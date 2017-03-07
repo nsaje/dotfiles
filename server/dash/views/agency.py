@@ -120,28 +120,28 @@ class AdGroupSettings(api_common.BaseApiView):
         changes, current_settings, new_settings = self.b1_sources_group_adjustments(
             changes, current_settings, new_settings)
 
-        if new_settings.id is None or 'tracking_code' in changes:
-            redirector_helper.insert_adgroup(
-                ad_group,
-                new_settings,
-                campaign_settings,
-            )
-        try:
-            change_b1_rtb_sources_cpcs = ('b1_sources_group_cpc_cc' in changes or
-                                          changes.get('b1_sources_group_enabled'))
-            helpers.adjust_adgroup_sources_cpcs(
-                ad_group, new_settings,
-                request.user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc'),
-                change_b1_rtb_sources_cpcs)
-        except cpc_constraints.ValidationError as err:
-            raise exc.ValidationError(errors={
-                'b1_sources_group_cpc_cc': list(err)
-            })
-        k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
-
         # save
         ad_group.save(request)
         if changes:
+            if new_settings.id is None or 'tracking_code' in changes:
+                redirector_helper.insert_adgroup(
+                    ad_group,
+                    new_settings,
+                    campaign_settings,
+                )
+            try:
+                change_b1_rtb_sources_cpcs = ('b1_sources_group_cpc_cc' in changes or
+                                              changes.get('b1_sources_group_enabled'))
+                helpers.adjust_adgroup_sources_cpcs(
+                    ad_group, new_settings,
+                    request.user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc'),
+                    change_b1_rtb_sources_cpcs)
+            except cpc_constraints.ValidationError as err:
+                raise exc.ValidationError(errors={
+                    'b1_sources_group_cpc_cc': list(err)
+                })
+
+            k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
             new_settings.save(
                 request,
                 action_type=constants.HistoryActionType.SETTINGS_CHANGE)
