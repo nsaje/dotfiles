@@ -130,8 +130,9 @@ class PublisherGroupsUpload(api_common.BaseApiView):
 
         account = helpers.get_account(request.user, account_id)
 
-        s3_helper = s3helpers.S3Helper(settings.PUBLISHER_GROUPS_ERRORS_BUCKET)
-        content = s3_helper.get(os.path.join('account_{}'.format(account.id), csv_key + '.csv'))
+        s3_helper = s3helpers.S3Helper()
+        content = s3_helper.get(os.path.join(
+            'publisher_group_errors', 'account_{}'.format(account.id), csv_key + '.csv'))
 
         return self.create_csv_response('publisher_group_errors', content=content)
 

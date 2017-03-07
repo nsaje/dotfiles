@@ -97,7 +97,8 @@ def save_entries_errors_csv(account_id, entry_dicts):
         )
 
     csv_key = ''.join(random.choice(string.letters + string.digits) for _ in range(64))
-    s3_helper = s3helpers.S3Helper(settings.PUBLISHER_GROUPS_ERRORS_BUCKET)
-    s3_helper.put(os.path.join('account_{}'.format(account_id), csv_key + '.csv'), output.getvalue())
+    s3_helper = s3helpers.S3Helper()
+    s3_helper.put(os.path.join(
+        'publisher_group_errors', 'account_{}'.format(account_id), csv_key + '.csv'), output.getvalue())
 
     return csv_key
