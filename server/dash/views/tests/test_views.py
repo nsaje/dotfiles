@@ -491,7 +491,7 @@ class CampaignAdGroups(TestCase):
     @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group', autospec=True)
     def test_put(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup):
         campaign = models.Campaign.objects.get(pk=1)
-
+        models.Source.objects.all().update(maintenance=False)
         response = self.client.put(
             reverse('campaign_ad_groups', kwargs={'campaign_id': campaign.id}),
         )
@@ -552,6 +552,7 @@ class CampaignAdGroups(TestCase):
         ad_group = models.AdGroup.objects.get(pk=2)
         ad_group_settings = ad_group.get_current_settings()
         request = None
+        models.Source.objects.all().update(maintenance=False)
 
         view = views.CampaignAdGroups()
         changes_text = view._add_media_sources(ad_group, ad_group_settings, request)
@@ -573,6 +574,18 @@ class CampaignAdGroups(TestCase):
         self.assertTrue(all(
             [adgss.state == constants.AdGroupSourceSettingsState.ACTIVE for adgss in ad_group_source_settings]
         ))
+
+    def test_add_media_sources_maintenance(self):
+        ad_group = models.AdGroup.objects.get(pk=2)
+        ad_group_settings = ad_group.get_current_settings()
+        request = None
+        models.Source.objects.all().update(maintenance=True)
+
+        view = views.CampaignAdGroups()
+        view._add_media_sources(ad_group, ad_group_settings, request)
+
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+        self.assertEqual(len(ad_group_sources), 0)
 
     def test_add_media_sources_with_retargeting(self):
         ad_group = models.AdGroup.objects.get(pk=2)

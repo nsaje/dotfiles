@@ -489,6 +489,8 @@ class CampaignAdGroups(api_common.BaseApiView):
         sources = ad_group.campaign.account.allowed_sources.all()
         added_sources = []
         for source in sources:
+            if source.maintenance:
+                continue
             try:
                 source_default_settings = helpers.get_source_default_settings(source)
             except exc.MissingDataError:
