@@ -31,3 +31,11 @@ def create_publisher_id(publisher, source_id):
 def dissect_publisher_id(publisher_id):
     publisher, source_id = publisher_id.rsplit(u'__', 1)
     return publisher, int(source_id) if source_id else None
+
+
+def inflate_publisher_id_source(publisher_id, source_ids):
+    publisher, source_id = dissect_publisher_id(publisher_id)
+    if source_id is not None:
+        return [publisher_id]
+
+    return [create_publisher_id(publisher, x) for x in source_ids]
