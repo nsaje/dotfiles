@@ -4,12 +4,8 @@ describe('zemCreateAdGroupSourceAction', function () {
 
     beforeEach(module('one'));
     beforeEach(module('one.mocks.zemInitializationService'));
-    beforeEach(module('one'), function ($provide, zemPermissions) {
-        zemPermissions.setMockedPermissions(zemPermissions.ALL_PERMISSIONS);
-    });
 
     beforeEach(inject(function ($injector, $componentController) {
-
         zemAdGroupSourcesStateService = $injector.get('zemAdGroupSourcesStateService');
         var bindings = {
             parentEntity: {
