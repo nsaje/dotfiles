@@ -1,55 +1,89 @@
 angular.module('one.widgets').component('zemInfobox', {
+    bindings: {
+        entity: '<',
+    },
     templateUrl: '/app/widgets/zem-infobox/zemInfobox.component.html',
     controller: function (zemInfoboxService, zemNavigationNewService, zemDataFilterService, zemEntityService, zemHistoryService, zemPermissions) { // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.openHistory = zemHistoryService.open;
 
-        var activeEntityUpdateHandler;
-        var hierarchyUpdateHandler;
+        var entityUpdateHandler;
+        var actionExecutedHandler;
         var dateRangeUpdateHandler;
         var dataFilterUpdateHandler;
 
+        var legacyActiveEntityUpdateHandler;
+        var legacyEntityUpdateHandler;
+        var legacyActionExecutedHandler;
+
         $ctrl.$onInit = function () {
-            var entityUpdateHandler;
-
-            updateHandler();
-
-            activeEntityUpdateHandler = zemNavigationNewService.onActiveEntityChange(function (event, activeEntity) {
-                if (entityUpdateHandler) {
-                    // Unsubscribe from updates on previous entity
-                    entityUpdateHandler();
-                }
-                if (activeEntity) {
-                    // Subscribe to updates on current entity
-                    entityUpdateHandler = zemEntityService.getEntityService(activeEntity.type).onEntityUpdated(
-                        updateHandler
-                    );
-                }
+            if (!zemPermissions.hasPermission('zemauth.can_use_new_routing')) {
+                $ctrl.entity = zemNavigationNewService.getActiveEntity();
                 updateHandler();
-            });
-            hierarchyUpdateHandler = zemNavigationNewService.onHierarchyUpdate(updateHandler);
+                if ($ctrl.entity) {
+                    legacyEntityUpdateHandler = zemEntityService.getEntityService($ctrl.entity.type)
+                        .onEntityUpdated(updateHandler);
+                    legacyActionExecutedHandler = zemEntityService.getEntityService($ctrl.entity.type)
+                        .onActionExecuted(updateHandler);
+                }
+
+                legacyActiveEntityUpdateHandler = zemNavigationNewService.onActiveEntityChange(
+                    function (event, activeEntity) {
+                        if (legacyEntityUpdateHandler) legacyEntityUpdateHandler();
+                        if (legacyActionExecutedHandler) legacyActionExecutedHandler();
+
+                        $ctrl.entity = activeEntity;
+                        updateHandler();
+                        if (activeEntity) {
+                            legacyEntityUpdateHandler = zemEntityService.getEntityService($ctrl.entity.type)
+                                .onEntityUpdated(updateHandler);
+                            legacyActionExecutedHandler = zemEntityService.getEntityService($ctrl.entity.type)
+                                .onActionExecuted(updateHandler);
+                        }
+                    }
+                );
+            }
+
             dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(updateHandler);
             dataFilterUpdateHandler = zemDataFilterService.onDataFilterUpdate(updateHandler);
         };
 
+        $ctrl.$onChanges = function (changes) {
+            if (zemPermissions.hasPermission('zemauth.can_use_new_routing')) {
+                $ctrl.entity = changes.entity.currentValue;
+                updateHandler();
+                if ($ctrl.entity) {
+                    if (entityUpdateHandler) entityUpdateHandler();
+                    entityUpdateHandler = zemEntityService.getEntityService($ctrl.entity.type).onEntityUpdated(
+                        updateHandler
+                    );
+                    if (actionExecutedHandler) actionExecutedHandler();
+                    actionExecutedHandler = zemEntityService.getEntityService($ctrl.entity.type).onActionExecuted(
+                        updateHandler
+                    );
+                }
+            }
+        };
+
         $ctrl.$onDestroy = function () {
-            // FIXME: Calling activeEntityUpdateHandler doesn't unsubscribe component from
-            // zemNavigationNewService.onActiveEntityChange immediately but only after another view change. Probably
-            // onActiveEntityChange callback is triggered before component is destroyed.
-            activeEntityUpdateHandler();
-            hierarchyUpdateHandler();
-            dateRangeUpdateHandler();
-            dataFilterUpdateHandler();
+            if (entityUpdateHandler) entityUpdateHandler();
+            if (actionExecutedHandler) actionExecutedHandler();
+            if (dateRangeUpdateHandler) dateRangeUpdateHandler();
+            if (dataFilterUpdateHandler) dataFilterUpdateHandler();
+
+            if (legacyActiveEntityUpdateHandler) legacyActiveEntityUpdateHandler();
+            if (legacyEntityUpdateHandler) legacyEntityUpdateHandler();
+            if (legacyActionExecutedHandler) legacyActionExecutedHandler();
         };
 
         function updateHandler () {
             $ctrl.loadRequestInProgress = true;
-            zemInfoboxService.reloadInfoboxData(zemNavigationNewService.getActiveEntity())
-            .then(updateView)
-            .finally(function () {
-                $ctrl.loadRequestInProgress = false;
-            });
+            zemInfoboxService.reloadInfoboxData($ctrl.entity)
+                .then(updateView)
+                .finally(function () {
+                    $ctrl.loadRequestInProgress = false;
+                });
         }
 
         function updateView (data) {

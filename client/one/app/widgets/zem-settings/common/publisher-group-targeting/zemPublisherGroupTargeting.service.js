@@ -11,11 +11,11 @@ angular.module('one.widgets').service('zemPublisherGroupTargetingService', funct
 
     function getAccountId (entity) {
         var accountId = null;
-        if (entity.type === 'adGroup') {
+        if (entity.type === constants.entityType.AD_GROUP) {
             accountId = entity.parent.parent.id;
-        } else if (entity.type === 'campaign') {
+        } else if (entity.type === constants.entityType.CAMPAIGN) {
             accountId = entity.parent.id;
-        } else if (entity.type === 'account') {
+        } else if (entity.type === constants.entityType.ACCOUNT) {
             accountId = entity.id;
         }
 

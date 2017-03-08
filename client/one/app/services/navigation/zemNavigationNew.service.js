@@ -39,9 +39,8 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
         var type = null;
 
         if (zemPermissions.hasPermission('zemauth.can_use_new_routing') && $state.includes('v2.analytics')) {
-            if ($state.params.level === 'account') type = constants.entityType.ACCOUNT;
-            if ($state.params.level === 'campaign') type = constants.entityType.CAMPAIGN;
-            if ($state.params.level === 'adgroup') type = constants.entityType.AD_GROUP;
+            var level = constants.levelStateParamToLevelMap[$state.params.level];
+            type = constants.levelToEntityTypeMap[level];
         } else {
             if ($state.includes('main.accounts'))  type = constants.entityType.ACCOUNT;
             if ($state.includes('main.campaigns')) type = constants.entityType.CAMPAIGN;
@@ -189,17 +188,18 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
     }
 
     function getTargetStateParams (entity) {
-        var level = 'accounts';
+        var level = constants.levelStateParam.ACCOUNTS;
         var id = entity ? entity.id : null;
 
         var breakdown = $state.params.breakdown;
-        if (breakdown === 'publishers' && !(entity && entity.type === constants.entityType.AD_GROUP)) {
+        var isAdGroup = entity && entity.type === constants.entityType.AD_GROUP;
+        if (breakdown === constants.breakdownStateParam.PUBLISHERS && !isAdGroup) {
             breakdown = null;
         }
 
-        if (entity && entity.type === constants.entityType.ACCOUNT) level = 'account';
-        if (entity && entity.type === constants.entityType.CAMPAIGN) level = 'campaign';
-        if (entity && entity.type === constants.entityType.AD_GROUP) level = 'adgroup';
+        if (entity && entity.type === constants.entityType.ACCOUNT) level = constants.levelStateParam.ACCOUNT;
+        if (entity && entity.type === constants.entityType.CAMPAIGN) level = constants.levelStateParam.CAMPAIGN;
+        if (entity && entity.type === constants.entityType.AD_GROUP) level = constants.levelStateParam.AD_GROUP;
 
         return {
             level: level,

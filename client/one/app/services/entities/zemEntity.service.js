@@ -45,19 +45,14 @@ angular.module('one.services').service('zemEntityService', function ($http, $q, 
 
     function getEntityServiceByLevel (level, breakdown) {
         if (breakdown === constants.breakdown.MEDIA_SOURCE || breakdown === constants.breakdown.PUBLISHER) {
-            return getEntityService(getEntityTypeFromLevel(level));
+            return getEntityService(constants.levelToEntityTypeMap[level]);
         }
         return getEntityService(getEntityTypeFromBreakdown(breakdown));
     }
 
     //
-    // Helper maps: level/breakdown -> entityType
+    // Helper map: breakdown -> entityType
     //
-    function getEntityTypeFromLevel (level) {
-        if (level === constants.level.ACCOUNTS) return constants.entityType.ACCOUNT;
-        if (level === constants.level.CAMPAIGNS) return constants.entityType.CAMPAIGN;
-        if (level === constants.level.AD_GROUPS) return constants.entityType.AD_GROUP;
-    }
     function getEntityTypeFromBreakdown (breakdown) {
         if (breakdown === constants.breakdown.ACCOUNT) return constants.entityType.ACCOUNT;
         if (breakdown === constants.breakdown.CAMPAIGN) return constants.entityType.CAMPAIGN;

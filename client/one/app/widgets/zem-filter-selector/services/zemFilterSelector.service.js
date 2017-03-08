@@ -39,7 +39,7 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
             permissions: ['zemauth.can_filter_by_agency'],
             isVisible: function () {
                 if (zemPermissions.hasPermission('zemauth.can_use_new_routing') && $state.includes('v2')) {
-                    return $state.params.level === 'accounts';
+                    return $state.params.level === constants.levelStateParam.ACCOUNTS;
                 }
                 return $state.includes('main.allAccounts');
             },
@@ -53,7 +53,7 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
             permissions: ['zemauth.can_filter_by_account_type'],
             isVisible: function () {
                 if (zemPermissions.hasPermission('zemauth.can_use_new_routing') && $state.includes('v2')) {
-                    return $state.params.level === 'accounts';
+                    return $state.params.level === constants.levelStateParam.ACCOUNTS;
                 }
                 return $state.includes('main.allAccounts');
             },
@@ -74,7 +74,7 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
             permissions: ['zemauth.can_see_publisher_blacklist_status'],
             isVisible: function () {
                 if (zemPermissions.hasPermission('zemauth.can_use_new_routing') && $state.includes('v2')) {
-                    return $state.params.breakdown === 'publishers';
+                    return $state.params.breakdown === constants.breakdownStateParam.PUBLISHERS;
                 }
                 return $state.includes('**.publishers');
             },

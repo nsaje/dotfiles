@@ -563,11 +563,21 @@ var constants = {
         CAMPAIGN: 'campaign',
         ACCOUNT: 'account',
     },
+    levelStateParam: {
+        ACCOUNTS: 'accounts',
+        ACCOUNT: 'account',
+        CAMPAIGN: 'campaign',
+        AD_GROUP: 'adgroup',
+    },
     level: {
         AD_GROUPS: 'ad_groups',
         CAMPAIGNS: 'campaigns',
         ACCOUNTS: 'accounts',
         ALL_ACCOUNTS: 'all_accounts',
+    },
+    breakdownStateParam: {
+        SOURCES: 'sources',
+        PUBLISHERS: 'publishers',
     },
     breakdown: {
         ACCOUNT: 'account',
@@ -732,6 +742,22 @@ var constants = {
         SHOPPING: 'shopping',
     }
 };
+
+constants.levelStateParamToLevelMap = {};
+constants.levelStateParamToLevelMap[constants.levelStateParam.ACCOUNTS] = constants.level.ALL_ACCOUNTS;
+constants.levelStateParamToLevelMap[constants.levelStateParam.ACCOUNT] = constants.level.ACCOUNTS;
+constants.levelStateParamToLevelMap[constants.levelStateParam.CAMPAIGN] = constants.level.CAMPAIGNS;
+constants.levelStateParamToLevelMap[constants.levelStateParam.AD_GROUP] = constants.level.AD_GROUPS;
+
+constants.breakdownStateParamToBreakdownMap = {};
+constants.breakdownStateParamToBreakdownMap[constants.breakdownStateParam.SOURCES] = constants.breakdown.MEDIA_SOURCE;
+constants.breakdownStateParamToBreakdownMap[constants.breakdownStateParam.PUBLISHERS] = constants.breakdown.PUBLISHER;
+
+constants.levelToEntityTypeMap = {};
+constants.levelToEntityTypeMap[constants.level.ALL_ACCOUNTS] = null;
+constants.levelToEntityTypeMap[constants.level.ACCOUNTS] = constants.entityType.ACCOUNT;
+constants.levelToEntityTypeMap[constants.level.CAMPAIGNS] = constants.entityType.CAMPAIGN;
+constants.levelToEntityTypeMap[constants.level.AD_GROUPS] = constants.entityType.AD_GROUP;
 
 var options = {
     accountTypes: [

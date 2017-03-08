@@ -1,4 +1,4 @@
-<div class="page">
+<div class="page" ng-if="$ctrl.entity !== undefined">
     <div class="section">
         <div class="graph-infobox-parent">
             <div class="graph-infobox-row">
@@ -7,7 +7,7 @@
                 </div>
                 <div class="spacing"></div>
                 <div class="infobox-container">
-                    <zem-infobox class="zem-infobox"></zem-infobox>
+                    <zem-infobox class="zem-infobox" entity="$ctrl.entity"></zem-infobox>
                 </div>
             </div>
         </div>

@@ -1,4 +1,4 @@
-angular.module('one.views').controller('zemAnalyticsView', function ($stateParams) {
+angular.module('one.views').controller('zemAnalyticsView', function ($stateParams, zemNavigationNewService) {
     var $ctrl = this;
 
     var DEFAULT_BREAKDOWN = {};
@@ -10,25 +10,19 @@ angular.module('one.views').controller('zemAnalyticsView', function ($stateParam
     initialize();
 
     function initialize () {
-        $ctrl.level = getLevelFromParams($stateParams.level);
-        $ctrl.breakdown = getBreakdownFromParams($stateParams.breakdown, $ctrl.level);
+        $ctrl.level = constants.levelStateParamToLevelMap[$stateParams.level];
+        if (!$ctrl.level) return;
+
         $ctrl.id = $stateParams.id ? parseInt($stateParams.id) : null;
-    }
+        $ctrl.breakdown =
+            constants.breakdownStateParamToBreakdownMap[$stateParams.breakdown] || DEFAULT_BREAKDOWN[$ctrl.level];
 
-    function getLevelFromParams (level) {
-        switch (level) {
-        case 'accounts': return constants.level.ALL_ACCOUNTS;
-        case 'account': return constants.level.ACCOUNTS;
-        case 'campaign': return constants.level.CAMPAIGNS;
-        case 'adgroup': return constants.level.AD_GROUPS;
-        }
-    }
-
-    function getBreakdownFromParams (breakdown, level) {
-        switch (breakdown) {
-        case 'sources': return constants.breakdown.MEDIA_SOURCE;
-        case 'publishers': return constants.breakdown.PUBLISHER;
-        default: return DEFAULT_BREAKDOWN[level];
+        $ctrl.entity = zemNavigationNewService.getActiveEntity();
+        if ($ctrl.entity === undefined) {
+            var handler = zemNavigationNewService.onActiveEntityChange(function (event, entity) {
+                $ctrl.entity = entity;
+                handler();
+            });
         }
     }
 });
