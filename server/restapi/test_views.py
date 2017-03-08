@@ -16,6 +16,7 @@ import views as restapi_views
 from dash import constants
 from dash import upload
 import redshiftapi.quickstats
+from automation import autopilot_plus
 
 from utils import json_helper
 from utils import redirector_helper
@@ -612,6 +613,23 @@ class AdGroupsTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json['data'])
         self.assertEqual(resp_json['data']['archived'], False)
+
+    @mock.patch.object(autopilot_plus, 'initialize_budget_autopilot_on_ad_group', autospec=True)
+    def test_adgroups_put_autopilot_budget(self, mock_autopilot):
+        ag = dash.models.AdGroup.objects.get(pk=2040)
+        new_settings = ag.get_current_settings().copy_settings()
+        new_settings.b1_sources_group_enabled = True
+        new_settings.save(None)
+        test_adgroup = self.adgroup_repr(
+            id=2040, campaign_id=608,
+            autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+            autopilot_daily_budget='20.00')
+        r = self.client.put(
+            reverse('adgroups_details', kwargs={'entity_id': 2040}),
+            data=test_adgroup, format='json')
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json['data'])
+        self.assertEqual(resp_json['data'], test_adgroup)
 
 
 class AdGroupSourcesTest(RESTAPITest):

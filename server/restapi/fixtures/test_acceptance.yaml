@@ -150,6 +150,7 @@
         created_dt: '2014-06-04T09:58:21'
         created_by: 1
         conversion_goal: 1
+        primary: true
     model: dash.campaigngoal
     pk: 1238
 

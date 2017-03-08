@@ -414,7 +414,7 @@ class AdGroupSerializer(SettingsSerializer):
             'exclusion_interest_targeting': DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['excluded']),
             'bluekai_targeting': data['targeting']['demographic'],
             'autopilot_state': DashConstantField(constants.AdGroupSettingsAutopilotState).to_internal_value(data['autopilot']['state']),
-            'autopilot_daily_budget': data['autopilotDailyBudget'],
+            'autopilot_daily_budget': data['autopilot']['dailyBudget'],
             'dayparting': data['dayparting'],
             'whitelist_publisher_groups': data['targeting']['publisherGroups']['included'],
             'blacklist_publisher_groups': data['targeting']['publisherGroups']['excluded'],
