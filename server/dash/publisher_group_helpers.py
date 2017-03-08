@@ -37,6 +37,7 @@ def get_blacklist_publisher_group(obj, create_if_none=False, request=None):
             publisher_group = models.PublisherGroup(
                 name=obj.get_default_blacklist_name(),
                 account=obj.get_account(),
+                default_include_subdomains=True,
                 implicit=True)
             publisher_group.save(request)
             obj.default_blacklist = publisher_group
@@ -59,6 +60,7 @@ def get_whitelist_publisher_group(obj, create_if_none=False, request=None):
             publisher_group = models.PublisherGroup(
                 name=obj.get_default_whitelist_name(),
                 account=obj.get_account(),
+                default_include_subdomains=True,
                 implicit=True)
             publisher_group.save(request)
             obj.default_whitelist = publisher_group
@@ -392,3 +394,22 @@ def get_ob_blacklisted_publishers_count(account):
     blacklists = _get_blacklists(account, account.get_current_settings())
     return models.PublisherGroupEntry.objects.filter(publisher_group_id__in=blacklists,
                                                      source__source_type__type=constants.SourceType.OUTBRAIN).count()
+
+
+def parse_publisher_group_type_level(publisher_group):
+    type_, level = None, None
+
+    if publisher_group.name.startswith("Default blacklist for account"):
+        type_, level = 'Blacklist', 'Account'
+    elif publisher_group.name.startswith("Default whitelist for account"):
+        type_, level = 'Whitelist', 'Account'
+    elif publisher_group.name.startswith("Default blacklist for campaign"):
+        type_, level = 'Blacklist', 'Campaign'
+    elif publisher_group.name.startswith("Default whitelist for campaign"):
+        type_, level = 'Whitelist', 'Campaign'
+    elif publisher_group.name.startswith("Default blacklist for ad group"):
+        type_, level = 'Blacklist', 'Ad Group'
+    elif publisher_group.name.startswith("Default whitelist for ad group"):
+        type_, level = 'Whitelist', 'Ad Group'
+
+    return type_, level

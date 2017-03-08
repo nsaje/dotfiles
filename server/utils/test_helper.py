@@ -1,6 +1,7 @@
 import datetime
 import httplib
 import operator
+import mock
 from contextlib import contextmanager
 
 import mock
@@ -12,6 +13,7 @@ from django.db import transaction
 from django.conf import settings
 from django.core.management import call_command
 from django.contrib.auth.models import Permission
+import django.core.files
 
 from django.test.client import RequestFactory
 
@@ -37,6 +39,13 @@ def fake_request(user, url=''):
     r = rf.get(url)
     r.user = user
     return r
+
+
+def mock_file(name, content):
+    m = mock.Mock(spec=django.core.files.File)
+    m.read.return_value = content
+    m.name = name
+    return m
 
 
 class MockDateTime(datetime.datetime):

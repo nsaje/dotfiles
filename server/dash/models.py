@@ -4635,6 +4635,8 @@ class PublisherGroup(models.Model):
 
     implicit = models.BooleanField(default=False)
 
+    default_include_subdomains = models.BooleanField(default=True)
+
     def save(self, request, *args, **kwargs):
         if request and request.user:
             self.modified_by = request.user

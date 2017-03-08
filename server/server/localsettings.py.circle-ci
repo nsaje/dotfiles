@@ -105,6 +105,7 @@ S3_BUCKET_STATS = ''
 S3_BUCKET_DEMO = ''
 S3_BUCKET_THUMBNAILER = ''
 S3_BUCKET_CUSTOM_REPORTS = ''
+S3_BUCKET_PUBLISHER_GROUPS = ''
 USE_S3 = False
 
 # fallback dir when S3 is not used

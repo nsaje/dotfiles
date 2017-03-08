@@ -31,6 +31,7 @@ angular.module('one.widgets').component('zemPublisherGroupsUpload', {
         };
 
         function upsert () {
+            $ctrl.putRequestInProgress = true;
             zemPublisherGroupsEndpoint
                 .upsert($ctrl.resolve.account.id, $ctrl.formData)
                 .then(function () {
@@ -38,6 +39,9 @@ angular.module('one.widgets').component('zemPublisherGroupsUpload', {
                 })
                 .catch(function (data) {
                     $ctrl.errors = data;
+                })
+                .finally(function () {
+                    $ctrl.putRequestInProgress = false;
                 });
         }
 

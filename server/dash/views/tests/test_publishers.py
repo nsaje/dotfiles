@@ -1,4 +1,5 @@
 import json
+from mock import patch
 
 from dash import constants
 from dash import models
@@ -8,6 +9,7 @@ from django.http.request import HttpRequest
 from django.test import Client, TestCase, override_settings
 
 from utils import test_helper
+from utils import s3helpers
 from zemauth.models import User
 
 
@@ -197,3 +199,98 @@ class PublisherGroupsViewTest(TestCase):
             pgs = models.PublisherGroup.objects.filter(pk=pg['id']).filter_by_account(account)
             self.assertEqual(pgs.count(), 1)
             self.assertFalse(pgs.first().implicit)
+
+
+class PublisherGroupsUploadTest(TestCase):
+
+    fixtures = ['test_publishers.yaml']
+
+    def setUp(self):
+        self.user = User.objects.get(pk=2)
+        self.client = Client()
+        self.client.login(username=self.user.email, password='secret')
+
+    def test_get_not_allowed(self):
+        response = self.client.get(
+            reverse('accounts_publisher_groups_upload', kwargs={'account_id': 1, 'csv_key': 'asd'}))
+        self.assertEqual(response.status_code, 404)
+
+    def test_post_not_allowed(self):
+        response = self.client.post(
+            reverse('accounts_publisher_groups_upload', kwargs={'account_id': 1}))
+        self.assertEqual(response.status_code, 404)
+
+    @patch.object(s3helpers.S3Helper, 'get')
+    def test_get(self, mock_s3):
+        test_helper.add_permissions(self.user, ['can_edit_publisher_groups'])
+
+        response = self.client.get(
+            reverse('accounts_publisher_groups_upload', kwargs={'account_id': 1, 'csv_key': 'asd'}))
+
+        self.assertEqual(response.status_code, 200)
+        mock_s3.assert_called_with('publisher_group_errors/account_1/asd.csv')
+
+    def test_post_update(self):
+        test_helper.add_permissions(self.user, ['can_edit_publisher_groups'])
+        account = models.Account.objects.get(pk=1)
+        data = {
+            'id': 1,
+            'name': 'qweasd',
+            'include_subdomains': True,
+        }
+
+        response = self.client.post(
+            reverse('accounts_publisher_groups_upload', kwargs={'account_id': account.id}),
+            data=data)
+
+        self.assertEqual(response.status_code, 200)
+        publisher_group = models.PublisherGroup.objects.get(pk=1)
+        self.assertEqual(publisher_group.name, 'qweasd')
+        for entry in publisher_group.entries.all():
+            self.assertEqual(entry.include_subdomains, True)
+
+    def test_post_update_apply_include_subdomains(self):
+        test_helper.add_permissions(self.user, ['can_edit_publisher_groups'])
+        account = models.Account.objects.get(pk=1)
+        data = {
+            'id': 1,
+            'name': 'qweasd',
+            'include_subdomains': False,
+        }
+
+        response = self.client.post(
+            reverse('accounts_publisher_groups_upload', kwargs={'account_id': account.id}),
+            data=data)
+
+        self.assertEqual(response.status_code, 200)
+        publisher_group = models.PublisherGroup.objects.get(pk=1)
+        self.assertEqual(publisher_group.name, 'qweasd')
+        for entry in publisher_group.entries.all():
+            self.assertEqual(entry.include_subdomains, False)
+
+    def test_post_create(self):
+        test_helper.add_permissions(self.user, ['can_edit_publisher_groups'])
+        account = models.Account.objects.get(pk=1)
+        mock_file = test_helper.mock_file('asd.csv', """\
+        Publisher,Source
+        asd,
+        qwe,adsnative""")
+        data = {
+            'name': 'qweasd',
+            'include_subdomains': True,
+            'entries': mock_file,
+        }
+
+        response = self.client.post(
+            reverse('accounts_publisher_groups_upload', kwargs={'account_id': account.id}),
+            data=data)
+
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.content)
+
+        self.assertEqual(response['data']['name'], 'qweasd')
+
+        publisher_group = models.PublisherGroup.objects.get(pk=response['data']['id'])
+        self.assertEqual(publisher_group.name, 'qweasd')
+        for entry in publisher_group.entries.all():
+            self.assertEqual(entry.include_subdomains, True)

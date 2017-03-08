@@ -55,8 +55,8 @@ def validate_entries(entry_dicts):
         error = []
 
         prefixes = ('http', 'https', 'www')
-        if any(publisher.startswith(x) for x in prefixes) and entry['include_subdomains']:
-            error.append("When including subdomains omit the following prefixes: {}".format(", ".join(prefixes)))
+        if any(publisher.startswith(x) for x in prefixes):
+            error.append("Remove the following prefixes: {}".format(", ".join(prefixes)))
 
         # these were already validated, remove so they won't cause false errors in further validation
         for prefix in ('http://', 'https://', 'www.'):
@@ -97,7 +97,7 @@ def save_entries_errors_csv(account_id, entry_dicts):
         )
 
     csv_key = ''.join(random.choice(string.letters + string.digits) for _ in range(64))
-    s3_helper = s3helpers.S3Helper()
+    s3_helper = s3helpers.S3Helper(settings.S3_BUCKET_PUBLISHER_GROUPS)
     s3_helper.put(os.path.join(
         'publisher_group_errors', 'account_{}'.format(account_id), csv_key + '.csv'), output.getvalue())
 

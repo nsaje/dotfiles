@@ -4,7 +4,9 @@
     <table class="table">
         <thead>
             <tr>
+                <th>ID</th>
                 <th>Name</th>
+                <th>Subdomains included</th>
                 <th>Number of publishers</th>
                 <th>Modified</th>
                 <th>Created</th>
@@ -18,7 +20,9 @@
                 </td>
             </tr>
             <tr ng-repeat="item in $ctrl.publisherGroups | filter: {implicit: false}">
+                <td>{{ item.id }}</td>
                 <td>{{ item.name }}</td>
+                <td>{{ item.include_subdomains ? 'Yes' : 'No' }}</td>
                 <td>{{ item.size }}</td>
                 <td>{{ (item.modified | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
                 <td>{{ (item.created | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
@@ -41,7 +45,11 @@
     <table class="table">
         <thead>
             <tr>
+                <th>ID</th>
+                <th>Level</th>
                 <th>Name</th>
+                <th>Type</th>
+                <th>Subdomains included</th>
                 <th>Number of publishers</th>
                 <th>Modified</th>
                 <th>Created</th>
@@ -55,7 +63,11 @@
                 </td>
             </tr>
             <tr ng-repeat="item in $ctrl.publisherGroups | filter: {implicit: true}">
+                <td>{{ item.id }}</td>
+                <td>{{ item.level }}</td>
                 <td>{{ item.name }}</td>
+                <td>{{ item.type }}</td>
+                <td>{{ item.include_subdomains ? 'Yes' : 'No' }}</td>
                 <td>{{ item.size }}</td>
                 <td>{{ (item.modified | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
                 <td>{{ (item.created | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>

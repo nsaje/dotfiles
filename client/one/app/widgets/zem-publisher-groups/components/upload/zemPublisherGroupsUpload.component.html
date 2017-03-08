@@ -43,9 +43,9 @@
     </div>
 </div>
 <div class="modal__footer buttons-panel">
-    <button class="button button--highlight button--with-icon check-icon" ng-if="!$ctrl.isCreationMode" ng-click="$ctrl.upsert()">Update</button>
-    <button class="button button--highlight button--with-icon check-icon" ng-if="$ctrl.isCreationMode" ng-click="$ctrl.upsert()">Create</button>
-    <button type="button" class="button button--outline" ng-if="!$ctrl.isCreationMode" ng-click="$ctrl.modalInstance.dismiss()">Close</button>
-    <button type="button" class="button button--outline" ng-if="$ctrl.isCreationMode" ng-click="$ctrl.modalInstance.dismiss()">Cancel</button>
+    <button class="button button--highlight button--with-icon check-icon" ng-disabled="!!$ctrl.putRequestInProgress" ng-if="!$ctrl.isCreationMode" ng-click="$ctrl.upsert()">Update</button>
+    <button class="button button--highlight button--with-icon check-icon" ng-disabled="!!$ctrl.putRequestInProgress" ng-if="$ctrl.isCreationMode" ng-click="$ctrl.upsert()">Create</button>
+    <button type="button" class="button button--outline" ng-disabled="!!$ctrl.putRequestInProgress" ng-if="!$ctrl.isCreationMode" ng-click="$ctrl.modalInstance.dismiss()">Close</button>
+    <button type="button" class="button button--outline" ng-disabled="!!$ctrl.putRequestInProgress" ng-if="$ctrl.isCreationMode" ng-click="$ctrl.modalInstance.dismiss()">Cancel</button>
     <div class="loader" ng-show="$ctrl.putRequestInProgress"></div>
 </div>
