@@ -20,7 +20,7 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
         $ctrl.createEntity = createEntity;
 
         $ctrl.$onInit = function () {
-            $ctrl.entityType = $ctrl.parentEntity ?
+            $ctrl.entityType = $ctrl.parentEntity && $ctrl.parentEntity.type ?
                 MAP_PARENT_TYPE[$ctrl.parentEntity.type] : constants.entityType.ACCOUNT;
 
             $ctrl.actionName = MAP_ACTION_NAME[$ctrl.entityType];

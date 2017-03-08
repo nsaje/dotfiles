@@ -1,13 +1,14 @@
 angular.module('one.widgets').factory('zemGridIntegrationService', function ($timeout, zemPermissions, zemGridConstants, zemGridEndpointService, zemDataSourceService, zemDataFilterService, zemSelectionService, zemAdGroupService, zemGridIntegrationSelectionService) { // eslint-disable-line
 
-    function IntegrationService (entity, $scope) {
+    function IntegrationService ($scope) {
         var DATA_SOURCE_CACHE = {};
 
         var breakdown;
+        var entity;
         var grid;
 
         this.initialize = initialize;
-        this.setBreakdown = setBreakdown;
+        this.configureDataSource = configureDataSource;
         this.getGrid = getGrid;
         this.setGridApi = setGridApi;
 
@@ -25,9 +26,10 @@ angular.module('one.widgets').factory('zemGridIntegrationService', function ($ti
             $scope.$on('$destroy', onEntityUpdatedHandler);
         }
 
-        function setBreakdown (_breakdown) {
+        function configureDataSource (_entity, _breakdown) {
             breakdown = _breakdown;
-            grid.dataSource = createDataSource(breakdown);
+            entity = _entity;
+            grid.dataSource = createDataSource(entity, breakdown);
             loadState();
         }
 
@@ -48,16 +50,31 @@ angular.module('one.widgets').factory('zemGridIntegrationService', function ($ti
             };
         }
 
-        function createDataSource (breakdown) {
-            if (!DATA_SOURCE_CACHE[breakdown]) {
-                var metadata = zemGridEndpointService.createMetaData(entity.level, entity.id, breakdown);
-                var endpoint = zemGridEndpointService.createEndpoint(metadata);
-                var dataSource = zemDataSourceService.createInstance(endpoint, $scope);
-                DATA_SOURCE_CACHE[breakdown] = dataSource;
+        function createDataSource (entity, breakdown) {
+            function createKey (entity, breakdown) {
+                if (!entity) {
+                    return 'all_accounts-' + breakdown;
+                }
+                return '{type}-{id}-{breakdown}'
+                    .replace('{type}', entity.type)
+                    .replace('{id}', entity.id)
+                    .replace('{breakdown}', breakdown);
             }
 
-            return DATA_SOURCE_CACHE[breakdown];
+            var key = createKey(entity, breakdown);
+
+            if (!DATA_SOURCE_CACHE[key]) {
+                var id = entity ? entity.id : null;
+                var level = entity ? constants.entityTypeToLevelMap[entity.type] : constants.level.ALL_ACCOUNTS;
+                var metadata = zemGridEndpointService.createMetaData(level, id, breakdown);
+                var endpoint = zemGridEndpointService.createEndpoint(metadata);
+                var dataSource = zemDataSourceService.createInstance(endpoint, $scope);
+                DATA_SOURCE_CACHE[key] = dataSource;
+            }
+
+            return DATA_SOURCE_CACHE[key];
         }
+
 
         function createDefaultGridOptions () {
             var options = {
@@ -110,7 +127,7 @@ angular.module('one.widgets').factory('zemGridIntegrationService', function ($ti
             grid.dataSource.setFilter(FILTER.FILTERED_MEDIA_SOURCES, filteredSources);
             grid.dataSource.setFilter(FILTER.SHOW_ARCHIVED_SOURCES, showArchived);
 
-            if (entity.level === constants.level.ALL_ACCOUNTS) {
+            if (!entity) {
                 grid.dataSource.setFilter(FILTER.FILTERED_AGENCIES, filteredAgencies);
                 grid.dataSource.setFilter(FILTER.FILTERED_ACCOUNT_TYPES, filteredAccountTypes);
             }
@@ -158,8 +175,8 @@ angular.module('one.widgets').factory('zemGridIntegrationService', function ($ti
     }
 
     return {
-        createInstance: function (entity, $scope) {
-            return new IntegrationService(entity, $scope);
+        createInstance: function ($scope) {
+            return new IntegrationService($scope);
         }
 
     };

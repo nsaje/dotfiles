@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
         api: '=',
     },
     templateUrl: '/app/widgets/zem-grid-integration/shared/bulk-publishers-actions/zemGridBulkPublishersActions.component.html', // eslint-disable-line max-len
-    controller: function ($window, zemGridConstants, zemGridBulkPublishersActionsService, zemAlertsService) { // eslint-disable-line max-len
+    controller: function ($scope, $window, zemGridConstants, zemGridBulkPublishersActionsService, zemAlertsService) { // eslint-disable-line max-len
         var MAX_BLACKLISTED_PUBLISHERS_YAHOO = 0;
         var MSG_GLOBAL_UPDATE_ALERT = 'This action will affect all accounts. Are you sure you want to proceed?';
         var MSG_DISABLED_ROW = '' +
@@ -27,7 +27,7 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
             $ctrl.service = zemGridBulkPublishersActionsService.createInstance($ctrl.api);
             initializeActions();
             initializeSelectionConfig();
-            $ctrl.api.onSelectionUpdated(null, updateActionStates);
+            $ctrl.api.onSelectionUpdated($scope, updateActionStates);
         };
 
         function initializeSelectionConfig () {
@@ -90,7 +90,8 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
             var selectedRows = $ctrl.api.getSelection().selected;
             var count = 0;
             for (var i = 0; i < selectedRows.length; i++) {
-                if (exchange === selectedRows[i].data.stats.exchange.value) {
+                var exchangeData = selectedRows[i].data.stats.exchange;
+                if (exchangeData && exchange === exchangeData.value) {
                     count++;
                 }
             }

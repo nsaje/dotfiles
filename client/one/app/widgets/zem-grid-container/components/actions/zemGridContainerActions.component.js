@@ -24,12 +24,12 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         function isGridBulkActionsVisible () {
             return isEntityBreakdown()
                 || ($ctrl.breakdown === constants.breakdown.MEDIA_SOURCE
-                    && $ctrl.entity.level === constants.level.AD_GROUPS);
+                    && $ctrl.entity && $ctrl.entity.type === constants.entityType.AD_GROUP);
         }
 
         function isGridBulkPublishersActionsVisible () {
             return $ctrl.breakdown === constants.breakdown.PUBLISHER
-                && $ctrl.entity.level === constants.level.AD_GROUPS;
+                && $ctrl.entity && $ctrl.entity.type === constants.entityType.AD_GROUP;
         }
 
         function isCreateEntityActionVisible () {
@@ -38,8 +38,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
 
         function isCreateAdGroupSourceActionVisible () {
             return $ctrl.breakdown === constants.breakdown.MEDIA_SOURCE
-                && $ctrl.entity.level === constants.level.AD_GROUPS;
-
+                && $ctrl.entity && $ctrl.entity.type === constants.entityType.AD_GROUP;
         }
 
         function isGridExportVisible () {

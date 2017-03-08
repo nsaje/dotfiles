@@ -3,7 +3,7 @@
         <div class="graph-infobox-parent">
             <div class="graph-infobox-row">
                 <div class="graph-container">
-                    <zem-chart level="$ctrl.level" breakdown="$ctrl.breakdown" entity-id="$ctrl.id"></zem-chart>
+                    <zem-chart level="$ctrl.level" breakdown="$ctrl.chartBreakdown" entity-id="$ctrl.entity.id"></zem-chart>
                 </div>
                 <div class="spacing"></div>
                 <div class="infobox-container">
@@ -11,5 +11,8 @@
                 </div>
             </div>
         </div>
+    </div>
+    <div class="section">
+        <zem-grid-container class="zem-grid-container" entity="$ctrl.entity" breakdown="$ctrl.breakdown"></zem-grid-container>
     </div>
 </div>

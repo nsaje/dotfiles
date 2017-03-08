@@ -67,6 +67,8 @@ angular.module('one.widgets').directive('zemGridRow', function (zemGridConstants
             vm.getRowClass = getRowClass;
 
             function getRowClass () {
+                if (!vm.row) return [];
+
                 var classes = [];
                 classes.push('level-' + vm.row.level);
                 if (vm.row.level === vm.grid.meta.dataService.getBreakdownLevel()) classes.push('level-last');

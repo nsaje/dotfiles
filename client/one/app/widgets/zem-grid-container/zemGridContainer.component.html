@@ -1,13 +1,19 @@
 <div class="zem-grid-container__header">
     <zem-grid-container-tabs
-            options="$ctrl.tabOptions"
-            on-selected="$ctrl.onTabSelected(option)"
+            entity="$ctrl.entity"
+            breakdown="$ctrl.breakdown"
             class="zem-grid-container-tabs"
     ></zem-grid-container-tabs>
 </div>
 
-<div class="zem-grid-container__body">
-    <zem-alerts level="$ctrl.entity.level"
+<div class="zem-grid-container__body"
+     ng-if="$ctrl.entity.type === $ctrl.constants.entityType.CAMPAIGN"
+     ng-show="$ctrl.breakdown === $ctrl.constants.breakdown.INSIGHTS">
+    <zem-content-insights entity="$ctrl.entity"></zem-content-insights>
+</div>
+
+<div class="zem-grid-container__body" ng-show="$ctrl.breakdown !== $ctrl.constants.breakdown.INSIGHTS">
+    <zem-alerts level="$ctrl.level"
                 entity-id="$ctrl.entity.id"
     ></zem-alerts>
 

@@ -20,14 +20,14 @@ describe('component: zemGridIntegrationService', function () {
         zemSelectionService = $injector.get('zemSelectionService');
 
         $scope = $injector.get('$rootScope').$new();
-        defaultEntity = {level: constants.level.ACCOUNTS, id: 'TEST-ACCOUNT-ID'};
+        defaultEntity = {type: constants.entityType.ACCOUNT, id: 'TEST-ACCOUNT-ID'};
 
         // TODO: Remove when accountAccess resolve is removed from main state in app.js
         $httpBackend.whenGET(/^\/api\/.*\/nav\//).respond(200, {data: {}});
     }));
 
     it('should create default grid options on initialization', function () {
-        var service = zemGridIntegrationService.createInstance(defaultEntity, $scope);
+        var service = zemGridIntegrationService.createInstance($scope);
         service.initialize();
 
         expect(service.getGrid().options).toEqual({
@@ -44,7 +44,7 @@ describe('component: zemGridIntegrationService', function () {
         spyOn(zemDataFilterService, 'onDateRangeUpdate').and.callThrough();
         spyOn(zemDataFilterService, 'onDataFilterUpdate').and.callThrough();
 
-        var service = zemGridIntegrationService.createInstance(defaultEntity, $scope);
+        var service = zemGridIntegrationService.createInstance($scope);
         service.initialize();
 
         expect(zemDataFilterService.onDateRangeUpdate).toHaveBeenCalled();
@@ -54,7 +54,7 @@ describe('component: zemGridIntegrationService', function () {
     it('should register to Selection service after settings grid api', function () {
         spyOn(zemSelectionService, 'onSelectionUpdate').and.callThrough();
 
-        var service = zemGridIntegrationService.createInstance(defaultEntity, $scope);
+        var service = zemGridIntegrationService.createInstance($scope);
         service.initialize();
 
         expect(zemSelectionService.onSelectionUpdate).not.toHaveBeenCalled();
@@ -67,39 +67,39 @@ describe('component: zemGridIntegrationService', function () {
     it('should create datasource based on the entity and breakdown', function () {
         spyOn(zemDataSourceService, 'createInstance').and.callThrough();
         spyOn(zemGridEndpointService, 'createMetaData').and.callThrough();
-        var service = zemGridIntegrationService.createInstance(defaultEntity, $scope);
+        var service = zemGridIntegrationService.createInstance($scope);
         service.initialize();
 
         expect(service.getGrid().dataSource).not.toBeDefined();
 
-        service.setBreakdown(constants.breakdown.CAMPAIGN);
+        service.configureDataSource(defaultEntity, constants.breakdown.CAMPAIGN);
 
         expect(service.getGrid().dataSource).toBeDefined();
         expect(zemDataSourceService.createInstance).toHaveBeenCalled();
         expect(zemGridEndpointService.createMetaData)
-            .toHaveBeenCalledWith(defaultEntity.level, defaultEntity.id, constants.breakdown.CAMPAIGN);
+            .toHaveBeenCalledWith(constants.level.ACCOUNTS, defaultEntity.id, constants.breakdown.CAMPAIGN);
     });
 
     it('should cache datasource based on the breakdown', function () {
         spyOn(zemDataSourceService, 'createInstance').and.callThrough();
-        var service = zemGridIntegrationService.createInstance(defaultEntity, $scope);
+        var service = zemGridIntegrationService.createInstance($scope);
         service.initialize();
-        service.setBreakdown(constants.breakdown.CAMPAIGN);
+        service.configureDataSource(defaultEntity, constants.breakdown.CAMPAIGN);
         expect(zemDataSourceService.createInstance).toHaveBeenCalled();
         var campaignDataSource = service.getGrid().dataSource;
 
         zemDataSourceService.createInstance.calls.reset();
-        service.setBreakdown(constants.breakdown.MEDIA_SOURCE);
+        service.configureDataSource(defaultEntity, constants.breakdown.MEDIA_SOURCE);
         expect(zemDataSourceService.createInstance).toHaveBeenCalled();
         var mediaDataSource = service.getGrid().dataSource;
 
         zemDataSourceService.createInstance.calls.reset();
-        service.setBreakdown(constants.breakdown.CAMPAIGN);
+        service.configureDataSource(defaultEntity, constants.breakdown.CAMPAIGN);
         expect(zemDataSourceService.createInstance).not.toHaveBeenCalled();
         expect(service.getGrid().dataSource).toBe(campaignDataSource);
 
         zemDataSourceService.createInstance.calls.reset();
-        service.setBreakdown(constants.breakdown.MEDIA_SOURCE);
+        service.configureDataSource(defaultEntity, constants.breakdown.MEDIA_SOURCE);
         expect(zemDataSourceService.createInstance).not.toHaveBeenCalled();
         expect(service.getGrid().dataSource).toBe(mediaDataSource);
     });

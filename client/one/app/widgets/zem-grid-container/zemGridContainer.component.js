@@ -4,44 +4,41 @@ angular.module('one.widgets').component('zemGridContainer', {
         entity: '<',
         breakdown: '<',
     },
-    controller: function ($scope, $timeout, zemGridEndpointService, zemDataSourceService, zemGridIntegrationService) {
+    controller: function ($scope, zemGridIntegrationService) { // eslint-disable-line max-len
         var $ctrl = this;
-        $ctrl.breakdown = constants.breakdown.CAMPAIGN;
 
-        $ctrl.onTabSelected = onTabSelected;
+        $ctrl.constants = constants;
+
         $ctrl.onGridInitialized = onGridInitialized;
 
         $ctrl.$onInit = function () {
-            $ctrl.gridIntegrationService = zemGridIntegrationService.createInstance($ctrl.entity, $scope);
-            $ctrl.gridIntegrationService.initialize();
-            $ctrl.gridIntegrationService.setBreakdown($ctrl.breakdown);
-            $ctrl.grid = $ctrl.gridIntegrationService.getGrid();
-
-            $ctrl.tabOptions = createTabOptions();
+            initializeGridIntegrationService();
+            configureContainer();
         };
 
         $ctrl.$onChanges = function () {
             if (!$ctrl.gridIntegrationService) return;
-            $ctrl.gridIntegrationService.setBreakdown($ctrl.breakdown);
+            configureContainer();
         };
+
+        function initializeGridIntegrationService () {
+            $ctrl.gridIntegrationService = zemGridIntegrationService.createInstance($scope);
+            $ctrl.gridIntegrationService.initialize();
+            $ctrl.grid = $ctrl.gridIntegrationService.getGrid();
+        }
+
+        function configureContainer () {
+            $ctrl.level = $ctrl.entity ?
+                $ctrl.constants.entityTypeToLevelMap[$ctrl.entity.type] :
+                $ctrl.constants.level.ALL_ACCOUNTS;
+
+            if ($ctrl.breakdown !== constants.breakdown.INSIGHTS) {
+                $ctrl.gridIntegrationService.configureDataSource($ctrl.entity, $ctrl.breakdown);
+            }
+        }
 
         function onGridInitialized (gridApi) {
             $ctrl.gridIntegrationService.setGridApi(gridApi);
-        }
-
-        function createTabOptions () {
-            // TODO - based on entity type
-            return [
-                {name: 'Campaigns', breakdown: constants.breakdown.CAMPAIGN},
-                {name: 'Sources', breakdown: constants.breakdown.MEDIA_SOURCE},
-                {name: 'Content Insights', breakdown: 'insights'},
-            ];
-        }
-
-        function onTabSelected (option) {
-            // TODO: This will be communicated through router
-            $ctrl.breakdown = option.breakdown;
-            $ctrl.gridIntegrationService.setBreakdown($ctrl.breakdown);
         }
     },
 });

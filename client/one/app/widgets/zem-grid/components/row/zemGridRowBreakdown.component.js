@@ -28,10 +28,12 @@ angular.module('one.widgets').directive('zemGridRowBreakdown', function () {
             }
 
             function getBreakdownColumnStyle () {
+                if (!vm.row) return;
                 return zemGridUIService.getBreakdownColumnStyle(vm.grid, vm.row);
             }
 
             function getCompleteText () {
+                if (!vm.row) return;
                 if (vm.row.type !== zemGridConstants.gridRowType.BREAKDOWN) return;
 
                 var pagination = vm.row.data.pagination;

@@ -67,10 +67,21 @@ angular.module('one.widgets').factory('zemGridDataService', function ($q, $timeo
             onStatsUpdatedHandler = dataSource.onStatsUpdated(grid.meta.scope, handleSourceStatsUpdate);
             onDataUpdatedHandler = dataSource.onDataUpdated(grid.meta.scope, handleSourceDataUpdate);
 
-            if (dataSource.getData()) {
+            zemGridParser.clear(grid);
+            if (dataSource.getData().stats) {
                 // If data already initialized use it
                 zemGridParser.parseMetaData(grid, dataSource.getMetaData());
                 zemGridParser.parse(grid, dataSource.getData());
+
+                // [OPTIMIZATION] Speed up first render (e.g. tab switch)
+                // Only prepare/render first 10 rows an after that show all data
+                grid.body.rows = grid.body.rows.slice(0, 10);
+                $timeout(function () {
+                    // Render All Data
+                    zemGridParser.parse(grid, dataSource.getData());
+                    grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
+                });
+
                 grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.METADATA_UPDATED);
                 grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
             } else {

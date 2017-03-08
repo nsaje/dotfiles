@@ -297,15 +297,30 @@ angular.module('one.widgets').factory('zemGridUIService', function ($timeout, ze
     }
 
     function resizeGridColumns (grid) {
-        // Ignore resizing request when grid was emptied while column widths are already available
-        // This can happen when DataSource destroys data tree (e.g. ordering event) and to
-        // prevent column collapse we just wait for table to be filled again
-        if (grid.body.rows.length === 0 && grid.ui.columnsWidths.length > 0) return;
-
+        clearColumnStyles(grid);
         calculateColumnWidths(grid);
         resizeCells(grid);
         resizeBreakdownRows(grid);
         initializePivotColumns(grid);
+    }
+
+    function clearColumnStyles (grid) {
+        if (!grid.body.ui.element) return;
+
+        grid.header.visibleColumns.forEach(function (column) {
+            column.left = 0;
+            column.pivot = false;
+            column.style = {};
+        });
+
+        grid.header.ui.element.find('.zem-grid-header-cell').each(clearStyle);
+        grid.body.ui.element.find('.zem-grid-cell').each(clearStyle);
+        grid.footer.ui.element.find('.zem-grid-cell').each(clearStyle);
+
+        function clearStyle (idx, _cell) {
+            var cell = angular.element(_cell);
+            cell.removeAttr('style');
+        }
     }
 
     function getBreakdownColumnStyle (grid, row) {

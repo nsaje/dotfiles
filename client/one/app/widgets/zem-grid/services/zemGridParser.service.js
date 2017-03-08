@@ -25,6 +25,13 @@ angular.module('one.widgets').factory('zemGridParser', function ($filter, zemGri
         }
     }
 
+    function clear (grid) {
+        grid.meta.data = null;
+        grid.meta.columns = [];
+        grid.footer.row = null;
+        grid.body.rows = [];
+    }
+
     function parseBreakdown (grid, parent, breakdown) {
         var rows = [];
         var level = breakdown.level;
@@ -102,6 +109,7 @@ angular.module('one.widgets').factory('zemGridParser', function ($filter, zemGri
     }
 
     return {
+        clear: clear,
         parse: parse,
         parseMetaData: parseMetaData,
     };

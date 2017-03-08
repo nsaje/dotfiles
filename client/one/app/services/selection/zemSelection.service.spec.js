@@ -14,7 +14,7 @@ describe('zemSelectionService', function () {
         expect(zemSelectionService.getSelection()).toEqual({
             selected: [],
             unselected: [],
-            totals: false,
+            totalsUnselected: false,
             all: false,
             batch: null,
         });
@@ -32,7 +32,7 @@ describe('zemSelectionService', function () {
         expect(zemSelectionService.getSelection()).toEqual({
             selected: [1, 2, 3],
             unselected: [4, 5, 6],
-            totals: true,
+            totalsUnselected: false,
             all: true,
             batch: 999,
         });
@@ -57,15 +57,15 @@ describe('zemSelectionService', function () {
     });
 
     it('isTotalsSelected should return false if totals are not selected', function () {
-        expect(zemSelectionService.isTotalsSelected(2)).toBe(false);
+        expect(zemSelectionService.isTotalsSelected(2)).toBe(true);
     });
 
     it('isTotalsSelected should return true if totals are selected', function () {
         spyOn($location, 'search').and.returnValue({
-            selected_totals: true,
+            totals_unselected: true,
         });
         zemSelectionService.init();
-        expect(zemSelectionService.isTotalsSelected(2)).toBe(true);
+        expect(zemSelectionService.isTotalsSelected(2)).toBe(false);
     });
 
     it('isAllSelected should return false if all is not selected', function () {
@@ -92,19 +92,18 @@ describe('zemSelectionService', function () {
         zemSelectionService.setSelection({
             selected: [1, 3],
             unselected: [2],
-            totals: true,
+            totalsUnselected: false,
         });
         expect(zemSelectionService.getSelection()).toEqual({
             selected: [1, 3],
             unselected: [2],
-            totals: true,
+            totalsUnselected: false,
             all: false,
             batch: null,
         });
         expect($location.search()).toEqual({
             selected_ids: '1,3',
             unselected_ids: '2',
-            selected_totals: true,
         });
     });
 
@@ -191,15 +190,13 @@ describe('zemSelectionService', function () {
         expect(zemSelectionService.getSelection().selected).toEqual([1, 2, 3]);
         expect(zemSelectionService.isTotalsSelected()).toBe(true);
         expect($location.search()).toEqual({
-            selected_ids: '1,2,3',
-            selected_totals: true,
+            selected_ids: '1,2,3'
         });
     });
 
     it('should correctly unselect totals', function () {
         var locationSpy = spyOn($location, 'search').and.returnValue({
-            selected_ids: '1,2,3',
-            selected_totals: true,
+            selected_ids: '1,2,3'
         });
         zemSelectionService.init();
         locationSpy.and.callThrough();
@@ -207,6 +204,7 @@ describe('zemSelectionService', function () {
         expect(zemSelectionService.getSelection().selected).toEqual([1, 2, 3]);
         expect(zemSelectionService.isTotalsSelected()).toBe(false);
         expect($location.search()).toEqual({
+            totals_unselected: true,
             selected_ids: '1,2,3',
         });
     });
@@ -222,7 +220,6 @@ describe('zemSelectionService', function () {
         expect(zemSelectionService.isTotalsSelected()).toBe(true);
         expect(zemSelectionService.isAllSelected()).toBe(true);
         expect($location.search()).toEqual({
-            selected_totals: true,
             selected_all: true,
         });
     });
@@ -235,7 +232,7 @@ describe('zemSelectionService', function () {
         zemSelectionService.init();
         locationSpy.and.callThrough();
         zemSelectionService.unselectAll();
-        expect(zemSelectionService.isTotalsSelected()).toBe(false);
+        expect(zemSelectionService.isTotalsSelected()).toBe(true);
         expect(zemSelectionService.isAllSelected()).toBe(false);
         expect($location.search()).toEqual({});
     });

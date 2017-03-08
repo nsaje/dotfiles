@@ -23,7 +23,7 @@ angular.module('one.services').service('zemSelectionService', function ($rootSco
 
     var SELECTED = 'selected';
     var UNSELECTED = 'unselected';
-    var TOTALS = 'totals';
+    var TOTALS_UNSELECTED = 'totalsUnselected';
     var ALL = 'all';
     var BATCH = 'batch';
 
@@ -36,7 +36,7 @@ angular.module('one.services').service('zemSelectionService', function ($rootSco
     var URL_PARAMS = {};
     URL_PARAMS[SELECTED] = {name: 'selected_ids', type: URL_PARAMS_TYPES.list};
     URL_PARAMS[UNSELECTED] = {name: 'unselected_ids', type: URL_PARAMS_TYPES.list};
-    URL_PARAMS[TOTALS] = {name: 'selected_totals', type: URL_PARAMS_TYPES.boolean};
+    URL_PARAMS[TOTALS_UNSELECTED] = {name: 'totals_unselected', type: URL_PARAMS_TYPES.boolean};
     URL_PARAMS[ALL] = {name: 'selected_all', type: URL_PARAMS_TYPES.boolean};
     URL_PARAMS[BATCH] = {name: 'selected_batch_id', type: URL_PARAMS_TYPES.number};
 
@@ -71,7 +71,7 @@ angular.module('one.services').service('zemSelectionService', function ($rootSco
     }
 
     function isTotalsSelected () {
-        return selection[TOTALS];
+        return !selection[TOTALS_UNSELECTED];
     }
 
     function isAllSelected () {
@@ -83,7 +83,7 @@ angular.module('one.services').service('zemSelectionService', function ($rootSco
     }
 
     function setSelection (newSelection) {
-        newSelection = angular.extend({}, getEmptySelection(), newSelection);
+        newSelection = angular.extend({}, getDefaultSelection(), newSelection);
         if (!angular.equals(selection, newSelection)) {
             selection = newSelection;
             setUrlParams(selection);
@@ -99,13 +99,13 @@ angular.module('one.services').service('zemSelectionService', function ($rootSco
     }
 
     function selectTotals () {
-        selection[TOTALS] = true;
+        selection[TOTALS_UNSELECTED] = false;
         setUrlParams(selection);
         pubSub.notify(EVENTS.ON_SELECTION_UPDATE, getSelection());
     }
 
     function unselectTotals () {
-        selection[TOTALS] = false;
+        selection[TOTALS_UNSELECTED] = true;
         setUrlParams(selection);
         pubSub.notify(EVENTS.ON_SELECTION_UPDATE, getSelection());
     }
@@ -113,7 +113,7 @@ angular.module('one.services').service('zemSelectionService', function ($rootSco
     function selectAll () {
         clear();
         selection[ALL] = true;
-        selection[TOTALS] = true;
+        selection[TOTALS_UNSELECTED] = false;
         setUrlParams(selection);
         pubSub.notify(EVENTS.ON_SELECTION_UPDATE, getSelection());
     }
@@ -136,7 +136,7 @@ angular.module('one.services').service('zemSelectionService', function ($rootSco
     // Private methods
     //
     function clear () {
-        selection = getEmptySelection();
+        selection = getDefaultSelection();
         setUrlParams(selection);
     }
 
@@ -185,7 +185,7 @@ angular.module('one.services').service('zemSelectionService', function ($rootSco
 
     function initFromUrlParams () {
         var params = $location.search();
-        var selection = getEmptySelection();
+        var selection = getDefaultSelection();
 
         angular.forEach(URL_PARAMS, function (param, key) {
             var value = params[param.name];
@@ -221,11 +221,11 @@ angular.module('one.services').service('zemSelectionService', function ($rootSco
         });
     }
 
-    function getEmptySelection () {
+    function getDefaultSelection () {
         var emptySelection = {};
         emptySelection[SELECTED] = [];
         emptySelection[UNSELECTED] = [];
-        emptySelection[TOTALS] = false;
+        emptySelection[TOTALS_UNSELECTED] = false;
         emptySelection[ALL] = false;
         emptySelection[BATCH] = null;
         return emptySelection;

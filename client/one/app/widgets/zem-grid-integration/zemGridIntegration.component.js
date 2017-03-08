@@ -15,10 +15,11 @@ angular.module('one.widgets').component('zemGridIntegration', {
         $ctrl.grid = undefined;
 
         $ctrl.$onInit = function () {
-            var entity = {level: $ctrl.level, id: $ctrl.entityId};
-            $ctrl.gridIntegrationService = zemGridIntegrationService.createInstance(entity, $scope);
+            var entity = $ctrl.entityId ?
+                {type: constants.levelToEntityTypeMap[$ctrl.level], id: $ctrl.entityId} : null;
+            $ctrl.gridIntegrationService = zemGridIntegrationService.createInstance($scope);
             $ctrl.gridIntegrationService.initialize();
-            $ctrl.gridIntegrationService.setBreakdown($ctrl.breakdown);
+            $ctrl.gridIntegrationService.configureDataSource(entity, $ctrl.breakdown);
             $ctrl.grid = $ctrl.gridIntegrationService.getGrid();
         };
 

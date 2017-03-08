@@ -22,21 +22,25 @@ angular.module('one.widgets').service('zemGridIntegrationSelectionService', func
         var selection = {
             selected: [],
             unselected: [],
+            totalsUnselected: false
         };
 
         switch (gridSelection.type) {
         case zemGridConstants.gridSelectionFilterType.ALL:
             selection.all = true;
-            selection.totals = true;
             break;
         case zemGridConstants.gridSelectionFilterType.CUSTOM:
             selection.batch = gridSelection.filter.batch.id;
+            selection.totalsUnselected = true;
+            break;
+        case zemGridConstants.gridSelectionFilterType.NONE:
+            selection.totalsUnselected = true;
             break;
         }
 
         gridSelection.selected.forEach(function (row) {
             if (row.level === zemGridConstants.gridRowLevel.FOOTER) {
-                selection.totals = true;
+                selection.totalsUnselected = false;
             } else if (row.level === zemGridConstants.gridRowLevel.BASE) {
                 var id = parseInt(row.data.breakdownId);
                 if (!isNaN(id)) {
@@ -47,7 +51,7 @@ angular.module('one.widgets').service('zemGridIntegrationSelectionService', func
 
         gridSelection.unselected.forEach(function (row) {
             if (row.level === zemGridConstants.gridRowLevel.FOOTER) {
-                selection.totals = false;
+                selection.totalsUnselected = true;
             } else if (row.level === zemGridConstants.gridRowLevel.BASE) {
                 var id = parseInt(row.data.breakdownId);
                 if (!isNaN(id)) {
@@ -58,7 +62,7 @@ angular.module('one.widgets').service('zemGridIntegrationSelectionService', func
 
         if (gridApi.isSelectionEmpty()) {
             // Select footer row if no other row is selected in grid
-            selection.totals = true;
+            selection.totalsUnselected = false;
         }
 
         return selection;
