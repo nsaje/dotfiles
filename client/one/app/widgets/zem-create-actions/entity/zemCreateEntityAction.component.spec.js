@@ -3,9 +3,6 @@ describe('zemCreateEntityActionComponent', function () {
 
     beforeEach(module('one'));
     beforeEach(module('one.mocks.zemInitializationService'));
-    beforeEach(module('one'), function ($provide, zemPermissions) {
-        zemPermissions.setMockedPermissions(zemPermissions.ALL_PERMISSIONS);
-    });
 
     beforeEach(inject(function ($rootScope, $componentController) {
         var bindings = {
