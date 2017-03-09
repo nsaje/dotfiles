@@ -455,7 +455,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
         self.assertEquals(
             publisher_group_csv_helpers.validate_entries([
                 {
-                    'publisher': 'pub1.com',
+                    'publisher': 'wwwpub1.com',
                     'source': 'AdsNative',
                     'include_subdomains': True,
                 },
@@ -472,7 +472,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
             ]),
             [
                 {
-                    'publisher': 'pub1.com',
+                    'publisher': 'wwwpub1.com',
                     'source': 'AdsNative',
                     'include_subdomains': True,
                 },
