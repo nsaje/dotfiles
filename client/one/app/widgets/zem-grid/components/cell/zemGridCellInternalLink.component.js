@@ -15,31 +15,16 @@ angular.module('one.widgets').directive('zemGridCellInternalLink', function () {
             grid: '=',
         },
         templateUrl: '/app/widgets/zem-grid/components/cell/zemGridCellInternalLink.component.html',
-        controller: function ($scope) {
+        controller: function ($scope, zemNavigationNewService) {
             var vm = this;
-
-            // Set some dummy values to initialize zem-in-link
-            vm.id = -1;
-            vm.state = 'unknown';
 
             $scope.$watch('ctrl.row', update);
             $scope.$watch('ctrl.data', update);
 
             function update () {
-                vm.id = -1;
-                vm.state = 'unknown';
+                vm.href = null;
                 if (vm.data && vm.row.data && vm.row.entity) {
-                    vm.id = vm.row.entity.id || -1;
-                    vm.state = getState(vm.row.entity.type);
-                }
-            }
-
-            function getState (entityType) {
-                switch (entityType) {
-                case constants.entityType.ACCOUNT: return 'main.accounts.campaigns';
-                case constants.entityType.CAMPAIGN: return 'main.campaigns.ad_groups';
-                case constants.entityType.AD_GROUP: return 'main.adGroups.ads';
-                default: return 'unknown';
+                    vm.href = zemNavigationNewService.getEntityHref(vm.row.entity);
                 }
             }
         },

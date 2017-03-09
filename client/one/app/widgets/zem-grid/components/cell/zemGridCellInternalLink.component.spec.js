@@ -28,14 +28,13 @@ describe('zemGridCellInternalLink', function () {
         element = $compile(template)(scope);
         scope.$digest();
 
-        expect(element.isolateScope().ctrl.id).toEqual(-1);
-        expect(element.isolateScope().ctrl.state).toEqual('unknown');
+        expect(element.isolateScope().ctrl.href).toEqual(null);
 
         var tests = [
-            {entityType: 'account', id: 123, expectedId: 123, expectedState: 'main.accounts.campaigns'},
-            {entityType: 'campaign', id: 456, expectedId: 456, expectedState: 'main.campaigns.ad_groups'},
-            {entityType: 'adGroup', id: 789, expectedId: 789, expectedState: 'main.adGroups.ads'},
-            {entityType: 'unknown', id: undefined, expectedId: -1, expectedState: 'unknown'},
+            {entityType: 'account', id: 123, expectedHref: '/accounts/123/campaigns'},
+            {entityType: 'campaign', id: 456, expectedHref: '/campaigns/456/ad_groups'},
+            {entityType: 'adGroup', id: 789, expectedHref: '/ad_groups/789/ads'},
+            {entityType: 'unknown', id: undefined, expectedHref: '/all_accounts/accounts'},
         ];
 
         tests.forEach(function (test) {
@@ -48,8 +47,7 @@ describe('zemGridCellInternalLink', function () {
             };
             scope.$digest();
 
-            expect(element.isolateScope().ctrl.id).toEqual(test.expectedId);
-            expect(element.isolateScope().ctrl.state).toEqual(test.expectedState);
+            expect(element.isolateScope().ctrl.href).toEqual(test.expectedHref);
         });
     });
 });
