@@ -1,11 +1,11 @@
 <div class="modal__header">
-    <div class="modal__title" ng-if="$ctrl.isCreationMode">Create publisher group</div>
-    <div class="modal__title" ng-if="!$ctrl.isCreationMode">Update publisher group</div>
+    <div class="modal__title" ng-if="$ctrl.isCreationMode">Create Publisher Group</div>
+    <div class="modal__title" ng-if="!$ctrl.isCreationMode">Update Publisher Group</div>
 </div>
 <div class="modal__body">
     <div class="form">
         <div class="form__group" ng-class="{'form--error': $ctrl.errors.name}">
-            <label class="form__label" for="zem-publisher-group-modal-name">Publisher group name:</label>
+            <label class="form__label" for="zem-publisher-group-modal-name">Name:</label>
             <input class="input-text" type="text" id="zem-publisher-group-modal-name" ng-model="$ctrl.formData.name"
                    ng-change="$ctrl.clearValidationError('name')" />
             <div class="message message--error" ng-repeat="error in $ctrl.errors.name">{{ error }}</div>

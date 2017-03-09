@@ -106,7 +106,7 @@ class PublisherGroups(api_common.BaseApiView):
 
         publisher_groups = []
         for pg in publisher_groups_q:
-            type_, level = publisher_group_helpers.parse_publisher_group_type_level(pg)
+            type_, level, obj, obj_name = publisher_group_helpers.parse_default_publisher_group_origin(pg)
             publisher_groups.append({
                 'id': pg.id,
                 'name': pg.name,
@@ -117,6 +117,8 @@ class PublisherGroups(api_common.BaseApiView):
                 'created': pg.created_dt,
                 'type': type_,
                 'level': level,
+                'level_name': obj_name,
+                'level_id': obj.id if obj else None,
             })
 
         return self.create_api_response({
@@ -183,7 +185,7 @@ class PublisherGroupsUpload(api_common.BaseApiView):
                     entry.include_subdomains = include_subdomains
                     entry.save()
 
-        type_, level = publisher_group_helpers.parse_publisher_group_type_level(publisher_group)
+        type_, level, obj, obj_name = publisher_group_helpers.parse_default_publisher_group_origin(publisher_group)
         return self.create_api_response({
             'id': publisher_group.id,
             'name': publisher_group.name,
@@ -194,6 +196,8 @@ class PublisherGroupsUpload(api_common.BaseApiView):
             'created': publisher_group.created_dt,
             'type': type_,
             'level': level,
+            'level_name': obj_name,
+            'level_id': obj.id if obj else None,
         })
 
 

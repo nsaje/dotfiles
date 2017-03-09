@@ -1,5 +1,5 @@
 <div class="white-background">
-    <h2>User defined publisher groups</h2>
+    <h2>User Publisher Groups</h2>
 
     <table class="table">
         <thead>
@@ -34,13 +34,17 @@
         </tbody>
     </table>
 
-    <button type="button" class="button button--with-icon add-icon" ng-click="$ctrl.createNew()">Add Publisher group</button>
+    <button type="button" class="button button--with-icon add-icon" ng-click="$ctrl.createNew()">Add Publisher Group</button>
 </div>
 
-<a href="" class="zem-publisher-groups-component__show-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="$ctrl.showCollapsed">Show background publisher groups</a>
+<a href="" class="zem-publisher-groups-component__show-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="$ctrl.showCollapsed">Show system publisher groups</a>
 
 <div class="white-background zem-publisher-groups-component__collapsed" ng-show="$ctrl.showCollapsed">
-    <h2>Background Publisher Groups</h2>
+    <h2>System Publisher Groups</h2>
+
+    <div class="description">
+        Publishers that you blacklist in the dashboard are added to one of the system blacklist publisher groups listed below.
+    </div>
 
     <table class="table">
         <thead>
@@ -65,7 +69,7 @@
             <tr ng-repeat="item in $ctrl.publisherGroups | filter: {implicit: true}">
                 <td>{{ item.id }}</td>
                 <td>{{ item.level }}</td>
-                <td>{{ item.name }}</td>
+                <td>{{ item.level_name }}</td>
                 <td>{{ item.type }}</td>
                 <td>{{ item.include_subdomains ? 'Yes' : 'No' }}</td>
                 <td>{{ item.size }}</td>
@@ -80,4 +84,4 @@
 
 </div>
 
-<a href="" class="zem-publisher-groups-component__hide-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="!$ctrl.showCollapsed">Hide background publisher groups</a>
+<a href="" class="zem-publisher-groups-component__hide-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="!$ctrl.showCollapsed">Hide system publisher groups</a>

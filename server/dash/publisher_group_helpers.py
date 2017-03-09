@@ -1,4 +1,5 @@
 import logging
+import re
 from decimal import Decimal
 
 from django.conf import settings
@@ -396,20 +397,31 @@ def get_ob_blacklisted_publishers_count(account):
                                                      source__source_type__type=constants.SourceType.OUTBRAIN).count()
 
 
-def parse_publisher_group_type_level(publisher_group):
-    type_, level = None, None
+def parse_default_publisher_group_origin(publisher_group):
+    type_, level, obj, name = None, None, None, ""
+    possible_ids = re.findall("([0-9]+)", publisher_group.name)
 
     if publisher_group.name.startswith("Default blacklist for account"):
         type_, level = 'Blacklist', 'Account'
+        obj = models.Account.objects.filter(pk=possible_ids[-1])
     elif publisher_group.name.startswith("Default whitelist for account"):
         type_, level = 'Whitelist', 'Account'
+        obj = models.Account.objects.filter(pk=possible_ids[-1])
     elif publisher_group.name.startswith("Default blacklist for campaign"):
         type_, level = 'Blacklist', 'Campaign'
+        obj = models.Campaign.objects.filter(pk=possible_ids[-1])
     elif publisher_group.name.startswith("Default whitelist for campaign"):
         type_, level = 'Whitelist', 'Campaign'
+        obj = models.Campaign.objects.filter(pk=possible_ids[-1])
     elif publisher_group.name.startswith("Default blacklist for ad group"):
         type_, level = 'Blacklist', 'Ad Group'
+        obj = models.AdGroup.objects.filter(pk=possible_ids[-1])
     elif publisher_group.name.startswith("Default whitelist for ad group"):
         type_, level = 'Whitelist', 'Ad Group'
+        obj = models.AdGroup.objects.filter(pk=possible_ids[-1])
 
-    return type_, level
+    if obj is not None and obj.exists():
+        obj = obj.first()
+        name = "{} [{}]".format(obj.name, obj.id)
+
+    return type_, level, obj, name

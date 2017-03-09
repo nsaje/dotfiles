@@ -75,7 +75,7 @@ class Command(ExceptionCommand):
             blacklisted_publisher_ids = set(list_helper.flatten(publishers_map[x] for x in blacklist))
             whitelisted_publisher_ids = set(list_helper.flatten(publishers_map[x] for x in whitelist))
 
-            traffic_publisher_ids = stats_map.get(ad_group.id, set())
+            traffic_publisher_ids = stats_map.get(ad_group.id, set()) - {'na__34'}  # remove triplelift NA as it gets in there sometimes
             traffic_publisher_ids_wo_outbrain = set(
                 x for x in traffic_publisher_ids if publisher_helpers.dissect_publisher_id(x)[1] != outbrain.id)
             traffic_publisher_ids_outbrain = set(
@@ -89,7 +89,7 @@ class Command(ExceptionCommand):
                     traffic_publisher_ids_wo_outbrain, whitelisted_publisher_ids, blacklisted_publisher_ids)
                 if violator_publisher_ids:
                     logger.warning(
-                        'publisher_group_monitor: Found publisher statistics for whitelisted publishers in ad group %s',
+                        'publisher_group_monitor: Found publisher statistics for non-whitelisted publishers in ad group %s',
                         ad_group.id, extra={'publisher_ids': violator_publisher_ids})
 
                 # outbrain doesn't support whitelisting so just don't check
