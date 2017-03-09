@@ -1,15 +1,15 @@
-// TODO: Temporary service used to handle redesing related permission. Remove once redesign is finished.
-angular.module('one.services').service('zemRedesignHelpersService', function () {
-    // TEMPORARY SOLUTION SHOULD BE REFACTORED
-    $(window).scroll(function () {
-        var st = $(this).scrollTop();
-        // FIXED HEADER
-        if (st > 50) {
-            $('body').addClass('fixed-header');
-        } else {
-            $('body').removeClass('fixed-header');
-        }
-    });
+angular.module('one.services').service('zemDesignHelpersService', function () {
+    this.init = init;
+
+    function init () {
+        $(document).ready(function () {
+            $('body').append('<div class="ee-zemanta-dots"></div>');
+
+            $('.ee-zemanta-dots').click(function () {
+                zemantaSecret();
+            });
+        });
+    }
 
     function zemantaSecret () {
         $('body').append('<div class="ee-wrapper"></div>');
@@ -78,12 +78,4 @@ angular.module('one.services').service('zemRedesignHelpersService', function () 
             $(this).remove();
         });
     }
-
-    $(document).ready(function () {
-        $('body').append('<div class="ee-zemanta-dots"></div>');
-
-        $('.ee-zemanta-dots').click(function () {
-            zemantaSecret();
-        });
-    });
 });
