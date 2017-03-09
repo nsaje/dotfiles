@@ -24,8 +24,8 @@ AUTOPILOT_CPC_CHANGE_PERFORMANCE_FACTOR_TABLE = (
     {'performance_upper_limit': 1.0, 'performance_lower_limit': 0.75, 'performance_factor': Decimal('1.0')},
     {'performance_upper_limit': 0.75, 'performance_lower_limit': 0.6, 'performance_factor': Decimal('0.98')},
     {'performance_upper_limit': 0.6, 'performance_lower_limit': 0.4, 'performance_factor': Decimal('0.95')},
-    {'performance_upper_limit': 0.4, 'performance_lower_limit': 0.2, 'performance_factor': Decimal('0.90')},
-    {'performance_upper_limit': 0.2, 'performance_lower_limit': 0.0, 'performance_factor': Decimal('0.80')},
+    {'performance_upper_limit': 0.4, 'performance_lower_limit': 0.2, 'performance_factor': Decimal('0.93')},
+    {'performance_upper_limit': 0.2, 'performance_lower_limit': 0.0, 'performance_factor': Decimal('0.90')},
 )
 
 AUTOPILOT_MIN_CPC = Decimal('0.03')
