@@ -20,6 +20,11 @@
                 <span class="checkbox-text">Include subdomains</span>
             </label>
         </div>
+
+        <div class="message message--help message--with-icon" ng-show="$ctrl.formData.include_subdomains">
+            <p>The domains should be listed without prefixes http/https/www.</p>
+        </div>
+
     </div>
 
     <div class="form__group form__group--choose-file" ng-class="{'form--error': !!$ctrl.errors.file}">

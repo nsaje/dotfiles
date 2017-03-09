@@ -54,7 +54,7 @@ def validate_entries(entry_dicts):
 
         error = []
 
-        prefixes = ('http', 'https', 'www')
+        prefixes = ('http://', 'https://', 'www.')
         if any(publisher.startswith(x) for x in prefixes):
             error.append("Remove the following prefixes: {}".format(", ".join(prefixes)))
 
