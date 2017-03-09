@@ -1,4 +1,4 @@
-
+# NOTE: also used by import_maxmind_locations command
 DMA_BY_CODE = {
     "669": "669 Madison, WI", 
     "762": "762 Missoula, MT", 
