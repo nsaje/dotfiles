@@ -6,11 +6,11 @@ TRAFFIC_FIELDS = [
     'license_fee', 'billing_cost',
     'margin', 'agency_total', 'cpm',
 ]
-POSTCLICK_ACQUISITION_FIELDS = ['visits', 'click_discrepancy', 'pageviews']
+POSTCLICK_ACQUISITION_FIELDS = ['click_discrepancy', ]
 POSTCLICK_ENGAGEMENT_FIELDS = [
     'percent_new_users', 'pv_per_visit', 'avg_tos', 'bounce_rate', 'goals', 'new_visits',
     'returning_users', 'unique_users', 'bounced_visits', 'total_seconds', 'non_bounced_visits',
-    'new_users',
+    'new_users', 'pageviews', 'visits',
 ]
 CONVERSION_GOAL_FIELDS = ['conversions']
 

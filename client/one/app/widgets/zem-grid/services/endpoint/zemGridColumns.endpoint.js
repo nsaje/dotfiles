@@ -773,8 +773,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             name: 'Visits',
             field: 'visits',
             type: zemGridConstants.gridColumnTypes.NUMBER,
-            shown: 'zemauth.aggregate_postclick_acquisition',
-            internal: 'zemauth.aggregate_postclick_acquisition',
+            shown: 'zemauth.aggregate_postclick_engagement',
+            internal: 'zemauth.aggregate_postclick_engagement',
             help: 'Total number of sessions within a date range. A session is the period of time in which a user ' +
                   'is actively engaged with your site.',
             totalRow: true,
@@ -829,8 +829,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             name: 'Pageviews',
             field: 'pageviews',
             type: zemGridConstants.gridColumnTypes.NUMBER,
-            shown: 'zemauth.aggregate_postclick_acquisition',
-            internal: 'zemauth.aggregate_postclick_acquisition',
+            shown: 'zemauth.aggregate_postclick_engagement',
+            internal: 'zemauth.aggregate_postclick_engagement',
             help: 'Total number of pageviews made during the selected date range. A pageview is a view of ' +
             'a single page. Repeated views are counted.',
             totalRow: true,

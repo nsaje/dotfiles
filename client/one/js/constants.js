@@ -823,11 +823,11 @@ var options = {
         {name: 'Avg. CPM', value: constants.chartMetric.CPM},
     ],
     adGroupAcquisitionChartPostClickMetrics: [
-        {name: 'Visits', value: constants.chartMetric.VISITS},
         {name: 'Click Discrepancy', value: constants.chartMetric.CLICK_DISCREPANCY},
-        {name: 'Pageviews', value: constants.chartMetric.PAGEVIEWS},
     ],
     adGroupEngagementChartPostClickMetrics: [
+        {name: 'Visits', value: constants.chartMetric.VISITS},
+        {name: 'Pageviews', value: constants.chartMetric.PAGEVIEWS},
         {name: 'Unique Users', value: constants.chartMetric.UNIQUE_USERS},
         {name: 'New Users', value: constants.chartMetric.NEW_USERS},
         {name: 'Returning Users', value: constants.chartMetric.RETURNING_USERS},

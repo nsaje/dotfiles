@@ -4,17 +4,6 @@
 angular.module('one.legacy').factory('zemPostclickMetricsService', function () {
     function insertAcquisitionColumns (columns, position, isShown, isInternal) {
         columns.splice(position, 0, {
-            name: 'Visits',
-            field: 'visits',
-            checked: true,
-            type: 'number',
-            shown: isShown,
-            internal: isInternal,
-            help: 'Total number of sessions within a date range. A session is the period of time in which a user is actively engaged with your site.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        }, {
             name: 'Click Discrepancy',
             field: 'click_discrepancy',
             checked: false,
@@ -25,17 +14,6 @@ angular.module('one.legacy').factory('zemPostclickMetricsService', function () {
             totalRow: true,
             order: true,
             initialOrder: 'desc',
-        }, {
-            name: 'Pageviews',
-            field: 'pageviews',
-            checked: true,
-            type: 'number',
-            shown: isShown,
-            internal: isInternal,
-            help: 'Total number of pageviews made during the selected date range. A pageview is a view of a single page. Repeated views are counted.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
         });
     }
 
@@ -43,6 +21,30 @@ angular.module('one.legacy').factory('zemPostclickMetricsService', function () {
         columns.splice(
             position,
             0,
+            {
+                name: 'Visits',
+                field: 'visits',
+                checked: true,
+                type: 'number',
+                shown: isShown,
+                internal: isInternal,
+                help: 'Total number of sessions within a date range. A session is the period of time in which a user is actively engaged with your site.',
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc',
+            },
+            {
+                name: 'Pageviews',
+                field: 'pageviews',
+                checked: true,
+                type: 'number',
+                shown: isShown,
+                internal: isInternal,
+                help: 'Total number of pageviews made during the selected date range. A pageview is a view of a single page. Repeated views are counted.',
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc',
+            },
             {
                 name: 'Unique Users',
                 field: 'unique_users',
