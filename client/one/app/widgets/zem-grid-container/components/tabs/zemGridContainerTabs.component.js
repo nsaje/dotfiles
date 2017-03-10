@@ -1,8 +1,8 @@
 angular.module('one.widgets').component('zemGridContainerTabs', {
     templateUrl: '/app/widgets/zem-grid-container/components/tabs/zemGridContainerTabs.component.html',
     bindings: {
+        tabs: '<',
         entity: '<',
-        breakdown: '<'
     },
     controller: function ($state) {
         var $ctrl = this;
@@ -10,15 +10,6 @@ angular.module('one.widgets').component('zemGridContainerTabs', {
         $ctrl.navigateTo = navigateTo;
 
         $ctrl.$onInit = function () {
-            $ctrl.options = createTabOptions($ctrl.entity);
-            $ctrl.options.forEach(function (option) { option.selected = option.breakdown === $ctrl.breakdown; });
-        };
-
-        $ctrl.$onChanges = function () {
-            $ctrl.options = createTabOptions($ctrl.entity);
-
-            // Set option.selected flag based on the current breakdown
-            $ctrl.options.forEach(function (option) { option.selected = option.breakdown === $ctrl.breakdown; });
         };
 
         function navigateTo (option) {
@@ -33,70 +24,5 @@ angular.module('one.widgets').component('zemGridContainerTabs', {
                 breakdown: breakdownStateParam
             }, {notify: false, location: 'replace'});
         }
-
-        function createTabOptions (entity) {
-            var options = [];
-            if (!entity) {
-                options = [
-                    {
-                        name: 'Accounts',
-                        breakdown: constants.breakdown.ACCOUNT,
-                    },
-                    {
-                        name: 'Sources',
-                        breakdown: constants.breakdown.MEDIA_SOURCE,
-                    },
-                ];
-            }
-
-            if (entity && entity.type === constants.entityType.ACCOUNT) {
-                options = [
-                    {
-                        name: 'Campaigns',
-                        breakdown: constants.breakdown.CAMPAIGN,
-                    },
-                    {
-                        name: 'Sources',
-                        breakdown: constants.breakdown.MEDIA_SOURCE,
-                    },
-                ];
-            }
-
-            if (entity && entity.type === constants.entityType.CAMPAIGN) {
-                options = [
-                    {
-                        name: 'Ad groups',
-                        breakdown: constants.breakdown.AD_GROUP,
-                    },
-                    {
-                        name: 'Sources',
-                        breakdown: constants.breakdown.MEDIA_SOURCE,
-                    },
-                    {
-                        name: 'Content Insights',
-                        breakdown: 'insights',
-                    },
-                ];
-            }
-
-            if (entity && entity.type === constants.entityType.AD_GROUP) {
-                options = [
-                    {
-                        name: 'Content Ads',
-                        breakdown: constants.breakdown.CONTENT_AD,
-                    },
-                    {
-                        name: 'Sources',
-                        breakdown: constants.breakdown.MEDIA_SOURCE,
-                    },
-                    {
-                        name: 'Publishers',
-                        breakdown: constants.breakdown.PUBLISHER,
-                    },
-                ];
-            }
-            return options;
-        }
-
     }
 });

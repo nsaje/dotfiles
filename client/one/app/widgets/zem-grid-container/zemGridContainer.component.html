@@ -1,31 +1,34 @@
 <div class="zem-grid-container__header">
     <zem-grid-container-tabs
+            tabs="$ctrl.tabs"
             entity="$ctrl.entity"
             breakdown="$ctrl.breakdown"
             class="zem-grid-container-tabs"
     ></zem-grid-container-tabs>
 </div>
 
-<div class="zem-grid-container__body"
-     ng-if="$ctrl.entity.type === $ctrl.constants.entityType.CAMPAIGN"
-     ng-show="$ctrl.breakdown === $ctrl.constants.breakdown.INSIGHTS">
-    <zem-content-insights entity="$ctrl.entity"></zem-content-insights>
-</div>
+<div class="zem-grid-container__body">
+    <div ng-repeat="tab in $ctrl.tabs">
+        <div ng-show="tab.selected">
+            <div ng-if="tab.activated && tab.breakdown === $ctrl.constants.breakdown.INSIGHTS">
+                <zem-content-insights ng-if="tab.activated" entity="$ctrl.entity"></zem-content-insights>
+            </div>
 
-<div class="zem-grid-container__body" ng-show="$ctrl.breakdown !== $ctrl.constants.breakdown.INSIGHTS">
-    <zem-alerts level="$ctrl.level"
-                entity-id="$ctrl.entity.id"
-    ></zem-alerts>
+            <div ng-if="tab.activated && tab.breakdown !== $ctrl.constants.breakdown.INSIGHTS" >
+                <zem-alerts entity="$ctrl.entity"></zem-alerts>
 
-    <zem-grid-container-actions
-            entity="$ctrl.entity"
-            breakdown="$ctrl.breakdown"
-            grid-api="$ctrl.grid.api"
-            class="zem-grid-container-actions"
-    ></zem-grid-container-actions>
+                <zem-grid-container-actions ng-if="tab.grid.api.getMetaData()"
+                        entity="$ctrl.entity"
+                        breakdown="tab.breakdown"
+                        grid-api="tab.grid.api"
+                        class="zem-grid-container-actions"
+                ></zem-grid-container-actions>
 
-    <zem-grid data-data-source="$ctrl.grid.dataSource"
-              options="$ctrl.grid.options"
-              on-initialized="$ctrl.onGridInitialized(api)"
-    ></zem-grid>
+                <zem-grid data-data-source="tab.grid.dataSource"
+                          options="tab.grid.options"
+                          on-initialized="$ctrl.onGridInitialized(tab, api)"
+                ></zem-grid>
+            </div>
+        </div>
+    </div>
 </div>

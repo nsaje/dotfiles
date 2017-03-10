@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.widgets').factory('zemGridApi', function () { // eslint-disable-line max-len
+angular.module('one.widgets').factory('zemGridApi', function (zemGridUIService) { // eslint-disable-line max-len
 
     //
     // GridApi provides interface for interaction with zem-grid
@@ -45,6 +45,8 @@ angular.module('one.widgets').factory('zemGridApi', function () { // eslint-disa
         this.setVisibleColumns = grid.meta.columnsService.setVisibleColumns;
         this.getVisibleColumns = grid.meta.columnsService.getVisibleColumns;
 
+        this.refreshUI = refreshUI;
+
         // Listeners - pubsub rewiring
         this.onMetaDataUpdated = onMetaDataUpdated;
         this.onDataUpdated = onDataUpdated;
@@ -69,6 +71,12 @@ angular.module('one.widgets').factory('zemGridApi', function () { // eslint-disa
 
         function getColumns () {
             return grid.header.columns;
+        }
+
+        function refreshUI () {
+            zemGridUIService.resizeGridColumns(grid);
+            zemGridUIService.updateStickyElements(grid);
+            zemGridUIService.updatePivotColumns(grid, grid.body.ui.scrolleft || 0);
         }
 
         function onMetaDataUpdated (scope, callback) {

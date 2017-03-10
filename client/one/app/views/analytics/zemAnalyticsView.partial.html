@@ -1,18 +1,32 @@
-<div class="page" ng-if="$ctrl.entity !== undefined">
+<div class="page" >
     <div class="section">
         <div class="graph-infobox-parent">
             <div class="graph-infobox-row">
                 <div class="graph-container">
-                    <zem-chart level="$ctrl.level" breakdown="$ctrl.chartBreakdown" entity-id="$ctrl.entity.id"></zem-chart>
+                    <zem-chart
+                            ng-if="$ctrl.initialized"
+                            level="$ctrl.level" breakdown="$ctrl.chartBreakdown"
+                            entity-id="$ctrl.entity.id">
+
+                    </zem-chart>
                 </div>
                 <div class="spacing"></div>
                 <div class="infobox-container">
-                    <zem-infobox class="zem-infobox" entity="$ctrl.entity"></zem-infobox>
+                    <zem-infobox
+                            ng-if="$ctrl.initialized"
+                            class="zem-infobox"
+                            entity="$ctrl.entity">
+                    </zem-infobox>
                 </div>
             </div>
         </div>
     </div>
     <div class="section">
-        <zem-grid-container class="zem-grid-container" entity="$ctrl.entity" breakdown="$ctrl.breakdown"></zem-grid-container>
+        <zem-grid-container
+                ng-if="$ctrl.initialized"
+                class="zem-grid-container"
+                entity="$ctrl.entity"
+                breakdown="$ctrl.breakdown">
+        </zem-grid-container>
     </div>
 </div>

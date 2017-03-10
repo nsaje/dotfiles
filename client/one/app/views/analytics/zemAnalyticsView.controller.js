@@ -1,4 +1,4 @@
-angular.module('one.views').controller('zemAnalyticsView', function ($scope, $state, zemNavigationNewService) {
+angular.module('one.views').controller('zemAnalyticsView', function ($scope, $state, $timeout, zemNavigationNewService) { // eslint-disable-line max-len
     var $ctrl = this;
 
     var DEFAULT_BREAKDOWN = {};
@@ -16,14 +16,17 @@ angular.module('one.views').controller('zemAnalyticsView', function ($scope, $st
         $ctrl.entity = zemNavigationNewService.getActiveEntity();
         if ($ctrl.entity === undefined) {
             var handler = zemNavigationNewService.onActiveEntityChange(function (event, entity) {
+                $ctrl.initialized = true;
                 $ctrl.entity = entity;
                 handler();
             });
+        } else {
+            $ctrl.initialized = true;
         }
 
         updateBreakdownParams();
 
-        // [WORKAROUND] Avoid zemAnalyticsView re-initialization
+        // [UX/WORKAROUND] Avoid zemAnalyticsView re-initialization
         // Ui-Router does not have mechanism to reuse states with dynamic parameters therefor we navigate to
         // this state with {notify: false}, which in turn will change params but will not recreate the state.
         // This is used by zemGridContainer, to avoid reinitialization of zemInfobox and zemChart components.

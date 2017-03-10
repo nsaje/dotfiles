@@ -235,6 +235,8 @@ angular.module('one.widgets').factory('zemGridUIService', function ($timeout, ze
 
     function updatePivotColumns (grid, leftOffset, animate) {
         if (!grid.body.ui.element) return;
+        if (grid.ui.element.is(':hidden')) return;
+
         grid.header.ui.element.find('.zem-grid-header-cell').each(updateCell);
         grid.footer.ui.element.find('.zem-grid-row > .zem-grid-cell').each(updateCell);
         grid.body.ui.element.find('.zem-grid-row-breakdown').each(updateBreakdownRow);
@@ -297,6 +299,9 @@ angular.module('one.widgets').factory('zemGridUIService', function ($timeout, ze
     }
 
     function resizeGridColumns (grid) {
+        if (!grid.ui.element) return;
+        if (grid.ui.element.is(':hidden')) return;
+
         clearColumnStyles(grid);
         calculateColumnWidths(grid);
         resizeCells(grid);
@@ -347,6 +352,8 @@ angular.module('one.widgets').factory('zemGridUIService', function ($timeout, ze
     }
 
     function updateStickyElements (grid) {
+        if (grid.ui.element.is(':hidden')) return;
+
         var FIXED_HEADER_HEIGHT = 30/*MINIMIZED HEADER*/ + 28/*MINIMIZED NAV TABS*/;
         var FIXED_DATA_FILTER_HEIGHT = 48;
         var STICKY_FOOTER_HEIGHT = zemGridConstants.gridBodyRendering.ROW_HEIGHT + 15/*SCROLL BAR*/;
@@ -355,7 +362,8 @@ angular.module('one.widgets').factory('zemGridUIService', function ($timeout, ze
         var stickyHeader = grid.ui.element.find('.zem-grid-sticky__header');
 
         var topOffset = getTopOffset();
-        var gridViewportOffset = window.pageYOffset - grid.ui.element.offset().top + topOffset;
+        var gridOffset = grid.ui.element.offset();
+        var gridViewportOffset = window.pageYOffset - gridOffset.top + topOffset;
 
         var isHeaderSticky = gridViewportOffset > 0;
         var isFooterSticky = isHeaderSticky && gridViewportOffset +

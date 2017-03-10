@@ -1,5 +1,8 @@
 angular.module('one.widgets').component('zemAlerts', {
     bindings: {
+        entity: '<',
+
+        // TODO: remove - legacy support
         level: '<',
         entityId: '<'
     },
@@ -11,6 +14,13 @@ angular.module('one.widgets').component('zemAlerts', {
         $ctrl.alertTypes = constants.notificationType;
 
         $ctrl.$onInit = function () {
+            if (!$ctrl.level) {
+                $ctrl.level = $ctrl.entity ?
+                    constants.entityTypeToLevelMap[$ctrl.entity.type] :
+                    constants.level.ALL_ACCOUNTS;
+                $ctrl.entityId = $ctrl.entity ? $ctrl.entity.id : null;
+            }
+
             zemAlertsService.refreshAlerts($ctrl.level, $ctrl.entityId);
             zemAlertsService.onAlertsChange(initializeAlerts);
             initializeAlerts();

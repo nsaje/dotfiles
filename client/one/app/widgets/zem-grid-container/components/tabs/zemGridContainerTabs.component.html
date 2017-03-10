@@ -1,9 +1,9 @@
 <!-- TODO -->
 <div class="clearfix">
-    <a ng-repeat="option in $ctrl.options" class="tab pull-left"
-         ng-class="{'tab--active': option.selected }"
-         ng-click="$ctrl.navigateTo(option)"
+    <a ng-repeat="tab in $ctrl.tabs" class="tab pull-left"
+         ng-class="{'tab--active': tab.selected }"
+         ng-click="$ctrl.navigateTo(tab)"
     >
-        <span>{{ option.name }}</span>
+        <span>{{ tab.name }}</span>
     </a>
 </div>
