@@ -429,6 +429,43 @@ class PublisherGroupHelpersTest(TestCase):
             publisher_group_helpers.blacklist_publishers(
                 self.request, entries, None, enforce_cpc=False)
 
+    def test_upsert_publisher_group_update(self):
+        form_data = {
+            'id': 1,
+            'name': 'Bla bla bla',
+            'include_subdomains': False,
+        }
+
+        publisher_group = publisher_group_helpers.upsert_publisher_group(self.request, 1, form_data, None)
+        publisher_group.refresh_from_db()
+
+        self.assertEqual(form_data, {
+            'id': publisher_group.id,
+            'name': publisher_group.name,
+            'include_subdomains': publisher_group.default_include_subdomains,
+        })
+
+        self.assertEqual(models.History.objects.last().changes_text,
+                         'Publisher group "pg 1 [1]" updated, name changed from "pg 1" to "Bla bla bla", '
+                         'subdomains included changed from "True" to "False"')
+
+    def test_upsert_publisher_group_create(self):
+        form_data = {
+            'name': 'Bla bla bla',
+            'include_subdomains': False,
+        }
+
+        publisher_group = publisher_group_helpers.upsert_publisher_group(self.request, 1, form_data, None)
+        publisher_group.refresh_from_db()
+
+        self.assertEqual(form_data, {
+            'name': publisher_group.name,
+            'include_subdomains': publisher_group.default_include_subdomains,
+        })
+
+        self.assertEqual(models.History.objects.last().changes_text,
+                         'Publisher group created')
+
 
 class PublisherGroupCSVHelpersTest(TestCase):
     fixtures = ['test_publishers.yaml']

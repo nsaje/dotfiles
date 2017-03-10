@@ -21,6 +21,23 @@ from utils import exc
 from utils import s3helpers
 
 
+def serialize_publisher_group(publisher_group):
+    type_, level, obj, obj_name = publisher_group_helpers.parse_default_publisher_group_origin(publisher_group)
+    return {
+        'id': publisher_group.id,
+        'name': publisher_group.name,
+        'include_subdomains': publisher_group.default_include_subdomains,
+        'implicit': publisher_group.implicit,
+        'size': publisher_group.entries.all().count(),
+        'modified': publisher_group.modified_dt,
+        'created': publisher_group.created_dt,
+        'type': type_,
+        'level': level,
+        'level_name': obj_name,
+        'level_id': obj.id if obj else None,
+    }
+
+
 class PublisherTargeting(api_common.BaseApiView):
 
     def post(self, request):
@@ -106,20 +123,7 @@ class PublisherGroups(api_common.BaseApiView):
 
         publisher_groups = []
         for pg in publisher_groups_q:
-            type_, level, obj, obj_name = publisher_group_helpers.parse_default_publisher_group_origin(pg)
-            publisher_groups.append({
-                'id': pg.id,
-                'name': pg.name,
-                'include_subdomains': pg.default_include_subdomains,
-                'implicit': pg.implicit,
-                'size': pg.entries.all().count(),
-                'modified': pg.modified_dt,
-                'created': pg.created_dt,
-                'type': type_,
-                'level': level,
-                'level_name': obj_name,
-                'level_id': obj.id if obj else None,
-            })
+            publisher_groups.append(serialize_publisher_group(pg))
 
         return self.create_api_response({
             "publisher_groups": publisher_groups,
@@ -153,7 +157,6 @@ class PublisherGroupsUpload(api_common.BaseApiView):
             raise exc.ValidationError(errors=form.errors)
 
         entries = form.cleaned_data.get('entries')
-        include_subdomains = bool(form.cleaned_data.get('include_subdomains'))
         if entries:
             validated_entries = publisher_group_csv_helpers.validate_entries(entries)
             if any('error' in entry for entry in validated_entries):
@@ -164,41 +167,10 @@ class PublisherGroupsUpload(api_common.BaseApiView):
 
             publisher_group_csv_helpers.clean_entry_sources(entries)
 
-        with transaction.atomic():
-            if form.cleaned_data.get('id'):
-                publisher_group = helpers.get_publisher_group(request.user, account_id, form.cleaned_data['id'])
-            else:
-                publisher_group = models.PublisherGroup(
-                    account=account,
-                    implicit=False)
+        publisher_group = publisher_group_helpers.upsert_publisher_group(
+            request, account_id, form.cleaned_data, entries)
 
-            publisher_group.default_include_subdomains = include_subdomains
-            publisher_group.name = form.cleaned_data['name']
-            publisher_group.save(request)
-
-            if entries:
-                # replace entries
-                publisher_group_helpers.replace_publishers(publisher_group, entries)
-            else:
-                # update entries
-                for entry in publisher_group.entries.all():
-                    entry.include_subdomains = include_subdomains
-                    entry.save()
-
-        type_, level, obj, obj_name = publisher_group_helpers.parse_default_publisher_group_origin(publisher_group)
-        return self.create_api_response({
-            'id': publisher_group.id,
-            'name': publisher_group.name,
-            'include_subdomains': publisher_group.default_include_subdomains,
-            'implicit': publisher_group.implicit,
-            'size': publisher_group.entries.all().count(),
-            'modified': publisher_group.modified_dt,
-            'created': publisher_group.created_dt,
-            'type': type_,
-            'level': level,
-            'level_name': obj_name,
-            'level_id': obj.id if obj else None,
-        })
+        return self.create_api_response(serialize_publisher_group(publisher_group))
 
 
 class PublisherGroupsDownload(api_common.BaseApiView):

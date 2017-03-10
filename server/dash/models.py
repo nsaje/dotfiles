@@ -4672,6 +4672,30 @@ class PublisherGroup(models.Model):
         ]
         return not any(self.id in x for x in publisher_groups)
 
+    def write_history(self, changes_text, changes, action_type,
+                      user=None, system_user=None):
+
+        if not changes and not changes_text:
+            return None
+
+        account = self.account
+        agency = self.agency
+        level = constants.HistoryLevel.ACCOUNT if account else constants.HistoryLevel.AGENCY
+
+        if not agency:
+            _, _, agency = _generate_parents(account=self)
+
+        return History.objects.create(
+            account=account,
+            agency=agency,
+            created_by=user,
+            system_user=system_user,
+            changes=changes,
+            changes_text=changes_text or "",
+            level=level,
+            action_type=action_type
+        )
+
     def __unicode__(self):
         return u'{} ({})'.format(self.name, self.id)
 

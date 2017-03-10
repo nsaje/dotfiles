@@ -1741,6 +1741,8 @@ class HistoryActionType(ConstantBase):
     CONVERSION_PIXEL_AUDIENCE_ENABLED = 21
     CONVERSION_PIXEL_SET_REDIRECT_URL = 23
     CONVERSION_PIXEL_REMOVE_REDIRECT_URL = 24
+    PUBLISHER_GROUP_CREATE = 25
+    PUBLISHER_GROUP_UPDATE = 26
 
     _VALUES = {
         GOAL_CHANGE: 'Change Campaign Goal',
@@ -1767,6 +1769,8 @@ class HistoryActionType(ConstantBase):
         CONVERSION_PIXEL_AUDIENCE_ENABLED: 'Enable pixel for building audiences',
         CONVERSION_PIXEL_SET_REDIRECT_URL: 'Set redirect url for pixel',
         CONVERSION_PIXEL_REMOVE_REDIRECT_URL: 'Remove redirect url for pixel',
+        PUBLISHER_GROUP_CREATE: 'Create publisher group',
+        PUBLISHER_GROUP_UPDATE: 'Update publisher group',
     }
 
 

@@ -7,6 +7,7 @@ from django.db import transaction
 from django.db.models import Q
 
 from dash import constants, cpc_constraints, history_helpers, models
+from dash.views import helpers
 from utils import email_helper
 
 logger = logging.getLogger(__name__)
@@ -281,12 +282,61 @@ def unlist_publishers(request, entry_dicts, obj, enforce_cpc=False, history=True
 
 
 @transaction.atomic
-def replace_publishers(publisher_group, entry_dicts):
-    selected_entries = models.PublisherGroupEntry.objects.filter(publisher_group=publisher_group)
-    selected_entries.delete()
+def upsert_publisher_group(request, account_id, publisher_group_dict, entry_dicts):
+    changes = {}
 
-    entries = _prepare_entries(entry_dicts, publisher_group)
-    models.PublisherGroupEntry.objects.bulk_create(entries)
+    # get or create publisher group
+    if publisher_group_dict.get('id'):
+        publisher_group = helpers.get_publisher_group(request.user, account_id, publisher_group_dict['id'])
+        history_action_type = constants.HistoryActionType.PUBLISHER_GROUP_UPDATE
+        changes_text = "Publisher group \"{} [{}]\" updated".format(publisher_group.name, publisher_group.id)
+    else:
+        publisher_group = models.PublisherGroup(account_id=account_id, implicit=False)
+        history_action_type = constants.HistoryActionType.PUBLISHER_GROUP_CREATE
+        changes_text = "Publisher group created"
+
+    # update
+    include_subdomains = bool(publisher_group_dict.get('include_subdomains'))
+    if include_subdomains != publisher_group.default_include_subdomains:
+        changes['include_subdomains'] = (publisher_group.default_include_subdomains, include_subdomains)
+        publisher_group.default_include_subdomains = include_subdomains
+
+    if publisher_group.name != publisher_group_dict['name']:
+        changes['name'] = (publisher_group.name, publisher_group_dict['name'])
+        publisher_group.name = publisher_group_dict['name']
+
+    publisher_group.save(request)
+
+    # replace publishers
+    if entry_dicts:
+        models.PublisherGroupEntry.objects.filter(publisher_group=publisher_group).delete()
+        models.PublisherGroupEntry.objects.bulk_create(_prepare_entries(entry_dicts, publisher_group))
+        changes['entries'] = list(publisher_group.entries.all().values(
+            'id', 'publisher', 'source__name', 'include_subdomains'))
+
+    if history_action_type == constants.HistoryActionType.PUBLISHER_GROUP_UPDATE and changes:
+        changes_text += ", " + _get_changes_description(changes)
+
+    # update entries
+    for entry in publisher_group.entries.all():
+        entry.include_subdomains = publisher_group.default_include_subdomains
+        entry.save()
+
+    # write history
+    publisher_group.write_history(changes_text, changes, history_action_type, request.user)
+
+    return publisher_group
+
+
+def _get_changes_description(changes):
+    texts = []
+    if 'name' in changes:
+        texts.append('name changed from "{}" to "{}"'.format(*changes['name']))
+    if 'include_subdomains' in changes:
+        texts.append('subdomains included changed from "{}" to "{}"'.format(*changes['include_subdomains']))
+    if 'entries' in changes:
+        texts.append('{} publishers replaced'.format(len(changes['entries'])))
+    return ", ".join(texts)
 
 
 def write_history(request, obj, entries, status, previous_status=None):
