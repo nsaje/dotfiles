@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemInfobox', {
         entity: '<',
     },
     templateUrl: '/app/widgets/zem-infobox/zemInfobox.component.html',
-    controller: function (zemInfoboxService, zemNavigationNewService, zemDataFilterService, zemEntityService, zemHistoryService, zemPermissions) { // eslint-disable-line max-len
+    controller: function (zemInfoboxService, zemNavigationNewService, zemDataFilterService, zemEntityService, zemHistoryService, zemPermissions, $state) { // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.openHistory = zemHistoryService.open;
@@ -18,7 +18,7 @@ angular.module('one.widgets').component('zemInfobox', {
         var legacyActionExecutedHandler;
 
         $ctrl.$onInit = function () {
-            if (!zemPermissions.hasPermission('zemauth.can_use_new_routing')) {
+            if (!$state.includes('v2.analytics')) {
                 $ctrl.entity = zemNavigationNewService.getActiveEntity();
                 updateHandler();
                 if ($ctrl.entity) {
@@ -50,7 +50,7 @@ angular.module('one.widgets').component('zemInfobox', {
         };
 
         $ctrl.$onChanges = function (changes) {
-            if (zemPermissions.hasPermission('zemauth.can_use_new_routing')) {
+            if ($state.includes('v2.analytics')) {
                 $ctrl.entity = changes.entity.currentValue;
                 updateHandler();
                 if ($ctrl.entity) {

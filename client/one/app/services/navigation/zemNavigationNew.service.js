@@ -38,7 +38,7 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
         var id = $state.params.id;
         var type = null;
 
-        if (zemPermissions.hasPermission('zemauth.can_use_new_routing') && $state.includes('v2.analytics')) {
+        if (zemPermissions.hasPermission('zemauth.can_use_new_routing') && $state.includes('v2')) {
             var level = constants.levelStateParamToLevelMap[$state.params.level];
             type = constants.levelToEntityTypeMap[level];
         } else {
@@ -249,6 +249,17 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
     }
 
     function setActiveEntity (entity) {
+        if ($state.includes('v2')) {
+            if (entity && entity.data && entity.data.archived && !$state.includes('v2.archived')) {
+                var level = constants.entityTypeToLevelMap[entity.type];
+                var params = {
+                    level: constants.levelToLevelStateParamMap[level],
+                    id: entity.id,
+                };
+                return $state.go('v2.archived', params);
+            }
+        }
+
         if (activeEntity === entity) return;
         activeEntity = entity;
         notifyListeners(EVENTS.ON_ACTIVE_ENTITY_CHANGE, activeEntity);

@@ -1,4 +1,3 @@
-/* globals angular,moment,constants */
 angular.module('one.widgets').component('zemPublisherGroups', {
     templateUrl: '/app/widgets/zem-publisher-groups/zemPublisherGroups.component.html',
     bindings: {

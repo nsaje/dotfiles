@@ -24,7 +24,8 @@ angular.module('one.widgets').directive('zemGridCellInternalLink', function () {
             function update () {
                 vm.href = null;
                 if (vm.data && vm.row.data && vm.row.entity) {
-                    vm.href = zemNavigationNewService.getEntityHref(vm.row.entity);
+                    var includeQueryParams = true;
+                    vm.href = zemNavigationNewService.getEntityHref(vm.row.entity, includeQueryParams);
                 }
             }
         },

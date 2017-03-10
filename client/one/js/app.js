@@ -104,11 +104,11 @@ angular.module('one.legacy').config(function ($stateProvider) {
         }).state('main.accounts.users', {
             url: '/users',
             templateUrl: '/app/views/users/zemUsersView.partial.html',
-            controller: 'zemUsersView',
+            controller: 'zemUsersView as $ctrl',
         }).state('main.accounts.pixels', {
             url: '/pixels',
             templateUrl: '/app/views/pixels/zemPixelsView.partial.html',
-            controller: 'zemPixelsView',
+            controller: 'zemPixelsView as $ctrl',
         });
 
     $stateProvider

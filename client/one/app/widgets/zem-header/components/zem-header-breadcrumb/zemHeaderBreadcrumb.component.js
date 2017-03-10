@@ -68,20 +68,20 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
             if (type === constants.entityType.AD_GROUP) return 'Ad Group';
         }
 
-        function getAdministrationPage () {
-            if ($state.includes('**.users')) {
+        function getAdministrationPage () { // eslint-disable-line complexity
+            if ($state.includes('**.users') || $state.includes('v2.users')) {
                 return {typeName: 'Account Settings', name: 'User permissions', href: $location.absUrl()};
             }
-            if ($state.includes('**.credit_v2')) {
+            if ($state.includes('**.credit_v2') || $state.includes('v2.accountCredit')) {
                 return {typeName: 'Account Settings', name: 'Account credit', href: $location.absUrl()};
             }
-            if ($state.includes('**.scheduled_reports_v2')) {
+            if ($state.includes('**.scheduled_reports_v2') || $state.includes('v2.reports')) {
                 return {typeName: 'Account Settings', name: 'Scheduled reports', href: $location.absUrl()};
             }
-            if ($state.includes('**.pixels')) {
+            if ($state.includes('**.pixels') || $state.includes('v2.pixels')) {
                 return {typeName: 'Account Settings', name: 'Pixels & Audiences', href: $location.absUrl()};
             }
-            if ($state.includes('**.publisherGroups')) {
+            if ($state.includes('**.publisherGroups') || $state.includes('v2.publisherGroups')) {
                 return {typeName: 'Account Settings', name: 'Publisher groups', href: $location.absUrl()};
             }
             return null;

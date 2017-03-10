@@ -1,4 +1,4 @@
-angular.module('one.views').controller('zemAccountCreditView', function ($state, zemNavigationNewService) {
+angular.module('one.views').controller('zemAccountCreditView', function (zemNavigationNewService) {
     var $ctrl = this;
 
     init();

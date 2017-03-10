@@ -1,5 +1,6 @@
 /* globals angular, constants */
-angular.module('one.views').controller('zemPixelsView', function ($scope, $timeout, zemNavigationNewService) { // eslint-disable-line max-len
+angular.module('one.views').controller('zemPixelsView', function (zemNavigationNewService) {
+    var $ctrl = this;
 
     initialize();
 
@@ -7,10 +8,10 @@ angular.module('one.views').controller('zemPixelsView', function ($scope, $timeo
         // WORKAROUND: Clear tab selection - not possible through uib API
         $('.uib-tab.active').removeClass('active');
 
-        $scope.account = zemNavigationNewService.getActiveAccount();
-        if (!$scope.account) {
+        $ctrl.account = zemNavigationNewService.getActiveAccount();
+        if (!$ctrl.account) {
             var handler = zemNavigationNewService.onActiveEntityChange(function () {
-                $scope.account = zemNavigationNewService.getActiveAccount();
+                $ctrl.account = zemNavigationNewService.getActiveAccount();
                 handler();
             });
         }

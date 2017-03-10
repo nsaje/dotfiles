@@ -95,15 +95,19 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
     }
 
     function navigateToPublisherGroupsView () {
-        var account = zemNavigationNewService.getActiveAccount();
-        var state = 'main.accounts.publisherGroups';
-        var params = {id: account.id};
-        $state.go(state, params);
+        var activeAccount = zemNavigationNewService.getActiveAccount();
+        if (zemPermissions.hasPermission('zemauth.can_use_new_routing')) {
+            $state.go('v2.publisherGroups', {id: activeAccount.id});
+        } else {
+            $state.go('main.accounts.publisherGroups', {id: activeAccount.id});
+        }
     }
 
     function navigateToAccountCreditView () {
         var activeAccount = zemNavigationNewService.getActiveAccount();
-        if (activeAccount) {
+        if (zemPermissions.hasPermission('zemauth.can_use_new_routing')) {
+            $state.go('v2.accountCredit', {id: activeAccount.id});
+        } else {
             $state.go('main.accounts.credit_v2', {id: activeAccount.id});
         }
     }
@@ -111,9 +115,17 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
     function navigateToScheduledReportsView () {
         var activeAccount = zemNavigationNewService.getActiveAccount();
         if (activeAccount) {
-            $state.go('main.accounts.scheduled_reports_v2', {id: activeAccount.id});
+            if (zemPermissions.hasPermission('zemauth.can_use_new_routing')) {
+                $state.go('v2.reports', {level: constants.levelStateParam.ACCOUNT, id: activeAccount.id});
+            } else {
+                $state.go('main.accounts.scheduled_reports_v2', {id: activeAccount.id});
+            }
         } else if (activeAccount === null) {
-            $state.go('main.allAccounts.scheduled_reports_v2');
+            if (zemPermissions.hasPermission('zemauth.can_use_new_routing')) {
+                $state.go('v2.reports', {level: constants.levelStateParam.ACCOUNTS});
+            } else {
+                $state.go('main.allAccounts.scheduled_reports_v2');
+            }
         }
     }
 
@@ -136,10 +148,12 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
     }
 
     function navigateToUserPermissions () {
-        var account = zemNavigationNewService.getActiveAccount();
-        var state = 'main.accounts.users';
-        var params = {id: account.id};
-        $state.go(state, params);
+        var activeAccount = zemNavigationNewService.getActiveAccount();
+        if (zemPermissions.hasPermission('zemauth.can_use_new_routing')) {
+            $state.go('v2.users', {id: activeAccount.id});
+        } else {
+            $state.go('main.accounts.users', {id: activeAccount.id});
+        }
     }
 
     function isPixelsViewAvailable () {
@@ -148,10 +162,11 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
     }
 
     function navigateToPixelsView () {
-        var account = zemNavigationNewService.getActiveAccount();
-        var state = 'main.accounts.pixels';
-        var params = {id: account.id};
-        $state.go(state, params);
+        var activeAccount = zemNavigationNewService.getActiveAccount();
+        if (zemPermissions.hasPermission('zemauth.can_use_new_routing')) {
+            $state.go('v2.pixels', {id: activeAccount.id});
+        } else {
+            $state.go('main.accounts.pixels', {id: activeAccount.id});
+        }
     }
-
 });

@@ -1,5 +1,5 @@
 /* globals angular, constants */
-angular.module('one.views').controller('zemPublisherGroupsView', function ($state, zemNavigationNewService) {
+angular.module('one.views').controller('zemPublisherGroupsView', function (zemNavigationNewService) {
     var $ctrl = this;
 
     init();

@@ -1,9 +1,9 @@
-<div class="page page-account-custom-audiences" ng-if="account">
+<div class="page page-account-custom-audiences" ng-if="$ctrl.account">
     <h1>Pixels & Audiences</h1>
     <div>
-        <zem-conversion-pixels class="zem-conversion-pixels" account="account"/>
+        <zem-conversion-pixels class="zem-conversion-pixels" account="$ctrl.account"/>
     </div>
     <div>
-        <zem-custom-audiences class="zem-custom-audiences" account="account"/>
+        <zem-custom-audiences class="zem-custom-audiences" account="$ctrl.account"/>
     </div>
 </div>
