@@ -37,4 +37,10 @@
         adblockTest.remove();
     }, 100);
 </script>
+
+<script>
+    window.APP = {
+        USE_NEW_ROUTING: {{ perms.zemaut.can_use_new_routing|yesno:"true,false" }}
+    }
+</script>
 {% endblock %}

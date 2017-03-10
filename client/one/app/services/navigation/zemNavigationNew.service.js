@@ -228,10 +228,12 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
     }
 
     function navigateTo (entity, params) {
-        if (zemPermissions.hasPermission('zemauth.can_use_new_routing')) {
-            return $state.go('v2.analytics', getTargetStateParams(entity));
-        }
         if (!params) params = {};
+
+        if (zemPermissions.hasPermission('zemauth.can_use_new_routing')) {
+            params = angular.extend(params, getTargetStateParams(entity));
+            return $state.go('v2.analytics', params);
+        }
         if (entity) params.id = entity.id;
 
         var reuseNestedState = true;

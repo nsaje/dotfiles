@@ -5,21 +5,6 @@ angular.module('one').config(function ($urlRouterProvider) {
         window.location = $location.absUrl();
     });
 
-    $urlRouterProvider.when('/ad_groups/:adGroupId/ads_plus', '/ad_groups/:adGroupId/ads');
-
-    $urlRouterProvider.when('/campaigns/:campaignId/budget', ['$state', '$match', function ($state, $match) {
-        $state.go('main.campaigns.ad_groups', {
-            id: $match.campaignId,
-            settings: true,
-            settingsScrollTo: 'zemCampaignBudgetsSettings'
-        });
-    }]);
-
-    $urlRouterProvider.when('/:level/:id/history', ['$location', function ($location) {
-        var url = $location.url().replace('/history', '?history');
-        $location.url(url);
-    }]);
-
     $urlRouterProvider.otherwise('/');
 
     $urlRouterProvider.rule(function ($injector, $location) {
@@ -36,4 +21,22 @@ angular.module('one').config(function ($urlRouterProvider) {
 
         return false;
     });
+
+    // If new routing is used skip legacy redirects
+    if (!window.APP || !window.APP.USE_NEW_ROUTING) {
+        $urlRouterProvider.when('/ad_groups/:adGroupId/ads_plus', '/ad_groups/:adGroupId/ads');
+
+        $urlRouterProvider.when('/campaigns/:campaignId/budget', ['$state', '$match', function ($state, $match) {
+            $state.go('main.campaigns.ad_groups', {
+                id: $match.campaignId,
+                settings: true,
+                settingsScrollTo: 'zemCampaignBudgetsSettings'
+            });
+        }]);
+
+        $urlRouterProvider.when('/:level/:id/history', ['$location', function ($location) {
+            var url = $location.url().replace('/history', '?history');
+            $location.url(url);
+        }]);
+    }
 });

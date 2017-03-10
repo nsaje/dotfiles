@@ -18,6 +18,7 @@ angular.module('one.widgets').service('zemSettingsService', function ($rootScope
     this.onClose = onClose;
 
     function init () {
+        handleStateChange();
         $rootScope.$on('$stateChangeSuccess', handleStateChange);
         $rootScope.$on('$locationChangeSuccess', handleLocationChange);
 

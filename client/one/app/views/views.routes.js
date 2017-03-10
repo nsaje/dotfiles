@@ -41,6 +41,8 @@ angular.module('one.views').config(function ($stateProvider) {
                 squash: true,
             },
             settings: null,
+            settingsScrollTo: null,
+            history: null,
         },
     });
 
