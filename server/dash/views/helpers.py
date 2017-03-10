@@ -269,6 +269,14 @@ def get_active_ad_group_sources(modelcls, modelobjects):
     return active_ad_group_sources
 
 
+def get_source_initial_state(ad_group_source):
+    if ad_group_source.source.source_type.type in (constants.SourceType.FACEBOOK, ):
+        return check_facebook_source(ad_group_source)
+    if ad_group_source.source.maintenance or ad_group_source.source.deprecated:
+        return False
+    return True
+
+
 def get_ad_group_sources_last_change_dt(ad_group_sources, ad_group_sources_settings,
                                         ad_group_sources_states, last_change_dt=None):
     def get_last_change(ad_group_source):
@@ -822,7 +830,7 @@ def check_yahoo_min_cpc(ad_group_settings, ad_group_source_settings):
 
 def check_max_cpm(ad_group_source, ad_group_settings):
     if ad_group_settings.max_cpm and not ad_group_source.source.source_type.can_set_max_cpm():
-            return False
+        return False
 
     return True
 

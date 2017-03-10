@@ -514,7 +514,10 @@ class CampaignAdGroups(api_common.BaseApiView):
         helpers.set_ad_group_source_settings(
             None,
             ad_group_source,
-            active=True,
+            active=helpers.get_source_initial_state(
+                ad_group_settings.ad_group,
+                ad_group_settings.source
+            ),
             mobile_only=ad_group_settings.is_mobile_only()
         )
         return ad_group_source
