@@ -309,9 +309,12 @@ def upsert_publisher_group(request, account_id, publisher_group_dict, entry_dict
 
     # replace publishers
     if entry_dicts:
+        changes['entries'] = [[], []]
+        changes['entries'][0] = list(publisher_group.entries.all().values(
+            'id', 'publisher', 'source__name', 'include_subdomains'))
         models.PublisherGroupEntry.objects.filter(publisher_group=publisher_group).delete()
         models.PublisherGroupEntry.objects.bulk_create(_prepare_entries(entry_dicts, publisher_group))
-        changes['entries'] = list(publisher_group.entries.all().values(
+        changes['entries'][1] = list(publisher_group.entries.all().values(
             'id', 'publisher', 'source__name', 'include_subdomains'))
 
     if history_action_type == constants.HistoryActionType.PUBLISHER_GROUP_UPDATE and changes:
@@ -335,7 +338,7 @@ def _get_changes_description(changes):
     if 'include_subdomains' in changes:
         texts.append('subdomains included changed from "{}" to "{}"'.format(*changes['include_subdomains']))
     if 'entries' in changes:
-        texts.append('{} publishers replaced'.format(len(changes['entries'])))
+        texts.append('{} publishers replaced'.format(len(changes['entries'][1])))
     return ", ".join(texts)
 
 
