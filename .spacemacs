@@ -31,6 +31,9 @@ values."
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
    '(
+     html
+     yaml
+     rust
      python
      sql
      go
@@ -47,11 +50,13 @@ values."
      emacs-lisp
      git
      markdown
-     org
+     (org :variables
+          org-projectile-file "~/org/TODOs.org")
      (shell :variables
-            shell-default-height 30
-            shell-default-position 'bottom)
-     spell-checking
+            shell-default-width 20
+            shell-default-position 'right)
+     (spell-checking :variables
+                     spell-checking-enable-by-default nil)
      syntax-checking
      version-control
      ;; notmuch
@@ -74,14 +79,6 @@ values."
    ;; them if they become unused. `all' installs *all* packages supported by
    ;; Spacemacs and never uninstall them. (default is `used-only')
    dotspacemacs-install-packages 'used-only)
-
-  ;; (setq-default dotspacemacs-configuration-layers
-  ;;               '((spell-checking :variables spell-checking-enable-by-default nil)))
-  ;; (setq-default dotspacemacs-configuration-layers
-  ;;               '((org :variables org-projectile-file "/home/nsaje/TODOs.org")))
-  ;; (with-eval-after-load 'org-agenda
-  ;;   (require 'org-projectile)
-  ;;   (push (org-projectile:todo-files) org-agenda-files))
  )
 
 (defun dotspacemacs/init ()
@@ -142,11 +139,11 @@ values."
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press <SPC> T n to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
-   dotspacemacs-themes '(solarized-light
-                         sanityinc-solarized-light
-                         spacemacs-dark
-                         spacemacs-light
-                         adwaita
+   dotspacemacs-themes '(leuven
+                         solarized-light
+                         material-light
+                         ;; spacemacs-dark
+                         ;; spacemacs-light
                          )
    ;; If non nil the cursor color matches the state color in GUI Emacs.
    dotspacemacs-colorize-cursor-according-to-state t
@@ -326,18 +323,28 @@ This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
     (global-linum-mode)
+    ;; (with-eval-after-load 'org-agenda
+    ;;   (require 'org-projectile)
+    ;;   (push "~/org/TODOs.org" org-agenda-files))
     (with-eval-after-load 'company
       (define-key company-active-map (kbd "C-w") 'evil-delete-backward-word)
       )
     (with-eval-after-load 'helm
       (define-key helm-map (kbd "C-w") 'evil-delete-backward-word)
       )
+    (remove-hook 'prog-mode-hook #'smartparens-mode)
+    (spacemacs/toggle-smartparens-globally-off)
     (define-key evil-window-map "q" 'delete-window)
 
     ; mu4e
     ;;location of my maildir
     (setq mu4e-maildir (expand-file-name "~/mbsync"))
     (setq mu4e-enable-notifications t)
+
+    ;; reply/forward citation
+    (setq message-citation-line-format "\n\nOn %a %d %b %Y at %R, %f wrote:\n")
+    (setq message-citation-line-function 'message-insert-formatted-citation-line)
+
     (with-eval-after-load 'mu4e-alert
       ;; Enable Desktop notifications
       (mu4e-alert-set-default-style 'notifications)) ; For linux
@@ -355,13 +362,15 @@ you should place your code here."
     (setq mu4e-get-mail-command "mbsync gmail"
           mu4e-update-interval 30)
     (setq mu4e-sent-messages-behavior 'delete)
+    (setq mu4e-compose-format-flowed t)
+    ;; (add-hook 'mu4e-compose-mode-hook
+    ;;   (lambda ()
+    ;;     (use-hard-newlines t 'guess)))
+    (setq mu4e-compose-signature-auto-include nil)
     (setq
       user-mail-address "nejc.saje@zemanta.com"
       user-full-name  "Nejc Saje"
-      ;; mu4e-compose-signature
-      ;; (concat
-      ;;  "Foo X. Bar\n"
-      ;;  "http://www.example.com\n")
+      mu4e-compose-signature nil
       )
     (setq message-send-mail-function 'smtpmail-send-it
         smtpmail-stream-type 'starttls
@@ -372,9 +381,48 @@ you should place your code here."
     (setq message-kill-buffer-on-exit t)
 
     (setq-default frame-title-format "Spacemacs - %b (%f)")
-    (with-eval-after-load 'org-agenda
-      (require 'org-projectile)
-      (push (org-projectile:todo-files) org-agenda-files))
+
+  ;;; scroll one line at a time (less "jumpy" than defaults)
+    (setq mouse-wheel-scroll-amount '(2 ((shift) . 1))) ;; two lines at a time
+    (setq mouse-wheel-progressive-speed nil) ;; don't accelerate scrolling
+    (setq mouse-wheel-follow-mouse 't) ;; scroll window under mouse
+
+  ;; yank preferences
+    (setq save-interprogram-paste-before-kill t)
+    (setq x-select-enable-clipboard nil)
+
+
+    ;; ORG MODE CONFIG
+    (setq org-agenda-files '("~/org/TODOs.org"))
+    (setq org-todo-keywords
+          (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
+                  (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))))
+
+    (setq org-todo-keyword-faces
+          (quote (("TODO" :foreground "red" :weight bold)
+                  ("NEXT" :foreground "blue" :weight bold)
+                  ("DONE" :foreground "forest green" :weight bold)
+                  ("WAITING" :foreground "orange" :weight bold)
+                  ("HOLD" :foreground "magenta" :weight bold)
+                  ("CANCELLED" :foreground "forest green" :weight bold)
+                  ("MEETING" :foreground "forest green" :weight bold)
+                  ("PHONE" :foreground "forest green" :weight bold))))
+    (setq org-directory "~/org")
+    (setq org-default-notes-file "~/org/TODOs.org")
+
+    ;; Capture templates for: TODO tasks, Notes, appointments, phone calls, meetings, and org-protocol
+    (setq org-capture-templates
+          (quote (("t" "todo" entry (file+headline "~/org/TODOs.org" "General")
+                  "* TODO %?\n%U\n\n" :clock-in t :clock-resume t)
+                  ;; ("r" "respond" entry (file+headline "~/org/TODOs.org" "General")
+                  ;; "* NEXT Respond to %:from on %:subject\nSCHEDULED: %t\n%U\n%a\n" :clock-in t :clock-resume t :immediate-finish t)
+                  ("r" "respond" entry (file+headline "~/org/TODOs.org" "General")
+                   "* NEXT Respond to %f on %s\nSCHEDULED: %t\n%U\n%a\n" :clock-in t :clock-resume t :immediate-finish t)
+                  ("n" "note" entry (file+headline "~/org/TODOs.org" "Notes")
+                  "* %? :NOTE:\n%U\n%a\n\n" :clock-in t :clock-resume t)
+                  ("m" "Meeting" entry (file+headline "~/git/org/refile.org" "Meetings")
+                  "* MEETING with %? :MEETING:\n%U\n\n" :clock-in t :clock-resume t))))
+    (setq org-mu4e-link-query-in-headers-mode nil)
   )
 
 ;; Do not write anything past this comment. This is where Emacs will
@@ -384,9 +432,78 @@ you should place your code here."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(compilation-message-face (quote default))
+ '(cua-global-mark-cursor-color "#2aa198")
+ '(cua-normal-cursor-color "#657b83")
+ '(cua-overwrite-cursor-color "#b58900")
+ '(cua-read-only-cursor-color "#859900")
  '(custom-safe-themes
    (quote
-    ("d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" default))))
+    ("d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" default)))
+ '(evil-want-Y-yank-to-eol nil)
+ '(fci-rule-color "#eee8d5" t)
+ '(highlight-changes-colors (quote ("#d33682" "#6c71c4")))
+ '(highlight-symbol-colors
+   (--map
+    (solarized-color-blend it "#fdf6e3" 0.25)
+    (quote
+     ("#b58900" "#2aa198" "#dc322f" "#6c71c4" "#859900" "#cb4b16" "#268bd2"))))
+ '(highlight-symbol-foreground-color "#586e75")
+ '(highlight-tail-colors
+   (quote
+    (("#eee8d5" . 0)
+     ("#B4C342" . 20)
+     ("#69CABF" . 30)
+     ("#69B7F0" . 50)
+     ("#DEB542" . 60)
+     ("#F2804F" . 70)
+     ("#F771AC" . 85)
+     ("#eee8d5" . 100))))
+ '(hl-bg-colors
+   (quote
+    ("#DEB542" "#F2804F" "#FF6E64" "#F771AC" "#9EA0E5" "#69B7F0" "#69CABF" "#B4C342")))
+ '(hl-fg-colors
+   (quote
+    ("#fdf6e3" "#fdf6e3" "#fdf6e3" "#fdf6e3" "#fdf6e3" "#fdf6e3" "#fdf6e3" "#fdf6e3")))
+ '(magit-diff-use-overlays nil)
+ '(nrepl-message-colors
+   (quote
+    ("#dc322f" "#cb4b16" "#b58900" "#546E00" "#B4C342" "#00629D" "#2aa198" "#d33682" "#6c71c4")))
+ '(pos-tip-background-color "#eee8d5")
+ '(pos-tip-foreground-color "#586e75")
+ '(smartrep-mode-line-active-bg (solarized-color-blend "#859900" "#eee8d5" 0.2))
+ '(term-default-bg-color "#fdf6e3")
+ '(term-default-fg-color "#657b83")
+ '(vc-annotate-background nil)
+ '(vc-annotate-background-mode nil)
+ '(vc-annotate-color-map
+   (quote
+    ((20 . "#dc322f")
+     (40 . "#c85d17")
+     (60 . "#be730b")
+     (80 . "#b58900")
+     (100 . "#a58e00")
+     (120 . "#9d9100")
+     (140 . "#959300")
+     (160 . "#8d9600")
+     (180 . "#859900")
+     (200 . "#669b32")
+     (220 . "#579d4c")
+     (240 . "#489e65")
+     (260 . "#399f7e")
+     (280 . "#2aa198")
+     (300 . "#2898af")
+     (320 . "#2793ba")
+     (340 . "#268fc6")
+     (360 . "#268bd2"))))
+ '(vc-annotate-very-old-color nil)
+ '(weechat-color-list
+   (quote
+    (unspecified "#fdf6e3" "#eee8d5" "#990A1B" "#dc322f" "#546E00" "#859900" "#7B6000" "#b58900" "#00629D" "#268bd2" "#93115C" "#d33682" "#00736F" "#2aa198" "#657b83" "#839496")))
+ '(xterm-color-names
+   ["#eee8d5" "#dc322f" "#859900" "#b58900" "#268bd2" "#d33682" "#2aa198" "#073642"])
+ '(xterm-color-names-bright
+   ["#fdf6e3" "#cb4b16" "#93a1a1" "#839496" "#657b83" "#6c71c4" "#586e75" "#002b36"]))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

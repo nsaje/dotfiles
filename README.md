@@ -32,3 +32,6 @@ scm_breeze
 git-completion.bash
 ```
 
+
+Thinkpad touchpad:
+`xinput --set-prop 11 "Synaptics Finger" 5 20 0`

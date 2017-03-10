@@ -10,7 +10,8 @@
 # Please see http://i3wm.org/docs/userguide.html for a complete reference!
 
 # set $mod Mod1
-set $mod Mod1
+#set $mod Mod1
+set $mod Mod4
 
 # have some gnome goodness
 #Fedora: exec --no-startup-id /usr/libexec/gnome-settings-daemon
@@ -34,6 +35,7 @@ exec ~/.local/bin/lowbattery.sh
 exec --no-startup-id redshift
 
 exec --no-startup-id setxkbmap -option ctrl:swapcaps
+exec --no-startup-id setxkbmap -option altwin:swap_lalt_lwin
 
 # Pulse Audio controls
 bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume 1 +5% #increase sound volume
@@ -74,6 +76,7 @@ bindsym $mod+Return exec gnome-terminal --hide-menubar
 #bindsym $mod+bracketright exec google-chrome --new-window --force-device-scale-factor=1.25 --profile-directory="Default"
 bindsym $mod+bracketright exec firefox -P "Zemanta"
 bindsym $mod+backslash exec firefox -P "Nejc"
+bindsym $mod+apostrophe exec emacsclient -c
 # firefox:
 # devpixelsperpx 1.25
 # doubleclickselectsall false
@@ -87,6 +90,9 @@ set $Locker bash ~/.local/bin/fuzzy_lock.sh && sleep 1
 
 #exec --no-startup-id xautolock -time 1 -locker "~/.local/bin/fuzzy_lock.sh" &
 exec --no-startup-id xautolock -time 3 -locker "bash ~/.local/bin/fuzzy_lock.sh" &
+
+# thinkpad touchpad
+exec --no-startup-id xinput --set-prop 11 "Synaptics Finger" 5 20 0
 
 set $mode_system System (l) lock, (e) logout, (s) suspend, (h) hibernate, (r) reboot, (Shift+s) shutdown
 mode "$mode_system" {

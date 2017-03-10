@@ -15,6 +15,9 @@ Plugin 'VundleVim/Vundle.vim'
 
 "Plugin 'zhaocai/GoldenView.Vim'
 
+" JS
+Plugin 'pangloss/vim-javascript.git'
+
 " Git
 Plugin 'tpope/vim-fugitive' " Git
 autocmd QuickFixCmdPost *grep* cwindow
@@ -109,7 +112,7 @@ let g:syntastic_mode_map = { 'mode': 'active', 'passive_filetypes': ['go'] }
 "Plugin 'nvie/vim-flake8'
 Plugin 'klen/python-mode'
 let g:pymode_rope_goto_definition_bind = "<C-]>"
-let g:pymode_rope = 0
+let g:pymode_rope = 1
 let g:pymode_options_max_line_length = 130
 let g:pymode_folding = 0
 let g:pymode_rope_regenerate_on_write = 0
