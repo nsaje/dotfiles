@@ -618,6 +618,7 @@ class K1ApiTest(TestCase):
             u'target_devices': [],
             u'iab_category': u'IAB24',
             u'target_regions': [],
+            u'exclusion_target_regions': [],
             u'retargeting': [
                              {u'event_id': u'100', u'event_type': u'redirect_adgroup', u'exclusion': False},
                              {u'event_id': u'200', u'event_type': u'redirect_adgroup', u'exclusion': True},
@@ -664,6 +665,7 @@ class K1ApiTest(TestCase):
             u'target_devices',
             u'iab_category',
             u'target_regions',
+            u'exclusion_target_regions',
             u'retargeting',
             u'campaign_id',
             u'account_id',

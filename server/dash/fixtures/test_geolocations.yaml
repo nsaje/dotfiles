@@ -1,0 +1,39 @@
+- model: dash.geolocation
+  pk: US
+  fields: {type: co, name: United States}
+
+- model: dash.geolocation
+  pk: CA
+  fields: {type: co, name: United States}
+
+- model: dash.geolocation
+  pk: GB
+  fields: {type: co, name: Great Britain}
+
+- model: dash.geolocation
+  pk: NC
+  fields: {type: co, name: New Caledonia}
+
+- model: dash.geolocation
+  pk: PR
+  fields: {type: co, name: Puerto Rico}
+
+- model: dash.geolocation
+  pk: US-NY
+  fields: {type: re, name: "New York, United States"}
+
+- model: dash.geolocation
+  pk: "501"
+  fields: {type: dma, name: "501 New York, NY"}
+
+- model: dash.geolocation
+  pk: "502"
+  fields: {type: dma, name: "502 Binghamton, NY"}
+
+- model: dash.geolocation
+  pk: "693"
+  fields: {type: dma, name: "693 Little Rock-Pine Bluff, AR"}
+
+- model: dash.geolocation
+  pk: "123456"
+  fields: {type: ci, name: "New York, New York, United States"}

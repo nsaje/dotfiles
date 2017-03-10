@@ -1183,6 +1183,7 @@ class CampaignSettings(SettingsBase):
         'archived',
         'target_devices',
         'target_regions',
+        'exclusion_target_regions',
         'automatic_campaign_stop',
         'landing_mode',
         'enable_ga_tracking',
@@ -1237,6 +1238,7 @@ class CampaignSettings(SettingsBase):
     )
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
+    exclusion_target_regions = jsonfield.JSONField(blank=True, null=True, default=[])
 
     whitelist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
     blacklist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
@@ -1317,6 +1319,7 @@ class CampaignSettings(SettingsBase):
             'archived': 'Archived',
             'target_devices': 'Device targeting',
             'target_regions': 'Locations',
+            'exclusion_target_regions': 'Excluded Locations',
             'automatic_campaign_stop': 'Automatic Campaign Stop',
             'landing_mode': 'Landing Mode',
             'enable_ga_tracking': 'Enable GA tracking',
@@ -1344,12 +1347,15 @@ class CampaignSettings(SettingsBase):
         elif prop_name == 'target_devices':
             value = ', '.join(constants.AdTargetDevice.get_text(x)
                               for x in value)
-        elif prop_name == 'target_regions':
+        elif prop_name in ('target_regions', 'exclusion_target_regions'):
             if value:
-                value = ', '.join(constants.AdTargetLocation.get_text(x)
-                                  for x in value)
+                names = Geolocation.objects.filter(key__in=value).values_list('name', flat=True)
+                value = ', '.join(names)
             else:
-                value = 'worldwide'
+                if prop_name == 'target_regions':
+                    value = 'worldwide'
+                elif prop_name == 'exclusion_target_regions':
+                    value = 'none'
         elif prop_name == 'automatic_campaign_stop':
             value = str(value)
         elif prop_name == 'landing_mode':
@@ -2355,6 +2361,7 @@ class AdGroupSettings(SettingsBase):
         'daily_budget_cc',
         'target_devices',
         'target_regions',
+        'exclusion_target_regions',
         'retargeting_ad_groups',
         'exclusion_retargeting_ad_groups',
         'bluekai_targeting',
@@ -2417,6 +2424,7 @@ class AdGroupSettings(SettingsBase):
     )
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
+    exclusion_target_regions = jsonfield.JSONField(blank=True, null=True, default=[])
     retargeting_ad_groups = jsonfield.JSONField(blank=True, default=[])
     exclusion_retargeting_ad_groups = jsonfield.JSONField(
         blank=True, default=[])
@@ -2567,6 +2575,7 @@ class AdGroupSettings(SettingsBase):
             'daily_budget_cc': 'Daily spend cap',
             'target_devices': 'Device targeting',
             'target_regions': 'Locations',
+            'exclusion_target_regions': 'Excluded Locations',
             'retargeting_ad_groups': 'Retargeting ad groups',
             'exclusion_retargeting_ad_groups': 'Exclusion ad groups',
             'whitelist_publisher_groups': 'Whitelist publisher groups',
@@ -2617,12 +2626,15 @@ class AdGroupSettings(SettingsBase):
         elif prop_name == 'target_devices':
             value = ', '.join(constants.AdTargetDevice.get_text(x)
                               for x in value)
-        elif prop_name == 'target_regions':
+        elif prop_name in ('target_regions', 'exclusion_target_regions'):
             if value:
-                value = ', '.join(constants.AdTargetLocation.get_text(x)
-                                  for x in value)
+                names = Geolocation.objects.filter(key__in=value).values_list('name', flat=True)
+                value = ', '.join(names)
             else:
-                value = 'worldwide'
+                if prop_name == 'target_regions':
+                    value = 'worldwide'
+                elif prop_name == 'exclusion_target_regions':
+                    value = 'none'
         elif prop_name in ('retargeting_ad_groups', 'exclusion_retargeting_ad_groups'):
             if not value:
                 value = ''

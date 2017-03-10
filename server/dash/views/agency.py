@@ -368,6 +368,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 if settings.daily_budget_cc is not None else '',
             'target_devices': settings.target_devices,
             'target_regions': settings.target_regions,
+            'exclusion_target_regions': settings.exclusion_target_regions or [],
             'tracking_code': settings.tracking_code,
             'autopilot_daily_budget':
                 '{:.2f}'.format(settings.autopilot_daily_budget)
@@ -407,6 +408,7 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.daily_budget_cc = resource['daily_budget_cc']
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
+        settings.exclusion_target_regions = resource['exclusion_target_regions']
         settings.interest_targeting = resource['interest_targeting']
         settings.exclusion_interest_targeting = resource['exclusion_interest_targeting']
         settings.ad_group_name = resource['name']
@@ -451,7 +453,8 @@ class AdGroupSettings(api_common.BaseApiView):
 
         return {
             'target_devices': settings.target_devices,
-            'target_regions': settings.target_regions
+            'target_regions': settings.target_regions,
+            'exclusion_target_regions': settings.exclusion_target_regions or []
         }
 
     def get_retargetable_adgroups(self, request, ad_group, existing_targetings):
@@ -767,6 +770,7 @@ class CampaignSettings(api_common.BaseApiView):
 
         result['target_devices'] = settings.target_devices
         result['target_regions'] = settings.target_regions
+        result['exclusion_target_regions'] = settings.exclusion_target_regions or []
 
         if request.user.has_perm('zemauth.can_modify_campaign_manager'):
             result['campaign_manager'] = str(settings.campaign_manager.id)\
@@ -789,6 +793,7 @@ class CampaignSettings(api_common.BaseApiView):
         settings.goal_quantity = resource['goal_quantity']
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
+        settings.exclusion_target_regions = resource['exclusion_target_regions']
         settings.enable_ga_tracking = resource['enable_ga_tracking']
         settings.enable_adobe_tracking = resource['enable_adobe_tracking']
         settings.adobe_tracking_param = resource['adobe_tracking_param']

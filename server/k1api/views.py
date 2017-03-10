@@ -411,6 +411,7 @@ class AdGroupsView(K1APIView):
                 'tracking_codes': ad_group_settings.get_tracking_codes(),
                 'target_devices': ad_group_settings.target_devices,
                 'target_regions': ad_group_settings.target_regions,
+                'exclusion_target_regions': ad_group_settings.exclusion_target_regions,
                 'iab_category': campaign_settings.iab_category,
                 'retargeting': self._get_retargeting(ad_group_settings),
                 'demographic_targeting': ad_group_settings.bluekai_targeting,

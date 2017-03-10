@@ -1,3 +1,7 @@
+- model: dash.geolocation
+  pk: US
+  fields: {type: co, name: United States}
+
 # Users
 - fields:
     date_joined: '2014-06-16T12:21:29'

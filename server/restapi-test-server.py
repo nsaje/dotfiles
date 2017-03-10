@@ -50,7 +50,7 @@ signal.signal(signal.SIGTERM, sigterm_handler)
 signal.signal(signal.SIGINT, sigterm_handler)
 
 print "Loading fixtures"
-call_command('loaddata', *['test_acceptance'])
+call_command('loaddata', *['test_acceptance', 'test_geolocations'])
 print "Running the server on %s" % args.addrport
 call_command('runserver', addrport=args.addrport,
              use_reloader=args.autoreload, use_threading=False)

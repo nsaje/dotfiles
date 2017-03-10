@@ -215,7 +215,7 @@ class AdGroupAdminFormTest(TestCase):
 
 
 class CampaignSettingsFormTest(TestCase):
-    fixtures = ['test_models.yaml']
+    fixtures = ['test_models.yaml', 'test_geolocations']
 
     def setUp(self):
         self.campaign = models.Campaign.objects.get(pk=1)
@@ -230,6 +230,7 @@ class CampaignSettingsFormTest(TestCase):
             'goal_quantity': 10,
             'target_devices': ['desktop', 'mobile'],
             'target_regions': ['US'],
+            'exclusion_target_regions': ['US:12345'],
             'enable_ga_tracking': True,
             'ga_tracking_type': 2,
             'ga_property_id': 'UA-123456789-1',
@@ -254,6 +255,7 @@ class CampaignSettingsFormTest(TestCase):
             'goal_quantity': Decimal('10'),
             'target_devices': ['desktop', 'mobile'],
             'target_regions': ['US'],
+            'exclusion_target_regions': ['US:12345'],
             'enable_ga_tracking': True,
             'ga_tracking_type': 2,
             'ga_property_id': 'UA-123456789-1',
@@ -357,7 +359,7 @@ class CampaignSettingsFormTest(TestCase):
 
 
 class AdGroupSettingsFormTest(TestCase):
-    fixtures = ['test_models.yaml']
+    fixtures = ['test_models.yaml', 'test_geolocations.yaml']
 
     def setUp(self):
         self.ad_group = models.AdGroup.objects.get(pk=1)
@@ -374,6 +376,7 @@ class AdGroupSettingsFormTest(TestCase):
             'start_date': '2014-12-11',
             'target_devices': ['desktop', 'mobile'],
             'target_regions': ['US'],
+            'exclusion_target_regions': ['US:12345'],
             'tracking_code': 'code=test',
             'retargeting_ad_groups': [3],
             'exclusion_retargeting_ad_groups': [5],
@@ -412,6 +415,7 @@ class AdGroupSettingsFormTest(TestCase):
             'start_date': datetime.date(2014, 12, 11),
             'target_devices': ['desktop', 'mobile'],
             'target_regions': ['US'],
+            'exclusion_target_regions': ['US:12345'],
             'tracking_code': 'code=test',
             'retargeting_ad_groups': [3],
             'exclusion_retargeting_ad_groups': [5],
@@ -1710,3 +1714,36 @@ class PublisherTargetingFormTestCase(TestCase):
             'end_date': datetime.date(2017, 1, 30),
             'enforce_cpc': False,
         }, f.cleaned_data)
+
+
+class TestGeolocationMultipleChoiceField(TestCase):
+
+    fixtures = ['test_geolocations']
+
+    def test_valid(self):
+        field = forms.GeolocationMultipleChoiceField()
+        locations = ['US', 'US-NY', '501', '123456', 'US:10000']
+        self.assertEqual(
+            field.clean(locations),
+            locations
+        )
+
+    def test_invalid_nonzip(self):
+        field = forms.GeolocationMultipleChoiceField()
+        locations = ['ABC', 'US-NY', '501', '123456', 'US:10000']
+        with self.assertRaises(ValidationError):
+            field.clean(locations)
+
+    def test_invalid_zip(self):
+        field = forms.GeolocationMultipleChoiceField()
+        locations = ['US', 'US-NY', '501', '123456', 'ABC:10000']
+        with self.assertRaises(ValidationError):
+            field.clean(locations)
+
+    def test_us_territories(self):
+        field = forms.GeolocationMultipleChoiceField()
+        locations = ['US-PR']
+        self.assertEqual(
+            field.clean(locations),
+            locations
+        )

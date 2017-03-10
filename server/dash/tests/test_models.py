@@ -19,7 +19,10 @@ from utils import exc, test_helper
 
 
 class AdGroupSettingsTest(TestCase):
-    fixtures = ['test_models.yaml']
+    fixtures = ['test_models.yaml', 'test_geolocations']
+
+    def setUp(self):
+        self.maxDiff = None
 
     def test_settings_fields(self):
         meta_fields = [
@@ -47,6 +50,7 @@ class AdGroupSettingsTest(TestCase):
             'target_devices': ['mobile'],
             'tracking_code': u'',
             'target_regions': ['US'],
+            'exclusion_target_regions': ['US-NY'],
             'retargeting_ad_groups': [1, 2],
             'exclusion_retargeting_ad_groups': [3, 4],
             'notes': 'Some note',
@@ -148,6 +152,7 @@ class AdGroupSettingsTest(TestCase):
             'Exclusion custom audience targeting set to "test audience 3, test audience 4", '
             'Start date set to "2014-06-04", '
             'State of all RTB sources set to "Enabled", '
+            'Excluded Locations set to "New York, United States", '
             'Description set to "Example description", '
             'End date set to "2014-06-05", '
             'Custom audience targeting set to "test audience 1, test audience 2", '
@@ -288,7 +293,7 @@ class AdGroupRunningStatusTest(TestCase):
 
 
 class CampaignSettingsTest(TestCase):
-    fixtures = ['test_models.yaml']
+    fixtures = ['test_models.yaml', 'test_geolocations']
 
     def test_settings_fields(self):
         meta_fields = [
@@ -314,6 +319,7 @@ class CampaignSettingsTest(TestCase):
             'campaign_manager': User.objects.get(pk=1),
             'promotion_goal': 1,
             'target_regions': [u'CA', u'501'],
+            'exclusion_target_regions': ['US-NY'],
             'campaign_goal': 2,
             'goal_quantity': Decimal('10.00'),
             'automatic_campaign_stop': True,
@@ -973,7 +979,7 @@ class CreditLineItemTestCase(TestCase):
 
 
 class HistoryTest(TestCase):
-    fixtures = ['test_api']
+    fixtures = ['test_api', 'test_geolocations']
 
     def setUp(self):
         self.u = User.objects.get(pk=1)

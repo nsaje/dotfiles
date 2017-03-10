@@ -28,7 +28,7 @@ from utils.test_helper import add_permissions, fake_request
 
 
 class AdGroupSettingsTest(TestCase):
-    fixtures = ['test_api', 'test_views', 'test_non_superuser']
+    fixtures = ['test_api', 'test_views', 'test_non_superuser', 'test_geolocations']
 
     def setUp(self):
         self.maxDiff = None
@@ -42,6 +42,7 @@ class AdGroupSettingsTest(TestCase):
                 'daily_budget_cc': '200.0000',
                 'target_devices': ['desktop'],
                 'target_regions': ['693', 'GB'],
+                'exclusion_target_regions': [],
                 'name': 'Test ad group name',
                 'id': 1,
                 'campaign_id': '1',
@@ -103,6 +104,7 @@ class AdGroupSettingsTest(TestCase):
                 'default_settings': {
                     'target_devices': ['mobile'],
                     'target_regions': ['NC', '501'],
+                    'exclusion_target_regions': [],
                 },
                 'retargetable_adgroups': [
                     {
@@ -166,6 +168,7 @@ class AdGroupSettingsTest(TestCase):
                     'state': 2,
                     'target_devices': ['desktop', 'mobile'],
                     'target_regions': ['GB', 'US', 'CA'],
+                    'exclusion_target_regions': [],
                     'autopilot_state': constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
                     'autopilot_daily_budget': '50.00',
                     'retargeting_ad_groups': [3],
@@ -310,6 +313,7 @@ class AdGroupSettingsTest(TestCase):
                     'default_settings': {
                         'target_devices': ['mobile'],
                         'target_regions': ['NC', '501'],
+                        'exclusion_target_regions': [],
                     },
                     'settings': {
                         'cpc_cc': '0.300',
@@ -323,6 +327,7 @@ class AdGroupSettingsTest(TestCase):
                         'state': 2,
                         'target_devices': ['desktop'],
                         'target_regions': ['693', 'GB'],
+                        'exclusion_target_regions': [],
                         'autopilot_daily_budget': '50.00',
                         'retargeting_ad_groups': [2],
                         'exclusion_retargeting_ad_groups': [9],
@@ -401,6 +406,7 @@ class AdGroupSettingsTest(TestCase):
                     'default_settings': {
                         'target_devices': ['mobile'],
                         'target_regions': ['NC', '501'],
+                        'exclusion_target_regions': [],
                     },
                     'settings': {
                         'cpc_cc': '0.050',
@@ -414,6 +420,7 @@ class AdGroupSettingsTest(TestCase):
                         'state': 2,
                         'target_devices': ['desktop'],
                         'target_regions': ['693', 'GB'],
+                        'exclusion_target_regions': [],
                         'autopilot_daily_budget': '50.00',
                         'retargeting_ad_groups': [2],
                         'exclusion_retargeting_ad_groups': [9],
@@ -571,6 +578,7 @@ class AdGroupSettingsTest(TestCase):
                     'default_settings': {
                         'target_devices': ['mobile'],
                         'target_regions': ['NC', '501'],
+                        'exclusion_target_regions': [],
                     },
                     'settings': {
                         'cpc_cc': '0.300',
@@ -584,6 +592,7 @@ class AdGroupSettingsTest(TestCase):
                         'state': 2,
                         'target_devices': ['desktop'],
                         'target_regions': ['693', 'GB'],
+                        'exclusion_target_regions': [],
                         'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
                         'autopilot_daily_budget': '100.00',
                         'retargeting_ad_groups': [2],
@@ -658,6 +667,7 @@ class AdGroupSettingsTest(TestCase):
                     'default_settings': {
                         'target_devices': ['mobile'],
                         'target_regions': ['NC', '501'],
+                        'exclusion_target_regions': [],
                     },
                     'settings': {
                         'cpc_cc': '0.300',
@@ -671,6 +681,7 @@ class AdGroupSettingsTest(TestCase):
                         'state': 2,
                         'target_devices': ['desktop'],
                         'target_regions': ['693', 'GB'],
+                        'exclusion_target_regions': [],
                         'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
                         'autopilot_daily_budget': '50.00',
                         'retargeting_ad_groups': [2],
@@ -1149,7 +1160,7 @@ class AdGroupSettingsTest(TestCase):
 
 
 class AdGroupSettingsRetargetableAdgroupsTest(TestCase):
-    fixtures = ['test_api.yaml', 'test_non_superuser.yaml']
+    fixtures = ['test_api.yaml', 'test_non_superuser.yaml', 'test_geolocations']
 
     def setUp(self):
         self.user = User.objects.get(pk=1)
@@ -1204,7 +1215,7 @@ class AdGroupSettingsRetargetableAdgroupsTest(TestCase):
 
 
 class AdGroupSettingsStateTest(TestCase):
-    fixtures = ['test_models.yaml', 'test_adgroup_settings_state.yaml', 'test_non_superuser.yaml']
+    fixtures = ['test_models.yaml', 'test_adgroup_settings_state.yaml', 'test_non_superuser.yaml', 'test_geolocations']
 
     def setUp(self):
         self.user = User.objects.get(pk=1)
@@ -2125,7 +2136,7 @@ class UserActivationTest(TestCase):
 
 
 class CampaignSettingsTest(TestCase):
-    fixtures = ['test_views.yaml', 'test_non_superuser.yaml', 'test_agency.yaml']
+    fixtures = ['test_views.yaml', 'test_non_superuser.yaml', 'test_agency.yaml', 'test_geolocations']
 
     def setUp(self):
         self.user = User.objects.get(pk=1)
@@ -2149,6 +2160,7 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(content['data']['settings']['goal_quantity'], '0.00')
         self.assertEqual(content['data']['settings']['target_devices'], ['mobile'])
         self.assertEqual(content['data']['settings']['target_regions'], ['NC', '501'])
+        self.assertEqual(content['data']['settings']['exclusion_target_regions'], [])
         self.assertEqual(content['data']['settings']['enable_ga_tracking'], True)
         self.assertEqual(content['data']['settings']['enable_adobe_tracking'], False)
         self.assertEqual(content['data']['settings']['ga_tracking_type'], 1)
@@ -2182,6 +2194,7 @@ class CampaignSettingsTest(TestCase):
         self.assertNotEqual(settings.campaign_goal, 2)
         self.assertNotEqual(settings.target_devices, ['desktop'])
         self.assertNotEqual(settings.target_regions, ['CA', '502'])
+        self.assertNotEqual(settings.exclusion_target_regions, ['CA', '502'])
         self.assertNotEqual(settings.ga_tracking_type, 2)
         self.assertNotEqual(settings.ga_property_id, 'UA-123456789-3')
         self.assertNotEqual(settings.enable_adobe_tracking, True)
@@ -2200,6 +2213,7 @@ class CampaignSettingsTest(TestCase):
                     'goal_quantity': 10,
                     'target_devices': ['desktop'],
                     'target_regions': ['CA', '502'],
+                    'exclusion_target_regions': [],
                     'campaign_manager': 1,
                     'iab_category': 'IAB17',
                     'enable_ga_tracking': True,
@@ -2226,6 +2240,7 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(settings.campaign_goal, 2)
         self.assertEqual(settings.target_devices, ['desktop'])
         self.assertEqual(settings.target_regions, ['CA', '502'])
+        self.assertEqual(settings.exclusion_target_regions, [])
         self.assertEqual(settings.campaign_manager_id, 1)
         self.assertEqual(settings.iab_category, 'IAB17')
         self.assertEqual(settings.enable_ga_tracking, True)
@@ -2263,6 +2278,7 @@ class CampaignSettingsTest(TestCase):
                     'goal_quantity': 10,
                     'target_devices': ['desktop'],
                     'target_regions': ['CA', '502'],
+                    'exclusion_target_regions': [],
                     'enable_ga_tracking': False,
                     'enable_adobe_tracking': False,
                     'ga_tracking_type': 2,
@@ -2301,6 +2317,7 @@ class CampaignSettingsTest(TestCase):
                     'goal_quantity': 10,
                     'target_devices': ['desktop'],
                     'target_regions': ['CA', '502'],
+                    'exclusion_target_regions': [],
                     'enable_ga_tracking': False,
                     'enable_adobe_tracking': False,
                     'ga_tracking_type': 2,
@@ -2353,6 +2370,7 @@ class CampaignSettingsTest(TestCase):
                     'goal_quantity': 10,
                     'target_devices': ['desktop'],
                     'target_regions': ['CA', '502'],
+                    'exclusion_target_regions': [],
                     'enable_ga_tracking': False,
                     'enable_adobe_tracking': False,
                     'ga_tracking_type': 2,
@@ -2407,6 +2425,7 @@ class CampaignSettingsTest(TestCase):
                     'goal_quantity': 10,
                     'target_devices': ['desktop'],
                     'target_regions': ['CA', '502'],
+                    'exclusion_target_regions': [],
                     'enable_ga_tracking': False,
                     'enable_adobe_tracking': False,
                     'ga_tracking_type': 2,
@@ -2436,7 +2455,8 @@ class CampaignSettingsTest(TestCase):
                     'name': 'test campaign 2',
                     'campaign_goal': 2,
                     'target_devices': ['nonexistent'],
-                    'target_regions': ['NC', '501']
+                    'target_regions': ['NC', '501'],
+                    'exclusion_target_regions': []
                 }
             }),
             content_type='application/json',

@@ -54,6 +54,57 @@ class TypedMultipleAnyChoiceField(forms.TypedMultipleChoiceField):
         return True
 
 
+class GeolocationMultipleChoiceField(forms.ModelMultipleChoiceField):
+
+    def __init__(self, *args, **kwargs):
+        super(GeolocationMultipleChoiceField, self).__init__(
+            queryset=models.Geolocation.objects.all(), *args, **kwargs)
+
+    def to_python(self, value):
+        if not value:
+            return []
+        return value
+
+    def clean(self, value):
+        # same as in ModelMultipleChoiceField.clean()
+        value = self.prepare_value(value)
+        if self.required and not value:
+            raise forms.ValidationError(self.error_messages['required'], code='required')
+        elif not self.required and not value:
+            return []
+        if not isinstance(value, (list, tuple)):
+            raise forms.ValidationError(self.error_messages['list'], code='list')
+
+        # partition into zip and non-zip
+        zips = []
+        non_zips = []
+        for location in value:
+            zip_tokens = location.split(':')
+            if len(zip_tokens) > 1:  # a ZIP code, need to check country
+                zips.append(zip_tokens)
+            else:  # not a ZIP code, will be checked by ModelMultipleChoiceField
+                if location in regions.SUBDIVISION_TO_COUNTRY:  # we used to treat Puerto Rico, Guam etc. as subdivisions
+                    location = regions.SUBDIVISION_TO_COUNTRY[location]
+                non_zips.append(location)
+
+        # check ZIP codes
+        zip_countries_qs = models.Geolocation.objects.filter(
+            type=constants.LocationType.COUNTRY,
+            pk__in=(country for country, code in zips))
+        zip_valid_countries = set(country.pk for country in zip_countries_qs)
+        for country, code in zips:
+            if country not in zip_valid_countries:
+                raise forms.ValidationError(
+                    self.error_messages['invalid_choice'],
+                    code='invalid_choice',
+                    params={'value': ':'.join((country, code))},
+                )
+
+        # check the rest of the locations
+        super(GeolocationMultipleChoiceField, self).clean(non_zips)
+        return value
+
+
 REDIRECT_JS_HELP_TEXT = '''!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
 n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
@@ -202,9 +253,11 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
             'required': 'Please select at least one target device.',
         }
     )
-    target_regions = forms.MultipleChoiceField(
-        required=False,
-        choices=constants.AdTargetLocation.get_choices()
+    target_regions = GeolocationMultipleChoiceField(
+        required=False
+    )
+    exclusion_target_regions = GeolocationMultipleChoiceField(
+        required=False
     )
     interest_targeting = forms.MultipleChoiceField(
         required=False,
@@ -775,9 +828,11 @@ class CampaignSettingsForm(PublisherGroupsFormMixin, forms.Form):
             'required': 'Please select at least one target device.',
         }
     )
-    target_regions = forms.MultipleChoiceField(
-        required=False,
-        choices=constants.AdTargetLocation.get_choices()
+    target_regions = GeolocationMultipleChoiceField(
+        required=False
+    )
+    exclusion_target_regions = GeolocationMultipleChoiceField(
+        required=False
     )
 
     campaign_manager = forms.IntegerField(required=False)

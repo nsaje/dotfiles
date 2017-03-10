@@ -479,3 +479,12 @@ SUBDIVISION_BY_CODE = {
     "US-UM": "United States Minor Outlying Islands",
     "US-VI": "Virgin Islands"
 }
+
+SUBDIVISION_TO_COUNTRY = {
+    "US-AS": "AS",
+    "US-GU": "GU",
+    "US-MP": "MP",
+    "US-PR": "PR",
+    "US-UM": "UM",
+    "US-VI": "VI"
+}

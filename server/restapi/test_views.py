@@ -45,7 +45,7 @@ class SerializerTests(TestCase):
 
 @override_settings(R1_DEMO_MODE=True)
 class RESTAPITest(TestCase):
-    fixtures = ['test_acceptance.yaml']
+    fixtures = ['test_acceptance.yaml', 'test_geolocations']
 
     def setUp(self):
         self.client = APIClient()
