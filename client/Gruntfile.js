@@ -85,6 +85,7 @@ module.exports = function (grunt) {
                     // NOTE: dashboard.legacy.less currently exists too and it is included here
                     '!one/app/styles/dashboard*.less',
                     'one/app/styles/dashboard*.less',
+                    '!one/app/styles/whitelabel/*.less',
                 ],
                 dest: 'dist/tmp/zemanta-one.less',
             },
