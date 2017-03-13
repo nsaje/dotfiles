@@ -7,7 +7,7 @@ START_DATE = datetime.date(2016, 12, 3)
 AUTOMATION_CAMPAIGN = 1096
 AUTOMATION_USER_EMAIL = 'businesswire-user@zemanta.com'
 
-DEFAULT_CPC = Decimal('0.2')
+DEFAULT_CPC = Decimal('0.1')
 DAILY_BUDGET_RTB_INITIAL = 30
 DAILY_BUDGET_OB_INITIAL = 10
 DAILY_BUDGET_PER_ARTICLE = 3.375
@@ -15,9 +15,7 @@ DAILY_BUDGET_PER_ARTICLE = 3.375
 OB_DAILY_BUDGET_PCT = 0.1
 
 CUSTOM_CPC_SETTINGS = {
-    38: Decimal('0.2'),
-    39: Decimal('0.1'),
-    62: Decimal('0.1'),
+    3: Decimal('0.2'),
 }
 
 INTEREST_TARGETING = [
