@@ -34,7 +34,7 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
         PERCENT_NEW_USERS: {name: '% New Users', value: 'percent_new_users', type: 'percent', fractionSize: 2},
         RETURNING_USERS: {name: 'Returning Users', value: 'returning_users', type: TYPE_NUMBER},
         UNIQUE_USERS: {name: 'Unique Users', value: 'unique_users', type: TYPE_NUMBER},
-        NEW_USERS: {name: 'New Users', value: 'unique_users', type: TYPE_NUMBER},
+        NEW_USERS: {name: 'New Users', value: 'new_users', type: TYPE_NUMBER},
         BOUNCE_RATE: {name: 'Bounce Rate', value: 'bounce_rate', type: 'percent', fractionSize: 2},
         TOTAL_SECONDS: {name: 'Total Seconds', value: 'total_seconds', type: TYPE_NUMBER},
         BOUNCED_VISITS: {name: 'Bounced Visits', value: 'bounced_visits', type: TYPE_NUMBER},
