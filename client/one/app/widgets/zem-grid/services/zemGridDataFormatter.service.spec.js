@@ -79,7 +79,7 @@ describe('zemGridDataFormatter', function () {
     it('should correctly format dateTime values', function () {
         tests = [
             {value: undefined, expectedResult: 'N/A'},
-            {value: 1457086451517, expectedResult: '3/4/2016 10:14 AM'},
+            {value: '2016-03-04T11:14:12.123999', expectedResult: '3/4/2016 11:14 AM'},
         ];
 
         options = {
