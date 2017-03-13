@@ -5,12 +5,20 @@
 <link type="text/css" rel="stylesheet" href="{{ staticUrl }}/one/zemanta-one.lib.min.css" />
 
 {% if debug %}
+{% if whitelabel %}
+<link type="text/css" rel="stylesheet" href="{{ staticUrl }}/one/zemanta-one-{{ whitelabel }}.css" />
+{% else %}
 <link type="text/css" rel="stylesheet" href="{{ staticUrl }}/one/zemanta-one.css" />
+{% endif %}
 <script type="text/javascript" src="{{ staticUrl }}/one/zemanta-one.lib.js"></script>
 <script type="text/javascript" src="{{ staticUrl }}/one/zemanta-one.js"></script>
 <script src="http://localhost:35729/livereload.js"></script>
 {% else %}
+{% if whitelabel %}
+<link type="text/css" rel="stylesheet" href="{{ staticUrl }}/one/zemanta-one-{{ whitelabel }}.min.css" />
+{% else %}
 <link type="text/css" rel="stylesheet" href="{{ staticUrl }}/one/zemanta-one.min.css" />
+{% endif %}
 <script type="text/javascript" src="{{ staticUrl }}/one/zemanta-one.lib.min.js"></script>
 <script type="text/javascript" src="{{ staticUrl }}/one/zemanta-one.min.js"></script>
 {% endif %}
@@ -26,6 +34,9 @@
 </div>
 
 <script>
+    {% if whitelabel %}
+    window.whitelabel = "{{ whitelabel }}";
+    {% endif %}
     var adblockTest = document.createElement('div');
     adblockTest.innerHTML = '&nbsp;';
     adblockTest.className = 'adsbox';

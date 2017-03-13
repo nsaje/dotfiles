@@ -1,5 +1,6 @@
 import datetime
 import mock
+import time
 from mock import patch
 
 from django import test
@@ -12,10 +13,15 @@ from dash import scheduled_report
 import zemauth.models
 
 
+class MockRequest(object):
+    pass
+
+
 class ScheduledReportTestCase(test.TestCase):
     fixtures = ['test_api']
 
     class MockDatetime(object):
+
         @classmethod
         def today(cls):
             return datetime.datetime(2016, 6, 8)
@@ -275,3 +281,183 @@ class ScheduledReportTestCase(test.TestCase):
         self.assertEqual(len(models.ExportReport.objects.filter(created_by=user)), 1)
         er = models.ExportReport.objects.filter(created_by=user)[0]
         self.assertEqual(er.include_totals, False)
+
+
+class ScheduledReportEmailsTestCase(test.TestCase):
+    fixtures = ['test_api']
+
+    class MockDatetime(object):
+
+        @classmethod
+        def today(cls):
+            return datetime.datetime(2017, 3, 9)
+
+        @classmethod
+        def utcnow(cls):
+            return datetime.datetime(2017, 3, 9, 8, 8)
+
+    def setUp(self):
+        self.user = zemauth.models.User.objects.get(pk=2)
+        self.ad_group = models.AdGroup.objects.get(pk=1)
+        self.agency = models.Agency(name='Test agency')
+
+        request = MockRequest()
+        request.user = self.user
+        self.agency.save(request)
+
+        self.account = self.ad_group.campaign.account
+        self.account.agency = self.agency
+        self.account.save(request)
+
+        self.campaign = self.ad_group.campaign
+
+        self.contents = '"Start Date","End Date","Account","Campaign","Ad Group","Status ({})","cost","Impressions"\r\n'.format(
+            time.strftime('%Y-%m-%d'))
+
+    @patch('dash.scheduled_report.datetime')
+    @patch('utils.email_helper.send_scheduled_export_report')
+    def test_account_report(self, mock_mail, mock_datetime):
+        mock_datetime.datetime = self.MockDatetime()
+        mock_datetime.timedelta = datetime.timedelta
+        scheduled_report.add_scheduled_report(
+            self.user,
+            report_name='rep',
+            filtered_sources=models.Source.objects.all().filter(pk=1),
+            order='name',
+            additional_fields='cost,impressions',
+            granularity=constants.ScheduledReportGranularity.AD_GROUP,
+            by_day=False,
+            by_source=False,
+            ad_group=None,
+            campaign=None,
+            account=self.account,
+            sending_frequency=constants.ScheduledReportSendingFrequency.WEEKLY,
+            recipient_emails='test@zem.com',
+            include_totals=True,
+        )
+        rep = models.ScheduledExportReport.objects.get(name='rep')
+        scheduled_report.send_scheduled_report(rep)
+        mock_mail.assert_called_with(
+            agency=self.agency,
+            email_adresses=[u'test@zem.com'],
+            entity_level='Account',
+            entity_name=u'test account 1 \u010c\u017e\u0161',
+            frequency='Weekly',
+            granularity='Ad Group',
+            report_contents=self.contents,
+            report_filename='test-account-1-czs_-_by_ad_group_report_2017-02-26_2017-03-04',
+            report_name='rep',
+            scheduled_by=u'mad.max@zemanta.com',
+            user=self.user,
+        )
+
+    @patch('dash.scheduled_report.datetime')
+    @patch('utils.email_helper.send_scheduled_export_report')
+    def test_campaign_report(self, mock_mail, mock_datetime):
+        mock_datetime.datetime = self.MockDatetime()
+        mock_datetime.timedelta = datetime.timedelta
+        scheduled_report.add_scheduled_report(
+            self.user,
+            report_name='rep',
+            filtered_sources=models.Source.objects.all().filter(pk=1),
+            order='name',
+            additional_fields='cost,impressions',
+            granularity=constants.ScheduledReportGranularity.AD_GROUP,
+            by_day=False,
+            by_source=False,
+            ad_group=None,
+            campaign=self.campaign,
+            account=None,
+            sending_frequency=constants.ScheduledReportSendingFrequency.WEEKLY,
+            recipient_emails='test@zem.com',
+            include_totals=True,
+        )
+        rep = models.ScheduledExportReport.objects.get(name='rep')
+        scheduled_report.send_scheduled_report(rep)
+        mock_mail.assert_called_with(
+            report_name='rep',
+            email_adresses=[u'test@zem.com'],
+            entity_level='Campaign',
+            entity_name=u'test campaign 1 \u010c\u017e\u0161',
+            frequency='Weekly',
+            granularity='Ad Group',
+            report_contents=self.contents,
+            report_filename='test-account-1-czs_test-campaign-1-czs_-_by_ad_group_report_2017-02-26_2017-03-04',
+            scheduled_by=u'mad.max@zemanta.com',
+            user=self.user,
+            agency=self.agency,
+        )
+
+    @patch('dash.scheduled_report.datetime')
+    @patch('utils.email_helper.send_scheduled_export_report')
+    def test_ad_group_report(self, mock_mail, mock_datetime):
+        mock_datetime.datetime = self.MockDatetime()
+        mock_datetime.timedelta = datetime.timedelta
+        scheduled_report.add_scheduled_report(
+            self.user,
+            report_name='rep',
+            filtered_sources=models.Source.objects.all().filter(pk=1),
+            order='name',
+            additional_fields='cost,impressions',
+            granularity=constants.ScheduledReportGranularity.AD_GROUP,
+            by_day=False,
+            by_source=False,
+            ad_group=self.ad_group,
+            campaign=None,
+            account=None,
+            sending_frequency=constants.ScheduledReportSendingFrequency.WEEKLY,
+            recipient_emails='test@zem.com',
+            include_totals=True,
+        )
+        rep = models.ScheduledExportReport.objects.get(name='rep')
+        scheduled_report.send_scheduled_report(rep)
+        mock_mail.assert_called_with(
+            agency=self.agency,
+            email_adresses=[u'test@zem.com'],
+            entity_level='Ad Group',
+            entity_name=u'test adgroup 1 \u010c\u017e\u0161',
+            frequency='Weekly',
+            granularity='Ad Group',
+            report_contents=self.contents,
+            report_filename='test-account-1-czs_test-campaign-1-czs_test-adgroup-1-czs_report_2017-02-26_2017-03-04',
+            report_name=u'rep',
+            scheduled_by=u'mad.max@zemanta.com',
+            user=self.user
+        )
+
+    @patch('dash.scheduled_report.datetime')
+    @patch('utils.email_helper.send_scheduled_export_report')
+    def test_general_report(self, mock_mail, mock_datetime):
+        mock_datetime.datetime = self.MockDatetime()
+        mock_datetime.timedelta = datetime.timedelta
+        scheduled_report.add_scheduled_report(
+            self.user,
+            report_name='rep',
+            filtered_sources=models.Source.objects.all().filter(pk=1),
+            order='name',
+            additional_fields='cost,impressions',
+            granularity=constants.ScheduledReportGranularity.AD_GROUP,
+            by_day=False,
+            by_source=False,
+            ad_group=None,
+            campaign=None,
+            account=None,
+            sending_frequency=constants.ScheduledReportSendingFrequency.WEEKLY,
+            recipient_emails='test@zem.com',
+            include_totals=True,
+        )
+        rep = models.ScheduledExportReport.objects.get(name='rep')
+        scheduled_report.send_scheduled_report(rep)
+        mock_mail.assert_called_with(
+            agency=None,
+            email_adresses=[u'test@zem.com'],
+            entity_level='All Accounts',
+            entity_name='All Accounts',
+            frequency='Weekly',
+            granularity='Ad Group',
+            report_contents=self.contents,
+            report_filename='ZemantaOne_-_by_ad_group_report_2017-02-26_2017-03-04',
+            report_name=u'rep',
+            scheduled_by=u'mad.max@zemanta.com',
+            user=self.user,
+        )

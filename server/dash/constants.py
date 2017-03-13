@@ -1906,6 +1906,14 @@ class Service(ConstantBase):
     }
 
 
+class Whitelabel(ConstantBase):
+    GREENPARK = 'greenpark'
+
+    _VALUES = {
+        GREENPARK: 'Green Park Content',
+    }
+
+
 class LocationType(ConstantBase):
     COUNTRY = 'co'
     REGION = 're'

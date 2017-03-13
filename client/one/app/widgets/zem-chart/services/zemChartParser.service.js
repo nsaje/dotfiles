@@ -1,13 +1,15 @@
-angular.module('one.widgets').service('zemChartParser', function (zemChartMetricsService) {
-
+/* global overwrittes */
+angular.module('one.widgets').service('zemChartParser', function ($window, zemChartMetricsService) {
     var COMMON_Y_AXIS_METRICS = ['clicks', 'visits', 'pageviews'];
-    var TOTALS_COLORS = ['#3f547f', '#b2bbcc'];
-    var GOALS_COLORS = ['#99cc00', '#d6eb99'];
-    var DATA_COLORS = [
-        ['#29aae3', '#a9ddf4'],
-        ['#0aaf9f', '#9ddfd9'],
-        ['#f15f74', '#f9bfc7'],
-    ];
+    var COLORS = angular.extend({
+        TOTALS: ['#3f547f', '#b2bbcc'],
+        GOALS: ['#99cc00', '#d6eb99'],
+        DATA: [
+            ['#29aae3', '#a9ddf4'],
+            ['#0aaf9f', '#9ddfd9'],
+            ['#f15f74', '#f9bfc7'],
+        ]
+    }, $window.whitelabel && (overwrittes[$window.whitelabel] || {}).chartColors || {});
 
     this.parseMetaData = parseMetaData;
     this.parseData = parseData;
@@ -112,7 +114,7 @@ angular.module('one.widgets').service('zemChartParser', function (zemChartMetric
                 id: goalField.id,
                 name: 'Goals',
             };
-            addLegendItem(chart, GOALS_COLORS, legendGoal, false, goals.indexOf(goal) + 1);
+            addLegendItem(chart, COLORS.GOALS, legendGoal, false, goals.indexOf(goal) + 1);
             campaignGoals[goalField.id].forEach(function (data) {
                 if (COMMON_Y_AXIS_METRICS.indexOf(goal.metric.id) === -1) {
                     commonYAxis = false;
@@ -120,7 +122,7 @@ angular.module('one.widgets').service('zemChartParser', function (zemChartMetric
                 var name = 'Goal (' + goalField.name + ')';
                 var yAxis = commonYAxis ? 0 : goal.index;
                 var pointFormat = getPointFormat(metric);
-                addGoalSeries(chart, name, data, GOALS_COLORS[goal.index], yAxis, pointFormat);
+                addGoalSeries(chart, name, data, COLORS.GOALS[goal.index], yAxis, pointFormat);
             });
         });
     }
@@ -313,11 +315,11 @@ angular.module('one.widgets').service('zemChartParser', function (zemChartMetric
         var i = 0;
 
         if (group.id === 'totals') {
-            return TOTALS_COLORS;
+            return COLORS.TOTALS;
         }
 
         // check if group had been assigned a color before
-        color = DATA_COLORS[chart.legend.usedColors[group.id]];
+        color = COLORS.DATA[chart.legend.usedColors[group.id]];
 
         // if not, select one of the available colors
         if (!color) {
@@ -325,12 +327,12 @@ angular.module('one.widgets').service('zemChartParser', function (zemChartMetric
                 return chart.legend.usedColors[key];
             });
 
-            for (i = 0; i < DATA_COLORS.length; i++) {
+            for (i = 0; i < COLORS.DATA.length; i++) {
                 if (usedColorIndexes.indexOf(i) !== -1) {
                     continue;
                 }
 
-                color = DATA_COLORS[i];
+                color = COLORS.DATA[i];
                 chart.legend.usedColors[group.id] = i;
                 break;
             }

@@ -11,6 +11,7 @@ import pytz
 import threading
 
 from django.db import transaction
+from django.db.models import Q
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
@@ -78,7 +79,14 @@ def create_name(objects, name):
 
 
 def index(request):
-    return render(request, 'index.html', {'staticUrl': settings.CLIENT_STATIC_URL, 'debug': settings.DEBUG})
+    associated_agency = models.Agency.objects.all().filter(
+        Q(users__id=request.user.id) | Q(account__users__id=request.user.id)
+    ).first()
+    return render(request, 'index.html', {
+        'staticUrl': settings.CLIENT_STATIC_URL,
+        'debug': settings.DEBUG,
+        'whitelabel': associated_agency and associated_agency.whitelabel
+    })
 
 
 def supply_dash_redirect(request):

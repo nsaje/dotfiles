@@ -1692,4 +1692,4 @@ def _send_depleting_budget_notification_email(campaign):
 
 def _send_notification_email(subject, body, campaign):
     emails = email_helper.email_manager_list(campaign)
-    email_helper.send_notification_mail(emails, subject, body)
+    email_helper.send_notification_mail(emails, subject, body, agency=campaign.account.agency)

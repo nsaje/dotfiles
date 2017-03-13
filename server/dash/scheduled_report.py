@@ -40,6 +40,14 @@ def get_due_scheduled_reports():
 
 
 def send_scheduled_report(scheduled_report):
+    agency = None
+    if scheduled_report.report.account:
+        agency = scheduled_report.report.account.agency
+    elif scheduled_report.report.campaign:
+        agency = scheduled_report.report.campaign.account.agency
+    elif scheduled_report.report.ad_group:
+        agency = scheduled_report.report.ad_group.campaign.account.agency
+
     report_log = models.ScheduledExportReportLog()
     report_log.scheduled_report = scheduled_report
 
@@ -63,7 +71,9 @@ def send_scheduled_report(scheduled_report):
             scheduled_by=scheduled_report.created_by.email,
             email_adresses=email_adresses,
             report_contents=report_contents,
-            report_filename=report_filename)
+            report_filename=report_filename,
+            user=scheduled_report.created_by,
+            agency=agency)
 
         report_log.state = constants.ScheduledReportSent.SUCCESS
 

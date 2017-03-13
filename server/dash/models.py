@@ -421,6 +421,13 @@ class Agency(models.Model):
         related_name="+",
         on_delete=models.PROTECT
     )
+    whitelabel = models.CharField(
+        max_length=255,
+        choices=constants.Whitelabel.get_choices(),
+        editable=True,
+        unique=False,
+        blank=True,
+    )
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
     created_dt = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')

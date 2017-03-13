@@ -50,6 +50,7 @@ module.exports = function (grunt) {
                     'dist/one/zemanta-one.templates.js',
                     'dist/build/config.js',
                     'one/js/constants.js',
+                    'one/js/whitelabel.js',
                     // App JS files - start with modules
                     'one/app/app.module.js',
                     'one/app/**/*.module.js',
@@ -87,6 +88,24 @@ module.exports = function (grunt) {
                 ],
                 dest: 'dist/tmp/zemanta-one.less',
             },
+            one_styles_greenpark: {
+                src: [
+                    'one/app/styles/variables.less',
+                    'one/app/styles/whitelabel/greenpark.less',
+                    'one/app/styles/mixins.less',
+                    'one/app/styles/libExtensions.less',
+                    'one/app/styles/utilities.less',
+                    'one/app/styles/animations.less',
+                    'one/app/styles/base.less',
+                    'one/**/*.less',
+                    // Exclude dashboard*.less and include it after any other less file in order to make it possible to
+                    // override components' styles if needed to make them fit better into dashboard's design
+                    // NOTE: dashboard.legacy.less currently exists too and it is included here
+                    '!one/app/styles/dashboard*.less',
+                    'one/app/styles/dashboard*.less',
+                ],
+                dest: 'dist/tmp/zemanta-one-greenpark.less',
+            },
         },
         bower_concat: {
             one_lib: {
@@ -105,6 +124,9 @@ module.exports = function (grunt) {
                 files: [{
                     src: 'dist/one/zemanta-one.css',
                     dest: 'dist/one/zemanta-one.min.css',
+                }, {
+                    src: 'dist/one/zemanta-one-greenpark.css',
+                    dest: 'dist/one/zemanta-one-greenpark.min.css',
                 }],
             },
             one_lib: {
@@ -132,6 +154,7 @@ module.exports = function (grunt) {
                 files: [
                     {expand: true, flatten: true, src: 'one/img/*', dest: 'dist/one/img/'},
                     {expand: true, flatten: true, src: 'one/images/*', dest: 'dist/one/images/'},
+                    {expand: true, flatten: true, src: 'one/images/whitelabel/greenpark/*', dest: 'dist/one/images/whitelabel/greenpark/'},
                     {expand: true, flatten: true, src: 'one/assets/*', dest: 'dist/one/assets/'}
                 ]
             },
@@ -186,6 +209,7 @@ module.exports = function (grunt) {
             one: {
                 files: {
                     'dist/one/zemanta-one.css': 'dist/tmp/zemanta-one.less',
+                    'dist/one/zemanta-one-greenpark.css': 'dist/tmp/zemanta-one-greenpark.less',
                 }
             },
         },
@@ -205,7 +229,7 @@ module.exports = function (grunt) {
                 files: [
                     'one/**/*.less',
                 ],
-                tasks: ['concat:one_styles', 'less:one', 'postcss:one', 'clean:tmp']
+                tasks: ['concat:one_styles', 'concat:one_styles_greenpark', 'less:one', 'postcss:one', 'clean:tmp']
             },
             one_templates: {
                 files: [
@@ -275,6 +299,7 @@ module.exports = function (grunt) {
                     'dist/one/zemanta-one.templates.js',
                     'dist/build/config.js',
                     'one/js/constants.js',
+                    'one/js/whitelabel.js',
                     'one/js/app.js',
                     'one/js/constants/*.js',
                     'one/js/services/**/*.js',
@@ -305,7 +330,7 @@ module.exports = function (grunt) {
             tmp: ['dist/tmp'],
         },
         build: {
-            one: ['html2js:one', 'concat:one_js', 'ngAnnotate:one', 'concat:one_styles', 'less:one', 'postcss:one', 'copy:one', 'clean:tmp'],
+            one: ['html2js:one', 'concat:one_js', 'ngAnnotate:one', 'concat:one_styles', 'concat:one_styles_greenpark', 'less:one', 'postcss:one', 'copy:one', 'clean:tmp'],
             one_lib: ['bower_concat:one_lib', 'cssmin:one_lib', 'copy:one_lib'],
         },
         dist: {

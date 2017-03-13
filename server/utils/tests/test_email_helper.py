@@ -181,7 +181,8 @@ class EmailHelperTestCase(TestCase):
         email_helper.send_account_notification_email(account, self.request, 'Something changed, yo')
 
         subject = 'Settings change - account '
-        body = 'Hi account manager of account \n\nWe\'d like to notify you that test@user.com has made the following change in the settings of the account :\n\n- Something changed, yo.\n\nPlease check https://testserver/accounts/{}/history for further details.\n\nYours truly,\nZemanta\n    '.format(account.pk)
+        body = 'Hi account manager of account \n\nWe\'d like to notify you that test@user.com has made the following change in the settings of the account :\n\n- Something changed, yo.\n\nPlease check https://testserver/accounts/{}/history for further details.\n\nYours truly,\nZemanta\n    '.format(
+            account.pk)
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, subject)
@@ -405,3 +406,62 @@ class FormatChangesTextTest(TestCase):
     def test_multiple_lines_(self):
         self.assertEqual(
             email_helper._format_changes_text('Some change.\nAnother change.'), '- Some change,\n- Another change.')
+
+
+@patch('utils.email_helper.render_to_string')
+class FormatTemplateTestCase(TestCase):
+
+    def setUp(self):
+        request_factory = RequestFactory()
+        self.normal_user = User.objects.create_user('test1@user.com')
+        self.whitelabel_agency_user = User.objects.create_user('test2@user.com')
+
+        self.request = request_factory.get('/test')
+        self.request.user = self.normal_user
+
+        self.agency = dash_models.Agency(name='Agency 1')
+        self.agency.save(self.request)
+        self.agency.users.add(self.normal_user)
+
+        self.whitelabel_agency = dash_models.Agency(name='Agency 2', whitelabel='greenpark')
+        self.whitelabel_agency.save(self.request)
+        self.whitelabel_agency.users.add(self.whitelabel_agency_user)
+
+    def test_no_params(self, mock_render):
+        email_helper.format_template('Subject', 'Body')
+        mock_render.assert_called_with('email.html',
+                                       {'content': '<p>Body</p>', 'subject': 'Subject'})
+
+    def test_normal_user(self, mock_render):
+        email_helper.format_template('Subject', 'Body', user=self.normal_user)
+        mock_render.assert_called_with('email.html',
+                                       {'content': '<p>Body</p>', 'subject': 'Subject'})
+
+    def test_whitelabel_agency_user(self, mock_render):
+        email_helper.format_template('Subject', 'Body', user=self.whitelabel_agency_user)
+        mock_render.assert_called_with('whitelabel/greenpark/email.html',
+                                       {'content': '<p>Body</p>', 'subject': 'Subject'})
+
+    def test_normal_agency(self, mock_render):
+        email_helper.format_template('Subject', 'Body', agency=self.agency)
+        mock_render.assert_called_with('email.html',
+                                       {'content': '<p>Body</p>', 'subject': 'Subject'})
+
+    def test_whitelabel_agency(self, mock_render):
+        email_helper.format_template('Subject', 'Body', agency=self.whitelabel_agency)
+        mock_render.assert_called_with('whitelabel/greenpark/email.html',
+                                       {'content': '<p>Body</p>', 'subject': 'Subject'})
+
+    def test_param_priority_agency(self, mock_render):
+        email_helper.format_template('Subject', 'Body',
+                                     agency=self.whitelabel_agency,
+                                     user=self.normal_user)
+        mock_render.assert_called_with('whitelabel/greenpark/email.html',
+                                       {'content': '<p>Body</p>', 'subject': 'Subject'})
+
+    def test_param_priority_user(self, mock_render):
+        email_helper.format_template('Subject', 'Body',
+                                     agency=self.agency,
+                                     user=self.whitelabel_agency_user)
+        mock_render.assert_called_with('email.html',
+                                       {'content': '<p>Body</p>', 'subject': 'Subject'})

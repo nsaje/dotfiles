@@ -3,6 +3,7 @@ import traceback
 import re
 from decimal import Decimal
 
+from django.db.models import Q
 from django.core.mail import send_mail
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -24,6 +25,16 @@ from utils import dates_helper
 logger = logging.getLogger(__name__)
 
 
+def _lookup_whitelabel(user=None, agency=None):
+    if user and not agency:
+        agency = dash.models.Agency.objects.all().filter(
+            Q(users__id=user.id) | Q(account__users__id=user.id)
+        ).first()
+    if agency:
+        return agency.whitelabel
+    return None
+
+
 def prepare_recipients(email_text):
     return (email.strip() for email in email_text.split(',') if email)
 
@@ -35,8 +46,12 @@ def format_email(template_type, **kwargs):
     return template.subject.format(**kwargs), template.body.format(**kwargs), prepare_recipients(template.recipients)
 
 
-def format_template(subject, content):
-    return render_to_string('email.html', {
+def format_template(subject, content, user=None, agency=None):
+    template_file = 'email.html'
+    whitelabel = _lookup_whitelabel(user, agency)
+    if whitelabel:
+        template_file = 'whitelabel/{}/email.html'.format(whitelabel)
+    return render_to_string(template_file, {
         'subject': subject,
         'content': '<p>' + '</p><p>'.join(re.split(r'\n+', content)) + '</p>'
     })
@@ -56,7 +71,7 @@ def email_manager_list(campaign):
     return list(ret)
 
 
-def send_notification_mail(to_emails, subject, body, settings_url=None):
+def send_notification_mail(to_emails, subject, body, settings_url=None, agency=None):
     if not to_emails:
         return
     try:
@@ -66,7 +81,7 @@ def send_notification_mail(to_emails, subject, body, settings_url=None):
             'Zemanta <{}>'.format(settings.FROM_EMAIL),
             to_emails,
             fail_silently=False,
-            html_message=format_template(subject, body),
+            html_message=format_template(subject, body, agency=agency),
         )
     except Exception as e:
         logger.exception(
@@ -137,7 +152,8 @@ def send_ad_group_notification_email(ad_group, request, changes_text):
     if not emails:
         return
     send_notification_mail(
-        emails, subject, body, ad_group.campaign.get_campaign_url(request))
+        emails, subject, body, ad_group.campaign.get_campaign_url(request),
+        agency=ad_group.campaign.account.agency)
 
 
 def send_campaign_notification_email(campaign, request, changes_text):
@@ -160,7 +176,8 @@ def send_campaign_notification_email(campaign, request, changes_text):
     if not emails:
         return
     send_notification_mail(
-        emails, subject, body, campaign.get_campaign_url(request))
+        emails, subject, body, campaign.get_campaign_url(request),
+        agency=campaign.account.agency)
 
 
 def send_account_notification_email(account, request, changes_text):
@@ -201,7 +218,8 @@ def send_budget_notification_email(campaign, request, changes_text):
     if not emails:
         return
     send_notification_mail(
-        emails, subject, body, campaign.get_campaign_url(request))
+        emails, subject, body, campaign.get_campaign_url(request),
+        agency=campaign.account.agency)
 
 
 def send_account_pixel_notification(account, request):
@@ -221,7 +239,8 @@ def send_account_pixel_notification(account, request):
         [account_settings.default_account_manager.email],
         subject,
         body,
-        account.get_account_url(request)
+        account.get_account_url(request),
+        agency=account.agency
     )
 
 
@@ -263,7 +282,7 @@ def _send_email_to_user(user, request, subject, body):
             'Zemanta <{}>'.format(settings.FROM_EMAIL),
             [user.email],
             fail_silently=False,
-            html_message=format_template(subject, body)
+            html_message=format_template(subject, body, user=user)
         )
     except Exception as e:
         if user is None:
@@ -390,7 +409,8 @@ def should_send_notification_mail(campaign, user, request):
 
 def send_scheduled_export_report(report_name, frequency, granularity,
                                  entity_level, entity_name, scheduled_by,
-                                 email_adresses, report_contents, report_filename):
+                                 email_adresses, report_contents, report_filename,
+                                 user=None, agency=None):
     args = {
         'frequency': frequency.lower(),
         'report_name': report_name,
@@ -408,7 +428,7 @@ def send_scheduled_export_report(report_name, frequency, granularity,
         settings.FROM_EMAIL
     ), email_adresses)
     email.attach(report_filename + '.csv', report_contents, 'text/csv')
-    email.attach_alternative(format_template(subject, body), "text/html")
+    email.attach_alternative(format_template(subject, body, user=user, agency=agency), "text/html")
     email.send(fail_silently=False)
 
 
@@ -421,7 +441,7 @@ def send_livestream_email(user, session_url):
     email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
     ), recipients)
-    email.attach_alternative(format_template(subject, body), "text/html")
+    email.attach_alternative(format_template(subject, body, user=user), "text/html")
     email.send(fail_silently=False)
 
 
@@ -512,7 +532,7 @@ def send_async_report(
     email = EmailMultiAlternatives(subject, plain_body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
     ), [user.email] + (recipients or []))
-    email.attach_alternative(format_template(subject, plain_body), "text/html")
+    email.attach_alternative(format_template(subject, plain_body, user=user), "text/html")
     email.send(fail_silently=False)
 
 
@@ -530,7 +550,7 @@ def send_depleting_credits_email(user, accounts):
     email = EmailMultiAlternatives(subject, plain_body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
     ), [user.email], bcc=recipients or [])
-    email.attach_alternative(format_template(subject, plain_body), "text/html")
+    email.attach_alternative(format_template(subject, plain_body, user=user), "text/html")
     email.send(fail_silently=False)
 
 
