@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.widgets').factory('zemGridUIService', function ($timeout, zemGridConstants, zemGridDataFormatter) { // eslint-disable-line max-len
+angular.module('one.widgets').factory('zemGridUIService', function ($timeout, $state, zemGridConstants, zemGridDataFormatter) { // eslint-disable-line max-len
     var requestAnimationFrame = (function () {
         return window.requestAnimationFrame ||
             window.webkitRequestAnimationFrame ||
@@ -354,9 +354,14 @@ angular.module('one.widgets').factory('zemGridUIService', function ($timeout, ze
     function updateStickyElements (grid) {
         if (grid.ui.element.is(':hidden')) return;
 
-        var FIXED_HEADER_HEIGHT = 30/*MINIMIZED HEADER*/ + 28/*MINIMIZED NAV TABS*/;
+        var FIXED_HEADER_HEIGHT = 30; // MINIMIZED HEADER
+
+        if (!$state.includes('v2')) {
+            FIXED_HEADER_HEIGHT += 28; // OLD MINIMIZED HEADER WITH NAV TABS
+        }
+
         var FIXED_DATA_FILTER_HEIGHT = 48;
-        var STICKY_FOOTER_HEIGHT = zemGridConstants.gridBodyRendering.ROW_HEIGHT + 15/*SCROLL BAR*/;
+        var STICKY_FOOTER_HEIGHT = zemGridConstants.gridBodyRendering.ROW_HEIGHT + 15; // SCROLL BAR
 
         var stickyFooter = grid.ui.element.find('.zem-grid-sticky__footer');
         var stickyHeader = grid.ui.element.find('.zem-grid-sticky__header');

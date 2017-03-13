@@ -4,34 +4,48 @@ zem-grid-container-tabs { display: block; }
 
 .zem-grid-container {
     margin-top: 20px;
-    &__header {
-        margin-bottom: -1px;
-    }
-    &__body {
-        min-height: 150px;
-        padding: 15px;
-        background: white;
-        box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.1);
-    }
+}
+
+.zem-grid-container__header {
+    margin-bottom: -1px;
+}
+
+.zem-grid-container__body {
+    padding: 15px;
+    background: white;
+    box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.1);
 }
 
 .zem-grid-container-tabs {
     // TODO: Style - only for debugging purposes
-    .tab {
+}
+
+.zem-grid__tab {
+    color: @text-color;
+    text-decoration: none;
+    background-color: darken(@light-gray,4%);
+    font-size: 14px;
+    padding: 6px @default-spacing;
+    margin: 4px 5px 0 0;
+    cursor: pointer;
+
+    &:hover {
         color: @text-color;
         text-decoration: none;
-        background: #d7d7d7;
-        font-size: 14px;
-        padding: 10px 15px;
-        margin-right: 10px;
-        cursor: pointer;
+        background-color: white;
+    }
+}
 
-        &--active {
-            color: @secondary-color;
-            font-weight: 500;
-            background: white;
-            border-top: 2px solid @secondary-color;
-        }
+.zem-grid__tab--active {
+    color: @secondary-color;
+    font-weight: 500;
+    background: white;
+    border-top: 2px solid @secondary-color;
+    padding: 8px @default-spacing;
+    margin-top: 0;
+
+    &:hover {
+        color: @secondary-color;
     }
 }
 

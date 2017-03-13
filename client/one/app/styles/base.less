@@ -77,6 +77,42 @@ h3 {
 }
 
 ////////////////////////////
+// Scroll to top button //
+////////////////////////////
+
+.scroll-to-top {
+    position: fixed;
+    width: 40px;
+    height: 40px;
+    background-color: fade(@very-dark-gray, 40%);
+    display: block;
+    right: -40px;
+    bottom: 100px;
+    z-index: 999;
+    transition: all @default-animation;
+
+    &:hover {
+        position: fixed;
+    }
+}
+
+.scroll-to-top::before {
+    content: " ";
+    position: absolute;
+    display: block;
+    width: 24px;
+    height: 24px;
+    background: url('images/arrow-white.svg') no-repeat center center;
+    left: 8px;
+    top: 8px;
+    transform: rotate(270deg);
+}
+
+.scroll-to-top--visible {
+    right: 0px;
+}
+
+////////////////////////////
 // Frequently used elements //
 ////////////////////////////
 

@@ -2,12 +2,31 @@ angular.module('one.services').service('zemDesignHelpersService', function () {
     this.init = init;
 
     function init () {
-        $(document).ready(function () {
-            $('body').append('<div class="ee-zemanta-dots"></div>');
+        initScrollToTop();
+        initZemantaSecret();
+    }
 
-            $('.ee-zemanta-dots').click(function () {
-                zemantaSecret();
+    function initScrollToTop () {
+        $(window).scroll(function () {
+            if ($(this).scrollTop () >= 600) {
+                $('.scroll-to-top').addClass('scroll-to-top--visible');
+            } else {
+                $('.scroll-to-top').removeClass('scroll-to-top--visible');
+            }
+        });
+
+        $(document).ready(function () {
+            $('body').append('<div class="ee-zemanta-dots"></div><a href="javascript:;" class="scroll-to-top"></a>');
+
+            $('.scroll-to-top').click(function () {
+                $('html, body').animate({scrollTop: 0}, 500);
             });
+        });
+    }
+
+    function initZemantaSecret () {
+        $('.ee-zemanta-dots').click(function () {
+            zemantaSecret();
         });
     }
 
