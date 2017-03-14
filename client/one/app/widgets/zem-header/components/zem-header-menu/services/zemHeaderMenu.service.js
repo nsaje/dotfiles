@@ -40,17 +40,17 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
             isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_see_new_scheduled_reports'),
         },
         {
+            text: 'Publisher groups',
+            callback: navigateToPublisherGroupsView,
+            isAvailable: isPublisherGroupsActionAvailable,
+            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_see_publisher_groups_ui'),
+        },
+        {
             text: 'User permissions',
             callback: navigateToUserPermissions,
             isAvailable: isUserPermissionsAvailable,
             isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_see_new_user_permissions'),
         },
-        {
-            text: 'Publisher groups',
-            callback: navigateToPublisherGroupsView,
-            isAvailable: isPublisherGroupsActionAvailable,
-            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_see_publisher_groups_ui'),
-        }
     ];
 
     function getAvailableActions (navigationGroup) {
