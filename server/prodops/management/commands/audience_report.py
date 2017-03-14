@@ -1,7 +1,7 @@
 import datetime
 
 import utils.command_helpers
-import analytics.statements
+import prodops.audience_report
 
 
 class Command(utils.command_helpers.ExceptionCommand):
@@ -20,8 +20,6 @@ class Command(utils.command_helpers.ExceptionCommand):
                             help='End date (excluded, default: today)')
 
     def _print(self, msg):
-        if not self.verbose:
-            return
         self.stdout.write(u'{}\n'.format(msg))
 
     def handle(self, *args, **options):
@@ -40,10 +38,10 @@ class Command(utils.command_helpers.ExceptionCommand):
         end_date = (options['end_date'] and
                     datetime.datetime.strptime(options['end_date'], "%Y-%m-%d").date() or
                     today)
-        filepath = analytics.audience_report.create_report(lookup, lookup_id,
-                                                           gte=start_date, lt=end_date)
+        filepath = prodops.audience_report.create_report(lookup, lookup_id,
+                                                         gte=start_date, lt=end_date)
         self._print('Report generated: {}'.format(
-            analytics.statements.upload_report(
+            prodops.helpers.upload_report_from_fs(
                 'ar/{}' - format(filepath.split('/')[-1]),
                 filepath)
         ))

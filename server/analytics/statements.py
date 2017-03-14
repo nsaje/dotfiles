@@ -93,11 +93,3 @@ def generate_csv(path, report, *args, **kwargs):
     s3.put(path, report if type(report) == str else report(*args, **kwargs),
            human_readable_filename=path.split('/')[-1])
     return get_url(path)
-
-
-def upload_report(path, filepath):
-    s3 = s3helpers.S3Helper(settings.S3_BUCKET_CUSTOM_REPORTS)
-    with open(filepath) as fd:
-        s3.put(path, fd.read(),
-               human_readable_filename=filepath.split('/')[-1])
-    return get_url(path)
