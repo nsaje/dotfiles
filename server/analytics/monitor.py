@@ -126,9 +126,9 @@ def audit_pacing(date, max_pacing=Decimal('200.0'), min_pacing=Decimal('50.0'), 
         if pacing is None:
             continue
         if pacing > max_pacing:
-            alarms.append((campaign_id, pacing, 'high'))
+            alarms.append((campaign_id, pacing, 'high', monthly_proj.row(campaign_id)))
         if pacing < min_pacing:
-            alarms.append((campaign_id, pacing, 'low'))
+            alarms.append((campaign_id, pacing, 'low', monthly_proj.row(campaign_id)))
     return alarms
 
 

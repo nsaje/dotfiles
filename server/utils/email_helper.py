@@ -102,13 +102,14 @@ def send_notification_mail(to_emails, subject, body, settings_url=None, agency=N
         )
 
 
-def send_pacing_notification_email(campaign, emails, pacing, alert):
+def send_pacing_notification_email(campaign, emails, pacing, alert, projections):
     subject, body, additional_emails = format_email(
         dash.constants.EmailTemplateType.PACING_NOTIFICATION,
         campaign=campaign,
         account=campaign.account,
         pacing=pacing.quantize(Decimal('.01')),
         alert=alert == 'low' and 'underpacing' or 'overpacing',
+        daily_ideal=projections['ideal_daily_media_spend'].quantize(Decimal('.01')),
     )
     email = EmailMultiAlternatives(
         subject,

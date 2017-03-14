@@ -211,6 +211,7 @@ class BudgetProjections(object):
         row = {
             'allocated_total_budget': None,
             'allocated_media_budget': None,
+            'ideal_daily_media_spend': None,
             'ideal_media_spend': None,
             'pacing': None,
             'attributed_media_spend': None,
@@ -241,8 +242,8 @@ class BudgetProjections(object):
     def _calculate_pacing(self, row, budgets):
         assert 'allocated_media_budget' in row
 
-        row['ideal_media_spend'] = row['allocated_media_budget'] / Decimal(self.forecast_days) \
-            * Decimal(self.past_days)
+        row['ideal_daily_media_spend'] = row['allocated_media_budget'] / Decimal(self.forecast_days)
+        row['ideal_media_spend'] = row['ideal_daily_media_spend'] * Decimal(self.past_days)
 
         row['attributed_media_spend'] = converters.nano_to_decimal(sum(
             statement.media_spend_nano + statement.data_spend_nano

@@ -70,7 +70,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             pk__in=set(a[0] for a in alarms)
         )}
 
-        for campaign_id, pacing, alert in alarms:
+        for campaign_id, pacing, alert, projections in alarms:
             campaign = campaigns[campaign_id]
             emails = set(utils.email_helper.email_manager_list(campaign)) & valid_emails
             self._print(u'Campaign {} ({}) has {} pacing {}: send to {}'.format(
@@ -83,5 +83,5 @@ class Command(utils.command_helpers.ExceptionCommand):
             if not options['send_emails']:
                 continue
             utils.email_helper.send_pacing_notification_email(
-                campaign, emails, pacing, alert
+                campaign, emails, pacing, alert, projections
             )

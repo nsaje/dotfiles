@@ -22,6 +22,7 @@ class ProjectionsTestCase(test.TestCase):
 
     def setUp(self):
         self.today = datetime.date(2015, 11, 15)
+        self.maxDiff = None
 
     def _create_statement(self, budget, date, media=500, data=500, fee=100, margin=0):
         reports.models.BudgetDailyStatement.objects.create(
@@ -54,6 +55,7 @@ class ProjectionsTestCase(test.TestCase):
         self.assertEqual(stats.row(1), {
             'total_fee_projection': Decimal('5892.15686274509803921568627'),
             'ideal_media_spend': Decimal('535.6209150326797385620915033'),
+            'ideal_daily_media_spend': Decimal('535.6209150326797385620915033'),
             'attributed_media_spend': Decimal('4000.0000'),
             'allocated_media_budget': Decimal('16068.62745098039215686274510'),
             'pacing': Decimal('746.7968273337400854179377669'),
@@ -79,6 +81,7 @@ class ProjectionsTestCase(test.TestCase):
         self.assertEqual(stats.row(1), {
             'total_fee_projection': Decimal('3999.9990'),
             'ideal_media_spend': Decimal('8034.313725490196078431372550'),
+            'ideal_daily_media_spend': Decimal('535.6209150326797385620915033'),
             'attributed_media_spend': Decimal('20000.0000'),
             'allocated_media_budget': Decimal('16068.62745098039215686274510'),
             'pacing': Decimal('248.9322757779133618059792556'),
@@ -97,6 +100,7 @@ class ProjectionsTestCase(test.TestCase):
 
         self.assertEqual(stats.row(1), {
             'ideal_media_spend': Decimal('4784.313725490196078431372549'),
+            'ideal_daily_media_spend': Decimal('318.9542483660130718954248366'),
             'attributed_media_spend': Decimal('10000.0000'),
             'allocated_media_budget': Decimal('9568.627450980392156862745099'),
             'pacing': Decimal('209.0163934426229508196721311'),
@@ -107,6 +111,7 @@ class ProjectionsTestCase(test.TestCase):
 
         self.assertEqual(stats.row(2), {
             'ideal_media_spend': Decimal('3250.000000000000000000000000'),
+            'ideal_daily_media_spend': Decimal('216.6666666666666666666666667'),
             'attributed_media_spend': Decimal('10000.0000'),
             'allocated_media_budget': Decimal('6500.000000000000000000000001'),
             'pacing': Decimal('307.6923076923076923076923077'),
@@ -308,6 +313,7 @@ class ProjectionsTestCase(test.TestCase):
         self.assertEqual(stats.row(1), {
             'total_fee_projection': Decimal('4365.68627450980392156862745'),
             'ideal_media_spend': Decimal('3489.355742296918767507002803'),
+            'ideal_daily_media_spend': Decimal('581.5592903828197945845004671'),
             'attributed_media_spend': Decimal('20000.0000'),
             'allocated_media_budget': Decimal('12212.74509803921568627450981'),
             'pacing': Decimal('573.1717106847555591233844422'),
@@ -326,6 +332,7 @@ class ProjectionsTestCase(test.TestCase):
 
         self.assertEqual(stats.row(1), {
             'ideal_media_spend': Decimal('2189.355742296918767507002801'),
+            'ideal_daily_media_spend': Decimal('364.8926237161531279178338002'),
             'attributed_media_spend': Decimal('10000.0000'),
             'allocated_media_budget': Decimal('7662.745098039215686274509805'),
             'pacing': Decimal('456.7553735926305015353121802'),
@@ -336,6 +343,7 @@ class ProjectionsTestCase(test.TestCase):
 
         self.assertEqual(stats.row(2), {
             'ideal_media_spend': Decimal('1300.000000000000000000000000'),
+            'ideal_daily_media_spend': Decimal('216.6666666666666666666666667'),
             'attributed_media_spend': Decimal('10000.0000'),
             'allocated_media_budget': Decimal('4550.000000000000000000000001'),
             'pacing': Decimal('769.2307692307692307692307692'),
@@ -357,6 +365,8 @@ class ProjectionsTestCase(test.TestCase):
 
         self.assertEqual(stats.total('ideal_media_spend'),
                          Decimal('8034.313725490196078431372549'))
+        self.assertEqual(stats.total('ideal_daily_media_spend'),
+                         Decimal('535.6209150326797385620915033'))
         self.assertEqual(stats.total('attributed_media_spend'),
                          Decimal('20000.0000'))
         self.assertEqual(stats.total('allocated_media_budget'),
@@ -408,6 +418,7 @@ class ProjectionsTestCase(test.TestCase):
             'attributed_media_spend': None,
             'flat_fee': Decimal('0.0'),
             'ideal_media_spend': None,
+            'ideal_daily_media_spend': None,
             'license_fee_projection': None,
             'media_spend_projection': None,
             'pacing': None,
@@ -416,6 +427,7 @@ class ProjectionsTestCase(test.TestCase):
         })
         self.assertEqual(dict(stats.totals), {
             'ideal_media_spend': None,
+            'ideal_daily_media_spend': None,
             'allocated_media_budget': Decimal('1285.294117647058823529411765'),
             'flat_fee': Decimal('0.0'),
             'media_spend_projection': None,

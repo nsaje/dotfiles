@@ -211,13 +211,13 @@ class Command(utils.command_helpers.ExceptionCommand):
         self._print('Pacing FAIL')
         overpaced = [
             (flying_campaigns[campaign_id], pacing)
-            for campaign_id, pacing, reason in alarms
+            for campaign_id, pacing, reason, projections in alarms
             if reason == 'high'
         ]
 
         underpaced = [
             (flying_campaigns[campaign_id], pacing)
-            for campaign_id, pacing, reason in alarms
+            for campaign_id, pacing, reason, projections in alarms
             if reason == 'low'
         ]
 

@@ -279,7 +279,8 @@ Zemanta
             campaign,
             ['prodops@zemanta.com'],
             Decimal('15.123456'),
-            'low'
+            'low',
+            {'ideal_daily_media_spend': Decimal('123.45678')},
         )
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, 'Your campaign is underpacing')
@@ -307,7 +308,8 @@ Zemanta''')
             campaign,
             ['prodops@zemanta.com'],
             Decimal('155.123456'),
-            'high'
+            'high',
+            {'ideal_daily_media_spend': Decimal('123.45678')},
         )
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, 'Your campaign is overpacing')
