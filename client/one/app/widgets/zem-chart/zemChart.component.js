@@ -51,7 +51,14 @@ angular.module('one.widgets').component('zemChart', {
         function subscribeToEvents () {
             var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(loadData);
             var dataFilterUpdateHandler = zemDataFilterService.onDataFilterUpdate(loadData);
-            var selectionUpdateHandler = zemSelectionService.onSelectionUpdate(loadData);
+
+            var oldSelection = zemSelectionService.getSelection();
+            var selectionUpdateHandler = zemSelectionService.onSelectionUpdate(function () {
+                if (angular.equals(oldSelection, zemSelectionService.getSelection())) return;
+                oldSelection = zemSelectionService.getSelection();
+                loadData();
+            });
+
             $scope.$on('$destroy', function () {
                 dateRangeUpdateHandler();
                 dataFilterUpdateHandler();
