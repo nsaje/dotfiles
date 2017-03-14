@@ -170,7 +170,7 @@ def send_autopilot_changes_email(campaign, emails, changes_data):
             u'Zemanta <{}>'.format(automation.autopilot_settings.AUTOPILOT_EMAIL),
             emails,
             fail_silently=False,
-            html_message=format_template(subject, body)
+            html_message=format_template(subject, body, agency=campaign.account.agency)
         )
     except Exception as e:
         logger.exception(u'Autopilot e-mail for campaign %s to %s was not sent' +
@@ -215,7 +215,7 @@ def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
             u'Zemanta <{}>'.format(automation.autopilot_settings.AUTOPILOT_EMAIL),
             emails,
             fail_silently=False,
-            html_message=format_template(subject, body)
+            html_message=format_template(subject, body, agency=campaign.account.agency)
         )
     except Exception as e:
         logger.exception(u'Autopilot e-mail for initialising budget autopilot on an adroup in ' +

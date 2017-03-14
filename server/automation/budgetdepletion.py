@@ -91,7 +91,7 @@ def _send_depleting_budget_notification_email(
             'Zemanta <{}>'.format(automation.settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL),
             emails,
             fail_silently=False,
-            html_message=format_template(subject, body)
+            html_message=format_template(subject, body, agency=campaign.account.agency)
         )
     except Exception as e:
         logger.exception(u'Budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:',
@@ -134,7 +134,7 @@ def _send_campaign_stopped_notification_email(
             'Zemanta <{}>'.format(automation.settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL),
             emails,
             fail_silently=False,
-            html_message=format_template(subject, body)
+            html_message=format_template(subject, body, agency=campaign.account.agency)
         )
     except Exception as e:
         logger.exception('Campaign stop because of budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:',

@@ -24,6 +24,10 @@ from utils import dates_helper
 
 logger = logging.getLogger(__name__)
 
+WHITELABEL_PRODUCTS = {
+    dash.constants.Whitelabel.GREENPARK: 'Telescope'
+}
+
 
 def _lookup_whitelabel(user=None, agency=None):
     if user and not agency:
@@ -33,6 +37,13 @@ def _lookup_whitelabel(user=None, agency=None):
     if agency:
         return agency.whitelabel
     return None
+
+
+def _adjust_product_name(whitelabel, text):
+    if whitelabel not in WHITELABEL_PRODUCTS:
+        return text
+    new_product_name = WHITELABEL_PRODUCTS[whitelabel]
+    return text.replace('Zemanta One', new_product_name).replace('Zemanta', new_product_name)
 
 
 def prepare_recipients(email_text):
@@ -51,6 +62,8 @@ def format_template(subject, content, user=None, agency=None):
     whitelabel = _lookup_whitelabel(user, agency)
     if whitelabel:
         template_file = 'whitelabel/{}/email.html'.format(whitelabel)
+        subject = _adjust_product_name(whitelabel, subject)
+        content = _adjust_product_name(whitelabel, content)
     return render_to_string(template_file, {
         'subject': subject,
         'content': '<p>' + '</p><p>'.join(re.split(r'\n+', content)) + '</p>'

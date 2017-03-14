@@ -467,3 +467,26 @@ class FormatTemplateTestCase(TestCase):
                                      user=self.whitelabel_agency_user)
         mock_render.assert_called_with('email.html',
                                        {'content': '<p>Body</p>', 'subject': 'Subject'})
+
+    def test_product_name_subject(self, mock_render):
+        email_helper.format_template('Subject Zemanta', 'Body', user=self.whitelabel_agency_user)
+        mock_render.assert_called_with('whitelabel/greenpark/email.html',
+                                       {'content': '<p>Body</p>', 'subject': 'Subject Telescope'})
+
+    def test_product_name_subject_long(self, mock_render):
+        email_helper.format_template('Subject Zemanta One', 'Body', user=self.whitelabel_agency_user)
+        mock_render.assert_called_with('whitelabel/greenpark/email.html',
+                                       {'content': '<p>Body</p>', 'subject': 'Subject Telescope'})
+
+    def test_product_name_body(self, mock_render):
+        email_helper.format_template('Subject', 'Body Zemanta, Zemanta',
+                                     user=self.whitelabel_agency_user)
+        mock_render.assert_called_with('whitelabel/greenpark/email.html',
+                                       {'content': '<p>Body Telescope, Telescope</p>',
+                                        'subject': 'Subject'})
+
+    def test_product_name_body_long(self, mock_render):
+        email_helper.format_template('Subject', 'Body: Zemanta One',
+                                     user=self.whitelabel_agency_user)
+        mock_render.assert_called_with('whitelabel/greenpark/email.html',
+                                       {'content': '<p>Body: Telescope</p>', 'subject': 'Subject'})

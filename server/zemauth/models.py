@@ -293,7 +293,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             message,
             from_email or 'Zemanta <{}>'.format(settings.FROM_EMAIL),
             [self.email],
-            html_message=utils.email_helper.format_template(subject, message),
+            html_message=utils.email_helper.format_template(subject, message, user=self),
             **kwargs
         )
 
