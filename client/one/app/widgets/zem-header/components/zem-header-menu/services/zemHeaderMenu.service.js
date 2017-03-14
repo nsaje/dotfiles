@@ -34,16 +34,16 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
             isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_see_new_pixels_view'),
         },
         {
-            text: 'Scheduled reports',
-            callback: navigateToScheduledReportsView,
-            isAvailable: zemPermissions.hasPermission('zemauth.can_see_new_scheduled_reports'),
-            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_see_new_scheduled_reports'),
-        },
-        {
             text: 'Publisher groups',
             callback: navigateToPublisherGroupsView,
             isAvailable: isPublisherGroupsActionAvailable,
             isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_see_publisher_groups_ui'),
+        },
+        {
+            text: 'Scheduled reports',
+            callback: navigateToScheduledReportsView,
+            isAvailable: zemPermissions.hasPermission('zemauth.can_see_new_scheduled_reports'),
+            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_see_new_scheduled_reports'),
         },
         {
             text: 'User permissions',
