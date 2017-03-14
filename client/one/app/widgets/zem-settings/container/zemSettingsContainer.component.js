@@ -9,7 +9,7 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         api: '<',
     },
     templateUrl: '/app/widgets/zem-settings/container/zemSettingsContainer.component.html',
-    controller: function ($transclude, $timeout, $element, $q, zemPermissions, zemUtils, zemPubSubService, zemEntityService, zemNavigationService, zemNavigationNewService) { // eslint-disable-line max-len
+    controller: function ($transclude, $timeout, $element, $q, zemPermissions, zemUtils, zemPubSubService, zemEntityService, zemNavigationService, zemNavigationNewService, $state) { // eslint-disable-line max-len
         var STATUS_CODE_NONE = 0;
         var STATUS_CODE_IN_PROGRESS = 1;
         var STATUS_CODE_ERROR = 2;
@@ -134,7 +134,12 @@ angular.module('one.widgets').component('zemSettingsContainer', {
             if (!$ctrl.entity.canArchive) return;
             $ctrl.status.code = STATUS_CODE_IN_PROGRESS;
             zemEntityService.executeAction(constants.entityAction.ARCHIVE, $ctrl.entityType, $ctrl.entity.id)
-            .then(updateNavigationCache).then(close);
+            .then(updateNavigationCache).then(function () {
+                close();
+                if ($state.includes('v2.analytics')) {
+                    zemNavigationNewService.refreshState();
+                }
+            });
         }
 
         function restore () {
@@ -142,8 +147,8 @@ angular.module('one.widgets').component('zemSettingsContainer', {
             $ctrl.status.code = STATUS_CODE_IN_PROGRESS;
             zemEntityService.executeAction(constants.entityAction.RESTORE, $ctrl.entityType, $ctrl.entity.id)
             .then(updateNavigationCache).then(load).then(function () {
-                zemNavigationNewService.refreshState();
                 close();
+                zemNavigationNewService.refreshState();
             });
         }
 

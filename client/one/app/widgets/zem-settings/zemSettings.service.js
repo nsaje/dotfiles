@@ -19,14 +19,18 @@ angular.module('one.widgets').service('zemSettingsService', function ($rootScope
 
     function init () {
         handleStateChange();
+        handleLocationChange();
+
         $rootScope.$on('$stateChangeSuccess', handleStateChange);
         $rootScope.$on('$locationChangeSuccess', handleLocationChange);
 
-        var unsubscribe = zemNavigationNewService.onActiveEntityChange(function () {
-            // Wait until active entity is initialized and then check if settings needs to be opened
-            handleLocationChange();
-            unsubscribe();
-        });
+        if (zemNavigationNewService.getActiveEntity() === undefined) {
+            var unsubscribe = zemNavigationNewService.onActiveEntityChange(function () {
+                // Wait until active entity is initialized and then check if settings needs to be opened
+                handleLocationChange();
+                unsubscribe();
+            });
+        }
     }
 
     function handleStateChange () {

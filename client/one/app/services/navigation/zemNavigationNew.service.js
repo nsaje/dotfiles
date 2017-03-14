@@ -193,7 +193,10 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
 
         var breakdown = $state.params.breakdown;
         var isAdGroup = entity && entity.type === constants.entityType.AD_GROUP;
-        if (breakdown === constants.breakdownStateParam.PUBLISHERS && !isAdGroup) {
+        var isCampaign = entity && entity.type === constants.entityType.CAMPAIGN;
+        if (breakdown === constants.breakdownStateParam.PUBLISHERS && !isAdGroup ||
+            breakdown === constants.breakdownStateParam.INSIGHTS && !isCampaign
+        ) {
             breakdown = null;
         }
 
@@ -224,7 +227,11 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
     }
 
     function refreshState () {
-        navigateTo(getActiveEntity());
+        if ($state.includes('v2')) {
+            $state.reload();
+        } else {
+            navigateTo(getActiveEntity());
+        }
     }
 
     function navigateTo (entity, params) {
@@ -241,6 +248,22 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
         $state.go(state, params);
     }
 
+    function redirectArchived (entity) {
+        if (!entity) return;
+
+        var level = constants.entityTypeToLevelMap[entity.type];
+        var params = {
+            level: constants.levelToLevelStateParamMap[level],
+            id: entity.id,
+        };
+
+        if (entity.data && entity.data.archived && !$state.includes('v2.archived')) {
+            return $state.go('v2.archived', params);
+        } else if (entity.data && !entity.data.archived && $state.includes('v2.archived')) {
+            return $state.go('v2.analytics', params);
+        }
+    }
+
     function getEntityById (type, id) {
         if (!hierarchyRoot) return null;
         if (type === constants.entityType.ACCOUNT) return hierarchyRoot.ids.accounts[id];
@@ -251,16 +274,7 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
     }
 
     function setActiveEntity (entity) {
-        if ($state.includes('v2')) {
-            if (entity && entity.data && entity.data.archived && !$state.includes('v2.archived')) {
-                var level = constants.entityTypeToLevelMap[entity.type];
-                var params = {
-                    level: constants.levelToLevelStateParamMap[level],
-                    id: entity.id,
-                };
-                return $state.go('v2.archived', params);
-            }
-        }
+        if ($state.includes('v2') && redirectArchived(entity)) return;
 
         if (activeEntity === entity) return;
         activeEntity = entity;

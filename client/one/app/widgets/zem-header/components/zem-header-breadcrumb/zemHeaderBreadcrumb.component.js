@@ -14,6 +14,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
             update();
 
             stateChangeUpdateHandler = $rootScope.$on('$stateChangeSuccess', update);
+            stateChangeUpdateHandler = $rootScope.$on('$locationChangeSuccess', update);
             activeEntityUpdateHandler = zemNavigationNewService.onActiveEntityChange(update);
             // FIXME: Use Entity services for name changes
             hierarchyUpdateHandler = zemNavigationNewService.onHierarchyUpdate(update);
@@ -51,7 +52,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
             if (administrationPage) $ctrl.breadcrumb.push(administrationPage);
 
             var includeQueryParmas = true;
-            var reuseNestedState = !administrationPage;
+            var reuseNestedState = !administrationPage && !$state.includes('v2');
             while (entity) {
                 $ctrl.breadcrumb.unshift({
                     name: entity.name,

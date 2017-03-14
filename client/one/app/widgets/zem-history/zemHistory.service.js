@@ -22,6 +22,8 @@ angular.module('one.widgets').service('zemHistoryService', function ($rootScope,
     //
     function init () {
         handleStateChange();
+        handleLocationChange();
+
         $rootScope.$on('$stateChangeSuccess', handleStateChange);
         $rootScope.$on('$locationChangeSuccess', handleLocationChange);
     }

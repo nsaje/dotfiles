@@ -1,14 +1,10 @@
-angular.module('one.services').service('zemInitializationService', function ($q, zemUserService, zemStateGuardService, zemMediaSourcesService, zemNavigationNewService, zemNavigationService, zemDataFilterService, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemDesignHelpersService) { // eslint-disable-line max-len
+angular.module('one.services').service('zemInitializationService', function ($q, zemUserService, zemMediaSourcesService, zemNavigationNewService, zemNavigationService, zemDataFilterService, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemDesignHelpersService) { // eslint-disable-line max-len
     this.initApp = initApp;
     this.initSequence = initSequence;
 
     var sequence;
 
     function initApp () {
-        // NOTE: zemStateGuardService should init first to set a guard check to $stateChangeStart event before any such
-        // event is emitted from ui-router
-        zemStateGuardService.init();
-
         zemNavigationNewService.init();
         zemMediaSourcesService.init();
         zemNavigationService.reload();
