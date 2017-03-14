@@ -111,7 +111,7 @@ def google_callback(request, *args, **kwargs):
 
 
 def _fail_response(message='Google authentication failed.'):
-    url = reverse('zemauth.views.login')
+    url = reverse('signin')
     if message:
         message = urllib.urlencode({'gauth_error': message or ""})
         url += "?" + message
