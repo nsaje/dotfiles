@@ -20,6 +20,12 @@
 <link type="text/css" rel="stylesheet" href="{{ staticUrl }}/one/zemanta-one.min.css" />
 {% endif %}
 <script type="text/javascript" src="{{ staticUrl }}/one/zemanta-one.lib.min.js"></script>
+
+<!-- Sentry/Raven config - should be included after Angular, but before application code. -->
+<script src="https://cdn.ravenjs.com/3.12.1/angular/raven.min.js" crossorigin="anonymous"></script>
+<script>Raven.config('https://5443376e0b054647b8c8759811ad4d5b@sentry.io/147373').install();</script>
+<!-- ----------------------------------------------------------------------------------- -->
+
 <script type="text/javascript" src="{{ staticUrl }}/one/zemanta-one.min.js"></script>
 {% endif %}
 
