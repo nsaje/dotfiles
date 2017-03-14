@@ -268,13 +268,13 @@ def send_password_reset_email(user, request):
     _send_email_to_user(user, request, subject, body)
 
 
-def send_email_to_new_user(user, request):
+def send_email_to_new_user(user, request, agency=None):
     args = {
         'user': user,
         'link_url': _generate_password_reset_url(user, request),
     }
     subject, body, _ = format_email(dash.constants.EmailTemplateType.USER_NEW, **args)
-    return _send_email_to_user(user, request, subject, body)
+    return _send_email_to_user(user, request, subject, body, agency=agency)
 
 
 def _generate_password_reset_url(user, request):
@@ -288,7 +288,7 @@ def _generate_password_reset_url(user, request):
     return url.replace('http://', 'https://')
 
 
-def _send_email_to_user(user, request, subject, body):
+def _send_email_to_user(user, request, subject, body, agency=None):
     try:
         send_mail(
             subject,
@@ -296,7 +296,7 @@ def _send_email_to_user(user, request, subject, body):
             'Zemanta <{}>'.format(settings.FROM_EMAIL),
             [user.email],
             fail_silently=False,
-            html_message=format_template(subject, body, user=user)
+            html_message=format_template(subject, body, user=user, agency=agency)
         )
     except Exception as e:
         if user is None:
