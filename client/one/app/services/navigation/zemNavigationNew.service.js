@@ -21,7 +21,7 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
 
     function init () {
         zemNavigationService.onUpdate($scope, handleDataUpdate);
-        $rootScope.$on('$stateChangeSuccess', handleStateChange);
+        $rootScope.$on('$zemStateChangeSuccess', handleStateChange);
     }
 
     function handleDataUpdate () {

@@ -52,7 +52,7 @@ angular.module('one.services').service('zemSelectionService', function ($rootSco
     function init () {
         selection = initFromUrlParams();
 
-        $rootScope.$on('$stateChangeStart', function () {
+        $rootScope.$on('$zemStateChangeStart', function () {
             clear();
             pubSub.notify(EVENTS.ON_SELECTION_UPDATE, getSelection());
         });

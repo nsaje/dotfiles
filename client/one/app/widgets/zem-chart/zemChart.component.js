@@ -24,6 +24,15 @@ angular.module('one.widgets').component('zemChart', {
             }
         };
 
+        $ctrl.$onChanges = function (changes) {
+            if (changes.breakdown) {
+                // If breakdown changes we need to replace chartDataService
+                // It is not needed to refresh data immediately, therefor
+                // new one is created when data refresh is requested
+                $ctrl.chartDataService = null;
+            }
+        };
+
         function initialize () {
             $ctrl.config = config;
 
@@ -39,7 +48,6 @@ angular.module('one.widgets').component('zemChart', {
             loadData();
         }
 
-
         function subscribeToEvents () {
             var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(loadData);
             var dataFilterUpdateHandler = zemDataFilterService.onDataFilterUpdate(loadData);
@@ -52,6 +60,11 @@ angular.module('one.widgets').component('zemChart', {
         }
 
         function updateDataSource () {
+            if (!$ctrl.chartDataService) {
+                $ctrl.chartDataService = zemChartService.createDataService(
+                    $ctrl.chart, $ctrl.level, $ctrl.breakdown, $ctrl.entityId);
+            }
+
             var metrics = [$ctrl.metrics.metric1.value];
             if ($ctrl.metrics.metric2.value) metrics.push($ctrl.metrics.metric2.value);
             $ctrl.chartDataService.setMetrics(metrics);

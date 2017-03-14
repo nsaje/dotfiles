@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemGridContainerTabs', {
         tabs: '<',
         entity: '<',
     },
-    controller: function ($state) {
+    controller: function ($rootScope, $state) {
         var $ctrl = this;
 
         $ctrl.navigateTo = navigateTo;
@@ -18,11 +18,17 @@ angular.module('one.widgets').component('zemGridContainerTabs', {
             var levelStateParam = constants.levelToLevelStateParamMap[level];
             var breakdownStateParam = constants.breakdownToBreakdownStateParamMap[option.breakdown];
 
+            // [WORKAROUND] Silently change state (notify: false) to avoid component reinitialization
+            // and notify directly with $zemStateChangeStart and $zemStateChangeSuccess
+            $rootScope.$broadcast('$zemStateChangeStart');
             $state.go('v2.analytics', {
                 id: id,
                 level: levelStateParam,
                 breakdown: breakdownStateParam
-            }, {notify: false, location: 'replace'});
+            }, {notify: false, location: 'replace'}).then(function () {
+                $rootScope.$broadcast('$zemStateChangeSuccess');
+            });
         }
     }
 });
+

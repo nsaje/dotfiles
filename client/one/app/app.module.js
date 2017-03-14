@@ -57,12 +57,23 @@ angular.module('one').run(function ($state, $rootScope, $location, config, zemIn
     $rootScope.config = config;
     $rootScope.$state = $state;
 
+    // [WORKAROUND] Wrap state change event into custom one and use in app
+    // This enables us to navigate to states without reinitialization (notify: false) but
+    // still using state change events to refresh depended services and components
     $rootScope.$on('$stateChangeStart', function () {
+        $rootScope.$broadcast('$zemStateChangeStart');
+    });
+    $rootScope.$on('$stateChangeSuccess', function () {
+        $rootScope.$broadcast('$zemStateChangeSuccess');
+    });
+    // [END WORKAROUND]
+
+    $rootScope.$on('$zemStateChangeStart', function () {
         // Save location.search so we can add it back after transition is done
         if (!locationSearch) locationSearch = $location.search();
     });
 
-    $rootScope.$on('$stateChangeSuccess', function () {
+    $rootScope.$on('$zemStateChangeSuccess', function () {
         // Restore all query string parameters back to $location.search
         // and keep the new ones if applied in the process of changing state
         // (e.g. params passed through ui-router $state)

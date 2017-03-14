@@ -7,7 +7,7 @@ angular.module('one.views').controller('zemMainView', function ($scope, $q, $sta
         $ctrl.hasPermission = zemPermissions.hasPermission;
 
         checkStateChange();
-        $scope.$on('$stateChangeSuccess', checkStateChange);
+        $scope.$on('$zemStateChangeSuccess', checkStateChange);
     }
 
     var checksPromise;

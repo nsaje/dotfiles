@@ -122,7 +122,7 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
         zemAgenciesService.onAgenciesUpdate(refreshAvailableAgencies);
 
         // Collapse filter selector when user navigates to different view and update visible categories and options
-        $rootScope.$on('$stateChangeSuccess', function () {
+        $rootScope.$on('$zemStateChangeSuccess', function () {
             zemFilterSelectorSharedService.setSelectorExpanded(false);
             pubSub.notify(EVENTS.ON_SECTIONS_UPDATE, getVisibleSections());
         });

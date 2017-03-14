@@ -21,7 +21,7 @@ angular.module('one.widgets').service('zemSettingsService', function ($rootScope
         handleStateChange();
         handleLocationChange();
 
-        $rootScope.$on('$stateChangeSuccess', handleStateChange);
+        $rootScope.$on('$zemStateChangeSuccess', handleStateChange);
         $rootScope.$on('$locationChangeSuccess', handleLocationChange);
 
         if (zemNavigationNewService.getActiveEntity() === undefined) {
