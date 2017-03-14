@@ -918,11 +918,11 @@ def _calculate_daily_source_caps(
 
     sorted_ad_group_sources = sorted(
         active_ad_group_sources,
-        key=lambda x: yesterday_spends.get((x.ad_group_id, x.source_id), DECIMAL_ZERO),
+        key=lambda x: yesterday_spends.get((x.ad_group_id, x.source_id), 0),
     )
 
     total_yesterday_spend = sum(
-        yesterday_spends.get((ags.ad_group_id, ags.source_id), DECIMAL_ZERO)
+        decimal.Decimal(yesterday_spends.get((ags.ad_group_id, ags.source_id), 0))
         for ags in active_ad_group_sources if ags.ad_group_id == ad_group_settings.ad_group_id
     ) + b1_group_yesterday_spend
     user_daily_budgets_sum = _sum_daily_budget(user_daily_budget_per_ags, user_group_daily_budget_per_ag)
@@ -937,7 +937,7 @@ def _calculate_daily_source_caps(
         if ags.source.source_type.min_daily_budget:
             min_source_cap = max(min_source_cap, ags.source.source_type.min_daily_budget)
 
-        source_yesterday_spend = yesterday_spends.get((ags.ad_group_id, ags.source_id), DECIMAL_ZERO)
+        source_yesterday_spend = decimal.Decimal(yesterday_spends.get((ags.ad_group_id, ags.source_id), 0))
         user_source_daily_budget = user_daily_budget_per_ags.get(ags.id)
 
         if total_yesterday_spend:
