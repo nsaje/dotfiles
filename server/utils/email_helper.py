@@ -274,6 +274,7 @@ def send_email_to_new_user(user, request, agency=None):
         'link_url': _generate_password_reset_url(user, request),
     }
     subject, body, _ = format_email(dash.constants.EmailTemplateType.USER_NEW, **args)
+    subject = _adjust_product_name(_lookup_whitelabel(user=user, agency=agency), subject)
     return _send_email_to_user(user, request, subject, body, agency=agency)
 
 
