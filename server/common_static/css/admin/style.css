@@ -1,3 +1,7 @@
 .model-adgroup .field-exclusion_interest_targeting {
     border: 1px solid red;
 }
+
+.model-adgroup .field-exclusion_target_regions {
+    border: 1px solid red;
+}

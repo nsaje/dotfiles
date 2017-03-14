@@ -1356,8 +1356,11 @@ class CampaignSettings(SettingsBase):
                               for x in value)
         elif prop_name in ('target_regions', 'exclusion_target_regions'):
             if value:
-                names = Geolocation.objects.filter(key__in=value).values_list('name', flat=True)
-                value = ', '.join(names)
+                names = list(Geolocation.objects.filter(key__in=value).values_list('name', flat=True))
+                zips = [v for v in value if ':' in v]
+                if zips:
+                    names.append('%s postal codes' % len(zips))
+                value = '; '.join(names)
             else:
                 if prop_name == 'target_regions':
                     value = 'worldwide'
@@ -2635,8 +2638,11 @@ class AdGroupSettings(SettingsBase):
                               for x in value)
         elif prop_name in ('target_regions', 'exclusion_target_regions'):
             if value:
-                names = Geolocation.objects.filter(key__in=value).values_list('name', flat=True)
-                value = ', '.join(names)
+                names = list(Geolocation.objects.filter(key__in=value).values_list('name', flat=True))
+                zips = [v for v in value if ':' in v]
+                if zips:
+                    names.append('%s postal codes' % len(zips))
+                value = '; '.join(names)
             else:
                 if prop_name == 'target_regions':
                     value = 'worldwide'
@@ -4869,6 +4875,10 @@ class CustomHack(models.Model):
 
 
 class Geolocation(models.Model):
+
+    class Meta:
+        ordering = ('-type',)
+
     key = models.CharField(
         primary_key=True,
         max_length=20
@@ -4882,3 +4892,6 @@ class Geolocation(models.Model):
         blank=False,
         null=False
     )
+
+    def __str__(self):
+        return self.name

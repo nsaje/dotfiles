@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'analytics',
     'integrations.bizwire',
+    'searchableselect',
 ]
 
 MIDDLEWARE_CLASSES = [
