@@ -14,7 +14,7 @@ angular.module('one.widgets').component('zemPublisherGroupTargeting', {
         $ctrl.texts = {
             selectedIncludedTitle: 'Whitelisted publisher groups',
             selectedExcludedTitle: 'Blacklisted publisher groups',
-            selectTargetingButton: 'Blacklist publisher group',
+            selectTargetingButton: 'Publisher group',
             noChoice: 'No available publisher groups',
         };
         $ctrl.publisherGroups = null;
