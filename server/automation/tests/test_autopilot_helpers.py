@@ -1,5 +1,5 @@
 from decimal import Decimal
-from mock import patch, MagicMock
+from mock import patch, MagicMock, ANY
 
 from django import test
 
@@ -72,8 +72,8 @@ class AutopilotHelpersTestCase(test.TestCase):
 
     @patch('utils.k1_helper.update_ad_group')
     @patch('dash.models.AdGroupSettings.copy_settings')
-    @patch('dash.views.helpers.adjust_adgroup_sources_cpcs')
-    def test_update_ad_group_b1_sources_group_values(self, mock_adjust_adgroup_sources_cpcs,
+    @patch('dash.views.helpers.set_ad_group_sources_cpcs')
+    def test_update_ad_group_b1_sources_group_values(self, mock_set_ad_group_sources_cpcs,
                                                      mock_copy_settings, mock_k1_update_ad_group):
         ag = dash.models.AdGroup.objects.get(id=1)
 
@@ -89,8 +89,8 @@ class AutopilotHelpersTestCase(test.TestCase):
 
         mock_copy_settings.assert_called_once()
 
-        mock_adjust_adgroup_sources_cpcs.assert_called_with(ag, current_ag_settings, True, True)
-        mock_adjust_adgroup_sources_cpcs.assert_called_once()
+        mock_set_ad_group_sources_cpcs.assert_called_with(ANY, ag, current_ag_settings)
+        mock_set_ad_group_sources_cpcs.assert_called_once()
 
         mock_k1_update_ad_group.assert_called_once()
 

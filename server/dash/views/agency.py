@@ -129,32 +129,31 @@ class AdGroupSettings(api_common.BaseApiView):
                     new_settings,
                     campaign_settings,
                 )
+
+            if self.should_initialize_budget_autopilot(changes, new_settings):
+                autopilot_plus.initialize_budget_autopilot_on_ad_group(new_settings, send_mail=True)
+
+            if self.should_set_cpc_autopilot_initial_cpcs(current_settings, new_settings):
+                self.set_cpc_autopilot_initial_cpcs(request, ad_group, new_settings)
+
+            ad_group_sources_cpcs = helpers.get_adjusted_ad_group_sources_cpcs(ad_group, new_settings)
             try:
-                change_b1_rtb_sources_cpcs = ('b1_sources_group_cpc_cc' in changes or
-                                              changes.get('b1_sources_group_enabled'))
-                helpers.adjust_adgroup_sources_cpcs(
-                    ad_group, new_settings,
-                    request.user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc'),
-                    change_b1_rtb_sources_cpcs)
+                helpers.validate_ad_group_sources_cpc_constraints(ad_group_sources_cpcs)
             except cpc_constraints.ValidationError as err:
                 raise exc.ValidationError(errors={
                     'b1_sources_group_cpc_cc': list(err)
                 })
+            helpers.set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, new_settings)
 
-            k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
             new_settings.save(
                 request,
                 action_type=constants.HistoryActionType.SETTINGS_CHANGE)
+            k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
 
             changes_text = models.AdGroupSettings.get_changes_text(
                 current_settings, new_settings, request.user, separator='\n')
 
             email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
-            if (('autopilot_daily_budget' in changes or 'autopilot_state' in changes and
-                 changes['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET) or
-                (new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and
-                    'b1_sources_group_state' in changes)):
-                autopilot_plus.initialize_budget_autopilot_on_ad_group(new_settings, send_mail=True)
 
         response = {
             'settings': self.get_dict(request, new_settings, ad_group),
@@ -164,6 +163,21 @@ class AdGroupSettings(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
+
+    def should_initialize_budget_autopilot(self, changes, new_settings):
+        if new_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+            return False
+
+        ap_budget_fields = ['autopilot_daily_budget', 'autopilot_state', 'b1_sources_group_state']
+        if not any(field in changes for field in ap_budget_fields):
+            return False
+
+        return True
+
+    def should_set_cpc_autopilot_initial_cpcs(self, current_settings, new_settings):
+        return current_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
+            new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC and\
+            new_settings.b1_sources_group_enabled
 
     def validate_autopilot_settings(self, request, settings, new_settings):
         if new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
@@ -275,6 +289,27 @@ class AdGroupSettings(api_common.BaseApiView):
             new_settings.b1_sources_group_cpc_cc = min(changes.get('cpc_cc'), new_settings.b1_sources_group_cpc_cc)
 
         return current_settings.get_setting_changes(new_settings), current_settings, new_settings
+
+    def set_cpc_autopilot_initial_cpcs(self, request, ad_group, new_ad_group_settings):
+        all_b1_sources = ad_group.adgroupsource_set.filter(
+            source__source_type__type=constants.SourceType.B1
+        )
+        active_b1_sources = all_b1_sources.filter_active()
+        active_b1_sources_settings = models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__in=active_b1_sources
+        ).group_current_settings()
+
+        if active_b1_sources.count() < 1:
+            return
+
+        avg_cpc_cc = (
+            sum(agss.cpc_cc for agss in active_b1_sources_settings) /
+            len(active_b1_sources_settings)
+        )
+
+        new_ad_group_settings.b1_sources_group_cpc_cc = avg_cpc_cc
+        new_ad_group_sources_cpcs = {ad_group_source: avg_cpc_cc for ad_group_source in all_b1_sources}
+        helpers.set_ad_group_sources_cpcs(new_ad_group_sources_cpcs, ad_group, new_ad_group_settings)
 
     def validate_state_change(self, ad_group, current_settings, new_settings, campaign_settings):
         if current_settings.state == new_settings.state:

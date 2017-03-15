@@ -31,7 +31,6 @@ class AdGroupSettingsTest(TestCase):
     fixtures = ['test_api', 'test_views', 'test_non_superuser', 'test_geolocations']
 
     def setUp(self):
-        self.maxDiff = None
         self.settings_dict = {
             'settings': {
                 'state': constants.AdGroupRunningStatus.INACTIVE,
@@ -61,7 +60,7 @@ class AdGroupSettingsTest(TestCase):
                 'b1_sources_group_enabled': True,
                 'b1_sources_group_daily_budget': '500.0000',
                 'b1_sources_group_state': 1,
-                'b1_sources_group_cpc_cc': '0.500',
+                'b1_sources_group_cpc_cc': '0.25',
                 'whitelist_publisher_groups': [1],
                 'blacklist_publisher_groups': [1],
             }
@@ -715,6 +714,123 @@ class AdGroupSettingsTest(TestCase):
                 # All b1 sources cpcs are adjusted to 0.05
                 if ags.source.source_type.type == constants.SourceType.B1:
                     self.assertTrue(cpc == Decimal('0.1'))
+
+            mock_insert_adgroup.assert_called_with(ad_group, ANY, ANY)
+
+    @patch('utils.redirector_helper.insert_adgroup')
+    @patch('utils.k1_helper.update_ad_group')
+    def test_full_autopilot_to_cpc_autopilot_transition(self, mock_k1_ping, mock_insert_adgroup):
+        with patch('utils.dates_helper.local_today') as mock_now:
+            # mock datetime so that budget is always valid
+            mock_now.return_value = datetime.date(2016, 1, 5)
+
+            ad_group = models.AdGroup.objects.get(pk=1)
+
+            old_settings = ad_group.get_current_settings()
+            self.assertIsNotNone(old_settings.pk)
+
+            old_settings = old_settings.copy_settings()
+            old_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+            old_settings.b1_sources_group_enabled = True
+            old_settings.b1_sources_group_cpc_cc = '0.25'
+            old_settings.save(None)
+
+            for ad_group_source in ad_group.adgroupsource_set.filter(
+                    source__source_type__type=constants.SourceType.B1):
+                ad_group_source_settings = ad_group_source.get_current_settings().copy_settings()
+                ad_group_source_settings.state = constants.AdGroupSettingsState.INACTIVE
+                ad_group_source_settings.save(None)
+
+            ad_group_source_1 = ad_group.adgroupsource_set.get(id=18)
+            ad_group_source_1_settings = ad_group_source_1.get_current_settings().copy_settings()
+            ad_group_source_1_settings.cpc_cc = '0.3'
+            ad_group_source_1_settings.state = constants.AdGroupSettingsState.ACTIVE
+            ad_group_source_1_settings.save(None)
+
+            ad_group_source_2 = ad_group.adgroupsource_set.get(id=1)
+            ad_group_source_2_settings = ad_group_source_2.get_current_settings().copy_settings()
+            ad_group_source_2_settings.cpc_cc = '0.13'
+            ad_group_source_2_settings.state = constants.AdGroupSettingsState.ACTIVE
+            ad_group_source_2_settings.save(None)
+
+            ad_group_source_3 = ad_group.adgroupsource_set.get(id=25)
+            ad_group_source_3_settings = ad_group_source_3.get_current_settings().copy_settings()
+            ad_group_source_3_settings.cpc_cc = '0.001'
+            ad_group_source_3_settings.save(None)
+
+            add_permissions(self.user, [
+                'settings_view',
+                'can_set_ad_group_max_cpc',
+                'can_set_adgroup_to_auto_pilot',
+                'can_view_retargeting_settings',
+                'can_target_custom_audiences',
+                'can_set_rtb_sources_as_one_cpc',
+            ])
+            new_settings = {}
+            new_settings.update(self.settings_dict)
+            new_settings['settings']['autopilot_state'] = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
+            new_settings['settings']['b1_sources_group_enabled'] = True
+
+            response = self.client.put(
+                reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps(new_settings),
+                follow=True
+            )
+            mock_k1_ping.assert_called_with(1, msg='AdGroupSettings.put')
+
+            self.assertEqual(json.loads(response.content), {
+                'data': {
+                    'action_is_waiting': False,
+                    'archived': False,
+                    'default_settings': {
+                        'target_devices': ['mobile'],
+                        'target_regions': ['NC', '501'],
+                        'exclusion_target_regions': [],
+                    },
+                    'settings': {
+                        'cpc_cc': '0.300',
+                        'max_cpm': '',
+                        'daily_budget_cc': '200.00',
+                        'end_date': str(datetime.date.today()),
+                        'id': '1',
+                        'campaign_id': '1',
+                        'name': 'Test ad group name',
+                        'start_date': '2015-05-01',
+                        'state': 2,
+                        'target_devices': ['desktop'],
+                        'target_regions': ['693', 'GB'],
+                        'exclusion_target_regions': [],
+                        'autopilot_state': constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
+                        'autopilot_daily_budget': '50.00',
+                        'retargeting_ad_groups': [2],
+                        'exclusion_retargeting_ad_groups': [9],
+                        'tracking_code': 'def=123',
+                        'autopilot_min_budget': '10',
+                        'autopilot_optimization_goal': None,
+                        'notes': 'Some note',
+                        'bluekai_targeting': ['and', 'bluekai:123', ['or', 'liveramp:123', 'outbrain:321']],
+                        'interest_targeting': ['fun', 'games'],
+                        'exclusion_interest_targeting': ['religion', 'weather'],
+                        'audience_targeting': [1],
+                        'exclusion_audience_targeting': [4],
+                        'redirect_pixel_urls': ["http://a.com/b.jpg", "http://a.com/c.jpg"],
+                        'redirect_javascript': "alert('a')",
+                        'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
+                        'b1_sources_group_enabled': True,
+                        'b1_sources_group_daily_budget': '500.0000',
+                        'b1_sources_group_state': 1,
+                        'b1_sources_group_cpc_cc': '0.2150',
+                        'whitelist_publisher_groups': [],  # no permission to set
+                        'blacklist_publisher_groups': [],  # no permission to set
+                        'landing_mode': False,
+                    }
+                },
+                'success': True
+            })
+
+            for ags in ad_group.adgroupsource_set.filter(source__source_type__type=constants.SourceType.B1):
+                agss = ags.get_current_settings()
+                self.assertEqual(Decimal('0.2150'), agss.cpc_cc)
 
             mock_insert_adgroup.assert_called_with(ad_group, ANY, ANY)
 
@@ -2706,7 +2822,6 @@ class AccountSettingsTest(TestCase):
             'can_modify_account_name',
             'can_modify_account_manager',
         ])
-        self.maxDiff = None
         user = User.objects.get(pk=2)
         agency = models.Agency.objects.get(pk=1)
         agency.users.add(user)
@@ -3989,7 +4104,6 @@ class CampaignContentInsightsTest(TestCase):
             }
         ]
 
-        self.maxDiff = None
         response = cis.get(fake_request(self.user()), 1)
         self.assertEqual(httplib.OK, response.status_code)
         self.assertDictEqual({

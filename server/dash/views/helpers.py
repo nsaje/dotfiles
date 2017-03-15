@@ -919,36 +919,55 @@ def add_source_to_ad_group(default_source_settings, ad_group):
     return ad_group_source
 
 
-@transaction.atomic
-def adjust_adgroup_sources_cpcs(ad_group, ad_group_settings,
-                                user_can_set_rtb_sources_as_one_cpc, change_b1_rtb_sources_cpcs):
-    for ags in ad_group.adgroupsource_set.all().select_related('source__source_type'):
-        curr_ags_settings = ags.get_current_settings()
-        proposed_cpc = curr_ags_settings.cpc_cc
-        if (change_b1_rtb_sources_cpcs and
-                user_can_set_rtb_sources_as_one_cpc and
-                ad_group_settings.b1_sources_group_enabled and
-                ags.source.source_type.type == constants.SourceType.B1 and
-                ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET):
-            proposed_cpc = ad_group_settings.b1_sources_group_cpc_cc
-        if ad_group_settings.cpc_cc and proposed_cpc > ad_group_settings.cpc_cc:
-            proposed_cpc = ad_group_settings.cpc_cc
+def get_adjusted_ad_group_sources_cpcs(ad_group, ad_group_settings):
+    adjusted_cpcs = {}
+    for ad_group_source in ad_group.adgroupsource_set.all().select_related('source__source_type', 'ad_group'):
+        proposed_cpc = ad_group_source.get_current_settings().cpc_cc
+        adjusted_cpc = _get_adjusted_ad_group_source_cpc(proposed_cpc, ad_group_source, ad_group_settings)
+        adjusted_cpcs[ad_group_source] = adjusted_cpc
+    return adjusted_cpcs
 
-        if proposed_cpc == curr_ags_settings.cpc_cc:
-            continue
+
+def validate_ad_group_sources_cpc_constraints(ad_group_sources_cpcs):
+    for ad_group_source, proposed_cpc in ad_group_sources_cpcs.items():
         if proposed_cpc:
-            cpc_constraints.validate_cpc(proposed_cpc, ad_group=ad_group, source=ags.source)
+            cpc_constraints.validate_cpc(proposed_cpc, ad_group=ad_group_source.ad_group, source=ad_group_source.source)
+
+
+@transaction.atomic
+def set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, ad_group_settings):
+    for ad_group_source, proposed_cpc in ad_group_sources_cpcs.items():
+        adjusted_cpc = _get_adjusted_ad_group_source_cpc(proposed_cpc, ad_group_source, ad_group_settings)
+        if adjusted_cpc:
+            adjusted_cpc = cpc_constraints.adjust_cpc(adjusted_cpc, ad_group=ad_group, source=ad_group_source.source)
+
+        ad_group_source_settings = ad_group_source.get_current_settings()
+        if ad_group_source_settings.cpc_cc == adjusted_cpc:
+            continue
+
         api.set_ad_group_source_settings(
-            ags,
-            {
-                'cpc_cc': proposed_cpc
-            },
+            ad_group_source,
+            {'cpc_cc': adjusted_cpc},
             request=None,
             ping_k1=False
         )
 
 
-def set_ad_group_source_settings(
+def _get_adjusted_ad_group_source_cpc(proposed_cpc, ad_group_source, ad_group_settings):
+    if (
+            ad_group_settings.b1_sources_group_enabled and
+            ad_group_source.source.source_type.type == constants.SourceType.B1 and
+            ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+    ):
+        proposed_cpc = ad_group_settings.b1_sources_group_cpc_cc
+
+    if ad_group_settings.cpc_cc and proposed_cpc > ad_group_settings.cpc_cc:
+        proposed_cpc = ad_group_settings.cpc_cc
+
+    return proposed_cpc
+
+
+def set_initial_ad_group_source_settings(
         request, ad_group_source, mobile_only=False, active=False, max_cpc=None):
     cpc_cc = ad_group_source.source.default_cpc_cc
     if mobile_only:

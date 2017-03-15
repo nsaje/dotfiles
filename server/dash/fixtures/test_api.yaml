@@ -711,6 +711,15 @@
     model: dash.adgroupsource
     pk: 24
 
+-   fields:
+        source: 8
+        ad_group: 1
+        source_campaign_key: {}
+        source_credentials: 5
+        last_successful_sync_dt: '2014-06-10T09:58:21'
+    model: dash.adgroupsource
+    pk: 25
+
 # test ad group source credentials
 
 -   fields:

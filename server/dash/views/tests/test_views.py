@@ -611,7 +611,7 @@ class CampaignAdGroups(TestCase):
             [adgss.state == constants.AdGroupSourceSettingsState.ACTIVE for adgss in ad_group_source_settings]
         ))
 
-    @patch('dash.views.helpers.set_ad_group_source_settings')
+    @patch('dash.views.helpers.set_initial_ad_group_source_settings')
     def test_create_ad_group_source(self, mock_set_ad_group_source_settings):
         # adblade must not be in maintenance for this particular test
         # so it supports retargeting - which is checked on adgroupsourc creation

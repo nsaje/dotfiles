@@ -519,7 +519,7 @@ class CampaignAdGroups(api_common.BaseApiView):
         ad_group = ad_group_settings.ad_group
         ad_group_source = helpers.add_source_to_ad_group(source_settings, ad_group)
         ad_group_source.save(None)
-        helpers.set_ad_group_source_settings(
+        helpers.set_initial_ad_group_source_settings(
             None,
             ad_group_source,
             active=helpers.get_source_initial_state(ad_group_source),
@@ -959,7 +959,7 @@ class AdGroupSources(api_common.BaseApiView):
             '{} campaign created.'.format(ad_group_source.source.name),
             user=request.user,
             action_type=constants.HistoryActionType.MEDIA_SOURCE_ADD)
-        helpers.set_ad_group_source_settings(
+        helpers.set_initial_ad_group_source_settings(
             None, ad_group_source,
             mobile_only=ad_group_settings.is_mobile_only(),
             max_cpc=ad_group_settings.cpc_cc
