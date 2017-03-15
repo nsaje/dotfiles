@@ -24,6 +24,8 @@ angular.module('one.widgets').component('zemAudienceTargeting', {
             selectedExcludedTitle: 'Excluded Audiences',
             selectTargetingButton: 'Add Custom Audience',
             noChoice: 'No available ad group or audience',
+            include: 'Include',
+            exclude: 'Exclude',
         };
         $ctrl.addTargeting = addTargeting;
         $ctrl.removeTargeting = removeTargeting;

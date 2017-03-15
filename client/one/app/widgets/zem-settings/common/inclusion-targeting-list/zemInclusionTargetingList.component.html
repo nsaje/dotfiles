@@ -37,8 +37,8 @@
         <div class="audience-select-option">
             <span ng-bind-html="targeting.name | highlight: $select.search"></span>
             <span class="targeting-select-buttons">
-                <a ng-click="$ctrl.addIncluded(targeting)" class="targeting-select-buttons__include">Include</a>
-                <a ng-click="$ctrl.addExcluded(targeting)" class="targeting-select-buttons__exclude">Exclude</a>
+                <a ng-click="$ctrl.addIncluded(targeting)" class="targeting-select-buttons__include">{{ $ctrl.texts.include }}</a>
+                <a ng-click="$ctrl.addExcluded(targeting)" class="targeting-select-buttons__exclude">{{ $ctrl.texts.exclude }}</a>
             </span>
         </div>
     </ui-select-choices>
