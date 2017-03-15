@@ -2,8 +2,6 @@ from django import forms
 from django.contrib.auth import forms as auth_forms
 from django.core.exceptions import ValidationError
 
-from zemauth import models
-
 
 class AuthenticationForm(auth_forms.AuthenticationForm):
     username = forms.CharField(

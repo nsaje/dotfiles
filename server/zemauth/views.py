@@ -34,7 +34,11 @@ def login(request, *args, **kwargs):
         kwargs['extra_context'] = {}
 
     if request.limited:
-        kwargs['extra_context']['ratelimited_error'] = 'Too many login attempts. Please try again in a few minutes.'
+        form = forms.AuthenticationForm(request, data=request.POST)
+        return TemplateResponse(request, kwargs['template_name'], {
+            'form': form,
+            'ratelimited_error': 'Too many login attempts. Please try again in a few minutes.'
+        })
 
     kwargs['extra_context']['gauth_error'] = request.GET.get('gauth_error')
 
