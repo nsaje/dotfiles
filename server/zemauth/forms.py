@@ -30,9 +30,6 @@ class PasswordResetForm(forms.Form):
                 code='invalid'
             )
 
-        if not models.User.objects.filter(email__iexact=form_username).exists():
-            raise ValidationError('We can\'t find an account registered with that address.', code='invalid')
-
         return form_username
 
 

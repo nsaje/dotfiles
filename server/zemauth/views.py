@@ -81,10 +81,15 @@ def password_reset(request, template_name=None):
 
     if request.method == 'POST':
         form = forms.PasswordResetForm(request.POST)
+
         if form.is_valid():
-            user = User.objects.get(email__iexact=form.cleaned_data['username'])
-            email_helper.send_password_reset_email(user, request)
             success = True
+
+            try:
+                user = User.objects.get(email__iexact=form.cleaned_data['username'])
+                email_helper.send_password_reset_email(user, request)
+            except User.DoesNotExist:
+                pass
 
     context = {
         'form': form,
