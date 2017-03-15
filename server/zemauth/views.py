@@ -10,6 +10,8 @@ from django.utils.http import urlsafe_base64_decode
 from django.template.response import TemplateResponse
 from django.shortcuts import resolve_url
 
+from ratelimit.decorators import ratelimit
+
 import influx
 
 import gauth
@@ -19,6 +21,7 @@ from zemauth import forms
 
 
 @influx.timer('auth.signin_response_time')
+@ratelimit(key='ip', rate='20/m', method='POST')
 def login(request, *args, **kwargs):
     """Wraps login view and injects certain query string values into
     extra_context and passes it to django.contrib.auth.views.login.
@@ -26,6 +29,9 @@ def login(request, *args, **kwargs):
 
     if 'error' in request.GET:
         return _fail_response()
+
+    if request.limited:
+        return _fail_response('Too many login attempts in a short time. Please try again in a few minutes.')
 
     if 'extra_context' not in kwargs:
         kwargs['extra_context'] = {}
