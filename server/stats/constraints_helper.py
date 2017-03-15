@@ -101,12 +101,12 @@ def prepare_campaign_constraints(user, campaign, breakdown, start_date, end_date
             ad_group__in=allowed_ad_groups).exclude_archived(show_archived)
     }
 
-    constraints.update(_get_basic_constraints(
-        start_date, end_date, show_archived, filtered_sources))
-
     if only_used_sources:
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group__campaign_id=campaign.id)
         filtered_sources = narrow_filtered_sources(filtered_sources, ad_group_sources)
+
+    constraints.update(_get_basic_constraints(
+        start_date, end_date, show_archived, filtered_sources))
 
     return constraints
 
