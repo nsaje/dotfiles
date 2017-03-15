@@ -130,9 +130,6 @@ class AdGroupSettings(api_common.BaseApiView):
                     campaign_settings,
                 )
 
-            if self.should_initialize_budget_autopilot(changes, new_settings):
-                autopilot_plus.initialize_budget_autopilot_on_ad_group(new_settings, send_mail=True)
-
             if self.should_set_cpc_autopilot_initial_cpcs(current_settings, new_settings):
                 self.set_cpc_autopilot_initial_cpcs(request, ad_group, new_settings)
 
@@ -149,6 +146,9 @@ class AdGroupSettings(api_common.BaseApiView):
                 request,
                 action_type=constants.HistoryActionType.SETTINGS_CHANGE)
             k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
+
+            if self.should_initialize_budget_autopilot(changes, new_settings):
+                autopilot_plus.initialize_budget_autopilot_on_ad_group(new_settings, send_mail=True)
 
             changes_text = models.AdGroupSettings.get_changes_text(
                 current_settings, new_settings, request.user, separator='\n')
