@@ -32,11 +32,11 @@ angular.module('one').config(function ($urlRouterProvider) {
     mapPagesToStates['credit_v2'] = 'v2.accountCredit';
     mapPagesToStates['archived'] = 'v2.archived';
 
-    $urlRouterProvider.when('/:level/:id/:breakdownOrPage', ['$rootScope', '$state', '$match', legacyRedirect]);
-    $urlRouterProvider.when('/:level/:breakdownOrPage', ['$rootScope', '$state', '$match', legacyRedirect]);
-    $urlRouterProvider.when('/', ['$rootScope ', '$state', '$match', legacyRedirect]);
+    $urlRouterProvider.when('/:level/:id/:breakdownOrPage', ['$state', '$match', '$rootScope', legacyRedirect]);
+    $urlRouterProvider.when('/:level/:breakdownOrPage', ['$state', '$match', '$rootScope', legacyRedirect]);
+    $urlRouterProvider.when('/', ['$state', '$match', legacyRedirect]);
 
-    function legacyRedirect ($rootScope, $state, $match) {
+    function legacyRedirect ($state, $match, $rootScope) {
         var state = mapPagesToStates[$match.breakdownOrPage];
         var level = mapLegacyLevelToLevelParam[$match.level];
         var breakdown = mapLegacyBreakdownToBreakdownStateParam[$match.breakdownOrPage];
@@ -64,6 +64,7 @@ angular.module('one').config(function ($urlRouterProvider) {
 
         // [WORKAROUND] Avoid state reload if user already on the correct one
         var avoidReload = ($state.is(state) && params.level === $state.params.level && params.id === $state.params.id);
+        avoidReload = avoidReload && $rootScope;
         if (avoidReload) $rootScope.$broadcast('$zemStateChangeStart');
         $state.go(state, params, {reload: !avoidReload, notify: !avoidReload}).then(function () {
             if (avoidReload) $rootScope.$broadcast('$zemStateChangeSuccess');
