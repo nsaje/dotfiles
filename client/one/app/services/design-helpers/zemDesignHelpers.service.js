@@ -2,8 +2,11 @@ angular.module('one.services').service('zemDesignHelpersService', function () {
     this.init = init;
 
     function init () {
-        initScrollToTop();
-        initZemantaSecret();
+        $('body').append('<div class="ee-zemanta-dots"></div><a href="javascript:void(0)" class="scroll-to-top"></a>');
+        $(document).ready(function () {
+            initScrollToTop();
+            initZemantaSecret();
+        });
     }
 
     function initScrollToTop () {
@@ -15,12 +18,8 @@ angular.module('one.services').service('zemDesignHelpersService', function () {
             }
         });
 
-        $(document).ready(function () {
-            $('body').append('<div class="ee-zemanta-dots"></div><a href="javascript:;" class="scroll-to-top"></a>');
-
-            $('.scroll-to-top').click(function () {
-                $('html, body').animate({scrollTop: 0}, 500);
-            });
+        $('.scroll-to-top').click(function () {
+            $('html, body').animate({scrollTop: 0}, 500);
         });
     }
 
