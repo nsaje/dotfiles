@@ -30,11 +30,11 @@ def login(request, *args, **kwargs):
     if 'error' in request.GET:
         return _fail_response()
 
-    if request.limited:
-        return _fail_response('Too many login attempts in a short time. Please try again in a few minutes.')
-
     if 'extra_context' not in kwargs:
         kwargs['extra_context'] = {}
+
+    if request.limited:
+        kwargs['extra_context']['ratelimited_error'] = 'Too many login attempts. Please try again in a few minutes.'
 
     kwargs['extra_context']['gauth_error'] = request.GET.get('gauth_error')
 

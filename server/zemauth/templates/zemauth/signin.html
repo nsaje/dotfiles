@@ -21,8 +21,10 @@
                 <h1>Sign in</h1>
                 {{ form.username }}
                 {{ form.password }}
-                {% if form.errors %}
 
+                {% if ratelimited_error %}
+                <div class="message--error">{{ ratelimited_error }}</div>
+                {% elif form.errors %}
                 <div class="message--error">Your email and password didn't match. Please try again.</div>
                 {% endif %}
 

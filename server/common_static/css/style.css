@@ -2,7 +2,7 @@ body, html {
     margin: 0;
     font-family: 'Roboto', sans-serif;
     font-weight: 300;
-    background: url("/static/img/background.jpg") no-repeat center center;
+    background: url("../img/background.jpg") no-repeat center center;
     background-attachment: fixed;
     background-size: cover;
     height: 100%;
@@ -104,7 +104,7 @@ input[type="text"]:focus, input[type="password"]:focus {
 }
 
 .container__left {
-    background: #e35325 url("/static/img/zemanta-logo-squares-white.svg") no-repeat left top;
+    background: #e35325 url("../img/zemanta-logo-squares-white.svg") no-repeat left top;
     background-size: 40px;
     width: 280px;
     margin: 0 auto;
@@ -192,7 +192,7 @@ input[type="text"]:focus, input[type="password"]:focus {
 }
 
 .container__right ul li {
-    background: url("/static/img/check-white.svg") no-repeat left 1px;
+    background: url("../img/check-white.svg") no-repeat left 1px;
     background-size: 16px;
     padding-left: 30px;
     margin-bottom: 5px;
@@ -223,7 +223,7 @@ input[type="text"]:focus, input[type="password"]:focus {
 
 .container__right--error {
     width: 460px;
-    background: url("/static/img/sad-face-white.svg") no-repeat 40px center;
+    background: url("../img/sad-face-white.svg") no-repeat 40px center;
     background-size: 140px;
     padding-left: 220px;
 }
@@ -235,7 +235,7 @@ input[type="text"]:focus, input[type="password"]:focus {
 
 .container__right--maintenance {
     width: 480px;
-    background: url("/static/img/maintenance-white.svg") no-repeat 40px center;
+    background: url("../img/maintenance-white.svg") no-repeat 40px center;
     background-size: 120px;
     padding-left: 200px;
 }
