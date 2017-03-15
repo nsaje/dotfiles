@@ -133,15 +133,15 @@ class AdGroupSettings(api_common.BaseApiView):
             if self.should_set_cpc_autopilot_initial_cpcs(current_settings, new_settings):
                 self.set_cpc_autopilot_initial_cpcs(request, ad_group, new_settings)
 
-            if self.should_adjust_ad_group_sources_cps(changes, new_settings):
-                ad_group_sources_cpcs = helpers.get_adjusted_ad_group_sources_cpcs(ad_group, new_settings)
+            ad_group_sources_cpcs = helpers.get_adjusted_ad_group_sources_cpcs(ad_group, new_settings)
+            if self.should_validate_cpc_constraints(changes, new_settings):
                 try:
                     helpers.validate_ad_group_sources_cpc_constraints(ad_group_sources_cpcs)
                 except cpc_constraints.ValidationError as err:
                     raise exc.ValidationError(errors={
                         'b1_sources_group_cpc_cc': list(err)
                     })
-                helpers.set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, new_settings)
+            helpers.set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, new_settings)
 
             new_settings.save(
                 request,
@@ -180,9 +180,8 @@ class AdGroupSettings(api_common.BaseApiView):
             new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC and\
             new_settings.b1_sources_group_enabled
 
-    def should_adjust_ad_group_sources_cps(self, changes, new_settings):
-        return 'b1_sources_group_cpc_cc' in changes or\
-            ('b1_sources_group_enabled' in changes and changes['b1_sources_group_enabled'])
+    def should_validate_cpc_constraints(self, changes, new_settings):
+        return 'b1_sources_group_cpc_cc' in changes
 
     def validate_autopilot_settings(self, request, settings, new_settings):
         if new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
