@@ -184,6 +184,7 @@ class FilterTestCase(TestCase):
 
         self.default_cleaned_rows[0].update({
             'agency': 1,
+            'agency_id': 1,
         })
         self.assertItemsEqual(self.rows, self.default_cleaned_rows)
 

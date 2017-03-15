@@ -8,112 +8,76 @@ Applies dash data to rows. No logics, only write data to proper keys.
 
 def get_augmenter_for_dimension(target_dimension):
     if target_dimension == 'account_id':
-        return augment_accounts
+        return generate_loop_function(augment_account)
     elif target_dimension == 'campaign_id':
-        return augment_campaigns
+        return generate_loop_function(augment_campaign)
     elif target_dimension == 'ad_group_id':
-        return augment_ad_groups
+        return generate_loop_function(augment_ad_group)
     elif target_dimension == 'content_ad_id':
-        return augment_content_ads
+        return generate_loop_function(augment_content_ad)
     elif target_dimension == 'source_id':
-        return augment_sources
+        return generate_loop_function(augment_source)
     elif target_dimension == 'publisher_id':
-        return augment_publishers
+        return generate_loop_function(augment_publisher)
 
 
-def augment_accounts(rows, loader, is_base_level=False):
-    for row in rows:
-        account_id = row['account_id']
-        augment_row_account(
-            row,
-            loader.objs_map[account_id],
-            loader.settings_map[account_id],
-            loader.projections_map[account_id]
-        )
+def get_report_augmenter_for_dimension(target_dimension):
+    if target_dimension == 'account_id':
+        return generate_loop_function(augment_account, augment_account_for_report)
+    elif target_dimension == 'campaign_id':
+        return generate_loop_function(augment_campaign, augment_campaign_for_report)
+    elif target_dimension == 'ad_group_id':
+        return generate_loop_function(augment_ad_group, augment_ad_group_for_report)
+    elif target_dimension == 'content_ad_id':
+        return generate_loop_function(augment_content_ad, augment_content_ad_for_report)
+    elif target_dimension == 'source_id':
+        return generate_loop_function(augment_source, augment_source_for_report)
+    elif target_dimension == 'publisher_id':
+        return generate_loop_function(augment_publisher, augment_publisher_for_report)
+
+
+def generate_loop_function(*augment_funcs):
+
+    def loop_function(rows, *args, **kwargs):
+        for row in rows:
+            for augment in augment_funcs:
+                augment(row, *args, **kwargs)
+
+    return loop_function
 
 
 def augment_accounts_totals(row, loader):
-    augment_row_account(row, projections=loader.projections_totals)
-
-
-def augment_campaigns(rows, loader, is_base_level=False):
-    for row in rows:
-        campaign_id = row['campaign_id']
-        augment_row_campaign(
-            row,
-            loader.objs_map[campaign_id],
-            loader.settings_map[campaign_id],
-            loader.projections_map[campaign_id]
-        )
+    augment_account(row, loader)
 
 
 def augment_campaigns_totals(row, loader):
-    augment_row_campaign(row, projections=loader.projections_totals)
-
-
-def augment_ad_groups(rows, loader, is_base_level=False):
-    for row in rows:
-        ad_group_id = row['ad_group_id']
-        augment_row_ad_group(
-            row,
-            loader.objs_map[ad_group_id],
-            loader.settings_map[ad_group_id],
-            loader.base_level_settings_map[ad_group_id] if is_base_level else None
-        )
-
-
-def augment_content_ads(rows, loader, is_base_level=False):
-    for row in rows:
-        content_ad_id = row['content_ad_id']
-        augment_row_content_ad(
-            row,
-            loader.objs_map[content_ad_id],
-            loader.batch_map[content_ad_id],
-            loader.ad_group_map[content_ad_id],
-            loader.per_source_status_map[content_ad_id]
-        )
-
-
-def augment_sources(rows, loader, is_base_level=False):
-    for row in rows:
-        source_id = row['source_id']
-        augment_row_source(
-            row,
-            loader.objs_map[source_id],
-            loader.settings_map[source_id]
-        )
+    augment_campaign(row, loader)
 
 
 def augment_sources_totals(row, loader):
-    augment_row_source(row, settings=loader.totals)
+    augment_source(row, loader)
 
 
-def augment_publishers(rows, loader, is_base_level=False):
-    for row in rows:
-        domain, _ = publisher_helpers.dissect_publisher_id(row['publisher_id'])
-        source_id = row['source_id']
-        augment_row_publisher(
-            row,
-            domain,
-            loader.source_map[source_id],
-            loader.blacklist_status_map[row['publisher_id']],
-            loader.can_blacklist_source_map[source_id]
-        )
+def augment_account(row, loader, is_base_level=False):
+    account_id = row.get('account_id')
 
-
-def augment_row_account(row, account=None, settings=None, projections=None):
-    if account:
+    if account_id:
+        account = loader.objs_map[account_id]
         row.update({
             'name': account.name,
             'agency': account.agency.name if account.agency else '',
         })
 
-    if settings:
+        settings = loader.settings_map[account_id]
         copy_fields_if_exists(
             ['status', 'archived', 'default_account_manager',
              'default_sales_representative', 'default_cs_representative',
              'account_type', 'salesforce_url'],
             settings, row)
+
+        projections = loader.projections_map[account_id]
+    else:
+        projections = loader.projections_totals
 
     if projections is not None:
         row.update({
@@ -127,14 +91,32 @@ def augment_row_account(row, account=None, settings=None, projections=None):
         })
 
 
-def augment_row_campaign(row, campaign=None, settings=None, projections=None):
-    if campaign:
+def augment_account_for_report(row, loader, is_base_level=False):
+    account_id = row.get('account_id')
+
+    if account_id:
+        account = loader.objs_map[account_id]
+        row.update({
+            'account': account.name,
+            'agency_id': account.agency.id if account.agency else '',
+        })
+
+
+def augment_campaign(row, loader, is_base_level=False):
+    campaign_id = row.get('campaign_id')
+
+    if campaign_id:
+        campaign = loader.objs_map[campaign_id]
         row.update({
             'name': campaign.name
         })
 
-    if settings:
+        settings = loader.settings_map[campaign_id]
         copy_fields_if_exists(['status', 'archived', 'campaign_manager'], settings, row)
+
+        projections = loader.projections_map[campaign_id]
+    else:
+        projections = loader.projections_totals
 
     if projections is not None:
         row.update({
@@ -145,21 +127,48 @@ def augment_row_campaign(row, campaign=None, settings=None, projections=None):
         })
 
 
-def augment_row_ad_group(row, ad_group=None, settings=None, base_level_settings=None):
-    if ad_group:
+def augment_campaign_for_report(row, loader, is_base_level=False):
+    campaign_id = row.get('campaign_id')
+
+    if campaign_id:
+        campaign = loader.objs_map[campaign_id]
+        row.update({
+            'campaign': campaign.name
+        })
+
+
+def augment_ad_group(row, loader, is_base_level=False):
+    ad_group_id = row.get('ad_group_id')
+
+    if ad_group_id:
+        ad_group = loader.objs_map[ad_group_id]
         row.update({
             'name': ad_group.name,
         })
 
-    if settings:
+        settings = loader.settings_map[ad_group_id]
         copy_fields_if_exists(['archived', 'status', 'state'], settings, row)
 
-    if base_level_settings:
-        copy_fields_if_exists(['campaign_stop_inactive', 'campaign_has_available_budget'], base_level_settings, row)
+        if is_base_level:
+            base_level_settings = loader.base_level_settings_map[ad_group_id]
+            copy_fields_if_exists(['campaign_stop_inactive', 'campaign_has_available_budget'], base_level_settings, row)
 
 
-def augment_row_content_ad(row, content_ad=None, batch=None, ad_group=None, status_per_source=None):
-    if content_ad:
+def augment_ad_group_for_report(row, loader, is_base_level=False):
+    ad_group_id = row.get('ad_group_id')
+
+    if ad_group_id:
+        ad_group = loader.objs_map[ad_group_id]
+        row.update({
+            'ad_group': ad_group.name,
+        })
+
+
+def augment_content_ad(row, loader, is_base_level=False):
+    content_ad_id = row.get('content_ad_id')
+
+    if content_ad_id:
+        content_ad = loader.objs_map[content_ad_id]
         row.update({
             'name': content_ad.title,
             'title': content_ad.title,
@@ -179,24 +188,39 @@ def augment_row_content_ad(row, content_ad=None, batch=None, ad_group=None, stat
             'redirector_url': content_ad.get_redirector_url()
         })
 
-        if ad_group:
-            row.update({
-                'url': content_ad.get_url(ad_group),
-            })
+        ad_group = loader.ad_group_map[content_ad_id]
+        row.update({
+            'url': content_ad.get_url(ad_group),
+        })
 
-    if batch:
+        batch = loader.batch_map[content_ad_id]
         row.update({
             'batch_id': batch.id,
             'batch_name': batch.name,
             'upload_time': batch.created_dt,
         })
 
-    if status_per_source:
+        status_per_source = loader.per_source_status_map[content_ad_id]
         row['status_per_source'] = status_per_source
 
 
-def augment_row_source(row, source=None, settings=None):
-    if source:
+def augment_content_ad_for_report(row, loader, is_base_level=False):
+    content_ad_id = row.get('content_ad_id')
+
+    if content_ad_id:
+        content_ad = loader.objs_map[content_ad_id]
+        row.update({
+            'content_ad': content_ad.title,
+            'image_url': content_ad.get_image_url(),
+            'status': constants.ContentAdSourceState.get_text(content_ad.state).upper(),
+        })
+
+
+def augment_source(row, loader, is_base_level=False):
+    source_id = row.get('source_id')
+
+    if source_id:
+        source = loader.objs_map[source_id]
         row.update({
             'id': source.id,
             'name': source.name,
@@ -204,6 +228,10 @@ def augment_row_source(row, source=None, settings=None):
             'archived': source.deprecated,
             'maintenance': source.maintenance,
         })
+
+        settings = loader.settings_map[source_id]
+    else:
+        settings = loader.totals
 
     if settings is not None:
         copy_fields_if_exists([
@@ -220,7 +248,24 @@ def augment_row_source(row, source=None, settings=None):
             })
 
 
-def augment_row_publisher(row, domain, source, entry_status, can_blacklist_source):
+def augment_source_for_report(row, loader, is_base_level=False):
+    source_id = row.get('source_id')
+
+    if source_id:
+        source = loader.objs_map[source_id]
+        row.update({
+            'source': source.name,
+        })
+
+
+def augment_publisher(row, loader, is_base_level=False):
+    domain, _ = publisher_helpers.dissect_publisher_id(row['publisher_id'])
+    source_id = row['source_id']
+    publisher_id = row['publisher_id']
+    source = loader.source_map[source_id]
+    entry_status = loader.blacklist_status_map[publisher_id]
+    can_blacklist_source = loader.can_blacklist_source_map[source_id]
+
     row.update({
         'name': domain,
         'source_id': source.id,
@@ -244,6 +289,25 @@ def augment_row_publisher(row, domain, source, entry_status, can_blacklist_sourc
                     entry_status['blacklisted_level'], entry_status['status']),
             },
         })
+
+
+def augment_publisher_for_report(row, loader, is_base_level=False):
+    domain, _ = publisher_helpers.dissect_publisher_id(row['publisher_id'])
+    source_id = row['source_id']
+    publisher_id = row['publisher_id']
+    source = loader.source_map[source_id]
+    entry_status = loader.blacklist_status_map[publisher_id]
+
+    row.update({
+        'publisher': domain,
+        'source': source.name,
+        'status': constants.PublisherTargetingStatus.get_text(entry_status['status']).upper(),
+        'blacklisted_level': (
+            constants.PublisherBlacklistLevel.get_text(
+                entry_status.get('blacklisted_level', '')
+            ) or ''
+        ).upper()
+    })
 
 
 def make_dash_rows(target_dimension, objs_ids, parent):

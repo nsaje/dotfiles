@@ -235,6 +235,7 @@ class ReportJobExecutor(JobExecutor):
                 raw_report, goals, filename = self.get_raw_new_report(self.job, breakdown)
             else:
                 raw_report, goals, filename = self.get_raw_report(self.job, breakdown)
+
             csv_report = self.convert_to_csv(self.job, raw_report, goals)
             report_path = self.save_to_s3(csv_report, filename)
             self.send_by_email(self.job, report_path)
@@ -335,9 +336,11 @@ class ReportJobExecutor(JobExecutor):
             csv_row = {}
             for column_name in requested_columns:
                 field_name = field_name_mapping[column_name]
+                csv_column = original_to_dated[column_name]
                 if field_name in row:
-                    csv_column = original_to_dated[column_name]
                     csv_row[csv_column] = row[field_name]
+                else:
+                    csv_row[csv_column] = dash.export._format_empty_value(None, field_name)
             writer.writerow(csv_row)
         return output.getvalue()
 
@@ -389,15 +392,34 @@ class ReportJobExecutor(JobExecutor):
         today = utils.dates_helper.local_today()
         expiry_date = today + datetime.timedelta(days=3)
 
+        view, breakdowns = cls._extract_view_breakdown(job)
         utils.email_helper.send_async_report(
             job.user, options['recipients'], report_path,
             filter_constraints['start_date'], filter_constraints['end_date'], expiry_date, filtered_sources,
             options['show_archived'], options['show_blacklisted_publishers'],
-            get_breakdown_from_fields(job.query['fields']),
+            view,
+            breakdowns,
             cls._extract_column_names(job.query['fields']),
             options['include_totals'],
             ad_group=helpers.get_ad_group(job.user, filter_constraints['ad_group_id'])
         )
+
+    @staticmethod
+    def _extract_view_breakdown(job):
+        breakdowns = get_breakdown_from_fields(job.query['fields'])
+        constraints = get_filter_constraints(job.query['filters'])
+        for constraint_dimension in [stats.constants.ACCOUNT, stats.constants.CAMPAIGN, stats.constants.AD_GROUP]:
+            if constraint_dimension in constraints:
+                try:
+                    breakdowns = breakdowns[breakdowns.index(constraint_dimension) + 1:]
+                except ValueError:
+                    pass
+
+        breakdowns = [breakdown[:-3] if breakdown.endswith('_id') else breakdown for breakdown in breakdowns]
+        breakdowns = [utils.columns._FIELD_MAPPING[breakdown][0] for breakdown in breakdowns]
+        if len(breakdowns) < 1:
+            return '', []
+        return breakdowns[0], ['By ' + breakdown for breakdown in breakdowns[1:]]
 
     @staticmethod
     def _generate_random_filename():

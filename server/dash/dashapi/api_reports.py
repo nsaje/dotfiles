@@ -1,7 +1,6 @@
 import copy
 
 from dash.dashapi import augmenter
-from dash.dashapi import augmenter_reports
 from dash.dashapi import loaders
 
 from stats import constants
@@ -15,7 +14,7 @@ def annotate(rows, user, breakdown, constraints, goals):
             continue
 
         loader = loader_cls.from_constraints(user, constraints)
-        augmenter_fn = augmenter_reports.get_augmenter_for_dimension(dimension)
+        augmenter_fn = augmenter.get_report_augmenter_for_dimension(dimension)
         augmenter_fn(rows, loader)
 
 
@@ -28,7 +27,7 @@ def query(user, breakdown, constraints, goals):
             loader = loader_cls.from_constraints(user, constraints)
             dimension_rows = augmenter.make_dash_rows(dimension, loader.objs_ids, None)
 
-            augmenter_fn = augmenter_reports.get_augmenter_for_dimension(dimension)
+            augmenter_fn = augmenter.get_report_augmenter_for_dimension(dimension)
             augmenter_fn(dimension_rows, loader)
         elif dimension in constants.TimeDimension._ALL:
             dimension_rows = [{

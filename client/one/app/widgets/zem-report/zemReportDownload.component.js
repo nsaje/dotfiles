@@ -42,14 +42,8 @@ angular.module('one.widgets').component('zemReportDownload', {
             $ctrl.shownSelectedFields = $ctrl.selectedFields.slice(0, nrShortlistItems);
 
             $ctrl.breakdown = $ctrl.resolve.api.getBreakdown();
+            $ctrl.view = $ctrl.breakdown[0].report_query;
             $ctrl.breakdown = $ctrl.breakdown.slice(1, $ctrl.breakdown.length);
-
-            if ($ctrl.resolve.tab) {
-                $ctrl.showIncludeIds = false;
-                $ctrl.showIncludeItemsWithNoSpend = false;
-            } else {
-                $ctrl.selectedFields = ['Agency', 'Account', 'Campaign', 'Ad Group'].concat($ctrl.selectedFields);
-            }
         };
 
         function startReport () {
@@ -74,17 +68,28 @@ angular.module('one.widgets').component('zemReportDownload', {
         }
 
         function getSelectedFields () {
-            var fields = [], columns = $ctrl.resolve.api.getColumns();
             var hiddenTypes = ['stateSelector', 'submissionStatus'];
             var remappedFields = {
                 'Thumbnail': ['Image Hash', 'Image URL'],
             };
+            var alwaysFields = {
+                'ad_groups': ['Account', 'Campaign', 'Ad Group'],
+                'campaigns': ['Account', 'Campaign'],
+                'accounts': ['Account'],
+                'all_accounts': [],
+            };
+
+            var fields = alwaysFields[$ctrl.resolve.api.getMetaData().level];
+            if ($ctrl.hasPermission('zemauth.can_view_account_agency_information')) {
+                fields.unshift('Agency');
+            }
 
             var breakdown = $ctrl.resolve.api.getBreakdown();
             for (var i = 0; i < breakdown.length; i++) {
                 fields.push(breakdown[i].report_query);
             }
 
+            var columns = $ctrl.resolve.api.getColumns();
             for (i = 0; i < columns.length; i++) {
                 if (columns[i].visible && columns[i].data.name &&
                         hiddenTypes.indexOf(columns[i].data.type) < 0 &&

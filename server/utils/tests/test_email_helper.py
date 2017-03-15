@@ -204,7 +204,7 @@ class EmailHelperTestCase(TestCase):
 
         email_helper.send_async_report(user, ['asd@gmail.com'], 'bla.com/test.csv',
                                        datetime.date(2016, 1, 1), datetime.date(2016, 5, 5), datetime.date(2016, 1, 4),
-                                       [], False, dash.constants.PublisherBlacklistFilter.SHOW_ACTIVE, ['Publisher', 'Day'],
+                                       [], False, dash.constants.PublisherBlacklistFilter.SHOW_ACTIVE, 'Publisher', ['By Day'],
                                        ['Clicks'], False, ad_group)
         subject = 'Report results'
         body = """Hi,
@@ -217,7 +217,7 @@ Ad Group: Ad Group 1
 
 Date range: 1/1/2016 - 5/5/2016
 View: Publisher
-Breakdowns: Day
+Breakdowns: By Day
 Columns: Clicks
 Filters: Show active publishers only
 Totals included: No

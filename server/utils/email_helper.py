@@ -9,7 +9,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
-from django.core.mail.message import EmailMessage, EmailMultiAlternatives
+from django.core.mail.message import EmailMultiAlternatives
 from django.template.loader import render_to_string
 
 import dash.constants
@@ -517,7 +517,7 @@ def send_ga_setup_instructions(user):
 def send_async_report(
         user, recipients, report_path, start_date, end_date, expiry_date, filtered_sources,
         show_archived, show_blacklisted_publishers,
-        breakdown_columns, columns, include_totals, ad_group):
+        view, breakdowns, columns, include_totals, ad_group):
 
     filters = []
     if show_archived:
@@ -537,8 +537,8 @@ def send_async_report(
         start_date=dates_helper.format_date_mmddyyyy(start_date),
         end_date=dates_helper.format_date_mmddyyyy(end_date),
         expiry_date=dates_helper.format_date_mmddyyyy(expiry_date),
-        tab_name=breakdown_columns[0] if breakdown_columns else '',
-        breakdown=(', '.join(breakdown_columns[1:]) if breakdown_columns else '') or '/',
+        tab_name=view,
+        breakdown=', '.join(breakdowns) or '/',
         columns=', '.join(columns),
         filters=', '.join(filters) if filters else '/',
         include_totals='Yes' if include_totals else 'No',

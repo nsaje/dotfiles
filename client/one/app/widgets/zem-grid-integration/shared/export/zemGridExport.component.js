@@ -28,12 +28,6 @@ angular.module('one.widgets').component('zemGridExport', {
             $scope.getAdditionalColumns = getAdditionalColumns;
             $scope.hasPermission = $ctrl.api.hasPermission;
             $scope.isPermissionInternal = $ctrl.api.isPermissionInternal;
-
-            if ($ctrl.api.hasPermission('zemauth.can_see_new_report_download') &&
-                    metaData.level === constants.level.AD_GROUPS &&
-                    metaData.breakdown === constants.breakdown.CONTENT_AD) {
-                $ctrl.exportModalTypes.push({name: 'Download new', value: 'download-new'});
-            }
         };
 
         function initializeData () {
@@ -54,6 +48,8 @@ angular.module('one.widgets').component('zemGridExport', {
             // Initialize data (date range, order) before modal is opened
             initializeData();
 
+            var metaData = $ctrl.api.getMetaData();
+
             var modalInstance;
             if (exportModalType === 'schedule') {
                 modalInstance = $uibModal.open({
@@ -63,13 +59,14 @@ angular.module('one.widgets').component('zemGridExport', {
                     keyboard: false,
                     scope: $scope,
                 });
-            } else if (exportModalType === 'download-new') {
+            } else if ($ctrl.api.hasPermission('zemauth.can_see_new_report_download') &&
+                    metaData.level === constants.level.AD_GROUPS &&
+                    metaData.breakdown === constants.breakdown.CONTENT_AD) {
                 $uibModal.open({
                     component: 'zemReportDownload',
                     windowClass: 'zem-report-download',
                     resolve: {
                         api: $ctrl.api,
-                        tab: $ctrl.tab,
                     }
                 });
             } else {
