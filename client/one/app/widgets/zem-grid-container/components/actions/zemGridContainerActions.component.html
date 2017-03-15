@@ -28,6 +28,11 @@
             api="$ctrl.gridApi"
             class="pull-right report-dropdown"
     ></zem-grid-export>
+    <zem-report-dropdown
+            ng-if="$ctrl.isReportDropdownVisible()"
+            api="$ctrl.gridApi"
+            class="pull-right report-dropdown">
+    </zem-report-dropdown>
 
     <!-- All levels & breakdowns -->
     <zem-grid-column-selector api="$ctrl.gridApi" class="pull-right"></zem-grid-column-selector>

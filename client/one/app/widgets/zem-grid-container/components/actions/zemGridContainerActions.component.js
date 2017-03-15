@@ -15,6 +15,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         $ctrl.isGridBulkPublishersActionsVisible = isGridBulkPublishersActionsVisible;
         $ctrl.isCreateEntityActionVisible = isCreateEntityActionVisible;
         $ctrl.isCreateAdGroupSourceActionVisible = isCreateAdGroupSourceActionVisible;
+        $ctrl.isReportDropdownVisible = isReportDropdownVisible;
 
         function isEntityBreakdown () {
             return $ctrl.breakdown !== constants.breakdown.MEDIA_SOURCE
@@ -43,6 +44,10 @@ angular.module('one.widgets').component('zemGridContainerActions', {
 
         function isGridExportVisible () {
             return $ctrl.breakdown !== constants.breakdown.PUBLISHER;
+        }
+
+        function isReportDropdownVisible () {
+            return $ctrl.breakdown === constants.breakdown.PUBLISHER;
         }
     },
 });
