@@ -36,6 +36,7 @@
   },
   "scripts": {
     "dev": "grunt dev",
+    "build": "grunt default",
     "test": "grunt test; exit 0",
     "watch-test": "karma start karma.conf.js",
     "lint": "eslint one test; exit 0"

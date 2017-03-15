@@ -112,11 +112,6 @@ describe('zemNavigationService', function () {
                 zemNavigationService.getAccount(1);
                 expect(apiMock.navigation.getAccount).not.toHaveBeenCalled();
             });
-
-            it('doesn\'t call api when getting accounts access', function () {
-                zemNavigationService.getAccountsAccess();
-                expect(apiMock.navigation.getAccountsAccess).not.toHaveBeenCalled();
-            });
         });
 
         describe('Notifies subscribers when cache is updated', function () {

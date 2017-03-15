@@ -4,6 +4,7 @@
 angular.module('one.legacy').factory('zemNavigationService', function ($rootScope, $q, $location, api) { // eslint-disable-line max-len
 
     var accounts = [];
+    var accountsAccess;
 
     function findAccountInNavTree (id) {
         var strId = id.toString();
@@ -49,12 +50,6 @@ angular.module('one.legacy').factory('zemNavigationService', function ($rootScop
             }
         }
         return undefined;
-    }
-
-    function findAccountsAccessInNavTree () {
-        return {
-            hasAccounts: !!accounts,
-        };
     }
 
     function loadData (id, apiFunc, searchCacheFunc) {
@@ -109,11 +104,19 @@ angular.module('one.legacy').factory('zemNavigationService', function ($rootScop
     }
 
     function getAccountsAccess () {
-        return loadData(
-            null,
-            api.navigation.getAccountsAccess,
-            findAccountsAccessInNavTree
-        );
+        var deferred = $q.defer();
+
+        if (accountsAccess) {
+            deferred.resolve(accountsAccess);
+        } else {
+            api.navigation.getAccountsAccess()
+                .then(function (data) {
+                    accountsAccess = data;
+                    deferred.resolve(accountsAccess);
+                });
+        }
+
+        return deferred.promise;
     }
 
     function updateModel (model, dataObjOrFunc) {
