@@ -32,11 +32,11 @@ angular.module('one').config(function ($urlRouterProvider) {
     mapPagesToStates['credit_v2'] = 'v2.accountCredit';
     mapPagesToStates['archived'] = 'v2.archived';
 
-    $urlRouterProvider.when('/:level/:id/:breakdownOrPage', ['$state', '$match', legacyRedirect]);
-    $urlRouterProvider.when('/:level/:breakdownOrPage', ['$state', '$match', legacyRedirect]);
-    $urlRouterProvider.when('/', ['$state', '$match', legacyRedirect]);
+    $urlRouterProvider.when('/:level/:id/:breakdownOrPage', ['$rootScope', '$state', '$match', legacyRedirect]);
+    $urlRouterProvider.when('/:level/:breakdownOrPage', ['$rootScope', '$state', '$match', legacyRedirect]);
+    $urlRouterProvider.when('/', ['$rootScope ', '$state', '$match', legacyRedirect]);
 
-    function legacyRedirect ($state, $match) {
+    function legacyRedirect ($rootScope, $state, $match) {
         var state = mapPagesToStates[$match.breakdownOrPage];
         var level = mapLegacyLevelToLevelParam[$match.level];
         var breakdown = mapLegacyBreakdownToBreakdownStateParam[$match.breakdownOrPage];
@@ -45,9 +45,12 @@ angular.module('one').config(function ($urlRouterProvider) {
         level = level ? level : constants.levelStateParam.ACCOUNTS;
 
         var params = {
-            id: $match.id,
+            id: $match.id ? parseInt($match.id) : null,
             level: level,
-            breakdown: breakdown
+            breakdown: breakdown,
+            settings: null,
+            settingsScrollTo: null,
+            history: null,
         };
 
         if ($match.breakdownOrPage === 'budget') {
@@ -57,9 +60,13 @@ angular.module('one').config(function ($urlRouterProvider) {
 
         if ($match.breakdownOrPage === 'history') {
             params.history = true;
-
         }
 
-        $state.go(state, params);
+        // [WORKAROUND] Avoid state reload if user already on the correct one
+        var avoidReload = ($state.is(state) && params.level === $state.params.level && params.id === $state.params.id);
+        if (avoidReload) $rootScope.$broadcast('$zemStateChangeStart');
+        $state.go(state, params, {reload: !avoidReload, notify: !avoidReload}).then(function () {
+            if (avoidReload) $rootScope.$broadcast('$zemStateChangeSuccess');
+        });
     }
 });

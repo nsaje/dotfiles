@@ -70,10 +70,22 @@ angular.module('one.widgets').service('zemSettingsService', function ($rootScope
     }
 
     function close () {
-        $location.search(QUERY_PARAM, null);
-        $location.search(QUERY_SCROLL_TO_PARAM, null);
+        clearParams();
         currentEntity = null;
         pubsub.notify(EVENTS.ON_CLOSE);
+    }
+
+    function clearParams () {
+        $location.search(QUERY_PARAM, null);
+        $location.search(QUERY_SCROLL_TO_PARAM, null);
+
+        if ($state.params[QUERY_PARAM]) {
+            // Silently clear state params (avoid reinitialization)
+            var params = angular.copy($state.params);
+            params[QUERY_PARAM] = undefined;
+            params[QUERY_SCROLL_TO_PARAM] = undefined;
+            $state.go($state.current, params, {reload: false, notify: false, inherit: false});
+        }
     }
 
     function getCurrentEntity () {

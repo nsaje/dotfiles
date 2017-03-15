@@ -34,8 +34,19 @@ angular.module('one.widgets').service('zemHistoryService', function ($rootScope,
     }
 
     function close () {
-        $location.search(QUERY_PARAM, null);
+        clearParams();
         pubsub.notify(EVENTS.ON_CLOSE);
+    }
+
+    function clearParams () {
+        $location.search(QUERY_PARAM, null);
+
+        if ($state.params[QUERY_PARAM]) {
+            // Silently clear state params (avoid reinitialization)
+            var params = angular.copy($state.params);
+            params[QUERY_PARAM] = undefined;
+            $state.go($state.current, params, {reload: false, notify: false, inherit: false});
+        }
     }
 
     function loadHistory (entity, order) {
