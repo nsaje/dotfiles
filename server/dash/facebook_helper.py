@@ -93,13 +93,13 @@ def send_page_access_request(page_id, business_id, access_token):
         elif ERROR_ALREADY_PENDING in error.get('message', ''):
             return constants.FacebookPageRequestType.PENDING
         elif ERROR_INVALID_PAGE in error.get('message', ''):
-            logger.warning('FB api returned an invalid page error for pageId: {}. Error message: {}', page_id,
+            logger.warning('FB api returned an invalid page error for pageId: %s. Error message: %s', page_id,
                            error.get('message'))
             return constants.FacebookPageRequestType.INVALID
 
     error = response.json().get('error', {})
-    logger.error('FB api returned and unknown error for pageId: {}. Status code: {}, error message: {}',
-                 response.status_code, error)
+    logger.error('FB api returned and unknown error for pageId: %s. Status code: %s, error message: %s',
+                 page_id, response.status_code, error)
     return constants.FacebookPageRequestType.ERROR
 
 
