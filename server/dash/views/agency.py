@@ -1592,6 +1592,7 @@ class AccountUserAction(api_common.BaseApiView):
         groups = self._get_agency_manager_groups()
 
         self._check_is_agency_account(account)
+        self._check_if_already_agency_user(account, user)
 
         account.agency.users.add(user)
         account.users.remove(user)
@@ -1610,6 +1611,13 @@ class AccountUserAction(api_common.BaseApiView):
         if not account.is_agency():
             raise exc.ValidationError(
                 pretty_message=u'Cannot promote user on account without agency.'
+            )
+
+    def _check_if_already_agency_user(self, account, user):
+        agency = helpers.get_user_agency(user)
+        if agency and account.agency != agency:
+            raise exc.ValidationError(
+                pretty_message=u'Cannot promote user on more then one agency.'
             )
 
     def _get_agency_manager_groups(self):
