@@ -135,6 +135,12 @@ angular.module('one.widgets').directive('zemGridHeader', function ($timeout, zem
 
                 // visibleColumns is shared with body to optimize virtual scroll performance
                 vm.grid.header.visibleColumns = vm.model.visibleColumns;
+
+                // [UI/UX] Resize columns before first render (avoid jumps)
+                $timeout (function () {
+                    zemGridUIService.resizeGridColumns(vm.grid);
+                    vm.visible = true;
+                });
             }
         },
     };
