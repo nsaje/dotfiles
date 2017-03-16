@@ -12,7 +12,7 @@ def upload_report_from_fs(path, filepath):
     with open(filepath) as fd:
         s3.put(path, fd.read(),
                human_readable_filename=filepath.split('/')[-1])
-    return analytics.statementsget_url(path)
+    return analytics.statements.get_url(path)
 
 
 def generate_report(name, data):
