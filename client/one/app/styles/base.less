@@ -2037,3 +2037,35 @@ h3 {
     margin-top: @default-spacing*1.5;
     position: relative;
 }
+
+////////////////////////////
+// Collapsable element //
+////////////////////////////
+
+.collapsable {
+    padding: @default-spacing @default-spacing 20px @default-spacing;
+    background-color: @very-light-gray;
+}
+
+.collapsable__show-collapsed {
+    display: block;
+    text-align: center;
+    margin: 20px -@default-spacing -@default-spacing -@default-spacing;
+    padding: 10px @default-spacing;
+    background-color: @very-light-gray;
+    color: @secondary-color;
+
+    &:hover {
+        color: @secondary-color;
+    }
+}
+
+.collapsable__hide-collapsed {
+    &:extend(.collapsable__show-collapsed);
+    margin-top: 0;
+    background-color: darken(@very-light-gray,3%);
+
+    &:hover {
+        color: @secondary-color;
+    }
+}

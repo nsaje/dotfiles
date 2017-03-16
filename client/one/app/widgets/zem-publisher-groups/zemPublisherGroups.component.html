@@ -39,53 +39,53 @@
     </table>
 
     <button type="button" class="button button--with-icon add-icon" ng-click="$ctrl.createNew()">Add Publisher Group</button>
-</div>
 
-<a href="" class="zem-publisher-groups-component__show-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="$ctrl.showCollapsed">Show system publisher groups</a>
+    <a href="" class="collapsable__show-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="$ctrl.showCollapsed">Show system publisher groups</a>
 
-<div class="white-background zem-publisher-groups-component__collapsed" ng-show="$ctrl.showCollapsed">
-    <h2>System Publisher Groups</h2>
+    <div class="collapsable zem-publisher-groups-component__collapsable" ng-show="$ctrl.showCollapsed">
+        <h2>System Publisher Groups</h2>
 
-    <div class="description">
-        Publishers that you blacklist in the dashboard are added to one of the system blacklist publisher groups listed below.
+        <div class="description">
+            Publishers that you blacklist in the dashboard are added to one of the system blacklist publisher groups listed below.
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Level</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Subdomains included</th>
+                    <th>Number of publishers</th>
+                    <th>Modified</th>
+                    <th>Created</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="5" class="loader-row" ng-if="$ctrl.loading">
+                        <span class="loader"></span>
+                    </td>
+                </tr>
+                <tr ng-repeat="item in $ctrl.publisherGroups | filter: {implicit: true}">
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.level }}</td>
+                    <td>{{ item.level_name }}</td>
+                    <td>{{ item.type }}</td>
+                    <td>{{ item.include_subdomains ? 'Yes' : 'No' }}</td>
+                    <td>{{ item.size }}</td>
+                    <td>{{ (item.modified | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
+                    <td>{{ (item.created | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
+                    <td class="action-buttons">
+                        <a class="button button--small button--with-icon button--only-icon download-icon" ng-click="$ctrl.download(item.id)"></a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
     </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Level</th>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Subdomains included</th>
-                <th>Number of publishers</th>
-                <th>Modified</th>
-                <th>Created</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td colspan="5" class="loader-row" ng-if="$ctrl.loading">
-                    <span class="loader"></span>
-                </td>
-            </tr>
-            <tr ng-repeat="item in $ctrl.publisherGroups | filter: {implicit: true}">
-                <td>{{ item.id }}</td>
-                <td>{{ item.level }}</td>
-                <td>{{ item.level_name }}</td>
-                <td>{{ item.type }}</td>
-                <td>{{ item.include_subdomains ? 'Yes' : 'No' }}</td>
-                <td>{{ item.size }}</td>
-                <td>{{ (item.modified | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
-                <td>{{ (item.created | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
-                <td class="action-buttons">
-                    <a class="button button--small button--with-icon button--only-icon download-icon" ng-click="$ctrl.download(item.id)"></a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-
+    <a href="" class="collapsable__hide-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="!$ctrl.showCollapsed">Hide system publisher groups</a>
 </div>
-
-<a href="" class="zem-publisher-groups-component__hide-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="!$ctrl.showCollapsed">Hide system publisher groups</a>

@@ -83,9 +83,9 @@
             ng-disabled="!$ctrl.getAvailableCredit().length">Add Budget Item
     </button>
 
-    <a href="" class="zem-settings-component__show-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="$ctrl.showCollapsed">Show depleted budget items</a>
+    <a href="" class="collapsable__show-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="$ctrl.showCollapsed">Show depleted budget items</a>
 
-    <div class="zem-settings-component__collapsed" ng-show="$ctrl.showCollapsed">
+    <div class="collapsable zem-settings-campaign-budget__collapsable" ng-show="$ctrl.showCollapsed">
         <div class="zem-settings-component__sub-header">Depleted Budget Items</div>
         <table class="table">
             <thead>
@@ -135,5 +135,5 @@
             </tbody>
         </table>
     </div>
-    <a href="" class="zem-settings-component__hide-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="!$ctrl.showCollapsed">Hide depleted budget items</a>
+    <a href="" class="collapsable__hide-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="!$ctrl.showCollapsed">Hide depleted budget items</a>
 </div>
