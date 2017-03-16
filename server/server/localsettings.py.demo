@@ -129,9 +129,8 @@ _MEMCACHED_PORT = os.environ.get('MEMCACHED_PORT_11211_TCP_PORT', '11211')
 
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
-        'LOCATION': ['%s:%s' % (_MEMCACHED_ADDR, _MEMCACHED_PORT),
-        ]
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'demo-default-cache',
     },
     'breakdowns_rs': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
