@@ -2,6 +2,7 @@ import datetime
 
 import utils.command_helpers
 import prodops.audience_report
+import prodops.helpers
 
 
 class Command(utils.command_helpers.ExceptionCommand):
