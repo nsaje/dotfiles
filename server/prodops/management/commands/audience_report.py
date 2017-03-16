@@ -43,6 +43,6 @@ class Command(utils.command_helpers.ExceptionCommand):
                                                          gte=start_date, lt=end_date)
         self._print('Report generated: {}'.format(
             prodops.helpers.upload_report_from_fs(
-                'ar/{}' - format(filepath.split('/')[-1]),
+                'ar/{}'.format(filepath.split('/')[-1]),
                 filepath)
         ))
