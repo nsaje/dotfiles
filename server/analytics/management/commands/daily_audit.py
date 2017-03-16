@@ -6,6 +6,9 @@ from django.conf import settings
 import utils.command_helpers
 import utils.email_helper
 import analytics.monitor
+import analytics.statements
+import analytics.users
+import utils.csv_utils
 import dash.models
 
 RECIPIANTS = (
@@ -51,6 +54,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         self.alarms = False
         self.email_body = ''
 
+        self.wau(options)
         self.audit_iab_categories(options)
         self.audit_campaign_pacing(options)
         self.audit_autopilot(options)
@@ -72,6 +76,18 @@ class Command(utils.command_helpers.ExceptionCommand):
             )
             email.send()
 
+    def wau(self, options):
+        url = analytics.statements.generate_csv(
+            'wau/{}-api.csv'.format(str(datetime.date.today())),
+            utils.csv_utils.tuplelist_to_csv(analytics.users.get_wau_api_report())
+        )
+        lines = ['WAU', ' - API user report: ' + url]
+        for line in lines:
+            self._print(line)
+            self.email_body += line + '\n'
+
+        self.email_body += '\n'
+
     def audit_click_discrepancy(self, options):
         alarms = analytics.monitor.audit_click_discrepancy()
         if not alarms:
@@ -89,6 +105,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             )
             self._print(text)
             self.email_body += text + '\n'
+        self.email_body += '\n'
 
     def audit_account_credits(self, options):
         alarms = analytics.monitor.audit_account_credits()

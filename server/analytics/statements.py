@@ -1,6 +1,4 @@
 import datetime
-import unicodecsv as csv
-import StringIO
 import urllib
 
 from django.conf import settings
@@ -10,6 +8,7 @@ import dash.constants
 from redshiftapi.models import MVMaster
 import redshiftapi.db
 from utils import s3helpers
+import utils.csv_utils
 
 DOWNLOAD_URL = 'https://one.zemanta.com/api/custom_report_download/'
 INVENTORY_REPORT_QUERY = """SELECT source_id, publisher, country, device_type,
@@ -58,28 +57,16 @@ def get_inventory_report(days=30):
 
 
 def inventory_report_csv(days=30):
-    report = get_inventory_report(days=days)
-    out = StringIO.StringIO()
-    csv_file = csv.writer(out, delimiter='\t')
-    csv_file.writerow((
-        'Exchange', 'Publisher', 'Country', 'Device', 'Impressions', 'Avg. impressions per day'
-    ))
-    for row in report:
-        csv_file.writerow(row)
-    return out.getvalue()
+    return utils.csv_utils.tuplelist_to_csv([
+        ('Exchange', 'Publisher', 'Country', 'Device', 'Impressions', 'Avg. impressions per day')
+    ] + get_inventory_report(days=days))
 
 
 def media_source_performance_report_csv(from_date, till_date):
-    report = get_media_source_performance_report(from_date, till_date)
-    out = StringIO.StringIO()
-    csv_file = csv.writer(out, delimiter='\t')
-    csv_file.writerow((
-        'Media source', 'CTR', 'Avg. CPC', 'Avg. CPM',
-        'Pageviews per Visit', 'Bounce Rate', 'Time on Site',
-    ))
-    for row in report:
-        csv_file.writerow(row)
-    return out.getvalue()
+    return utils.csv_utils.tuplelist_to_csv([
+        ('Media source', 'CTR', 'Avg. CPC', 'Avg. CPM',
+         'Pageviews per Visit', 'Bounce Rate', 'Time on Site', )
+    ] + get_media_source_performance_report(from_date, till_date))
 
 
 def get_url(path):

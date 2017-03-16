@@ -25,3 +25,11 @@ def convert_to_xls(csv_str, encoding='utf-8'):
             worksheet.write(row, col, el)
     workbook.close()
     return buf.getvalue()
+
+
+def tuplelist_to_csv(data):
+    out = StringIO.StringIO()
+    csv_file = unicodecsv.writer(out, delimiter='\t')
+    for row in data:
+        csv_file.writerow(row)
+    return out.getvalue()

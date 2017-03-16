@@ -1,10 +1,9 @@
-import StringIO
-
-import unicodecsv as csv
 from django.conf import settings
 
 from utils import s3helpers
 import analytics.statements
+import analytics.heleprs
+import utils.csv_utils
 
 
 def upload_report_from_fs(path, filepath):
@@ -17,10 +16,6 @@ def upload_report_from_fs(path, filepath):
 
 def generate_report(name, data):
     s3 = s3helpers.S3Helper(settings.S3_BUCKET_CUSTOM_REPORTS)
-    out = StringIO.StringIO()
-    csv_file = csv.writer(out, delimiter='\t')
-    for row in data:
-        csv_file.writerow(row)
     path = '/custom-csv/{}.csv'.format(name)
-    s3.put(path, out.getvalue())
+    s3.put(path, utils.csv_utils.tuplelist_to_csv(data))
     return analytics.statements.get_url(path)
