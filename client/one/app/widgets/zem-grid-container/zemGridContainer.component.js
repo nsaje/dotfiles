@@ -17,7 +17,7 @@ angular.module('one.widgets').component('zemGridContainer', {
             // [UX] Delay tab activation (zemGrid) to
             // show tab container as fast as possible on initial render
             var tab = getTab($ctrl.breakdown);
-            $timeout(function () { activateTab(tab); });
+            activateTab(tab);
         };
 
         $ctrl.$onChanges = function (changes) {
@@ -52,12 +52,14 @@ angular.module('one.widgets').component('zemGridContainer', {
 
         function activateGridTab (tab) {
             if (!tab.activated) {
-                var $childScope = $scope.$new();
-                tab.gridIntegrationService = zemGridIntegrationService.createInstance($childScope);
-                tab.gridIntegrationService.initialize();
-                tab.gridIntegrationService.configureDataSource($ctrl.entity, tab.breakdown);
-                tab.grid = tab.gridIntegrationService.getGrid();
-                tab.activated = true;
+                $timeout(function () {
+                    var $childScope = $scope.$new();
+                    tab.gridIntegrationService = zemGridIntegrationService.createInstance($childScope);
+                    tab.gridIntegrationService.initialize();
+                    tab.gridIntegrationService.configureDataSource($ctrl.entity, tab.breakdown);
+                    tab.grid = tab.gridIntegrationService.getGrid();
+                    tab.activated = true;
+                });
             } else {
                 // [UX] Refresh/resize Grid UI if already activated
                 //   -> column sizes, pivot columns, sticky header/footer
