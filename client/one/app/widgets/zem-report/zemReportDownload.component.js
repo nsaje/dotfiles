@@ -18,7 +18,6 @@ angular.module('one.widgets').component('zemReportDownload', {
         $ctrl.includeTotals = false;
         $ctrl.includeIds = false;
         $ctrl.includeItemsWithNoSpend = false;
-        $ctrl.showIncludeIds = true;
         $ctrl.showIncludeItemsWithNoSpend = true;
         $ctrl.recipients = '';
         $ctrl.user = undefined;
@@ -43,6 +42,9 @@ angular.module('one.widgets').component('zemReportDownload', {
 
             $ctrl.breakdown = $ctrl.resolve.api.getBreakdown();
             $ctrl.view = $ctrl.breakdown[0].report_query;
+            if ($ctrl.view === 'Publisher') {
+                $ctrl.showIncludeItemsWithNoSpend = false;
+            }
             $ctrl.breakdown = $ctrl.breakdown.slice(1, $ctrl.breakdown.length);
         };
 

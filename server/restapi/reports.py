@@ -58,6 +58,10 @@ SUPPORTED_BREAKDOWNS = {
     (utils.columns.FieldNames.publisher_id, utils.columns.FieldNames.day),
     (utils.columns.FieldNames.publisher_id, utils.columns.FieldNames.week),
     (utils.columns.FieldNames.publisher_id, utils.columns.FieldNames.month),
+    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.publisher_id, ),
+    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.publisher_id, utils.columns.FieldNames.day),
+    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.publisher_id, utils.columns.FieldNames.week),
+    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.publisher_id, utils.columns.FieldNames.month),
 }
 
 DATED_COLUMNS = (
