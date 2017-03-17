@@ -374,6 +374,7 @@ class AdGroupSerializer(SettingsSerializer):
             'targeting': {
                 'geo': {
                     'included': self._partition_regions(settings['target_regions']),
+                    'excluded': self._partition_regions(settings['exclusion_target_regions']),
                 },
                 'devices': map(lambda x: DashConstantField(constants.AdTargetDevice).to_representation(x), settings['target_devices']),
                 'interest': {
@@ -409,6 +410,7 @@ class AdGroupSerializer(SettingsSerializer):
             'daily_budget_cc': data['dailyBudget'],
             'tracking_code': data['trackingCode'],
             'target_regions': self._unpartition_regions(data['targeting']['geo']['included']),
+            'exclusion_target_regions': self._unpartition_regions(data['targeting']['geo']['excluded']),
             'target_devices': DashConstantField(constants.AdTargetDevice).to_internal_value_many(data['targeting']['devices']),
             'interest_targeting': DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['included']),
             'exclusion_interest_targeting': DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['excluded']),
@@ -427,17 +429,24 @@ class AdGroupSerializer(SettingsSerializer):
         geo = {
             'countries': [],
             'regions': [],
-            'dma': []
+            'dma': [],
+            'cities': [],
+            'postalCodes': [],
         }
-        for region in target_regions:
-            if region in regions.COUNTRY_BY_CODE:
-                geo['countries'].append(region)
-            elif region in regions.SUBDIVISION_BY_CODE:
-                geo['regions'].append(region)
-            elif region in regions.DMA_BY_CODE:
-                geo['dma'].append(region)
-            else:
-                raise Exception('Unknown region returned from internal API!')
+        non_zips = {loc.key: loc for loc in dash.models.Geolocation.objects.filter(key__in=target_regions)}
+        zips = set(target_regions) - set(non_zips.keys())
+        for location in target_regions:
+            if location in non_zips:
+                if non_zips[location].type == constants.LocationType.COUNTRY:
+                    geo['countries'].append(location)
+                if non_zips[location].type == constants.LocationType.REGION:
+                    geo['regions'].append(location)
+                if non_zips[location].type == constants.LocationType.DMA:
+                    geo['dma'].append(location)
+                if non_zips[location].type == constants.LocationType.CITY:
+                    geo['cities'].append(location)
+            if location in zips:
+                geo['postalCodes'].append(location)
         return geo
 
     @staticmethod
@@ -448,6 +457,8 @@ class AdGroupSerializer(SettingsSerializer):
         target_regions.extend(geo['countries'])
         target_regions.extend(geo['regions'])
         target_regions.extend(geo['dma'])
+        target_regions.extend(geo['cities'])
+        target_regions.extend(geo['postalCodes'])
         return target_regions
 
 

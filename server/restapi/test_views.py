@@ -1,4 +1,5 @@
 from decimal import Decimal
+import string
 import datetime
 import json
 import mock
@@ -484,7 +485,8 @@ class AdGroupsTest(RESTAPITest):
         max_cpm='1.700',
         daily_budget='15.00',
         tracking_code='a=b',
-        target_regions=['US'],
+        target_regions={'countries': ['US']},
+        exclusion_target_regions={},
         target_devices=['desktop'],
         interest_targeting=['women', 'fashion'],
         exclusion_interest_targeting=['politics'],
@@ -495,6 +497,23 @@ class AdGroupsTest(RESTAPITest):
         whitelist_publisher_groups=[153],
         blacklist_publisher_groups=[154],
     ):
+        final_target_regions = {
+            'countries': [],
+            'regions': [],
+            'dma': [],
+            'cities': [],
+            'postalCodes': []
+        }
+        final_target_regions.update(target_regions)
+        final_exclusion_target_regions = {
+            'countries': [],
+            'regions': [],
+            'dma': [],
+            'cities': [],
+            'postalCodes': []
+        }
+        final_exclusion_target_regions.update(exclusion_target_regions)
+
         representation = {
             'id': str(id),
             'campaignId': str(campaign_id),
@@ -509,11 +528,8 @@ class AdGroupsTest(RESTAPITest):
             'trackingCode': tracking_code,
             'targeting': {
                 'geo': {
-                    'included': {
-                        'countries': target_regions,
-                        'regions': [],
-                        'dma': [],
-                    },
+                    'included': final_target_regions,
+                    'excluded': final_exclusion_target_regions,
                 },
                 'devices': [constants.AdTargetDevice.get_name(i) for i in target_devices],
                 'interest': {
@@ -535,6 +551,29 @@ class AdGroupsTest(RESTAPITest):
 
         return normalize(representation)
 
+    @staticmethod
+    def _partition_regions(target_regions):
+        """ non-exact heuristics in order to not reimplement functionality in tests """
+        geo = {
+            'countries': [],
+            'regions': [],
+            'dma': [],
+            'cities': [],
+            'postalCodes': []
+        }
+        for tr in target_regions:
+            if len(tr) == 2 and all(char in string.ascii_uppercase for char in tr):
+                geo['countries'].append(tr)
+            elif 5 <= len(tr) <= 6 and '-' in tr:
+                target_regions['regions'].append(tr)
+            elif ':' in tr:
+                geo['postalCodes'].append(tr)
+            elif len(tr) == 3:
+                geo['dma'].append(tr)
+            else:
+                geo['cities'].append(int(tr))
+        return geo
+
     def validate_against_db(self, adgroup):
         adgroup_db = dash.models.AdGroup.objects.get(pk=adgroup['id'])
         settings_db = adgroup_db.get_current_settings()
@@ -550,7 +589,7 @@ class AdGroupsTest(RESTAPITest):
             max_cpm=settings_db.max_cpm.quantize(Decimal('1.000')) if settings_db.max_cpm else '',
             daily_budget=settings_db.daily_budget_cc.quantize(Decimal('1.00')),
             tracking_code=settings_db.tracking_code,
-            target_regions=settings_db.target_regions,
+            target_regions=self._partition_regions(settings_db.target_regions),
             target_devices=settings_db.target_devices,
             interest_targeting=settings_db.interest_targeting,
             exclusion_interest_targeting=settings_db.exclusion_interest_targeting,
