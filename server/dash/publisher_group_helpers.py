@@ -89,13 +89,13 @@ def concat_publisher_group_targeting(ad_group, ad_group_settings, campaign,
     blacklist |= set(account_settings.blacklist_publisher_groups)
     if include_global:
         blacklist |= set([get_global_blacklist().id])
-    blacklist = [x for x in blacklist if x]
+    blacklist = sorted([x for x in blacklist if x])
 
     whitelist = set([ad_group.default_whitelist_id, campaign.default_whitelist_id, account.default_whitelist_id])
     whitelist |= set(ad_group_settings.whitelist_publisher_groups)
     whitelist |= set(campaign_settings.whitelist_publisher_groups)
     whitelist |= set(account_settings.whitelist_publisher_groups)
-    whitelist = [x for x in whitelist if x]
+    whitelist = sorted([x for x in whitelist if x])
 
     return blacklist, whitelist
 

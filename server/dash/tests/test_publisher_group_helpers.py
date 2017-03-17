@@ -407,8 +407,8 @@ class PublisherGroupHelpersTest(TestCase):
                 ad_group, ad_group_settings, campaign, campaign_settings, account, account_settings
             )
 
-        self.assertItemsEqual(blacklist, [1, 2, 3, 4, 5, 6, 7])
-        self.assertItemsEqual(whitelist, [11, 12, 13, 14, 15, 16])
+        self.assertEqual(blacklist, [1, 2, 3, 4, 5, 6, 7])
+        self.assertEqual(whitelist, [11, 12, 13, 14, 15, 16])
 
     def test_blacklist_outbrain_validation(self):
         outbrain = models.Source.objects.get(pk=3)
