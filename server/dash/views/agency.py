@@ -139,7 +139,7 @@ class AdGroupSettings(api_common.BaseApiView):
                     helpers.validate_ad_group_sources_cpc_constraints(ad_group_sources_cpcs)
                 except cpc_constraints.ValidationError as err:
                     raise exc.ValidationError(errors={
-                        'b1_sources_group_cpc_cc': list(err)
+                        'b1_sources_group_cpc_cc': list(set(err))
                     })
             helpers.set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, new_settings)
 

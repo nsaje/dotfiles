@@ -439,7 +439,7 @@ class YesterdayCostTestCase(test.TestCase):
         datetime_mock.timedelta = datetime.timedelta
 
         result = api.get_yesterday_cost(dict(ad_group=1))
-        self.assertEqual(result, {1: 1.9043})
+        self.assertEqual(result, {1: 1.9443000000000001})
 
     @patch('reports.api.datetime')
     def test_non_existing_yesterday_cost(self, datetime_mock):

@@ -274,7 +274,9 @@ def get_yesterday_cost(constraints, breakdown=None):
 
     rs = get_day_cost(yesterday, breakdown=breakdown, **constraints)
 
-    result = map_by_breakdown(rs, breakdown, lambda row: row.get('e_media_cost', row['media_cost']) or 0.0)
+    result = map_by_breakdown(rs, breakdown, lambda row: (
+        (row.get('e_media_cost', row['media_cost']) or 0.0) + (row.get('e_data_cost', row['data_cost']))
+    ))
 
     return result
 
@@ -291,7 +293,7 @@ def get_actual_yesterday_cost(constraints, breakdown=None):
 
     rs = get_day_cost(yesterday, breakdown=breakdown, **constraints)
 
-    result = map_by_breakdown(rs, breakdown, lambda row: row.get('media_cost', 0.0))
+    result = map_by_breakdown(rs, breakdown, lambda row: row.get('media_cost', 0.0) + row.get('data_cost', 0.0))
 
     return result
 

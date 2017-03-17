@@ -112,8 +112,8 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.account_id AS account_id,
             base_table.source_id AS source_id,
             base_table.dma AS dma,
-            SUM(base_table.cost_nano)/1000000000.0 yesterday_cost,
-            SUM(base_table.effective_cost_nano)/1000000000.0 e_yesterday_cost
+            (NVL(SUM(base_table.cost_nano), 0) + NVL(SUM(base_table.data_cost_nano), 0))/1000000000.0 yesterday_cost,
+            (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0))/1000000000.0 e_yesterday_cost
         FROM mv_account_delivery_geo base_table
         WHERE (( base_table.date = %s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
@@ -140,8 +140,8 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.publisher AS publisher,
             base_table.source_id AS source_id,
             base_table.date AS day,
-            SUM(base_table.cost_nano)/1000000000.0 yesterday_cost,
-            SUM(base_table.effective_cost_nano)/1000000000.0 e_yesterday_cost,
+            (NVL(SUM(base_table.cost_nano), 0) + NVL(SUM(base_table.data_cost_nano), 0))/1000000000.0 yesterday_cost,
+            (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0))/1000000000.0 e_yesterday_cost,
             MAX(base_table.publisher || '__' || base_table.source_id) publisher_id
         FROM mv_pubs_ad_group base_table
         WHERE (( base_table.date = %s)
@@ -296,15 +296,16 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
 
         goals = Goals(None, None, None, None, None)
 
-        sql, params = queries.prepare_query_joint_base(['account_id'], constraints, None, ['total_seconds'], 5, 10, goals, False)
+        sql, params = queries.prepare_query_joint_base(['account_id'], constraints, None, [
+                                                       'total_seconds'], 5, 10, goals, False)
 
         self.assertSQLEquals(sql, """
         WITH
             temp_yesterday AS (
                 SELECT
                     a.account_id AS account_id,
-                    SUM(a.effective_cost_nano)/1000000000.0 e_yesterday_cost,
-                    SUM(a.cost_nano)/1000000000.0 yesterday_cost
+                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))/1000000000.0 e_yesterday_cost,
+                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))/1000000000.0 yesterday_cost
                 FROM mv_account a
                 WHERE (a.date=%s)
                 GROUP BY 1
@@ -347,7 +348,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
 
         goals = Goals(None, None, None, None, None)
 
-        sql, params = queries.prepare_query_joint_base(['publisher_id'], constraints, None, ['total_seconds'], 5, 10, goals, True)
+        sql, params = queries.prepare_query_joint_base(['publisher_id'], constraints, None, [
+                                                       'total_seconds'], 5, 10, goals, True)
 
         self.assertSQLEquals(sql, """
         WITH
@@ -355,8 +357,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                 SELECT
                     a.publisher AS publisher,
                     a.source_id AS source_id,
-                    SUM(a.effective_cost_nano)/1000000000.0 e_yesterday_cost,
-                    SUM(a.cost_nano)/1000000000.0 yesterday_cost
+                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))/1000000000.0 e_yesterday_cost,
+                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))/1000000000.0 yesterday_cost
                 FROM mv_pubs_ad_group a
                 WHERE (a.date=%s)
                 GROUP BY 1, 2
@@ -410,8 +412,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                 SELECT
                     a.account_id AS account_id,
                     a.campaign_id AS campaign_id,
-                    SUM(a.effective_cost_nano)/1000000000.0 e_yesterday_cost,
-                    SUM(a.cost_nano)/1000000000.0 yesterday_cost
+                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))/1000000000.0 e_yesterday_cost,
+                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))/1000000000.0 yesterday_cost
                 FROM mv_campaign a
                 WHERE (a.date=%s)
                 GROUP BY 1, 2
@@ -485,8 +487,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                     a.publisher AS publisher,
                     a.source_id AS source_id,
                     a.dma AS dma,
-                    SUM(a.effective_cost_nano)/1000000000.0 e_yesterday_cost,
-                    SUM(a.cost_nano)/1000000000.0 yesterday_cost
+                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))/1000000000.0 e_yesterday_cost,
+                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))/1000000000.0 yesterday_cost
                 FROM mv_pubs_master a
                 WHERE (a.date=%s)
                 GROUP BY 1, 2, 3
@@ -562,7 +564,8 @@ class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
 
         goals = Goals(campaign_goals, conversion_goals, campaign_goal_values, pixels, None)
 
-        sql, params = queries.prepare_query_joint_base(['account_id'], constraints, None, ['total_seconds'], 5, 10, goals, False)
+        sql, params = queries.prepare_query_joint_base(['account_id'], constraints, None, [
+                                                       'total_seconds'], 5, 10, goals, False)
 
         self.assertSQLEquals(sql, """
         WITH temp_conversions AS (
@@ -585,8 +588,8 @@ class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
          GROUP BY 1 ),
         temp_yesterday AS (
          SELECT   a.account_id AS account_id ,
-                  SUM(a.effective_cost_nano)/1000000000.0    e_yesterday_cost,
-                  SUM(a.cost_nano)          /1000000000.0    yesterday_cost
+                  (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))/1000000000.0 e_yesterday_cost,
+                  (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))/1000000000.0 yesterday_cost
          FROM     mv_account a
          WHERE    (a.DATE =%s)
          GROUP BY 1 ),
@@ -700,8 +703,8 @@ class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
         temp_yesterday AS (
          SELECT   a.account_id AS account_id ,
                   a.campaign_id AS campaign_id,
-                  SUM(a.effective_cost_nano)/1000000000.0    e_yesterday_cost,
-                  SUM(a.cost_nano)          /1000000000.0    yesterday_cost
+                  (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))/1000000000.0 e_yesterday_cost,
+                  (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))/1000000000.0 yesterday_cost
          FROM     mv_campaign a
          WHERE    (a.DATE =%s)
          GROUP BY 1, 2 ),

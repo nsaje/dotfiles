@@ -29,6 +29,7 @@ var constants = {
         PILOT: 4,
         ACTIVATED: 5,
         MANAGED: 6,
+        PAAS: 7,
     },
     infoboxStatus: {
         ACTIVE: 'active',
@@ -786,6 +787,7 @@ var options = {
         {name: 'Pilot', id: constants.accountTypes.PILOT},
         {name: 'Activated', id: constants.accountTypes.ACTIVATED},
         {name: 'Managed', id: constants.accountTypes.MANAGED},
+        {name: 'PAAS', id: constants.accountTypes.PAAS},
     ],
     adGroupSettingsStates: [
         {name: 'Paused', value: constants.settingsState.INACTIVE},
@@ -1446,7 +1448,6 @@ constants.defaultAccountTypes = [
         id: String(constants.accountTypes.PILOT),
         name: 'Pilot',
     },
-
     {
         id: String(constants.accountTypes.ACTIVATED),
         name: 'Activated',
@@ -1454,5 +1455,9 @@ constants.defaultAccountTypes = [
     {
         id: String(constants.accountTypes.MANAGED),
         name: 'Managed',
+    },
+    {
+        id: String(constants.accountTypes.PAAS),
+        name: 'PAAS',
     },
 ];

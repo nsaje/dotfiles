@@ -137,6 +137,7 @@ class AccountType(ConstantBase):
     PILOT = 4
     ACTIVATED = 5
     MANAGED = 6
+    PAAS = 7
 
     _VALUES = {
         UNKNOWN: 'Unknown',
@@ -145,6 +146,7 @@ class AccountType(ConstantBase):
         PILOT: 'Pilot',
         ACTIVATED: 'Activated',
         MANAGED: 'Managed',
+        PAAS: 7,
     }
 
 

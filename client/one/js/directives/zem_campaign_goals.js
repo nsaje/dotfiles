@@ -146,7 +146,7 @@ angular.module('one.legacy').directive('zemCampaignGoals', function ($filter) {
                     var el = $scope.campaignGoals[i];
                     if (el.primary && constants.automaticallyOptimizedKPIGoals.indexOf(el.type) > -1) {
                         label = ('Goal ' + constants.campaignGoalValueText[el.type] +
-                        ' is automatically optimized when data from GA/Omniture ' +
+                        ' is automatically optimized when data from Google Analytics/Adobe Analytics ' +
                         'is available and there are enough clicks for the data to be statistically significant.');
                         break;
                     }

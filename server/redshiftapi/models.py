@@ -43,7 +43,7 @@ class BreakdownsBase(backtosql.Model):
 
         if 'publisher_id' in breakdown:
             publisher_id_idx = breakdown.index('publisher_id')
-            breakdown = breakdown[:publisher_id_idx] + ['publisher', 'source_id'] + breakdown[publisher_id_idx+1:]
+            breakdown = breakdown[:publisher_id_idx] + ['publisher', 'source_id'] + breakdown[publisher_id_idx + 1:]
 
         return self.select_columns(subset=breakdown)
 
@@ -101,9 +101,12 @@ class BreakdownsBase(backtosql.Model):
     def get_query_all_yesterday_context(self, breakdown, constraints, parents, orders, use_publishers_view):
         constraints = helpers.get_yesterday_constraints(constraints)
 
-        yesterday_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'cost_nano'},
+        yesterday_cost = backtosql.TemplateColumn('part_sum_nano_double.sql',
+                                                  {'column_name1': 'cost_nano', 'column_name2': 'data_cost_nano'},
                                                   alias='yesterday_cost')
-        e_yesterday_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'effective_cost_nano'},
+        e_yesterday_cost = backtosql.TemplateColumn('part_sum_nano_double.sql',
+                                                    {'column_name1': 'effective_cost_nano',
+                                                        'column_name2': 'effective_data_cost_nano'},
                                                     alias='e_yesterday_cost')
 
         self.add_column(yesterday_cost)
@@ -231,9 +234,12 @@ class MVConversionsPublishers(MVConversions):
 
 class MVJointMaster(MVMaster):
 
-    yesterday_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'cost_nano'},
+    yesterday_cost = backtosql.TemplateColumn('part_sum_nano_double.sql',
+                                              {'column_name1': 'cost_nano', 'column_name2': 'data_cost_nano'},
                                               group=YESTERDAY_AGGREGATES)
-    e_yesterday_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'effective_cost_nano'},
+    e_yesterday_cost = backtosql.TemplateColumn('part_sum_nano_double.sql',
+                                                {'column_name1': 'effective_cost_nano',
+                                                 'column_name2': 'effective_data_cost_nano'},
                                                 group=YESTERDAY_AGGREGATES)
 
     def init_conversion_columns(self, conversion_goals):

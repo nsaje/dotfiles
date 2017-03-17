@@ -277,6 +277,7 @@ def _prepare_table_rows(context):
     ]))]
     agency_rows = map(TableRow.prepare(TableRow.TYPE_BREAKDOWN), [
         [TableCell('Managed', align='right')] + _populate_agency(context, dash.constants.AccountType.MANAGED),
+        [TableCell('PAAS', align='right')] + _populate_agency(context, dash.constants.AccountType.PAAS),
         [TableCell('Pilot', align='right')] + _populate_agency(context, dash.constants.AccountType.PILOT),
         [TableCell('Activated', align='right')] + _populate_agency(context, dash.constants.AccountType.ACTIVATED),
         [TableCell('Test', align='right')] + _populate_agency(context, dash.constants.AccountType.TEST),
@@ -294,6 +295,7 @@ def _prepare_table_rows(context):
 
     clientdirect_rows = map(TableRow.prepare(TableRow.TYPE_BREAKDOWN), [
         [TableCell('Managed', align='right')] + _populate_clientdirect(context, dash.constants.AccountType.MANAGED),
+        [TableCell('PAAS', align='right')] + _populate_clientdirect(context, dash.constants.AccountType.PAAS),
         [TableCell('Pilot', align='right')] + _populate_clientdirect(context, dash.constants.AccountType.PILOT),
         [TableCell('Activated', align='right')] +
         _populate_clientdirect(context, dash.constants.AccountType.ACTIVATED),
