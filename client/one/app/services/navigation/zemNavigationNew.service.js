@@ -21,6 +21,9 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
 
     function init () {
         zemNavigationService.onUpdate($scope, handleDataUpdate);
+        $rootScope.$on('$zemStateChangeStart', function () {
+            activeEntity = undefined;
+        });
         $rootScope.$on('$zemStateChangeSuccess', handleStateChange);
     }
 
@@ -265,7 +268,7 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
     }
 
     function getEntityById (type, id) {
-        if (!hierarchyRoot) return null;
+        if (!hierarchyRoot) return;
         if (type === constants.entityType.ACCOUNT) return hierarchyRoot.ids.accounts[id];
         if (type === constants.entityType.CAMPAIGN) return hierarchyRoot.ids.campaigns[id];
         if (type === constants.entityType.AD_GROUP) return hierarchyRoot.ids.adGroups[id];

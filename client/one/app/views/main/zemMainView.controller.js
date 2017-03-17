@@ -1,11 +1,9 @@
-angular.module('one.views').controller('zemMainView', function ($scope, $q, $state, zemPermissions, zemNavigationService) { // eslint-disable-line max-len
+angular.module('one.views').controller('zemMainView', function ($scope, $location, $q, $state, zemNavigationService) {
     var $ctrl = this;
 
     initialize();
 
     function initialize () {
-        $ctrl.hasPermission = zemPermissions.hasPermission;
-
         checkStateChange();
         $scope.$on('$zemStateChangeSuccess', checkStateChange);
     }
@@ -16,15 +14,16 @@ angular.module('one.views').controller('zemMainView', function ($scope, $q, $sta
 
         $ctrl.mainStateAllowed = false;
 
-        checksPromise = $q.all([canActivateMainState()])
+        checksPromise = $q.all([canActivateMainState(), checkRedirectToDefaultAccount()])
             .then(function () {
                 checksPromise = null;
                 $ctrl.mainStateAllowed = true;
             })
-            .catch(function (error) {
+            .catch(function (redirect) {
                 checksPromise = null;
-                if (error) {
-                    $state.go(error.state, error.params, {reload: true, location: 'replace'});
+                if (redirect) {
+                    var options = redirect.options || {reload: true, location: 'replace'};
+                    $state.go(redirect.state, redirect.params, options);
                 }
             });
     }
@@ -37,6 +36,31 @@ angular.module('one.views').controller('zemMainView', function ($scope, $q, $sta
                     deferred.resolve();
                 } else {
                     deferred.reject({state: 'error.forbidden'});
+                }
+            });
+        return deferred.promise;
+    }
+
+    function checkRedirectToDefaultAccount () {
+        if (!$state.is('v2')) return $q.resolve();
+
+        var deferred = $q.defer();
+        zemNavigationService.getAccountsAccess()
+            .then(function (accountsAccess) {
+                if (accountsAccess.accountsCount > 1) {
+                    deferred.reject({
+                        state: 'v2.analytics',
+                        params: {level: constants.levelStateParam.ACCOUNTS},
+                    });
+                } else {
+                    var defaultAccountParams = {
+                        level: constants.levelStateParam.ACCOUNT,
+                        id: accountsAccess.defaultAccountId,
+                    };
+                    deferred.reject({
+                        state: 'v2.analytics',
+                        params: defaultAccountParams,
+                    });
                 }
             });
         return deferred.promise;

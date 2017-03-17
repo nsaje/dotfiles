@@ -2,7 +2,6 @@ angular.module('one.views').config(function ($stateProvider) {
     $stateProvider.state('v2', {
         url: '/v2',
         templateUrl: '/app/views/main/zemMainView.partial.html',
-        abstract: true,
         controller: 'zemMainView as $ctrl',
         resolve: {
             // Don't resolve until app is initialized

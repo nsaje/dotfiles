@@ -34,7 +34,7 @@ angular.module('one').config(function ($urlRouterProvider) {
 
     $urlRouterProvider.when('/:level/:id/:breakdownOrPage', ['$state', '$match', '$rootScope', legacyRedirect]);
     $urlRouterProvider.when('/:level/:breakdownOrPage', ['$state', '$match', '$rootScope', legacyRedirect]);
-    $urlRouterProvider.when('/', ['$state', '$match', legacyRedirect]);
+    $urlRouterProvider.when('/', 'v2');
 
     function legacyRedirect ($state, $match, $rootScope) {
         var state = mapPagesToStates[$match.breakdownOrPage];
