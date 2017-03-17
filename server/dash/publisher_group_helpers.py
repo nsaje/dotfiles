@@ -475,6 +475,6 @@ def parse_default_publisher_group_origin(publisher_group):
 
     if obj is not None and obj.exists():
         obj = obj.first()
-        name = "{} [{}]".format(obj.name, obj.id)
+        name = u"{} [{}]".format(obj.name, obj.id)
 
     return type_, level, obj, name
