@@ -214,6 +214,7 @@ def _threshold_autopilot_min_max_cpc(cpc, cpc_change_comments):
                 [CpcChangeComment.OVER_AUTOPILOT_MAX_CPC])
     return (cpc, cpc_change_comments)
 
+
 def _has_b1_sources(ad_group_sources):
     for ags in ad_group_sources:
         if ags == dash.constants.SourceAllRTB:
