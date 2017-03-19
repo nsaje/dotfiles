@@ -16,8 +16,11 @@ def get_autopilot_cpc_recommendations(ad_group, adgroup_settings, data, budget_c
     adjust_automatic_mode_rtb_cpcs = adjust_rtb_sources and SourceAllRTB in data
     for ag_source in ag_sources:
         source_type = ag_source.source.source_type if ag_source != SourceAllRTB else SourceAllRTB
-        if not adjust_rtb_sources and source_type != SourceAllRTB and source_type.type == dash.constants.SourceType.B1:
-            continue
+        if not adjust_rtb_sources:
+            if source_type != SourceAllRTB and source_type.type == dash.constants.SourceType.B1:
+                continue
+            if source_type == SourceAllRTB and not _has_b1_sources(data.keys()):
+                continue
         if adjust_rtb_sources and source_type == SourceAllRTB:
             continue
 
@@ -210,3 +213,12 @@ def _threshold_autopilot_min_max_cpc(cpc, cpc_change_comments):
         return (autopilot_settings.AUTOPILOT_MAX_CPC, cpc_change_comments +
                 [CpcChangeComment.OVER_AUTOPILOT_MAX_CPC])
     return (cpc, cpc_change_comments)
+
+
+def _has_b1_sources(ad_group_sources):
+    for ags in ad_group_sources:
+        if ags == dash.constants.SourceAllRTB:
+            continue
+        if ags.source.source_type.type == dash.constants.SourceType.B1:
+            return True
+    return False
