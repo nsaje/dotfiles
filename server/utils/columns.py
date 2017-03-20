@@ -37,7 +37,6 @@ _FIELD_MAPPING = {
     'publisher_id': ('Publisher Id',),
     'publisher': ('Publisher',),
     'external_id': ('External Id',),
-    'domain_link': ('Link',),
     'blacklisted_level': ('Blacklisted Level',),
 
     'source': ('Media Source',),
@@ -45,10 +44,23 @@ _FIELD_MAPPING = {
     'source_slug': ('Media Source Slug',),
     'bid_cpc': ('Bid CPC',),
     'daily_budget': ('Daily Spend Cap',),
-    # TODO: Fix fields with same names
-    #  'supply_dash_url': ('Link',),
+    'supply_dash_url': ('Link',),
 
     'status': ('Status',),
+    'campaign_manager': ('Campaign Manager',),
+    'account_type': ('Account Type',),
+    'default_sales_representative': ('Sales Representative',),
+    'default_cs_representative': ('CS Representative',),
+    'default_account_manager': ('Account Manager',),
+    'salesforce_url': ('SalesForce Link',),
+
+    'age': ('Age',),
+    'gender': ('Gender',),
+    'age_gender': ('Age and Gender',),
+    'country': ('Country',),
+    'state': ('State',),
+    'dma': ('DMA',),
+    'device_type': ('Device',),
 
     'agency_total': ('Total Spend + Margin',),
     'avg_cost_for_new_visitor': ('Avg. Cost for New Visitor',),
@@ -83,10 +95,22 @@ _FIELD_MAPPING = {
     'unique_users': ('Unique Users',),
     'visits': ('Visits',),
     'yesterday_cost': ('Actual Yesterday Spend',),
+
+    'pacing': ('Pacing',),
+    'allocated_budgets': ('Media budgets',),
+    'spend_projection': ('Spend Projection',),
+    'license_fee_projection': ('License Fee Projection',),
+    'flat_fee': ('Recognized Flat Fee',),
+    'total_fee': ('Total Fee',),
+    'total_fee_projection': ('Total Fee Projection',),
 }
 
+_PUBLISHERS_FIELD_MAPPING = {
+    'domain_link': ('Link',),
+}
 
 _FIELD_MAPPING_REVERSE = {name: field for field, names in _FIELD_MAPPING.iteritems() for name in names}
+_PUBLISHERS_FIELD_MAPPING_REVERSE = {name: field for field, names in _PUBLISHERS_FIELD_MAPPING.iteritems() for name in names}
 
 
 class FieldsMeta(type):
@@ -128,10 +152,12 @@ class ColumnNames:
             setattr(cls, k, v[0])
 
 
-def get_field_names_mapping(pixels=[], conversion_goals=[]):
+def get_field_names_mapping(pixels=[], conversion_goals=[], show_publishers_fields=False):
     columns = copy.copy(_FIELD_MAPPING_REVERSE)
     columns.update(get_pixel_field_names_mapping(pixels))
     columns.update(get_conversion_goals_field_names_mapping(conversion_goals))
+    if show_publishers_fields:
+        columns.update(_PUBLISHERS_FIELD_MAPPING_REVERSE)
     return columns
 
 

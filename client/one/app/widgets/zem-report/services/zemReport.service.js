@@ -11,6 +11,9 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
         var showArchived = zemDataFilterService.getShowArchived();
         var filteredSources = zemDataFilterService.getFilteredSources();
         var filteredPublisherStatus = zemDataFilterService.getFilteredPublisherStatus();
+        var filteredAccountTypes = zemDataFilterService.getFilteredAccountTypes();
+        var filteredAgencies = zemDataFilterService.getFilteredAgencies();
+        var levelFilter = getLevelFilter(gridApi);
 
         var config = {
             fields: getFields(selectedFields, includeConfig),
@@ -20,11 +23,6 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
                     operator: 'between',
                     from: dateRange.startDate.format('YYYY-MM-DD'),
                     to: dateRange.endDate.format('YYYY-MM-DD'),
-                },
-                {
-                    field: 'Ad Group Id',
-                    operator: '=',
-                    value: gridApi.getMetaData().id,
                 },
             ],
             options: {
@@ -38,11 +36,31 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
             },
         };
 
+        if (levelFilter) {
+            config.filters.push(levelFilter);
+        }
+
         if (filteredSources) {
             config.filters.push({
                 field: 'Media Source',
                 operator: 'IN',
                 values: filteredSources,
+            });
+        }
+
+        if (filteredAccountTypes) {
+            config.filters.push({
+                field: 'Account Type',
+                operator: 'IN',
+                values: filteredAccountTypes,
+            });
+        }
+
+        if (filteredAgencies) {
+            config.filters.push({
+                field: 'Agency',
+                operator: 'IN',
+                values: filteredAgencies,
             });
         }
 
@@ -98,5 +116,28 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
         }
 
         return prefix + orderField;
+    }
+
+    function getLevelFilter (gridApi) {
+        var metaData = gridApi.getMetaData();
+        if (metaData.level === constants.level.AD_GROUPS) {
+            return {
+                field: 'Ad Group Id',
+                operator: '=',
+                value: metaData.id,
+            };
+        } else if (metaData.level === constants.level.CAMPAIGNS) {
+            return {
+                field: 'Campaign Id',
+                operator: '=',
+                value: metaData.id,
+            };
+        } else if (metaData.level === constants.level.ACCOUNTS) {
+            return {
+                field: 'Account Id',
+                operator: '=',
+                value: metaData.id,
+            };
+        }
     }
 });

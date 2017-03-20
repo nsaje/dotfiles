@@ -45,6 +45,8 @@ def prepare_constraints(user, breakdown, start_date, end_date, filtered_sources,
     constrain_ad_group = constrain_content_ads or stats.constants.AD_GROUP in breakdown
     constrain_campaigns = constrain_ad_group or stats.constants.CAMPAIGN in breakdown
 
+    ad_group = None
+
     # limit by ids
     ad_group_sources = None
     if content_ad_ids:
@@ -60,6 +62,9 @@ def prepare_constraints(user, breakdown, start_date, end_date, filtered_sources,
         allowed_content_ads = allowed_content_ads.filter(ad_group_id__in=ad_group_ids)
         campaign_ids = _intersection(campaign_ids, _distinct_key(allowed_ad_groups, 'campaign_id'))
         ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group__in=allowed_ad_groups)
+
+        if len(ad_group_ids) == 1:
+            ad_group = allowed_ad_groups.first()
 
         constrain_ad_group = True
         constrain_campaigns = True
@@ -79,9 +84,12 @@ def prepare_constraints(user, breakdown, start_date, end_date, filtered_sources,
         allowed_campaigns = allowed_campaigns.filter(account_id__in=account_ids)
         allowed_ad_groups = allowed_ad_groups.filter(campaign__in=allowed_campaigns)
         allowed_content_ads = allowed_content_ads.filter(ad_group__in=allowed_ad_groups)
-        if ad_group_sources is None:
-            ad_group_sources = dash.models.AdGroupSource.objects.filter(
-                ad_group__campaign__account__in=allowed_accounts)
+
+        constrain_campaigns = True
+
+    if ad_group_sources is None:
+        ad_group_sources = dash.models.AdGroupSource.objects.filter(
+            ad_group__campaign__account__in=allowed_accounts)
 
     if only_used_sources:
         filtered_sources = stats.constraints_helper.narrow_filtered_sources(filtered_sources, ad_group_sources)
@@ -98,6 +106,7 @@ def prepare_constraints(user, breakdown, start_date, end_date, filtered_sources,
 
     constraints = {
         'show_archived': show_archived,
+        'ad_group': ad_group,
         'allowed_content_ads': allowed_content_ads if constrain_content_ads else None,
         'allowed_ad_groups': allowed_ad_groups if constrain_ad_group else None,
         'allowed_campaigns': allowed_campaigns if constrain_campaigns else None,
@@ -127,7 +136,7 @@ def get_goals(constraints):
     campaign_goals, conversion_goals, campaign_goal_values, pixels = [], [], [], []
     primary_goals = []
 
-    if constraints['allowed_campaigns'].count() == 1:
+    if constraints['allowed_campaigns'] is not None and constraints['allowed_campaigns'].count() == 1:
         campaign = constraints['allowed_campaigns'][0]
         conversion_goals = campaign.conversiongoal_set.all().select_related('pixel')
         campaign_goals = campaign.campaigngoal_set.all().order_by('-primary', 'created_dt').select_related(

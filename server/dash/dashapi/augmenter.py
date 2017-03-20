@@ -96,9 +96,11 @@ def augment_account_for_report(row, loader, is_base_level=False):
 
     if account_id:
         account = loader.objs_map[account_id]
+        settings = loader.settings_map[account_id]
         row.update({
             'account': account.name,
             'agency_id': account.agency.id if account.agency else '',
+            'status': constants.AdGroupRunningStatus.get_text(settings['status']).upper(),
         })
 
 
@@ -132,8 +134,10 @@ def augment_campaign_for_report(row, loader, is_base_level=False):
 
     if campaign_id:
         campaign = loader.objs_map[campaign_id]
+        settings = loader.settings_map[campaign_id]
         row.update({
-            'campaign': campaign.name
+            'campaign': campaign.name,
+            'status': constants.AdGroupRunningStatus.get_text(settings['status']).upper(),
         })
 
 
@@ -159,8 +163,10 @@ def augment_ad_group_for_report(row, loader, is_base_level=False):
 
     if ad_group_id:
         ad_group = loader.objs_map[ad_group_id]
+        settings = loader.settings_map[ad_group_id]
         row.update({
             'ad_group': ad_group.name,
+            'status': constants.AdGroupSettingsState.get_text(settings['status']).upper(),
         })
 
 
@@ -256,6 +262,11 @@ def augment_source_for_report(row, loader, is_base_level=False):
         row.update({
             'source': source.name,
         })
+        status = loader.settings_map[source_id].get('status')
+        if status is not None:
+            row.update({
+                'status': constants.AdGroupSourceSettingsState.get_text(status).upper(),
+            })
 
 
 def augment_publisher(row, loader, is_base_level=False):
@@ -308,6 +319,26 @@ def augment_publisher_for_report(row, loader, is_base_level=False):
             ) or ''
         ).upper()
     })
+
+
+def augment_parent_ids(rows, loader_map, dimension):
+    parent_dimensions = {
+        'content_ad_id': 'ad_group_id',
+        'ad_group_id': 'campaign_id',
+        'campaign_id': 'account_id',
+    }
+    parent_dimension = parent_dimensions.get(dimension)
+    if parent_dimension is None:
+        return
+
+    loader = loader_map.get(dimension)
+    if loader is None:
+        return
+
+    for row in rows:
+        row[parent_dimension] = getattr(loader.objs_map[row[dimension]], parent_dimension)
+
+    augment_parent_ids(rows, loader_map, parent_dimension)
 
 
 def make_dash_rows(target_dimension, objs_ids, parent):

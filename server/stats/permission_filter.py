@@ -105,7 +105,7 @@ def validate_breakdown_by_structure(breakdown):
 
     unsupperted_breakdowns = set(breakdown) - set(clean_breakdown)
     if unsupperted_breakdowns:
-        raise exc.InvalidBreakdownError("Unsupported breakdowns {}".format(unsupperted_breakdowns))
+        raise exc.InvalidBreakdownError("Unsupported breakdowns: {}".format(', '.join(unsupperted_breakdowns)))
 
     if breakdown != clean_breakdown:
         raise exc.InvalidBreakdownError("Wrong breakdown order")

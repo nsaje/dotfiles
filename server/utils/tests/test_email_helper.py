@@ -202,10 +202,13 @@ class EmailHelperTestCase(TestCase):
         ad_group = dash_models.AdGroup(campaign=campaign, name='Ad Group 1')
         ad_group.save(self.request)
 
-        email_helper.send_async_report(user, ['asd@gmail.com'], 'bla.com/test.csv',
-                                       datetime.date(2016, 1, 1), datetime.date(2016, 5, 5), datetime.date(2016, 1, 4),
-                                       [], False, dash.constants.PublisherBlacklistFilter.SHOW_ACTIVE, 'Publisher', ['By Day'],
-                                       ['Clicks'], False, ad_group)
+        email_helper.send_async_report(
+            user, ['asd@gmail.com'], 'bla.com/test.csv',
+            datetime.date(2016, 1, 1), datetime.date(2016, 5, 5), datetime.date(2016, 1, 4),
+            [], False, dash.constants.PublisherBlacklistFilter.SHOW_ACTIVE, 'Publisher', ['By Day'],
+            ['Clicks'], False,
+            ad_group.name, campaign.name, account.name,
+        )
         subject = 'Report results'
         body = """Hi,
 

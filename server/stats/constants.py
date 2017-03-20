@@ -128,3 +128,11 @@ def get_base_dimension(breakdown):
 
 def get_parent_breakdown(breakdown):
     return breakdown[:-1]
+
+
+def get_child_breakdown_of_dimension(breakdown, dimension):
+    try:
+        breakdown = breakdown[breakdown.index(dimension) + 1:]
+    except ValueError:
+        pass
+    return breakdown

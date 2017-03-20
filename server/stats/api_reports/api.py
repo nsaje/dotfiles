@@ -15,17 +15,17 @@ from utils import sort_helper
 from utils import columns
 
 
-def query(user, breakdown, constraints, goals, order, include_items_with_no_spend=False):
+def query(user, breakdown, constraints, goals, order, level, include_items_with_no_spend=False):
     stats_rows = redshiftapi.api_reports.query(
         breakdown, constraints, goals, order,
         use_publishers_view=api_breakdowns.should_use_publishers_view(breakdown))
 
     if include_items_with_no_spend:
-        dash_rows = dash.dashapi.api_reports.query(user, breakdown, constraints, goals)
+        dash_rows = dash.dashapi.api_reports.query(user, breakdown, constraints, level)
         rows = helpers.merge_rows(breakdown, dash_rows, stats_rows)
     else:
         rows = stats_rows
-        dash.dashapi.api_reports.annotate(rows, user, breakdown, constraints, goals)
+        dash.dashapi.api_reports.annotate(rows, user, breakdown, constraints, level)
 
     rows = sort_helper.sort_results(rows, [order])
 
@@ -36,12 +36,14 @@ def query(user, breakdown, constraints, goals, order, include_items_with_no_spen
     return rows
 
 
-def totals(user, breakdown, constraints, goals):
+def totals(user, breakdown, constraints, goals, level):
     rows = redshiftapi.api_reports.query_totals(
         breakdown, constraints, goals,
         use_publishers_view=api_breakdowns.should_use_publishers_view(breakdown))
 
     assert len(rows) == 1
+
+    dash.dashapi.api_reports.annotate_totals(rows[0], user, breakdown, constraints, level)
 
     format_values(rows)
 
@@ -58,11 +60,11 @@ def get_filename(breakdown, constraints):
         account_name = 'ZemantaOne'
 
     campaign_name = None
-    if constraints['allowed_campaigns'].count() == 1:
+    if constraints['allowed_campaigns'] is not None and constraints['allowed_campaigns'].count() == 1:
         campaign_name = slugify(constraints['allowed_campaigns'][0].name)
 
     ad_group_name = None
-    if constraints['allowed_ad_groups'].count() == 1:
+    if constraints['allowed_ad_groups'] is not None and constraints['allowed_ad_groups'].count() == 1:
         ad_group_name = slugify(constraints['allowed_ad_groups'][0].name)
 
     breakdown = ['by_' + getattr(columns.ColumnNames, constants.get_dimension_name_key(x)).lower() for x in breakdown]

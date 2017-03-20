@@ -27,7 +27,7 @@ class ReportViewsTest(TestCase):
     def test_new_job(self):
         query = {
             'fields': [{'field': 'Content Ad Id'}],
-            'filters': [{'field': 'Ad Group Id', 'operator': '=', 'value': '123'},
+            'filters': [{'field': 'Ad Group Id', 'operator': '=', 'value': '1'},
                         {'field': 'Date', 'operator': '=', 'value': '2016-10-10'}]
         }
         r = self.client.post(reverse('reports_list'), query, format='json')
@@ -72,6 +72,9 @@ class ReportViewsTest(TestCase):
             test_helper.QuerySetMatcher(dash.models.Source.objects.filter(pk__in=[1])),
             show_archived=False,
             show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL,
+            only_used_sources=True,
+            filtered_agencies=None,
+            filtered_account_types=None,
             ad_group_ids=[1]
         )
 
@@ -81,6 +84,7 @@ class ReportViewsTest(TestCase):
             mock.ANY,
             mock.ANY,
             '-e_media_cost',
+            'ad_groups',
             include_items_with_no_spend=False,
         )
 
@@ -116,6 +120,9 @@ class ReportViewsTest(TestCase):
             test_helper.QuerySetMatcher(dash.models.Source.objects.filter(pk__in=[1])),
             show_archived=True,
             show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ACTIVE,
+            only_used_sources=True,
+            filtered_agencies=None,
+            filtered_account_types=None,
             ad_group_ids=[1]
         )
 
@@ -125,6 +132,7 @@ class ReportViewsTest(TestCase):
             mock.ANY,
             mock.ANY,
             'clicks',
+            'ad_groups',
             include_items_with_no_spend=True,
         )
         self.assertTrue(mock_totals.called)
@@ -132,7 +140,7 @@ class ReportViewsTest(TestCase):
     def test_get_report_job_authorization(self):
         query = {
             'fields': [{'field': 'Content Ad Id'}],
-            'filters': [{'field': 'Ad Group Id', 'operator': '=', 'value': '123'},
+            'filters': [{'field': 'Ad Group Id', 'operator': '=', 'value': '1'},
                         {'field': 'Date', 'operator': '=', 'value': '2016-10-10'}]
         }
         r = self.client.post(reverse('reports_list'), query, format='json')

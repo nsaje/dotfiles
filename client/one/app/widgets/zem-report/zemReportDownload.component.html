@@ -92,4 +92,5 @@
     <div class="loader" ng-show="$ctrl.jobPostingInProgress"></div>
     <span ng-show="$ctrl.jobPosted">Requested report will be sent to your inbox shortly.</span>
     <span class="message message--success" ng-show="$ctrl.jobPosted && $ctrl.jobPostedSuccessfully">Requested report will be sent to your inbox shortly.</span>
+    <span class="message message--error" ng-repeat="error in $ctrl.errors.details.nonFieldErrors">{{ error }}</span>
 </div>

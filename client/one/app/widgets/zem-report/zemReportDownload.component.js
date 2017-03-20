@@ -50,6 +50,7 @@ angular.module('one.widgets').component('zemReportDownload', {
 
         function startReport () {
             $ctrl.jobPostingInProgress = true;
+            $ctrl.errors = undefined;
             zemReportService
                 .startReport($ctrl.resolve.api, $ctrl.selectedFields, {
                     includeTotals: $ctrl.includeTotals,
@@ -82,7 +83,8 @@ angular.module('one.widgets').component('zemReportDownload', {
             };
 
             var fields = alwaysFields[$ctrl.resolve.api.getMetaData().level];
-            if ($ctrl.hasPermission('zemauth.can_view_account_agency_information')) {
+            if ($ctrl.hasPermission('zemauth.can_view_account_agency_information') &&
+                    fields.indexOf('Account') >= 0) {
                 fields.unshift('Agency');
             }
 
@@ -93,7 +95,9 @@ angular.module('one.widgets').component('zemReportDownload', {
 
             var columns = $ctrl.resolve.api.getColumns();
             for (i = 0; i < columns.length; i++) {
-                if (columns[i].visible && columns[i].data.name &&
+                if (columns[i].visible &&
+                        !columns[i].disabled &&
+                        columns[i].data.name &&
                         hiddenTypes.indexOf(columns[i].data.type) < 0 &&
                         fields.indexOf(columns[i].data.name) < 0) {
                     if (columns[i].data.name in remappedFields) {

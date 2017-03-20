@@ -257,7 +257,7 @@ class BreakdownAllowedTest(TestCase):
         permission_filter.validate_breakdown_by_structure(['account_id'])
         permission_filter.validate_breakdown_by_structure([])
 
-        with self.assertRaisesMessage(exc.InvalidBreakdownError, "Unsupported breakdowns set(['bla'])"):
+        with self.assertRaisesMessage(exc.InvalidBreakdownError, "Unsupported breakdowns: bla"):
             permission_filter.validate_breakdown_by_structure(['account_id', 'bla', 'device_type'])
 
         with self.assertRaisesMessage(exc.InvalidBreakdownError, "Wrong breakdown order"):

@@ -517,7 +517,8 @@ def send_ga_setup_instructions(user):
 def send_async_report(
         user, recipients, report_path, start_date, end_date, expiry_date, filtered_sources,
         show_archived, show_blacklisted_publishers,
-        view, breakdowns, columns, include_totals, ad_group):
+        view, breakdowns, columns, include_totals,
+        ad_group_name, campaign_name, account_name):
 
     filters = []
     if show_archived:
@@ -531,9 +532,9 @@ def send_async_report(
     subject, plain_body, _ = format_email(
         dash.constants.EmailTemplateType.ASYNC_REPORT_RESULTS,
         link_url=report_path,
-        account_name=ad_group.campaign.account.name,
-        campaign_name=ad_group.campaign.name,
-        ad_group_name=ad_group.name,
+        account_name=account_name or '/',
+        campaign_name=campaign_name or '/',
+        ad_group_name=ad_group_name or '/',
         start_date=dates_helper.format_date_mmddyyyy(start_date),
         end_date=dates_helper.format_date_mmddyyyy(end_date),
         expiry_date=dates_helper.format_date_mmddyyyy(expiry_date),

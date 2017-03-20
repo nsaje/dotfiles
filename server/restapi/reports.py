@@ -17,12 +17,14 @@ import dash.models
 import stats.constants
 import stats.api_breakdowns
 import stats.api_reports
+import stats.permission_filter
 
 import utils.s3helpers
 import utils.email_helper
 import utils.columns
 import utils.sort_helper
 import utils.dates_helper
+from utils import exc
 
 
 logger = logging.getLogger(__name__)
@@ -36,50 +38,14 @@ OPERATORS = [EQUALS, IN, BETWEEN]
 
 DEFAULT_ORDER = '-e_media_cost'
 
-SUPPORTED_BREAKDOWNS = {
-    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.content_ad_id),
-    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.source_id),
-    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.day),
-    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.week),
-    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.month),
-    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.source_id, utils.columns.FieldNames.day),
-    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.source_id, utils.columns.FieldNames.week),
-    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.source_id, utils.columns.FieldNames.month),
-    (utils.columns.FieldNames.content_ad_id, ),
-    (utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.source_id),
-    (utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.day),
-    (utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.week),
-    (utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.month),
-    (utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.source_id, utils.columns.FieldNames.day),
-    (utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.source_id, utils.columns.FieldNames.week),
-    (utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.source_id, utils.columns.FieldNames.month),
-    (utils.columns.FieldNames.source_id, ),
-    (utils.columns.FieldNames.publisher_id, ),
-    (utils.columns.FieldNames.publisher_id, utils.columns.FieldNames.day),
-    (utils.columns.FieldNames.publisher_id, utils.columns.FieldNames.week),
-    (utils.columns.FieldNames.publisher_id, utils.columns.FieldNames.month),
-    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.publisher_id, ),
-    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.publisher_id, utils.columns.FieldNames.day),
-    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.publisher_id, utils.columns.FieldNames.week),
-    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.publisher_id, utils.columns.FieldNames.month),
-}
-
 DATED_COLUMNS = (
     utils.columns.FieldNames.status,
 )
 
-BREAKDOWN_FIELDS = {
-    utils.columns.FieldNames.content_ad_id,
-    utils.columns.FieldNames.ad_group_id,
-    utils.columns.FieldNames.campaign_id,
-    utils.columns.FieldNames.account_id,
-    utils.columns.FieldNames.content_ad_id,
-    utils.columns.FieldNames.source_id,
-    utils.columns.FieldNames.publisher_id,
-    utils.columns.FieldNames.day,
-    utils.columns.FieldNames.week,
-    utils.columns.FieldNames.month,
-}
+BREAKDOWN_FIELDS = set(
+    stats.constants.StructureDimension._ALL +
+    stats.constants.TimeDimension._ALL +
+    stats.constants.DeliveryDimension._ALL)
 
 
 def get_breakdown_from_fields(fields):
@@ -99,23 +65,7 @@ def get_breakdown_from_fields(fields):
     if utils.columns.FieldNames.publisher_id in breakdown and utils.columns.FieldNames.source_id in breakdown:
         breakdown.remove(utils.columns.FieldNames.source_id)
 
-    return tuple(breakdown)
-
-
-def get_order(order_fieldname):
-    if not order_fieldname:
-        return DEFAULT_ORDER
-
-    prefix, fieldname = utils.sort_helper.dissect_order(order_fieldname)
-
-    try:
-        field_key = utils.columns.FieldNames.from_column_name(fieldname)
-    except:
-        # the above will fail when we are sorting by name as we are remapping those columns
-        # to the dimension name, see function remap_columns
-        field_key = 'name'
-
-    return prefix + field_key
+    return breakdown
 
 
 def get_filter_constraints(filters):
@@ -125,6 +75,10 @@ def get_filter_constraints(filters):
 
         if field_name == utils.columns.FieldNames.ad_group_id and f['operator'] == EQUALS:
             filter_constraints['ad_group_id'] = int(f['value'])
+        if field_name == utils.columns.FieldNames.campaign_id and f['operator'] == EQUALS:
+            filter_constraints['campaign_id'] = int(f['value'])
+        if field_name == utils.columns.FieldNames.account_id and f['operator'] == EQUALS:
+            filter_constraints['account_id'] = int(f['value'])
         if field_name == utils.columns.FieldNames.date and f['operator'] == BETWEEN:
             filter_constraints['start_date'] = _parse_date(f['from'])
             filter_constraints['end_date'] = _parse_date(f['to'])
@@ -136,21 +90,34 @@ def get_filter_constraints(filters):
             filter_constraints['sources'] = [f['value']]
         if field_name == utils.columns.FieldNames.source and f['operator'] == IN:
             filter_constraints['sources'] = f['values']
+        if field_name == utils.columns.FieldNames.agency and f['operator'] == IN:
+            filter_constraints['agencies'] = f['values']
+        if field_name == utils.columns.FieldNames.account_type and f['operator'] == IN:
+            filter_constraints['account_types'] = f['values']
     return filter_constraints
 
 
-def get_options(options):
-    return {
-        'show_archived': options.get('show_archived') or False,
-        'email_report': options.get('email_report') or False,
-        'show_blacklisted_publishers': (options.get('show_blacklisted_publishers') or
-                                        constants.PublisherBlacklistFilter.SHOW_ALL),
-        'include_totals': options.get('include_totals') or False,
-        'include_items_with_no_spend': options.get('include_items_with_no_spend') or False,
-        'show_status_date': options.get('show_status_date') or False,
-        'recipients': options.get('recipients') or [],
-        'order': get_order(options.get('order')),
-    }
+def get_level_from_constraints(constraints):
+    if stats.constants.AD_GROUP in constraints:
+        return dash.constants.Level.AD_GROUPS
+    elif stats.constants.CAMPAIGN in constraints:
+        return dash.constants.Level.CAMPAIGNS
+    elif stats.constants.ACCOUNT in constraints:
+        return dash.constants.Level.ACCOUNTS
+    else:
+        return dash.constants.Level.ALL_ACCOUNTS
+
+
+def limit_breakdown_to_level(breakdown, level):
+    if level == dash.constants.Level.AD_GROUPS:
+        constraint_dimension = stats.constants.AD_GROUP
+    elif level == dash.constants.Level.CAMPAIGNS:
+        constraint_dimension = stats.constants.CAMPAIGN
+    elif level == dash.constants.Level.ACCOUNTS:
+        constraint_dimension = stats.constants.ACCOUNT
+    else:
+        return breakdown
+    return stats.constants.get_child_breakdown_of_dimension(breakdown, constraint_dimension)
 
 
 def _parse_date(string):
@@ -180,32 +147,43 @@ class ReportOptionsSerializer(serializers.Serializer):
     email_report = serializers.BooleanField(default=False)
     show_archived = serializers.BooleanField(default=False)
     show_blacklisted_publishers = serializers.ChoiceField(
-        constants.PublisherBlacklistFilter.get_all(), required=False)
+        constants.PublisherBlacklistFilter.get_all(), default=constants.PublisherBlacklistFilter.SHOW_ALL)
     include_totals = serializers.BooleanField(default=False)
     include_items_with_no_spend = serializers.BooleanField(default=False)
     show_status_date = serializers.BooleanField(default=False)
-    recipients = serializers.ListField(child=serializers.EmailField(), required=False)
+    recipients = serializers.ListField(child=serializers.EmailField(), default=[])
     order = serializers.CharField(required=False)
 
 
 class ReportQuerySerializer(serializers.Serializer):
     fields = ReportNamesSerializer(many=True)
     filters = ReportFiltersSerializer(many=True)
-    options = ReportOptionsSerializer(required=False)
-
-    def validate_fields(self, fields):
-        breakdown = get_breakdown_from_fields(fields)
-        if breakdown not in SUPPORTED_BREAKDOWNS:
-            raise serializers.ValidationError("Breakdown %s not supported!" % str(breakdown))
-        return fields
+    options = ReportOptionsSerializer(default={})
 
     def validate_filters(self, filters):
         filter_constraints = get_filter_constraints(filters)
-        if 'ad_group_id' not in filter_constraints:
-            raise serializers.ValidationError("Please specify a single ad group in filters!")
         if 'start_date' not in filter_constraints or 'end_date' not in filter_constraints:
             raise serializers.ValidationError("Please specify a date range!")
+        if 'ad_group_id' in filter_constraints:
+            helpers.get_ad_group(self.context['request'].user, filter_constraints['ad_group_id'])
+        if 'campaign_id' in filter_constraints:
+            helpers.get_campaign(self.context['request'].user, filter_constraints['campaign_id'])
+        if 'account_id' in filter_constraints:
+            helpers.get_account(self.context['request'].user, filter_constraints['account_id'])
         return filters
+
+    def validate(self, data):
+        filter_constraints = get_filter_constraints(data['filters'])
+        level = get_level_from_constraints(filter_constraints)
+        breakdown = limit_breakdown_to_level(get_breakdown_from_fields(data['fields']), level)
+        try:
+            stats.permission_filter.validate_breakdown_by_structure(breakdown)
+            stats.permission_filter.validate_breakdown_by_permissions(level, self.context['request'].user, breakdown)
+        except exc.InvalidBreakdownError as e:
+            raise serializers.ValidationError(e)
+        if stats.constants.get_delivery_dimension(breakdown):
+            raise serializers.ValidationError("Delivery dimension not supported!")
+        return data
 
 
 class JobExecutor(object):
@@ -233,14 +211,9 @@ class ReportJobExecutor(JobExecutor):
             return
 
         try:
-            breakdown = list(get_breakdown_from_fields(self.job.query['fields']))
-            # temporary switch while new reports are developed
-            if utils.columns.FieldNames.publisher_id in breakdown or utils.columns.FieldNames.content_ad_id in breakdown:
-                raw_report, goals, filename = self.get_raw_new_report(self.job, breakdown)
-            else:
-                raw_report, goals, filename = self.get_raw_report(self.job, breakdown)
+            raw_report, field_name_mapping, filename = self.get_raw_new_report(self.job)
 
-            csv_report = self.convert_to_csv(self.job, raw_report, goals)
+            csv_report = self.convert_to_csv(self.job, raw_report, field_name_mapping)
             report_path = self.save_to_s3(csv_report, filename)
             self.send_by_email(self.job, report_path)
 
@@ -254,82 +227,66 @@ class ReportJobExecutor(JobExecutor):
             self.job.save()
 
     @classmethod
-    def get_raw_new_report(cls, job, breakdown):
+    def get_raw_new_report(cls, job):
         user = job.user
 
+        breakdown = list(get_breakdown_from_fields(job.query['fields']))
         filter_constraints = get_filter_constraints(job.query['filters'])
-        ad_group_id = filter_constraints['ad_group_id']
         start_date = filter_constraints['start_date']
         end_date = filter_constraints['end_date']
         filtered_sources = helpers.get_filtered_sources(user, ','.join(filter_constraints.get('sources', [])))
+        filtered_account_types = helpers.get_filtered_account_types(filter_constraints.get('account_types', []))
+        filtered_agencies = helpers.get_filtered_agencies(filter_constraints.get('agencies', []))
 
-        options = get_options(job.query.get('options', {}))
+        level = get_level_from_constraints(filter_constraints)
+        structure_constraints = cls._extract_structure_constraints(filter_constraints)
 
-        ad_group = helpers.get_ad_group(user, ad_group_id)
         constraints = stats.api_reports.prepare_constraints(
             user, breakdown, start_date, end_date, filtered_sources,
-            show_archived=options['show_archived'],
-            show_blacklisted_publishers=options['show_blacklisted_publishers'],
-            ad_group_ids=[ad_group.id])
+            show_archived=job.query['options']['show_archived'],
+            show_blacklisted_publishers=job.query['options']['show_blacklisted_publishers'],
+            filtered_account_types=filtered_account_types,
+            filtered_agencies=filtered_agencies,
+            only_used_sources=True,
+            **structure_constraints
+        )
         goals = stats.api_reports.get_goals(constraints)
 
-        rows = stats.api_reports.query(
-            user, breakdown, constraints, goals, options['order'],
-            include_items_with_no_spend=options['include_items_with_no_spend'])
-
-        if options['include_totals']:
-            totals = stats.api_reports.totals(user, breakdown, constraints, goals)
-            rows.append(totals)
-
-        return rows, goals, stats.api_reports.get_filename(breakdown, constraints)
-
-    @classmethod
-    def get_raw_report(cls, job, breakdown):
-        filter_constraints = get_filter_constraints(job.query['filters'])
-        ad_group_id = filter_constraints['ad_group_id']
-        start_date = filter_constraints['start_date']
-        end_date = filter_constraints['end_date']
-
-        level = constants.Level.AD_GROUPS
-        user = job.user
-        stats.api_breakdowns.validate_breakdown_allowed(level, user, breakdown)
-        ad_group = helpers.get_ad_group(user, ad_group_id)
-        target_dim = stats.constants.get_target_dimension(breakdown)
-        filtered_sources = dash.models.Source.objects.all()
-        constraints = stats.constraints_helper.prepare_ad_group_constraints(
-            user, ad_group, breakdown,
-            only_used_sources=target_dim == 'source_id',
-            start_date=start_date, end_date=end_date, filtered_sources=filtered_sources)
-        goals = stats.api_breakdowns.get_goals(constraints)
-        parents = []
-        offset = 0
-        limit = MAX_ROWS
-
-        rows = stats.api_breakdowns.query(
-            level,
-            user,
-            breakdown,
-            constraints,
-            goals,
-            parents,
-            '-clicks',
-            offset,
-            limit,
+        field_name_mapping = utils.columns.get_field_names_mapping(
+            goals.pixels, goals.conversion_goals,
+            show_publishers_fields=stats.constants.PUBLISHER in breakdown
         )
 
-        cls.remap_columns(rows, breakdown)
-        return rows, goals, None
+        order = cls._get_order(job, field_name_mapping)
+
+        rows = stats.api_reports.query(
+            user, breakdown, constraints, goals, order, level,
+            include_items_with_no_spend=job.query['options']['include_items_with_no_spend'])
+
+        if job.query['options']['include_totals']:
+            totals_constraints = stats.api_reports.prepare_constraints(
+                user, breakdown, start_date, end_date, filtered_sources,
+                show_archived=True,
+                show_blacklisted_publishers=job.query['options']['show_blacklisted_publishers'],
+                filtered_account_types=filtered_account_types,
+                filtered_agencies=filtered_agencies,
+                only_used_sources=True,
+                **structure_constraints
+            )
+            totals = stats.api_reports.totals(
+                user, limit_breakdown_to_level(breakdown, level),
+                totals_constraints, goals, level)
+            rows.append(totals)
+
+        return rows, field_name_mapping, stats.api_reports.get_filename(breakdown, constraints)
 
     @classmethod
-    def convert_to_csv(cls, job, data, goals):
-        options = get_options(job.query.get('options', {}))
-
+    def convert_to_csv(cls, job, data, field_name_mapping):
         requested_columns = cls._extract_column_names(job.query['fields'])
-        field_name_mapping = utils.columns.get_field_names_mapping(goals.pixels, goals.conversion_goals)
 
         csv_column_names = requested_columns
         original_to_dated = {k: k for k in requested_columns}
-        if options['show_status_date']:
+        if job.query['options']['show_status_date']:
             csv_column_names, original_to_dated = cls._date_column_names(csv_column_names)
 
         output = StringIO.StringIO()
@@ -347,19 +304,6 @@ class ReportJobExecutor(JobExecutor):
                     csv_row[csv_column] = dash.export._format_empty_value(None, field_name)
             writer.writerow(csv_row)
         return output.getvalue()
-
-    @classmethod
-    def remap_columns(cls, rows, breakdown):
-        # temporary fix for naming discrepancies between reports and breakdowns
-        for row in rows:
-            if 'exchange' in row:
-                row['source'] = row['exchange']
-            if breakdown == ['source_id']:
-                row['source'] = row['breakdown_name']
-            if breakdown == ['content_ad_id']:
-                row['content_ad'] = row.get('breakdown_name', row['title'])
-            if breakdown == ['publisher_id']:
-                row['publisher'] = row.get('breakdown_name', row['domain'])
 
     @staticmethod
     def _extract_column_names(fields_list):
@@ -382,7 +326,7 @@ class ReportJobExecutor(JobExecutor):
 
     @classmethod
     def send_by_email(cls, job, report_path):
-        if not job.query.get('options', {}).get('email_report'):
+        if not job.query['options']['email_report']:
             return
 
         filter_constraints = get_filter_constraints(job.query['filters'])
@@ -391,39 +335,59 @@ class ReportJobExecutor(JobExecutor):
         if filter_constraints.get('sources'):
             filtered_sources = helpers.get_filtered_sources(job.user, ','.join(filter_constraints.get('sources', [])))
 
-        options = get_options(job.query.get('options', {}))
-
         today = utils.dates_helper.local_today()
         expiry_date = today + datetime.timedelta(days=3)
 
         view, breakdowns = cls._extract_view_breakdown(job)
+        ad_group_name, campaign_name, account_name = cls._extract_entity_names(job.user, filter_constraints)
         utils.email_helper.send_async_report(
-            job.user, options['recipients'], report_path,
+            job.user, job.query['options']['recipients'], report_path,
             filter_constraints['start_date'], filter_constraints['end_date'], expiry_date, filtered_sources,
-            options['show_archived'], options['show_blacklisted_publishers'],
+            job.query['options']['show_archived'], job.query['options']['show_blacklisted_publishers'],
             view,
             breakdowns,
             cls._extract_column_names(job.query['fields']),
-            options['include_totals'],
-            ad_group=helpers.get_ad_group(job.user, filter_constraints['ad_group_id'])
+            job.query['options']['include_totals'],
+            ad_group_name, campaign_name, account_name,
         )
 
     @staticmethod
     def _extract_view_breakdown(job):
-        breakdowns = get_breakdown_from_fields(job.query['fields'])
-        constraints = get_filter_constraints(job.query['filters'])
-        for constraint_dimension in [stats.constants.ACCOUNT, stats.constants.CAMPAIGN, stats.constants.AD_GROUP]:
-            if constraint_dimension in constraints:
-                try:
-                    breakdowns = breakdowns[breakdowns.index(constraint_dimension) + 1:]
-                except ValueError:
-                    pass
+        breakdowns = limit_breakdown_to_level(
+            get_breakdown_from_fields(job.query['fields']),
+            get_level_from_constraints(get_filter_constraints(job.query['filters'])),
+        )
 
         breakdowns = [breakdown[:-3] if breakdown.endswith('_id') else breakdown for breakdown in breakdowns]
         breakdowns = [utils.columns._FIELD_MAPPING[breakdown][0] for breakdown in breakdowns]
         if len(breakdowns) < 1:
             return '', []
         return breakdowns[0], ['By ' + breakdown for breakdown in breakdowns[1:]]
+
+    @staticmethod
+    def _extract_structure_constraints(constraints):
+        structure_constraints = {}
+        if stats.constants.AD_GROUP in constraints:
+            structure_constraints['ad_group_ids'] = [constraints[stats.constants.AD_GROUP]]
+        if stats.constants.CAMPAIGN in constraints:
+            structure_constraints['campaign_ids'] = [constraints[stats.constants.CAMPAIGN]]
+        if stats.constants.ACCOUNT in constraints:
+            structure_constraints['account_ids'] = [constraints[stats.constants.ACCOUNT]]
+        return structure_constraints
+
+    @staticmethod
+    def _extract_entity_names(user, constraints):
+        if stats.constants.AD_GROUP in constraints:
+            ad_group = helpers.get_ad_group(user, constraints[stats.constants.AD_GROUP])
+            return ad_group.name, ad_group.campaign.name, ad_group.campaign.account.name
+        elif stats.constants.CAMPAIGN in constraints:
+            campaign = helpers.get_campaign(user, constraints[stats.constants.CAMPAIGN])
+            return None, campaign.name, campaign.account.name
+        elif stats.constants.ACCOUNT in constraints:
+            account = helpers.get_account(user, constraints[stats.constants.ACCOUNT])
+            return None, None, account.name
+        else:
+            return None, None, None
 
     @staticmethod
     def _generate_random_filename():
@@ -440,3 +404,20 @@ class ReportJobExecutor(JobExecutor):
             dated_columns.append(dated_name)
             original_to_dated_columns[name] = dated_name
         return dated_columns, original_to_dated_columns
+
+    @staticmethod
+    def _get_order(job, field_name_mapping):
+        order_fieldname = job.query['options'].get('order')
+        if not order_fieldname:
+            return DEFAULT_ORDER
+
+        prefix, fieldname = utils.sort_helper.dissect_order(order_fieldname)
+
+        try:
+            field_key = field_name_mapping[fieldname]
+        except:
+            # the above will fail when we are sorting by name as we are remapping those columns
+            # to the dimension name
+            field_key = 'name'
+
+        return prefix + field_key

@@ -1099,7 +1099,7 @@ class ReportsViewList(RESTAPIBaseView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
-        query = restapi.reports.ReportQuerySerializer(data=request.data)
+        query = restapi.reports.ReportQuerySerializer(data=request.data, context={'request': request})
         try:
             query.is_valid(raise_exception=True)
         except serializers.ValidationError as e:
