@@ -2,7 +2,6 @@ from django.conf import settings
 
 from utils import s3helpers
 import analytics.statements
-import analytics.heleprs
 import utils.csv_utils
 
 
