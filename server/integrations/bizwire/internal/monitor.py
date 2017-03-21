@@ -1,10 +1,9 @@
 import logging
 import pytz
 import datetime
-import re
 
 import influx
-import boto3
+from dateutil import rrule
 
 import backtosql
 from integrations.bizwire import config
@@ -16,6 +15,8 @@ from redshiftapi import db
 from utils import dates_helper, email_helper
 
 logger = logging.getLogger(__name__)
+
+MISSING_CLICKS_THRESHOLD = 3
 
 
 def run_hourly_job():
@@ -42,12 +43,8 @@ def _get_unique_s3_labels(dates):
 
 
 def monitor_num_ingested_articles():
-    now = dates_helper.utc_now()
-    dates = []
-    current_date = config.START_DATE
-    while current_date <= now.date():
-        dates.append(current_date)
-        current_date += datetime.timedelta(days=1)
+    start_date = dates_helper.utc_today().replace(day=1)  # beginning of month
+    dates = [dt.date() for dt in rrule.rrule(rrule.DAILY, dtstart=start_date, until=dates_helper.utc_today())]
     unique_labels = _get_unique_s3_labels(dates)
     content_ad_labels = set(
         dash.models.ContentAd.objects.filter(
@@ -170,7 +167,7 @@ def _send_unexpected_spend_email_alert(expected_spend, actual_spend):
     if dates_helper.utc_now().hour != 14:
         return
 
-    if expected_spend * 0.8 < actual_spend < expected_spend:
+    if actual_spend < expected_spend:
         return
 
     emails = config.NOTIFICATION_EMAILS
@@ -185,7 +182,7 @@ def _send_missing_clicks_email_alert(missing_clicks):
     if dates_helper.utc_now().hour != 14:
         return
 
-    if missing_clicks < 1:
+    if missing_clicks < MISSING_CLICKS_THRESHOLD:
         return
 
     emails = config.NOTIFICATION_EMAILS

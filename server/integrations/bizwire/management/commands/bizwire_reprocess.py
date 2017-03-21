@@ -1,21 +1,23 @@
+import datetime
 import logging
 import json
 import sys
 
 import boto3
-import dateutil
 
 from django.conf import settings
 
 import dash.models
 from integrations.bizwire import config
 from integrations.bizwire.internal import helpers
-from utils.command_helpers import ExceptionCommand
+from utils import dates_helper, command_helpers
 
 logger = logging.getLogger(__name__)
 
+FIND_MISSING_NUM_DAYS = 7
 
-class Command(ExceptionCommand):
+
+class Command(command_helpers.ExceptionCommand):
     help = """Start lambdas to process businesswire articles for given parameters.
     Usage: ./manage.py bizwire_process_articles [options]
 
@@ -51,7 +53,8 @@ class Command(ExceptionCommand):
         sys.exit(1)
 
     def _get_missing_keys(self, options):
-        keys = [k for k in helpers.get_s3_keys()
+        dates = [dates_helper.utc_today() - datetime.timedelta(days=i) for i in reversed(range(FIND_MISSING_NUM_DAYS))]
+        keys = [k for k in helpers.get_s3_keys_for_dates(dates)
                 if helpers.get_s3_key_dt(k).date() >= config.START_DATE]
         labels_keys = {
             helpers.get_s3_key_label(key): key
