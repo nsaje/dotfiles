@@ -457,3 +457,60 @@ Current monitors:
   - causes: production data changes
   - solution: update the transaction monitor with new demo campaigns and adgroups
 If any monitor fails in the *first four steps*, there was a problem with login (usually database timeouts etc.).
+
+
+## Database migrations - adding field with a default value to a high-throughput table
+
+In PostgreSQL, adding a field with a default value causes the default value to be written to every existing row [1].
+Since PostgreSQL updates rows by copying them and then modifying them, this is a slow operation. In addition to that,
+these writes are done inside an exclusive table lock (acquired by the ALTER TABLE statement), which causes downtime
+in high-throughput applications.
+
+To combat that, adding field with a default value should be done in multiple steps. Below is a Django-specific procedure.
+
+
+1. **Create a nullable field without a default and create a migration.** This will only add a field to a table and won't
+   cause any writes to happen, so it is very fast.
+
+```python
+    my_new_field = models.CharField(max_length=127, blank=True, null=True)
+```
+
+```bash
+    ./manage.py makemigrations
+```
+
+2. **Assign a default to a field and create a migration.** This will not write the default to existing rows, but will cause
+   Django to start writing the default value into new rows (django doesn't keep defaults in the RDBMS but in its ORM).
+
+```python
+    my_new_field = models.CharField(max_length=127, blank=True, null=True, default='mydefault')
+```
+
+```bash
+    ./manage.py makemigrations
+```
+
+3. **Run migrations and deploy.** Migrating and deploying at this stage ensures that all the server processes are aware of
+   the field and are writing default values into it. **It is important to have two migration files here (one from each
+   of the 1 & 2 steps), otherwise Django will merge the two steps and use the performance-impacting approach.**
+
+4. **Set field to NOT NULL**. This will update all the rows, but will do so using an UPDATE WHERE statement, which uses
+   row-level locks instead of table-level, so it will not impact performance (at least not nearly as much). If/when we start
+   having issues with this approach, we'll have to perform this step in batches [2][3].
+
+```python
+    my_new_field = models.CharField(max_length=127, blank=True, null=False, default='mydefault')
+```
+
+```bash
+    ./manage.py makemigrations
+```
+
+5. **Run migrations and deploy.**
+
+[1] http://www.databasesoup.com/2013/11/alter-table-and-downtime-part-i.html
+
+[2] http://pankrat.github.io/2015/django-migrations-without-downtimes/
+
+[3] https://docs.djangoproject.com/en/1.10/howto/writing-migrations/#non-atomic-migrations
