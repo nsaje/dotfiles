@@ -7,15 +7,15 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
     templateUrl: '/app/widgets/zem-settings/adgroup/autopilot/zemAdGroupAutopilotSettings.component.html',
     controller: function ($q, $state, config) {
         var MSG_ALL_RTB_ENABLED_AD_GROUP_INACTIVE = 'One joint Bid CPC and Daily Spend Cap for will be set for all ' +
-            'RTB sources. Please check it in the Media Sources tab before enabling the ad group.';
+            'RTB sources. Please check the Daily Spend Cap in the Media Sources tab before enabling the ad group.';
         var MSG_ALL_RTB_ENABLED_AD_GROUP_ACTIVE = 'This ad group will be automatically paused to set one joint Bid ' +
-            'CPC and Daily Spend Cap for all RTB sources. Please check it in the Media Sources tab before enabling ' +
-            'the ad group.';
+            'CPC and Daily Spend Cap for all RTB sources. Please check the Daily Spend Cap in the Media Sources ' +
+            'tab before enabling the ad group.';
         var MSG_ALL_RTB_DISABLED_AD_GROUP_INACTIVE = 'Bid CPCs and Daily Spend Caps of all RTB sources will be ' +
-            'reset. Please check them in the Media Sources tab before you enable the ad group.';
+            'reset. Please check Daily Spend Caps in the Media Sources tab before you enable the ad group.';
         var MSG_ALL_RTB_DISABLED_AD_GROUP_ACTIVE = 'This ad group will be automatically paused to reset the Bid CPCs ' +
-            'and Daily Spend Caps of all RTB sources. Please check them in the Media Sources tab before you enable ' +
-            'the ad group.';
+            'and Daily Spend Caps of all RTB sources. Please check Daily Spend Caps in the Media Sources tab before ' +
+            'you enable the ad group.';
 
         var $ctrl = this;
         $ctrl.constants = constants;
