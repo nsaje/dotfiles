@@ -90,10 +90,10 @@ class Command(command_helpers.ExceptionCommand):
         )
 
         num_candidates = candidates.count()
-        if not self.purge_candidates:
+        if num_candidates and not self.purge_candidates:
             logger.info('%s candidates exist. Use --purge-candidates to remove them.', num_candidates)
             return
-        elif self.dry_run:
+        elif num_candidates and self.dry_run:
             logger.info('%s candidates would be removed.', num_candidates)
             return
 
