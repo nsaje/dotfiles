@@ -12,9 +12,9 @@ class Command(utils.command_helpers.ExceptionCommand):
         parser.add_argument('--account', dest='account', default=None,
                             help='Account ID')
         parser.add_argument('--campaign', dest='campaign', default=None,
-                            help='Account ID')
+                            help='Campaign ID')
         parser.add_argument('--ad-group', dest='ad_group', default=None,
-                            help='Account ID')
+                            help='Ad group ID')
         parser.add_argument('--start-date', '-s', dest='start_date', default=None,
                             help='Start date (default: start of current month)')
         parser.add_argument('--end-date', '-e', dest='end_date', default=None,
