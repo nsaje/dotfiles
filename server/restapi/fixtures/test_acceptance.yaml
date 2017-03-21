@@ -29,6 +29,7 @@
       - ['can_set_ad_group_max_cpm', 'zemauth', 'user']
       - ['can_modify_account_name', 'zemauth', 'user']
       - ['can_set_white_blacklist_publisher_groups', 'zemauth', 'user']
+      - ['can_modify_campaign_iab_category', 'zemauth', 'user']
 
 - model: oauth2_provider.application
   pk: 1
