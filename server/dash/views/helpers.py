@@ -965,8 +965,12 @@ def _get_adjusted_ad_group_source_cpc(proposed_cpc, ad_group_source, ad_group_se
 
 
 def adjust_max_cpc(proposed_cpc, ad_group_settings):
-    if ad_group_settings.cpc_cc and proposed_cpc > ad_group_settings.cpc_cc:
+    if not (proposed_cpc and ad_group_settings.cpc_cc):
+        return proposed_cpc
+
+    if proposed_cpc > ad_group_settings.cpc_cc:
         return ad_group_settings.cpc_cc
+
     return proposed_cpc
 
 

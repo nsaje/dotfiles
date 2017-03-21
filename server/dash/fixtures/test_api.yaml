@@ -381,6 +381,8 @@
         description: 'Example description'
         call_to_action: 'Call to action'
         target_regions: ['693']
+        target_devices: ['desktop', 'mobile']
+        start_date: '2015-03-02'
     model: dash.adgroupsettings
     pk: 3
 

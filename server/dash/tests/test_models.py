@@ -66,6 +66,7 @@ class AdGroupSettingsTest(TestCase):
             'description': 'Example description',
             'call_to_action': 'Call to action',
             'ad_group_name': 'AdGroup name',
+            'name': 'AdGroup name',
             'autopilot_daily_budget': Decimal('0.0000'),
             'autopilot_state': 1,
             'landing_mode': False,

@@ -410,7 +410,6 @@ class AdGroupSettingsFormTest(TestCase):
             'max_cpm': Decimal('1.50'),
             'daily_budget_cc': Decimal('10.00'),
             'end_date': datetime.date(2014, 12, 31),
-            'id': 248,
             'name': 'Test ad group',
             'start_date': datetime.date(2014, 12, 11),
             'target_devices': ['desktop', 'mobile'],

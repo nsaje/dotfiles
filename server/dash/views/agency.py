@@ -133,10 +133,6 @@ class AdGroupSettings(api_common.BaseApiView):
             if self.should_set_cpc_autopilot_initial_cpcs(current_settings, new_settings):
                 self.set_cpc_autopilot_initial_cpcs(request, ad_group, new_settings)
 
-            new_settings.b1_sources_group_cpc_cc = helpers.adjust_max_cpc(
-                new_settings.b1_sources_group_cpc_cc,
-                new_settings
-            )
             ad_group_sources_cpcs = helpers.get_adjusted_ad_group_sources_cpcs(ad_group, new_settings)
             if self.should_validate_cpc_constraints(changes, new_settings):
                 try:
@@ -146,6 +142,10 @@ class AdGroupSettings(api_common.BaseApiView):
                         'b1_sources_group_cpc_cc': list(set(err))
                     })
             helpers.set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, new_settings)
+
+            form = forms.AdGroupSettingsForm(ad_group, request.user, new_settings.get_settings_dict())
+            if not form.is_valid():
+                logger.error('Inconsistent settings change. errors=%s', form.errors.as_data())
 
             new_settings.save(
                 request,
@@ -283,8 +283,6 @@ class AdGroupSettings(api_common.BaseApiView):
             new_b1_sources_group_cpc = constants.SourceAllRTB.DEFAULT_CPC_CC
             if changes.get('b1_sources_group_cpc_cc'):
                 new_b1_sources_group_cpc = changes['b1_sources_group_cpc_cc']
-            if new_settings.cpc_cc:
-                new_b1_sources_group_cpc = min(new_settings.cpc_cc, new_b1_sources_group_cpc)
             new_settings.b1_sources_group_cpc_cc = new_b1_sources_group_cpc
 
             if changes.get('b1_sources_group_daily_budget'):
@@ -296,6 +294,10 @@ class AdGroupSettings(api_common.BaseApiView):
         if changes.get('cpc_cc') and new_settings.b1_sources_group_enabled:
             new_settings.b1_sources_group_cpc_cc = min(changes.get('cpc_cc'), new_settings.b1_sources_group_cpc_cc)
 
+        new_settings.b1_sources_group_cpc_cc = helpers.adjust_max_cpc(
+            new_settings.b1_sources_group_cpc_cc,
+            new_settings
+        )
         return current_settings.get_setting_changes(new_settings), current_settings, new_settings
 
     def set_cpc_autopilot_initial_cpcs(self, request, ad_group, new_ad_group_settings):

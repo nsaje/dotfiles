@@ -2512,6 +2512,12 @@ class AdGroupSettings(SettingsBase):
             ("settings_view", "Can view settings in dashboard."),
         )
 
+    def get_settings_dict(self):
+        # ad group settings form expects 'name' instead of 'ad_group_name'
+        settings_dict = super(AdGroupSettings, self).get_settings_dict()
+        settings_dict['name'] = settings_dict['ad_group_name']
+        return settings_dict
+
     def _convert_date_utc_datetime(self, date):
         dt = datetime.datetime(
             date.year,

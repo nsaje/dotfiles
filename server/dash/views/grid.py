@@ -9,6 +9,7 @@ TODO when we move base level:
 import datetime
 import json
 
+from dash import forms
 from dash import views
 from dash import constants
 from dash import table
@@ -135,10 +136,19 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'state' in settings:
             ad_group_settings_dict['b1_sources_group_state'] = settings['state']
 
-        request._body = json.dumps({'settings': ad_group_settings_dict})
-        views.agency.AdGroupSettings().put(request, ad_group_id)
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group_settings = ad_group.get_current_settings()
+        form = forms.B1SourcesGroupSettingsForm(ad_group_settings, {
+            'b1_sources_group_daily_budget': ad_group_settings_dict['b1_sources_group_daily_budget'],
+            'b1_sources_group_cpc_cc': ad_group_settings_dict['b1_sources_group_cpc_cc'],
+            'b1_sources_group_state': ad_group_settings_dict['b1_sources_group_state'],
+        })
+        if not form.is_valid():
+            raise exc.ValidationError(errors=form.errors)
+
+        request._body = json.dumps({'settings': ad_group_settings_dict})
+
+        views.agency.AdGroupSettings().put(request, ad_group_id)
         row = breakdown_helpers.create_all_rtb_source_row_data(
             ad_group,
             ad_group.get_current_settings(),

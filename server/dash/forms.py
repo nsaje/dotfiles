@@ -248,7 +248,6 @@ class AdGroupAdminForm(forms.ModelForm):
 
 
 class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
-    id = forms.IntegerField()
     name = forms.CharField(
         max_length=127,
         error_messages={'required': 'Please specify ad group name.'}
@@ -499,10 +498,36 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
             dayparting = {}
         return dayparting
 
+
+class B1SourcesGroupSettingsForm(forms.Form):
+    b1_sources_group_daily_budget = forms.DecimalField(
+        decimal_places=4,
+        required=False,
+    )
+
+    b1_sources_group_cpc_cc = forms.DecimalField(
+        decimal_places=4,
+        required=False,
+    )
+
+    b1_sources_group_state = forms.TypedChoiceField(
+        required=False,
+        choices=constants.AdGroupSourceSettingsState.get_choices(),
+        coerce=int,
+        empty_value=None
+    )
+
+    def __init__(self, ad_group_settings, *args, **kwargs):
+        self.ad_group_settings = ad_group_settings
+        super(B1SourcesGroupSettingsForm, self).__init__(*args, **kwargs)
+
     def clean_b1_sources_group_cpc_cc(self):
         cpc_cc = self.cleaned_data.get('b1_sources_group_cpc_cc')
+        if cpc_cc is None:
+            return cpc_cc
+
         validation_helpers.validate_b1_sources_group_cpc_cc(
-            cpc_cc, self.ad_group)
+            cpc_cc, self.ad_group_settings)
         return cpc_cc
 
 

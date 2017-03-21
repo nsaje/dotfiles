@@ -49,8 +49,7 @@ def validate_ad_group_source_cpc_cc(cpc_cc, ad_group_source):
     _validate_max_cpc(cpc_cc, max_cpc, 'ad group')
 
 
-def validate_b1_sources_group_cpc_cc(cpc_cc, ad_group):
-    ad_group_settings = ad_group.get_current_settings()
+def validate_b1_sources_group_cpc_cc(cpc_cc, ad_group_settings):
     if not ad_group_settings.b1_sources_group_enabled:
         return
 
