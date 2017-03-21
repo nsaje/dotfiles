@@ -1245,7 +1245,7 @@ class CampaignSettings(SettingsBase):
     )
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
-    exclusion_target_regions = jsonfield.JSONField(blank=True, null=True, default=[])
+    exclusion_target_regions = jsonfield.JSONField(blank=True, null=False, default=[])
 
     whitelist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
     blacklist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
@@ -2434,7 +2434,7 @@ class AdGroupSettings(SettingsBase):
     )
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
-    exclusion_target_regions = jsonfield.JSONField(blank=True, null=True, default=[])
+    exclusion_target_regions = jsonfield.JSONField(blank=True, null=False, default=[])
     retargeting_ad_groups = jsonfield.JSONField(blank=True, default=[])
     exclusion_retargeting_ad_groups = jsonfield.JSONField(
         blank=True, default=[])
