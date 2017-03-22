@@ -78,7 +78,7 @@
             <div class="message message--error" ng-repeat="error in $ctrl.errors.margin" for="margin-input">{{ error }}</div>
         </div>
         <div class="message message--info message--with-icon" ng-if="$ctrl.isInLandingMode">
-            Add at least ${{ $ctrl.budgets.minAmount | number:2 }} to adjust media sources by your needs.
+            Add at least ${{ $ctrl.budgets.minAmount | number:2 }} to an active budget to adjust media sources by your needs.
         </div>
         <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.comment}">
             <label class="form__label" for="comment-input">Notes</label>
