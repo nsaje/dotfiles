@@ -14,10 +14,16 @@ angular.module('one.widgets').component('zemHeaderNavigation', {
             hotkeys.bindTo($scope).add({combo: 'f', callback: open});
             hotkeys.bindTo($scope).add({combo: 'enter', allowIn: ['INPUT'], callback: close});
 
-            hotkeys.bindTo($scope).add({combo: 'ctrl+up', callback: zemHeaderNavigationService.quickNavigate});
-            hotkeys.bindTo($scope).add({combo: 'ctrl+down', callback: zemHeaderNavigationService.quickNavigate});
-            hotkeys.bindTo($scope).add({combo: 'ctrl+left', callback: zemHeaderNavigationService.quickNavigate});
-            hotkeys.bindTo($scope).add({combo: 'ctrl+right', callback: zemHeaderNavigationService.quickNavigate});
+            var quickNavigateCombos = [
+                'ctrl+up', 'command+up',
+                'ctrl+down', 'command+down',
+                'ctrl+left', 'command+left',
+                'ctrl+right', 'command+right',
+            ];
+            hotkeys.bindTo($scope).add({
+                combo: quickNavigateCombos,
+                callback: zemHeaderNavigationService.quickNavigate
+            });
         }
 
         function open () {
