@@ -8,6 +8,8 @@ import dash.regions
 from dash import constants
 from dash import models
 
+import geolocation
+
 logger = logging.getLogger(__name__)
 
 
@@ -25,11 +27,11 @@ class Command(ExceptionCommand):
         objs = []
         for loc_type, location in locations_by_type.iteritems():
             for key, name in location.iteritems():
-                objs.append(models.Geolocation(type=loc_type, key=key, name=name))
+                objs.append(geolocation.Geolocation(type=loc_type, key=key, name=name))
 
         with transaction.atomic():
-            models.Geolocation.objects.all().delete()
-            models.Geolocation.objects.bulk_create(objs)
+            geolocation.Geolocation.objects.all().delete()
+            geolocation.Geolocation.objects.bulk_create(objs)
 
     @staticmethod
     def get_locations(maxmind_csv_path):

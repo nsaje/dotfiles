@@ -40,6 +40,7 @@ from utils import converters
 from utils import json_helper
 from utils import lc_helper
 
+import geolocation
 
 SHORT_NAME_MAX_LENGTH = 22
 NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL = 3  # number of days an ad group is paused before it can be archived
@@ -1356,7 +1357,7 @@ class CampaignSettings(SettingsBase):
                               for x in value)
         elif prop_name in ('target_regions', 'exclusion_target_regions'):
             if value:
-                names = list(Geolocation.objects.filter(key__in=value).values_list('name', flat=True))
+                names = list(geolocation.Geolocation.objects.filter(key__in=value).values_list('name', flat=True))
                 zips = [v for v in value if ':' in v]
                 if zips:
                     names.append('%s postal codes' % len(zips))
@@ -2644,7 +2645,7 @@ class AdGroupSettings(SettingsBase):
                               for x in value)
         elif prop_name in ('target_regions', 'exclusion_target_regions'):
             if value:
-                names = list(Geolocation.objects.filter(key__in=value).values_list('name', flat=True))
+                names = list(geolocation.Geolocation.objects.filter(key__in=value).values_list('name', flat=True))
                 zips = [v for v in value if ':' in v]
                 if zips:
                     names.append('%s postal codes' % len(zips))
@@ -4878,26 +4879,3 @@ class CustomHack(models.Model):
                 }
                 for obj in self
             ]
-
-
-class Geolocation(models.Model):
-
-    class Meta:
-        ordering = ('-type',)
-
-    key = models.CharField(
-        primary_key=True,
-        max_length=20
-    )
-    type = models.CharField(
-        max_length=3,
-        choices=constants.LocationType.get_choices()
-    )
-    name = models.CharField(
-        max_length=127,
-        blank=False,
-        null=False
-    )
-
-    def __str__(self):
-        return self.name

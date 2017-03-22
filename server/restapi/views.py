@@ -29,6 +29,8 @@ import dash.threads
 from utils import json_helper, exc, dates_helper, redirector_helper, bidder_helper
 from redshiftapi import quickstats
 
+import dash.geolocation
+
 import restapi.authentication
 import restapi.models
 import restapi.reports
@@ -435,7 +437,7 @@ class AdGroupSerializer(SettingsSerializer):
             'cities': [],
             'postalCodes': [],
         }
-        non_zips = {loc.key: loc for loc in dash.models.Geolocation.objects.filter(key__in=target_regions)}
+        non_zips = {loc.key: loc for loc in dash.geolocation.Geolocation.objects.filter(key__in=target_regions)}
         zips = set(target_regions) - set(non_zips.keys())
         for location in target_regions:
             if location in non_zips:

@@ -29,6 +29,8 @@ from dash import cpc_constraints
 from dash.views import helpers
 from utils import dates_helper
 
+import geolocation
+
 from zemauth.models import User as ZemUser
 
 import stats.constants
@@ -59,7 +61,7 @@ class GeolocationMultipleChoiceField(forms.ModelMultipleChoiceField):
 
     def __init__(self, *args, **kwargs):
         super(GeolocationMultipleChoiceField, self).__init__(
-            queryset=models.Geolocation.objects.all(), *args, **kwargs)
+            queryset=geolocation.Geolocation.objects.all(), *args, **kwargs)
 
     def to_python(self, value):
         if not value:
@@ -89,7 +91,7 @@ class GeolocationMultipleChoiceField(forms.ModelMultipleChoiceField):
                 non_zips.append(location)
 
         # check ZIP codes
-        zip_countries_qs = models.Geolocation.objects.filter(
+        zip_countries_qs = geolocation.Geolocation.objects.filter(
             type=constants.LocationType.COUNTRY,
             pk__in=(country for country, code in zips))
         zip_valid_countries = set(country.pk for country in zip_countries_qs)
