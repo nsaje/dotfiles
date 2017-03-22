@@ -5,11 +5,11 @@ angular.module('one.widgets').directive('zemGridCellPerformanceIndicator', funct
 
     var statusIcons = {},
         statusClasses = {};
-    statusIcons[constants.emoticon.HAPPY] = 'happy_face.svg';
+    statusIcons[constants.emoticon.HAPPY] = 'emoticon-happy-green.svg';
     statusClasses[constants.emoticon.HAPPY] = 'img-icon-happy';
-    statusIcons[constants.emoticon.SAD] = 'sad_face.svg';
+    statusIcons[constants.emoticon.SAD] = 'emoticon-sad-red.svg';
     statusClasses[constants.emoticon.SAD] = 'img-icon-sad';
-    statusIcons[constants.emoticon.NEUTRAL] = 'neutral_face.svg';
+    statusIcons[constants.emoticon.NEUTRAL] = 'emoticon-neutral-gray.svg';
     statusClasses[constants.emoticon.NEUTRAL] = 'img-icon-neutral';
 
     function isFieldVisible (row) {

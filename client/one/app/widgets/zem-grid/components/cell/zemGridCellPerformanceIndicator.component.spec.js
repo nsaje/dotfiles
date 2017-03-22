@@ -20,7 +20,7 @@ describe('zemGridCellPerformanceIndicator', function () {
         scope.$digest();
 
         expect(element.isolateScope().ctrl.overall).toEqual({
-            file: 'neutral_face.svg',
+            file: 'emoticon-neutral-gray.svg',
             class: 'img-icon-neutral',
         });
     });
@@ -46,9 +46,9 @@ describe('zemGridCellPerformanceIndicator', function () {
 
     it('should correctly set performance icon', function () {
         var tests = [
-            {overall: 1, expectedResult: {file: 'happy_face.svg', class: 'img-icon-happy'}},
-            {overall: 2, expectedResult: {file: 'neutral_face.svg', class: 'img-icon-neutral'}},
-            {overall: 3, expectedResult: {file: 'sad_face.svg', class: 'img-icon-sad'}},
+            {overall: 1, expectedResult: {file: 'emoticon-happy-green.svg', class: 'img-icon-happy'}},
+            {overall: 2, expectedResult: {file: 'emoticon-neutral-gray.svg', class: 'img-icon-neutral'}},
+            {overall: 3, expectedResult: {file: 'emoticon-sad-red.svg', class: 'img-icon-sad'}},
         ];
 
         tests.forEach(function (test) {
@@ -74,6 +74,6 @@ describe('zemGridCellPerformanceIndicator', function () {
         var iconElement = element.find('.zem-icon');
 
         expect(iconElement.hasClass('img-icon-happy')).toBe(true);
-        expect(iconElement.attr('src')).toEqual(config.static_url + '/one/img/happy_face.svg');
+        expect(iconElement.attr('src')).toEqual(config.static_url + '/one/images/emoticon-happy-green.svg');
     }));
 });

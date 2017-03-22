@@ -1,14 +1,10 @@
-<div class="container-fluid no-tabset" ng-if="$ctrl.mainStateAllowed">
-    <zem-header class="zem-header row"></zem-header>
-    <zem-filter-selector class="zem-filter-selector row"></zem-filter-selector>
+<div class="zem-container no-tabset" ng-if="$ctrl.mainStateAllowed">
+    <zem-header class="zem-header"></zem-header>
+    <zem-filter-selector class="zem-filter-selector"></zem-filter-selector>
 
-    <div class="row body">
-        <div class="content content-full">
-            <ui-view/>
-        </div>
-    </div>
+    <ui-view class="zem-content"/>
 
-    <zem-footer class="zem-footer row"></zem-footer>
+    <zem-footer class="zem-footer"></zem-footer>
 
     <!-- Widgets used in drawer -->
     <zem-settings class="zem-settings"></zem-settings>

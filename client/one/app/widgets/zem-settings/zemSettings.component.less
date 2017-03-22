@@ -44,7 +44,7 @@
     position: absolute;
     width: 100%;
     bottom: 0px;
-    left: 0;
+    left: 10px;
     height: 60px;
     padding: 0 @default-spacing;
     display: table;
@@ -70,6 +70,12 @@
         max-height: 60px;
         overflow: hidden;
         vertical-align: middle;
+    }
+}
+
+.zem-side-panel__drawer--visible {
+    .zem-settings__footer {
+        left: 0;
     }
 }
 

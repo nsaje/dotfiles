@@ -35,11 +35,17 @@
     position: absolute;
     width: 100%;
     bottom: 0px;
-    left: 0;
+    left: 10px;
     height: 60px;
     padding: @default-spacing;
     background-color: tint(@secondary-color,90%);
     box-shadow: 0px 0px 3px 0px fade(@secondary-color,40%);
+}
+
+.zem-side-panel__drawer--visible {
+    .zem-history__footer {
+        left: 0;
+    }
 }
 
 .zem-history__section {

@@ -78,6 +78,7 @@ module.exports = function (grunt) {
                     'one/app/styles/libExtensions.less',
                     'one/app/styles/utilities.less',
                     'one/app/styles/animations.less',
+                    'one/app/styles/layout.less',
                     'one/app/styles/base.less',
                     'one/**/*.less',
                     // Exclude dashboard*.less and include it after any other less file in order to make it possible to

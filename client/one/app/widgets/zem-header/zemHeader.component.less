@@ -5,6 +5,7 @@
     position: fixed;
     z-index: 999;
     top: 0;
+    left: 0;
     width: 100%;
     transition: all @default-animation;
     transform: translateZ(0);
@@ -425,10 +426,6 @@
 
 @media only screen and (min-width: @min-app-width) {
     .fixed-header {
-        .page {
-            margin-top: @default-spacing*1.5+100;
-        }
-
         .zem-header {
             height: @header-height-minimized;
 

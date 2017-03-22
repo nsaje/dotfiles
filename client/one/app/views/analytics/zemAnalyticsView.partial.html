@@ -1,33 +1,25 @@
-<div class="page" >
-    <div class="section">
-        <div class="graph-infobox-parent">
-            <div class="graph-infobox-row">
-                <div class="graph-container">
-                    <zem-chart
-                            ng-if="$ctrl.initialized"
-                            level="$ctrl.level"
-                            breakdown="$ctrl.chartBreakdown"
-                            entity-id="$ctrl.entity.id">
-
-                    </zem-chart>
-                </div>
-                <div class="spacing"></div>
-                <div class="infobox-container">
-                    <zem-infobox
-                            ng-if="$ctrl.initialized"
-                            class="zem-infobox"
-                            entity="$ctrl.entity">
-                    </zem-infobox>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="section">
-        <zem-grid-container
+<div class="chart-infobox__container">
+    <div class="chart-infobox__chart">
+        <zem-chart
                 ng-if="$ctrl.initialized"
-                class="zem-grid-container"
-                entity="$ctrl.entity"
-                breakdown="$ctrl.breakdown">
-        </zem-grid-container>
+                level="$ctrl.level"
+                breakdown="$ctrl.chartBreakdown"
+                entity-id="$ctrl.entity.id"
+                class="zem-chart">
+        </zem-chart>
+    </div>
+    <div class="chart-infobox__spacing"></div>
+    <div class="chart-infobox__infobox">
+        <zem-infobox
+                ng-if="$ctrl.initialized"
+                class="zem-infobox"
+                entity="$ctrl.entity">
+        </zem-infobox>
     </div>
 </div>
+<zem-grid-container
+        ng-if="$ctrl.initialized"
+        class="zem-grid-container"
+        entity="$ctrl.entity"
+        breakdown="$ctrl.breakdown">
+</zem-grid-container>
