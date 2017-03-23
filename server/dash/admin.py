@@ -341,8 +341,10 @@ class AgencyResource(resources.ModelResource):
 
     class Meta:
         model = models.Agency
-        fields = ['id', 'name', 'accounts', 'agency_managers', 'sales_representative', 'cs_representative', 'default_account_type']
-        export_order = ['id', 'name', 'accounts', 'agency_managers', 'sales_representative', 'cs_representative', 'default_account_type']
+        fields = ['id', 'name', 'accounts', 'agency_managers',
+                  'sales_representative', 'cs_representative', 'default_account_type']
+        export_order = ['id', 'name', 'accounts', 'agency_managers',
+                        'sales_representative', 'cs_representative', 'default_account_type']
 
     def dehydrate_sales_representative(self, obj):
         return obj.sales_representative and obj.sales_representative.get_full_name() or ''
@@ -1453,6 +1455,22 @@ class PublisherGroupAdmin(admin.ModelAdmin):
         obj.save(request)
 
 
+class PublisherGroupListFilter(SimpleListFilter):
+    title = 'Publisher Group Type'
+    parameter_name = 'publisher_group_type'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('global', 'Global'),
+        )
+
+    def queryset(self, request, queryset):
+        val = self.value()
+        if val == 'global':
+            return queryset.filter(publisher_group_id=settings.GLOBAL_BLACKLIST_ID)
+        return queryset
+
+
 class PublisherGroupEntryAdmin(admin.ModelAdmin):
     list_display = ('publisher_group', 'publisher', 'source', 'include_subdomains', 'created_dt', 'modified_dt')
     readonly_fields = ('created_dt', 'modified_dt')
@@ -1460,6 +1478,7 @@ class PublisherGroupEntryAdmin(admin.ModelAdmin):
 
     list_filter = (
         ('created_dt', admin.DateFieldListFilter),
+        PublisherGroupListFilter,
         'source',
     )
 
