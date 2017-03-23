@@ -80,8 +80,12 @@ class Command(ExceptionCommand):
             blacklisted_publisher_ids = set(list_helper.flatten(publishers_map[x] for x in blacklist))
             whitelisted_publisher_ids = set(list_helper.flatten(publishers_map[x] for x in whitelist))
 
-            overall_blacklisted_entry_ids |= blacklisted_publisher_ids
-            overall_whitelisted_entry_ids |= whitelisted_publisher_ids
+            overall_blacklisted_entry_ids |= set(models.PublisherGroupEntry.objects
+                                                 .filter(publisher_group_id__in=blacklist)
+                                                 .values_list('id', flat=True))
+            overall_whitelisted_entry_ids |= set(models.PublisherGroupEntry.objects
+                                                 .filter(publisher_group_id__in=whitelist)
+                                                 .values_list('id', flat=True))
 
             ad_group_stats = stats_map.get(ad_group.id, {})
             ad_group_violators = set()
