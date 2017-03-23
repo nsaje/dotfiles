@@ -171,7 +171,7 @@ class AdGroupSettingsTest(TestCase):
             'Pixel retargeting JavaScript set to "alert(\'a\')", '
             'Ad group name set to "AdGroup name", '
             'Group all RTB sources set to "True", '
-            'BlueKai targeting set to "["or", 3, 4]"'
+            'Data targeting set to "["or", 3, 4]"'
         )
         self.assertHTMLEqual(expected, actual)
 

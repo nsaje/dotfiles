@@ -2597,7 +2597,7 @@ class AdGroupSettings(SettingsBase):
             'exclusion_retargeting_ad_groups': 'Exclusion ad groups',
             'whitelist_publisher_groups': 'Whitelist publisher groups',
             'blacklist_publisher_groups': 'Blacklist publisher groups',
-            'bluekai_targeting': 'BlueKai targeting',
+            'bluekai_targeting': 'Data targeting',
             'interest_targeting': 'Interest targeting',
             'exclusion_interest_targeting': 'Exclusion interest targeting',
             'audience_targeting': 'Custom audience targeting',
