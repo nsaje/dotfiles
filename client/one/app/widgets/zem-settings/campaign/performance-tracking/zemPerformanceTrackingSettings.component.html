@@ -31,7 +31,8 @@
                 <div class="message m-t-xs" ng-if="$ctrl.entity.settings.gaTrackingType === $ctrl.constants.gaTrackingType.EMAIL">
                     <p>
                         Email reporting relies on automated daily reports sent from Google Analytics to us.
-                        <br />Email reporting does not require additional permissions on your Google Analytics account or property, but is less reliable.
+                        <br />Email reporting does not require additional permissions on your Google Analytics account or property, but it is less reliable than API reporting.
+                        <br />Please see instructions below.
                     </p>
                     <a href="http://help.zemanta.com/article/show/12522-setting-up-automated-google-analytics-reports"
                        target="_blank" class="alternative-link">
@@ -40,8 +41,9 @@
                 </div>
                 <div class="message m-t-xs" ng-if="$ctrl.entity.settings.gaTrackingType === $ctrl.constants.gaTrackingType.API">
                     <p>
-                        API reporting allows us to automatically download reports from your Google Analytics account or property.
-                        <br/ >API reporting requires that you add a user to your Google Analytics account or property with read & analyze permission.
+                        API reporting allows the system to automatically download reports from your Google Analytics account or property.
+                        <br/ >API reporting requires that you add a user to your Google Analytics account or property with the read & analyze permission.
+                        <br />Please see instructions below.
                     </p>
                     <a href="http://help.zemanta.com/article/show/10814-realtime-google-analytics-reports_1"
                        target="_blank" class="alternative-link">
