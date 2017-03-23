@@ -2,7 +2,9 @@ SELECT
     ad_group_id,
     publisher,
     source_id,
-    MAX(publisher || '__' || source_id) publisher_id
+    MAX(publisher || '__' || source_id) publisher_id,
+    SUM(clicks) AS clicks,
+    SUM(impressions) AS impressions
 FROM
     mv_pubs_ad_group
 WHERE

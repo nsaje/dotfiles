@@ -2,6 +2,7 @@ import backtosql
 import collections
 import datetime
 import dateutil.parser
+import influx
 import logging
 
 from utils.command_helpers import ExceptionCommand
@@ -65,6 +66,10 @@ class Command(ExceptionCommand):
 
         outbrain = models.Source.objects.get(source_type__type=constants.SourceType.OUTBRAIN)
 
+        overall_blacklisted_entry_ids = set()
+        overall_whitelisted_entry_ids = set()
+        overall_vialotors_stats = {'clicks': 0, 'impressions': 0}
+
         for ad_group in ad_groups:
             blacklist, whitelist = publisher_group_helpers.concat_publisher_group_targeting(
                 ad_group, ad_group_settings_map[ad_group.id],
@@ -75,7 +80,13 @@ class Command(ExceptionCommand):
             blacklisted_publisher_ids = set(list_helper.flatten(publishers_map[x] for x in blacklist))
             whitelisted_publisher_ids = set(list_helper.flatten(publishers_map[x] for x in whitelist))
 
-            traffic_publisher_ids = stats_map.get(ad_group.id, set()) - {'na__34'}  # remove triplelift NA as it gets in there sometimes
+            overall_blacklisted_entry_ids |= blacklisted_publisher_ids
+            overall_whitelisted_entry_ids |= whitelisted_publisher_ids
+
+            ad_group_stats = stats_map.get(ad_group.id, {})
+            ad_group_violators = set()
+
+            traffic_publisher_ids = set(ad_group_stats.keys()) - {'na__34'}  # remove triplelift NA as it gets in there sometimes
             traffic_publisher_ids_wo_outbrain = set(
                 x for x in traffic_publisher_ids if publisher_helpers.dissect_publisher_id(x)[1] != outbrain.id)
             traffic_publisher_ids_outbrain = set(
@@ -92,6 +103,8 @@ class Command(ExceptionCommand):
                         'publisher_group_monitor: Found publisher statistics for non-whitelisted publishers in ad group %s',
                         ad_group.id, extra={'publisher_ids': violator_publisher_ids})
 
+                    ad_group_violators |= violator_publisher_ids
+
                 # outbrain doesn't support whitelisting so just don't check
 
             if blacklisted_publisher_ids:
@@ -104,6 +117,8 @@ class Command(ExceptionCommand):
                         'publisher_group_monitor: Found publisher statistics for blacklisted publishers in ad group %s',
                         ad_group.id, extra={'publisher_ids': violator_publisher_ids})
 
+                    ad_group_violators |= violator_publisher_ids
+
                 if len(set(x for x in blacklisted_publisher_ids if publisher_helpers.dissect_publisher_id(x)[1] == outbrain.id)) < 30:
                     # outbrain - skip check when more than 30 blacklisted outbrain publishers as we are probably waiting for
                     # a manual action
@@ -114,6 +129,21 @@ class Command(ExceptionCommand):
                         logger.warning(
                             'publisher_group_monitor: Found Outbrain publisher statistics for blacklisted publishers in ad group %s',
                             ad_group.id, extra={'publisher_ids': violator_publisher_ids})
+
+                        ad_group_violators |= violator_publisher_ids
+
+            overall_vialotors_stats['clicks'] += sum(ad_group_stats[x]['clicks'] for x in violator_publisher_ids)
+            overall_vialotors_stats['impressions'] += sum(ad_group_stats[x]['impressions'] for x in violator_publisher_ids)
+
+        logger.info('Blacklisted publisher group entries count %s', len(overall_blacklisted_entry_ids))
+        logger.info('Whitelisted publisher group entries count %s', len(overall_whitelisted_entry_ids))
+        influx.gauge('dash.blacklisted_publisher.status', len(overall_blacklisted_entry_ids), status='blacklisted')
+        influx.gauge('dash.blacklisted_publisher.status', len(overall_whitelisted_entry_ids), status='whitelisted')
+
+        logger.info('Overall clicks for violator publishers: %s', overall_vialotors_stats['clicks'])
+        logger.info('Overall impressions for violator publishers: %s', overall_vialotors_stats['impressions'])
+        influx.gauge('dash.blacklisted_publisher.stats', overall_vialotors_stats['clicks'], type='clicks')
+        influx.gauge('dash.blacklisted_publisher.stats', overall_vialotors_stats['impressions'], type='impressions')
 
     def get_whitelist_violators(self, publisher_ids, whitelisted_publisher_ids, blacklisted_publisher_ids):
         return publisher_ids - (whitelisted_publisher_ids - blacklisted_publisher_ids)
@@ -134,9 +164,16 @@ class Command(ExceptionCommand):
             cursor.execute(sql, params)
             results = redshiftapi.db.dictfetchall(cursor)
 
-        m = collections.defaultdict(set)
+        m = collections.defaultdict(dict)
         for row in results:
-            m[row['ad_group_id']].add(row['publisher_id'])
+            if row['publisher_id'] not in m[row['ad_group_id']]:
+                m[row['ad_group_id']][row['publisher_id']] = {
+                    'clicks': 0,
+                    'impressions': 0,
+                }
+
+            m[row['ad_group_id']][row['publisher_id']]['clicks'] += row['clicks']
+            m[row['ad_group_id']][row['publisher_id']]['impressions'] += row['impressions']
 
         return m
 
