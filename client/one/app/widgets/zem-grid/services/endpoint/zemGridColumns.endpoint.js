@@ -476,7 +476,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             shown: true,
             fractionSize: 3,
             help: '<p>The average cost per click on an ad.</p>' +
-                  '<p>The metric is calculated as the total cost divided by total amount of clicks.</p>',
+                  '<p>The metric is calculated as the media cost divided by total amount of clicks.</p>',
             totalRow: true,
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
@@ -488,7 +488,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             fractionSize: 3,
             help: '<p>The average cost per thousand ad impressions. ' +
                   'Impression is counted whenever an ad is served to the user.</p>' +
-                  '<p>The metric is calculated as the total cost divided by total amount ' +
+                  '<p>The metric is calculated as the media cost divided by total amount ' +
                   'of impressions, multiplied by thousand.</p>',
             totalRow: true,
             order: true,

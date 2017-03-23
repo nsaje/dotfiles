@@ -247,7 +247,7 @@ class CampaignBudgetView(api_common.BaseApiView):
             if not request.user.has_perm('zemauth.can_manage_agency_margin'):
                 del data['margin']
             else:
-                data['margin'] = helpers.format_percent_to_decimal(data['margin'])
+                data['margin'] = helpers.format_percent_to_decimal(data['margin'] or '0')
 
         item = forms.BudgetLineItemForm(data)
         if item.errors:
@@ -398,7 +398,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             if not request.user.has_perm('zemauth.can_manage_agency_margin'):
                 del data['margin']
             else:
-                data['margin'] = helpers.format_percent_to_decimal(data['margin'])
+                data['margin'] = helpers.format_percent_to_decimal(data['margin'] or '0')
 
         data['campaign'] = campaign.id
 
