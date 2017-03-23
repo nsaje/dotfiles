@@ -13,6 +13,7 @@ from utils import s3helpers
 
 logger = logging.getLogger(__name__)
 
+OUTBRAIN_AGENCY = 55
 
 EXAMPLE_CSV_CONTENT = [{
     "publisher": "example.com",
@@ -23,12 +24,23 @@ EXAMPLE_CSV_CONTENT = [{
 }]
 
 
-def get_csv_content(publisher_group_entries):
+def get_csv_content(account, publisher_group_entries):
     output = StringIO.StringIO()
     writer = unicodecsv.writer(output, encoding='utf-8', dialect='excel', quoting=unicodecsv.QUOTE_ALL)
-    writer.writerow(('Publisher', 'Source'))
+
+    is_outbrain = account.agency.id == OUTBRAIN_AGENCY
+    add_outbrain_publisher_id = is_outbrain and any(entry.outbrain_publisher_id for entry in publisher_group_entries)
+
+    headers = ['Publisher', 'Source']
+    if add_outbrain_publisher_id:
+        headers.append('Outbrain Publisher Id')
+    writer.writerow(headers)
+
     for entry in publisher_group_entries.order_by('publisher'):
-        writer.writerow((entry.publisher, entry.source))
+        row = [entry.publisher, entry.source]
+        if add_outbrain_publisher_id:
+            row.append(entry.outbrain_publisher_id)
+        writer.writerow(row)
 
     return output.getvalue()
 
@@ -85,20 +97,35 @@ def clean_entry_sources(entry_dicts):
         entry['source'] = sources_by_slug.get(entry['source'].lower())
 
 
-def save_entries_errors_csv(account_id, entry_dicts):
+def get_entries_errors_csv_content(account, entry_dicts):
     output = StringIO.StringIO()
     writer = unicodecsv.writer(output, encoding='utf-8', dialect='excel', quoting=unicodecsv.QUOTE_ALL)
-    writer.writerow(('Publisher', 'Source', 'Error'))
+
+    is_outbrain = account.agency.id == OUTBRAIN_AGENCY
+    add_outbrain_publisher_id = is_outbrain and any('outbrain_publisher_id' in entry_dict for entry_dict in entry_dicts)
+
+    headers = ['Publisher', 'Source', 'Error']
+    if add_outbrain_publisher_id:
+        headers.insert(-1, 'Outbrain Publisher Id')
+
+    writer.writerow(headers)
     for entry in entry_dicts:
-        writer.writerow((
+        row = [
             entry['publisher'],
             entry['source'],
-            entry.get('error'))
-        )
+            entry.get('error')
+        ]
+        if add_outbrain_publisher_id:
+            row.insert(-1, entry.get('outbrain_publisher_id'))
+        writer.writerow(row)
+    return output.getvalue()
 
+
+def save_entries_errors_csv(account, entry_dicts):
+    csv_content = get_entries_errors_csv_content(entry_dicts)
     csv_key = ''.join(random.choice(string.letters + string.digits) for _ in range(64))
     s3_helper = s3helpers.S3Helper(settings.S3_BUCKET_PUBLISHER_GROUPS)
     s3_helper.put(os.path.join(
-        'publisher_group_errors', 'account_{}'.format(account_id), csv_key + '.csv'), output.getvalue())
+        'publisher_group_errors', 'account_{}'.format(account.id), csv_key + '.csv'), csv_content)
 
     return csv_key

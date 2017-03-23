@@ -2,7 +2,6 @@ import json
 import slugify
 import os
 
-from django.db import transaction
 from django.conf import settings
 
 from dash import constants
@@ -160,7 +159,7 @@ class PublisherGroupsUpload(api_common.BaseApiView):
         if entries:
             validated_entries = publisher_group_csv_helpers.validate_entries(entries)
             if any('error' in entry for entry in validated_entries):
-                errors_csv_key = publisher_group_csv_helpers.save_entries_errors_csv(account.id, validated_entries)
+                errors_csv_key = publisher_group_csv_helpers.save_entries_errors_csv(account, validated_entries)
                 raise exc.ValidationError(errors={
                     'errors_csv_key': errors_csv_key,
                 })
@@ -179,13 +178,14 @@ class PublisherGroupsDownload(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.can_edit_publisher_groups'):
             raise exc.MissingDataError()
 
-        helpers.get_account(request.user, account_id)
+        account = helpers.get_account(request.user, account_id)
         publisher_group = helpers.get_publisher_group(request.user, account_id, publisher_group_id)
         if not publisher_group:
             raise exc.MissingDataError()
 
         return self.create_csv_response('publisher_group_{}'.format(slugify.slugify(publisher_group.name)),
-                                        content=publisher_group_csv_helpers.get_csv_content(publisher_group.entries.all()))
+                                        content=publisher_group_csv_helpers.get_csv_content(account,
+                                                                                            publisher_group.entries.all()))
 
 
 class PublisherGroupsExampleDownload(api_common.BaseApiView):

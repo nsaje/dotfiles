@@ -402,6 +402,7 @@ def _prepare_entries(entry_dicts, publisher_group):
             publisher=entry['publisher'],
             source=entry['source'],
             include_subdomains=entry['include_subdomains'],
+            outbrain_publisher_id=entry.get('outbrain_publisher_id', ''),
             publisher_group=publisher_group,
         ))
     return entries

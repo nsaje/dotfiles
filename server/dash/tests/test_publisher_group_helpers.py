@@ -471,12 +471,24 @@ class PublisherGroupCSVHelpersTest(TestCase):
     fixtures = ['test_publishers.yaml']
 
     def test_get_csv_content(self):
+        publisher_group = models.PublisherGroup.objects.get(pk=1)
         self.assertEquals(
-            publisher_group_csv_helpers.get_csv_content(models.PublisherGroup.objects.get(pk=1).entries.all()),
+            publisher_group_csv_helpers.get_csv_content(publisher_group.account, publisher_group.entries.all()),
             textwrap.dedent('''\
             "Publisher","Source"\r
             "pub1","AdsNative"\r
             "pub2",""\r
+            '''))
+
+    def test_get_csv_content_outbrain_publisher_id(self):
+        publisher_group = models.PublisherGroup.objects.get(pk=1)
+        publisher_group.account.agency.id = 55
+        self.assertEquals(
+            publisher_group_csv_helpers.get_csv_content(publisher_group.account, publisher_group.entries.all()),
+            textwrap.dedent('''\
+            "Publisher","Source","Outbrain Publisher Id"\r
+            "pub1","AdsNative",""\r
+            "pub2","","asd123"\r
             '''))
 
     def test_get_example_csv_content(self):
@@ -550,3 +562,24 @@ class PublisherGroupCSVHelpersTest(TestCase):
             'source': None,
             'include_subdomains': True,
         }])
+
+    def test_get_entries_errors_csv_content(self):
+        entries = [{
+            'publisher': 'pub1',
+            'source': models.Source.objects.get(pk=1),
+            'include_subdomains': True,
+            'outbrain_publisher_id': '12345',
+        }, {
+            'publisher': 'pub2',
+            'source': None,
+            'include_subdomains': True,
+        }]
+        account = models.Account.objects.get(pk=1)
+        account.agency.id = 55
+        self.assertEquals(
+            publisher_group_csv_helpers.get_entries_errors_csv_content(account, entries),
+            textwrap.dedent('''\
+            "Publisher","Source","Outbrain Publisher Id","Error"\r
+            "pub1","AdsNative","12345",""\r
+            "pub2","","",""\r
+            '''))
