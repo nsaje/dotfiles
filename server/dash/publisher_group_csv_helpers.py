@@ -28,7 +28,7 @@ def get_csv_content(account, publisher_group_entries):
     output = StringIO.StringIO()
     writer = unicodecsv.writer(output, encoding='utf-8', dialect='excel', quoting=unicodecsv.QUOTE_ALL)
 
-    is_outbrain = account.agency.id == OUTBRAIN_AGENCY
+    is_outbrain = account.agency is not None and account.agency.id == OUTBRAIN_AGENCY
     add_outbrain_publisher_id = is_outbrain and any(entry.outbrain_publisher_id for entry in publisher_group_entries)
 
     headers = ['Publisher', 'Source']
@@ -101,7 +101,7 @@ def get_entries_errors_csv_content(account, entry_dicts):
     output = StringIO.StringIO()
     writer = unicodecsv.writer(output, encoding='utf-8', dialect='excel', quoting=unicodecsv.QUOTE_ALL)
 
-    is_outbrain = account.agency.id == OUTBRAIN_AGENCY
+    is_outbrain = account.agency is not None and account.agency.id == OUTBRAIN_AGENCY
     add_outbrain_publisher_id = is_outbrain and any('outbrain_publisher_id' in entry_dict for entry_dict in entry_dicts)
 
     headers = ['Publisher', 'Source', 'Error']
