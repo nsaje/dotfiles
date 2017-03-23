@@ -56,7 +56,7 @@
         <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.endDate}">
             <label class="form__label" for="end-date-input">End Date</label>
             <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon">
-                <input class="input-text" id="end-date-input" type="text" uib-datepicker-popup="MM/dd/yyyy" ng-disabled="!$ctrl.budgetItem.credit || !($ctrl.budgetItem.isUpdatable || $ctrl.budgetItem.isEditable)" datepicker-options="{initDate: $ctrl.initEndDate, minDate: $ctrl.minDate, maxDate: $ctrl.maxDate}" ng-model="$ctrl.budgetItem.endDate" is-open="$ctrl.endDatePicker.isOpen" ng-click="$ctrl.openEndDatePicker()">
+                <input class="input-text" id="end-date-input" type="text" uib-datepicker-popup="MM/dd/yyyy" ng-disabled="!$ctrl.budgetItem.credit || !($ctrl.budgetItem.isUpdatable || $ctrl.budgetItem.isEditable)" datepicker-options="{initDate: $ctrl.initEndDate, minDate: $ctrl.today, maxDate: $ctrl.maxDate}" ng-model="$ctrl.budgetItem.endDate" is-open="$ctrl.endDatePicker.isOpen" ng-click="$ctrl.openEndDatePicker()">
             </div>
             <div class="message message--error" ng-repeat="error in $ctrl.errors.endDate" for="end-date-input">{{ error }}</div>
         </div>

@@ -1474,6 +1474,57 @@ class BudgetReserveTestCase(TestCase):
 
         self.assertEqual(budget.freed_cc, 280 * converters.DOLAR_TO_CC)
 
+    def test_asset_return_overlaping_budgets(self):
+        today = datetime.date(2015, 11, 11)
+        credit = models.CreditLineItem.objects.create(
+            account_id=1,
+            start_date=datetime.date(2015, 11, 1),
+            end_date=datetime.date(2015, 11, 30),
+            amount=1000,
+            license_fee=Decimal('0.2'),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+        budget1 = models.BudgetLineItem.objects.create(
+            credit=credit,
+            amount=500,
+            freed_cc=1000000,
+            start_date=datetime.date(2015, 11, 1),
+            end_date=datetime.date(2015, 11, 10),
+            campaign_id=1,
+        )
+        models.BudgetLineItem.objects.create(
+            credit=credit,
+            amount=600,
+            start_date=datetime.date(2015, 11, 1),
+            end_date=datetime.date(2015, 11, 10),
+            campaign_id=1,
+        )
+
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=budget1,
+            date=today - datetime.timedelta(1),
+            media_spend_nano=300 * converters.DOLAR_TO_NANO,
+            data_spend_nano=0,
+            license_fee_nano=0 * converters.DOLAR_TO_NANO,
+            margin_nano=0,
+        )
+
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 14)
+            budget1.free_inactive_allocated_assets()
+
+        self.assertEqual(budget1.freed_cc, 200 * converters.DOLAR_TO_CC)
+
+        with self.assertRaises(ValidationError) as err:
+            models.BudgetLineItem.objects.create(
+                credit=credit,
+                amount=200,
+                start_date=datetime.date(2015, 11, 1),
+                end_date=datetime.date(2015, 11, 10),
+                campaign_id=1,
+            )
+
     def test_mayfly_budget(self):
         c = create_credit(
             account_id=2,
