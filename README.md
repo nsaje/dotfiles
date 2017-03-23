@@ -25,12 +25,24 @@ Client is a web client built on top of AngularJS. It uses Server API to communic
 
 #### Development databases
 
-For development, you can use the development databases running on AWS.
-Howto and connection details are specified in the [Z1 Staging Data repo](https://github.com/Zemanta/z1-staging-data/blob/master/README.md)
+~~For development, you can use the development databases running on AWS.
+Howto and connection details are specified in the [Z1 Staging Data repo](https://github.com/Zemanta/z1-staging-data/blob/master/README.md)~~
 
+For development you can use weekly dump of database on pg01. If you need to connect to database while at home you need to connect via VPN.
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'one',
+        'USER': 'admin',
+        'PASSWORD': Secret('kms:region=us-east-1:AQECAHi+LUun9zpdDynDViFKm08DnYVERdz5zNZO4BgKN2CjEAAAAHQwcgYJKoZIhvcNAQcGoGUwYwIBADBeBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDMtes6P5JhglIzDfcAIBEIAx8U9/ycXSfbBL5Mw/c7ii8eM1XmAlI1rgvisZVjyRR3K9R/nv6tgyGZYWV5HIiMYXQQ==').get(),
+        'HOST': 'pg01',
+    }
+}
+```
 #### Local databases
 
-In production, we use PostgreSQL 9.3 database so it is best to install it for development as well.
+In production, we use PostgreSQL 9.6 database so it is best to install it for development as well.
 
 All the commands bellow assume that you are located in server subdirectory.
 
