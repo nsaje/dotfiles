@@ -78,3 +78,6 @@ termcolor==1.1.0
 
 # locations autocomplete in admin
 django-searchable-select==1.4.4.post3
+
+# user agent parser
+ua-parser==0.7.3

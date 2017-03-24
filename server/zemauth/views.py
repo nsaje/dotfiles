@@ -18,6 +18,7 @@ import gauth
 from utils import email_helper
 from zemauth.models import User
 from zemauth import forms
+from zemauth import devices
 
 
 @influx.timer('auth.signin_response_time')
@@ -45,7 +46,11 @@ def login(request, *args, **kwargs):
     if settings.GOOGLE_OAUTH_ENABLED:
         kwargs['extra_context']['gauth_url'] = gauth.get_uri(request)
 
-    return auth_views.login(request, *args, **kwargs)
+    response = auth_views.login(request, *args, **kwargs)
+    if request.method == 'POST':
+        devices.handle_user_device(request, response)
+
+    return response
 
 
 def set_password(request, uidb64=None, token=None, template_name=None):

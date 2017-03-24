@@ -1649,6 +1649,7 @@ class EmailTemplateType(ConstantBase):
     WEEKLY_CLIENT_REPORT = 23
     PACING_NOTIFICATION = 24
     WEEKLY_INVENTORY_REPORT = 25
+    NEW_DEVICE_LOGIN = 26
 
     _VALUES = {
         ADGROUP_CHANGE: 'Ad group settings change',
@@ -1675,6 +1676,7 @@ class EmailTemplateType(ConstantBase):
         WEEKLY_CLIENT_REPORT: 'Weekly client report',
         PACING_NOTIFICATION: 'Pacing notification',
         WEEKLY_INVENTORY_REPORT: 'Weekly inventory report',
+        NEW_DEVICE_LOGIN: 'New device login',
     }
 
 

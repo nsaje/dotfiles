@@ -493,6 +493,22 @@ def send_weekly_inventory_report_email():
     email.send(fail_silently=False)
 
 
+def send_new_user_device_email(user, browser, os, city, country):
+    subject, body, _ = format_email(
+        dash.constants.EmailTemplateType.NEW_USER_DEVICE,
+        time=dates_helper.local_now().strftime('%A, %d %b %Y %I:%m %p %Z'),
+        browser=browser,
+        os=os,
+        city=city,
+        country=country,
+    )
+    email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
+        settings.FROM_EMAIL,
+    ), [user.email])
+    email.attach_alternative(format_template(subject, body), "text/html")
+    email.send(fail_silently=False)
+
+
 def send_outbrain_accounts_running_out_email(n):
     subject, body, recipients = format_email(
         dash.constants.EmailTemplateType.OUTBRAIN_ACCOUNTS_RUNNING_OUT,
