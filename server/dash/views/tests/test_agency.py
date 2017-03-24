@@ -954,7 +954,9 @@ class AdGroupSettingsTest(TestCase):
             self.assertNotEqual(response_settings_dict['autopilot_daily_budget'], '0.00')
             self.assertNotEqual(response_settings_dict['retargeting_ad_groups'], [2])
 
-    def test_validate_autopilot_settings_to_full_ap_wo_all_rtb_enabled(self):
+    @patch('automation.autopilot_budgets.get_adgroup_minimum_daily_budget', autospec=True)
+    def test_validate_autopilot_settings_to_full_ap_wo_all_rtb_enabled(self, mock_get_min_budget):
+        mock_get_min_budget.return_value = 0
         view = agency.AdGroupSettings()
         current_settings = models.AdGroupSettings()
         new_settings = models.AdGroupSettings()
@@ -970,13 +972,15 @@ class AdGroupSettingsTest(TestCase):
         new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
 
         with self.assertRaises(exc.ValidationError):
-            view.validate_autopilot_settings(request, current_settings, new_settings)
+            view.validate_autopilot_settings(request, None, current_settings, new_settings)
 
         new_settings.state = constants.AdGroupSettingsState.INACTIVE
         with self.assertRaises(exc.ValidationError):
-            view.validate_autopilot_settings(request, current_settings, new_settings)
+            view.validate_autopilot_settings(request, None, current_settings, new_settings)
 
-    def test_validate_autopilot_settings_all_rtb_cpc(self):
+    @patch('automation.autopilot_budgets.get_adgroup_minimum_daily_budget', autospec=True)
+    def test_validate_autopilot_settings_all_rtb_cpc(self, mock_get_min_budget):
+        mock_get_min_budget.return_value = 0
         view = agency.AdGroupSettings()
         current_settings = models.AdGroupSettings()
         new_settings = models.AdGroupSettings()
@@ -993,7 +997,8 @@ class AdGroupSettingsTest(TestCase):
 
         current_settings.b1_sources_group_cpc_cc = '0.1'
         new_settings.b1_sources_group_cpc_cc = '0.2'
-        view.validate_autopilot_settings(request, current_settings, new_settings)  # no exception
+        view.validate_autopilot_settings(request, None, current_settings, new_settings)  # no exception
+        mock_get_min_budget.assert_called_with(None, new_settings)
 
         current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
         new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
@@ -1002,9 +1007,11 @@ class AdGroupSettingsTest(TestCase):
         new_settings.b1_sources_group_cpc_cc = '0.2'
 
         with self.assertRaises(exc.ValidationError):
-            view.validate_autopilot_settings(request, current_settings, new_settings)
+            view.validate_autopilot_settings(request, None, current_settings, new_settings)
 
-    def test_validate_autopilot_settings_all_rtb_daily_budget(self):
+    @patch('automation.autopilot_budgets.get_adgroup_minimum_daily_budget', autospec=True)
+    def test_validate_autopilot_settings_all_rtb_daily_budget(self, mock_get_min_budget):
+        mock_get_min_budget.return_value = 0
         view = agency.AdGroupSettings()
         current_settings = models.AdGroupSettings()
         new_settings = models.AdGroupSettings()
@@ -1021,13 +1028,35 @@ class AdGroupSettingsTest(TestCase):
 
         current_settings.b1_sources_group_cpc_cc = '100.0'
         new_settings.b1_sources_group_cpc_cc = '200.0'
-        view.validate_autopilot_settings(request, current_settings, new_settings)  # no exception
+        view.validate_autopilot_settings(request, None, current_settings, new_settings)  # no exception
+        mock_get_min_budget.assert_called_with(None, new_settings)
 
         current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
         new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
 
         with self.assertRaises(exc.ValidationError):
-            view.validate_autopilot_settings(request, current_settings, new_settings)
+            view.validate_autopilot_settings(request, None, current_settings, new_settings)
+
+    @patch('automation.autopilot_budgets.get_adgroup_minimum_daily_budget', autospec=True)
+    def test_validate_autopilot_settings_autopilot_daily_budget(self, mock_get_min_budget):
+        view = agency.AdGroupSettings()
+        current_settings = models.AdGroupSettings()
+        new_settings = models.AdGroupSettings()
+        new_settings.state = constants.AdGroupSettingsState.ACTIVE
+
+        request = HttpRequest()
+        request.user = self.user
+
+        mock_get_min_budget.return_value = 0
+        new_settings.b1_sources_group_enabled = True
+        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+        new_settings.autopilot_daily_budget = 100
+        view.validate_autopilot_settings(request, None, current_settings, new_settings)  # no exception
+        mock_get_min_budget.assert_called_with(None, new_settings)
+
+        mock_get_min_budget.return_value = 1000000
+        with self.assertRaises(exc.ValidationError):
+            view.validate_autopilot_settings(request, None, current_settings, new_settings)
 
     def test_validate_all_rtb_state_adgroup_inactive(self):
         view = agency.AdGroupSettings()

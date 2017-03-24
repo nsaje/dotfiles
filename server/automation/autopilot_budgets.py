@@ -200,9 +200,8 @@ def _get_campaign_goal_value(campaign_goal_type, data_value, max_value_of_campai
     raise exceptions.NotImplementedError('Budget Autopilot campaign goal is not implemented: ', campaign_goal_type)
 
 
-def get_adgroup_minimum_daily_budget(adgroup=None):
-    ad_group_settings = adgroup.get_current_settings()
-    enabled_sources_settings = autopilot_helpers.get_autopilot_active_sources_settings({adgroup: ad_group_settings})
+def get_adgroup_minimum_daily_budget(ad_group, ad_group_settings):
+    enabled_sources_settings = autopilot_helpers.get_autopilot_active_sources_settings({ad_group: ad_group_settings})
     if ad_group_settings.b1_sources_group_enabled:
         enabled_sources_settings = [a for a in enabled_sources_settings if
                                     a.ad_group_source.source.source_type.type != dash.constants.SourceType.B1]

@@ -905,7 +905,7 @@ def _enabling_autopilot_sources_allowed(ad_group_settings, number_of_sources_to_
         automation.autopilot_settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC
     )
     return ad_group_settings.autopilot_daily_budget - required_budget >=\
-        automation.autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group_settings.ad_group)
+        automation.autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group_settings.ad_group, ad_group_settings)
 
 
 def add_source_to_ad_group(default_source_settings, ad_group):

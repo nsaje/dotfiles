@@ -10,7 +10,7 @@ from django.conf import settings
 from django.contrib.auth import models as authmodels
 from django.http import Http404
 
-from automation import autopilot_budgets, autopilot_plus, campaign_stop
+from automation import autopilot_budgets, autopilot_plus, autopilot_settings, campaign_stop
 from dash.views import helpers
 from dash import forms
 from dash import models
@@ -106,7 +106,7 @@ class AdGroupSettings(api_common.BaseApiView):
         campaign_settings = ad_group.campaign.get_current_settings()
 
         self.validate_state_change(ad_group, current_settings, new_settings, campaign_settings)
-        self.validate_autopilot_settings(request, current_settings, new_settings)
+        self.validate_autopilot_settings(request, ad_group, current_settings, new_settings)
         self.validate_all_rtb_state(request, current_settings, new_settings)
         self.validate_yahoo_desktop_targeting(ad_group, current_settings, new_settings)
         self.validate_all_rtb_campaign_stop(ad_group, current_settings, new_settings, campaign_settings)
@@ -187,7 +187,7 @@ class AdGroupSettings(api_common.BaseApiView):
     def should_validate_cpc_constraints(self, changes, new_settings):
         return 'b1_sources_group_cpc_cc' in changes
 
-    def validate_autopilot_settings(self, request, settings, new_settings):
+    def validate_autopilot_settings(self, request, ad_group, settings, new_settings):
         if new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
             if not new_settings.b1_sources_group_enabled:
                 msg = 'To enable Daily Cap Autopilot, RTB Sources have to be managed as a group.'
@@ -210,6 +210,20 @@ class AdGroupSettings(api_common.BaseApiView):
                 raise exc.ValidationError(errors={
                     'b1_sources_group_daily_budget': msg,
                 })
+
+        min_autopilot_daily_budget = autopilot_budgets.get_adgroup_minimum_daily_budget(
+            ad_group, new_settings
+        )
+        if new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
+           new_settings.autopilot_daily_budget < min_autopilot_daily_budget:
+            msg = 'Total Daily Spend Cap must be at least ${min_budget}. Autopilot '\
+                  'requires ${min_per_source} or more per active media source.'
+            raise exc.ValidationError(errors={
+                'autopilot_daily_budget': msg.format(
+                    min_budget=min_autopilot_daily_budget,
+                    min_per_source=autopilot_settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC,
+                )
+            })
 
     def validate_autopilot_campaign_stop(self, ad_group, current_settings, new_settings, campaign_settings):
         if new_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
@@ -429,7 +443,7 @@ class AdGroupSettings(api_common.BaseApiView):
             'redirect_pixel_urls': settings.redirect_pixel_urls,
             'redirect_javascript': settings.redirect_javascript,
             'autopilot_state': settings.autopilot_state,
-            'autopilot_min_budget': autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group),
+            'autopilot_min_budget': autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group, settings),
             'autopilot_optimization_goal': primary_campaign_goal.type if primary_campaign_goal else None,
             'dayparting': settings.dayparting,
             'b1_sources_group_enabled': settings.b1_sources_group_enabled,

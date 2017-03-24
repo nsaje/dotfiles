@@ -400,25 +400,8 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
             pixel__account_id=ad_group.campaign.account.pk)
         self.current_settings = self.ad_group.get_current_settings()
 
-    def _clean_autopilot_daily_budget(self, cleaned_data):
-        budget = cleaned_data.get('autopilot_daily_budget', 0)
-        ap_state = cleaned_data.get('autopilot_state')
-        budget_ap_is_active = ap_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-        budget_insufficient = budget < autopilot_budgets.get_adgroup_minimum_daily_budget(
-            self.ad_group)
-        if budget_ap_is_active and budget_insufficient:
-            self.add_error(
-                'autopilot_daily_budget',
-                'Total Daily Spend Cap must be at least $' +
-                str(autopilot_budgets.get_adgroup_minimum_daily_budget(self.ad_group)) + '. ' +
-                'Autopilot requires $' + str(autopilot_settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC) +
-                ' or more per active media source.'
-            )
-        return budget
-
     def clean(self):
         cleaned_data = super(AdGroupSettingsForm, self).clean()
-        self._clean_autopilot_daily_budget(cleaned_data)
         return cleaned_data
 
     def clean_retargeting_ad_groups(self):
