@@ -5,6 +5,7 @@ import json
 import logging
 
 import influx
+import mimetypes
 
 from django.db.models import Q
 from django.conf import settings
@@ -609,4 +610,9 @@ class CustomReportDownload(ExportApiView):
         except:
             logger.exception('Failed to fetch {} from s3.'.format(path))
             raise exc.MissingDataError()
-        return self.create_csv_response(filename, content=content)
+        mime, encoding = mimetypes.guess_type(filename)
+        return self.create_file_response(
+            '{}; name="{}"'.format(mime or 'text/csv', filename),
+            filename,
+            content=content
+        )
