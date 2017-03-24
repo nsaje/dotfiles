@@ -2,21 +2,29 @@ import logging
 import datetime
 
 from django.core.management.base import CommandError
-
+from django.db.models import Count
 from utils.command_helpers import ExceptionCommand
-from dash.models import Account, AdGroupSource, Source, OutbrainAccount
+from dash.models import Account, AdGroup, AdGroupSource, Source, OutbrainAccount
 from dash.constants import SourceType
 
 from redshiftapi import db
 
 logger = logging.getLogger(__name__)
 OB = Source.objects.get(source_type__type=SourceType.OUTBRAIN)
-QUERY = '''
-SELECT account_id, SUM(cost_nano::decimal)/1000000000
-FROM mv_master where account_id in ({})
+QUERY_NEW = '''
+SELECT account_id, SUM(impressions)
+FROM mv_master
+WHERE account_id in ({}) AND source_id = {}
+GROUP BY account_id;
+'''
+QUERY_OLD = '''
+SELECT account_id, SUM(impressions)
+FROM contentadstats
+WHERE account_id in ({}) AND source_id = {}
 GROUP BY account_id;
 '''
 ARCHIVED_AT_LEAST_DAYS = 30
+MAX_AD_GROUP_COUNT_LIMIT = 50
 
 
 class Command(ExceptionCommand):
@@ -35,14 +43,27 @@ class Command(ExceptionCommand):
     def _validate_account_ids(self, account_ids, filter_only=False):
         account_ids = list(account_ids)
         with db.get_stats_cursor() as c:
-            c.execute(QUERY.format(','.join(map(str, account_ids))))
+            c.execute(QUERY_OLD.format(','.join(map(str, account_ids)), OB.pk))
             data = dict(c.fetchall())
+        with db.get_stats_cursor() as c:
+            c.execute(QUERY_NEW.format(','.join(map(str, account_ids)), OB.pk))
+            data.update(dict(c.fetchall()))
+        adgroup_counts = {
+            obj['campaign__account_id']: obj['total']
+            for obj in AdGroup.objects.all().values('campaign__account_id').annotate(total=Count('id')).order_by('-total')
+        }
+        invalid_account_ids = [acc_id for acc_id in account_ids if adgroup_counts.get(
+            acc_id, 0) > MAX_AD_GROUP_COUNT_LIMIT]
+        if not filter_only and invalid_account_ids:
+            raise CommandError('Some accounts have too many ad groups: ' + ', '.join(str(acc_id)
+                                                                                     for acc_id in invalid_account_ids))
+        account_ids = list(set(account_ids) - set(invalid_account_ids))
         if data:
             if filter_only:
                 return [acc_id for acc_id in account_ids if acc_id not in data]
-            raise CommandError('Some accounts have spend in RS: {}'.format(
+            raise CommandError('Some accounts have impressions in RS: {}'.format(
                 ', '.join([
-                    'account {} spent ${}'.format(acc_id, spend) for acc_id, spend in data.iteritems()
+                    'account {} - {}'.format(acc_id, spend) for acc_id, spend in data.iteritems()
                 ])
             ))
         return account_ids
