@@ -493,7 +493,7 @@ def send_weekly_inventory_report_email():
     email.send(fail_silently=False)
 
 
-def send_new_user_device_email(user, browser, os, city, country):
+def send_new_user_device_email(request, browser, os, city, country):
     subject, body, _ = format_email(
         dash.constants.EmailTemplateType.NEW_DEVICE_LOGIN,
         time=dates_helper.local_now().strftime('%A, %d %b %Y %I:%m %p %Z'),
@@ -501,10 +501,11 @@ def send_new_user_device_email(user, browser, os, city, country):
         os=os,
         city=city,
         country=country,
+        reset_password_url=request.build_absolute_uri(('password_reset'))
     )
     email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL,
-    ), [user.email])
+    ), [request.user.email])
     email.attach_alternative(format_template(subject, body), "text/html")
     email.send(fail_silently=False)
 

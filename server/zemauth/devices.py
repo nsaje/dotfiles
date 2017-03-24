@@ -88,7 +88,7 @@ def _send_email(request):
         # TODO: remove this after a while
         return
     email_helper.send_new_user_device_email(
-        request.user,
+        request,
         browser=browser,
         os=os,
         city=city,
