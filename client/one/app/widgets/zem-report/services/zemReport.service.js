@@ -82,9 +82,11 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
 
     function getFields (selectedFieldNames, includeConfig) {
         var fieldsWithIds = ['Content Ad', 'Ad Group', 'Campaign', 'Account', 'Agency'];
+        var includeIds = includeConfig.includeIds || selectedFieldNames.indexOf('Id') >= 0;
         var fields = [];
         for (var i = 0; i < selectedFieldNames.length; i++) {
-            if (includeConfig.includeIds && fieldsWithIds.indexOf(selectedFieldNames[i]) >= 0) {
+            if (selectedFieldNames[i] === 'Id') continue;
+            if (includeIds && fieldsWithIds.indexOf(selectedFieldNames[i]) >= 0) {
                 fields.push({
                     field: selectedFieldNames[i] + ' Id',
                 });

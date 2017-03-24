@@ -101,7 +101,7 @@ UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
                        'image_urls', 'urlLink', 'upload_time',
                        'batch_name', 'display_url', 'brand_name',
                        'description', 'call_to_action', 'e_yesterday_cost',
-                       'breakdown_name']
+                       'breakdown_name', 'id']
 
 FORMAT_1_DECIMAL = []
 
@@ -1118,7 +1118,7 @@ class AllAccountsExport(object):
 
         if breakdown or by_source:
             required_fields.extend(['status'])
-        if include_model_ids:
+        if include_model_ids or 'id' in additional_fields:
             required_fields = _include_model_ids(required_fields)
 
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
@@ -1200,7 +1200,7 @@ class AccountExport(object):
             dimensions.extend(['campaign', 'ad_group', 'content_ad'])
 
         required_fields.extend(['status'])
-        if include_model_ids:
+        if include_model_ids or 'id' in additional_fields:
             required_fields = _include_model_ids(required_fields)
 
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
@@ -1257,7 +1257,7 @@ class CampaignExport(object):
             required_fields.extend(['ad_group', 'title', 'image_url', 'image_hash', 'label', 'url'])
             dimensions.extend(['ad_group', 'content_ad'])
         required_fields.extend(['status'])
-        if include_model_ids:
+        if include_model_ids or 'id' in additional_fields:
             required_fields = _include_model_ids(required_fields)
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)
@@ -1304,7 +1304,7 @@ class AdGroupAdsExport(object):
             required_fields.extend(['title', 'image_url', 'image_hash', 'label', 'url'])
             dimensions.extend(['content_ad'])
         required_fields.extend(['status'])
-        if include_model_ids:
+        if include_model_ids or 'id' in additional_fields:
             required_fields = _include_model_ids(required_fields)
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)

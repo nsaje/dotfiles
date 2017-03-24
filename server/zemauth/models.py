@@ -271,6 +271,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_receive_sales_credit_email', 'Can receive depleting credit emails.'),
             ('can_see_new_report_download', 'User can see new report download.'),
             ('can_use_new_routing', 'User can use new routing.'),
+            ('can_see_id_columns_in_table', 'User can see id columns in table.'),
         )
 
     def get_full_name(self):

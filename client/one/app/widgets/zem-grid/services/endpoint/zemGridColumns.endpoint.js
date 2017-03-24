@@ -12,7 +12,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
     //
     var COLUMNS = {
         id: {
-            shown: false, // not shown (used internally)
+            internal: 'zemauth.can_see_id_columns_in_table',
+            shown: 'zemauth.can_see_id_columns_in_table',
             name: 'Id',
             field: 'id',
             type: zemGridConstants.gridColumnTypes.TEXT,
@@ -947,7 +948,6 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
 
     // Permanent columns - always present and can't be hidden
     var PERMANENT_COLUMNS_GROUP = [
-        COLUMNS.id,
         COLUMNS.state,
         COLUMNS.editButton,
         COLUMNS.name,
@@ -983,6 +983,10 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
     var CAMPAIGN_MANAGEMENT_GROUP = [
         COLUMNS.campaignManager,
     ];
+
+    var MANAGEMENT_GROUP = [
+        COLUMNS.id,
+    ].concat(ACCOUNT_MANAGEMENT_GROUP).concat(CAMPAIGN_MANAGEMENT_GROUP);
 
     var SOURCE_GROUP = [
         COLUMNS.supplyDashUrl,
@@ -1085,8 +1089,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
     // Sets order of columns (this collection is used for creation)
     var COLUMNS_ORDERED = [].concat(
         PERMANENT_COLUMNS_GROUP,
-        ACCOUNT_MANAGEMENT_GROUP,
-        CAMPAIGN_MANAGEMENT_GROUP,
+        MANAGEMENT_GROUP,
         CONTENT_GROUP,
         SOURCE_GROUP,
         PUBLISHER_GROUP,
@@ -1192,7 +1195,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
     var CATEGORIES = [
         {
             name: 'Management',
-            columns: [].concat(ACCOUNT_MANAGEMENT_GROUP, CAMPAIGN_MANAGEMENT_GROUP),
+            columns: [].concat(MANAGEMENT_GROUP),
         },
         {
             name: 'Content',

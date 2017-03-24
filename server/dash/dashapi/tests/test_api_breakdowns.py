@@ -31,7 +31,7 @@ SOURCE_1 = {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'sourc
 SOURCE_2 = {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'source_slug': 'gravity', 'id': 2}  # noqa
 
 ACCOUNT_1 = {
-    'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1,
+    'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1, 'id': 1,
     'default_account_manager': 'mad.max@zemanta.com', 'default_sales_representative': 'supertestuser@test.com', 'salesforce_url': '',
     'default_cs_representative': 'supercsuser@test.com',
     'agency': '', 'account_type': 'Activated',
@@ -40,24 +40,24 @@ ACCOUNT_1 = {
 }
 
 CAMPAIGN_1 = {
-    'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1,
+    'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1, 'id': 1,
     'campaign_manager': 'supertestuser@test.com',
     'pacing': None, 'allocated_budgets': None, 'spend_projection': None, 'license_fee_projection': None,
 }
 CAMPAIGN_2 = {
-    'campaign_id': 2, 'archived': True, 'name': 'test campaign 2', 'status': 2,
+    'campaign_id': 2, 'archived': True, 'name': 'test campaign 2', 'status': 2, 'id': 2,
     'campaign_manager': 'mad.max@zemanta.com',
     'pacing': None, 'allocated_budgets': None, 'spend_projection': None, 'license_fee_projection': None,
 }
 
-AD_GROUP_1 = {'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 1, 'state': 1}
-AD_GROUP_2 = {'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2', 'status': 2, 'state': 2}
+AD_GROUP_1 = {'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 1, 'state': 1, 'id': 1}
+AD_GROUP_2 = {'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2', 'status': 2, 'state': 2, 'id': 2}
 
 AD_GROUP_BASE_1 = dict_join(AD_GROUP_1, {'campaign_has_available_budget': False, 'campaign_stop_inactive': True})
 AD_GROUP_BASE_2 = dict_join(AD_GROUP_2, {'campaign_has_available_budget': False, 'campaign_stop_inactive': False})
 
 CONTENT_AD_1 = {
-    'content_ad_id': 1, 'title': 'Title 1', 'description': 'Example description', 'brand_name': 'Example',
+    'content_ad_id': 1, 'id': 1, 'title': 'Title 1', 'description': 'Example description', 'brand_name': 'Example',
     'archived': False, 'name': 'Title 1', 'display_url': 'example.com', 'call_to_action': 'Call to action', 'label': '',
     'image_hash': '100', 'image_urls': {
         'square': '/100.jpg?w=160&h=160&fit=crop&crop=center&fm=jpg',
@@ -83,7 +83,7 @@ CONTENT_AD_1 = {
     },
 }
 CONTENT_AD_2 = {
-    'content_ad_id': 2, 'title': 'Title 2', 'description': 'Example description', 'brand_name': 'Example',
+    'content_ad_id': 2, 'id': 2, 'title': 'Title 2', 'description': 'Example description', 'brand_name': 'Example',
     'archived': False, 'name': 'Title 2', 'display_url': 'example.com', 'call_to_action': 'Call to action', 'label': '',
     'image_hash': '200', 'image_urls': {
         'square': '/200.jpg?w=160&h=160&fit=crop&crop=center&fm=jpg',
@@ -153,7 +153,7 @@ AD_GROUP_SOURCE_2 = {
 
 SOURCE_1__CONTENT_AD_1 = {
     'source_id': 1,
-    'content_ad_id': 1, 'title': 'Title 1', 'description': 'Example description', 'brand_name': 'Example',
+    'content_ad_id': 1, 'id': 1, 'title': 'Title 1', 'description': 'Example description', 'brand_name': 'Example',
     'archived': False, 'name': 'Title 1', 'display_url': 'example.com', 'call_to_action': 'Call to action', 'label': '',
     'image_hash': '100', 'image_urls': {
         'square': '/100.jpg?w=160&h=160&fit=crop&crop=center&fm=jpg',
