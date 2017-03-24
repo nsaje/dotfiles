@@ -191,10 +191,11 @@ CELERY_TASK_SERIALIZER = 'pickle'
 CELERY_ACCEPT_CONTENT = ['pickle']
 
 CELERY_ROUTES = {
-    'reports_execute': {'queue': 'reports'},
+    'reports_execute': {'queue': 'z1-reports'},
 }
 
-QUEUE_NAME_PREFIX = 'z1-'
+# must be empty otherwise k1 queues get prefixed as well
+QUEUE_NAME_PREFIX = ''
 
 SQS_REGION = 'us-east-1'
 SQS_VISIBILITY_TIMEOUT = 10 * 60
