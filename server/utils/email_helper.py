@@ -495,7 +495,7 @@ def send_weekly_inventory_report_email():
 
 def send_new_user_device_email(user, browser, os, city, country):
     subject, body, _ = format_email(
-        dash.constants.EmailTemplateType.NEW_USER_DEVICE,
+        dash.constants.EmailTemplateType.NEW_DEVICE_LOGIN,
         time=dates_helper.local_now().strftime('%A, %d %b %Y %I:%m %p %Z'),
         browser=browser,
         os=os,
