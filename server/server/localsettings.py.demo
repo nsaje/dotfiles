@@ -158,6 +158,10 @@ BROKER_URL = BROKER_TRANSPORT + '://' + BROKER_USER + ':' + BROKER_PASSWORD + '@
 CELERY_TASK_SERIALIZER = 'pickle'
 CELERY_ACCEPT_CONTENT = ['pickle']
 
+CELERY_ROUTES = {
+    'reports_execute': {'queue': 'reports'},
+}
+
 SQS_REGION = ''
 SQS_QUEUE_PREFIX = 'demo'
 SQS_VISIBILITY_TIMEOUT = 10 * 60
@@ -167,6 +171,8 @@ BROKER_TRANSPORT_OPTIONS = {
     'region': SQS_REGION,
     'polling_interval': 10,
 }
+
+USE_CELERY_FOR_REPORTS = False
 
 R1_DEMO_MODE = True
 R1_API_SIGN_KEY = Secret('').get()

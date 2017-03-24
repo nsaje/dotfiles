@@ -14,6 +14,10 @@ from dash import constants
 from dash.views import helpers
 import dash.models
 
+from restapi import models
+
+from server import celery
+
 import stats.constants
 import stats.api_breakdowns
 import stats.api_reports
@@ -184,6 +188,13 @@ class ReportQuerySerializer(serializers.Serializer):
         if stats.constants.get_delivery_dimension(breakdown):
             raise serializers.ValidationError("Delivery dimension not supported!")
         return data
+
+
+@celery.app.task(acks_late=True, name='reports_execute')
+def execute(job_id):
+    job = models.ReportJob.objects.get(pk=job_id)
+    executor = ReportJobExecutor(job)
+    executor.execute()
 
 
 class JobExecutor(object):

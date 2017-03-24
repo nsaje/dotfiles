@@ -6,6 +6,7 @@ import time
 
 from django.db import transaction
 import django.db.models
+from django.conf import settings
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
@@ -1113,9 +1114,12 @@ class ReportsViewList(RESTAPIBaseView):
         job = restapi.models.ReportJob(user=request.user, query=query.data)
         job.save()
 
-        executor = restapi.reports.ReportJobExecutor(job)
-        thread = dash.threads.AsyncFunction(executor.execute)
-        thread.start()
+        if settings.USE_CELERY_FOR_REPORTS:
+            restapi.reports.execute.delay(job.id)
+        else:
+            executor = restapi.reports.ReportJobExecutor(job)
+            thread = dash.threads.AsyncFunction(executor.execute)
+            thread.start()
 
         return self.response_ok(ReportJobSerializer(job).data, status=201)
 

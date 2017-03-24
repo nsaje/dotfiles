@@ -93,6 +93,14 @@ oneapi_ambassador:
     labels:
       traefik.enable: "false"
 
+einsworker_reports:
+    extends: eins
+    mem_limit: 1g
+    labels:
+      traefik.enable: "false"
+    entrypoint: ""
+    command: "celery worker -A server -c 1 -Q prod-reports -l INFO -f /app/logs/eins_celery_reports.log"
+
 einsworker_convapi:
     extends: eins
     mem_limit: 256m
