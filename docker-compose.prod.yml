@@ -99,7 +99,7 @@ einsworker_reports:
     labels:
       traefik.enable: "false"
     entrypoint: ""
-    command: "celery worker -A server -c 1 -Q prod-reports -l INFO -f /app/logs/eins_celery_reports.log"
+    command: "celery worker -A server -c 1 -Q z1-reports -l INFO -f /app/logs/eins_celery_reports.log"
 
 einsworker_convapi:
     extends: eins
