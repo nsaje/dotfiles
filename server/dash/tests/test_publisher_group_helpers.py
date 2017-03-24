@@ -476,7 +476,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
             publisher_group_csv_helpers.get_csv_content(publisher_group.account, publisher_group.entries.all()),
             textwrap.dedent('''\
             "Publisher","Source"\r
-            "pub1","AdsNative"\r
+            "pub1","adsnative"\r
             "pub2",""\r
             '''))
 
@@ -487,7 +487,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
             publisher_group_csv_helpers.get_csv_content(publisher_group.account, publisher_group.entries.all()),
             textwrap.dedent('''\
             "Publisher","Source","Outbrain Publisher Id"\r
-            "pub1","AdsNative",""\r
+            "pub1","adsnative",""\r
             "pub2","","asd123"\r
             '''))
 
@@ -549,6 +549,10 @@ class PublisherGroupCSVHelpersTest(TestCase):
             'publisher': 'https://pub1.com',
             'source': '',
             'include_subdomains': True,
+        }, {
+            'publisher': 'https://pub2.com',
+            'source': 'adsnative',
+            'include_subdomains': True,
         }]
 
         publisher_group_csv_helpers.clean_entry_sources(entries)
@@ -560,6 +564,10 @@ class PublisherGroupCSVHelpersTest(TestCase):
         }, {
             'publisher': 'https://pub1.com',
             'source': None,
+            'include_subdomains': True,
+        }, {
+            'publisher': 'https://pub2.com',
+            'source': models.Source.objects.get(pk=1),
             'include_subdomains': True,
         }])
 

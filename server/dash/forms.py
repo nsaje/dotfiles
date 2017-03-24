@@ -1115,6 +1115,9 @@ class ParseCSVExcelFile(object):
     def _is_example_row(self, row):
         return False
 
+    def _is_empty_row(self, row):
+        return not any(x.strip() if x else x for x in row.values())
+
     def _remove_unnecessary_fields(self, row):
         # unicodecsv stores values of all unneeded columns
         # under key None. This can be removed.
@@ -1950,6 +1953,7 @@ class PublisherGroupUploadForm(forms.Form, ParseCSVExcelFile):
         data = (dict(zip(column_names, row)) for row in rows[1:])
         data = [self._remove_unnecessary_fields(
             row) for row in data if not self._is_example_row(row)]
+        data = [row for row in data if not self._is_empty_row(row)]
 
         if len(data) < 1:
             raise forms.ValidationError('Uploaded file is empty.')

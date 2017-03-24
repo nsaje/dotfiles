@@ -18,3 +18,26 @@ class PublisherHelpersTest(TestCase):
                          ['asd__1', 'asd__2', 'asd__3'])
         self.assertEqual(publisher_helpers.inflate_publisher_id_source('asd__1', [1, 2, 3]),
                          ['asd__1'])
+
+    def test_is_subdomain_match(self):
+        self.assertFalse(publisher_helpers.is_subdomain_match('msn.com', 'cnn.com'))
+        self.assertFalse(publisher_helpers.is_subdomain_match('msn.com', 'www.cnn.com'))
+        self.assertFalse(publisher_helpers.is_subdomain_match('msn.com', 'money.cnn.com'))
+        self.assertFalse(publisher_helpers.is_subdomain_match('msn.com', 'http://money.cnn.com'))
+
+        self.assertTrue(publisher_helpers.is_subdomain_match('msn.com', 'msn.com'))
+        self.assertTrue(publisher_helpers.is_subdomain_match('msn.com', 'www.msn.com'))
+        self.assertTrue(publisher_helpers.is_subdomain_match('msn.com', 'money.msn.com'))
+        self.assertTrue(publisher_helpers.is_subdomain_match('msn.com', 'http://money.msn.com'))
+
+        self.assertFalse(publisher_helpers.is_subdomain_match('money.msn.com', 'msn.com'))
+        self.assertFalse(publisher_helpers.is_subdomain_match('money.msn.com', 'www.msn.com'))
+
+        self.assertTrue(publisher_helpers.is_subdomain_match('money.msn.com', 'money.msn.com'))
+        self.assertTrue(publisher_helpers.is_subdomain_match('money.msn.com', 'http://money.msn.com'))
+
+    def test_strip_prefix(self):
+        self.assertEqual(publisher_helpers.strip_prefix('msn.com'), 'msn.com')
+        self.assertEqual(publisher_helpers.strip_prefix('http://msn.com'), 'msn.com')
+        self.assertEqual(publisher_helpers.strip_prefix('https://msn.com'), 'msn.com')
+        self.assertEqual(publisher_helpers.strip_prefix('http://www.msn.com'), 'www.msn.com')

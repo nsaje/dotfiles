@@ -433,7 +433,8 @@ class PublisherBlacklistLoader(Loader):
     @cached_property
     def blacklist_status_map(self):
         default = {
-            'status': constants.PublisherTargetingStatus.UNLISTED
+            'status': constants.PublisherTargetingStatus.UNLISTED,
+            'include_subdomains': False,
         }
 
         whitelisted_ids = self.whitelist_qs.values_list('pk', flat=True)
@@ -449,15 +450,32 @@ class PublisherBlacklistLoader(Loader):
             if entry.source_id:
                 d[self._get_obj_id(entry)] = {
                     'status': status,
+                    'include_subdomains': entry.include_subdomains,
                     'blacklisted_level': level,
                 }
             else:
                 for source_id in self.source_map.keys():
                     d[publisher_helpers.create_publisher_id(entry.publisher, source_id)] = {
                         'status': status,
+                        'include_subdomains': entry.include_subdomains,
                         'blacklisted_level': level,
                     }
         return d
+
+    def find_blacklisted_status_by_subdomain(self, publisher_id):
+        # finds whether status matches any of those blacklisted/whitelisted also by checking subdomains
+
+        # check for exact match
+        if publisher_id in self.blacklist_status_map:
+            return self.blacklist_status_map[publisher_id]
+
+        # find subdomain match
+        for entry_publisher_id, status in self.blacklist_status_map.iteritems():
+            if status['include_subdomains'] and publisher_helpers.is_subdomain_match(entry_publisher_id, publisher_id):
+                return status
+
+        # nothing matched, return the default value (blacklist_status_map is a defaultdict)
+        return self.blacklist_status_map[publisher_id]
 
     @cached_property
     def source_map(self):

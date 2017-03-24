@@ -39,3 +39,26 @@ def inflate_publisher_id_source(publisher_id, source_ids):
         return [publisher_id]
 
     return [create_publisher_id(publisher, x) for x in source_ids]
+
+
+def strip_prefix(publisher, prefixes=('http://', 'https://')):
+    for prefix in prefixes:
+        publisher = publisher.replace(prefix, '')
+    return publisher
+
+
+def is_subdomain_match(listed_publisher, publisher):
+    listed_split = listed_publisher.split('.')
+    listed_split.reverse()
+
+    publisher_split = strip_prefix(publisher).split('.')
+    publisher_split.reverse()
+
+    for i, part in enumerate(listed_split):
+        if len(publisher_split) < i + 1:
+            return False
+
+        if listed_split[i] != publisher_split[i]:
+            return False
+
+    return True

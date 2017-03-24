@@ -274,7 +274,7 @@ def augment_publisher(row, loader, is_base_level=False):
     source_id = row['source_id']
     publisher_id = row['publisher_id']
     source = loader.source_map[source_id]
-    entry_status = loader.blacklist_status_map[publisher_id]
+    entry_status = loader.find_blacklisted_status_by_subdomain(publisher_id)
     can_blacklist_source = loader.can_blacklist_source_map[source_id]
 
     row.update({
@@ -307,7 +307,7 @@ def augment_publisher_for_report(row, loader, is_base_level=False):
     source_id = row['source_id']
     publisher_id = row['publisher_id']
     source = loader.source_map[source_id]
-    entry_status = loader.blacklist_status_map[publisher_id]
+    entry_status = loader.find_blacklisted_status_by_subdomain(publisher_id)
 
     row.update({
         'publisher': domain,

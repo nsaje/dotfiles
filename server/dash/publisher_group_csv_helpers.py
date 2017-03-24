@@ -37,7 +37,7 @@ def get_csv_content(account, publisher_group_entries):
     writer.writerow(headers)
 
     for entry in publisher_group_entries.order_by('publisher'):
-        row = [entry.publisher, entry.source]
+        row = [entry.publisher, entry.source.get_clean_slug() if entry.source else None]
         if add_outbrain_publisher_id:
             row.append(entry.outbrain_publisher_id)
         writer.writerow(row)
