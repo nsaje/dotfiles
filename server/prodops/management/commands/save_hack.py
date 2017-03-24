@@ -1,6 +1,7 @@
 import utils.command_helpers
 import dash.models
 
+
 class Command(utils.command_helpers.ExceptionCommand):
     help = "Store hack"
 
@@ -13,7 +14,6 @@ class Command(utils.command_helpers.ExceptionCommand):
         parser.add_argument('--agencies', dest='agencies', default='')
         parser.add_argument('--source', dest='source', default='b1')
         parser.add_argument('--details', dest='details', default='')
-        
 
     def _print(self, msg):
         self.stdout.write(u'{}\n'.format(msg))
@@ -43,5 +43,5 @@ class Command(utils.command_helpers.ExceptionCommand):
         for agency in filter(bool, options.get('agencis', '').split(',')):
             dash.models.CustomHack.objects.create(agency_id=int(agency), **hack)
             saved_hacks += 1
-        
+
         print 'Saved hacks', saved_hacks
