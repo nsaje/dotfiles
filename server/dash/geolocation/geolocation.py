@@ -3,7 +3,16 @@ from django.db import models
 import dash.constants
 
 
+class GeolocationManager(models.Manager):
+    def map(self, keys):
+        return super(GeolocationManager, self).get_queryset().filter(key__in=keys)
+
+    def search(self, query):
+        return super(GeolocationManager, self).get_queryset().filter(name__icontains=query)
+
+
 class Geolocation(models.Model):
+    objects = GeolocationManager()
 
     class Meta:
         ordering = ('-type',)
