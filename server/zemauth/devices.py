@@ -24,7 +24,7 @@ VALID_KEY_CHARS = string.ascii_letters + string.digits
 
 MAX_RETRIES = 20
 
-TEST_EMAILS = ['luka.silovinac@zemanta.com']
+TEST_EMAILS = ['luka.silovinac@zemanta.com', 'gasper.setinc@zemanta.com']
 
 
 def _get_ip_info(ip):
