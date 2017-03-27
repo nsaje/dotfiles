@@ -1912,9 +1912,11 @@ class Service(ConstantBase):
 
 class Whitelabel(ConstantBase):
     GREENPARK = 'greenpark'
+    ADTECHNACITY = 'adtechnacity'
 
     _VALUES = {
         GREENPARK: 'Green Park Content',
+        ADTECHNACITY: 'Adtechnacity',
     }
 
 

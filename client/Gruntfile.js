@@ -105,8 +105,28 @@ module.exports = function (grunt) {
                     // NOTE: dashboard.legacy.less currently exists too and it is included here
                     '!one/app/styles/dashboard*.less',
                     'one/app/styles/dashboard*.less',
+                    '!one/app/styles/whitelabel/adtechnacity.less',
                 ],
                 dest: 'dist/tmp/zemanta-one-greenpark.less',
+            },
+            one_styles_adtechnacity: {
+                src: [
+                    'one/app/styles/variables.less',
+                    'one/app/styles/whitelabel/adtechnacity.less',
+                    'one/app/styles/mixins.less',
+                    'one/app/styles/libExtensions.less',
+                    'one/app/styles/utilities.less',
+                    'one/app/styles/animations.less',
+                    'one/app/styles/base.less',
+                    'one/**/*.less',
+                    // Exclude dashboard*.less and include it after any other less file in order to make it possible to
+                    // override components' styles if needed to make them fit better into dashboard's design
+                    // NOTE: dashboard.legacy.less currently exists too and it is included here
+                    '!one/app/styles/dashboard*.less',
+                    'one/app/styles/dashboard*.less',
+                    '!one/app/styles/whitelabel/greenpark.less',
+                ],
+                dest: 'dist/tmp/zemanta-one-adtechnacity.less',
             },
         },
         bower_concat: {
@@ -129,6 +149,9 @@ module.exports = function (grunt) {
                 }, {
                     src: 'dist/one/zemanta-one-greenpark.css',
                     dest: 'dist/one/zemanta-one-greenpark.min.css',
+                }, {
+                    src: 'dist/one/zemanta-one-adtechnacity.css',
+                    dest: 'dist/one/zemanta-one-adtechnacity.min.css',
                 }],
             },
             one_lib: {
@@ -156,7 +179,10 @@ module.exports = function (grunt) {
                 files: [
                     {expand: true, flatten: true, src: 'one/img/*', dest: 'dist/one/img/'},
                     {expand: true, flatten: true, src: 'one/images/*', dest: 'dist/one/images/'},
-                    {expand: true, flatten: true, src: 'one/images/whitelabel/greenpark/*', dest: 'dist/one/images/whitelabel/greenpark/'},
+                    {expand: true, flatten: true, src: 'one/images/whitelabel/greenpark/*',
+                     dest: 'dist/one/images/whitelabel/greenpark/'},
+                    {expand: true, flatten: true, src: 'one/images/whitelabel/adtechnacity/*',
+                     dest: 'dist/one/images/whitelabel/adtechnacity/'},
                     {expand: true, flatten: true, src: 'one/assets/*', dest: 'dist/one/assets/'}
                 ]
             },
@@ -212,6 +238,7 @@ module.exports = function (grunt) {
                 files: {
                     'dist/one/zemanta-one.css': 'dist/tmp/zemanta-one.less',
                     'dist/one/zemanta-one-greenpark.css': 'dist/tmp/zemanta-one-greenpark.less',
+                    'dist/one/zemanta-one-adtechnacity.css': 'dist/tmp/zemanta-one-adtechnacity.less',
                 }
             },
         },
@@ -231,7 +258,9 @@ module.exports = function (grunt) {
                 files: [
                     'one/**/*.less',
                 ],
-                tasks: ['concat:one_styles', 'concat:one_styles_greenpark', 'less:one', 'postcss:one', 'clean:tmp']
+                tasks: ['concat:one_styles',
+                        'concat:one_styles_greenpark', 'concat:one_styles_adtechnacity',
+                        'less:one', 'postcss:one', 'clean:tmp']
             },
             one_templates: {
                 files: [
@@ -332,7 +361,10 @@ module.exports = function (grunt) {
             tmp: ['dist/tmp'],
         },
         build: {
-            one: ['html2js:one', 'concat:one_js', 'ngAnnotate:one', 'concat:one_styles', 'concat:one_styles_greenpark', 'less:one', 'postcss:one', 'copy:one', 'clean:tmp'],
+            one: ['html2js:one', 'concat:one_js', 'ngAnnotate:one', 'concat:one_styles',
+                  'concat:one_styles_greenpark', 'concat:one_styles_adtechnacity',
+                  'less:one', 'postcss:one', 'copy:one', 'clean:tmp'],
+
             one_lib: ['bower_concat:one_lib', 'cssmin:one_lib', 'copy:one_lib'],
         },
         dist: {

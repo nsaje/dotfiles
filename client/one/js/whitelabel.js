@@ -12,4 +12,15 @@ var overwrittes = {
             ],
         },
     },
+    adtechnacity: {
+        chartColors: {
+            TOTALS: ['#555f7b', '#bbbfca'],
+            GOALS: ['#99cc00', '#d6eb99'],
+            DATA: [
+                ['#29aae3', '#a9ddf4'],
+                ['#0aaf9f', '#9ddfd9'],
+                ['#f15f74', '#f9bfc7'],
+            ],
+        },
+    },
 };

@@ -85,7 +85,7 @@ def index(request):
     return render(request, 'index.html', {
         'staticUrl': settings.CLIENT_STATIC_URL,
         'debug': settings.DEBUG,
-        'whitelabel': associated_agency and associated_agency.whitelabel
+        'whitelabel': associated_agency and associated_agency.whitelabel,
     })
 
 
