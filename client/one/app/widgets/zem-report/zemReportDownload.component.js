@@ -4,8 +4,10 @@ angular.module('one.widgets').component('zemReportDownload', {
         resolve: '<',
     },
     templateUrl: '/app/widgets/zem-report/zemReportDownload.component.html',
-    controller: function (zemReportService, zemPermissions, zemUserService, zemDataFilterService, zemFilterSelectorService) {  // eslint-disable-line max-len
+    controller: function (zemReportService, zemReportBreakdownService, zemPermissions, zemUserService, zemDataFilterService, zemFilterSelectorService) {  // eslint-disable-line max-len
         var $ctrl = this;
+
+        var NR_SHORTLIST_ITEMS = 9;
 
         // Public API
         $ctrl.startReport = startReport;
@@ -28,25 +30,45 @@ angular.module('one.widgets').component('zemReportDownload', {
         $ctrl.jobPostingInProgress = false;
         $ctrl.jobPosted = false;
 
+        $ctrl.availableBreakdowns = {};
+
         $ctrl.$onInit = function () {
             $ctrl.user = zemUserService.current();
             $ctrl.dateRange = zemDataFilterService.getDateRange();
 
             $ctrl.appliedFilterConditions = zemFilterSelectorService.getAppliedConditions();
+            $ctrl.shownAppliedFilterConditions = $ctrl.appliedFilterConditions.slice(0, NR_SHORTLIST_ITEMS);
 
-            var nrShortlistItems = 9;
-            $ctrl.shownAppliedFilterConditions = $ctrl.appliedFilterConditions.slice(0, nrShortlistItems);
+            $ctrl.breakdown = angular.copy($ctrl.resolve.api.getBreakdown());
 
-            $ctrl.selectedFields = getSelectedFields();
-            $ctrl.shownSelectedFields = $ctrl.selectedFields.slice(0, nrShortlistItems);
-
-            $ctrl.breakdown = $ctrl.resolve.api.getBreakdown();
             $ctrl.view = $ctrl.breakdown[0].report_query;
             if ($ctrl.view === 'Publisher') {
                 $ctrl.showIncludeItemsWithNoSpend = false;
             }
-            $ctrl.breakdown = $ctrl.breakdown.slice(1, $ctrl.breakdown.length);
+
+            update();
         };
+
+        $ctrl.addBreakdown = function (breakdown) {
+            $ctrl.breakdown.push(breakdown);
+            update();
+        };
+
+        function update () {
+            $ctrl.selectedFields = getSelectedFields();
+            if ($ctrl.shownSelectedFields.length <= NR_SHORTLIST_ITEMS) {
+                $ctrl.shownSelectedFields = $ctrl.selectedFields.slice(0, NR_SHORTLIST_ITEMS);
+            } else {
+                $ctrl.showAllSelectedFields();
+            }
+
+            $ctrl.shownBreakdown = $ctrl.breakdown.slice(1, $ctrl.breakdown.length);
+
+            $ctrl.availableBreakdowns = zemReportBreakdownService.getAvailableBreakdowns(
+                $ctrl.breakdown,
+                $ctrl.resolve.api.getMetaData()
+            );
+        }
 
         function startReport () {
             $ctrl.jobPostingInProgress = true;
@@ -88,9 +110,8 @@ angular.module('one.widgets').component('zemReportDownload', {
                 fields.unshift('Agency');
             }
 
-            var breakdown = $ctrl.resolve.api.getBreakdown();
-            for (var i = 0; i < breakdown.length; i++) {
-                fields.push(breakdown[i].report_query);
+            for (var i = 0; i < $ctrl.breakdown.length; i++) {
+                fields.push($ctrl.breakdown[i].report_query);
             }
 
             var columns = $ctrl.resolve.api.getColumns();

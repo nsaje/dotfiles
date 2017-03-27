@@ -6,7 +6,7 @@ from dash.dashapi import loaders
 from stats import constants
 from redshiftapi.postprocess import _get_representative_dates
 
-HIERARCHICAL_DIMENSIONS = {constants.ACCOUNT, constants.CAMPAIGN, constants.AD_GROUP, constants.CONTENT_AD}
+HIERARCHICAL_DIMENSIONS = [constants.ACCOUNT, constants.CAMPAIGN, constants.AD_GROUP, constants.CONTENT_AD]
 
 
 def annotate(rows, user, breakdown, constraints, level):
@@ -92,9 +92,9 @@ def _get_loaders(user, breakdown, constraints, level):
 
 
 def _get_generate_dimensions(breakdown):
-    # only take target dimension from hierarchical dimensions
+    # only take most specific dimension from hierarchical dimensions
     # returned dimensions are independent and need generated rows
-    hierarchical = [dimension for dimension in breakdown if dimension in HIERARCHICAL_DIMENSIONS]
+    hierarchical = [dimension for dimension in HIERARCHICAL_DIMENSIONS if dimension in breakdown]
     non_hierarchical = [dimension for dimension in breakdown if dimension not in HIERARCHICAL_DIMENSIONS]
     return hierarchical[-1:] + non_hierarchical
 

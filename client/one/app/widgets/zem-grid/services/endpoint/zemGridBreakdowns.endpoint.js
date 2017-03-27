@@ -128,6 +128,9 @@ angular.module('one.widgets').factory('zemGridEndpointBreakdowns', function (zem
 
     return {
         BREAKDOWNS: BREAKDOWNS,
+        ENTITY_BREAKDOWNS: ENTITY_BREAKDOWNS,
+        TIME_BREAKDOWNS: TIME_BREAKDOWNS,
+        getEntityLevelBreakdown: getEntityLevelBreakdown,
         createBreakdownGroups: createBreakdownGroups,
     };
 });

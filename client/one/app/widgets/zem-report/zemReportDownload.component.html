@@ -15,10 +15,23 @@
                 {{ $ctrl.view }}
             </div>
         </div>
-        <div class="form__group form__group--informative" ng-if="$ctrl.breakdown.length > 0">
+        <div class="form__group form__group--informative">
             <label class="form__label">Breakdowns</label>
             <div class="form__information">
-                <span ng-repeat="dimension in $ctrl.breakdown" class="tag">{{ dimension.name }}</span>
+                <span ng-repeat="dimension in $ctrl.shownBreakdown" class="tag">{{ dimension.name }}</span>
+            </div>
+            <div class="form__label"></div>
+            <div class="form__information" ng-if="$ctrl.availableBreakdowns.length">
+              <ui-select
+                      theme="select2"
+                      search-enabled="false"
+                      ng-model="$ctrl.addbreakdown"
+                      class="button button--dropdown-toggle-icon button--with-icon add-icon button--dropdown-toggle-icon">
+                  <ui-select-match placeholder="Add breakdown">Add breakdown</ui-select-match>
+                  <ui-select-choices repeat="breakdown in $ctrl.availableBreakdowns">
+                      <div ng-click="$ctrl.addBreakdown(breakdown)">{{breakdown.name}}</div>
+                  </ui-select-choices>
+              </ui-select>
             </div>
         </div>
         <div class="form__group form__group--informative">

@@ -21,7 +21,6 @@ from server import celery
 import stats.constants
 import stats.api_breakdowns
 import stats.api_reports
-import stats.permission_filter
 
 import utils.s3helpers
 import utils.email_helper
@@ -179,10 +178,10 @@ class ReportQuerySerializer(serializers.Serializer):
     def validate(self, data):
         filter_constraints = get_filter_constraints(data['filters'])
         level = get_level_from_constraints(filter_constraints)
-        breakdown = limit_breakdown_to_level(get_breakdown_from_fields(data['fields']), level)
+        breakdown = get_breakdown_from_fields(data['fields'])
         try:
-            stats.permission_filter.validate_breakdown_by_structure(breakdown)
-            stats.permission_filter.validate_breakdown_by_permissions(level, self.context['request'].user, breakdown)
+            stats.api_reports.validate_breakdown_by_structure(level, breakdown)
+            stats.api_reports.validate_breakdown_by_permissions(level, self.context['request'].user, breakdown)
         except exc.InvalidBreakdownError as e:
             raise serializers.ValidationError(e)
         if stats.constants.get_delivery_dimension(breakdown):
