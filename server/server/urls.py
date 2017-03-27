@@ -756,6 +756,11 @@ urlpatterns += [
         k1api.views.PublisherGroupsEntriesView.as_view(),
         name='k1api.publisher_groups_entries',
     ),
+    url(
+        r'^k1api/geolocations$',
+        k1api.views.GeolocationsView.as_view(),
+        name='k1api.geolocations',
+    ),
 ]
 
 # Crossvalidation Api

@@ -21,6 +21,14 @@ class Geolocation(models.Model):
         blank=False,
         null=False
     )
+    woeid = models.CharField(
+        max_length=20,
+        blank=True,
+    )
+    outbrain_id = models.CharField(
+        max_length=40,
+        blank=True,
+    )
 
     def __str__(self):
         return self.name
