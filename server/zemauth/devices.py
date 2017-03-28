@@ -1,6 +1,7 @@
 import datetime
 import string
 import logging
+from functools import partial
 
 from ua_parser import user_agent_parser
 import ipware.ip
@@ -11,7 +12,7 @@ from django.db import IntegrityError, transaction
 from django.utils.crypto import get_random_string
 
 from zemauth import models
-from utils import dates_helper, email_helper
+from utils import dates_helper, email_helper, threads
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +57,10 @@ def _handle_user_device(request, response):
             user=request.user,
             device_id=device.device_key,
         )
-        _send_email(request)
+        send_email_fn = partial(_send_email, request)
+        send_email_thread = threads.AsyncFunction(send_email_fn)
+        send_email_thread.start()
+
     response.set_cookie(
         DEVICE_COOKIE_NAME,
         device.device_key,

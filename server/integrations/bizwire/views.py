@@ -20,8 +20,7 @@ from redshiftapi import db
 from . import config
 
 import dash.models
-from dash import threads
-from utils import request_signer
+from utils import request_signer, threads
 
 
 logger = logging.getLogger(__name__)

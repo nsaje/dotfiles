@@ -2,18 +2,16 @@ import datetime
 import mock
 from django.test import TestCase
 
-from utils import exc
-from utils import test_helper
+from utils import test_helper, threads
 
 from zemauth.models import User
 from dash import models
-from dash import threads
 from dash.constants import Level
 
 from stats import api_breakdowns
 
 
-@mock.patch('dash.threads.AsyncFunction', threads.MockAsyncFunction)
+@mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
 class ApiBreakdownQueryTest(TestCase):
     fixtures = ['test_api_breakdowns.yaml']
 

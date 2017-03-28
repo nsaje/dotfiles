@@ -9,9 +9,8 @@ from zemauth.models import User
 
 from dash import constants
 import dash.models
-import dash.threads
 import restapi.models
-from utils import test_helper
+from utils import test_helper, threads
 from restapi import reports
 
 
@@ -22,7 +21,7 @@ class ReportViewsTest(TestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=User.objects.get(pk=1))
 
-    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
     @mock.patch('restapi.reports.ReportJobExecutor', restapi.reports.MockJobExecutor)
     def test_new_job(self):
         query = {
@@ -49,7 +48,7 @@ class ReportViewsTest(TestCase):
         self.assertEqual(resp_json['data']['status'], 'DONE')
         self.assertEqual(job_id, int(resp_json['data']['id']))
 
-    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
@@ -90,7 +89,7 @@ class ReportViewsTest(TestCase):
 
         self.assertFalse(mock_totals.called)
 
-    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')

@@ -2,7 +2,7 @@ import newrelic.agent
 
 from functools import partial
 
-from utils import sort_helper
+from utils import sort_helper, threads
 
 from stats.constants import get_target_dimension
 import stats.constraints_helper
@@ -11,7 +11,6 @@ import stats.helpers
 from dash.dashapi import loaders
 from dash.dashapi import augmenter
 from dash.dashapi import helpers
-from dash import threads
 
 
 def query(level, user, breakdown, constraints, parents, order, offset, limit):

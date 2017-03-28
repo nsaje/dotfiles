@@ -1,8 +1,7 @@
 from functools import partial
-from dash import threads
 import stats.constants
 
-from utils import sort_helper
+from utils import sort_helper, threads
 
 from redshiftapi import db
 from redshiftapi import helpers

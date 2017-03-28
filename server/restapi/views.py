@@ -26,8 +26,7 @@ from dash import constants
 from dash import upload
 from dash import publisher_group_helpers
 import dash.models
-import dash.threads
-from utils import json_helper, exc, dates_helper, redirector_helper, bidder_helper
+from utils import json_helper, exc, dates_helper, redirector_helper, bidder_helper, threads
 from redshiftapi import quickstats
 
 import dash.geolocation
@@ -1118,7 +1117,7 @@ class ReportsViewList(RESTAPIBaseView):
             restapi.reports.execute.delay(job.id)
         else:
             executor = restapi.reports.ReportJobExecutor(job)
-            thread = dash.threads.AsyncFunction(executor.execute)
+            thread = threads.AsyncFunction(executor.execute)
             thread.start()
 
         return self.response_ok(ReportJobSerializer(job).data, status=201)

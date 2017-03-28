@@ -8,11 +8,12 @@ from utils.dict_helper import dict_join
 from zemauth.models import User
 
 from dash import models
-from dash import threads
-from dash.constants import Level, PublisherBlacklistLevel, PublisherTargetingStatus
+from dash.constants import Level, PublisherBlacklistLevel
 from dash.dashapi import api_breakdowns
 from dash.dashapi import helpers
 from dash.dashapi import augmenter
+
+from utils import threads
 
 
 """
@@ -214,7 +215,7 @@ PUBLISHER_5__SOURCE_2 = {
 }
 
 
-@patch('dash.threads.AsyncFunction', threads.MockAsyncFunction)
+@patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
 @override_settings(R1_BLANK_REDIRECT_URL='http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/')
 class QueryTest(TestCase):
 
@@ -662,7 +663,7 @@ class QueryTest(TestCase):
         self.assertEqual(rows, [PUBLISHER_1__SOURCE_1, PUBLISHER_2__SOURCE_2, PUBLISHER_5__SOURCE_2])
 
 
-@patch('dash.threads.AsyncFunction', threads.MockAsyncFunction)
+@patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
 @override_settings(R1_BLANK_REDIRECT_URL='http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/')
 class QueryOrderTest(TestCase):
 
@@ -735,7 +736,7 @@ class QueryOrderTest(TestCase):
         self.assertEqual(rows, [SOURCE_2, SOURCE_1])
 
 
-@patch('dash.threads.AsyncFunction', threads.MockAsyncFunction)
+@patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
 @override_settings(R1_BLANK_REDIRECT_URL='http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/')
 class QueryForRowsTest(TestCase):
 

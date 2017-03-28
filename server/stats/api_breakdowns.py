@@ -1,12 +1,11 @@
 from functools import partial
 
-from utils import sort_helper
+from utils import sort_helper, threads
 
 import newrelic.agent
 
 import dash.models
 import dash.campaign_goals
-from dash import threads
 
 
 from stats import helpers

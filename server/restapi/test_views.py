@@ -12,7 +12,6 @@ from django.core.urlresolvers import reverse
 from rest_framework import exceptions
 
 import dash.models
-import dash.threads
 import views as restapi_views
 from dash import constants
 from dash import upload

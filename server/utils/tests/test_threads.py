@@ -1,5 +1,5 @@
 from django.test import TestCase
-from dash import threads
+from utils import threads
 
 
 class SomeException(Exception):

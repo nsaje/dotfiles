@@ -7,14 +7,11 @@ import newrelic.agent
 from dash import constants
 from dash import forms
 from dash import campaign_goals
-from dash import threads
-from dash import publisher_helpers
 from dash import publisher_group_helpers
 from dash.views import helpers
 from dash.views import breakdown_helpers
 
-from utils import api_common
-from utils import exc
+from utils import api_common, exc, threads
 
 import stats.api_breakdowns
 import stats.constraints_helper
