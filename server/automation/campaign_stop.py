@@ -1049,6 +1049,8 @@ def _restore_user_ad_group_settings(ad_group, pause_ad_group=False):
     new_settings.end_date = user_settings.end_date
     new_settings.landing_mode = False
     new_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
+    new_settings.b1_sources_group_state = user_settings.b1_sources_group_state
+    new_settings.b1_sources_group_daily_budget = user_settings.b1_sources_group_daily_budget
 
     if pause_ad_group:
         new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
