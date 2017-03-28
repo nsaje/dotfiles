@@ -26,6 +26,8 @@ from dash import forms as dash_forms
 from dash import validation_helpers
 from dash import cpc_constraints
 
+import analytics.helpers
+
 import utils.k1_helper
 import utils.email_helper
 import utils.redirector_helper
@@ -1605,7 +1607,7 @@ class CustomHackAdmin(admin.ModelAdmin):
         '_agency',
         '_account',
         '_campaign',
-        'ad_group',
+        '_ad_group',
         'service',
         'created_dt',
     )
@@ -1626,7 +1628,7 @@ class CustomHackAdmin(admin.ModelAdmin):
         'source__name',
     )
 
-    readonly_fields = ('created_dt', 'created_by', 'confirmed_by', 'confirmed_dt')
+    readonly_fields = ('_spend_after', 'created_dt', 'created_by', 'confirmed_by', 'confirmed_dt')
     raw_id_fields = ('agency', 'account', 'campaign', 'ad_group')
 
     ordering = ('-created_dt', )
@@ -1670,7 +1672,7 @@ class CustomHackAdmin(admin.ModelAdmin):
         return obj.source
 
     def _agency(self, obj):
-        return (
+        entity = (
             obj.agency or
             (obj.account and obj.account.agency) or
             (obj.campaign and obj.campaign.account and obj.campaign.account.agency) or
@@ -1678,17 +1680,34 @@ class CustomHackAdmin(admin.ModelAdmin):
              obj.ad_group.campaign.account and obj.ad_group.campaign.account.agency) or
             None
         )
+        return entity and u'{} | {}'.format(entity.pk, unicode(entity.name)) or ''
 
     def _account(self, obj):
-        return (
+        entity = (
             obj.account or
             (obj.campaign and obj.campaign.account) or
             (obj.ad_group and obj.ad_group.campaign and obj.ad_group.campaign.account) or
             None
         )
+        return entity and u'{} | {}'.format(entity.pk, unicode(entity.name)) or ''
 
     def _campaign(self, obj):
-        return obj.campaign or (obj.ad_group and obj.ad_group.campaign) or ''
+        entity = obj.campaign or (obj.ad_group and obj.ad_group.campaign) or ''
+        return entity and u'{} | {}'.format(entity.pk, unicode(entity.name)) or ''
+
+    def _ad_group(self, obj):
+        return obj.ad_group and u'{} | {}'.format(obj.ad_group.pk, unicode(obj.ad_group.name)) or ''
+
+    def _spend_after(self, obj):
+        spend = analytics.helpers.get_spend(
+            obj.created_dt.date(),
+            ad_group=obj.ad_group, campaign=obj.campaign, account=obj.account, agency=obj.agency
+        )
+        if not spend or not any(spend[0].values()):
+            return 'NONE'
+        return 'media: ${media}, data: ${data}, fee: ${fee}, margin: ${margin}'.format(**spend[0])
+    _spend_after.short_description = 'Spend after hack implementation'
+
 
 admin.site.register(models.Agency, AgencyAdmin)
 admin.site.register(models.Account, AccountAdmin)
