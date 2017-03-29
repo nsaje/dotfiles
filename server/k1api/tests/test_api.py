@@ -1184,13 +1184,18 @@ class K1ApiTest(TestCase):
         self.assertEqual(data['error'], 'account id must be specified')
         self.assertEqual(response.status_code, 400)
 
-    def test_get_geolocations(self):
-        locs = [{'key': 'US', 'name': 'america', 'outbrain_id': 'abcdef', 'woeid': '123'},
-                {'key': 'US-NY', 'name': 'new york', 'outbrain_id': 'bbcdef', 'woeid': '124'}]
 
-        for loc in locs:
+class GeolocationsTest(K1ApiTest):
+
+    def setUp(self):
+        self.locs = [{'key': 'US', 'name': 'america', 'outbrain_id': 'abcdef', 'woeid': '123'},
+                     {'key': 'US-NY', 'name': 'new york', 'outbrain_id': 'bbcdef', 'woeid': '124'}]
+
+        for loc in self.locs:
             dash.geolocation.Geolocation.objects.create(**loc)
+        super(GeolocationsTest, self).setUp()
 
+    def test_get_geolocations(self):
         response = self.client.get(
             reverse('k1api.geolocations'),
             {'keys': 'US,US-NY,US:10000'}  # ZIPs can be ignored since we don't keep them all in DB
@@ -1200,4 +1205,16 @@ class K1ApiTest(TestCase):
         self._assert_response_ok(response, data)
         locations = data['response']
 
-        self.assertEqual(locs, locations)
+        self.assertEqual(self.locs, locations)
+
+    def test_get_geolocations_empty_keys(self):
+        response = self.client.get(
+            reverse('k1api.geolocations'),
+            {'keys': ''}
+        )
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        locations = data['response']
+
+        self.assertEqual([], locations)

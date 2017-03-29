@@ -948,11 +948,7 @@ class GeolocationsView(K1APIView):
 
     def get(self, request):
         keys = request.GET.get('keys')
-
-        if not keys:
-            return self.response_error('Keys parameter is missing', status=400)
-
-        keys = keys.split(',')
+        keys = keys.split(',') if keys else []
         geolocations = dash.geolocation.Geolocation.objects.filter(key__in=keys)
         response = geolocations.values('key', 'name', 'woeid', 'outbrain_id')
         return self.response_ok(list(response))
