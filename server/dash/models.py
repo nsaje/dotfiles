@@ -493,7 +493,7 @@ class Account(models.Model):
     name = models.CharField(
         max_length=127,
         editable=True,
-        unique=True,
+        unique=False,
         blank=False,
         null=False
     )

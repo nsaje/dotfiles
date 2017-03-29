@@ -90,7 +90,7 @@ angular.module('one.widgets').component('zemGridContainer', {
                         breakdown: constants.breakdown.ACCOUNT,
                     },
                     {
-                        name: 'Sources',
+                        name: 'Media Sources',
                         breakdown: constants.breakdown.MEDIA_SOURCE,
                     },
                 ];
@@ -103,7 +103,7 @@ angular.module('one.widgets').component('zemGridContainer', {
                         breakdown: constants.breakdown.CAMPAIGN,
                     },
                     {
-                        name: 'Sources',
+                        name: 'Media Sources',
                         breakdown: constants.breakdown.MEDIA_SOURCE,
                     },
                 ];
@@ -116,7 +116,7 @@ angular.module('one.widgets').component('zemGridContainer', {
                         breakdown: constants.breakdown.AD_GROUP,
                     },
                     {
-                        name: 'Sources',
+                        name: 'Media Sources',
                         breakdown: constants.breakdown.MEDIA_SOURCE,
                     },
                     {
@@ -133,7 +133,7 @@ angular.module('one.widgets').component('zemGridContainer', {
                         breakdown: constants.breakdown.CONTENT_AD,
                     },
                     {
-                        name: 'Sources',
+                        name: 'Media Sources',
                         breakdown: constants.breakdown.MEDIA_SOURCE,
                     },
                     {

@@ -30,17 +30,19 @@
      </div>
 </div>
 
-<ui-select theme="select2" ng-model="$ctrl.currentlySelected" on-select="$ctrl.addIncluded($select.selected)"
-           class="button button--with-icon add-icon button--dropdown-toggle-icon">
-    <ui-select-match placeholder="{{ $ctrl.texts.selectTargetingButton }}">{{ $ctrl.texts.selectTargetingButton }}</ui-select-match>
-    <ui-select-choices group-by="$ctrl.groupBySection" repeat="targeting in $ctrl.notSelected | filter: {name: $select.search} track by targeting.id" position="down">
-        <div class="audience-select-option">
-            <span ng-bind-html="targeting.name | highlight: $select.search"></span>
-            <span class="targeting-select-buttons">
-                <a ng-click="$ctrl.addIncluded(targeting)" class="targeting-select-buttons__include">{{ $ctrl.texts.include }}</a>
-                <a ng-click="$ctrl.addExcluded(targeting)" class="targeting-select-buttons__exclude">{{ $ctrl.texts.exclude }}</a>
-            </span>
-        </div>
-    </ui-select-choices>
-    <ui-select-no-choice> {{ $ctrl.texts.noChoice }} </ui-select-no-choice>
-</ui-select>
+<div class="m-b-l">
+    <ui-select theme="select2" ng-model="$ctrl.currentlySelected" on-select="$ctrl.addIncluded($select.selected)"
+               class="button button--with-icon add-icon button--dropdown-toggle-icon">
+        <ui-select-match placeholder="{{ $ctrl.texts.selectTargetingButton }}">{{ $ctrl.texts.selectTargetingButton }}</ui-select-match>
+        <ui-select-choices group-by="$ctrl.groupBySection" repeat="targeting in $ctrl.notSelected | filter: {name: $select.search} track by targeting.id" position="down">
+            <div class="audience-select-option">
+                <span ng-bind-html="targeting.name | highlight: $select.search"></span>
+                <span class="targeting-select-buttons">
+                    <a ng-click="$ctrl.addIncluded(targeting)" class="targeting-select-buttons__include">{{ $ctrl.texts.include }}</a>
+                    <a ng-click="$ctrl.addExcluded(targeting)" class="targeting-select-buttons__exclude">{{ $ctrl.texts.exclude }}</a>
+                </span>
+            </div>
+        </ui-select-choices>
+        <ui-select-no-choice> {{ $ctrl.texts.noChoice }} </ui-select-no-choice>
+    </ui-select>
+</div>
