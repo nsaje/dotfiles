@@ -74,9 +74,9 @@ def _format_whitespace(content):
     '''
     Format multiple concurrent new line characters into paragraphs and single new lines into line breaks.
     '''
-    content = re.sub(r'\n\n+', '</p><p>', content)
-    content = re.sub(r'\n', '<br>', content)
-    return '<p>{}</p>'.format(
+    content = re.sub(r'\n\n+', u'</p><p>', content)
+    content = re.sub(r'\n', u'<br>', content)
+    return u'<p>{}</p>'.format(
         content
     )
 
