@@ -66,8 +66,19 @@ def format_template(subject, content, user=None, agency=None):
         content = _adjust_product_name(whitelabel, content)
     return render_to_string(template_file, {
         'subject': subject,
-        'content': '<p>' + '</p><p>'.join(re.split(r'\n+', content)) + '</p>'
+        'content': _format_whitespace(content),
     })
+
+
+def _format_whitespace(content):
+    '''
+    Format multiple concurrent new line characters into paragraphs and single new lines into line breaks.
+    '''
+    content = re.sub(r'\n\n+', '</p><p>', content)
+    content = re.sub(r'\n', '<br>', content)
+    return '<p>{}</p>'.format(
+        content
+    )
 
 
 def email_manager_list(campaign):
