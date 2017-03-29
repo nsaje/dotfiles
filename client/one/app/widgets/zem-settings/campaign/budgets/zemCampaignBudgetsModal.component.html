@@ -2,14 +2,14 @@
     <div class="modal__title" ng-if="$ctrl.isNew">Add Budget</div>
     <div class="modal__title" ng-if="!$ctrl.isNew">Edit Budget Item #{{ $ctrl.budgetItem.id }}</div>
 </div>
-<div class="modal__body zem-settings-campaign-budget__modal-body">
+<div class="modal__body zem-campaign-budgets-settings__modal-body">
     <p ng-if="!$ctrl.isNew">Created by <strong>{{ $ctrl.budgetItem.createdBy }}</strong> on <strong>{{ $ctrl.budgetItem.createdOn }}</strong></p>
     <p ng-if="$ctrl.isNew">Created by <strong>{{ $ctrl.user.name }}</strong> on <strong>{{ $ctrl.today }}</strong></p>
     <hr>
     <div class="form" id="form-campaign-budget-budgetItem" ng-class="{ 'new': $ctrl.isNew, 'edit': !$ctrl.isNew }">
-        <label class="form__label" ng-if="$ctrl.isNew">Select Credit Line</label>
-        <label class="form__label" ng-if="!$ctrl.isNew">Selected Credit Line</label>
-        <table class="table">
+        <label class="form__label" ng-if="$ctrl.isNew">Select credit line from table below</label>
+        <label class="form__label" ng-if="!$ctrl.isNew">Selected credit line</label>
+        <table class="custom-table">
             <thead>
                 <tr>
                     <th ng-if="$ctrl.isNew"></th>
@@ -24,7 +24,7 @@
             <tbody>
                 <!-- TODO: If possible add class row-error to row that was selected and has insufficient credit amount for selected budget -->
                 <tr ng-repeat="credit in $ctrl.availableCredit" ng-class="{'row--error': !!$ctrl.errors.credit}">
-                    <td class="zem-settings-campaign-budget__select-credit" ng-if="$ctrl.isNew" title="{{ $ctrl.credit.comment }}">
+                    <td class="zem-campaign-budgets-settings__select-credit" ng-if="$ctrl.isNew" title="{{ $ctrl.credit.comment }}">
                         <label>
                             <input class="input-radio" type="radio" ng-model="$ctrl.budgetItem.credit"
                                ng-click="$ctrl.checkCreditValues()" ng-value="credit"/>

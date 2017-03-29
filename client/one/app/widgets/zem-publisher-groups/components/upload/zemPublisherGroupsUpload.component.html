@@ -5,46 +5,47 @@
 <div class="modal__body">
     <div class="form">
         <div class="form__group" ng-class="{'form--error': $ctrl.errors.name}">
-            <label class="form__label" for="zem-publisher-group-modal-name">Name:</label>
+            <label class="form__label" for="zem-publisher-group-modal-name">Publisher group name:</label>
             <input class="input-text" type="text" id="zem-publisher-group-modal-name" ng-model="$ctrl.formData.name"
                    ng-change="$ctrl.clearValidationError('name')" />
             <div class="message message--error" ng-repeat="error in $ctrl.errors.name">{{ error }}</div>
         </div>
-    </div>
 
-    <div class="form__indented-group">
-        <div class="form__checkbox">
-            <label>
-                <input class="input-checkbox" type="checkbox" ng-model="$ctrl.formData.include_subdomains"
-                       ng-change="$ctrl.clearValidationError('include_subdomains')" />
-                <span class="checkbox-text">Include subdomains</span>
-            </label>
+        <div class="form__indented-group">
+            <div class="form__checkbox">
+                <label>
+                    <input class="input-checkbox" type="checkbox" ng-model="$ctrl.formData.include_subdomains"
+                           ng-change="$ctrl.clearValidationError('include_subdomains')" />
+                    <span class="checkbox-text">Include subdomains</span>
+                </label>
+            </div>
+
+            <div class="message message--help message--with-icon" ng-show="$ctrl.formData.include_subdomains">
+                The domains should be listed without prefixes http://, https:// or www.
+            </div>
+
         </div>
 
-        <div class="message message--help message--with-icon" ng-show="$ctrl.formData.include_subdomains">
-            <p>The domains should be listed without prefixes http/https/www.</p>
+        <div class="form__group form__group--choose-file" ng-class="{'form--error': !!$ctrl.errors.file}">
+            <label class="form__label" for="file-input">CSV file with publishers:</label>
+            <zem-file-input zem-file-input-change="$ctrl.fileUploadCallback(file)" zem-file-input-accept=".csv">
+                <button type="button" class="button button--with-icon folder-icon"
+                        ng-click="$ctrl.clearValidationError('entries')" zem-file-input-trigger>Choose file</button>
+                <input class="input-text file-choosen" type="text" id="file-input" readonly ng-model="$ctrl.formData.file.name"
+                        placeholder="No file chosen">
+            </zem-file-input>
+
+            <div class="message message--error" ng-repeat="error in $ctrl.errors.entries">{{ error }}</div>
+            <div class="message message--error" ng-if="$ctrl.errors.errors_csv_key" for="file-input">
+                <p>There were some errors in the attached file.</p>
+                <a ng-click="$ctrl.downloadErrors()">Download the report</a>
+            </div>
+
+            <div class="message message--help message--with-icon">
+                <p>If you have trouble with the file structure, you can download our example file and start from there.</p>
+                <a ng-click="$ctrl.downloadExample()">Download CSV example file</a><br>
+            </div>
         </div>
-
-    </div>
-
-    <div class="form__group form__group--choose-file" ng-class="{'form--error': !!$ctrl.errors.file}">
-        <label class="form__label" for="file-input">File:</label>
-        <zem-file-input zem-file-input-change="$ctrl.fileUploadCallback(file)" zem-file-input-accept=".csv">
-            <button type="button" class="button button--with-icon folder-icon"
-                    ng-click="$ctrl.clearValidationError('entries')" zem-file-input-trigger>Choose file</button>
-            <input class="input-text file-choosen" type="text" id="file-input" readonly ng-model="$ctrl.formData.file.name"
-                    placeholder="No file chosen">
-        </zem-file-input>
-
-        <div class="message message--error" ng-repeat="error in $ctrl.errors.entries">{{ error }}</div>
-        <div class="message message--error" ng-if="$ctrl.errors.errors_csv_key" for="file-input">There were some errors in the attached file, download the report
-            <b><a ng-click="$ctrl.downloadErrors()">here</a></b></div>
-
-        <div class="message message--help message--with-icon">
-            <p>If you have trouble with file structure, you can download our example file and start from here.</p>
-            <a ng-click="$ctrl.downloadExample()">Download CSV example file</a><br>
-        </div>
-
     </div>
 </div>
 <div class="modal__footer buttons-panel">

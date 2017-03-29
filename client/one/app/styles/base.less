@@ -68,12 +68,21 @@ h3 {
     margin: 0 0 @default-spacing 0;
 }
 
+////////////////////////////
+// Loader //
+////////////////////////////
+
 .loader {
     display: inline-block;
     width: 50px;
     height: 20px;
     background: transparent url('@{images-folder}/loader.gif') no-repeat center center;
     vertical-align: middle;
+}
+
+.loader--full-width {
+    display: block;
+    margin: 0 auto;
 }
 
 ////////////////////////////
@@ -113,15 +122,6 @@ h3 {
 }
 
 ////////////////////////////
-// Frequently used elements //
-////////////////////////////
-
-.description {
-    margin-bottom: @default-spacing;
-    color: @gray;
-}
-
-////////////////////////////
 // Internal feature //
 ////////////////////////////
 
@@ -143,6 +143,7 @@ h3 {
 ////////////////////////////
 
 .button {
+    position: relative;
     height: @default-button-input-height;
     line-height: @default-button-input-height;
     padding: 0 10px;
@@ -243,7 +244,6 @@ h3 {
 }
 
 .button--dropdown-toggle-icon {
-    position: relative;
     padding-right: 30px;
 
     &:after {
@@ -276,7 +276,6 @@ h3 {
 }
 
 .button--with-icon {
-    position: relative;
     padding-left: 33px;
 
     &:before {
@@ -1481,6 +1480,190 @@ h3 {
     filter: grayscale(100%);
 }
 
+////////////////////////////
+// Tables //
+////////////////////////////
+
+.custom-table {
+    width: 100%;
+    margin-bottom: @default-spacing;
+
+    thead, tfoot {
+        tr th {
+            position: relative;
+            padding: @default-table-spacing;
+            background-color: tint(@secondary-color, 90%);
+            border-bottom: 1px solid tint(@secondary-color, 80%);
+            color: @secondary-color;
+            font-weight: 500;
+            font-size: (@default-font-size)-1;
+            line-height: (@default-font-size)+3;
+
+            a {
+                color: @secondary-color;
+                font-weight: 500;
+                font-size: (@default-font-size)-1;
+            }
+        }
+    }
+
+    tfoot {
+        tr td {
+            border: none;
+            background-color: tint(@secondary-color, 96%);
+            border-top: 1px solid tint(@secondary-color, 80%);
+        }
+    }
+
+    tbody {
+        border-bottom: 1px solid tint(@secondary-color, 90%);
+
+        tr {
+            td {
+                padding: @default-table-spacing;
+                border-bottom: 1px solid tint(@secondary-color, 90%);
+                vertical-align: middle;
+                position: relative;
+
+                a {
+                    font-weight: 500;
+                    color: @secondary-color;
+                }
+
+                strong {
+                    color: @secondary-color;
+                    font-weight: 500;
+                }
+            }
+
+            &:hover {
+                background-color: tint(@secondary-color, 96%);
+            }
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+    }
+
+    .custom-table__action-buttons {
+        position: relative;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .custom-table__no-data {
+        text-align: center;
+        color: @gray;
+    }
+
+    .custom-table__notes {
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+        word-break: break-all;
+    }
+}
+
+.collapsable {
+    tbody {
+        border-bottom: 1px solid tint(@secondary-color, 88%);
+
+        tr {
+            td {
+                border-bottom: 1px solid tint(@secondary-color, 88%);
+            }
+
+            &:hover {
+                background-color: fade(white, 40%);
+            }
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+    }
+}
+
+///////////////////////////
+// Sort indicator //
+///////////////////////////
+
+.sort-indicator {
+    position: relative;
+
+    &::after {
+        content: " ";
+        display: block;
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 10px;
+        height: 10px;
+        background: url('@{images-folder}/sort-ascending-sec.svg') no-repeat center center;
+        opacity: 0.5;
+    }
+}
+
+.sort-indicator--reversed {
+    &::after {
+        background-image: url('@{images-folder}/sort-descending-sec.svg');
+    }
+}
+
+///////////////////////////
+// Two columns list //
+///////////////////////////
+
+.two-columns-list {
+    display: table;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.two-columns-list__container {
+    width: 100%;
+    display: table-cell;
+    border: 1px solid @light-gray;
+}
+
+.two-columns-list__container--half {
+    width: 48%;
+}
+
+.two-columns-list__spacing {
+    width: 4%;
+    display: table-cell;
+}
+
+.two-columns-list__title {
+    font-size: @default-font-size+2;
+    padding: 5px 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid @light-gray;
+}
+
+.two-columns-list__list {
+    margin-left: 10px;
+    list-style: none;
+
+    li {
+        padding: 5px 40px 5px 0;
+        position: relative;
+
+        &::before {
+            top: 10px;
+        }
+    }
+
+    .button {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+}
+
 ///////////////////////////
 // Dropdown menu //
 ///////////////////////////
@@ -1703,6 +1886,18 @@ h3 {
         }
     }
 
+
+    .form__group--choose-file {
+        .button {
+            width: 20%;
+            margin-right: 1%;
+        }
+
+        .input-text {
+            width: 46%;
+        }
+    }
+
     .form__indented-group {
         margin-left: 100-@form-input-width-modal;
     }
@@ -1762,6 +1957,15 @@ h3 {
 }
 
 ////////////////////////////
+// Description //
+////////////////////////////
+
+.description {
+    margin-bottom: @default-spacing;
+    color: @gray;
+}
+
+////////////////////////////
 // Messages //
 ////////////////////////////
 
@@ -1782,7 +1986,7 @@ h3 {
     color: @green;
 
     a {
-        color: @green;
+        color: @green !important;
     }
 
     .list-with-bullets li::before {
@@ -1805,7 +2009,7 @@ h3 {
     color: @red;
 
     a {
-        color: @red;
+        color: @red !important;
     }
 
     .list-with-bullets li::before {

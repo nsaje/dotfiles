@@ -1,11 +1,11 @@
-<div class="zem-settings-targeting-list clearfix" ng-show="$ctrl.included.length || $ctrl.excluded.length">
-    <div class="zem-settings-targeting-list__list-container" ng-if="$ctrl.included.length"
-         ng-class="{'zem-settings-targeting-list__list-container--half' : $ctrl.included.length && $ctrl.excluded.length }">
-        <div class="zem-settings-targeting-list__title text-green">{{ $ctrl.texts.selectedIncludedTitle }}</div>
-        <ul class="zem-settings-targeting-list__list list-with-bullets">
+<div class="two-columns-list clearfix" ng-show="$ctrl.included.length || $ctrl.excluded.length">
+    <div class="two-columns-list__container" ng-if="$ctrl.included.length"
+         ng-class="{'two-columns-list__container--half' : $ctrl.included.length && $ctrl.excluded.length }">
+        <div class="two-columns-list__title text-green">{{ $ctrl.texts.selectedIncludedTitle }}</div>
+        <ul class="two-columns-list__list list-with-bullets">
             <li ng-repeat="targeting in $ctrl.included | orderBy:'type'">
                 {{targeting.title}}
-                <span class="zem-settings-targeting-list__archived" ng-if="targeting.archived">
+                <span class="text-gray" ng-if="targeting.archived">
                     (Archived)
                 </span>
                 <a href="" class="button button--extra-small button--with-icon button--only-icon remove-icon"
@@ -13,14 +13,14 @@
             </li>
         </ul>
     </div>
-    <div class="zem-settings-targeting-list__spacing" ng-if="$ctrl.included.length && $ctrl.excluded.length"></div>
-    <div class="zem-settings-targeting-list__list-container" ng-if="$ctrl.excluded.length"
-         ng-class="{'zem-settings-targeting-list__list-container--half' : $ctrl.included.length && $ctrl.excluded.length }">
-        <div class="zem-settings-targeting-list__title text-red">{{ $ctrl.texts.selectedExcludedTitle }}</div>
-        <ul class="zem-settings-targeting-list__list list-with-bullets">
+    <div class="two-columns-list__spacing" ng-if="$ctrl.included.length && $ctrl.excluded.length"></div>
+    <div class="two-columns-list__container" ng-if="$ctrl.excluded.length"
+         ng-class="{'two-columns-list__container--half' : $ctrl.included.length && $ctrl.excluded.length }">
+        <div class="two-columns-list__title text-red">{{ $ctrl.texts.selectedExcludedTitle }}</div>
+        <ul class="two-columns-list__list list-with-bullets">
             <li ng-repeat="targeting in $ctrl.excluded | orderBy:'type'">
                 {{targeting.title}}
-                <span class="zem-settings-targeting-list__archived" ng-if="targeting.archived">
+                <span class="text-gray" ng-if="targeting.archived">
                     (Archived)
                 </span>
                 <a href="" class="button button--extra-small button--with-icon button--only-icon remove-icon"

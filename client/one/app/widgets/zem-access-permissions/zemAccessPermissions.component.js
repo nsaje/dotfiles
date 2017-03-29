@@ -20,6 +20,7 @@ angular.module('one').component('zemAccessPermissions', {
 
         $ctrl.$onInit = function () {
             $ctrl.stateService.initialize();
+            $ctrl.showCollapsed = false;
         };
 
         function create () {

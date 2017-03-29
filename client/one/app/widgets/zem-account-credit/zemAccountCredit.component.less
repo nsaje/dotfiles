@@ -1,3 +1,42 @@
 .zem-account-credit {
     display: block;
 }
+
+.zem-account-credit__credit-overview {
+    padding: @default-spacing 0 0 0;
+    border-top: 1px solid @light-gray;
+    display: table;
+    width: 100%;
+
+    .clearfix();
+}
+
+.zem-account-credit__credit-overview-box {
+    display: table-cell;
+    border-right: 1px solid @light-gray;
+    text-align: center;
+    position: relative;
+    vertical-align: middle;
+    width: 25%;
+
+    &:last-child {
+        border-right: none;
+    }
+}
+
+.zem-account-credit__credit-overview-name {
+    font-size: @default-font-size;
+}
+
+.zem-account-credit__credit-overview-value {
+    display: block;
+}
+
+.zem-account-credit__credit-overview-box--exposed {
+    color: @secondary-color;
+
+    .zem-account-credit__credit-overview-value {
+        font-weight: 500;
+        font-size: 18px;
+    }
+}

@@ -1,9 +1,11 @@
-<h1>{{$ctrl.getEntityTypeName()}} archived</h1>
+<h1 class="zem-content__title">{{$ctrl.getEntityTypeName()}} archived</h1>
 
-<div class="section white-background">
-    <p>
+<div class="custom-panel">
+    <div class="loader loader--full-width" ng-show="$ctrl.requestInProgress"></div>
+    <div class="message">
         {{$ctrl.getEntityTypeName()}} <strong>{{entity.name}}</strong> is archived.
-    </p>
-    <button class="button" ng-click="$ctrl.restore()">Restore</button>
-    <div class="loader" ng-show="$ctrl.requestInProgress"></div>
+    </div>
+    <div class="m-t">
+        <button class="button" ng-click="$ctrl.restore()">Restore</button>
+    </div>
 </div>

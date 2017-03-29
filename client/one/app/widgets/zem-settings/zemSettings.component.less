@@ -84,42 +84,13 @@
 }
 
 .zem-settings-component__container {
-    background-color: @white;
-    box-shadow: 0px 0px 5px 0px fade(black,10%);
-    padding: @default-spacing;
     margin-top: 0;
     margin-bottom: @default-spacing+5;
-    position: relative;
 
     .multiselect {
         height: 180px;
+        margin-top: 0;
     }
-}
-
-.zem-settings-component__container--disabled {
-    background-color: fade(@white,30%);
-    box-shadow: 0px 0px 5px 0px fade(black,10%);
-}
-
-.zem-settings-component__header {
-    margin: -@default-spacing -@default-spacing @default-spacing -@default-spacing;
-    padding: 10px @default-spacing 8px @default-spacing;
-    color: @secondary-color;
-    font-size: 18px;
-    font-weight: 500;
-    border-bottom: 1px solid @border-color;
-}
-
-.zem-settings-component__sub-header {
-    font-size: @default-font-size+4;
-    color: @secondary-color;
-    position: relative;
-    margin-bottom: 10px;
-}
-
-.zem-settings-component__description {
-    margin-bottom: @default-spacing;
-    color: @gray;
 }
 
 .zem-settings__different-than-default {
@@ -134,7 +105,7 @@
 // Facebook //
 ///////////////////////////
 
-.zem-settings-component__container--facebook {
+.zem-facebook-page-settings {
     .input-text--facebook {
         input {
             padding-right: 150px;
@@ -169,14 +140,14 @@
 // Campaign goals //
 ///////////////////////////
 
-.zem-settings-component__container--campaign-goals {
+.zem-campaign-goals-settings {
     :not(.message--info).message {
         display: block;
         margin-bottom: 15px;
     }
 }
 
-.zem-settings-campaign-goals__primary-goal {
+.zem-campaign-goals__primary-goal {
     color: @gray;
     float: right;
 
@@ -191,11 +162,11 @@
     }
 }
 
-.zem-settings-campaign-goals__optimization {
+.zem-campaign-goals__optimization {
     margin: 10px 0;
 }
 
-.zem-settings-campaign-goals__goal {
+.zem-campaign-goals__goal {
     border: 1px solid @light-gray;
     border-radius: @border-radius;
     height: 50px;
@@ -209,17 +180,17 @@
         transform: translateY(-50%);
     }
 
-    &:not(.zem-settings-campaign-goals__goal--primary):hover {
+    &:not(.zem-campaign-goals__goal--primary):hover {
         cursor: pointer;
         color: @secondary-color;
 
-        .zem-settings-campaign-goals__goal-number {
+        .zem-campaign-goals__goal-number {
             background-color: tint(@secondary-color,90%);
         }
     }
 }
 
-.zem-settings-campaign-goals__goal-number {
+.zem-campaign-goals__goal-number {
     position: absolute;
     left: -1px;
     top: -1px;
@@ -234,29 +205,29 @@
     border-bottom-left-radius: @border-radius;
 }
 
-.zem-settings-campaign-goals__goal-description {
+.zem-campaign-goals__goal-description {
     position: absolute;
     left: 65px;
     top: 50%;
     transform: translateY(-50%);
 }
 
-.zem-settings-campaign-goals__edit-button {
+.zem-campaign-goals__edit-button {
     right: 55px;
 }
 
-.zem-settings-campaign-goals__delete-button {
+.zem-campaign-goals__delete-button {
     right: 9px;
 }
 
-.zem-settings-campaign-goals__goal--primary {
-    .zem-settings-campaign-goals__goal-number {
+.zem-campaign-goals__goal--primary {
+    .zem-campaign-goals__goal-number {
         background-color: @secondary-color;
         border-color: @secondary-color;
         color: white;
     }
 
-    .zem-settings-campaign-goals__goal-description {
+    .zem-campaign-goals__goal-description {
         color: @secondary-color;
     }
 }
@@ -265,7 +236,7 @@
 // Device targeting //
 ///////////////////////////
 
-.zem-settings-component__container--device-targeting {
+.zem-device-targeting-settings {
     .form::after {
         content: "";
         display: block;
@@ -301,39 +272,39 @@
     }
 }
 
-.zem-settings-device-targeting__desktop {
+.zem-device-targeting__desktop {
     .form__label {
         background: url('images/device-desktop-gray.svg') no-repeat center center;
         background-size: 100px;
     }
 
-    &.zem-settings-device-targeting__active {
+    &.zem-device-targeting__active {
         .form__label {
             background-image: url('@{images-folder}/device-desktop-sec.svg');
         }
     }
 }
 
-.zem-settings-device-targeting__tablet {
+.zem-device-targeting__tablet {
     .form__label {
         background: url('images/device-tablet-gray.svg') no-repeat center 40px;
         background-size: 40px;
     }
 
-    &.zem-settings-device-targeting__active {
+    &.zem-device-targeting__active {
         .form__label {
             background-image: url('@{images-folder}/device-tablet-sec.svg');
         }
     }
 }
 
-.zem-settings-device-targeting__mobile {
+.zem-device-targeting__mobile {
     .form__label {
         background: url('images/device-mobile-gray.svg') no-repeat center 60px;
         background-size: 20px;
     }
 
-    &.zem-settings-device-targeting__active {
+    &.zem-device-targeting__active {
         .form__label {
             background-image: url('@{images-folder}/device-mobile-sec.svg');
         }
@@ -344,7 +315,7 @@
 // Locations //
 ///////////////////////////
 
-.zem-settings-component__container--locations {
+.zem-region-targeting-settings {
     .button {
         .clearfix();
     }
@@ -358,7 +329,7 @@
 // Ad group general settings //
 ///////////////////////////
 
-.zem-settings-component__container--ad-group-general-settings {
+.zem-adgroup-general-settings {
     .form__checkbox {
         float: left;
         width: auto;
@@ -370,7 +341,7 @@
 // Targeting //
 ///////////////////////////
 
-.zem-settings-component__container--targeting {
+.zem-account-targeting-settings {
     .form {
         padding: 0 @default-spacing @default-spacing+5 @default-spacing;
         margin: 0 -@default-spacing @default-spacing -@default-spacing;
@@ -381,6 +352,12 @@
         margin-bottom: 0;
         padding-bottom: 0;
         border-bottom: none;
+    }
+
+    .form--border-top {
+        border-top: 1px solid @light-gray;
+        margin-top: @default-spacing+5;
+        padding-top: @default-spacing;
     }
 
     .form__title .internal-feature {
@@ -466,60 +443,11 @@
     }
 }
 
-.zem-settings-targeting-list {
-    display: table;
-    width: 100%;
-    margin-top: 10px;
-}
-
-.zem-settings-targeting-list__list-container {
-    width: 100%;
-    display: table-cell;
-    border: 1px solid @light-gray;
-}
-
-.zem-settings-targeting-list__list-container--half {
-    width: 48%;
-}
-
-.zem-settings-targeting-list__spacing {
-    width: 4%;
-    display: table-cell;
-}
-
-.zem-settings-targeting-list__title {
-    font-size: @default-font-size+2;
-    padding: 5px 10px;
-    margin-bottom: 10px;
-    border-bottom: 1px solid @light-gray;
-}
-
-.zem-settings-targeting-list__list {
-    margin-left: 10px;
-    list-style: none;
-
-    li {
-        padding: 5px 40px 5px 0;
-        position: relative;
-
-        &::before {
-            top: 10px;
-        }
-    }
-
-    .button {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-    }
-}
-
 ///////////////////////////
 // Tracking //
 ///////////////////////////
 
-.zem-settings-component__container--tracking {
+.zem-adgroup-tracking-settings {
     .form {
         padding: 0 @default-spacing @default-spacing+5 @default-spacing;
         margin: 0 -@default-spacing @default-spacing -@default-spacing;
@@ -537,7 +465,7 @@
 // Autopilot //
 ///////////////////////////
 
-.zem-settings-component__container--autopilot {
+.zem-adgroup-autopilot-settings {
     .message {
         margin-bottom: 10px;
     }
@@ -547,8 +475,8 @@
 // Bakcend hacks //
 ///////////////////////////
 
-.zem-settings-component__container--backend-hacks {
-    .table strong {
+.zem-backend-hacks {
+    .custom-table strong {
         color: @text-color;
     }
 }
@@ -557,11 +485,11 @@
 // Budget //
 ///////////////////////////
 
-.zem-settings-component__container--campaign-budget {
+.zem-campaign-budgets-settings {
 
 }
 
-.zem-settings-campaign-budget__budget-overview {
+.zem-campaign-budgets-settings__budget-overview {
     padding: @default-spacing 0;
     margin-bottom: @default-spacing;
     border-top: 1px solid @light-gray;
@@ -572,7 +500,7 @@
     .clearfix();
 }
 
-.zem-settings-campaign-budget__budget-overview-box {
+.zem-campaign-budgets-settings__budget-overview-box {
     display: table-cell;
     border-right: 1px solid @light-gray;
     text-align: center;
@@ -584,25 +512,25 @@
     }
 }
 
-.budget-overview__name {
+.zem-campaign-budgets-settings__budget-overview-name {
     font-size: @default-font-size;
 }
 
-.budget-overview__value {
+.zem-campaign-budgets-settings__budget-overview-value {
     display: block;
 }
 
-.zem-settings-campaign-budget__budget-overview-box--exposed {
+.zem-campaign-budgets-settings__budget-overview-box--exposed {
     color: @secondary-color;
 
-    .budget-overview__value {
+    .zem-campaign-budgets-settings__budget-overview-value {
         font-weight: 500;
         font-size: 18px;
     }
 }
 
-.zem-settings-campaign-budget__modal-body {
-    .zem-settings-campaign-budget__select-credit {
+.zem-campaign-budgets-settings__modal-body {
+    .zem-campaign-budgets-settings__select-credit {
         vertical-align: top;
 
         label {
@@ -612,7 +540,7 @@
     }
 }
 
-.zem-settings-campaign-budget__collapsable {
+.zem-campaign-budgets-settings__collapsable {
     margin: 20px -@default-spacing -@default-spacing -@default-spacing;
 
     .table {

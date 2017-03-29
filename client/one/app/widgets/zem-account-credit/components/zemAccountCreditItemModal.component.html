@@ -3,7 +3,7 @@
     <div class="modal__title" ng-if="!$ctrl.createMode">Edit Credit Item #{{ $ctrl.state.creditItem.id }}</div>
 </div>
 <div class="modal__body">
-    <div class="loader" ng-show="$ctrl.state.requests.reloadCreditItem.inProgress"></div>
+    <div class="loader loader--full-width" ng-show="$ctrl.state.requests.reloadCreditItem.inProgress"></div>
     <p>Created by <strong>{{ $ctrl.state.creditItem.createdBy }}</strong> on <strong>{{ $ctrl.state.creditItem.createdOn }}</strong></p>
     <hr>
     <div class="form" id="form-account-credit-item" ng-class="{ 'new': $ctrl.createMode, 'edit': !$ctrl.createMode }" ng-show="!$ctrl.state.requests.reloadCreditItem.inProgress">
@@ -74,7 +74,7 @@
     <div ng-show="!$ctrl.createMode">
         <hr>
         <h3>Allocated budget items</h3>
-        <table class="table">
+        <table class="custom-table">
             <thead>
                 <tr>
                     <th>Campaign</th>
@@ -90,10 +90,10 @@
                     <td>{{ budget.total | decimalCurrency:"$":2  }}</td>
                     <td>{{ budget.spend | decimalCurrency:"$":2  }}</td>
                     <td>{{ budget.startDate }} - {{ budget.endDate }}</td>
-                    <td><zem-note-popover content="{{ budget.comment }}" placement="top"></zem-note-popover></td>
+                    <td><zem-note-popover content="{{ budget.comment }}" placement="top" class="note-popover"></zem-note-popover></td>
                 </tr>
-                <tr ng-show="!$ctrl.state.creditItem.numOfBudgets" class="message">
-                    <td colspan="5">No allocated budget items.</td>
+                <tr ng-show="!$ctrl.state.creditItem.numOfBudgets">
+                    <td colspan="5" class="custom-table__no-data">No allocated budget items.</td>
                 </tr>
             </tbody>
         </table>

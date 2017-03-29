@@ -1,17 +1,17 @@
-<div class="zem-settings-component__container zem-settings-component__container--device-targeting">
-    <div class="zem-settings-component__header" ng-if="$ctrl.isDefault()">Default device targeting</div>
-    <div class="zem-settings-component__header" ng-if="!$ctrl.isDefault()">
+<div class="custom-panel zem-settings-component__container zem-device-targeting-settings">
+    <h2 class="custom-panel__title" ng-if="$ctrl.isDefault()">Default device targeting</h2>
+    <h2 class="custom-panel__title" ng-if="!$ctrl.isDefault()">
         Device targeting
         <div class="zem-settings__different-than-default" ng-if="!$ctrl.isEqualToDefault()">Different than campaign default</div>
-    </div>
-    <div class="zem-settings-component__description">The devices on which your content ads will be shown. <span ng-if="$ctrl.isDefault()">Used for all newly created ad groups.</span></div>
+    </h2>
+    <div class="custom-panel__description">The devices on which your content ads will be shown. <span ng-if="$ctrl.isDefault()">Used for all newly created ad groups.</span></div>
     <!-- TODO: Device classes should be calculated in controler -->
     <div class="form">
         <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.targetDevices,
-                                           'zem-settings-device-targeting__mobile': device.name == 'Mobile',
-                                           'zem-settings-device-targeting__tablet': device.name == 'Tablet',
-                                           'zem-settings-device-targeting__desktop': device.name == 'Desktop',
-                                           'zem-settings-device-targeting__active': device.checked,
+                                           'zem-device-targeting__mobile': device.name == 'Mobile',
+                                           'zem-device-targeting__tablet': device.name == 'Tablet',
+                                           'zem-device-targeting__desktop': device.name == 'Desktop',
+                                           'zem-device-targeting__active': device.checked,
                                            }" ng-repeat='device in $ctrl.entity.settings.targetDevices'>
             <label class="form__label" for="{{ device.name }}"></label>
             <div class="form__checkbox">

@@ -1,16 +1,16 @@
 <div class="content-insights">
-    <div class="loader" ng-show="$ctrl.loading"></div>
+    <div class="loader loader--full-width" ng-show="$ctrl.loading"></div>
 
     <div ng-if="!$ctrl.loading" class="clearfix">
         <div class="content-insights__container">
             <div class="content-insights__title text-green">Best Titles</div>
 
-            <table class="table">
+            <table class="custom-table">
                 <thead>
                     <tr>
-                        <th></th>
+                        <th class="content-insights__number-column text-gray"></th>
                         <th>{{$ctrl.data.summary}}</th>
-                        <th class="text-right">{{$ctrl.data.metric}}</th>
+                        <th class="content-insights__number-performance-column text-right">{{$ctrl.data.metric}}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -20,6 +20,9 @@
                         <td>{{ row.summary }}</td>
                         <td class="content-insights__number-performance-column text-right text-green">{{ row.metric }}</td>
                     </tr>
+                    <tr ng-hide="$ctrl.data.bestPerformerRows.length">
+                        <td colspan="3" class="custom-table__no-data">No data</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -27,12 +30,12 @@
         <div class="content-insights__container m-r-none">
             <div class="content-insights__title text-red">Worst Titles</div>
 
-            <table class="table">
+            <table class="custom-table">
                 <thead>
                     <tr>
-                        <th></th>
+                        <th class="content-insights__number-column text-gray"></th>
                         <th>{{$ctrl.data.summary}}</th>
-                        <th class="text-right">{{$ctrl.data.metric}}</th>
+                        <th class="content-insights__number-performance-column text-right">{{$ctrl.data.metric}}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,6 +44,9 @@
                         <td class="content-insights__number-column text-gray">{{$index + 1}}</td>
                         <td>{{ row.summary }}</td>
                         <td class="content-insights__number-performance-column text-right text-red">{{ row.metric }}</td>
+                    </tr>
+                    <tr ng-hide="$ctrl.data.worstPerformerRows.length">
+                        <td colspan="3" class="custom-table__no-data">No data</td>
                     </tr>
                 </tbody>
             </table>

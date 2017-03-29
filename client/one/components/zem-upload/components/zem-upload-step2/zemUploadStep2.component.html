@@ -15,7 +15,7 @@
             <span class="content-upload__batch-title">You're editing:</span>
         </div>
         <div class="content-upload__ads-container custom-scroller">
-            <table class="table content-upload__ads-table">
+            <table class="custom-table content-upload__ads-table">
                 <tr ng-repeat="candidate in ctrl.candidates" ng-class="{'content-upload__selected-ad': candidate.id === ctrl.editFormApi.selectedId}" ng-click="ctrl.editFormApi.open(candidate)">
                     <td class="content-upload__ad-status" ng-class="{
                         'content-upload__ad-status--loading': ctrl.getStatus(candidate) === 'loading',

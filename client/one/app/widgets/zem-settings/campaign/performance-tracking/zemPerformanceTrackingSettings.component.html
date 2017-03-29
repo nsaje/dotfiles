@@ -1,6 +1,6 @@
-<div class="zem-settings-component__container">
-    <div class="zem-settings-component__header">Performance tracking</div>
-    <div class="zem-settings-component__description">Connect your Google/Adobe Analytics account to better track your campaign performance.</div>
+<div class="custom-panel zem-settings-component__container">
+    <h2 class="custom-panel__title">Performance tracking</h2>
+    <div class="custom-panel__description">Connect your Google/Adobe Analytics account to better track your campaign performance.</div>
     <div class="form">
         <div class="form__checkbox">
             <label>
@@ -28,22 +28,18 @@
                         <div>{{type.name}}</div>
                     </ui-select-choices>
                 </ui-select>
-                <div class="message m-t-xs" ng-if="$ctrl.entity.settings.gaTrackingType === $ctrl.constants.gaTrackingType.EMAIL">
+                <div class="message message--info message--with-icon m-t-xs" ng-if="$ctrl.entity.settings.gaTrackingType === $ctrl.constants.gaTrackingType.EMAIL">
                     <p>
-                        Email reporting relies on automated daily reports sent from Google Analytics to us.
-                        <br />Email reporting does not require additional permissions on your Google Analytics account or property, but it is less reliable than API reporting.
-                        <br />Please see instructions below.
+                        Email reporting relies on automated daily reports sent from Google Analytics to us. It does not require additional permissions on your Google Analytics account or property, but it is less reliable than API reporting. Please see instructions below.
                     </p>
                     <a href="http://help.zemanta.com/article/show/12522-setting-up-automated-google-analytics-reports"
                        target="_blank" class="alternative-link">
                         Download a guide to setting up Automated Google Analytics Report via email
                     </a>
                 </div>
-                <div class="message m-t-xs" ng-if="$ctrl.entity.settings.gaTrackingType === $ctrl.constants.gaTrackingType.API">
+                <div class="message message--info message--with-icon m-t-xs" ng-if="$ctrl.entity.settings.gaTrackingType === $ctrl.constants.gaTrackingType.API">
                     <p>
-                        API reporting allows the system to automatically download reports from your Google Analytics account or property.
-                        <br/ >API reporting requires that you add a user to your Google Analytics account or property with the read & analyze permission.
-                        <br />Please see instructions below.
+                        API reporting allows the system to automatically download reports from your Google Analytics account or property. It requires that you add a user to your Google Analytics account or property with the read & analyze permission. Please see instructions below.
                     </p>
                     <a href="http://help.zemanta.com/article/show/10814-realtime-google-analytics-reports_1"
                        target="_blank" class="alternative-link">
@@ -88,7 +84,7 @@
                 </label>
                 <input class="input-text" id="adobe-tracking-param-input" type="text"
                        ng-model="$ctrl.entity.settings.adobeTrackingParam">
-                <div class="message m-t-xs">
+                <div class="message message--info message--with-icon m-t-xs">
                     <a href="http://help.zemanta.com/article/show/12524-setting-up-automated-adobe-analytics-reports"
                        target="_blank" class="alternative-link">Download a guide to setting up Automated Adobe Analytics Report</a>
                 </div>

@@ -1,5 +1,5 @@
-<div class="zem-settings-component__container zem-settings-component__container--tracking">
-    <div class="zem-settings-component__header">Tracking</div>
+<div class="custom-panel zem-settings-component__container zem-adgroup-tracking-settings">
+    <h2 class="custom-panel__title">Tracking</h2>
     <div class="form">
         <div class="form__title">3rd party pixel tracking</div>
         <div class="form__text m-b-none">3rd party pixels help you retarget people who clicked on Zemanta ads. This is a read-only section. Please contact your Zemanta Account Manager if you want to set up or change 3rd party pixel tracking.</div>
@@ -15,6 +15,7 @@
                 <div class="textarea--dashed break-long-words">{{$ctrl.entity.settings.redirectJavascript}}</div>
             </div>
         </div>
+        <div class="message m-t m-b-none" ng-if="!$ctrl.entity.settings.redirectPixelUrls.length && !$ctrl.entity.settings.redirectJavascript">No 3rd party pixel tracking.</div>
     </div>
     <!-- end additional targeting -->
 
