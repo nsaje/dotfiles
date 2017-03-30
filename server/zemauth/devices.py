@@ -45,7 +45,7 @@ def handle_user_device(request, response):
 
 @transaction.atomic
 def _handle_user_device(request, response):
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticated() or request.user.email.endswith('@zemanta-test.com'):
         return
     device_key = request.COOKIES.get(DEVICE_COOKIE_NAME)
     device = _get_or_create_device(device_key)
