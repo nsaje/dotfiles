@@ -63,7 +63,7 @@ class BudgetProjections(object):
 
         self.calculation_groups = {}
         self.projections = {}
-        self.accounts = {acc.id: acc for acc in accounts}
+        self.accounts = {acc.id: acc for acc in (accounts or dash.models.Account.objects.all())}
 
         self._prepare_account_types()
 
