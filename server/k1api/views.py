@@ -411,6 +411,8 @@ class AdGroupsView(K1APIView):
                 'display_url': ad_group_settings.display_url,
                 'tracking_codes': ad_group_settings.get_tracking_codes(),
                 'target_devices': ad_group_settings.target_devices,
+                'target_placements': [],  # TODO placeholder
+                'target_os': [],  # TODO placeholder
                 'target_regions': ad_group_settings.target_regions,
                 'exclusion_target_regions': ad_group_settings.exclusion_target_regions,
                 'iab_category': campaign_settings.iab_category,

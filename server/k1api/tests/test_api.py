@@ -616,6 +616,8 @@ class K1ApiTest(TestCase):
             u'display_url': u'brand1.com',
             u'tracking_codes': u'tracking1&tracking2',
             u'target_devices': [],
+            u'target_os': [],
+            u'target_placements': [],
             u'iab_category': u'IAB24',
             u'target_regions': [],
             u'exclusion_target_regions': [],
