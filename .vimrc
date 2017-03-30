@@ -55,7 +55,7 @@ Plugin 'avakhov/vim-yaml' " yaml support
 "Plugin 'tpope/vim-sleuth' " automatic indentation settings
 "Plugin 'godlygeek/tabular' " aligning things
 "Plugin 'plasticboy/vim-markdown' " markdown (mostly for tables: :TableFormat)
-Plugin 'airblade/vim-gitgutter' " git status in gutter
+"Plugin 'airblade/vim-gitgutter' " git status in gutter
 Plugin 'tpope/vim-surround' " surrounding
 
 " snippets
@@ -96,6 +96,7 @@ let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#show_buffers=2
 " Show just the filename
 let g:airline#extensions#tabline#fnamemod = ':t'
+let g:airline_theme='solarized'
 
 " theme
 Plugin 'altercation/vim-colors-solarized'
@@ -140,7 +141,7 @@ filetype plugin on
 " theme
 syntax enable
 set background=light
-colorscheme solarized
+"colorscheme solarized
 
 
 " ---------------------------------------------------------------------------------

@@ -31,13 +31,14 @@ values."
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
    '(
+     javascript
      html
      yaml
      rust
      python
      sql
      go
-     python
+     gtags
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press <SPC f e R> (Vim style) or
@@ -53,20 +54,20 @@ values."
      (org :variables
           org-projectile-file "~/org/TODOs.org")
      (shell :variables
-            shell-default-width 20
+            shell-default-height 20
             shell-default-position 'right)
      (spell-checking :variables
                      spell-checking-enable-by-default nil)
      syntax-checking
      version-control
      ;; notmuch
-     mu4e
+     ;; mu4e
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '()
+   dotspacemacs-additional-packages '(simpleclip)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
@@ -142,6 +143,7 @@ values."
    dotspacemacs-themes '(leuven
                          solarized-light
                          material-light
+                         zenburn
                          ;; spacemacs-dark
                          ;; spacemacs-light
                          )
@@ -338,47 +340,47 @@ you should place your code here."
 
     ; mu4e
     ;;location of my maildir
-    (setq mu4e-maildir (expand-file-name "~/mbsync"))
-    (setq mu4e-enable-notifications t)
+    ;; (setq mu4e-maildir (expand-file-name "~/mbsync"))
+    ;; (setq mu4e-enable-notifications t)
 
     ;; reply/forward citation
-    (setq message-citation-line-format "\n\nOn %a %d %b %Y at %R, %f wrote:\n")
-    (setq message-citation-line-function 'message-insert-formatted-citation-line)
+    ;; (setq message-citation-line-format "\n\nOn %a %d %b %Y at %R, %f wrote:\n")
+    ;; (setq message-citation-line-function 'message-insert-formatted-citation-line)
 
-    (with-eval-after-load 'mu4e-alert
-      ;; Enable Desktop notifications
-      (mu4e-alert-set-default-style 'notifications)) ; For linux
-    (setq mu4e-alert-interesting-mail-query "flag:unread AND maildir:/INBOX"
-          mu4e-enable-mode-line t)
-    ;;rename files when moving
-    ;;NEEDED FOR MBSYNC
-    (setq mu4e-change-filenames-when-moving t)
-    (defun my-render-html-message ()
-      (let ((dom (libxml-parse-html-region (point-min) (point-max))))
-        (erase-buffer)
-        (shr-insert-document dom)
-        (goto-char (point-min))))
-    (setq mu4e-html2text-command 'my-render-html-message)
-    (setq mu4e-get-mail-command "mbsync gmail"
-          mu4e-update-interval 30)
-    (setq mu4e-sent-messages-behavior 'delete)
-    (setq mu4e-compose-format-flowed t)
-    ;; (add-hook 'mu4e-compose-mode-hook
-    ;;   (lambda ()
-    ;;     (use-hard-newlines t 'guess)))
-    (setq mu4e-compose-signature-auto-include nil)
-    (setq
-      user-mail-address "nejc.saje@zemanta.com"
-      user-full-name  "Nejc Saje"
-      mu4e-compose-signature nil
-      )
-    (setq message-send-mail-function 'smtpmail-send-it
-        smtpmail-stream-type 'starttls
-        smtpmail-default-smtp-server "smtp.gmail.com"
-        smtpmail-smtp-server "smtp.gmail.com"
-        smtpmail-smtp-service 587)
-    ;; don't keep message buffers around
-    (setq message-kill-buffer-on-exit t)
+    ;; (with-eval-after-load 'mu4e-alert
+    ;;   ;; Enable Desktop notifications
+    ;;   (mu4e-alert-set-default-style 'notifications)) ; For linux
+    ;; (setq mu4e-alert-interesting-mail-query "flag:unread AND maildir:/INBOX"
+    ;;       mu4e-enable-mode-line t)
+    ;; ;;rename files when moving
+    ;; ;;NEEDED FOR MBSYNC
+    ;; (setq mu4e-change-filenames-when-moving t)
+    ;; (defun my-render-html-message ()
+    ;;   (let ((dom (libxml-parse-html-region (point-min) (point-max))))
+    ;;     (erase-buffer)
+    ;;     (shr-insert-document dom)
+    ;;     (goto-char (point-min))))
+    ;; (setq mu4e-html2text-command 'my-render-html-message)
+    ;; (setq mu4e-get-mail-command "mbsync gmail"
+    ;;       mu4e-update-interval 30)
+    ;; (setq mu4e-sent-messages-behavior 'delete)
+    ;; (setq mu4e-compose-format-flowed t)
+    ;; ;; (add-hook 'mu4e-compose-mode-hook
+    ;; ;;   (lambda ()
+    ;; ;;     (use-hard-newlines t 'guess)))
+    ;; (setq mu4e-compose-signature-auto-include nil)
+    ;; (setq
+    ;;   user-mail-address "nejc.saje@zemanta.com"
+    ;;   user-full-name  "Nejc Saje"
+    ;;   mu4e-compose-signature nil
+    ;;   )
+    ;; (setq message-send-mail-function 'smtpmail-send-it
+    ;;     smtpmail-stream-type 'starttls
+    ;;     smtpmail-default-smtp-server "smtp.gmail.com"
+    ;;     smtpmail-smtp-server "smtp.gmail.com"
+    ;;     smtpmail-smtp-service 587)
+    ;; ;; don't keep message buffers around
+    ;; (setq message-kill-buffer-on-exit t)
 
     (setq-default frame-title-format "Spacemacs - %b (%f)")
 
@@ -386,11 +388,11 @@ you should place your code here."
     (setq mouse-wheel-scroll-amount '(2 ((shift) . 1))) ;; two lines at a time
     (setq mouse-wheel-progressive-speed nil) ;; don't accelerate scrolling
     (setq mouse-wheel-follow-mouse 't) ;; scroll window under mouse
+    (setq scroll-preserve-screen-position 't)
+    (setq scroll-margin 5)
 
-  ;; yank preferences
-    (setq save-interprogram-paste-before-kill t)
-    (setq x-select-enable-clipboard nil)
-
+    ;; clipboard preferences
+    (simpleclip-mode 1)
 
     ;; ORG MODE CONFIG
     (setq org-agenda-files '("~/org/TODOs.org"))
@@ -413,16 +415,51 @@ you should place your code here."
     ;; Capture templates for: TODO tasks, Notes, appointments, phone calls, meetings, and org-protocol
     (setq org-capture-templates
           (quote (("t" "todo" entry (file+headline "~/org/TODOs.org" "General")
-                  "* TODO %?\n%U\n\n" :clock-in t :clock-resume t)
+                  "* TODO %?\n")
                   ;; ("r" "respond" entry (file+headline "~/org/TODOs.org" "General")
                   ;; "* NEXT Respond to %:from on %:subject\nSCHEDULED: %t\n%U\n%a\n" :clock-in t :clock-resume t :immediate-finish t)
-                  ("r" "respond" entry (file+headline "~/org/TODOs.org" "General")
-                   "* NEXT Respond to %f on %s\nSCHEDULED: %t\n%U\n%a\n" :clock-in t :clock-resume t :immediate-finish t)
+                  ;; ("r" "respond" entry (file+headline "~/org/TODOs.org" "General")
+                  ;;  "* NEXT Respond to %f on %s\nSCHEDULED: %t\n%U\n%a\n" :clock-in t :clock-resume t :immediate-finish t)
                   ("n" "note" entry (file+headline "~/org/TODOs.org" "Notes")
-                  "* %? :NOTE:\n%U\n%a\n\n" :clock-in t :clock-resume t)
-                  ("m" "Meeting" entry (file+headline "~/git/org/refile.org" "Meetings")
-                  "* MEETING with %? :MEETING:\n%U\n\n" :clock-in t :clock-resume t))))
+                  "* %? :NOTE:\n")
+                  ("m" "Meeting" entry (file+headline "~/org/TODOs.org" "Meetings")
+                  "* MEETING with %? :MEETING:\n%U\n\n"))))
     (setq org-mu4e-link-query-in-headers-mode nil)
+
+    ;; persp keybindings
+    (define-key window-numbering-keymap "\M-0" 'spacemacs/persp-switch-to-0)
+    (define-key window-numbering-keymap "\M-1" 'spacemacs/persp-switch-to-1)
+    (define-key window-numbering-keymap "\M-2" 'spacemacs/persp-switch-to-2)
+    (define-key window-numbering-keymap "\M-3" 'spacemacs/persp-switch-to-3)
+    (define-key window-numbering-keymap "\M-4" 'spacemacs/persp-switch-to-4)
+    (define-key window-numbering-keymap "\M-5" 'spacemacs/persp-switch-to-5)
+    (define-key window-numbering-keymap "\M-6" 'spacemacs/persp-switch-to-6)
+    (define-key window-numbering-keymap "\M-7" 'spacemacs/persp-switch-to-7)
+    (define-key window-numbering-keymap "\M-8" 'spacemacs/persp-switch-to-8)
+    (define-key window-numbering-keymap "\M-9" 'spacemacs/persp-switch-to-9)
+
+    (setq dotspacemacs-colorize-cursor-according-to-state nil)
+
+    ;; so C-i works for evil jump forward
+    (setq dotspacemacs-distinguish-gui-tab t)
+
+    ;; display which function we're in
+    (which-function-mode)
+
+    ;; find other file
+    (with-eval-after-load 'projectile
+      (push '("html" "js") projectile-other-file-alist) ;; switch from html -> js
+      (push '("js" "html") projectile-other-file-alist) ;; switch from js -> html
+      (push '("component.js" "component.html") projectile-other-file-alist) ;; switch from js -> html
+      (push '("component.html" "component.js") projectile-other-file-alist) ;; switch from html -> js
+     )
+
+    ;; (push "dist" 'projectile-globally-ignored-directories)
+    ;; (push "node_modules" 'projectile-globally-ignored-directories)
+    (setq projectile-use-git-grep 1)
+
+    ;; automatically resume layout
+    (setq dotspacemacs-auto-resume-layouts t)
   )
 
 ;; Do not write anything past this comment. This is where Emacs will
@@ -432,78 +469,7 @@ you should place your code here."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(compilation-message-face (quote default))
- '(cua-global-mark-cursor-color "#2aa198")
- '(cua-normal-cursor-color "#657b83")
- '(cua-overwrite-cursor-color "#b58900")
- '(cua-read-only-cursor-color "#859900")
- '(custom-safe-themes
-   (quote
-    ("d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" default)))
- '(evil-want-Y-yank-to-eol nil)
- '(fci-rule-color "#eee8d5" t)
- '(highlight-changes-colors (quote ("#d33682" "#6c71c4")))
- '(highlight-symbol-colors
-   (--map
-    (solarized-color-blend it "#fdf6e3" 0.25)
-    (quote
-     ("#b58900" "#2aa198" "#dc322f" "#6c71c4" "#859900" "#cb4b16" "#268bd2"))))
- '(highlight-symbol-foreground-color "#586e75")
- '(highlight-tail-colors
-   (quote
-    (("#eee8d5" . 0)
-     ("#B4C342" . 20)
-     ("#69CABF" . 30)
-     ("#69B7F0" . 50)
-     ("#DEB542" . 60)
-     ("#F2804F" . 70)
-     ("#F771AC" . 85)
-     ("#eee8d5" . 100))))
- '(hl-bg-colors
-   (quote
-    ("#DEB542" "#F2804F" "#FF6E64" "#F771AC" "#9EA0E5" "#69B7F0" "#69CABF" "#B4C342")))
- '(hl-fg-colors
-   (quote
-    ("#fdf6e3" "#fdf6e3" "#fdf6e3" "#fdf6e3" "#fdf6e3" "#fdf6e3" "#fdf6e3" "#fdf6e3")))
- '(magit-diff-use-overlays nil)
- '(nrepl-message-colors
-   (quote
-    ("#dc322f" "#cb4b16" "#b58900" "#546E00" "#B4C342" "#00629D" "#2aa198" "#d33682" "#6c71c4")))
- '(pos-tip-background-color "#eee8d5")
- '(pos-tip-foreground-color "#586e75")
- '(smartrep-mode-line-active-bg (solarized-color-blend "#859900" "#eee8d5" 0.2))
- '(term-default-bg-color "#fdf6e3")
- '(term-default-fg-color "#657b83")
- '(vc-annotate-background nil)
- '(vc-annotate-background-mode nil)
- '(vc-annotate-color-map
-   (quote
-    ((20 . "#dc322f")
-     (40 . "#c85d17")
-     (60 . "#be730b")
-     (80 . "#b58900")
-     (100 . "#a58e00")
-     (120 . "#9d9100")
-     (140 . "#959300")
-     (160 . "#8d9600")
-     (180 . "#859900")
-     (200 . "#669b32")
-     (220 . "#579d4c")
-     (240 . "#489e65")
-     (260 . "#399f7e")
-     (280 . "#2aa198")
-     (300 . "#2898af")
-     (320 . "#2793ba")
-     (340 . "#268fc6")
-     (360 . "#268bd2"))))
- '(vc-annotate-very-old-color nil)
- '(weechat-color-list
-   (quote
-    (unspecified "#fdf6e3" "#eee8d5" "#990A1B" "#dc322f" "#546E00" "#859900" "#7B6000" "#b58900" "#00629D" "#268bd2" "#93115C" "#d33682" "#00736F" "#2aa198" "#657b83" "#839496")))
- '(xterm-color-names
-   ["#eee8d5" "#dc322f" "#859900" "#b58900" "#268bd2" "#d33682" "#2aa198" "#073642"])
- '(xterm-color-names-bright
-   ["#fdf6e3" "#cb4b16" "#93a1a1" "#839496" "#657b83" "#6c71c4" "#586e75" "#002b36"]))
+ )
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
