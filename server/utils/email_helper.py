@@ -28,7 +28,7 @@ WHITELABEL_PRODUCTS = {
     dash.constants.Whitelabel.GREENPARK: 'Telescope'
 }
 
-URLS_RE = re.compile(r"((https?):((//)|(\\\\))+[\w\d:#@%/;$()~_?\+-=\\\.&]*)", re.MULTILINE | re.UNICODE)
+URLS_RE = re.compile(r"((https?):((//)|(\\\\))+[\w\d:#@%/;$()~_?\+\-=\\\.&]*[\w\d#@%/$()~_\+\-=\\&])", re.MULTILINE | re.UNICODE)
 
 
 def _lookup_whitelabel(user=None, agency=None):

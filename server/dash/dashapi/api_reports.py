@@ -48,6 +48,9 @@ def query(user, breakdown, constraints, level):
         if dimension in constants.StructureDimension._ALL:
             loader = loader_map[dimension]
             dimension_rows = augmenter.make_dash_rows(dimension, loader.objs_ids, None)
+            if dimension in HIERARCHICAL_DIMENSIONS:
+                augmenter_fn = augmenter.get_report_augmenter_for_dimension(dimension)
+                augmenter_fn(dimension_rows, loader)
             rows = _extend_rows(rows, dimension_rows)
         elif dimension in constants.TimeDimension._ALL:
             rows = _extend_rows(
