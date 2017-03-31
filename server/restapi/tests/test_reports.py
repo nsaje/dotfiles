@@ -157,6 +157,378 @@ class ReportViewsTest(TestCase):
         r = self.client.get(reverse('reports_details', kwargs={'job_id': job_id}))
         self.assertEqual(r.status_code, 403)
 
+    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.totals', return_value={})
+    @mock.patch('stats.api_reports.query', return_value=[])
+    @mock.patch('stats.api_reports.prepare_constraints')
+    def test_report_breakdown(self, mock_prepare_constraints, mock_query, mock_totals):
+        query = {
+            'fields': [
+                {'field': 'Account'},
+                {'field': 'Campaign Id'},
+                {'field': 'Ad Group'},
+                {'field': 'Content Ad Id'},
+                {'field': 'Media Source'},
+                {'field': 'Day'},
+            ],
+            'filters': [
+                {'field': 'Date', 'operator': '=', 'value': '2016-10-10'},
+                {'field': 'Media Source', 'operator': 'IN', 'values': ['1']},
+            ],
+        }
+        r = self.client.post(reverse('reports_list'), query, format='json')
+        self.assertEqual(r.status_code, 201)
+
+        mock_prepare_constraints.assert_called_with(
+            User.objects.get(pk=1),
+            ['account_id', 'campaign_id', 'ad_group_id', 'content_ad_id', 'source_id', 'day'],
+            datetime.date(2016, 10, 10), datetime.date(2016, 10, 10),
+            test_helper.QuerySetMatcher(dash.models.Source.objects.filter(pk__in=[1])),
+            show_archived=False,
+            show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL,
+            only_used_sources=True,
+            filtered_agencies=None,
+            filtered_account_types=None,
+        )
+
+        mock_query.assert_called_with(
+            User.objects.get(pk=1),
+            ['account_id', 'campaign_id', 'ad_group_id', 'content_ad_id', 'source_id', 'day'],
+            mock.ANY,
+            mock.ANY,
+            '-e_media_cost',
+            'all_accounts',
+            include_items_with_no_spend=False,
+        )
+
+        self.assertFalse(mock_totals.called)
+
+    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.totals', return_value={})
+    @mock.patch('stats.api_reports.query', return_value=[])
+    @mock.patch('stats.api_reports.prepare_constraints')
+    def test_report_all_account(self, mock_prepare_constraints, mock_query, mock_totals):
+        query = {
+            'fields': [{'field': 'Account'}],
+            'filters': [
+                {'field': 'Date', 'operator': '=', 'value': '2016-10-10'},
+                {'field': 'Media Source', 'operator': 'IN', 'values': ['1']},
+            ],
+        }
+        r = self.client.post(reverse('reports_list'), query, format='json')
+        self.assertEqual(r.status_code, 201)
+
+        mock_prepare_constraints.assert_called_with(
+            User.objects.get(pk=1),
+            ['account_id'],
+            datetime.date(2016, 10, 10), datetime.date(2016, 10, 10),
+            test_helper.QuerySetMatcher(dash.models.Source.objects.filter(pk__in=[1])),
+            show_archived=False,
+            show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL,
+            only_used_sources=True,
+            filtered_agencies=None,
+            filtered_account_types=None,
+        )
+
+        mock_query.assert_called_with(
+            User.objects.get(pk=1),
+            ['account_id'],
+            mock.ANY,
+            mock.ANY,
+            '-e_media_cost',
+            'all_accounts',
+            include_items_with_no_spend=False,
+        )
+
+        self.assertFalse(mock_totals.called)
+
+    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.totals', return_value={})
+    @mock.patch('stats.api_reports.query', return_value=[])
+    @mock.patch('stats.api_reports.prepare_constraints')
+    def test_report_account(self, mock_prepare_constraints, mock_query, mock_totals):
+        query = {
+            'fields': [{'field': 'Campaign'}],
+            'filters': [
+                {'field': 'Account Id', 'operator': '=', 'value': '1'},
+                {'field': 'Date', 'operator': '=', 'value': '2016-10-10'},
+                {'field': 'Media Source', 'operator': 'IN', 'values': ['1']},
+            ],
+        }
+        r = self.client.post(reverse('reports_list'), query, format='json')
+        self.assertEqual(r.status_code, 201)
+
+        mock_prepare_constraints.assert_called_with(
+            User.objects.get(pk=1),
+            ['campaign_id'],
+            datetime.date(2016, 10, 10), datetime.date(2016, 10, 10),
+            test_helper.QuerySetMatcher(dash.models.Source.objects.filter(pk__in=[1])),
+            show_archived=False,
+            show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL,
+            only_used_sources=True,
+            filtered_agencies=None,
+            filtered_account_types=None,
+            account_ids=[1]
+        )
+
+        mock_query.assert_called_with(
+            User.objects.get(pk=1),
+            ['campaign_id'],
+            mock.ANY,
+            mock.ANY,
+            '-e_media_cost',
+            'accounts',
+            include_items_with_no_spend=False,
+        )
+
+        self.assertFalse(mock_totals.called)
+
+    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.totals', return_value={})
+    @mock.patch('stats.api_reports.query', return_value=[])
+    @mock.patch('stats.api_reports.prepare_constraints')
+    def test_report_accounts(self, mock_prepare_constraints, mock_query, mock_totals):
+        query = {
+            'fields': [{'field': 'Campaign'}],
+            'filters': [
+                {'field': 'Account Id', 'operator': 'IN', 'values': ['1', '2', '3']},
+                {'field': 'Date', 'operator': '=', 'value': '2016-10-10'},
+                {'field': 'Media Source', 'operator': 'IN', 'values': ['1']},
+            ],
+        }
+        r = self.client.post(reverse('reports_list'), query, format='json')
+        self.assertEqual(r.status_code, 201)
+
+        mock_prepare_constraints.assert_called_with(
+            User.objects.get(pk=1),
+            ['campaign_id'],
+            datetime.date(2016, 10, 10), datetime.date(2016, 10, 10),
+            test_helper.QuerySetMatcher(dash.models.Source.objects.filter(pk__in=[1])),
+            show_archived=False,
+            show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL,
+            only_used_sources=True,
+            filtered_agencies=None,
+            filtered_account_types=None,
+            account_ids=[1, 2, 3]
+        )
+
+        mock_query.assert_called_with(
+            User.objects.get(pk=1),
+            ['campaign_id'],
+            mock.ANY,
+            mock.ANY,
+            '-e_media_cost',
+            'all_accounts',
+            include_items_with_no_spend=False,
+        )
+
+        self.assertFalse(mock_totals.called)
+
+    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.totals', return_value={})
+    @mock.patch('stats.api_reports.query', return_value=[])
+    @mock.patch('stats.api_reports.prepare_constraints')
+    def test_report_campaign(self, mock_prepare_constraints, mock_query, mock_totals):
+        query = {
+            'fields': [{'field': 'Ad Group'}],
+            'filters': [
+                {'field': 'Campaign Id', 'operator': '=', 'value': '1'},
+                {'field': 'Date', 'operator': '=', 'value': '2016-10-10'},
+                {'field': 'Media Source', 'operator': 'IN', 'values': ['1']},
+            ],
+        }
+        r = self.client.post(reverse('reports_list'), query, format='json')
+        self.assertEqual(r.status_code, 201)
+
+        mock_prepare_constraints.assert_called_with(
+            User.objects.get(pk=1),
+            ['ad_group_id'],
+            datetime.date(2016, 10, 10), datetime.date(2016, 10, 10),
+            test_helper.QuerySetMatcher(dash.models.Source.objects.filter(pk__in=[1])),
+            show_archived=False,
+            show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL,
+            only_used_sources=True,
+            filtered_agencies=None,
+            filtered_account_types=None,
+            campaign_ids=[1]
+        )
+
+        mock_query.assert_called_with(
+            User.objects.get(pk=1),
+            ['ad_group_id'],
+            mock.ANY,
+            mock.ANY,
+            '-e_media_cost',
+            'campaigns',
+            include_items_with_no_spend=False,
+        )
+
+        self.assertFalse(mock_totals.called)
+
+    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.totals', return_value={})
+    @mock.patch('stats.api_reports.query', return_value=[])
+    @mock.patch('stats.api_reports.prepare_constraints')
+    def test_report_campaigns(self, mock_prepare_constraints, mock_query, mock_totals):
+        query = {
+            'fields': [{'field': 'Ad Group'}],
+            'filters': [
+                {'field': 'Campaign Id', 'operator': 'IN', 'values': ['1', '2', '3']},
+                {'field': 'Date', 'operator': '=', 'value': '2016-10-10'},
+                {'field': 'Media Source', 'operator': 'IN', 'values': ['1']},
+            ],
+        }
+        r = self.client.post(reverse('reports_list'), query, format='json')
+        self.assertEqual(r.status_code, 201)
+
+        mock_prepare_constraints.assert_called_with(
+            User.objects.get(pk=1),
+            ['ad_group_id'],
+            datetime.date(2016, 10, 10), datetime.date(2016, 10, 10),
+            test_helper.QuerySetMatcher(dash.models.Source.objects.filter(pk__in=[1])),
+            show_archived=False,
+            show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL,
+            only_used_sources=True,
+            filtered_agencies=None,
+            filtered_account_types=None,
+            campaign_ids=[1, 2, 3]
+        )
+
+        mock_query.assert_called_with(
+            User.objects.get(pk=1),
+            ['ad_group_id'],
+            mock.ANY,
+            mock.ANY,
+            '-e_media_cost',
+            'accounts',
+            include_items_with_no_spend=False,
+        )
+
+        self.assertFalse(mock_totals.called)
+
+    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.totals', return_value={})
+    @mock.patch('stats.api_reports.query', return_value=[])
+    @mock.patch('stats.api_reports.prepare_constraints')
+    def test_report_ad_group(self, mock_prepare_constraints, mock_query, mock_totals):
+        query = {
+            'fields': [{'field': 'Content Ad'}],
+            'filters': [
+                {'field': 'Ad Group Id', 'operator': '=', 'value': '1'},
+                {'field': 'Date', 'operator': '=', 'value': '2016-10-10'},
+                {'field': 'Media Source', 'operator': 'IN', 'values': ['1']},
+            ],
+        }
+        r = self.client.post(reverse('reports_list'), query, format='json')
+        self.assertEqual(r.status_code, 201)
+
+        mock_prepare_constraints.assert_called_with(
+            User.objects.get(pk=1),
+            ['content_ad_id'],
+            datetime.date(2016, 10, 10), datetime.date(2016, 10, 10),
+            test_helper.QuerySetMatcher(dash.models.Source.objects.filter(pk__in=[1])),
+            show_archived=False,
+            show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL,
+            only_used_sources=True,
+            filtered_agencies=None,
+            filtered_account_types=None,
+            ad_group_ids=[1]
+        )
+
+        mock_query.assert_called_with(
+            User.objects.get(pk=1),
+            ['content_ad_id'],
+            mock.ANY,
+            mock.ANY,
+            '-e_media_cost',
+            'ad_groups',
+            include_items_with_no_spend=False,
+        )
+
+        self.assertFalse(mock_totals.called)
+
+    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.totals', return_value={})
+    @mock.patch('stats.api_reports.query', return_value=[])
+    @mock.patch('stats.api_reports.prepare_constraints')
+    def test_report_ad_groups(self, mock_prepare_constraints, mock_query, mock_totals):
+        query = {
+            'fields': [{'field': 'Content Ad'}],
+            'filters': [
+                {'field': 'Ad Group Id', 'operator': 'IN', 'values': ['1', '2', '3']},
+                {'field': 'Date', 'operator': '=', 'value': '2016-10-10'},
+                {'field': 'Media Source', 'operator': 'IN', 'values': ['1']},
+            ],
+        }
+        r = self.client.post(reverse('reports_list'), query, format='json')
+        self.assertEqual(r.status_code, 201)
+
+        mock_prepare_constraints.assert_called_with(
+            User.objects.get(pk=1),
+            ['content_ad_id'],
+            datetime.date(2016, 10, 10), datetime.date(2016, 10, 10),
+            test_helper.QuerySetMatcher(dash.models.Source.objects.filter(pk__in=[1])),
+            show_archived=False,
+            show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL,
+            only_used_sources=True,
+            filtered_agencies=None,
+            filtered_account_types=None,
+            ad_group_ids=[1, 2, 3]
+        )
+
+        mock_query.assert_called_with(
+            User.objects.get(pk=1),
+            ['content_ad_id'],
+            mock.ANY,
+            mock.ANY,
+            '-e_media_cost',
+            'campaigns',
+            include_items_with_no_spend=False,
+        )
+
+        self.assertFalse(mock_totals.called)
+
+    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.totals', return_value={})
+    @mock.patch('stats.api_reports.query', return_value=[])
+    @mock.patch('stats.api_reports.prepare_constraints')
+    def test_report_content_ads(self, mock_prepare_constraints, mock_query, mock_totals):
+        query = {
+            'fields': [{'field': 'Content Ad'}],
+            'filters': [
+                {'field': 'Content Ad Id', 'operator': 'IN', 'values': ['1', '2', '3']},
+                {'field': 'Date', 'operator': '=', 'value': '2016-10-10'},
+                {'field': 'Media Source', 'operator': 'IN', 'values': ['1']},
+            ],
+        }
+        r = self.client.post(reverse('reports_list'), query, format='json')
+        self.assertEqual(r.status_code, 201)
+
+        mock_prepare_constraints.assert_called_with(
+            User.objects.get(pk=1),
+            ['content_ad_id'],
+            datetime.date(2016, 10, 10), datetime.date(2016, 10, 10),
+            test_helper.QuerySetMatcher(dash.models.Source.objects.filter(pk__in=[1])),
+            show_archived=False,
+            show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL,
+            only_used_sources=True,
+            filtered_agencies=None,
+            filtered_account_types=None,
+            content_ad_ids=[1, 2, 3]
+        )
+
+        mock_query.assert_called_with(
+            User.objects.get(pk=1),
+            ['content_ad_id'],
+            mock.ANY,
+            mock.ANY,
+            '-e_media_cost',
+            'ad_groups',
+            include_items_with_no_spend=False,
+        )
+
+        self.assertFalse(mock_totals.called)
+
 
 class ReportsHeelpersTest(TestCase):
 

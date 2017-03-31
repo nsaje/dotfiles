@@ -56,6 +56,8 @@ BREAKDOWN_FIELDS = set(
     stats.constants.TimeDimension._ALL +
     stats.constants.DeliveryDimension._ALL)
 
+STRUCTURE_CONSTRAINTS_FIELDS = ['account_id', 'campaign_id', 'ad_group_id', 'content_ad_id']
+
 
 def get_breakdown_from_fields(fields):
     if not fields:
@@ -82,12 +84,11 @@ def get_filter_constraints(filters):
     for f in filters:
         field_name = utils.columns.FieldNames.from_column_name(f['field'])
 
-        if field_name == utils.columns.FieldNames.ad_group_id and f['operator'] == EQUALS:
-            filter_constraints['ad_group_id'] = int(f['value'])
-        if field_name == utils.columns.FieldNames.campaign_id and f['operator'] == EQUALS:
-            filter_constraints['campaign_id'] = int(f['value'])
-        if field_name == utils.columns.FieldNames.account_id and f['operator'] == EQUALS:
-            filter_constraints['account_id'] = int(f['value'])
+        if field_name in STRUCTURE_CONSTRAINTS_FIELDS:
+            if f['operator'] == EQUALS:
+                filter_constraints[field_name] = int(f['value'])
+            elif f['operator'] == IN:
+                filter_constraints[field_name + '_list'] = [int(v) for v in f['values']]
         if field_name == utils.columns.FieldNames.date and f['operator'] == BETWEEN:
             filter_constraints['start_date'] = _parse_date(f['from'])
             filter_constraints['end_date'] = _parse_date(f['to'])
@@ -109,9 +110,15 @@ def get_filter_constraints(filters):
 def get_level_from_constraints(constraints):
     if stats.constants.AD_GROUP in constraints:
         return dash.constants.Level.AD_GROUPS
+    elif 'content_ad_id_list' in constraints:
+        return dash.constants.Level.AD_GROUPS
     elif stats.constants.CAMPAIGN in constraints:
         return dash.constants.Level.CAMPAIGNS
+    elif 'ad_group_id_list' in constraints:
+        return dash.constants.Level.CAMPAIGNS
     elif stats.constants.ACCOUNT in constraints:
+        return dash.constants.Level.ACCOUNTS
+    elif 'campaign_id_list' in constraints:
         return dash.constants.Level.ACCOUNTS
     else:
         return dash.constants.Level.ALL_ACCOUNTS
@@ -383,12 +390,11 @@ class ReportJobExecutor(JobExecutor):
     @staticmethod
     def _extract_structure_constraints(constraints):
         structure_constraints = {}
-        if stats.constants.AD_GROUP in constraints:
-            structure_constraints['ad_group_ids'] = [constraints[stats.constants.AD_GROUP]]
-        if stats.constants.CAMPAIGN in constraints:
-            structure_constraints['campaign_ids'] = [constraints[stats.constants.CAMPAIGN]]
-        if stats.constants.ACCOUNT in constraints:
-            structure_constraints['account_ids'] = [constraints[stats.constants.ACCOUNT]]
+        for field in STRUCTURE_CONSTRAINTS_FIELDS:
+            if field in constraints:
+                structure_constraints[field + 's'] = [constraints[field]]
+            elif field + '_list' in constraints:
+                structure_constraints[field + 's'] = constraints[field + '_list']
         return structure_constraints
 
     @staticmethod

@@ -169,18 +169,18 @@ Each Zemanta One user can perform a maximum of 20 requests per second to the Zem
 In case that limit is crossed, the API will start responding with HTTP status 429 (Too Many Requests).
 
 ## Authentication
- 
+
 Zemanta REST API uses two-legged OAuth2 authentication using client credentials.
 The client credentials are used to acquire an access token, which must
 then be passed to all REST API calls as the header
- 
+
 ```
 Authorization: Bearer <access_token>
 ```
 
 Access tokens are valid for 10 hours, after which a new access token must be obtained using the client credentials.
 Please cache and reuse access tokens for the duration of their validity.
- 
+
 
 ### Create client credentials
 
@@ -238,7 +238,7 @@ targeting | [targeting](#account-targeting) | account targeting settings       |
 
 Targeting        | Property | Property  | Type                                          | Description
 -----------------|----------|-----------|-----------------------------------------------|---------------------------------------------------------------------------------------------|
-publisherGroups  |          |           |                                               | 
+publisherGroups  |          |           |                                               |
 &nbsp;           | included |           | array[[publisherGroupId](#publishers-management-publisher-groups)]   | whitelisted publisher group IDs
 &nbsp;           | excluded |           | array[[publisherGroupId](#publishers-management-publisher-groups)]   | blacklisted publisher group IDs
 
@@ -302,7 +302,7 @@ publisherGroups  |          |           |                                       
 
 After your Insertion Order for media spend has been executed Zemanta's Customer Success team
 will assign a credit line to your account. With credit added to your account you have the
-ability to create budget items and associate them with the campaigns you're planning. 
+ability to create budget items and associate them with the campaigns you're planning.
 
 Property  | Type            | Description
 ----------|-----------------|----------------------------------------------|
@@ -374,7 +374,7 @@ adobe    |                   |                                       |
 
 Targeting        | Property | Property  | Type                                          | Description
 -----------------|----------|-----------|-----------------------------------------------|---------------------------------------------------------------------------------------------|
-publisherGroups  |          |           |                                               | 
+publisherGroups  |          |           |                                               |
 &nbsp;           | included |           | array[[publisherGroupId](#publishers-management-publisher-groups)]   | whitelisted publisher group IDs
 &nbsp;           | excluded |           | array[[publisherGroupId](#publishers-management-publisher-groups)]   | blacklisted publisher group IDs
 
@@ -575,7 +575,7 @@ For more detailed reports, please use the [Reporting endpoints](#reporting).
     + campaignId: 608 (required)
     + from: `2016-11-18` (required)
     + to: `2016-11-18` (required)
-    
+
 + Response 200 (application/json)
 
         {
@@ -759,7 +759,7 @@ pixelUrl         | url                           | pixel url, if applicable    |
                 }
             ]
         }
-        
+
 ### Add a campaign goal [POST /rest/v1/campaigns/{campaignId}/goals/]
 
 + Parameters
@@ -809,7 +809,7 @@ pixelUrl         | url                           | pixel url, if applicable    |
         {
             "primary": true
         }
-        
+
 + Response 200 (application/json)
 
         {
@@ -835,7 +835,7 @@ pixelUrl         | url                           | pixel url, if applicable    |
 
 + Response 204
 
-            
+
 # Group Ad Group Management
 
 ## Ad Groups [/rest/v1/adgroups/]
@@ -876,7 +876,7 @@ geo              |          |           |
 interest         |          |           |
 &nbsp;           | included |           | array[[interestCategory](#interest-category)] | interest categories to target
 &nbsp;           | excluded |           | array[[interestCategory](#interest-category)] | interest categories to avoid
-publisherGroups  |          |           |                                               | 
+publisherGroups  |          |           |                                               |
 &nbsp;           | included |           | array[[publisherGroupId](#publishers-management-publisher-groups)]   | whitelisted publisher group IDs
 &nbsp;           | excluded |           | array[[publisherGroupId](#publishers-management-publisher-groups)]   | blacklisted publisher group IDs
 
@@ -884,9 +884,9 @@ publisherGroups  |          |           |                                       
 <a name="dayparting"></a>
 #### Dayparting
 
-Dayparting structure is defined as a dictionary of days which point to a list of hours that are enabled in that day, eg. "monday" -> [0, 1, 2, 5]. 
-This means that on monday bidding is enabled from 00:00 to 02:59 and from 5:00 to 5:59. 
-The other value is "timezone" that defines in which timezone the hours are evaluated, eg. "timezone" -> "America/New_York". 
+Dayparting structure is defined as a dictionary of days which point to a list of hours that are enabled in that day, eg. "monday" -> [0, 1, 2, 5].
+This means that on monday bidding is enabled from 00:00 to 02:59 and from 5:00 to 5:59.
+The other value is "timezone" that defines in which timezone the hours are evaluated, eg. "timezone" -> "America/New_York".
 This value must be formatted according to the tz database (see https://en.wikipedia.org/wiki/Tz_database). If timezone isn't specified then user's timezone is used to resolve the hours.
 
 Property  | Type                                                     | Description
@@ -918,7 +918,7 @@ dailyBudget | dailyBudget                         | autopilot daily budget
 
 + Parameters
     + adGroupId: 2040 (required)
-    
+
 + Response 200 (application/json)
 
         {
@@ -1260,7 +1260,7 @@ dailyBudget | [money](#money)     | daily budget for the given source
                 "state": "INACTIVE"
             }
         ]
-        
+
 
 + Response 200 (application/json)
 
@@ -1308,7 +1308,7 @@ Property     | Type                | Description
 groupEnabled | boolean             | enable or disable treating all RTB sources as a single source
 state        | `ACTIVE`/`INACTIVE` | the state of all RTB sources
 dailyBudget  | [money](#money)     | daily budget shared among all RTB sources
-        
+
 ### Get ad group source settings for All RTB sources as one [GET /rest/v1/adgroups/{adGroupId}/sources/rtb/]
 
 + Parameters
@@ -1323,7 +1323,7 @@ dailyBudget  | [money](#money)     | daily budget shared among all RTB sources
                 "dailyBudget": "50.00"
             }
         }
-        
+
 ### Update ad group source settings for All RTB sources as one [PUT /rest/v1/adgroups/{adGroupId}/sources/rtb/]
 
 + Parameters
@@ -1410,7 +1410,7 @@ approvedContentAds | array[[Content Ad](#content-ad)] | An array that contains t
                 "trackerUrls": ["https://example.com/t1", "https://example.com/t2"]
             }
         ]
-        
+
 + Response 201 (application/json)
 
         {
@@ -1483,7 +1483,7 @@ approvedContentAds | array[[Content Ad](#content-ad)] | An array that contains t
                 }
             ]
         }
-        
+
 
 ### Get content ad details [GET /rest/v1/contentads/{contentAdId}]
 
@@ -1509,7 +1509,7 @@ approvedContentAds | array[[Content Ad](#content-ad)] | An array that contains t
                 "trackerUrls": ["https://example.com/t1", "https://example.com/t2"]
             }
         }
-        
+
 
 ### Edit a content ad [PUT /rest/v1/contentads/{contentAdId}]
 
@@ -1521,7 +1521,7 @@ approvedContentAds | array[[Content Ad](#content-ad)] | An array that contains t
         {
             "state": "INACTIVE"
         }
-        
+
 
 + Response 200 (application/json)
 
@@ -1550,8 +1550,8 @@ approvedContentAds | array[[Content Ad](#content-ad)] | An array that contains t
 ## Publisher Groups [/rest/v1/accounts/{accountId}/publishergroups/] ##
 <a name='publisher-groups'></a>
 
-Publisher Groups are named collections of publishers that can be referenced in Ad Group's `publisherGroups` 
-targeting section as whitelists. 
+Publisher Groups are named collections of publishers that can be referenced in Ad Group's `publisherGroups`
+targeting section as whitelists.
 Publishers are represented as publisher domain (or name) and source pairs in the same manner as in publisher reports and blacklist management.
 
 Property     | Type                | Description
@@ -1563,7 +1563,7 @@ name         | string              | name of the publisher group
 
 + Parameters
     + accountId: 186 (required)
-    
+
 + Response 200 (application/json)
 
 
@@ -1581,7 +1581,7 @@ name         | string              | name of the publisher group
 
 + Parameters
     + accountId: 186 (required)
-    
+
 + Request (application/json)
 
         {
@@ -1603,7 +1603,7 @@ name         | string              | name of the publisher group
 + Parameters
     + accountId: 186 (required)
     + publisherGroupId: 153 (required)
-    
+
 + Response 200 (application/json)
 
         {
@@ -1613,19 +1613,19 @@ name         | string              | name of the publisher group
                   "name": "Secondary whitelist"
             }
         }
-        
+
 ### Edit a publisher group [PUT /rest/v1/accounts/{accountId}/publishergroups/{publisherGroupId}] ###
 
 + Parameters
     + accountId: 186 (required)
     + publisherGroupId: 153 (required)
-    
+
 + Request (application/json)
-    
+
         {
             "name": "Mobile campaigns whitelist"
         }
-        
+
 + Response 200 (application/json)
 
         {
@@ -1635,7 +1635,7 @@ name         | string              | name of the publisher group
                   "name": "Mobile campaigns whitelist"
             }
         }
-        
+
 ### Delete a publisher group [DELETE /rest/v1/accounts/{accountId}/publishergroups/{publisherGroupId}] ###
 
 Publisher groups can be deleted when they are not referenced by any Ad Group.
@@ -1650,7 +1650,7 @@ Publisher groups can be deleted when they are not referenced by any Ad Group.
 
 Property           | Type                | Description                                                           | Create         |
 -------------------|---------------------|-----------------------------------------------------------------------|----------------|
-id                 | string              | id of the entry                                                       | N/A            | 
+id                 | string              | id of the entry                                                       | N/A            |
 publisherGroupId   | string              | id of the publisher group                                             | required       |
 publisher          | string              | publisher's domain (or name), strict matching                         | required       |
 source             | string              | source identifier, if not set it refers to all sources                | optional       |
@@ -1690,7 +1690,7 @@ This endpoint supports creating multiple entries at once that are all appended t
 
 + Parameters
     + publisherGroupId: 153 (required)
-    
+
 + Request (application/json)
 
         [
@@ -1730,7 +1730,7 @@ This endpoint supports creating multiple entries at once that are all appended t
 + Parameters
     + publisherGroupId: 153 (required)
     + entryId: 622 (required)
-    
+
 + Response 200 (application/json)
 
         {
@@ -1741,20 +1741,20 @@ This endpoint supports creating multiple entries at once that are all appended t
                   "source": "yahoo"
             }
         }
-        
+
 ### Edit a publisher group entry [PUT /rest/v1/publishergroups/{publisherGroupId}/entries/{entryId}] ###
 
 + Parameters
     + publisherGroupId: 153 (required)
     + entryId: 622 (required)
-    
+
 + Request (application/json)
 
         {
                   "publisher": "example.com/publisher4",
                   "source": "yahoo"
         }
-    
+
 + Response 200 (application/json)
 
         {
@@ -1765,7 +1765,7 @@ This endpoint supports creating multiple entries at once that are all appended t
                   "source": "yahoo"
             }
         }
-        
+
 ### Delete a publisher group entry [DELETE /rest/v1/publishergroups/{publisherGroupId}/entries/{entryId}] ###
 
 + Parameters
@@ -1784,7 +1784,7 @@ This endpoint supports creating multiple entries at once that are all appended t
 
 + Parameters
     + adGroupId: 2040 (required)
-    
+
 + Response 200 (application/json)
 
         {
@@ -1794,7 +1794,7 @@ This endpoint supports creating multiple entries at once that are all appended t
                     "status": "ENABLED",
                     "level": "ADGROUP",
                     "source": "gumgum"
-                }, 
+                },
                 {
                     "name": "example.com/publisher2",
                     "status": "ENABLED",
@@ -1823,7 +1823,7 @@ This endpoint supports creating multiple entries at once that are all appended t
                 "status": "BLACKLISTED",
                 "level": "ADGROUP",
                 "source": "gumgum"
-            }, 
+            },
             {
                 "name": "example.com/publisher2",
                 "status": "BLACKLISTED",
@@ -1831,7 +1831,7 @@ This endpoint supports creating multiple entries at once that are all appended t
                 "source": "gumgum"
             }
         ]
-    
+
 + Response 200 (application/json)
 
         {
@@ -1841,7 +1841,7 @@ This endpoint supports creating multiple entries at once that are all appended t
                     "status": "BLACKLISTED",
                     "level": "ADGROUP",
                     "source": "gumgum"
-                }, 
+                },
                 {
                     "name": "example.com/publisher2",
                     "status": "BLACKLISTED",
@@ -1859,11 +1859,100 @@ This endpoint supports creating multiple entries at once that are all appended t
 Getting a report is performed asynchronously. First, you create a report job, then you poll
 its status and finally, when its status is DONE, you receive a link to a CSV file in the result field.
 
-For now, only the following lists of fields are supported:
+### Filters
+#### Time Filter
+```
+{
+  "field": "Date",
+  "operator": "between",
+  "from": "2016-10-01",
+  "to": "2016-10-31"
+}
+```
+#### Equal Filter
+Supported fields: Account Id, Campaign Id, Ad Group Id, Media Source Id
+```
+{
+  "field": "Ad Group Id",
+  "operator": "=",
+  "value": "2040"
+}
+```
+#### In Filter
+Supported fields: Account Id, Campaign Id, Ad Group Id, Content Ad Id, Media Source Id
+```
+{
+  "field": "Ad Group Id",
+  "operator": "IN",
+  "values": ["2040", "2041"]
+}
+```
 
-- [Content Ad Id, Content Ad, Label, Total Spend, Impressions, Clicks, Avg. CPC]
-- [Publisher, Media Source, Media Source Slug, Total Spend, Impressions, Clicks, Avg. CPC]
-- [Media Source Id, Media Source Slug, Media Source, Total Spend, Impressions, Clicks, Avg. CPC]
+### Fields
+#### Breakdown Fields
+When breakdown fields are specified, the report will be broken down by that field.
+
+Entity breakdown:
+- Account, Account Id
+- Campaign, Campaign Id
+- Ad Group, Ad Group Id
+- Content Ad, Content Ad Id
+- Media Source, Media Source Id
+- Publisher (only available with Ad Group Id equal filter)
+
+Time breakdown:
+- Day (e.g. 2017-03-30)
+- Week (e.g. Week 2017-03-27 - 2017-04-02)
+- Month (e.g. Month 3/2017)
+
+#### Entity Specific Fields
+- Account:
+    - Total Fee
+    - Recognized Flat Fee
+- Content Ad:
+    - URL
+    - Display URL
+    - Brand Name
+    - Description
+    - Image Hash
+    - Image URL
+    - Call to action
+    - Label
+    - Uploaded
+    - Batch Name
+- Media Source:
+    - Media Source Slug
+
+#### Common Fields
+- Impressions
+- Clicks
+- CTR
+- Avg. CPC
+- Avg. CPM
+- Yesterday Spend
+- Media Spend
+- Data Cost
+- License Fee
+- Total Spend
+- Margin
+- Total Spend + Margin
+- Visits
+- Unique Users
+- New Users
+- Returning Users
+- % New Users
+- Pageviews
+- Pageviews per Visit
+- Bounced Visits
+- Non-Bounced Visits
+- Bounce Rate
+- Total Seconds
+- Time on Site
+- Avg. Cost per Visit
+- Avg. Cost per New Visitor
+- Avg. Cost per Pageview
+- Avg. Cost per Non-Bounced Visit
+- Avg. Cost per Minute
 
 ## Report jobs [/rest/v1/reports/]
 
@@ -1886,7 +1975,7 @@ For now, only the following lists of fields are supported:
                 {"field": "Ad Group Id", "operator": "=", "value": "2040"}
             ]
         }
-    
+
 + Response 201 (application/json)
 
         {
@@ -1896,7 +1985,7 @@ For now, only the following lists of fields are supported:
                 "result": null
             }
         }
-        
+
 
 ### Get report job status [GET /rest/v1/reports/{jobId}]
 
@@ -2423,425 +2512,425 @@ A string representing a decimal number. Example: `"15.48"`
 
 <a name="dma"></a>
 ### DMA
-- `669` - 669 Madison, WI 
-- `762` - 762 Missoula, MT 
-- `760` - 760 Twin Falls, ID 
-- `766` - 766 Helena, MT 
-- `662` - 662 Abilene-Sweetwater, TX 
-- `764` - 764 Rapid City, SD 
-- `765` - 765 El Paso, TX 
-- `804` - 804 Palm Springs, CA 
-- `610` - 610 Rockford, IL 
-- `692` - 692 Beaumont-Port Arthur, TX 
-- `693` - 693 Little Rock-Pine Bluff, AR 
-- `691` - 691 Huntsville-Decatur (Florence), AL 
-- `698` - 698 Montgomery (Selma), AL 
-- `758` - 758 Idaho Falls-Pocatello, ID 
-- `542` - 542 Dayton, OH 
-- `543` - 543 Springfield-Holyoke, MA 
-- `540` - 540 Traverse City-Cadillac, MI 
-- `541` - 541 Lexington, KY 
-- `546` - 546 Columbia, SC 
-- `547` - 547 Toledo, OH 
-- `544` - 544 Norfolk-Portsmouth-Newport News,VA 
-- `545` - 545 Greenville-New Bern-Washington, NC 
-- `810` - 810 Yakima-Pasco-Richland-Kennewick, WA 
-- `811` - 811 Reno, NV 
-- `548` - 548 West Palm Beach-Ft. Pierce, FL 
-- `813` - 813 Medford-Klamath Falls, OR 
-- `570` - 570 Florence-Myrtle Beach, SC 
-- `678` - 678 Wichita-Hutchinson, KS 
-- `679` - 679 Des Moines-Ames, IA 
-- `718` - 718 Jackson, MS 
-- `717` - 717 Quincy, IL-Hannibal, MO-Keokuk, IA 
-- `675` - 675 Peoria-Bloomington, IL 
-- `676` - 676 Duluth, MN-Superior, WI 
-- `670` - 670 Ft. Smith-Fayetteville-Springdale-Rogers, AR 
-- `671` - 671 Tulsa, OK 
-- `711` - 711 Meridian, MS 
-- `767` - 767 Casper-Riverton, WY 
-- `661` - 661 San Angelo, TX 
-- `673` - 673 Columbus-Tupelo-West Point, MS 
-- `537` - 537 Bangor, ME 
-- `536` - 536 Youngstown, OH 
-- `535` - 535 Columbus, OH 
-- `534` - 534 Orlando-Daytona Beach-Melbourne, FL 
-- `533` - 533 Hartford & New Haven, CT 
-- `828` - 828 Monterey-Salinas, CA 
-- `530` - 530 Tallahassee, FL-Thomasville, GA 
-- `825` - 825 San Diego, CA 
-- `821` - 821 Bend, OR 
-- `820` - 820 Portland, OR 
-- `539` - 539 Tampa-St Petersburg (Sarasota), FL 
-- `538` - 538 Rochester, NY 
-- `592` - 592 Gainesville, FL 
-- `709` - 709 Tyler-Longview(Lufkin & Nacogdoches), TX 
-- `597` - 597 Parkersburg, WV 
-- `596` - 596 Zanesville, OH 
-- `705` - 705 Wausau-Rhinelander, WI 
-- `702` - 702 La Crosse-Eau Claire, WI 
-- `740` - 740 North Platte, NE 
-- `604` - 604 Columbia-Jefferson City, MO 
-- `790` - 790 Albuquerque-Santa Fe, NM 
-- `839` - 839 Las Vegas, NV 
-- `798` - 798 Glendive, MT 
-- `524` - 524 Atlanta, GA 
-- `525` - 525 Albany, GA 
-- `526` - 526 Utica, NY 
-- `527` - 527 Indianapolis, IN 
-- `520` - 520 Augusta, GA 
-- `521` - 521 Providence, RI-New Bedford, MA 
-- `522` - 522 Columbus, GA 
-- `523` - 523 Burlington, VT-Plattsburgh, NY 
-- `528` - 528 Miami-Ft. Lauderdale, FL 
-- `529` - 529 Louisville, KY 
-- `532` - 532 Albany-Schenectady-Troy, NY 
-- `584` - 584 Charlottesville, VA 
-- `582` - 582 Lafayette, IN 
-- `583` - 583 Alpena, MI 
-- `581` - 581 Terre Haute, IN 
-- `588` - 588 South Bend-Elkhart, IN 
-- `598` - 598 Clarksburg-Weston, WV 
-- `789` - 789 Tucson (Sierra Vista), AZ 
-- `519` - 519 Charleston, SC 
-- `640` - 640 Memphis, TN 
-- `643` - 643 Lake Charles, LA 
-- `642` - 642 Lafayette, LA 
-- `644` - 644 Alexandria, LA 
-- `647` - 647 Greenwood-Greenville, MS 
-- `649` - 649 Evansville, IN 
-- `648` - 648 Champaign & Springfield-Decatur,IL 
-- `513` - 513 Flint-Saginaw-Bay City, MI 
-- `512` - 512 Baltimore, MD 
-- `515` - 515 Cincinnati, OH 
-- `514` - 514 Buffalo, NY 
-- `517` - 517 Charlotte, NC 
-- `516` - 516 Erie, PA 
-- `623` - 623 Dallas-Ft. Worth, TX 
-- `622` - 622 New Orleans, LA 
-- `627` - 627 Wichita Falls, TX & Lawton, OK 
-- `626` - 626 Victoria, TX 
-- `625` - 625 Waco-Temple-Bryan, TX 
-- `624` - 624 Sioux City, IA 
-- `573` - 573 Roanoke-Lynchburg, VA 
-- `571` - 571 Ft. Myers-Naples, FL 
-- `628` - 628 Monroe, LA-El Dorado, AR 
-- `577` - 577 Wilkes Barre-Scranton, PA 
-- `576` - 576 Salisbury, MD 
-- `575` - 575 Chattanooga, TN 
-- `574` - 574 Johnstown-Altoona, PA 
-- `606` - 606 Dothan, AL 
-- `600` - 600 Corpus Christi, TX 
-- `559` - 559 Bluefield-Beckley-Oak Hill, WV 
-- `752` - 752 Colorado Springs-Pueblo, CO 
-- `745` - 745 Fairbanks, AK 
-- `855` - 855 Santa Barbara-Santa Maria-San Luis Obispo, CA 
-- `746` - 746 Biloxi-Gulfport, MS 
-- `819` - 819 Seattle-Tacoma, WA 
-- `508` - 508 Pittsburgh, PA 
-- `656` - 656 Panama City, FL 
-- `657` - 657 Sherman, TX-Ada, OK 
-- `652` - 652 Omaha, NE 
-- `734` - 734 Jonesboro, AR 
-- `737` - 737 Mankato, MN 
-- `736` - 736 Bowling Green, KY 
-- `506` - 506 Boston, MA-Manchester, NH 
-- `507` - 507 Savannah, GA 
-- `504` - 504 Philadelphia, PA 
-- `505` - 505 Detroit, MI 
-- `502` - 502 Binghamton, NY 
-- `503` - 503 Macon, GA 
-- `500` - 500 Portland-Auburn, ME 
-- `501` - 501 New York, NY 
-- `630` - 630 Birmingham, AL 
-- `569` - 569 Harrisonburg, VA 
-- `632` - 632 Paducah, KY-Cape Girardeau, MO-Harrisburg-Mount Vernon, IL 
-- `633` - 633 Odessa-Midland, TX 
-- `757` - 757 Boise, ID 
-- `650` - 650 Oklahoma City, OK 
-- `755` - 755 Great Falls, MT 
-- `637` - 637 Cedar Rapids-Waterloo-Iowa City & Dubuque, IA 
-- `638` - 638 St. Joseph, MO 
-- `561` - 561 Jacksonville, FL 
-- `759` - 759 Cheyenne, WY-Scottsbluff, NE 
-- `651` - 651 Lubbock, TX 
-- `564` - 564 Charleston-Huntington, WV 
-- `565` - 565 Elmira, NY 
-- `566` - 566 Harrisburg-Lancaster-Lebanon-York, PA 
-- `567` - 567 Greenville-Spartanburg, SC-Asheville, NC-Anderson, SC 
-- `868` - 868 Chico-Redding, CA 
-- `549` - 549 Watertown, NY 
-- `747` - 747 Juneau, AK 
-- `862` - 862 Sacramento-Stockton-Modesto, CA 
-- `866` - 866 Fresno-Visalia, CA 
-- `724` - 724 Fargo-Valley City, ND 
-- `725` - 725 Sioux Falls(Mitchell), SD 
-- `722` - 722 Lincoln & Hastings-Kearney, NE 
-- `658` - 658 Green Bay-Appleton, WI 
-- `659` - 659 Nashville, TN 
-- `631` - 631 Ottumwa, IA-Kirksville, MO 
-- `605` - 605 Topeka, KS 
-- `753` - 753 Phoenix, AZ 
-- `881` - 881 Spokane, WA 
-- `743` - 743 Anchorage, AK 
-- `744` - 744 Honolulu, HI 
-- `558` - 558 Lima, OH 
-- `603` - 603 Joplin, MO-Pittsburg, KS 
-- `602` - 602 Chicago, IL 
-- `555` - 555 Syracuse, NY 
-- `554` - 554 Wheeling, WV-Steubenville, OH 
-- `557` - 557 Knoxville, TN 
-- `556` - 556 Richmond-Petersburg, VA 
-- `551` - 551 Lansing, MI 
-- `751` - 751 Denver, CO 
-- `553` - 553 Marquette, MI 
-- `552` - 552 Presque Isle, ME 
-- `550` - 550 Wilmington, NC 
-- `634` - 634 Amarillo, TX 
-- `756` - 756 Billings, MT 
-- `749` - 749 Laredo, TX 
-- `641` - 641 San Antonio, TX 
-- `636` - 636 Harlingen-Weslaco-Brownsville-McAllen, TX 
-- `518` - 518 Greensboro-High Point-Winston Salem, NC 
-- `754` - 754 Butte-Bozeman, MT 
-- `560` - 560 Raleigh-Durham (Fayetteville), NC 
-- `716` - 716 Baton Rouge, LA 
-- `618` - 618 Houston, TX 
-- `619` - 619 Springfield, MO 
-- `771` - 771 Yuma, AZ-El Centro, CA 
-- `770` - 770 Salt Lake City, UT 
-- `773` - 773 Grand Junction-Montrose, CO 
-- `612` - 612 Shreveport, LA 
-- `613` - 613 Minneapolis-St. Paul, MN 
-- `563` - 563 Grand Rapids-Kalamazoo-Battle Creek, MI 
-- `611` - 611 Rochester, MN-Mason City, IA-Austin, MN 
-- `616` - 616 Kansas City, MO 
-- `617` - 617 Milwaukee, WI 
-- `511` - 511 Washington, DC (Hagerstown, MD) 
-- `510` - 510 Cleveland-Akron (Canton), OH 
-- `635` - 635 Austin, TX 
-- `710` - 710 Hattiesburg-Laurel, MS 
-- `801` - 801 Eugene, OR 
-- `509` - 509 Ft. Wayne, IN 
-- `686` - 686 Mobile, AL-Pensacola (Ft. Walton Beach), FL 
-- `609` - 609 St. Louis, MO 
-- `803` - 803 Los Angeles, CA 
-- `802` - 802 Eureka, CA 
-- `687` - 687 Minot-Bismarck-Dickinson(Williston), ND 
-- `800` - 800 Bakersfield, CA 
-- `807` - 807 San Francisco-Oakland-San Jose, CA 
-- `639` - 639 Jackson, TN 
+- `669` - 669 Madison, WI
+- `762` - 762 Missoula, MT
+- `760` - 760 Twin Falls, ID
+- `766` - 766 Helena, MT
+- `662` - 662 Abilene-Sweetwater, TX
+- `764` - 764 Rapid City, SD
+- `765` - 765 El Paso, TX
+- `804` - 804 Palm Springs, CA
+- `610` - 610 Rockford, IL
+- `692` - 692 Beaumont-Port Arthur, TX
+- `693` - 693 Little Rock-Pine Bluff, AR
+- `691` - 691 Huntsville-Decatur (Florence), AL
+- `698` - 698 Montgomery (Selma), AL
+- `758` - 758 Idaho Falls-Pocatello, ID
+- `542` - 542 Dayton, OH
+- `543` - 543 Springfield-Holyoke, MA
+- `540` - 540 Traverse City-Cadillac, MI
+- `541` - 541 Lexington, KY
+- `546` - 546 Columbia, SC
+- `547` - 547 Toledo, OH
+- `544` - 544 Norfolk-Portsmouth-Newport News,VA
+- `545` - 545 Greenville-New Bern-Washington, NC
+- `810` - 810 Yakima-Pasco-Richland-Kennewick, WA
+- `811` - 811 Reno, NV
+- `548` - 548 West Palm Beach-Ft. Pierce, FL
+- `813` - 813 Medford-Klamath Falls, OR
+- `570` - 570 Florence-Myrtle Beach, SC
+- `678` - 678 Wichita-Hutchinson, KS
+- `679` - 679 Des Moines-Ames, IA
+- `718` - 718 Jackson, MS
+- `717` - 717 Quincy, IL-Hannibal, MO-Keokuk, IA
+- `675` - 675 Peoria-Bloomington, IL
+- `676` - 676 Duluth, MN-Superior, WI
+- `670` - 670 Ft. Smith-Fayetteville-Springdale-Rogers, AR
+- `671` - 671 Tulsa, OK
+- `711` - 711 Meridian, MS
+- `767` - 767 Casper-Riverton, WY
+- `661` - 661 San Angelo, TX
+- `673` - 673 Columbus-Tupelo-West Point, MS
+- `537` - 537 Bangor, ME
+- `536` - 536 Youngstown, OH
+- `535` - 535 Columbus, OH
+- `534` - 534 Orlando-Daytona Beach-Melbourne, FL
+- `533` - 533 Hartford & New Haven, CT
+- `828` - 828 Monterey-Salinas, CA
+- `530` - 530 Tallahassee, FL-Thomasville, GA
+- `825` - 825 San Diego, CA
+- `821` - 821 Bend, OR
+- `820` - 820 Portland, OR
+- `539` - 539 Tampa-St Petersburg (Sarasota), FL
+- `538` - 538 Rochester, NY
+- `592` - 592 Gainesville, FL
+- `709` - 709 Tyler-Longview(Lufkin & Nacogdoches), TX
+- `597` - 597 Parkersburg, WV
+- `596` - 596 Zanesville, OH
+- `705` - 705 Wausau-Rhinelander, WI
+- `702` - 702 La Crosse-Eau Claire, WI
+- `740` - 740 North Platte, NE
+- `604` - 604 Columbia-Jefferson City, MO
+- `790` - 790 Albuquerque-Santa Fe, NM
+- `839` - 839 Las Vegas, NV
+- `798` - 798 Glendive, MT
+- `524` - 524 Atlanta, GA
+- `525` - 525 Albany, GA
+- `526` - 526 Utica, NY
+- `527` - 527 Indianapolis, IN
+- `520` - 520 Augusta, GA
+- `521` - 521 Providence, RI-New Bedford, MA
+- `522` - 522 Columbus, GA
+- `523` - 523 Burlington, VT-Plattsburgh, NY
+- `528` - 528 Miami-Ft. Lauderdale, FL
+- `529` - 529 Louisville, KY
+- `532` - 532 Albany-Schenectady-Troy, NY
+- `584` - 584 Charlottesville, VA
+- `582` - 582 Lafayette, IN
+- `583` - 583 Alpena, MI
+- `581` - 581 Terre Haute, IN
+- `588` - 588 South Bend-Elkhart, IN
+- `598` - 598 Clarksburg-Weston, WV
+- `789` - 789 Tucson (Sierra Vista), AZ
+- `519` - 519 Charleston, SC
+- `640` - 640 Memphis, TN
+- `643` - 643 Lake Charles, LA
+- `642` - 642 Lafayette, LA
+- `644` - 644 Alexandria, LA
+- `647` - 647 Greenwood-Greenville, MS
+- `649` - 649 Evansville, IN
+- `648` - 648 Champaign & Springfield-Decatur,IL
+- `513` - 513 Flint-Saginaw-Bay City, MI
+- `512` - 512 Baltimore, MD
+- `515` - 515 Cincinnati, OH
+- `514` - 514 Buffalo, NY
+- `517` - 517 Charlotte, NC
+- `516` - 516 Erie, PA
+- `623` - 623 Dallas-Ft. Worth, TX
+- `622` - 622 New Orleans, LA
+- `627` - 627 Wichita Falls, TX & Lawton, OK
+- `626` - 626 Victoria, TX
+- `625` - 625 Waco-Temple-Bryan, TX
+- `624` - 624 Sioux City, IA
+- `573` - 573 Roanoke-Lynchburg, VA
+- `571` - 571 Ft. Myers-Naples, FL
+- `628` - 628 Monroe, LA-El Dorado, AR
+- `577` - 577 Wilkes Barre-Scranton, PA
+- `576` - 576 Salisbury, MD
+- `575` - 575 Chattanooga, TN
+- `574` - 574 Johnstown-Altoona, PA
+- `606` - 606 Dothan, AL
+- `600` - 600 Corpus Christi, TX
+- `559` - 559 Bluefield-Beckley-Oak Hill, WV
+- `752` - 752 Colorado Springs-Pueblo, CO
+- `745` - 745 Fairbanks, AK
+- `855` - 855 Santa Barbara-Santa Maria-San Luis Obispo, CA
+- `746` - 746 Biloxi-Gulfport, MS
+- `819` - 819 Seattle-Tacoma, WA
+- `508` - 508 Pittsburgh, PA
+- `656` - 656 Panama City, FL
+- `657` - 657 Sherman, TX-Ada, OK
+- `652` - 652 Omaha, NE
+- `734` - 734 Jonesboro, AR
+- `737` - 737 Mankato, MN
+- `736` - 736 Bowling Green, KY
+- `506` - 506 Boston, MA-Manchester, NH
+- `507` - 507 Savannah, GA
+- `504` - 504 Philadelphia, PA
+- `505` - 505 Detroit, MI
+- `502` - 502 Binghamton, NY
+- `503` - 503 Macon, GA
+- `500` - 500 Portland-Auburn, ME
+- `501` - 501 New York, NY
+- `630` - 630 Birmingham, AL
+- `569` - 569 Harrisonburg, VA
+- `632` - 632 Paducah, KY-Cape Girardeau, MO-Harrisburg-Mount Vernon, IL
+- `633` - 633 Odessa-Midland, TX
+- `757` - 757 Boise, ID
+- `650` - 650 Oklahoma City, OK
+- `755` - 755 Great Falls, MT
+- `637` - 637 Cedar Rapids-Waterloo-Iowa City & Dubuque, IA
+- `638` - 638 St. Joseph, MO
+- `561` - 561 Jacksonville, FL
+- `759` - 759 Cheyenne, WY-Scottsbluff, NE
+- `651` - 651 Lubbock, TX
+- `564` - 564 Charleston-Huntington, WV
+- `565` - 565 Elmira, NY
+- `566` - 566 Harrisburg-Lancaster-Lebanon-York, PA
+- `567` - 567 Greenville-Spartanburg, SC-Asheville, NC-Anderson, SC
+- `868` - 868 Chico-Redding, CA
+- `549` - 549 Watertown, NY
+- `747` - 747 Juneau, AK
+- `862` - 862 Sacramento-Stockton-Modesto, CA
+- `866` - 866 Fresno-Visalia, CA
+- `724` - 724 Fargo-Valley City, ND
+- `725` - 725 Sioux Falls(Mitchell), SD
+- `722` - 722 Lincoln & Hastings-Kearney, NE
+- `658` - 658 Green Bay-Appleton, WI
+- `659` - 659 Nashville, TN
+- `631` - 631 Ottumwa, IA-Kirksville, MO
+- `605` - 605 Topeka, KS
+- `753` - 753 Phoenix, AZ
+- `881` - 881 Spokane, WA
+- `743` - 743 Anchorage, AK
+- `744` - 744 Honolulu, HI
+- `558` - 558 Lima, OH
+- `603` - 603 Joplin, MO-Pittsburg, KS
+- `602` - 602 Chicago, IL
+- `555` - 555 Syracuse, NY
+- `554` - 554 Wheeling, WV-Steubenville, OH
+- `557` - 557 Knoxville, TN
+- `556` - 556 Richmond-Petersburg, VA
+- `551` - 551 Lansing, MI
+- `751` - 751 Denver, CO
+- `553` - 553 Marquette, MI
+- `552` - 552 Presque Isle, ME
+- `550` - 550 Wilmington, NC
+- `634` - 634 Amarillo, TX
+- `756` - 756 Billings, MT
+- `749` - 749 Laredo, TX
+- `641` - 641 San Antonio, TX
+- `636` - 636 Harlingen-Weslaco-Brownsville-McAllen, TX
+- `518` - 518 Greensboro-High Point-Winston Salem, NC
+- `754` - 754 Butte-Bozeman, MT
+- `560` - 560 Raleigh-Durham (Fayetteville), NC
+- `716` - 716 Baton Rouge, LA
+- `618` - 618 Houston, TX
+- `619` - 619 Springfield, MO
+- `771` - 771 Yuma, AZ-El Centro, CA
+- `770` - 770 Salt Lake City, UT
+- `773` - 773 Grand Junction-Montrose, CO
+- `612` - 612 Shreveport, LA
+- `613` - 613 Minneapolis-St. Paul, MN
+- `563` - 563 Grand Rapids-Kalamazoo-Battle Creek, MI
+- `611` - 611 Rochester, MN-Mason City, IA-Austin, MN
+- `616` - 616 Kansas City, MO
+- `617` - 617 Milwaukee, WI
+- `511` - 511 Washington, DC (Hagerstown, MD)
+- `510` - 510 Cleveland-Akron (Canton), OH
+- `635` - 635 Austin, TX
+- `710` - 710 Hattiesburg-Laurel, MS
+- `801` - 801 Eugene, OR
+- `509` - 509 Ft. Wayne, IN
+- `686` - 686 Mobile, AL-Pensacola (Ft. Walton Beach), FL
+- `609` - 609 St. Louis, MO
+- `803` - 803 Los Angeles, CA
+- `802` - 802 Eureka, CA
+- `687` - 687 Minot-Bismarck-Dickinson(Williston), ND
+- `800` - 800 Bakersfield, CA
+- `807` - 807 San Francisco-Oakland-San Jose, CA
+- `639` - 639 Jackson, TN
 - `682` - 682 Davenport,IA-Rock Island-Moline,IL
 - `531` - 531 Tri-Cities-Tn-Va
- 
+
 <a name="country"></a>
 ### Country
-- `BD` - Bangladesh 
-- `BE` - Belgium 
-- `BF` - Burkina Faso 
-- `BG` - Bulgaria 
-- `BA` - Bosnia and Herzegovina 
-- `BB` - Barbados 
-- `WF` - Wallis and Futuna 
-- `BN` - Brunei Darussalam 
-- `BO` - Bolivia, Plurinational State of 
-- `BH` - Bahrain 
-- `BI` - Burundi 
-- `BJ` - Benin 
-- `BT` - Bhutan 
-- `JM` - Jamaica 
-- `BW` - Botswana 
-- `WS` - Samoa 
-- `BR` - Brazil 
-- `BS` - Bahamas 
-- `BY` - Belarus 
-- `BZ` - Belize 
-- `RU` - Russian Federation 
-- `RW` - Rwanda 
-- `RS` - Serbia 
-- `LT` - Lithuania 
-- `LU` - Luxembourg 
-- `LR` - Liberia 
-- `RO` - Romania 
-- `LS` - Lesotho 
-- `GW` - Guinea-Bissau 
-- `GU` - Guam 
-- `GT` - Guatemala 
-- `GS` - South Georgia and the South Sandwich Islands 
-- `GR` - Greece 
-- `GQ` - Equatorial Guinea 
-- `JP` - Japan 
-- `GY` - Guyana 
-- `GE` - Georgia 
-- `GD` - Grenada 
-- `GB` - United Kingdom 
-- `GA` - Gabon 
-- `SV` - El Salvador 
-- `GN` - Guinea 
-- `GM` - Gambia 
-- `KW` - Kuwait 
-- `GH` - Ghana 
-- `OM` - Oman 
-- `JO` - Jordan 
-- `HR` - Croatia 
-- `HT` - Haiti 
-- `HU` - Hungary 
-- `HN` - Honduras 
-- `HM` - Heard Island and McDonald Islands 
-- `AD` - Andorra 
-- `PW` - Palau 
-- `PT` - Portugal 
-- `PY` - Paraguay 
-- `PA` - Panama 
-- `PF` - French Polynesia 
-- `PG` - Papua New Guinea 
-- `PE` - Peru 
-- `PK` - Pakistan 
-- `PH` - Philippines 
-- `PN` - Pitcairn 
-- `PL` - Poland 
-- `PM` - Saint Pierre and Miquelon 
-- `ZM` - Zambia 
-- `EE` - Estonia 
-- `EG` - Egypt 
-- `ZA` - South Africa 
-- `EC` - Ecuador 
-- `AL` - Albania 
-- `AO` - Angola 
-- `KZ` - Kazakhstan 
-- `ET` - Ethiopia 
-- `ZW` - Zimbabwe 
-- `ES` - Spain 
-- `ER` - Eritrea 
-- `ME` - Montenegro 
-- `MD` - Moldova, Republic of 
-- `MG` - Madagascar 
-- `MA` - Morocco 
-- `MC` - Monaco 
-- `UZ` - Uzbekistan 
-- `LV` - Latvia 
-- `ML` - Mali 
-- `MN` - Mongolia 
-- `MH` - Marshall Islands 
-- `MK` - Macedonia, the Former Yugoslav Republic of 
-- `MU` - Mauritius 
-- `MT` - Malta 
-- `MW` - Malawi 
-- `MV` - Maldives 
-- `MP` - Northern Mariana Islands 
-- `MR` - Mauritania 
-- `UG` - Uganda 
-- `MY` - Malaysia 
-- `MX` - Mexico 
-- `VU` - Vanuatu 
-- `FR` - France 
-- `FI` - Finland 
-- `FJ` - Fiji 
-- `FM` - Micronesia, Federated States of 
-- `NI` - Nicaragua 
-- `NL` - Netherlands 
-- `NO` - Norway 
-- `NA` - Namibia 
-- `NC` - New Caledonia 
-- `NE` - Niger 
-- `NF` - Norfolk Island 
-- `NG` - Nigeria 
-- `NZ` - New Zealand 
-- `NP` - Nepal 
-- `NR` - Nauru 
-- `NU` - Niue 
-- `CK` - Cook Islands 
-- `CH` - Switzerland 
-- `CO` - Colombia 
-- `CN` - China 
-- `CM` - Cameroon 
-- `CL` - Chile 
-- `CC` - Cocos (Keeling) Islands 
-- `CA` - Canada 
-- `CG` - Congo 
-- `CF` - Central African Republic 
-- `CD` - Congo, the Democratic Republic of the 
-- `CZ` - Czech Republic 
-- `CY` - Cyprus 
-- `CX` - Christmas Island 
-- `CR` - Costa Rica 
-- `CV` - Cape Verde 
-- `SZ` - Swaziland 
-- `KG` - Kyrgyzstan 
-- `KE` - Kenya 
-- `SR` - Suriname 
-- `KI` - Kiribati 
-- `KH` - Cambodia 
-- `KN` - Saint Kitts and Nevis 
-- `KM` - Comoros 
-- `ST` - Sao Tome and Principe 
-- `SK` - Slovakia 
-- `KR` - Korea, Republic of 
-- `SI` - Slovenia 
-- `SH` - Saint Helena, Ascension and Tristan da Cunha 
-- `SO` - Somalia 
-- `SN` - Senegal 
-- `SM` - San Marino 
-- `SL` - Sierra Leone 
-- `SC` - Seychelles 
-- `SB` - Solomon Islands 
-- `SA` - Saudi Arabia 
-- `SG` - Singapore 
-- `SE` - Sweden 
-- `DO` - Dominican Republic 
-- `DM` - Dominica 
-- `DJ` - Djibouti 
-- `DK` - Denmark 
-- `DE` - Germany 
-- `YE` - Yemen 
-- `AT` - Austria 
-- `DZ` - Algeria 
-- `US` - United States 
-- `UY` - Uruguay 
-- `UM` - United States Minor Outlying Islands 
-- `TZ` - Tanzania, United Republic of 
-- `LC` - Saint Lucia 
-- `LA` - Lao People's Democratic Republic 
-- `TV` - Tuvalu 
-- `TT` - Trinidad and Tobago 
-- `TR` - Turkey 
-- `LK` - Sri Lanka 
-- `LI` - Liechtenstein 
-- `TN` - Tunisia 
-- `TO` - Tonga 
-- `TL` - Timor-Leste 
-- `TM` - Turkmenistan 
-- `TJ` - Tajikistan 
-- `TK` - Tokelau 
-- `TH` - Thailand 
-- `TG` - Togo 
-- `TD` - Chad 
-- `LY` - Libya 
-- `VA` - Holy See (Vatican City State) 
-- `VC` - Saint Vincent and the Grenadines 
-- `AE` - United Arab Emirates 
-- `VE` - Venezuela, Bolivarian Republic of 
-- `AG` - Antigua and Barbuda 
-- `AF` - Afghanistan 
-- `IQ` - Iraq 
-- `IS` - Iceland 
-- `AM` - Armenia 
-- `IT` - Italy 
-- `VN` - Viet Nam 
-- `AQ` - Antarctica 
-- `AS` - American Samoa 
+- `BD` - Bangladesh
+- `BE` - Belgium
+- `BF` - Burkina Faso
+- `BG` - Bulgaria
+- `BA` - Bosnia and Herzegovina
+- `BB` - Barbados
+- `WF` - Wallis and Futuna
+- `BN` - Brunei Darussalam
+- `BO` - Bolivia, Plurinational State of
+- `BH` - Bahrain
+- `BI` - Burundi
+- `BJ` - Benin
+- `BT` - Bhutan
+- `JM` - Jamaica
+- `BW` - Botswana
+- `WS` - Samoa
+- `BR` - Brazil
+- `BS` - Bahamas
+- `BY` - Belarus
+- `BZ` - Belize
+- `RU` - Russian Federation
+- `RW` - Rwanda
+- `RS` - Serbia
+- `LT` - Lithuania
+- `LU` - Luxembourg
+- `LR` - Liberia
+- `RO` - Romania
+- `LS` - Lesotho
+- `GW` - Guinea-Bissau
+- `GU` - Guam
+- `GT` - Guatemala
+- `GS` - South Georgia and the South Sandwich Islands
+- `GR` - Greece
+- `GQ` - Equatorial Guinea
+- `JP` - Japan
+- `GY` - Guyana
+- `GE` - Georgia
+- `GD` - Grenada
+- `GB` - United Kingdom
+- `GA` - Gabon
+- `SV` - El Salvador
+- `GN` - Guinea
+- `GM` - Gambia
+- `KW` - Kuwait
+- `GH` - Ghana
+- `OM` - Oman
+- `JO` - Jordan
+- `HR` - Croatia
+- `HT` - Haiti
+- `HU` - Hungary
+- `HN` - Honduras
+- `HM` - Heard Island and McDonald Islands
+- `AD` - Andorra
+- `PW` - Palau
+- `PT` - Portugal
+- `PY` - Paraguay
+- `PA` - Panama
+- `PF` - French Polynesia
+- `PG` - Papua New Guinea
+- `PE` - Peru
+- `PK` - Pakistan
+- `PH` - Philippines
+- `PN` - Pitcairn
+- `PL` - Poland
+- `PM` - Saint Pierre and Miquelon
+- `ZM` - Zambia
+- `EE` - Estonia
+- `EG` - Egypt
+- `ZA` - South Africa
+- `EC` - Ecuador
+- `AL` - Albania
+- `AO` - Angola
+- `KZ` - Kazakhstan
+- `ET` - Ethiopia
+- `ZW` - Zimbabwe
+- `ES` - Spain
+- `ER` - Eritrea
+- `ME` - Montenegro
+- `MD` - Moldova, Republic of
+- `MG` - Madagascar
+- `MA` - Morocco
+- `MC` - Monaco
+- `UZ` - Uzbekistan
+- `LV` - Latvia
+- `ML` - Mali
+- `MN` - Mongolia
+- `MH` - Marshall Islands
+- `MK` - Macedonia, the Former Yugoslav Republic of
+- `MU` - Mauritius
+- `MT` - Malta
+- `MW` - Malawi
+- `MV` - Maldives
+- `MP` - Northern Mariana Islands
+- `MR` - Mauritania
+- `UG` - Uganda
+- `MY` - Malaysia
+- `MX` - Mexico
+- `VU` - Vanuatu
+- `FR` - France
+- `FI` - Finland
+- `FJ` - Fiji
+- `FM` - Micronesia, Federated States of
+- `NI` - Nicaragua
+- `NL` - Netherlands
+- `NO` - Norway
+- `NA` - Namibia
+- `NC` - New Caledonia
+- `NE` - Niger
+- `NF` - Norfolk Island
+- `NG` - Nigeria
+- `NZ` - New Zealand
+- `NP` - Nepal
+- `NR` - Nauru
+- `NU` - Niue
+- `CK` - Cook Islands
+- `CH` - Switzerland
+- `CO` - Colombia
+- `CN` - China
+- `CM` - Cameroon
+- `CL` - Chile
+- `CC` - Cocos (Keeling) Islands
+- `CA` - Canada
+- `CG` - Congo
+- `CF` - Central African Republic
+- `CD` - Congo, the Democratic Republic of the
+- `CZ` - Czech Republic
+- `CY` - Cyprus
+- `CX` - Christmas Island
+- `CR` - Costa Rica
+- `CV` - Cape Verde
+- `SZ` - Swaziland
+- `KG` - Kyrgyzstan
+- `KE` - Kenya
+- `SR` - Suriname
+- `KI` - Kiribati
+- `KH` - Cambodia
+- `KN` - Saint Kitts and Nevis
+- `KM` - Comoros
+- `ST` - Sao Tome and Principe
+- `SK` - Slovakia
+- `KR` - Korea, Republic of
+- `SI` - Slovenia
+- `SH` - Saint Helena, Ascension and Tristan da Cunha
+- `SO` - Somalia
+- `SN` - Senegal
+- `SM` - San Marino
+- `SL` - Sierra Leone
+- `SC` - Seychelles
+- `SB` - Solomon Islands
+- `SA` - Saudi Arabia
+- `SG` - Singapore
+- `SE` - Sweden
+- `DO` - Dominican Republic
+- `DM` - Dominica
+- `DJ` - Djibouti
+- `DK` - Denmark
+- `DE` - Germany
+- `YE` - Yemen
+- `AT` - Austria
+- `DZ` - Algeria
+- `US` - United States
+- `UY` - Uruguay
+- `UM` - United States Minor Outlying Islands
+- `TZ` - Tanzania, United Republic of
+- `LC` - Saint Lucia
+- `LA` - Lao People's Democratic Republic
+- `TV` - Tuvalu
+- `TT` - Trinidad and Tobago
+- `TR` - Turkey
+- `LK` - Sri Lanka
+- `LI` - Liechtenstein
+- `TN` - Tunisia
+- `TO` - Tonga
+- `TL` - Timor-Leste
+- `TM` - Turkmenistan
+- `TJ` - Tajikistan
+- `TK` - Tokelau
+- `TH` - Thailand
+- `TG` - Togo
+- `TD` - Chad
+- `LY` - Libya
+- `VA` - Holy See (Vatican City State)
+- `VC` - Saint Vincent and the Grenadines
+- `AE` - United Arab Emirates
+- `VE` - Venezuela, Bolivarian Republic of
+- `AG` - Antigua and Barbuda
+- `AF` - Afghanistan
+- `IQ` - Iraq
+- `IS` - Iceland
+- `AM` - Armenia
+- `IT` - Italy
+- `VN` - Viet Nam
+- `AQ` - Antarctica
+- `AS` - American Samoa
 - `AR` - Argentina 〃
-- `AU` - Australia 
-- `IL` - Israel 
-- `IN` - India 
-- `LB` - Lebanon 
-- `AZ` - Azerbaijan 
-- `IE` - Ireland 
-- `ID` - Indonesia 
-- `UA` - Ukraine 
-- `QA` - Qatar 
+- `AU` - Australia
+- `IL` - Israel
+- `IN` - India
+- `LB` - Lebanon
+- `AZ` - Azerbaijan
+- `IE` - Ireland
+- `ID` - Indonesia
+- `UA` - Ukraine
+- `QA` - Qatar
 - `MZ` - Mozambique
- 
+
 <a name="region"></a>
 ### Region
 - `US-AL` - Alabama
@@ -2901,11 +2990,3 @@ A string representing a decimal number. Example: `"15.48"`
 - `US-PR` - Puerto Rico
 - `US-UM` - United States Minor Outlying Islands
 - `US-VI` - Virgin Islands
-
-
-
-
-
-
-
-
