@@ -21,15 +21,15 @@ logger = logging.getLogger(__name__)
 
 
 FIELDNAMES = {
-    'account_id': 'Account Id',
-    'campaign_id': 'Campaign Id',
-    'ad_group_id': 'Ad Group Id',
-    'content_ad_id': 'Content Ad Id',
+    'account_id': 'Account ID',
+    'campaign_id': 'Campaign ID',
+    'ad_group_id': 'Ad Group ID',
+    'content_ad_id': 'Content Ad ID',
     'account': 'Account',
     'account_type': 'Account Type',
     'salesforce_url': 'SalesForce Link',
     'agency': 'Agency',
-    'agency_id': 'Agency Id',
+    'agency_id': 'Agency ID',
     'ad_group': 'Ad Group',
     'avg_tos': 'Avg. ToS',
     'bounce_rate': 'Bounce Rate',
