@@ -157,7 +157,7 @@ class ReportViewsTest(TestCase):
         r = self.client.get(reverse('reports_details', kwargs={'job_id': job_id}))
         self.assertEqual(r.status_code, 403)
 
-    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
@@ -203,7 +203,7 @@ class ReportViewsTest(TestCase):
 
         self.assertFalse(mock_totals.called)
 
-    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
@@ -242,7 +242,7 @@ class ReportViewsTest(TestCase):
 
         self.assertFalse(mock_totals.called)
 
-    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
@@ -283,7 +283,7 @@ class ReportViewsTest(TestCase):
 
         self.assertFalse(mock_totals.called)
 
-    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
@@ -324,7 +324,7 @@ class ReportViewsTest(TestCase):
 
         self.assertFalse(mock_totals.called)
 
-    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
@@ -365,7 +365,7 @@ class ReportViewsTest(TestCase):
 
         self.assertFalse(mock_totals.called)
 
-    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
@@ -406,7 +406,7 @@ class ReportViewsTest(TestCase):
 
         self.assertFalse(mock_totals.called)
 
-    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
@@ -447,7 +447,7 @@ class ReportViewsTest(TestCase):
 
         self.assertFalse(mock_totals.called)
 
-    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
@@ -488,7 +488,7 @@ class ReportViewsTest(TestCase):
 
         self.assertFalse(mock_totals.called)
 
-    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
