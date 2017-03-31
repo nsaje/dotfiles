@@ -733,7 +733,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         response = export.AllAccountsExport().get(request)
 
         expected_content = (
-            'Start Date,End Date,Agency Id,Agency,Account Id,Account,Status (' +
+            'Start Date,End Date,Agency ID,Agency,Account ID,Account,Status (' +
             time.strftime('%Y-%m-%d') + ')'
             ',Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,' +
             str(agency.id) + ',Test Agency,' +
