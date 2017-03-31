@@ -54,6 +54,8 @@ FIELDNAMES = {
     'percent_new_users': 'Percent New Users',
     'pv_per_visit': 'Pageviews per Visit',
     'source': 'Source',
+    'source_id': 'Source ID',
+    'source_slug': 'Source Slug',
     'start_date': 'Start Date',
     'title': 'Title',
     'visits': 'Visits',
@@ -86,13 +88,13 @@ FIELDNAMES = {
     'avg_cost_for_new_visitor': 'Avg. Cost for New Visitor',
 }
 
-FIELDNAMES_ID_MAPPING = [('account', 'account_id'),
-                         ('campaign', 'campaign_id'),
-                         ('ad_group', 'ad_group_id'),
+FIELDNAMES_ID_MAPPING = [('account', ('account_id',)),
+                         ('campaign', ('campaign_id',)),
+                         ('ad_group', ('ad_group_id',)),
                          # content ad is never a required field, but title is
-                         ('title', 'content_ad_id'),
-                         ('agency', 'agency_id'),
-                         ]
+                         ('title', ('content_ad_id',)),
+                         ('agency', ('agency_id',)),
+                         ('source', ('source_slug', 'source_id'))]
 
 UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
                        'submission_status', 'titleLink', 'bid_cpc',
@@ -171,9 +173,9 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
     if include_missing:
         _add_missing_stats(stats, dimensions, prefetched_data, sources, start_date, end_date)
 
-    source_names = None
+    source_objs = None
     if 'source' in dimensions:
-        source_names = {source.id: source.name for source in models.Source.objects.all()}
+        source_objs = {source.id: source for source in models.Source.objects.all()}
 
     account_appeared = defaultdict(bool)
 
@@ -181,7 +183,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
     for i, stat in enumerate(stats):
         try:
             _populate_stat(stat, start_date=start_date, end_date=end_date, dimensions=dimensions,
-                           source_names=source_names, user=user, prefetched_data=prefetched_data,
+                           source_objs=source_objs, user=user, prefetched_data=prefetched_data,
                            budgets=budgets, projections=projections, account_projections=account_projections,
                            include_projections=include_projections, include_flat_fees=include_flat_fees,
                            statuses=statuses, settings=settings, account_settings=account_settings)
@@ -502,7 +504,7 @@ def _prefetch_statuses(entities, level, by_source, sources=None):
         ad_groups, ad_groups_settings)
 
 
-def _populate_stat(stat, start_date=None, end_date=None, dimensions=None, source_names=None,
+def _populate_stat(stat, start_date=None, end_date=None, dimensions=None, source_objs=None,
                    user=None, prefetched_data=None, budgets=None, projections=None,
                    account_projections=None, include_flat_fees=False,
                    include_projections=False, statuses=None, settings=None,
@@ -512,7 +514,7 @@ def _populate_stat(stat, start_date=None, end_date=None, dimensions=None, source
     stat['end_date'] = end_date
 
     if dimensions == ['source']:
-        _populate_source_stat(stat, user=user, source_names=source_names)
+        _populate_source_stat(stat, user=user, source_objs=source_objs)
     else:
         _populate_model_stat(stat, dimensions=dimensions, prefetched_data=prefetched_data,
                              projections=projections, account_projections=account_projections,
@@ -521,7 +523,11 @@ def _populate_stat(stat, start_date=None, end_date=None, dimensions=None, source
                              settings=settings, account_settings=account_settings)
 
     if 'source' in stat:
-        stat['source'] = source_names[stat['source']]
+        stat['source_id'] = source_objs[stat['source']].id
+        stat['source_slug'] = source_objs[stat['source']].bidder_slug
+
+        # WARNING: the next line overwrites the entry
+        stat['source'] = source_objs[stat['source']].name
 
 
 def _adjust_breakdown_by_day(first_stat_date, stat):
@@ -545,7 +551,7 @@ def _adjust_breakdown_by_account(stat, account_appeared):
             stat[field] = Decimal(0.0)
 
 
-def _populate_source_stat(stat, user=None, source_names=None):
+def _populate_source_stat(stat, user=None, source_objs=None):
     ad_group_sources = models.AdGroupSource.objects.filter(
         ad_group__campaign__account__in=models.Account.objects.all().filter_by_user(user),
         source=stat['source']).select_related('ad_group')
@@ -1077,14 +1083,15 @@ def _include_breakdowns(required_fields, dimensions, by_day, by_source):
     return required_fields, dimensions
 
 
-def _include_model_ids(required_fields):
-    for field, field_id in FIELDNAMES_ID_MAPPING:
-        try:
-            idx = required_fields.index(field)
-            required_fields.insert(idx, field_id)
-        except ValueError:
-            pass
-    return required_fields
+def _include_model_ids(fields):
+    for field, field_ids in FIELDNAMES_ID_MAPPING:
+        for field_id in field_ids:
+            try:
+                idx = fields.index(field)
+                fields.insert(idx, field_id)
+            except ValueError:
+                pass
+    return fields
 
 
 class AllAccountsExport(object):
@@ -1118,7 +1125,7 @@ class AllAccountsExport(object):
 
         if breakdown or by_source:
             required_fields.extend(['status'])
-        if include_model_ids or 'id' in additional_fields:
+        if include_model_ids:
             required_fields = _include_model_ids(required_fields)
 
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
@@ -1200,7 +1207,7 @@ class AccountExport(object):
             dimensions.extend(['campaign', 'ad_group', 'content_ad'])
 
         required_fields.extend(['status'])
-        if include_model_ids or 'id' in additional_fields:
+        if include_model_ids:
             required_fields = _include_model_ids(required_fields)
 
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
@@ -1257,7 +1264,7 @@ class CampaignExport(object):
             required_fields.extend(['ad_group', 'title', 'image_url', 'image_hash', 'label', 'url'])
             dimensions.extend(['ad_group', 'content_ad'])
         required_fields.extend(['status'])
-        if include_model_ids or 'id' in additional_fields:
+        if include_model_ids:
             required_fields = _include_model_ids(required_fields)
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)
@@ -1304,7 +1311,7 @@ class AdGroupAdsExport(object):
             required_fields.extend(['title', 'image_url', 'image_hash', 'label', 'url'])
             dimensions.extend(['content_ad'])
         required_fields.extend(['status'])
-        if include_model_ids or 'id' in additional_fields:
+        if include_model_ids:
             required_fields = _include_model_ids(required_fields)
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)

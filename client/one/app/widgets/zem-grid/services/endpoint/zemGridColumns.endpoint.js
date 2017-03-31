@@ -11,12 +11,67 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
     // COLUMN DEFINITIONS
     //
     var COLUMNS = {
-        id: {
+        agencyId: {
+            internal: [
+                'zemauth.can_see_id_columns_in_table',
+                'zemauth.can_view_account_agency_information'
+            ],
+            shown: [
+                'zemauth.can_see_id_columns_in_table',
+                'zemauth.can_view_account_agency_information'
+            ],
+            name: 'Agency ID',
+            field: 'agency_id',
+            type: zemGridConstants.gridColumnTypes.TEXT,
+            help: 'The ID number of your agency.',
+        },
+        accountId: {
             internal: 'zemauth.can_see_id_columns_in_table',
             shown: 'zemauth.can_see_id_columns_in_table',
-            name: 'Id',
-            field: 'id',
+            name: 'Account ID',
+            field: 'account_id',
             type: zemGridConstants.gridColumnTypes.TEXT,
+            help: 'The ID number of your account.',
+        },
+        campaignId: {
+            internal: 'zemauth.can_see_id_columns_in_table',
+            shown: 'zemauth.can_see_id_columns_in_table',
+            name: 'Campaign ID',
+            field: 'campaign_id',
+            type: zemGridConstants.gridColumnTypes.TEXT,
+            help: 'The ID number of your campaign.',
+        },
+        adGroupId: {
+            internal: 'zemauth.can_see_id_columns_in_table',
+            shown: 'zemauth.can_see_id_columns_in_table',
+            name: 'Ad Group ID',
+            field: 'ad_group_id',
+            type: zemGridConstants.gridColumnTypes.TEXT,
+            help: 'The ID number of your ad group.',
+        },
+        contentAdId: {
+            internal: 'zemauth.can_see_id_columns_in_table',
+            shown: 'zemauth.can_see_id_columns_in_table',
+            name: 'Content Ad ID',
+            field: 'content_ad_id',
+            type: zemGridConstants.gridColumnTypes.TEXT,
+            help: 'The ID number of your content ad.',
+        },
+        sourceId: {
+            internal: 'zemauth.can_see_id_columns_in_table',
+            shown: 'zemauth.can_see_id_columns_in_table',
+            name: 'Source ID',
+            field: 'source_id',
+            type: zemGridConstants.gridColumnTypes.TEXT,
+            help: 'The ID number of your media source.',
+        },
+        sourceSlug: {
+            internal: 'zemauth.can_see_id_columns_in_table',
+            shown: 'zemauth.can_see_id_columns_in_table',
+            name: 'Source Slug',
+            field: 'source_slug',
+            type: zemGridConstants.gridColumnTypes.TEXT,
+            help: 'The slug identifier of your media source.',
         },
         name: {
             name: '', // Branded based on breakdown
@@ -320,12 +375,6 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             shown: false, // not shown (used internally)
             name: 'External Id',
             field: 'external_id',
-            type: zemGridConstants.gridColumnTypes.TEXT,
-        },
-        sourceId: {
-            shown: false, // not shown (used internally)
-            name: 'Id',
-            field: 'source_id',
             type: zemGridConstants.gridColumnTypes.TEXT,
         },
         domain: {
@@ -985,7 +1034,13 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
     ];
 
     var MANAGEMENT_GROUP = [
-        COLUMNS.id,
+        COLUMNS.agencyId,
+        COLUMNS.accountId,
+        COLUMNS.campaignId,
+        COLUMNS.adGroupId,
+        COLUMNS.contentAdId,
+        COLUMNS.sourceId,
+        COLUMNS.sourceSlug,
     ].concat(ACCOUNT_MANAGEMENT_GROUP).concat(CAMPAIGN_MANAGEMENT_GROUP);
 
     var SOURCE_GROUP = [
@@ -993,7 +1048,6 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
     ];
 
     var PUBLISHER_GROUP = [
-        COLUMNS.sourceId,
         COLUMNS.externalId,
         COLUMNS.domain,
         COLUMNS.domainLink,
@@ -1169,6 +1223,14 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
     COLUMNS.bidCpcSetting.exceptions.breakdownBaseLevelOnly = true;
     COLUMNS.dailyBudgetSetting.exceptions.breakdownBaseLevelOnly = true;
 
+    // Exceptions (id columns)
+    COLUMNS.agencyId.exceptions.breakdowns = [constants.breakdown.ACCOUNT, constants.breakdown.CAMPAIGN, constants.breakdown.AD_GROUP, constants.breakdown.CONTENT_AD]; // eslint-disable-line max-len
+    COLUMNS.accountId.exceptions.breakdowns = [constants.breakdown.ACCOUNT, constants.breakdown.CAMPAIGN, constants.breakdown.AD_GROUP, constants.breakdown.CONTENT_AD]; // eslint-disable-line max-len
+    COLUMNS.campaignId.exceptions.breakdowns = [constants.breakdown.CAMPAIGN, constants.breakdown.AD_GROUP, constants.breakdown.CONTENT_AD]; // eslint-disable-line max-len
+    COLUMNS.adGroupId.exceptions.breakdowns = [constants.breakdown.AD_GROUP, constants.breakdown.CONTENT_AD];
+    COLUMNS.contentAdId.exceptions.breakdowns = [constants.breakdown.CONTENT_AD];
+    COLUMNS.sourceId.exceptions.breakdowns = [constants.breakdown.MEDIA_SOURCE];
+    COLUMNS.sourceSlug.exceptions.breakdowns = [constants.breakdown.MEDIA_SOURCE];
 
     function configureBreakdownExceptions (columns, breakdowns) {
         columns.forEach(function (column) {

@@ -200,6 +200,7 @@ class ExportTestCase(test.TestCase):
 
         self.assertEqual(1, mock_missing_stats.call_count)
 
+        self.maxDiff = None
         expectedRows = [{
             'account_id': 1,
             'campaign_id': 1,
@@ -219,6 +220,8 @@ class ExportTestCase(test.TestCase):
             'cpc': 10.23,
             'start_date': datetime.date(2014, 6, 30),
             'source': u'Taboola',
+            'source_id': 4,
+            'source_slug': None,
             'ad_group': u'test adgroup 1 \u010c\u017e\u0161',
             'image_url': u'/123456789.jpg?w=200&h=300&fit=crop&crop=center&fm=jpg',
             'image_hash': u'987654321',
@@ -246,6 +249,8 @@ class ExportTestCase(test.TestCase):
             'cpc': 20.23,
             'start_date': datetime.date(2014, 6, 30),
             'source': u'Outbrain',
+            'source_id': 3,
+            'source_slug': None,
             'ad_group': u'test adgroup 1 \u010c\u017e\u0161',
             'image_url': u'/123456789.jpg?w=200&h=300&fit=crop&crop=center&fm=jpg',
             'image_hash': u'987654321',
@@ -273,6 +278,8 @@ class ExportTestCase(test.TestCase):
             'cpc': 30.23,
             'start_date': datetime.date(2014, 6, 30),
             'source': u'Outbrain',
+            'source_id': 3,
+            'source_slug': None,
             'ad_group': u'test adgroup 1 \u010c\u017e\u0161',
             'image_url': u'/123456789.jpg?w=200&h=300&fit=crop&crop=center&fm=jpg',
             'image_hash': u'987654321',
@@ -345,6 +352,8 @@ class ExportTestCase(test.TestCase):
             'cpc': 10.23,
             'start_date': datetime.date(2014, 6, 30),
             'source': u'Taboola',
+            'source_id': 4,
+            'source_slug': None,
             'ad_group': u'test adgroup 1 \u010c\u017e\u0161',
             'image_url': u'/123456789.jpg?w=200&h=300&fit=crop&crop=center&fm=jpg',
             'image_hash': u'987654321',
@@ -372,6 +381,8 @@ class ExportTestCase(test.TestCase):
             'cpc': 20.23,
             'start_date': datetime.date(2014, 6, 30),
             'source': u'Outbrain',
+            'source_id': 3,
+            'source_slug': None,
             'ad_group': u'test adgroup 1 \u010c\u017e\u0161',
             'image_url': u'/123456789.jpg?w=200&h=300&fit=crop&crop=center&fm=jpg',
             'image_hash': u'987654321',
@@ -399,6 +410,8 @@ class ExportTestCase(test.TestCase):
             'cpc': 30.23,
             'start_date': datetime.date(2014, 6, 30),
             'source': u'Outbrain',
+            'source_id': 3,
+            'source_slug': None,
             'ad_group': u'test adgroup 1 \u010c\u017e\u0161',
             'image_url': u'/123456789.jpg?w=200&h=300&fit=crop&crop=center&fm=jpg',
             'image_hash': u'987654321',
@@ -988,7 +1001,7 @@ class ExportTestCase(test.TestCase):
 
     @mock.patch('dash.export.AdGroupAdsExport.get_data')
     def test_get_report_contents_ad_group(self, get_data_mock):
-        report_contents = export._get_report_contents(
+        export._get_report_contents(
             user=User.objects.get(pk=1),
             filtered_sources=[],
             view_filter=None,
@@ -1019,7 +1032,7 @@ class ExportTestCase(test.TestCase):
 
     @mock.patch('dash.export.CampaignExport.get_data')
     def test_get_report_contents_campaign(self, get_data_mock):
-        report_contents = export._get_report_contents(
+        export._get_report_contents(
             user=User.objects.get(pk=1),
             filtered_sources=[],
             view_filter=None,
@@ -1048,7 +1061,7 @@ class ExportTestCase(test.TestCase):
 
     @mock.patch('dash.export.CampaignExport.get_data')
     def test_get_report_contents_totals(self, get_data_mock):
-        report_contents = export._get_report_contents(
+        export._get_report_contents(
             user=User.objects.get(pk=1),
             filtered_sources=[],
             view_filter=None,
@@ -1080,7 +1093,7 @@ class ExportTestCase(test.TestCase):
     @mock.patch('dash.export._get_report')
     def test_get_report_from_export_report(self, mock_get_report):
         export_report = models.ExportReport.objects.get(id=1)
-        contents = export.get_report_from_export_report(
+        export.get_report_from_export_report(
             export_report,
             datetime.date(2014, 6, 3),
             datetime.date(2014, 6, 10))

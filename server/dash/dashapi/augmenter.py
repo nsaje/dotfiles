@@ -64,8 +64,8 @@ def augment_account(row, loader, is_base_level=False):
     if account_id:
         account = loader.objs_map[account_id]
         row.update({
-            'id': account_id,
             'name': account.name,
+            'agency_id': account.agency_id,
             'agency': account.agency.name if account.agency else '',
         })
 
@@ -111,7 +111,8 @@ def augment_campaign(row, loader, is_base_level=False):
     if campaign_id:
         campaign = loader.objs_map[campaign_id]
         row.update({
-            'id': campaign_id,
+            'agency_id': campaign.account.agency_id,
+            'account_id': campaign.account_id,
             'name': campaign.name
         })
 
@@ -149,7 +150,9 @@ def augment_ad_group(row, loader, is_base_level=False):
     if ad_group_id:
         ad_group = loader.objs_map[ad_group_id]
         row.update({
-            'id': ad_group_id,
+            'agency_id': ad_group.campaign.account.agency_id,
+            'account_id': ad_group.campaign.account_id,
+            'campaign_id': ad_group.campaign_id,
             'name': ad_group.name,
         })
 
@@ -179,7 +182,10 @@ def augment_content_ad(row, loader, is_base_level=False):
     if content_ad_id:
         content_ad = loader.objs_map[content_ad_id]
         row.update({
-            'id': content_ad_id,
+            'agency_id': content_ad.ad_group.campaign.account.agency_id,
+            'account_id': content_ad.ad_group.campaign.account_id,
+            'campaign_id': content_ad.ad_group.campaign_id,
+            'ad_group_id': content_ad.ad_group_id,
             'name': content_ad.title,
             'title': content_ad.title,
             'display_url': content_ad.display_url,

@@ -61,8 +61,9 @@ class ApiBreakdownQueryTest(TestCase):
         )
 
         self.assertEqual(result, [{
-            'id': 1,
             'campaign_id': 1,
+            'account_id': 1,
+            'agency_id': None,
             'name': 'test campaign 1',
             'breakdown_id': '1',
             'breakdown_name': 'test campaign 1',
@@ -81,8 +82,9 @@ class ApiBreakdownQueryTest(TestCase):
             'breakdown_name': 'test campaign 2',
             'name': 'test campaign 2',
             'breakdown_id': '2',
-            'id': 2,
             'campaign_id': 2,
+            'account_id': 1,
+            'agency_id': None,
             'pacing': None,
             'spend_projection': None,
             'allocated_budgets': None,
@@ -119,8 +121,9 @@ class ApiBreakdownQueryTest(TestCase):
                                       order, offset, limit)
 
         self.assertEqual(result, [{
-            'id': 1,
             'campaign_id': 1,
+            'account_id': 1,
+            'agency_id': None,
             'name': 'test campaign 1',
             'breakdown_id': '1',
             'breakdown_name': 'test campaign 1',
@@ -134,8 +137,9 @@ class ApiBreakdownQueryTest(TestCase):
             'campaign_manager': 'supertestuser@test.com',
             'archived': False,
         }, {
-            'id': 2,
             'campaign_id': 2,
+            'account_id': 1,
+            'agency_id': None,
             'name': 'test campaign 2',
             'breakdown_id': '2',
             'breakdown_name': 'test campaign 2',

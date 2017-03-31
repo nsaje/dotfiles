@@ -11,37 +11,39 @@ from zemauth.models import User
 
 
 ACCOUNT_1 = {
-    'account': 'test account 1', 'agency_id': '', 'id': 1,
-    'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 'ACTIVE', 'default_account_manager': 'mad.max@zemanta.com', 'default_sales_representative': 'supertestuser@test.com', 'salesforce_url': '', 'default_cs_representative': 'supercsuser@test.com',
-    'agency': '', 'account_type': 'Activated',
+    'account': 'test account 1', 'account_id': 1, 'agency_id': '',
+    'archived': False, 'name': 'test account 1', 'status': 'ACTIVE', 'default_account_manager': 'mad.max@zemanta.com',
+    'default_sales_representative': 'supertestuser@test.com', 'salesforce_url': '',
+    'default_cs_representative': 'supercsuser@test.com', 'agency': '', 'account_type': 'Activated',
     'pacing': None, 'allocated_budgets': Decimal('0'), 'spend_projection': Decimal('0'),
     'license_fee_projection': Decimal('0'), 'flat_fee': 0, 'total_fee': 0, 'total_fee_projection': Decimal('0'),
 }
 
 CAMPAIGN_1 = {
-    'campaign': 'test campaign 1',
-    'campaign_id': 1, 'id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 'ACTIVE',
+    'campaign': 'test campaign 1', 'campaign_id': 1, 'account_id': 1, 'agency_id': None,
+    'archived': False, 'name': 'test campaign 1', 'status': 'ACTIVE',
     'campaign_manager': 'supertestuser@test.com',
     'pacing': None, 'allocated_budgets': None, 'spend_projection': None, 'license_fee_projection': None,
 }
 CAMPAIGN_2 = {
-    'campaign': 'test campaign 2',
-    'campaign_id': 2, 'id': 2, 'archived': True, 'name': 'test campaign 2', 'status': 'PAUSED',
+    'campaign': 'test campaign 2', 'campaign_id': 2, 'account_id': 1, 'agency_id': None,
+    'archived': True, 'name': 'test campaign 2', 'status': 'PAUSED',
     'campaign_manager': 'mad.max@zemanta.com',
     'pacing': None, 'allocated_budgets': None, 'spend_projection': None, 'license_fee_projection': None,
 }
 
 AD_GROUP_1 = {
-    'ad_group': 'test adgroup 1',
-    'ad_group_id': 1, 'id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 'ENABLED', 'state': 1,
+    'ad_group': 'test adgroup 1', 'ad_group_id': 1, 'campaign_id': 1, 'account_id': 1, 'agency_id': None,
+    'archived': False, 'name': 'test adgroup 1', 'status': 'ENABLED', 'state': 1,
 }
 AD_GROUP_2 = {
-    'ad_group': 'test adgroup 2',
-    'ad_group_id': 2, 'id': 2, 'archived': False, 'name': 'test adgroup 2', 'status': 'PAUSED', 'state': 2
+    'ad_group': 'test adgroup 2', 'ad_group_id': 2, 'campaign_id': 1, 'account_id': 1, 'agency_id': None,
+    'archived': False, 'name': 'test adgroup 2', 'status': 'PAUSED', 'state': 2
 }
 
 CONTENT_AD_1 = {
-    'content_ad_id': 1, 'id': 1, 'title': 'Title 1', 'description': 'Example description', 'brand_name': 'Example',
+    'content_ad_id': 1, 'ad_group_id': 1, 'campaign_id': 1, 'account_id': 1, 'agency_id': None,
+    'title': 'Title 1', 'description': 'Example description', 'brand_name': 'Example',
     'content_ad': 'Title 1',
     'archived': False, 'name': 'Title 1', 'display_url': 'example.com', 'call_to_action': 'Call to action', 'label': '',
     'image_hash': '100', 'image_urls': {
@@ -69,7 +71,8 @@ CONTENT_AD_1 = {
     },
 }
 CONTENT_AD_2 = {
-    'content_ad_id': 2, 'id': 2, 'title': 'Title 2', 'description': 'Example description', 'brand_name': 'Example',
+    'content_ad_id': 2, 'ad_group_id': 1, 'campaign_id': 1, 'account_id': 1, 'agency_id': None,
+    'title': 'Title 2', 'description': 'Example description', 'brand_name': 'Example',
     'content_ad': 'Title 2',
     'archived': False, 'name': 'Title 2', 'display_url': 'example.com', 'call_to_action': 'Call to action', 'label': '',
     'image_hash': '200', 'image_urls': {

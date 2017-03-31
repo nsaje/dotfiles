@@ -48,8 +48,6 @@ def query(user, breakdown, constraints, level):
         if dimension in constants.StructureDimension._ALL:
             loader = loader_map[dimension]
             dimension_rows = augmenter.make_dash_rows(dimension, loader.objs_ids, None)
-            if dimension in HIERARCHICAL_DIMENSIONS:
-                augmenter.augment_parent_ids(dimension_rows, loader_map, dimension)
             rows = _extend_rows(rows, dimension_rows)
         elif dimension in constants.TimeDimension._ALL:
             rows = _extend_rows(
@@ -73,16 +71,8 @@ def query(user, breakdown, constraints, level):
 
 
 def _get_loaders(user, breakdown, constraints, level):
-    # loaders for all parents in hierarchy are needed to get parent ids
-    dimensions = copy.copy(breakdown)
-    if 'content_ad_id' in dimensions and 'ad_group_id' not in dimensions:
-        dimensions.append('ad_group_id')
-    if 'ad_group_id' in dimensions and 'campaign_id' not in dimensions:
-        dimensions.append('campaign_id')
-    if 'campaign_id' in dimensions and 'account_id' not in dimensions:
-        dimensions.append('account_id')
     loader_map = {}
-    for dimension in dimensions:
+    for dimension in breakdown:
         loader_cls = loaders.get_loader_for_dimension(dimension, level)
         if loader_cls is not None:
             loader_map[dimension] = loader_cls.from_constraints(user, constraints)
