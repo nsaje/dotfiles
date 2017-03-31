@@ -529,13 +529,13 @@ class PublisherGroupCSVHelpersTest(TestCase):
                     'publisher': 'https://pub1.com',
                     'source': None,
                     'include_subdomains': True,
-                    'error': 'Remove the following prefixes: http, https, www',
+                    'error': 'Remove the following prefixes: http, https',
                 },
                 {
                     'publisher': 'https://pub1.com',
                     'source': 'asd',
                     'include_subdomains': False,
-                    'error': 'Remove the following prefixes: http, https, www; Unknown source',
+                    'error': 'Remove the following prefixes: http, https; Unknown source',
                 },
             ]
         )
