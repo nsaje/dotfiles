@@ -47,6 +47,13 @@ _FIELD_MAPPING = {
     'supply_dash_url': ('Link',),
 
     'status': ('Status',),
+    'account_status': ('Account Status',),
+    'campaign_status': ('Campaign Status',),
+    'ad_group_status': ('Ad Group Status',),
+    'content_ad_status': ('Content Ad Status',),
+    'source_status': ('Media Source Status',),
+    'publisher_status': ('Publisher Status',),
+
     'campaign_manager': ('Campaign Manager',),
     'account_type': ('Account Type',),
     'default_sales_representative': ('Sales Representative',),

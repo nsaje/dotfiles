@@ -2,6 +2,22 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
 
     // Public API
     this.startReport = startReport;
+    this.getReport = getReport;
+
+    function getReport (id) {
+        var deferred = $q.defer();
+
+        zemReportEndpoint
+            .getReport(id)
+            .then(function (response) {
+                deferred.resolve(response.data);
+            })
+            .catch(function (response) {
+                deferred.reject(response.data);
+            });
+
+        return deferred.promise;
+    }
 
     function startReport (gridApi, selectedFields, includeConfig) {
         var deferred = $q.defer();
@@ -16,7 +32,7 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
         var levelFilter = getLevelFilter(gridApi);
 
         var config = {
-            fields: getFields(selectedFields, includeConfig),
+            fields: selectedFields.map(function (field) { return {'field': field}; }),
             filters: [
                 {
                     field: 'Date',
@@ -26,7 +42,7 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
                 },
             ],
             options: {
-                emailReport: true,
+                emailReport: includeConfig.sendReport,
                 recipients: includeConfig.recipients,
                 showArchived: showArchived,
                 includeTotals: includeConfig.includeTotals || false,
@@ -71,29 +87,13 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
         zemReportEndpoint
             .startReport(config)
             .then(function (response) {
-                deferred.resolve(response);
+                deferred.resolve(response.data);
             })
             .catch(function (response) {
-                deferred.reject(response);
+                deferred.reject(response.data);
             });
 
         return deferred.promise;
-    }
-
-    function getFields (selectedFieldNames, includeConfig) {
-        var fieldsWithIds = ['Content Ad', 'Ad Group', 'Campaign', 'Account', 'Agency'];
-        var fields = [];
-        for (var i = 0; i < selectedFieldNames.length; i++) {
-            if (includeConfig.includeIds && fieldsWithIds.indexOf(selectedFieldNames[i]) >= 0) {
-                fields.push({
-                    field: selectedFieldNames[i] + ' Id',
-                });
-            }
-            fields.push({
-                field: selectedFieldNames[i],
-            });
-        }
-        return fields;
     }
 
     function getOrder (gridApi) {

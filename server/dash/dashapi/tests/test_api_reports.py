@@ -11,34 +11,39 @@ from zemauth.models import User
 
 
 ACCOUNT_1 = {
-    'account': 'test account 1', 'account_id': 1, 'agency_id': '',
-    'archived': False, 'name': 'test account 1', 'status': 'ACTIVE', 'default_account_manager': 'mad.max@zemanta.com',
-    'default_sales_representative': 'supertestuser@test.com', 'salesforce_url': '',
-    'default_cs_representative': 'supercsuser@test.com', 'agency': '', 'account_type': 'Activated',
+    'account': 'test account 1', 'agency_id': '', 'account_id': 1,
+    'archived': False, 'name': 'test account 1', 'status': 'ACTIVE', 'account_status': 'ACTIVE',
+    'default_account_manager': 'mad.max@zemanta.com', 'default_sales_representative': 'supertestuser@test.com',
+    'salesforce_url': '', 'default_cs_representative': 'supercsuser@test.com',
+    'agency': '', 'account_type': 'Activated',
     'pacing': None, 'allocated_budgets': Decimal('0'), 'spend_projection': Decimal('0'),
     'license_fee_projection': Decimal('0'), 'flat_fee': 0, 'total_fee': 0, 'total_fee_projection': Decimal('0'),
 }
 
 CAMPAIGN_1 = {
-    'campaign': 'test campaign 1', 'campaign_id': 1, 'account_id': 1, 'agency_id': None,
-    'archived': False, 'name': 'test campaign 1', 'status': 'ACTIVE',
+    'campaign': 'test campaign 1', 'campaign_id': 1,
+    'account_id': 1, 'agency_id': None,
+    'archived': False, 'name': 'test campaign 1', 'status': 'ACTIVE', 'campaign_status': 'ACTIVE',
     'campaign_manager': 'supertestuser@test.com',
     'pacing': None, 'allocated_budgets': None, 'spend_projection': None, 'license_fee_projection': None,
 }
 CAMPAIGN_2 = {
-    'campaign': 'test campaign 2', 'campaign_id': 2, 'account_id': 1, 'agency_id': None,
-    'archived': True, 'name': 'test campaign 2', 'status': 'PAUSED',
+    'campaign': 'test campaign 2', 'campaign_id': 2,
+    'account_id': 1, 'agency_id': None,
+    'archived': True, 'name': 'test campaign 2', 'status': 'PAUSED', 'campaign_status': 'PAUSED',
     'campaign_manager': 'mad.max@zemanta.com',
     'pacing': None, 'allocated_budgets': None, 'spend_projection': None, 'license_fee_projection': None,
 }
 
 AD_GROUP_1 = {
-    'ad_group': 'test adgroup 1', 'ad_group_id': 1, 'campaign_id': 1, 'account_id': 1, 'agency_id': None,
-    'archived': False, 'name': 'test adgroup 1', 'status': 'ENABLED', 'state': 1,
+    'ad_group': 'test adgroup 1', 'ad_group_id': 1,
+    'campaign_id': 1, 'account_id': 1, 'agency_id': None,
+    'archived': False, 'name': 'test adgroup 1', 'status': 'ENABLED', 'ad_group_status': 'ENABLED', 'state': 1,
 }
 AD_GROUP_2 = {
-    'ad_group': 'test adgroup 2', 'ad_group_id': 2, 'campaign_id': 1, 'account_id': 1, 'agency_id': None,
-    'archived': False, 'name': 'test adgroup 2', 'status': 'PAUSED', 'state': 2
+    'ad_group': 'test adgroup 2', 'ad_group_id': 2,
+    'campaign_id': 1, 'account_id': 1, 'agency_id': None,
+    'archived': False, 'name': 'test adgroup 2', 'status': 'PAUSED', 'ad_group_status': 'PAUSED', 'state': 2
 }
 
 CONTENT_AD_1 = {
@@ -53,7 +58,7 @@ CONTENT_AD_1 = {
     'image_url': '/100.jpg?w=200&h=300&fit=crop&crop=center&fm=jpg',
     'batch_id': 1, 'batch_name': 'batch 1', 'upload_time': datetime.datetime(2015, 2, 23, 0, 0),
     'redirector_url': 'http://r1.zemanta.com/b/r1/z1/1/1/', 'url': 'http://testurl1.com',
-    'state': 1, 'status': 'ENABLED', 'status_per_source': {
+    'state': 1, 'status': 'ENABLED', 'content_ad_status': 'ENABLED', 'status_per_source': {
         1: {
             'source_id': 1,
             'submission_status': 1,
@@ -82,7 +87,7 @@ CONTENT_AD_2 = {
     'image_url': '/200.jpg?w=200&h=300&fit=crop&crop=center&fm=jpg',
     'batch_id': 1, 'batch_name': 'batch 1', 'upload_time': datetime.datetime(2015, 2, 23, 0, 0),
     'redirector_url': 'http://r1.zemanta.com/b/r2/z1/1/2/', 'url': 'http://testurl2.com',
-    'state': 2, 'status': 'PAUSED', 'status_per_source': {
+    'state': 2, 'status': 'PAUSED', 'content_ad_status': 'PAUSED', 'status_per_source': {
         2: {
             'source_id': 2,
             'submission_status': 2,
@@ -110,7 +115,7 @@ AD_GROUP_SOURCE_1 = {
     'archived': False, 'maintenance': False,
     'supply_dash_url': None,
     'supply_dash_disabled_message': "This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard.",  # noqa
-    'state': 1, 'status': 'ENABLED',
+    'state': 1, 'status': 'ENABLED', 'source_status': 'ENABLED',
     'editable_fields': {
         'state': {
             'message': 'This source must be managed manually.',
@@ -134,7 +139,7 @@ AD_GROUP_SOURCE_2 = {
     'archived': False, 'maintenance': False,
     'supply_dash_url': None,
     'supply_dash_disabled_message': "This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard.",  # noqa
-    'state': 2, 'status': 'PAUSED', 'editable_fields': {
+    'state': 2, 'status': 'PAUSED', 'source_status': 'PAUSED', 'editable_fields': {
         'state': {
             'message': 'Please add additional budget to your campaign to make changes.',
             'enabled': False
@@ -154,19 +159,19 @@ AD_GROUP_SOURCE_2 = {
 PUBLISHER_1__SOURCE_1 = {
     'publisher_id': 'pub1.com__1', 'publisher': 'pub1.com', 'domain': 'pub1.com', 'name': 'pub1.com', 'domain_link': 'http://pub1.com',  # noqa
     'source_id': 1, 'source_name': 'AdsNative', 'exchange': 'AdsNative', 'source_slug': 'adsnative', 'source': 'AdsNative',
-    'status': 'BLACKLISTED', 'blacklisted': 'Blacklisted', 'blacklisted_level': 'GLOBAL',
+    'status': 'BLACKLISTED', 'publisher_status': 'BLACKLISTED', 'blacklisted': 'Blacklisted', 'blacklisted_level': 'GLOBAL',
     'blacklisted_level_description': 'Blacklisted globally',
     'can_blacklist_publisher': True, 'notifications': {'message': 'Blacklisted globally'},
 }
 PUBLISHER_2__SOURCE_1 = {
     'publisher_id': 'pub2.com__1', 'publisher': 'pub2.com', 'domain': 'pub2.com', 'name': 'pub2.com', 'domain_link': 'http://pub2.com',  # noqa
     'source_id': 1, 'source_name': 'AdsNative', 'exchange': 'AdsNative', 'source_slug': 'adsnative', 'source': 'AdsNative',
-    'status': 'ACTIVE', 'blacklisted': 'Active', 'can_blacklist_publisher': True, 'blacklisted_level': '',
+    'status': 'ACTIVE', 'publisher_status': 'ACTIVE', 'blacklisted': 'Active', 'can_blacklist_publisher': True, 'blacklisted_level': '',
 }
 PUBLISHER_2__SOURCE_2 = {
     'publisher_id': 'pub2.com__2', 'publisher': 'pub2.com', 'name': 'pub2.com', 'domain': 'pub2.com', 'domain_link': 'http://pub2.com',  # noqa
     'source_id': 2, 'source_name': 'Gravity', 'exchange': 'Gravity', 'source_slug': 'gravity', 'source': 'Gravity',
-    'status': 'WHITELISTED', 'blacklisted': 'Whitelisted', 'blacklisted_level': 'AD GROUP',
+    'status': 'WHITELISTED', 'publisher_status': 'WHITELISTED', 'blacklisted': 'Whitelisted', 'blacklisted_level': 'AD GROUP',
     'blacklisted_level_description': 'Whitelisted in this ad group',
     'can_blacklist_publisher': False, 'notifications': {'message': 'Whitelisted in this ad group'},
 }

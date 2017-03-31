@@ -102,6 +102,7 @@ def augment_account_for_report(row, loader, is_base_level=False):
             'account': account.name,
             'agency_id': account.agency.id if account.agency else '',
             'status': constants.AdGroupRunningStatus.get_text(settings['status']).upper(),
+            'account_status': constants.AdGroupRunningStatus.get_text(settings['status']).upper(),
         })
 
 
@@ -141,6 +142,7 @@ def augment_campaign_for_report(row, loader, is_base_level=False):
         row.update({
             'campaign': campaign.name,
             'status': constants.AdGroupRunningStatus.get_text(settings['status']).upper(),
+            'campaign_status': constants.AdGroupRunningStatus.get_text(settings['status']).upper(),
         })
 
 
@@ -173,6 +175,7 @@ def augment_ad_group_for_report(row, loader, is_base_level=False):
         row.update({
             'ad_group': ad_group.name,
             'status': constants.AdGroupSettingsState.get_text(settings['status']).upper(),
+            'ad_group_status': constants.AdGroupSettingsState.get_text(settings['status']).upper(),
         })
 
 
@@ -229,6 +232,7 @@ def augment_content_ad_for_report(row, loader, is_base_level=False):
             'content_ad': content_ad.title,
             'image_url': content_ad.get_image_url(),
             'status': constants.ContentAdSourceState.get_text(content_ad.state).upper(),
+            'content_ad_status': constants.ContentAdSourceState.get_text(content_ad.state).upper(),
         })
 
 
@@ -276,6 +280,7 @@ def augment_source_for_report(row, loader, is_base_level=False):
         if status is not None:
             row.update({
                 'status': constants.AdGroupSourceSettingsState.get_text(status).upper(),
+                'source_status': constants.AdGroupSourceSettingsState.get_text(status).upper(),
             })
 
 
@@ -323,6 +328,7 @@ def augment_publisher_for_report(row, loader, is_base_level=False):
         'publisher': domain,
         'source': source.name,
         'status': constants.PublisherTargetingStatus.get_text(entry_status['status']).upper(),
+        'publisher_status': constants.PublisherTargetingStatus.get_text(entry_status['status']).upper(),
         'blacklisted_level': (
             constants.PublisherBlacklistLevel.get_text(
                 entry_status.get('blacklisted_level', '')

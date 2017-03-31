@@ -2,7 +2,7 @@
     <div class="modal__title">Export Report</div>
 </div>
 <div class="modal__body">
-    <h3>You are downloading a report with the following settings:</h3>
+    <h3>You are exporting a report with the following settings:</h3>
     <hr>
     <div class="form">
         <div class="form__group form__group--informative">
@@ -26,6 +26,7 @@
                       theme="select2"
                       search-enabled="false"
                       ng-model="$ctrl.addbreakdown"
+                      ng-disabled="$ctrl.jobPosted"
                       class="button button--dropdown-toggle-icon button--with-icon add-icon button--dropdown-toggle-icon">
                   <ui-select-match placeholder="Add breakdown">Add breakdown</ui-select-match>
                   <ui-select-choices repeat="breakdown in $ctrl.availableBreakdowns">
@@ -55,7 +56,7 @@
             <label class="form__label" for="include-totals-checkbox">Include totals</label>
             <div class="form__checkbox">
                 <label>
-                    <input id="include-totals-checkbox" type="checkbox" ng-model="$ctrl.includeTotals" class="input-checkbox">
+                    <input id="include-totals-checkbox" type="checkbox" ng-model="$ctrl.includeTotals" ng-disabled="$ctrl.jobPosted" class="input-checkbox">
                     <span class="checkbox-text"></span>
                 </label>
             </div>
@@ -67,6 +68,8 @@
                     <input id="add-ids-checkbox"
                            type="checkbox"
                            ng-model="$ctrl.includeIds"
+                           ng-disabled="$ctrl.jobPosted"
+                           ng-change="$ctrl.update()"
                            class="input-checkbox">
                     <span class="checkbox-text" for="add-ids-checkbox"></span>
                 </label>
@@ -79,6 +82,7 @@
                     <input id="add-missing-checkbox"
                            type="checkbox"
                            ng-model="$ctrl.includeItemsWithNoSpend"
+                           ng-disabled="$ctrl.jobPosted"
                            class="input-checkbox">
                     <span class="checkbox-text" for="add-missing-checkbox"></span>
                 </label>
@@ -86,24 +90,39 @@
         </div>
         <hr>
         <div class="form__group">
+            <label class="form__label" for="send-report-checkbox">Send report</label>
+            <div class="form__checkbox">
+                <label>
+                    <input id="send-report-checkbox"
+                           type="checkbox"
+                           ng-model="$ctrl.sendReport"
+                           ng-disabled="$ctrl.jobPosted"
+                           class="input-checkbox">
+                    <span class="checkbox-text" for="send-report-checkbox"></span>
+                </label>
+            </div>
+        </div>
+        <div class="form__group" ng-if="$ctrl.sendReport">
             <label class="form__label" for="recipients">Report will be sent to</label>
             <div class="form__information" id="recipients">
                 {{ $ctrl.user.email }}
             </div>
         </div>
-        <div class="form__group" ng-class="{'form__group--error': $ctrl.errors.details.options.recipients.length > 0}">
+        <div class="form__group" ng-class="{'form__group--error': $ctrl.errors.details.options.recipients.length > 0}" ng-if="$ctrl.sendReport">
             <label class="form__label">Add more recipients</label>
-            <textarea class="textarea" ng-model="$ctrl.recipients" placeholder="Comma-separated list of recipient email addresses"></textarea>
+            <textarea class="textarea" ng-model="$ctrl.recipients" placeholder="Comma-separated list of recipient email addresses" ng-disabled="$ctrl.jobPosted"></textarea>
             <div ng-repeat="error in $ctrl.errors.details.options.recipients" class="message message--error" for="recipients">{{ error }}</div>
         </div>
     </div>
 </div>
 <div class="modal__footer buttons-panel">
-    <button type="submit" class="button button--highlight button--with-icon send-icon" ng-click="$ctrl.startReport()" ng-show="!$ctrl.jobPosted" ng-disabled="$ctrl.jobPostingInProgress">Send</button>
-    <button type="button" class="button button--outline" ng-click="$ctrl.close()" ng-show="!$ctrl.jobPosted">Cancel</button>
-    <button type="button" class="button button--outline" ng-click="$ctrl.close()" ng-show="$ctrl.jobPosted">Close</button>
-    <div class="loader" ng-show="$ctrl.jobPostingInProgress"></div>
-    <span ng-show="$ctrl.jobPosted">Requested report will be sent to your inbox shortly.</span>
-    <span class="message message--success" ng-show="$ctrl.jobPosted && $ctrl.jobPostedSuccessfully">Requested report will be sent to your inbox shortly.</span>
+    <button type="submit" class="button button--highlight button--with-icon send-icon" ng-click="$ctrl.startReport()" ng-show="!$ctrl.jobDone" ng-disabled="$ctrl.jobPosted" ng-if="$ctrl.sendReport">Send</button>
+    <button type="submit" class="button button--highlight button--with-icon download-icon" ng-click="$ctrl.startReport()" ng-show="!$ctrl.jobDone" ng-disabled="$ctrl.jobPosted" ng-if="!$ctrl.sendReport">Download</button>
+    <button type="button" class="button button--outline" ng-click="$ctrl.cancel()" ng-show="!$ctrl.jobDone">Cancel</button>
+    <button type="button" class="button button--outline" ng-click="$ctrl.close()" ng-show="$ctrl.jobDone">Close</button>
+    <div class="loader" ng-show="$ctrl.jobPosted && !$ctrl.jobDone"></div>
+    <span ng-show="$ctrl.reportSent">Requested report will be sent to your inbox shortly.</span>
+    <span ng-if="$ctrl.reportUrl">Requested report can be downloaded here: <a href="{{ $ctrl.reportUrl }}" target="_blank">Download Report</a></span>
     <span class="message message--error" ng-repeat="error in $ctrl.errors.details.nonFieldErrors">{{ error }}</span>
+    <span class="message message--error" ng-if="$ctrl.hasError && !$ctrl.errors.details.nonFieldErrors">An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.</span>
 </div>

@@ -28,6 +28,8 @@ WHITELABEL_PRODUCTS = {
     dash.constants.Whitelabel.GREENPARK: 'Telescope'
 }
 
+URLS_RE = re.compile(r"((https?):((//)|(\\\\))+[\w\d:#@%/;$()~_?\+-=\\\.&]*)", re.MULTILINE | re.UNICODE)
+
 
 def _lookup_whitelabel(user=None, agency=None):
     if user and not agency:
@@ -44,6 +46,10 @@ def _adjust_product_name(whitelabel, text):
         return text
     new_product_name = WHITELABEL_PRODUCTS[whitelabel]
     return text.replace('Zemanta One', new_product_name).replace('Zemanta', new_product_name)
+
+
+def _url_to_link(text):
+    return URLS_RE.sub(r'<a href="\1" target="_blank">\1</a>', text)
 
 
 def prepare_recipients(email_text):
@@ -576,7 +582,7 @@ def send_async_report(
     email = EmailMultiAlternatives(subject, plain_body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
     ), [user.email] + (recipients or []))
-    email.attach_alternative(format_template(subject, plain_body, user=user), "text/html")
+    email.attach_alternative(format_template(subject, _url_to_link(plain_body), user=user), "text/html")
     email.send(fail_silently=False)
 
 

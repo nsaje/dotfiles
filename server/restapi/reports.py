@@ -43,6 +43,12 @@ DEFAULT_ORDER = '-e_media_cost'
 
 DATED_COLUMNS = (
     utils.columns.FieldNames.status,
+    utils.columns.FieldNames.account_status,
+    utils.columns.FieldNames.campaign_status,
+    utils.columns.FieldNames.ad_group_status,
+    utils.columns.FieldNames.content_ad_status,
+    utils.columns.FieldNames.source_status,
+    utils.columns.FieldNames.publisher_status,
 )
 
 BREAKDOWN_FIELDS = set(

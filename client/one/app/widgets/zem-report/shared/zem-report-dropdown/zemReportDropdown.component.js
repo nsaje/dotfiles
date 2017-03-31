@@ -14,8 +14,8 @@ angular.module('one.widgets').component('zemReportDropdown', {
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
 
         $ctrl.actions = [{
-            name: 'Download',
-            value: 'download',
+            name: 'Export',
+            value: 'export',
             hasPermission: zemPermissions.hasPermission('zemauth.can_access_publisher_reports'),
             execute: openReportModal,
         }];
@@ -33,6 +33,7 @@ angular.module('one.widgets').component('zemReportDropdown', {
             $uibModal.open({
                 component: 'zemReportDownload',
                 windowClass: 'zem-report-download',
+                backdrop: 'static',
                 resolve: {
                     api: $ctrl.api,
                 }

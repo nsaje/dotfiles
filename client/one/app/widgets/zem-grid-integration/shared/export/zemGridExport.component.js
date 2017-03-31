@@ -28,6 +28,10 @@ angular.module('one.widgets').component('zemGridExport', {
             $scope.getAdditionalColumns = getAdditionalColumns;
             $scope.hasPermission = $ctrl.api.hasPermission;
             $scope.isPermissionInternal = $ctrl.api.isPermissionInternal;
+
+            if ($ctrl.api.hasPermission('zemauth.can_see_new_report_download')) {
+                $ctrl.exportModalTypes[0].name = 'Export';
+            }
         };
 
         function initializeData () {
@@ -61,6 +65,7 @@ angular.module('one.widgets').component('zemGridExport', {
                 $uibModal.open({
                     component: 'zemReportDownload',
                     windowClass: 'zem-report-download',
+                    backdrop: 'static',
                     resolve: {
                         api: $ctrl.api,
                     }
