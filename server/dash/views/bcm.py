@@ -123,11 +123,12 @@ class AccountCreditView(api_common.BaseApiView):
         ]
 
     def _get_credit_totals(self, account_id, credit_items):
-        total = sum(credit.effective_amount() for credit in credit_items)
+        valid_credit_items = [credit for credit in credit_items if credit.status != constants.CreditLineItemStatus.PENDING]
+        total = sum(credit.effective_amount() for credit in valid_credit_items)
         allocated = sum(
-            credit.get_allocated_amount() for credit in credit_items if not credit.is_past()
+            credit.get_allocated_amount() for credit in valid_credit_items if not credit.is_past()
         )
-        past = sum(credit.effective_amount() for credit in credit_items if credit.is_past())
+        past = sum(credit.effective_amount() for credit in valid_credit_items if credit.is_past())
         return {
             'total': str(total),
             'allocated': str(allocated),

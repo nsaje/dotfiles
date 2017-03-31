@@ -37,7 +37,7 @@ class AccountCampaignBudgetData(TestCase):
             amount=900,
             start_date=self.start_date,
             end_date=self.end_date,
-            campaign_id=1,
+            campaign_id=2,
         )
 
         create_statement(
@@ -59,9 +59,9 @@ class AccountCampaignBudgetData(TestCase):
         )
 
     def test_campaign_budget_data(self):
-        budget, spend = dash.bcm_helpers.get_campaign_media_budget_data([1])
-        self.assertEqual(budget, {1: Decimal('810.0000')})
-        self.assertEqual(spend, {1: Decimal('400.0000')})
+        budget, spend = dash.bcm_helpers.get_campaign_media_budget_data([2])
+        self.assertEqual(budget, {2: Decimal('810.0000')})
+        self.assertEqual(spend, {2: Decimal('400.0000')})
 
     def test_account_budget_data(self):
         budget, spend = dash.bcm_helpers.get_account_media_budget_data([1, 2, 3])

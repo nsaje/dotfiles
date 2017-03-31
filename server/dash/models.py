@@ -3558,6 +3558,7 @@ class CreditLineItem(FootprintModel, HistoryMixin):
         default=constants.CreditLineItemStatus.PENDING,
         choices=constants.CreditLineItemStatus.get_choices()
     )
+    refund = models.BooleanField(null=False, blank=False, default=False)
     comment = models.CharField(max_length=256, blank=True, null=True)
 
     created_dt = models.DateTimeField(
@@ -4101,10 +4102,17 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             self.validate_end_date,
             self.validate_amount,
             self.validate_credit,
+            self.validate_campaign,
         )
 
     def license_fee(self):
         return self.credit.license_fee
+
+    def validate_campaign(self):
+        is_valid_account_credit = self.credit.account_id and self.campaign.account_id == self.credit.account_id
+        is_valid_agency_credit = self.credit.agency_id and self.campaign.account.agency_id == self.credit.agency_id
+        if not (is_valid_account_credit or is_valid_agency_credit):
+            raise ValidationError('Campaign has no credit.')
 
     def validate_credit(self):
         if self.has_changed('credit'):

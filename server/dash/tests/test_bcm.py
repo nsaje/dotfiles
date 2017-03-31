@@ -353,6 +353,95 @@ class CreditsTestCase(TestCase):
 
         self.assertEqual(flat_fee, Decimal('90.0000'))
 
+    def test_campaign_credit(self):
+        request = HttpRequest()
+        request.user = User.objects.get(pk=1)
+        agency = models.Agency()
+        agency.name = '123'
+        agency.save(request)
+
+        acc = models.Account.objects.get(pk=10)
+        acc.agency = agency
+        acc.save(request)
+
+        c1 = create_credit(
+            account_id=1,
+            start_date=TODAY + datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(2),
+            amount=2000,
+            license_fee=Decimal('0.456'),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+        c2 = create_credit(
+            agency=agency,
+            start_date=TODAY + datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(2),
+            amount=1000,
+            license_fee=Decimal('0.456'),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+        c3 = create_credit(
+            account_id=10,
+            start_date=TODAY + datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(2),
+            amount=1000,
+            license_fee=Decimal('0.456'),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+
+        with self.assertRaises(ValidationError) as err:
+            create_budget(
+                credit=c1,
+                amount=10,
+                start_date=TODAY + datetime.timedelta(1),
+                end_date=TODAY + datetime.timedelta(2),
+                campaign_id=10,
+            )
+        self.assertTrue('campaign' in err.exception.error_dict)
+        with self.assertRaises(ValidationError) as err:
+            create_budget(
+                credit=c2,
+                amount=10,
+                start_date=TODAY + datetime.timedelta(1),
+                end_date=TODAY + datetime.timedelta(2),
+                campaign_id=1,
+            )
+        self.assertTrue('campaign' in err.exception.error_dict)
+        with self.assertRaises(ValidationError) as err:
+            create_budget(
+                credit=c2,
+                amount=10,
+                start_date=TODAY + datetime.timedelta(1),
+                end_date=TODAY + datetime.timedelta(2),
+                campaign_id=1,
+            )
+        self.assertTrue('campaign' in err.exception.error_dict)
+
+        create_budget(
+            credit=c1,
+            amount=10,
+            start_date=TODAY + datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(2),
+            campaign_id=1,
+        )
+        create_budget(
+            credit=c2,
+            amount=10,
+            start_date=TODAY + datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(2),
+            campaign_id=10,
+        )
+        create_budget(
+            credit=c3,
+            amount=10,
+            start_date=TODAY + datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(2),
+            campaign_id=10,
+        )
+
     def test_statuses(self):
         c1 = create_credit(
             account_id=2,
@@ -387,7 +476,7 @@ class CreditsTestCase(TestCase):
             amount=1000,
             start_date=TODAY + datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(2),
-            campaign_id=1,
+            campaign_id=2,
         )
 
         with self.assertRaises(AssertionError):
@@ -414,7 +503,7 @@ class CreditsTestCase(TestCase):
                 amount=500,
                 start_date=TODAY + datetime.timedelta(1),
                 end_date=TODAY + datetime.timedelta(2),
-                campaign_id=1,
+                campaign_id=2,
             )
 
     def test_multidelete(self):
@@ -525,7 +614,7 @@ class CreditsTestCase(TestCase):
             amount=1000,
             start_date=TODAY + datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(2),
-            campaign_id=1,
+            campaign_id=2,
         )
 
         with self.assertRaises(ValidationError) as err:
@@ -644,7 +733,7 @@ class BudgetsTestCase(TestCase):
                 amount=10000,
                 start_date=TODAY - datetime.timedelta(1),
                 end_date=TODAY + datetime.timedelta(11),
-                campaign_id=1,
+                campaign_id=2,
             )
         self.assertTrue('amount' in err.exception.error_dict)
         self.assertTrue('start_date' in err.exception.error_dict)
@@ -657,7 +746,7 @@ class BudgetsTestCase(TestCase):
                 amount=-10000,
                 start_date=TODAY - datetime.timedelta(1),
                 end_date=TODAY + datetime.timedelta(11),
-                campaign_id=1,
+                campaign_id=2,
             )
         self.assertTrue('amount' in err.exception.error_dict)
         self.assertTrue('start_date' in err.exception.error_dict)
@@ -670,7 +759,7 @@ class BudgetsTestCase(TestCase):
                 amount=800,
                 start_date=TODAY - datetime.timedelta(1),
                 end_date=TODAY + datetime.timedelta(11),
-                campaign_id=1,
+                campaign_id=2,
             )
         self.assertFalse('amount' in err.exception.error_dict)
         self.assertTrue('start_date' in err.exception.error_dict)
@@ -683,7 +772,7 @@ class BudgetsTestCase(TestCase):
                 amount=800,
                 start_date=TODAY + datetime.timedelta(8),
                 end_date=TODAY + datetime.timedelta(4),
-                campaign_id=1,
+                campaign_id=2,
             )
         self.assertFalse('amount' in err.exception.error_dict)
         self.assertFalse('start_date' in err.exception.error_dict)
@@ -696,7 +785,7 @@ class BudgetsTestCase(TestCase):
                 amount=800,
                 start_date=TODAY + datetime.timedelta(4),
                 end_date=TODAY + datetime.timedelta(8),
-                campaign_id=1,
+                campaign_id=2,
             )
         self.assertTrue('credit' in err.exception.error_dict)
 
@@ -708,7 +797,7 @@ class BudgetsTestCase(TestCase):
             amount=800,
             start_date=TODAY + datetime.timedelta(4),
             end_date=TODAY + datetime.timedelta(8),
-            campaign_id=1,
+            campaign_id=2,
         )
 
         b.amount = 100000
@@ -742,21 +831,21 @@ class BudgetsTestCase(TestCase):
             amount=300,
             start_date=TODAY + datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(5),
-            campaign_id=1,
+            campaign_id=2,
         )
         create_budget(
             credit=c,
             amount=300,
             start_date=TODAY + datetime.timedelta(2),
             end_date=TODAY + datetime.timedelta(8),
-            campaign_id=1,
+            campaign_id=2,
         )
         create_budget(
             credit=c,
             amount=300,
             start_date=TODAY + datetime.timedelta(7),
             end_date=TODAY + datetime.timedelta(10),
-            campaign_id=1,
+            campaign_id=2,
         )
 
         self.assertEqual(c.get_allocated_amount(), 900)
@@ -767,7 +856,7 @@ class BudgetsTestCase(TestCase):
                 amount=101,
                 start_date=TODAY + datetime.timedelta(2),
                 end_date=TODAY + datetime.timedelta(8),
-                campaign_id=1,
+                campaign_id=2,
             )
         self.assertEqual(err.exception.error_dict['amount'][0][0],
                          'Budget exceeds the total credit amount by $1.00.')
@@ -777,7 +866,7 @@ class BudgetsTestCase(TestCase):
             amount=100,
             start_date=TODAY + datetime.timedelta(2),
             end_date=TODAY + datetime.timedelta(8),
-            campaign_id=1,
+            campaign_id=2,
         )
         self.assertEqual(c.get_allocated_amount(), 1000)
 
@@ -814,7 +903,7 @@ class BudgetsTestCase(TestCase):
             amount=800,
             start_date=TODAY + datetime.timedelta(4),
             end_date=TODAY + datetime.timedelta(7),
-            campaign_id=1,
+            campaign_id=2,
         )
         b.save(request=request)
         history = models.BudgetHistory.objects.filter(budget=b).order_by('-created_dt')
@@ -853,7 +942,7 @@ class BudgetsTestCase(TestCase):
                 amount=800,
                 start_date=TODAY + datetime.timedelta(4),
                 end_date=TODAY + datetime.timedelta(8),
-                campaign_id=1,
+                campaign_id=2,
             )
         self.assertTrue('credit' in err.exception.error_dict)
 
@@ -864,7 +953,7 @@ class BudgetsTestCase(TestCase):
             amount=800,
             start_date=TODAY + datetime.timedelta(4),
             end_date=TODAY + datetime.timedelta(8),
-            campaign_id=1,
+            campaign_id=2,
         )
         self.assertEqual(b.credit, c)
 
@@ -883,21 +972,21 @@ class BudgetsTestCase(TestCase):
             amount=800,
             start_date=TODAY - datetime.timedelta(4),
             end_date=TODAY + datetime.timedelta(8),
-            campaign_id=1,
+            campaign_id=2,
         )
         b2 = create_budget(
             credit=c,
             amount=800,
             start_date=TODAY + datetime.timedelta(4),
             end_date=TODAY + datetime.timedelta(8),
-            campaign_id=1,
+            campaign_id=2,
         )
         b3 = create_budget(
             credit=c,
             amount=800,
             start_date=TODAY + datetime.timedelta(4),
             end_date=TODAY + datetime.timedelta(8),
-            campaign_id=1,
+            campaign_id=2,
         )
         with self.assertRaises(AssertionError):
             b1.delete()
@@ -925,7 +1014,7 @@ class BudgetsTestCase(TestCase):
             'end_date': str(TODAY + datetime.timedelta(10)),
             'amount': 100,
             'status': 1,
-            'campaign': 1,
+            'campaign': 2,
             'comment': 'Test case',
         })
         self.assertFalse(budget_form.is_valid())
@@ -937,11 +1026,23 @@ class BudgetsTestCase(TestCase):
             'end_date': str(TODAY + datetime.timedelta(10)),
             'amount': 100,
             'status': 1,
-            'campaign': 1,
+            'campaign': 2,
             'comment': 'Test case',
         })
         self.assertTrue(budget_form.is_valid())
         self.assertFalse(budget_form.errors)
+
+        budget_form = forms.BudgetLineItemForm({
+            'credit': c.id,
+            'start_date': str(TODAY + datetime.timedelta(1)),
+            'end_date': str(TODAY + datetime.timedelta(10)),
+            'amount': -100,
+            'status': 1,
+            'campaign': 2,
+            'comment': 'Test case',
+        })
+        self.assertFalse(budget_form.is_valid())
+        self.assertTrue(budget_form.errors)
 
         budget_form = forms.BudgetLineItemForm({
             'credit': c.id,
@@ -962,7 +1063,7 @@ class BudgetsTestCase(TestCase):
             'end_date': str(TODAY + datetime.timedelta(10)),
             'amount': 1100,
             'status': 1,
-            'campaign': 1,
+            'campaign': 2,
             'comment': 'Test case',
         })
         self.assertFalse(budget_form.is_valid())
@@ -984,7 +1085,7 @@ class BudgetsTestCase(TestCase):
             amount=1000,
             start_date=TODAY + datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(2),
-            campaign_id=1,
+            campaign_id=2,
         )
 
         self.assertEqual(b.state(), constants.BudgetLineItemState.PENDING)
@@ -1017,14 +1118,14 @@ class BudgetsTestCase(TestCase):
             amount=300,
             start_date=TODAY - datetime.timedelta(2),
             end_date=TODAY - datetime.timedelta(1),
-            campaign_id=1,
+            campaign_id=2,
         )
         b2 = create_budget(
             credit=c,
             amount=300,
             start_date=TODAY,
             end_date=TODAY + datetime.timedelta(1),
-            campaign_id=1,
+            campaign_id=2,
         )
 
         self.assertEqual(b2.state(),
@@ -1053,7 +1154,7 @@ class BudgetsTestCase(TestCase):
                 amount=300,
                 start_date=TODAY,
                 end_date=TODAY + datetime.timedelta(1),
-                campaign_id=1,
+                campaign_id=2,
             )
         self.assertTrue('credit' in err.exception.error_dict)
 
@@ -1080,7 +1181,7 @@ class BudgetSpendTestCase(TestCase):
             amount=1000,
             start_date=self.start_date,
             end_date=self.end_date,
-            campaign_id=1,
+            campaign_id=2,
             margin=Decimal('0.123'),
         )
 
@@ -1326,7 +1427,7 @@ class BudgetReserveTestCase(TestCase):
             amount=800,
             start_date=self.start_date,
             end_date=self.end_date,
-            campaign_id=1,
+            campaign_id=2,
         )
 
     def test_editing_budget_amount(self):
@@ -1516,7 +1617,7 @@ class BudgetReserveTestCase(TestCase):
 
         self.assertEqual(budget1.freed_cc, 200 * converters.DOLAR_TO_CC)
 
-        with self.assertRaises(ValidationError) as err:
+        with self.assertRaises(ValidationError):
             models.BudgetLineItem.objects.create(
                 credit=credit,
                 amount=200,
@@ -1540,7 +1641,7 @@ class BudgetReserveTestCase(TestCase):
             amount=1000,
             start_date=TODAY - datetime.timedelta(1),
             end_date=TODAY - datetime.timedelta(1),
-            campaign_id=1,
+            campaign_id=2,
         )
         create_statement(
             budget=b,
@@ -1574,7 +1675,7 @@ class BudgetReserveTestCase(TestCase):
             amount=1000,
             start_date=TODAY - datetime.timedelta(1),
             end_date=TODAY - datetime.timedelta(1),
-            campaign_id=1,
+            campaign_id=2,
         )
         self.assertEqual(len(c.budgets.all()), 1)
         with self.assertRaises(ValidationError) as err:
@@ -1583,7 +1684,7 @@ class BudgetReserveTestCase(TestCase):
                 amount=500,
                 start_date=TODAY - datetime.timedelta(1),
                 end_date=TODAY - datetime.timedelta(1),
-                campaign_id=1,
+                campaign_id=2,
             )
         self.assertEqual(err.exception.error_dict['amount'][0][0],
                          u'Budget exceeds the total credit amount by $500.00.')
@@ -1598,7 +1699,7 @@ class BudgetReserveTestCase(TestCase):
                 amount=201,
                 start_date=TODAY - datetime.timedelta(1),
                 end_date=TODAY - datetime.timedelta(1),
-                campaign_id=1,
+                campaign_id=2,
             )
         self.assertEqual(err.exception.error_dict['amount'][0][0],
                          u'Budget exceeds the total credit amount by $1.00.')
@@ -1609,7 +1710,7 @@ class BudgetReserveTestCase(TestCase):
             amount=200,
             start_date=TODAY - datetime.timedelta(1),
             end_date=TODAY - datetime.timedelta(1),
-            campaign_id=1,
+            campaign_id=2,
         )
         self.assertEqual(len(c.budgets.all()), 2)
 
@@ -1633,14 +1734,14 @@ class BCMCommandTestCase(TestCase):
             amount=200,
             start_date=TODAY - datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(1),
-            campaign_id=1,
+            campaign_id=2,
         )
         self.b2 = create_budget(
             credit=self.c,
             amount=500,
             start_date=TODAY - datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(1),
-            campaign_id=1,
+            campaign_id=2,
         )
 
     def _call_command(self, *args, **kwargs):
@@ -1653,9 +1754,8 @@ class BCMCommandTestCase(TestCase):
     def test_list_budget(self):
         self.assertEqual(
             self._call_command('bcm', 'list', 'budgets', str(self.b1.pk), str(self.b2.pk)),
-            ''' - #{} test account 1, test campaign 1, 2015-11-30 - 2015-12-02 ($200, freed $0.0000, margin 0.0000)
- - #{} test account 1, test campaign 1, 2015-11-30 - 2015-12-02 ($500, freed $0.0000, margin 0.0000)
-'''.format(self.b1.pk, self.b2.pk)
+            ''' - #22 test account 2, test campaign 2, 2015-11-30 - 2015-12-02 ($200, freed $0.0000, margin 0.0000)
+ - #23 test account 2, test campaign 2, 2015-11-30 - 2015-12-02 ($500, freed $0.0000, margin 0.0000)\n'''.format(self.b1.pk, self.b2.pk)
         )
 
     def test_list_credit(self):
@@ -1880,7 +1980,7 @@ class BCMCommandTestCase(TestCase):
             amount=200,
             start_date=TODAY - datetime.timedelta(10),
             end_date=TODAY - datetime.timedelta(5),
-            campaign_id=1,
+            campaign_id=2,
         )
         self._call_command('bcm', 'release', 'budgets', str(b.pk), '--no-confirm')
 
@@ -1915,7 +2015,7 @@ class BCMCommandTestCase(TestCase):
             amount=200,
             start_date=TODAY - datetime.timedelta(10),
             end_date=TODAY - datetime.timedelta(5),
-            campaign_id=1,
+            campaign_id=2,
         )
 
         out = self._call_command('bcm', 'list', 'budgets', '--credits', str(self.c.pk))
@@ -1923,7 +2023,7 @@ class BCMCommandTestCase(TestCase):
         self.assertIn('#' + str(self.b2.pk), out)
         self.assertNotIn('#' + str(b.pk), out)
 
-        out = self._call_command('bcm', 'list', 'budgets', '--campaigns', '1')
+        out = self._call_command('bcm', 'list', 'budgets', '--campaigns', '2')
         self.assertIn('#' + str(self.b1.pk), out)
         self.assertIn('#' + str(self.b2.pk), out)
         self.assertIn('#' + str(b.pk), out)

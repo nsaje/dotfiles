@@ -45,7 +45,8 @@
             </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="item in $ctrl.state.credit.active">
+            <tr ng-repeat="item in $ctrl.state.credit.active"
+                ng-class="{'credit-canceled': !!item.isCanceled, 'credit-pending': !(item.isSigned && item.isCanceled)}">
                 <td>{{ item.id }}</td>
                 <td>{{ item.createdBy }}<br /><span class="text-gray">{{ item.createdOn }}</span></td>
                 <td>{{ item.startDate }}</td>
@@ -108,7 +109,8 @@
             </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="item in $ctrl.state.credit.past">
+            <tr ng-repeat="item in $ctrl.state.credit.past"
+                ng-class="{'credit-canceled': !!item.isCanceled, 'credit-pending': !(item.isSigned && item.isCanceled)}">
                 <td>{{ item.id }}</td>
                 <td>{{ item.createdBy }}<br /><span class="text-gray">{{ item.createdOn }}</span></td>
                 <td>{{ item.startDate }}</td>

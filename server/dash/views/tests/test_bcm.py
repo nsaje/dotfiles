@@ -60,6 +60,9 @@ class AccountCreditViewTest(BCMViewTestCase):
 
     def test_get(self):
         url = reverse('accounts_credit', kwargs={'account_id': 1})
+        c = models.CreditLineItem.objects.get(pk=1)
+        c.status = constants.CreditLineItemStatus.SIGNED
+        c.save()
 
         self.add_permission('account_credit_view')
         with patch('utils.dates_helper.local_today') as mock_now:
@@ -81,7 +84,7 @@ class AccountCreditViewTest(BCMViewTestCase):
                     "total": "100000.0000",
                     "comment": "Test case",
                     "id": 1,
-                    "is_signed": False,
+                    "is_signed": True,
                     "is_canceled": False,
                     "is_agency": False,
                     "budgets": [
@@ -120,7 +123,7 @@ class AccountCreditViewTest(BCMViewTestCase):
                     "allocated": "100000.0000",
                     "total": "100000.0000",
                     "id": 1,
-                    "is_signed": False,
+                    "is_signed": True,
                     "is_canceled": False,
                     "is_agency": False,
                     "budgets": [
@@ -158,7 +161,7 @@ class AccountCreditViewTest(BCMViewTestCase):
                     "total": "99900.0000",
                     "comment": "Agency credit",
                     "id": 1000,
-                    "is_signed": False,
+                    "is_signed": True,
                     "is_canceled": False,
                     "is_agency": True,
                     "budgets": [],
@@ -535,14 +538,14 @@ class AccountCreditItemViewTest(BCMViewTestCase):
 
         self.add_permission('account_credit_view')
 
-        item = models.CreditLineItem.objects.get(pk=2)
+        item = models.CreditLineItem.objects.get(pk=1000)
         self.assertEqual(item.amount, 100000)
 
         data = {
-            'start_date': '2015-12-01',
-            'end_date': '2015-12-01',
-            'amount': '1000',
-            'license_fee': '30%',
+            'start_date': str(item.start_date),
+            'end_date': str(item.end_date),
+            'amount': '2000000',
+            'license_fee': '20%',
             'comment': 'no comment',
             'account': 1000,
             'is_agency': True,
@@ -552,8 +555,9 @@ class AccountCreditItemViewTest(BCMViewTestCase):
             response = self.client.post(url, json.dumps(data), content_type='application/json')
 
         item = models.CreditLineItem.objects.get(pk=1000)
+
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(item.amount, 1000)
+        self.assertEqual(item.amount, 2000000)
         self.assertEqual(json.loads(response.content)['data'], "1000")
         self.assertEqual(item.agency_id, 1)
 
@@ -786,7 +790,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             'comment': u'Agency credit',
             'end_date': u'2015-11-30',
             'start_date': u'2015-10-01',
-            'is_available': False,
+            'is_available': True,
             'license_fee': u'20',
             'total': u'99900.0000',
             'id': 1000,
@@ -795,16 +799,26 @@ class CampaignBudgetViewTest(BCMViewTestCase):
 
     @patch('automation.campaign_stop.perform_landing_mode_check')
     def test_put(self, mock_lmode):
+        c = models.CreditLineItem.objects.create(
+            account_id=10,
+            start_date=datetime.date(2015, 10, 1),
+            end_date=datetime.date(2015, 11, 30),
+            amount=10000,
+            license_fee=Decimal('0.2'),
+            status=constants.CreditLineItemStatus.PENDING,
+            created_by_id=1,
+        )
+
         mock_lmode.return_value = False
         data = {
-            'credit': 2,
+            'credit': c.pk,
             'amount': '1000',
             'start_date': '2015-10-01',
             'end_date': '2015-12-31',
             'comment': 'Comment'
         }
 
-        url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
+        url = reverse('campaigns_budget', kwargs={'campaign_id': 10})
 
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 10, 11)
@@ -817,7 +831,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             response = self.client.put(url, json.dumps(data), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
-        credit = models.CreditLineItem.objects.get(pk=2)
+        credit = models.CreditLineItem.objects.get(pk=c.pk)
         credit.status = 1
         credit.end_date = datetime.date(2015, 12, 31)
         credit.save()
@@ -829,7 +843,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertTrue(mock_lmode.called)
 
         hist = history_helpers.get_campaign_history(
-            models.Campaign.objects.get(pk=1)).first()
+            models.Campaign.objects.get(pk=10)).first()
         self.assertIsNotNone(hist.created_by)
         self.assertEqual(constants.HistoryActionType.CREATE, hist.action_type)
 
@@ -843,19 +857,28 @@ class CampaignBudgetViewTest(BCMViewTestCase):
 
     @patch('automation.campaign_stop.perform_landing_mode_check')
     def test_put_margin_no_permission(self, mock_lmode):
+        c = models.CreditLineItem.objects.create(
+            account_id=10,
+            start_date=datetime.date(2015, 10, 1),
+            end_date=datetime.date(2015, 11, 30),
+            amount=10000,
+            license_fee=Decimal('0.2'),
+            status=constants.CreditLineItemStatus.PENDING,
+            created_by_id=1,
+        )
+
         mock_lmode.return_value = False
-        credit_id = 2
         data = {
-            'credit': credit_id,
+            'credit': c.pk,
             'amount': '1000',
             'start_date': '2015-10-01',
             'end_date': '2015-10-31',
             'margin': '20%',
             'comment': 'Comment'
         }
-        models.CreditLineItem.objects.filter(pk=credit_id).update(status=constants.CreditLineItemStatus.SIGNED)
+        models.CreditLineItem.objects.filter(pk=c.pk).update(status=constants.CreditLineItemStatus.SIGNED)
 
-        url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
+        url = reverse('campaigns_budget', kwargs={'campaign_id': 10})
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 9, 30)
             response = self.client.put(url, json.dumps(data), content_type='application/json')
@@ -868,20 +891,29 @@ class CampaignBudgetViewTest(BCMViewTestCase):
 
     @patch('automation.campaign_stop.perform_landing_mode_check')
     def test_put_margin(self, mock_lmode):
+        c = models.CreditLineItem.objects.create(
+            account_id=10,
+            start_date=datetime.date(2015, 10, 1),
+            end_date=datetime.date(2015, 11, 30),
+            amount=10000,
+            license_fee=Decimal('0.2'),
+            status=constants.CreditLineItemStatus.PENDING,
+            created_by_id=1,
+        )
+
         mock_lmode.return_value = False
-        credit_id = 2
         data = {
-            'credit': credit_id,
+            'credit': c.pk,
             'amount': '1000',
             'start_date': '2015-10-01',
             'end_date': '2015-10-31',
             'margin': '20%',
             'comment': 'Comment'
         }
-        models.CreditLineItem.objects.filter(pk=credit_id).update(status=constants.CreditLineItemStatus.SIGNED)
+        models.CreditLineItem.objects.filter(pk=c.pk).update(status=constants.CreditLineItemStatus.SIGNED)
 
         self.add_permission('can_manage_agency_margin')
-        url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
+        url = reverse('campaigns_budget', kwargs={'campaign_id': 10})
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 9, 30)
             response = self.client.put(url, json.dumps(data), content_type='application/json')
@@ -1463,8 +1495,8 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
             "past": [],
             "totals": {
                 "available": "0.0000",
-                "allocated": "110000.0000",
-                "total": "110000.0000",
+                "allocated": "10000.0000",
+                "total": "10000.0000",
                 "past": "0",
             }
         })
@@ -1511,12 +1543,8 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                 }
             ],
             "past": [],
-            "totals": {
-                "available": "5006.0000",
-                "allocated": "104994.0000",
-                "total": "110000.0000",
-                "past": "0",
-            }
+            "totals":  {
+                u'past': u'0', u'available': u'5006.0000', u'allocated': u'4994.0000', u'total': u'10000.0000'}
         }
         on_freed_data = {
             "active": [
@@ -1561,12 +1589,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                 }
             ],
             "past": [],
-            "totals": {
-                "available": "5050.0000",
-                "allocated": "104950.0000",
-                "total": "110000.0000",
-                "past": "0",
-            }
+            u'totals': {u'past': u'0', u'available': u'5050.0000', u'allocated': u'4950.0000', u'total': u'10000.0000'}
         }
 
         with patch('utils.dates_helper.local_today') as mock_now:

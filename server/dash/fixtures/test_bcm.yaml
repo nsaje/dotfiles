@@ -122,6 +122,15 @@
 -   fields:
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        account: 2 # test account 1
+        name: 'test campaign 2'
+    model: dash.campaign
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
         modified_by: 10
         account: 10 # test account 1
         name: 'test campaign non-connected'

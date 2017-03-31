@@ -1344,10 +1344,10 @@ class HistoryTest(TestCase):
             '''
             Created credit
             . Credit: #{cid}. Status set to "Signed"
-            , Comment set to ""
             , End Date set to "{ed}"
             , Flat Fee Start Date set to ""
             , Flat Fee (cc) set to "$0.00"
+            , Comment set to ""
             , Start Date set to "{sd}"
             , Flat Fee End Date set to ""
             , Amount set to "$100.00"
