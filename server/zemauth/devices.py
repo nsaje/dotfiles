@@ -78,10 +78,10 @@ def _send_email(request):
         ip_info = {}
     user_agent = request.META['HTTP_USER_AGENT']
     user_agent_parsed = user_agent_parser.Parse(user_agent)
-    browser = user_agent_parsed.get('user_agent', {}).get('family', 'Unknown Browser')
-    os = user_agent_parsed.get('os', {}).get('family', 'Unknown Operating System')
-    city = ip_info.get('city', 'Unknown City')
-    country = ip_info.get('country', 'Unknown Country')
+    browser = user_agent_parsed.get('user_agent', {}).get('family') or 'Unknown Browser'
+    os = user_agent_parsed.get('os', {}).get('family') or 'Unknown Operating System'
+    city = ip_info.get('city') or 'Unknown City'
+    country = ip_info.get('country') or 'Unknown Country'
     if any('Unknown' in prop for prop in [browser, os, city, country]):
         logger.warning(
             'Could\'t extract information for new device email. '
