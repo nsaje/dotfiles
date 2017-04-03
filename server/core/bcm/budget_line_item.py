@@ -1,0 +1,382 @@
+# -*- coding: utf-8 -*-
+import datetime
+from decimal import Decimal
+
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.db.models import Sum
+from django.forms.models import model_to_dict
+
+import utils.demo_anonymizer
+import utils.string_helper
+from dash import constants
+from utils import converters
+from utils import dates_helper
+from utils import lc_helper
+
+
+import core.bcm.helpers
+import core.common
+import core.history
+
+
+class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
+    class Meta:
+        app_label = 'dash'
+
+    history_fields = [
+        'start_date',
+        'end_date',
+        'amount',
+        'freed_cc',
+        'margin',
+        'comment',
+    ]
+
+    _demo_fields = {
+        'comment': lambda: 'Monthly budget',
+    }
+    campaign = models.ForeignKey('Campaign', related_name='budgets', on_delete=models.PROTECT)
+    credit = models.ForeignKey('CreditLineItem', related_name='budgets', on_delete=models.PROTECT)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    margin = models.DecimalField(
+        decimal_places=4,
+        max_digits=5,
+        default=Decimal('0'),
+    )
+
+    amount = models.IntegerField()
+    freed_cc = models.BigIntegerField(default=0)
+
+    comment = models.CharField(max_length=256, blank=True, null=True)
+
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(
+        auto_now=True, verbose_name='Modified at')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
+                                   verbose_name='Created by',
+                                   on_delete=models.PROTECT, null=True, blank=True)
+
+    objects = core.common.QuerySetManager()
+
+    def __unicode__(self):
+        return u'${} - from {} to {} (id: {}, campaign: {})'.format(
+            self.amount,
+            self.start_date,
+            self.end_date,
+            self.id,
+            unicode(self.campaign),
+        )
+
+    @classmethod
+    def get_human_prop_name(cls, prop_name):
+        NAMES = {
+            'start_date': 'Start Date',
+            'end_date': 'End Date',
+            'amount': 'Amount',
+            'freed_cc': 'Released amount',
+            'margin': 'Margin',
+            'comment': 'Comment',
+        }
+        return NAMES.get(prop_name)
+
+    @classmethod
+    def get_human_value(cls, prop_name, value):
+        if prop_name == 'amount' and value is not None:
+            value = lc_helper.default_currency(value)
+        elif prop_name == 'freed_cc' and value is not None:
+            value = lc_helper.default_currency(
+                Decimal(value) * converters.CC_TO_DECIMAL_DOLAR)
+        elif prop_name == 'flat_fee_cc':
+            value = lc_helper.default_currency(
+                Decimal(value) * converters.CC_TO_DECIMAL_DOLAR)
+        elif prop_name == 'margin' and value is not None:
+            value = '{}%'.format(utils.string_helper.format_decimal(
+                Decimal(value) * 100, 2, 3))
+        elif prop_name == 'comment':
+            value = value or ''
+        return value
+
+    def get_settings_dict(self):
+        return {history_key: getattr(self, history_key) for history_key in self.history_fields}
+
+    def save(self, request=None, action_type=None, *args, **kwargs):
+        import core.bcm
+        self.full_clean()
+        if request and not self.pk:
+            self.created_by = request.user
+        super(BudgetLineItem, self).save(*args, **kwargs)
+        core.bcm.BudgetHistory.objects.create(
+            created_by=request.user if request else None,
+            snapshot=model_to_dict(self),
+            budget=self,
+        )
+        self.add_to_history(
+            request and request.user,
+            action_type)
+
+    def add_to_history(self, user, action_type):
+        changes = self.get_model_state_changes(
+            model_to_dict(self)
+        )
+        # this is a temporary state until cleaning up of settings changes text
+        if not changes and not self.post_init_newly_created:
+            return None, ''
+
+        if self.post_init_newly_created:
+            changes = model_to_dict(self)
+
+        changes, changes_text = self.construct_changes(
+            'Created budget.',
+            'Budget: #{}.'.format(self.id) if self.id else None,
+            changes
+        )
+        self.campaign.write_history(
+            changes_text,
+            changes=changes,
+            action_type=action_type,
+            user=user
+        )
+
+    def db_state(self, date=None):
+        return BudgetLineItem.objects.get(pk=self.pk).state(date=date)
+
+    def delete(self):
+        if self.db_state() != constants.BudgetLineItemState.PENDING:
+            raise AssertionError('Cannot delete nonpending budgets')
+        super(BudgetLineItem, self).delete()
+
+    def get_overlap(self, start_date, end_date):
+        return dates_helper.get_overlap(self.start_date, self.end_date, start_date, end_date)
+
+    def get_available_amount(self, date=None):
+        if date is None:
+            date = dates_helper.local_today()
+        total_spend = self.get_spend_data(date=date, use_decimal=True)['total']
+        return self.allocated_amount() - total_spend
+
+    def state(self, date=None):
+        if date is None:
+            date = dates_helper.local_today()
+        if self.get_available_amount(date) <= 0:
+            return constants.BudgetLineItemState.DEPLETED
+        if self.end_date and self.end_date < date:
+            return constants.BudgetLineItemState.INACTIVE
+        if self.start_date and self.start_date <= date:
+            return constants.BudgetLineItemState.ACTIVE
+        return constants.BudgetLineItemState.PENDING
+
+    def state_text(self, date=None):
+        return constants.BudgetLineItemState.get_text(self.state(date=date))
+
+    def allocated_amount_cc(self):
+        return self.amount * converters.DOLAR_TO_CC - self.freed_cc
+
+    def allocated_amount(self):
+        return Decimal(self.allocated_amount_cc()) * converters.CC_TO_DECIMAL_DOLAR
+
+    def is_editable(self):
+        return self.state() == constants.BudgetLineItemState.PENDING
+
+    def is_updatable(self):
+        return self.state() == constants.BudgetLineItemState.ACTIVE
+
+    def free_inactive_allocated_assets(self):
+        if self.state() != constants.BudgetLineItemState.INACTIVE:
+            raise AssertionError('Budget has to be inactive to be freed.')
+        amount_cc = self.amount * converters.DOLAR_TO_CC
+        spend_data = self.get_spend_data()
+
+        reserve = self.get_reserve_amount_cc()
+        free_date = self.end_date + \
+            datetime.timedelta(days=settings.LAST_N_DAY_REPORTS)
+        is_over_sync_time = dates_helper.local_today() > free_date
+
+        if is_over_sync_time:
+            # After we completed all syncs, free all the assets including
+            # reserve
+            self.freed_cc = max(0, amount_cc - spend_data['total_cc'])
+        elif self.freed_cc == 0 and reserve is not None:
+            self.freed_cc = max(
+                0, amount_cc - spend_data['total_cc'] - reserve
+            )
+
+        self.save()
+
+    def get_reserve_amount_cc(self, factor_offset=0):
+        try:
+            # try to get previous statement that has more solid data
+            statement = list(self.statements.all().order_by('-date')[:2])[-1]
+        except IndexError:
+            return None
+        total_cc = converters.nano_to_cc(
+            statement.data_spend_nano + statement.media_spend_nano + statement.license_fee_nano
+        )
+        return total_cc * (factor_offset + settings.BUDGET_RESERVE_FACTOR)
+
+    def get_latest_statement(self):
+        return self.statements.all().order_by('-date').first()
+
+    def get_latest_statement_qs(self):
+        latest_statement = self.get_latest_statement()
+        if not latest_statement:
+            import reports.models
+            return reports.models.BudgetDailyStatement.objects.none()
+        return self.statements.filter(id=latest_statement.id)
+
+    def get_spend_data(self, date=None, use_decimal=False):
+        import reports.budget_helpers
+        return reports.budget_helpers.calculate_spend_data(
+            self.statements,
+            date=date,
+            use_decimal=use_decimal
+        )
+
+    def get_daily_spend(self, date, use_decimal=False):
+        statement = date and self.statements.filter(date=date)\
+            or self.get_latest_statement_qs()
+        import reports.budget_helpers
+        return reports.budget_helpers.calculate_spend_data(
+            statement,
+            date=date,
+            use_decimal=use_decimal
+        )
+
+    def get_ideal_budget_spend(self, date):
+        '''
+        Ideal budget spend at END of specified date.
+        '''
+        if date < self.start_date:
+            return 0
+        elif date >= self.end_date:
+            return self.amount
+
+        date_start_diff = (date - self.start_date).days + 1
+        date_total_diff = (self.end_date - self.start_date).days + 1
+
+        return self.amount * Decimal(date_start_diff) / Decimal(date_total_diff)
+
+    def clean(self):
+        if self.pk:
+            db_state = self.db_state()
+            if self.has_changed('margin'):
+                raise ValidationError({
+                    'margin': 'Margin can only be set on newly created budgets.',
+                })
+            if self.has_changed('start_date') and not db_state == constants.BudgetLineItemState.PENDING:
+                raise ValidationError(
+                    'Only pending budgets can change start date and amount.')
+            is_reserve_update = all([
+                not self.has_changed('start_date'),
+                not self.has_changed('end_date'),
+                not self.has_changed('amount'),
+                not self.has_changed('campaign'),
+            ])
+            if not is_reserve_update and db_state not in (constants.BudgetLineItemState.PENDING,
+                                                          constants.BudgetLineItemState.ACTIVE,):
+                raise ValidationError(
+                    'Only pending and active budgets can change.')
+        elif self.credit.status == constants.CreditLineItemStatus.CANCELED:
+            raise ValidationError({
+                'credit': 'Canceled credits cannot have new budget items.'
+            })
+
+        core.bcm.helpers.validate(
+            self.validate_start_date,
+            self.validate_end_date,
+            self.validate_amount,
+            self.validate_credit,
+            self.validate_campaign,
+        )
+
+    def license_fee(self):
+        return self.credit.license_fee
+
+    def validate_campaign(self):
+        is_valid_account_credit = self.credit.account_id and self.campaign.account_id == self.credit.account_id
+        is_valid_agency_credit = self.credit.agency_id and self.campaign.account.agency_id == self.credit.agency_id
+        if not (is_valid_account_credit or is_valid_agency_credit):
+            raise ValidationError('Campaign has no credit.')
+
+    def validate_credit(self):
+        if self.has_changed('credit'):
+            raise ValidationError('Credit cannot change.')
+        if self.credit.status == constants.CreditLineItemStatus.PENDING:
+            raise ValidationError(
+                'Cannot allocate budget from an unsigned credit.')
+
+    def validate_start_date(self):
+        if not self.start_date:
+            return
+        if self.start_date < self.credit.start_date:
+            raise ValidationError(
+                'Start date cannot be smaller than the credit\'s start date.')
+
+    def validate_end_date(self):
+        if not self.end_date:
+            return
+        if self.end_date > self.credit.end_date:
+            raise ValidationError(
+                'End date cannot be bigger than the credit\'s end date.')
+        if self.start_date and self.start_date > self.end_date:
+            raise ValidationError(
+                'Start date cannot be bigger than the end date.')
+
+    def validate_margin(self):
+        if not self.margin:
+            return
+        if not (0 <= self.margin < 1):
+            raise ValidationError('Margin must be between 0 and 100%.')
+
+    def validate_amount(self):
+        if self.has_changed('amount') and \
+           self.credit.status == constants.CreditLineItemStatus.CANCELED:
+            raise ValidationError(
+                'Canceled credit\'s budget amounts cannot change.')
+        if not self.amount:
+            return
+        if self.amount < 0:
+            raise ValidationError('Amount cannot be negative.')
+
+        budgets = self.credit.budgets.exclude(pk=self.pk)
+        delta = self.credit.effective_amount() - sum(b.allocated_amount()
+                                                     for b in budgets) - self.allocated_amount()
+        if delta < 0:
+            raise ValidationError(
+                'Budget exceeds the total credit amount by ${}.'.format(
+                    -delta.quantize(Decimal('1.00'))
+                )
+            )
+
+    @classmethod
+    def get_defaults_dict(cls):
+        return {}
+
+    class QuerySet(models.QuerySet):
+
+        def delete(self):
+            if any(itm.state() != constants.BudgetLineItemState.PENDING for itm in self):
+                raise AssertionError('Some budget items are not pending')
+            super(BudgetLineItem.QuerySet, self).delete()
+
+        def filter_active(self, date=None):
+            if date is None:
+                date = dates_helper.local_today()
+            return self.exclude(
+                end_date__lt=date
+            ).filter(
+                start_date__lte=date
+            ).annotate(
+                media_spend_sum=Sum('statements__media_spend_nano'),
+                license_fee_spend_sum=Sum('statements__license_fee_nano'),
+                data_spend_sum=Sum('statements__data_spend_nano')
+            ).exclude(
+                amount__lte=core.bcm.helpers.Round(
+                    core.bcm.helpers.Coalesce('media_spend_sum') * 1e-9 +
+                    core.bcm.helpers.Coalesce('license_fee_spend_sum') * 1e-9 +
+                    core.bcm.helpers.Coalesce('data_spend_sum') * 1e-9
+                )
+            )

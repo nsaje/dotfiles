@@ -1,0 +1,54 @@
+# -*- coding: utf-8 -*-
+
+from django.db import models
+from django.db.models.functions import Concat
+
+import core.entity
+import core.common
+
+
+class PublisherGroupEntry(models.Model):
+    class Meta:
+        app_label = 'dash'
+        ordering = ('pk',)
+
+    id = models.AutoField(primary_key=True)
+    publisher_group = models.ForeignKey('PublisherGroup', related_name='entries')
+
+    publisher = models.CharField(max_length=127, blank=False, null=False, verbose_name='Publisher name or domain')
+    source = models.ForeignKey('Source', null=True, blank=True, on_delete=models.PROTECT)
+    include_subdomains = models.BooleanField(default=True)
+
+    outbrain_publisher_id = models.CharField(max_length=127, blank=True, verbose_name='Special Outbrain publisher ID')
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+
+    objects = core.common.QuerySetManager()
+
+    class QuerySet(models.QuerySet):
+
+        def filter_by_sources(self, sources, include_wo_source=False):
+            if not core.entity.helpers.should_filter_by_sources(sources):
+                return self
+
+            if not include_wo_source:
+                return self.filter(source__in=sources)
+
+            return self.filter(models.Q(source__in=sources) | models.Q(source__isnull=True))
+
+        def filter_by_publisher_source(self, publisher_source_dicts):
+            q = models.Q()
+            for entry in publisher_source_dicts:
+                q |= models.Q(publisher=entry['publisher'], source=entry['source'])
+            return self.filter(q)
+
+        def annotate_publisher_id(self):
+            return self.annotate(publisher_id=Concat(
+                'publisher', models.Value('__'), 'source_id', output_field=models.CharField()))
+
+    def __unicode__(self):
+        return u'{} ({})'.format(self.publisher, self.source if self.source else 'All sources')
+
+    def __str__(self):
+        return unicode(self).encode('ascii', 'ignore')

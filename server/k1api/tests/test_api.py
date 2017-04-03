@@ -12,6 +12,7 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.db.models import F
 
+import dash.features.geolocation
 import dash.constants
 import dash.models
 
@@ -1194,7 +1195,7 @@ class GeolocationsTest(K1ApiTest):
                      {'key': 'US-NY', 'name': 'new york', 'outbrain_id': 'bbcdef', 'woeid': '124'}]
 
         for loc in self.locs:
-            dash.geolocation.Geolocation.objects.create(**loc)
+            dash.features.geolocation.Geolocation.objects.create(**loc)
         super(GeolocationsTest, self).setUp()
 
     def test_get_geolocations(self):

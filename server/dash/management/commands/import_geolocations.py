@@ -8,7 +8,7 @@ from utils.command_helpers import ExceptionCommand
 import dash.regions
 from dash import constants
 
-import dash.geolocation
+import dash.features.geolocation
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ class Command(ExceptionCommand):
         objs = []
         for loc_type, location in locations_by_type.iteritems():
             for key, name in location.iteritems():
-                objs.append(dash.geolocation.Geolocation(
+                objs.append(dash.features.geolocation.Geolocation(
                     type=loc_type,
                     key=key,
                     name=name,
@@ -40,7 +40,7 @@ class Command(ExceptionCommand):
 
         # add ZIP code mappings
         for key in set(self.get_zips(yahoo_mapping)).union(set(self.get_zips(outbrain_mapping))):
-            objs.append(dash.geolocation.Geolocation(
+            objs.append(dash.features.geolocation.Geolocation(
                 type=constants.LocationType.ZIP,
                 key=key,
                 name=key,
@@ -49,8 +49,8 @@ class Command(ExceptionCommand):
             ))
 
         with transaction.atomic():
-            dash.geolocation.Geolocation.objects.all().delete()
-            dash.geolocation.Geolocation.objects.bulk_create(objs)
+            dash.features.geolocation.Geolocation.objects.all().delete()
+            dash.features.geolocation.Geolocation.objects.bulk_create(objs)
 
     @staticmethod
     def get_locations(maxmind_csv_path):

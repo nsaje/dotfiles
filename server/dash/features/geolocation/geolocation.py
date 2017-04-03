@@ -1,6 +1,8 @@
+# -*- coding: utf-8 -*-
+
 from django.db import models
 
-import dash.constants
+from dash import constants
 
 
 class GeolocationManager(models.Manager):
@@ -23,7 +25,7 @@ class Geolocation(models.Model):
     )
     type = models.CharField(
         max_length=3,
-        choices=dash.constants.LocationType.get_choices()
+        choices=constants.LocationType.get_choices()
     )
     name = models.CharField(
         max_length=127,
