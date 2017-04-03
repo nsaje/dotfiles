@@ -1,7 +1,7 @@
 import datetime
 import collections
 import calendar
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
 import newrelic.agent
 from django.db.models import Prefetch
@@ -15,7 +15,8 @@ from utils import converters
 
 
 class BudgetProjections(object):
-    PRECISION = 2
+    PRECISION = Decimal('.0001')
+    ROUNDING = ROUND_HALF_UP
     CONFIDENCE_OFFSET_DAYS = 7
     BREAKDOWN_PREFIX = {
         'account': 'campaign__'
@@ -145,8 +146,9 @@ class BudgetProjections(object):
 
         self.totals['pacing'] = None
         if self.totals['ideal_media_spend']:
-            self.totals['pacing'] = self.totals['attributed_media_spend'] / \
-                self.totals['ideal_media_spend'] * Decimal(100)
+            self.totals['pacing'] = (self.totals['attributed_media_spend'] /
+                                     self.totals['ideal_media_spend'] * Decimal(100)).quantize(BudgetProjections.PRECISION,
+                                                                                               rounding=BudgetProjections.ROUNDING)
 
     def _get_credit_line_items_by_account(self):
         if self.breakdown != 'account':
@@ -184,7 +186,10 @@ class BudgetProjections(object):
                 row = self._blank_projections()
                 self._calculate_allocated_budgets(row, budgets)
                 self._calculate_recognized_fees(row, budgets, key, credit_line_items_map, accounts_with_spend_map)
-                self.projections[key] = row
+                self.projections[key] = {
+                    metric: value and value.quantize(BudgetProjections.PRECISION, rounding=BudgetProjections.ROUNDING)
+                    for metric, value in row.iteritems()
+                }
                 continue
             statements_on_date, row = {}, {}
             for budget in budgets:
@@ -205,7 +210,10 @@ class BudgetProjections(object):
                                                    num_of_positive_statements)
             self._calculate_total_license_fee_projection(row, budgets)
 
-            self.projections[key] = row
+            self.projections[key] = {
+                metric: value and value.quantize(BudgetProjections.PRECISION, rounding=BudgetProjections.ROUNDING)
+                for metric, value in row.iteritems()
+            }
 
     def _blank_projections(self):
         row = {
