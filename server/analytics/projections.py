@@ -309,6 +309,11 @@ class BudgetProjections(object):
         if agency_account_count == 0:
             return 0
 
+        if account.pk not in accounts_with_spend_by_agency[account.agency_id]:
+            # This account has no spend in this daterange,
+            # Agency credit flat fee has to be excluded
+            return 0
+
         agency_flat_fee_share = Decimal(sum(
             credit.get_flat_fee_on_date_range(self.start_date, self.end_date)
             for credit in account.agency.credits.all()

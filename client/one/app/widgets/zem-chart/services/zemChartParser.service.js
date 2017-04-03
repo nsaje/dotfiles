@@ -356,6 +356,7 @@ angular.module('one.widgets').service('zemChartParser', function ($window, zemCh
             removable: removable,
         };
 
+
         if (legendItem.id === 'totals') {
             chart.legend.items.unshift(legendItem);
         } else {
