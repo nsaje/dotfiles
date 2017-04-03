@@ -104,13 +104,11 @@ def _query_all(breakdown, constraints, parents, goals, use_publishers_view,
     t_conversions = None
     t_touchpoints = None
 
-    if not metrics or set(metrics).intersection(set(
-            queries.get_master_model_cls(use_publishers_view).columns_dict.keys())):
-        sql, params = queries.prepare_query_all_base(breakdown, constraints, parents, use_publishers_view)
-        t_base = threads.AsyncFunction(
-            partial(db.execute_query, sql, params, helpers.get_query_name(
-                breakdown_for_name, '{}_base'.format(extra_name))))
-        t_base.start()
+    sql, params = queries.prepare_query_all_base(breakdown, constraints, parents, use_publishers_view)
+    t_base = threads.AsyncFunction(
+        partial(db.execute_query, sql, params, helpers.get_query_name(
+            breakdown_for_name, '{}_base'.format(extra_name))))
+    t_base.start()
 
     if not metrics or set(metrics).intersection(set(['yesterday_cost', 'e_yesterday_cost'])):
         sql, params = queries.prepare_query_all_yesterday(breakdown, constraints, parents, use_publishers_view)
