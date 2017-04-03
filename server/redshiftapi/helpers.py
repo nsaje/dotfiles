@@ -179,3 +179,17 @@ def get_query_name(breakdown, extra_name=''):
         extra_name = '__' + extra_name
 
     return '__'.join(breakdown) + extra_name
+
+
+def is_pixel_metric(metric):
+    return (
+        metric.startswith('pixel_') or
+        metric.startswith('avg_cost_per_pixel_')
+    )
+
+
+def is_conversion_goal_metric(metric):
+    return (
+        metric.startswith('conversion_goal_') or
+        metric.startswith('avg_cost_per_conversion_goal_')
+    )

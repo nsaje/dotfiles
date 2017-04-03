@@ -124,8 +124,7 @@ def _query_all(breakdown, constraints, parents, goals, use_publishers_view,
 
     if support_conversions:
         if goals.conversion_goals:
-            if not metrics or set(metrics).intersection(
-                    set(queries.get_master_conversions_model_cls(use_publishers_view).columns_dict.keys())):
+            if not metrics or any(helpers.is_conversion_goal_metric(metric) for metric in metrics):
                 sql, params = queries.prepare_query_all_conversions(
                     breakdown + ['slug'], constraints, parents, use_publishers_view)
                 t_conversions = threads.AsyncFunction(
@@ -134,8 +133,7 @@ def _query_all(breakdown, constraints, parents, goals, use_publishers_view,
                 t_conversions.start()
 
         if goals.pixels:
-            if not metrics or set(metrics).intersection(
-                    set(queries.get_master_touchpoints_model_cls(use_publishers_view).columns_dict.keys())):
+            if not metrics or any(helpers.is_pixel_metric(metric) for metric in metrics):
                 sql, params = queries.prepare_query_all_touchpoints(
                     breakdown + ['slug', 'window'], constraints, parents, use_publishers_view)
                 t_touchpoints = threads.AsyncFunction(
