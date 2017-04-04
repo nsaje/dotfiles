@@ -97,7 +97,7 @@ def _get_content_ad_ids_added_yesterday():
         ad_group__campaign=config.AUTOMATION_CAMPAIGN,
         created_dt__lt=pacific_midnight_today,
         created_dt__gte=pacific_midnight_yesterday,
-    ).values_list('id', flat=True)
+    ).exclude_archived().values_list('id', flat=True)
 
 
 def monitor_yesterday_clicks():
