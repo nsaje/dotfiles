@@ -65,7 +65,7 @@ class TargetingExpressionField(forms.Field):
                 tokens = exp.split(':', 1)
                 assert len(tokens) == 2
                 # lr example: lr-IntuitTurbo:45936607
-                assert 'lr-' == exp[:3] or tokens[0] in ['bluekai', 'liveramp', 'outbrain']
+                assert 'lr-' == exp[:3] or tokens[0] in ['bluekai', 'liveramp', 'outbrain', 'lotame']
             except:
                 raise forms.ValidationError('Invalid category format: "%s"' % exp)
         else:
