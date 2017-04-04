@@ -1229,8 +1229,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
     COLUMNS.campaignId.exceptions.breakdowns = [constants.breakdown.CAMPAIGN, constants.breakdown.AD_GROUP, constants.breakdown.CONTENT_AD]; // eslint-disable-line max-len
     COLUMNS.adGroupId.exceptions.breakdowns = [constants.breakdown.AD_GROUP, constants.breakdown.CONTENT_AD];
     COLUMNS.contentAdId.exceptions.breakdowns = [constants.breakdown.CONTENT_AD];
-    COLUMNS.sourceId.exceptions.breakdowns = [constants.breakdown.MEDIA_SOURCE];
-    COLUMNS.sourceSlug.exceptions.breakdowns = [constants.breakdown.MEDIA_SOURCE];
+    COLUMNS.sourceId.exceptions.breakdowns = [constants.breakdown.MEDIA_SOURCE, constants.breakdown.PUBLISHER];
+    COLUMNS.sourceSlug.exceptions.breakdowns = [constants.breakdown.MEDIA_SOURCE, constants.breakdown.PUBLISHER];
 
     function configureBreakdownExceptions (columns, breakdowns) {
         columns.forEach(function (column) {
