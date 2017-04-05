@@ -85,7 +85,7 @@ def validate_source_settings(min_cpc=None, max_cpc=None, **levels):
             msg += 'under {} '.format(
                 lc_helper.default_currency(max_cpc),
             )
-        raise CpcValidationError(msg + 'on all ad groups')
+        raise CpcValidationError(msg + 'on all ad groups. Please contact Customer Success Team.')
 
 
 def create(constraint_type=dash.constants.CpcConstraintType.MANUAL,
