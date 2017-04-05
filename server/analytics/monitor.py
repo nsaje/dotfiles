@@ -13,6 +13,7 @@ import etl.refresh_k1
 from automation import autopilot_helpers
 from utils import converters
 import redshiftapi.db
+import analytics.helpers
 
 logger = logging.getLogger('stats.monitor')
 
@@ -347,4 +348,23 @@ def audit_click_discrepancy(date=None, days=30, threshold=20):
         change = int(test) - int(base)
         if change > threshold:
             alarms.append((campaign, base, test))
+    return alarms
+
+
+def audit_custom_hacks(minimal_spend=Decimal('0.0001')):
+    alarms = []
+    for unconfirmed_hack in dash.models.CustomHack.objects.filter(confirmed_by__isnull=True).filter_active(True):
+        spend = analytics.helpers.get_spend(
+            unconfirmed_hack.created_dt.date(),
+            ad_group=unconfirmed_hack.ad_group,
+            campaign=unconfirmed_hack.campaign,
+            account=unconfirmed_hack.account,
+            agency=unconfirmed_hack.agency
+        )
+        if not spend or ((spend[0]['media'] or Decimal('0')) + (spend[0]['data'] or Decimal('0'))) < minimal_spend:
+            continue
+        alarms.append((
+            unconfirmed_hack,
+            'media: ${media}, data: ${data}, fee: ${fee}, margin: ${margin}'.format(**spend[0]),
+        ))
     return alarms
