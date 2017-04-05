@@ -193,7 +193,10 @@ class AdGroupAdminForm(forms.ModelForm):
         'target_regions',
         'exclusion_target_regions',
         'redirect_pixel_urls',
-        'redirect_javascript'
+        'redirect_javascript',
+        'target_devices',
+        'target_placements',
+        'target_os',
     ]
     notes = forms.CharField(required=False, widget=forms.Textarea,
                             help_text='Describe what kind of additional targeting was setup on the backend.')
@@ -230,6 +233,33 @@ class AdGroupAdminForm(forms.ModelForm):
     )
     redirect_javascript = forms.CharField(required=False, widget=forms.Textarea,
                                           help_text='Example: <span style="width:600px; display:block">%s</span>' % strip_tags(REDIRECT_JS_HELP_TEXT))
+    target_devices = forms.MultipleChoiceField(
+        required=False,
+        help_text='Select devices you want to include.',
+        choices=constants.AdTargetDevice.get_choices(),
+    )
+    target_placements = forms.MultipleChoiceField(
+        required=False,
+        help_text='Select placement media you want to include.',
+        choices=constants.Placement.get_choices(),
+    )
+    target_os = postgres_forms.JSONField(
+        required=False,
+        help_text='''Example that sets windows targeting OR android version 6.0 OR ios with version range 8.0 - 9.0:<br />
+        [<br />
+        &emsp;{"name": "windows"},<br />
+        &emsp;{"name": "android", "version": {"exact": "android_6_0"}},<br />
+        &emsp;{"name": "ios", "version": {"min": "ios_8_0", "max": "ios_9_0"}}<br />
+        ]<br /><br />
+        Note: version range is inclusive<br />''' +
+        '''
+        <b>Operating system codes:</b> {}<br />
+        <b>Operating system version codes:</b> {}<br />
+        '''.format(
+            ", ".join(sorted(x[0] for x in constants.OperatingSystem.get_choices())),
+            ", ".join(sorted(x[0] for x in constants.OperatingSystemVersion.get_choices())),
+        )
+    )
 
     def __init__(self, *args, **kwargs):
         initial = kwargs.get('initial', {})

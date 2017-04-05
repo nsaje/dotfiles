@@ -1934,3 +1934,161 @@ class LocationType(ConstantBase):
         DMA: 'DMA',
         ZIP: 'Postal Code',
     }
+
+
+class Placement(ConstantBase):
+    APP = 'app'
+    SITE = 'site'
+
+    _VALUES = {
+        APP: 'In-app',
+        SITE: 'Web',
+    }
+
+
+class OperatingSystem(ConstantBase):
+    ANDROID = 'android'
+    IOS = 'ios'
+    WINPHONE = 'winphone'
+    WINDOWS = 'windows'
+    MACOSX = 'macosx'
+    LINUX = 'linux'
+    CHROMEOS = 'chromeos'
+
+    _VALUES = {
+        ANDROID: 'Android',
+        IOS: 'iOS',
+        WINPHONE: 'Windows Phone',
+        WINDOWS: 'Windows',
+        MACOSX: 'macOS',
+        LINUX: 'Linux',
+        CHROMEOS: 'ChromeOS',
+    }
+
+
+class OperatingSystemVersion(ConstantBase):
+    ANDROID_2_1 = 'android_2_1'
+    ANDROID_2_2 = 'android_2_2'
+    ANDROID_2_3 = 'android_2_3'
+    ANDROID_3_0 = 'android_3_0'
+    ANDROID_3_1 = 'android_3_1'
+    ANDROID_3_2 = 'android_3_2'
+    ANDROID_4_0 = 'android_4_0'
+    ANDROID_4_1 = 'android_4_1'
+    ANDROID_4_2 = 'android_4_2'
+    ANDROID_4_3 = 'android_4_3'
+    ANDROID_4_4 = 'android_4_4'
+    ANDROID_5_0 = 'android_5_0'
+    ANDROID_5_1 = 'android_5_1'
+    ANDROID_6_0 = 'android_6_0'
+    ANDROID_7_0 = 'android_7_0'
+    ANDROID_7_1 = 'android_7_1'
+    IOS_3_2 = 'ios_3_2'
+    IOS_4_0 = 'ios_4_0'
+    IOS_4_1 = 'ios_4_1'
+    IOS_4_2 = 'ios_4_2'
+    IOS_4_3 = 'ios_4_3'
+    IOS_5_0 = 'ios_5_0'
+    IOS_5_1 = 'ios_5_1'
+    IOS_6_0 = 'ios_6_0'
+    IOS_6_1 = 'ios_6_1'
+    IOS_7_0 = 'ios_7_0'
+    IOS_7_1 = 'ios_7_1'
+    IOS_8_0 = 'ios_8_0'
+    IOS_8_1 = 'ios_8_1'
+    IOS_8_2 = 'ios_8_2'
+    IOS_8_3 = 'ios_8_3'
+    IOS_8_4 = 'ios_8_4'
+    IOS_9_0 = 'ios_9_0'
+    IOS_9_1 = 'ios_9_1'
+    IOS_9_2 = 'ios_9_2'
+    IOS_9_3 = 'ios_9_3'
+    IOS_10_0 = 'ios_10_0'
+    IOS_10_1 = 'ios_10_1'
+    IOS_10_2 = 'ios_10_2'
+    IOS_10_3 = 'ios_10_3'
+    WINPHONE_7 = 'winphone_7'
+    WINPHONE_8_0 = 'winphone_8_0'
+    WINPHONE_8_1 = 'winphone_8_1'
+    WINPHONE_10 = 'winphone_10'
+    WINDOWS_98 = 'windows_98'
+    WINDOWS_2000 = 'windows_2000'
+    WINDOWS_XP = 'windows_xp'
+    WINDOWS_VISTA = 'windows_vista'
+    WINDOWS_7 = 'windows_7'
+    WINDOWS_8 = 'windows_8'
+    WINDOWS_8_1 = 'windows_8_1'
+    WINDOWS_10 = 'windows_10'
+    MACOSX_10_4 = 'macosx_10_4'
+    MACOSX_10_5 = 'macosx_10_5'
+    MACOSX_10_6 = 'macosx_10_6'
+    MACOSX_10_7 = 'macosx_10_7'
+    MACOSX_10_8 = 'macosx_10_8'
+    MACOSX_10_9 = 'macosx_10_9'
+    MACOSX_10_10 = 'macosx_10_10'
+    MACOSX_10_11 = 'macosx_10_11'
+    MACOSX_10_12 = 'macosx_10_12'
+
+    _VALUES = {
+        ANDROID_2_1: '2.1 Eclair',
+        ANDROID_2_2: '2.2 Froyo',
+        ANDROID_2_3: '2.3 Gingerbread',
+        ANDROID_3_0: '3.0 Honeycomb',
+        ANDROID_3_1: '3.1 Honeycomb',
+        ANDROID_3_2: '3.2 Honeycomb',
+        ANDROID_4_0: '4.0 Ice Cream Sandwich',
+        ANDROID_4_1: '4.1 Jelly Bean',
+        ANDROID_4_2: '4.2 Jelly Bean',
+        ANDROID_4_3: '4.3 Jelly Bean',
+        ANDROID_4_4: '4.4 KitKat',
+        ANDROID_5_0: '5.0 Lollipop',
+        ANDROID_5_1: '5.1 Lollipop',
+        ANDROID_6_0: '6.0 Marshmallow',
+        ANDROID_7_0: '7.0 Nougat',
+        ANDROID_7_1: '7.1 Nougat',
+        IOS_3_2: '3.2',
+        IOS_4_0: '4.0',
+        IOS_4_1: '4.1',
+        IOS_4_2: '4.2',
+        IOS_4_3: '4.3',
+        IOS_5_0: '5.0',
+        IOS_5_1: '5.1',
+        IOS_6_0: '6.0',
+        IOS_6_1: '6.1',
+        IOS_7_0: '7.0',
+        IOS_7_1: '7.1',
+        IOS_8_0: '8.0',
+        IOS_8_1: '8.1',
+        IOS_8_2: '8.2',
+        IOS_8_3: '8.3',
+        IOS_8_4: '8.4',
+        IOS_9_0: '9.0',
+        IOS_9_1: '9.1',
+        IOS_9_2: '9.2',
+        IOS_9_3: '9.3',
+        IOS_10_0: '10.0',
+        IOS_10_1: '10.1',
+        IOS_10_2: '10.2',
+        IOS_10_3: '10.3',
+        WINPHONE_7: '7',
+        WINPHONE_8_0: '8.0',
+        WINPHONE_8_1: '8.1',
+        WINPHONE_10: '10',
+        WINDOWS_98: '98',
+        WINDOWS_2000: '2000',
+        WINDOWS_XP: 'XP',
+        WINDOWS_VISTA: 'Vista',
+        WINDOWS_7: '7',
+        WINDOWS_8: '8',
+        WINDOWS_8_1: '8.1',
+        WINDOWS_10: '10',
+        MACOSX_10_4: '10.4 Tiger',
+        MACOSX_10_5: '10.5 Leopard',
+        MACOSX_10_6: '10.6 Snow Leopard',
+        MACOSX_10_7: '10.7 Lion',
+        MACOSX_10_8: '10.8 Mountain Lion',
+        MACOSX_10_9: '10.9 Mavericks',
+        MACOSX_10_10: '10.10 Yosemite',
+        MACOSX_10_11: '10.11 El Capitan',
+        MACOSX_10_12: '10.12 Sierra',
+    }

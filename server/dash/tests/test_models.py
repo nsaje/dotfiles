@@ -48,6 +48,13 @@ class AdGroupSettingsTest(TestCase):
             'start_date': datetime.date(2014, 6, 4),
             'end_date': datetime.date(2014, 6, 5),
             'target_devices': ['mobile'],
+            'target_os': [{
+                'name': 'android',
+                'version': {
+                    'exact': 'android_6_0',
+                }
+            }],
+            'target_placements': ['app'],
             'tracking_code': u'',
             'target_regions': ['US'],
             'exclusion_target_regions': ['US-NY'],
@@ -138,42 +145,45 @@ class AdGroupSettingsTest(TestCase):
         new_settings.changes_text = None
         user = User.objects.get(pk=1)
 
-        actual = models.AdGroupSettings.get_changes_text(old_settings, new_settings, user)
-        expected = (
-            'Daily spend cap set to "$50.00", '
-            'Whitelist publisher groups set to "pg 1", '
-            'Brand name set to "Example", '
-            'Bid CPC for all RTB sources set to "$0.100", '
-            'Daily budget for all RTB sources set to "$500.00", '
-            'Max CPC bid set to "$1.000", '
-            'Interest targeting set to "A, B", '
-            'Exclusion interest targeting set to "C, D", '
-            'Blacklist publisher groups set to "", '
-            'State set to "Enabled", '
-            'Exclusion custom audience targeting set to "test audience 3, test audience 4", '
-            'Start date set to "2014-06-04", '
-            'State of all RTB sources set to "Enabled", '
-            'Excluded Locations set to "New York, United States", '
-            'Description set to "Example description", '
-            'End date set to "2014-06-05", '
-            'Custom audience targeting set to "test audience 1, test audience 2", '
-            'Autopilot set to "Optimize Bids and Daily Spend Caps", '
-            'Exclusion ad groups set to "test adgroup 3, test adgroup 4 on budget autopilot", '
-            'Dayparting set to "Timezone: CET; Tuesday: 10, 12; Monday: 1, 2, 5", '
-            'Pixel retargeting tags set to "http://a.com/b.jpg, http://a.com/c.jpg", '
-            'Max CPM set to "$1.60", '
-            'Retargeting ad groups set to "test adgroup 1, test adgroup 2", '
-            'Locations set to "United States", '
-            'Display URL set to "example.com", '
-            'Device targeting set to "Mobile", '
-            'Notes set to "Some note", '
-            'Call to action set to "Call to action", '
-            'Pixel retargeting JavaScript set to "alert(\'a\')", '
-            'Ad group name set to "AdGroup name", '
-            'Group all RTB sources set to "True", '
+        actual = models.AdGroupSettings.get_changes_text(old_settings, new_settings, user, separator='@@@')
+        actual = actual.split('@@@')
+        expected = [
+            'Daily spend cap set to "$50.00"',
+            'Whitelist publisher groups set to "pg 1"',
+            'Brand name set to "Example"',
+            'Bid CPC for all RTB sources set to "$0.100"',
+            'Daily budget for all RTB sources set to "$500.00"',
+            'Max CPC bid set to "$1.000"',
+            'Interest targeting set to "A, B"',
+            'Exclusion interest targeting set to "C, D"',
+            'Blacklist publisher groups set to ""',
+            'State set to "Enabled"',
+            'Exclusion custom audience targeting set to "test audience 3, test audience 4"',
+            'Start date set to "2014-06-04"',
+            'State of all RTB sources set to "Enabled"',
+            'Excluded Locations set to "New York, United States"',
+            'Description set to "Example description"',
+            'End date set to "2014-06-05"',
+            'Custom audience targeting set to "test audience 1, test audience 2"',
+            'Autopilot set to "Optimize Bids and Daily Spend Caps"',
+            'Exclusion ad groups set to "test adgroup 3, test adgroup 4 on budget autopilot"',
+            'Dayparting set to "Timezone: CET; Tuesday: 10, 12; Monday: 1, 2, 5"',
+            'Pixel retargeting tags set to "http://a.com/b.jpg, http://a.com/c.jpg"',
+            'Max CPM set to "$1.60"',
+            'Operating Systems set to "Android (6.0 Marshmallow)"',
+            'Retargeting ad groups set to "test adgroup 1, test adgroup 2"',
+            'Locations set to "United States"',
+            'Placement set to "In-app"',
+            'Device targeting set to "Mobile"',
+            'Notes set to "Some note"',
+            'Display URL set to "example.com"',
+            'Pixel retargeting JavaScript set to "alert(\'a\')"',
+            'Ad group name set to "AdGroup name"',
+            'Call to action set to "Call to action"',
+            'Group all RTB sources set to "True"',
             'Data targeting set to "["or", 3, 4]"'
-        )
-        self.assertHTMLEqual(expected, actual)
+        ]
+        self.assertItemsEqual(expected, actual)
 
 
 class AdGroupRunningStatusTest(TestCase):
@@ -317,6 +327,8 @@ class CampaignSettingsTest(TestCase):
             'iab_category': u'1',
             'name': u'Test campaign 1',
             'target_devices': [u'mobile'],
+            'target_os': None,
+            'target_placements': None,
             'campaign_manager': User.objects.get(pk=1),
             'promotion_goal': 1,
             'target_regions': [u'CA', u'501'],

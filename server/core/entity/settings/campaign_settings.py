@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 import jsonfield
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 
 import utils.demo_anonymizer
@@ -15,6 +15,8 @@ import core.common
 import core.entity
 import core.history
 import core.source
+
+import device_targeting_helper
 
 from settings_base import SettingsBase
 from settings_query_set import SettingsQuerySet
@@ -37,6 +39,8 @@ class CampaignSettings(SettingsBase):
         'promotion_goal',
         'archived',
         'target_devices',
+        'target_os',
+        'target_placements',
         'target_regions',
         'exclusion_target_regions',
         'automatic_campaign_stop',
@@ -91,7 +95,11 @@ class CampaignSettings(SettingsBase):
         null=False,
         default=0
     )
+
     target_devices = jsonfield.JSONField(blank=True, default=[])
+    target_placements = ArrayField(models.CharField(max_length=24), null=True, blank=True, verbose_name='Placement')
+    target_os = JSONField(null=True, blank=True, verbose_name='Operating Systems')
+
     target_regions = jsonfield.JSONField(blank=True, default=[])
     exclusion_target_regions = jsonfield.JSONField(blank=True, null=False, default=[])
 
@@ -170,6 +178,8 @@ class CampaignSettings(SettingsBase):
             'promotion_goal': 'Promotion Goal',
             'archived': 'Archived',
             'target_devices': 'Device targeting',
+            'target_placements': 'Placement',
+            'target_os': 'Operating Systems',
             'target_regions': 'Locations',
             'exclusion_target_regions': 'Excluded Locations',
             'automatic_campaign_stop': 'Automatic Campaign Stop',
@@ -201,6 +211,10 @@ class CampaignSettings(SettingsBase):
         elif prop_name == 'target_devices':
             value = ', '.join(constants.AdTargetDevice.get_text(x)
                               for x in value)
+        elif prop_name == 'target_placements':
+            value = ', '.join(constants.Placement.get_text(x) for x in value) if value else ''
+        elif prop_name == 'target_os':
+            value = ', '.join(device_targeting_helper.get_human_value(x) for x in value) if value else ''
         elif prop_name in ('target_regions', 'exclusion_target_regions'):
             if value:
                 # FIXME: circular dependency

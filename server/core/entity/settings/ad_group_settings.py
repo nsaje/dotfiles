@@ -7,7 +7,7 @@ from decimal import Decimal
 import jsonfield
 import pytz
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 
 import utils.demo_anonymizer
@@ -22,6 +22,8 @@ import core.common
 import core.entity
 import core.history
 import core.source
+
+import device_targeting_helper
 
 from settings_base import SettingsBase
 from settings_query_set import SettingsQuerySet
@@ -48,6 +50,8 @@ class AdGroupSettings(SettingsBase):
         'cpc_cc',
         'daily_budget_cc',
         'target_devices',
+        'target_os',
+        'target_placements',
         'target_regions',
         'exclusion_target_regions',
         'retargeting_ad_groups',
@@ -110,7 +114,11 @@ class AdGroupSettings(SettingsBase):
         null=True,
         verbose_name='Daily spend cap'
     )
+
     target_devices = jsonfield.JSONField(blank=True, default=[])
+    target_placements = ArrayField(models.CharField(max_length=24), null=True, blank=True, verbose_name='Placement')
+    target_os = JSONField(null=True, blank=True, verbose_name='Operating System')
+
     target_regions = jsonfield.JSONField(blank=True, default=[])
     exclusion_target_regions = jsonfield.JSONField(blank=True, null=False, default=[])
     retargeting_ad_groups = jsonfield.JSONField(blank=True, default=[])
@@ -261,6 +269,8 @@ class AdGroupSettings(SettingsBase):
             'cpc_cc': 'Max CPC bid',
             'daily_budget_cc': 'Daily spend cap',
             'target_devices': 'Device targeting',
+            'target_placements': 'Placement',
+            'target_os': 'Operating Systems',
             'target_regions': 'Locations',
             'exclusion_target_regions': 'Excluded Locations',
             'retargeting_ad_groups': 'Retargeting ad groups',
@@ -313,6 +323,10 @@ class AdGroupSettings(SettingsBase):
         elif prop_name == 'target_devices':
             value = ', '.join(constants.AdTargetDevice.get_text(x)
                               for x in value)
+        elif prop_name == 'target_placements':
+            value = ', '.join(constants.Placement.get_text(x) for x in value) if value else ''
+        elif prop_name == 'target_os':
+            value = ', '.join(device_targeting_helper.get_human_value(x) for x in value) if value else ''
         elif prop_name in ('target_regions', 'exclusion_target_regions'):
             value = AdGroupSettings._get_human_value_for_target_regions(prop_name, value)
         elif prop_name in ('retargeting_ad_groups', 'exclusion_retargeting_ad_groups'):
@@ -422,6 +436,9 @@ class AdGroupSettings(SettingsBase):
 
         if not user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
             excluded_keys.update(['whitelist_publisher_groups', 'blacklist_publisher_groups'])
+
+        if not user.has_perm('can_set_advanced_device_targeting'):
+            excluded_keys.update(['target_os', 'target_placements'])
 
         valid_changes = {
             key: value for key, value in changes.iteritems()
