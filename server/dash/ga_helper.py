@@ -44,7 +44,7 @@ def _get_service():
         return _management_service
 
     key_buffer = io.BytesIO(settings.GA_PRIVATE_KEY)
-    credentials = ServiceAccountCredentials(settings.GA_CLIENT_EMAIL, key_buffer, scope=GA_SCOPE)
+    credentials = ServiceAccountCredentials.from_p12_keyfile_buffer(settings.GA_CLIENT_EMAIL, key_buffer, scopes=GA_SCOPE)
     http = credentials.authorize(httplib2.Http())
     # Build the GA service object.
     _management_service = googleapiclient.discovery.build(MANAGEMENT_API_NAME, MANAGEMENT_API_VERSION, http=http,

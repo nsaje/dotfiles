@@ -43,6 +43,7 @@ django-import-export==0.5.1
 
 # for accessing Google Analytics
 google-api-python-client==1.6.2
+pyOpenSSL==16.2.0
 
 # for secrets encryption
 secretcrypt==0.4.2
