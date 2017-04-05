@@ -325,6 +325,26 @@ of the JSON, just the schema! E.g. the JSON must contain all fields etc -
 [more on what it checks](http://www.relishapp.com/apiary/gavel/docs/expectations/body-json-example)).
 This means that the documentation and the fixtures don't have to match 100%.
 
+#### Debugging acceptance tests
+
+```
+export ACCEPTANCE_IMAGE="569683728510.dkr.ecr.us-east-1.amazonaws.com/zemanta/z1"
+docker-compose -f docker-compose.yml -f docker-compose.acceptance.yml up --force-recreate -d
+```
+
+then exec into eins container:
+
+`docker exec -it zemantaeins_eins_1 bash`
+
+and run inside:
+
+`python restapi-test-server.py eins:8124 --keepdb --autoreload`
+
+Then you can run acceptance tests with
+
+`docker-compose -f docker-compose.yml -f docker-compose.acceptance.yml run --rm dredd ./restapi-acceptance-tests.sh eins:8124`
+
+
 ### Test ride your pull request in production
 
 **WARNING** Using this you can change production data through code that has not been reviewed yet. Use with care.

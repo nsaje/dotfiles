@@ -17,6 +17,7 @@ eins:
     image: $ACCEPTANCE_IMAGE
     expose:
       - "8123"
+      - "8124"  # for testing
     links:
       - "postgres:db"
       - "memcached:memcached"

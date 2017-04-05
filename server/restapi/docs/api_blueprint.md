@@ -386,32 +386,7 @@ publisherGroups  |          |           |                                       
 
 + Response 200 (application/json)
 
-        {
-            "data": {
-                "id": "608",
-                "accountId": "186",
-                "name": "My Campaign 1",
-                "archived": false,
-                "iabCategory": "IAB1_1",
-                "tracking": {
-                    "ga": {
-                        "enabled": true,
-                        "type": "API",
-                        "webPropertyId": "UA-123456789-1"
-                    },
-                    "adobe": {
-                        "enabled": true,
-                        "trackingParameter": "cid"
-                    }
-                },
-                "targeting": {
-                    "publisherGroups": {
-                        "included": ["153"],
-                        "excluded": ["154"]
-                    }
-                }
-            }
-        }
+    + Attributes (CampaignResponse)
 
 
 ### Update campaign details [PUT /rest/v1/campaigns/{campaignId}]
@@ -421,90 +396,17 @@ publisherGroups  |          |           |                                       
 
 + Request (application/json)
 
-        {
-            "name": "My Campaign 2",
-            "archived": false,
-            "iabCategory": "IAB1_1",
-            "tracking": {
-                "ga": {
-                    "enabled": true,
-                    "type": "API",
-                    "webPropertyId": "UA-123456789-1"
-                },
-                "adobe": {
-                    "enabled": true,
-                    "trackingParameter": "cid"
-                }
-            },
-            "targeting": {
-                "publisherGroups": {
-                    "included": ["153"],
-                    "excluded": ["154"]
-                }
-            }
-        }
+    + Attributes (CampaignWithoutIds)
 
 + Response 200 (application/json)
 
-        {
-            "data": {
-                "id": "608",
-                "accountId": "186",
-                "name": "My Campaign 2",
-                "archived": false,
-                "iabCategory": "IAB1_1",
-                "tracking": {
-                    "ga": {
-                        "enabled": true,
-                        "type": "API",
-                        "webPropertyId": "UA-123456789-1"
-                    },
-                    "adobe": {
-                        "enabled": true,
-                        "trackingParameter": "cid"
-                    }
-                },
-                "targeting": {
-                    "publisherGroups": {
-                        "included": ["153"],
-                        "excluded": ["154"]
-                    }
-                }
-            }
-        }
+    + Attributes (CampaignResponse)
 
 ### List campaigns [GET /rest/v1/campaigns/]
 
 + Response 200 (application/json)
 
-        {
-            "data": [
-                {
-                    "id": "608",
-                    "accountId": "186",
-                    "name": "My Campaign 1",
-                    "archived": false,
-                    "iabCategory": "IAB1_1",
-                    "tracking": {
-                        "ga": {
-                            "enabled": true,
-                            "type": "API",
-                            "webPropertyId": "UA-123456789-1"
-                        },
-                        "adobe": {
-                            "enabled": true,
-                            "trackingParameter": "cid"
-                        }
-                    },
-                    "targeting": {
-                        "publisherGroups": {
-                            "included": ["153"],
-                            "excluded": ["154"]
-                        }
-                    }
-                }
-            ]
-        }
+    + Attributes (CampaignListResponse)
 
 
 ### Create new campaign [POST /rest/v1/campaigns/]
@@ -512,57 +414,12 @@ publisherGroups  |          |           |                                       
 
 + Request (application/json)
 
-        {
-            "accountId": "186",
-            "name": "My Campaign 3",
-            "archived": false,
-            "iabCategory": "IAB1_1",
-            "tracking": {
-                "ga": {
-                    "enabled": true,
-                    "type": "API",
-                    "webPropertyId": "UA-123456789-1"
-                },
-                "adobe": {
-                    "enabled": true,
-                    "trackingParameter": "cid"
-                }
-            },
-            "targeting": {
-                "publisherGroups": {
-                    "included": ["153"],
-                    "excluded": ["154"]
-                }
-            }
-        }
+    + Attributes (CampaignWithoutIds)
+        - `accountId`: `186` (string)
 
 + Response 201 (application/json)
 
-        {
-            "data": {
-                "id": "609",
-                "accountId": "186",
-                "name": "My Campaign 3",
-                "iabCategory": "IAB1_1",
-                "tracking": {
-                    "ga": {
-                        "enabled": true,
-                        "type": "API",
-                        "webPropertyId": "UA-123456789-1"
-                    },
-                    "adobe": {
-                        "enabled": true,
-                        "trackingParameter": "cid"
-                    }
-                },
-                "targeting": {
-                    "publisherGroups": {
-                        "included": ["153"],
-                        "excluded": ["154"]
-                    }
-                }
-            }
-        }
+    + Attributes (CampaignResponse)
 
 
 ### Get campaign performance [GET /rest/v1/campaigns/{campaignId}/stats/{?from,to}]
@@ -873,6 +730,14 @@ geo              |          |           |
 &nbsp;           |          | countries | array[[country](#country)]                    | countries to target
 &nbsp;           |          | regions   | array[[region](#region)]                      | regions to target
 &nbsp;           |          | dma       | array[[DMA](#dma)]                            | DMA IDs to target
+&nbsp;           |          | cities    | array[[City](#city)]                          | cities to target
+&nbsp;           |          | postalCodes| array[[PostalCode](#postalcode)]             | postal codes to target
+&nbsp;           | excluded |           |                                               |
+&nbsp;           |          | countries | array[[country](#country)]                    | countries to target
+&nbsp;           |          | regions   | array[[region](#region)]                      | regions to target
+&nbsp;           |          | dma       | array[[DMA](#dma)]                            | DMA IDs to target
+&nbsp;           |          | cities    | array[[City](#city)]                          | cities to target
+&nbsp;           |          | postalCodes| array[[PostalCode](#postalcode)]             | postal codes to target
 interest         |          |           |
 &nbsp;           | included |           | array[[interestCategory](#interest-category)] | interest categories to target
 &nbsp;           | excluded |           | array[[interestCategory](#interest-category)] | interest categories to avoid
@@ -920,49 +785,7 @@ dailyBudget | dailyBudget                         | autopilot daily budget
     + adGroupId: 2040 (required)
 
 + Response 200 (application/json)
-
-        {
-            "data": {
-                "id": "2040",
-                "campaignId": "608",
-                "name": "My ad group 1",
-                "state": "ACTIVE",
-                "archived": false,
-                "startDate": "2016-10-05",
-                "endDate": "2016-11-05",
-                "maxCpc": "0.25",
-                "maxCpm": "1.20",
-                "dailyBudget": "20.0",
-                "targeting": {
-                    "devices": ["DESKTOP", "TABLET"],
-                    "geo": {
-                        "included": {
-                            "countries": ["CA"],
-                            "regions": ["US-NY"],
-                            "dma": ["693"]
-                        }
-                    },
-                    "interest": {
-                        "included": ["WOMEN", "FASHION"],
-                        "excluded": ["POLITICS"]
-                    },
-                    "publisherGroups": {
-                        "included": ["153"],
-                        "excluded": ["154"]
-                    }
-                },
-                "trackingCode": "this=1&that=2",
-                "autopilot": {
-                    "state": "ACTIVE_CPC",
-                    "dailyBudget": 100.0001
-                },
-                "dayparting": {
-                    "monday": [0, 1, 2, 3],
-                    "friday": [20, 21, 22, 23],
-                    "timezone": "America/New_York"
-                }
-            }
-        }
+    + Attributes (AdGroupResponse)
 
 
 ### Update ad group details [PUT /rest/v1/adgroups/{adGroupId}]
@@ -972,89 +795,11 @@ dailyBudget | dailyBudget                         | autopilot daily budget
 
 + Request (application/json)
 
-        {
-            "name": "My ad group 2",
-            "state": "INACTIVE",
-            "archived": false,
-            "startDate": "2016-10-05",
-            "endDate": "2016-11-05",
-            "maxCpc": "0.25",
-            "maxCpm": "1.20",
-            "dailyBudget": "20.0",
-            "targeting": {
-                "devices": ["DESKTOP", "TABLET"],
-                "geo": {
-                    "included": {
-                        "countries": ["CA"],
-                        "regions": ["US-NY"],
-                        "dma": ["693"]
-                    }
-                },
-                "interest": {
-                    "included": ["WOMEN", "FASHION"],
-                    "excluded": ["POLITICS"]
-                },
-                "publisherGroups": {
-                    "included": ["153"],
-                    "excluded": ["154"]
-                }
-            },
-            "trackingCode": "this=1&that=2",
-            "autopilot": {
-                "state": "ACTIVE_CPC",
-                "dailyBudget": "100.0001"
-            },
-            "dayparting": {
-                "monday": [4, 5, 6, 7],
-                "friday": [2, 3, 7, 8, 9, 10],
-                "timezone": "Europe/Ljubljana"
-            }
-        }
+    + Attributes (AdGroupWithoutIds)
 
 + Response 200 (application/json)
 
-        {
-            "data": {
-                "id": "2040",
-                "campaignId": "608",
-                "name": "My ad group 2",
-                "state": "ACTIVE",
-                "archived": false,
-                "startDate": "2016-10-05",
-                "endDate": "2016-11-05",
-                "maxCpc": "0.25",
-                "maxCpm": "1.20",
-                "dailyBudget": "20.0",
-                "targeting": {
-                    "devices": ["desktop", "tablet"],
-                    "geo": {
-                        "included": {
-                            "countries": ["CA"],
-                            "regions": ["US-NY"],
-                            "dma": ["693"]
-                        }
-                    },
-                    "interest": {
-                        "included": ["WOMEN", "FASHION"],
-                        "excluded": ["POLITICS"]
-                    },
-                    "publisherGroups": {
-                        "included": ["153"],
-                        "excluded": ["154"]
-                    }
-                },
-                "trackingCode": "this=1&that=2",
-                "autopilot": {
-                    "state": "ACTIVE_CPC",
-                    "dailyBudget": "100.0001"
-                },
-                "dayparting": {
-                    "monday": [4, 5, 6, 7],
-                    "friday": [2, 3, 7, 8, 9, 10],
-                    "timezone": "Europe/Ljubljana"
-                }
-            }
-        }
+    + Attributes (AdGroupResponse)
 
 ### List ad groups [GET /rest/v1/adgroups/{?campaignId}]
 
@@ -1063,140 +808,20 @@ dailyBudget | dailyBudget                         | autopilot daily budget
 
 + Response 200 (application/json)
 
-        {
-            "data": [
-                {
-                    "id": "2040",
-                    "campaignId": "608",
-                    "name": "My ad group 1",
-                    "state": "ACTIVE",
-                    "archived": false,
-                    "startDate": "2016-10-05",
-                    "endDate": "2016-11-05",
-                    "maxCpc": "0.25",
-                    "maxCpm": "1.20",
-                    "dailyBudget": "20.0",
-                    "targeting": {
-                        "devices": ["DESKTOP", "TABLET"],
-                        "geo": {
-                            "included": {
-                                "countries": ["CA"],
-                                "regions": ["US-NY"],
-                                "dma": ["693"]
-                            }
-                        },
-                        "interest": {
-                            "included": ["WOMEN", "FASHION"],
-                            "excluded": ["POLITICS"]
-                        },
-                        "publisherGroups": {
-                            "included": ["153"],
-                            "excluded": ["154"]
-                        }
-                    },
-                    "trackingCode": "this=1&that=2",
-                    "autopilot": {
-                        "state": "ACTIVE_CPC",
-                        "dailyBudget": "100.0001"
-                    },
-                    "dayparting": {
-                        "monday": [4, 5, 6, 7],
-                        "friday": [2, 3, 7, 8, 9, 10],
-                        "timezone": "Europe/Ljubljana"
-                    }
-                }
-            ]
-        }
+    + Attributes (AdGroupListResponse)
 
 
 ### Create new ad group [POST /rest/v1/adgroups/]
 
 + Request (application/json)
 
-        {
-            "campaignId": "608",
-            "name": "My ad group 3",
-            "state": "INACTIVE",
-            "archived": false,
-            "startDate": "2016-10-05",
-            "endDate": "2016-11-05",
-            "maxCpc": "0.25",
-            "maxCpm": "1.20",
-            "dailyBudget": "20.0",
-            "targeting": {
-                "devices": ["DESKTOP", "TABLET"],
-                "geo": {
-                    "included": {
-                        "countries": ["CA"],
-                        "regions": ["US-NY"],
-                        "dma": ["693"]
-                    }
-                },
-                "interest": {
-                    "included": ["WOMEN", "FASHION"],
-                    "excluded": ["POLITICS"]
-                },
-                "publisherGroups": {
-                    "included": ["153"],
-                    "excluded": ["154"]
-                }
-            },
-            "trackingCode": "this=1&that=2",
-            "autopilot": {
-                "state": "ACTIVE_CPC",
-                "dailyBudget": "100.0001"
-            },
-            "dayparting": {
-                "monday": [4, 5, 6, 7],
-                "friday": [2, 3, 7, 8, 9, 10],
-                "timezone": "America/Los_Angeles"
-            }
-        }
+    + Attributes
+        - `campaignId`: `608` (string)
+        - Include AdGroupWithoutIds
 
 + Response 201 (application/json)
 
-        {
-            "data": {
-                "id": "2040",
-                "campaignId": "608",
-                "name": "My ad group 1",
-                "state": "INACTIVE",
-                "archived": false,
-                "startDate": "2016-10-05",
-                "endDate": "2016-11-05",
-                "maxCpc": "0.25",
-                "maxCpm": "1.20",
-                "dailyBudget": "20.0",
-                "targeting": {
-                    "devices": ["DESKTOP", "TABLET"],
-                    "geo": {
-                        "included": {
-                            "countries": ["CA"],
-                            "regions": ["US-NY"],
-                            "dma": ["693"]
-                        }
-                    },
-                    "interest": {
-                        "included": ["WOMEN", "FASHION"],
-                        "excluded": ["POLITICS"]
-                    },
-                    "publisherGroups": {
-                        "included": ["153"],
-                        "excluded": ["154"]
-                    }
-                },
-                "trackingCode": "this=1&that=2",
-                "autopilot": {
-                    "state": "ACTIVE_CPC",
-                    "dailyBudget": "100.0001"
-                },
-                "dayparting": {
-                    "monday": [4, 5, 6, 7],
-                    "friday": [2, 3, 7, 8, 9, 10],
-                    "timezone": "America/Los_Angeles"
-                }
-            }
-        }
+    + Attributes (AdGroupResponse)
 
 ## Ad Group Sources [/rest/v1/adgroups/{adGroupId}/sources/]
 
@@ -2725,268 +2350,159 @@ A string representing a decimal number. Example: `"15.48"`
 
 <a name="country"></a>
 ### Country
-- `BD` - Bangladesh
-- `BE` - Belgium
-- `BF` - Burkina Faso
-- `BG` - Bulgaria
-- `BA` - Bosnia and Herzegovina
-- `BB` - Barbados
-- `WF` - Wallis and Futuna
-- `BN` - Brunei Darussalam
-- `BO` - Bolivia, Plurinational State of
-- `BH` - Bahrain
-- `BI` - Burundi
-- `BJ` - Benin
-- `BT` - Bhutan
-- `JM` - Jamaica
-- `BW` - Botswana
-- `WS` - Samoa
-- `BR` - Brazil
-- `BS` - Bahamas
-- `BY` - Belarus
-- `BZ` - Belize
-- `RU` - Russian Federation
-- `RW` - Rwanda
-- `RS` - Serbia
-- `LT` - Lithuania
-- `LU` - Luxembourg
-- `LR` - Liberia
-- `RO` - Romania
-- `LS` - Lesotho
-- `GW` - Guinea-Bissau
-- `GU` - Guam
-- `GT` - Guatemala
-- `GS` - South Georgia and the South Sandwich Islands
-- `GR` - Greece
-- `GQ` - Equatorial Guinea
-- `JP` - Japan
-- `GY` - Guyana
-- `GE` - Georgia
-- `GD` - Grenada
-- `GB` - United Kingdom
-- `GA` - Gabon
-- `SV` - El Salvador
-- `GN` - Guinea
-- `GM` - Gambia
-- `KW` - Kuwait
-- `GH` - Ghana
-- `OM` - Oman
-- `JO` - Jordan
-- `HR` - Croatia
-- `HT` - Haiti
-- `HU` - Hungary
-- `HN` - Honduras
-- `HM` - Heard Island and McDonald Islands
-- `AD` - Andorra
-- `PW` - Palau
-- `PT` - Portugal
-- `PY` - Paraguay
-- `PA` - Panama
-- `PF` - French Polynesia
-- `PG` - Papua New Guinea
-- `PE` - Peru
-- `PK` - Pakistan
-- `PH` - Philippines
-- `PN` - Pitcairn
-- `PL` - Poland
-- `PM` - Saint Pierre and Miquelon
-- `ZM` - Zambia
-- `EE` - Estonia
-- `EG` - Egypt
-- `ZA` - South Africa
-- `EC` - Ecuador
-- `AL` - Albania
-- `AO` - Angola
-- `KZ` - Kazakhstan
-- `ET` - Ethiopia
-- `ZW` - Zimbabwe
-- `ES` - Spain
-- `ER` - Eritrea
-- `ME` - Montenegro
-- `MD` - Moldova, Republic of
-- `MG` - Madagascar
-- `MA` - Morocco
-- `MC` - Monaco
-- `UZ` - Uzbekistan
-- `LV` - Latvia
-- `ML` - Mali
-- `MN` - Mongolia
-- `MH` - Marshall Islands
-- `MK` - Macedonia, the Former Yugoslav Republic of
-- `MU` - Mauritius
-- `MT` - Malta
-- `MW` - Malawi
-- `MV` - Maldives
-- `MP` - Northern Mariana Islands
-- `MR` - Mauritania
-- `UG` - Uganda
-- `MY` - Malaysia
-- `MX` - Mexico
-- `VU` - Vanuatu
-- `FR` - France
-- `FI` - Finland
-- `FJ` - Fiji
-- `FM` - Micronesia, Federated States of
-- `NI` - Nicaragua
-- `NL` - Netherlands
-- `NO` - Norway
-- `NA` - Namibia
-- `NC` - New Caledonia
-- `NE` - Niger
-- `NF` - Norfolk Island
-- `NG` - Nigeria
-- `NZ` - New Zealand
-- `NP` - Nepal
-- `NR` - Nauru
-- `NU` - Niue
-- `CK` - Cook Islands
-- `CH` - Switzerland
-- `CO` - Colombia
-- `CN` - China
-- `CM` - Cameroon
-- `CL` - Chile
-- `CC` - Cocos (Keeling) Islands
-- `CA` - Canada
-- `CG` - Congo
-- `CF` - Central African Republic
-- `CD` - Congo, the Democratic Republic of the
-- `CZ` - Czech Republic
-- `CY` - Cyprus
-- `CX` - Christmas Island
-- `CR` - Costa Rica
-- `CV` - Cape Verde
-- `SZ` - Swaziland
-- `KG` - Kyrgyzstan
-- `KE` - Kenya
-- `SR` - Suriname
-- `KI` - Kiribati
-- `KH` - Cambodia
-- `KN` - Saint Kitts and Nevis
-- `KM` - Comoros
-- `ST` - Sao Tome and Principe
-- `SK` - Slovakia
-- `KR` - Korea, Republic of
-- `SI` - Slovenia
-- `SH` - Saint Helena, Ascension and Tristan da Cunha
-- `SO` - Somalia
-- `SN` - Senegal
-- `SM` - San Marino
-- `SL` - Sierra Leone
-- `SC` - Seychelles
-- `SB` - Solomon Islands
-- `SA` - Saudi Arabia
-- `SG` - Singapore
-- `SE` - Sweden
-- `DO` - Dominican Republic
-- `DM` - Dominica
-- `DJ` - Djibouti
-- `DK` - Denmark
-- `DE` - Germany
-- `YE` - Yemen
-- `AT` - Austria
-- `DZ` - Algeria
-- `US` - United States
-- `UY` - Uruguay
-- `UM` - United States Minor Outlying Islands
-- `TZ` - Tanzania, United Republic of
-- `LC` - Saint Lucia
-- `LA` - Lao People's Democratic Republic
-- `TV` - Tuvalu
-- `TT` - Trinidad and Tobago
-- `TR` - Turkey
-- `LK` - Sri Lanka
-- `LI` - Liechtenstein
-- `TN` - Tunisia
-- `TO` - Tonga
-- `TL` - Timor-Leste
-- `TM` - Turkmenistan
-- `TJ` - Tajikistan
-- `TK` - Tokelau
-- `TH` - Thailand
-- `TG` - Togo
-- `TD` - Chad
-- `LY` - Libya
-- `VA` - Holy See (Vatican City State)
-- `VC` - Saint Vincent and the Grenadines
-- `AE` - United Arab Emirates
-- `VE` - Venezuela, Bolivarian Republic of
-- `AG` - Antigua and Barbuda
-- `AF` - Afghanistan
-- `IQ` - Iraq
-- `IS` - Iceland
-- `AM` - Armenia
-- `IT` - Italy
-- `VN` - Viet Nam
-- `AQ` - Antarctica
-- `AS` - American Samoa
-- `AR` - Argentina 〃
-- `AU` - Australia
-- `IL` - Israel
-- `IN` - India
-- `LB` - Lebanon
-- `AZ` - Azerbaijan
-- `IE` - Ireland
-- `ID` - Indonesia
-- `UA` - Ukraine
-- `QA` - Qatar
-- `MZ` - Mozambique
+Countries are identified by their [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) code.
 
+Examples:
+- `US` - United States
+- `CA` - Canada
+ 
 <a name="region"></a>
 ### Region
-- `US-AL` - Alabama
-- `US-AK` - Alaska
-- `US-AZ` - Arizona
-- `US-AR` - Arkansas
-- `US-CA` - California
-- `US-CO` - Colorado
-- `US-CT` - Connecticut
-- `US-DE` - Delaware
-- `US-FL` - Florida
-- `US-GA` - Georgia
-- `US-HI` - Hawaii
-- `US-ID` - Idaho
-- `US-IL` - Illinois
-- `US-IN` - Indiana
-- `US-IA` - Iowa
-- `US-KS` - Kansas
-- `US-KY` - Kentucky
-- `US-LA` - Louisiana
-- `US-ME` - Maine
-- `US-MD` - Maryland
-- `US-MA` - Massachusetts
-- `US-MI` - Michigan
-- `US-MN` - Minnesota
-- `US-MS` - Mississippi
-- `US-MO` - Missouri
-- `US-MT` - Montana
-- `US-NE` - Nebraska
-- `US-NV` - Nevada
-- `US-NH` - New Hampshire
-- `US-NJ` - New Jersey
-- `US-NM` - New Mexico
-- `US-NY` - New York
-- `US-NC` - North Carolina
-- `US-ND` - North Dakota
-- `US-OH` - Ohio
-- `US-OK` - Oklahoma
-- `US-OR` - Oregon
-- `US-PA` - Pennsylvania
-- `US-RI` - Rhode Island
-- `US-SC` - South Carolina
-- `US-SD` - South Dakota
-- `US-TN` - Tennessee
-- `US-TX` - Texas
-- `US-UT` - Utah
-- `US-VT` - Vermont
-- `US-VA` - Virginia
-- `US-WA` - Washington
-- `US-WV` - West Virginia
-- `US-WI` - Wisconsin
-- `US-WY` - Wyoming
-- `US-DC` - District of Columbia
-- `US-AS` - American Samoa
-- `US-GU` - Guam
-- `US-MP` - Northern Mariana Islands
-- `US-PR` - Puerto Rico
-- `US-UM` - United States Minor Outlying Islands
-- `US-VI` - Virgin Islands
+Regions are identified by the country's [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+code and the region's [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) code concatenated with a `-` sign.
+
+Examples:
+- `US-NY` - New York, United States
+- `CA-QC` - Quebec, Canada
+
+<a name="city"></a>
+### City
+Cities are identified using [Geoname IDs](https://geonames.org).
+
+Examples:
+- `5128581` - New York, New York, United States
+- `6167865` - Toronto, Ontario, Canada
+
+<a name="postalcode"></a>
+### Postal Code
+Postal codes are identified by the [Country](#country) code and the postal code concatenated with a `:` (colon) sign.
+
+Examples:
+- `US:10001` - New York, United States
+- `CA:M4E` - East Toronto (The Beaches), Ontario, Canada
+
+
+# Data Structures
+
+## `geoCategories` (object)
+
+- `countries`: `CA` (array[string])
+- `regions`: `US-NY` (array[string])
+- `dma`: `693` (array[string])
+- `cities`: `123456` (array[string])
+- `postalCodes`: `US:10001` (array[string])
+
+## `geo` (object)
+
+- `included` (geoCategories)
+- `excluded` (geoCategories)
+
+## `interest` (object)
+
+- `included`: `WOMEN`, `FASHION` (array[string])
+- `excluded`: `POLITICS` (array[string])
+
+## `publisherGroups` (object)
+
+- `included`: `153` (array[string])
+- `excluded`: `154` (array[string])
+
+## `targeting` (object)
+
+- `devices`: `DESKTOP`, `MOBILE` (array[string])
+- `geo` (geo)
+- `interest` (interest)
+- `publisherGroups` (publisherGroups)
+
+## `autopilot` (object)
+
+- `state`: `ACTIVE_CPC` (string)
+- `dailyBudget`: `100.0001` (string)
+
+## `dayparting` (object)
+
+- `monday`: `0`, `1`, `2`, `3` (array[number])
+- `friday`: `20`, `21`, `22`, `23` (array[number])
+- `timezone`: `America/New_York` (string)
+
+## AdGroupWithoutIds (object)
+
+- `name`: `My ad group 1` (string)
+- `state`: `INACTIVE` (string)
+- `archived`: `false` (boolean)
+- `startDate`: `2016-10-05` (string)
+- `endDate`: `2116-11-05` (string, optional, nullable)
+- `maxCpc`: `0.25` (string)
+- `maxCpm`: `1.20` (string)
+- `dailyBudget`: `20.0` (string)
+- `targeting` (targeting)
+- `trackingCode`: `this=1&that=2` (string)
+- `autopilot` (autopilot)
+- `dayparting` (dayparting)
+
+## AdGroupIds (object)
+
+- `id`: `2040` (string)
+- `campaignId`: `608` (string)
+
+## AdGroup (object)
+
+- Include AdGroupIds
+- Include AdGroupWithoutIds
+
+## AdGroupResponse
+
+- `data` (AdGroup)
+
+## AdGroupListResponse
+
+- `data` (array[AdGroup])
+
+
+<!-- CAMPAIGN -->
+
+## `ga` (object)
+
+- `enabled`: `true` (boolean)
+- `type`: `API` (string)
+- `webPropertyId`: `UA-123456789-1` (string)
+
+## `adobe` (object)
+
+- `enabled`: `true` (boolean)
+- `trackingParameter`: `cid` (string)
+
+## `tracking` (object)
+
+- `ga` (ga)
+- `adobe` (adobe)
+
+## `campaignTargeting` (object)
+
+- `publisherGroups` (publisherGroups)
+
+## CampaignWithoutIds (object)
+
+- `name`: `My Campaign 1` (string)
+- `archived`: `false` (boolean)
+- `iabCategory`: `IAB1_1` (string)
+- `tracking` (tracking)
+- `targeting` (campaignTargeting)
+
+## CampaignIds (object)
+
+- `id`: `608` (string)
+- `accountId`: `186` (string)
+
+## Campaign (object)
+
+- Include CampaignIds
+- Include CampaignWithoutIds
+
+## CampaignResponse
+
+- `data` (Campaign)
+
+## CampaignListResponse
+
+- `data` (array[Campaign])
