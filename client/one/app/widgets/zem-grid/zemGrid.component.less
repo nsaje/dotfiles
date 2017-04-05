@@ -44,10 +44,6 @@ zem-grid {
     background-color: @zem-grid-bg-color;
     position: relative;
 
-    .loader { // Initial loader
-        margin: 50px; // Don't cover header and footer
-    }
-
     a {
         color: @secondary-color;
         font-weight: 500;
@@ -82,14 +78,38 @@ zem-grid {
 
         .zem-grid-cell-checkbox {
             display: inline-block;
-            margin: 0;
-            width: 100%;
+            width: auto;
+            max-width: none;
+            height: 100%;
+            margin: 0 -8px;
+            cursor: pointer;
 
-            input {
-                width: auto;
-                margin: -2px 0 0 11px;
-                vertical-align: middle;
+            .input-checkbox {
+                + .checkbox-text {
+                    padding: 15px 10px;
+                    width: 14px;
+                    height: 14px;
+                    box-sizing: content-box;
+
+                    &::before {
+                        left: 10px;
+                        top: 15px;
+                    }
+
+                    &::after {
+                        left: 17px;
+                        top: 23px;
+                    }
+                }
+
+                &:checked {
+                    + .checkbox-text::after {
+                        left: 12px;
+                        top: 17px;
+                    }
+                }
             }
+
         }
 
         .zem-grid-cell-edit-button {
@@ -182,6 +202,45 @@ zem-grid {
 
         .zem-grid-header-cell {
             display: inline-block;
+        }
+
+        .zem-grid-header-cell-checkbox {
+            .dropdown {
+                margin: 0 0 0 -8px;
+                height: 100%;
+                transition: background @default-animation;
+
+                &:hover {
+                    background: tint(@secondary-color, 80%);
+                }
+
+                .zem-grid-cell-checkbox {
+                    margin: 0;
+                    display: block;
+                    float: left;
+
+                    .checkbox-text {
+                        padding-right: 2px;
+                    }
+                }
+
+                .button--table-header {
+                    border-left: none;
+                    border-top: none;
+                    border-bottom: none;
+                    height: 100%;
+                    border-radius: 0;
+                    padding: 0;
+                    width: 26px;
+                    display: block;
+                    float: right;
+
+                    &:hover {
+                        box-shadow: none;
+                        background: none;
+                    }
+                }
+            }
         }
 
         .zem-grid-header-cell-data {
@@ -532,34 +591,15 @@ zem-grid {
 // Dropdowns
 .zem-grid-header-cell-checkbox-custom-filters-dropdown-menu {
     padding: 8px 10px;
+    margin-top: 1px;
+    font-size: @default-font-size;
 
     .link {
         font-weight: 300;
         cursor: pointer;
+
         &:hover {
             text-decoration: underline;
-        }
-    }
-
-    .link-list {
-        .link-list-name {
-            vertical-align: top;
-            display: inline-block;
-            font-weight: 300;
-            line-height: 22px;
-        }
-
-        .link-list-items {
-            vertical-align: top;
-            display: inline-block;
-            font-weight: 400;
-            line-height: 22px;
-
-            .link-list-item {
-                cursor: pointer;
-                &:hover {
-                    text-decoration: underline; }
-            }
         }
     }
 }

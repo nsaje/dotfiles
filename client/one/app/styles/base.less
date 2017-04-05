@@ -85,6 +85,15 @@ h3 {
     margin: 0 auto;
 }
 
+.loader--takeover {
+    display: block;
+    position: absolute;
+    z-index: 999;
+    top: 50%;
+    left: 50%;
+    margin: -10px 0 0 -25px;
+}
+
 ////////////////////////////
 // Scroll to top button //
 ////////////////////////////
@@ -1052,12 +1061,12 @@ h3 {
     &:disabled {
         + .checkbox-text {
             color: @gray;
+            cursor: not-allowed;
         }
 
         + .checkbox-text::before,
         &:hover + .checkbox-text::before {
             border: 1px solid @light-gray;
-            cursor: not-allowed;
         }
 
         + .checkbox-text::after {
@@ -1140,12 +1149,12 @@ h3 {
     &:disabled {
         + .radio-text {
             color: @gray;
+            cursor: not-allowed;
         }
 
         + .radio-text::before,
         &:hover + .radio-text::before {
             border: 1px solid @light-gray;
-            cursor: not-allowed;
         }
 
         + .radio-text::after {
@@ -2223,6 +2232,38 @@ h3 {
         background: url('images/question-white.svg') no-repeat center center;
         background-size: 9px;
     }
+}
+
+////////////////////////////
+// Custom Panel //
+////////////////////////////
+
+.custom-panel {
+    background-color: white;
+    box-shadow: 0px 0px 3px 0px rgba(0,0,0,0.1);
+    padding: @default-spacing;
+    margin-top: @default-spacing*1.5;
+    position: relative;
+}
+
+.custom-panel--disabled {
+    background-color: fade(@white,30%);
+    box-shadow: 0px 0px 5px 0px fade(black,10%);
+}
+
+.custom-panel__title {
+    margin: -@default-spacing -@default-spacing @default-spacing -@default-spacing;
+    padding: (@default-spacing/2)+6 @default-spacing (@default-spacing/2)+4 @default-spacing;
+    border-bottom: 1px solid @border-color;
+}
+
+.custom-panel__sub-title {
+    position: relative;
+}
+
+.custom-panel__description {
+    margin-bottom: @default-spacing;
+    color: @gray;
 }
 
 ////////////////////////////

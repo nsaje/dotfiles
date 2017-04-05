@@ -2,7 +2,7 @@
     <h2 class="custom-panel__title">Campaign goals</h2>
     <div class="custom-panel__description">Define your marketing objectives by adding campaign goals.</div>
     <div ng-if="$ctrl.hasPermission('zemauth.can_see_campaign_goals')" is-internal="zemauth.can_see_campaign_goals">
-        <div class="zem-campaign-goals" ng-class="{'has-error': !!$ctrl.errors.goals || $ctrl.errors.noGoals}">
+        <div class="zem-campaign-goals">
             <div class="message message--error" ng-show="!!$ctrl.errors.noGoals">{{ $ctrl.errors.noGoals }}</div>
             <zem-campaign-goals account="$ctrl.account" campaign="$ctrl.entity.settings"
                                 goals="$ctrl.entity.goals" model="$ctrl.entityGoalsDiff"></zem-campaign-goals>

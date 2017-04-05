@@ -258,7 +258,7 @@ tags-input .host .tags {
 }
 
 ////////////////////////////
-// Zem Note Popover //
+// Note Popover //
 ////////////////////////////
 
 .note-popover {
@@ -269,6 +269,318 @@ tags-input .host .tags {
         display: block;
         background: url('@{images-folder}/comment-sec.svg') no-repeat center center;
     }
+}
+
+///////////////////////////
+// Popover //
+///////////////////////////
+
+.popover {
+    font-family: 'Roboto', sans-serif;
+    border: none;
+    border-radius: @border-radius;
+    box-shadow: 0px 2px 10px 0px rgba(0,0,0,0.2);
+
+    .popover-content {
+        padding: 10px;
+        max-height: 250px;
+        overflow-y: auto;
+
+        ul.icon-list {
+            margin: 0px;
+            padding: 0px;
+            list-style: none;
+
+            li {
+                padding: 8px 0 8px 25px;
+                position: relative;
+                border-bottom: 1px solid @line-color;
+
+                .zem-icon {
+                    width: 16px;
+                    position: absolute;
+                    left: 0;
+                    top: 8px;
+                }
+
+                &:first-child {
+                    padding-top: 0;
+
+                    .zem-icon {
+                        top: 0;
+                    }
+                }
+
+                &:last-child {
+                    border-bottom: none;
+                    padding-bottom: 0;
+                }
+            }
+        }
+    }
+
+    &.top .arrow {
+        border-top-color: @white;
+    }
+
+    &.right .arrow {
+        border-right-color: @white;
+    }
+
+    &.bottom .arrow {
+        border-bottom-color: @white;
+    }
+
+    &.left .arrow {
+        border-left-color: @white;
+    }
+
+    // Hack to expand popover's box to make it easier to move cursor inside the popover without popover closing
+    &:after {
+        content: '';
+        position: absolute;
+        display: block;
+    }
+    &.top:after {
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: 12px;
+        margin-bottom: -12px;
+    }
+    &.right:after {
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 12px;
+        margin-left: -12px;
+    }
+    &.bottom:after {
+        top: 0;
+        right: 0;
+        left: 0;
+        height: 12px;
+        margin-top: -12px;
+    }
+    &.left:after {
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 12px;
+        margin-right: -12px;
+    }
+}
+
+///////////////////////////
+// Dropdown //
+///////////////////////////
+
+.dropdown-menu {
+    font-family: 'Roboto', sans-serif;
+    border: none;
+    border-radius: @border-radius;
+    box-shadow: 0px 2px 10px 0px rgba(0,0,0,0.2);
+}
+
+///////////////////////////
+// Header - daterange picker //
+///////////////////////////
+
+.daterangepicker {
+    &.opensleft:before {
+        content: none;
+    }
+    &.opensleft:after {
+        content: none;
+    }
+
+    .ranges {
+        li {
+            margin-bottom: 2px;
+            padding: 2px 12px;
+            background-color: transparent;
+            border: 1px solid transparent;
+            color: @secondary-color;
+
+            &:last-child {
+                margin-bottom: 12px;
+            }
+
+            &:hover {
+                border: 1px solid transparent;
+                background-color: @secondary-color;
+                color: @white;
+            }
+
+            &.active {
+                border: 1px solid transparent;
+                background-color: @secondary-color;
+                color: @white;
+            }
+        }
+
+        .btn-primary, .btn-default {
+            padding: 0 10px;
+            font-size: 14px;
+        }
+    }
+
+    .calendar-table {
+        padding: 0;
+    }
+
+    .calendar {
+        margin-bottom: 0;
+
+        .daterangepicker_input {
+            display: none;
+        }
+
+        td, th {
+            line-height: 20px;
+        }
+
+        td {
+            &.available {
+                &.off.in-range {
+                    background-color: @very-light-gray;
+
+                    &:hover {
+                        color: @secondary-color;
+                    }
+                }
+
+                &:hover {
+                    background-color: @secondary-color;
+                    color: @white;
+                }
+            }
+
+            &.active {
+                border: 1px solid transparent;
+                background-color: @secondary-color;
+
+                &.off.end-date, &.off.start-date {
+                    background-color: #ddd;
+                }
+            }
+
+            &.in-range {
+                background-color: tint(@secondary-color, 80%);
+
+                &.active {
+                    background-color: @secondary-color;
+                }
+            }
+        }
+
+        &.left {
+            td.active.end-date:not(.start-date):not(.off) {
+                background-color: fade(@secondary-color, 50%);
+            }
+        }
+        &.right {
+            td.active.start-date:not(.end-date):not(.off){
+                background-color: fade(@secondary-color, 50%);
+            }
+        }
+    }
+}
+
+///////////////////////////
+// Input - datepicker //
+///////////////////////////
+
+.uib-datepicker-popup.dropdown-menu {
+    border: 1px solid @border-color;
+    box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
+
+    .uib-datepicker {
+        padding: 0 5px;
+
+        div:focus {
+            outline: none;
+        }
+
+        .btn {
+            border: none;
+            background: none;
+
+            &:hover {
+                background: none;
+                background-color: @secondary-color;
+                color: @white !important;
+
+                span {
+                    color: @white !important;
+                }
+            }
+
+            &.active {
+                background-color: @secondary-color;
+                color: white;
+
+                .text-info {
+                    color: @white;
+                }
+            }
+
+            &:hover {
+                background-color: @secondary-color;
+            }
+
+            &[disabled] {
+                opacity: 1;
+
+                span {
+                    color: @light-gray;
+                }
+
+                &:hover {
+                    background-color: transparent;
+
+                    span {
+                        color: @light-gray !important;
+                    }
+                }
+            }
+        }
+    }
+}
+
+////////////////////////////
+// CHARTS //
+////////////////////////////
+
+.highcharts-tooltip {
+    line-height: 18px;
+
+    span {
+        font-family: @default-font-family !important;
+        border: none;
+        border-radius: @border-radius;
+        box-shadow: 0px 2px 10px 0px rgba(0,0,0,0.2);
+        background-color: fade(white,90%);
+        padding: 10px;
+    }
+
+    .tooltip-header {
+        color: @secondary-color;
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .color-box {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        margin-right: 5px;
+    }
+}
+
+g.highcharts-tooltip {
+    display: none;
 }
 
 ////////////////////////////

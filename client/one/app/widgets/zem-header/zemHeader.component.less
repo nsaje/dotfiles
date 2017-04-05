@@ -28,9 +28,9 @@
         }
     }
 
-	.btn-default {
-		background: transparent !important;
-	}
+    .btn-default {
+        background: transparent !important;
+    }
 
     .dropdown-menu {
         margin: 0;
@@ -111,9 +111,9 @@
         .breadcrumb {
             float: left;
             height: 40px;
-			padding: 0;
+            padding: 0;
             margin: 0;
-			background-color: transparent;
+            background-color: transparent;
             transition: all @default-animation;
 
             .slash {
@@ -376,6 +376,13 @@
             opacity: 1;
             visibility: visible;
         }
+    }
+}
+
+@media only screen and (max-width: ((@min-app-width)-1)) {
+    .zem-header {
+        position: relative;
+        width: auto;
     }
 }
 
@@ -651,16 +658,9 @@
         display: block;
     }
 
-	.calendar {
-		.daterangepicker_input {
-			display: none;
-		}
-	}
-}
-
-@media only screen and (max-width: ((@min-app-width)-1)) {
-    .zem-header {
-        position: relative;
-        width: auto;
+    .calendar {
+        .daterangepicker_input {
+            display: none;
+        }
     }
 }

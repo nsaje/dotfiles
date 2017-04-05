@@ -1,523 +1,96 @@
-///////////////////////////
-// Edit-campaign-goal modal //
-///////////////////////////
-
-.modal__body .form__group--meet-or-beat-goal {
-    .postfixed-field,
-    .input-text {
-        width: @form-input-width-modal - 45% - 2%;
-        margin-right: 2%;
-    }
-
-    .postfixed-field {
-        .input-text {
-            width: 100%;
-        }
-    }
-
-    .button {
-        width: 45%;
-    }
-}
-
-///////////////////////////
-///////////////////////////
-///////////////////////////
-// Below this comment is old CSS that needs review //
-///////////////////////////
-///////////////////////////
-///////////////////////////
-
-///////////////////////////
-// Settings general //
-///////////////////////////
-
-.page {
-    h1 {
-        margin: -10px 0 -10px 0;
-        color: @secondary-color;
-        font-weight: 400;
-        font-size: 24px;
-    }
-
-    h2 {
-        margin: -@default-spacing -@default-spacing 20px -@default-spacing;
-        padding: (@default-spacing/2)+6 @default-spacing (@default-spacing/2)+4 @default-spacing;
-        color: @secondary-color;
-        font-size: 18px;
-        font-weight: 500;
-        border-bottom: 1px solid @border-color;
-    }
-
-    h3 {
-        color: @secondary-color;
-        font-size: 16px;
-        font-weight: 500;
-    }
-}
-
-///////////////////////////
-// Footer //
-///////////////////////////
-
-.footer {
-    padding-bottom: 20px;
-
-    .logo {
-        float: left;
-        height: 20px;
-        margin-top: 4px;
-    }
-
-    .small-text {
-        text-align: left;
-        color: @gray;
-        font-size: @default-font-size;
-        line-height: 16px;
-        float: left;
-        padding-left: 20px;
-        margin-left: 20px;
-        border-left: 1px solid @line-dark-color;
-
-        a {
-            color: @gray;
-        }
-    }
-}
-
-///////////////////////////
-// Move to utilities.less //
-///////////////////////////
-
-.loader-container {
-    position: relative;
-    width: 100%;
-
-    > .loader {
-        display: block;
-        position: absolute;
-        .position-properties(0);
-        z-index: 1;
-        top: 50%;
-        left: 50%;
-        margin: -10px 0 0 -25px;
-    }
-}
-
-.table tr td .loader {
-    display: block;
-    margin: 0 auto;
-}
-
-.error {
-    color: @red;
-
-    a {
-        color: @red !important;
-    }
-}
-
-///////////////////////////
-// Move to zemHeader.component.less //
-///////////////////////////
-
-.daterangepicker {
-    &.opensleft:before {
-        content: none;
-    }
-    &.opensleft:after {
-        content: none;
-    }
-
-    .ranges {
-        li {
-            margin-bottom: 2px;
-            padding: 2px 12px;
-            background-color: transparent;
-            border: 1px solid transparent;
-            color: @secondary-color;
-
-            &:last-child {
-                margin-bottom: 12px;
-            }
-
-            &:hover {
-                border: 1px solid transparent;
-                background-color: @secondary-color;
-                color: @white;
-            }
-
-            &.active {
-                border: 1px solid transparent;
-                background-color: @secondary-color;
-                color: @white;
-            }
-        }
-
-        .btn-primary, .btn-default {
-            padding: 0 10px;
-            font-size: 14px;
-        }
-    }
-
-    .calendar-table {
-        padding: 0;
-    }
-
-    .calendar {
-        margin-bottom: 0;
-
-        .daterangepicker_input {
-            display: none;
-        }
-
-        td, th {
-            line-height: 20px;
-        }
-
-        td {
-            &.available {
-                &.off.in-range {
-                    background-color: @very-light-gray;
-
-                    &:hover {
-                        color: @secondary-color;
-                    }
-                }
-
-                &:hover {
-                    background-color: @secondary-color;
-                    color: @white;
-                }
-            }
-
-            &.active {
-                border: 1px solid transparent;
-                background-color: @secondary-color;
-
-                &.off.end-date, &.off.start-date {
-                    background-color: #ddd;
-                }
-            }
-
-            &.in-range {
-                background-color: tint(@secondary-color, 80%);
-
-                &.active {
-                    background-color: @secondary-color;
-                }
-            }
-        }
-
-        &.left {
-            td.active.end-date:not(.start-date):not(.off) {
-                background-color: fade(@secondary-color, 50%);
-            }
-        }
-        &.right {
-            td.active.start-date:not(.end-date):not(.off){
-                background-color: fade(@secondary-color, 50%);
-            }
-        }
-    }
-}
-
-///////////////////////////
-// Popover //
-///////////////////////////
-
-.popover {
-    font-family: 'Roboto', sans-serif;
-    border: none;
-    border-radius: @border-radius;
-    box-shadow: 0px 2px 10px 0px rgba(0,0,0,0.2);
-
-    .popover-content {
-        padding: 10px;
-        max-height: 250px;
-        overflow-y: auto;
-
-        ul.icon-list {
-            margin: 0px;
-            padding: 0px;
-            list-style: none;
-
-            li {
-                padding: 8px 0 8px 25px;
-                position: relative;
-                border-bottom: 1px solid @line-color;
-
-                .zem-icon {
-                    width: 16px;
-                    position: absolute;
-                    left: 0;
-                    top: 8px;
-                }
-
-                &:first-child {
-                    padding-top: 0;
-
-                    .zem-icon {
-                        top: 0;
-                    }
-                }
-
-                &:last-child {
-                    border-bottom: none;
-                    padding-bottom: 0;
-                }
-            }
-        }
-    }
-
-    &.top .arrow {
-        border-top-color: @white;
-    }
-
-    &.right .arrow {
-        border-right-color: @white;
-    }
-
-    &.bottom .arrow {
-        border-bottom-color: @white;
-    }
-
-    &.left .arrow {
-        border-left-color: @white;
-    }
-
-    // Hack to expand popover's box to make it easier to move cursor inside the popover without popover closing
-    &:after {
-        content: '';
-        position: absolute;
-        display: block;
-    }
-    &.top:after {
-        right: 0;
-        bottom: 0;
-        left: 0;
-        height: 12px;
-        margin-bottom: -12px;
-    }
-    &.right:after {
-        top: 0;
-        left: 0;
-        bottom: 0;
-        width: 12px;
-        margin-left: -12px;
-    }
-    &.bottom:after {
-        top: 0;
-        right: 0;
-        left: 0;
-        height: 12px;
-        margin-top: -12px;
-    }
-    &.left:after {
-        top: 0;
-        right: 0;
-        bottom: 0;
-        width: 12px;
-        margin-right: -12px;
-    }
-}
-
-///////////////////////////
-// Media sources - 2 column select //
-///////////////////////////
-
-select.media-source-select {
-    height: 180px;
-    width: 100%;
-}
-
-.publishers-blacklist-bigdrop {
-    width: 240px !important;
-}
-
-
-.media-source-control-row {
-    margin-top: 5px;
-
-    select {
-        outline: none;
-    }
-}
-
-///////////////////////////
-// Move to datepicker component //
-///////////////////////////
-
-.uib-datepicker-popup.dropdown-menu {
-    border: 1px solid @border-color;
-    box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
-
-    .uib-datepicker {
-        padding: 0 5px;
-
-        div:focus {
-            outline: none;
-        }
-
-        .btn {
-            border: none;
-            background: none;
-
-            &:hover {
-                background: none;
-                background-color: @secondary-color;
-                color: @white !important;
-
-                span {
-                    color: @white !important;
-                }
-            }
-
-            &.active {
-                background-color: @secondary-color;
-                color: white;
-
-                .text-info {
-                    color: @white;
-                }
-            }
-
-            &:hover {
-                background-color: @secondary-color;
-            }
-
-            &[disabled] {
-                opacity: 1;
-
-                span {
-                    color: @light-gray;
-                }
-
-                &:hover {
-                    background-color: transparent;
-
-                    span {
-                        color: @light-gray !important;
-                    }
-                }
-            }
-        }
-    }
-}
-
-///////////////////////////
-// Temporary solutions that should be fixed someday //
-///////////////////////////
-
-.zem-tabset zem-internal-feature {
-    left: 0px !important;
-    top: 0px !important;
-}
-
-.select2-results zem-internal-feature {
-    position: relative;
-}
-
-.has-error .checkbox, .has-error .checkbox-inline, .has-error .control-label, .has-error .help-block, .has-error .radio, .has-error .radio-inline, .has-error.checkbox label, .has-error.checkbox-inline label, .has-error.radio label, .has-error.radio-inline label {
-    color: @red !important;
-}
-
-.zem-grid-column-selector,
-.zem-grid-breakdown-selector {
-    ul.dropdown-menu {
-        .list-wrapper {
-            padding-bottom: @default-spacing;
-
-            > div {
-                margin: 0 0 10px 16px;
-                border-bottom: 1px solid @line-color;
-                padding-bottom: 10px;
-
-                &:last-child {
-                    border: none;
-                    padding-bottom: 0;
-                    margin-bottom: 0;
-                }
-            }
-        }
-
-        .buttons-panel {
-            padding: 10px @default-spacing;
-        }
-
-        li {
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-        }
-
-        .category-name {
-            color: @secondary-color;
-            font-size: @default-font-size+2;
-            font-weight: bold;
-            margin: 0;
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-        }
-
-        .description {
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-            margin-left: 0;
-        }
-
-        .subcategory {
-            .col-xs-6 {
-                padding-left: 0 !important;
-                padding-right: 0 !important;
-
-                .sub-category-name {
-                    color: @text-color;
-                    font-weight: normal;
-                    margin-left: 0;
-                }
-            }
-        }
-
-        .checkbox {
-            margin: 3px 0 3px 5px;
-            label {
-                font-weight: normal;
-                font-size: @default-font-size;
-
-                &.disabled {
-                    opacity: 0.4;
-                }
-            }
-        }
-    }
-}
-
-.checkbox-no-text input[type="checkbox"] {
-    margin-top: 11px;
-}
-
-.form-horizontal .form-group .radio {
-    margin-left: 15px;
-}
-
-.daily-spend-caps { // on adgroup settings
-    margin-left: 5px !important;
-}
-
 ////////////////////////////
-// Responsive //
+// Splash screen //
 ////////////////////////////
+
+.splash {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    text-align: center;
+    transform: translate(-50%, -50%);
+}
+
+[ng-cloak].splash {
+    display: block !important;
+}
+
+///////////////////////////
+// Layout //
+///////////////////////////
+
+.zem-container {
+    min-height: 100vh;
+    padding: @default-spacing*1.5+@header-height @default-spacing 72px @default-spacing;
+    position: relative;
+    transition: padding-top @default-animation;
+}
+
+.no-tabset.zem-container {
+    padding-top: @default-spacing*1.5+@header-height;
+}
+
+@media only screen and (min-width: @min-app-width) {
+    .fixed-header .zem-container {
+        padding-top: @default-spacing*1.5+@header-height;
+    }
+}
 
 @media only screen and (max-width: ((@min-app-width)-1)) {
-    .zem-tabset {
-        position: relative;
-        width: auto;
-        margin: 0 -@default-spacing;
-        top: auto;
+    .zem-container {
+        padding: 0 0 72px 0 !important;
     }
 
-    .page,
-    .no-tabset .page {
-        margin-top: @default-spacing*1.5;
+    .content-container {
+        padding: @default-spacing*1.5 @default-spacing 0 @default-spacing;
     }
+}
+
+.content-container {
+    display: block;
+}
+
+.content-container__title {
+    margin: -10px 0 -10px 0;
+}
+
+.zem-footer {
+    position: absolute;
+    bottom: 0;
+    left: @default-spacing;
+    right: @default-spacing;
+}
+
+///////////////////////////
+// Chart & Infobox //
+///////////////////////////
+
+.chart-infobox__container {
+    display: table;
+    table-layout: fixed;
+    width: 100%;
+    position: relative;
+}
+
+.chart-infobox__chart {
+    display: table-cell;
+    position: relative;
+    width: 100%;
+    height: 375px;
+    padding: @default-spacing @default-spacing 0 @default-spacing;
+    vertical-align: top;
+    margin-top: 0;
+}
+
+.chart-infobox__infobox {
+    display: table-cell;
+    width: 350px;
+    position: relative;
+    padding: 0;
+    margin-top: 0;
+}
+
+.chart-infobox__spacing {
+    display: table-cell;
+    width: @default-spacing*1.5;
 }

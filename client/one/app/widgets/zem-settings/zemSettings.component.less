@@ -232,6 +232,24 @@
     }
 }
 
+.modal__body .form__group--meet-or-beat-goal {
+    .postfixed-field,
+    .input-text {
+        width: @form-input-width-modal - 45% - 2%;
+        margin-right: 2%;
+    }
+
+    .postfixed-field {
+        .input-text {
+            width: 100%;
+        }
+    }
+
+    .button {
+        width: 45%;
+    }
+}
+
 ///////////////////////////
 // Device targeting //
 ///////////////////////////
@@ -260,6 +278,7 @@
         padding: 0;
         display: block;
         cursor: pointer;
+        transition: all @default-animation;
     }
 
     .form__checkbox {
