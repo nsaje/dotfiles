@@ -18,5 +18,5 @@ class Command(ExceptionCommand):
         ]
 
         for table in tables:
-            with influx.timer('etl.vacuum', table=table):
+            with influx.block_timer('etl.vacuum', table=table):
                 maintenance.vacuum_and_analyze(table)
