@@ -17,7 +17,7 @@ __all__ = ['query', 'query_totals']
 def query(breakdown, constraints, goals, order='-media_cost', use_publishers_view=False):
     constraints = extract_constraints(constraints)
 
-    rows = api_breakdowns._query_all(
+    rows = api_breakdowns.query_all(
         breakdown, constraints, None, goals, use_publishers_view,
         breakdown_for_name=breakdown, extra_name='reports_all')
     rows = sort_helper.sort_results(rows, [order])
@@ -28,8 +28,8 @@ def query(breakdown, constraints, goals, order='-media_cost', use_publishers_vie
 def query_totals(breakdown, constraints, goals, use_publishers_view=False):
     constraints = extract_constraints(constraints)
 
-    rows = api_breakdowns._query_all([], constraints, None, goals, use_publishers_view,
-                                     breakdown_for_name=breakdown, extra_name='report_totals')
+    rows = api_breakdowns.query_all([], constraints, None, goals, use_publishers_view,
+                                    breakdown_for_name=breakdown, extra_name='report_totals')
     postprocess.set_default_values([], rows)
     return rows
 

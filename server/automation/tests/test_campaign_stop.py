@@ -1441,7 +1441,7 @@ class StopNonSpendingSourcesTestCase(TestCase):
         self.addCleanup(patcher.stop)
 
     @patch('utils.dates_helper.local_today')
-    @patch('reports.api_contentads.query')
+    @patch('redshiftapi.api_breakdowns.query_all', autospec=True)
     def test_stop_non_spending_sources(self, mock_get_yesterday_spends, mock_local_today):
         mock_local_today.return_value = datetime.date(2016, 3, 15)
         campaign = dash.models.Campaign.objects.get(id=1)
@@ -1458,7 +1458,7 @@ class StopNonSpendingSourcesTestCase(TestCase):
 
         mock_get_yesterday_spends.return_value = []
         for ags in dash.models.AdGroupSource.objects.filter(ad_group__in=ad_groups):
-            row = {'ad_group': ags.ad_group_id, 'source': ags.source_id,
+            row = {'ad_group_id': ags.ad_group_id, 'source_id': ags.source_id,
                    'media_cost': Decimal(100), 'data_cost': Decimal(0)}
             if ags.id in non_spending_ags_ids:
                 row['media_cost'] = Decimal('0.5')
@@ -1484,7 +1484,7 @@ class StopNonSpendingSourcesTestCase(TestCase):
         self.assertItemsEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
 
     @patch('utils.dates_helper.local_today')
-    @patch('reports.api_contentads.query')
+    @patch('redshiftapi.api_breakdowns.query_all', autospec=True)
     def test_stop_whole_ad_group(self, mock_get_yesterday_spends, mock_local_today):
         mock_local_today.return_value = datetime.date(2016, 3, 15)
         campaign = dash.models.Campaign.objects.get(id=1)
@@ -1495,7 +1495,7 @@ class StopNonSpendingSourcesTestCase(TestCase):
 
         mock_get_yesterday_spends.return_value = []
         for ags in dash.models.AdGroupSource.objects.filter(ad_group__in=ad_groups):
-            row = {'ad_group': ags.ad_group_id, 'source': ags.source_id,
+            row = {'ad_group_id': ags.ad_group_id, 'source_id': ags.source_id,
                    'media_cost': Decimal(100), 'data_cost': Decimal(0)}
             if ags.ad_group_id in non_spending_ag_ids:
                 row['media_cost'] = Decimal('0.5')

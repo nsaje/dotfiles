@@ -28,7 +28,7 @@ class ApiTest(TestCase):
 class QueryTest(TestCase):
 
     @patch('redshiftapi.api_breakdowns.should_query_all', return_value=True)
-    @patch('redshiftapi.api_breakdowns._query_all')
+    @patch('redshiftapi.api_breakdowns.query_all')
     def test_query_all_base(self, mock_query, _):
         mock_query.return_value = [
             {'campaign_id': 1, 'clicks': 1},
@@ -61,7 +61,7 @@ class QueryTest(TestCase):
         ])
 
     @patch('redshiftapi.api_breakdowns.should_query_all', return_value=True)
-    @patch('redshiftapi.api_breakdowns._query_all')
+    @patch('redshiftapi.api_breakdowns.query_all')
     def test_query_all_depth_2(self, mock_query, _):
         mock_query.return_value = [
             {'campaign_id': 1, 'ad_group_id': 1, 'clicks': 1},
@@ -94,7 +94,7 @@ class QueryTest(TestCase):
         ])
 
     @patch('redshiftapi.api_breakdowns.should_query_all', return_value=True)
-    @patch('redshiftapi.api_breakdowns._query_all')
+    @patch('redshiftapi.api_breakdowns.query_all')
     def test_query_all_depth_3(self, mock_query, _):
         mock_query.return_value = [
             {'campaign_id': 1, 'ad_group_id': 1, 'dma': 501, 'clicks': 1},
@@ -331,7 +331,7 @@ class QueryTest(TestCase):
 
 class QueryStatsForRowsTest(TestCase):
     @patch('redshiftapi.api_breakdowns.should_query_all', return_value=True)
-    @patch('redshiftapi.api_breakdowns._query_all')
+    @patch('redshiftapi.api_breakdowns.query_all')
     def test_query_all_base(self, mock_query, _):
         mock_query.return_value = [
             {'campaign_id': 1, 'clicks': 1},
@@ -363,7 +363,7 @@ class QueryStatsForRowsTest(TestCase):
         ])
 
     @patch('redshiftapi.api_breakdowns.should_query_all', return_value=True)
-    @patch('redshiftapi.api_breakdowns._query_all')
+    @patch('redshiftapi.api_breakdowns.query_all')
     def test_query_all_depth_2(self, mock_query, _):
         mock_query.return_value = [
             {'campaign_id': 1, 'ad_group_id': 1, 'clicks': 1},
@@ -399,7 +399,7 @@ class QueryStatsForRowsTest(TestCase):
         ])
 
     @patch('redshiftapi.api_breakdowns.should_query_all', return_value=False)
-    @patch('redshiftapi.api_breakdowns._query_all')
+    @patch('redshiftapi.api_breakdowns.query_all')
     def test_query_only_relevant_depth_1(self, mock_query, _):
         mock_query.return_value = [
             {'campaign_id': 1, 'clicks': 1},
@@ -430,7 +430,7 @@ class QueryStatsForRowsTest(TestCase):
         ])
 
     @patch('redshiftapi.api_breakdowns.should_query_all', return_value=True)
-    @patch('redshiftapi.api_breakdowns._query_all')
+    @patch('redshiftapi.api_breakdowns.query_all')
     def test_query_only_relevant_depth_2(self, mock_query, _):
         mock_query.return_value = [
             {'campaign_id': 1, 'ad_group_id': 1, 'clicks': 1},
@@ -465,7 +465,7 @@ class QueryStatsForRowsTest(TestCase):
 
 
 class QueryTotalsTest(TestCase):
-    @patch('redshiftapi.api_breakdowns._query_all')
+    @patch('redshiftapi.api_breakdowns.query_all')
     def test_query_totals(self, mock_query):
         mock_query.return_value = [
             {'clicks': 4},

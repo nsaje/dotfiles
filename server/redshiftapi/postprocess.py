@@ -167,13 +167,14 @@ def merge_rows(breakdown, base_rows, yesterday_rows, touchpoint_rows, conversion
 
     row_by_breakdown = sort_helper.group_rows_by_breakdown_key(breakdown, rows, max_1=True)
 
-    if goals.conversion_goals:
-        apply_conversion_goal_columns(breakdown, row_by_breakdown, goals.conversion_goals, conversion_rows)
-    if goals.pixels:
-        apply_pixel_columns(breakdown, row_by_breakdown, goals.pixels, touchpoint_rows)
-    if goals.campaign_goals:
-        apply_performance_columns(breakdown, row_by_breakdown, goals.campaign_goals, goals.campaign_goal_values,
-                                  goals.conversion_goals, goals.pixels)
+    if goals:
+        if goals.conversion_goals:
+            apply_conversion_goal_columns(breakdown, row_by_breakdown, goals.conversion_goals, conversion_rows)
+        if goals.pixels:
+            apply_pixel_columns(breakdown, row_by_breakdown, goals.pixels, touchpoint_rows)
+        if goals.campaign_goals:
+            apply_performance_columns(breakdown, row_by_breakdown, goals.campaign_goals, goals.campaign_goal_values,
+                                      goals.conversion_goals, goals.pixels)
     return rows
 
 

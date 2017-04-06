@@ -44,8 +44,8 @@ def query(breakdown, constraints, parents, goals, order, offset, limit, use_publ
         offset = 0
 
     if should_query_all(breakdown):
-        all_rows = _query_all(breakdown, constraints, parents, goals, use_publishers_view,
-                              breakdown_for_name=breakdown, extra_name='all')
+        all_rows = query_all(breakdown, constraints, parents, goals, use_publishers_view,
+                             breakdown_for_name=breakdown, extra_name='all')
 
         rows = sort_helper.sort_results(all_rows, orders)
         rows = postprocess.fill_in_missing_rows(rows, breakdown, constraints, parents, orders, offset, limit)
@@ -72,13 +72,13 @@ def query(breakdown, constraints, parents, goals, order, offset, limit, use_publ
 
 def query_stats_for_rows(rows, breakdown, constraints, goals, use_publishers_view=False):
     if should_query_all(breakdown):
-        stats_rows = _query_all(breakdown, constraints, None, goals, use_publishers_view,
-                                breakdown_for_name=breakdown, extra_name='rows')
+        stats_rows = query_all(breakdown, constraints, None, goals, use_publishers_view,
+                               breakdown_for_name=breakdown, extra_name='rows')
         rows = helpers.select_relevant_stats_rows(breakdown, rows, stats_rows)
     else:
         parents = helpers.create_parents(rows, breakdown)  # this limits the query to rows we are looking for
-        rows = _query_all(breakdown, constraints, parents, goals, use_publishers_view,
-                          breakdown_for_name=breakdown, extra_name='rows')
+        rows = query_all(breakdown, constraints, parents, goals, use_publishers_view,
+                         breakdown_for_name=breakdown, extra_name='rows')
 
     postprocess.set_default_values(breakdown, rows)
     return rows
@@ -90,14 +90,14 @@ def query_structure_with_stats(breakdown, constraints, use_publishers_view=False
 
 
 def query_totals(breakdown, constraints, goals, use_publishers_view=False):
-    rows = _query_all([], constraints, None, goals, use_publishers_view,
-                      breakdown_for_name=breakdown, extra_name='totals')
+    rows = query_all([], constraints, None, goals, use_publishers_view,
+                     breakdown_for_name=breakdown, extra_name='totals')
     postprocess.set_default_values([], rows)
     return rows
 
 
-def _query_all(breakdown, constraints, parents, goals, use_publishers_view,
-               breakdown_for_name=[], extra_name='', metrics=None):
+def query_all(breakdown, constraints, parents, goals, use_publishers_view,
+              breakdown_for_name=[], extra_name='', metrics=None):
 
     t_base = None
     t_yesterday = None
@@ -120,7 +120,7 @@ def _query_all(breakdown, constraints, parents, goals, use_publishers_view,
     needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
     support_conversions = view_selector.supports_conversions(needed_dimensions, use_publishers_view)
 
-    if support_conversions:
+    if goals and support_conversions:
         if goals.conversion_goals:
             if not metrics or any(helpers.is_conversion_goal_metric(metric) for metric in metrics):
                 sql, params = queries.prepare_query_all_conversions(

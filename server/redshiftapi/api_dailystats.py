@@ -12,7 +12,7 @@ __all__ = ['query']
 def query(breakdown, metrics, constraints, goals, order, use_publishers_view=False):
     constraints = extract_constraints(constraints, use_publishers_view)
 
-    rows = api_breakdowns._query_all(
+    rows = api_breakdowns.query_all(
         breakdown, constraints, None, goals, use_publishers_view,
         breakdown_for_name=breakdown, extra_name='dailystats_all',
         metrics=metrics)

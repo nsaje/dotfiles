@@ -15,9 +15,10 @@ from automation import autopilot_settings, models
 import dash.constants
 import dash.models
 
-import reports.api_contentads
 import reports.budget_helpers
 import reports.models
+
+import redshiftapi.api_breakdowns
 
 import utils.k1_helper
 from utils import dates_helper, email_helper, url_helper, pagerduty_helper
@@ -793,7 +794,7 @@ def _adjust_source_caps(campaign, daily_caps):
         ).group_current_settings()
     }
 
-    yesterday_spends = _get_yesterday_source_spends(active_ad_groups)
+    yesterday_spends = _get_yesterday_source_spends(campaign, active_ad_groups)
     user_daily_budget_per_ags, user_group_daily_budget_per_ag = _get_user_daily_budget_per_ags(
         dates_helper.local_today(), campaign)
 
@@ -1158,19 +1159,28 @@ def _update_b1_group_cap(ad_group, cap):
     new_settings.save(None)
 
 
-def _get_yesterday_source_spends(ad_groups):
-    rows = reports.api_contentads.query(
-        dates_helper.local_today() - datetime.timedelta(days=1),
-        dates_helper.local_today() - datetime.timedelta(days=1),
-        breakdown=['ad_group', 'source'],
-        ad_group=ad_groups
+def _get_yesterday_source_spends(campaign, ad_groups):
+    yday = dates_helper.local_today() - datetime.timedelta(days=1)
+    breakdown = ['ad_group_id', 'source_id']
+    constraints = {
+        'date__gte': yday,
+        'date__lte': yday,
+        'campaign_id': campaign.id,
+        'ad_group_id': [ad_group.id for ad_group in ad_groups],
+    }
+    rows = redshiftapi.api_breakdowns.query_all(
+        breakdown,
+        constraints,
+        parents=None,
+        goals=None,
+        use_publishers_view=False,
     )
 
     yesterday_spends = {}
     for row in rows:
-        media_cost = row['media_cost'] or 0
-        data_cost = row['data_cost'] or 0
-        yesterday_spends[(row['ad_group'], row['source'])] = media_cost + data_cost
+        media_cost = row['media_cost'] or DECIMAL_ZERO
+        data_cost = row['data_cost'] or DECIMAL_ZERO
+        yesterday_spends[(row['ad_group_id'], row['source_id'])] = media_cost + data_cost
 
     return yesterday_spends
 
@@ -1267,21 +1277,29 @@ def _get_ad_group_ratios(active_ad_groups, per_date_data):
 
 
 def _get_past_7_days_data(campaign):
-    data = reports.api_contentads.query(
-        start_date=dates_helper.local_today() - datetime.timedelta(days=7),
-        end_date=dates_helper.local_today() - datetime.timedelta(days=1),
-        breakdown=['date', 'ad_group', 'source'],
-        campaign=campaign,
+    today = dates_helper.local_today()
+    breakdown = ['date', 'ad_group_id', 'source_id']
+    constraints = {
+        'date__gte': today - datetime.timedelta(days=7),
+        'date__lte': today - datetime.timedelta(days=1),
+        'campaign_id': campaign.id,
+    }
+    rows = redshiftapi.api_breakdowns.query_all(
+        breakdown,
+        constraints,
+        parents=None,
+        goals=None,
+        use_publishers_view=False,
     )
 
     date_spend = defaultdict(int)
     source_spend = defaultdict(int)
-    for item in data:
-        media_cost = item['media_cost'] or 0
-        data_cost = item['data_cost'] or 0
+    for row in rows:
+        media_cost = row['media_cost'] or DECIMAL_ZERO
+        data_cost = row['data_cost'] or DECIMAL_ZERO
         spend = media_cost + data_cost
-        date_spend[(item['ad_group'], item['date'])] += spend
-        source_spend[(item['ad_group'], item['source'])] += spend
+        date_spend[(row['ad_group_id'], row['date'])] += spend
+        source_spend[(row['ad_group_id'], row['source_id'])] += spend
 
     return date_spend, source_spend
 
