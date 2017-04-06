@@ -222,8 +222,8 @@ class Command(BaseCommand):
         try:
             with transaction.atomic():
                 self._handle_action(action, model, object_list, options)
-        except ValidationError as err:
-            raise CommandError('Validation failed: {}'.format(err))
+        except ValidationError:
+            raise CommandError('Validation failed.')
         except DatabaseError:
             raise CommandError('Wrong fields.')
 
