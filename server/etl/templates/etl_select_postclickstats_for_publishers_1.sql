@@ -5,7 +5,7 @@ SELECT
     ad_group_id,
     type,
     source,
-    lower(publisher),
+    CASE WHEN source = 'yahoo' THEN NULL ELSE lower(publisher) END,
     SUM(visits) as visits,
     SUM(new_visits) as new_visits,
     SUM(bounced_visits) as bounced_visits,

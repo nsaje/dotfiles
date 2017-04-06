@@ -39,6 +39,7 @@ class MVHSourceTest(TestCase, backtosql.TestSQLMixin):
             1\tadblade\tadblade\r
             2\tadiant\tadiant\r
             3\toutbrain\toutbrain\r
+            4\tyahoo\tyahoo\r
             """))
 
         mock_cursor().__enter__().execute.assert_has_calls([
@@ -608,7 +609,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                     type AS postclick_source,
                     content_ad_id AS content_ad_id,
                     source AS source_slug,
-                    publisher AS publisher,
+                    CASE WHEN source = 'yahoo' THEN NULL ELSE publisher END AS publisher,
                     SUM(bounced_visits) bounced_visits,
                     json_dict_sum(LISTAGG(conversions, ';'), ';') AS conversions,
                     SUM(new_visits) new_visits,
@@ -740,7 +741,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
             type AS postclick_source,
             content_ad_id AS content_ad_id,
             source AS source_slug,
-            publisher AS publisher,
+            CASE WHEN source = 'yahoo' THEN NULL ELSE publisher END AS publisher,
             SUM(bounced_visits) bounced_visits,
             json_dict_sum(LISTAGG(conversions, ';'), ';') AS conversions,
             SUM(new_visits) new_visits,
@@ -841,7 +842,7 @@ class MasterViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
                     type AS postclick_source,
                     content_ad_id AS content_ad_id,
                     source AS source_slug,
-                    publisher AS publisher,
+                    CASE WHEN source = 'yahoo' THEN NULL ELSE publisher END AS publisher,
                     SUM(bounced_visits) bounced_visits,
                     json_dict_sum(LISTAGG(conversions, ';'), ';') AS conversions,
                     SUM(new_visits) new_visits,
@@ -903,7 +904,7 @@ class MasterViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
             type AS postclick_source,
             content_ad_id AS content_ad_id,
             source AS source_slug,
-            publisher AS publisher,
+            CASE WHEN source = 'yahoo' THEN NULL ELSE publisher END AS publisher,
             SUM(bounced_visits) bounced_visits,
             json_dict_sum(LISTAGG(conversions, ';'), ';') AS conversions,
             SUM(new_visits) new_visits,
@@ -950,7 +951,7 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
                     type AS postclick_source,
                     content_ad_id AS content_ad_id,
                     source AS source_slug,
-                    publisher AS publisher,
+                    CASE WHEN source = 'yahoo' THEN NULL ELSE publisher END AS publisher,
                     SUM(bounced_visits) bounced_visits,
                     json_dict_sum(LISTAGG(conversions, ';'), ';') AS conversions,
                     SUM(new_visits) new_visits,
@@ -1063,7 +1064,7 @@ class MVConversionsTestAccountId(TestCase, backtosql.TestSQLMixin):
                     type AS postclick_source,
                     content_ad_id AS content_ad_id,
                     source AS source_slug,
-                    publisher AS publisher,
+                    CASE WHEN source = 'yahoo' THEN NULL ELSE publisher END AS publisher,
                     SUM(bounced_visits) bounced_visits,
                     json_dict_sum(LISTAGG(conversions, ';'), ';') AS conversions,
                     SUM(new_visits) new_visits,
@@ -1141,6 +1142,7 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
                     a.ad_group_id as ad_group_id,
                     a.content_ad_id as content_ad_id,
                     CASE WHEN a.source_id = 3 THEN a.publisher
+                         WHEN a.source_id = 4 THEN NULL
                          ELSE LOWER(a.publisher)
                     END as publisher,
                     a.slug as slug,
@@ -1206,6 +1208,7 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
                     a.ad_group_id as ad_group_id,
                     a.content_ad_id as content_ad_id,
                     CASE WHEN a.source_id = 3 THEN a.publisher
+                         WHEN a.source_id = 4 THEN NULL
                          ELSE LOWER(a.publisher)
                     END as publisher,
                     a.slug as slug,

@@ -15,7 +15,7 @@ SELECT
     touchpoint_id,
     touchpoint_timestamp,
     conversion_lag,
-    publisher
+    CASE WHEN source_id = 4 THEN NULL ELSE publisher END
 FROM conversions
 WHERE
     date=%(date)s

@@ -127,6 +127,10 @@ def get_outbrain():
     return dash.models.Source.objects.get(name__iexact='outbrain')
 
 
+def get_yahoo():
+    return dash.models.Source.objects.get(name__iexact='yahoo')
+
+
 class Materialize(object):
 
     TABLE_NAME = 'missing'
@@ -371,7 +375,8 @@ class MasterView(Materialize):
 
     def prefetch(self):
         if self.account_id:
-            self.ad_groups_map = {x.id: x for x in dash.models.AdGroup.objects.filter(campaign__account_id=self.account_id)}
+            self.ad_groups_map = {x.id: x for x in dash.models.AdGroup.objects.filter(
+                campaign__account_id=self.account_id)}
             self.campaigns_map = {x.id: x for x in dash.models.Campaign.objects.filter(account_id=self.account_id)}
             self.accounts_map = {x.id: x for x in dash.models.Account.objects.filter(id=self.account_id)}
 
@@ -384,6 +389,7 @@ class MasterView(Materialize):
             helpers.extract_source_slug(x.bidder_slug): x for x in dash.models.Source.objects.all()}
         self.sources_map = {x.id: x for x in dash.models.Source.objects.all()}
         self.outbrain = get_outbrain()
+        self.yahoo = get_yahoo()
 
     def get_postclickstats(self, cursor, date):
 
@@ -418,6 +424,12 @@ class MasterView(Materialize):
 
                 returning_users = helpers.calculate_returning_users(row.users, row.new_visits)
 
+                publisher = row.publisher
+                if source.id == self.yahoo.id:
+                    publisher = None
+                elif publisher and source.id != self.outbrain.id:
+                    publisher = publisher.lower()
+
                 yield (
                     helpers.get_breakdown_key_for_postclickstats(source.id, row.content_ad_id),
                     (
@@ -429,7 +441,7 @@ class MasterView(Materialize):
                         campaign.id,
                         ad_group.id,
                         row.content_ad_id,
-                        row.publisher.lower() if (row.publisher and source.id != self.outbrain.id) else row.publisher,
+                        publisher,
 
                         dash.constants.DeviceType.UNDEFINED,
                         None,
@@ -493,6 +505,7 @@ class MasterPublishersView(Materialize):
 
     def __init__(self, *args, **kwargs):
         self.outbrain = get_outbrain()
+        self.yahoo = get_yahoo()
         super(MasterPublishersView, self).__init__(*args, **kwargs)
 
     def generate(self, **kwargs):
@@ -602,9 +615,11 @@ class MVTouchpointConversions(Materialize):
 
     def prepare_insert_query(self):
         outbrain = get_outbrain()
+        yahoo = get_yahoo()
         sql = backtosql.generate_sql('etl_insert_mv_touchpointconversions.sql', {
             'account_id': self.account_id,
             'outbrain_id': outbrain.id,
+            'yahoo_id': yahoo.id,
         })
 
         return sql, self._add_account_id_param({
@@ -614,6 +629,7 @@ class MVTouchpointConversions(Materialize):
 
 
 class DerivedMaterializedView(Materialize):
+
     def generate(self, **kwargs):
         with db.get_write_stats_transaction():
             with db.get_write_stats_cursor() as c:

@@ -103,6 +103,12 @@
     model: dash.sourcetype
     pk: 3
 
+-   fields:
+        type: 'yahoo'
+        available_actions: [19, 20]
+    model: dash.sourcetype
+    pk: 4
+
 # sources
 
 -   fields:
@@ -144,6 +150,19 @@
         supports_retargeting: true
     model: dash.source
     pk: 3
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Yahoo
+        bidder_slug: 'yahoo'
+        source_type: 2
+        tracking_slug: 'yahoo'
+        maintenance: false
+        deprecated: false
+        supports_retargeting: true
+    model: dash.source
+    pk: 4
     
 # test adgroup
 
