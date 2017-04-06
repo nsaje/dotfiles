@@ -258,7 +258,7 @@ class Command(BaseCommand):
                 if obj.freed_cc:
                     if self._confirm('Budget was already released. Do you want to clear it?'):
                         obj.freed_cc = 0
-                        obj.save()
+                        #obj.save()
                 try:
                     obj.free_inactive_allocated_assets()
                     self._print(
