@@ -64,7 +64,7 @@ sqlparse==0.2.2
 Pillow==4.0.0
 
 # REST framework
-djangorestframework
+djangorestframework==3.6.2
 django-oauth-toolkit==0.11.0
 djangorestframework-camel-case==0.2.0
 dredd-hooks==0.1.2

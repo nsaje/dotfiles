@@ -5,16 +5,32 @@ from django.db import models
 from dash import constants
 
 
-class GeolocationManager(models.Manager):
-    def map(self, keys):
-        return super(GeolocationManager, self).get_queryset().filter(key__in=keys)
+class GeolocationQuerySet(models.QuerySet):
+    def key_in(self, keys):
+        return self.filter(key__in=keys)
 
-    def search(self, query):
-        return super(GeolocationManager, self).get_queryset().filter(name__icontains=query)
+    def of_type(self, types):
+        return self.filter(type__in=types)
+
+    def name_contains(self, query):
+        return self.filter(name__icontains=query)
+
+
+class GeolocationManager(models.Manager):
+    def search(self, keys=None, types=None, name_contains=None, limit=None):
+        locations = super(GeolocationManager, self).get_queryset().all()
+        if keys:
+            locations = locations.key_in(keys)
+        if types:
+            locations = locations.of_type(types)
+        if name_contains:
+            locations = locations.name_contains(name_contains)
+
+        return locations[:limit]
 
 
 class Geolocation(models.Model):
-    objects = GeolocationManager()
+    objects = GeolocationManager.from_queryset(GeolocationQuerySet)()
 
     class Meta:
         ordering = ('-type',)

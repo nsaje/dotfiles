@@ -12,6 +12,7 @@ from django.core.urlresolvers import reverse
 from rest_framework import exceptions
 
 import dash.models
+import fields
 import views as restapi_views
 from dash import constants
 from dash import upload
@@ -34,7 +35,7 @@ def normalize(d):
 class SerializerTests(TestCase):
 
     def test_allow_not_provided(self):
-        NOT_PROVIDED = restapi_views.NOT_PROVIDED
+        NOT_PROVIDED = fields.NOT_PROVIDED
         d = {'name': 'test', 'tracking': {'ga': {'enabled': True}}}
         new_d = restapi_views.SettingsSerializer._allow_not_provided(d)
         self.assertEqual(new_d['name'], 'test')

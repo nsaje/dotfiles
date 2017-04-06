@@ -63,7 +63,7 @@ angular.module('one.widgets').service('zemAccountCreditStateService', function (
             state.creditItem = {};
             state.requests.reloadCreditItem = {};
 
-            if (!account || !id) return $q.rejcet();
+            if (!account || !id) return $q.reject();
 
             state.requests.reloadCreditItem.inProgress = true;
             return zemAccountCreditEndpoint.get(account.id, id)
@@ -81,7 +81,7 @@ angular.module('one.widgets').service('zemAccountCreditStateService', function (
         function saveCreditItem (isNew) {
             state.requests.saveCreditItem = {};
 
-            if (!account || !state.creditItem) return $q.rejcet();
+            if (!account || !state.creditItem) return $q.reject();
 
             var action = zemAccountCreditEndpoint.update;
             if (isNew) {
@@ -104,7 +104,7 @@ angular.module('one.widgets').service('zemAccountCreditStateService', function (
         function cancelCreditItem (id) {
             state.requests.cancelCreditItem = {};
 
-            if (!account || !id) return $q.rejcet();
+            if (!account || !id) return $q.reject();
 
             state.requests.cancelCreditItem.inProgress = true;
             return zemAccountCreditEndpoint.cancel(account.id, [id])

@@ -96,7 +96,7 @@ urlpatterns += [
 
 # REST API
 urlpatterns += [
-    url(r'^rest/v1/', include('restapi.urls')),
+    url(r'^rest/', include('restapi.urls')),
 ]
 
 # Custom integrations API

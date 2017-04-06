@@ -1627,6 +1627,25 @@ Time breakdown:
             }
         }
 
+
+# Group Utilities
+
+<a name="geolocations"></a>
+## Geolocations [/rest/v1/geolocations/]
+
+### List geolocations [GET /rest/v1/geolocations/{?keys,types,nameContains,limit}]
+
++ Parameters
+    + keys: `US,US-HI` (optional, string) - Comma-separated list of [location keys](#header-geo-targeting)
+    + types: COUNTRY,REGION (optional, string) - Comma-separated list of [location types](#location-type)
+    + nameContains: United (optional, string) - Search query
+    + limit: 10 (optional, int) - Maximum number of locations to return, up to `50`, defaults to `10`
+
++ Response 200 (application/json)
+
+    + Attributes (GeolocationResponse)
+
+
 # Group Additional Types
 
 <a name="money"></a>
@@ -2135,6 +2154,14 @@ A string representing a decimal number. Example: `"15.48"`
 
 ## Geo targeting
 
+<a name="location-type"></a>
+### Location type
+- `COUNTRY`
+- `REGION`
+- `CITY`
+- `DMA`
+- `ZIP`
+
 <a name="dma"></a>
 ### DMA
 - `669` - 669 Madison, WI
@@ -2506,3 +2533,20 @@ Examples:
 ## CampaignListResponse
 
 - `data` (array[Campaign])
+
+<!-- GEOLOCATION -->
+## GeolocationCountry (object)
+
+- `key`: `US` (string)
+- `type`: `COUNTRY` (string)
+- `name`: `United States` (string)
+
+## GeolocationRegion (object)
+
+- `key`: `US-HI` (string)
+- `type`: `REGION` (string)
+- `name`: `Hawaii, United States` (string)
+
+## GeolocationResponse
+
+- `data` (array[GeolocationCountry, GeolocationRegion])

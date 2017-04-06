@@ -32,6 +32,7 @@ from redshiftapi import quickstats
 import restapi.authentication
 import restapi.models
 import restapi.reports
+import fields
 
 import dash.features.geolocation
 
@@ -40,19 +41,6 @@ logger = logging.getLogger(__name__)
 
 
 REALTIME_STATS_AGENCIES = [55]
-
-
-class NotProvided(object):
-    def __getitem__(self, key):
-        return self
-
-    def __iter__(self):
-        # empty iterator pattern: yield keyword turns the function into a generator,
-        # a preceding return makes sure the generator is empty
-        return
-        yield
-
-NOT_PROVIDED = NotProvided()
 
 
 class RESTAPIJSONRenderer(JSONRenderer):
@@ -108,45 +96,6 @@ class RESTAPIBaseView(APIView):
         return Response(data, **kwargs)
 
 
-class IdField(serializers.Field):
-    def to_representation(self, data):
-        if isinstance(data, django.db.models.Model):
-            return str(data.id)
-        return str(data)
-
-    def to_internal_value(self, data):
-        return int(data)
-
-
-class DashConstantField(serializers.Field):
-
-    def __init__(self, const_cls, **kwargs):
-        self.const_cls = const_cls
-        super(DashConstantField, self).__init__(**kwargs)
-
-    def to_internal_value(self, data):
-        if data == NOT_PROVIDED:
-            return NOT_PROVIDED
-        try:
-            return getattr(self.const_cls, data)
-        except AttributeError:
-            valid_choices = self.const_cls.get_all_names()
-            raise serializers.ValidationError('Invalid choice %s! Valid choices: %s' % (data, ', '.join(valid_choices)))
-
-    def to_internal_value_many(self, data):
-        if data == NOT_PROVIDED:
-            return NOT_PROVIDED
-        return map(lambda x: self.to_internal_value(x), data)
-
-    def to_representation(self, value):
-        if not value:
-            return None
-        return self.const_cls.get_name(value)
-
-    def to_representation_many(self, data):
-        return map(lambda x: self.to_representation(x), data)
-
-
 class DataNodeSerializerMixin(object):
     @property
     def data(self):
@@ -199,9 +148,9 @@ class SettingsSerializer(serializers.BaseSerializer):
 
     @classmethod
     def _allow_not_provided(cls, d):
-        if d == NOT_PROVIDED:
-            return NOT_PROVIDED
-        new_dict = collections.defaultdict(lambda: NOT_PROVIDED)
+        if d == fields.NOT_PROVIDED:
+            return fields.NOT_PROVIDED
+        new_dict = collections.defaultdict(lambda: fields.NOT_PROVIDED)
         new_dict.update(d)
         for key, value in new_dict.items():
             if isinstance(value, dict):
@@ -236,7 +185,7 @@ class AccountSerializer(SettingsSerializer):
             'whitelist_publisher_groups': data['targeting']['publisherGroups']['included'],
             'blacklist_publisher_groups': data['targeting']['publisherGroups']['excluded'],
         }
-        return {'settings': {k: v for k, v in settings.items() if v != NOT_PROVIDED}}
+        return {'settings': {k: v for k, v in settings.items() if v != fields.NOT_PROVIDED}}
 
 
 class AccountCreditSerializer(serializers.Serializer):
@@ -290,12 +239,12 @@ class CampaignSerializer(SettingsSerializer):
             'accountId': settings['account_id'],
             'name': settings['name'],
             'archived': data_internal['data']['archived'],
-            'iabCategory': DashConstantField(constants.IABCategory).to_representation(settings['iab_category']),
+            'iabCategory': fields.DashConstantField(constants.IABCategory).to_representation(settings['iab_category']),
             # 'campaignManager': self._user_to_email(settings['campaign_manager']),  # TODO(nsaje): convert to email
             'tracking': {
                 'ga': {
                     'enabled': settings['enable_ga_tracking'],
-                    'type': DashConstantField(constants.GATrackingType).to_representation(settings['ga_tracking_type']),
+                    'type': fields.DashConstantField(constants.GATrackingType).to_representation(settings['ga_tracking_type']),
                     'webPropertyId': settings['ga_property_id'],
                 },
                 'adobe': {
@@ -316,18 +265,18 @@ class CampaignSerializer(SettingsSerializer):
         settings = {
             'id': data['id'],
             'name': data['name'],
-            'iab_category': DashConstantField(constants.IABCategory).to_internal_value(data['iabCategory']),
+            'iab_category': fields.DashConstantField(constants.IABCategory).to_internal_value(data['iabCategory']),
             'archived': data['archived'],
             # 'campaign_manager': data['campaignManager'],  # TODO(nsaje): convert from email
             'enable_ga_tracking': data['tracking']['ga']['enabled'],
-            'ga_tracking_type': DashConstantField(constants.GATrackingType).to_internal_value(data['tracking']['ga']['type']),
+            'ga_tracking_type': fields.DashConstantField(constants.GATrackingType).to_internal_value(data['tracking']['ga']['type']),
             'ga_property_id': data['tracking']['ga']['webPropertyId'],
             'enable_adobe_tracking': data['tracking']['adobe']['enabled'],
             'adobe_tracking_param': data['tracking']['adobe']['trackingParameter'],
             'whitelist_publisher_groups': data['targeting']['publisherGroups']['included'],
             'blacklist_publisher_groups': data['targeting']['publisherGroups']['excluded'],
         }
-        return {'settings': {k: v for k, v in settings.items() if v != NOT_PROVIDED}}
+        return {'settings': {k: v for k, v in settings.items() if v != fields.NOT_PROVIDED}}
 
 
 class AdGroupSerializer(SettingsSerializer):
@@ -380,10 +329,10 @@ class AdGroupSerializer(SettingsSerializer):
                     'included': self._partition_regions(settings['target_regions']),
                     'excluded': self._partition_regions(settings['exclusion_target_regions']),
                 },
-                'devices': map(lambda x: DashConstantField(constants.AdTargetDevice).to_representation(x), settings['target_devices']),
+                'devices': map(lambda x: fields.DashConstantField(constants.AdTargetDevice).to_representation(x), settings['target_devices']),
                 'interest': {
-                    'included': map(lambda x: DashConstantField(constants.InterestCategory).to_representation(x), settings['interest_targeting']),
-                    'excluded': map(lambda x: DashConstantField(constants.InterestCategory).to_representation(x), settings['exclusion_interest_targeting']),
+                    'included': map(lambda x: fields.DashConstantField(constants.InterestCategory).to_representation(x), settings['interest_targeting']),
+                    'excluded': map(lambda x: fields.DashConstantField(constants.InterestCategory).to_representation(x), settings['exclusion_interest_targeting']),
                 },
                 'demographic': settings['bluekai_targeting'],
                 'publisherGroups': {
@@ -405,7 +354,7 @@ class AdGroupSerializer(SettingsSerializer):
         settings = {
             'id': data['id'],
             'name': data['name'],
-            'state': DashConstantField(constants.AdGroupSettingsState).to_internal_value(data['state']),
+            'state': fields.DashConstantField(constants.AdGroupSettingsState).to_internal_value(data['state']),
             'archived': data['archived'],
             'start_date': data['startDate'],
             'end_date': data['endDate'],
@@ -415,18 +364,18 @@ class AdGroupSerializer(SettingsSerializer):
             'tracking_code': data['trackingCode'],
             'target_regions': self._unpartition_regions(data['targeting']['geo']['included']),
             'exclusion_target_regions': self._unpartition_regions(data['targeting']['geo']['excluded']),
-            'target_devices': DashConstantField(constants.AdTargetDevice).to_internal_value_many(data['targeting']['devices']),
-            'interest_targeting': DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['included']),
-            'exclusion_interest_targeting': DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['excluded']),
+            'target_devices': fields.DashConstantField(constants.AdTargetDevice).to_internal_value_many(data['targeting']['devices']),
+            'interest_targeting': fields.DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['included']),
+            'exclusion_interest_targeting': fields.DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['excluded']),
             'bluekai_targeting': data['targeting']['demographic'],
-            'autopilot_state': DashConstantField(constants.AdGroupSettingsAutopilotState).to_internal_value(data['autopilot']['state']),
+            'autopilot_state': fields.DashConstantField(constants.AdGroupSettingsAutopilotState).to_internal_value(data['autopilot']['state']),
             'autopilot_daily_budget': data['autopilot']['dailyBudget'],
             'dayparting': data['dayparting'],
             'whitelist_publisher_groups': data['targeting']['publisherGroups']['included'],
             'blacklist_publisher_groups': data['targeting']['publisherGroups']['excluded'],
         }
 
-        return {'settings': {k: v for k, v in settings.items() if v != NOT_PROVIDED}}
+        return {'settings': {k: v for k, v in settings.items() if v != fields.NOT_PROVIDED}}
 
     @staticmethod
     def _partition_regions(target_regions):
@@ -455,8 +404,8 @@ class AdGroupSerializer(SettingsSerializer):
 
     @staticmethod
     def _unpartition_regions(geo):
-        if geo == NOT_PROVIDED:
-            return NOT_PROVIDED
+        if geo == fields.NOT_PROVIDED:
+            return fields.NOT_PROVIDED
         target_regions = []
         target_regions.extend(geo['countries'])
         target_regions.extend(geo['regions'])
@@ -598,7 +547,7 @@ class CampaignGoalsSerializer(serializers.BaseSerializer):
             'goalId': conversion_goal['goal_id'],
             'name': conversion_goal['name'],
             'pixelUrl': conversion_goal['pixel_url'],
-            'conversionWindow': DashConstantField(constants.ConversionWindows).to_representation(conversion_goal['conversion_window']),
+            'conversionWindow': fields.DashConstantField(constants.ConversionWindows).to_representation(conversion_goal['conversion_window']),
             'type': constants.ConversionGoalType.get_name(conversion_goal['type']),
         }
 
@@ -606,7 +555,7 @@ class CampaignGoalsSerializer(serializers.BaseSerializer):
         try:
             return {
                 'primary': data_external['primary'],
-                'type': DashConstantField(constants.CampaignGoalKPI).to_internal_value(data_external['type']),
+                'type': fields.DashConstantField(constants.CampaignGoalKPI).to_internal_value(data_external['type']),
                 'conversion_goal': self._conversion_goal_to_internal_value(data_external.get('conversionGoal')),
                 'value': data_external['value']
             }
@@ -620,8 +569,8 @@ class CampaignGoalsSerializer(serializers.BaseSerializer):
             'goal_id': conversion_goal['goalId'],
             'name': conversion_goal['name'],
             'pixel_url': conversion_goal['pixelUrl'],
-            'conversion_window': DashConstantField(constants.ConversionWindows).to_internal_value(conversion_goal['conversionWindow']),
-            'type': DashConstantField(constants.ConversionGoalType).to_internal_value(conversion_goal['type']),
+            'conversion_window': fields.DashConstantField(constants.ConversionWindows).to_internal_value(conversion_goal['conversionWindow']),
+            'type': fields.DashConstantField(constants.ConversionGoalType).to_internal_value(conversion_goal['type']),
         }
 
 
@@ -690,12 +639,12 @@ class CampaignGoalsViewDetails(RESTAPIBaseView):
 
 
 class CampaignBudgetSerializer(serializers.Serializer):
-    id = IdField(read_only=True)
-    creditId = IdField(source='credit', write_only=True)
+    id = fields.IdField(read_only=True)
+    creditId = fields.IdField(source='credit', write_only=True)
     amount = serializers.DecimalField(max_digits=20, decimal_places=0)
     startDate = serializers.DateField(source='start_date')
     endDate = serializers.DateField(source='end_date')
-    state = DashConstantField(constants.BudgetLineItemState, read_only=True)
+    state = fields.DashConstantField(constants.BudgetLineItemState, read_only=True)
     spend = serializers.DecimalField(max_digits=20, decimal_places=4, read_only=True)
     available = serializers.DecimalField(max_digits=20, decimal_places=4, read_only=True)
 
@@ -792,8 +741,8 @@ class PublisherSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=127)
     source = SourceIdSlugField(required=False, allow_null=True)
     externalId = serializers.CharField(max_length=127, required=False, allow_null=True)
-    status = DashConstantField(constants.PublisherStatus)
-    level = DashConstantField(constants.PublisherBlacklistLevel, label='level')
+    status = fields.DashConstantField(constants.PublisherStatus)
+    level = fields.DashConstantField(constants.PublisherBlacklistLevel, label='level')
 
     def create(self, validated_data):
         request = validated_data['request']
@@ -889,7 +838,7 @@ class AdGroupSourceSerializer(serializers.Serializer):
     source = SourceIdSlugField(source='ad_group_source.source')
     cpc = serializers.DecimalField(max_digits=10, decimal_places=4, source='cpc_cc')
     dailyBudget = serializers.DecimalField(max_digits=10, decimal_places=4, source='daily_budget_cc')
-    state = DashConstantField(constants.AdGroupSourceSettingsState)
+    state = fields.DashConstantField(constants.AdGroupSourceSettingsState)
 
     def create(self, validated_data):
         request = validated_data['request']
@@ -921,7 +870,7 @@ class AdGroupSourcesViewList(RESTAPIBaseView):
 class AdGroupSourcesRTBSerializer(serializers.Serializer):
     groupEnabled = serializers.BooleanField(source='b1_sources_group_enabled')
     dailyBudget = serializers.DecimalField(max_digits=10, decimal_places=2, source='b1_sources_group_daily_budget')
-    state = DashConstantField(constants.AdGroupSourceSettingsState, source='b1_sources_group_state')
+    state = fields.DashConstantField(constants.AdGroupSourceSettingsState, source='b1_sources_group_state')
     cpc = serializers.DecimalField(max_digits=10, decimal_places=4, source='b1_sources_group_cpc_cc')
 
     def update(self, data_internal, validated_data):
@@ -959,9 +908,9 @@ class ContentAdSerializer(serializers.ModelSerializer):
                   'description', 'call_to_action', 'label', 'image_crop', 'tracker_urls')
         read_only_fields = tuple(set(fields) - set(('state',)))
 
-    id = IdField()
-    ad_group_id = IdField(source='ad_group')
-    state = DashConstantField(constants.ContentAdSourceState)
+    id = fields.IdField()
+    ad_group_id = fields.IdField(source='ad_group')
+    state = fields.DashConstantField(constants.ContentAdSourceState)
     image_url = serializers.URLField(source='get_image_url')
 
     def create(self, validated_data):
@@ -1030,8 +979,8 @@ class ContentAdCandidateSerializer(serializers.ModelSerializer):
 
 
 class UploadBatchSerializer(serializers.Serializer):
-    id = IdField()
-    status = DashConstantField(constants.UploadBatchStatus)
+    id = fields.IdField()
+    status = fields.DashConstantField(constants.UploadBatchStatus)
     approvedContentAds = ContentAdSerializer(many=True, source='get_approved_content_ads')
 
     def to_representation(self, batch):
@@ -1092,8 +1041,8 @@ class ReportJobSerializer(serializers.ModelSerializer):
     class Meta:
         model = restapi.models.ReportJob
         fields = ('id', 'status', 'result')
-    id = IdField()
-    status = DashConstantField(constants.ReportJobStatus)
+    id = fields.IdField()
+    status = fields.DashConstantField(constants.ReportJobStatus)
     result = serializers.JSONField()
 
 
@@ -1141,8 +1090,8 @@ class PublisherGroupSerializer(DataNodeSerializerMixin, serializers.ModelSeriali
         fields = ('id', 'name', 'account_id')
         list_serializer_class = DataNodeListSerializer
 
-    id = IdField(read_only=True)
-    account_id = IdField(read_only=True)
+    id = fields.IdField(read_only=True)
+    account_id = fields.IdField(read_only=True)
 
     def create(self, validated_data):
         pgroup = dash.models.PublisherGroup(
@@ -1163,8 +1112,8 @@ class PublisherGroupEntrySerializer(DataNodeSerializerMixin, serializers.ModelSe
         fields = ('id', 'publisher', 'publisher_group_id', 'source', 'include_subdomains')
         list_serializer_class = DataNodeListSerializer
 
-    id = IdField(read_only=True)
-    publisher_group_id = IdField(read_only=True)
+    id = fields.IdField(read_only=True)
+    publisher_group_id = fields.IdField(read_only=True)
     source = SourceIdSlugField(required=False, allow_null=True)
 
 

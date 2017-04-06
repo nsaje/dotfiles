@@ -24,6 +24,10 @@ class ConstantBase(object):
         return ((cons, cls.get_text(cons)) for cons in cls.get_all())
 
     @classmethod
+    def get_name_choices(cls):
+        return ((cons, cls.get_text(cons)) for cons in cls.get_all_names())
+
+    @classmethod
     def get_name(cls, value):
         return {v: k for k, v in cls._get_all_kv_pairs()}[value]
 
