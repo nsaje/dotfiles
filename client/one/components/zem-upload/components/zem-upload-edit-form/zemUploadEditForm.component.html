@@ -48,7 +48,7 @@
                 </div>
                 <div class="message message--error" for="image-url-input" ng-if="ctrl.fieldsApiErrors['imageUrl']">Something went wrong. <a href ng-click="ctrl.updateField('imageUrl')" tabindex="-1">Try again</a></div>
                 <div class="message message--error" for="image-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.imageUrl" ng-if="!ctrl.showImageUpload">{{ error }}</div>
-                <div class="form__text--small">Recommended image size is above 1200x1200px. Some media sources will not work with smaller images.</div>
+                <div class="form__text--small">We recommend using HQ images, at least 1200x628 pixels or above. The minimum required image for a native ad is 300x300 pixels.</div>
                 <div class="form__text--small">
                     <a href class="action-link" ng-click="ctrl.toggleImageUpload()" tabindex="-1">
                         If you have image on your computer, switch to image uploading form.
@@ -67,7 +67,7 @@
                 </div>
                 <div class="message message--error" for="image-input" ng-if="ctrl.fieldsApiErrors['image']">Something went wrong. <a href ng-click="ctrl.updateField('image')" tabindex="-1">Try again</a></div>
                 <div class="message message--error" for="image-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.image" ng-if="ctrl.showImageUpload">{{ error }}</div>
-                <div class="form__text--small">Recommended image size is above 1200x1200px. Some media sources will not work with smaller images.</div>
+                <div class="form__text--small">We recommend using HQ images, at least 1200x628 pixels or above. The minimum required image for a native ad is 300x300 pixels.</div>
                 <div class="form__text--small">
                     <a href ng-click="ctrl.toggleImageUpload()" tabindex="-1" ng-if="!ctrl.isEdit">
                         If you want to upload an image URL, click here to switch to the URL form.

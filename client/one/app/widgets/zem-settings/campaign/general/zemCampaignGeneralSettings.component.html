@@ -31,8 +31,8 @@
         <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_modify_campaign_iab_category')"
              ng-class="{'form--error': !!$ctrl.errors.iabCategory}">
             <label class="form__label" for="iab-category-select">
-                IAB Category:
-                <zem-help-popover content="IAB category under which content of this campaign belongs."
+                Campaign Category:
+                <zem-help-popover content="Specify campaign's content category. All campaigns must list one top-level category. If you are using mixed content consider splitting your campaign."
                                   placement="top"></zem-help-popover>
             </label>
             <select ui-select2="{minimumResultsForSearch: 2}" id="iab-category-select"
