@@ -19,6 +19,8 @@ class RefreshTest(TestCase):
         refresh_k1.MATERIALIZED_VIEWS = self.tmp_MATERIALIZED_VIEWS
         refresh_k1.ALL_MATERIALIZED_VIEWS = self.tmp_ALL_MATERIALIZED_VIEWS
 
+    @mock.patch('etl.maintenance.vacuum', mock.Mock())
+    @mock.patch('etl.maintenance.analyze', mock.Mock())
     @mock.patch('etl.maintenance.crossvalidate_traffic')
     @mock.patch('etl.daily_statements_k1.reprocess_daily_statements')
     @mock.patch('etl.refresh_k1.generate_job_id', return_value='asd')
@@ -62,6 +64,8 @@ class RefreshByAccountTest(TestCase):
         refresh_k1.MATERIALIZED_VIEWS = self.tmp_MATERIALIZED_VIEWS
         refresh_k1.ALL_MATERIALIZED_VIEWS = self.tmp_ALL_MATERIALIZED_VIEWS
 
+    @mock.patch('etl.maintenance.vacuum', mock.Mock())
+    @mock.patch('etl.maintenance.analyze', mock.Mock())
     @mock.patch('etl.maintenance.crossvalidate_traffic')
     @mock.patch('etl.daily_statements_k1.reprocess_daily_statements')
     @mock.patch('etl.refresh_k1.generate_job_id', return_value='asd')

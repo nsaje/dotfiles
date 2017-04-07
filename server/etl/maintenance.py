@@ -1,8 +1,12 @@
 import backtosql
 import influx
+import logging
 
 from redshiftapi import db
 from etl import helpers
+
+
+logger = logging.getLogger(__name__)
 
 
 def _execute_query(query, *params):
@@ -10,9 +14,19 @@ def _execute_query(query, *params):
         c.execute(query, params)
 
 
-def vacuum_and_analyze(table):
-    _execute_query('VACUUM {}'.format(table))
+def vacuum(table, delete_only=False):
+    logger.info('Starting VACUUM table %s', table)
+    if delete_only:
+        _execute_query('VACUUM DELETE ONLY {}'.format(table))
+    else:
+        _execute_query('VACUUM {}'.format(table))
+    logger.info('Finished VACUUM table %s', table)
+
+
+def analyze(table):
+    logger.info('Starting ANALYZE table %s', table)
     _execute_query('ANALYZE {}'.format(table))
+    logger.info('Finished ANALYZE table %s', table)
 
 
 def cluster_disk_usage():

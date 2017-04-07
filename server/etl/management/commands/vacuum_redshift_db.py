@@ -13,4 +13,5 @@ class Command(ExceptionCommand):
         tables = [x.TABLE_NAME for x in views if not x.IS_TEMPORARY_TABLE]
 
         for table in tables:
-            maintenance.vacuum_and_analyze(table)
+            maintenance.vacuum(table)
+            maintenance.analyze(table)

@@ -12,11 +12,16 @@ class Command(ExceptionCommand):
             'conversions',
             'postclickstats',
             'outbrainpublisherstats',
-            'supply_stats',
             'audience_report',
             'pixie_sample',
         ]
 
         for table in tables:
             with influx.block_timer('etl.vacuum', table=table):
-                maintenance.vacuum_and_analyze(table)
+                maintenance.vacuum(table)
+                maintenance.analyze(table)
+
+        table = 'supply_stats'
+        with influx.block_timer('etl.vacuum', table=tabe):
+            maintenance.vacuum(table, delete_only=True)
+            maintenance.analyze(table)
