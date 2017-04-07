@@ -1166,6 +1166,29 @@ class K1ApiTest(TestCase):
         ad_group_source.refresh_from_db()
         self.assertEqual(ad_group_source.blockers, {})
 
+    def test_update_ad_group_source_blockers_no_change(self):
+        ad_group_source = dash.models.AdGroupSource.objects.get(ad_group_id=1, source__bidder_slug='adblade')
+        ad_group_source.blockers = {}
+        ad_group_source.save()
+
+        with mock.patch.object(dash.models.AdGroupSource, 'save') as mock_save:
+            params = {'source_slug': 'adblade', 'ad_group_id': 1}
+            put_body = {'geo-exclusion': None}
+            response = self.client.generic(
+                'PUT',
+                reverse('k1api.ad_groups.sources.blockers'),
+                json.dumps(put_body),
+                'application/json',
+                QUERY_STRING=urllib.urlencode(params)
+            )
+            data = json.loads(response.content)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(data['response'], {})
+
+            ad_group_source.refresh_from_db()
+            self.assertEqual(ad_group_source.blockers, {})
+            mock_save.assert_not_called()
+
     def test_update_facebook_account(self):
         response = self.client.put(
             reverse('k1api.facebook_accounts'),

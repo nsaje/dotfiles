@@ -675,19 +675,23 @@ class AdGroupSourceBlockersView(K1APIView):
         """
         ad_group_id = request.GET.get('ad_group_id')
         source_slug = request.GET.get('source_slug')
-        ad_group_source = dash.models.AdGroupSource.objects.get(
+        ad_group_source = dash.models.AdGroupSource.objects.only('blockers').get(
             ad_group_id=ad_group_id, source__bidder_slug=source_slug)
 
         blockers_update = json.loads(request.body)
+        changes = 0
         for key, value in blockers_update.items():
             if not (isinstance(key, basestring) and (isinstance(value, basestring) or value is None)):
                 return self.response_error("Bad input: blocker key should be string and value should be either string or None", status=400)
-            if value:
+            if value and value != ad_group_source.blockers.get(key):
                 ad_group_source.blockers[key] = value
+                changes += 1
             if not value and key in ad_group_source.blockers:
                 del ad_group_source.blockers[key]
+                changes += 1
 
-        ad_group_source.save()
+        if changes:
+            ad_group_source.save()
         return self.response_ok(ad_group_source.blockers)
 
 
