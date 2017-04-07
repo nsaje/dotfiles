@@ -276,6 +276,10 @@ class CampaignSerializer(SettingsSerializer):
             'whitelist_publisher_groups': data['targeting']['publisherGroups']['included'],
             'blacklist_publisher_groups': data['targeting']['publisherGroups']['excluded'],
         }
+        if (settings['iab_category'] != fields.NOT_PROVIDED and
+                settings['iab_category'] != dash.constants.IABCategory.IAB24 and
+                '-' not in settings['iab_category']):
+            raise serializers.ValidationError({'iabCategory': 'Tier 1 IAB categories not allowed, please use Tier 2 IAB categories.'})
         return {'settings': {k: v for k, v in settings.items() if v != fields.NOT_PROVIDED}}
 
 

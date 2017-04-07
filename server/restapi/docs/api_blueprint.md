@@ -1670,7 +1670,6 @@ A string representing a decimal number. Example: `"15.48"`
 
 <a name="iab-categories"></a>
 ## IAB Category
-- `IAB1` - Arts & Entertainment
 - `IAB1_1` - Books & Literature
 - `IAB1_2` - Celebrity Fan/Gossip
 - `IAB1_3` - Fine Art
@@ -1678,7 +1677,6 @@ A string representing a decimal number. Example: `"15.48"`
 - `IAB1_5` - Movies
 - `IAB1_6` - Music
 - `IAB1_7` - Television
-- `IAB2` - Automotive
 - `IAB2_1` - Auto Parts
 - `IAB2_2` - Auto Repair
 - `IAB2_3` - Buying/Selling Cars
@@ -1702,7 +1700,6 @@ A string representing a decimal number. Example: `"15.48"`
 - `IAB2_21` - Trucks & Accessories
 - `IAB2_22` - Vintage Cars
 - `IAB2_23` - Wagon
-- `IAB3` - Business
 - `IAB3_1` - Advertising
 - `IAB3_2` - Agriculture
 - `IAB3_3` - Biotech/Biomedical
@@ -1715,7 +1712,6 @@ A string representing a decimal number. Example: `"15.48"`
 - `IAB3_10` - Logistics
 - `IAB3_11` - Marketing
 - `IAB3_12` - Metals
-- `IAB4` - Careers
 - `IAB4_1` - Career Planning
 - `IAB4_2` - College
 - `IAB4_3` - Financial Aid
@@ -1727,7 +1723,6 @@ A string representing a decimal number. Example: `"15.48"`
 - `IAB4_9` - Telecommuting
 - `IAB4_10` - U.S. Military
 - `IAB4_11` - Career Advice
-- `IAB5` - Education
 - `IAB5_1` - 7-12 Education
 - `IAB5_2` - Adult Education
 - `IAB5_3` - Art History
@@ -1743,7 +1738,6 @@ A string representing a decimal number. Example: `"15.48"`
 - `IAB5_13` - Private School
 - `IAB5_14` - Special Education
 - `IAB5_15` - Studying Business
-- `IAB6` - Family & Parenting
 - `IAB6_1` - Adoption
 - `IAB6_2` - Babies & Toddlers
 - `IAB6_3` - Daycare/Pre School
@@ -1753,7 +1747,6 @@ A string representing a decimal number. Example: `"15.48"`
 - `IAB6_7` - Pregnancy
 - `IAB6_8` - Special Needs Kids
 - `IAB6_9` - Eldercare
-- `IAB7` - Health & Fitness
 - `IAB7_1` - Exercise
 - `IAB7_2` - A.D.D.
 - `IAB7_3` - AIDS/HIV
@@ -1799,7 +1792,6 @@ A string representing a decimal number. Example: `"15.48"`
 - `IAB7_43` - Thyroid Disease
 - `IAB7_44` - Weight Loss
 - `IAB7_45` - Women's Health
-- `IAB8` - Food & Drink
 - `IAB8_1` - American Cuisine
 - `IAB8_2` - Barbecues & Grilling
 - `IAB8_3` - Cajun/Creole
@@ -1818,7 +1810,6 @@ A string representing a decimal number. Example: `"15.48"`
 - `IAB8_16` - Vegan
 - `IAB8_17` - Vegetarian
 - `IAB8_18` - Wine
-- `IAB9` - Hobbies & Interests
 - `IAB9_1` - Art/Technology
 - `IAB9_2` - Arts & Crafts
 - `IAB9_3` - Beadwork
@@ -1850,7 +1841,6 @@ A string representing a decimal number. Example: `"15.48"`
 - `IAB9_29` - Stamps & Coins
 - `IAB9_30` - Video & Computer Games
 - `IAB9_31` - Woodworking
-- `IAB10` - Home & Garden
 - `IAB10_1` - Appliances
 - `IAB10_2` - Entertaining
 - `IAB10_3` - Environmental Safety
@@ -1860,17 +1850,14 @@ A string representing a decimal number. Example: `"15.48"`
 - `IAB10_7` - Interior Decorating
 - `IAB10_8` - Landscaping
 - `IAB10_9` - Remodeling & Construction
-- `IAB11` - Law, Gov't & Politics
 - `IAB11_1` - Immigration
 - `IAB11_2` - Legal Issues
 - `IAB11_3` - U.S. Government Resources
 - `IAB11_4` - Politics
 - `IAB11_5` - Commentary
-- `IAB12` - News
 - `IAB12_1` - International News
 - `IAB12_2` - National News
 - `IAB12_3` - Local News
-- `IAB13` - Personal Finance
 - `IAB13_1` - Beginning Investing
 - `IAB13_2` - Credit/Debt & Loans
 - `IAB13_3` - Financial News
@@ -1883,7 +1870,6 @@ A string representing a decimal number. Example: `"15.48"`
 - `IAB13_10` - Retirement Planning
 - `IAB13_11` - Stocks
 - `IAB13_12` - Tax Planning
-- `IAB14` - Society
 - `IAB14_1` - Dating
 - `IAB14_2` - Divorce Support
 - `IAB14_3` - Gay Life
@@ -1892,7 +1878,6 @@ A string representing a decimal number. Example: `"15.48"`
 - `IAB14_6` - Teens
 - `IAB14_7` - Weddings
 - `IAB14_8` - Ethnic Specific
-- `IAB15` - Science
 - `IAB15_1` - Astrology
 - `IAB15_2` - Biology
 - `IAB15_3` - Chemistry
@@ -1903,7 +1888,6 @@ A string representing a decimal number. Example: `"15.48"`
 - `IAB15_8` - Geography
 - `IAB15_9` - Botany
 - `IAB15_10` - Weather
-- `IAB16` - Pets
 - `IAB16_1` - Aquariums
 - `IAB16_2` - Birds
 - `IAB16_3` - Cats
@@ -1911,7 +1895,6 @@ A string representing a decimal number. Example: `"15.48"`
 - `IAB16_5` - Large Animals
 - `IAB16_6` - Reptiles
 - `IAB16_7` - Veterinary Medicine
-- `IAB17` - Sports
 - `IAB17_1` - Auto Racing
 - `IAB17_2` - Baseball
 - `IAB17_3` - Bicycling
@@ -1956,14 +1939,12 @@ A string representing a decimal number. Example: `"15.48"`
 - `IAB17_42` - Walking
 - `IAB17_43` - Waterski/Wakeboard
 - `IAB17_44` - World Soccer
-- `IAB18` - Style & Fashion
 - `IAB18_1` - Beauty
 - `IAB18_2` - Body Art
 - `IAB18_3` - Fashion
 - `IAB18_4` - Jewelry
 - `IAB18_5` - Clothing
 - `IAB18_6` - Accessories
-- `IAB19` - Technology & Computing
 - `IAB19_1` - 3-D Graphics
 - `IAB19_2` - Animation
 - `IAB19_3` - Antivirus Software
@@ -2000,7 +1981,6 @@ A string representing a decimal number. Example: `"15.48"`
 - `IAB19_34` - Web Design/HTML
 - `IAB19_35` - Web Search
 - `IAB19_36` - Windows
-- `IAB20` - Travel
 - `IAB20_1` - Adventure Travel
 - `IAB20_2` - Africa
 - `IAB20_3` - Air Travel
@@ -2028,16 +2008,13 @@ A string representing a decimal number. Example: `"15.48"`
 - `IAB20_25` - Theme Parks
 - `IAB20_26` - Traveling with Kids
 - `IAB20_27` - United Kingdom
-- `IAB21` - Real Estate
 - `IAB21_1` - Apartments
 - `IAB21_2` - Architects
 - `IAB21_3` - Buying/Selling Homes
-- `IAB22` - Shopping
 - `IAB22_1` - Contests & Freebies
 - `IAB22_2` - Couponing
 - `IAB22_3` - Comparison
 - `IAB22_4` - Engines
-- `IAB23` - Religion & Spirituality
 - `IAB23_1` - Alternative Religions
 - `IAB23_2` - Atheism/Agnosticism
 - `IAB23_3` - Buddhism
@@ -2049,7 +2026,6 @@ A string representing a decimal number. Example: `"15.48"`
 - `IAB23_9` - Latter-Day Saints
 - `IAB23_10` - Pagan/Wiccan
 - `IAB24` - Uncategorized
-- `IAB25` - Non-Standard Content
 - `IAB25_1` - Unmoderated UGC
 - `IAB25_2` - Extreme Graphic/Explicit Violence
 - `IAB25_3` - Pornography
@@ -2057,7 +2033,6 @@ A string representing a decimal number. Example: `"15.48"`
 - `IAB25_5` - Hate Content
 - `IAB25_6` - Under Construction
 - `IAB25_7` - Incentivized
-- `IAB26` - Illegal Content
 - `IAB26_1` - Illegal Content
 - `IAB26_2` - Warez
 - `IAB26_3` - Spyware/Malware
