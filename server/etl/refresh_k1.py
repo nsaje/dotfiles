@@ -104,9 +104,12 @@ def _refresh_k1_reports(update_since, views, account_id=None):
             mv = mv_class(job_id, date_from, date_to, account_id=account_id)
             mv.generate(campaign_factors=effective_spend_factors)
 
-            maintenance.analyze(mv_class.TABLE_NAME)
-            if not mv_class.IS_TEMPORARY_TABLE:
-                maintenance.vacuum(mv_class.TABLE_NAME)
+            try:
+                maintenance.analyze(mv_class.TABLE_NAME)
+                if not mv_class.IS_TEMPORARY_TABLE:
+                    maintenance.vacuum(mv_class.TABLE_NAME)
+            except Exception:
+                logger.exception("Vacuum and analyze skipped")
 
     influx.incr('etl.refresh_k1.refresh_k1_reports_finished', 1)
 
