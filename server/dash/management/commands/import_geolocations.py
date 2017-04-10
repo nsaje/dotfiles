@@ -21,11 +21,13 @@ class Command(ExceptionCommand):
         parser.add_argument('maxmind_csv', type=str, help='example filename: GeoIP2-City-Locations-en.csv')
         parser.add_argument('yahoo_mapping_csv', type=str, help='example filename: yahoo-mapping.csv')
         parser.add_argument('outbrain_mapping_csv', type=str, help='example filename: outbrain-mapping.csv')
+        parser.add_argument('facebook_mapping_csv', type=str, help='example filename: facebook-mapping.csv')
 
     def handle(self, *args, **options):
         locations_by_type = self.get_locations(options['maxmind_csv'])
         yahoo_mapping = self.get_mapping(options['yahoo_mapping_csv'], 'woeid')
         outbrain_mapping = self.get_mapping(options['outbrain_mapping_csv'], 'outbrain_id')
+        facebook_mapping = self.get_mapping(options['facebook_mapping_csv'], 'facebook_key')
 
         objs = []
         for loc_type, location in locations_by_type.iteritems():
@@ -36,6 +38,7 @@ class Command(ExceptionCommand):
                     name=name,
                     woeid=yahoo_mapping.get(key, ''),
                     outbrain_id=outbrain_mapping.get(key, ''),
+                    facebook_key=facebook_mapping.get(key, ''),
                 ))
 
         # add ZIP code mappings
