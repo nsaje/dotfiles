@@ -58,6 +58,7 @@ class Command(ExceptionCommand):
         regions = {}
         dmas = dash.regions.DMA_BY_CODE  # use our hardcoded DMA definitions because MaxMind DB doesn't have names
         cities = {}
+        city_names = set()
 
         with open(maxmind_csv_path, 'r') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=',', quotechar='"')
@@ -80,8 +81,11 @@ class Command(ExceptionCommand):
                         name_tokens.append(row['subdivision_1_name'])
                     if row['country_name']:
                         name_tokens.append(row['country_name'])
-                    full_name = ', '.join(name_tokens) + ' [%s]' % row['geoname_id']
+                    full_name = ', '.join(name_tokens)
+                    if full_name in city_names:
+                        full_name += ' [%s]' % row['geoname_id']
                     cities[row['geoname_id']] = full_name
+                    city_names.add(full_name)
 
         return {
             constants.LocationType.COUNTRY: countries,
