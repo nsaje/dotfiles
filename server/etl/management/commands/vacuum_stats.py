@@ -22,6 +22,6 @@ class Command(ExceptionCommand):
                 maintenance.analyze(table)
 
         table = 'supply_stats'
-        with influx.block_timer('etl.vacuum', table=tabe):
+        with influx.block_timer('etl.vacuum', table=table):
             maintenance.vacuum(table, delete_only=True)
             maintenance.analyze(table)
