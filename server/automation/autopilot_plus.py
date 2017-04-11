@@ -418,8 +418,7 @@ def _find_corresponding_source_data(ag_source, days_ago_data, yesterday_data):
 
 
 def _get_autopilot_goals(ad_groups):
-    campaign_goals = []
-    campaign_goals_values = []
+    campaign_goals = {}
     conversion_goals = []
     pixels = []
     for adg in ad_groups:
@@ -429,13 +428,12 @@ def _get_autopilot_goals(ad_groups):
             value = primary_goal.values.all().order_by('-created_dt').first().value
             if primary_goal.type == dash.constants.CampaignGoalKPI.CPA and value:
                 value = Decimal('1.0') / value
-            campaign_goals.append(primary_goal)
-            campaign_goals_values.append(value)
+            campaign_goals[camp] = {'goal': primary_goal, 'value': value}
             if primary_goal and primary_goal.type == dash.constants.CampaignGoalKPI.CPA:
                 conversion_goals.append(primary_goal.conversion_goal)
                 if primary_goal.conversion_goal.type == dash.constants.ConversionGoalType.PIXEL:
                     pixels.append(primary_goal.conversion_goal.pixel)
-    return campaign_goals, campaign_goals_values, conversion_goals, pixels
+    return campaign_goals, conversion_goals, pixels
 
 
 def _report_autopilot_exception(element, e):
