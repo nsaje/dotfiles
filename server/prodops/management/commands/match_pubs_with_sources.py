@@ -24,7 +24,7 @@ class Command(utils.command_helpers.ExceptionCommand):
     def add_arguments(self, parser):
         parser.add_argument('--days', '-d', dest='days', default=30,
                             help='Days in the past to look (default: 30)')
-        parser.add_argument('publishers_fd', type=str)
+        parser.add_argument('publishers_csv', type=str)
 
     def _print(self, msg):
         self.stdout.write(u'{}\n'.format(msg))
@@ -34,15 +34,15 @@ class Command(utils.command_helpers.ExceptionCommand):
         self.sources = {s.pk: s for s in dash.models.Source.objects.all()}
 
         publishers = []
-        with open(options['publishers_fd']) as fd:
+        with open(options['publishers_csv']) as fd:
             for row in csv.reader(fd):
-                if row[0].lower() in ('domains', 'publishers'):
+                if row[0].lower() in ('domains', 'publishers', 'domain', 'publisher'):
                     continue
                 publishers.append(row[0])
 
         data = []
         for i, pub_sublist in enumerate(chunks(publishers, PUBS_PER_CHUNK)):
-            self._print('Processing batch {i}'.format(i))
+            self._print('Processing batch {}'.format(i))
             data.extend(self._match_sources(pub_sublist))
 
         self._print('Report generated.')
