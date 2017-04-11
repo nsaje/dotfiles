@@ -69,7 +69,6 @@ class Command(utils.command_helpers.ExceptionCommand):
             [('publisher', 'media source', )] + data)
         )
 
-
     def _match_sources(self, publishers):
         pub_source_map = {}
         with redshiftapi.db.get_stats_cursor() as c:
@@ -78,7 +77,8 @@ class Command(utils.command_helpers.ExceptionCommand):
             )))
             for row in c.fetchall():
                 source = self.sources.get(row[1])
-                pub_source_map.setdefault(row[0], set()).add(source.name if self.use_source_names else source.bidder_slug)
+                pub_source_map.setdefault(row[0], set()).add(
+                    source.name if self.use_source_names else source.bidder_slug)
 
         return [
             (pub, ', '.join(sources)) for pub, sources in pub_source_map.iteritems()
