@@ -1,9 +1,12 @@
 from functools import partial
 
-from utils import threads
+from utils import sort_helper, threads
+
+import newrelic.agent
 
 import dash.models
 import dash.campaign_goals
+
 
 from stats import helpers
 from stats import constants
@@ -11,14 +14,14 @@ from stats import augmenter
 from stats import permission_filter
 
 # expose these helpers as API
-from stats.helpers import get_goals, Goals
+from stats.helpers import get_goals
 
 import redshiftapi.api_breakdowns
 import dash.dashapi.api_breakdowns
 
 
 # define the API
-__all__ = ['query', 'totals', 'validate_breakdown_allowed', 'get_goals', 'Goals']
+__all__ = ['query', 'totals', 'validate_breakdown_allowed', 'get_goals']
 
 
 def validate_breakdown_allowed(level, user, breakdown):
