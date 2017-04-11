@@ -7,11 +7,11 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 from zemauth.models import User
 
-from dash import constants
+import dash.constants
 import dash.models
-import restapi.models
 from utils import test_helper, threads
-from restapi import reports
+from dash.features.reports import reports
+from dash.features.reports import constants
 
 
 class ReportViewsTest(TestCase):
@@ -22,7 +22,7 @@ class ReportViewsTest(TestCase):
         self.client.force_authenticate(user=User.objects.get(pk=1))
 
     @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
-    @mock.patch('restapi.reports.ReportJobExecutor', restapi.reports.MockJobExecutor)
+    @mock.patch('dash.features.reports.reports.ReportJobExecutor', reports.MockJobExecutor)
     def test_new_job(self):
         query = {
             'fields': [{'field': 'Content Ad Id'}],
@@ -37,7 +37,7 @@ class ReportViewsTest(TestCase):
         self.assertIn('id', resp_json['data'])
 
         job_id = int(resp_json['data']['id'])
-        job = restapi.models.ReportJob.objects.get(pk=job_id)
+        job = dash.models.ReportJob.objects.get(pk=job_id)
         job.status = constants.ReportJobStatus.DONE
         job.save()
 

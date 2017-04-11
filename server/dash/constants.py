@@ -1845,20 +1845,6 @@ class AlertType(object):
     DANGER = 'danger'
 
 
-class ReportJobStatus(ConstantBase):
-    DONE = 1
-    FAILED = 2
-    IN_PROGRESS = 3
-    CANCELLED = 4
-
-    _VALUES = {
-        DONE: 'Done',
-        FAILED: 'Failed',
-        IN_PROGRESS: 'In progress',
-        CANCELLED: 'Cancelled',
-    }
-
-
 # MVP for all-RTB-sources-as-one
 class SourceAllRTB(object):
     ID = '0123456789'

@@ -4,7 +4,7 @@ import jsonfield
 from django.db import models
 from django.conf import settings
 
-from dash import constants
+import constants
 
 
 class ReportJob(models.Model):
@@ -19,3 +19,6 @@ class ReportJob(models.Model):
     )
     query = jsonfield.JSONField()
     result = jsonfield.JSONField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'restapi_reportjob'

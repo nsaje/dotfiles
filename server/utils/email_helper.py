@@ -581,7 +581,7 @@ def send_async_report(
 
     email = EmailMultiAlternatives(subject, plain_body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
-    ), [user.email] + (recipients or []))
+    ), (recipients or []))
     email.attach_alternative(format_template(subject, _url_to_link(plain_body), user=user), "text/html")
     email.send(fail_silently=False)
 

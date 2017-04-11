@@ -42,7 +42,11 @@ def local_today():
 
 
 def local_yesterday():
-    return local_today() - datetime.timedelta(days=1)
+    return yesterday(local_today())
+
+
+def yesterday(today):
+    return today - datetime.timedelta(days=1)
 
 
 def local_midnight_to_utc_time():

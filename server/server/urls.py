@@ -29,6 +29,7 @@ import dash.views.audiences
 import dash.views.alerts
 import dash.views.bulk_actions
 import dash.views.publishers
+import dash.features.scheduled_reports.views
 
 
 admin.site.login = login_required(admin.site.login)
@@ -657,6 +658,16 @@ urlpatterns += [
         r'^api/custom_report_download/',
         login_required(dash.views.export.CustomReportDownload.as_view()),
         name='custom_report_download'
+    ),
+    url(
+        r'^api/scheduled_reports/$',
+        login_required(dash.features.scheduled_reports.views.ScheduledReports.as_view()),
+        name='scheduled_reports'
+    ),
+    url(
+        r'^api/scheduled_reports/(?P<scheduled_report_id>\d+)/$',
+        login_required(dash.features.scheduled_reports.views.ScheduledReportsDelete.as_view()),
+        name='scheduled_reports_delete'
     ),
 ]
 

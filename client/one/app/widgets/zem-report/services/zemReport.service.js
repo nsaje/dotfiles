@@ -3,6 +3,7 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
     // Public API
     this.startReport = startReport;
     this.getReport = getReport;
+    this.scheduleReport = scheduleReport;
 
     function getReport (id) {
         var deferred = $q.defer();
@@ -19,70 +20,34 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
         return deferred.promise;
     }
 
-    function startReport (gridApi, selectedFields, includeConfig) {
+    function scheduleReport (gridApi, queryConfig, recipients, name, frequency, timePeriod, dayOfWeek) {
         var deferred = $q.defer();
 
-        var dateRange = zemDataFilterService.getDateRange();
-
-        var showArchived = zemDataFilterService.getShowArchived();
-        var filteredSources = zemDataFilterService.getFilteredSources();
-        var filteredPublisherStatus = zemDataFilterService.getFilteredPublisherStatus();
-        var filteredAccountTypes = zemDataFilterService.getFilteredAccountTypes();
-        var filteredAgencies = zemDataFilterService.getFilteredAgencies();
-        var levelFilter = getLevelFilter(gridApi);
-
         var config = {
-            fields: selectedFields.map(function (field) { return {'field': field}; }),
-            filters: [
-                {
-                    field: 'Date',
-                    operator: 'between',
-                    from: dateRange.startDate.format('YYYY-MM-DD'),
-                    to: dateRange.endDate.format('YYYY-MM-DD'),
-                },
-            ],
-            options: {
-                emailReport: includeConfig.sendReport,
-                recipients: includeConfig.recipients,
-                showArchived: showArchived,
-                includeTotals: includeConfig.includeTotals || false,
-                includeItemsWithNoSpend: includeConfig.includeItemsWithNoSpend || false,
-                showStatusDate: true,
-                order: getOrder(gridApi),
-            },
+            name: name,
+            query: getQueryConfig(gridApi, queryConfig, recipients),
+            frequency: frequency,
+            time_period: timePeriod,
+            day_of_week: dayOfWeek
         };
 
-        if (levelFilter) {
-            config.filters.push(levelFilter);
-        }
-
-        if (filteredSources) {
-            config.filters.push({
-                field: 'Media Source',
-                operator: 'IN',
-                values: filteredSources,
+        zemReportEndpoint
+            .scheduleReport(config)
+            .then(function (response) {
+                deferred.resolve(response.data);
+            })
+            .catch(function (response) {
+                deferred.reject(response.data);
             });
-        }
 
-        if (filteredAccountTypes) {
-            config.filters.push({
-                field: 'Account Type',
-                operator: 'IN',
-                values: filteredAccountTypes,
-            });
-        }
+        return deferred.promise;
+    }
 
-        if (filteredAgencies) {
-            config.filters.push({
-                field: 'Agency',
-                operator: 'IN',
-                values: filteredAgencies,
-            });
-        }
 
-        if (filteredPublisherStatus) {
-            config.options.showBlacklistedPublishers = filteredPublisherStatus;
-        }
+    function startReport (gridApi, queryConfig, recipients) {
+        var deferred = $q.defer();
+
+        var config = getQueryConfig(gridApi, queryConfig, recipients);
 
         zemReportEndpoint
             .startReport(config)
@@ -94,6 +59,69 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
             });
 
         return deferred.promise;
+    }
+
+    function getQueryConfig (gridApi, queryConfig, recipients) {
+        var dateRange = zemDataFilterService.getDateRange();
+
+        var config =  {
+            fields: queryConfig.selectedFields.map(function (field) { return {'field': field}; }),
+            filters: [
+                {
+                    field: 'Date',
+                    operator: 'between',
+                    from: dateRange.startDate.format('YYYY-MM-DD'),
+                    to: dateRange.endDate.format('YYYY-MM-DD'),
+                },
+            ],
+            options: {
+                recipients: recipients,
+                showArchived: zemDataFilterService.getShowArchived(),
+                includeTotals: queryConfig.includeTotals || false,
+                includeItemsWithNoSpend: queryConfig.includeItemsWithNoSpend || false,
+                showStatusDate: true,
+                order: getOrder(gridApi),
+            }
+        };
+
+        var levelFilter = getLevelFilter(gridApi);
+        if (levelFilter) {
+            config.filters.push(levelFilter);
+        }
+
+        var filteredSources = zemDataFilterService.getFilteredSources();
+        if (filteredSources) {
+            config.filters.push({
+                field: 'Media Source',
+                operator: 'IN',
+                values: filteredSources,
+            });
+        }
+
+        var filteredAccountTypes = zemDataFilterService.getFilteredAccountTypes();
+        if (filteredAccountTypes) {
+            config.filters.push({
+                field: 'Account Type',
+                operator: 'IN',
+                values: filteredAccountTypes,
+            });
+        }
+
+        var filteredAgencies = zemDataFilterService.getFilteredAgencies();
+        if (filteredAgencies) {
+            config.filters.push({
+                field: 'Agency',
+                operator: 'IN',
+                values: filteredAgencies,
+            });
+        }
+
+        var filteredPublisherStatus = zemDataFilterService.getFilteredPublisherStatus();
+        if (filteredPublisherStatus) {
+            config.options.showBlacklistedPublishers = filteredPublisherStatus;
+        }
+
+        return config;
     }
 
     function getOrder (gridApi) {

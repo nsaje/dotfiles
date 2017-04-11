@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         breakdown: '<',
         gridApi: '<',
     },
-    controller: function () {
+    controller: function (zemPermissions) {
         var $ctrl = this;
         $ctrl.constants = constants;
 
@@ -43,11 +43,15 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         }
 
         function isGridExportVisible () {
-            return $ctrl.breakdown !== constants.breakdown.PUBLISHER;
+            return $ctrl.breakdown !== constants.breakdown.PUBLISHER &&
+                !zemPermissions.hasPermission('zemauth.can_see_new_report_schedule');
         }
 
         function isReportDropdownVisible () {
-            return $ctrl.breakdown === constants.breakdown.PUBLISHER;
+            return ($ctrl.breakdown === constants.breakdown.PUBLISHER &&
+                    zemPermissions.hasPermission('zemauth.can_access_publisher_reports'))
+                || ($ctrl.breakdown !== constants.breakdown.PUBLISHER &&
+                    zemPermissions.hasPermission('zemauth.can_see_new_report_schedule'));
         }
     },
 });

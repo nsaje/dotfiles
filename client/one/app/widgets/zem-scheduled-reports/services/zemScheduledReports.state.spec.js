@@ -63,7 +63,7 @@ describe('zemScheduledReportsStateService', function () {
         spyOn(stateService, 'reloadReports').and.stub();
         spyOn(zemScheduledReportsEndpoint, 'remove').and.callFake(mockedAsyncFunction);
 
-        stateService.removeReport(123);
+        stateService.removeReport({scheduledReportId: 123});
         expect(stateService.getState()).toEqual({removeRequestInProgress: true});
         $rootScope.$digest();
         expect(zemScheduledReportsEndpoint.remove).toHaveBeenCalledWith(123);
@@ -77,7 +77,7 @@ describe('zemScheduledReportsStateService', function () {
         spyOn(stateService, 'reloadReports').and.stub();
         spyOn(zemScheduledReportsEndpoint, 'remove').and.callFake(mockedAsyncFunction);
 
-        stateService.removeReport(123);
+        stateService.removeReport({scheduledReportId: 123});
         expect(stateService.getState()).toEqual({removeRequestInProgress: true});
         $rootScope.$digest();
         expect(zemScheduledReportsEndpoint.remove).toHaveBeenCalledWith(123);

@@ -5,8 +5,6 @@ import ipware.ip
 import time
 
 from django.db import transaction
-import django.db.models
-from django.conf import settings
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
@@ -20,22 +18,22 @@ from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
 
 from dash.views import agency, bulk_actions, views, bcm, helpers, publishers
-from dash import regions
 from dash import campaign_goals
 from dash import constants
 from dash import upload
 from dash import publisher_group_helpers
+from dash.features.reports import models as reports_models
+from dash.features.reports import serializers as reports_serializers
+from dash.features.reports import reports
 import dash.models
-from utils import json_helper, exc, dates_helper, redirector_helper, bidder_helper, threads
+from utils import json_helper, exc, dates_helper, redirector_helper, bidder_helper
 from redshiftapi import quickstats
 
 import restapi.authentication
-import restapi.models
-import restapi.reports
+
 import fields
 
 import dash.features.geolocation
-
 
 logger = logging.getLogger(__name__)
 
@@ -1041,39 +1039,22 @@ class ContentAdBatchViewDetails(RESTAPIBaseView):
         return self.response_ok(batch_serializer.data)
 
 
-class ReportJobSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = restapi.models.ReportJob
-        fields = ('id', 'status', 'result')
-    id = fields.IdField()
-    status = fields.DashConstantField(constants.ReportJobStatus)
-    result = serializers.JSONField()
-
-
 class ReportsViewList(RESTAPIBaseView):
     renderer_classes = (CamelCaseJSONRenderer,)
     parser_classes = (CamelCaseJSONParser,)
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
-        query = restapi.reports.ReportQuerySerializer(data=request.data, context={'request': request})
+        query = reports_serializers.ReportQuerySerializer(data=request.data, context={'request': request})
         try:
             query.is_valid(raise_exception=True)
         except serializers.ValidationError as e:
             logger.debug(e)
             raise e
 
-        job = restapi.models.ReportJob(user=request.user, query=query.data)
-        job.save()
+        job = reports.create_job(request.user, query.data)
 
-        if settings.USE_CELERY_FOR_REPORTS:
-            restapi.reports.execute.delay(job.id)
-        else:
-            executor = restapi.reports.ReportJobExecutor(job)
-            thread = threads.AsyncFunction(executor.execute)
-            thread.start()
-
-        return self.response_ok(ReportJobSerializer(job).data, status=201)
+        return self.response_ok(reports_serializers.ReportJobSerializer(job).data, status=201)
 
 
 class ReportsViewDetails(RESTAPIBaseView):
@@ -1082,10 +1063,10 @@ class ReportsViewDetails(RESTAPIBaseView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, job_id):
-        job = restapi.models.ReportJob.objects.get(pk=job_id)
+        job = reports_models.ReportJob.objects.get(pk=job_id)
         if job.user != request.user:
             raise exceptions.PermissionDenied
-        return self.response_ok(ReportJobSerializer(job).data)
+        return self.response_ok(reports_serializers.ReportJobSerializer(job).data)
 
 
 class PublisherGroupSerializer(DataNodeSerializerMixin, serializers.ModelSerializer):

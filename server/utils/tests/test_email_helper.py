@@ -235,7 +235,7 @@ Zemanta
         self.assertEqual(mail.outbox[0].subject, subject)
         self.assertEqual(mail.outbox[0].body, body)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, ['manager@user.com', 'asd@gmail.com'])
+        self.assertEqual(mail.outbox[0].to, ['asd@gmail.com'])
 
     @override_settings(
         HOSTNAME='testhost',

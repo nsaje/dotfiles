@@ -273,6 +273,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_use_new_routing', 'User can use new routing.'),
             ('can_see_id_columns_in_table', 'User can see id columns in table.'),
             ('can_set_advanced_device_targeting', 'User can set advanced device targeting.'),
+            ('can_see_new_report_schedule', 'User can see new report schedule.'),
         )
 
     def get_full_name(self):

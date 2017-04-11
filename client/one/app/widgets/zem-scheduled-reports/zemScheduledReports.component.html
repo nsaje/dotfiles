@@ -8,7 +8,8 @@
             <tr>
                 <th>Report Name</th>
                 <th>Report Level</th>
-                <th>Granularity</th>
+                <th ng-if="!$ctrl.hasPermission('zemauth.can_see_new_report_schedule')">Granularity</th>
+                <th ng-if="$ctrl.hasPermission('zemauth.can_see_new_report_schedule')">Breakdown</th>
                 <th>Frequency</th>
                 <th ng-if="$ctrl.hasPermission('zemauth.can_set_day_of_week_in_scheduled_reports')">Day of week</th>
                 <th ng-if="$ctrl.hasPermission('zemauth.can_set_time_period_in_scheduled_reports')">Time period</th>
@@ -20,7 +21,8 @@
             <tr ng-repeat="report in $ctrl.state.reports">
                 <td>{{ report.name }}</td>
                 <td>{{ report.level }}</td>
-                <td>{{ report.granularity }}</td>
+                <td ng-if="!$ctrl.hasPermission('zemauth.can_see_new_report_schedule')">{{ report.granularity }}</td>
+                <td ng-if="$ctrl.hasPermission('zemauth.can_see_new_report_schedule')">{{ report.breakdown }}</td>
                 <td>{{ report.frequency }}</td>
                 <td ng-if="$ctrl.hasPermission('zemauth.can_set_day_of_week_in_scheduled_reports')">
                     {{ report.dayOfWeek }}
@@ -32,7 +34,7 @@
                 <td>
                     <button type="button"
                             class="button button--small button--with-icon remove-icon"
-                            ng-click="$ctrl.removeReport(report.scheduledReportId)">
+                            ng-click="$ctrl.removeReport(report)">
                         Remove
                     </button>
                 </td>

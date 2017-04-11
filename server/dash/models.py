@@ -21,6 +21,8 @@ from dash.features.demo import *
 from dash.features.emails import *
 from dash.features.exports import *
 from dash.features.geolocation import *
+from dash.features.scheduled_reports import *
+from dash.features.reports.models import *
 
 # FIXME: Legacy import - accessing constants through dash.modals
 from dash import constants

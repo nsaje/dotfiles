@@ -381,7 +381,7 @@
         user: 1
         status: 1
         query: '{}'
-    model: restapi.reportjob
+    model: dash.reportjob
     pk: 27
 
 # test publisher groups

@@ -1,13 +1,7 @@
-<span ng-if="$ctrl.hasPermission('zemauth.can_access_publisher_reports')">
-    <zem-internal-feature
-        ng-if="$ctrl.isPermissionInternal('zemauth.can_access_publisher_reports')"
-        popover-placement="left">
-    </zem-internal-feature>
-    <zem-dropdown
-        zem-placeholder="Report"
-        zem-dropdown-options="$ctrl.actions"
-        zem-on-select="$ctrl.execute(selected)"
-        zem-disabled-title="Nothing here"
-        zem-css-class="show-rows button button--dropdown-toggle-icon">
-    </zem-dropdown>
-</span>
+<zem-dropdown
+    zem-placeholder="Report"
+    zem-dropdown-options="$ctrl.actions"
+    zem-on-select="$ctrl.execute(selected)"
+    zem-disabled-title="Nothing here"
+    zem-css-class="show-rows button button--dropdown-toggle-icon">
+</zem-dropdown>
