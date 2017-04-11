@@ -46,7 +46,7 @@ class ScheduledReportManager(models.Manager):
     def _get_account(self, user, query):
         constraints = reports_helpers.get_filter_constraints(query['filters'])
         if 'ad_group_id' in constraints:
-            ad_group = core.entity.AdGroup.objects.select_related('campaign_account').get(pk=constraints['ad_group_id'])
+            ad_group = core.entity.AdGroup.objects.select_related('campaign__account').get(pk=constraints['ad_group_id'])
             return ad_group.campaign.account
         elif 'campaign_id' in constraints:
             campaign = core.entity.Campaign.objects.select_related('account').get(pk=constraints['campaign_id'])
