@@ -13,7 +13,6 @@ import threading
 from django.db import transaction
 from django.db.models import Q
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect

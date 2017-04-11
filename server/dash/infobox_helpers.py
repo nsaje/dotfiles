@@ -3,7 +3,6 @@ import datetime
 import influx
 import utils.lc_helper
 
-import reports.api_helpers
 from django.db import models
 from django.db.models import Sum, F, ExpressionWrapper
 from django.core.cache import caches
@@ -12,7 +11,7 @@ import dash.constants
 import dash.models
 import dash.campaign_goals
 import zemauth.models
-import reports.api_contentads
+import redshiftapi.api_breakdowns
 import reports.models
 import utils.dates_helper
 import utils.lc_helper
@@ -164,11 +163,19 @@ def get_media_campaign_spend(user, campaign, until_date=None):
 
 
 def get_yesterday_adgroup_spend(user, ad_group):
-    yesterday_media_cost = reports.api_contentads.get_actual_yesterday_cost(
-        {'ad_group': ad_group.id},
-        breakdown=['ad_group']
+    yesterday = utils.dates_helper.local_today() - datetime.timedelta(days=1)
+    query_results = redshiftapi.api_breakdowns.query_all(
+        ['ad_group_id'],
+        constraints={
+            'date__gte': yesterday,
+            'date__lte': yesterday,
+            'ad_group_id': [ad_group.id],
+        },
+        parents=None,
+        goals=None,
+        use_publishers_view=False,
     )
-    return sum(yesterday_media_cost.values())
+    return sum(row['e_yesterday_cost'] for row in query_results)
 
 
 def get_yesterday_campaign_spend(user, campaign):

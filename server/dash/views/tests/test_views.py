@@ -10,7 +10,6 @@ from django.test.utils import override_settings
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import Permission
-from django.conf import settings
 
 from zemauth.models import User
 
@@ -978,13 +977,13 @@ class AdGroupOverviewTest(TestCase):
         else:
             return None
 
-    @patch('reports.redshift.get_cursor')
-    def test_run_empty(self, cursor):
+    @patch('redshiftapi.api_breakdowns.query_all')
+    def test_run_empty(self, mock_query_all):
         self.setUpPermissions()
-        cursor().dictfetchall.return_value = [{
+        mock_query_all.return_value = [{
             'adgroup_id': 1,
             'source_id': 9,
-            'media_cost_cc_sum': 0.0
+            'e_yesterday_cost': decimal.Decimal('0.0'),
         }]
 
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -1093,8 +1092,8 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('$0.00', yesterday_spend['value'])
 
     @patch('reports.redshift.get_cursor')
-    @patch('reports.api_contentads.get_actual_yesterday_cost')
-    def test_run_mid(self, mock_cost, cursor):
+    @patch('redshiftapi.api_breakdowns.query_all')
+    def test_run_mid(self, mock_query_all, cursor):
         self.setUpPermissions()
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
         end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
@@ -1146,9 +1145,9 @@ class AdGroupOverviewTest(TestCase):
             }
         }
 
-        mock_cost.return_value = {
-            1: 60.0
-        }
+        mock_query_all.return_value = [{
+            'e_yesterday_cost': decimal.Decimal('60.0'),
+        }]
 
         response = self._get_ad_group_overview(1)
 

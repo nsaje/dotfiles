@@ -321,13 +321,13 @@ class InfoBoxHelpersTest(TestCase):
 
         self.assertEqual(0, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
 
-    @mock.patch('reports.redshift.get_cursor')
-    def test_get_yesterday_adgroup_spend(self, cursor):
+    @mock.patch('redshiftapi.api_breakdowns.query_all')
+    def test_get_yesterday_adgroup_spend(self, mock_query_all):
         user = zemauth.models.User.objects.get(pk=1)
         ad_group = dash.models.AdGroup.objects.get(pk=1)
-        cursor().dictfetchall.return_value = [{
-            'adgroup_id': u'1',
-            'media_cost_cc_sum': 500000,
+        mock_query_all.return_value = [{
+            'ad_group_id': u'1',
+            'e_yesterday_cost': Decimal(50),
         }]
 
         self.assertEqual(
