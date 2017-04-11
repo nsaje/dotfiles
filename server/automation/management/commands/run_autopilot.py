@@ -39,4 +39,4 @@ class Command(ExceptionCommand):
                 utils.slack.publish(ALERT_MSG.format(repr(exc)),
                                     msg_type=SlackMsgTypes.CRITICAL,
                                     username='Autopilot')
-            raise exc
+            raise
