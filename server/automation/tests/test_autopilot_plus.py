@@ -194,16 +194,16 @@ class AutopilotPlusTestCase(test.TestCase):
         source1 = dash.models.AdGroupSource.objects.get(id=1)
         source2 = dash.models.AdGroupSource.objects.get(id=2)
         days_ago_data = (
-            {'ad_group': 1, 'source': 1, 'rand': 1},
-            {'ad_group': 1, 'source': 2, 'rand': 0},
-            {'ad_group': 2, 'source': 2, 'rand': 0},
-            {'ad_group': 2, 'source': 1, 'rand': 2}
+            {'ad_group_id': 1, 'source_id': 1, 'rand': 1},
+            {'ad_group_id': 1, 'source_id': 2, 'rand': 0},
+            {'ad_group_id': 2, 'source_id': 2, 'rand': 0},
+            {'ad_group_id': 2, 'source_id': 1, 'rand': 2}
         )
         yesterday_data = (
-            {'ad_group': 1, 'source': 1, 'media_cost': 1, 'clicks': 1, 'data_cost': 0},
-            {'ad_group': 1, 'source': 2, 'media_cost': 0, 'clicks': 0, 'data_cost': 0},
-            {'ad_group': 2, 'source': 2, 'media_cost': 0, 'clicks': 0, 'data_cost': 0},
-            {'ad_group': 2, 'source': 1, 'media_cost': 2, 'clicks': 2, 'data_cost': 0}
+            {'ad_group_id': 1, 'source_id': 1, 'media_cost': 1, 'clicks': 1, 'data_cost': 0},
+            {'ad_group_id': 1, 'source_id': 2, 'media_cost': 0, 'clicks': 0, 'data_cost': 0},
+            {'ad_group_id': 2, 'source_id': 2, 'media_cost': 0, 'clicks': 0, 'data_cost': 0},
+            {'ad_group_id': 2, 'source_id': 1, 'media_cost': 2, 'clicks': 2, 'data_cost': 0}
         )
         self.assertEqual(autopilot_plus._find_corresponding_source_data(source1, days_ago_data, yesterday_data),
                          (days_ago_data[0], 1, 1))
@@ -294,13 +294,13 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertTrue(changed_source in changed_sources)
         self.assertTrue(not_changed_source not in changed_sources)
 
-    @patch('reports.api_contentads.query')
+    @patch('redshiftapi.api_breakdowns.query_all')
     @patch('influx.gauge')
     def test_report_adgroups_data_to_influx(self, mock_influx, mock_query):
         mock_query.return_value = [
-            {'ad_group': 1, 'media_cost': Decimal('15'), 'data_cost': 0},
-            {'ad_group': 3, 'media_cost': Decimal('10'), 'data_cost': 0},
-            {'ad_group': 4, 'media_cost': Decimal('20'), 'data_cost': 0}]
+            {'ad_group_id': 1, 'media_cost': Decimal('15'), 'data_cost': 0},
+            {'ad_group_id': 3, 'media_cost': Decimal('10'), 'data_cost': 0},
+            {'ad_group_id': 4, 'media_cost': Decimal('20'), 'data_cost': 0}]
 
         adgroups = dash.models.AdGroup.objects.filter(id__in=[1, 2, 3, 4])
         autopilot_plus._report_adgroups_data_to_influx([adg.get_current_settings() for adg in adgroups])
@@ -338,13 +338,13 @@ class AutopilotPlusTestCase(test.TestCase):
             ]
         )
 
-    @patch('reports.api_contentads.query')
+    @patch('redshiftapi.api_breakdowns.query_all')
     @patch('influx.gauge')
     def test_report_new_budgets_on_ap_to_influx(self, mock_influx, mock_query):
         mock_query.return_value = [
-            {'ad_group': 1, 'billing_cost': Decimal('15')},
-            {'ad_group': 3, 'billing_cost': Decimal('10')},
-            {'ad_group': 4, 'billing_cost': Decimal('20')}]
+            {'ad_group_id': 1, 'billing_cost': Decimal('15')},
+            {'ad_group_id': 3, 'billing_cost': Decimal('10')},
+            {'ad_group_id': 4, 'billing_cost': Decimal('20')}]
 
         adgroups = dash.models.AdGroup.objects.filter(id__in=[1, 3, 4])
         autopilot_plus._report_new_budgets_on_ap_to_influx([adg.get_current_settings() for adg in adgroups])
