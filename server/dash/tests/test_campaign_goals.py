@@ -292,7 +292,8 @@ class CampaignGoalsTestCase(TestCase):
 
         self.assertItemsEqual(result, cam_goals)
 
-    def test_get_goal_performance(self):
+    @patch('stats.api_breakdowns.totals')
+    def test_get_goal_performance(self, mock_totals):
         start_date, end_date = datetime.date.today() - datetime.timedelta(7), datetime.date.today()
 
         self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 75)
@@ -302,7 +303,7 @@ class CampaignGoalsTestCase(TestCase):
         self._add_value(constants.CampaignGoalKPI.CPV, 15)
         self._add_value(constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT, 2)
 
-        stats = {
+        mock_totals.return_value = {
             'conversion_goal_1': 10,
             'e_media_cost': 5,
             'bounce_rate': 10,
@@ -312,8 +313,8 @@ class CampaignGoalsTestCase(TestCase):
             'avg_cost_per_visit': 35,
             'avg_cost_per_non_bounced_visit': 8,
         }
-        performance = campaign_goals.get_goals_performance(self.user, {'campaign': self.campaign},
-                                                           start_date, end_date, stats=stats)
+        performance = campaign_goals.get_goals_performance(
+            self.user, self.campaign, start_date, end_date)
         self.assertEqual(
             [(p[1], p[2]) for p in performance],
             [(10, Decimal('60.00000')), (0.5, Decimal('10.00000')), (None, None),
@@ -327,9 +328,9 @@ class CampaignGoalsTestCase(TestCase):
              cgp.AVERAGE, cgp.UNDERPERFORMING, ],
         )
 
-        stats['conversion_goal_1'] = None
-        performance = campaign_goals.get_goals_performance(self.user, {'campaign': self.campaign},
-                                                           start_date, end_date, stats=stats)
+        mock_totals.return_value['conversion_goal_1'] = None
+        performance = campaign_goals.get_goals_performance(
+            self.user, self.campaign, start_date, end_date)
         self.assertEqual(
             [p[0] for p in performance],
             [cgp.UNDERPERFORMING, cgp.UNDERPERFORMING, cgp.UNDERPERFORMING,
@@ -337,9 +338,8 @@ class CampaignGoalsTestCase(TestCase):
              cgp.AVERAGE, cgp.UNDERPERFORMING, ],
         )
 
-    @patch('reports.api_touchpointconversions.query')
-    @patch('reports.api_contentads.query')
-    def test_infobox_campaign(self, mock_contentads_query, mock_tpc_query):
+    @patch('stats.api_breakdowns.totals')
+    def test_infobox_campaign(self, mock_totals):
         start_date, end_date = datetime.date.today() - datetime.timedelta(7), datetime.date.today()
 
         self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 75)
@@ -349,9 +349,7 @@ class CampaignGoalsTestCase(TestCase):
         self._add_value(constants.CampaignGoalKPI.CPV, 15)
         self._add_value(constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT, 2)
 
-        mock_tpc_query.return_value = {}
-
-        mock_contentads_query.return_value = {
+        mock_totals.return_value = {
             'bounce_rate': 10,
             'total_pageviews': 10,
             'pv_per_visit': 10,
@@ -366,10 +364,9 @@ class CampaignGoalsTestCase(TestCase):
             'avg_cost_per_non_bounced_visit': 8,
         }
 
-        self.maxDiff = None
         goals_infobox = infobox_helpers.get_primary_campaign_goal(
             self.user,
-            {'campaign': self.campaign},
+            self.campaign,
             start_date,
             end_date
         )
@@ -386,9 +383,8 @@ class CampaignGoalsTestCase(TestCase):
             }
         ])
 
-    @patch('reports.api_touchpointconversions.query')
-    @patch('reports.api_contentads.query')
-    def test_infobox_ad_group(self, mock_contentads_query, mock_tpc_query):
+    @patch('stats.api_breakdowns.totals')
+    def test_infobox_ad_group(self, mock_totals):
         start_date, end_date = datetime.date.today() - datetime.timedelta(7), datetime.date.today()
 
         ad_group = models.AdGroup.objects.filter(campaign=self.campaign)[0]
@@ -400,8 +396,7 @@ class CampaignGoalsTestCase(TestCase):
         self._add_value(constants.CampaignGoalKPI.CPV, 15)
         self._add_value(constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT, 2)
 
-        mock_tpc_query.return_value = {}
-        mock_contentads_query.return_value = {
+        mock_totals.return_value = {
             'bounce_rate': 10,
             'total_pageviews': 10,
             'avg_tos': 10,
@@ -418,7 +413,7 @@ class CampaignGoalsTestCase(TestCase):
 
         goals_infobox = infobox_helpers.get_primary_campaign_goal(
             self.user,
-            {'ad_group': ad_group},
+            ad_group.campaign,
             start_date,
             end_date
         )

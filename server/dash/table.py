@@ -63,11 +63,11 @@ def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
         if not goals:
             continue
         conversion_goals = campaign.conversiongoal_set.all()
-        performance = campaign_goals.get_goals_performance(
-            user, {'campaign': campaign}, start_date, end_date,
-            goals=goals, stats=stat, conversion_goals=conversion_goals
-        )
-
+        # performance = campaign_goals.get_goals_performance(
+        #     user, {'campaign': campaign}, start_date, end_date,
+        #     goals=goals, stats=stat, conversion_goals=conversion_goals
+        # )
+        performance = None
         if not performance:
             continue
 

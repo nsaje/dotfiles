@@ -1,9 +1,6 @@
-import collections
 import datetime
 
-from dash import models
 from dash import constants as dash_constants
-from dash import campaign_goals as dash_campaign_goals
 from reports.api import row_has_conversion_goal_data, row_has_postclick_data, row_has_traffic_data
 
 from stats import constants

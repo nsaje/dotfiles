@@ -4,10 +4,13 @@ from decimal import Decimal, ROUND_DOWN
 from django.db import transaction
 from django.db.models import Prefetch
 
-from utils import exc
 from dash import models, constants, forms
-import dash.stats_helper
 import dash.history_helpers
+
+import stats.api_breakdowns
+import stats.constraints_helper
+
+from utils import exc
 import utils.lc_helper
 
 
@@ -453,24 +456,19 @@ def get_goal_performance_metric(campaign_goal, conversion_goals):
     return CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type]
 
 
-def get_goals_performance(user, constraints, start_date, end_date,
-                          goals=None, conversion_goals=None, stats=None):
+def get_goals_performance(user, campaign, start_date, end_date):
+    constraints = stats.constraints_helper.prepare_campaign_constraints(
+        user, campaign, [], start_date, end_date, models.Source.objects.all())
+    stats_goals = stats.api_breakdowns.get_goals(constraints)
+    query_results = stats.api_breakdowns.totals(user, constants.Level.CAMPAIGNS, [], constraints, stats_goals)
+
     performance = []
-    campaign = constraints.get('campaign') or constraints['ad_group'].campaign
-    conversion_goals = conversion_goals or campaign.conversiongoal_set.all()
-    goals = goals or fetch_goals([campaign.pk], end_date)
-
-    stats = stats or dash.stats_helper.get_stats_with_conversions(
-        user,
-        start_date=start_date,
-        end_date=end_date,
-        conversion_goals=conversion_goals,
-        constraints=constraints,
-        pixels=campaign.account.conversionpixel_set.filter(archived=False)
-    )
-
-    for campaign_goal in goals:
-        performance.append(_prepare_performance_output(campaign_goal, stats, conversion_goals))
+    for campaign_goal in stats_goals.campaign_goals:
+        performance.append(_prepare_performance_output(
+            campaign_goal,
+            query_results,
+            stats_goals.conversion_goals
+        ))
 
     return performance
 
