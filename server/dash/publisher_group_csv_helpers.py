@@ -78,6 +78,8 @@ def validate_entries(entry_dicts):
             error.append("'/' should not be used")
 
         validated_entry = copy.copy(entry)
+        if 'error' in validated_entry:
+            del validated_entry['error']
 
         if source_slug:
             if source_slug.lower() not in sources_by_slug:

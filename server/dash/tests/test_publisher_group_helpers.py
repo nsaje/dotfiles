@@ -540,6 +540,47 @@ class PublisherGroupCSVHelpersTest(TestCase):
             ]
         )
 
+    def test_validate_entries_with_error(self):
+        self.assertEquals(
+            publisher_group_csv_helpers.validate_entries([
+                {
+                    'publisher': 'wwwpub1.com',
+                    'source': 'AdsNative',
+                    'include_subdomains': True,
+                },
+                {
+                    'publisher': 'pub1.com',
+                    'source': '',
+                    'include_subdomains': True,
+                    'error': 'Remove the following prefixes: http, https',
+                },
+                {
+                    'publisher': 'https://pub1.com',
+                    'source': 'asd',
+                    'include_subdomains': False,
+                    'error': 'Remove the following prefixes: http, https; Unknown source',
+                },
+            ]),
+            [
+                {
+                    'publisher': 'wwwpub1.com',
+                    'source': 'AdsNative',
+                    'include_subdomains': True,
+                },
+                {
+                    'publisher': 'pub1.com',
+                    'source': None,
+                    'include_subdomains': True,
+                },
+                {
+                    'publisher': 'https://pub1.com',
+                    'source': 'asd',
+                    'include_subdomains': False,
+                    'error': 'Remove the following prefixes: http, https; Unknown source',
+                },
+            ]
+        )
+
     def test_clean_entry_sources(self):
         entries = [{
             'publisher': 'pub1.com',
