@@ -40,7 +40,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         for account in filter(bool, options.get('accounts', '').split(',')):
             dash.models.CustomHack.objects.create(account_id=int(account), **hack)
             saved_hacks += 1
-        for agency in filter(bool, options.get('agencis', '').split(',')):
+        for agency in filter(bool, options.get('agencies', '').split(',')):
             dash.models.CustomHack.objects.create(agency_id=int(agency), **hack)
             saved_hacks += 1
 
