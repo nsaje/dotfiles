@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from restapi import models
+import models
 
 
 class ReportJobAdmin(admin.ModelAdmin):
