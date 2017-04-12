@@ -9,7 +9,7 @@ angular.module('one.widgets').service('zemChartParser', function ($window, zemCh
             ['#0aaf9f', '#9ddfd9'],
             ['#f15f74', '#f9bfc7'],
         ]
-    }, $window.whitelabel && (overwrittes[$window.whitelabel] || {}).chartColors || {});
+    }, $window.whitelabel && (overwrittes[$window.whitelabel.id] || {}).chartColors || {});
 
     this.parseMetaData = parseMetaData;
     this.parseData = parseData;

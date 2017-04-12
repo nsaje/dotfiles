@@ -1,6 +1,6 @@
 angular.module('one.widgets').component('zemHeaderBreadcrumb', {
     templateUrl: '/app/widgets/zem-header/components/zem-header-breadcrumb/zemHeaderBreadcrumb.component.html',
-    controller: function ($rootScope, $state, $location, $document, config, zemPermissions, zemNavigationNewService) { // eslint-disable-line max-len
+    controller: function ($rootScope, $state, $location, $document, $window, config, zemPermissions, zemNavigationNewService) { // eslint-disable-line max-len
 
         var $ctrl = this;
         $ctrl.config = config;
@@ -34,9 +34,9 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
         }
 
         function updateTitle (entity) {
-            var title;
+            var title, dashboardTitle = $window.whitelabel && $window.whitelabel.dashboardTitle || 'Zemanta';
             if (entity) {
-                title = entity.name + ' | Zemanta';
+                title = entity.name + ' | ' + dashboardTitle;
             } else {
                 title = 'My accounts';
                 if (zemPermissions.hasPermission('dash.group_account_automatically_add')) {

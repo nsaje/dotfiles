@@ -41,7 +41,7 @@
 
 <script>
     {% if whitelabel %}
-    window.whitelabel = "{{ whitelabel }}";
+    window.whitelabel = { id: "{{ whitelabel }}", dashboardTitle: "{{ custom_dashboard_title }}" };
     {% endif %}
     var adblockTest = document.createElement('div');
     adblockTest.innerHTML = '&nbsp;';

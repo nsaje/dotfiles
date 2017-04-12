@@ -152,6 +152,7 @@ angular.module('one.legacy').controller('MainCtrl', function ($scope, $state, $l
     $scope.breadcrumb = [];
 
     $scope.setBreadcrumbAndTitle = function (breadcrumb, title) {
+        var dashboardTitle = 'Zemanta';
         $scope.breadcrumb = breadcrumb;
         if ($scope.canAccessAllAccounts() && $scope.accountsAccess.accountsCount > 0) {
             $scope.breadcrumb.unshift({
@@ -161,7 +162,7 @@ angular.module('one.legacy').controller('MainCtrl', function ($scope, $state, $l
             });
         }
 
-        $document.prop('title', title + ' | Zemanta');
+        $document.prop('title', title + ' | ' + ($window.whitelabel && $window.whitelabel.dashboardTitle || dashboardTitle));
     };
 
     $scope.getBreadcrumbAllAccountsName = function () {

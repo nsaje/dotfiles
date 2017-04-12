@@ -47,6 +47,18 @@ class Agency(models.Model):
         unique=False,
         blank=True,
     )
+    custom_favicon_url = models.CharField(
+        max_length=255,
+        editable=True,
+        blank=True,
+        default='',
+    )
+    custom_dashboard_title = models.CharField(
+        max_length=255,
+        editable=True,
+        blank=True,
+        default='',
+    )
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
     created_dt = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')

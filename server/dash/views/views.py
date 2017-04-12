@@ -85,6 +85,8 @@ def index(request):
         'staticUrl': settings.CLIENT_STATIC_URL,
         'debug': settings.DEBUG,
         'whitelabel': associated_agency and associated_agency.whitelabel,
+        'custom_favicon_url': associated_agency and associated_agency.custom_favicon_url,
+        'custom_dashboard_title': associated_agency and associated_agency.custom_dashboard_title,
     })
 
 
