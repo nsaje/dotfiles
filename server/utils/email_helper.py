@@ -25,7 +25,8 @@ from utils import dates_helper
 logger = logging.getLogger(__name__)
 
 WHITELABEL_PRODUCTS = {
-    dash.constants.Whitelabel.GREENPARK: 'Telescope'
+    dash.constants.Whitelabel.GREENPARK: 'Telescope',
+    dash.constants.Whitelabel.ADTECHNACITY: 'adtechnacity',
 }
 
 URLS_RE = re.compile(r"((https?):((//)|(\\\\))+[\w\d:#@%/;$()~_?\+\-=\\\.&]*[\w\d#@%/$()~_\+\-=\\&])", re.MULTILINE | re.UNICODE)
