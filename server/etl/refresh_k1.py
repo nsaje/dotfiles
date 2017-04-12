@@ -12,12 +12,13 @@ from etl import materialize_k1
 from etl import materialize_views
 from etl import maintenance
 
+import utils.slack
+from analytics.constants import SlackMsgTypes
 
 logger = logging.getLogger(__name__)
 
 MATERIALIZED_VIEWS = [
     materialize_k1.ContentAdStats,
-    materialize_k1.Publishers,
     materialize_k1.TouchpointConversions,
 ]
 
@@ -64,11 +65,23 @@ NEW_MATERIALIZED_VIEWS = [
 
 
 ALL_MATERIALIZED_VIEWS = MATERIALIZED_VIEWS + NEW_MATERIALIZED_VIEWS
+SLACK_MIN_DAYS_TO_PROCESS = 1
+
+
+def _post_to_slack(status, update_since, account_id=None):
+    utils.slack.publish('Materialization since {}{} *{}*.'.format(
+        str(update_since.date()), account_id and ' for *account {}*'.format(account_id) or '', status
+    ), msg_type=SlackMsgTypes.INFO, username='Refresh k1')
 
 
 @influx.timer('etl.refresh_k1.refresh_k1_timer', type='all')
 def refresh_k1_reports(update_since, account_id=None):
+    do_post_to_slack = (datetime.datetime.today() - update_since).days > SLACK_MIN_DAYS_TO_PROCESS
+    if do_post_to_slack:
+        _post_to_slack('started', update_since, account_id)
     _refresh_k1_reports(update_since, ALL_MATERIALIZED_VIEWS, account_id)
+    if do_post_to_slack:
+        _post_to_slack('finished', update_since, account_id)
 
 
 @influx.timer('etl.refresh_k1.refresh_k1_timer', type='only_new')
