@@ -7,10 +7,10 @@ from django.views.decorators.csrf import csrf_exempt
 
 import newrelic.agent
 
+import redshiftapi.api_breakdowns
+
 from utils import request_signer
 import dash.models
-import reports.api_contentads
-import etl.refresh_k1
 
 logger = logging.getLogger(__name__)
 
@@ -35,11 +35,16 @@ def crossvalidation(request):
     sources = dash.models.Source.objects.filter(source_type__type='b1')
     bidder_slugs = {source.id: source.bidder_slug for source in sources}
 
-    stats = reports.api_contentads.query(
-        start_date,
-        end_date,
-        breakdown=['content_ad', 'source', 'ad_group'],
-        source__eq=[source.id for source in sources],
+    stats = redshiftapi.api_breakdowns.query_all(
+        ['content_ad_id', 'source_id', 'ad_group_id'],
+        {
+            'date__gte': start_date,
+            'date__lte': end_date,
+            'source_id': [source.id for source in sources],
+        },
+        None,
+        None,
+        False
     )
 
     # filter stats without impressions, so we don't have to use pointers in b1 for json decoding
@@ -53,9 +58,9 @@ def crossvalidation(request):
 
 def _format_stat(stat, bidder_slugs):
     return {
-        'content_ad_id': stat['content_ad'],
-        'bidder_slug': bidder_slugs[stat['source']],
-        'ad_group_id': stat['ad_group'],
+        'content_ad_id': stat['content_ad_id'],
+        'bidder_slug': bidder_slugs[stat['source_id']],
+        'ad_group_id': stat['ad_group_id'],
         'impressions': stat['impressions'],
         'clicks': stat['clicks'],
         'cost': stat['media_cost'],

@@ -6,43 +6,43 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.test.utils import override_settings
 
-import reports.views
+from utils import test_helper
 
 
-@patch('reports.api_contentads.query')
+@patch('redshiftapi.api_breakdowns.query_all')
 @patch('utils.request_signer.verify_wsgi_request')
 @override_settings(BIDDER_API_SIGN_KEY='test_api_key')
 class CrossvalidationViewTest(TestCase):
     fixtures = ['test_api_views']
 
-    def test_no_parameters(self, mock_verify_wsgi_request, mock_contentads_query):
+    def test_no_parameters(self, mock_verify_wsgi_request, mock_query_all):
         response = self.client.get(reverse('api.crossvalidation'))
 
         mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
         self.assertEqual(response.status_code, 400)
 
-    def test_valid_request(self, mock_verify_wsgi_request, mock_contentads_query):
-        mock_contentads_query.return_value = [
+    def test_valid_request(self, mock_verify_wsgi_request, mock_query_all):
+        mock_query_all.return_value = [
             {
-                'content_ad': 10,
-                'source': 1,
-                'ad_group': 1,
+                'content_ad_id': 10,
+                'source_id': 1,
+                'ad_group_id': 1,
                 'impressions': None,
                 'clicks': None,
                 'media_cost': None,
             },
             {
-                'content_ad': 11,
-                'source': 1,
-                'ad_group': 1,
+                'content_ad_id': 11,
+                'source_id': 1,
+                'ad_group_id': 1,
                 'impressions': 10,
                 'clicks': 2,
                 'media_cost': 0.033,
             },
             {
-                'content_ad': 15,
-                'source': 2,
-                'ad_group': 2,
+                'content_ad_id': 15,
+                'source_id': 2,
+                'ad_group_id': 2,
                 'impressions': 5,
                 'clicks': 0,
                 'media_cost': 0.0,
@@ -56,15 +56,16 @@ class CrossvalidationViewTest(TestCase):
 
         mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
-        self.assertEqual(mock_contentads_query.call_args[0][0], date(2015, 11, 05))
-        self.assertEqual(mock_contentads_query.call_args[0][1], date(2015, 11, 05))
-        self.assertItemsEqual(
-            mock_contentads_query.call_args[1]['breakdown'],
-            ['content_ad', 'source', 'ad_group'],
-        )
-        self.assertItemsEqual(
-            mock_contentads_query.call_args[1]['source__eq'],
-            [1, 2],
+        mock_query_all.assert_called_once_with(
+            ['content_ad_id', 'source_id', 'ad_group_id'],
+            {
+                'date__gte': date(2015, 11, 5),
+                'date__lte': date(2015, 11, 5),
+                'source_id': test_helper.ListMatcher([1, 2]),
+            },
+            None,
+            None,
+            False
         )
 
         self.assertEqual(response.status_code, 200)
