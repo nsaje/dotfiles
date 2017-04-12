@@ -6,9 +6,10 @@ import models
 class ScheduledReportAdmin(admin.ModelAdmin):
     model = models.ScheduledReport
     list_display = (
-        'id',
+        'name',
         'created_dt',
         'user',
+        'account',
         'state',
         'sending_frequency',
         'day_of_week',
