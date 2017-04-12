@@ -9,14 +9,14 @@ import influx
 import dash
 import dash.campaign_goals
 import dash.constants
-from dash import stats_helper
 from automation import models
 from automation import autopilot_budgets
 from automation import autopilot_cpc
 from automation import autopilot_helpers
 from automation import autopilot_settings
 import automation.constants
-import reports.api_contentads
+from stats.api_breakdowns import Goals
+import redshiftapi.api_breakdowns
 from utils import pagerduty_helper
 from utils import dates_helper
 from utils import k1_helper
@@ -267,8 +267,12 @@ def _populate_prefetch_adgroup_source_goal_data(
             ags, conv_days_ago_data, campaign_goal_data['goal'].conversion_goal, conv_goals)
     elif goal_col in row and row[goal_col]:
         goal_value = row[goal_col]
-        dividend = row[autopilot_settings.GOALS_CALC_COLS.get(campaign_goal_data['goal'].type).get('dividend')]
-        divisor = row[autopilot_settings.GOALS_CALC_COLS.get(campaign_goal_data['goal'].type).get('divisor')]
+        dividend = float(
+            row[autopilot_settings.GOALS_CALC_COLS.get(campaign_goal_data['goal'].type).get('dividend', 0.0)]
+        )
+        divisor = float(
+            row[autopilot_settings.GOALS_CALC_COLS.get(campaign_goal_data['goal'].type).get('divisor', 0.0)]
+        )
 
     if goal_optimal > 0.0 and goal_value > 0.0:
         goal_performance = (min(float(goal_value) / float(goal_optimal), 1.0) if goal_high_is_good else
@@ -325,8 +329,8 @@ def _populate_b1_sources_data(row, current_b1_data, goal_col, goal_optimal, goal
 def _get_conversions_per_cost_value(ag_source, data, conversion_goal, conversion_goals):
     view_key = conversion_goal.get_view_key(conversion_goals)
     for r in data:
-        if r['ad_group'] == ag_source.ad_group.id and r['source'] == ag_source.source.id:
-            spend = r.get('media_cost', 0.0) + r.get('data_cost', 0.0)
+        if r['ad_group_id'] == ag_source.ad_group.id and r['source_id'] == ag_source.source.id:
+            spend = float(r.get('media_cost') or 0) + float(r.get('data_cost') or 0)
             conv = r.get(view_key)
             return conv, spend, ((conv or 0.0) / spend) if spend > 0 else 0.0
     return None, None, 0.0
@@ -348,36 +352,55 @@ def _populate_prefetch_adgroup_source_data(ag_source, ag_source_setting, yesterd
 def _fetch_data(ad_groups, sources):
     today = dates_helper.local_today()
     yesterday = today - datetime.timedelta(days=1)
+    days_ago = yesterday - datetime.timedelta(days=autopilot_settings.AUTOPILOT_DATA_LOOKBACK_DAYS)
     campaign_goals, conversion_goals, pixels = _get_autopilot_goals(ad_groups)
 
-    yesterday_data = reports.api_contentads.query(
-        yesterday,
-        yesterday,
-        breakdown=['ad_group', 'source'],
-        ad_group=ad_groups,
-        source=sources
+    yesterday_data = redshiftapi.api_breakdowns.query_all(
+        ['ad_group_id', 'source_id'],
+        {
+            'date__gte': yesterday,
+            'date__lte': yesterday,
+            'ad_group_id': [ad_group.id for ad_group in ad_groups],
+            'source_id': list(sources),
+        },
+        parents=None,
+        goals=None,
+        use_publishers_view=False,
     )
 
-    days_ago_data = reports.api_contentads.query(
-        yesterday - datetime.timedelta(days=autopilot_settings.AUTOPILOT_DATA_LOOKBACK_DAYS),
-        yesterday,
-        breakdown=['ad_group', 'source'],
-        ad_group=ad_groups,
-        source=sources
+    days_ago_data = redshiftapi.api_breakdowns.query_all(
+        ['ad_group_id', 'source_id'],
+        {
+            'date__gte': days_ago,
+            'date__lte': yesterday,
+            'ad_group_id': [ad_group.id for ad_group in ad_groups],
+            'source_id': list(sources),
+        },
+        parents=None,
+        goals=None,
+        use_publishers_view=False,
     )
 
-    conversions_days_ago_data = stats_helper.get_stats_with_conversions(
-        None,
-        yesterday - datetime.timedelta(days=autopilot_settings.AUTOPILOT_CONVERSION_DATA_LOOKBACK_DAYS),
-        yesterday,
-        breakdown=['ad_group', 'source'],
+    stats_goals = Goals(
         conversion_goals=conversion_goals,
         pixels=pixels,
-        constraints={
-            'ad_group': ad_groups,
-            'source': sources,
+        # NOTE: campaign goals are handled separately
+        campaign_goals=[],
+        campaign_goal_values=[],
+        primary_goals=[]
+    )
+    conversions_days_ago_data = redshiftapi.api_breakdowns.query_all(
+        ['ad_group_id', 'source_id'],
+        {
+            'date__gte': days_ago,
+            'date__lte': yesterday,
+            'ad_group_id': [ad_group.id for ad_group in ad_groups],
+            'source_id': list(sources),
         },
-        filter_by_permissions=False)
+        parents=None,
+        goals=stats_goals,
+        use_publishers_view=False,
+    )
 
     return yesterday_data, days_ago_data, conversions_days_ago_data, campaign_goals, conversion_goals
 
@@ -387,12 +410,12 @@ def _find_corresponding_source_data(ag_source, days_ago_data, yesterday_data):
     yesterdays_spend_cc = Decimal(0)
     yesterdays_clicks = 0
     for r in days_ago_data:
-        if r['ad_group'] == ag_source.ad_group.id and r['source'] == ag_source.source.id:
+        if r['ad_group_id'] == ag_source.ad_group.id and r['source_id'] == ag_source.source.id:
             row = r
             break
     for r in yesterday_data:
-        if r['ad_group'] == ag_source.ad_group.id and r['source'] == ag_source.source.id:
-            yesterdays_spend_cc = Decimal(r['media_cost']) + Decimal(r['data_cost'])
+        if r['ad_group_id'] == ag_source.ad_group.id and r['source_id'] == ag_source.source.id:
+            yesterdays_spend_cc = Decimal(r['media_cost'] or 0) + Decimal(r['data_cost'] or 0)
             yesterdays_clicks = r.get('clicks')
             break
     return row, yesterdays_spend_cc, yesterdays_clicks
@@ -440,13 +463,22 @@ def _report_adgroups_data_to_influx(ad_groups_settings):
     yesterday_spend_on_cpc_ap = Decimal(0.0)
     yesterday_spend_on_budget_ap = Decimal(0.0)
     yesterday = dates_helper.local_today() - datetime.timedelta(days=1)
-    yesterday_data = reports.api_contentads.query(yesterday, yesterday, breakdown=['ad_group'],
-                                                  ad_group=[ags.ad_group for ags in ad_groups_settings])
+    yesterday_data = redshiftapi.api_breakdowns.query_all(
+        ['ad_group_id'],
+        {
+            'date__lte': yesterday,
+            'date__gte': yesterday,
+            'ad_group_id': [ags.ad_group_id for ags in ad_groups_settings]
+        },
+        parents=None,
+        goals=None,
+        use_publishers_view=False,
+    )
     for ad_group_setting in ad_groups_settings:
         yesterday_spend = Decimal('0')
         for row in yesterday_data:
-            if row['ad_group'] == ad_group_setting.ad_group.id:
-                yesterday_spend = Decimal(row['media_cost']) + Decimal(row['data_cost'])
+            if row['ad_group_id'] == ad_group_setting.ad_group.id:
+                yesterday_spend = Decimal(row['media_cost'] or 0) + Decimal(row['data_cost'] or 0)
                 break
         if ad_group_setting.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
             num_on_budget_ap += 1

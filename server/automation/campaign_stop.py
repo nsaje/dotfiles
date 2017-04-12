@@ -1160,17 +1160,15 @@ def _update_b1_group_cap(ad_group, cap):
 
 
 def _get_yesterday_source_spends(campaign, ad_groups):
-    yday = dates_helper.local_today() - datetime.timedelta(days=1)
-    breakdown = ['ad_group_id', 'source_id']
-    constraints = {
-        'date__gte': yday,
-        'date__lte': yday,
-        'campaign_id': campaign.id,
-        'ad_group_id': [ad_group.id for ad_group in ad_groups],
-    }
+    yesterday = dates_helper.local_today() - datetime.timedelta(days=1)
     rows = redshiftapi.api_breakdowns.query_all(
-        breakdown,
-        constraints,
+        ['ad_group_id', 'source_id'],
+        {
+            'date__gte': yesterday,
+            'date__lte': yesterday,
+            'campaign_id': campaign.id,
+            'ad_group_id': [ad_group.id for ad_group in ad_groups],
+        },
         parents=None,
         goals=None,
         use_publishers_view=False,
@@ -1278,15 +1276,13 @@ def _get_ad_group_ratios(active_ad_groups, per_date_data):
 
 def _get_past_7_days_data(campaign):
     today = dates_helper.local_today()
-    breakdown = ['date', 'ad_group_id', 'source_id']
-    constraints = {
-        'date__gte': today - datetime.timedelta(days=7),
-        'date__lte': today - datetime.timedelta(days=1),
-        'campaign_id': campaign.id,
-    }
     rows = redshiftapi.api_breakdowns.query_all(
-        breakdown,
-        constraints,
+        ['date', 'ad_group_id', 'source_id'],
+        {
+            'date__gte': today - datetime.timedelta(days=7),
+            'date__lte': today - datetime.timedelta(days=1),
+            'campaign_id': campaign.id,
+        },
         parents=None,
         goals=None,
         use_publishers_view=False,
