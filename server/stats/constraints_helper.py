@@ -28,13 +28,17 @@ def _get_basic_constraints(start_date, end_date, show_archived, filtered_sources
 
 @newrelic.agent.function_trace()
 def prepare_all_accounts_constraints(user, breakdown, start_date, end_date, filtered_sources, show_archived=False,
-                                     filtered_agencies=None, filtered_account_types=None, only_used_sources=True):
+                                     filtered_agencies=None, filtered_account_types=None, filtered_accounts=None,
+                                     only_used_sources=True):
 
     allowed_accounts = models.Account.objects.all()\
                                              .filter_by_user(user)\
                                              .filter_by_sources(filtered_sources)\
                                              .filter_by_agencies(filtered_agencies)\
                                              .filter_by_account_types(filtered_account_types)
+
+    if filtered_accounts:
+        allowed_accounts = allowed_accounts.filter(id__in=filtered_accounts.values_list('id', flat=True))
 
     allowed_campaigns = models.Campaign.objects.filter(account__in=allowed_accounts)\
                                                .filter_by_user(user)\
@@ -62,10 +66,13 @@ def prepare_all_accounts_constraints(user, breakdown, start_date, end_date, filt
 
 @newrelic.agent.function_trace()
 def prepare_account_constraints(user, account, breakdown, start_date, end_date, filtered_sources,
-                                show_archived=False, only_used_sources=True):
+                                filtered_campaigns=None, show_archived=False, only_used_sources=True):
     allowed_campaigns = account.campaign_set.all()\
                                             .filter_by_user(user)\
                                             .filter_by_sources(filtered_sources)
+
+    if filtered_campaigns:
+        allowed_campaigns = allowed_campaigns.filter(id__in=filtered_campaigns.values_list('id', flat=True))
 
     allowed_ad_groups = models.AdGroup.objects.filter(campaign__in=allowed_campaigns)
 
@@ -91,8 +98,11 @@ def prepare_account_constraints(user, account, breakdown, start_date, end_date, 
 
 @newrelic.agent.function_trace()
 def prepare_campaign_constraints(user, campaign, breakdown, start_date, end_date, filtered_sources,
-                                 show_archived=False, only_used_sources=True):
+                                 filtered_ad_groups=None, show_archived=False, only_used_sources=True):
     allowed_ad_groups = campaign.adgroup_set.all().exclude_archived(show_archived)
+    if filtered_ad_groups:
+        allowed_ad_groups = allowed_ad_groups.filter(id__in=filtered_ad_groups.values_list('id', flat=True))
+
     constraints = {
         'campaign': campaign,
         'account': campaign.account,
@@ -113,14 +123,17 @@ def prepare_campaign_constraints(user, campaign, breakdown, start_date, end_date
 
 @newrelic.agent.function_trace()
 def prepare_ad_group_constraints(user, ad_group, breakdown, start_date, end_date, filtered_sources,
-                                 show_archived=False, only_used_sources=True,
+                                 filtered_content_ads=None, show_archived=False, only_used_sources=True,
                                  show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL):
+    allowed_content_ads = models.ContentAd.objects.filter(ad_group=ad_group).exclude_archived(show_archived)
+    if filtered_content_ads:
+        allowed_content_ads = allowed_content_ads.filter(id__in=filtered_content_ads.values_list('id', flat=True))
+
     constraints = {
         'ad_group': ad_group,
         'campaign': ad_group.campaign,
         'account': ad_group.campaign.account,
-        'allowed_content_ads': models.ContentAd.objects.filter(
-            ad_group=ad_group).exclude_archived(show_archived)
+        'allowed_content_ads': allowed_content_ads,
     }
 
     if only_used_sources:
