@@ -36,19 +36,19 @@ class ValidateBreakdownTest(TestCase):
         user = User.objects.get(pk=1)
         test_helper.add_permissions(user, ['can_see_publishers'])
 
-        with self.assertRaises(exc.InvalidBreakdownError):
-            validate_breakdown_by_structure(Level.ALL_ACCOUNTS, ['publisher_id'])
+        validate_breakdown_by_structure(Level.ALL_ACCOUNTS, ['publisher_id'])
 
-        with self.assertRaises(exc.InvalidBreakdownError):
-            validate_breakdown_by_structure(Level.ACCOUNTS, ['publisher_id'])
+        validate_breakdown_by_structure(Level.ACCOUNTS, ['publisher_id'])
 
-        with self.assertRaises(exc.InvalidBreakdownError):
-            validate_breakdown_by_structure(Level.CAMPAIGNS, ['publisher_id'])
+        validate_breakdown_by_structure(Level.CAMPAIGNS, ['publisher_id'])
 
         validate_breakdown_by_structure(Level.AD_GROUPS, ['publisher_id'])
 
         with self.assertRaises(exc.InvalidBreakdownError):
             validate_breakdown_by_structure(Level.AD_GROUPS, ['publisher_id', 'source_id'])
+
+        with self.assertRaises(exc.InvalidBreakdownError):
+            validate_breakdown_by_structure(Level.AD_GROUPS, ['publisher_id', 'content_ad_id'])
 
     def test_breakdown_validate_delivery(self):
         user = User.objects.get(pk=1)

@@ -16,7 +16,7 @@ def annotate(rows, user, breakdown, constraints, level):
             continue
 
         loader = loader_cls.from_constraints(user, constraints)
-        augmenter_fn = augmenter.get_report_augmenter_for_dimension(dimension)
+        augmenter_fn = augmenter.get_report_augmenter_for_dimension(dimension, level)
         augmenter_fn(rows, loader)
 
 
@@ -49,7 +49,7 @@ def query(user, breakdown, constraints, level):
             loader = loader_map[dimension]
             dimension_rows = augmenter.make_dash_rows(dimension, loader.objs_ids, None)
             if dimension in HIERARCHICAL_DIMENSIONS:
-                augmenter_fn = augmenter.get_report_augmenter_for_dimension(dimension)
+                augmenter_fn = augmenter.get_report_augmenter_for_dimension(dimension, level)
                 augmenter_fn(dimension_rows, loader)
             rows = _extend_rows(rows, dimension_rows)
         elif dimension in constants.TimeDimension._ALL:
@@ -67,7 +67,7 @@ def query(user, breakdown, constraints, level):
         if loader is None:
             continue
 
-        augmenter_fn = augmenter.get_report_augmenter_for_dimension(dimension)
+        augmenter_fn = augmenter.get_report_augmenter_for_dimension(dimension, level)
         augmenter_fn(rows, loader)
 
     return rows

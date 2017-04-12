@@ -25,8 +25,8 @@ def validate_breakdown_by_permissions(level, user, breakdown):
 
 def validate_breakdown_by_structure(level, breakdown):
     if constants.StructureDimension.PUBLISHER in breakdown:
-        if level != Level.AD_GROUPS:
-            raise exc.InvalidBreakdownError("Unsupported breakdown - publishers are only available on ad group level")
+        if constants.StructureDimension.CONTENT_AD in breakdown:
+            raise exc.InvalidBreakdownError("Unsupported breakdown - can not breakdown by content ad and publisher")
         if constants.StructureDimension.SOURCE in breakdown:
             raise exc.InvalidBreakdownError("Unsupported breakdown - publishers are broken down by source by default")
 

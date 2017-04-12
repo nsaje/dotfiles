@@ -95,7 +95,7 @@ oneapi_ambassador:
 
 einsworker_reports:
     extends: eins
-    mem_limit: 1g
+    mem_limit: 2g
     labels:
       traefik.enable: "false"
     entrypoint: ""

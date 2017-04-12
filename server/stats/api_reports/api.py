@@ -81,7 +81,7 @@ def get_filename(breakdown, constraints):
 
 def format_values(rows):
     for row in rows:
-        for column, value in row.items():
+        for column, value in row.iteritems():
             value = dash.export._format_empty_value(value, column)
             value = dash.export._format_percentages(value, column)
             value = dash.export._format_decimals(value, column)

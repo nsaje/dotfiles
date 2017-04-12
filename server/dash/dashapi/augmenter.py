@@ -21,7 +21,7 @@ def get_augmenter_for_dimension(target_dimension):
         return generate_loop_function(augment_publisher)
 
 
-def get_report_augmenter_for_dimension(target_dimension):
+def get_report_augmenter_for_dimension(target_dimension, level):
     if target_dimension == 'account_id':
         return generate_loop_function(augment_account, augment_account_for_report)
     elif target_dimension == 'campaign_id':
@@ -33,7 +33,10 @@ def get_report_augmenter_for_dimension(target_dimension):
     elif target_dimension == 'source_id':
         return generate_loop_function(augment_source, augment_source_for_report)
     elif target_dimension == 'publisher_id':
-        return generate_loop_function(augment_publisher, augment_publisher_for_report)
+        if level == constants.Level.AD_GROUPS:
+            return generate_loop_function(augment_publisher, augment_publisher_for_report)
+        else:
+            return generate_loop_function(augment_publisher_for_report_no_status)
 
 
 def generate_loop_function(*augment_funcs):
@@ -334,6 +337,22 @@ def augment_publisher_for_report(row, loader, is_base_level=False):
                 entry_status.get('blacklisted_level', '')
             ) or ''
         ).upper()
+    })
+
+
+def augment_publisher_for_report_no_status(row, loader, is_base_level=False):
+    domain, _ = publisher_helpers.dissect_publisher_id(row['publisher_id'])
+    source_id = row['source_id']
+    source = loader.source_map[source_id]
+
+    row.update({
+        'publisher': domain,
+        'source': source.name,
+        'source_id': source.id,
+        'source_name': source.name,
+        'source_slug': source.bidder_slug,
+        'domain': domain,
+        'domain_link': publisher_helpers.get_publisher_domain_link(domain),
     })
 
 

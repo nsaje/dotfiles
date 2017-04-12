@@ -1523,7 +1523,7 @@ Entity breakdown:
 - Ad Group, Ad Group Id
 - Content Ad, Content Ad Id
 - Media Source, Media Source Id
-- Publisher (only available with Ad Group Id equal filter)
+- Publisher
 
 Time breakdown:
 - Day (e.g. 2017-03-30)
@@ -2357,7 +2357,7 @@ Countries are identified by their [ISO 3166-1 alpha-2](https://en.wikipedia.org/
 Examples:
 - `US` - United States
 - `CA` - Canada
- 
+
 <a name="region"></a>
 ### Region
 Regions are identified by the country's [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
