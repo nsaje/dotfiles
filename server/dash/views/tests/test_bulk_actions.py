@@ -35,7 +35,7 @@ class AdGroupSourceStateTest(TestCase):
             follow=True
         )
 
-    @patch('dash.views.bulk_actions.table.AdGroupSourcesTableUpdates')
+    @patch('dash.legacy.get_updated_ad_group_sources_changes')
     @patch('dash.views.bulk_actions.AdGroupSourceState._check_can_set_state')
     @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
     @patch('dash.views.bulk_actions.api.set_ad_group_source_settings')
@@ -50,7 +50,7 @@ class AdGroupSourceStateTest(TestCase):
             'selected_ids': [source_id, maintenance_source_id],
         }
 
-        mock_table_update.return_value.get.return_value = {
+        mock_table_update.return_value = {
             'rows': {
                 '1': {
                     'cpc': 3,
@@ -96,7 +96,7 @@ class AdGroupSourceStateTest(TestCase):
         adgs = models.AdGroup.objects.get(pk=ad_group_id).get_current_settings()
         mock_autopilot_initialize.assert_called_once_with(adgs, send_mail=False)
         self.assertEqual(1, mock_check.call_count)
-        self.assertEqual(1, mock_table_update.return_value.get.call_count)
+        self.assertEqual(1, mock_table_update.call_count)
 
         mock_k1_ping.assert_called_once_with(1, msg='AdGroupSourceState.post')
 

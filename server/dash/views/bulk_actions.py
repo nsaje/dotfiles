@@ -17,7 +17,7 @@ from dash import forms
 from dash import models
 from dash import retargeting_helper
 from dash import upload
-from dash import table
+from dash import legacy
 from dash.dashapi import data_helper
 from dash.views import helpers
 from dash.views import breakdown_helpers
@@ -129,7 +129,7 @@ class AdGroupSourceState(BaseBulkActionView):
         }
 
     def _apply_updates(self, request, response, last_change_dt, ad_group_id):
-        response_update = table.AdGroupSourcesTableUpdates().get(
+        response_update = legacy.get_updated_ad_group_sources_changes(
             request.user, last_change_dt, [], ad_group_id_=ad_group_id)
         if 'rows' in response_update:
             for row_id, row_update in response_update['rows'].iteritems():

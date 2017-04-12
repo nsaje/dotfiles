@@ -12,7 +12,7 @@ import json
 from dash import forms
 from dash import views
 from dash import constants
-from dash import table
+from dash import legacy
 from dash.views import helpers
 from dash import upload
 
@@ -103,8 +103,8 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         request._body = json.dumps(settings)
         response_save_http = views.views.AdGroupSourceSettings().put(request, ad_group_id, source_id)
         response_save = json.loads(response_save_http.content)['data']
-        response_update = table.AdGroupSourcesTableUpdates()\
-            .get(request.user, last_change_dt, filtered_sources, ad_group_id_=ad_group_id)
+        response_update = legacy.get_updated_ad_group_sources_changes(
+            request.user, last_change_dt, filtered_sources, ad_group_id_=ad_group_id)
 
         response = {}
         response.update(response_save)
@@ -153,8 +153,8 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             ad_group,
             ad_group.get_current_settings(),
             show_rtb_group_cpc=request.user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc'))
-        response_update = table.AdGroupSourcesTableUpdates() \
-            .get(request.user, None, filtered_sources, ad_group_id_=ad_group_id)
+        response_update = legacy.get_updated_ad_group_sources_changes(
+            request.user, None, filtered_sources, ad_group_id_=ad_group_id)
         convert_update_response(response_update, None)
         convert_resource_response(constants.Level.AD_GROUPS, 'source_id', response_update)
         response = {
