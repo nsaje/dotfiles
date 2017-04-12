@@ -14,8 +14,8 @@ class ContentInsightsHelperTestCase(test.TestCase):
     def user(self):
         return User.objects.get(pk=2)
 
-    @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
-    def test_fetch_campaign_content_ad_metrics(self, mock_get_stats):
+    @patch('redshiftapi.api_breakdowns.query_all')
+    def test_fetch_campaign_content_ad_metrics(self, mock_query_all):
         campaign = dash.models.Campaign.objects.get(pk=1)
         ids = []
         for i in range(3):
@@ -28,19 +28,19 @@ class ContentInsightsHelperTestCase(test.TestCase):
             )
             ids.append(cad.id)
 
-        mock_get_stats.return_value = [
+        mock_query_all.return_value = [
             {
-                'content_ad': ids[0],
+                'content_ad_id': ids[0],
                 'clicks': 100,
                 'impressions': 100000,
             },
             {
-                'content_ad': ids[1],
+                'content_ad_id': ids[1],
                 'clicks': 1000,
                 'impressions': 100000,
             },
             {
-                'content_ad': ids[2],
+                'content_ad_id': ids[2],
                 'clicks': 10000,
                 'impressions': 100000,
             }
@@ -63,8 +63,8 @@ class ContentInsightsHelperTestCase(test.TestCase):
             }
         ], best)
 
-    @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
-    def test_fetch_campaign_content_ad_metrics_with_filters(self, mock_get_stats):
+    @patch('redshiftapi.api_breakdowns.query_all')
+    def test_fetch_campaign_content_ad_metrics_with_filters(self, mock_query_all):
         campaign = dash.models.Campaign.objects.get(pk=1)
         ids = []
         for i in range(3):
@@ -77,19 +77,19 @@ class ContentInsightsHelperTestCase(test.TestCase):
             )
             ids.append(cad.id)
 
-        mock_get_stats.return_value = [
+        mock_query_all.return_value = [
             {
-                'content_ad': ids[0],
+                'content_ad_id': ids[0],
                 'clicks': 10,
                 'impressions': 100,  # ctr 10% but too little impressions
             },
             {
-                'content_ad': ids[1],
+                'content_ad_id': ids[1],
                 'clicks': 100,
                 'impressions': 10000,  # ctr 1%
             },
             {
-                'content_ad': ids[2],
+                'content_ad_id': ids[2],
                 'clicks': 1000,
                 'impressions': 10000,  # ctr 10%
             }

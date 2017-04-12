@@ -1,6 +1,8 @@
 import dash.models
-from dash import stats_helper
 from collections import defaultdict
+
+import redshiftapi.api_breakdowns
+import stats.api_breakdowns
 
 CONTENT_INSIGHTS_TABLE_ROW_COUNT = 10
 MIN_WORST_PERFORMER_CLICKS = 20
@@ -8,20 +10,24 @@ MIN_BEST_PERFORMER_CLICKS = 20
 
 
 def fetch_campaign_content_ad_metrics(user, campaign, start_date, end_date):
-    stats = stats_helper.get_content_ad_stats_with_conversions(
-        user,
-        start_date,
-        end_date,
-        breakdown=['content_ad'],
-        ignore_diff_rows=True,
-        constraints={'campaign': campaign.id}
+    goals = stats.api_breakdowns.get_goals({'campaign': campaign})
+    query_results = redshiftapi.api_breakdowns.query_all(
+        breakdown=['content_ad_id'],
+        constraints={
+            'date__gte': start_date,
+            'date__lte': end_date,
+            'campaign_id': campaign.id,
+        },
+        parents=None,
+        goals=goals,
+        use_publishers_view=False,
     )
     dd_ads = _deduplicate_content_ad_titles(campaign=campaign)
-    return _extract_ends(dd_ads, stats)
+    return _extract_ends(dd_ads, query_results)
 
 
 def _extract_ends(deduplicated_ads, stats):
-    mapped_stats = {stat['content_ad']: stat for stat in stats}
+    mapped_stats = {stat['content_ad_id']: stat for stat in stats}
     dd_cad_metric = []
     for title, caids in deduplicated_ads.iteritems():
         dd_cad_metric.append(_extract_ctr_metric(title, caids, mapped_stats))
