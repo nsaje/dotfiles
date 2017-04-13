@@ -51,8 +51,9 @@ values."
      emacs-lisp
      git
      markdown
+     imenu-list
      (org :variables
-          org-projectile-file "~/org/TODOs.org")
+          org-projectile-file "~/Dropbox/org/TODOs.org")
      (shell :variables
             shell-default-height 20
             shell-default-position 'right)
@@ -67,7 +68,7 @@ values."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '(simpleclip)
+   dotspacemacs-additional-packages '(simpleclip flyspell-lazy)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
@@ -148,7 +149,7 @@ values."
                          ;; spacemacs-light
                          )
    ;; If non nil the cursor color matches the state color in GUI Emacs.
-   dotspacemacs-colorize-cursor-according-to-state t
+   dotspacemacs-colorize-cursor-according-to-state nil
    ;; Default font, or prioritized list of fonts. `powerline-scale' allows to
    ;; quickly tweak the mode-line size to make separators look not too crappy.
    dotspacemacs-default-font '("Iosevka Term"
@@ -178,7 +179,7 @@ values."
    ;; and TAB or <C-m> and RET.
    ;; In the terminal, these pairs are generally indistinguishable, so this only
    ;; works in the GUI. (default nil)
-   dotspacemacs-distinguish-gui-tab nil
+   dotspacemacs-distinguish-gui-tab t  ;; so C-i works for jump forward
    ;; If non nil `Y' is remapped to `y$' in Evil states. (default nil)
    dotspacemacs-remap-Y-to-y$ nil
    ;; If non-nil, the shift mappings `<' and `>' retain visual state if used
@@ -197,7 +198,7 @@ values."
    dotspacemacs-display-default-layout nil
    ;; If non nil then the last auto saved layouts are resume automatically upon
    ;; start. (default nil)
-   dotspacemacs-auto-resume-layouts nil
+   dotspacemacs-auto-resume-layouts t
    ;; Size (in MB) above which spacemacs will prompt to open the large file
    ;; literally to avoid performance issues. Opening a file literally means that
    ;; no major mode or minor modes are active. (default is 1)
@@ -395,7 +396,7 @@ you should place your code here."
     (simpleclip-mode 1)
 
     ;; ORG MODE CONFIG
-    (setq org-agenda-files '("~/org/TODOs.org"))
+    (setq org-agenda-files '("~/Dropbox/org/TODOs.org"))
     (setq org-todo-keywords
           (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
                   (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))))
@@ -409,20 +410,20 @@ you should place your code here."
                   ("CANCELLED" :foreground "forest green" :weight bold)
                   ("MEETING" :foreground "forest green" :weight bold)
                   ("PHONE" :foreground "forest green" :weight bold))))
-    (setq org-directory "~/org")
-    (setq org-default-notes-file "~/org/TODOs.org")
+    (setq org-directory "~/Dropbox/org")
+    (setq org-default-notes-file "~/Dropbox/org/TODOs.org")
 
     ;; Capture templates for: TODO tasks, Notes, appointments, phone calls, meetings, and org-protocol
     (setq org-capture-templates
-          (quote (("t" "todo" entry (file+headline "~/org/TODOs.org" "General")
+          (quote (("t" "todo" entry (file+headline "~/Dropbox/org/TODOs.org" "General")
                   "* TODO %?\n")
-                  ;; ("r" "respond" entry (file+headline "~/org/TODOs.org" "General")
+                  ;; ("r" "respond" entry (file+headline "~/Dropbox/org/TODOs.org" "General")
                   ;; "* NEXT Respond to %:from on %:subject\nSCHEDULED: %t\n%U\n%a\n" :clock-in t :clock-resume t :immediate-finish t)
-                  ;; ("r" "respond" entry (file+headline "~/org/TODOs.org" "General")
+                  ;; ("r" "respond" entry (file+headline "~/Dropbox/org/TODOs.org" "General")
                   ;;  "* NEXT Respond to %f on %s\nSCHEDULED: %t\n%U\n%a\n" :clock-in t :clock-resume t :immediate-finish t)
-                  ("n" "note" entry (file+headline "~/org/TODOs.org" "Notes")
+                  ("n" "note" entry (file+headline "~/Dropbox/org/TODOs.org" "Notes")
                   "* %? :NOTE:\n")
-                  ("m" "Meeting" entry (file+headline "~/org/TODOs.org" "Meetings")
+                  ("m" "Meeting" entry (file+headline "~/Dropbox/org/TODOs.org" "Meetings")
                   "* MEETING with %? :MEETING:\n%U\n\n"))))
     (setq org-mu4e-link-query-in-headers-mode nil)
 
@@ -437,11 +438,6 @@ you should place your code here."
     (define-key window-numbering-keymap "\M-7" 'spacemacs/persp-switch-to-7)
     (define-key window-numbering-keymap "\M-8" 'spacemacs/persp-switch-to-8)
     (define-key window-numbering-keymap "\M-9" 'spacemacs/persp-switch-to-9)
-
-    (setq dotspacemacs-colorize-cursor-according-to-state nil)
-
-    ;; so C-i works for evil jump forward
-    (setq dotspacemacs-distinguish-gui-tab t)
 
     ;; display which function we're in
     (which-function-mode)
@@ -458,9 +454,49 @@ you should place your code here."
     ;; (push "node_modules" 'projectile-globally-ignored-directories)
     (setq projectile-use-git-grep 1)
 
-    ;; automatically resume layout
-    (setq dotspacemacs-auto-resume-layouts t)
-  )
+    ;; lazy spellcheck
+    (flyspell-lazy-mode 1)
+
+    ;; Angular imenu
+    ;; (setq javascript-common-imenu-regex-list
+    ;;       '(("Attribute" " \\([a-z][a-zA-Z0-9-_]+\\) *= *\{[a-zA-Z0-9_.(), ]+\}\\( \\|$\\)" 1)
+    ;;         ("Controller" "[. \t]controller([ \t]*['\"]\\([^'\"]+\\)" 1)
+    ;;         ("Controller" "[. \t]controllerAs:[ \t]*['\"]\\([^'\"]+\\)" 1)
+    ;;         ("Filter" "[. \t]filter([ \t]*['\"]\\([^'\"]+\\)" 1)
+    ;;         ("State" "[. \t]state[(:][ \t]*['\"]\\([^'\"]+\\)" 1)
+    ;;         ("Factory" "[. \t]factory([ \t]*['\"]\\([^'\"]+\\)" 1)
+    ;;         ("Service" "[. \t]service([ \t]*['\"]\\([^'\"]+\\)" 1)
+    ;;         ("Module" "[. \t]module( *['\"]\\([a-zA-Z0-9_.]+\\)['\"], *\\[" 1)
+    ;;         ("ngRoute" "[. \t]when(\\(['\"][a-zA-Z0-9_\/]+['\"]\\)" 1)
+    ;;         ("Directive" "[. \t]directive([ \t]*['\"]\\([^'\"]+\\)" 1)
+    ;;         ("Event" "[. \t]\$on([ \t]*['\"]\\([^'\"]+\\)" 1)
+    ;;         ("Config" "[. \t]config([ \t]*function *( *\\([^\)]+\\)" 1)
+    ;;         ("Config" "[. \t]config([ \t]*\\[ *['\"]\\([^'\"]+\\)" 1)
+    ;;         ("OnChange" "[ \t]*\$(['\"]\\([^'\"]*\\)['\"]).*\.change *( *function" 1)
+    ;;         ("OnClick" "[ \t]*\$([ \t]*['\"]\\([^'\"]*\\)['\"]).*\.click *( *function" 1)
+    ;;         ("Watch" "[. \t]\$watch( *['\"]\\([^'\"]+\\)" 1)
+    ;;         ("Function" "function[ \t]+\\([a-zA-Z0-9_$.]+\\)[ \t]*(" 1)
+    ;;         ("Function" "^[ \t]*\\([a-zA-Z0-9_$.]+\\)[ \t]*=[ \t]*function[ \t]*(" 1)
+    ;;         ;; {{ es6 beginning
+    ;;         ("Function" "^[ \t]*\\([A-Za-z_$][A-Za-z0-9_$]+\\)[ \t]*([a-zA-Z0-9, ]*) *\{ *$" 1) ;; es6 fn1 () { }
+    ;;         ("Function" "^[ \t]*\\([A-Za-z_$][A-Za-z0-9_$]+\\)[ \t]*=[ \t]*(?[a-zA-Z0-9, ]*)?[ \t]*=>" 1) ;; es6 fn1 = (e) =>
+    ;;         ;; }}
+    ;;         ("Task" "[. \t]task([ \t]*['\"]\\([^'\"]+\\)" 1)
+    ;; ))
+    ;; ;; js-mode imenu enhancement
+    ;; ;; @see http://stackoverflow.com/questions/20863386/idomenu-not-working-in-javascript-mode
+    ;; (defun mo-js-imenu-make-index ()
+    ;;   (save-excursion
+    ;;     (imenu--generic-function javascript-common-imenu-regex-list)))
+    ;; (defun mo-js-mode-hook ()
+    ;;   (when (and (not (is-buffer-file-temp)) (not (derived-mode-p 'js2-mode)))
+    ;;     (my-common-js-setup)
+    ;;     (setq imenu-create-index-function 'mo-js-imenu-make-index)))
+    ;; (add-hook 'js-mode-hook 'mo-js-mode-hook)
+    (setq-default js2-basic-offset 4)
+    ;; (with-eval-after-load 'js2-mode
+    ;;   (load (expand-file-name "private/init-javascript.el" user-emacs-directory)))
+)
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.

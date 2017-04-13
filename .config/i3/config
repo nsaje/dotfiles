@@ -89,7 +89,8 @@ bindsym $mod+apostrophe exec emacsclient -c
 set $Locker bash ~/.local/bin/fuzzy_lock.sh && sleep 1
 
 #exec --no-startup-id xautolock -time 1 -locker "~/.local/bin/fuzzy_lock.sh" &
-exec --no-startup-id xautolock -time 3 -locker "bash ~/.local/bin/fuzzy_lock.sh" &
+exec --no-startup-id xautolock -time 5 -locker "bash ~/.local/bin/fuzzy_lock.sh" &
+# NOTE: should be put into sleep hooks as well
 
 # thinkpad touchpad
 exec --no-startup-id xinput --set-prop 11 "Synaptics Finger" 5 20 0
