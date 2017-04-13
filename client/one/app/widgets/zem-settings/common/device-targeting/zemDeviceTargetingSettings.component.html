@@ -29,7 +29,7 @@
     <div class="message message--info message--with-icon">Yahoo, Facebook and Instagram don't support Tablet option.</div>
 
 
-    <div ng-if="$ctrl.hasPermission('zemauth.can_set_advanced_device_targeting')">
+    <div ng-if="$ctrl.hasPermission('zemauth.can_set_advanced_device_targeting')" is-internal="zemauth.can_set_advanced_device_targeting">
         <div class="collapsable zem-advanced-device-targeting__collapsable" ng-show="$ctrl.showAdvanceSettings">
             <h3 class="custom-panel__sub-title">Advanced device targeting options</h3>
             <div class="form">

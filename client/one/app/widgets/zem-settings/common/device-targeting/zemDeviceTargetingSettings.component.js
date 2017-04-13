@@ -27,7 +27,7 @@ angular.module('one.widgets').component('zemDeviceTargetingSettings', {
                 $ctrl.stateService = zemDeviceTargetingStateService.createInstance($ctrl.entity);
                 $ctrl.stateService.initialize();
                 $ctrl.state = $ctrl.stateService.getState();
-                $ctrl.showAdvanceSettings = $ctrl.state.operatingSystems || $ctrl.state.placements;
+                $ctrl.showAdvanceSettings = false;
             }
         };
 
