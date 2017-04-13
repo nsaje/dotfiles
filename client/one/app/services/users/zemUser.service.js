@@ -46,8 +46,8 @@ angular.module('one.services').service('zemUserService', function (zemPubSubServ
         });
     }
 
-    function remove (accountId, userId) {
-        return zemUserEndpoint.remove(accountId, userId).then(function (data) {
+    function remove (accountId, userId, fromAllAccounts) {
+        return zemUserEndpoint.remove(accountId, userId, fromAllAccounts).then(function (data) {
             pubsub.notify(EVENTS.ON_USER_REMOVED, {
                 accountId: accountId,
                 userId: userId,

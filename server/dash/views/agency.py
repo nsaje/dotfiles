@@ -1577,20 +1577,42 @@ class AccountUsers(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
-
+        remove_from_all_accounts = request.GET.get('remove_from_all_accounts')
         try:
             user = ZemUser.objects.get(pk=user_id)
         except ZemUser.DoesNotExist:
             raise exc.MissingDataError()
 
-        if len(account.users.filter(pk=user.pk)):
-            account.users.remove(user)
-            changes_text = u'Removed user {} ({})'.format(user.get_full_name(), user.email)
-            account.write_history(changes_text, user=request.user)
+        with transaction.atomic():
+            self._remove_user(request, account, user, remove_from_all_accounts=remove_from_all_accounts)
 
         return self.create_api_response({
             'user_id': user.id
         })
+
+    def _remove_user(self, request, account, user, remove_from_all_accounts=False):
+        self._remove_user_from_account(account, user, request.user)
+
+        is_agency_manager = account.agency and account.agency.users.filter(pk=user.pk).exists()
+        if account.agency and (is_agency_manager or remove_from_all_accounts):
+            for other_account in account.agency.account_set.all().exclude(pk=account.pk):
+                self._remove_user_from_account(other_account, user, request.user)
+
+        if is_agency_manager:
+            groups = authmodels.Group.objects.filter(
+                permissions=authmodels.Permission.objects.get(codename='group_agency_manager_add')
+            )
+            user.groups.remove(*groups)
+
+            account.agency.users.remove(user)
+            changes_text = u'Removed agency user {} ({})'.format(user.get_full_name(), user.email)
+            account.agency.write_history(changes_text, user=request.user)
+
+    def _remove_user_from_account(self, account, removed_user, request_user):
+        if len(account.users.filter(pk=removed_user.pk)):
+            account.users.remove(removed_user)
+            changes_text = u'Removed user {} ({})'.format(removed_user.get_full_name(), removed_user.email)
+            account.write_history(changes_text, user=request_user)
 
     def _get_user_dict(self, user, agency_managers=False):
         return {

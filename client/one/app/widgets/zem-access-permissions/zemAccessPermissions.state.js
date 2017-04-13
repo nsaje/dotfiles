@@ -26,6 +26,15 @@ angular.module('one.widgets').service('zemAccessPermissionsStateService', functi
             );
         }
 
+        function getRemoveConfirmMessage (user, removeFromAll) {
+            if (user.is_agency_manager || removeFromAll) {
+                return 'You are about to remove user ' + user.email + '. '
+                    + 'This user will loose access to all agency accounts and data associated with them.';
+            }
+            return 'You are about to remove access to current account from user ' + user.email + '. '
+                + 'User will still have access to other agency accounts where he or she was authorised.';
+        }
+
         function getState () {
             return state;
         }
@@ -56,10 +65,13 @@ angular.module('one.widgets').service('zemAccessPermissionsStateService', functi
             );
         }
 
-        function remove (user) {
+        function remove (user, fromAllAccounts) {
+            if (!confirm(getRemoveConfirmMessage(user, fromAllAccounts))) {
+                return null;
+            }
             user.requestInProgress = true;
 
-            return zemUserService.remove(account.id, user.id).then(
+            return zemUserService.remove(account.id, user.id, fromAllAccounts).then(
                 function () {
                     if (user) {
                         user.removed = true;

@@ -393,6 +393,7 @@ urlpatterns += [
     url(
         r'^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/',
         login_required(dash.views.agency.AccountUsers.as_view()),
+        name='account_users_manage',
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/users/',

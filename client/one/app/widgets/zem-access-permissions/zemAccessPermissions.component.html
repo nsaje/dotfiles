@@ -48,7 +48,9 @@
                             <button tabindex="-1" ng-click="$ctrl.downgrade(user)" href="#" class="button button--small" title="Downgrade to Normal User" is-internal="zemauth.can_promote_agency_managers">Downgrade</button>
                         </span>
                         <button ng-show="!user.is_active" tabindex="-1" ng-click="$ctrl.activate(user)" href="#" class="button button--small button--with-icon send-icon" title="Resend Activation Mail">Resend</button>
-                        <button tabindex="-1" ng-click="$ctrl.remove(user)" href="#" class="button button--small button--with-icon remove-icon">Remove</button>
+                        <button tabindex="-1" ng-if="user.is_agency_manager" ng-click="$ctrl.remove(user)" href="#" class="button button--small button--with-icon remove-icon">Delete user account</button>
+                        <button tabindex="-1" ng-if="!user.is_agency_manager" ng-click="$ctrl.remove(user)" href="#" class="button button--small button--with-icon remove-icon">Delete user's access to current account</button>
+                        <button tabindex="-1" ng-if="!user.is_agency_manager" ng-click="$ctrl.remove(user, true)" href="#" class="button button--small button--with-icon remove-icon">Delete user account</button>
                     </div>
                 </td>
             </tr>

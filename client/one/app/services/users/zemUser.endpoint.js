@@ -33,9 +33,12 @@ angular.module('one.services').service('zemUserEndpoint', function ($q, $http, z
         return deferred.promise;
     }
 
-    function remove (accountId, userId) {
+    function remove (accountId, userId, fromAllAccounts) {
         var deferred = $q.defer();
         var url = '/api/accounts/' + accountId + '/users/' + userId + '/';
+        if (fromAllAccounts) {
+            url += '?remove_from_all_accounts=1';
+        }
 
         $http.delete(url).
             success(function (data) {
