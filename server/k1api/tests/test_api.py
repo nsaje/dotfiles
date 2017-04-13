@@ -400,6 +400,55 @@ class K1ApiTest(TestCase):
         self.assertEqual(data['ga_accounts'][1]['account_id'], 2)
         self.assertEqual(data['ga_accounts'][1]['ga_account_id'], '123')
         self.assertEqual(data['ga_accounts'][1]['ga_web_property_id'], 'UA-123-3')
+        
+    def test_get_ga_accounts_since_ever(self):
+        campaign_settings = dash.models.Campaign.objects.get(pk=1).get_current_settings().copy_settings()
+        campaign_settings.ga_property_id = 'UA-123-4'
+        campaign_settings.save(None)
+
+        response = self.client.get(
+            reverse('k1api.ga_accounts'),
+            QUERY_STRING=urllib.urlencode({'date_since': '2014-07-01'}),
+        )
+        
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(len(data['ga_accounts']), 5)
+        self.assertEqual(
+            list(sorted(data['ga_accounts'], key=lambda x: x['ga_web_property_id'])),
+            [{u'ga_web_property_id': u'UA-123-0', u'account_id': 2, u'ga_account_id': u'123'},
+             {u'ga_web_property_id': u'UA-123-1', u'account_id': 2, u'ga_account_id': u'123'},
+             {u'ga_web_property_id': u'UA-123-2', u'account_id': 1, u'ga_account_id': u'123'},
+             {u'ga_web_property_id': u'UA-123-3', u'account_id': 2, u'ga_account_id': u'123'},
+             {u'ga_web_property_id': u'UA-123-4', u'account_id': 1, u'ga_account_id': u'123'}]
+        )
+
+    def test_get_ga_accounts_since_yesterday(self):
+        campaign_settings = dash.models.CampaignSettings.objects.all().group_current_settings().first().copy_settings()
+        campaign_settings.ga_property_id = 'UA-123-4'
+        campaign_settings.save(None)
+
+        response = self.client.get(
+            reverse('k1api.ga_accounts'),
+            QUERY_STRING=urllib.urlencode({'date_since': str(datetime.date.today() - datetime.timedelta(1))}),
+        )
+        
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(len(data['ga_accounts']), 3)
+        self.assertEqual(data['ga_accounts'][0]['account_id'], 1)
+        self.assertEqual(data['ga_accounts'][0]['ga_account_id'], '123')
+        self.assertEqual(data['ga_accounts'][0]['ga_web_property_id'], 'UA-123-4')
+        self.assertEqual(data['ga_accounts'][1]['account_id'], 1)
+        self.assertEqual(data['ga_accounts'][1]['ga_account_id'], '123')
+        self.assertEqual(data['ga_accounts'][1]['ga_web_property_id'], 'UA-123-2')
+        self.assertEqual(data['ga_accounts'][2]['account_id'], 2)
+        self.assertEqual(data['ga_accounts'][2]['ga_account_id'], '123')
+        self.assertEqual(data['ga_accounts'][2]['ga_web_property_id'], 'UA-123-3')
 
     def _test_get_content_ad_sources_for_ad_group(self, ad_group_id, content_ad_id):
         response = self.client.get(

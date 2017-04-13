@@ -163,9 +163,31 @@
         iab_category: IAB25
         enable_ga_tracking: true
         ga_tracking_type: 2
-        ga_property_id: 'UA-123-3'
+        ga_property_id: 'UA-123-1'
     model: dash.campaignsettings
     pk: 2
+
+-   fields:
+        created_dt: '2014-07-02T09:58:21'
+        name: 'test campaign 2'
+        campaign: 2
+        iab_category: IAB25
+        enable_ga_tracking: true
+        ga_tracking_type: 2
+        ga_property_id: 'UA-123-0'
+    model: dash.campaignsettings
+    pk: 3
+
+-   fields:
+        created_dt: '2014-07-04T09:58:21'
+        name: 'test campaign 2'
+        campaign: 2
+        iab_category: IAB25
+        enable_ga_tracking: true
+        ga_tracking_type: 2
+        ga_property_id: 'UA-123-3'
+    model: dash.campaignsettings
+    pk: 4
 
 # source types
 

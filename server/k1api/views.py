@@ -239,24 +239,43 @@ class SourcePixelsView(K1APIView):
 class GAAccountsView(K1APIView):
 
     def get(self, request):
+        date_since = request.GET.get('date_since')
         all_current_settings = dash.models.CampaignSettings.objects.all().group_current_settings()
         ga_accounts = set()
         for current_settings in all_current_settings:
-            if not (current_settings.enable_ga_tracking and
-                    current_settings.ga_tracking_type == dash.constants.GATrackingType.API):
-                continue
-            ga_property_id = current_settings.ga_property_id
-            ga_accounts.add((
-                current_settings.campaign.account_id,
-                self._extract_ga_account_id(ga_property_id),
-                ga_property_id
-            ))
+            self._extract_ga_settings(ga_accounts, current_settings)
+        if date_since:
+            valid_previous_settings = dash.models.CampaignSettings.objects.filter(
+                created_dt__lte=datetime.datetime.strptime(date_since, '%Y-%m-%d').date()
+            ).order_by('campaign_id', '-created_dt').distinct('campaign')
+            for previous_settings in valid_previous_settings:
+                self._extract_ga_settings(ga_accounts, previous_settings)
+            all_intermediate_settings = dash.models.CampaignSettings.objects.filter(
+                created_dt__gte=datetime.datetime.strptime(date_since, '%Y-%m-%d').date()
+            ).exclude(
+                pk__in=set(s.pk for s in all_current_settings) | set(s.pk for s in valid_previous_settings)
+            ).exclude(
+                ga_property_id__in=set(ga_property_id for _, _, ga_property_id in ga_accounts)
+            )
+            for previous_settings in all_intermediate_settings:
+                self._extract_ga_settings(ga_accounts, previous_settings)
         ga_accounts_dicts = [
             {'account_id': account_id, 'ga_account_id': ga_account_id, 'ga_web_property_id': ga_web_property_id}
             for account_id, ga_account_id, ga_web_property_id in ga_accounts
         ]
 
         return self.response_ok({'ga_accounts': list(ga_accounts_dicts)})
+
+    def _extract_ga_settings(self, ga_accounts, campaign_settings):
+        if not (campaign_settings.enable_ga_tracking and
+                campaign_settings.ga_tracking_type == dash.constants.GATrackingType.API):
+            return
+        ga_property_id = campaign_settings.ga_property_id
+        ga_accounts.add((
+            campaign_settings.campaign.account_id,
+            self._extract_ga_account_id(ga_property_id),
+            ga_property_id
+        ))
 
     @staticmethod
     def _extract_ga_account_id(ga_property_id):
