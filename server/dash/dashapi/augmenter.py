@@ -204,6 +204,7 @@ def augment_content_ad(row, loader, is_base_level=False):
                 'landscape': content_ad.get_image_url(256, 160)
             },
             'image_hash': content_ad.image_hash,
+            'tracker_urls': content_ad.tracker_urls or [],
             'state': content_ad.state,
             'status': content_ad.state,
             'archived': content_ad.archived,

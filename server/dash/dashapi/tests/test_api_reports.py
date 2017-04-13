@@ -58,6 +58,7 @@ CONTENT_AD_1 = {
     'image_url': '/100.jpg?w=200&h=300&fit=crop&crop=center&fm=jpg',
     'batch_id': 1, 'batch_name': 'batch 1', 'upload_time': datetime.datetime(2015, 2, 23, 0, 0),
     'redirector_url': 'http://r1.zemanta.com/b/r1/z1/1/1/', 'url': 'http://testurl1.com',
+    'tracker_urls': [u'http://testurl1.com', u'http://testurl2.com'],
     'state': 1, 'status': 'ENABLED', 'content_ad_status': 'ENABLED', 'status_per_source': {
         1: {
             'source_id': 1,
@@ -87,6 +88,7 @@ CONTENT_AD_2 = {
     'image_url': '/200.jpg?w=200&h=300&fit=crop&crop=center&fm=jpg',
     'batch_id': 1, 'batch_name': 'batch 1', 'upload_time': datetime.datetime(2015, 2, 23, 0, 0),
     'redirector_url': 'http://r1.zemanta.com/b/r2/z1/1/2/', 'url': 'http://testurl2.com',
+    'tracker_urls': [],
     'state': 2, 'status': 'PAUSED', 'content_ad_status': 'PAUSED', 'status_per_source': {
         2: {
             'source_id': 2,
@@ -378,4 +380,4 @@ class QueryTest(TestCase):
             constants.Level.AD_GROUPS,
         )
 
-        self.assertEqual(2*3*30, len(rows))
+        self.assertEqual(2 * 3 * 30, len(rows))

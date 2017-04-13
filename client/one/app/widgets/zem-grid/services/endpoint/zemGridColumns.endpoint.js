@@ -369,6 +369,18 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             orderField: 'label',
             initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
+        impressionTrackers: {
+            name: 'Impression trackers',
+            field: 'tracker_urls',
+            type: zemGridConstants.gridColumnTypes.TEXT,
+            shown: true,
+            help: 'Content ad\'s impression trackers.',
+            totalRow: false,
+            titleField: 'tracker_urls',
+            order: true,
+            orderField: 'tracker_urls',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
+        },
 
         // Publisher
         externalId: {
@@ -1061,7 +1073,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         COLUMNS.description,
         COLUMNS.callToAction,
         COLUMNS.label,
-        // TODO: impression trackers
+        COLUMNS.impressionTrackers,
         COLUMNS.uploadTime,
         COLUMNS.batchId,
         COLUMNS.batchName,

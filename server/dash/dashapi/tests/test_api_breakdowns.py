@@ -90,6 +90,7 @@ CONTENT_AD_1 = {
             'submission_errors': None
         }
     },
+    'tracker_urls': [u'http://testurl1.com', u'http://testurl2.com'],
 }
 
 CONTENT_AD_2 = {
@@ -111,6 +112,7 @@ CONTENT_AD_2 = {
             'submission_errors': None
         }
     },
+    'tracker_urls': [],
 }
 
 # sources on ad group level
@@ -166,6 +168,7 @@ SOURCE_1__CONTENT_AD_1 = {
     'source_id': 1, 'content_ad_id': 1, 'ad_group_id': 1, 'campaign_id': 1, 'account_id': 1, 'agency_id': None,
     'title': 'Title 1', 'description': 'Example description', 'brand_name': 'Example',
     'archived': False, 'name': 'Title 1', 'display_url': 'example.com', 'call_to_action': 'Call to action', 'label': '',
+    'tracker_urls': [u'http://testurl1.com', u'http://testurl2.com'],
     'image_hash': '100', 'image_urls': {
         'square': '/100.jpg?w=160&h=160&fit=crop&crop=center&fm=jpg',
         'landscape': '/100.jpg?w=256&h=160&fit=crop&crop=center&fm=jpg'

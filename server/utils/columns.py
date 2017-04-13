@@ -29,6 +29,7 @@ _FIELD_MAPPING = {
     'display_url': ('Display URL',),
     'image_urls': ('Thumbnail',),
     'image_hash': ('Image Hash',),
+    'tracker_urls': ('Impression trackers',),
     'image_url': ('Image URL',),
     'label': ('Label',),
     'upload_time': ('Uploaded',),
