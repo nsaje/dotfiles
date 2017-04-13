@@ -1,5 +1,3 @@
-from reports import api_helpers
-
 import dash.campaign_goals
 import dash.models
 from dash.constants import Level
@@ -31,11 +29,61 @@ HELPER_FIELDS = set(['campaign_stop_inactive', 'campaign_has_available_budget', 
 
 DEFAULT_FIELDS = DIMENSION_FIELDS | DEFAULT_STATS | set(SOURCE_FIELDS) | HELPER_FIELDS | set(PUBLISHER_FIELDS)
 
+POSTCLICK_ACQUISITION_FIELDS = ['click_discrepancy', ]
+POSTCLICK_ENGAGEMENT_FIELDS = [
+    'percent_new_users', 'pv_per_visit', 'avg_tos', 'bounce_rate', 'goals', 'new_visits',
+    'returning_users', 'unique_users', 'bounced_visits', 'total_seconds', 'non_bounced_visits',
+    'new_users', 'pageviews', 'visits',
+]
+
+FIELD_PERMISSION_MAPPING = {
+    'e_media_cost':     ('zemauth.can_view_platform_cost_breakdown',),
+    'e_data_cost':      ('zemauth.can_view_platform_cost_breakdown',),
+    'license_fee':      ('zemauth.can_view_platform_cost_breakdown',),
+
+    'media_cost':       ('zemauth.can_view_actual_costs',),
+    'data_cost':        ('zemauth.can_view_actual_costs',),
+
+    'yesterday_cost':   ('zemauth.can_view_actual_costs',),
+    'e_yesterday_cost': ('zemauth.can_view_platform_cost_breakdown',),
+
+    'margin':           ('zemauth.can_view_agency_margin',),
+    'agency_total':     ('zemauth.can_view_agency_margin',),
+
+    'pacing':                 ('zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'),
+    'allocated_budgets':      ('zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'),
+    'spend_projection':       ('zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'),
+    'license_fee_projection': ('zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'),
+    'total_fee':              ('zemauth.can_view_flat_fees', 'zemauth.can_view_platform_cost_breakdown'),
+    'flat_fee':               ('zemauth.can_view_flat_fees', 'zemauth.can_view_platform_cost_breakdown'),
+
+    'total_fee_projection':   ('zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown',
+                               'zemauth.can_view_flat_fees'),
+
+    'default_account_manager':      ('zemauth.can_see_managers_in_accounts_table',),
+    'default_sales_representative': ('zemauth.can_see_managers_in_accounts_table',),
+    'default_cs_representative': ('zemauth.can_see_managers_in_accounts_table',),
+
+    'campaign_manager': ('zemauth.can_see_managers_in_campaigns_table',),
+    'account_type':     ('zemauth.can_see_account_type',),
+    'salesforce_url':   ('zemauth.can_see_salesforce_url',),
+    'agency':           ('zemauth.can_view_account_agency_information',),
+    'agency_id':        ('zemauth.can_view_account_agency_information',),
+
+    'performance':      ('zemauth.campaign_goal_performance',),
+    'styles':           ('zemauth.campaign_goal_performance',),
+}
+
+GOAL_FIELDS = [
+    'avg_cost_per_minute', 'avg_cost_per_non_bounced_visit', 'avg_cost_per_pageview',
+    'avg_cost_for_new_visitor', 'avg_cost_per_visit',
+]
+
 
 def filter_columns_by_permission(user, rows, goals):
     fields_to_keep = list(DEFAULT_FIELDS)
 
-    fields_to_keep.extend(api_helpers.get_fields_to_keep(user))
+    fields_to_keep.extend(_get_fields_to_keep(user))
     fields_to_keep.extend(dash.campaign_goals.get_allowed_campaign_goals_fields(
         user, goals.campaign_goals, goals.campaign_goal_values, goals.conversion_goals
     ))
@@ -44,8 +92,8 @@ def filter_columns_by_permission(user, rows, goals):
     ))
     fields_to_keep.extend(dash.campaign_goals.get_allowed_pixels_fields(goals.pixels))
 
-    api_helpers.remove_fields(rows, fields_to_keep)
-    api_helpers.custom_cleanup(user, rows)
+    _remove_fields(rows, fields_to_keep)
+    _custom_cleanup(user, rows)
 
 
 def validate_breakdown_by_permissions(level, user, breakdown):
@@ -111,3 +159,43 @@ def validate_breakdown_by_structure(breakdown):
 
     if breakdown != clean_breakdown:
         raise exc.InvalidBreakdownError("Wrong breakdown order")
+
+
+def _get_fields_to_keep(user):
+    fields_to_keep = []
+
+    if ((user.has_perm('zemauth.content_ads_postclick_acquisition') or
+         user.has_perm('zemauth.aggregate_postclick_acquisition'))):
+        fields_to_keep.extend(POSTCLICK_ACQUISITION_FIELDS)
+
+    if user.has_perm('zemauth.aggregate_postclick_engagement'):
+        fields_to_keep.extend(POSTCLICK_ENGAGEMENT_FIELDS)
+
+    fields_to_keep.extend(GOAL_FIELDS)
+
+    for field, permissions in FIELD_PERMISSION_MAPPING.iteritems():
+        if not permissions or user.has_perms(permissions):
+            fields_to_keep.append(field)
+
+    return fields_to_keep
+
+
+def _remove_fields(rows, fields_to_keep):
+    for row in rows:
+        for row_field in row.keys():
+            if row_field not in fields_to_keep:
+                row.pop(row_field, None)
+
+
+def _custom_cleanup(user, rows):
+    """
+    Put here custom logics for cleaning fields that doesn't fit '_remove_fields'.
+    """
+
+    remove_content_ad_source_status = not user.has_perm('zemauth.can_see_media_source_status_on_submission_popover')
+
+    if remove_content_ad_source_status:
+        for row in rows:
+            if row.get('status_per_source'):
+                for source_status in row['status_per_source'].values():
+                    source_status.pop('source_status', None)
