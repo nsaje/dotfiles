@@ -14,6 +14,7 @@ class Command(ExceptionCommand):
             'outbrainpublisherstats',
             'audience_report',
             'pixie_sample',
+            'statsnew',
         ]
 
         for table in tables:
