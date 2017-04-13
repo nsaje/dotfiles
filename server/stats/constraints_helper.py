@@ -83,8 +83,8 @@ def prepare_account_constraints(user, account, breakdown, start_date, end_date, 
 
     constraints = {
         'account': account,
-        'allowed_campaigns': allowed_campaigns,
-        'allowed_ad_groups': allowed_ad_groups,
+        'allowed_campaigns': simplify_query(allowed_campaigns),
+        'allowed_ad_groups': simplify_query(allowed_ad_groups),
     }
 
     if only_used_sources:

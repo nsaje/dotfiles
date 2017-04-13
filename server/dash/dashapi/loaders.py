@@ -183,7 +183,8 @@ class AccountsLoader(Loader):
 
 class CampaignsLoader(Loader):
     def __init__(self, campaigns_qs, filtered_sources_qs, **kwargs):
-        super(CampaignsLoader, self).__init__(campaigns_qs, **kwargs)
+        super(CampaignsLoader, self).__init__(
+            campaigns_qs.select_related('account'), **kwargs)
 
         self.filtered_sources_qs = filtered_sources_qs
 
@@ -261,7 +262,8 @@ class CampaignsLoader(Loader):
 
 class AdGroupsLoader(Loader):
     def __init__(self, ad_groups_qs, filtered_sources_qs, **kwargs):
-        super(AdGroupsLoader, self).__init__(ad_groups_qs, **kwargs)
+        super(AdGroupsLoader, self).__init__(
+            ad_groups_qs.select_related('campaign', 'campaign__account'), **kwargs)
         self.filtered_sources_qs = filtered_sources_qs
 
     @classmethod

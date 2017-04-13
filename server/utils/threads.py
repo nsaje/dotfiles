@@ -80,5 +80,5 @@ class AsyncFunction(Thread):
         self.join()
         return self.get_result()
 
-
+# uncomment the following statement to disable async behaviour
 # AsyncFunction = MockAsyncFunction
