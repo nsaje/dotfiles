@@ -5,13 +5,14 @@ angular.module('one.widgets').component('zemDeviceTargetingSettings', {
         api: '<',
     },
     templateUrl: '/app/widgets/zem-settings/common/device-targeting/zemDeviceTargetingSettings.component.html',
-    controller: function ($q, config, zemPermissions) {
+    controller: function ($q, config, zemPermissions, zemDeviceTargetingStateService) {
         var $ctrl = this;
         $ctrl.options = options;
         $ctrl.config = config;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
 
+        $ctrl.showAdvanceSettings = false;
         $ctrl.isEqualToDefault = isEqualToDefault;
         $ctrl.isDefault = isDefault;
 
@@ -19,38 +20,29 @@ angular.module('one.widgets').component('zemDeviceTargetingSettings', {
             $ctrl.api.register({});
         };
 
+        $ctrl.$onChanges = function (changes) {
+            if (changes.entity && $ctrl.entity) {
+                if ($ctrl.stateService) $ctrl.stateService.destroy();
+
+                $ctrl.stateService = zemDeviceTargetingStateService.createInstance($ctrl.entity);
+                $ctrl.stateService.initialize();
+                $ctrl.state = $ctrl.stateService.getState();
+                $ctrl.showAdvanceSettings = $ctrl.state.operatingSystems || $ctrl.state.placements;
+            }
+        };
+
+        $ctrl.$onDestroy = function () {
+            if ($ctrl.stateService) $ctrl.stateService.destroy();
+        };
+
         function isDefault () {
-            if (!$ctrl.entity) return false;
-            return !$ctrl.entity.defaultSettings;
+            if (!$ctrl.state) return false;
+            return !$ctrl.state.defaults.devices;
         }
 
         function isEqualToDefault () {
-            if (!$ctrl.entity) return false;
-            var isEqualToDefault = true;
-            var item, defaultItem;
-
-            options.adTargetDevices.forEach(function (option) {
-                item = getDeviceItemByValue($ctrl.entity.settings.targetDevices, option.value);
-                defaultItem = getDeviceItemByValue($ctrl.entity.defaultSettings.targetDevices, option.value);
-
-                if (item.checked !== defaultItem.checked) {
-                    isEqualToDefault = false;
-                }
-            });
-
-            return isEqualToDefault;
-        }
-
-        function getDeviceItemByValue (devices, value) {
-            var result;
-
-            devices.forEach(function (item) {
-                if (item.value === value) {
-                    result = item;
-                }
-            });
-
-            return result;
+            if (!$ctrl.state) return false;
+            return angular.equals($ctrl.state.devices, $ctrl.state.defaults.devices);
         }
     },
 });

@@ -1,0 +1,19 @@
+<div ng-repeat="placement in $ctrl.state.placements"
+     class="form__group zem-placement-device-targeting__option"
+     ng-class="{
+            'zem-placement-device-targeting__option--website': placement.value === 'site',
+            'zem-placement-device-targeting__option--in-app': placement.value === 'app',
+            'zem-placement-device-targeting__option--active': placement.selected,
+            'zem-placement-device-targeting__option--enabled': placement.enabled,
+        }"
+>
+    <label class="form__label" for="{{placement.value}}"></label>
+    <div class="form__checkbox">
+        <label>
+            <input class="input-checkbox" type="checkbox" id="{{placement.value}}"
+                   ng-model="placement.selected" ng-change="$ctrl.stateService.update()">
+            <span class="checkbox-text">{{ placement.name }}</span>
+        </label>
+    </div>
+
+</div>

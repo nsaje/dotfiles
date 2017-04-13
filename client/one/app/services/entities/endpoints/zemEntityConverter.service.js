@@ -45,14 +45,10 @@ angular.module('one.services').service('zemEntityConverter', function ($http, $q
     }
 
     function convertCampaignSettingsFromApi (data) {
-        data.settings.targetDevices = convertTargetDevicesFromApi(data.settings.targetDevices);
         data.goals = convertGoalsFromApi(data.goals);
     }
 
     function convertCampaignSettingsToApi (apiData) {
-        // Target devices
-        apiData.settings.target_devices = convertTargetDevicesToApi(apiData.settings.target_devices);
-
         // Goals - configure defaults
         apiData.goals = apiData.goals || {};
         apiData.goals.primary = apiData.goals.primary || null;
@@ -79,12 +75,6 @@ angular.module('one.services').service('zemEntityConverter', function ($http, $q
         delete settings.cpcCc;
         delete settings.dailyBudgetCc;
         delete settings.autopilotDailyBudget;
-
-        // Target devices
-        data.settings.targetDevices = convertTargetDevicesFromApi(data.settings.targetDevices);
-        if (data.defaultSettings) {
-            data.defaultSettings.targetDevices = convertTargetDevicesFromApi(data.defaultSettings.targetDevices);
-        }
     }
 
     function convertAdGroupSettingsToApi (apiData) {
@@ -100,29 +90,7 @@ angular.module('one.services').service('zemEntityConverter', function ($http, $q
         delete apiSettings.daily_budget;
         delete apiSettings.autopilot_budget;
 
-        // Target devices
-        apiSettings.target_devices = convertTargetDevicesToApi(apiSettings.target_devices);
-
         return apiSettings;
-    }
-
-    function convertTargetDevicesFromApi (targetDevices) {
-        return options.adTargetDevices.map(function (item) {
-            return {
-                name: item.name,
-                value: item.value,
-                checked: targetDevices && targetDevices.indexOf(item.value) > -1,
-            };
-        });
-    }
-
-    function convertTargetDevicesToApi (devices) {
-        if (!devices) return [];
-        return devices.filter(function (item) {
-            return item.checked;
-        }).map(function (item) {
-            return item.value;
-        });
     }
 
     function convertGoalsFromApi (goals) {
