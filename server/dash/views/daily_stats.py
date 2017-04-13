@@ -128,8 +128,8 @@ class BaseDailyStatsView(api_common.BaseApiView):
                     (stat['day'], float(stat[metric]) if isinstance(stat.get(metric), Decimal) else stat.get(metric))
                 )
                 # when all values are None we treat this as no data (an empty array)
-                if all(x[1] is None for x in data[metric]):
-                    data[metric] = []
+                if all(x[1] is None for x in data[group_id][metric]):
+                    data[group_id][metric] = []
         return data
 
     def _get_series_groups_dict(self, objects):

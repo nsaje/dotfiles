@@ -330,6 +330,172 @@
     }
 }
 
+.zem-advanced-device-targeting__collapsable {
+    margin: 20px -@default-spacing 0 -@default-spacing;
+
+    .form > .form__label {
+        height: auto;
+        margin-bottom: 5px;
+    }
+}
+
+.zem-os-device-targeting-settings {
+    display: block;
+}
+
+.zem-os-device-targeting__container {
+    border-radius: @border-radius;
+    border: 1px solid @light-gray;
+    padding: 10px;
+    background-color: white;
+    margin-bottom: 5px;
+    height: 72px;
+    position: relative;
+
+    .form__vertical-group {
+        width: 140px;
+        margin: 0 10px 0 0;
+        display: inline-block;
+        vertical-align: top;
+
+        .form__label {
+            margin-bottom: 0;
+            height: auto;
+        }
+    }
+
+    @media only screen and (min-width: 1750px) {
+        .form__vertical-group {
+            width: 180px;
+        }
+    }
+
+    @media only screen and (min-width: 1850px) {
+        .form__vertical-group {
+            width: 210px;
+        }
+    }
+}
+
+.zem-os-device-targeting__platform-icon {
+    display: block;
+    float: left;
+    height: 50px;
+    width: 70px;
+    margin: 0 20px 0 0;
+    background: no-repeat center center;
+}
+
+.zem-os-device-targeting--desktop {
+    .zem-os-device-targeting__platform-icon {
+        background-image: url('images/device-desktop-gray.svg');
+    }
+}
+
+.zem-os-device-targeting--tablet-mobile {
+    .zem-os-device-targeting__platform-icon {
+        background-image: url('images/device-tablet-gray.svg');
+        background-size: 32px;
+        background-position: 5px bottom;
+        position: relative;
+
+        &::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            right: 0;
+            top: 24px;
+            height: 26px;
+            width: 26px;
+            background-size: contain;
+            background: url('images/device-mobile-gray.svg') no-repeat center center;
+        }
+    }
+}
+
+.zem-os-device-targeting__platform-name {
+    display: block;
+    float: left;
+    font-size: 18px;
+    line-height: 50px;
+    width: 250px;
+    padding-left: 30px;
+    position: relative;
+    pointer-events: none;
+
+    &::before {
+        content: " ";
+        display: block;
+        position: absolute;
+        left: 0px;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 20px;
+        width: 20px;
+        background: no-repeat center center;
+        background-size: contain;
+    }
+}
+.zem-os-device-targeting__remove {
+    display: block;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 10px;
+}
+
+.zem-os-device-targeting__platform-name--windows::before,
+.zem-os-device-targeting__platform-name--winphone::before {
+    background-image: url('images/os-windows.svg');
+    width: 16px;
+    height: 16px;
+}
+
+.zem-os-device-targeting__platform-name--ios::before,
+.zem-os-device-targeting__platform-name--macosx::before{
+    background-image: url('images/os-apple.svg');
+    margin-top: -2px;
+}
+
+.zem-os-device-targeting__platform-name--linux::before {
+    background-image: url('images/os-linux.svg');
+}
+
+.zem-os-device-targeting__platform-name--android::before {
+    background-image: url('images/os-android.svg');
+}
+
+.zem-placement-device-targeting__option--website {
+    .form__label {
+        background: url('images/placement-website-gray.svg') no-repeat center center;
+        background-size: 100px;
+    }
+
+    &.zem-placement-device-targeting__option--active {
+        .form__label {
+            background-image: url('@{images-folder}/placement-website-sec.svg');
+        }
+    }
+}
+
+.zem-placement-device-targeting__option--in-app {
+    .form__label {
+        background: url('images/placement-in-app-gray.svg') no-repeat center center;
+        background-size: 80px;
+    }
+
+    &.zem-placement-device-targeting__option--active {
+        .form__label {
+            background-image: url('@{images-folder}/placement-in-app-sec.svg');
+        }
+    }
+}
+
+.zem-os-device-targeting__container--disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
 ///////////////////////////
 // Locations //
 ///////////////////////////
