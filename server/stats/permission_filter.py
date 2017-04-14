@@ -5,36 +5,8 @@ from dash.constants import Level
 from utils import exc
 
 from stats import constants
-from stats.helpers import CONTENT_ADS_FIELDS, SOURCE_FIELDS, PUBLISHER_FIELDS
-from stats.constants import StructureDimension, DeliveryDimension, TimeDimension
-
-
-DIMENSION_FIELDS = set(StructureDimension._ALL) | set(DeliveryDimension._ALL) | set(TimeDimension._ALL)
-DIMENSION_FIELDS |= set([
-    'name', 'status', 'state', 'archived',
-    'account', 'campaign', 'ad_group', 'content_ad', 'source', 'publisher',
-    'account_status', 'campaign_status', 'ad_group_status', 'content_ad_status',
-    'source_status', 'publisher_status',
-    'breakdown_name', 'breakdown_id', 'parent_breakdown_id',
-])
-
-# content ad fields
-DIMENSION_FIELDS |= set(CONTENT_ADS_FIELDS)
-
-DEFAULT_STATS = set([
-    'ctr', 'cpc', 'clicks', 'impressions', 'billing_cost', 'cpm',
-])
-
-HELPER_FIELDS = set(['campaign_stop_inactive', 'campaign_has_available_budget', 'status_per_source'])
-
-DEFAULT_FIELDS = DIMENSION_FIELDS | DEFAULT_STATS | set(SOURCE_FIELDS) | HELPER_FIELDS | set(PUBLISHER_FIELDS)
-
-POSTCLICK_ACQUISITION_FIELDS = ['click_discrepancy', ]
-POSTCLICK_ENGAGEMENT_FIELDS = [
-    'percent_new_users', 'pv_per_visit', 'avg_tos', 'bounce_rate', 'goals', 'new_visits',
-    'returning_users', 'unique_users', 'bounced_visits', 'total_seconds', 'non_bounced_visits',
-    'new_users', 'pageviews', 'visits',
-]
+from stats import fields
+from stats.constants import StructureDimension
 
 FIELD_PERMISSION_MAPPING = {
     'e_media_cost':     ('zemauth.can_view_platform_cost_breakdown',),
@@ -81,7 +53,7 @@ GOAL_FIELDS = [
 
 
 def filter_columns_by_permission(user, rows, goals):
-    fields_to_keep = list(DEFAULT_FIELDS)
+    fields_to_keep = list(fields.DEFAULT_FIELDS)
 
     fields_to_keep.extend(_get_fields_to_keep(user))
     fields_to_keep.extend(dash.campaign_goals.get_allowed_campaign_goals_fields(
@@ -166,10 +138,10 @@ def _get_fields_to_keep(user):
 
     if ((user.has_perm('zemauth.content_ads_postclick_acquisition') or
          user.has_perm('zemauth.aggregate_postclick_acquisition'))):
-        fields_to_keep.extend(POSTCLICK_ACQUISITION_FIELDS)
+        fields_to_keep.extend(fields.POSTCLICK_ACQUISITION_FIELDS)
 
     if user.has_perm('zemauth.aggregate_postclick_engagement'):
-        fields_to_keep.extend(POSTCLICK_ENGAGEMENT_FIELDS)
+        fields_to_keep.extend(fields.POSTCLICK_ENGAGEMENT_FIELDS)
 
     fields_to_keep.extend(GOAL_FIELDS)
 

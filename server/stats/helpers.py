@@ -1,4 +1,3 @@
-import copy
 import datetime
 import logging
 
@@ -13,36 +12,9 @@ import dash.models
 from dash.constants import PublisherBlacklistFilter
 
 from stats import constants
+from stats import fields
 
 logger = logging.getLogger(__name__)
-
-CONTENT_ADS_FIELDS = [
-    'url', 'title', 'display_url', 'brand_name', 'description', 'call_to_action', 'label', 'batch_name', 'batch_id',
-    'upload_time', 'image_hash', 'image_urls', 'image_url', 'redirector_url', 'status_per_source',
-    'tracker_urls'
-]
-
-SOURCE_FIELDS = [
-    'min_bid_cpc', 'max_bid_cpc', 'daily_budget', 'maintenance', 'bid_cpc', 'current_bid_cpc',
-    'current_daily_budget', 'supply_dash_url', 'supply_dash_disabled_message', 'editable_fields',
-    'status_setting', 'id', 'notifications', 'source_slug',
-]
-
-PUBLISHER_FIELDS = [
-    'source_name', 'exchange', 'domain', 'external_id', 'domain_link', 'can_blacklist_publisher', 'blacklisted',
-    'blacklisted_level', 'blacklisted_level_description', 'source_slug',
-]
-
-OTHER_DASH_FIELDS = [
-    'default_account_manager', 'default_sales_representative', 'default_cs_representative', 'campaign_manager', 'account_type', 'agency',
-    'archived', 'maintenance', 'status_per_source'
-]
-
-
-PROJECTION_FIELDS = (
-    'allocated_budgets', 'pacing', 'flat_fee', 'total_fee',
-    'spend_projection', 'license_fee_projection', 'total_fee_projection',
-)
 
 Goals = collections.namedtuple('Goals', 'campaign_goals, conversion_goals, campaign_goal_values, pixels, primary_goals')
 
@@ -251,10 +223,10 @@ def extract_order_field(order, target_dimension, primary_goals=None):
     if order_field == 'state':
         order_field = 'status'
 
-    if target_dimension != 'content_ad_id' and order_field in CONTENT_ADS_FIELDS:
+    if target_dimension != 'content_ad_id' and order_field in fields.CONTENT_ADS_FIELDS:
         order_field = 'name'
 
-    if target_dimension != 'source_id' and order_field in SOURCE_FIELDS:
+    if target_dimension != 'source_id' and order_field in fields.SOURCE_FIELDS:
         order_field = 'clicks'
 
     if order_field == 'performance':
@@ -311,19 +283,19 @@ def should_query_dashapi_first(order, target_dimension):
     if order_field == 'status' and target_dimension in constants.StructureDimension._ALL:
         return True
 
-    if order_field in CONTENT_ADS_FIELDS and target_dimension == 'content_ad_id':
+    if order_field in fields.CONTENT_ADS_FIELDS and target_dimension == 'content_ad_id':
         return True
 
-    if order_field in SOURCE_FIELDS and target_dimension == 'source_id':
+    if order_field in fields.SOURCE_FIELDS and target_dimension == 'source_id':
         return True
 
-    if order_field in CONTENT_ADS_FIELDS and target_dimension == 'content_ad_id':
+    if order_field in fields.CONTENT_ADS_FIELDS and target_dimension == 'content_ad_id':
         return True
 
-    if order_field in OTHER_DASH_FIELDS:
+    if order_field in fields.OTHER_DASH_FIELDS:
         return True
 
-    if order_field in PROJECTION_FIELDS:
+    if order_field in fields.PROJECTION_FIELDS:
         return True
 
     return False

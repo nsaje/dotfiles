@@ -1,9 +1,9 @@
 import datetime
 
 from dash import constants as dash_constants
-from reports.api import row_has_conversion_goal_data, row_has_postclick_data, row_has_traffic_data
 
 from stats import constants
+from stats import fields
 from stats import helpers
 
 
@@ -44,9 +44,9 @@ def cleanup(rows, target_dimension, constraints):
         if deprecated_source_ids:
             for row in rows:
                 if row['source_id'] in deprecated_source_ids and\
-                   not row_has_traffic_data(row) and\
-                   not row_has_postclick_data(row) and\
-                   not row_has_conversion_goal_data(row):
+                   not _has_traffic_data(row) and\
+                   not _has_postclick_data(row) and\
+                   not _has_conversion_goal_data(row):
                     to_remove.append(row)
 
     for row in to_remove:
@@ -82,3 +82,16 @@ def augment_row_time(row, target_dimension):
     if target_dimension == constants.TimeDimension.MONTH:
         date = row[constants.TimeDimension.MONTH]
         row['name'] = "Month {}/{}".format(date.month, date.year)
+
+
+def _has_traffic_data(row):
+    return any(row.get(field) is not None for field in fields.TRAFFIC_FIELDS)
+
+
+def _has_postclick_data(row):
+    return any(row.get(field) is not None for field in
+               fields.POSTCLICK_ACQUISITION_FIELDS + fields.POSTCLICK_ENGAGEMENT_FIELDS)
+
+
+def _has_conversion_goal_data(row):
+    return any(k.startswith('conversion_goal_') and v > 0 for k, v in row.iteritems())
