@@ -1,28 +1,15 @@
 angular.module('one.widgets').service('zemGeoTargetingEndpoint', function ($q, $http) {
     this.search = search;
+    this.searchByTypes = searchByTypes;
     this.map = map;
+    this.mapKey = mapKey;
 
     function search (searchTerm) {
-        var REQUESTED_SIZE = 20;
-        var url = '/rest/v1/geolocations/';
-
         var requests = {
-            country: getDeferredPromise(
-                url,
-                {params: {nameContains: searchTerm, types: [constants.geolocationType.COUNTRY], limit: REQUESTED_SIZE}}
-            ),
-            region: getDeferredPromise(
-                url,
-                {params: {nameContains: searchTerm, types: [constants.geolocationType.REGION], limit: REQUESTED_SIZE}}
-            ),
-            dma: getDeferredPromise(
-                url,
-                {params: {nameContains: searchTerm, types: [constants.geolocationType.DMA], limit: REQUESTED_SIZE}}
-            ),
-            city: getDeferredPromise(
-                url,
-                {params: {nameContains: searchTerm, types: [constants.geolocationType.CITY], limit: REQUESTED_SIZE}}
-            ),
+            country: searchByTypes(searchTerm, [constants.geolocationType.COUNTRY]),
+            region: searchByTypes(searchTerm, [constants.geolocationType.REGION]),
+            dma: searchByTypes(searchTerm, [constants.geolocationType.DMA]),
+            city: searchByTypes(searchTerm, [constants.geolocationType.CITY]),
         };
 
         return $q.all(requests).then(function (results) {
@@ -52,6 +39,23 @@ angular.module('one.widgets').service('zemGeoTargetingEndpoint', function ($q, $
             // Flatten an array of arrays (results)
             return [].concat.apply([], results);
         });
+    }
+
+    function mapKey (key) {
+        var deferred = $q.defer();
+        map([key]).then(function (result) {
+            deferred.resolve(result[0]);
+        });
+        return deferred.promise;
+    }
+
+    function searchByTypes (searchTerm, locationTypes) {
+        var url = '/rest/v1/geolocations/';
+        var REQUESTED_SIZE = 20;
+        return getDeferredPromise(
+            url,
+            {params: {nameContains: searchTerm, types: locationTypes, limit: REQUESTED_SIZE}}
+        );
     }
 
     function getDeferredPromise (url, config) {

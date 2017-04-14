@@ -13,6 +13,7 @@
         refresh-targetings="$ctrl.stateService.refresh(searchTerm)"
         display-sections="true"
     ></zem-inclusion-targeting-list>
+
     <div class="more-messages__container">
         <div ng-if="$ctrl.errors.length" class="message message--error">
             <div ng-repeat="error in $ctrl.errors.targetRegions">{{ error }}</div>
@@ -27,4 +28,11 @@
             <div ng-repeat="info in $ctrl.state.messages.infos">{{ info }}</div>
         </div>
     </div>
+
+    <hr>
+    <zem-zip-targeting entity="$ctrl.entity"
+                       errors="$ctrl.errors"
+                       api="$ctrl.api"
+                       class="zem-zip-targeting"
+    ></zem-zip-targeting>
 </div>

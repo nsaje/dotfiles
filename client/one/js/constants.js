@@ -750,7 +750,11 @@ var constants = {
         DMA: 'DMA',
         CITY: 'CITY',
         ZIP: 'ZIP',
-    }
+    },
+    zipTargetingType: {
+        INCLUDE: 'include',
+        EXCLUDE: 'exclude',
+    },
 };
 
 constants.levelStateParamToLevelMap = {};
@@ -1385,6 +1389,10 @@ var options = {
         {name: 'Law', value: constants.interestCategory.LAW, internal: true},  // legacy, now in combination
         {name: 'Couponing', value: constants.interestCategory.COUPONS, internal: true},  // legacy, now in combination
         {name: 'Shopping', value: constants.interestCategory.SHOPPING, internal: true},  // legacy, now in combination
+    ],
+    zipTargetingTypes: [
+        {name: 'Include', value: constants.zipTargetingType.INCLUDE},
+        {name: 'Exclude', value: constants.zipTargetingType.EXCLUDE},
     ],
 };
 
