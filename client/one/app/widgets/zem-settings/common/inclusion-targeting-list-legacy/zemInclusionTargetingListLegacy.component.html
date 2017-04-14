@@ -2,7 +2,7 @@
     <div class="two-columns-list__container" ng-if="$ctrl.included.length"
          ng-class="{'two-columns-list__container--half' : $ctrl.included.length && $ctrl.excluded.length }">
         <div class="two-columns-list__title text-green">{{ $ctrl.texts.selectedIncludedTitle }}</div>
-        <ul class="two-columns-list__list list-with-bullets">
+        <ul class="two-columns-list__list list-with-bullets" style="margin: 10px">
             <li ng-repeat="targeting in $ctrl.included | orderBy:'type'">
                 {{targeting.title}}
                 <span class="text-gray" ng-if="targeting.archived">
@@ -17,7 +17,7 @@
     <div class="two-columns-list__container" ng-if="$ctrl.excluded.length"
          ng-class="{'two-columns-list__container--half' : $ctrl.included.length && $ctrl.excluded.length }">
         <div class="two-columns-list__title text-red">{{ $ctrl.texts.selectedExcludedTitle }}</div>
-        <ul class="two-columns-list__list list-with-bullets">
+        <ul class="two-columns-list__list list-with-bullets" style="margin: 0 10px;">
             <li ng-repeat="targeting in $ctrl.excluded | orderBy:'type'">
                 {{targeting.title}}
                 <span class="text-gray" ng-if="targeting.archived">
