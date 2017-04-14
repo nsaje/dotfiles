@@ -2,23 +2,26 @@ angular.module('one.widgets').component('zemInclusionTargetingList', {
     bindings: {
         texts: '<',
         targetings: '<',
+        displaySections: '<?',
         addTargeting: '&',
         removeTargeting: '&',
+        refreshTargetings: '&?',
     },
     templateUrl: '/app/widgets/zem-settings/common/inclusion-targeting-list/zemInclusionTargetingList.component.html',
     controller: function () {
         var $ctrl = this;
+        var showTargetingEditSection;
 
         // template variables
-        $ctrl.included = [];
-        $ctrl.excluded = [];
         $ctrl.notSelected = [];
-        $ctrl.currentlySelected = undefined;
 
         // template functions
+        $ctrl.enableTargetingEditSection = enableTargetingEditSection;
+        $ctrl.isTargetingEditSectionVisible = isTargetingEditSectionVisible;
         $ctrl.groupBySection = groupBySection;
         $ctrl.addIncluded = addIncluded;
         $ctrl.addExcluded = addExcluded;
+        $ctrl.onRefresh = onRefresh;
         $ctrl.remove = remove;
 
         $ctrl.$onInit = function () {
@@ -29,6 +32,14 @@ angular.module('one.widgets').component('zemInclusionTargetingList', {
             setSelected();
         };
 
+        function enableTargetingEditSection () {
+            showTargetingEditSection = true;
+        }
+
+        function isTargetingEditSectionVisible () {
+            return showTargetingEditSection || $ctrl.included || $ctrl.excluded;
+        }
+
         function groupBySection (targeting) {
             return targeting.section;
         }
@@ -36,7 +47,6 @@ angular.module('one.widgets').component('zemInclusionTargetingList', {
         function addIncluded (targeting) {
             targeting.included = true;
             targeting.excluded = false;
-
             $ctrl.addTargeting({targeting: targeting});
 
             setSelected();
@@ -61,7 +71,11 @@ angular.module('one.widgets').component('zemInclusionTargetingList', {
         }
 
         function setSelected () {
-            var targeting, included = [], excluded = [], notSelected = [];
+            var targeting, includedSections = {}, excludedSections = {}, notSelected = [];
+            var includedCount = 0, excludedCount = 0;
+
+            delete $ctrl.included;
+            delete $ctrl.excluded;
 
             if (!$ctrl.targetings || !$ctrl.targetings.length) {
                 return;
@@ -71,18 +85,36 @@ angular.module('one.widgets').component('zemInclusionTargetingList', {
                 targeting = $ctrl.targetings[i];
 
                 if (targeting.included) {
-                    included.push(targeting);
+                    if (!includedSections[targeting.section]) {
+                        includedSections[targeting.section] = [];
+                    }
+                    includedSections[targeting.section].push(targeting);
+                    includedCount++;
                 } else if (targeting.excluded) {
-                    excluded.push(targeting);
+                    if (!excludedSections[targeting.section]) {
+                        excludedSections[targeting.section] = [];
+                    }
+                    excludedSections[targeting.section].push(targeting);
+                    excludedCount++;
                 } else {
                     notSelected.push(targeting);
                 }
             }
 
             $ctrl.notSelected = notSelected;
-            $ctrl.included = included;
-            $ctrl.excluded = excluded;
+            if (includedCount > 0) {
+                $ctrl.included = includedSections;
+            }
+            if (excludedCount > 0) {
+                $ctrl.excluded = excludedSections;
+            }
         }
 
+        function onRefresh (searchTerm) {
+            if (!$ctrl.refreshTargetings) {
+                return;
+            }
+            $ctrl.refreshTargetings({searchTerm: searchTerm});
+        }
     }
 });

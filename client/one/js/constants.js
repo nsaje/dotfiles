@@ -743,6 +743,13 @@ var constants = {
         LAW: 'law',
         COUPONS: 'coupons',
         SHOPPING: 'shopping',
+    },
+    geolocationType: {
+        COUNTRY: 'COUNTRY',
+        REGION: 'REGION',
+        DMA: 'DMA',
+        CITY: 'CITY',
+        ZIP: 'ZIP',
     }
 };
 
@@ -1461,3 +1468,10 @@ constants.defaultAccountTypes = [
         name: 'PAAS',
     },
 ];
+
+constants.geolocationTypeText = {};
+constants.geolocationTypeText[constants.geolocationType.COUNTRY] = 'Country';
+constants.geolocationTypeText[constants.geolocationType.REGION] = 'Region';
+constants.geolocationTypeText[constants.geolocationType.DMA] = 'DMA®';
+constants.geolocationTypeText[constants.geolocationType.CITY] = 'City';
+constants.geolocationTypeText[constants.geolocationType.ZIP] = 'Postal Code';

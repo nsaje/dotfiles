@@ -23,12 +23,12 @@
 <div class="form" ng-if="$ctrl.hasPermission('zemauth.can_set_interest_targeting')">
     <div class="form__title" is-internal="zemauth.can_set_interest_targeting">Interest targeting</div>
     <div class="form__text">Define your audience by including or excluding interests and demographics.</div>
-    <zem-inclusion-targeting-list
+    <zem-inclusion-targeting-list-legacy
         texts="$ctrl.texts"
         targetings="$ctrl.allTargetings"
         add-targeting="$ctrl.addTargeting(targeting)"
         remove-targeting="$ctrl.removeTargeting(targeting)"
-    ></zem-inclusion-targeting-list>
+    ></zem-inclusion-targeting-list-legacy>
     <div class="message message--error" ng-repeat="error in $ctrl.errors.interestTargeting">{{ error }}</div>
     <div class="message message--error" ng-repeat="error in $ctrl.errors.exclusionInterestTargeting">{{ error }}</div>
 </div>
