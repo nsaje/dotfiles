@@ -180,14 +180,18 @@ def get_yesterday_adgroup_spend(user, ad_group):
 
 def get_yesterday_campaign_spend(user, campaign):
     yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
-    daily_statements = reports.models.BudgetDailyStatement.objects.filter(
-        budget__campaign=campaign,
-        date=yesterday,
+    query_results = redshiftapi.api_breakdowns.query_all(
+        ['campaign_id'],
+        constraints={
+            'date__gte': yesterday,
+            'date__lte': yesterday,
+            'campaign_id': [campaign.id],
+        },
+        parents=None,
+        goals=None,
+        use_publishers_view=False,
     )
-    return reports.budget_helpers.calculate_spend_data(
-        daily_statements,
-        use_decimal=True
-    ).get('media', Decimal(0))
+    return sum(row['e_yesterday_cost'] for row in query_results)
 
 
 def _filter_daily_statements(statements, filtered_agencies, filtered_account_types):
