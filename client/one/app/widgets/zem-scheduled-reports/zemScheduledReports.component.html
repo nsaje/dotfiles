@@ -1,7 +1,6 @@
 <h1 class="content-container__title">Scheduled Reports</h1>
 <div class="custom-panel">
     <div class="custom-panel__description">Overview of your reports scheduled for this account.</div>
-    <div class="loader loader--full-width" ng-show="$ctrl.state.reports.length && $ctrl.state.removeRequestInProgress"></div>
     <div class="message message--error-box message--with-icon zem-scheduled-reports__message" ng-show="$ctrl.state.removeErrorMessage">{{$ctrl.state.removeErrorMessage}}</div>
     <table class="custom-table">
         <thead>
@@ -19,7 +18,7 @@
         </thead>
         <tbody>
             <tr ng-repeat="report in $ctrl.state.reports">
-                <td>{{ report.name }}</td>
+                <td><strong>{{ report.name }}</strong></td>
                 <td>{{ report.level }}</td>
                 <td ng-if="!$ctrl.hasPermission('zemauth.can_see_new_report_schedule')">{{ report.granularity }}</td>
                 <td ng-if="$ctrl.hasPermission('zemauth.can_see_new_report_schedule')">{{ report.breakdown }}</td>
@@ -31,7 +30,7 @@
                     {{ report.timePeriod }}
                 </td>
                 <td>{{ report.recipients }}</td>
-                <td>
+                <td class="custom-table__action-buttons">
                     <button type="button"
                             class="button button--small button--with-icon remove-icon"
                             ng-click="$ctrl.removeReport(report)">
