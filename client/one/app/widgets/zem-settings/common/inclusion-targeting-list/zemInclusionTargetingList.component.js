@@ -76,6 +76,7 @@ angular.module('one.widgets').component('zemInclusionTargetingList', {
 
             delete $ctrl.included;
             delete $ctrl.excluded;
+            delete $ctrl.notSelected;
 
             if (!$ctrl.targetings || !$ctrl.targetings.length) {
                 return;

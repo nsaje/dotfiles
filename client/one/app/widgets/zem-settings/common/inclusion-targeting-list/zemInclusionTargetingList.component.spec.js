@@ -17,7 +17,7 @@ describe('component: zemInclusionTargetingList', function () {
 
         it('should initialize without errors', function () {
             $ctrl.$onInit();
-            expect($ctrl.notSelected).toEqual([]);
+            expect($ctrl.notSelected).not.toBeDefined();
             expect($ctrl.included).not.toBeDefined();
             expect($ctrl.excluded).not.toBeDefined();
         });

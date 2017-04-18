@@ -4,7 +4,7 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
     var TOOLTIP_NOT_SUPPORTED_BY_OUTBRAIN = 'Not supported by Outbrain';
     var TOOLTIP_NOT_SUPPORTED_BY_YAHOO = 'Not supported by Yahoo!';
     var TOOLTIP_NOT_SUPPORTED_BY_FACEBOOK = 'Not supported by Facebook';
-    var WARNING_DIFFERENT_LOCATION_LEVELS = 'Different levels of locations included. Note that if for example both the United States and the state of New York are included, the whole US will be targeted.'; // eslint-disable-line max-len
+    var WARNING_DIFFERENT_LOCATION_LEVELS = 'You are using different geographical features (city, country, ...). Note that if for example both the country United States and the city of New York are included, the whole US will be targeted.'; // eslint-disable-line max-len
     var INFO_OUTBRAIN_EXCLUDED = 'Outbrain media source will be paused because it doesn\'t support excluded locations.'; // eslint-disable-line max-len
     var INFO_OUTBRAIN_INCLUDED = 'Outbrain media source will be paused because it doesn\'t support any of the included locations.'; // eslint-disable-line max-len
     var INFO_YAHOO_EXCLUDED = 'Yahoo media source will be paused because it doesn\'t support all the excluded locations.'; // eslint-disable-line max-len
@@ -46,10 +46,10 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
         }
 
         function getEnabledTargetings () {
-            var targetings = [];
             var isIncluded;
             var isExcluded;
             var geolocation;
+            var targetings = [];
 
             entity.settings.targetRegions.forEach(function (key) {
                 isIncluded = true;
@@ -67,6 +67,17 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
                     targetings.push(generateGeolocationObject(geolocation, isIncluded, isExcluded));
                 }
             });
+
+            targetings.sort(function (a, b) {
+                var ORDER = [
+                    constants.geolocationType.COUNTRY,
+                    constants.geolocationType.REGION,
+                    constants.geolocationType.DMA,
+                    constants.geolocationType.CITY
+                ];
+                return ORDER.indexOf(a.geolocation.type) - ORDER.indexOf(b.geolocation.type);
+            });
+
             return targetings;
         }
 
@@ -80,8 +91,8 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
                 var SECTION_RESULTS_SIZE = 10;
                 var sectionItems = {};
                 response.forEach(function (geolocation) {
-                    for (var i = 0; i < state.targetings.length; i++) {
-                        if (state.targetings[i].id === geolocation.key) {
+                    for (var i = 0; i < targetings.length; i++) {
+                        if (targetings[i].id === geolocation.key) {
                             return;
                         }
                     }
