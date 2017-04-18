@@ -20,5 +20,13 @@ class ReportJob(models.Model):
     query = jsonfield.JSONField()
     result = jsonfield.JSONField(null=True, blank=True)
 
+    scheduled_report = models.ForeignKey(
+        'ScheduledReport',
+        related_name='jobs',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
     class Meta:
         db_table = 'restapi_reportjob'

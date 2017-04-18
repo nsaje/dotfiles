@@ -13,6 +13,7 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('dash', '0198_geolocation_facebook_key'),
+        ('restapi', '0002_remove_reportjob'),
     ]
 
     state_operations = [

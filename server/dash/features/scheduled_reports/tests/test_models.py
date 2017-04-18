@@ -32,17 +32,21 @@ class ScheduledReportTestCase(TestCase):
         mixer.cycle(3).blend(
             models.ScheduledReport,
             sending_frequency=(v for v in constants.ScheduledReportSendingFrequency._VALUES),
-            last_sent_dt=datetime.datetime(2017, 3, 31),
+            last_sent_dt=datetime.datetime(2017, 3, 31, 0, 2),
             query={}
         )
         self.assertEqual(6, models.ScheduledReport.objects.all().count())
 
         # already sent
-        now_mock.return_value = datetime.datetime(2017, 3, 31)
+        now_mock.return_value = datetime.datetime(2017, 3, 31, 0, 3)
         self.assertEqual(1, models.ScheduledReport.objects.all().filter_due().count())
 
-        # monthly
-        now_mock.return_value = datetime.datetime(2017, 4, 1)
+        # already sent
+        now_mock.return_value = datetime.datetime(2017, 3, 31, 23, 1)
+        self.assertEqual(1, models.ScheduledReport.objects.all().filter_due().count())
+
+        # monthly and not already sent
+        now_mock.return_value = datetime.datetime(2017, 4, 1, 0, 1)
         self.assertEqual(3, models.ScheduledReport.objects.all().filter_due().count())
 
         # daily only

@@ -33,8 +33,8 @@ import models
 logger = logging.getLogger(__name__)
 
 
-def create_job(user, query):
-    job = models.ReportJob(user=user, query=query)
+def create_job(user, query, scheduled_report=None):
+    job = models.ReportJob(user=user, query=query, scheduled_report=scheduled_report)
     job.save()
 
     if settings.USE_CELERY_FOR_REPORTS:
@@ -208,16 +208,33 @@ class ReportJobExecutor(JobExecutor):
 
         view, breakdowns = cls._extract_view_breakdown(job)
         ad_group_name, campaign_name, account_name = cls._extract_entity_names(job.user, filter_constraints)
-        utils.email_helper.send_async_report(
-            job.user, job.query['options']['recipients'], report_path,
-            filter_constraints['start_date'], filter_constraints['end_date'], expiry_date, filtered_sources,
-            job.query['options']['show_archived'], job.query['options']['show_blacklisted_publishers'],
-            view,
-            breakdowns,
-            cls._extract_column_names(job.query['fields']),
-            job.query['options']['include_totals'],
-            ad_group_name, campaign_name, account_name,
-        )
+
+        if job.scheduled_report:
+            utils.email_helper.send_async_scheduled_report(
+                job.user, job.query['options']['recipients'],
+                job.scheduled_report.name,
+                dash.constants.ScheduledReportSendingFrequency.get_text(
+                    job.scheduled_report.sending_frequency),
+                report_path, expiry_date,
+                filter_constraints['start_date'], filter_constraints['end_date'],
+                filtered_sources,
+                job.query['options']['show_archived'], job.query['options']['show_blacklisted_publishers'],
+                job.query['options']['include_totals'],
+                view, breakdowns,
+                cls._extract_column_names(job.query['fields']),
+                ad_group_name, campaign_name, account_name,
+            )
+        else:
+            utils.email_helper.send_async_report(
+                job.user, job.query['options']['recipients'], report_path,
+                filter_constraints['start_date'], filter_constraints['end_date'], expiry_date, filtered_sources,
+                job.query['options']['show_archived'], job.query['options']['show_blacklisted_publishers'],
+                view,
+                breakdowns,
+                cls._extract_column_names(job.query['fields']),
+                job.query['options']['include_totals'],
+                ad_group_name, campaign_name, account_name,
+            )
 
     @staticmethod
     def _extract_view_breakdown(job):
