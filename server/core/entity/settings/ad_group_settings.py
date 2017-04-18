@@ -23,7 +23,7 @@ import core.entity
 import core.history
 import core.source
 
-import device_targeting_helper
+import helpers
 
 from settings_base import SettingsBase
 from settings_query_set import SettingsQuerySet
@@ -326,7 +326,7 @@ class AdGroupSettings(SettingsBase):
         elif prop_name == 'target_placements':
             value = ', '.join(constants.Placement.get_text(x) for x in value) if value else ''
         elif prop_name == 'target_os':
-            value = ', '.join(device_targeting_helper.get_human_value(x) for x in value) if value else ''
+            value = ', '.join(helpers.get_human_value_target_os(x) for x in value) if value else ''
         elif prop_name in ('target_regions', 'exclusion_target_regions'):
             value = AdGroupSettings._get_human_value_for_target_regions(prop_name, value)
         elif prop_name in ('retargeting_ad_groups', 'exclusion_retargeting_ad_groups'):
@@ -437,7 +437,7 @@ class AdGroupSettings(SettingsBase):
         if not user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
             excluded_keys.update(['whitelist_publisher_groups', 'blacklist_publisher_groups'])
 
-        if not user.has_perm('can_set_advanced_device_targeting'):
+        if not user.has_perm('zemauth.can_set_advanced_device_targeting'):
             excluded_keys.update(['target_os', 'target_placements'])
 
         valid_changes = {

@@ -16,7 +16,7 @@ import core.entity
 import core.history
 import core.source
 
-import device_targeting_helper
+import helpers
 
 from settings_base import SettingsBase
 from settings_query_set import SettingsQuerySet
@@ -214,7 +214,7 @@ class CampaignSettings(SettingsBase):
         elif prop_name == 'target_placements':
             value = ', '.join(constants.Placement.get_text(x) for x in value) if value else ''
         elif prop_name == 'target_os':
-            value = ', '.join(device_targeting_helper.get_human_value(x) for x in value) if value else ''
+            value = ', '.join(helpers.get_human_value_target_os(x) for x in value) if value else ''
         elif prop_name in ('target_regions', 'exclusion_target_regions'):
             if value:
                 # FIXME: circular dependency

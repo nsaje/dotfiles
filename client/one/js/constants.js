@@ -55,11 +55,6 @@ var constants = {
         warning: 'warning',
         danger: 'danger',
     },
-    adTargetDevice: {
-        DESKTOP: 'desktop',
-        TABLET: 'tablet',
-        MOBILE: 'mobile',
-    },
     chartMetric: {
         CLICKS: 'clicks',
         IMPRESSIONS: 'impressions',
@@ -822,11 +817,6 @@ var options = {
     priceDiscoveryOptions: [
         {name: 'Automatic', value: constants.priceDiscovery.AUTOMATIC},
         {name: 'Manual', value: constants.priceDiscovery.MANUAL},
-    ],
-    adTargetDevices: [
-        {name: 'Desktop', value: constants.adTargetDevice.DESKTOP},
-        {name: 'Tablet', value: constants.adTargetDevice.TABLET},
-        {name: 'Mobile', value: constants.adTargetDevice.MOBILE},
     ],
     adGroupChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},

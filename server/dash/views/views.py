@@ -483,6 +483,8 @@ class CampaignAdGroups(api_common.BaseApiView):
         campaign_settings = ad_group.campaign.get_current_settings()
 
         new_settings.target_devices = campaign_settings.target_devices
+        new_settings.target_os = campaign_settings.target_os
+        new_settings.target_placements = campaign_settings.target_placements
         new_settings.target_regions = campaign_settings.target_regions
         new_settings.ad_group_name = ad_group.name
 

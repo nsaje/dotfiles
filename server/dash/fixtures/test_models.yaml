@@ -241,7 +241,7 @@
         call_to_action: 'Call to action'
         ad_group_name: 'AdGroup name'
         target_devices: ['mobile']
-        target_os: [{'name': 'android', 'version': {'exact': 'android_6_0'}}]
+        target_os: [{'name': 'android', 'version': {'min': 'android_6_0', 'max': 'android_6_0'}}]
         target_placements: ['app']
         target_regions: ['US']
         exclusion_target_regions: ['US-NY']

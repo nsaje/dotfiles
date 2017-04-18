@@ -104,7 +104,7 @@ angular.module('one.widgets').service('zemDeviceTargetingStateService', function
         function convertFromApi (entity) {
             var data =  {
                 devices: convertTargetDevicesFromApi(entity.settings.targetDevices),
-                placements: convertPlacementsFromApi(entity.settings.placements),
+                placements: convertPlacementsFromApi(entity.settings.targetPlacements),
                 operatingSystems: convertOperatingSystemsFromApi(entity.settings.targetOs),
                 defaults: {
                     devices: null,
@@ -115,7 +115,9 @@ angular.module('one.widgets').service('zemDeviceTargetingStateService', function
 
             if (entity.defaultSettings) {
                 data.defaults = {
-                    devices: convertTargetDevicesFromApi(entity.defaultSettings.targetDevices)
+                    devices: convertTargetDevicesFromApi(entity.defaultSettings.targetDevices),
+                    placements: convertPlacementsFromApi(entity.defaultSettings.targetPlacements),
+                    operatingSystems: convertOperatingSystemsFromApi(entity.defaultSettings.targetOs),
                 };
             }
 
@@ -130,12 +132,13 @@ angular.module('one.widgets').service('zemDeviceTargetingStateService', function
             };
         }
 
-        function convertTargetDevicesFromApi (targetDevices) {
+        function convertTargetDevicesFromApi (data) {
+            if (!data) data = [];
             return zemDeviceTargetingConstants.DEVICES.map(function (item) {
                 return {
                     name: item.name,
                     value: item.value,
-                    checked: targetDevices && targetDevices.indexOf(item.value) > -1,
+                    checked: data.indexOf(item.value) > -1,
                 };
             });
         }
@@ -148,10 +151,6 @@ angular.module('one.widgets').service('zemDeviceTargetingStateService', function
         }
 
         function convertOperatingSystemsToApi (operatingSystems) {
-            if (operatingSystems.length === 0) {
-                return null;
-            }
-
             return operatingSystems
             .map(function (os) {
                 var osApi = {
@@ -159,10 +158,9 @@ angular.module('one.widgets').service('zemDeviceTargetingStateService', function
                 };
 
                 if (os.version) {
-                    osApi.version = {
-                        min: os.version.min.value,
-                        max: os.version.max.value,
-                    };
+                    osApi.version = {};
+                    if (os.version.min.value) osApi.version.min = os.version.min.value;
+                    if (os.version.max.value) osApi.version.max = os.version.max.value;
                 }
 
                 return osApi;
@@ -170,15 +168,16 @@ angular.module('one.widgets').service('zemDeviceTargetingStateService', function
         }
 
         function convertOperatingSystemsFromApi (data) {
-            if (!data || data.length === 0)  return []; // Initial data
-
+            if (!data) data = [];
             return data.map(function (targetOs) {
                 var option = angular.copy(findOs(targetOs.name));
                 if (option.versions) {
                     option.versions.unshift({value: null, name: ' - '});
                     option.version = {
-                        min: targetOs.version ? findVersion(option.versions, targetOs.version.min) : option.versions[0],
-                        max: targetOs.version ? findVersion(option.versions, targetOs.version.max) : option.versions[0],
+                        min: targetOs.version && targetOs.version.min ?
+                            findVersion(option.versions, targetOs.version.min) : option.versions[0],
+                        max: targetOs.version && targetOs.version.max ?
+                            findVersion(option.versions, targetOs.version.max) : option.versions[0],
                     };
                 }
 
@@ -202,15 +201,16 @@ angular.module('one.widgets').service('zemDeviceTargetingStateService', function
                 return placement.value;
             });
 
-            if (data.length === placements.length)  return null;
+            if (data.length === placements.length || data.length === 0)  return [];
 
             return data;
         }
 
         function convertPlacementsFromApi (data) {
+            if (!data) data = [];
             var placements = angular.copy(zemDeviceTargetingConstants.PLACEMENTS);
             placements.forEach(function (placement) {
-                placement.selected = !data || data.targetPlacements.indexOf(placement.value) >= 0;
+                placement.selected = data.length === 0 || data.indexOf(placement.value) >= 0;
             });
 
             return placements;

@@ -143,9 +143,7 @@ class AdGroupSettings(api_common.BaseApiView):
                     })
             helpers.set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, new_settings)
 
-            form = forms.AdGroupSettingsForm(ad_group, request.user, new_settings.get_settings_dict())
-            if not form.is_valid():
-                logger.error('Inconsistent settings change. errors=%s', form.errors.as_data())
+            self.check_settings_consistency(request, new_settings, ad_group)
 
             new_settings.save(
                 request,
@@ -168,6 +166,12 @@ class AdGroupSettings(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
+
+    def check_settings_consistency(self, request, settings, ad_group):
+        settings_dict = self.get_dict(request, settings, ad_group)
+        form = forms.AdGroupSettingsForm(ad_group, request.user, settings_dict)
+        if not form.is_valid():
+            logger.error('Inconsistent settings change. errors=%s', form.errors.as_data())
 
     def should_initialize_budget_autopilot(self, changes, new_settings):
         if new_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
@@ -425,7 +429,6 @@ class AdGroupSettings(api_common.BaseApiView):
             'daily_budget_cc':
                 '{:.2f}'.format(settings.daily_budget_cc)
                 if settings.daily_budget_cc is not None else '',
-            'target_devices': settings.target_devices,
             'target_regions': settings.target_regions,
             'exclusion_target_regions': settings.exclusion_target_regions or [],
             'tracking_code': settings.tracking_code,
@@ -454,6 +457,12 @@ class AdGroupSettings(api_common.BaseApiView):
             'blacklist_publisher_groups': settings.blacklist_publisher_groups,
             'landing_mode': settings.landing_mode,
         }
+
+        # TODO (refactor-workaround) Re-use restapi serializers
+        from restapi.serializers.targeting import DevicesSerializer, OSsSerializer, PlacementsSerializer
+        result['target_devices'] = DevicesSerializer(settings.target_devices).data
+        result['target_os'] = OSsSerializer(settings.target_os).data
+        result['target_placements'] = PlacementsSerializer(settings.target_placements).data
 
         return result
 
@@ -507,14 +516,24 @@ class AdGroupSettings(api_common.BaseApiView):
             settings.whitelist_publisher_groups = resource['whitelist_publisher_groups']
             settings.blacklist_publisher_groups = resource['blacklist_publisher_groups']
 
+        if user.has_perm('zemauth.can_set_advanced_device_targeting'):
+            settings.target_os = resource['target_os']
+            settings.target_placements = resource['target_placements']
+
     def get_default_settings_dict(self, ad_group):
         settings = ad_group.campaign.get_current_settings()
-
-        return {
-            'target_devices': settings.target_devices,
+        result = {
             'target_regions': settings.target_regions,
             'exclusion_target_regions': settings.exclusion_target_regions or []
         }
+
+        # TODO (refactor-workaround) Re-use restapi serializers
+        from restapi.serializers.targeting import DevicesSerializer, OSsSerializer, PlacementsSerializer
+        result['target_devices'] = DevicesSerializer(settings.target_devices).data
+        result['target_os'] = OSsSerializer(settings.target_os).data
+        result['target_placements'] = PlacementsSerializer(settings.target_placements).data
+
+        return result
 
     def get_retargetable_adgroups(self, request, ad_group, existing_targetings):
         '''
@@ -827,7 +846,6 @@ class CampaignSettings(api_common.BaseApiView):
             'blacklist_publisher_groups': settings.blacklist_publisher_groups,
         }
 
-        result['target_devices'] = settings.target_devices
         result['target_regions'] = settings.target_regions
         result['exclusion_target_regions'] = settings.exclusion_target_regions or []
 
@@ -843,6 +861,12 @@ class CampaignSettings(api_common.BaseApiView):
                 result['ga_property_readable'] = ga_helper.is_readable(settings.ga_property_id)
             except:
                 logger.exception("Google Analytics validation failed")
+
+        # TODO (refactor-workaround) Re-use restapi serializers
+        from restapi.serializers.targeting import DevicesSerializer, OSsSerializer, PlacementsSerializer
+        result['target_devices'] = DevicesSerializer(settings.target_devices).data
+        result['target_os'] = OSsSerializer(settings.target_os).data
+        result['target_placements'] = PlacementsSerializer(settings.target_placements).data
 
         return result
 
@@ -869,6 +893,10 @@ class CampaignSettings(api_common.BaseApiView):
         if request.user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
             settings.whitelist_publisher_groups = resource['whitelist_publisher_groups']
             settings.blacklist_publisher_groups = resource['blacklist_publisher_groups']
+
+        if request.user.has_perm('zemauth.can_set_advanced_device_targeting'):
+            settings.target_os = resource['target_os']
+            settings.target_placements = resource['target_placements']
 
     def set_campaign(self, campaign, resource):
         campaign.name = resource['name']

@@ -30,6 +30,7 @@
       - ['can_modify_account_name', 'zemauth', 'user']
       - ['can_set_white_blacklist_publisher_groups', 'zemauth', 'user']
       - ['can_modify_campaign_iab_category', 'zemauth', 'user']
+      - ['can_set_advanced_device_targeting', 'zemauth', 'user']
 
 - model: oauth2_provider.application
   pk: 1
@@ -129,6 +130,8 @@
         campaign_goal: 4
         goal_quantity: 10
         target_devices: ['mobile']
+        target_os: [{name: 'ios', version: {min: 'ios_4_0'}}]
+        target_placements: ['app']
         target_regions: ['US']
         campaign: 608
     model: dash.campaignsettings
@@ -263,6 +266,8 @@
         ad_group: 2040
         tracking_code: 'param1=foo&param2=bar'
         target_devices: ['desktop', 'mobile']
+        target_os: [{name: 'macosx'}, {name: 'ios', version: {min: 'ios_4_0'}}]
+        target_placements: ['app', 'site']
         target_regions: ['GB', 'US', 'CA']
         display_url: 'example.com'
         brand_name: 'Example'

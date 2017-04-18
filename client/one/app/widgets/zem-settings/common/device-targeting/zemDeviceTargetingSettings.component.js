@@ -12,7 +12,7 @@ angular.module('one.widgets').component('zemDeviceTargetingSettings', {
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
 
-        $ctrl.showAdvanceSettings = false;
+        $ctrl.showAdvanceGroup = false;
         $ctrl.isEqualToDefault = isEqualToDefault;
         $ctrl.isDefault = isDefault;
 
@@ -27,13 +27,22 @@ angular.module('one.widgets').component('zemDeviceTargetingSettings', {
                 $ctrl.stateService = zemDeviceTargetingStateService.createInstance($ctrl.entity);
                 $ctrl.stateService.initialize();
                 $ctrl.state = $ctrl.stateService.getState();
-                $ctrl.showAdvanceSettings = false;
+                $ctrl.showAdvanceGroup = isAdvanceGroupVisible();
             }
         };
 
         $ctrl.$onDestroy = function () {
             if ($ctrl.stateService) $ctrl.stateService.destroy();
         };
+
+        function isAdvanceGroupVisible () {
+            if ($ctrl.state.operatingSystems.length > 0) return true;
+
+            var selectedPlacements = $ctrl.state.placements.filter(function (p) { return p.selected; });
+            if (selectedPlacements.length !== $ctrl.state.placements.length) return true;
+
+            return false;
+        }
 
         function isDefault () {
             if (!$ctrl.state) return false;

@@ -1,8 +1,7 @@
 <div ng-repeat="placement in $ctrl.state.placements"
-     class="form__group zem-placement-device-targeting__option"
+     class="form__group zem-placement-device-targeting__option
+            zem-placement-device-targeting__option--{{placement.value}}"
      ng-class="{
-            'zem-placement-device-targeting__option--website': placement.value === 'site',
-            'zem-placement-device-targeting__option--in-app': placement.value === 'app',
             'zem-placement-device-targeting__option--active': placement.selected,
             'zem-placement-device-targeting__option--enabled': placement.enabled,
         }"
