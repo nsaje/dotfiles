@@ -4,26 +4,27 @@
         {{ $ctrl.view }}
     </div>
 </div>
+<hr>
 <div class="form__group form__group--informative">
     <label class="form__label">Breakdowns</label>
     <div class="form__information">
-        <span ng-repeat="dimension in $ctrl.shownBreakdown" class="tag">{{ dimension.name }}</span>
-    </div>
-    <div class="form__label"></div>
-    <div class="form__information" ng-if="$ctrl.availableBreakdowns.length">
-      <ui-select
+        <span ng-repeat="dimension in $ctrl.shownBreakdown" ng-click="$ctrl.removeBreakdown(dimension)" class="tag tag--remove-button">{{ dimension.name }}</span>
+
+        <ui-select
               theme="select2"
               search-enabled="false"
               ng-model="$ctrl.addbreakdown"
               ng-disabled="$ctrl.disabled"
-              class="button button--dropdown-toggle-icon button--with-icon add-icon button--dropdown-toggle-icon">
-          <ui-select-match placeholder="Add breakdown">Add breakdown</ui-select-match>
-          <ui-select-choices repeat="breakdown in $ctrl.availableBreakdowns">
-              <div ng-click="$ctrl.addBreakdown(breakdown)">{{breakdown.name}}</div>
-          </ui-select-choices>
-      </ui-select>
+              class="button button--dropdown-toggle-icon button--with-icon add-icon button--dropdown-toggle-icon zem-report-query-config__add-breakdown"
+              ng-if="$ctrl.availableBreakdowns.length">
+            <ui-select-match placeholder="Add breakdown">Add breakdown</ui-select-match>
+            <ui-select-choices repeat="breakdown in $ctrl.availableBreakdowns">
+                <div ng-click="$ctrl.addBreakdown(breakdown)">{{breakdown.name}}</div>
+            </ui-select-choices>
+        </ui-select>
     </div>
 </div>
+<hr>
 <div class="form__group form__group--informative">
     <label class="form__label">Columns</label>
     <div class="form__information">
@@ -32,6 +33,7 @@
            ng-if="$ctrl.shownSelectedFields.length < $ctrl.config.selectedFields.length">...</a>
     </div>
 </div>
+<hr ng-if="$ctrl.appliedFilterConditions.length">
 <div class="form__group form__group--informative" ng-if="$ctrl.appliedFilterConditions.length">
     <label class="form__label">Filters</label>
     <div class="form__information">
@@ -40,6 +42,7 @@
            ng-if="$ctrl.shownAppliedFilterConditions.length < $ctrl.appliedFilterConditions.length">...</a>
     </div>
 </div>
+<hr>
 <div class="form__group form__group--informative">
     <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_include_totals_in_reports')" popover-placement="right"></zem-internal-feature>
     <label class="form__label" for="include-totals-checkbox">Include totals</label>

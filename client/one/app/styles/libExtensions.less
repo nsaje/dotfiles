@@ -67,6 +67,7 @@
 .select2-drop.select2-drop-above {
     border: 1px solid @border-color;
     box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
+    outline: none;
 
     .select2-results {
         // bug fix for mac os scroll bars
@@ -74,8 +75,14 @@
         outline: none;
 
         .select2-result-label {
-            padding: 7px 10px;
-            line-height: 16px;
+            padding: 0;
+
+            div,
+            span {
+                line-height: 16px;
+                display: block;
+                padding: 7px 10px;
+            }
         }
 
         li {
