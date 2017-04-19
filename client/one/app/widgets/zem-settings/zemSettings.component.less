@@ -444,28 +444,28 @@
     right: 10px;
 }
 
-.zem-os-device-targeting__platform-name--windows::before,
-.zem-os-device-targeting__platform-name--winphone::before {
+.zem-os-device-targeting__platform-name--WINDOWS::before,
+.zem-os-device-targeting__platform-name--WINPHONE::before {
     background-image: url('images/os-windows.svg');
     width: 16px;
     height: 16px;
 }
 
-.zem-os-device-targeting__platform-name--ios::before,
-.zem-os-device-targeting__platform-name--macosx::before{
+.zem-os-device-targeting__platform-name--IOS::before,
+.zem-os-device-targeting__platform-name--MACOSX::before{
     background-image: url('images/os-apple.svg');
     margin-top: -2px;
 }
 
-.zem-os-device-targeting__platform-name--linux::before {
+.zem-os-device-targeting__platform-name--LINUX::before {
     background-image: url('images/os-linux.svg');
 }
 
-.zem-os-device-targeting__platform-name--android::before {
+.zem-os-device-targeting__platform-name--ANDROID::before {
     background-image: url('images/os-android.svg');
 }
 
-.zem-placement-device-targeting__option--website {
+.zem-placement-device-targeting__option--SITE {
     .form__label {
         background: url('images/placement-website-gray.svg') no-repeat center center;
         background-size: 100px;
@@ -478,7 +478,7 @@
     }
 }
 
-.zem-placement-device-targeting__option--in-app {
+.zem-placement-device-targeting__option--APP {
     .form__label {
         background: url('images/placement-in-app-gray.svg') no-repeat center center;
         background-size: 80px;
@@ -497,7 +497,7 @@
 }
 
 ///////////////////////////
-// Locations //
+// Geo targeting //
 ///////////////////////////
 
 .zem-region-targeting-settings {
@@ -508,6 +508,109 @@
 
 .zem-settings-locations__undo {
     margin-bottom: 10px;
+}
+
+.targeting-not-supported {
+    position: absolute;
+    right: 35px;
+    height: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.targeting-not-supported__icon {
+    width: 10px;
+    height: 10px;
+    display: block;
+    background-size: 10px;
+    float: right;
+    margin-left: 6px;
+    opacity: 0.2;
+
+    &:last-child {
+        margin-left: 0;
+    }
+}
+
+.targeting-not-supported__icon--yahoo {
+    background: url('images/not-supported-yahoo.svg') no-repeat center center;
+}
+
+.targeting-not-supported__icon--outbrain {
+    background: url('images/not-supported-outbrain.svg') no-repeat center center;
+}
+
+.targeting-not-supported__icon--facebook {
+    background: url('images/not-supported-facebook.svg') no-repeat center center;
+    width: 6px;
+    background-size: 10px;
+}
+
+.ui-select-choices-row {
+    position: relative;
+
+    .targeting-not-supported {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .targeting-not-supported__icon {
+        width: 10px;
+    }
+
+    &:hover {
+        .targeting-not-supported .targeting-not-supported__icon--yahoo {
+            background: url('images/not-supported-yahoo.svg') no-repeat center center;
+        }
+
+        .targeting-not-supported .targeting-not-supported__icon--outbrain {
+            background: url('images/not-supported-outbrain.svg') no-repeat center center;
+        }
+
+        .targeting-not-supported .targeting-not-supported__icon--facebook {
+            background: url('images/not-supported-facebook.svg') no-repeat center center;
+        }
+    }
+
+    &.active {
+        .targeting-not-supported__icon {
+            opacity: 0.8;
+        }
+
+        .targeting-not-supported .targeting-not-supported__icon--yahoo {
+            background: url('images/not-supported-yahoo-white.svg') no-repeat center center;
+        }
+
+        .targeting-not-supported .targeting-not-supported__icon--outbrain {
+            background: url('images/not-supported-outbrain-white.svg') no-repeat center center;
+        }
+
+        .targeting-not-supported .targeting-not-supported__icon--facebook {
+            background: url('images/not-supported-facebook-white.svg') no-repeat center center;
+        }
+    }
+}
+
+.two-columns-list__list {
+    li.two-columns-list__list--one-icon {
+        padding-right: 55px;
+    }
+
+    li.two-columns-list__list--two-icons {
+        padding-right: 70px;
+    }
+
+    li.two-columns-list__list--three-icons {
+        padding-right: 85px;
+    }
+}
+
+.zem-zip-targeting__country {
+    .select2-drop {
+        min-width: 250px;
+    }
 }
 
 ///////////////////////////

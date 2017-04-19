@@ -9,9 +9,8 @@ from dash import campaign_goals
 from dash.constants import Level
 
 from stats import permission_filter
+from stats import fields
 from stats.helpers import Goals
-
-from reports import api_helpers
 
 
 class FilterTestCase(TestCase):
@@ -38,12 +37,12 @@ class FilterTestCase(TestCase):
         }
 
         # add all possible fields
-        row.update({x: 1 for x in api_helpers.TRAFFIC_FIELDS})
-        row.update({x: 1 for x in api_helpers.POSTCLICK_ACQUISITION_FIELDS})
-        row.update({x: 1 for x in api_helpers.POSTCLICK_ENGAGEMENT_FIELDS})
-        row.update({x: 1 for x in api_helpers.GOAL_FIELDS})
+        row.update({x: 1 for x in fields.TRAFFIC_FIELDS})
+        row.update({x: 1 for x in fields.POSTCLICK_ACQUISITION_FIELDS})
+        row.update({x: 1 for x in fields.POSTCLICK_ENGAGEMENT_FIELDS})
+        row.update({x: 1 for x in permission_filter.GOAL_FIELDS})
 
-        for field in api_helpers.FIELD_PERMISSION_MAPPING.keys():
+        for field in permission_filter.FIELD_PERMISSION_MAPPING.keys():
             if field not in row:
                 row[field] = 1
 

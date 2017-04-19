@@ -20,6 +20,7 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         $ctrl.showAllSelectedFields = showAllSelectedFields;
         $ctrl.showAllAppliedFilters = showAllAppliedFilters;
         $ctrl.addBreakdown = addBreakdown;
+        $ctrl.removeBreakdown = removeBreakdown;
         $ctrl.update = update;
 
         // template variables
@@ -40,6 +41,8 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
             $ctrl.appliedFilterConditions = zemFilterSelectorService.getAppliedConditions();
             if ($ctrl.appliedFilterConditions.length > SHORTLIST_LIMIT) {
                 $ctrl.shownAppliedFilterConditions = $ctrl.appliedFilterConditions.slice(0, NR_SHORTLIST_ITEMS);
+            } else {
+                $ctrl.showAllAppliedFilters();
             }
 
             $ctrl.breakdown = angular.copy($ctrl.gridApi.getBreakdown());
@@ -54,6 +57,11 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
 
         function addBreakdown (breakdown) {
             $ctrl.breakdown.push(breakdown);
+            update();
+        }
+
+        function removeBreakdown (breakdown) {
+            $ctrl.breakdown.splice($ctrl.breakdown.indexOf(breakdown), 1);
             update();
         }
 

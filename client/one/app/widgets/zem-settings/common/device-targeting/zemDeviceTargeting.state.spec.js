@@ -26,40 +26,40 @@ describe('state: zemDeviceTargetingStateService', function () {
     it('should load the state on initalization', function () {
         var stateService = zemDeviceTargetingStateService.createInstance({
             settings: {
-                targetDevices: ['mobile'],
+                targetDevices: ['MOBILE'],
                 targetOs: [
-                    {name: 'ios', version: {min: 'ios_4_0', max: null}},
-                    {name: 'android', version: {min: 'android_2_1', max: null}}
+                    {name: 'IOS', version: {min: 'IOS_4_0', max: null}},
+                    {name: 'ANDROID', version: {min: 'ANDROID_2_1', max: null}}
                 ],
-                targetPlacements: ['site', 'app']
+                targetPlacements: ['SITE', 'APP']
             }
         });
         stateService.initialize();
         expect(stateService.getState()).toEqual(
             {
                 devices: [
-                    {name: 'Desktop', value: 'desktop', checked: false},
-                    {name: 'Tablet', value: 'tablet', checked: false},
-                    {name: 'Mobile', value: 'mobile', checked: true}
+                    {name: 'Desktop', value: 'DESKTOP', checked: false},
+                    {name: 'Tablet', value: 'TABLET', checked: false},
+                    {name: 'Mobile', value: 'MOBILE', checked: true}
                 ],
                 placements: [
-                    {value: 'site', name: 'Website', devices: ['desktop', 'mobile', 'tablet'], selected: true},
-                    {value: 'app', name: 'In-app', devices: ['mobile', 'tablet'], selected: true}
+                    {value: 'SITE', name: 'Website', devices: ['DESKTOP', 'MOBILE', 'TABLET'], selected: true},
+                    {value: 'APP', name: 'In-app', devices: ['MOBILE', 'TABLET'], selected: true}
                 ],
                 operatingSystems: [
                     {
-                        devices: ['mobile', 'tablet'],
-                        value: 'ios',
+                        devices: ['MOBILE', 'TABLET'],
+                        value: 'IOS',
                         name: 'Apple iOS',
                         versions: jasmine.any(Object),
-                        version: {min: {value: 'ios_4_0', name: '4.0'}, max: {value: null, name: ' - '}}
+                        version: {min: {value: 'IOS_4_0', name: '4.0'}, max: {value: null, name: ' - '}}
                     },
                     {
-                        devices: ['mobile', 'tablet'],
-                        value: 'android',
+                        devices: ['MOBILE', 'TABLET'],
+                        value: 'ANDROID',
                         name: 'Google Android',
                         versions: jasmine.any(Object),
-                        version: {min: {value: 'android_2_1', name: '2.1 Eclair'}, max: {value: null, name: ' - '}}
+                        version: {min: {value: 'ANDROID_2_1', name: '2.1 Eclair'}, max: {value: null, name: ' - '}}
                     }
                 ],
                 defaults: {
@@ -79,7 +79,7 @@ describe('state: zemDeviceTargetingStateService', function () {
     it('should notify updates to the state', function () {
         var stateService = zemDeviceTargetingStateService.createInstance({
             settings: {
-                targetDevices: ['mobile'],
+                targetDevices: ['MOBILE'],
             }
         });
 
@@ -95,7 +95,7 @@ describe('state: zemDeviceTargetingStateService', function () {
     it('should notify on operatingSystem updates', function () {
         var stateService = zemDeviceTargetingStateService.createInstance({
             settings: {
-                targetDevices: ['desktop'],
+                targetDevices: ['DESKTOP'],
                 targetOs: [],
             }
         });
@@ -116,9 +116,9 @@ describe('state: zemDeviceTargetingStateService', function () {
     it('should update settings on state update', function () {
         var entity = {
             settings: {
-                targetDevices: ['mobile'],
-                targetOs: [{name: 'ios', version: {min: 'ios_4_0', max: null}}],
-                targetPlacements: ['site', 'app']
+                targetDevices: ['MOBILE'],
+                targetOs: [{name: 'IOS', version: {min: 'IOS_4_0', max: null}}],
+                targetPlacements: ['SITE', 'APP']
             }
         };
 
@@ -132,16 +132,16 @@ describe('state: zemDeviceTargetingStateService', function () {
         stateService.update();
 
         expect(entity.settings).toEqual({
-            targetDevices: ['desktop', 'mobile'],
-            targetOs: [{name: 'ios', version: {min: 'ios_4_0', max: null}}],
-            targetPlacements: ['app']
+            targetDevices: ['DESKTOP', 'MOBILE'],
+            targetOs: [{name: 'IOS', version: {min: 'IOS_4_0'}}],
+            targetPlacements: ['APP']
         });
     });
 
     it('should configure OS max version to be always greater than min', function () {
         var entity = {
             settings: {
-                targetOs: [{name: 'ios', version: {min: 'ios_4_0', max: 'ios_7_0'}}],
+                targetOs: [{name: 'IOS', version: {min: 'IOS_4_0', max: 'IOS_7_0'}}],
             }
         };
 
@@ -153,8 +153,8 @@ describe('state: zemDeviceTargetingStateService', function () {
         stateService.update();
 
         expect(stateService.getState().operatingSystems[0].version).toEqual ({
-            min: {value: 'ios_4_0', name: '4.0'},
-            max: {value: 'ios_4_0', name: '4.0'}
+            min: {value: 'IOS_4_0', name: '4.0'},
+            max: {value: 'IOS_4_0', name: '4.0'}
         });
     });
 });

@@ -178,6 +178,19 @@ PUBLISHER_2__SOURCE_2 = {
     'can_blacklist_publisher': False, 'notifications': {'message': 'Whitelisted in this ad group'},
 }
 
+PUBLISHER_1__SOURCE_1_CAMPAIGN = {
+    'publisher_id': 'pub1.com__1', 'publisher': 'pub1.com', 'domain': 'pub1.com', 'domain_link': 'http://pub1.com',  # noqa
+    'source_id': 1, 'source_name': 'AdsNative', 'source_slug': 'adsnative', 'source': 'AdsNative',
+}
+PUBLISHER_2__SOURCE_1_CAMPAIGN = {
+    'publisher_id': 'pub2.com__1', 'publisher': 'pub2.com', 'domain': 'pub2.com', 'domain_link': 'http://pub2.com',  # noqa
+    'source_id': 1, 'source_name': 'AdsNative', 'source_slug': 'adsnative', 'source': 'AdsNative',
+}
+PUBLISHER_2__SOURCE_2_CAMPAIGN = {
+    'publisher_id': 'pub2.com__2', 'publisher': 'pub2.com', 'domain': 'pub2.com', 'domain_link': 'http://pub2.com',  # noqa
+    'source_id': 2, 'source_name': 'Gravity', 'source_slug': 'gravity', 'source': 'Gravity',
+}
+
 
 @override_settings(R1_BLANK_REDIRECT_URL='http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/')
 class AnnotateTest(TestCase):
@@ -319,6 +332,36 @@ class AnnotateTest(TestCase):
         )
 
         self.assertEqual(rows, [PUBLISHER_1__SOURCE_1, PUBLISHER_2__SOURCE_1, PUBLISHER_2__SOURCE_2])
+
+    def test_annotate_publisher_campaign_level(self):
+        rows = [
+            {'publisher_id': 'pub1.com__1', 'source_id': 1},
+            {'publisher_id': 'pub2.com__1', 'source_id': 1},
+            {'publisher_id': 'pub2.com__2', 'source_id': 2},
+        ]
+
+        api_reports.annotate(
+            rows,
+            User.objects.get(pk=1),
+            ['publisher_id'],
+            {
+                'ad_group': models.AdGroup.objects.get(pk=1),
+                'allowed_content_ads': models.ContentAd.objects.filter(ad_group=1),
+                'show_archived': True,
+                'filtered_sources': models.Source.objects.all(),
+                'publisher_blacklist': models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1, 3, 5]),
+                'publisher_whitelist': models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[2, 4]),
+                'publisher_group_targeting': {
+                    'ad_group': {'included': set([2]), 'excluded': set([3])},
+                    'campaign': {'included': set([4]), 'excluded': set()},
+                    'account': {'included': set(), 'excluded': set([5])},
+                    'global': {'excluded': set([1])},
+                },
+            },
+            constants.Level.CAMPAIGNS,
+        )
+
+        self.assertEqual(rows, [PUBLISHER_1__SOURCE_1_CAMPAIGN, PUBLISHER_2__SOURCE_1_CAMPAIGN, PUBLISHER_2__SOURCE_2_CAMPAIGN])
 
     def test_annotate_breakdown(self):
         rows = [

@@ -25,6 +25,7 @@ class CustomHack(models.Model):
         choices=constants.Service.get_choices(),
         max_length=255
     )
+    trello_ticket_url = models.CharField(null=True, blank=True, max_length=255)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True,

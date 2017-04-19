@@ -1,3 +1,4 @@
+import datetime
 import pytz
 
 from django.conf import settings
@@ -64,7 +65,7 @@ class ScheduledReportQuerySet(models.QuerySet):
         due_reports = self.filter(state=constants.ScheduledReportState.ACTIVE)
 
         due_reports = due_reports.exclude(
-            last_sent_dt__gt=dates_helper.yesterday(today)
+            last_sent_dt__gt=dates_helper.yesterday(today) + datetime.timedelta(hours=1)
         )
 
         due_reports = due_reports.exclude(

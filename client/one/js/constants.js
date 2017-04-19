@@ -55,11 +55,6 @@ var constants = {
         warning: 'warning',
         danger: 'danger',
     },
-    adTargetDevice: {
-        DESKTOP: 'desktop',
-        TABLET: 'tablet',
-        MOBILE: 'mobile',
-    },
     chartMetric: {
         CLICKS: 'clicks',
         IMPRESSIONS: 'impressions',
@@ -743,7 +738,18 @@ var constants = {
         LAW: 'law',
         COUPONS: 'coupons',
         SHOPPING: 'shopping',
-    }
+    },
+    geolocationType: {
+        COUNTRY: 'COUNTRY',
+        REGION: 'REGION',
+        DMA: 'DMA',
+        CITY: 'CITY',
+        ZIP: 'ZIP',
+    },
+    zipTargetingType: {
+        INCLUDE: 'include',
+        EXCLUDE: 'exclude',
+    },
 };
 
 constants.levelStateParamToLevelMap = {};
@@ -811,11 +817,6 @@ var options = {
     priceDiscoveryOptions: [
         {name: 'Automatic', value: constants.priceDiscovery.AUTOMATIC},
         {name: 'Manual', value: constants.priceDiscovery.MANUAL},
-    ],
-    adTargetDevices: [
-        {name: 'Desktop', value: constants.adTargetDevice.DESKTOP},
-        {name: 'Tablet', value: constants.adTargetDevice.TABLET},
-        {name: 'Mobile', value: constants.adTargetDevice.MOBILE},
     ],
     adGroupChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
@@ -1379,6 +1380,10 @@ var options = {
         {name: 'Couponing', value: constants.interestCategory.COUPONS, internal: true},  // legacy, now in combination
         {name: 'Shopping', value: constants.interestCategory.SHOPPING, internal: true},  // legacy, now in combination
     ],
+    zipTargetingTypes: [
+        {name: 'Include', value: constants.zipTargetingType.INCLUDE},
+        {name: 'Exclude', value: constants.zipTargetingType.EXCLUDE},
+    ],
 };
 
 var defaults = {
@@ -1461,3 +1466,10 @@ constants.defaultAccountTypes = [
         name: 'PAAS',
     },
 ];
+
+constants.geolocationTypeText = {};
+constants.geolocationTypeText[constants.geolocationType.COUNTRY] = 'Country';
+constants.geolocationTypeText[constants.geolocationType.REGION] = 'Region';
+constants.geolocationTypeText[constants.geolocationType.DMA] = 'DMA®';
+constants.geolocationTypeText[constants.geolocationType.CITY] = 'City';
+constants.geolocationTypeText[constants.geolocationType.ZIP] = 'Postal Code';

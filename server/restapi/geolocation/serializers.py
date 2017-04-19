@@ -5,9 +5,10 @@ import dash.features.geolocation
 import dash.constants
 import restapi.fields
 import restapi.serializers
+import restapi.common.serializers
 
 
-class GeolocationQueryParamsExpectations(restapi.serializers.QueryParamsExpectations):
+class GeolocationQueryParamsExpectations(restapi.common.serializers.QueryParamsExpectations):
     types = restapi.fields.CommaListField(
         child=restapi.fields.DashConstantField(dash.constants.LocationType),
         max_length=10,

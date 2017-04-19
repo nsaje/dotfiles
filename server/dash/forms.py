@@ -4,6 +4,7 @@ import decimal
 import mimetypes
 import re
 
+import json
 import unicodecsv
 import dateutil.parser
 import rfc3987
@@ -32,6 +33,9 @@ from utils import dates_helper
 from zemauth.models import User as ZemUser
 
 import stats.constants
+
+import restapi.serializers.targeting
+import dash.compatibility.forms
 
 MAX_ADS_PER_UPLOAD = 100
 
@@ -321,11 +325,17 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
             'min_value': 'Please provide budget of at least $10.00.'
         }
     )
-    target_devices = forms.MultipleChoiceField(
-        choices=constants.AdTargetDevice.get_choices(),
-        error_messages={
-            'required': 'Please select at least one target device.',
-        }
+    target_devices = dash.compatibility.forms.RestFrameworkSerializer(
+        restapi.serializers.targeting.DevicesSerializer,
+        error_messages={'required': 'Please select at least one target device.'}
+    )
+    target_os = dash.compatibility.forms.RestFrameworkSerializer(
+        restapi.serializers.targeting.OSsSerializer,
+        required=False
+    )
+    target_placements = dash.compatibility.forms.RestFrameworkSerializer(
+        restapi.serializers.targeting.PlacementsSerializer,
+        required=False
     )
     target_regions = GeolocationMultipleChoiceField(
         required=False
@@ -905,12 +915,19 @@ class CampaignSettingsForm(PublisherGroupsFormMixin, forms.Form):
         empty_value=None
     )
     goal_quantity = forms.DecimalField(decimal_places=4)
-    target_devices = forms.MultipleChoiceField(
-        choices=constants.AdTargetDevice.get_choices(),
-        error_messages={
-            'required': 'Please select at least one target device.',
-        }
+    target_devices = dash.compatibility.forms.RestFrameworkSerializer(
+        restapi.serializers.targeting.DevicesSerializer,
+        error_messages={'required': 'Please select at least one target device.'}
     )
+    target_os = dash.compatibility.forms.RestFrameworkSerializer(
+        restapi.serializers.targeting.OSsSerializer,
+        required=False
+    )
+    target_placements = dash.compatibility.forms.RestFrameworkSerializer(
+        restapi.serializers.targeting.PlacementsSerializer,
+        required=False
+    )
+
     target_regions = GeolocationMultipleChoiceField(
         required=False
     )

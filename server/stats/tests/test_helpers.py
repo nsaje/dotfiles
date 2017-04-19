@@ -2,15 +2,14 @@ import copy
 import datetime
 from django.test import TestCase
 
-from zemauth.models import User
-
 from dash import models
-from dash.constants import Level, AccountType
+from dash.constants import AccountType
 from utils import test_helper
 from utils import exc
 
 from stats import helpers
 from stats import constants
+from stats import fields
 
 
 class HelpersTest(TestCase):
@@ -244,16 +243,16 @@ class HelpersTest(TestCase):
             self.assertFalse(helpers.should_query_dashapi_first('status', dimension), dimension)
             self.assertFalse(helpers.should_query_dashapi_first('clicks', dimension))
 
-        for field in helpers.CONTENT_ADS_FIELDS:
+        for field in fields.CONTENT_ADS_FIELDS:
             self.assertTrue(helpers.should_query_dashapi_first(field, 'content_ad_id'))
 
-        for field in helpers.SOURCE_FIELDS:
+        for field in fields.SOURCE_FIELDS:
             self.assertTrue(helpers.should_query_dashapi_first(field, 'source_id'))
 
-        for field in helpers.PUBLISHER_FIELDS:
+        for field in fields.PUBLISHER_FIELDS:
             self.assertFalse(helpers.should_query_dashapi_first(field, 'publisher_id'))
 
-        for field in helpers.OTHER_DASH_FIELDS:
+        for field in fields.OTHER_DASH_FIELDS:
             self.assertTrue(helpers.should_query_dashapi_first(field, 'campaign_id'))
             self.assertTrue(helpers.should_query_dashapi_first(field, 'account_id'))
             self.assertTrue(helpers.should_query_dashapi_first(field, 'ad_group_id'))

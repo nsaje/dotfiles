@@ -53,6 +53,10 @@ def _url_to_link(text):
     return URLS_RE.sub(r'<a href="\1" target="_blank">\1</a>', text)
 
 
+def _bold(text, bold):
+    return text.replace(bold, '<b>' + bold + '</b>')
+
+
 def prepare_recipients(email_text):
     return (email.strip() for email in email_text.split(',') if email)
 
@@ -549,12 +553,7 @@ def send_ga_setup_instructions(user):
     email.send(fail_silently=True)
 
 
-def send_async_report(
-        user, recipients, report_path, start_date, end_date, expiry_date, filtered_sources,
-        show_archived, show_blacklisted_publishers,
-        view, breakdowns, columns, include_totals,
-        ad_group_name, campaign_name, account_name):
-
+def _format_report_filters(show_archived, show_blacklisted_publishers, filtered_sources):
     filters = []
     if show_archived:
         filters.append('Show archived items')
@@ -563,6 +562,16 @@ def send_async_report(
             dash.constants.PublisherBlacklistFilter.get_text(show_blacklisted_publishers).lower()))
     if filtered_sources:
         filters.extend([x.name for x in filtered_sources])
+    return filters
+
+
+def send_async_report(
+        user, recipients, report_path, start_date, end_date, expiry_date, filtered_sources,
+        show_archived, show_blacklisted_publishers,
+        view, breakdowns, columns, include_totals,
+        ad_group_name, campaign_name, account_name):
+
+    filters = _format_report_filters(show_archived, show_blacklisted_publishers, filtered_sources)
 
     subject, plain_body, _ = format_email(
         dash.constants.EmailTemplateType.ASYNC_REPORT_RESULTS,
@@ -584,6 +593,43 @@ def send_async_report(
         settings.FROM_EMAIL
     ), (recipients or []))
     email.attach_alternative(format_template(subject, _url_to_link(plain_body), user=user), "text/html")
+    email.send(fail_silently=False)
+
+
+def send_async_scheduled_report(
+        user, recipients, report_name, frequency, report_path, expiry_date, start_date, end_date,
+        filtered_sources, show_archived, show_blacklisted_publishers, include_totals,
+        view, breakdowns, columns, ad_group_name, campaign_name, account_name):
+
+    filters = _format_report_filters(show_archived, show_blacklisted_publishers, filtered_sources)
+
+    subject, plain_body, _ = format_email(
+        dash.constants.EmailTemplateType.ASYNC_SCHEDULED_REPORT_RESULTS,
+        report_name=report_name,
+        frequency=frequency.lower(),
+        cancel_url='https://one.zemanta.com/v2/reports/accounts',
+        link_url=report_path,
+        account_name=account_name or '/',
+        campaign_name=campaign_name or '/',
+        ad_group_name=ad_group_name or '/',
+        start_date=dates_helper.format_date_mmddyyyy(start_date),
+        end_date=dates_helper.format_date_mmddyyyy(end_date),
+        expiry_date=dates_helper.format_date_mmddyyyy(expiry_date),
+        tab_name=view,
+        breakdown=', '.join(breakdowns) or '/',
+        columns=', '.join(columns),
+        filters=', '.join(filters) if filters else '/',
+        include_totals='Yes' if include_totals else 'No',
+    )
+
+    html_body = _bold(plain_body, 'Report settings')
+    html_body = _bold(html_body, 'Note:')
+    html_body = _url_to_link(html_body)
+
+    email = EmailMultiAlternatives(subject, plain_body, 'Zemanta <{}>'.format(
+        settings.FROM_EMAIL
+    ), (recipients or []))
+    email.attach_alternative(format_template(subject, html_body, user=user), "text/html")
     email.send(fail_silently=False)
 
 

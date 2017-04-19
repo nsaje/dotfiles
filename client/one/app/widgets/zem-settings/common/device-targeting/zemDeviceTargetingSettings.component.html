@@ -30,7 +30,7 @@
 
 
     <div ng-if="$ctrl.hasPermission('zemauth.can_set_advanced_device_targeting')" is-internal="zemauth.can_set_advanced_device_targeting">
-        <div class="collapsable zem-advanced-device-targeting__collapsable" ng-show="$ctrl.showAdvanceSettings">
+        <div class="collapsable zem-advanced-device-targeting__collapsable" ng-show="$ctrl.showAdvanceGroup">
             <h3 class="custom-panel__sub-title">Advanced device targeting options</h3>
             <div class="form">
                 <div class="form__label">Choose operating system</div>
@@ -48,10 +48,10 @@
         </div>
 
         <a href=""
-           ng-class="{ 'collapsable__show-collapsed': !$ctrl.showAdvanceSettings,
-                       'collapsable__hide-collapsed': $ctrl.showAdvanceSettings }"
-           ng-click="$ctrl.showAdvanceSettings = !$ctrl.showAdvanceSettings">
-            {{$ctrl.showAdvanceSettings ? 'Hide':'Show'}} advanced device targeting options
+           ng-class="{ 'collapsable__show-collapsed': !$ctrl.showAdvanceGroup,
+                       'collapsable__hide-collapsed': $ctrl.showAdvanceGroup }"
+           ng-click="$ctrl.showAdvanceGroup = !$ctrl.showAdvanceGroup">
+            {{$ctrl.showAdvanceGroup ? 'Hide':'Show'}} advanced device targeting options
         </a>
     </div>
 </div>

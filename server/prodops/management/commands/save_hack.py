@@ -1,6 +1,8 @@
 import utils.command_helpers
 import dash.models
 
+from django.db.models import Q
+
 
 class Command(utils.command_helpers.ExceptionCommand):
     help = "Store hack"
@@ -14,6 +16,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         parser.add_argument('--agencies', dest='agencies', default='')
         parser.add_argument('--source', dest='source', default='b1')
         parser.add_argument('--details', dest='details', default='')
+        parser.add_argument('--trello', dest='trelo', default='')
 
     def _print(self, msg):
         self.stdout.write(u'{}\n'.format(msg))
@@ -21,14 +24,21 @@ class Command(utils.command_helpers.ExceptionCommand):
     def handle(self, *args, **options):
         hack = {}
         if options['source']:
-            if options['source'] == 'b1':
+            source = options['sourrce']
+            if source == 'b1':
                 hack['rtb_only'] = True
-            else:
+            elif source.isdigit():
                 hack['source_id'] = int(options['source'])
+            else:
+                hack['source'] = dash.models.Source.objects.get(
+                    Q(bidder_slug='b1_{}'.format(source)) | Q(bidder_slug=source)
+                )
         hack['summary'] = options['summary']
         hack['service'] = options['service']
         if options['details']:
             hack['details'] = options['details']
+        if options['trello']:
+            hack['trello_ticket_url'] = options['trello']
         saved_hacks = 0
 
         for ad_group in filter(bool, options.get('ad_groups', '').split(',')):

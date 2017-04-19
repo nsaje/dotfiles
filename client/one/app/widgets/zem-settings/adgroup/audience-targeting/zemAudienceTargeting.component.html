@@ -40,12 +40,12 @@
     </div>
 
     <div ng-if="$ctrl.retargetingEnabled && $ctrl.entity.warnings.retargeting === undefined">
-        <zem-inclusion-targeting-list
+        <zem-inclusion-targeting-list-legacy
             texts="$ctrl.texts"
             targetings="$ctrl.allTargetings"
             add-targeting="$ctrl.addTargeting(targeting)"
             remove-targeting="$ctrl.removeTargeting(targeting)"
-        ></zem-inclusion-targeting-list>
+        ></zem-inclusion-targeting-list-legacy>
     </div>
 
     <div class="message message--error" ng-repeat="error in $ctrl.errors.retargetingAdGroups">{{ error }}</div>

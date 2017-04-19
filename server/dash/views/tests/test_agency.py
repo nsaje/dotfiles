@@ -39,7 +39,7 @@ class AdGroupSettingsTest(TestCase):
                 'cpc_cc': '0.3000',
                 'max_cpm': '1.6000',
                 'daily_budget_cc': '200.0000',
-                'target_devices': ['desktop'],
+                'target_devices': ['DESKTOP'],
                 'target_regions': ['693', 'GB'],
                 'exclusion_target_regions': [],
                 'name': 'Test ad group name',
@@ -101,7 +101,9 @@ class AdGroupSettingsTest(TestCase):
                 'archived': False,
                 'action_is_waiting': False,
                 'default_settings': {
-                    'target_devices': ['mobile'],
+                    'target_devices': ['MOBILE'],
+                    'target_os': [],
+                    'target_placements': [],
                     'target_regions': ['NC', '501'],
                     'exclusion_target_regions': [],
                 },
@@ -165,7 +167,9 @@ class AdGroupSettingsTest(TestCase):
                     'name': 'test adgroup 1',
                     'start_date': '2015-03-02',
                     'state': 2,
-                    'target_devices': ['desktop', 'mobile'],
+                    'target_devices': ['DESKTOP', 'MOBILE'],
+                    'target_os': [],
+                    'target_placements': [],
                     'target_regions': ['GB', 'US', 'CA'],
                     'exclusion_target_regions': [],
                     'autopilot_state': constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
@@ -310,7 +314,9 @@ class AdGroupSettingsTest(TestCase):
                     'archived': False,
                     'action_is_waiting': False,
                     'default_settings': {
-                        'target_devices': ['mobile'],
+                        'target_devices': ['MOBILE'],
+                        'target_os': [],
+                        'target_placements': [],
                         'target_regions': ['NC', '501'],
                         'exclusion_target_regions': [],
                     },
@@ -324,7 +330,9 @@ class AdGroupSettingsTest(TestCase):
                         'name': 'Test ad group name',
                         'start_date': '2015-05-01',
                         'state': 2,
-                        'target_devices': ['desktop'],
+                        'target_devices': ['DESKTOP'],
+                        'target_os': [],
+                        'target_placements': [],
                         'target_regions': ['693', 'GB'],
                         'exclusion_target_regions': [],
                         'autopilot_daily_budget': '50.00',
@@ -403,7 +411,9 @@ class AdGroupSettingsTest(TestCase):
                     'action_is_waiting': False,
                     'archived': False,
                     'default_settings': {
-                        'target_devices': ['mobile'],
+                        'target_devices': ['MOBILE'],
+                        'target_os': [],
+                        'target_placements': [],
                         'target_regions': ['NC', '501'],
                         'exclusion_target_regions': [],
                     },
@@ -417,7 +427,9 @@ class AdGroupSettingsTest(TestCase):
                         'name': 'Test ad group name',
                         'start_date': '2015-05-01',
                         'state': 2,
-                        'target_devices': ['desktop'],
+                        'target_devices': ['DESKTOP'],
+                        'target_os': [],
+                        'target_placements': [],
                         'target_regions': ['693', 'GB'],
                         'exclusion_target_regions': [],
                         'autopilot_daily_budget': '50.00',
@@ -575,7 +587,9 @@ class AdGroupSettingsTest(TestCase):
                     'archived': False,
                     'action_is_waiting': False,
                     'default_settings': {
-                        'target_devices': ['mobile'],
+                        'target_devices': ['MOBILE'],
+                        'target_os': [],
+                        'target_placements': [],
                         'target_regions': ['NC', '501'],
                         'exclusion_target_regions': [],
                     },
@@ -589,7 +603,9 @@ class AdGroupSettingsTest(TestCase):
                         'name': 'Test ad group name',
                         'start_date': '2015-05-01',
                         'state': 2,
-                        'target_devices': ['desktop'],
+                        'target_devices': ['DESKTOP'],
+                        'target_os': [],
+                        'target_placements': [],
                         'target_regions': ['693', 'GB'],
                         'exclusion_target_regions': [],
                         'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
@@ -664,7 +680,9 @@ class AdGroupSettingsTest(TestCase):
                     'action_is_waiting': False,
                     'archived': False,
                     'default_settings': {
-                        'target_devices': ['mobile'],
+                        'target_devices': ['MOBILE'],
+                        'target_os': [],
+                        'target_placements': [],
                         'target_regions': ['NC', '501'],
                         'exclusion_target_regions': [],
                     },
@@ -678,7 +696,9 @@ class AdGroupSettingsTest(TestCase):
                         'name': 'Test ad group name',
                         'start_date': '2015-05-01',
                         'state': 2,
-                        'target_devices': ['desktop'],
+                        'target_devices': ['DESKTOP'],
+                        'target_os': [],
+                        'target_placements': [],
                         'target_regions': ['693', 'GB'],
                         'exclusion_target_regions': [],
                         'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
@@ -777,13 +797,16 @@ class AdGroupSettingsTest(TestCase):
                 follow=True
             )
             mock_k1_ping.assert_called_with(1, msg='AdGroupSettings.put')
+            self.maxDiff = None
 
             self.assertEqual(json.loads(response.content), {
                 'data': {
                     'action_is_waiting': False,
                     'archived': False,
                     'default_settings': {
-                        'target_devices': ['mobile'],
+                        'target_devices': ['MOBILE'],
+                        'target_os': [],
+                        'target_placements': [],
                         'target_regions': ['NC', '501'],
                         'exclusion_target_regions': [],
                     },
@@ -797,7 +820,9 @@ class AdGroupSettingsTest(TestCase):
                         'name': 'Test ad group name',
                         'start_date': '2015-05-01',
                         'state': 2,
-                        'target_devices': ['desktop'],
+                        'target_devices': ['DESKTOP'],
+                        'target_os': [],
+                        'target_placements': [],
                         'target_regions': ['693', 'GB'],
                         'exclusion_target_regions': [],
                         'autopilot_state': constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
@@ -2303,7 +2328,7 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(content['data']['settings']['name'], 'test campaign 1')
         self.assertEqual(content['data']['settings']['campaign_goal'], 3)
         self.assertEqual(content['data']['settings']['goal_quantity'], '0.00')
-        self.assertEqual(content['data']['settings']['target_devices'], ['mobile'])
+        self.assertEqual(content['data']['settings']['target_devices'], ['MOBILE'])
         self.assertEqual(content['data']['settings']['target_regions'], ['NC', '501'])
         self.assertEqual(content['data']['settings']['exclusion_target_regions'], [])
         self.assertEqual(content['data']['settings']['enable_ga_tracking'], True)
@@ -2356,7 +2381,7 @@ class CampaignSettingsTest(TestCase):
                     'name': 'test campaign 2',
                     'campaign_goal': 2,
                     'goal_quantity': 10,
-                    'target_devices': ['desktop'],
+                    'target_devices': ['DESKTOP'],
                     'target_regions': ['CA', '502'],
                     'exclusion_target_regions': [],
                     'campaign_manager': 1,
@@ -2421,7 +2446,7 @@ class CampaignSettingsTest(TestCase):
                     'name': 'test campaign 2',
                     'campaign_goal': 2,
                     'goal_quantity': 10,
-                    'target_devices': ['desktop'],
+                    'target_devices': ['DESKTOP'],
                     'target_regions': ['CA', '502'],
                     'exclusion_target_regions': [],
                     'enable_ga_tracking': False,
@@ -2460,7 +2485,7 @@ class CampaignSettingsTest(TestCase):
                     'name': 'test campaign 2',
                     'campaign_goal': 2,
                     'goal_quantity': 10,
-                    'target_devices': ['desktop'],
+                    'target_devices': ['DESKTOP'],
                     'target_regions': ['CA', '502'],
                     'exclusion_target_regions': [],
                     'enable_ga_tracking': False,
@@ -2513,7 +2538,7 @@ class CampaignSettingsTest(TestCase):
                     'name': 'test campaign 2',
                     'campaign_goal': 2,
                     'goal_quantity': 10,
-                    'target_devices': ['desktop'],
+                    'target_devices': ['DESKTOP'],
                     'target_regions': ['CA', '502'],
                     'exclusion_target_regions': [],
                     'enable_ga_tracking': False,
@@ -2568,7 +2593,7 @@ class CampaignSettingsTest(TestCase):
                     'name': 'test campaign 2',
                     'campaign_goal': 2,
                     'goal_quantity': 10,
-                    'target_devices': ['desktop'],
+                    'target_devices': ['DESKTOP'],
                     'target_regions': ['CA', '502'],
                     'exclusion_target_regions': [],
                     'enable_ga_tracking': False,

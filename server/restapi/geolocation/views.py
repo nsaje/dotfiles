@@ -1,4 +1,4 @@
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.response import Response
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 
@@ -9,6 +9,7 @@ import serializers
 
 class GeolocationListView(restapi.views.RESTAPIBaseView):
     renderer_classes = (CamelCaseJSONRenderer,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         qpe = serializers.GeolocationQueryParamsExpectations(data=request.query_params)

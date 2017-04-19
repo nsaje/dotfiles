@@ -21,8 +21,6 @@ describe('zemScheduledReportsStateService', function () {
     it('should create new state instance', function () {
         var stateService = zemScheduledReportsStateService.createInstance();
         expect(stateService.getState).toBeDefined();
-        expect(stateService.reloadReports).toBeDefined();
-        expect(stateService.removeReport).toBeDefined();
     });
 
     it('should correctly update state when successfully getting data from endpoint', function () {

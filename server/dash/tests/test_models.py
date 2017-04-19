@@ -51,7 +51,8 @@ class AdGroupSettingsTest(TestCase):
             'target_os': [{
                 'name': 'android',
                 'version': {
-                    'exact': 'android_6_0',
+                    'min': 'android_6_0',
+                    'max': 'android_6_0',
                 }
             }],
             'target_placements': ['app'],

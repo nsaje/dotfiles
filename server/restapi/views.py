@@ -30,7 +30,7 @@ from utils import json_helper, exc, dates_helper, redirector_helper, bidder_help
 from redshiftapi import quickstats
 
 import restapi.authentication
-
+import restapi.serializers.targeting
 import fields
 
 import dash.features.geolocation
@@ -251,6 +251,9 @@ class CampaignSerializer(SettingsSerializer):
                 },
             },
             'targeting': {
+                'devices': settings['target_devices'],
+                'placements': settings['target_placements'],
+                'os': settings['target_os'],
                 'publisherGroups': {
                     'included': settings['whitelist_publisher_groups'],
                     'excluded': settings['blacklist_publisher_groups'],
@@ -273,6 +276,11 @@ class CampaignSerializer(SettingsSerializer):
             'adobe_tracking_param': data['tracking']['adobe']['trackingParameter'],
             'whitelist_publisher_groups': data['targeting']['publisherGroups']['included'],
             'blacklist_publisher_groups': data['targeting']['publisherGroups']['excluded'],
+
+            # TODO (refactor-workaround) Deserialization done in Django View
+            'target_devices': data['targeting']['devices'],
+            'target_placements': data['targeting']['placements'],
+            'target_os': data['targeting']['os'],
         }
         if (settings['iab_category'] != fields.NOT_PROVIDED and
                 settings['iab_category'] != dash.constants.IABCategory.IAB24 and
@@ -331,7 +339,9 @@ class AdGroupSerializer(SettingsSerializer):
                     'included': self._partition_regions(settings['target_regions']),
                     'excluded': self._partition_regions(settings['exclusion_target_regions']),
                 },
-                'devices': map(lambda x: fields.DashConstantField(constants.AdTargetDevice).to_representation(x), settings['target_devices']),
+                'devices': settings['target_devices'],
+                'os': settings['target_os'],
+                'placements': settings['target_placements'],
                 'interest': {
                     'included': map(lambda x: fields.DashConstantField(constants.InterestCategory).to_representation(x), settings['interest_targeting']),
                     'excluded': map(lambda x: fields.DashConstantField(constants.InterestCategory).to_representation(x), settings['exclusion_interest_targeting']),
@@ -348,7 +358,6 @@ class AdGroupSerializer(SettingsSerializer):
             },
             'dayparting': settings['dayparting'],
         }
-
         return ret
 
     def to_internal_value(self, external_data):
@@ -366,7 +375,6 @@ class AdGroupSerializer(SettingsSerializer):
             'tracking_code': data['trackingCode'],
             'target_regions': self._unpartition_regions(data['targeting']['geo']['included']),
             'exclusion_target_regions': self._unpartition_regions(data['targeting']['geo']['excluded']),
-            'target_devices': fields.DashConstantField(constants.AdTargetDevice).to_internal_value_many(data['targeting']['devices']),
             'interest_targeting': fields.DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['included']),
             'exclusion_interest_targeting': fields.DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['excluded']),
             'bluekai_targeting': data['targeting']['demographic'],
@@ -375,8 +383,12 @@ class AdGroupSerializer(SettingsSerializer):
             'dayparting': data['dayparting'],
             'whitelist_publisher_groups': data['targeting']['publisherGroups']['included'],
             'blacklist_publisher_groups': data['targeting']['publisherGroups']['excluded'],
-        }
 
+            # TODO (refactor-workaround) Deserialization done in Django Views
+            'target_devices': data['targeting']['devices'],
+            'target_placements': data['targeting']['placements'],
+            'target_os': data['targeting']['os'],
+        }
         return {'settings': {k: v for k, v in settings.items() if v != fields.NOT_PROVIDED}}
 
     @staticmethod

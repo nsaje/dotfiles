@@ -24,6 +24,8 @@ from utils import redirector_helper
 from utils import bidder_helper
 from utils import test_helper
 
+import restapi.serializers.targeting
+
 
 TODAY = datetime.datetime(2016, 1, 15).date()
 
@@ -188,6 +190,9 @@ class CampaignsTest(RESTAPITest):
         adobe_tracking_param='cid',
         whitelist_publisher_groups=[153],
         blacklist_publisher_groups=[154],
+        target_devices=[constants.AdTargetDevice.DESKTOP],
+        target_placements=[constants.Placement.APP],
+        target_os=[{'name': constants.OperatingSystem.ANDROID}],
             ):
         representation = {
             'id': str(id),
@@ -207,6 +212,9 @@ class CampaignsTest(RESTAPITest):
                 }
             },
             'targeting': {
+                'devices': restapi.serializers.targeting.DevicesSerializer(target_devices).data,
+                'placements': restapi.serializers.targeting.PlacementsSerializer(target_placements).data,
+                'os': restapi.serializers.targeting.OSsSerializer(target_os).data,
                 'publisherGroups': {
                     'included': whitelist_publisher_groups,
                     'excluded': blacklist_publisher_groups,
@@ -231,6 +239,9 @@ class CampaignsTest(RESTAPITest):
             adobe_tracking_param=settings_db.adobe_tracking_param,
             whitelist_publisher_groups=settings_db.whitelist_publisher_groups,
             blacklist_publisher_groups=settings_db.blacklist_publisher_groups,
+            target_devices=settings_db.target_devices,
+            target_placements=settings_db.target_placements,
+            target_os=settings_db.target_os,
         )
         self.assertEqual(expected, campaign)
 
@@ -490,7 +501,9 @@ class AdGroupsTest(RESTAPITest):
         tracking_code='a=b',
         target_regions={'countries': ['US']},
         exclusion_target_regions={},
-        target_devices=['desktop'],
+        target_devices=[constants.AdTargetDevice.DESKTOP],
+        target_placements=[constants.Placement.APP],
+        target_os=[{'name': constants.OperatingSystem.ANDROID}],
         interest_targeting=['women', 'fashion'],
         exclusion_interest_targeting=['politics'],
         demographic_targeting=['and', 'bluekai:123', ['or', 'liveramp:123', 'outbrain:123']],
@@ -534,7 +547,9 @@ class AdGroupsTest(RESTAPITest):
                     'included': final_target_regions,
                     'excluded': final_exclusion_target_regions,
                 },
-                'devices': [constants.AdTargetDevice.get_name(i) for i in target_devices],
+                'devices': restapi.serializers.targeting.DevicesSerializer(target_devices).data,
+                'placements': restapi.serializers.targeting.PlacementsSerializer(target_placements).data,
+                'os': restapi.serializers.targeting.OSsSerializer(target_os).data,
                 'interest': {
                     'included': [constants.InterestCategory.get_name(i) for i in interest_targeting],
                     'excluded': [constants.InterestCategory.get_name(i) for i in exclusion_interest_targeting],
@@ -593,7 +608,6 @@ class AdGroupsTest(RESTAPITest):
             daily_budget=settings_db.daily_budget_cc.quantize(Decimal('1.00')),
             tracking_code=settings_db.tracking_code,
             target_regions=self._partition_regions(settings_db.target_regions),
-            target_devices=settings_db.target_devices,
             interest_targeting=settings_db.interest_targeting,
             exclusion_interest_targeting=settings_db.exclusion_interest_targeting,
             demographic_targeting=settings_db.bluekai_targeting,
@@ -602,6 +616,9 @@ class AdGroupsTest(RESTAPITest):
             dayparting=settings_db.dayparting,
             whitelist_publisher_groups=settings_db.whitelist_publisher_groups,
             blacklist_publisher_groups=settings_db.blacklist_publisher_groups,
+            target_devices=settings_db.target_devices,
+            target_placements=settings_db.target_placements,
+            target_os=settings_db.target_os,
         )
         self.assertEqual(expected, adgroup)
 

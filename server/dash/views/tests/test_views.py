@@ -1214,8 +1214,13 @@ class CampaignOverviewTest(TestCase):
             return matching_settings[0]
         return None
 
-    @patch('reports.redshift.get_cursor')
-    def test_run_empty(self, cursor):
+    @patch('redshiftapi.api_breakdowns.query_all')
+    def test_run_empty(self, mock_query_all):
+        mock_query_all.return_value = [{
+            'campaign_id': 1,
+            'source_id': 9,
+            'e_yesterday_cost': decimal.Decimal('0.0'),
+        }]
         req = RequestFactory().get('/')
         req.user = self.user
 
@@ -1237,11 +1242,6 @@ class CampaignOverviewTest(TestCase):
             new_adgss.save(req)
 
         self.setUpPermissions()
-        cursor().dictfetchall.return_value = [{
-            'adgroup_id': 1,
-            'source_id': 9,
-            'cost_cc_sum': 0.0
-        }]
 
         campaign = models.Campaign.objects.get(pk=1)
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()

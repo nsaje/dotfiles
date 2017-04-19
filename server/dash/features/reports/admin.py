@@ -17,7 +17,7 @@ class ReportJobAdmin(admin.ModelAdmin):
         'status',
     )
 
-    readonly_fields = ('created_dt', 'user', 'query', 'result')
+    readonly_fields = ('created_dt', 'user', 'query', 'result', 'scheduled_report')
 
     ordering = ('-created_dt', )
 
