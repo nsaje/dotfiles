@@ -14,6 +14,7 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         var STATUS_CODE_IN_PROGRESS = 1;
         var STATUS_CODE_ERROR = 2;
         var STATUS_TEST_SAVE_ERROR = 'An error occurred while saving. Please correct the marked fields and save again.';
+        var HEADER_OFFSET = 78;
 
         var $ctrl = this;
         $ctrl.constants = constants;
@@ -163,7 +164,7 @@ angular.module('one.widgets').component('zemSettingsContainer', {
 
             $timeout(function () {
                 $('.zem-settings__body').animate ({
-                    scrollTop: element.offset().top,
+                    scrollTop: element.offset().top - HEADER_OFFSET,
                 }, 500);
             });
         }

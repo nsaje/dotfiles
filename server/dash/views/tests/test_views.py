@@ -490,6 +490,11 @@ class CampaignAdGroups(TestCase):
     @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group', autospec=True)
     def test_put(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup):
         campaign = models.Campaign.objects.get(pk=1)
+        models.CampaignGoal.objects.create(
+            type=constants.CampaignGoalKPI.TIME_ON_SITE,
+            campaign=campaign,
+            primary=True,
+        )
         models.Source.objects.all().update(maintenance=False)
         response = self.client.put(
             reverse('campaign_ad_groups', kwargs={'campaign_id': campaign.id}),

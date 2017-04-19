@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
     bindings: {
         parentEntity: '<',
     },
-    controller: function (zemCreateEntityActionService) {
+    controller: function (zemCreateEntityActionService, zemToastsService) {
         var $ctrl = this;
         var MAP_PARENT_TYPE = {};
         MAP_PARENT_TYPE[constants.entityType.ACCOUNT] = constants.entityType.CAMPAIGN;
@@ -28,9 +28,13 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
 
         function createEntity () {
             $ctrl.createInProgress = true;
-            zemCreateEntityActionService.createEntity($ctrl.entityType, $ctrl.parentEntity).finally(function () {
-                $ctrl.createInProgress = false;
-            });
+            zemCreateEntityActionService
+                .createEntity($ctrl.entityType, $ctrl.parentEntity)
+                .catch(function (data) {
+                    zemToastsService.error(data.data.data, {timeout: 7000});
+                }).finally(function () {
+                    $ctrl.createInProgress = false;
+                });
         }
     },
 });
