@@ -11,7 +11,7 @@ import oauth2_provider.views
 from zemauth.forms import AuthenticationForm
 
 import k1api.views
-import reports.views
+import etl.crossvalidation.views
 import zemauth.views
 
 import dash.views.daily_stats
@@ -779,7 +779,7 @@ urlpatterns += [
 urlpatterns += [
     url(
         r'^api/crossvalidation$',
-        reports.views.crossvalidation,
+        etl.crossvalidation.views.crossvalidation,
         name='api.crossvalidation',
     )
 ]
