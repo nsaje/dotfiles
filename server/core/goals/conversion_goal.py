@@ -2,8 +2,8 @@
 
 from django.db import models
 
-import reports.constants
 from dash import constants
+import dash.features.performance_tracking.constants
 
 
 class ConversionGoal(models.Model):
@@ -31,9 +31,9 @@ class ConversionGoal(models.Model):
         # map conversion goal to the key under which they are stored in stats
         # database
         if self.type == constants.ConversionGoalType.GA:
-            prefix = reports.constants.ReportType.GOOGLE_ANALYTICS
+            prefix = dash.features.performance_tracking.constants.ReportType.GOOGLE_ANALYTICS
         elif self.type == constants.ConversionGoalType.OMNITURE:
-            prefix = reports.constants.ReportType.OMNITURE
+            prefix = dash.features.performance_tracking.constants.ReportType.OMNITURE
         else:
             raise Exception('Invalid conversion goal type')
 

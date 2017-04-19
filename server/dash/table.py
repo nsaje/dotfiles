@@ -18,7 +18,6 @@ from utils.sort_helper import sort_results, sort_rows_by_order_and_archived
 import reports.api
 import reports.api_helpers
 import reports.api_contentads
-import reports.constants
 import reports.models
 from analytics.projections import BudgetProjections
 
