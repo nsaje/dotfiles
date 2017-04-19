@@ -8,7 +8,6 @@ from django.db.models import Prefetch
 
 import dash.models
 import dash.constants
-import reports.models
 import utils.dates_helper
 
 from utils import converters
@@ -94,7 +93,7 @@ class BudgetProjections(object):
         ).prefetch_related(
             Prefetch(
                 'statements',
-                queryset=reports.models.BudgetDailyStatement.objects.filter(
+                queryset=dash.models.BudgetDailyStatement.objects.filter(
                     date__gte=self.confidence_date,
                     date__lte=self.projection_date
                 ).order_by('date')
@@ -165,7 +164,7 @@ class BudgetProjections(object):
             return {}
 
         agency_ids = dash.models.Account.objects.filter(pk__in=self.accounts).values_list('agency_id', flat=True)
-        res = reports.models.BudgetDailyStatement.objects.filter(
+        res = dash.models.BudgetDailyStatement.objects.filter(
             budget__campaign__account__agency_id__in=agency_ids).filter(
                 media_spend_nano__gt=0
         ).values_list('budget__campaign__account_id', 'budget__campaign__account__agency_id')

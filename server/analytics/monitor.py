@@ -4,7 +4,6 @@ from decimal import Decimal
 
 from django.db.models import F, Sum
 
-import reports.models
 import dash.models
 import dash.constants
 import automation.models
@@ -64,7 +63,7 @@ def audit_spend_integrity(date, account_id=None):
         tbl for tbl in etl.refresh_k1.NEW_MATERIALIZED_VIEWS
         if tbl.TABLE_NAME.startswith('mv_')
     ]
-    spend_queryset = reports.models.BudgetDailyStatement.objects.filter(
+    spend_queryset = dash.models.BudgetDailyStatement.objects.filter(
         date=date
     )
     if account_id:
@@ -94,7 +93,7 @@ def audit_spend_patterns(date=None, threshold=0.8, first_in_month_threshold=0.6,
     if date is None:
         date = datetime.datetime.utcnow().date() - datetime.timedelta(1)
     total_spend = Sum(F('media_spend_nano') + F('data_spend_nano') + F('license_fee_nano'))
-    result = reports.models.BudgetDailyStatement.objects.filter(
+    result = dash.models.BudgetDailyStatement.objects.filter(
         date__lte=date,
         date__gte=date - datetime.timedelta(day_range),
     ).values('date').annotate(

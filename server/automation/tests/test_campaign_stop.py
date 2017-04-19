@@ -7,7 +7,6 @@ from django.test import TestCase
 from automation import campaign_stop
 from dash import constants
 import dash.models
-import reports.models
 
 from utils import dates_helper, test_helper
 
@@ -1865,7 +1864,7 @@ class MinimumBudgetAmountTestCase(TestCase):
             Decimal('261.1111111111111111111111111')  # max daily caps without spend
         )
 
-        reports.models.BudgetDailyStatement.objects.create(
+        dash.models.BudgetDailyStatement.objects.create(
             date=datetime.date(2016, 4, 4),
             media_spend_nano=225000000000,
             license_fee_nano=22500000000,
@@ -1879,7 +1878,7 @@ class MinimumBudgetAmountTestCase(TestCase):
             Decimal('508.6111111111111111111111111')  # max daily caps without spend
         )
 
-        reports.models.BudgetDailyStatement.objects.create(
+        dash.models.BudgetDailyStatement.objects.create(
             date=datetime.date(2016, 4, 5),
             media_spend_nano=125000000000,
             license_fee_nano=12500000000,

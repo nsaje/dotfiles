@@ -16,6 +16,7 @@ from utils import dates_helper
 from utils import lc_helper
 
 
+import core.bcm
 import core.bcm.helpers
 import core.common
 import core.history
@@ -223,13 +224,12 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
     def get_latest_statement_qs(self):
         latest_statement = self.get_latest_statement()
         if not latest_statement:
-            import reports.models
-            return reports.models.BudgetDailyStatement.objects.none()
+            return core.bcm.BudgetDailyStatement.objects.none()
         return self.statements.filter(id=latest_statement.id)
 
     def get_spend_data(self, date=None, use_decimal=False):
-        import reports.budget_helpers
-        return reports.budget_helpers.calculate_spend_data(
+        import dash.budget_helpers
+        return dash.budget_helpers.calculate_spend_data(
             self.statements,
             date=date,
             use_decimal=use_decimal
@@ -238,8 +238,8 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
     def get_daily_spend(self, date, use_decimal=False):
         statement = date and self.statements.filter(date=date)\
             or self.get_latest_statement_qs()
-        import reports.budget_helpers
-        return reports.budget_helpers.calculate_spend_data(
+        import dash.budget_helpers
+        return dash.budget_helpers.calculate_spend_data(
             statement,
             date=date,
             use_decimal=use_decimal

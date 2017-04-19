@@ -14,9 +14,7 @@ from automation import autopilot_settings, models
 
 import dash.constants
 import dash.models
-
-import reports.budget_helpers
-import reports.models
+import dash.budget_helpers
 
 import redshiftapi.api_breakdowns
 
@@ -1302,11 +1300,11 @@ def _get_past_7_days_data(campaign):
 
 def _get_yesterday_budget_spend(campaign):
     yesterday = dates_helper.local_today() - datetime.timedelta(days=1)
-    statements = reports.models.BudgetDailyStatement.objects.filter(
+    statements = dash.models.BudgetDailyStatement.objects.filter(
         budget__campaign=campaign,
         date=yesterday,
     )
-    spend_data = reports.budget_helpers.calculate_spend_data(statements, use_decimal=True)
+    spend_data = dash.budget_helpers.calculate_spend_data(statements, use_decimal=True)
 
     return spend_data['media'] + spend_data['data']
 

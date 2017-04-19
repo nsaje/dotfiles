@@ -7,6 +7,7 @@ from django.db import transaction
 from django.db.models import Sum
 
 import dash.models
+
 import reports.models
 
 from utils import dates_helper
@@ -17,7 +18,7 @@ def _generate_statements(date, campaign):
     budgets = dash.models.BudgetLineItem.objects.filter(campaign_id=campaign.id,
                                                         start_date__lte=date,
                                                         end_date__gte=date)
-    existing_statements = reports.models.BudgetDailyStatement.objects.filter(
+    existing_statements = dash.models.BudgetDailyStatement.objects.filter(
         date__lte=date,
         budget__campaign_id=campaign.id)
     existing_statements.filter(date=date).delete()
@@ -69,7 +70,7 @@ def _generate_statements(date, campaign):
         total_data_nano -= attributed_data_nano
 
         margin_nano = (attributed_media_nano + attributed_data_nano + license_fee_nano) * budget.margin
-        reports.models.BudgetDailyStatement.objects.create(
+        dash.models.BudgetDailyStatement.objects.create(
             budget_id=budget.id,
             date=date,
             media_spend_nano=attributed_media_nano,
@@ -85,7 +86,7 @@ def _generate_statements(date, campaign):
 
 def _get_dates(date, campaign):
     budgets = dash.models.BudgetLineItem.objects.filter(campaign_id=campaign.id)
-    existing_statements = reports.models.BudgetDailyStatement.objects.filter(budget__campaign_id=campaign.id)
+    existing_statements = dash.models.BudgetDailyStatement.objects.filter(budget__campaign_id=campaign.id)
 
     if budgets.count() == 0:
         return []
@@ -112,7 +113,7 @@ def _get_dates(date, campaign):
 
 
 def get_effective_spend_pcts(date, campaign):
-    attributed_spends = reports.models.BudgetDailyStatement.objects.\
+    attributed_spends = dash.models.BudgetDailyStatement.objects.\
         filter(budget__campaign=campaign, date=date).\
         aggregate(
             media_nano=Sum('media_spend_nano'),

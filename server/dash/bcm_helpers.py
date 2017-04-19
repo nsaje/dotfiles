@@ -3,11 +3,10 @@ from decimal import Decimal
 
 from dateutil.relativedelta import relativedelta
 from django.db import connection, transaction
-from django.db.models import Q, Sum, F, DecimalField
+from django.db.models import Sum, F, DecimalField
 
 import dash.models
 import dash.constants
-import reports.models
 
 from utils import converters
 
@@ -29,7 +28,7 @@ def get_campaign_media_budget_data(campaign_ids):
             output_field=DecimalField(max_digits=10, decimal_places=4)
         )
     )
-    media_spend_data = reports.models.BudgetDailyStatement.objects.filter(
+    media_spend_data = dash.models.BudgetDailyStatement.objects.filter(
         budget__campaign_id__in=campaign_ids
     ).values('budget__campaign_id').order_by().annotate(
         media_nano=Sum('media_spend_nano')
@@ -60,7 +59,7 @@ def get_account_media_budget_data(account_ids):
         for row in budget_data
     }
 
-    media_spend_data = reports.models.BudgetDailyStatement.objects.filter(
+    media_spend_data = dash.models.BudgetDailyStatement.objects.filter(
         budget__credit__account_id__in=account_ids
     ).values('budget__credit__account_id').order_by().annotate(
         media_nano=Sum('media_spend_nano')
@@ -139,5 +138,5 @@ def delete_budget(budget):
 def _delete_budget_traces(budget):
     cursor = connection.cursor()
     cursor.execute("DELETE FROM dash_budgethistory WHERE budget_id = %s;", [budget.pk])
-    cursor.execute("DELETE FROM reports_budgetdailystatement WHERE budget_id = %s;", [budget.pk])
+    cursor.execute("DELETE FROM dash_budgetdailystatement WHERE budget_id = %s;", [budget.pk])
     cursor.execute("DELETE FROM dash_budgetlineitem WHERE id = %s;", [budget.pk])

@@ -4,11 +4,9 @@ import calendar
 from decimal import Decimal
 from django.test import TestCase, mock
 from django.db import connection
-from django.utils import timezone
 
 import zemauth.models
 
-import reports.models
 import dash.constants
 import dash.models
 import dash.infobox_helpers
@@ -243,7 +241,7 @@ class InfoBoxHelpersTest(TestCase):
             created_by=user,
         )
 
-        reports.models.BudgetDailyStatement.objects.create(
+        dash.models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=start_date,
             media_spend_nano=499 * 10**9,
@@ -368,7 +366,7 @@ class InfoBoxAccountHelpersTest(TestCase):
     def test_get_yesterday_all_accounts_spend(self):
         self.assertEqual(0, dash.infobox_helpers.get_yesterday_all_accounts_spend(None, None))
         yesterday = datetime.datetime.utcnow() - datetime.timedelta(days=1)
-        reports.models.BudgetDailyStatement.objects.create(
+        dash.models.BudgetDailyStatement.objects.create(
             budget=self.budget,
             date=yesterday,
             media_spend_nano=10e9,
@@ -398,7 +396,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         self.assertEqual(0, dash.infobox_helpers.get_mtd_agency_spend(self.user))
 
         today = datetime.datetime.utcnow()
-        reports.models.BudgetDailyStatement.objects.create(
+        dash.models.BudgetDailyStatement.objects.create(
             budget=self.budget,
             date=today,
             media_spend_nano=10e9,
@@ -412,7 +410,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         self.assertEqual(0, dash.infobox_helpers.get_yesterday_agency_spend(self.user))
 
         today = datetime.datetime.utcnow()
-        reports.models.BudgetDailyStatement.objects.create(
+        dash.models.BudgetDailyStatement.objects.create(
             budget=self.budget,
             date=today - datetime.timedelta(1),
             media_spend_nano=10e9,
@@ -428,7 +426,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         self.assertEqual(0, dash.infobox_helpers.get_mtd_all_accounts_spend(None, None))
 
         today = datetime.datetime.utcnow()
-        reports.models.BudgetDailyStatement.objects.create(
+        dash.models.BudgetDailyStatement.objects.create(
             budget=self.budget,
             date=today,
             media_spend_nano=10e9,
@@ -439,7 +437,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend(None, None))
 
         aproximately_one_month_ago = datetime.datetime.utcnow() - datetime.timedelta(days=31)
-        reports.models.BudgetDailyStatement.objects.create(
+        dash.models.BudgetDailyStatement.objects.create(
             budget=self.budget,
             date=aproximately_one_month_ago,
             media_spend_nano=10e9,
@@ -625,7 +623,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         available_credit = dash.infobox_helpers.calculate_yesterday_account_spend(account)
         self.assertEqual(0, available_credit)
 
-        reports.models.BudgetDailyStatement.objects.create(
+        dash.models.BudgetDailyStatement.objects.create(
             budget=self.budget,
             date=datetime.datetime.utcnow() - datetime.timedelta(days=1),
             media_spend_nano=10 * 10**9,
@@ -1069,7 +1067,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         # as long as there are no budgets available there-s nothing to spend
         self.assertEqual(90, budget_available)
 
-        reports.models.BudgetDailyStatement.objects.create(
+        dash.models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=start_date,
             media_spend_nano=10 * 10**9,
@@ -1148,7 +1146,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         # as long as there are no budgets available there-s nothing to spend
         self.assertEqual(90, budget_available)
 
-        reports.models.BudgetDailyStatement.objects.create(
+        dash.models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=start_date,
             media_spend_nano=10 * 10**9,

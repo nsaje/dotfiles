@@ -5,13 +5,13 @@ from django.contrib.auth import models as auth_models
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
 
-import reports.constants
 import utils.demo_anonymizer
 import utils.string_helper
 from dash import constants
 from utils import exc
 from utils import json_helper
 
+import core.bcm
 import core.common
 import core.history
 import core.entity.helpers
@@ -245,7 +245,7 @@ class Account(models.Model):
 
         def filter_with_spend(self):
             return self.filter(
-                pk__in=set(reports.models.BudgetDailyStatement.objects.filter(
+                pk__in=set(core.bcm.BudgetDailyStatement.objects.filter(
                     budget__campaign__account_id__in=self
                 ).filter(
                     media_spend_nano__gt=0

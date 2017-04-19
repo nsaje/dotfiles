@@ -22,7 +22,6 @@ from utils import exc
 from utils import test_helper
 
 from reports import redshift
-import reports.models
 
 import zemauth.models
 
@@ -1135,7 +1134,7 @@ class AdGroupOverviewTest(TestCase):
             created_by=self.user,
         )
 
-        reports.models.BudgetDailyStatement.objects.create(
+        models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=datetime.datetime.today() - datetime.timedelta(days=1),
             media_spend_nano=60 * 10**9,

@@ -100,7 +100,7 @@ def delete_budget(budget):
 def _delete_budget_traces(budget):
     cursor = connection.cursor()
     cursor.execute("DELETE FROM dash_budgethistory WHERE budget_id = %s;", [budget.pk])
-    cursor.execute("DELETE FROM reports_budgetdailystatement WHERE budget_id = %s;", [budget.pk])
+    cursor.execute("DELETE FROM dash_budgetdailystatement WHERE budget_id = %s;", [budget.pk])
     cursor.execute("DELETE FROM dash_budgetlineitem WHERE id = %s;", [budget.pk])
 
 

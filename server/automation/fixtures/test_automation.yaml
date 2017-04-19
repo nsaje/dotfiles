@@ -430,7 +430,7 @@
     data_spend_nano: 0
     license_fee_nano: 5000000000
     margin_nano: 0
-  model: reports.budgetdailystatement
+  model: dash.budgetdailystatement
   pk: 1
 
 - fields:
@@ -440,7 +440,7 @@
     data_spend_nano: 0
     license_fee_nano: 6000000000
     margin_nano: 0
-  model: reports.budgetdailystatement
+  model: dash.budgetdailystatement
   pk: 2
 
 - fields:
@@ -450,7 +450,7 @@
     data_spend_nano: 0
     license_fee_nano: 7000000000
     margin_nano: 0
-  model: reports.budgetdailystatement
+  model: dash.budgetdailystatement
   pk: 3
 
 - fields:
@@ -460,5 +460,5 @@
     data_spend_nano: 0
     license_fee_nano: 10000000000
     margin_nano: 0
-  model: reports.budgetdailystatement
+  model: dash.budgetdailystatement
   pk: 4
