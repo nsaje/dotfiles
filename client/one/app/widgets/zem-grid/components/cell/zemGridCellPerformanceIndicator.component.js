@@ -23,6 +23,10 @@ angular.module('one.widgets').directive('zemGridCellPerformanceIndicator', funct
                 class: statusClasses[overall],
             };
         }
+        return {
+            file: statusIcons[constants.emoticon.NEUTRAL],
+            class: statusClasses[constants.emoticon.NEUTRAL],
+        };
     }
 
     function getStatusList (statuses) {
@@ -61,10 +65,7 @@ angular.module('one.widgets').directive('zemGridCellPerformanceIndicator', funct
 
             function update () {
                 vm.isFieldVisible = false;
-                vm.overall = {
-                    file: statusIcons[constants.emoticon.NEUTRAL],
-                    class: statusClasses[constants.emoticon.NEUTRAL],
-                };
+                vm.overall = getOverallIcon();
                 vm.statusList = [];
 
                 if (vm.row) {
