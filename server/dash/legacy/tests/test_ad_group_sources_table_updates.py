@@ -2,7 +2,6 @@ from django.test import TestCase
 
 from dash.legacy import ad_group_source_table_updates
 from dash import models
-from dash import table
 from dash.views import helpers
 from zemauth.models import User
 from decimal import Decimal
@@ -14,7 +13,8 @@ class AdGroupSourcesTableUpdatesTest(TestCase):
     fixtures = ['test_api_breakdowns']
 
     def test_get(self):
-        response = table.AdGroupSourcesTableUpdates().get(User.objects.get(pk=1), None, None, 1)
+        response = ad_group_source_table_updates.get_updated_ad_group_sources_changes(
+            User.objects.get(pk=1), None, None, 1)
         expected = {
             'notifications': {},
             'in_progress': False,
