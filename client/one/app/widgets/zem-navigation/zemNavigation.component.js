@@ -43,6 +43,7 @@ angular.module('one.widgets').component('zemNavigation', {
         };
 
         function handleKeyDown (event) {
+            if (!$ctrl.list) return;
             if (event.keyCode === KEY_UP_ARROW) upSelection(event);
             if (event.keyCode === KEY_DOWN_ARROW) downSelection(event);
             if (event.keyCode === KEY_ENTER) enterSelection(event);
