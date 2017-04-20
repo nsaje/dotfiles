@@ -168,16 +168,16 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($wi
         }
 
         function pause (selection) {
-            bulkUpdatedState(selection, constants.settingsState.INACTIVE);
+            return bulkUpdatedState(selection, constants.settingsState.INACTIVE);
         }
 
         function enable (selection) {
-            bulkUpdatedState(selection, constants.settingsState.ACTIVE);
+            return bulkUpdatedState(selection, constants.settingsState.ACTIVE);
         }
 
         function archive (selection) {
             var metaData = gridApi.getMetaData();
-            zemEntityService.executeBulkAction(
+            return zemEntityService.executeBulkAction(
                 constants.entityAction.ARCHIVE,
                 metaData.level,
                 metaData.breakdown,
@@ -193,7 +193,7 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($wi
 
         function restore (selection) {
             var metaData = gridApi.getMetaData();
-            zemEntityService.executeBulkAction(
+            return zemEntityService.executeBulkAction(
                 constants.entityAction.RESTORE,
                 metaData.level,
                 metaData.breakdown,
@@ -206,7 +206,7 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($wi
 
         function edit (selection) {
             var metaData = gridApi.getMetaData();
-            zemEntityService.executeBulkAction(
+            return zemEntityService.executeBulkAction(
                 constants.entityAction.EDIT,
                 metaData.level,
                 metaData.breakdown,
@@ -239,7 +239,7 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($wi
             var metaData = gridApi.getMetaData();
             var action = state === constants.settingsState.ACTIVE ?
                 constants.entityAction.ACTIVATE : constants.entityAction.DEACTIVATE;
-            zemEntityService.executeBulkAction(
+            return zemEntityService.executeBulkAction(
                 action,
                 metaData.level,
                 metaData.breakdown,

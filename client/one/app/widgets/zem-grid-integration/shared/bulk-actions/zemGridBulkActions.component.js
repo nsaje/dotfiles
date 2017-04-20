@@ -29,7 +29,7 @@ angular.module('one.widgets').component('zemGridBulkActions', {
         function isEnabled () {
             var selection = $ctrl.api.getSelection();
             if (selection.type === zemGridConstants.gridSelectionFilterType.NONE) {
-                if (selection.selected.length == 1 && selection.selected[0].level == 0) {
+                if (selection.selected.length === 1 && selection.selected[0].level === 0) {
                     return false;
                 }
                 return selection.selected.length > 0;
@@ -38,17 +38,19 @@ angular.module('one.widgets').component('zemGridBulkActions', {
         }
 
         function execute (actionValue) {
+            $ctrl.showLoader = true;
+
             var selection = $ctrl.api.getSelection();
             var action = getActionByValue(actionValue);
 
             var convertedSelection = {};
             convertedSelection.selectedIds = selection.selected.filter(function (row) {
-                return row.level == 1;
+                return row.level === 1;
             }).map(function (row) {
                 return row.id;
             });
             convertedSelection.unselectedIds = selection.unselected.filter(function (row) {
-                return row.level == 1;
+                return row.level === 1;
             }).map(function (row) {
                 return row.id;
             });
@@ -56,7 +58,10 @@ angular.module('one.widgets').component('zemGridBulkActions', {
             convertedSelection.filterId = selection.type === zemGridConstants.gridSelectionFilterType.CUSTOM ?
                 selection.filter.batch.id : null;
 
-            action.execute(convertedSelection);
+            action.execute(convertedSelection)
+                .finally(function () {
+                    $ctrl.showLoader = false;
+                });
         }
 
         function getActionByValue (value) {
