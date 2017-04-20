@@ -29,7 +29,7 @@ class Command(ExceptionCommand):
         today = datetime.datetime(today.year, today.month, today.day)
         yesterday = today - datetime.timedelta(days=1)
 
-        recipients = reports.models.SupplyReportRecipient.objects.all().prefetch_related('source')
+        recipients = dash.models.SupplyReportRecipient.objects.all().prefetch_related('source')
         if len(recipients) == 0:
             logger.info('No recipients.')
             return
