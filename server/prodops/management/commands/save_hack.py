@@ -16,23 +16,22 @@ class Command(utils.command_helpers.ExceptionCommand):
         parser.add_argument('--agencies', dest='agencies', default='')
         parser.add_argument('--source', dest='source', default='b1')
         parser.add_argument('--details', dest='details', default='')
-        parser.add_argument('--trello', dest='trelo', default='')
+        parser.add_argument('--trello', dest='trello', default='')
 
     def _print(self, msg):
         self.stdout.write(u'{}\n'.format(msg))
 
     def handle(self, *args, **options):
         hack = {}
-        if options['source']:
-            source = options['sourrce']
-            if source == 'b1':
-                hack['rtb_only'] = True
-            elif source.isdigit():
-                hack['source_id'] = int(options['source'])
-            else:
-                hack['source'] = dash.models.Source.objects.get(
-                    Q(bidder_slug='b1_{}'.format(source)) | Q(bidder_slug=source)
-                )
+        source = options['source']
+        if source == 'b1':
+            hack['rtb_only'] = True
+        elif source.isdigit():
+            hack['source_id'] = int(source)
+        elif source:
+            hack['source'] = dash.models.Source.objects.get(
+                Q(bidder_slug='b1_{}'.format(source)) | Q(bidder_slug=source)
+            )
         hack['summary'] = options['summary']
         hack['service'] = options['service']
         if options['details']:
