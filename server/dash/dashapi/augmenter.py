@@ -294,7 +294,7 @@ def augment_publisher(row, loader, is_base_level=False):
     publisher_id = row['publisher_id']
     source = loader.source_map[source_id]
     if loader.account and loader.account.pk in (120, ):
-        entry_status = constants.PublisherTargetingStatus.WHITELISTED
+        entry_status = {'status': constants.PublisherTargetingStatus.WHITELISTED}
     else:
         entry_status = loader.find_blacklisted_status_by_subdomain(publisher_id)
     can_blacklist_source = loader.can_blacklist_source_map[source_id]
