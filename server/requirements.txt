@@ -1,4 +1,4 @@
-Django==1.10.5
+Django==1.11
 # Depends on: libmemcached-dev
 pylibmc==1.5.1
 jsonfield==1.0.0

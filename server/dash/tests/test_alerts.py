@@ -1,7 +1,7 @@
 import mock
 
 from django.http.request import HttpRequest
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 import dash.alerts
 from dash import models
@@ -9,6 +9,7 @@ from dash import constants
 from zemauth.models import User
 
 
+@override_settings(ALLOWED_HOSTS=['testname'])
 class AccountLandingModeAlertsTestCase(TestCase):
 
     fixtures = ['test_api.yaml']
@@ -62,6 +63,7 @@ class AccountLandingModeAlertsTestCase(TestCase):
         self.assertTrue(self.campaign.name in alerts[0]['message'])
 
 
+@override_settings(ALLOWED_HOSTS=['testname'])
 class CampaignLandingModeAlertsTestCase(TestCase):
 
     fixtures = ['test_api.yaml']
