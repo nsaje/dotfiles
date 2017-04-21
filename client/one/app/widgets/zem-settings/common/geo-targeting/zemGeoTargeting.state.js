@@ -49,14 +49,18 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
             var isIncluded;
             var isExcluded;
             var geolocation;
-            var targetings = [];
+            var targetings = {};
+            targetings[constants.geolocationType.COUNTRY] = [];
+            targetings[constants.geolocationType.REGION] = [];
+            targetings[constants.geolocationType.DMA] = [];
+            targetings[constants.geolocationType.CITY] = [];
 
             entity.settings.targetRegions.forEach(function (key) {
                 isIncluded = true;
                 isExcluded = false;
                 geolocation = geolocationMappings[key];
                 if (geolocation) {
-                    targetings.push(generateGeolocationObject(geolocation, isIncluded, isExcluded));
+                    targetings[geolocation.type].push(generateGeolocationObject(geolocation, isIncluded, isExcluded));
                 }
             });
             entity.settings.exclusionTargetRegions.forEach(function (key) {
@@ -64,21 +68,14 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
                 isExcluded = true;
                 geolocation = geolocationMappings[key];
                 if (geolocation) {
-                    targetings.push(generateGeolocationObject(geolocation, isIncluded, isExcluded));
+                    targetings[geolocation.type].push(generateGeolocationObject(geolocation, isIncluded, isExcluded));
                 }
             });
-
-            targetings.sort(function (a, b) {
-                var ORDER = [
-                    constants.geolocationType.COUNTRY,
-                    constants.geolocationType.REGION,
-                    constants.geolocationType.DMA,
-                    constants.geolocationType.CITY
-                ];
-                return ORDER.indexOf(a.geolocation.type) - ORDER.indexOf(b.geolocation.type);
-            });
-
-            return targetings;
+            return []
+                .concat(targetings[constants.geolocationType.COUNTRY])
+                .concat(targetings[constants.geolocationType.REGION])
+                .concat(targetings[constants.geolocationType.DMA])
+                .concat(targetings[constants.geolocationType.CITY]);
         }
 
         function refresh (searchTerm) {
