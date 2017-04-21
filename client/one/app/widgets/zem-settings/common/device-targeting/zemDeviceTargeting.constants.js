@@ -117,7 +117,7 @@ angular.module('one.widgets').factory('zemDeviceTargetingConstants', function ()
         },
         {
             devices: [DEVICE_TYPE.MOBILE, DEVICE_TYPE.TABLET],
-            value: 'WINPHONE', name: 'Microsoft Windows',
+            value: 'WINPHONE', name: 'Windows Phone',
             versions: VERSIONS_WINPHONE
         },
     ];

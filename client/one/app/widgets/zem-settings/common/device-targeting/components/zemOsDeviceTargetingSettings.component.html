@@ -44,9 +44,8 @@
     ></button>
 </div>
 
-<ui-select theme="select2"
-           ng-model="$ctrl.operatingSystemToAdd" search-enabled="false"
-           ng-change="$ctrl.stateService.addOperatingSystem($ctrl.operatingSystemToAdd)"
+<ui-select theme="select2" ng-model="_model_" search-enabled="false"
+           on-select="$ctrl.stateService.addOperatingSystem($item)"
            class="button button--with-icon add-icon button--dropdown-toggle-icon m-t-s">
     <ui-select-match placeholder="Add Operating System">Add Operating System</ui-select-match>
     <ui-select-choices repeat="operatingSystem in $ctrl.availableOptions">
