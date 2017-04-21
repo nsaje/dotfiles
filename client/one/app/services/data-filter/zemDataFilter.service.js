@@ -300,7 +300,7 @@ angular.module('one.services').service('zemDataFilterService', function ($locati
 
     function setUrlParam (name, value) {
         if (!value) value = null;
-        $location.search(name, value);
+        $location.search(name, value).replace();
     }
 
     function setCondition (condition, value) {
