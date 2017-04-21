@@ -409,7 +409,7 @@ class ContentAdsLoader(Loader):
 
 
 class PublisherBlacklistLoader(Loader):
-    def __init__(self, blacklist_qs, whitelist_qs, publisher_group_targeting, filtered_sources_qs, user, **kwargs):
+    def __init__(self, blacklist_qs, whitelist_qs, publisher_group_targeting, filtered_sources_qs, user, account=None, **kwargs):
         super(PublisherBlacklistLoader, self).__init__(blacklist_qs | whitelist_qs, **kwargs)
         self.filtered_sources_qs = filtered_sources_qs.select_related('source_type')
         self.user = user
@@ -417,6 +417,7 @@ class PublisherBlacklistLoader(Loader):
         self.publisher_group_targeting = publisher_group_targeting
         self.whitelist_qs = whitelist_qs
         self.blacklist_qs = blacklist_qs
+        self.account = account
 
     @classmethod
     def _get_obj_id(cls, obj):
@@ -430,7 +431,8 @@ class PublisherBlacklistLoader(Loader):
             constraints['filtered_sources'],
             user,
             start_date=constraints.get('date__gte'),
-            end_date=constraints.get('date__lte'))
+            end_date=constraints.get('date__lte'),
+            account=constraints.get('account'))
 
     @cached_property
     def blacklist_status_map(self):
