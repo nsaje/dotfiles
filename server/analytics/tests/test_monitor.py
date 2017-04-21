@@ -3,9 +3,8 @@ from decimal import Decimal
 from django.test import TestCase
 import mock
 
-from dash.models import BudgetLineItem
+from dash.models import BudgetLineItem, BudgetDailyStatement
 import dash.constants
-from reports.models import BudgetDailyStatement
 from analytics import monitor
 from utils import converters
 import utils.dates_helper

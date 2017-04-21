@@ -13,6 +13,10 @@ angular.module('one.widgets').directive('zemGridCopy', function ($timeout, zemGr
                 // If only one element is selected leave default behaviour
                 if (selection.anchorNode === selection.extentNode) return;
 
+                // If selection is not within grid element leave default behaviour
+                if (grid.ui.element.has(selection.anchorNode).length === 0) return;
+                if (grid.ui.element.has(selection.extentNode).length === 0) return;
+
                 // Find all rows between selected elements including header footer
                 // export them as a html table and apply it to copy selection
                 var anchorElement = angular.element(selection.anchorNode);
@@ -87,6 +91,8 @@ angular.module('one.widgets').directive('zemGridCopy', function ($timeout, zemGr
             }
 
             function convertRow (columns, row) {
+                if (!row) return '';
+
                 var htmlTableRow = columns.map(function (column) {
                     if (!column.data || !column.data.name) return undefined;
 

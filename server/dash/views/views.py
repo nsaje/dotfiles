@@ -33,7 +33,7 @@ from automation import autopilot_plus
 
 from automation import campaign_stop
 
-from dash import models, region_targeting_helper, retargeting_helper
+from dash import models, region_targeting_helper, retargeting_helper, campaign_goals
 from dash import constants
 from dash import api
 from dash import forms
@@ -441,6 +441,23 @@ class CampaignAdGroups(api_common.BaseApiView):
     @influx.timer('dash.api')
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
+        primary_goal = campaign_goals.get_primary_campaign_goal(campaign)
+        if not primary_goal:
+            url = request.build_absolute_uri(
+                '/v2/analytics/campaign/{}?settings&settingsScrollTo=zemCampaignGoalsSettings'.format(
+                    campaign.id,
+                )
+            )
+            raise exc.ValidationError(
+                data={
+                    'message': 'You are not able to add an ad group because campaign goal is not defined.',
+                    'action': {
+                        'text': 'Configure the campaign goal',
+                        'url': url,
+                    }
+                }
+            )
+
         ad_group, ad_group_settings, changes_text = self._create_ad_group(campaign, request)
         ad_group_settings.save(None)
 

@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
         entity: '<',
     },
     templateUrl: '/app/widgets/zem-infobox/components/zem-infobox-header/zemInfoboxHeader.component.html',
-    controller: function ($timeout, zemSettingsService, zemEntityService, zemNavigationService, zemPermissions) {
+    controller: function ($timeout, zemSettingsService, zemEntityService, zemNavigationService, zemPermissions, zemToastsService) { // eslint-disable-line max-len
         var $ctrl = this;
 
         $ctrl.openSettings = zemSettingsService.open;
@@ -62,23 +62,11 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
                 })
                 .catch(function (error) {
                     $ctrl.isEntityEnabled = !$ctrl.isEntityEnabled;
-                    errorMessageFadeInAndOut(error.data.message);
+                    zemToastsService.error(error.data.message, {timeout: 5000});
                 })
                 .finally(function () {
                     requestInProgress = false;
                 });
-        }
-
-        function errorMessageFadeInAndOut (message) {
-            $ctrl.errorMessage = message;
-            $ctrl.errorMessageVisible = true;
-            $timeout(function () {
-                $ctrl.errorMessageVisible = false;
-                // Wait for fade-out animation to finish
-                $timeout(function () {
-                    $ctrl.errorMessage = null;
-                }, 200);
-            }, 5000);
         }
     },
 });

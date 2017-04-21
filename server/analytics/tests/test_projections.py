@@ -6,7 +6,6 @@ import mock
 
 import dash.models
 import dash.constants
-import reports.models
 import analytics.projections
 import utils.dates_helper
 from utils.test_helper import fake_request
@@ -25,7 +24,7 @@ class ProjectionsTestCase(test.TestCase):
         self.maxDiff = None
 
     def _create_statement(self, budget, date, media=500, data=500, fee=100, margin=0):
-        reports.models.BudgetDailyStatement.objects.create(
+        dash.models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=date,
             media_spend_nano=media * converters.DOLAR_TO_NANO,
@@ -163,7 +162,7 @@ class ProjectionsTestCase(test.TestCase):
             created_by=User.objects.get(pk=1),
         )
 
-        reports.models.BudgetDailyStatement.objects.create(
+        dash.models.BudgetDailyStatement.objects.create(
             budget=bud,
             date=start_date + datetime.timedelta(days=2),
             media_spend_nano=100,
@@ -275,7 +274,7 @@ class ProjectionsTestCase(test.TestCase):
                 created_by=User.objects.get(pk=1),
             )
 
-            reports.models.BudgetDailyStatement.objects.create(
+            dash.models.BudgetDailyStatement.objects.create(
                 budget=bud,
                 date=start_date + datetime.timedelta(days=2),
                 media_spend_nano=100,

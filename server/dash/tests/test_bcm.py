@@ -12,14 +12,13 @@ from utils import converters
 from dash import models, constants, forms
 from zemauth.models import User
 from django.http.request import HttpRequest
-import reports.models
 
 TODAY = datetime.datetime(2015, 12, 1).date()
 YESTERDAY = TODAY - datetime.timedelta(1)
 
 create_credit = models.CreditLineItem.objects.create
 create_budget = models.BudgetLineItem.objects.create
-create_statement = reports.models.BudgetDailyStatement.objects.create
+create_statement = models.BudgetDailyStatement.objects.create
 
 
 @patch('dash.forms.dates_helper.local_today', lambda: TODAY)
@@ -1431,7 +1430,7 @@ class BudgetReserveTestCase(TestCase):
         )
 
     def test_editing_budget_amount(self):
-        reports.models.BudgetDailyStatement.objects.create(
+        models.BudgetDailyStatement.objects.create(
             budget=self.b,
             date=self.start_date - datetime.timedelta(1),
             media_spend_nano=100 * converters.DOLAR_TO_NANO,
@@ -1439,7 +1438,7 @@ class BudgetReserveTestCase(TestCase):
             license_fee_nano=20 * converters.DOLAR_TO_NANO,
             margin_nano=0,
         )
-        reports.models.BudgetDailyStatement.objects.create(
+        models.BudgetDailyStatement.objects.create(
             budget=self.b,
             date=self.start_date,
             media_spend_nano=120 * converters.DOLAR_TO_NANO,
@@ -1457,7 +1456,7 @@ class BudgetReserveTestCase(TestCase):
         self.assertEqual(self.b.amount, models.BudgetLineItem.objects.get(pk=self.b.pk).amount)
 
     def test_reserve_calculation(self):
-        reports.models.BudgetDailyStatement.objects.create(
+        models.BudgetDailyStatement.objects.create(
             budget=self.b,
             date=self.start_date + datetime.timedelta(0),
             media_spend_nano=100 * converters.DOLAR_TO_NANO,
@@ -1477,7 +1476,7 @@ class BudgetReserveTestCase(TestCase):
             })
             self.assertEqual(self.b.get_reserve_amount_cc(), 6 * converters.DOLAR_TO_CC)
 
-        reports.models.BudgetDailyStatement.objects.create(
+        models.BudgetDailyStatement.objects.create(
             budget=self.b,
             date=self.start_date + datetime.timedelta(1),
             media_spend_nano=80 * converters.DOLAR_TO_NANO,
@@ -1495,7 +1494,7 @@ class BudgetReserveTestCase(TestCase):
             # Same reserve because we didn't have yesterday's values for the previous statement
             self.assertEqual(self.b.get_reserve_amount_cc(), 6 * converters.DOLAR_TO_CC)
 
-        reports.models.BudgetDailyStatement.objects.create(
+        models.BudgetDailyStatement.objects.create(
             budget=self.b,
             date=self.start_date + datetime.timedelta(2),
             media_spend_nano=100 * converters.DOLAR_TO_NANO,
@@ -1531,7 +1530,7 @@ class BudgetReserveTestCase(TestCase):
             campaign_id=1,
         )
 
-        reports.models.BudgetDailyStatement.objects.create(
+        models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=today - datetime.timedelta(1),
             media_spend_nano=100 * converters.DOLAR_TO_NANO,
@@ -1540,7 +1539,7 @@ class BudgetReserveTestCase(TestCase):
             margin_nano=0,
         )
         for num in range(0, 5):
-            reports.models.BudgetDailyStatement.objects.create(
+            models.BudgetDailyStatement.objects.create(
                 budget=budget,
                 date=today + datetime.timedelta(num),
                 media_spend_nano=100 * converters.DOLAR_TO_NANO,
@@ -1602,7 +1601,7 @@ class BudgetReserveTestCase(TestCase):
             campaign_id=1,
         )
 
-        reports.models.BudgetDailyStatement.objects.create(
+        models.BudgetDailyStatement.objects.create(
             budget=budget1,
             date=today - datetime.timedelta(1),
             media_spend_nano=300 * converters.DOLAR_TO_NANO,

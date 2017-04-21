@@ -212,7 +212,7 @@ class AdGroupAdminForm(forms.ModelForm):
         required=False,
         help_text='Enter ZIP codes in the format of "US:123456", one ZIP code per line.',
         widget=GeolocationAdminWidget())
-    bluekai_targeting = fields.TargetingExpressionField(
+    bluekai_targeting = postgres_forms.JSONField(
         required=False, help_text='Example: ["and", "bluekai:446103", ["not", ["or", "bluekai:510120", "bluekai:510122"]]]')
     interest_targeting = forms.MultipleChoiceField(
         required=False,

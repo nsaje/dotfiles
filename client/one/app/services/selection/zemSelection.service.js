@@ -217,7 +217,7 @@ angular.module('one.services').service('zemSelectionService', function ($rootSco
             } else if (value instanceof Array) {
                 value = value.join(',');
             }
-            $location.search(URL_PARAMS[key].name, value);
+            $location.search(URL_PARAMS[key].name, value).replace();
         });
     }
 

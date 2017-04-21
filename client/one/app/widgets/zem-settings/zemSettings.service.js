@@ -39,8 +39,8 @@ angular.module('one.widgets').service('zemSettingsService', function ($rootScope
         // which will trigger change event which is again handled in this service
         var value = $state.params[QUERY_PARAM];
         if (value) {
-            $location.search(QUERY_PARAM, true);
-            $location.search(QUERY_SCROLL_TO_PARAM, $state.params[QUERY_SCROLL_TO_PARAM]);
+            $location.search(QUERY_PARAM, true).replace();
+            $location.search(QUERY_SCROLL_TO_PARAM, $state.params[QUERY_SCROLL_TO_PARAM]).replace();
         }
     }
 
@@ -64,8 +64,8 @@ angular.module('one.widgets').service('zemSettingsService', function ($rootScope
                 entity: currentEntity,
                 scrollToComponent: scrollToComponent,
             });
-            $location.search(QUERY_PARAM, true);
-            $location.search(QUERY_SCROLL_TO_PARAM, scrollToComponent);
+            $location.search(QUERY_PARAM, true).replace();
+            $location.search(QUERY_SCROLL_TO_PARAM, scrollToComponent).replace();
         }
     }
 
@@ -76,8 +76,8 @@ angular.module('one.widgets').service('zemSettingsService', function ($rootScope
     }
 
     function clearParams () {
-        $location.search(QUERY_PARAM, null);
-        $location.search(QUERY_SCROLL_TO_PARAM, null);
+        $location.search(QUERY_PARAM, null).replace();
+        $location.search(QUERY_SCROLL_TO_PARAM, null).replace();
 
         if ($state.params[QUERY_PARAM]) {
             // Silently clear state params (avoid reinitialization)

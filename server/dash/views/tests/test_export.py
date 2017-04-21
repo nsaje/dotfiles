@@ -14,7 +14,6 @@ from django.core.urlresolvers import reverse
 
 from dash.views import export
 import dash.models
-import reports.models
 from dash import constants
 from utils.test_helper import add_permissions
 
@@ -663,7 +662,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
             amount=100
         )
 
-        reports.models.BudgetDailyStatement.objects.create(
+        dash.models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=start_date,
             media_spend_nano=1000,
@@ -837,7 +836,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
             amount=100
         )
 
-        reports.models.BudgetDailyStatement.objects.create(
+        dash.models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=start_date,
             media_spend_nano=1000,

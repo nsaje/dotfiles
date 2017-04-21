@@ -12,7 +12,6 @@ from dash import export
 from dash import models
 from dash import constants
 import reports.redshift as redshift
-import reports.models as rm
 from utils import test_helper
 
 from zemauth.models import User
@@ -475,7 +474,7 @@ class ExportTestCase(test.TestCase):
             start_date=datetime.date(2014, 6, 1),
             end_date=datetime.date(2014, 7, 31),
         )
-        rm.BudgetDailyStatement.objects.create(
+        models.BudgetDailyStatement.objects.create(
             date=start_date,
             budget=budget,
             license_fee_nano=1 * 10**9,

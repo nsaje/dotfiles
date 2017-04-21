@@ -23,4 +23,4 @@ class GeolocationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = dash.features.geolocation.Geolocation
-        fields = ('key', 'type', 'name', 'outbrain_id', 'woeid')
+        fields = ('key', 'type', 'name', 'outbrain_id', 'woeid', 'facebook_key')

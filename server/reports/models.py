@@ -154,17 +154,6 @@ class ContentAdStats(models.Model):
         )
 
 
-class SupplyReportRecipient(models.Model):
-    first_name = models.CharField('first name', max_length=30, blank=True)
-    last_name = models.CharField('last name', max_length=30, blank=True)
-    email = models.EmailField('email address', max_length=255)
-    source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
-    custom_subject = models.CharField(max_length=100, blank=True)
-    publishers_report = models.BooleanField(default=False)
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
-
-
 class ContentAdPostclickStats(models.Model):
     date = models.DateField(verbose_name='Report date')
     content_ad = models.ForeignKey('dash.ContentAd', on_delete=models.PROTECT)
@@ -205,43 +194,3 @@ class ContentAdGoalConversionStats(models.Model):
         unique_together = (
             ('date', 'content_ad', 'source', 'goal_type', 'goal_name'),
         )
-
-
-class BudgetDailyStatement(models.Model):
-    budget = models.ForeignKey(dash.models.BudgetLineItem, related_name='statements')
-    date = models.DateField()
-    media_spend_nano = models.BigIntegerField()
-    data_spend_nano = models.BigIntegerField()
-    license_fee_nano = models.BigIntegerField()
-    margin_nano = models.BigIntegerField()
-
-    @property
-    def total_spend_nano(self):
-        return self.media_spend_nano + self.data_spend_nano + self.license_fee_nano
-
-    class Meta:
-        get_latest_by = 'date'
-        unique_together = ('budget', 'date')
-
-
-class BudgetDailyStatementK1(models.Model):
-    """
-    insert into reports_budgetdailystatementk1
-        (id, date, budget_id, data_spend_nano, license_fee_nano, media_spend_nano)
-            select id, date, budget_id, data_spend_nano, license_fee_nano, media_spend_nano
-                from reports_budgetdailystatement;
-    """
-
-    budget = models.ForeignKey(dash.models.BudgetLineItem, related_name='statements_k1')
-    date = models.DateField()
-    media_spend_nano = models.BigIntegerField()
-    data_spend_nano = models.BigIntegerField()
-    license_fee_nano = models.BigIntegerField()
-
-    @property
-    def total_spend_nano(self):
-        return self.media_spend_nano + self.data_spend_nano + self.license_fee_nano
-
-    class Meta:
-        get_latest_by = 'date'
-        unique_together = ('budget', 'date')

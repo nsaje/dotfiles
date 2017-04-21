@@ -12,7 +12,6 @@ from django.test import TestCase
 
 from zemauth.models import User
 from dash import models, constants
-from reports.models import BudgetDailyStatement
 from utils.test_helper import fake_request
 from django.test.client import RequestFactory
 
@@ -1309,7 +1308,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
         budget.credit.amount = 250000
         budget.credit.status = constants.CreditLineItemStatus.SIGNED
         budget.credit.save()
-        BudgetDailyStatement.objects.create(
+        models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=today,
             media_spend_nano=300 * converters.DOLAR_TO_NANO,
@@ -1322,7 +1321,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
         budget.pk = None
         budget.total = 50000
         budget.save()
-        BudgetDailyStatement.objects.create(
+        models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=today,
             media_spend_nano=100 * converters.DOLAR_TO_NANO,
@@ -1428,7 +1427,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
             campaign_id=1,
         )
 
-        BudgetDailyStatement.objects.create(
+        models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=today - datetime.timedelta(1),
             media_spend_nano=500 * converters.DOLAR_TO_NANO,
@@ -1437,7 +1436,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
             margin_nano=0,
         )
         for num in range(0, 5):
-            BudgetDailyStatement.objects.create(
+            models.BudgetDailyStatement.objects.create(
                 budget=budget,
                 date=today + datetime.timedelta(num),
                 media_spend_nano=800 * converters.DOLAR_TO_NANO,

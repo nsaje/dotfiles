@@ -22,13 +22,14 @@ logger = logging.getLogger(__name__)
 
 
 class Command(ExceptionCommand):
+
     def handle(self, *args, **options):
         today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
         today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
         today = datetime.datetime(today.year, today.month, today.day)
         yesterday = today - datetime.timedelta(days=1)
 
-        recipients = reports.models.SupplyReportRecipient.objects.all().prefetch_related('source')
+        recipients = dash.models.SupplyReportRecipient.objects.all().prefetch_related('source')
         if len(recipients) == 0:
             logger.info('No recipients.')
             return
@@ -83,15 +84,15 @@ class Command(ExceptionCommand):
 
     def get_publisher_stats(self, recipient, date):
         query = """
-            select to_char(date, 'YYYY-MM-DD') as date, domain, sum(impressions), sum(clicks), sum(cost_nano)
-            from publishers_1
-            where exchange=%s and date=%s
-            group by date, domain
+            select to_char(date, 'YYYY-MM-DD') as date, publisher, sum(impressions), sum(clicks), sum(cost_nano)
+            from mv_master
+            where source_id=%s and date=%s
+            group by date, publisher
         """
 
         result = []
 
-        params = [recipient.source.bidder_slug, date.date().isoformat()]
+        params = [recipient.source.pk, date.date().isoformat()]
 
         with connections[settings.STATS_DB_NAME].cursor() as c:
             c.execute(query, params)

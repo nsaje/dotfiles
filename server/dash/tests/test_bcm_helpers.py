@@ -6,13 +6,12 @@ from django.test import TestCase
 import dash.models
 import dash.constants
 import dash.bcm_helpers
-import reports.models
 
 from utils import converters
 
 create_credit = dash.models.CreditLineItem.objects.create
 create_budget = dash.models.BudgetLineItem.objects.create
-create_statement = reports.models.BudgetDailyStatement.objects.create
+create_statement = dash.models.BudgetDailyStatement.objects.create
 
 
 class AccountCampaignBudgetData(TestCase):

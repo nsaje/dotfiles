@@ -4,7 +4,6 @@ from django.template.loader import render_to_string
 
 import dash.models
 import dash.constants
-import reports.models
 import analytics.projections
 from utils import converters
 from utils.html_helpers import TableCell, TableRow, Url
@@ -150,7 +149,7 @@ class ReportContext(object):
             1
         )
 
-        statements_qs = reports.models.BudgetDailyStatement.objects.filter(
+        statements_qs = dash.models.BudgetDailyStatement.objects.filter(
             date__gte=start_date,
             date__lte=self.date,
         ).select_related('budget__campaign').select_related('budget__campaign__account')

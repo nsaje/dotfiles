@@ -4,6 +4,7 @@ from django.db.models import Sum
 
 import influx
 
+import dash.models
 import reports.models
 from reports import redshift
 
@@ -68,7 +69,7 @@ class Command(ExceptionCommand):
             total_time_on_site=Sum('duration'),
         )
 
-        ds_stats = reports.models.BudgetDailyStatement.objects.aggregate(
+        ds_stats = dash.models.BudgetDailyStatement.objects.aggregate(
             effective_cost_nano=Sum('media_spend_nano'),
             effective_data_cost_nano=Sum('data_spend_nano'),
             license_fee_nano=Sum('license_fee_nano')

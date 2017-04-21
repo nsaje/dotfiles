@@ -133,6 +133,7 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
                 }
             }
 
+            $ctrl.showLoader = true;
             $ctrl.service
                 .execute(action, false)
                 .then(function () {
@@ -148,6 +149,9 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
                         if (!err.data.errors || !err.data.errors.cpc_constraints) { return; }
                         zemAlertsService.notify(constants.notificationType.warning, err.data.errors.cpc_constraints[0], true); // eslint-disable-line max-len
                     });
+                })
+                .finally(function () {
+                    $ctrl.showLoader = false;
                 });
         }
 

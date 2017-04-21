@@ -35,6 +35,7 @@ describe('zemDataFilterService', function () {
 
     it('should init correctly with url params', function () {
         spyOn($location, 'search').and.returnValue({
+            replace: angular.noop,
             start_date: moment('2016-11-01').format('YYYY-MM-DD'),
             end_date: moment('2016-12-01').format('YYYY-MM-DD'),
             filtered_sources: '1,2',

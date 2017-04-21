@@ -627,7 +627,7 @@ pixelUrl         | url                           | pixel url, if applicable    |
         {
             "type": "CPA",
             "value": "30.0",
-            "primary": true,
+            "primary": false,
             "conversionGoal": {
                 "type": "GA",
                 "name": "My conversion goal 2",
@@ -659,7 +659,7 @@ pixelUrl         | url                           | pixel url, if applicable    |
 
 + Parameters
     + campaignId: 608 (required)
-    + goalId: 1238 (required)
+    + goalId: 1239 (required)
 
 + Request (application/json)
 

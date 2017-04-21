@@ -29,7 +29,7 @@ angular.module('one.widgets').service('zemHistoryService', function ($rootScope,
     }
 
     function open () {
-        $location.search(QUERY_PARAM, true);
+        $location.search(QUERY_PARAM, true).replace();
         pubsub.notify(EVENTS.ON_OPEN);
     }
 
@@ -39,7 +39,7 @@ angular.module('one.widgets').service('zemHistoryService', function ($rootScope,
     }
 
     function clearParams () {
-        $location.search(QUERY_PARAM, null);
+        $location.search(QUERY_PARAM, null).replace();
 
         if ($state.params[QUERY_PARAM]) {
             // Silently clear state params (avoid reinitialization)
@@ -89,7 +89,7 @@ angular.module('one.widgets').service('zemHistoryService', function ($rootScope,
         // which will trigger change event which is again handled in this service
         var value = $state.params[QUERY_PARAM];
         if (value) {
-            $location.search(QUERY_PARAM, true);
+            $location.search(QUERY_PARAM, true).replace();
         }
     }
 

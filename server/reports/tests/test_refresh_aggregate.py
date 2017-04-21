@@ -6,7 +6,6 @@ import boto.s3
 import boto.sqs
 from django import test
 from django.db.models import Sum
-from django.conf import settings
 
 from reports import exc
 from reports import refresh
@@ -187,7 +186,7 @@ class RefreshContentAdStats(test.TestCase):
         date = datetime.datetime(2015, 2, 1)
         campaign = dash.models.Campaign.objects.get(pk=1)
 
-        models.BudgetDailyStatement.objects.create(
+        dash.models.BudgetDailyStatement.objects.create(
             budget_id=1,
             date=date,
             media_spend_nano=400000000000,
@@ -254,7 +253,7 @@ class RefreshContentAdStats(test.TestCase):
         date = datetime.datetime(2015, 2, 1)
         campaign = dash.models.Campaign.objects.get(pk=1)
 
-        models.BudgetDailyStatement.objects.create(
+        dash.models.BudgetDailyStatement.objects.create(
             budget_id=1,
             date=date,
             media_spend_nano=400000000000,
@@ -307,7 +306,7 @@ class RefreshContentAdStats(test.TestCase):
         campaign = dash.models.Campaign.objects.get(pk=1)
 
         # has only 20% of actual spend
-        models.BudgetDailyStatement.objects.create(
+        dash.models.BudgetDailyStatement.objects.create(
             budget_id=1,
             date=date,
             media_spend_nano=8000000000,

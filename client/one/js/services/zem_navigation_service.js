@@ -138,9 +138,11 @@ angular.module('one.legacy').factory('zemNavigationService', function ($rootScop
     function notifyAdGroupReloading (id, reloading) {
         $rootScope.$emit('navigation-adgroup-loading-' + id);
         var adGroupCached = findAdGroupInNavTree(id);
-        updateModel(adGroupCached.adGroup, {
-            reloading: reloading,
-        });
+        if (adGroupCached) {
+            updateModel(adGroupCached.adGroup, {
+                reloading: reloading,
+            });
+        }
     }
 
     function updateAllAccountsCache (data) {

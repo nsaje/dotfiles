@@ -11,14 +11,13 @@ import oauth2_provider.views
 from zemauth.forms import AuthenticationForm
 
 import k1api.views
-import reports.views
+import etl.crossvalidation.views
 import zemauth.views
 
 import dash.views.daily_stats
 import dash.views.bcm
 import dash.views.breakdown
 import dash.views.export
-import dash.views.table
 import dash.views.agency
 import dash.views.views
 import dash.views.navigation
@@ -143,21 +142,9 @@ urlpatterns += [
         name='ad_group_sources'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id_>\d+)/sources/table/updates/',
-        login_required(dash.views.table.AdGroupSourcesTableUpdates.as_view()),
-    ),
-    url(
-        r'^api/(?P<level_>(all_accounts))/sources/table/',
-        login_required(dash.views.table.SourcesTable.as_view()),
-    ),
-    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/(?P<source_id>\d+)/settings/',
         login_required(dash.views.views.AdGroupSourceSettings.as_view()),
         name='ad_group_source_settings'
-    ),
-    url(
-        r'^api/(?P<level_>(ad_groups|campaigns|accounts))/(?P<id_>\d+)/sources/table/',
-        login_required(dash.views.table.SourcesTable.as_view()),
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/allowed/',
@@ -166,16 +153,6 @@ urlpatterns += [
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/export/allowed/',
         login_required(dash.views.export.CampaignAdGroupsExportAllowed.as_view())
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/table/updates/',
-        login_required(dash.views.table.AdGroupAdsTableUpdates.as_view()),
-        name='ad_group_ads_table_updates'
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/table/',
-        login_required(dash.views.table.AdGroupAdsTable.as_view()),
-        name='ad_group_ads_table'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/csv/',
@@ -282,10 +259,6 @@ urlpatterns += [
         name='ad_group_overview'
     ),
     url(
-        r'^api/accounts/table/',
-        login_required(dash.views.table.AccountsAccountsTable.as_view()),
-    ),
-    url(
         r'^api/accounts/overview/',
         login_required(dash.views.views.AllAccountsOverview.as_view()),
         name='all_accounts_overview'
@@ -339,14 +312,6 @@ urlpatterns += [
         r'^api/all_accounts/sources/daily_stats/',
         login_required(dash.views.daily_stats.AllAccountsSourcesDailyStats.as_view()),
         name='accounts_sources_daily_stats'
-    ),
-    url(
-        r'^api/accounts/(?P<account_id>\d+)/campaigns/table/',
-        login_required(dash.views.table.AccountCampaignsTable.as_view()),
-    ),
-    url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/table/',
-        login_required(dash.views.table.CampaignAdGroupsTable.as_view()),
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/',
@@ -779,7 +744,7 @@ urlpatterns += [
 urlpatterns += [
     url(
         r'^api/crossvalidation$',
-        reports.views.crossvalidation,
+        etl.crossvalidation.views.crossvalidation,
         name='api.crossvalidation',
     )
 ]

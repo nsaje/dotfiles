@@ -1,11 +1,12 @@
 describe('component: zemGridBulkActions', function () {
-    var $componentController;
+    var $injector, $componentController;
     var zemGridConstants, zemGridBulkActionsService;
     var $ctrl, api;
 
     beforeEach(module('one'));
     beforeEach(module('one.mocks.zemInitializationService'));
-    beforeEach(inject(function ($injector) {
+    beforeEach(inject(function (_$injector_) {
+        $injector = _$injector_;
         $componentController = $injector.get('$componentController');
         zemGridBulkActionsService = $injector.get('zemGridBulkActionsService');
         zemGridConstants = $injector.get('zemGridConstants');
@@ -54,12 +55,11 @@ describe('component: zemGridBulkActions', function () {
             filterId: null,
         };
         api.getSelection = function () { return selection; };
-
         var action = {
             value: 'some action',
             execute: angular.noop,
         };
-        spyOn(action, 'execute');
+        spyOn(action, 'execute').and.callFake(zemSpecsHelper.getMockedAsyncFunction($injector));
         $ctrl.actions = [action];
         $ctrl.execute(action.value);
 
