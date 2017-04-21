@@ -51,7 +51,9 @@ angular.module('one.widgets').component('zemDeviceTargetingSettings', {
 
         function isEqualToDefault () {
             if (!$ctrl.state) return false;
-            return angular.equals($ctrl.state.devices, $ctrl.state.defaults.devices);
+            return angular.equals($ctrl.state.devices, $ctrl.state.defaults.devices)
+                && angular.equals($ctrl.state.operatingSystems, $ctrl.state.defaults.operatingSystems)
+                && angular.equals($ctrl.state.placements, $ctrl.state.defaults.placements);
         }
     },
 });
