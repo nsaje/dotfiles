@@ -48,6 +48,7 @@ def get_loader_for_dimension(target_dimension, level):
 
 
 class Loader(object):
+
     def __init__(self, objs_qs, start_date=None, end_date=None):
         self.objs_qs = objs_qs
 
@@ -80,6 +81,7 @@ class Loader(object):
 
 
 class AccountsLoader(Loader):
+
     def __init__(self, accounts_qs, filtered_sources_qs, **kwargs):
         accounts_qs = accounts_qs.select_related('agency')
 
@@ -182,6 +184,7 @@ class AccountsLoader(Loader):
 
 
 class CampaignsLoader(Loader):
+
     def __init__(self, campaigns_qs, filtered_sources_qs, **kwargs):
         super(CampaignsLoader, self).__init__(
             campaigns_qs.select_related('account'), **kwargs)
@@ -261,6 +264,7 @@ class CampaignsLoader(Loader):
 
 
 class AdGroupsLoader(Loader):
+
     def __init__(self, ad_groups_qs, filtered_sources_qs, **kwargs):
         super(AdGroupsLoader, self).__init__(
             ad_groups_qs.select_related('campaign', 'campaign__account'), **kwargs)
@@ -319,6 +323,7 @@ class AdGroupsLoader(Loader):
 
 
 class ContentAdsLoader(Loader):
+
     def __init__(self, content_ads_qs, filtered_sources_qs, **kwargs):
         super(ContentAdsLoader, self).__init__(content_ads_qs.select_related('batch'), **kwargs)
         self.filtered_sources_qs = filtered_sources_qs
@@ -355,8 +360,8 @@ class ContentAdsLoader(Loader):
         for content_ad_id, content_ad in self.objs_map.iteritems():
             content_ad_sources = self.content_ads_sources_map[content_ad_id]
             if (any([x.state == constants.ContentAdSourceState.ACTIVE for x in content_ad_sources]) and
-               self.ad_group_loader.settings_map[content_ad.ad_group_id]['status'] ==
-               constants.AdGroupRunningStatus.ACTIVE):
+                self.ad_group_loader.settings_map[content_ad.ad_group_id]['status'] ==
+                    constants.AdGroupRunningStatus.ACTIVE):
                 status_map[content_ad_id] = constants.ContentAdSourceState.ACTIVE
             else:
                 status_map[content_ad_id] = constants.ContentAdSourceState.INACTIVE
@@ -409,6 +414,7 @@ class ContentAdsLoader(Loader):
 
 
 class PublisherBlacklistLoader(Loader):
+
     def __init__(self, blacklist_qs, whitelist_qs, publisher_group_targeting, filtered_sources_qs, user, account=None, **kwargs):
         super(PublisherBlacklistLoader, self).__init__(blacklist_qs | whitelist_qs, **kwargs)
         self.filtered_sources_qs = filtered_sources_qs.select_related('source_type')
@@ -491,8 +497,8 @@ class PublisherBlacklistLoader(Loader):
 
         for source_id, source in self.source_map.items():
             can_blacklist_outbrain_publisher = source.source_type.type == constants.SourceType.OUTBRAIN and\
-                                               self.user.has_perm(
-                                                   'zemauth.can_modify_outbrain_account_publisher_blacklist_status')
+                self.user.has_perm(
+                    'zemauth.can_modify_outbrain_account_publisher_blacklist_status')
 
             d[source_id] = (source.can_modify_publisher_blacklist_automatically() and
                             (source.source_type.type != constants.SourceType.OUTBRAIN or
@@ -501,6 +507,7 @@ class PublisherBlacklistLoader(Loader):
 
 
 class SourcesLoader(Loader):
+
     @classmethod
     def from_constraints(cls, user, constraints):
         return cls(
@@ -619,8 +626,8 @@ class AdGroupSourcesLoader(Loader):
     def _ad_group_source_settings_map(self):
         source_settings = models.AdGroupSourceSettings.objects.filter(
             ad_group_source_id__in=[x.pk for x in self._active_ad_groups_sources_qs])\
-                                                              .group_current_settings()\
-                                                              .select_related('ad_group_source')
+            .group_current_settings()\
+            .select_related('ad_group_source')
         return {x.ad_group_source.source_id: x for x in source_settings}
 
     @cached_property
