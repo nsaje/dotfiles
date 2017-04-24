@@ -50,7 +50,7 @@ class InsertCandidatesTestCase(TestCase):
         self.assertEqual(0, models.UploadBatch.objects.filter(ad_group=ad_group).count())
         self.assertEqual(0, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
 
-        upload.insert_candidates(data, ad_group, batch_name, filename)
+        upload.insert_candidates(None, data, ad_group, batch_name, filename)
         self.assertEqual(1, models.UploadBatch.objects.filter(ad_group=ad_group).count())
         self.assertEqual(1, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
 
@@ -82,7 +82,7 @@ class InsertCandidatesTestCase(TestCase):
         self.assertEqual(0, models.UploadBatch.objects.filter(ad_group=ad_group).count())
         self.assertEqual(0, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
 
-        upload.insert_candidates(data, ad_group, batch_name, filename)
+        upload.insert_candidates(None, data, ad_group, batch_name, filename)
         self.assertEqual(1, models.UploadBatch.objects.filter(ad_group=ad_group).count())
         self.assertEqual(1, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
 
@@ -119,7 +119,7 @@ class InsertCandidatesTestCase(TestCase):
         self.assertEqual(0, models.UploadBatch.objects.filter(ad_group=ad_group).count())
         self.assertEqual(0, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
 
-        upload.insert_candidates([test_candidate], ad_group, batch_name, filename)
+        upload.insert_candidates(None, [test_candidate], ad_group, batch_name, filename)
         self.assertEqual(1, models.UploadBatch.objects.filter(ad_group=ad_group).count())
         self.assertEqual(1, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
 
@@ -153,7 +153,7 @@ class InsertEditCandidatesTestCase(TestCase):
             status=constants.UploadBatchStatus.IN_PROGRESS,
         ).count()
 
-        upload.insert_edit_candidates(content_ads, ad_group)
+        upload.insert_edit_candidates(None, content_ads, ad_group)
         in_progress_after = ad_group.uploadbatch_set.filter(
             status=constants.UploadBatchStatus.IN_PROGRESS,
         ).count()
@@ -406,7 +406,7 @@ class AddCandidateTestCase(TestCase):
 
     def test_add_candidate(self):
         ad_group = models.AdGroup.objects.get(id=1)
-        new_batch = upload.create_empty_batch(ad_group.id, 'test')
+        new_batch = upload.create_empty_batch(None, ad_group.id, 'test')
 
         candidate = upload.add_candidate(new_batch)
         self.assertEqual(ad_group.id, candidate.ad_group_id)
@@ -435,7 +435,7 @@ class AddCandidateTestCase(TestCase):
 
     def test_with_defaults(self):
         ad_group = models.AdGroup.objects.get(id=1)
-        new_batch = upload.create_empty_batch(ad_group.id, 'test')
+        new_batch = upload.create_empty_batch(None, ad_group.id, 'test')
         new_batch.default_image_crop = 'abc'
         new_batch.default_display_url = 'example.com'
         new_batch.default_brand_name = 'Example'
@@ -473,12 +473,12 @@ class CreateEmptyBatchTestCase(TestCase):
 
     def test_create_empty_batch(self):
         ad_group_id = 1
-        empty_batch = upload.create_empty_batch(ad_group_id, 'test')
+        empty_batch = upload.create_empty_batch(None, ad_group_id, 'test')
         self.assertEqual(ad_group_id, empty_batch.ad_group_id)
         self.assertEqual('test', empty_batch.name)
         self.assertEqual(None, empty_batch.original_filename)
 
-        another_empty_batch = upload.create_empty_batch(ad_group_id, 'test', 'filename')
+        another_empty_batch = upload.create_empty_batch(None, ad_group_id, 'test', 'filename')
         self.assertEqual(ad_group_id, another_empty_batch.ad_group_id)
         self.assertEqual('test', another_empty_batch.name)
         self.assertEqual('filename', another_empty_batch.original_filename)
@@ -493,7 +493,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
 
         # prepare candidate
         ad_group = models.AdGroup.objects.get(id=1)
-        batch, candidates = upload.insert_candidates(data, ad_group, 'batch1', 'test_upload.csv')
+        batch, candidates = upload.insert_candidates(None, data, ad_group, 'batch1', 'test_upload.csv')
 
         result = upload.get_candidates_with_errors(candidates)
         self.assertEqual([{
@@ -528,7 +528,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
 
         # prepare candidate
         ad_group = models.AdGroup.objects.get(id=1)
-        batch, candidates = upload.insert_candidates(data, ad_group, 'batch1', 'test_upload.csv')
+        batch, candidates = upload.insert_candidates(None, data, ad_group, 'batch1', 'test_upload.csv')
 
         result = upload.get_candidates_with_errors(candidates)
         self.assertEqual([{
@@ -829,6 +829,7 @@ class UploadTest(TestCase):
 
         ad_group = models.AdGroup.objects.get(pk=1)
         batch, candidates = upload.insert_candidates(
+            None,
             content_ads_data,
             ad_group,
             'Test batch',
@@ -859,6 +860,7 @@ class UploadTest(TestCase):
     def test_process_callback(self, *mocks):
         ad_group = models.AdGroup.objects.get(pk=1)
         _, candidates = upload.insert_candidates(
+            None,
             [{
                 "url": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
                 "image_url": "http://static1.squarespace.com/image.jpg",
@@ -896,6 +898,7 @@ class UploadTest(TestCase):
     def test_process_callback_url_pending_start(self, *mocks):
         ad_group = models.AdGroup.objects.get(pk=1)
         _, candidates = upload.insert_candidates(
+            None,
             [{
                 "url": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
                 "image_url": "http://static1.squarespace.com/image.jpg",
@@ -931,6 +934,7 @@ class UploadTest(TestCase):
     def test_process_callback_image_url_pending_start(self, *mocks):
         ad_group = models.AdGroup.objects.get(pk=1)
         _, candidates = upload.insert_candidates(
+            None,
             [{
                 "url": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
                 "image_url": "http://static1.squarespace.com/image.jpg",

@@ -25,7 +25,7 @@ class UploadBatch(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=form.errors)
 
-        batch = upload.create_empty_batch(ad_group_id, form.cleaned_data['batch_name'])
+        batch = upload.create_empty_batch(request.user, ad_group_id, form.cleaned_data['batch_name'])
         candidate = upload.add_candidate(batch)
         return self.create_api_response({
             'batch_id': batch.id,
@@ -47,6 +47,7 @@ class UploadCsv(api_common.BaseApiView):
         filename = request.FILES['candidates'].name
 
         batch, candidates = upload.insert_candidates(
+            request.user,
             candidates_data,
             ad_group,
             batch_name,
@@ -103,16 +104,6 @@ class UploadSave(api_common.BaseApiView):
                 content_ads = upload.persist_batch(batch)
             except (upload.InvalidBatchStatus, upload.CandidateErrorsRemaining) as e:
                 raise exc.ValidationError(message=e.message)
-
-            changes_text = 'Imported batch "{}" with {} content ad{}.'.format(
-                batch.name,
-                len(content_ads),
-                pluralize(len(content_ads)),
-            )
-            ad_group.write_history(
-                changes_text,
-                user=request.user,
-                action_type=constants.HistoryActionType.CONTENT_AD_CREATE)
 
         return content_ads
 

@@ -74,7 +74,7 @@ class ContentAdEdit(api_common.BaseApiView):
     def post(self, request, content_ad_id):
         content_ad = views.helpers.get_content_ad(request.user, content_ad_id, select_related=True)
 
-        batch, candidates = upload.insert_edit_candidates([content_ad], content_ad.ad_group)
+        batch, candidates = upload.insert_edit_candidates(request.user, [content_ad], content_ad.ad_group)
         return self.create_api_response({
             'batch_id': batch.id,
             'candidates': upload.get_candidates_with_errors(candidates),

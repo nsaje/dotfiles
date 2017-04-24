@@ -3,6 +3,7 @@ import StringIO
 
 from django.db import transaction
 from django.conf import settings
+from django.template.defaultfilters import pluralize
 import unicodecsv
 
 from dash import constants
@@ -31,10 +32,10 @@ class ChangeForbidden(Exception):
     pass
 
 
-def insert_candidates(candidates_data, ad_group, batch_name, filename, auto_save=False, is_edit=False):
+def insert_candidates(user, candidates_data, ad_group, batch_name, filename, auto_save=False, is_edit=False):
     with transaction.atomic():
         batch = create_empty_batch(
-            ad_group.id, batch_name, original_filename=filename,
+            user, ad_group.id, batch_name, original_filename=filename,
             auto_save=auto_save, is_edit=is_edit)
         candidates = _create_candidates(candidates_data, ad_group, batch)
 
@@ -44,17 +45,17 @@ def insert_candidates(candidates_data, ad_group, batch_name, filename, auto_save
     return batch, candidates
 
 
-def insert_edit_candidates(content_ads, ad_group):
+def insert_edit_candidates(user, content_ads, ad_group):
     content_ads_data = []
     for content_ad in content_ads:
         content_ad_dict = content_ad.to_candidate_dict()
         content_ad_dict['original_content_ad'] = content_ad
         content_ads_data.append(content_ad_dict)
 
-    return insert_candidates(content_ads_data, ad_group, '', '', is_edit=True)
+    return insert_candidates(user, content_ads_data, ad_group, '', '', is_edit=True)
 
 
-def create_empty_batch(ad_group_id, batch_name, original_filename=None, auto_save=False, is_edit=False):
+def create_empty_batch(user, ad_group_id, batch_name, original_filename=None, auto_save=False, is_edit=False):
     batch = models.UploadBatch(
         name=batch_name,
         ad_group_id=ad_group_id,
@@ -65,7 +66,7 @@ def create_empty_batch(ad_group_id, batch_name, original_filename=None, auto_sav
     if is_edit:
         batch.type = constants.UploadBatchType.EDIT
 
-    batch.save()
+    batch.save(user=user)
     return batch
 
 
@@ -136,6 +137,8 @@ def persist_batch(batch):
         batch.save()
         candidates.delete()
 
+        _save_history(batch, content_ads)
+
     k1_helper.update_content_ads(
         batch.ad_group_id, [ad.pk for ad in batch.contentad_set.all()],
         msg='upload.process_async.insert'
@@ -158,11 +161,33 @@ def persist_edit_batch(request, batch):
         candidates.delete()
         batch.delete()
 
+        _save_history(batch, content_ads)
+
     k1_helper.update_content_ads(
         batch.ad_group_id, [ad.pk for ad in content_ads],
         msg='upload.process_async.edit'
     )
     return content_ads
+
+
+def _save_history(batch, content_ads):
+    if batch.type == constants.UploadBatchType.EDIT:
+        changes_text = 'Edited {} content ad{}.'.format(
+            len(content_ads),
+            pluralize(len(content_ads)),
+        )
+        action_type = constants.HistoryActionType.CONTENT_AD_EDIT
+    else:
+        changes_text = 'Imported batch "{}" with {} content ad{}.'.format(
+            batch.name,
+            len(content_ads),
+            pluralize(len(content_ads)),
+        )
+        action_type = constants.HistoryActionType.CONTENT_AD_CREATE
+    batch.ad_group.write_history(
+        changes_text,
+        user=batch.created_by,
+        action_type=action_type)
 
 
 def _create_redirect_ids(content_ads):

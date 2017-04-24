@@ -1022,6 +1022,7 @@ class ContentAdBatchViewList(RESTAPIBaseView):
         filename = None
 
         batch, candidates = upload.insert_candidates(
+            request.user,
             candidates_data,
             ad_group,
             batch_name,
@@ -1034,7 +1035,7 @@ class ContentAdBatchViewList(RESTAPIBaseView):
 
     @staticmethod
     def _generate_batch_name(prefix):
-        return '%s %s' % (prefix, dates_helper.local_now().strftime('M/D/YYYY h:mm A'))
+        return '%s %s' % (prefix, dates_helper.local_now().strftime('%m/%d/%Y %H:%M %z'))
 
 
 class ContentAdBatchViewDetails(RESTAPIBaseView):

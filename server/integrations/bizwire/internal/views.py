@@ -100,7 +100,7 @@ def article_upload(request):
             campaign_id=config.AUTOMATION_CAMPAIGN,
         )
 
-        dash.upload.insert_candidates(candidates_data, ad_group, batch_name, filename='', auto_save=True)
+        dash.upload.insert_candidates(None, candidates_data, ad_group, batch_name, filename='', auto_save=True)
 
     for ad_group_id in candidates_per_ad_group.keys():
         try:

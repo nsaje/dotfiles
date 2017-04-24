@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from django.conf import settings
 from django.db import models
 
 from dash import constants
@@ -15,6 +15,13 @@ class UploadBatch(models.Model):
     name = models.CharField(max_length=1024)
     created_dt = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='+',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
     status = models.IntegerField(
         default=constants.UploadBatchStatus.IN_PROGRESS,
         choices=constants.UploadBatchStatus.get_choices()
@@ -38,3 +45,9 @@ class UploadBatch(models.Model):
 
     def get_approved_content_ads(self):
         return self.contentad_set.all().order_by('pk')
+
+    def save(self, *args, **kwargs):
+        if self.pk is None:
+            user = kwargs.pop('user', None)
+            self.created_by = user
+        super(UploadBatch, self).save(*args, **kwargs)

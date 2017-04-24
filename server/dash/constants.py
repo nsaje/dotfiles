@@ -1749,6 +1749,7 @@ class HistoryActionType(ConstantBase):
     CONVERSION_PIXEL_REMOVE_REDIRECT_URL = 24
     PUBLISHER_GROUP_CREATE = 25
     PUBLISHER_GROUP_UPDATE = 26
+    CONTENT_AD_EDIT = 26
 
     _VALUES = {
         GOAL_CHANGE: 'Change Campaign Goal',
@@ -1761,6 +1762,7 @@ class HistoryActionType(ConstantBase):
         SETTINGS_CHANGE: 'Change Settings',
         CREATE: 'Create',
         CONTENT_AD_CREATE: 'Create Content Ad',
+        CONTENT_AD_EDIT: 'Edit Content Ad',
         CONVERSION_PIXEL_CREATE: 'Create Conversion Pixel',
         CONVERSION_PIXEL_ARCHIVE_RESTORE: 'Archive/Restore Conversion Pixel',
         ARCHIVE_RESTORE: 'Archive/Restore',

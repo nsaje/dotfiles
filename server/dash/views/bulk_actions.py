@@ -199,7 +199,7 @@ class AdGroupContentAdEdit(BaseBulkActionView):
             ad_group_id=ad_group.id,
         )
 
-        batch, candidates = upload.insert_edit_candidates(content_ads, ad_group)
+        batch, candidates = upload.insert_edit_candidates(request.user, content_ads, ad_group)
         return self.create_api_response({
             'batch_id': batch.id,
             'candidates': upload.get_candidates_with_errors(candidates),
