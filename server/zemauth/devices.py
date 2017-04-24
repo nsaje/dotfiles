@@ -25,8 +25,6 @@ VALID_KEY_CHARS = string.ascii_letters + string.digits
 
 MAX_RETRIES = 20
 
-TEST_EMAILS = ['luka.silovinac@zemanta.com', 'gasper.setinc@zemanta.com']
-
 
 def _get_ip_info(ip):
     # NOTE: this is internal to this module since it's calls to the service (1000 requests per day)
@@ -88,9 +86,6 @@ def _send_email(request):
             'browser=%s, os=%s, city=%s, country=%s, ip=%s, user_agent=%s',
             browser, os, city, country, ip, user_agent
         )
-    if request.user.email not in TEST_EMAILS:
-        # TODO: remove this after a while
-        return
     email_helper.send_new_user_device_email(
         request,
         browser=browser,
