@@ -25,10 +25,6 @@ class DeviceCookieTestCase(TestCase):
     def setUp(self):
         self.user = models.User.objects.get(id=2)
 
-        test_emails_patcher = patch('zemauth.devices.TEST_EMAILS', [self.user.email])
-        test_emails_patcher.start()
-        self.addCleanup(test_emails_patcher.stop)
-
         utc_now_patcher = patch('utils.dates_helper.utc_now')
         mock_utc_now = utc_now_patcher.start()
         mock_utc_now.return_value = MOCK_NOW
