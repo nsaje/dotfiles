@@ -27,7 +27,7 @@ MAX_RETRIES = 20
 
 
 def _get_ip_info(ip):
-    # NOTE: this is internal to this module since it's calls to the service (1000 requests per day)
+    # NOTE: this is internal to this module since calls to the service (1000 requests per day)
     # are throttled and it might not fit another use case
     url = IP_INFO_URL.format(ip=ip, timeout=IP_INFO_TIMEOUT_SECONDS)
     response = requests.get(url)
