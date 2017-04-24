@@ -24,12 +24,14 @@ class Command(ExceptionCommand):
             Q(image_status=constants.AsyncUploadJobStatus.PENDING_START) |
             Q(url_status=constants.AsyncUploadJobStatus.PENDING_START),
             created_dt__lte=dates_helper.utc_now() - datetime.timedelta(hours=1),
+            batch__status=constants.UploadBatchStatus.IN_PROGRESS,
         ).count()
 
         num_waiting = models.ContentAdCandidate.objects.filter(
             Q(image_status=constants.AsyncUploadJobStatus.WAITING_RESPONSE) |
             Q(url_status=constants.AsyncUploadJobStatus.WAITING_RESPONSE),
             created_dt__lte=dates_helper.utc_now() - datetime.timedelta(hours=1),
+            batch__status=constants.UploadBatchStatus.IN_PROGRESS,
         ).count()
 
         interactive = bool(options.get('interactive', False))
