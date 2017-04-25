@@ -36,7 +36,9 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
                                'avg_cost_per_non_bounced_visit', 'avg_cost_per_pageview',
                                'avg_cost_per_visit', 'total_pageviews', 'total_seconds',
                                'non_bounced_visits', 'margin', 'agency_total',
-                               'cpm', 'returning_users', 'unique_users', 'bounced_visits'])
+                               'cpm', 'returning_users', 'unique_users', 'bounced_visits',
+                               'video_start', 'video_first_quartile', 'video_midpoint',
+                               'video_third_quartile', 'video_complete', 'video_progress_3s'])
 
     def test_get_constraints(self):
         date_from = datetime.date(2016, 7, 1)
@@ -132,6 +134,8 @@ class MVMasterPublishersTest(TestCase, backtosql.TestSQLMixin):
                                'avg_cost_per_visit', 'total_pageviews', 'total_seconds',
                                'non_bounced_visits', 'margin', 'agency_total',
                                'cpm', 'returning_users', 'unique_users', 'bounced_visits',
+                               'video_start', 'video_first_quartile', 'video_midpoint',
+                               'video_third_quartile', 'video_complete', 'video_progress_3s',
                                'external_id', 'publisher_id'])
 
     def test_get_constraints(self):
@@ -395,7 +399,9 @@ class MVJointMasterPublishersTest(TestCase, backtosql.TestSQLMixin):
                                'avg_cost_per_non_bounced_visit', 'avg_cost_per_pageview',
                                'avg_cost_per_visit', 'total_pageviews', 'total_seconds',
                                'non_bounced_visits', 'margin', 'agency_total',
-                               'cpm', 'returning_users', 'unique_users', 'bounced_visits'])
+                               'cpm', 'returning_users', 'unique_users', 'bounced_visits',
+                               'video_start', 'video_first_quartile', 'video_midpoint',
+                               'video_third_quartile', 'video_complete', 'video_progress_3s'])
 
 
 class MVJointMasterTest(TestCase, backtosql.TestSQLMixin):
@@ -415,7 +421,9 @@ class MVJointMasterTest(TestCase, backtosql.TestSQLMixin):
                                'avg_cost_per_non_bounced_visit', 'avg_cost_per_pageview',
                                'avg_cost_per_visit', 'total_pageviews', 'total_seconds',
                                'non_bounced_visits', 'margin', 'agency_total',
-                               'cpm', 'returning_users', 'unique_users', 'bounced_visits'])
+                               'cpm', 'returning_users', 'unique_users', 'bounced_visits',
+                               'video_start', 'video_first_quartile', 'video_midpoint',
+                               'video_third_quartile', 'video_complete', 'video_progress_3s'])
 
     @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
     def test_get_query_joint_context(self, mock_today):

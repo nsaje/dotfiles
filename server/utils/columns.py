@@ -113,6 +113,13 @@ _FIELD_MAPPING = {
     'flat_fee': ('Recognized Flat Fee',),
     'total_fee': ('Total Fee',),
     'total_fee_projection': ('Total Fee Projection',),
+
+    'video_start': ('Video Start',),
+    'video_first_quartile': ('Video First Quartile',),
+    'video_midpoint': ('Video Midpoint',),
+    'video_third_quartile': ('Video Third Quartile',),
+    'video_complete': ('Video Complete',),
+    'video_progress_3s': ('Video Progress 3s',),
 }
 
 _PUBLISHERS_FIELD_MAPPING = {
