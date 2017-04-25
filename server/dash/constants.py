@@ -146,7 +146,7 @@ class AccountType(ConstantBase):
         PILOT: 'Pilot',
         ACTIVATED: 'Activated',
         MANAGED: 'Managed',
-        PAAS: 7,
+        PAAS: 'PAAS',
     }
 
 
