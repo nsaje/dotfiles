@@ -7,6 +7,9 @@ from django.conf import settings
 
 from utils import json_helper
 import exc
+import influx
+import time
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -108,8 +111,18 @@ class BaseApiView(View):
         return self.create_api_response(error_data, success=False, status_code=status_code)
 
     def dispatch(self, request, *args, **kwargs):
+        start_time = time.time()
         try:
-            return super(BaseApiView, self).dispatch(request, *args, **kwargs)
+            response = super(BaseApiView, self).dispatch(request, *args, **kwargs)
+            influx.timing(
+                'dash.request',
+                (time.time() - start_time),
+                endpoint=self.__class__.__name__,
+                path=re.sub('/[0-9]+/', '/_ID_/', request.path),
+                method=request.method,
+                status=str(response.status_code),
+            )
+            return response
         except Http404:
             raise  # django's default 404, will use template found in templates/404.html
         except Exception as e:
