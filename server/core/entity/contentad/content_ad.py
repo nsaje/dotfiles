@@ -26,7 +26,7 @@ class ContentAd(models.Model):
         'display_url': utils.demo_anonymizer.fake_display_url,
         'brand_name': utils.demo_anonymizer.fake_brand,
         'redirect_id': lambda: 'u1jvpq0wthxc',
-        'tracker_urls': [],
+        'tracker_urls': lambda: [],
     }
 
     label = models.CharField(max_length=100, default='')
