@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemReportService', function ($q, zemReportEndpoint, zemPermissions, zemDataFilterService) {  // eslint-disable-line max-len
+angular.module('one.widgets').service('zemReportService', function ($q, zemReportEndpoint, zemPermissions, zemDataFilterService, zemUtils) {  // eslint-disable-line max-len
 
     // Public API
     this.startReport = startReport;
@@ -27,12 +27,12 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
             name: name,
             query: getQueryConfig(gridApi, queryConfig, recipients),
             frequency: frequency,
-            time_period: timePeriod,
-            day_of_week: dayOfWeek
+            timePeriod: timePeriod,
+            dayOfWeek: dayOfWeek
         };
 
         zemReportEndpoint
-            .scheduleReport(config)
+            .scheduleReport(zemUtils.convertToUnderscore(config))
             .then(function (response) {
                 deferred.resolve(response.data);
             })

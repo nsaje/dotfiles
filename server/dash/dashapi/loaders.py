@@ -480,9 +480,11 @@ class PublisherBlacklistLoader(Loader):
             return self.blacklist_status_map[publisher_id]
 
         # find subdomain match
-        for entry_publisher_id, status in self.blacklist_status_map.iteritems():
-            if status['include_subdomains'] and publisher_helpers.is_subdomain_match(entry_publisher_id, publisher_id):
-                return status
+        for subdomain in publisher_helpers.all_subdomains(publisher_id):
+            if subdomain in self.blacklist_status_map:
+                status = self.blacklist_status_map[subdomain]
+                if status['include_subdomains']:
+                    return status
 
         # nothing matched, return the default value (blacklist_status_map is a defaultdict)
         return self.blacklist_status_map[publisher_id]

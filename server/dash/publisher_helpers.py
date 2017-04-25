@@ -62,3 +62,8 @@ def is_subdomain_match(listed_publisher, publisher):
             return False
 
     return True
+
+
+def all_subdomains(publisher):
+    parts = publisher.split('.')
+    return ['.'.join(parts[i:]) for i in range(1, len(parts))]

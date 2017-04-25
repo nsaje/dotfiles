@@ -24,28 +24,29 @@ def prepare_constraints(user, breakdown, start_date, end_date, filtered_sources,
 
     # determine the basic structure that is allowed
     allowed_accounts = dash.models.Account.objects.all()\
-                                                  .filter_by_user(user)\
-                                                  .filter_by_sources(filtered_sources)\
                                                   .filter_by_agencies(filtered_agencies)\
                                                   .filter_by_account_types(filtered_account_types)\
                                                   .exclude_archived(show_archived)
 
-    allowed_campaigns = dash.models.Campaign.objects.filter(account__in=allowed_accounts)\
-                                                    .filter_by_user(user)\
-                                                    .filter_by_sources(filtered_sources)\
-                                                    .exclude_archived(show_archived)
-
-    allowed_ad_groups = dash.models.AdGroup.objects.filter(campaign__in=allowed_campaigns)\
-                                                   .exclude_archived(show_archived)
-
-    allowed_content_ads = dash.models.ContentAd.objects.filter(ad_group__in=allowed_ad_groups)\
-                                                       .exclude_archived(show_archived)
+    allowed_campaigns = dash.models.Campaign.objects.all().exclude_archived(show_archived)
+    allowed_ad_groups = dash.models.AdGroup.objects.all().exclude_archived(show_archived)
+    allowed_content_ads = dash.models.ContentAd.objects.all().exclude_archived(show_archived)
 
     constrain_content_ads = stats.constants.CONTENT_AD in breakdown
     constrain_ad_group = constrain_content_ads or stats.constants.AD_GROUP in breakdown
     constrain_campaigns = constrain_ad_group or stats.constants.CAMPAIGN in breakdown
 
     ad_group = None
+
+    # filter by user and sources only on level that is restricted
+    if content_ad_ids:
+        allowed_content_ads = allowed_content_ads.filter_by_user(user)
+    elif ad_group_ids:
+        allowed_ad_groups = allowed_ad_groups.filter_by_user(user)
+    elif campaign_ids:
+        allowed_campaigns = allowed_campaigns.filter_by_user(user).filter_by_sources(filtered_sources)
+    else:
+        allowed_accounts = allowed_accounts.filter_by_user(user).filter_by_sources(filtered_sources)
 
     # limit by ids
     ad_group_sources = None
@@ -59,7 +60,8 @@ def prepare_constraints(user, breakdown, start_date, end_date, filtered_sources,
 
     if ad_group_ids:
         allowed_ad_groups = allowed_ad_groups.filter(pk__in=ad_group_ids)
-        allowed_content_ads = allowed_content_ads.filter(ad_group_id__in=ad_group_ids)
+        if not content_ad_ids:
+            allowed_content_ads = allowed_content_ads.filter(ad_group__in=allowed_ad_groups)
         campaign_ids = _intersection(campaign_ids, _distinct_key(allowed_ad_groups, 'campaign_id'))
         ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group__in=allowed_ad_groups)
 
@@ -71,8 +73,10 @@ def prepare_constraints(user, breakdown, start_date, end_date, filtered_sources,
 
     if campaign_ids:
         allowed_campaigns = allowed_campaigns.filter(pk__in=campaign_ids)
-        allowed_ad_groups = allowed_ad_groups.filter(campaign_id__in=campaign_ids)
-        allowed_content_ads = allowed_content_ads.filter(ad_group__in=allowed_ad_groups)
+        if not ad_group_ids:
+            allowed_ad_groups = allowed_ad_groups.filter(campaign__in=allowed_campaigns)
+            if not content_ad_ids:
+                allowed_content_ads = allowed_content_ads.filter(ad_group__in=allowed_ad_groups)
         account_ids = _intersection(account_ids, _distinct_key(allowed_campaigns, 'account_id'))
         if ad_group_sources is None:
             ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group__campaign__in=allowed_campaigns)
@@ -81,9 +85,13 @@ def prepare_constraints(user, breakdown, start_date, end_date, filtered_sources,
 
     if account_ids:
         allowed_accounts = allowed_accounts.filter(pk__in=account_ids)
-        allowed_campaigns = allowed_campaigns.filter(account_id__in=account_ids)
-        allowed_ad_groups = allowed_ad_groups.filter(campaign__in=allowed_campaigns)
-        allowed_content_ads = allowed_content_ads.filter(ad_group__in=allowed_ad_groups)
+
+    if not campaign_ids:
+        allowed_campaigns = allowed_campaigns.filter(account__in=allowed_accounts)
+        if not ad_group_ids:
+            allowed_ad_groups = allowed_ad_groups.filter(campaign__in=allowed_campaigns)
+            if not content_ad_ids:
+                allowed_content_ads = allowed_content_ads.filter(ad_group__in=allowed_ad_groups)
 
         constrain_campaigns = True
 

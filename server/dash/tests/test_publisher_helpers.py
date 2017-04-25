@@ -41,3 +41,9 @@ class PublisherHelpersTest(TestCase):
         self.assertEqual(publisher_helpers.strip_prefix('http://msn.com'), 'msn.com')
         self.assertEqual(publisher_helpers.strip_prefix('https://msn.com'), 'msn.com')
         self.assertEqual(publisher_helpers.strip_prefix('http://www.msn.com'), 'www.msn.com')
+
+    def test_all_subdomains(self):
+        self.assertEqual(publisher_helpers.all_subdomains('www.msn.com'), ['msn.com', 'com'])
+        self.assertEqual(publisher_helpers.all_subdomains('msn.com'), ['com'])
+        self.assertEqual(publisher_helpers.all_subdomains('http://www.msn.com'), ['msn.com', 'com'])
+        self.assertEqual(publisher_helpers.all_subdomains('https://www.msn.com'), ['msn.com', 'com'])

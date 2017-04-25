@@ -1,4 +1,3 @@
-import datetime
 from django.utils.text import slugify
 
 import redshiftapi.api_reports
@@ -13,6 +12,8 @@ from stats import permission_filter
 
 from utils import sort_helper
 from utils import columns
+
+from format_helper import format_values
 
 
 def query(user, breakdown, constraints, goals, order, level, include_items_with_no_spend=False):
@@ -77,37 +78,3 @@ def get_filename(breakdown, constraints):
         constraints['date__gte'].isoformat(),
         constraints['date__lte'].isoformat(),
     ]))
-
-
-def format_values(rows):
-    for row in rows:
-        for column, value in row.iteritems():
-            value = dash.export._format_empty_value(value, column)
-            value = dash.export._format_percentages(value, column)
-            value = dash.export._format_decimals(value, column)
-            value = dash.export._format_hash(value, column)
-            value = format_date(value, column)
-            value = format_week(value, column)
-            value = format_month(value, column)
-            row[column] = value
-
-
-def format_date(value, column):
-    if column == constants.TimeDimension.DAY:
-        if not value:
-            return ''
-        value = value.strftime('%Y-%m-%d')
-    return value
-
-
-def format_week(value, column):
-    if column == constants.TimeDimension.WEEK:
-        value = "Week {} - {}".format(
-            value.isoformat(), (value + datetime.timedelta(days=6)).isoformat())
-    return value
-
-
-def format_month(value, column):
-    if column == constants.TimeDimension.MONTH:
-        value = "Month {}/{}".format(value.month, value.year)
-    return value

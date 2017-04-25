@@ -7,6 +7,8 @@ import unicodecsv
 import StringIO
 import os.path
 
+import influx
+
 from django.conf import settings
 
 import dash.constants
@@ -14,6 +16,7 @@ import dash.views.helpers
 import dash.models
 
 from server import celery
+from celery.exceptions import SoftTimeLimitExceeded
 
 import stats.constants
 import stats.api_breakdowns
@@ -47,11 +50,13 @@ def create_job(user, query, scheduled_report=None):
     return job
 
 
-@celery.app.task(acks_late=True, name='reports_execute')
+@celery.app.task(acks_late=True, name='reports_execute', soft_time_limit=9*60)
 def execute(job_id):
+    logger.info('Start job executor for report id: %d', job_id)
     job = models.ReportJob.objects.get(pk=job_id)
     executor = ReportJobExecutor(job)
     executor.execute()
+    logger.info('Done job executor for report id: %d', job_id)
 
 
 class JobExecutor(object):
@@ -73,6 +78,7 @@ class MockJobExecutor(JobExecutor):
 
 class ReportJobExecutor(JobExecutor):
 
+    @influx.timer('dash.reports.execute')
     def execute(self):
         if self.job.status != constants.ReportJobStatus.IN_PROGRESS:
             logger.warning('Running a job executor on a job in incorrect state: %s' % self.job.status)
@@ -87,9 +93,15 @@ class ReportJobExecutor(JobExecutor):
 
             self.job.result = report_path
             self.job.status = constants.ReportJobStatus.DONE
+            influx.incr('dash.reports', 1, status='success')
+        except SoftTimeLimitExceeded:
+            self.job.status = constants.ReportJobStatus.FAILED
+            self.job.result = 'Timeout'
+            influx.incr('dash.reports', 1, status='timeout')
         except Exception as e:
             self.job.status = constants.ReportJobStatus.FAILED
             self.job.result = str(e)
+            influx.incr('dash.reports', 1, status='failed')
             logger.exception('Exception when processing API report job %s' % self.job.id)
         finally:
             self.job.save()
