@@ -275,6 +275,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('fea_new_geo_targeting', 'Feature: new geo targeting widget.'),
             ('can_set_advanced_device_targeting', 'User can set advanced device targeting.'),
             ('can_see_new_report_schedule', 'User can see new report schedule.'),
+            ('fea_can_see_video_metrics', 'User can see video metrics.'),
         )
 
     def get_full_name(self):

@@ -17,8 +17,10 @@ class DeliveryDimension:
     AGE = 'age'
     GENDER = 'gender'
     AGE_GENDER = 'age_gender'
+    PLACEMENT_TYPE = 'placement_type'
+    VIDEO_PLAYBACK_METHOD = 'video_playback_method'
 
-    _ALL = [DEVICE, COUNTRY, STATE, DMA, AGE, GENDER, AGE_GENDER]
+    _ALL = [DEVICE, COUNTRY, STATE, DMA, AGE, GENDER, AGE_GENDER, PLACEMENT_TYPE, VIDEO_PLAYBACK_METHOD]
 
 
 class TimeDimension:
