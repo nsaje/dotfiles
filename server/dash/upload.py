@@ -6,8 +6,6 @@ from django.conf import settings
 from django.template.defaultfilters import pluralize
 import unicodecsv
 
-from server import celery
-
 from dash import constants
 from dash import forms
 from dash import models
@@ -96,36 +94,19 @@ def _invoke_external_validation(candidate, batch):
 
     cleaned_urls = _get_cleaned_urls(candidate)
     skip_url_validation = has_skip_validation_magic_word(batch.original_filename)
-    data = {
-        'namespace': settings.LAMBDA_CONTENT_UPLOAD_NAMESPACE,
-        'candidateID': candidate.pk,
-        'pageUrl': cleaned_urls['url'],
-        'adGroupID': candidate.ad_group.pk,
-        'batchID': candidate.batch.pk,
-        'imageUrl': cleaned_urls['image_url'],
-        'callbackUrl': settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL,
-        'skipUrlValidation': skip_url_validation,
-    }
-    if settings.USE_CELERY_FOR_UPLOAD_LAMBDAS:
-        _invoke_lambda_celery.delay(data)
-    else:
-        _invoke_lambda_async(data)
-
-
-def _invoke_lambda_async(data):
     lambda_helper.invoke_lambda(
         settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME,
-        data,
+        {
+            'namespace': settings.LAMBDA_CONTENT_UPLOAD_NAMESPACE,
+            'candidateID': candidate.pk,
+            'pageUrl': cleaned_urls['url'],
+            'adGroupID': candidate.ad_group.pk,
+            'batchID': candidate.batch.pk,
+            'imageUrl': cleaned_urls['image_url'],
+            'callbackUrl': settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL,
+            'skipUrlValidation': skip_url_validation,
+        },
         async=True,
-    )
-
-
-@celery.app.task(acks_late=True, name='upload_lambda_execute', time_limit=300)
-def _invoke_lambda_celery(data):
-    lambda_helper.invoke_lambda(
-        settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME,
-        data,
-        async=False,
     )
 
 
