@@ -24,5 +24,12 @@ CREATE TABLE mv_ad_group (
        margin_nano bigint encode lzo,
 
        users integer encode lzo,
-       returning_users integer encode lzo
+       returning_users integer encode lzo,
+
+       video_start integer encode lzo,
+       video_first_quartile integer encode lzo,
+       video_midpoint integer encode lzo,
+       video_third_quartile integer encode lzo,
+       video_complete integer encode lzo,
+       video_progress_3s integer encode lzo
 ) distkey(date) sortkey(date, source_id, account_id, campaign_id, ad_group_id);
