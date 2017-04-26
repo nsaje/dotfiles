@@ -101,6 +101,14 @@ einsworker_reports:
     entrypoint: ""
     command: "celery worker -A server -c 1 -Q z1-reports -l INFO -f /app/logs/eins_celery_reports.log --prefetch-multiplier 0"
 
+einsworker_upload_lambda:
+    extends: eins
+    mem_limit: 512m
+    labels:
+      traefik.enable: "false"
+    entrypoint: ""
+    command: "celery worker -A server -c 20 -P gevent -Q z1-upload-lambda -l INFO -f /app/logs/eins_celery_upload_lambda.log --prefetch-multiplier 0"
+
 einsworker_convapi:
     extends: eins
     mem_limit: 256m
