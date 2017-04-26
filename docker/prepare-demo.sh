@@ -41,7 +41,7 @@ echo "Loading dump"
 python $DIR/manage.py loaddata dump*.json
 
 echo "Loading geolocations"
-python $DIR/manage.py manage.py import_geolocations dash/features/geolocation/supported_locations/GeoIP2-City-Locations-en.csv dash/features/geolocation/supported_locations/yahoo-mapping.csv dash/features/geolocation/supported_locations/outbrain-mapping.csv dash/features/geolocation/supported_locations/facebook-mapping.csv
+python $DIR/manage.py import_geolocations dash/features/geolocation/supported_locations/GeoIP2-City-Locations-en.csv dash/features/geolocation/supported_locations/yahoo-mapping.csv dash/features/geolocation/supported_locations/outbrain-mapping.csv dash/features/geolocation/supported_locations/facebook-mapping.csv
 
 echo "Incrementing sequences"
 python $DIR/manage.py dbshell <<SQL | grep 'ALTER SEQUENCE' | python $DIR/manage.py dbshell
