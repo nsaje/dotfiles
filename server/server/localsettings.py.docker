@@ -169,7 +169,6 @@ CELERY_ACCEPT_CONTENT = ['pickle']
 
 CELERY_ROUTES = {
     'reports_execute': {'queue': 'reports'},
-    'upload_lambda_execute': {'queue': 'upload-lambda'},
 }
 
 QUEUE_NAME_PREFIX = 'test'
@@ -185,7 +184,6 @@ BROKER_TRANSPORT_OPTIONS = {
 }
 
 USE_CELERY_FOR_REPORTS = False
-USE_CELERY_FOR_UPLOAD_LAMBDAS = False
 
 R1_DEMO_MODE = False
 R1_API_SIGN_KEY = Secret('').get()
