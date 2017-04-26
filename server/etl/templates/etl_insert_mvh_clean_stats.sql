@@ -41,9 +41,6 @@ INSERT INTO mvh_clean_stats (
       CASE WHEN 499 < dma AND dma < 1000 THEN dma
            ELSE NULL
       END AS dma,
-      city_id,
-      placement_type,
-      video_playback_method,
       CASE WHEN TRIM(age)='18-20' THEN 1
            WHEN TRIM(age)='21-29' THEN 2
            WHEN TRIM(age)='30-39' THEN 3
@@ -81,13 +78,7 @@ INSERT INTO mvh_clean_stats (
       SUM(impressions) as impressions,
       SUM(clicks) as clicks,
       SUM(spend) as spend,
-      SUM(data_spend) as data_spend,
-      SUM(video_start) as video_start,
-      SUM(video_first_quartile) as video_first_quartile,
-      SUM(video_midpoint) as video_midpoint,
-      SUM(video_third_quartile) as video_third_quartile,
-      SUM(video_complete) as video_complete,
-      SUM(video_progress_3s) as video_progress_3s
+      SUM(data_spend) as data_spend
   FROM stats
   WHERE
       ((hour is null and date>=%(date_from)s AND date<=%(date_to)s)
@@ -102,5 +93,5 @@ INSERT INTO mvh_clean_stats (
       {% if account_id %}
           AND ad_group_id=ANY(%(ad_group_id)s)
       {% endif %}
-  GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+  GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
 );

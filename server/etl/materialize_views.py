@@ -469,18 +469,6 @@ class MasterView(Materialize):
 
                         row.users,
                         returning_users,
-
-                        None,  # city_id
-
-                        None,  # placement_type
-                        None,  # video_playback_method
-                        None,  # video_start
-                        None,  # video_first_quartile
-                        None,  # video_midpoint
-                        None,  # video_third_quartile
-                        None,  # video_complete
-                        None,  # video_progress_3s
-
                     ),
                     (row.conversions, row.postclick_source)
                 )

@@ -290,11 +290,6 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                 country varchar(2) encode bytedict,
                 state varchar(5) encode bytedict,
                 dma int2 encode bytedict,
-                city_id integer encode lzo,
-
-                placement_type integer encode lzo,
-                video_playback_method integer encode lzo,
-
                 age int2 encode bytedict,
                 gender int2 encode bytedict,
                 age_gender int2 encode bytedict,
@@ -302,14 +297,7 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                 impressions integer encode lzo,
                 clicks integer encode lzo,
                 spend bigint encode lzo,
-                data_spend bigint encode lzo,
-
-                video_start integer encode lzo,
-                video_first_quartile integer encode lzo,
-                video_midpoint integer encode lzo,
-                video_third_quartile integer encode lzo,
-                video_complete integer encode lzo,
-                video_progress_3s integer encode lzo
+                data_spend bigint encode lzo
             ) distkey(date) sortkey(date, source_slug, ad_group_id, content_ad_id, publisher)""")),
             mock.call(backtosql.SQLMatcher("""
             INSERT INTO mvh_clean_stats
@@ -349,9 +337,6 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                     CASE WHEN 499 < dma AND dma < 1000 THEN dma
                         ELSE NULL
                     END AS dma,
-                    city_id,
-                    placement_type,
-                    video_playback_method,
                     CASE WHEN TRIM(age)='18-20' THEN 1
                         WHEN TRIM(age)='21-29' THEN 2
                         WHEN TRIM(age)='30-39' THEN 3
@@ -388,13 +373,7 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                     SUM(impressions) as impressions,
                     SUM(clicks) as clicks,
                     SUM(spend) as spend,
-                    SUM(data_spend) as data_spend,
-                    SUM(video_start) as video_start,
-                    SUM(video_first_quartile) as video_first_quartile,
-                    SUM(video_midpoint) as video_midpoint,
-                    SUM(video_third_quartile) as video_third_quartile,
-                    SUM(video_complete) as video_complete,
-                    SUM(video_progress_3s) as video_progress_3s
+                    SUM(data_spend) as data_spend
                 FROM stats
                 WHERE ((hour is null
                         and date>=%(date_from)s
@@ -407,7 +386,7 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                             AND hour >= %(tzhour_from)s)
                             OR (date=%(tzdate_to)s
                                 AND hour < %(tzhour_to)s))))
-                GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);"""), {
+                GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);"""), {
                 'tzhour_from': 4,
                 'tzhour_to': 4,
                 'tzdate_from': '2016-07-01',
@@ -437,11 +416,6 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                 country varchar(2) encode bytedict,
                 state varchar(5) encode bytedict,
                 dma int2 encode bytedict,
-                city_id integer encode lzo,
-
-                placement_type integer encode lzo,
-                video_playback_method integer encode lzo,
-
                 age int2 encode bytedict,
                 gender int2 encode bytedict,
                 age_gender int2 encode bytedict,
@@ -449,14 +423,7 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                 impressions integer encode lzo,
                 clicks integer encode lzo,
                 spend bigint encode lzo,
-                data_spend bigint encode lzo,
-
-                video_start integer encode lzo,
-                video_first_quartile integer encode lzo,
-                video_midpoint integer encode lzo,
-                video_third_quartile integer encode lzo,
-                video_complete integer encode lzo,
-                video_progress_3s integer encode lzo
+                data_spend bigint encode lzo
             ) distkey(date) sortkey(date, source_slug, ad_group_id, content_ad_id, publisher)""")),
             mock.call(
                 backtosql.SQLMatcher("""
@@ -498,9 +465,6 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                     CASE WHEN 499 < dma AND dma < 1000 THEN dma
                         ELSE NULL
                     END AS dma,
-                    city_id,
-                    placement_type,
-                    video_playback_method,
                     CASE WHEN TRIM(age)='18-20' THEN 1
                         WHEN TRIM(age)='21-29' THEN 2
                         WHEN TRIM(age)='30-39' THEN 3
@@ -538,13 +502,7 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                     SUM(impressions) as impressions,
                     SUM(clicks) as clicks,
                     SUM(spend) as spend,
-                    SUM(data_spend) as data_spend,
-                    SUM(video_start) as video_start,
-                    SUM(video_first_quartile) as video_first_quartile,
-                    SUM(video_midpoint) as video_midpoint,
-                    SUM(video_third_quartile) as video_third_quartile,
-                    SUM(video_complete) as video_complete,
-                    SUM(video_progress_3s) as video_progress_3s
+                    SUM(data_spend) as data_spend
                 FROM stats
                 WHERE ((hour is null
                         and date>=%(date_from)s
@@ -558,7 +516,7 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                             OR (date=%(tzdate_to)s
                                 AND hour < %(tzhour_to)s))))
                     AND ad_group_id=ANY(%(ad_group_id)s)
-                GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);"""), {
+                GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);"""), {
                     'tzhour_from': 4,
                     'tzhour_to': 4,
                     'tzdate_from': '2016-07-01',
@@ -632,18 +590,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                         ) * cf.pct_margin::decimal(10, 8) * 1000
                     ) as margin_nano,
                     null as users,
-                    null as returning_users,
-
-                    a.city_id as city_id,
-
-                    a.placement_type as placement_type,
-                    a.video_playback_method as video_playback_method,
-                    a.video_start as video_start,
-                    a.video_first_quartile as video_first_quartile,
-                    a.video_midpoint as video_midpoint,
-                    a.video_third_quartile as video_third_quartile,
-                    a.video_complete as video_complete,
-                    a.video_progress_3s as video_progress_3s
+                    null as returning_users
                 FROM ( (mvh_clean_stats a left outer join mvh_source b on a.source_slug=b.bidder_slug)
                     join mvh_adgroup_structure c on a.ad_group_id=c.ad_group_id )
                         join mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and a.date=cf.date
@@ -774,16 +721,13 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         self.assertItemsEqual(list(mv.get_postclickstats(None, date)), [
             ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'Bla.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0, 24, 2,
-                      None, None, None, None, None, None, None, None, None), ('{einpix: 2}', 'gaapi')),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0, 24, 2), ('{einpix: 2}', 'gaapi')),
             ((3, 4), (date, 3, 1, 2, 2, 2, 4, 'Trol', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0, 24, 2,
-                      None, None, None, None, None, None, None, None, None), ('{einpix: 2}', 'omniture')),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0, 24, 2), ('{einpix: 2}', 'omniture')),
             ((1, 3), (date, 1, 1, 1, 3, 3, 3, 'nesto.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0, 24, 2,
-                      None, None, None, None, None, None, None, None, None), ('{einpix: 2}', 'gaapi')),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0, 24, 2), ('{einpix: 2}', 'gaapi')),
         ])
 
     def test_prepare_postclickstats_query(self):
@@ -879,18 +823,7 @@ class MasterViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
                         ) * cf.pct_margin::decimal(10, 8) * 1000
                     ) as margin_nano,
                     null as users,
-                    null as returning_users,
-
-                    a.city_id as city_id,
-
-                    a.placement_type as placement_type,
-                    a.video_playback_method as video_playback_method,
-                    a.video_start as video_start,
-                    a.video_first_quartile as video_first_quartile,
-                    a.video_midpoint as video_midpoint,
-                    a.video_third_quartile as video_third_quartile,
-                    a.video_complete as video_complete,
-                    a.video_progress_3s as video_progress_3s
+                    null as returning_users
                 FROM ( (mvh_clean_stats a left outer join mvh_source b on a.source_slug=b.bidder_slug)
                     join mvh_adgroup_structure c on a.ad_group_id=c.ad_group_id )
                         join mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and a.date=cf.date
