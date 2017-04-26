@@ -61,8 +61,6 @@ def augment_row_delivery(row, target_dimension):
         constants.DeliveryDimension.GENDER: dash_constants.Gender,
         constants.DeliveryDimension.AGE_GENDER: dash_constants.AgeGenderGroup,
         constants.DeliveryDimension.DMA: dash_constants.DMA,
-        constants.DeliveryDimension.PLACEMENT_TYPE: dash_constants.PlacementType,
-        constants.DeliveryDimension.VIDEO_PLAYBACK_METHOD: dash_constants.VideoPlaybackMethod,
     }
 
     if target_dimension in mapping and row[target_dimension]:

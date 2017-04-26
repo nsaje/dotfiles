@@ -69,8 +69,6 @@ _FIELD_MAPPING = {
     'state': ('State',),
     'dma': ('DMA',),
     'device_type': ('Device',),
-    'placement_type': ('Placement Type',),
-    'video_playback_method': ('Video Playback Method',),
 
     'agency_total': ('Total Spend + Margin',),
     'avg_cost_for_new_visitor': ('Avg. Cost for New Visitor',),
