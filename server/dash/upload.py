@@ -125,7 +125,7 @@ def _invoke_lambda_async(data):
     name='upload_lambda_execute',
     time_limit=300,
     max_retries=5,
-    default_retry_deplay=20)
+    default_retry_delay=20)
 def _invoke_lambda_celery(data):
     data['raiseException'] = True
     lambda_helper.invoke_lambda(
