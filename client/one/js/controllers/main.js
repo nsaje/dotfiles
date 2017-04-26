@@ -162,7 +162,7 @@ angular.module('one.legacy').controller('MainCtrl', function ($scope, $state, $l
             });
         }
 
-        $document.prop('title', title + ' | ' + ($window.whitelabel && $window.whitelabel.dashboardTitle || dashboardTitle));
+        $document.prop('title', title + ' | ' + ($window.zOne.whitelabel && $window.zOne.whitelabel.dashboardTitle || dashboardTitle));
     };
 
     $scope.getBreadcrumbAllAccountsName = function () {

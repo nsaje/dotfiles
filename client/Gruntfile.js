@@ -133,7 +133,8 @@ module.exports = function (grunt) {
                 dest: 'dist/one/zemanta-one.lib.js',
                 mainFiles: {
                     'highcharts-release': 'highcharts.js',
-                    'angular-bootstrap-datetimepicker': 'src/js/datetimepicker.js'
+                    'angular-bootstrap-datetimepicker': 'src/js/datetimepicker.js',
+                    'raven-js': ['dist/raven.js', 'dist/plugins/angular.js']
                 },
                 dependencies: {
                     'angular': 'bootstrap-daterangepicker'

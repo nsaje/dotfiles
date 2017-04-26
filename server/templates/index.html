@@ -4,35 +4,47 @@
 <base href="/">
 <link type="text/css" rel="stylesheet" href="{{ staticUrl }}/one/zemanta-one.lib.min.css" />
 
+
+<script>
+    window.zOne = {
+        isDebug: {{ debug|yesno:"true,false" }},
+        useNewRouting: {{ perms.zemauth.can_use_new_routing|yesno:"true,false" }},
+        whitelabel: null
+    };
+
+    {% if whitelabel %}
+        window.zOne.whitelabel = {
+            id: "{{ whitelabel }}",
+            dashboardTitle: "{{ custom_dashboard_title }}"
+        };
+    {% endif %}
+</script>
+
 {% if debug %}
-{% if whitelabel %}
-<link type="text/css" rel="stylesheet" href="{{ staticUrl }}/one/zemanta-one-{{ whitelabel }}.css" />
-{% else %}
-<link type="text/css" rel="stylesheet" href="{{ staticUrl }}/one/zemanta-one.css" />
-{% endif %}
-<script type="text/javascript" src="{{ staticUrl }}/one/zemanta-one.lib.js"></script>
-<script type="text/javascript" src="{{ staticUrl }}/one/zemanta-one.js"></script>
-<script src="http://localhost:35729/livereload.js"></script>
-{% else %}
-{% if whitelabel %}
-<link type="text/css" rel="stylesheet" href="{{ staticUrl }}/one/zemanta-one-{{ whitelabel }}.min.css" />
-{% else %}
-<link type="text/css" rel="stylesheet" href="{{ staticUrl }}/one/zemanta-one.min.css" />
-{% endif %}
-<script type="text/javascript" src="{{ staticUrl }}/one/zemanta-one.lib.min.js"></script>
+    {% if whitelabel %}
+        <link type="text/css" rel="stylesheet" href="{{ staticUrl }}/one/zemanta-one-{{ whitelabel }}.css" />
+    {% else %}
+        <link type="text/css" rel="stylesheet" href="{{ staticUrl }}/one/zemanta-one.css" />
+    {% endif %}
 
-<!-- Sentry/Raven config - should be included after Angular, but before application code. -->
-<script src="https://cdn.ravenjs.com/3.12.1/angular/raven.min.js" crossorigin="anonymous"></script>
-<script>Raven.config('https://5443376e0b054647b8c8759811ad4d5b@sentry.io/147373').install();</script>
-<!-- ----------------------------------------------------------------------------------- -->
+    <script type="text/javascript" src="{{ staticUrl }}/one/zemanta-one.lib.js"></script>
+    <script type="text/javascript" src="{{ staticUrl }}/one/zemanta-one.js"></script>
+    <script src="http://localhost:35729/livereload.js"></script>
+{% else %}
+    {% if whitelabel %}
+        <link type="text/css" rel="stylesheet" href="{{ staticUrl }}/one/zemanta-one-{{ whitelabel }}.min.css" />
+    {% else %}
+        <link type="text/css" rel="stylesheet" href="{{ staticUrl }}/one/zemanta-one.min.css" />
+    {% endif %}
 
-<script type="text/javascript" src="{{ staticUrl }}/one/zemanta-one.min.js"></script>
+    <script type="text/javascript" src="{{ staticUrl }}/one/zemanta-one.lib.min.js"></script>
+    <script type="text/javascript" src="{{ staticUrl }}/one/zemanta-one.min.js"></script>
 {% endif %}
 
 {% endblock %}
 
 {% block content %}
-<div ng-app="one" ng-strict-di>
+<div>
     <div class="splash" ng-cloak="">
         <div class="loader"></div>
     </div>
@@ -40,9 +52,6 @@
 </div>
 
 <script>
-    {% if whitelabel %}
-    window.whitelabel = { id: "{{ whitelabel }}", dashboardTitle: "{{ custom_dashboard_title }}" };
-    {% endif %}
     var adblockTest = document.createElement('div');
     adblockTest.innerHTML = '&nbsp;';
     adblockTest.className = 'adsbox';
@@ -53,11 +62,5 @@
         }
         adblockTest.remove();
     }, 100);
-</script>
-
-<script>
-    window.APP = {
-        USE_NEW_ROUTING: {{ perms.zemauth.can_use_new_routing|yesno:"true,false" }}
-    }
 </script>
 {% endblock %}

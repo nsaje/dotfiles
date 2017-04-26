@@ -23,7 +23,7 @@ angular.module('one').config(function ($urlRouterProvider) {
     });
 
     // If new routing is used skip legacy redirects
-    if (!window.APP || !window.APP.USE_NEW_ROUTING) {
+    if (!window.zOne.useNewRouting) {
         $urlRouterProvider.when('/ad_groups/:adGroupId/ads_plus', '/ad_groups/:adGroupId/ads');
 
         $urlRouterProvider.when('/campaigns/:campaignId/budget', ['$state', '$match', function ($state, $match) {

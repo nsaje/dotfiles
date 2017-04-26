@@ -6,6 +6,7 @@
 angular.module(
     'one.libs',
     [
+        'ngRaven',
         'config',
         'templates-one',
         'ngSanitize',

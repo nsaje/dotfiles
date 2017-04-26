@@ -23,6 +23,9 @@ module.exports = function (config) {
             'one/components/**/*.js',
             'test/unit/**/*.js',
         ],
+        exclude: [
+            'one/app/app.bootstrap.js',
+        ],
 
         preprocessors: {
             '{one}/js/**/*.js': 'coverage'

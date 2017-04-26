@@ -34,7 +34,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
         }
 
         function updateTitle (entity) {
-            var title, dashboardTitle = $window.whitelabel && $window.whitelabel.dashboardTitle || 'Zemanta';
+            var title, dashboardTitle = $window.zOne.whitelabel && $window.zOne.whitelabel.dashboardTitle || 'Zemanta';
             if (entity) {
                 title = entity.name + ' | ' + dashboardTitle;
             } else {

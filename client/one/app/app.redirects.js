@@ -4,7 +4,7 @@ angular.module('one').config(function ($urlRouterProvider) {
     //
     // This file contains redirects from legacy routes to new ones
     //
-    if (!window.APP || !window.APP.USE_NEW_ROUTING) return;
+    if (!window.zOne.useNewRouting) return;
 
     var mapLegacyLevelToLevelParam = {};
     mapLegacyLevelToLevelParam['all_accounts'] = constants.levelStateParam.ACCOUNTS;

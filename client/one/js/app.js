@@ -5,7 +5,7 @@ angular.module('one.legacy', []);
 angular.module('one.legacy').config(function ($stateProvider) {
 
     // If new routing is used skip legacy state initialization
-    if (window.APP && window.APP.USE_NEW_ROUTING) return;
+    if (window.zOne.useNewRouting) return;
 
     var basicTemplate = '<ng-include src="\'/partials/tabset.html\'"></ng-include><div ui-view></div>';
 
