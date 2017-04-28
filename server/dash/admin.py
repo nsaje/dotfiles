@@ -1474,7 +1474,7 @@ class PublisherGroupListFilter(SimpleListFilter):
         return queryset
 
 
-class PublisherGroupEntryAdmin(admin.ModelAdmin):
+class PublisherGroupEntryAdmin(ExportMixin, admin.ModelAdmin):
     list_display = ('publisher_group', 'publisher', 'source', 'include_subdomains', 'created_dt', 'modified_dt')
     readonly_fields = ('created_dt', 'modified_dt')
     search_fields = ['publisher_group__name', 'publisher_group__id', 'publisher', 'source__name']
