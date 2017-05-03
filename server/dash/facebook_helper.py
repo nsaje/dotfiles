@@ -17,7 +17,7 @@ FB_AD_ACCOUNT_GET_URL = "https://graph.facebook.com/{api_version}/{account_id}"
 FB_PAGES_URL = 'https://graph.facebook.com/{api_version}/{business_id}/pages'
 FB_PAGE_ID_URL = "https://graph.facebook.com/{api_version}/{page_id}?fields=id"
 FB_USER_PERMISSIONS_URL = "https://graph.facebook.com/{api_version}/{object_id}/userpermissions"
-FB_API_VERSION = 'v2.7'
+FB_API_VERSION = 'v2.8'
 
 TZ_AMERICA_NEW_YORK = 7
 CURRENCY_USD = 'USD'
