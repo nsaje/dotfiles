@@ -26,6 +26,7 @@ ERROR_INVALID_PAGE = 'Param page_id must be a valid page ID'
 ERROR_ALREADY_PENDING = 'There is already pending client request for page'
 ERROR_ALREADY_CONNECTED = 'You Already Have Access To This Page'
 ERROR_ALREADY_BELONGS_TO_BUSINESS_MANAGER = 'Asset already belongs to this Business Manager'
+ERROR_ALREADY_ACCESS = 'Your business already have access to the object.'
 
 
 def update_facebook_account(facebook_account, new_url, business_id, access_token):
@@ -86,9 +87,13 @@ def send_page_access_request(page_id, business_id, access_token):
         return constants.FacebookPageRequestType.PENDING
     elif response.status_code == 400:
         error = response.json().get('error', {})
+        already_connected = (
+            ERROR_ALREADY_CONNECTED in error.get('error_user_title', '') or
+            ERROR_ALREADY_BELONGS_TO_BUSINESS_MANAGER in error.get('message', '') or
+            ERROR_ALREADY_ACCESS in error.get('error_user_msg', '')
+        )
 
-        if ERROR_ALREADY_CONNECTED in error.get('error_user_title', '') \
-                or ERROR_ALREADY_BELONGS_TO_BUSINESS_MANAGER in error.get('message', ''):
+        if already_connected:
             return constants.FacebookPageRequestType.CONNECTED
         elif ERROR_ALREADY_PENDING in error.get('message', ''):
             return constants.FacebookPageRequestType.PENDING
