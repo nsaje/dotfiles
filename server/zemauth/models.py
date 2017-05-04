@@ -275,6 +275,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('fea_new_geo_targeting', 'Feature: new geo targeting widget.'),
             ('can_set_advanced_device_targeting', 'User can set advanced device targeting.'),
             ('can_see_new_report_schedule', 'User can see new report schedule.'),
+            ('can_clone_contentads', 'User can clone content ads.'),
+            ('can_clone_adgroups', 'User can clone ad groups.'),
         )
 
     def get_full_name(self):
