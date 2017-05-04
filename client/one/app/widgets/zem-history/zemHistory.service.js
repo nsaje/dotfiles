@@ -15,6 +15,7 @@ angular.module('one.widgets').service('zemHistoryService', function ($rootScope,
     };
 
     var QUERY_PARAM = 'history';
+    this.QUERY_PARAM = QUERY_PARAM;
 
 
     //

@@ -28,7 +28,7 @@
                           is-internal="{{row.internal}}">
     </zem-infobox-data-row>
     <hr ng-if="$ctrl.isEntityAvailable" class="zem-infobox__content-separator" />
-    <a ng-if="$ctrl.isEntityAvailable" class="alternative-link link-with-icon history-icon" ng-click="$ctrl.openHistory()">
+    <a ng-if="$ctrl.isEntityAvailable" class="alternative-link link-with-icon history-icon" ng-click="$ctrl.openHistory($event)">
         View history
     </a>
 </div>

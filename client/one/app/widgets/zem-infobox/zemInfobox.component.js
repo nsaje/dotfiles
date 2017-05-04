@@ -3,10 +3,10 @@ angular.module('one.widgets').component('zemInfobox', {
         entity: '<',
     },
     templateUrl: '/app/widgets/zem-infobox/zemInfobox.component.html',
-    controller: function (zemInfoboxService, zemNavigationNewService, zemDataFilterService, zemEntityService, zemHistoryService, zemPermissions, $state) { // eslint-disable-line max-len
+    controller: function (zemInfoboxService, zemNavigationNewService, zemDataFilterService, zemEntityService, zemHistoryService, zemPermissions, $state, $location, $window) { // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;
-        $ctrl.openHistory = zemHistoryService.open;
+        $ctrl.openHistory = openHistory;
 
         var entityUpdateHandler;
         var actionExecutedHandler;
@@ -101,6 +101,25 @@ angular.module('one.widgets').component('zemInfobox', {
             $ctrl.delivery = data.delivery;
             $ctrl.basicSettings = data.basicSettings;
             $ctrl.performanceSettings = data.performanceSettings;
+        }
+
+        function openHistory (event) {
+            if (shouldOpenInNewTab(event)) {
+                openInNewTabWithParam(zemHistoryService.QUERY_PARAM);
+            } else {
+                zemHistoryService.open();
+            }
+        }
+
+        function shouldOpenInNewTab (event) {
+            // Has user clicked with middle mouse button or while ctrl/cmd keys were pressed
+            return event.ctrlKey || event.metaKey || event.which === 2;
+        }
+
+        function openInNewTabWithParam (param) {
+            var tempLocation = angular.copy($location);
+            tempLocation.search(param, true);
+            $window.open(tempLocation.absUrl(), '_blank');
         }
     },
 });
