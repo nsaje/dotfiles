@@ -135,25 +135,6 @@ def get_adgroup_realtimestats(ad_group_id):
         raise
 
 
-def fetch_redirects_impressions(date, timeout=300):
-    request_url = settings.R1_CONVERSION_STATS_URL.format(date=date.strftime('%Y-%m-%d'))
-
-    logger.info('Querying redirect impressions')
-    job_id = _call_api_retry(request_url, method='GET')
-
-    start_time = time.time()
-    while (time.time() - start_time) < timeout:
-        logger.info('Polling redirect impressions results')
-        result = _call_api_paginated(settings.R1_CONVERSION_STATS_RESULT_URL.format(job_id=job_id), method='GET')
-        if result is None:
-            time.sleep(2)
-            continue
-
-        return result
-
-    raise Exception('Redirect conversion stats timeout')
-
-
 def upsert_audience(audience):
     try:
         rules = [{'id': str(rule.id), 'type': rule.type, 'value': rule.value} for rule in audience.audiencerule_set.all()]
