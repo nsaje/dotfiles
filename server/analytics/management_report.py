@@ -219,6 +219,7 @@ def _populate_agency(context, type_filter):
     monthly_campaigns = context.campaigns['this_month'] & valid_campaigns
     projections = analytics.projections.CurrentMonthBudgetProjections(
         'account',
+        accounts=dash.models.Account.objects.filter(pk__in=valid_accounts),
         campaign_id__in=monthly_campaigns
     )
     postfix = ""
@@ -249,6 +250,7 @@ def _populate_clientdirect(context, type_filter):
     monthly_campaigns = context.campaigns['this_month'] & valid_campaigns
     projections = analytics.projections.CurrentMonthBudgetProjections(
         'account',
+        accounts=dash.models.Account.objects.filter(pk__in=valid_accounts),
         campaign_id__in=monthly_campaigns
     )
     postfix = ""
