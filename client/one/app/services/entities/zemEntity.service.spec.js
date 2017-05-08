@@ -16,9 +16,6 @@ describe('zemEntityService', function () {
         $httpBackend.whenGET(/.*/).respond(200, {});
         $httpBackend.whenPUT(/.*/).respond(200, {data: {settings: {}, defaultSettings: {}}});
         $httpBackend.whenPOST(/.*/).respond(200, {});
-        // TODO: Remove when accountAccess resolve is removed from main state in app.js
-        $httpBackend.whenGET(/^\/api\/.*\/nav\//).respond(200, {data: {}});
-        $httpBackend.flush();
     }));
 
     afterEach(function () {

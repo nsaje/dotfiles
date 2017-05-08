@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.widgets').factory('zemGridBulkActionsService', function ($window, api, zemEntityService, zemContentAdService, zemGridEndpointColumns, zemGridConstants, zemAlertsService, zemUploadService, zemUploadApiConverter) { // eslint-disable-line max-len
+angular.module('one.widgets').factory('zemGridBulkActionsService', function ($window, zemEntityService, zemContentAdService, zemGridEndpointColumns, zemGridConstants, zemAlertsService, zemUploadService, zemUploadApiConverter) { // eslint-disable-line max-len
 
     function BulkActionsService (gridApi) {
         this.getActions = getActions;

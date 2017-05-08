@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemAccessPermissionsSettings', {
         entity: '<',
     },
     templateUrl: '/app/widgets/zem-settings/account/access-permissions/zemAccessPermissionsSettings.component.html',
-    controller: function (api, $state, zemPermissions, zemUserService) { // eslint-disable-line max-len
+    controller: function (zemAccessPermissionsSettingsEndpoint, $state, zemPermissions, zemUserService) { // eslint-disable-line max-len
 
         // TODO: update settings after user added/removed
 
@@ -111,18 +111,19 @@ angular.module('one.widgets').component('zemAccessPermissionsSettings', {
             var user = getUser(userId);
             user.requestInProgress = true;
 
-            api.accountUserAction.post($ctrl.entity.settings.id, userId, 'activate').then(
-                function () {
-                    user.saved = true;
-                    user.emailResent = true;
-                },
-                function () {
-                    user.saved = false;
-                    user.emailResent = false;
-                }
-            ).finally(function () {
-                user.requestInProgress = false;
-            });
+            zemAccessPermissionsSettingsEndpoint.post($ctrl.entity.settings.id, userId, 'activate')
+                .then(
+                    function () {
+                        user.saved = true;
+                        user.emailResent = true;
+                    },
+                    function () {
+                        user.saved = false;
+                        user.emailResent = false;
+                    })
+                .finally(function () {
+                    user.requestInProgress = false;
+                });
         }
 
         function undoRemove (userId) {
@@ -141,25 +142,27 @@ angular.module('one.widgets').component('zemAccessPermissionsSettings', {
         function promoteUser (user) {
             user.requestInProgress = true;
 
-            api.accountUserAction.post($ctrl.entity.settings.id, user.id, 'promote').then(
-                function () {
-                    user.is_agency_manager = true;
-                }
-            ).finally(function () {
-                user.requestInProgress = false;
-            });
+            zemAccessPermissionsSettingsEndpoint.post($ctrl.entity.settings.id, user.id, 'promote')
+                .then(
+                    function () {
+                        user.is_agency_manager = true;
+                    })
+                .finally(function () {
+                    user.requestInProgress = false;
+                });
         }
 
         function downgradeUser (user) {
             user.requestInProgress = true;
 
-            api.accountUserAction.post($ctrl.entity.settings.id, user.id, 'downgrade').then(
-                function () {
-                    user.is_agency_manager = false;
-                }
-            ).finally(function () {
-                user.requestInProgress = false;
-            });
+            zemAccessPermissionsSettingsEndpoint.post($ctrl.entity.settings.id, user.id, 'downgrade')
+                .then(
+                    function () {
+                        user.is_agency_manager = false;
+                    })
+                .finally(function () {
+                    user.requestInProgress = false;
+                });
         }
     },
 });

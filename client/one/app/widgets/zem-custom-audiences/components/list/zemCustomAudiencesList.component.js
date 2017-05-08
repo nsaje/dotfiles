@@ -6,7 +6,7 @@ angular.module('one.widgets').component('zemCustomAudiencesList', {
     bindings: {
         stateService: '<',
     },
-    controller: function (api, zemDataFilterService, zemPermissions, $scope, $uibModal) {
+    controller: function (zemDataFilterService, zemPermissions, $scope, $uibModal) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {

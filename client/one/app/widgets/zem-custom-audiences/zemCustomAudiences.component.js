@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemCustomAudiences', {
     bindings: {
         account: '<',
     },
-    controller: function ($scope, api, $uibModal, zemPermissions, zemCustomAudiencesStateService) {
+    controller: function ($scope, $uibModal, zemPermissions, zemCustomAudiencesStateService) {
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;

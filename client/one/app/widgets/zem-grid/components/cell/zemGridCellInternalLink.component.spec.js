@@ -31,10 +31,10 @@ describe('zemGridCellInternalLink', function () {
         expect(element.isolateScope().ctrl.href).toEqual(null);
 
         var tests = [
-            {entityType: 'account', id: 123, expectedHref: '/accounts/123/campaigns'},
-            {entityType: 'campaign', id: 456, expectedHref: '/campaigns/456/ad_groups'},
-            {entityType: 'adGroup', id: 789, expectedHref: '/ad_groups/789/ads'},
-            {entityType: 'unknown', id: undefined, expectedHref: '/all_accounts/accounts'},
+            {entityType: 'account', id: 123, expectedHref: '/v2/analytics/account/123'},
+            {entityType: 'campaign', id: 456, expectedHref: '/v2/analytics/campaign/456'},
+            {entityType: 'adGroup', id: 789, expectedHref: '/v2/analytics/adgroup/789'},
+            {entityType: 'unknown', id: undefined, expectedHref: '/v2/analytics/accounts'},
         ];
 
         tests.forEach(function (test) {

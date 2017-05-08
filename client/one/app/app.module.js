@@ -7,7 +7,6 @@ angular.module(
         'one.services',
         'one.views',
         'one.widgets',
-        'one.legacy',
     ]
 );
 

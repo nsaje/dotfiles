@@ -1,5 +1,5 @@
 /* globals options */
-angular.module('one.widgets').service('zemFilterSelectorService', function ($rootScope, $state, $filter, api, zemPermissions, zemDataFilterService, zemFilterSelectorSharedService, zemMediaSourcesService, zemAgenciesService, zemPubSubService) { // eslint-disable-line max-len
+angular.module('one.widgets').service('zemFilterSelectorService', function ($rootScope, $state, $filter, zemPermissions, zemDataFilterService, zemFilterSelectorSharedService, zemMediaSourcesService, zemAgenciesService, zemPubSubService) { // eslint-disable-line max-len
     this.init = init;
     this.getVisibleSections = getVisibleSections;
     this.getAppliedConditions = getAppliedConditions;
@@ -38,10 +38,7 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
             getOptions: getAgenciesOptions,
             permissions: ['zemauth.can_filter_by_agency'],
             isVisible: function () {
-                if (zemPermissions.hasPermission('zemauth.can_use_new_routing') && $state.includes('v2')) {
-                    return $state.params.level === constants.levelStateParam.ACCOUNTS;
-                }
-                return $state.includes('main.allAccounts');
+                return $state.params.level === constants.levelStateParam.ACCOUNTS;
             },
         },
         {
@@ -52,10 +49,7 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
             getOptions: getAccountTypesOptions,
             permissions: ['zemauth.can_filter_by_account_type'],
             isVisible: function () {
-                if (zemPermissions.hasPermission('zemauth.can_use_new_routing') && $state.includes('v2')) {
-                    return $state.params.level === constants.levelStateParam.ACCOUNTS;
-                }
-                return $state.includes('main.allAccounts');
+                return $state.params.level === constants.levelStateParam.ACCOUNTS;
             },
         },
         {
@@ -73,10 +67,7 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
             getOptions: getPublisherStatusOptions,
             permissions: ['zemauth.can_see_publisher_blacklist_status'],
             isVisible: function () {
-                if (zemPermissions.hasPermission('zemauth.can_use_new_routing') && $state.includes('v2')) {
-                    return $state.params.breakdown === constants.breakdownStateParam.PUBLISHERS;
-                }
-                return $state.includes('**.publishers');
+                return $state.params.breakdown === constants.breakdownStateParam.PUBLISHERS;
             },
         },
     ];

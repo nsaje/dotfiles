@@ -8,6 +8,8 @@ angular.module('one.widgets').component('zemGridExport', {
     controller: function ($scope, $uibModal, zemGridExportOptions) {
         var $ctrl = this;
 
+        var MODALS_URL = '/app/widgets/zem-grid-integration/shared/export/modals/';
+
         $ctrl.showScheduledReportModal = showScheduledReportModal;
         $ctrl.exportModalTypes = [
             {name: 'Download', value: 'download'},
@@ -52,11 +54,10 @@ angular.module('one.widgets').component('zemGridExport', {
             // Initialize data (date range, order) before modal is opened
             initializeData();
 
-            var modalInstance;
             if (exportModalType === 'schedule') {
-                modalInstance = $uibModal.open({
-                    templateUrl: '/partials/add_scheduled_report_modal.html',
-                    controller: 'AddScheduledReportModalCtrl',
+                $uibModal.open({
+                    templateUrl: MODALS_URL + 'zemAddScheduledReportModal.partial.html', // TODO: Create component
+                    controller: 'zemAddScheduledReportModalCtrl',
                     backdrop: 'static',
                     keyboard: false,
                     scope: $scope,
@@ -71,14 +72,13 @@ angular.module('one.widgets').component('zemGridExport', {
                     }
                 });
             } else {
-                modalInstance = $uibModal.open({
-                    templateUrl: '/partials/download_export_report_modal.html',
-                    controller: 'DownloadExportReportModalCtrl',
+                $uibModal.open({
+                    templateUrl: MODALS_URL + 'zemDownloadExportReportModal.partial.html', // TODO: Create component
+                    controller: 'zemDownloadExportReportModalCtrl',
                     backdrop: 'static',
                     keyboard: false,
                     scope: $scope,
                 });
-                return modalInstance;
             }
         }
     }

@@ -67,7 +67,8 @@ describe('component: zemCreateEntityAction', function () {
             spyOn($state, 'go');
             zemCreateEntityActionService.createEntity(constants.entityType.ACCOUNT);
             $rootScope.$apply();
-            expect($state.go).toHaveBeenCalledWith('main.accounts.campaigns', {id: 1, settings: 'create'});
+            expect($state.go).toHaveBeenCalledWith('v2.analytics',
+                {settings: 'create', level: 'account', id: 1, breakdown: undefined});
         });
     });
 });

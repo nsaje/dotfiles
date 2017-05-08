@@ -4,7 +4,7 @@
             <span ng-show="ctrl.row.data.meta.loading"> Loading ... </span>
             <a ng-show="!ctrl.row.data.meta.loading && !ctrl.row.data.pagination.complete && !ctrl.row.data.meta.error"
                ng-click="ctrl.loadMore(20)">
-                <img class="load-more-icon" ng-src="{{ctrl.config.static_url}}/one/img/load_more.svg">
+                <img class="load-more-icon" ng-src="{{ctrl.config.static_url}}/one/images/load_more.svg">
                 <span>Load more</span>
             </a>
             <span ng-show="!ctrl.row.data.meta.loading && (ctrl.row.data.pagination.complete || ctrl.row.data.meta.error)">

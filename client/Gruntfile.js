@@ -49,8 +49,6 @@ module.exports = function (grunt) {
                 src: [
                     'dist/one/zemanta-one.templates.js',
                     'dist/build/config.js',
-                    'one/js/constants.js',
-                    'one/js/whitelabel.js',
                     // App JS files - start with modules
                     'one/app/app.module.js',
                     'one/app/**/*.module.js',
@@ -58,16 +56,6 @@ module.exports = function (grunt) {
                     // Exclude tests, test helpers and mocks
                     '!one/app/test/**/*',
                     '!one/app/**/*.spec.js',
-                    // Legacy app bellow
-                    'one/js/app.js',
-                    'one/js/constants/*.js',
-                    'one/js/services/**/*.js',
-                    'one/js/directives/**/*.js',
-                    'one/js/services/**/*.js',
-                    'one/js/controllers/**/*.js',
-                    'one/js/filters/**/*.js',
-                    'one/components/**/*.js',
-                    '!one/**/*.spec.js',
                 ],
                 dest: 'dist/one/zemanta-one.js',
             },
@@ -177,7 +165,6 @@ module.exports = function (grunt) {
         copy: {
             one: {
                 files: [
-                    {expand: true, flatten: true, src: 'one/img/*', dest: 'dist/one/img/'},
                     {expand: true, flatten: true, src: 'one/images/*', dest: 'dist/one/images/'},
                     {expand: true, flatten: true, src: 'one/images/whitelabel/greenpark/*',
                      dest: 'dist/one/images/whitelabel/greenpark/'},
@@ -265,7 +252,6 @@ module.exports = function (grunt) {
             one_templates: {
                 files: [
                     'one/**/*.html',
-                    'one/img/**/*',
                     'one/images/**/*',
                     'one/assets/**/*',
                 ],
@@ -323,39 +309,6 @@ module.exports = function (grunt) {
                 singleRun: true,
             },
         },
-        jslint: { // configure the task
-            // lint your project's server code
-            server: {
-                src: [
-                    'dist/one/zemanta-one.templates.js',
-                    'dist/build/config.js',
-                    'one/js/constants.js',
-                    'one/js/whitelabel.js',
-                    'one/js/app.js',
-                    'one/js/constants/*.js',
-                    'one/js/services/**/*.js',
-                    'one/js/directives/**/*.js',
-                    'one/js/services/**/*.js',
-                    'one/js/controllers/**/*.js',
-                    'one/js/filters/**/*.js',
-                    'one/components/**/*.js',
-                ],
-                exclude: [],
-                directives: { // example directives
-                    node: true,
-                    todo: true,
-                },
-                options: {
-                    edition: 'latest', // specify an edition of jslint or use 'dir/mycustom-jslint.js' for own path
-                    junit: 'out/server-junit.xml', // write the output to a JUnit XML
-                    log: 'out/server-lint.log',
-                    jslintXml: 'out/server-jslint.xml',
-                    errorsOnly: true, // only display errors
-                    failOnError: true, // defaults to true
-                    checkstyle: 'out/server-checkstyle.xml' // write a checkstyle-XML
-                }
-            }
-        },
         clean: {
             // Remove dist/tmp directory containing temporary files used by different steps in build process
             tmp: ['dist/tmp'],
@@ -386,5 +339,4 @@ module.exports = function (grunt) {
     grunt.registerTask('prod', ['default', 'karma:local']);
     grunt.registerTask('test', ['build', 'karma:local']);
     grunt.registerTask('dev', ['ngconstant:dev', 'build', 'connect:dev', 'watch']);
-    grunt.registerTask('lint', ['ngconstant:dev', 'jslint']);
 };

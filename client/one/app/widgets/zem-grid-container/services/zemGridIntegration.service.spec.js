@@ -1,5 +1,5 @@
 describe('component: zemGridIntegrationService', function () {
-    var $timeout, $httpBackend;
+    var $timeout;
     var zemDataSourceService, zemGridEndpointService, zemGridMocks;
     var zemGridIntegrationService, zemDataFilterService, zemSelectionService;
 
@@ -10,7 +10,6 @@ describe('component: zemGridIntegrationService', function () {
     beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($injector) {
         $timeout = $injector.get('$timeout');
-        $httpBackend = $injector.get('$httpBackend');
 
         zemGridMocks = $injector.get('zemGridMocks');
         zemDataSourceService = $injector.get('zemDataSourceService');
@@ -21,9 +20,6 @@ describe('component: zemGridIntegrationService', function () {
 
         $scope = $injector.get('$rootScope').$new();
         defaultEntity = {type: constants.entityType.ACCOUNT, id: 'TEST-ACCOUNT-ID'};
-
-        // TODO: Remove when accountAccess resolve is removed from main state in app.js
-        $httpBackend.whenGET(/^\/api\/.*\/nav\//).respond(200, {data: {}});
     }));
 
     it('should create default grid options on initialization', function () {

@@ -12,9 +12,6 @@ describe('zemEntityActionsService', function () {
         zemEntityBulkActionsEndpoint = $injector.get('zemEntityBulkActionsEndpoint');
 
         $httpBackend.whenPOST(/.*/).respond(200, {});
-        // TODO: Remove when accountAccess resolve is removed from main state in app.js
-        $httpBackend.whenGET(/^\/api\/.*\/nav\//).respond(200, {data: {}});
-        $httpBackend.flush();
     }));
 
     afterEach(function () {
