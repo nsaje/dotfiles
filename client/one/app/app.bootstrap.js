@@ -23,7 +23,7 @@
     }
 
     function initializeRaven () {
-        var url = 'https://0005443376e0b054647b8c8759811ad4d5b@sentry.io/147373';
+        var url = 'https://5443376e0b054647b8c8759811ad4d5b@sentry.io/147373';
         var options = {
             shouldSendCallback: function () { return !window.zOne.isDebug; }
         };
