@@ -896,6 +896,12 @@ class ContentAdsTest(RESTAPITest):
         self.validate_against_db(resp_json['data'])
         self.assertEqual(resp_json['data']['state'], 'INACTIVE')
 
+    def test_contentads_put_without_state(self):
+        r = self.client.put(
+            reverse('contentads_details', kwargs={'content_ad_id': 16805}),
+            data={'title': 'test'}, format='json')
+        self.assertResponseError(r, 'ValidationError')
+
 
 class PublisherBlacklistTest(RESTAPITest):
 

@@ -31,9 +31,9 @@ class IdField(serializers.Field):
 
 class DashConstantField(serializers.Field):
 
-    def __init__(self, const_cls, **kwargs):
+    def __init__(self, const_cls, *args, **kwargs):
         self.const_cls = const_cls
-        super(DashConstantField, self).__init__(**kwargs)
+        super(DashConstantField, self).__init__(*args, **kwargs)
 
     def to_internal_value(self, data):
         if data == NOT_PROVIDED:

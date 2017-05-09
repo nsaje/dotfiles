@@ -922,10 +922,10 @@ class ContentAdSerializer(serializers.ModelSerializer):
                   'description', 'call_to_action', 'label', 'image_crop', 'tracker_urls')
         read_only_fields = tuple(set(fields) - set(('state',)))
 
-    id = fields.IdField()
-    ad_group_id = fields.IdField(source='ad_group')
-    state = fields.DashConstantField(constants.ContentAdSourceState)
-    image_url = serializers.URLField(source='get_image_url')
+    id = fields.IdField(required=False)
+    ad_group_id = fields.IdField(source='ad_group', required=False)
+    state = fields.DashConstantField(constants.ContentAdSourceState, required=True)
+    image_url = serializers.URLField(source='get_image_url', required=False)
 
     def create(self, validated_data):
         request = validated_data['request']
@@ -965,7 +965,7 @@ class ContentAdViewDetails(RESTAPIBaseView):
 
     def put(self, request, content_ad_id):
         helpers.get_content_ad(request.user, content_ad_id)  # validation
-        serializer = ContentAdSerializer(data=request.data, partial=True)
+        serializer = ContentAdSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(request=request, content_ad_id=content_ad_id)
         return self.response_ok(serializer.data)
