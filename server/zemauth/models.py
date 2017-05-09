@@ -278,6 +278,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_clone_contentads', 'User can clone content ads.'),
             ('can_clone_adgroups', 'User can clone ad groups.'),
             ('can_see_publishers_all_levels', 'User can see publishers on all levels.'),
+            ('fea_can_see_video_metrics', 'User can see video metrics.'),
         )
 
     def get_full_name(self):

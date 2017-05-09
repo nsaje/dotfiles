@@ -130,6 +130,8 @@ class MVMaster(BreakdownsBase):
     age = backtosql.Column('age', BREAKDOWN)
     gender = backtosql.Column('gender', BREAKDOWN)
     age_gender = backtosql.Column('age_gender', BREAKDOWN)
+    placement_type = backtosql.Column('placement_type', BREAKDOWN)
+    video_playback_method = backtosql.Column('video_playback_method', BREAKDOWN)
 
     clicks = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'clicks'}, AGGREGATE)
     impressions = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'impressions'}, AGGREGATE)
@@ -186,6 +188,14 @@ class MVMaster(BreakdownsBase):
     avg_cost_per_visit = backtosql.TemplateColumn('part_sumdiv_nano.sql', {
         'expr': 'cost_nano', 'divisor': 'visits',
     }, AGGREGATE)
+
+    # Video
+    video_start = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'video_start'}, AGGREGATE)
+    video_first_quartile = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'video_first_quartile'}, AGGREGATE)
+    video_midpoint = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'video_midpoint'}, AGGREGATE)
+    video_third_quartile = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'video_third_quartile'}, AGGREGATE)
+    video_complete = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'video_complete'}, AGGREGATE)
+    video_progress_3s = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'video_progress_3s'}, AGGREGATE)
 
     @classmethod
     def get_best_view(cls, needed_dimensions, use_publishers_view):

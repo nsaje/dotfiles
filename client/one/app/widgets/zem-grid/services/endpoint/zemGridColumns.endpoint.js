@@ -929,7 +929,75 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             totalRow: true,
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-        }
+        },
+
+        // Video Metrics
+        videoStart: {
+            name: 'Video Start',
+            field: 'video_start',
+            type: zemGridConstants.gridColumnTypes.NUMBER,
+            shown: 'zemauth.fea_can_see_video_metrics',
+            internal: 'zemauth.fea_can_see_video_metrics',
+            help: 'Video Start.',
+            totalRow: true,
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
+        },
+        videoProgress3s: {
+            name: 'Video Progress 3s',
+            field: 'video_progress_3s',
+            type: zemGridConstants.gridColumnTypes.NUMBER,
+            shown: 'zemauth.fea_can_see_video_metrics',
+            internal: 'zemauth.fea_can_see_video_metrics',
+            help: 'Video Progress 3s.',
+            totalRow: true,
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
+        },
+        videoFirstQuartile: {
+            name: 'Video First Quartile',
+            field: 'video_first_quartile',
+            type: zemGridConstants.gridColumnTypes.NUMBER,
+            shown: 'zemauth.fea_can_see_video_metrics',
+            internal: 'zemauth.fea_can_see_video_metrics',
+            help: 'Video First Quartile.',
+            totalRow: true,
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
+        },
+        videoMidpoint: {
+            name: 'Video Midpoint',
+            field: 'video_midpoint',
+            type: zemGridConstants.gridColumnTypes.NUMBER,
+            shown: 'zemauth.fea_can_see_video_metrics',
+            internal: 'zemauth.fea_can_see_video_metrics',
+            help: 'Video Midpoint.',
+            totalRow: true,
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
+        },
+        videoThirdQuartile: {
+            name: 'Video Third Quartile',
+            field: 'video_third_quartile',
+            type: zemGridConstants.gridColumnTypes.NUMBER,
+            shown: 'zemauth.fea_can_see_video_metrics',
+            internal: 'zemauth.fea_can_see_video_metrics',
+            help: 'Video Third Quartile.',
+            totalRow: true,
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
+        },
+        videoComplete: {
+            name: 'Video Complete',
+            field: 'video_complete',
+            type: zemGridConstants.gridColumnTypes.NUMBER,
+            shown: 'zemauth.fea_can_see_video_metrics',
+            internal: 'zemauth.fea_can_see_video_metrics',
+            help: 'Video Complete.',
+            totalRow: true,
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
+        },
     };
 
     // ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1139,13 +1207,23 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         COLUMNS.conversionGoalsPlaceholder,
     ];
 
+    var VIDEO_METRICS_GROUP = [
+        COLUMNS.videoStart,
+        COLUMNS.videoProgress3s,
+        COLUMNS.videoFirstQuartile,
+        COLUMNS.videoMidpoint,
+        COLUMNS.videoThirdQuartile,
+        COLUMNS.videoComplete
+    ];
+
     var METRICS_GROUP = [].concat(
         COSTS_GROUP,
         PROJECTIONS_GROUP,
         TRAFFIC_ACQUISITION_GROUP,
         AUDIENCE_METRICS_GROUP,
         PIXELS_GROUP,
-        CONVERSION_GOALS_GROUP
+        CONVERSION_GOALS_GROUP,
+        VIDEO_METRICS_GROUP
     );
 
     // //////////////V////////////////////////////////////////////////////////////////////////////////////
@@ -1308,6 +1386,10 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         {
             name: 'Google & Adobe Analytics Goals',
             columns: CONVERSION_GOALS_GROUP,
+        },
+        {
+            name: 'Video Metrics',
+            columns: VIDEO_METRICS_GROUP,
         }
     ];
 

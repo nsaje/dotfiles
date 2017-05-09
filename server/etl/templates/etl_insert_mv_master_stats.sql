@@ -54,7 +54,18 @@ INSERT INTO mv_master (
       ) as margin_nano,
 
       null as users,
-      null as returning_users
+      null as returning_users,
+
+      a.city_id as city_id,
+
+      a.placement_type as placement_type,
+      a.video_playback_method as video_playback_method,
+      a.video_start as video_start,
+      a.video_first_quartile as video_first_quartile,
+      a.video_midpoint as video_midpoint,
+      a.video_third_quartile as video_third_quartile,
+      a.video_complete as video_complete,
+      a.video_progress_3s as video_progress_3s
   FROM
     (
       (mvh_clean_stats a left outer join mvh_source b on a.source_slug=b.bidder_slug)

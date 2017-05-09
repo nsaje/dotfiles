@@ -22,6 +22,8 @@ angular.module('one.widgets').factory('zemGridEndpointBreakdowns', function (zem
         state: {name: 'State', query: 'state', report_query: 'State'},
         dma: {name: 'DMA', query: 'dma', report_query: 'DMA'},
         device: {name: 'Device', query: 'device_type', report_query: 'Device'},
+        placementType: {name: 'Placement Type', query: 'placement_type', report_query: 'Placement Type'},
+        videoPlaybackMethod: {name: 'Video Playback Method', query: 'video_playback_method', report_query: 'Video Playback Method'}, // eslint-disable-line max-len
 
         day: {name: 'By day', query: 'day', report_query: 'Day'},
         week: {name: 'By week', query: 'week', report_query: 'Week'},
@@ -48,6 +50,8 @@ angular.module('one.widgets').factory('zemGridEndpointBreakdowns', function (zem
         BREAKDOWNS.state,
         BREAKDOWNS.dma,
         BREAKDOWNS.device,
+        BREAKDOWNS.placementType,
+        BREAKDOWNS.videoPlaybackMethod,
     ];
 
     var TIME_BREAKDOWNS = [
