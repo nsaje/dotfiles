@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.db import models
+from django.db.models import Q, Case, When
 
 from dash import constants
 
@@ -18,7 +19,13 @@ class GeolocationQuerySet(models.QuerySet):
 
 class GeolocationManager(models.Manager):
     def search(self, keys=None, types=None, name_contains=None, limit=None):
-        locations = super(GeolocationManager, self).get_queryset().all()
+        locations = super(GeolocationManager, self).get_queryset().all().annotate(
+            num_external=(
+                Case(When(~Q(woeid=''), then=1), default=0, output_field=models.IntegerField()) +
+                Case(When(~Q(outbrain_id=''), then=1), default=0, output_field=models.IntegerField()) +
+                Case(When(~Q(facebook_key=''), then=1), default=0, output_field=models.IntegerField())
+            )
+        ).order_by('-num_external', 'name')
         if keys:
             locations = locations.key_in(keys)
         if types:
@@ -31,9 +38,6 @@ class GeolocationManager(models.Manager):
 
 class Geolocation(models.Model):
     objects = GeolocationManager.from_queryset(GeolocationQuerySet)()
-
-    class Meta:
-        ordering = ('-type',)
 
     key = models.CharField(
         primary_key=True,
