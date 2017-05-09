@@ -80,6 +80,10 @@ angular.module('one.widgets').component('zemChart', {
 
         function loadData () {
             updateDataSource();
+
+            // FIXME: chartDataService can become null (proper reinitialization needed on breakdown change)
+            var chartDataService = $ctrl.chartDataService;
+
             $ctrl.chartDataService.getData().then(function () {
                 if (!$ctrl.initialized) {
                     // First request
@@ -87,7 +91,7 @@ angular.module('one.widgets').component('zemChart', {
 
                     // Update Dynamic metrics - re-fetch if metrics are not available anymore (use default metrics)
                     loadMetrics();
-                    var metrics = $ctrl.chartDataService.getMetrics();
+                    var metrics = chartDataService.getMetrics();
                     if (metrics[0] !== $ctrl.metrics.metric1.value || metrics[1] !== $ctrl.metrics.metric2.value) {
                         loadData();
                     }
