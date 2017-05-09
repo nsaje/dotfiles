@@ -1,9 +1,7 @@
 from django.test import TestCase
 from decimal import Decimal
-from mock import patch
 
 from zemauth.models import User
-from utils import test_helper
 
 from dash import models
 from dash import constants
@@ -532,3 +530,183 @@ class AdGroupSourcesLoaderTest(TestCase):
             'daily_budget': Decimal('0'),
             'current_daily_budget': Decimal('0'),
         })
+
+
+class PublisherBlacklistLoaderTest(TestCase):
+    fixtures = ['test_api_breakdowns.yaml']
+
+    def setUp(self):
+        self.publisher_group_targeting = {
+            'ad_group': {
+                'included': set([7]),
+                'excluded': set([6]),
+                1: {
+                    'included': set([7]),
+                    'excluded': set([6]),
+                },
+                2: {
+                    'included': set(),
+                    'excluded': set(),
+                },
+            },
+            'campaign': {
+                'included': set([5]),
+                'excluded': set([4]),
+                1: {
+                    'included': set([5]),
+                    'excluded': set([4]),
+                },
+                2: {
+                    'included': set(),
+                    'excluded': set(),
+                },
+            },
+            'account': {
+                'included': set([3]),
+                'excluded': set([2]),
+                1: {
+                    'included': set([3]),
+                    'excluded': set([2]),
+                },
+                2: {
+                    'included': set(),
+                    'excluded': set(),
+                },
+            },
+            'global': {
+                'excluded': set([1]),
+            },
+        }
+        self.loader = loaders.PublisherBlacklistLoader(
+            models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1, 2, 4, 6]),
+            models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[3, 5, 7]),
+            self.publisher_group_targeting,
+            models.Source.objects.all(),
+            User.objects.get(pk=1),
+        )
+
+    def test_from_constraints(self):
+        loader = loaders.PublisherBlacklistLoader.from_constraints(User.objects.get(pk=1), {
+            'publisher_blacklist': models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1, 2, 4, 6]),
+            'publisher_whitelist': models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[3, 5, 7]),
+            'publisher_group_targeting': self.publisher_group_targeting,
+            'filtered_sources': models.Source.objects.all(),
+        })
+
+        self.assertItemsEqual(loader.whitelist_qs, self.loader.whitelist_qs)
+        self.assertItemsEqual(loader.blacklist_qs, self.loader.blacklist_qs)
+        self.assertItemsEqual(loader.publisher_group_targeting, self.loader.publisher_group_targeting)
+        self.assertItemsEqual(loader.filtered_sources_qs, self.loader.filtered_sources_qs)
+
+    def test_can_blacklist_source(self):
+        self.assertTrue(self.loader.can_blacklist_source_map[1])
+        self.assertFalse(self.loader.can_blacklist_source_map[2])
+
+    def test_status_global_unlisted(self):
+        row = {
+            'publisher_id': 'pubtest.com__1',
+        }
+        self.assertEqual(self.loader.find_blacklisted_status_by_subdomain(row), {
+            'status': constants.PublisherTargetingStatus.UNLISTED,
+        })
+
+    def test_status_global_blacklist(self):
+        row = {
+            'publisher_id': 'pub1.com__1',
+        }
+        self.assertEqual(self.loader.find_blacklisted_status_by_subdomain(row), {
+            'blacklisted_level': 'global',
+            'status': constants.PublisherTargetingStatus.BLACKLISTED,
+        })
+
+    def test_status_global_blacklist_subdomain(self):
+        row = {
+            'publisher_id': 'test.pub1.com__1',
+        }
+        self.assertEqual(self.loader.find_blacklisted_status_by_subdomain(row), {
+            'blacklisted_level': 'global',
+            'status': constants.PublisherTargetingStatus.BLACKLISTED,
+        })
+
+    def _subdomain_id_test(self, row, status, id_field):
+        self.assertEqual(self.loader.find_blacklisted_status_by_subdomain(row), status)
+
+        row[id_field] = 1
+        self.assertEqual(self.loader.find_blacklisted_status_by_subdomain(row), status)
+
+        row[id_field] = 2
+        self.assertEqual(self.loader.find_blacklisted_status_by_subdomain(row), {
+            'status': constants.PublisherTargetingStatus.UNLISTED,
+        })
+        del row[id_field]
+
+        row['publisher_id'] = 'test.'+row['publisher_id']
+        self.assertEqual(self.loader.find_blacklisted_status_by_subdomain(row), status)
+
+        row[id_field] = 1
+        self.assertEqual(self.loader.find_blacklisted_status_by_subdomain(row), status)
+
+        row[id_field] = 2
+        self.assertEqual(self.loader.find_blacklisted_status_by_subdomain(row), {
+            'status': constants.PublisherTargetingStatus.UNLISTED,
+        })
+
+    def test_status_account_blacklist(self):
+        row = {
+            'publisher_id': 'pub2.com__2',
+        }
+        status = {
+            'blacklisted_level': 'account',
+            'status': constants.PublisherTargetingStatus.BLACKLISTED,
+        }
+        self._subdomain_id_test(row, status, 'account_id')
+
+    def test_status_account_whitelist(self):
+        row = {
+            'publisher_id': 'pub3.com__3',
+        }
+        status = {
+            'blacklisted_level': 'account',
+            'status': constants.PublisherTargetingStatus.WHITELISTED,
+        }
+        self._subdomain_id_test(row, status, 'account_id')
+
+    def test_status_campaign_blacklist(self):
+        row = {
+            'publisher_id': 'pub4.com__4',
+        }
+        status = {
+            'blacklisted_level': 'campaign',
+            'status': constants.PublisherTargetingStatus.BLACKLISTED,
+        }
+        self._subdomain_id_test(row, status, 'campaign_id')
+
+    def test_status_campaign_whitelist(self):
+        row = {
+            'publisher_id': 'pub5.com__2',
+        }
+        status = {
+            'blacklisted_level': 'campaign',
+            'status': constants.PublisherTargetingStatus.WHITELISTED,
+        }
+        self._subdomain_id_test(row, status, 'campaign_id')
+
+    def test_status_ad_group_blacklist(self):
+        row = {
+            'publisher_id': 'pub6.com__2',
+        }
+        status = {
+            'blacklisted_level': 'adgroup',
+            'status': constants.PublisherTargetingStatus.BLACKLISTED,
+        }
+        self._subdomain_id_test(row, status, 'ad_group_id')
+
+    def test_status_ad_group_whitelist(self):
+        row = {
+            'publisher_id': 'pub7.com__2',
+        }
+        status = {
+            'blacklisted_level': 'adgroup',
+            'status': constants.PublisherTargetingStatus.WHITELISTED,
+        }
+        self._subdomain_id_test(row, status, 'ad_group_id')

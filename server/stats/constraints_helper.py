@@ -29,7 +29,8 @@ def _get_basic_constraints(start_date, end_date, show_archived, filtered_sources
 @newrelic.agent.function_trace()
 def prepare_all_accounts_constraints(user, breakdown, start_date, end_date, filtered_sources, show_archived=False,
                                      filtered_agencies=None, filtered_account_types=None, filtered_accounts=None,
-                                     only_used_sources=True):
+                                     only_used_sources=True,
+                                     show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL):
 
     allowed_accounts = models.Account.objects.all()\
                                              .filter_by_user(user)\
@@ -59,6 +60,13 @@ def prepare_all_accounts_constraints(user, breakdown, start_date, end_date, filt
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group__campaign__account__in=allowed_accounts)
         filtered_sources = narrow_filtered_sources(filtered_sources, ad_group_sources)
 
+    add_publisher_constraints(
+        constraints, filtered_sources, show_blacklisted_publishers,
+        None, None,
+        None, None,
+        None, None,
+    )
+
     constraints.update(_get_basic_constraints(start_date, end_date, show_archived, filtered_sources))
 
     return constraints
@@ -66,7 +74,8 @@ def prepare_all_accounts_constraints(user, breakdown, start_date, end_date, filt
 
 @newrelic.agent.function_trace()
 def prepare_account_constraints(user, account, breakdown, start_date, end_date, filtered_sources,
-                                filtered_campaigns=None, show_archived=False, only_used_sources=True):
+                                filtered_campaigns=None, show_archived=False, only_used_sources=True,
+                                show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL):
     allowed_campaigns = account.campaign_set.all()\
                                             .filter_by_user(user)\
                                             .filter_by_sources(filtered_sources)
@@ -91,6 +100,15 @@ def prepare_account_constraints(user, account, breakdown, start_date, end_date, 
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group__campaign__account_id=account.id)
         filtered_sources = narrow_filtered_sources(filtered_sources, ad_group_sources)
 
+    account_settings = account.get_current_settings()
+
+    add_publisher_constraints(
+        constraints, filtered_sources, show_blacklisted_publishers,
+        None, None,
+        None, None,
+        account, account_settings,
+    )
+
     constraints.update(_get_basic_constraints(start_date, end_date, show_archived, filtered_sources))
 
     return constraints
@@ -98,7 +116,8 @@ def prepare_account_constraints(user, account, breakdown, start_date, end_date, 
 
 @newrelic.agent.function_trace()
 def prepare_campaign_constraints(user, campaign, breakdown, start_date, end_date, filtered_sources,
-                                 filtered_ad_groups=None, show_archived=False, only_used_sources=True):
+                                 filtered_ad_groups=None, show_archived=False, only_used_sources=True,
+                                 show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL):
     allowed_ad_groups = campaign.adgroup_set.all().exclude_archived(show_archived)
     if filtered_ad_groups:
         allowed_ad_groups = allowed_ad_groups.filter(id__in=filtered_ad_groups.values_list('id', flat=True))
@@ -114,6 +133,16 @@ def prepare_campaign_constraints(user, campaign, breakdown, start_date, end_date
     if only_used_sources:
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group__campaign_id=campaign.id)
         filtered_sources = narrow_filtered_sources(filtered_sources, ad_group_sources)
+
+    campaign_settings = campaign.get_current_settings()
+    account_settings = campaign.account.get_current_settings()
+
+    add_publisher_constraints(
+        constraints, filtered_sources, show_blacklisted_publishers,
+        None, None,
+        campaign, campaign_settings,
+        campaign.account, account_settings,
+    )
 
     constraints.update(_get_basic_constraints(
         start_date, end_date, show_archived, filtered_sources))
@@ -144,14 +173,33 @@ def prepare_ad_group_constraints(user, ad_group, breakdown, start_date, end_date
     campaign_settings = ad_group.campaign.get_current_settings()
     account_settings = ad_group.campaign.account.get_current_settings()
 
+    add_publisher_constraints(
+        constraints, filtered_sources, show_blacklisted_publishers,
+        ad_group, ad_group_settings,
+        ad_group.campaign, campaign_settings,
+        ad_group.campaign.account, account_settings,
+    )
+
+    constraints.update(_get_basic_constraints(
+        start_date, end_date, show_archived, filtered_sources))
+
+    return constraints
+
+
+def add_publisher_constraints(constraints, filtered_sources, show_blacklisted_publishers,
+                              ad_group, ad_group_settings,
+                              campaign, campaign_settings,
+                              account, account_settings):
     blacklists, whitelists = publisher_group_helpers.concat_publisher_group_targeting(
-        ad_group, ad_group_settings, ad_group.campaign, campaign_settings,
-        ad_group.campaign.account, account_settings
+        ad_group, ad_group_settings,
+        campaign, campaign_settings,
+        account, account_settings
     )
 
     publisher_group_targeting = publisher_group_helpers.get_publisher_group_targeting_dict(
-        ad_group, ad_group_settings, ad_group.campaign, campaign_settings,
-        ad_group.campaign.account, account_settings
+        ad_group, ad_group_settings,
+        campaign, campaign_settings,
+        account, account_settings
     )
 
     blacklisted_entries = models.PublisherGroupEntry.objects.filter(publisher_group_id__in=blacklists)\
@@ -163,11 +211,6 @@ def prepare_ad_group_constraints(user, ad_group, breakdown, start_date, end_date
     constraints['publisher_whitelist'] = whitelisted_entries
     constraints['publisher_group_targeting'] = publisher_group_targeting
     constraints['publisher_blacklist_filter'] = show_blacklisted_publishers
-
-    constraints.update(_get_basic_constraints(
-        start_date, end_date, show_archived, filtered_sources))
-
-    return constraints
 
 
 def get_allowed_constraints_field(target_dimension):

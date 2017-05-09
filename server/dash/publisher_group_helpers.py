@@ -1,10 +1,10 @@
+from collections import defaultdict
 import logging
 import re
 from decimal import Decimal
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Q
 
 from dash import constants, cpc_constraints, history_helpers, models
 from dash.views import helpers
@@ -83,37 +83,46 @@ def can_user_handle_publisher_listing_level(user, obj):
 def concat_publisher_group_targeting(ad_group, ad_group_settings, campaign,
                                      campaign_settings, account, account_settings, include_global=True):
 
-    blacklist = set([ad_group.default_blacklist_id, campaign.default_blacklist_id, account.default_blacklist_id])
-    blacklist |= set(ad_group_settings.blacklist_publisher_groups)
-    blacklist |= set(campaign_settings.blacklist_publisher_groups)
-    blacklist |= set(account_settings.blacklist_publisher_groups)
+    blacklist = set()
+    whitelist = set()
+
+    if ad_group:
+        blacklist |= _get_blacklists(ad_group, ad_group_settings)
+        whitelist |= _get_whitelists(ad_group, ad_group_settings)
+    if campaign:
+        blacklist |= _get_blacklists(campaign, campaign_settings)
+        whitelist |= _get_whitelists(campaign, campaign_settings)
+    if account:
+        blacklist |= _get_blacklists(account, account_settings)
+        whitelist |= _get_whitelists(account, account_settings)
+
     if include_global:
         blacklist |= set([get_global_blacklist().id])
-    blacklist = sorted([x for x in blacklist if x])
 
-    whitelist = set([ad_group.default_whitelist_id, campaign.default_whitelist_id, account.default_whitelist_id])
-    whitelist |= set(ad_group_settings.whitelist_publisher_groups)
-    whitelist |= set(campaign_settings.whitelist_publisher_groups)
-    whitelist |= set(account_settings.whitelist_publisher_groups)
+    blacklist = sorted([x for x in blacklist if x])
     whitelist = sorted([x for x in whitelist if x])
 
     return blacklist, whitelist
 
 
-def load_settings_and_concat_publisher_group_targeting(accounts, campaigns, ad_groups, include_global=True):
-    accounts_settings = models.AccountSettings.objects.filter(
-        account__in=accounts
-    ).group_current_settings().prefetch_related('account')
-    campaigns_settings = models.CampaignSettings.objects.filter(
-        campaign__in=campaigns
-    ).group_current_settings().prefetch_related('campaign')
-    ad_groups_settings = models.AdGroupSettings.objects.filter(
-        ad_group__in=ad_groups
-    ).group_current_settings().prefetch_related('ad_group')
-
+def get_publisher_group_targeting_multiple_entities(accounts, campaigns, ad_groups, include_global=True):
     whitelist = set()
     blacklist = set()
-    targeting = get_default_publisher_group_targeting_dict(include_global)
+
+    def gettargeting():
+        return {
+            'included': set(),
+            'excluded': set(),
+        }
+
+    targeting = {
+        'ad_group': defaultdict(gettargeting),
+        'campaign': defaultdict(gettargeting),
+        'account': defaultdict(gettargeting),
+        'global': {
+            'excluded': set([get_global_blacklist().id]) if include_global else set(),
+        },
+    }
     if include_global:
         blacklist = set([get_global_blacklist().id])
 
@@ -123,17 +132,31 @@ def load_settings_and_concat_publisher_group_targeting(accounts, campaigns, ad_g
             current = set(x for x in current if x)
 
             blacklist.update(current)
-            targeting[related_field]['excluded'] = current
+            targeting[related_field][getattr(x, related_field).id]['excluded'].update(current)
 
             current = set(x.whitelist_publisher_groups) | set([getattr(x, related_field).default_whitelist_id])
             current = set(x for x in current if x)
 
             whitelist.update(current)
-            targeting[related_field]['included'] = current
+            targeting[related_field][getattr(x, related_field).id]['included'].update(current)
 
-    fill_up(accounts_settings, 'account')
-    fill_up(campaigns_settings, 'campaign')
-    fill_up(ad_groups_settings, 'ad_group')
+    if accounts is not None:
+        accounts_settings = models.AccountSettings.objects.filter(
+            account__in=accounts
+        ).group_current_settings().prefetch_related('account')
+        fill_up(accounts_settings, 'account')
+
+    if campaigns is not None:
+        campaigns_settings = models.CampaignSettings.objects.filter(
+            campaign__in=campaigns
+        ).group_current_settings().prefetch_related('campaign')
+        fill_up(campaigns_settings, 'campaign')
+
+    if ad_groups is not None:
+        ad_groups_settings = models.AdGroupSettings.objects.filter(
+            ad_group__in=ad_groups
+        ).group_current_settings().prefetch_related('ad_group')
+        fill_up(ad_groups_settings, 'ad_group')
 
     return blacklist, whitelist, targeting
 
@@ -161,20 +184,27 @@ def get_default_publisher_group_targeting_dict(include_global=True):
 def get_publisher_group_targeting_dict(ad_group, ad_group_settings, campaign,
                                        campaign_settings, account, account_settings, include_global=True):
     d = get_default_publisher_group_targeting_dict(include_global)
-    d.update({
-        'ad_group': {
-            'included': _get_whitelists(ad_group, ad_group_settings),
-            'excluded': _get_blacklists(ad_group, ad_group_settings),
-        },
-        'campaign': {
-            'included': _get_whitelists(campaign, campaign_settings),
-            'excluded': _get_blacklists(campaign, campaign_settings),
-        },
-        'account': {
-            'included': _get_whitelists(account, account_settings),
-            'excluded': _get_blacklists(account, account_settings),
-        }
-    })
+    if ad_group is not None:
+        d.update({
+            'ad_group': {
+                'included': _get_whitelists(ad_group, ad_group_settings),
+                'excluded': _get_blacklists(ad_group, ad_group_settings),
+            },
+        })
+    if campaign is not None:
+        d.update({
+            'campaign': {
+                'included': _get_whitelists(campaign, campaign_settings),
+                'excluded': _get_blacklists(campaign, campaign_settings),
+            },
+        })
+    if account is not None:
+        d.update({
+            'account': {
+                'included': _get_whitelists(account, account_settings),
+                'excluded': _get_blacklists(account, account_settings),
+            }
+        })
     return d
 
 

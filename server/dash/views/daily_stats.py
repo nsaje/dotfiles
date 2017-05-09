@@ -262,6 +262,34 @@ class AllAccountsSourcesDailyStats(AllAccountsDailyStatsView):
         )
 
 
+class AllAccountsPublishersDailyStats(AllAccountsDailyStatsView):
+
+    def extract_params(self, request, breakdown, selected_only):
+        params = super(AllAccountsPublishersDailyStats, self).extract_params(request, breakdown, selected_only)
+        params['show_blacklisted_publishers'] = request.GET.get(
+            'show_blacklisted_publishers', constants.PublisherBlacklistFilter.SHOW_ALL
+        )
+        params['only_used_sources'] = False
+        return params
+
+    def get(self, request):
+        if not request.user.has_perm('zemauth.can_see_publishers'):
+            raise exc.MissingDataError()
+
+        self.view_filter = helpers.ViewFilter(request=request)
+
+        self.selected_objects = None
+        self.selected_ids = None
+
+        return self.create_api_response(
+            self.get_stats(
+                request,
+                None,
+                should_use_publishers_view=True,
+            ),
+        )
+
+
 class AccountDailyStatsView(BaseDailyStatsView):
 
     def prepare_constraints(self, request, breakdown, selected_only=False):
@@ -334,6 +362,40 @@ class AccountSourcesDailyStats(AccountDailyStatsView):
                 )
             )
         )
+
+
+class AccountPublishersDailyStats(AccountDailyStatsView):
+
+    def extract_params(self, request, breakdown, selected_only):
+        params = super(AccountPublishersDailyStats, self).extract_params(request, breakdown, selected_only)
+        params['show_blacklisted_publishers'] = request.GET.get(
+            'show_blacklisted_publishers', constants.PublisherBlacklistFilter.SHOW_ALL
+        )
+        params['only_used_sources'] = False
+        return params
+
+    def get(self, request, account_id):
+        if not request.user.has_perm('zemauth.can_see_publishers'):
+            raise exc.MissingDataError()
+
+        self.account = helpers.get_account(request.user, account_id)
+
+        pixels = self.account.conversionpixel_set.filter(archived=False)
+
+        self.selected_objects = None
+        self.selected_ids = None
+
+        return self.create_api_response(
+            self.merge(
+                self.get_stats(
+                    request,
+                    None,
+                    should_use_publishers_view=True,
+                ), self.get_goals(
+                    request,
+                    pixels=pixels,
+                )
+            ))
 
 
 class CampaignDailyStatsView(BaseDailyStatsView):
@@ -414,6 +476,43 @@ class CampaignSourcesDailyStats(CampaignDailyStatsView):
                 )
             )
         )
+
+
+class CampaignPublishersDailyStats(CampaignDailyStatsView):
+
+    def extract_params(self, request, breakdown, selected_only):
+        params = super(CampaignPublishersDailyStats, self).extract_params(request, breakdown, selected_only)
+        params['show_blacklisted_publishers'] = request.GET.get(
+            'show_blacklisted_publishers', constants.PublisherBlacklistFilter.SHOW_ALL
+        )
+        params['only_used_sources'] = False
+        return params
+
+    def get(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.can_see_publishers'):
+            raise exc.MissingDataError()
+
+        self.campaign = helpers.get_campaign(request.user, campaign_id)
+
+        conversion_goals = self.campaign.conversiongoal_set.all()
+        pixels = self.campaign.account.conversionpixel_set.filter(archived=False)
+
+        self.selected_objects = None
+        self.selected_ids = None
+
+        return self.create_api_response(
+            self.merge(
+                self.get_stats(
+                    request,
+                    None,
+                    should_use_publishers_view=True,
+                ), self.get_goals(
+                    request,
+                    conversion_goals=conversion_goals,
+                    campaign=self.campaign,
+                    pixels=pixels,
+                )
+            ))
 
 
 class AdGroupDailyStatsView(BaseDailyStatsView):

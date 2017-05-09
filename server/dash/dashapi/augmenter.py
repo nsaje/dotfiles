@@ -33,10 +33,7 @@ def get_report_augmenter_for_dimension(target_dimension, level):
     elif target_dimension == 'source_id':
         return generate_loop_function(augment_source, augment_source_for_report)
     elif target_dimension == 'publisher_id':
-        if level == constants.Level.AD_GROUPS:
-            return generate_loop_function(augment_publisher, augment_publisher_for_report)
-        else:
-            return generate_loop_function(augment_publisher_for_report_no_status)
+        return generate_loop_function(augment_publisher, augment_publisher_for_report)
 
 
 def generate_loop_function(*augment_funcs):
@@ -291,9 +288,8 @@ def augment_source_for_report(row, loader, is_base_level=False):
 def augment_publisher(row, loader, is_base_level=False):
     domain, _ = publisher_helpers.dissect_publisher_id(row['publisher_id'])
     source_id = row['source_id']
-    publisher_id = row['publisher_id']
     source = loader.source_map[source_id]
-    entry_status = loader.find_blacklisted_status_by_subdomain(publisher_id)
+    entry_status = loader.find_blacklisted_status_by_subdomain(row)
     can_blacklist_source = loader.can_blacklist_source_map[source_id]
 
     row.update({
@@ -324,9 +320,8 @@ def augment_publisher(row, loader, is_base_level=False):
 def augment_publisher_for_report(row, loader, is_base_level=False):
     domain, _ = publisher_helpers.dissect_publisher_id(row['publisher_id'])
     source_id = row['source_id']
-    publisher_id = row['publisher_id']
     source = loader.source_map[source_id]
-    entry_status = loader.find_blacklisted_status_by_subdomain(publisher_id)
+    entry_status = loader.find_blacklisted_status_by_subdomain(row)
 
     row.update({
         'publisher': domain,
@@ -338,22 +333,6 @@ def augment_publisher_for_report(row, loader, is_base_level=False):
                 entry_status.get('blacklisted_level', '')
             ) or ''
         ).upper()
-    })
-
-
-def augment_publisher_for_report_no_status(row, loader, is_base_level=False):
-    domain, _ = publisher_helpers.dissect_publisher_id(row['publisher_id'])
-    source_id = row['source_id']
-    source = loader.source_map[source_id]
-
-    row.update({
-        'publisher': domain,
-        'source': source.name,
-        'source_id': source.id,
-        'source_name': source.name,
-        'source_slug': source.bidder_slug,
-        'domain': domain,
-        'domain_link': publisher_helpers.get_publisher_domain_link(domain),
     })
 
 

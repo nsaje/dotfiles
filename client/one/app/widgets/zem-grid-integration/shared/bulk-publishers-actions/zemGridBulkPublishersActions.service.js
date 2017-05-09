@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.widgets').factory('zemGridBulkPublishersActionsService', function ($q, zemDataFilterService, zemGridBulkPublishersActionsEndpoint, zemGridEndpointColumns, zemGridConstants) { // eslint-disable-line max-len
+angular.module('one.widgets').factory('zemGridBulkPublishersActionsService', function ($q, zemDataFilterService, zemGridBulkPublishersActionsEndpoint, zemGridEndpointColumns, zemGridConstants, zemNavigationNewService) { // eslint-disable-line max-len
     function BulkActionsService (gridApi) {
         this.getBlacklistActions = getBlacklistActions;
         this.getUnlistActions = getUnlistActions;
@@ -10,76 +10,115 @@ angular.module('one.widgets').factory('zemGridBulkPublishersActionsService', fun
         var COLUMNS = zemGridEndpointColumns.COLUMNS;
         var bulkUpdateDefered;
 
+        var BLACKLIST_ADGROUP = {
+            name: 'Blacklist in this adgroup',
+            value: 'blacklist-adgroup',
+            entityType: constants.entityType.AD_GROUP,
+            configEntityId: 'ad_group',
+            level: constants.publisherBlacklistLevel.ADGROUP,
+            status: constants.publisherTargetingStatus.BLACKLISTED,
+            includeSubdomains: true,
+            hasPermission: gridApi.hasPermission('zemauth.can_modify_publisher_blacklist_status'),
+        };
+        var BLACKLIST_CAMPAIGN = {
+            name: 'Blacklist in this campaign',
+            value: 'blacklist-campaign',
+            entityType: constants.entityType.CAMPAIGN,
+            configEntityId: 'campaign',
+            level: constants.publisherBlacklistLevel.CAMPAIGN,
+            status: constants.publisherTargetingStatus.BLACKLISTED,
+            includeSubdomains: true,
+            hasPermission: gridApi.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
+                gridApi.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
+        };
+        var BLACKLIST_ACCOUNT = {
+            name: 'Blacklist in this account',
+            value: 'blacklist-account',
+            entityType: constants.entityType.ACCOUNT,
+            configEntityId: 'account',
+            level: constants.publisherBlacklistLevel.ACCOUNT,
+            status: constants.publisherTargetingStatus.BLACKLISTED,
+            includeSubdomains: true,
+            hasPermission: gridApi.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
+                gridApi.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
+        };
+        var BLACKLIST_GLOBAL = {
+            name: 'Blacklist globally on RTB sources',
+            value: 'blacklist-global',
+            level: constants.publisherBlacklistLevel.GLOBAL,
+            status: constants.publisherTargetingStatus.BLACKLISTED,
+            includeSubdomains: true,
+            internal: gridApi.isPermissionInternal('zemauth.can_access_global_publisher_blacklist_status'),
+            hasPermission: gridApi.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
+                gridApi.hasPermission('zemauth.can_access_global_publisher_blacklist_status')
+        };
+
+        var UNLIST_ADGROUP = {
+            name: 'Re-enable in this adgroup',
+            value: 'unlist-adgroup',
+            entityType: constants.entityType.AD_GROUP,
+            configEntityId: 'ad_group',
+            level: constants.publisherBlacklistLevel.ADGROUP,
+            status: constants.publisherTargetingStatus.UNLISTED,
+            hasPermission: gridApi.hasPermission('zemauth.can_modify_publisher_blacklist_status')
+        };
+        var UNLIST_CAMPAIGN = {
+            name: 'Re-enable in this campaign',
+            value: 'unlist-campaign',
+            entityType: constants.entityType.CAMPAIGN,
+            configEntityId: 'campaign',
+            level: constants.publisherBlacklistLevel.CAMPAIGN,
+            status: constants.publisherTargetingStatus.UNLISTED,
+            hasPermission: gridApi.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
+                gridApi.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
+        };
+        var UNLIST_ACCOUNT = {
+            name: 'Re-enable in this account',
+            value: 'unlist-account',
+            entityType: constants.entityType.ACCOUNT,
+            configEntityId: 'account',
+            level: constants.publisherBlacklistLevel.ACCOUNT,
+            status: constants.publisherTargetingStatus.UNLISTED,
+            hasPermission: gridApi.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
+                gridApi.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
+        };
+        var UNLIST_GLOBAL = {
+            name: 'Re-enable globally on RTB sources',
+            value: 'unlist-global',
+            level: constants.publisherBlacklistLevel.GLOBAL,
+            status: constants.publisherTargetingStatus.UNLISTED,
+            hasPermission: gridApi.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
+                gridApi.hasPermission('zemauth.can_access_global_publisher_blacklist_status')
+        };
+
         function getBlacklistActions () {
-            return [{
-                name: 'Blacklist in this adgroup',
-                value: 'blacklist-adgroup',
-                level: constants.publisherBlacklistLevel.ADGROUP,
-                status: constants.publisherTargetingStatus.BLACKLISTED,
-                includeSubdomains: true,
-                hasPermission: gridApi.hasPermission('zemauth.can_modify_publisher_blacklist_status'),
-            }, {
-                name: 'Blacklist in this campaign',
-                value: 'blacklist-campaign',
-                level: constants.publisherBlacklistLevel.CAMPAIGN,
-                status: constants.publisherTargetingStatus.BLACKLISTED,
-                includeSubdomains: true,
-                hasPermission: gridApi.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
-                    gridApi.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
-            }, {
-                name: 'Blacklist in this account',
-                value: 'blacklist-account',
-                level: constants.publisherBlacklistLevel.ACCOUNT,
-                status: constants.publisherTargetingStatus.BLACKLISTED,
-                includeSubdomains: true,
-                hasPermission: gridApi.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
-                    gridApi.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
-            }, {
-                name: 'Blacklist globally on RTB sources',
-                value: 'blacklist-global',
-                level: constants.publisherBlacklistLevel.GLOBAL,
-                status: constants.publisherTargetingStatus.BLACKLISTED,
-                includeSubdomains: true,
-                internal: gridApi.isPermissionInternal('zemauth.can_access_global_publisher_blacklist_status'),
-                hasPermission: gridApi.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
-                    gridApi.hasPermission('zemauth.can_access_global_publisher_blacklist_status')
-            }];
+            var level = gridApi.getMetaData().level;
+            if (level === constants.level.AD_GROUPS) {
+                return [BLACKLIST_ADGROUP, BLACKLIST_CAMPAIGN, BLACKLIST_ACCOUNT, BLACKLIST_GLOBAL];
+            } else if (level === constants.level.CAMPAIGNS) {
+                return [BLACKLIST_CAMPAIGN, BLACKLIST_ACCOUNT, BLACKLIST_GLOBAL];
+            } else if (level === constants.level.ACCOUNTS) {
+                return [BLACKLIST_ACCOUNT, BLACKLIST_GLOBAL];
+            } else if (level === constants.level.ALL_ACCOUNTS) {
+                return [BLACKLIST_GLOBAL];
+            }
         }
 
         function getUnlistActions () {
-            return [{
-                name: 'Re-enable in this adgroup',
-                value: 'unlist-adgroup',
-                level: constants.publisherBlacklistLevel.ADGROUP,
-                status: constants.publisherTargetingStatus.UNLISTED,
-                hasPermission: gridApi.hasPermission('zemauth.can_modify_publisher_blacklist_status')
-            }, {
-                name: 'Re-enable in this campaign',
-                value: 'unlist-campaign',
-                level: constants.publisherBlacklistLevel.CAMPAIGN,
-                status: constants.publisherTargetingStatus.UNLISTED,
-                hasPermission: gridApi.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
-                    gridApi.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
-            }, {
-                name: 'Re-enable in this account',
-                value: 'unlist-account',
-                level: constants.publisherBlacklistLevel.ACCOUNT,
-                status: constants.publisherTargetingStatus.UNLISTED,
-                hasPermission: gridApi.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
-                    gridApi.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
-            }, {
-                name: 'Re-enable globally on RTB sources',
-                value: 'unlist-global',
-                level: constants.publisherBlacklistLevel.GLOBAL,
-                status: constants.publisherTargetingStatus.UNLISTED,
-                hasPermission: gridApi.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
-                    gridApi.hasPermission('zemauth.can_access_global_publisher_blacklist_status')
-            }];
+            var level = gridApi.getMetaData().level;
+            if (level === constants.level.AD_GROUPS) {
+                return [UNLIST_ADGROUP, UNLIST_CAMPAIGN, UNLIST_ACCOUNT, UNLIST_GLOBAL];
+            } else if (level === constants.level.CAMPAIGNS) {
+                return [UNLIST_CAMPAIGN, UNLIST_ACCOUNT, UNLIST_GLOBAL];
+            } else if (level === constants.level.ACCOUNTS) {
+                return [UNLIST_ACCOUNT, UNLIST_GLOBAL];
+            } else if (level === constants.level.ALL_ACCOUNTS) {
+                return [UNLIST_GLOBAL];
+            }
         }
 
         function execute (action, enforceCpc) {
             if (!bulkUpdateDefered) {
-                var meta = gridApi.getMetaData();
                 var selection = gridApi.getSelection();
                 var dateRange = zemDataFilterService.getDateRange();
 
@@ -87,13 +126,15 @@ angular.module('one.widgets').factory('zemGridBulkPublishersActionsService', fun
                     entries: convertRows(selection.selected, action.includeSubdomains),
                     entries_not_selected: convertRows(selection.unselected),
                     status: action.status,
-                    ad_group: meta.id,
-                    level: action.level,
                     enforce_cpc: enforceCpc,
                     select_all: selection.type === zemGridConstants.gridSelectionFilterType.ALL,
                     start_date: dateRange.startDate.format('YYYY-MM-DD'),
                     end_date: dateRange.endDate.format('YYYY-MM-DD')
                 };
+
+                if (action.entityType) {
+                    config[action.configEntityId] = zemNavigationNewService.getActiveEntityByType(action.entityType).id;
+                }
 
                 bulkUpdateDefered = zemGridBulkPublishersActionsEndpoint.bulkUpdate(config).finally(function () {
                     bulkUpdateDefered = null;

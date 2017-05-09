@@ -72,7 +72,8 @@ def validate_breakdown_by_permissions(level, user, breakdown):
     base_dimension = constants.get_base_dimension(breakdown)
 
     if level == Level.ALL_ACCOUNTS:
-        if base_dimension not in (StructureDimension.SOURCE, StructureDimension.ACCOUNT):
+        if base_dimension not in (
+                StructureDimension.SOURCE, StructureDimension.ACCOUNT, StructureDimension.PUBLISHER):
             raise exc.MissingDataError()
         if base_dimension == StructureDimension.SOURCE and not user.has_perm('zemauth.all_accounts_sources_view'):
             raise exc.MissingDataError()
@@ -80,7 +81,8 @@ def validate_breakdown_by_permissions(level, user, breakdown):
             raise exc.MissingDataError()
 
     elif level == Level.ACCOUNTS:
-        if base_dimension not in (StructureDimension.SOURCE, StructureDimension.CAMPAIGN):
+        if base_dimension not in (
+                StructureDimension.SOURCE, StructureDimension.CAMPAIGN, StructureDimension.PUBLISHER):
             raise exc.MissingDataError()
         if base_dimension == StructureDimension.SOURCE and not user.has_perm('zemauth.account_sources_view'):
             raise exc.MissingDataError()
@@ -88,7 +90,8 @@ def validate_breakdown_by_permissions(level, user, breakdown):
             raise exc.MissingDataError()
 
     elif level == Level.CAMPAIGNS:
-        if base_dimension not in (StructureDimension.SOURCE, StructureDimension.AD_GROUP):
+        if base_dimension not in (
+                StructureDimension.SOURCE, StructureDimension.AD_GROUP, StructureDimension.PUBLISHER):
             raise exc.MissingDataError()
 
     elif level == Level.AD_GROUPS:

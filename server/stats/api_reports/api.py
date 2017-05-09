@@ -16,7 +16,7 @@ from utils import columns
 from format_helper import format_values
 
 
-def query(user, breakdown, constraints, goals, order, level, include_items_with_no_spend=False):
+def query(user, breakdown, constraints, goals, order, level, columns, include_items_with_no_spend=False):
     stats_rows = redshiftapi.api_reports.query(
         breakdown, constraints, goals, order,
         use_publishers_view=api_breakdowns.should_use_publishers_view(breakdown))
@@ -30,14 +30,14 @@ def query(user, breakdown, constraints, goals, order, level, include_items_with_
 
     rows = sort_helper.sort_results(rows, [order])
 
-    format_values(rows)
+    format_values(rows, columns)
 
     permission_filter.filter_columns_by_permission(user, rows, goals)
 
     return rows
 
 
-def totals(user, breakdown, constraints, goals, level):
+def totals(user, breakdown, constraints, goals, level, columns):
     rows = redshiftapi.api_reports.query_totals(
         breakdown, constraints, goals,
         use_publishers_view=api_breakdowns.should_use_publishers_view(breakdown))
@@ -46,7 +46,7 @@ def totals(user, breakdown, constraints, goals, level):
 
     dash.dashapi.api_reports.annotate_totals(rows[0], user, breakdown, constraints, level)
 
-    format_values(rows)
+    format_values(rows, columns)
 
     permission_filter.filter_columns_by_permission(user, rows, goals)
 

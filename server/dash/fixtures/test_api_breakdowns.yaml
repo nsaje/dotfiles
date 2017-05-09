@@ -1,5 +1,5 @@
 # Ad group structure (by ids) and state settings
-# 
+#
 # | Account:                 | 1                       |
 # |--------------------------+-------------------------|
 # | Campaign                 | 1                     2 |
@@ -15,7 +15,7 @@
 # |--------------------------+-------------------------|
 # | Ad Group Source Settings | 1  2  3  4            5 |
 # | State:                   | 1  2  1  2            2 |
-# 
+#
 # | Ad Group:         | 1         |
 # |-------------------+-----------|
 # | Content ad:       | 1     2 3 |
@@ -26,7 +26,7 @@
 # | State             | 1  2  1   |
 # |-------------------+-----------|
 # | Source            | 1  2  2   |
-# 
+#
 # | publisher group |  entry id | publisher | source |ad group 1 | campaign 1 | account 1 | global |
 # |-----------------+-----------+-----------+--------|-----------+------------+-----------+--------|
 # |               1 |         1 | pub1      |      1 |           |            |           | exc    |
@@ -606,6 +606,26 @@
   model: dash.publishergroup
   pk: 5
 
+- fields:
+    name: 'pg6'
+    account: 1
+    agency: !!null
+    created_dt: '2015-09-23T09:57:22'
+    modified_dt: '2015-09-23T09:57:22'
+    modified_by: 1
+  model: dash.publishergroup
+  pk: 6
+
+- fields:
+    name: 'pg7'
+    account: 1
+    agency: !!null
+    created_dt: '2015-09-23T09:57:22'
+    modified_dt: '2015-09-23T09:57:22'
+    modified_by: 1
+  model: dash.publishergroup
+  pk: 7
+
 # publisher group entries
 - fields:
     publisher_group: 1
@@ -651,3 +671,21 @@
     modified_dt: '2014-06-04T09:58:21'
   model: dash.publishergroupentry
   pk: 5
+
+- fields:
+    publisher_group: 6
+    publisher: 'pub6.com'
+    source: 2
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+  model: dash.publishergroupentry
+  pk: 6
+
+- fields:
+    publisher_group: 7
+    publisher: 'pub7.com'
+    source: 2
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+  model: dash.publishergroupentry
+  pk: 7

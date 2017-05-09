@@ -40,19 +40,21 @@ angular.module('one.widgets').service('zemReportBreakdownService', function (zem
     }
 
     function getReportStructureBreakdowns (metaData) {
-        if (metaData.breakdown === constants.breakdown.PUBLISHER) {
-            return [];
-        }
-
         var entityBreakdown = zemGridEndpointBreakdowns.getEntityLevelBreakdown(metaData.level);
         var structureBreakdowns = zemGridEndpointBreakdowns.ENTITY_BREAKDOWNS.slice(
             zemGridEndpointBreakdowns.ENTITY_BREAKDOWNS.indexOf(entityBreakdown) + 1
         );
 
-        if (metaData.breakdown === constants.breakdown.MEDIA_SOURCE) {
+        if (metaData.breakdown !== entityBreakdown.query) {
             structureBreakdowns.unshift(entityBreakdown);
         } else {
             structureBreakdowns.push(zemGridEndpointBreakdowns.BREAKDOWNS.source);
+        }
+
+        if (metaData.breakdown === constants.breakdown.PUBLISHER &&
+                structureBreakdowns.length > 0 &&
+                structureBreakdowns[structureBreakdowns.length - 1].query === constants.breakdown.CONTENT_AD) {
+            structureBreakdowns.pop();
         }
 
         return structureBreakdowns;

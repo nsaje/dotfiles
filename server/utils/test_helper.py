@@ -63,6 +63,9 @@ class QuerySetMatcher():
         b = sorted(list(other), key=lambda x: x.pk)
         return a == b
 
+    def __repr__(self):
+        return '<QuerySet %s>' % list(self.obj)
+
 
 class ListMatcher():
     """Checks if both lists (or list like objects) contain the same elements.

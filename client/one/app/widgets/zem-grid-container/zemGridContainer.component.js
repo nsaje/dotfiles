@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemGridContainer', {
         entity: '<',
         breakdown: '<',
     },
-    controller: function ($scope, $timeout, zemGridIntegrationService) { // eslint-disable-line max-len
+    controller: function ($scope, $timeout, zemGridIntegrationService, zemGridContainerTabsService) { // eslint-disable-line max-len
         var $ctrl = this;
 
         $ctrl.constants = constants;
@@ -31,7 +31,7 @@ angular.module('one.widgets').component('zemGridContainer', {
         };
 
         function initializeTabs () {
-            $ctrl.tabs = createTabOptions($ctrl.entity);
+            $ctrl.tabs = zemGridContainerTabsService.createTabOptions($ctrl.entity);
             var tab = getTab($ctrl.breakdown);
             selectTab(tab);
         }
@@ -78,71 +78,6 @@ angular.module('one.widgets').component('zemGridContainer', {
 
         function onGridInitialized (tab, gridApi) {
             tab.gridIntegrationService.setGridApi(gridApi);
-        }
-
-        // TODO: Refactor if further expanded (create dedicated service)
-        function createTabOptions (entity) {
-            var options = [];
-            if (!entity) {
-                options = [
-                    {
-                        name: 'Accounts',
-                        breakdown: constants.breakdown.ACCOUNT,
-                    },
-                    {
-                        name: 'Media Sources',
-                        breakdown: constants.breakdown.MEDIA_SOURCE,
-                    },
-                ];
-            }
-
-            if (entity && entity.type === constants.entityType.ACCOUNT) {
-                options = [
-                    {
-                        name: 'Campaigns',
-                        breakdown: constants.breakdown.CAMPAIGN,
-                    },
-                    {
-                        name: 'Media Sources',
-                        breakdown: constants.breakdown.MEDIA_SOURCE,
-                    },
-                ];
-            }
-
-            if (entity && entity.type === constants.entityType.CAMPAIGN) {
-                options = [
-                    {
-                        name: 'Ad groups',
-                        breakdown: constants.breakdown.AD_GROUP,
-                    },
-                    {
-                        name: 'Media Sources',
-                        breakdown: constants.breakdown.MEDIA_SOURCE,
-                    },
-                    {
-                        name: 'Content Insights',
-                        breakdown: 'insights',
-                    },
-                ];
-            }
-
-            if (entity && entity.type === constants.entityType.AD_GROUP) {
-                options = [
-                    {
-                        name: 'Content Ads',
-                        breakdown: constants.breakdown.CONTENT_AD,
-                    },
-                    {
-                        name: 'Media Sources',
-                        breakdown: constants.breakdown.MEDIA_SOURCE,
-                    },
-                    {
-                        name: 'Publishers',
-                        breakdown: constants.breakdown.PUBLISHER,
-                    },
-                ];
-            }
-            return options;
         }
     },
 });

@@ -178,19 +178,6 @@ PUBLISHER_2__SOURCE_2 = {
     'can_blacklist_publisher': False, 'notifications': {'message': 'Whitelisted in this ad group'},
 }
 
-PUBLISHER_1__SOURCE_1_CAMPAIGN = {
-    'publisher_id': 'pub1.com__1', 'publisher': 'pub1.com', 'domain': 'pub1.com', 'domain_link': 'http://pub1.com',  # noqa
-    'source_id': 1, 'source_name': 'AdsNative', 'source_slug': 'adsnative', 'source': 'AdsNative',
-}
-PUBLISHER_2__SOURCE_1_CAMPAIGN = {
-    'publisher_id': 'pub2.com__1', 'publisher': 'pub2.com', 'domain': 'pub2.com', 'domain_link': 'http://pub2.com',  # noqa
-    'source_id': 1, 'source_name': 'AdsNative', 'source_slug': 'adsnative', 'source': 'AdsNative',
-}
-PUBLISHER_2__SOURCE_2_CAMPAIGN = {
-    'publisher_id': 'pub2.com__2', 'publisher': 'pub2.com', 'domain': 'pub2.com', 'domain_link': 'http://pub2.com',  # noqa
-    'source_id': 2, 'source_name': 'Gravity', 'source_slug': 'gravity', 'source': 'Gravity',
-}
-
 
 @override_settings(R1_BLANK_REDIRECT_URL='http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/')
 class AnnotateTest(TestCase):
@@ -361,7 +348,7 @@ class AnnotateTest(TestCase):
             constants.Level.CAMPAIGNS,
         )
 
-        self.assertEqual(rows, [PUBLISHER_1__SOURCE_1_CAMPAIGN, PUBLISHER_2__SOURCE_1_CAMPAIGN, PUBLISHER_2__SOURCE_2_CAMPAIGN])
+        self.assertEqual(rows, [PUBLISHER_1__SOURCE_1, PUBLISHER_2__SOURCE_1, PUBLISHER_2__SOURCE_2])
 
     def test_annotate_breakdown(self):
         rows = [

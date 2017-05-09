@@ -29,6 +29,26 @@ class PrepareConstraints(TestCase):
                 'filtered_sources': test_helper.QuerySetMatcher(sources),
                 'allowed_accounts': test_helper.QuerySetMatcher(dash.models.Account.objects.all()),
                 'allowed_campaigns': test_helper.QuerySetMatcher(dash.models.Campaign.objects.filter(pk__in=[1])),
+                'publisher_blacklist': test_helper.QuerySetMatcher(dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1])),
+                'publisher_whitelist': test_helper.QuerySetMatcher([]),
+                'publisher_group_targeting': {
+                    'account': {
+                        'excluded': set(),
+                        'included': set(),
+                    },
+                    'campaign': {
+                        'excluded': set(),
+                        'included': set(),
+                    },
+                    'ad_group': {
+                        'excluded': set(),
+                        'included': set(),
+                    },
+                    'global': {
+                        'excluded': set([1]),
+                    },
+                },
+                'publisher_blacklist_filter': 'all',
             }
         )
 
@@ -43,6 +63,26 @@ class PrepareConstraints(TestCase):
                 'filtered_sources': test_helper.QuerySetMatcher(sources),
                 'allowed_accounts': test_helper.QuerySetMatcher(dash.models.Account.objects.all()),
                 'allowed_campaigns': test_helper.QuerySetMatcher(dash.models.Campaign.objects.filter(pk__in=[1])),
+                'publisher_blacklist': test_helper.QuerySetMatcher(dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1])),
+                'publisher_whitelist': test_helper.QuerySetMatcher(dash.models.PublisherGroupEntry.objects.none()),
+                'publisher_group_targeting': {
+                    'account': {
+                        'excluded': set(),
+                        'included': set(),
+                    },
+                    'campaign': {
+                        'excluded': set(),
+                        'included': set(),
+                    },
+                    'ad_group': {
+                        'excluded': set(),
+                        'included': set(),
+                    },
+                    'global': {
+                        'excluded': set([1]),
+                    },
+                },
+                'publisher_blacklist_filter': 'all',
             }
         )
 
@@ -56,6 +96,26 @@ class PrepareConstraints(TestCase):
                 'allowed_accounts': test_helper.QuerySetMatcher(dash.models.Account.objects.all()),
                 'allowed_campaigns': test_helper.QuerySetMatcher(
                     dash.models.Campaign.objects.filter(pk__in=[1, 2])),  # show archived
+                'publisher_blacklist': test_helper.QuerySetMatcher(dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1])),
+                'publisher_whitelist': test_helper.QuerySetMatcher(dash.models.PublisherGroupEntry.objects.none()),
+                'publisher_group_targeting': {
+                    'account': {
+                        'excluded': set(),
+                        'included': set(),
+                    },
+                    'campaign': {
+                        'excluded': set(),
+                        'included': set(),
+                    },
+                    'ad_group': {
+                        'excluded': set(),
+                        'included': set(),
+                    },
+                    'global': {
+                        'excluded': set([1]),
+                    },
+                },
+                'publisher_blacklist_filter': 'all',
             }
         )
 
@@ -77,6 +137,26 @@ class PrepareConstraints(TestCase):
                 'account': account,
                 'allowed_campaigns': test_helper.QuerySetMatcher(dash.models.Campaign.objects.filter(pk__in=[1, 2])),
                 'allowed_ad_groups': test_helper.QuerySetMatcher(dash.models.AdGroup.objects.filter(campaign_id__in=[1, 2])),
+                'publisher_blacklist': test_helper.QuerySetMatcher(dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1, 5])),
+                'publisher_whitelist': test_helper.QuerySetMatcher(dash.models.PublisherGroupEntry.objects.none()),
+                'publisher_group_targeting': {
+                    'account': {
+                        'excluded': set([5]),
+                        'included': set(),
+                    },
+                    'campaign': {
+                        'excluded': set(),
+                        'included': set(),
+                    },
+                    'ad_group': {
+                        'excluded': set(),
+                        'included': set(),
+                    },
+                    'global': {
+                        'excluded': set([1]),
+                    },
+                },
+                'publisher_blacklist_filter': 'all',
             }
         )
 
@@ -100,6 +180,26 @@ class PrepareConstraints(TestCase):
                 'allowed_ad_groups': test_helper.QuerySetMatcher(dash.models.AdGroup.objects.filter(campaign_id=1)),
                 'allowed_content_ads': test_helper.QuerySetMatcher(
                     dash.models.ContentAd.objects.filter(ad_group__campaign_id=1).exclude_archived()),
+                'publisher_blacklist': test_helper.QuerySetMatcher(dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1, 5])),
+                'publisher_whitelist': test_helper.QuerySetMatcher(dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[4])),
+                'publisher_group_targeting': {
+                    'account': {
+                        'excluded': set([5]),
+                        'included': set(),
+                    },
+                    'campaign': {
+                        'excluded': set(),
+                        'included': set([4]),
+                    },
+                    'ad_group': {
+                        'excluded': set(),
+                        'included': set(),
+                    },
+                    'global': {
+                        'excluded': set([1]),
+                    },
+                },
+                'publisher_blacklist_filter': 'all',
             }
         )
 
@@ -116,6 +216,26 @@ class PrepareConstraints(TestCase):
                 'allowed_ad_groups': test_helper.QuerySetMatcher(dash.models.AdGroup.objects.filter(campaign_id=1)),
                 'allowed_content_ads': test_helper.QuerySetMatcher(
                     dash.models.ContentAd.objects.filter(ad_group__campaign_id=1).exclude_archived()),
+                'publisher_blacklist': test_helper.QuerySetMatcher(dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1, 5])),
+                'publisher_whitelist': test_helper.QuerySetMatcher(dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[4])),
+                'publisher_group_targeting': {
+                    'account': {
+                        'excluded': set([5]),
+                        'included': set(),
+                    },
+                    'campaign': {
+                        'excluded': set(),
+                        'included': set([4]),
+                    },
+                    'ad_group': {
+                        'excluded': set(),
+                        'included': set(),
+                    },
+                    'global': {
+                        'excluded': set([1]),
+                    },
+                },
+                'publisher_blacklist_filter': 'all',
             }
         )
 

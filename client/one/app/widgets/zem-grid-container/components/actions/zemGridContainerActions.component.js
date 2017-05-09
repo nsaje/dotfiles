@@ -29,8 +29,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         }
 
         function isGridBulkPublishersActionsVisible () {
-            return $ctrl.breakdown === constants.breakdown.PUBLISHER
-                && $ctrl.entity && $ctrl.entity.type === constants.entityType.AD_GROUP;
+            return $ctrl.breakdown === constants.breakdown.PUBLISHER;
         }
 
         function isCreateEntityActionVisible () {

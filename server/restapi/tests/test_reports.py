@@ -49,10 +49,11 @@ class ReportViewsTest(TestCase):
         self.assertEqual(job_id, int(resp_json['data']['id']))
 
     @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.get_filename', return_value='')
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
-    def test_raw_new_report_no_options(self, mock_prepare_constraints, mock_query, mock_totals):
+    def test_raw_new_report_no_options(self, mock_prepare_constraints, mock_query, mock_totals, mock_filename):
         query = {
             'fields': [{'field': 'Publisher'}],
             'filters': [
@@ -84,16 +85,18 @@ class ReportViewsTest(TestCase):
             mock.ANY,
             '-e_media_cost',
             'ad_groups',
+            ['publisher'],
             include_items_with_no_spend=False,
         )
 
         self.assertFalse(mock_totals.called)
 
     @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.get_filename', return_value='')
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
-    def test_raw_new_report_form_handeled(self, mock_prepare_constraints, mock_query, mock_totals):
+    def test_raw_new_report_form_handeled(self, mock_prepare_constraints, mock_query, mock_totals, mock_filename):
         query = {
             'fields': [{'field': 'Publisher'}],
             'filters': [
@@ -132,6 +135,7 @@ class ReportViewsTest(TestCase):
             mock.ANY,
             'clicks',
             'ad_groups',
+            ['publisher'],
             include_items_with_no_spend=True,
         )
         self.assertTrue(mock_totals.called)
@@ -158,10 +162,11 @@ class ReportViewsTest(TestCase):
         self.assertEqual(r.status_code, 403)
 
     @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.get_filename', return_value='')
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
-    def test_report_breakdown(self, mock_prepare_constraints, mock_query, mock_totals):
+    def test_report_breakdown(self, mock_prepare_constraints, mock_query, mock_totals, mock_filename):
         query = {
             'fields': [
                 {'field': 'Account'},
@@ -198,16 +203,18 @@ class ReportViewsTest(TestCase):
             mock.ANY,
             '-e_media_cost',
             'all_accounts',
+            ['account', 'campaign_id', 'ad_group', 'content_ad_id', 'source', 'day'],
             include_items_with_no_spend=False,
         )
 
         self.assertFalse(mock_totals.called)
 
     @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.get_filename', return_value='')
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
-    def test_report_all_account(self, mock_prepare_constraints, mock_query, mock_totals):
+    def test_report_all_account(self, mock_prepare_constraints, mock_query, mock_totals, mock_filename):
         query = {
             'fields': [{'field': 'Account'}],
             'filters': [
@@ -237,16 +244,18 @@ class ReportViewsTest(TestCase):
             mock.ANY,
             '-e_media_cost',
             'all_accounts',
+            ['account'],
             include_items_with_no_spend=False,
         )
 
         self.assertFalse(mock_totals.called)
 
     @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.get_filename', return_value='')
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
-    def test_report_account(self, mock_prepare_constraints, mock_query, mock_totals):
+    def test_report_account(self, mock_prepare_constraints, mock_query, mock_totals, mock_filename):
         query = {
             'fields': [{'field': 'Campaign'}],
             'filters': [
@@ -278,16 +287,18 @@ class ReportViewsTest(TestCase):
             mock.ANY,
             '-e_media_cost',
             'accounts',
+            ['campaign'],
             include_items_with_no_spend=False,
         )
 
         self.assertFalse(mock_totals.called)
 
     @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.get_filename', return_value='')
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
-    def test_report_accounts(self, mock_prepare_constraints, mock_query, mock_totals):
+    def test_report_accounts(self, mock_prepare_constraints, mock_query, mock_totals, mock_filename):
         query = {
             'fields': [{'field': 'Campaign'}],
             'filters': [
@@ -319,16 +330,18 @@ class ReportViewsTest(TestCase):
             mock.ANY,
             '-e_media_cost',
             'all_accounts',
+            ['campaign'],
             include_items_with_no_spend=False,
         )
 
         self.assertFalse(mock_totals.called)
 
     @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.get_filename', return_value='')
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
-    def test_report_campaign(self, mock_prepare_constraints, mock_query, mock_totals):
+    def test_report_campaign(self, mock_prepare_constraints, mock_query, mock_totals, mock_filename):
         query = {
             'fields': [{'field': 'Ad Group'}],
             'filters': [
@@ -360,16 +373,18 @@ class ReportViewsTest(TestCase):
             mock.ANY,
             '-e_media_cost',
             'campaigns',
+            ['ad_group'],
             include_items_with_no_spend=False,
         )
 
         self.assertFalse(mock_totals.called)
 
     @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.get_filename', return_value='')
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
-    def test_report_campaigns(self, mock_prepare_constraints, mock_query, mock_totals):
+    def test_report_campaigns(self, mock_prepare_constraints, mock_query, mock_totals, mock_filename):
         query = {
             'fields': [{'field': 'Ad Group'}],
             'filters': [
@@ -401,16 +416,18 @@ class ReportViewsTest(TestCase):
             mock.ANY,
             '-e_media_cost',
             'accounts',
+            ['ad_group'],
             include_items_with_no_spend=False,
         )
 
         self.assertFalse(mock_totals.called)
 
     @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.get_filename', return_value='')
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
-    def test_report_ad_group(self, mock_prepare_constraints, mock_query, mock_totals):
+    def test_report_ad_group(self, mock_prepare_constraints, mock_query, mock_totals, mock_filename):
         query = {
             'fields': [{'field': 'Content Ad'}],
             'filters': [
@@ -442,16 +459,18 @@ class ReportViewsTest(TestCase):
             mock.ANY,
             '-e_media_cost',
             'ad_groups',
+            ['content_ad'],
             include_items_with_no_spend=False,
         )
 
         self.assertFalse(mock_totals.called)
 
     @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.get_filename', return_value='')
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
-    def test_report_ad_groups(self, mock_prepare_constraints, mock_query, mock_totals):
+    def test_report_ad_groups(self, mock_prepare_constraints, mock_query, mock_totals, mock_filename):
         query = {
             'fields': [{'field': 'Content Ad'}],
             'filters': [
@@ -483,16 +502,18 @@ class ReportViewsTest(TestCase):
             mock.ANY,
             '-e_media_cost',
             'campaigns',
+            ['content_ad'],
             include_items_with_no_spend=False,
         )
 
         self.assertFalse(mock_totals.called)
 
     @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.get_filename', return_value='')
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
-    def test_report_content_ads(self, mock_prepare_constraints, mock_query, mock_totals):
+    def test_report_content_ads(self, mock_prepare_constraints, mock_query, mock_totals, mock_filename):
         query = {
             'fields': [{'field': 'Content Ad'}],
             'filters': [
@@ -524,6 +545,7 @@ class ReportViewsTest(TestCase):
             mock.ANY,
             '-e_media_cost',
             'ad_groups',
+            ['content_ad'],
             include_items_with_no_spend=False,
         )
 

@@ -3,7 +3,7 @@ describe('component: zemGridBulkPublishersActions', function () {
     var zemGridConstants;
     var zemGridBulkPublishersActionsService;
     var zemDataFilterService;
-    var $ctrl, api;
+    var $ctrl, api, $q;
 
     beforeEach(module('one'));
     beforeEach(module('one.mocks.zemInitializationService'));
@@ -12,9 +12,10 @@ describe('component: zemGridBulkPublishersActions', function () {
         zemGridConstants = $injector.get('zemGridConstants');
         zemGridBulkPublishersActionsService = $injector.get('zemGridBulkPublishersActionsService');
         zemDataFilterService = $injector.get('zemDataFilterService');
+        $q = $injector.get('$q');
 
         var zemGridMocks = $injector.get('zemGridMocks');
-        api = zemGridMocks.createApi(constants.level.CAMPAIGNS, constants.breakdown.AD_GROUP);
+        api = zemGridMocks.createApi(constants.level.AD_GROUPS, constants.breakdown.PUBLISHER);
 
         var locals = {};
         var bindings = {api: api};
@@ -55,7 +56,7 @@ describe('component: zemGridBulkPublishersActions', function () {
             expect($ctrl.unlistActions.length).toEqual(4);
         });
 
-        it('should execute action using selection', function () {
+        it('should execute action', function () {
             var selection = {
                 type: zemGridConstants.gridSelectionFilterType.NONE,
                 selected: [{
@@ -79,11 +80,10 @@ describe('component: zemGridBulkPublishersActions', function () {
             spyOn(zemDataFilterService, 'getDateRange').and.returnValue(dateRange);
             spyOn(api, 'getSelection').and.callThrough();
             spyOn(api, 'clearSelection').and.callThrough();
-            spyOn($ctrl.service, 'execute').and.callThrough();
+            spyOn($ctrl.service, 'execute').and.returnValue($q.defer().promise);
 
             $ctrl.execute(action.value);
 
-            expect(api.getSelection).toHaveBeenCalled();
             expect($ctrl.service.execute).toHaveBeenCalledWith(action, false);
         });
     });

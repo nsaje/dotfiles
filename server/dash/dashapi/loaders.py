@@ -425,6 +425,10 @@ class PublisherBlacklistLoader(Loader):
         self.blacklist_qs = blacklist_qs
         self.account = account
 
+        self.default = {
+            'status': constants.PublisherTargetingStatus.UNLISTED,
+        }
+
     @classmethod
     def _get_obj_id(cls, obj):
         return publisher_helpers.create_publisher_id(obj.publisher, obj.source_id)
@@ -441,64 +445,91 @@ class PublisherBlacklistLoader(Loader):
             account=constraints.get('account'))
 
     @cached_property
-    def blacklist_status_map(self):
-        default = {
-            'status': constants.PublisherTargetingStatus.UNLISTED,
-            'include_subdomains': False,
-        }
-
-        whitelisted_ids = set(self.whitelist_qs.values_list('pk', flat=True))
-        d = collections.defaultdict(lambda: default)
+    def publisher_group_entry_map(self):
+        d = {}
         for entry in self.objs_qs:
-            status = constants.PublisherTargetingStatus.BLACKLISTED
-            if entry.id in whitelisted_ids:
-                status = constants.PublisherTargetingStatus.WHITELISTED
-
-            level = publisher_group_helpers.get_publisher_entry_list_level(entry, self.publisher_group_targeting)
-
             if entry.source_id:
-                d[self._get_obj_id(entry)] = {
-                    'status': status,
-                    'include_subdomains': entry.include_subdomains,
-                    'blacklisted_level': level,
-                }
+                d[publisher_helpers.create_publisher_id(entry.publisher, entry.source_id)] = entry
             else:
-                d[publisher_helpers.create_publisher_id(entry.publisher, 'all')] = {
-                    'status': status,
-                    'include_subdomains': entry.include_subdomains,
-                    'blacklisted_level': level,
-                }
+                d[publisher_helpers.create_publisher_id(entry.publisher, 'all')] = entry
         return d
 
-    def find_blacklisted_status_by_subdomain(self, publisher_id):
-        source_match_status = self.find_blacklisted_status_for_source(publisher_id)
-        if source_match_status is not None:
-            return source_match_status
-
-        publisher, source_id = publisher_helpers.dissect_publisher_id(publisher_id)
-        publisher_all = publisher_helpers.create_publisher_id(publisher, 'all')
-        all_sources_match_status = self.find_blacklisted_status_for_source(publisher_all)
-        if all_sources_match_status is not None:
-            return all_sources_match_status
-
-        # nothing matched, return the default value (blacklist_status_map is a defaultdict)
-        return self.blacklist_status_map[publisher_id]
-
-    def find_blacklisted_status_for_source(self, publisher_id):
-        # finds whether status matches any of those blacklisted/whitelisted also by checking subdomains
-
+    def find_publisher_group_entry_subdomains(self, publisher_id):
         # check for exact match
-        if publisher_id in self.blacklist_status_map:
-            return self.blacklist_status_map[publisher_id]
+        entry = self.publisher_group_entry_map.get(publisher_id)
+        if entry is not None:
+            return entry
 
         # find subdomain match
         for subdomain in publisher_helpers.all_subdomains(publisher_id):
-            if subdomain in self.blacklist_status_map:
-                status = self.blacklist_status_map[subdomain]
-                if status['include_subdomains']:
-                    return status
+            entry = self.publisher_group_entry_map.get(subdomain)
+            if entry is not None and entry.include_subdomains:
+                return entry
 
         return None
+
+    def find_publisher_group_entry_all_sources(self, publisher_id):
+        entry = self.find_publisher_group_entry_subdomains(publisher_id)
+        if entry is not None:
+            return entry
+
+        publisher, source_id = publisher_helpers.dissect_publisher_id(publisher_id)
+        publisher_all = publisher_helpers.create_publisher_id(publisher, 'all')
+        entry = self.find_publisher_group_entry_subdomains(publisher_all)
+        if entry is not None:
+            return entry
+
+        return None
+
+    def find_blacklisted_status_for_level(self, row, level, publisher_group_entry):
+        targeting = self.publisher_group_targeting[level].get(
+            row.get(level + '_id'),  # for reports there can be multiple entities per level
+            self.publisher_group_targeting[level],  # default is used for grid
+        )
+
+        if publisher_group_entry.publisher_group_id in targeting['included']:
+            return {
+                'status': constants.PublisherTargetingStatus.WHITELISTED,
+            }
+
+        if publisher_group_entry.publisher_group_id in targeting['excluded']:
+            return {
+                'status': constants.PublisherTargetingStatus.BLACKLISTED,
+            }
+
+        return None
+
+    def find_blacklisted_status(self, row, publisher_group_entry):
+        status = self.find_blacklisted_status_for_level(row, 'ad_group', publisher_group_entry)
+        if status is not None:
+            status['blacklisted_level'] = constants.PublisherBlacklistLevel.ADGROUP
+            return status
+
+        status = self.find_blacklisted_status_for_level(row, 'campaign', publisher_group_entry)
+        if status is not None:
+            status['blacklisted_level'] = constants.PublisherBlacklistLevel.CAMPAIGN
+            return status
+
+        status = self.find_blacklisted_status_for_level(row, 'account', publisher_group_entry)
+        if status is not None:
+            status['blacklisted_level'] = constants.PublisherBlacklistLevel.ACCOUNT
+            return status
+
+        if publisher_group_entry.publisher_group_id in self.publisher_group_targeting['global']['excluded']:
+            return {
+                'status': constants.PublisherTargetingStatus.BLACKLISTED,
+                'blacklisted_level': constants.PublisherBlacklistLevel.GLOBAL,
+            }
+
+        return self.default
+
+    def find_blacklisted_status_by_subdomain(self, row):
+        publisher_group_entry = self.find_publisher_group_entry_all_sources(row['publisher_id'])
+        if publisher_group_entry is not None:
+            return self.find_blacklisted_status(row, publisher_group_entry)
+
+        # nothing matched, return the default value
+        return self.default
 
     @cached_property
     def source_map(self):

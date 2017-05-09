@@ -82,6 +82,26 @@ class AllAccountsBreakdownTestCase(TestCase):
                 'show_archived': True,
                 'allowed_accounts': test_helper.QuerySetMatcher(models.Account.objects.filter(pk__in=[1, 2])),
                 'allowed_campaigns': test_helper.QuerySetMatcher(models.Campaign.objects.filter(pk__in=[1, 2, 3])),
+                'publisher_blacklist': test_helper.QuerySetMatcher(models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1])),
+                'publisher_whitelist': test_helper.QuerySetMatcher(models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[])),
+                'publisher_group_targeting': {
+                    'account': {
+                        'excluded': set([]),
+                        'included': set(),
+                    },
+                    'campaign': {
+                        'excluded': set(),
+                        'included': set([]),
+                    },
+                    'ad_group': {
+                        'excluded': set(),
+                        'included': set(),
+                    },
+                    'global': {
+                        'excluded': set([1]),
+                    },
+                },
+                'publisher_blacklist_filter': 'all',
             },
             ANY,
             ['1-2-33', '1-2-34', '1-3-22'],
@@ -267,6 +287,26 @@ class AccountBreakdownTestCase(TestCase):
                 'allowed_campaigns': test_helper.QuerySetMatcher(models.Campaign.objects.filter(pk__in=[1, 2])),
                 'allowed_ad_groups': test_helper.QuerySetMatcher(models.AdGroup.objects.filter(pk__in=[1, 2, 9, 10])),
                 'show_archived': True,
+                'publisher_blacklist': test_helper.QuerySetMatcher(models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1])),
+                'publisher_whitelist': test_helper.QuerySetMatcher(models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1])),
+                'publisher_group_targeting': {
+                    'account': {
+                        'excluded': set([1]),
+                        'included': set([1]),
+                    },
+                    'campaign': {
+                        'excluded': set(),
+                        'included': set(),
+                    },
+                    'ad_group': {
+                        'excluded': set(),
+                        'included': set(),
+                    },
+                    'global': {
+                        'excluded': set([1]),
+                    },
+                },
+                'publisher_blacklist_filter': 'all',
             },
             ANY,
             ['1-2-33', '1-2-34', '1-3-22'],
@@ -446,6 +486,26 @@ class CampaignBreakdownTestCase(TestCase):
                 'date__lte': datetime.date(2016, 2, 3),
                 'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
                 'show_archived': False,
+                'publisher_blacklist': test_helper.QuerySetMatcher(models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1])),
+                'publisher_whitelist': test_helper.QuerySetMatcher(models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1])),
+                'publisher_group_targeting': {
+                    'account': {
+                        'excluded': set([1]),
+                        'included': set([1]),
+                    },
+                    'campaign': {
+                        'excluded': set([1]),
+                        'included': set([1]),
+                    },
+                    'ad_group': {
+                        'excluded': set(),
+                        'included': set(),
+                    },
+                    'global': {
+                        'excluded': set([1]),
+                    },
+                },
+                'publisher_blacklist_filter': 'all',
             },
             ANY,
             ['1-2-33', '1-2-34', '1-3-22'],

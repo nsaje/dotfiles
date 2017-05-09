@@ -7,10 +7,10 @@ from stats import constants
 formatters = {}
 
 
-def format_values(rows):
+def format_values(rows, columns):
     if len(rows) <= 0:
         return rows
-    for column in rows[0].iterkeys():
+    for column in columns:
         if 'avg_cost_per' in column:
             formatter = format_2_decimal
         else:

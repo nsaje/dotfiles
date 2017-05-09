@@ -4,31 +4,38 @@ describe('service: zemGridBulkPublishersActionsService', function () {
     var zemGridConstants;
     var zemDataFilterService;
     var zemGridBulkPublishersActionsEndpoint;
+    var zemNavigationNewService;
     var gridApi;
+
+    function getExpectedEndpointParams (override) {
+        var params = {
+            entries: [{source: 1, publisher: 'bla', include_subdomains: true}],
+            entries_not_selected: [{source: 2, publisher: 'bla2', include_subdomains: undefined}],
+            status: constants.publisherTargetingStatus.BLACKLISTED,
+            enforce_cpc: true,
+            select_all: false,
+            start_date: '2017-01-01',
+            end_date: '2017-01-01',
+        };
+        if (override) {
+            angular.extend(params, override);
+        }
+        return params;
+    }
 
     beforeEach(module('one'));
     beforeEach(module('one.mocks.zemInitializationService'));
-    beforeEach(inject(function ($q, _zemDataFilterService_, _zemGridBulkPublishersActionsService_, _zemGridBulkPublishersActionsEndpoint_, _zemGridConstants_, _zemGridMocks_) { // eslint-disable-line max-len
+    beforeEach(inject(function ($q, _zemDataFilterService_, _zemGridBulkPublishersActionsService_, _zemGridBulkPublishersActionsEndpoint_, _zemGridConstants_, _zemGridMocks_, _zemNavigationNewService_) { // eslint-disable-line max-len
         zemDataFilterService = _zemDataFilterService_;
         zemGridBulkPublishersActionsEndpoint = _zemGridBulkPublishersActionsEndpoint_;
         zemGridConstants = _zemGridConstants_;
+        zemNavigationNewService = _zemNavigationNewService_;
 
         zemDataFilterService.getDateRange = function () {
             return {startDate: moment('2017-01-01'), endDate: moment('2017-01-01')};
         };
 
-        gridApi = _zemGridMocks_.createApi(constants.level.AD_GROUP, constants.breakdown.PUBLISHER);
-        gridApi.getMetaData = function () {
-            return {id: 1};
-        };
-        service = _zemGridBulkPublishersActionsService_.createInstance(gridApi);
-
-        var defered = $q.defer();
-        spyOn(zemGridBulkPublishersActionsEndpoint, 'bulkUpdate').and.returnValue(defered.promise);
-    }));
-
-    it('should call the endpoint', function () {
-        var action = service.getBlacklistActions()[0];
+        gridApi = _zemGridMocks_.createApi(constants.level.AD_GROUPS, constants.breakdown.PUBLISHER);
         gridApi.getSelection = function () {
             return {
                 type: zemGridConstants.gridSelectionFilterType.CUSTOM,
@@ -53,19 +60,57 @@ describe('service: zemGridBulkPublishersActionsService', function () {
             };
         };
 
+        service = _zemGridBulkPublishersActionsService_.createInstance(gridApi);
+        spyOn(zemNavigationNewService, 'getActiveEntityByType').and.returnValue({
+            'id': 1,
+        });
+
+        var defered = $q.defer();
+        spyOn(zemGridBulkPublishersActionsEndpoint, 'bulkUpdate').and.returnValue(defered.promise);
+    }));
+
+    it('should call the endpoint for adgroup', function () {
+        var action = service.getBlacklistActions()[0];
+
         service.execute(action, true);
 
-        expect(zemGridBulkPublishersActionsEndpoint.bulkUpdate).toHaveBeenCalledWith({
-            entries: [{source: 1, publisher: 'bla', include_subdomains: true}],
-            entries_not_selected: [{source: 2, publisher: 'bla2', include_subdomains: undefined}],
-            status: constants.publisherTargetingStatus.BLACKLISTED,
-            ad_group: 1,
-            level: constants.publisherBlacklistLevel.ADGROUP,
-            enforce_cpc: true,
-            select_all: false,
-            start_date: '2017-01-01',
-            end_date: '2017-01-01',
-        });
+        expect(zemGridBulkPublishersActionsEndpoint.bulkUpdate).toHaveBeenCalledWith(
+            getExpectedEndpointParams({ad_group: 1})
+        );
+        expect(zemNavigationNewService.getActiveEntityByType).toHaveBeenCalledWith('adGroup');
+    });
+
+    it('should call the endpoint for campaign', function () {
+        var action = service.getBlacklistActions()[1];
+
+        service.execute(action, true);
+
+        expect(zemGridBulkPublishersActionsEndpoint.bulkUpdate).toHaveBeenCalledWith(
+            getExpectedEndpointParams({campaign: 1})
+        );
+        expect(zemNavigationNewService.getActiveEntityByType).toHaveBeenCalledWith('campaign');
+    });
+
+    it('should call the endpoint for account', function () {
+        var action = service.getBlacklistActions()[2];
+
+        service.execute(action, true);
+
+        expect(zemGridBulkPublishersActionsEndpoint.bulkUpdate).toHaveBeenCalledWith(
+            getExpectedEndpointParams({account: 1})
+        );
+        expect(zemNavigationNewService.getActiveEntityByType).toHaveBeenCalledWith('account');
+    });
+
+    it('should call the endpoint for global blacklist', function () {
+        var action = service.getBlacklistActions()[3];
+
+        service.execute(action, true);
+
+        expect(zemGridBulkPublishersActionsEndpoint.bulkUpdate).toHaveBeenCalledWith(
+            getExpectedEndpointParams()
+        );
+        expect(zemNavigationNewService.getActiveEntityByType).not.toHaveBeenCalled();
     });
 
     it('should call the endpoint with select all flag and without enforcing cpc constraints', function () {
@@ -84,12 +129,12 @@ describe('service: zemGridBulkPublishersActionsService', function () {
             entries: [],
             entries_not_selected: [],
             status: constants.publisherTargetingStatus.BLACKLISTED,
-            ad_group: 1,
-            level: constants.publisherBlacklistLevel.CAMPAIGN,
+            campaign: 1,
             enforce_cpc: false,
             select_all: true,
             start_date: '2017-01-01',
             end_date: '2017-01-01',
         });
+        expect(zemNavigationNewService.getActiveEntityByType).toHaveBeenCalledWith('campaign');
     });
 });

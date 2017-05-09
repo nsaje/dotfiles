@@ -138,9 +138,11 @@ class ReportJobExecutor(JobExecutor):
         )
 
         order = cls._get_order(job, field_name_mapping)
+        column_names = cls._extract_column_names(job.query['fields'])
+        columns = [field_name_mapping[column_name] for column_name in column_names]
 
         rows = stats.api_reports.query(
-            user, breakdown, constraints, goals, order, level,
+            user, breakdown, constraints, goals, order, level, columns,
             include_items_with_no_spend=job.query['options']['include_items_with_no_spend'])
 
         if job.query['options']['include_totals']:
@@ -155,7 +157,7 @@ class ReportJobExecutor(JobExecutor):
             )
             totals = stats.api_reports.totals(
                 user, helpers.limit_breakdown_to_level(breakdown, level),
-                totals_constraints, goals, level)
+                totals_constraints, goals, level, columns)
             rows.append(totals)
 
         return rows, field_name_mapping, stats.api_reports.get_filename(breakdown, constraints)

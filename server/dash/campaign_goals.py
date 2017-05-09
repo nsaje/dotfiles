@@ -697,13 +697,12 @@ def get_allowed_campaign_goals_fields(user, campaign_goals, campaign_goal_values
 
     for goal in included_campaign_goals:
         relevant_fields = CAMPAIGN_GOAL_MAP.get(goal, [])
-
-        if goal == constants.CampaignGoalKPI.CPA:
-            relevant_fields.extend([
-                'avg_cost_per_{}'.format(cg.get_view_key(conversion_goals)) for cg in conversion_goals
-            ])
-
         allowed_fields.extend(relevant_fields)
+
+    if constants.CampaignGoalKPI.CPA in included_campaign_goals:
+        allowed_fields.extend([
+            'avg_cost_per_{}'.format(cg.get_view_key(conversion_goals)) for cg in conversion_goals
+        ])
 
     if user.has_perm('zemauth.campaign_goal_performance'):
         allowed_fields.extend([

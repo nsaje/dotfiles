@@ -98,7 +98,7 @@ angular.module('one.widgets').factory('zemGridStateAndStatusHelpers', function (
                 statusTexts: statusTexts,
             };
         }
-        if (level === constants.level.AD_GROUPS && breakdown === constants.breakdown.PUBLISHER) {
+        if (breakdown === constants.breakdown.PUBLISHER) {
             statusTexts = {};
             statusTexts[constants.publisherTargetingStatus.UNLISTED] = 'Active';
             statusTexts[constants.publisherTargetingStatus.BLACKLISTED] = 'Blacklisted';

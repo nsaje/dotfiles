@@ -5,6 +5,7 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
     this.getEntityHref = getEntityHref;
     this.getHomeHref = getHomeHref;
     this.getActiveEntity = getActiveEntity;
+    this.getActiveEntityByType = getActiveEntityByType;
     this.getActiveAccount = getActiveAccount;
     this.getNavigationHierarchy = getNavigationHierarchy;
     this.onHierarchyUpdate = onHierarchyUpdate;
@@ -131,7 +132,8 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
         var breakdown = $state.params.breakdown;
         var isAdGroup = entity && entity.type === constants.entityType.AD_GROUP;
         var isCampaign = entity && entity.type === constants.entityType.CAMPAIGN;
-        if (breakdown === constants.breakdownStateParam.PUBLISHERS && !isAdGroup ||
+        if (breakdown === constants.breakdownStateParam.PUBLISHERS && !isAdGroup &&
+            !zemPermissions.hasPermission('zemauth.can_see_publishers_all_levels') ||
             breakdown === constants.breakdownStateParam.INSIGHTS && !isCampaign
         ) {
             breakdown = null;
@@ -212,9 +214,13 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
     }
 
     function getActiveAccount () {
+        return getActiveEntityByType(constants.entityType.ACCOUNT);
+    }
+
+    function getActiveEntityByType (type) {
         var entity = activeEntity;
         while (entity) {
-            if (entity.type === constants.entityType.ACCOUNT) {
+            if (entity.type === type) {
                 return entity;
             }
             entity = entity.parent;

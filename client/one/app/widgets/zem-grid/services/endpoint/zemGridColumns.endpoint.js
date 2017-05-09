@@ -1210,6 +1210,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
     // Exceptions (performance - not shown on ALL_ACCOUNTS level and on ACCOUNT - MEDIA SOURCES)
     COLUMNS.performance.exceptions.levels = [constants.level.ACCOUNTS, constants.level.CAMPAIGNS, constants.level.AD_GROUPS]; // eslint-disable-line max-len
     COLUMNS.performance.exceptions.custom.push({level: constants.level.ACCOUNTS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false}); // eslint-disable-line max-len
+    COLUMNS.performance.exceptions.custom.push({level: constants.level.ACCOUNTS, breakdown: constants.breakdown.PUBLISHER, shown: false}); // eslint-disable-line max-len
 
     // Exceptions (media source status column - shown only on Ad Group level)
     COLUMNS.status.exceptions.custom.push({level: constants.level.ALL_ACCOUNTS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false}); // eslint-disable-line max-len
