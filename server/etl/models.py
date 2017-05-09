@@ -68,6 +68,8 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
     age = backtosql.Column('age', BREAKDOWN)
     gender = backtosql.Column('gender', BREAKDOWN)
     age_gender = backtosql.Column('age_gender', BREAKDOWN)
+    placement_type = backtosql.Column('placement_type', BREAKDOWN)
+    video_playback_method = backtosql.Column('video_playback_method', BREAKDOWN)
 
     clicks = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'clicks'}, AGGREGATES)
     impressions = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'impressions'}, AGGREGATES)
@@ -89,6 +91,14 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
     users = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'users'}, AGGREGATES)
     returning_users = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'returning_users'}, AGGREGATES)
 
+    # Video
+    video_start = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'video_start'}, AGGREGATES)
+    video_first_quartile = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'video_first_quartile'}, AGGREGATES)
+    video_midpoint = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'video_midpoint'}, AGGREGATES)
+    video_third_quartile = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'video_third_quartile'}, AGGREGATES)
+    video_complete = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'video_complete'}, AGGREGATES)
+    video_progress_3s = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'video_progress_3s'}, AGGREGATES)
+
     def get_ordered_aggregates(self):
         """
         Returns aggregates in order as it is used in materialized view table definitions.
@@ -98,5 +108,6 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
             'impressions', 'clicks', 'cost_nano', 'data_cost_nano', 'visits', 'new_visits',
             'bounced_visits', 'pageviews', 'total_time_on_site', 'effective_cost_nano',
             'effective_data_cost_nano', 'license_fee_nano', 'margin_nano', 'users',
-            'returning_users',
+            'returning_users', 'video_start', 'video_first_quartile', 'video_midpoint',
+            'video_third_quartile', 'video_complete', 'video_progress_3s',
         ])
