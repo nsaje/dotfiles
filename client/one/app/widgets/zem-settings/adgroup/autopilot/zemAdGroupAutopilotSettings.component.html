@@ -28,7 +28,7 @@
                            zem-currency-input ng-disabled="$ctrl.isInLanding()">
                 </div>
 
-                <div class="message message--error" ng-repeat="error in $ctrl.errors.autopilotBudget" for="autopilot-budget">{{ error }}</div>
+                <div class="message message--error" for="autopilot-budget">{{ $ctrl.errors.autopilotBudget }}</div>
             </div>
 
             <div class="message message--info message--with-icon">
