@@ -24,6 +24,7 @@ celery==4.0.2
 ipython==5.2.2
 requests==2.13.0
 django-timezone-field==2.0
+m3-cdecimal==2.3
 
 # Tests
 mock==2.0.0

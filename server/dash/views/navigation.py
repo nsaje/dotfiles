@@ -96,10 +96,11 @@ class NavigationTreeView(api_common.BaseApiView):
             .filter_by_sources(view_filter.filtered_sources)\
             .filter_by_agencies(view_filter.filtered_agencies)\
             .filter_by_account_types(view_filter.filtered_account_types)\
-            .order_by('name')
+            .order_by('name').only('id', 'campaign_id', 'name')
 
         ad_groups_settings = models.AdGroupSettings.objects.filter(
-            ad_group__in=ad_groups).group_current_settings()
+            ad_group__in=ad_groups).group_current_settings().only(
+                'id', 'ad_group_id', 'state', 'autopilot_state', 'archived', 'landing_mode', 'start_date', 'end_date')
 
         map_ad_groups_settings = {ags.ad_group_id: ags for ags in ad_groups_settings}
 
