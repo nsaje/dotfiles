@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemNavigationNewService', function ($rootScope, $location, $state, zemNavigationService) { // eslint-disable-line max-len
+angular.module('one.services').service('zemNavigationNewService', function ($rootScope, $location, $state, zemNavigationService, zemPermissions) { // eslint-disable-line max-len
     this.init = init;
     this.navigateTo = navigateTo;
     this.refreshState = refreshState;
