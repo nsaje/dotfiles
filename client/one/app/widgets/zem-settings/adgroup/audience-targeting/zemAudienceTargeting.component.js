@@ -12,7 +12,6 @@ angular.module('one.widgets').component('zemAudienceTargeting', {
         var $ctrl = this;
 
         $ctrl.config = config;
-        $ctrl.retargetingEnabled = false;
         $ctrl.getTargetingWarningMessage = getTargetingWarningMessage;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
@@ -24,8 +23,7 @@ angular.module('one.widgets').component('zemAudienceTargeting', {
             selectedExcludedTitle: 'Excluded Audiences',
             selectTargetingButton: 'Add Custom Audience',
             noChoice: 'No available ad group or audience',
-            include: 'Include',
-            exclude: 'Exclude',
+            toggleTargetingEditSection: 'Enable audience targeting',
         };
         $ctrl.addTargeting = addTargeting;
         $ctrl.removeTargeting = removeTargeting;
@@ -35,27 +33,8 @@ angular.module('one.widgets').component('zemAudienceTargeting', {
         };
 
         $ctrl.$onChanges = function () {
-            $ctrl.retargetingEnabled = isRetargetingEnabled();
             $ctrl.allTargetings = getAllAudiencesAndAdGroups();
         };
-
-        function isRetargetingEnabled () {
-            if (!$ctrl.entity) return false;
-            var settings = $ctrl.entity.settings;
-            if (!$ctrl.hasPermission('zemauth.can_target_custom_audiences')
-                && settings.retargetingAdGroups && !!settings.retargetingAdGroups.length) {
-                return true;
-            }
-
-            if ((settings.retargetingAdGroups && !!settings.retargetingAdGroups.length) ||
-                (settings.exclusionRetargetingAdGroups && !!settings.exclusionRetargetingAdGroups.length) ||
-                (settings.audienceTargeting && !!settings.audienceTargeting.length) ||
-                (settings.exclusionAudienceTargeting && !!settings.exclusionAudienceTargeting.length)) {
-                return true;
-            }
-
-            return false;
-        }
 
         function getTargetingWarningMessage () {
             if ($ctrl.entity.warnings && $ctrl.entity.warnings.retargeting !== undefined) {
@@ -75,7 +54,6 @@ angular.module('one.widgets').component('zemAudienceTargeting', {
             } else if (targeting.type === AUDIENCE_TARGETING) {
                 addTargetingToCollection(targeting, 'audienceTargeting', 'exclusionAudienceTargeting');
             }
-            $ctrl.retargetingEnabled = isRetargetingEnabled();
         }
 
         function addTargetingToCollection (targeting, inclusionCollectionName, exclusionCollectionName) {
@@ -98,7 +76,6 @@ angular.module('one.widgets').component('zemAudienceTargeting', {
             } else if (targeting.type === AUDIENCE_TARGETING) {
                 removeTargetingFromCollection(targeting, 'audienceTargeting', 'exclusionAudienceTargeting');
             }
-            $ctrl.retargetingEnabled = isRetargetingEnabled();
         }
 
         function removeTargetingFromCollection (targeting, inclusionCollectionName, exclusionCollectionName) {

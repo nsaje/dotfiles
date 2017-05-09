@@ -17,8 +17,7 @@ angular.module('one.widgets').component('zemInterestTargeting', {
             selectedExcludedTitle: 'Excluded Interests',
             selectTargetingButton: 'Add Interest',
             noChoice: 'No available interests',
-            include: 'Include',
-            exclude: 'Exclude',
+            toggleTargetingEditSection: 'Enable interest targeting',
         };
         $ctrl.allTargetings = [];
         $ctrl.addTargeting = addTargeting;

@@ -16,7 +16,6 @@ describe('component: zemAudienceTargeting', function () {
 
         it('should initialize without errors', function () {
             $ctrl.$onInit();
-            expect($ctrl.retargetingEnabled).toBe(false);
             expect($ctrl.allTargetings).toEqual([]);
         });
     });
@@ -110,10 +109,6 @@ describe('component: zemAudienceTargeting', function () {
             $ctrl.$onInit();
             $ctrl.$onChanges();
         }));
-
-        it('should properly set retargeting enabled', function () {
-            expect($ctrl.retargetingEnabled).toBe(true);
-        });
 
         it('should set targetings', function () {
             expect($ctrl.allTargetings).toEqual(targetings);
