@@ -35,7 +35,7 @@ def _fetch_all_with_source_slug(cursor):
     for row in cursor:
         c = conversion(*row)
         c_out = conversion_out(
-            source_slug=source_id_map[row.source_id],
+            source_slug=source_id_map[c.source_id],
             ad_group_id=c.ad_group_id,
             content_ad_id=c.content_ad_id,
             publisher=c.publisher,
