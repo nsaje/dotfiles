@@ -9,7 +9,10 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 """
 
 import copy
-
+import sys
+import cdecimal
+# Ensure any import of decimal gets cdecimal instead.
+sys.modules['decimal'] = cdecimal
 from secretcrypt import Secret
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
