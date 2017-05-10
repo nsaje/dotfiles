@@ -3,6 +3,7 @@ import stats.constants as sc
 
 GEO = set([sc.COUNTRY, sc.STATE, sc.DMA])
 DEMO = set([sc.DEVICE, sc.AGE, sc.GENDER, sc.AGE_GENDER])
+VIDEO = set([sc.PLACEMENT_TYPE, sc.VIDEO_PLAYBACK_METHOD])
 
 ACCOUNT = {sc.ACCOUNT, sc.SOURCE}
 CAMPAIGN_N_ABOVE = {sc.CAMPAIGN} | ACCOUNT
@@ -26,7 +27,7 @@ BASE_VIEWS = [
     ['mv_content_ad_delivery_geo', CONTENT_AD_N_ABOVE | GEO],
     ['mv_content_ad_delivery_demo', CONTENT_AD_N_ABOVE | DEMO],
 
-    ['mv_master', CONTENT_AD_N_ABOVE | {sc.PUBLISHER} | GEO | DEMO],
+    ['mv_master', CONTENT_AD_N_ABOVE | {sc.PUBLISHER} | GEO | DEMO | VIDEO],
 ]
 
 
