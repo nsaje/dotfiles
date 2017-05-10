@@ -40,34 +40,34 @@ angular.module('one.widgets').service('zemGridContainerTabsService', function (z
         var options = [];
         if (!entity) {
             options = [
-                TABS.accounts,
-                TABS.sources,
+                angular.copy(TABS.accounts),
+                angular.copy(TABS.sources),
             ];
             if (zemPermissions.hasPermission('zemauth.can_see_publishers_all_levels')) {
-                options.push(TABS.publishers);
+                options.push(angular.copy(TABS.publishers));
             }
         } else if (entity.type === constants.entityType.ACCOUNT) {
             options = [
-                TABS.campaigns,
-                TABS.sources,
+                angular.copy(TABS.campaigns),
+                angular.copy(TABS.sources),
             ];
             if (zemPermissions.hasPermission('zemauth.can_see_publishers_all_levels')) {
-                options.push(TABS.publishers);
+                options.push(angular.copy(TABS.publishers));
             }
         } else if (entity && entity.type === constants.entityType.CAMPAIGN) {
             options = [
-                TABS.ad_groups,
-                TABS.sources,
-                TABS.insights,
+                angular.copy(TABS.ad_groups),
+                angular.copy(TABS.sources),
+                angular.copy(TABS.insights),
             ];
             if (zemPermissions.hasPermission('zemauth.can_see_publishers_all_levels')) {
-                options.splice(2, 0, TABS.publishers);
+                options.splice(2, 0, angular.copy(TABS.publishers));
             }
         } else if (entity && entity.type === constants.entityType.AD_GROUP) {
             options = [
-                TABS.content_ads,
-                TABS.sources,
-                TABS.publishers,
+                angular.copy(TABS.content_ads),
+                angular.copy(TABS.sources),
+                angular.copy(TABS.publishers),
             ];
         }
         return options;
