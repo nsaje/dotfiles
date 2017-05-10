@@ -40,6 +40,8 @@ DIMENSION_FIELDS |= set(CONTENT_ADS_FIELDS)
 
 DEFAULT_STATS = set([
     'ctr', 'cpc', 'clicks', 'impressions', 'billing_cost', 'cpm',
+    'video_start', 'video_first_quartile', 'video_midpoint',
+    'video_third_quartile', 'video_complete', 'video_progress_3s',
 ])
 
 HELPER_FIELDS = set(['campaign_stop_inactive', 'campaign_has_available_budget', 'status_per_source'])
@@ -52,6 +54,8 @@ TRAFFIC_FIELDS = [
     'media_cost', 'e_media_cost', 'e_data_cost',
     'license_fee', 'billing_cost',
     'margin', 'agency_total', 'cpm',
+    'video_start', 'video_first_quartile', 'video_midpoint',
+    'video_third_quartile', 'video_complete', 'video_progress_3s',
 ]
 POSTCLICK_ACQUISITION_FIELDS = ['click_discrepancy', ]
 POSTCLICK_ENGAGEMENT_FIELDS = [

@@ -34,6 +34,8 @@ class FilterTestCase(TestCase):
                 'source_id': 1,
                 'source_status': 1,
             }},
+            'video_start': 1, 'video_first_quartile': 1, 'video_midpoint': 1,
+            'video_third_quartile': 1, 'video_complete': 1, 'video_progress_3s': 1,
         }
 
         # add all possible fields
@@ -84,6 +86,8 @@ class FilterTestCase(TestCase):
                 'archived': 1, 'maintenance': 1, 'status_per_source': {1: {
                     'source_id': 1,
                 }},
+                'video_start': 1, 'video_first_quartile': 1, 'video_midpoint': 1,
+                'video_third_quartile': 1, 'video_complete': 1, 'video_progress_3s': 1,
             },
         ]
 
