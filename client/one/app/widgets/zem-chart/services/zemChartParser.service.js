@@ -143,10 +143,12 @@ angular.module('one.widgets').service('zemChartParser', function ($window, zemCh
         });
 
         metricIds.forEach(function (metricId, index) {
+            var metric = zemChartMetricsService.findMetricByValue(chart.metrics.options, metricId);
+            if (!metric) return;
+
             var data = group.seriesData[metricId] || [];
             if (data.length) chart.hasData = true;
 
-            var metric = zemChartMetricsService.findMetricByValue(chart.metrics.options, metricId);
             var name = group.name + ' (' + metric.name + ')';
             var yAxis = commonYAxis ? 0 : index;
             var pointFormat = getPointFormat(metric);
@@ -237,7 +239,10 @@ angular.module('one.widgets').service('zemChartParser', function ($window, zemCh
         var axisFormat = null;
 
         metricIds.forEach(function (metricId, index) {
-            format = getMetricFormat(zemChartMetricsService.findMetricByValue(chart.metrics.options, metricId));
+            var metric = zemChartMetricsService.findMetricByValue(chart.metrics.options, metricId);
+            if (!metric) return;
+
+            format = getMetricFormat(metric);
             axisFormat = null;
             if (format !== undefined) {
                 if (format.type === 'currency') {

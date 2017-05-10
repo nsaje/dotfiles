@@ -65,12 +65,7 @@ angular.module('one.widgets').service('zemChartDataService', function ($q, zemDa
         function applyData (chartData) {
             chart.clearData();
 
-            // Undefined means that no data has been assigned yet but will be.
-            if (!chartData && !chartData.groups) {
-                chart.hasData = true;
-                return;
-            }
-
+            if (!chartData) return;
             zemChartParser.parseData(chart, chartData, metrics, zemDataFilterService.getDateRange());
         }
 

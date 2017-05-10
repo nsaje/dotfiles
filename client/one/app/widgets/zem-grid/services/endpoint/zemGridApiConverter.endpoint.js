@@ -30,7 +30,7 @@ angular.module('one.widgets').factory('zemGridEndpointApiConverter', function (z
             convertedBreakdown.totals = convertStatsFromApi(breakdown.totals, metaData);
         }
 
-        convertedBreakdown.rows = breakdown.rows.map(function (row) {
+        convertedBreakdown.rows = breakdown.rows ? breakdown.rows.map(function (row) {
             return {
                 stats: convertStatsFromApi(row, metaData),
                 group: row.group,
@@ -39,7 +39,7 @@ angular.module('one.widgets').factory('zemGridEndpointApiConverter', function (z
                 supplyDashDisabledMessage: row.supply_dash_disabled_message,
                 entity: getRowEntity(config, row.breakdown_id),
             };
-        });
+        }) : [];
 
         // Create groups for rows with special group property
         // Group breakdown contains rows defined in 'row.group.ids'

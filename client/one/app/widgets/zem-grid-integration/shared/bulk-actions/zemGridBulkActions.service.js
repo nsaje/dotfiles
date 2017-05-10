@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.widgets').factory('zemGridBulkActionsService', function ($window, zemEntityService, zemContentAdService, zemGridEndpointColumns, zemGridConstants, zemAlertsService, zemUploadService, zemUploadApiConverter) { // eslint-disable-line max-len
+angular.module('one.widgets').factory('zemGridBulkActionsService', function ($q, $window, zemEntityService, zemContentAdService, zemGridEndpointColumns, zemGridConstants, zemAlertsService, zemUploadService, zemUploadApiConverter) { // eslint-disable-line max-len
 
     function BulkActionsService (gridApi) {
         this.getActions = getActions;
@@ -233,6 +233,7 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($wi
             if (selection.filterId) url += '&select_batch=' + selection.filterId;
 
             $window.open(url, '_blank');
+            return $q.resolve();
         }
 
         function bulkUpdatedState (selection, state) {

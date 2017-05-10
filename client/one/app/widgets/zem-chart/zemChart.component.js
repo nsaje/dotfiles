@@ -175,16 +175,14 @@ angular.module('one.widgets').component('zemChart', {
         }
 
         function getMetric (metricValue, usePlaceholderFallback) {
-            if (!metricValue) return zemChartMetricsService.createEmptyMetric();
-
             var metric = zemChartMetricsService.findMetricByValue($ctrl.chart.metrics.options, metricValue);
             if (metric) {
                 return metric;
-            } else if (usePlaceholderFallback) {
+            } else if (metricValue && usePlaceholderFallback) {
                 return zemChartMetricsService.createPlaceholderMetric(metricValue);
             }
 
-            return null;
+            return zemChartMetricsService.createEmptyMetric();
         }
     }
 });

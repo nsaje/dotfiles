@@ -60,6 +60,7 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
         }
 
         function updateAutopilotSettings () {
+            if (!$ctrl.entity) return;
             $ctrl.entity.settings.b1SourcesGroupEnabled = $ctrl.b1SourcesGroupEnabled;
             $ctrl.entity.settings.autopilotState = constants.adGroupSettingsAutopilotState.INACTIVE;
 
