@@ -42,7 +42,7 @@ INSERT INTO mv_touchpointconversions (
 
               c.touchpoint_id as touchpoint_id,
               RANK() OVER
-                  (PARTITION BY c.conversion_id ORDER BY c.touchpoint_timestamp DESC) AS conversion_id_ranked
+                  (PARTITION BY c.conversion_id, c.ad_group_id ORDER BY c.touchpoint_timestamp DESC) AS conversion_id_ranked
         FROM conversions c
         WHERE c.conversion_lag <= 2160 AND c.date BETWEEN %(date_from)s AND %(date_to)s
               {% if account_id %}

@@ -1236,7 +1236,7 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
 
                         c.touchpoint_id as touchpoint_id,
                         RANK() OVER
-                            (PARTITION BY c.conversion_id ORDER BY c.touchpoint_timestamp DESC) AS conversion_id_ranked
+                            (PARTITION BY c.conversion_id, c.ad_group_id ORDER BY c.touchpoint_timestamp DESC) AS conversion_id_ranked
                     FROM conversions c
                     WHERE c.conversion_lag <= 2160 AND c.date BETWEEN %(date_from)s AND %(date_to)s
                 ) a join mvh_adgroup_structure s on a.ad_group_id=s.ad_group_id
@@ -1302,7 +1302,7 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
 
                         c.touchpoint_id as touchpoint_id,
                         RANK() OVER
-                            (PARTITION BY c.conversion_id ORDER BY c.touchpoint_timestamp DESC) AS conversion_id_ranked
+                            (PARTITION BY c.conversion_id, c.ad_group_id ORDER BY c.touchpoint_timestamp DESC) AS conversion_id_ranked
                     FROM conversions c
                     WHERE c.conversion_lag <= 2160 AND c.date BETWEEN %(date_from)s AND %(date_to)s AND c.account_id=%(account_id)s
                 ) a join mvh_adgroup_structure s on a.ad_group_id=s.ad_group_id

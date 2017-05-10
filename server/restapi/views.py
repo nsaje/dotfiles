@@ -17,6 +17,8 @@ from rest_framework import exceptions
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
 
+from utils import json_helper, exc, dates_helper, redirector_helper, bidder_helper
+
 from dash.views import agency, bulk_actions, views, bcm, helpers, publishers
 from dash import campaign_goals
 from dash import constants
@@ -25,9 +27,8 @@ from dash.features.reports import models as reports_models
 from dash.features.reports import serializers as reports_serializers
 from dash.features.reports import reports
 import dash.models
-from utils import json_helper, exc, dates_helper, redirector_helper, bidder_helper
 from dash.features import contentupload
-from redshiftapi import quickstats
+import redshiftapi.quickstats
 
 import restapi.authentication
 import restapi.serializers.targeting
@@ -732,7 +733,7 @@ class CampaignStatsView(RESTAPIBaseView):
         to_date = self.request.query_params.get('to', None)
         if not from_date or not to_date:
             raise serializers.ValidationError('Missing from or to parameter')
-        stats = quickstats.query_campaign(campaign.id, from_date, to_date)
+        stats = redshiftapi.quickstats.query_campaign(campaign.id, from_date, to_date)
         return self.response_ok(StatsSerializer(stats).data)
 
 

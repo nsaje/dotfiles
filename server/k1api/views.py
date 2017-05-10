@@ -3,10 +3,11 @@ import logging
 import re
 from collections import defaultdict
 import datetime
+import uuid
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Q, F
+from django.db.models import F
 from django.http import JsonResponse, Http404
 from django.views.generic import View
 from django.utils.decorators import method_decorator
@@ -14,10 +15,12 @@ from django.views.decorators.csrf import csrf_exempt
 
 import dash.constants
 import dash.models
-from dash import constants, publisher_helpers, publisher_group_helpers
+from dash import constants, publisher_group_helpers
 from utils import redirector_helper, email_helper
 from utils import url_helper, request_signer, converters
-from redshiftapi import quickstats
+import redshiftapi.quickstats
+import redshiftapi.internal_stats.conversions
+import etl.materialize_views
 import dash.features.geolocation
 
 
@@ -543,12 +546,37 @@ class AdGroupStatsView(K1APIView):
             return self.response_error('Source \'{}\' does not exist'.format(source_slug), status=400)
         from_date = ad_group.created_dt.date()
         to_date = datetime.date.today() + datetime.timedelta(days=1)
-        stats = quickstats.query_adgroup(ad_group.id, from_date, to_date, source.id)
+        stats = redshiftapi.quickstats.query_adgroup(ad_group.id, from_date, to_date, source.id)
         return self.response_ok({
             'total_cost': stats['total_cost'],
             'impressions': stats['impressions'],
             'clicks': stats['clicks'],
             'cpc': stats['cpc'],
+        })
+
+
+class AdGroupConversionStatsView(K1APIView):
+    """
+    Returns conversion stats for an adgroup (used for post kpi optimization in bidder)
+    """
+
+    def get(self, request):
+        try:
+            from_date = datetime.datetime.strptime(request.GET.get('from_date'), '%Y-%m-%d').date()
+            to_date = datetime.datetime.strptime(request.GET.get('to_date'), '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            return self.response_error('Invalid date format', status=400)
+
+        ad_group_ids = request.GET.get('ad_group_ids')
+        if ad_group_ids:
+            ad_group_ids = ad_group_ids.split(',')
+
+        conversion_generator = redshiftapi.internal_stats.conversions.query_conversions(from_date, to_date, ad_group_ids)
+        path = etl.materialize_views.upload_csv("conversions", from_date, uuid.uuid4().hex, conversion_generator)
+
+        return self.response_ok({
+            'path': path,
+            'bucket': settings.S3_BUCKET_STATS,
         })
 
 

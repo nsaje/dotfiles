@@ -1,6 +1,5 @@
 import backtosql
 
-from redshiftapi import helpers
 from redshiftapi import models
 
 
