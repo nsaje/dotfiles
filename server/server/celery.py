@@ -7,9 +7,9 @@ import cdecimal
 # Ensure any import of decimal gets cdecimal instead.
 sys.modules['decimal'] = cdecimal
 
-from celery import Celery
+from celery import Celery  # noqa
 
-from django.conf import settings
+from django.conf import settings  # noqa
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'server.settings')
