@@ -2,6 +2,11 @@ from __future__ import absolute_import
 
 import os
 
+import sys
+import cdecimal
+# Ensure any import of decimal gets cdecimal instead.
+sys.modules['decimal'] = cdecimal
+
 from celery import Celery
 
 from django.conf import settings
