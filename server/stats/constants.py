@@ -47,6 +47,8 @@ DMA = DeliveryDimension.DMA
 AGE = DeliveryDimension.AGE
 GENDER = DeliveryDimension.GENDER
 AGE_GENDER = DeliveryDimension.AGE_GENDER
+PLACEMENT_TYPE = DeliveryDimension.PLACEMENT_TYPE
+VIDEO_PLAYBACK_METHOD = DeliveryDimension.VIDEO_PLAYBACK_METHOD
 
 
 DAY = TimeDimension.DAY
