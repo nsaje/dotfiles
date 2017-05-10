@@ -572,7 +572,7 @@ class AdGroupConversionStatsView(K1APIView):
             ad_group_ids = ad_group_ids.split(',')
 
         conversion_generator = redshiftapi.internal_stats.conversions.query_conversions(from_date, to_date, ad_group_ids)
-        path = etl.materialize_views.upload_csv("conversions", from_date, uuid.uuid4().hex, conversion_generator)
+        path = etl.materialize_views.upload_csv("conversions", from_date, uuid.uuid4().hex, lambda: conversion_generator)
 
         return self.response_ok({
             'path': path,
