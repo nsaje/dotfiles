@@ -6,11 +6,11 @@ clean_up () {
 	ARG=$?
 	docker-compose -f docker-compose.yml -f docker-compose.acceptance.yml stop;
 	exit $ARG
-} 
+}
 trap clean_up EXIT
 
 if [ -n ${ACCEPTANCE_IMAGE} ]; then
-	export ACCEPTANCE_IMAGE="569683728510.dkr.ecr.us-east-1.amazonaws.com/zemanta/z1"
+	export ACCEPTANCE_IMAGE="569683728510.dkr.ecr.us-east-1.amazonaws.com/zemanta/z1:current"
 fi
 
 export COMPOSE_PROJECT_NAME=acceptance-`basename $(pwd)`;

@@ -34,11 +34,10 @@ jenkins_test:
 
 test_acceptance:	## runs tests against a running server in a container
 ifdef GIT_BRANCH
-	export ACCEPTANCE_IMAGE=$(GIT_BRANCH).$(BUILD_NUM)
+	ACCEPTANCE_IMAGE=z1:$(GIT_BRANCH).$(BUILD_NUM) ./scripts/docker_test_acceptance.sh
 else
-	export ACCEPTANCE_IMAGE=$(ECR_BASE)/z1
+	ACCEPTANCE_IMAGE=$(ECR_BASE)/z1 ./scripts/docker_test_acceptance.sh
 endif
-	./scripts/docker_test_acceptance.sh
 
 ####################
 # image management #
