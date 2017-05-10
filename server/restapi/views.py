@@ -20,13 +20,13 @@ from djangorestframework_camel_case.parser import CamelCaseJSONParser
 from dash.views import agency, bulk_actions, views, bcm, helpers, publishers
 from dash import campaign_goals
 from dash import constants
-from dash import upload
 from dash import publisher_group_helpers
 from dash.features.reports import models as reports_models
 from dash.features.reports import serializers as reports_serializers
 from dash.features.reports import reports
 import dash.models
 from utils import json_helper, exc, dates_helper, redirector_helper, bidder_helper
+from dash.features import contentupload
 from redshiftapi import quickstats
 
 import restapi.authentication
@@ -999,7 +999,7 @@ class UploadBatchSerializer(serializers.Serializer):
 
     def to_representation(self, batch):
         external_data = super(UploadBatchSerializer, self).to_representation(batch)
-        cleaned_candidates = upload.get_candidates_with_errors(batch.contentadcandidate_set.all())
+        cleaned_candidates = contentupload.upload.get_candidates_with_errors(batch.contentadcandidate_set.all())
         external_data['validationStatus'] = [candidate['errors'] for candidate in cleaned_candidates]
         return external_data
 
@@ -1021,7 +1021,7 @@ class ContentAdBatchViewList(RESTAPIBaseView):
         candidates_data = serializer.validated_data
         filename = None
 
-        batch, candidates = upload.insert_candidates(
+        batch, candidates = contentupload.upload.insert_candidates(
             request.user,
             candidates_data,
             ad_group,

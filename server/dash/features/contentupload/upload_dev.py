@@ -6,7 +6,6 @@ from django.conf import settings
 
 from dash import models
 from dash import constants
-from dash import constants
 
 
 class MockAsyncValidation(threading.Thread):

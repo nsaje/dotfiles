@@ -12,8 +12,8 @@ from integrations.bizwire.internal import actions, helpers
 
 import dash.api
 import dash.constants
+from dash.features import contentupload
 import dash.models
-import dash.upload
 
 from utils import k1_helper, request_signer
 
@@ -100,7 +100,7 @@ def article_upload(request):
             campaign_id=config.AUTOMATION_CAMPAIGN,
         )
 
-        dash.upload.insert_candidates(None, candidates_data, ad_group, batch_name, filename='', auto_save=True)
+        contentupload.upload.insert_candidates(None, candidates_data, ad_group, batch_name, filename='', auto_save=True)
 
     for ad_group_id in candidates_per_ad_group.keys():
         try:

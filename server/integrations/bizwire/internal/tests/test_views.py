@@ -17,7 +17,7 @@ from zemauth.models import User
 
 
 @freeze_time('2016-11-30 12:00:00')
-@patch('dash.upload._invoke_external_validation', MagicMock())
+@patch('dash.features.contentupload.upload._invoke_external_validation', MagicMock())
 @patch('utils.redirector_helper.insert_adgroup', MagicMock())
 @patch('integrations.bizwire.config.AUTOMATION_CAMPAIGN', 1)
 @patch('integrations.bizwire.config.AUTOMATION_USER_EMAIL', 'user@test.com')

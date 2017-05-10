@@ -15,10 +15,11 @@ import dash.models
 import fields
 import views as restapi_views
 from dash import constants
-from dash import upload
 import redshiftapi.quickstats
 from automation import autopilot_plus
 
+from dash import constants
+from dash.features import contentupload
 from utils import json_helper
 from utils import redirector_helper
 from utils import bidder_helper
@@ -943,7 +944,7 @@ class TestBatchUpload(TestCase):
             "trackerUrls": ["https://www.example.com/a", "https://www.example.com/b"]
         }
 
-    @mock.patch('dash.upload._invoke_external_validation', mock.Mock())
+    @mock.patch('dash.features.contentupload.upload._invoke_external_validation', mock.Mock())
     def test_batch_upload_success(self):
         to_upload = [self._mock_content_ad('test1'), self._mock_content_ad('test2')]
         r = self.client.post(reverse('contentads_batch_list') + '?adGroupId=1', to_upload, format='json')
@@ -990,9 +991,9 @@ class TestBatchUpload(TestCase):
             candidate.image_status = constants.AsyncUploadJobStatus.OK
             candidate.url_status = constants.AsyncUploadJobStatus.OK
             candidate.save()
-        upload._handle_auto_save(batch)
+        contentupload.upload._handle_auto_save(batch)
 
-    @mock.patch('dash.upload._invoke_external_validation', mock.Mock())
+    @mock.patch('dash.features.contentupload.upload._invoke_external_validation', mock.Mock())
     def test_batch_upload_failure(self):
         to_upload = [self._mock_content_ad('test1'), self._mock_content_ad('test2')]
         r = self.client.post(reverse('contentads_batch_list') + '?adGroupId=1', to_upload, format='json')
@@ -1028,7 +1029,7 @@ class TestBatchUpload(TestCase):
             candidate.image_status = constants.AsyncUploadJobStatus.FAILED
             candidate.url_status = constants.AsyncUploadJobStatus.FAILED
             candidate.save()
-        upload._handle_auto_save(batch)
+        contentupload.upload._handle_auto_save(batch)
 
 
 class PublisherGroupTest(RESTAPITest):

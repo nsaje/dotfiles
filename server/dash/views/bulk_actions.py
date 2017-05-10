@@ -16,10 +16,10 @@ from dash import constants
 from dash import forms
 from dash import models
 from dash import retargeting_helper
-from dash import upload
 from dash import legacy
 from dash.dashapi import data_helper
 from dash.views import helpers
+from dash.features import contentupload
 from dash.views import breakdown_helpers
 
 from utils import api_common
@@ -199,10 +199,10 @@ class AdGroupContentAdEdit(BaseBulkActionView):
             ad_group_id=ad_group.id,
         )
 
-        batch, candidates = upload.insert_edit_candidates(request.user, content_ads, ad_group)
+        batch, candidates = contentupload.upload.insert_edit_candidates(request.user, content_ads, ad_group)
         return self.create_api_response({
             'batch_id': batch.id,
-            'candidates': upload.get_candidates_with_errors(candidates),
+            'candidates': contentupload.upload.get_candidates_with_errors(candidates),
         })
 
 

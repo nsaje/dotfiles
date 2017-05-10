@@ -1,37 +1,28 @@
-import logging
 import StringIO
+import logging
 
-from django.db import transaction
-from django.conf import settings
-from django.template.defaultfilters import pluralize
 import unicodecsv
-
-from server import celery
+from django.conf import settings
+from django.db import transaction
+from django.template.defaultfilters import pluralize
 
 from dash import constants
 from dash import forms
-from dash import models
 from dash import image_helper
-from dash import upload_dev
-from utils import lambda_helper, k1_helper, redirector_helper
+from dash import models
+from server import celery
+from utils import k1_helper
+from utils import lambda_helper
+from utils import redirector_helper
+
+import exc
+import upload_dev
 
 logger = logging.getLogger(__name__)
 
 VALID_DEFAULTS_FIELDS = set(['image_crop', 'description', 'display_url', 'brand_name', 'call_to_action'])
 VALID_UPDATE_FIELDS = set(['url', 'brand_name', 'display_url', 'description', 'image_crop', 'label',
                            'primary_tracker_url', 'secondary_tracker_url', 'call_to_action'])
-
-
-class InvalidBatchStatus(Exception):
-    pass
-
-
-class CandidateErrorsRemaining(Exception):
-    pass
-
-
-class ChangeForbidden(Exception):
-    pass
 
 
 def insert_candidates(user, candidates_data, ad_group, batch_name, filename, auto_save=False, is_edit=False):
@@ -141,18 +132,18 @@ def has_skip_validation_magic_word(filename):
 
 def persist_batch(batch):
     if batch.status != constants.UploadBatchStatus.IN_PROGRESS:
-        raise InvalidBatchStatus('Invalid batch status')
+        raise exc.InvalidBatchStatus('Invalid batch status')
 
     if batch.type == constants.UploadBatchType.EDIT:
-        raise ChangeForbidden('Batch in edit mode')
+        raise exc.ChangeForbidden('Batch in edit mode')
 
     candidates = models.ContentAdCandidate.objects.filter(batch=batch).order_by('pk')
     if any(candidate.original_content_ad_id for candidate in candidates):
-        raise ChangeForbidden('Some candidates are linked to content ads')
+        raise exc.ChangeForbidden('Some candidates are linked to content ads')
 
     cleaned_candidates, errors = _clean_candidates(candidates)
     if errors:
-        raise CandidateErrorsRemaining('Save not permitted - candidate errors exist')
+        raise exc.CandidateErrorsRemaining('Save not permitted - candidate errors exist')
 
     with transaction.atomic():
         content_ads = _persist_candidates(batch, cleaned_candidates)
@@ -173,10 +164,10 @@ def persist_batch(batch):
 
 def persist_edit_batch(request, batch):
     if batch.status != constants.UploadBatchStatus.IN_PROGRESS:
-        raise InvalidBatchStatus('Invalid batch status')
+        raise exc.InvalidBatchStatus('Invalid batch status')
 
     if batch.type != constants.UploadBatchType.EDIT:
-        raise ChangeForbidden('Batch not in edit mode')
+        raise exc.ChangeForbidden('Batch not in edit mode')
 
     candidates = models.ContentAdCandidate.objects.filter(batch=batch)
     with transaction.atomic():
@@ -289,7 +280,7 @@ def _transform_field(field):
 @transaction.atomic
 def cancel_upload(batch):
     if batch.status != constants.UploadBatchStatus.IN_PROGRESS:
-        raise InvalidBatchStatus('Invalid batch status')
+        raise exc.InvalidBatchStatus('Invalid batch status')
 
     batch.status = constants.UploadBatchStatus.CANCELLED
     batch.save()
@@ -331,7 +322,7 @@ def _update_candidate(data, batch, files):
     updated_fields = {}
     for field in data:
         if batch.type == constants.UploadBatchType.EDIT and field not in VALID_UPDATE_FIELDS:
-            raise ChangeForbidden('Update not permitted - field is not editable')
+            raise exc.ChangeForbidden('Update not permitted - field is not editable')
 
         if field == 'image' or field not in form.cleaned_data:
             continue
@@ -382,7 +373,7 @@ def update_candidate(data, defaults, batch, files=None):
 @transaction.atomic
 def add_candidate(batch):
     if batch.type == constants.UploadBatchType.EDIT:
-        raise ChangeForbidden('Cannot add candidate - batch in edit mode')
+        raise exc.ChangeForbidden('Cannot add candidate - batch in edit mode')
 
     return batch.contentadcandidate_set.create(
         ad_group_id=batch.ad_group_id,
@@ -396,7 +387,7 @@ def add_candidate(batch):
 
 def delete_candidate(candidate):
     if candidate.batch.type == constants.UploadBatchType.EDIT:
-        raise ChangeForbidden('Cannot delete candidate - batch in edit mode')
+        raise exc.ChangeForbidden('Cannot delete candidate - batch in edit mode')
 
     candidate.delete()
 
@@ -536,11 +527,11 @@ def _create_content_ad(candidate, ad_group_id, batch_id, ad_group_sources):
 def _apply_content_ad_edit(candidate):
     content_ad = candidate.original_content_ad
     if not content_ad:
-        raise ChangeForbidden('Update not permitted - original content ad not set')
+        raise exc.ChangeForbidden('Update not permitted - original content ad not set')
 
     f = forms.ContentAdForm(candidate.to_dict())
     if not f.is_valid():
-        raise CandidateErrorsRemaining('Save not permitted - candidate errors exist')
+        raise exc.CandidateErrorsRemaining('Save not permitted - candidate errors exist')
 
     for field in VALID_UPDATE_FIELDS:
         setattr(content_ad, field, f.cleaned_data[field])

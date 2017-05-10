@@ -13,8 +13,8 @@ from dash import forms
 from dash import views
 from dash import constants
 from dash import legacy
+from dash.features import contentupload
 from dash.views import helpers
-from dash import upload
 
 import stats.helpers
 import breakdown_helpers
@@ -74,10 +74,10 @@ class ContentAdEdit(api_common.BaseApiView):
     def post(self, request, content_ad_id):
         content_ad = views.helpers.get_content_ad(request.user, content_ad_id, select_related=True)
 
-        batch, candidates = upload.insert_edit_candidates(request.user, [content_ad], content_ad.ad_group)
+        batch, candidates = contentupload.upload.insert_edit_candidates(request.user, [content_ad], content_ad.ad_group)
         return self.create_api_response({
             'batch_id': batch.id,
-            'candidates': upload.get_candidates_with_errors(candidates),
+            'candidates': contentupload.upload.get_candidates_with_errors(candidates),
         })
 
 

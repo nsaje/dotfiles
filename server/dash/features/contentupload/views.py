@@ -2,17 +2,16 @@ import json
 
 from django.db import transaction
 from django.http import Http404
-from django.template.defaultfilters import pluralize
 
 from dash import constants
 from dash import forms
 from dash import models
-from dash import upload
-
 from dash.views import helpers
-
 from utils import api_common
-from utils import exc
+import utils.exc
+
+import upload
+import exc
 
 
 class UploadBatch(api_common.BaseApiView):
@@ -23,7 +22,7 @@ class UploadBatch(api_common.BaseApiView):
         resource = json.loads(request.body)
         form = forms.AdGroupAdsUploadBaseForm(resource)
         if not form.is_valid():
-            raise exc.ValidationError(errors=form.errors)
+            raise utils.exc.ValidationError(errors=form.errors)
 
         batch = upload.create_empty_batch(request.user, ad_group_id, form.cleaned_data['batch_name'])
         candidate = upload.add_candidate(batch)
@@ -40,7 +39,7 @@ class UploadCsv(api_common.BaseApiView):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         form = forms.AdGroupAdsUploadForm(request.POST, request.FILES)
         if not form.is_valid():
-            raise exc.ValidationError(errors=form.errors)
+            raise utils.exc.ValidationError(errors=form.errors)
 
         batch_name = form.cleaned_data['batch_name']
         candidates_data = form.cleaned_data['candidates']
@@ -69,7 +68,7 @@ class UploadStatus(api_common.BaseApiView):
         try:
             batch = ad_group.uploadbatch_set.get(id=batch_id)
         except models.UploadBatch.DoesNotExist:
-            raise exc.MissingDataError('Upload batch does not exist')
+            raise utils.exc.MissingDataError('Upload batch does not exist')
 
         candidates = batch.contentadcandidate_set.all()
         candidate_ids = request.GET.get('candidates')
@@ -94,7 +93,7 @@ class UploadSave(api_common.BaseApiView):
         resource.update(json.loads(request.body))
         form = forms.AdGroupAdsUploadBaseForm(resource)
         if not form.is_valid():
-            raise exc.ValidationError(errors=form.errors)
+            raise utils.exc.ValidationError(errors=form.errors)
 
         with transaction.atomic():
             batch.name = form.cleaned_data['batch_name']
@@ -102,23 +101,23 @@ class UploadSave(api_common.BaseApiView):
 
             try:
                 content_ads = upload.persist_batch(batch)
-            except (upload.InvalidBatchStatus, upload.CandidateErrorsRemaining) as e:
-                raise exc.ValidationError(message=e.message)
+            except (exc.InvalidBatchStatus, exc.CandidateErrorsRemaining) as e:
+                raise utils.exc.ValidationError(message=e.message)
 
         return content_ads
 
     def _execute_update(self, request, batch):
         try:
             return upload.persist_edit_batch(request, batch)
-        except (upload.InvalidBatchStatus, upload.CandidateErrorsRemaining) as e:
-            raise exc.ValidationError(message=e.message)
+        except (exc.InvalidBatchStatus, exc.CandidateErrorsRemaining) as e:
+            raise utils.exc.ValidationError(message=e.message)
 
     def post(self, request, ad_group_id, batch_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         try:
             batch = ad_group.uploadbatch_set.get(id=batch_id)
         except models.UploadBatch.DoesNotExist:
-            raise exc.MissingDataError('Upload batch does not exist')
+            raise utils.exc.MissingDataError('Upload batch does not exist')
 
         if batch.type != constants.UploadBatchType.EDIT:
             content_ads = self._execute_save(request, ad_group, batch)
@@ -139,12 +138,12 @@ class UploadCancel(api_common.BaseApiView):
         try:
             batch = ad_group.uploadbatch_set.get(id=batch_id)
         except models.UploadBatch.DoesNotExist:
-            raise exc.MissingDataError('Upload batch does not exist')
+            raise utils.exc.MissingDataError('Upload batch does not exist')
 
         try:
             upload.cancel_upload(batch)
-        except upload.InvalidBatchStatus:
-            raise exc.ValidationError(errors={
+        except exc.InvalidBatchStatus:
+            raise utils.exc.ValidationError(errors={
                 'cancel': 'Cancel action unsupported at this stage',
             })
 
@@ -158,7 +157,7 @@ class CandidatesDownload(api_common.BaseApiView):
         try:
             batch = ad_group.uploadbatch_set.get(id=batch_id)
         except models.UploadBatch.DoesNotExist:
-            raise exc.MissingDataError('Upload batch does not exist')
+            raise utils.exc.MissingDataError('Upload batch does not exist')
 
         batch_name = batch.name
         if 'batch_name' in request.GET:
@@ -175,7 +174,7 @@ class CandidateUpdate(api_common.BaseApiView):
         try:
             batch = ad_group.uploadbatch_set.get(id=batch_id)
         except models.UploadBatch.DoesNotExist:
-            raise exc.MissingDataError('Upload batch does not exist')
+            raise utils.exc.MissingDataError('Upload batch does not exist')
 
         return ad_group, batch
 
@@ -187,7 +186,7 @@ class CandidateUpdate(api_common.BaseApiView):
             updated_fields, errors = upload.update_candidate(
                 resource['candidate'], resource['defaults'], batch, request.FILES)
         except models.ContentAdCandidate.DoesNotExist:
-            raise exc.MissingDataError('Candidate does not exist')
+            raise utils.exc.MissingDataError('Candidate does not exist')
 
         return self.create_api_response({
             'updated_fields': updated_fields,
@@ -202,13 +201,13 @@ class Candidate(api_common.BaseApiView):
         try:
             batch = ad_group.uploadbatch_set.get(id=batch_id)
         except models.UploadBatch.DoesNotExist:
-            raise exc.MissingDataError('Upload batch does not exist')
+            raise utils.exc.MissingDataError('Upload batch does not exist')
 
         return ad_group, batch
 
     def get(self, request, ad_group_id, batch_id, candidate_id=None):
         if candidate_id:
-            raise exc.ValidationError('Not supported')
+            raise utils.exc.ValidationError('Not supported')
         _, batch = self._get_ad_group_batch(request, ad_group_id, batch_id)
 
         return self.create_api_response({
@@ -217,7 +216,7 @@ class Candidate(api_common.BaseApiView):
 
     def post(self, request, ad_group_id, batch_id, candidate_id=None):
         if candidate_id:
-            raise exc.ValidationError('Not supported')
+            raise utils.exc.ValidationError('Not supported')
         _, batch = self._get_ad_group_batch(request, ad_group_id, batch_id)
         candidate = upload.add_candidate(batch)
 
@@ -230,7 +229,7 @@ class Candidate(api_common.BaseApiView):
         try:
             candidate = batch.contentadcandidate_set.get(id=candidate_id)
         except models.ContentAdCandidate.DoesNotExist:
-            raise exc.MissingDataError('Candidate does not exist')
+            raise utils.exc.MissingDataError('Candidate does not exist')
 
         upload.delete_candidate(candidate)
         return self.create_api_response({})
