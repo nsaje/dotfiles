@@ -142,7 +142,9 @@ angular.module('one.widgets').service('zemConversionPixelsStateService', functio
             if (!request) return;
 
             if (validationErrorField) {
-                delete request.validationErrors[validationErrorField];
+                if (request.validationErrors) {
+                    delete request.validationErrors[validationErrorField];
+                }
             } else {
                 delete request.validationErrors;
                 delete request.errors;
