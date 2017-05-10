@@ -92,6 +92,6 @@ angular.module('one.views').config(function ($stateProvider) {
 
     $stateProvider.state('error.forbidden', {
         url: '/forbidden',
-        templateUrl: '/app/views/common/403.html',
+        templateUrl: '/app/views/common/403.partial.html',
     });
 });

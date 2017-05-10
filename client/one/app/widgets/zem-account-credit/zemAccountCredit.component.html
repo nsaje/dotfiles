@@ -53,7 +53,8 @@
                 <td>{{ item.endDate }}</td>
                 <td>
                     <span ng-show="item.isSigned" class="text-green">Yes</span>
-                    <span ng-show="!item.isSigned" class="text-red">No</span>
+                    <span ng-show="!item.isSigned && !item.isCanceled" class="text-red">No</span>
+                    <span ng-show="item.isCanceled" class="text-gray">Canceled</span>
                 </td>
                 <td>{{ item.licenseFee  }}</td>
                 <td>{{ item.flatFee | decimalCurrency:"$":2 }}</td>
@@ -117,7 +118,8 @@
                 <td>{{ item.endDate }}</td>
                 <td>
                     <span ng-show="item.isSigned" class="text-green">Yes</span>
-                    <span ng-show="!item.isSigned" class="text-red">No</span>
+                    <span ng-show="!item.isSigned && !item.isCanceled" class="text-red">No</span>
+                    <span ng-show="item.isCanceled" class="text-gray">Canceled</span>
                 </td>
                 <td>{{ item.licenseFee }}</td>
                 <td>{{ item.flatFee | decimalCurrency:"$":2 }}</td>

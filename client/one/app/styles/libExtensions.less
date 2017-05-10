@@ -75,14 +75,14 @@
         outline: none;
 
         .select2-result-label {
-            padding: 0;
+            padding: 7px 10px;
+            font-size: @default-font-size;
+            line-height: 16px;
 
-            div,
-            span:not(.ui-select-highlight) {
-                line-height: 16px;
+            div {
                 display: block;
+                margin: -7px -10px;
                 padding: 7px 10px;
-                font-size: @default-font-size;
             }
         }
 
@@ -415,6 +415,11 @@ tags-input .host .tags {
     }
 }
 
+#supporthero-container {
+    box-shadow: -5px 0px 30px 0px fade(black,20%) !important;
+    border: none !important;
+}
+
 ////////////////////////////
 // Note Popover //
 ////////////////////////////
@@ -739,6 +744,66 @@ tags-input .host .tags {
 
 g.highcharts-tooltip {
     display: none;
+}
+
+.message {
+    .close {
+        position: absolute;
+        top: -1px;
+        right: -1px;
+        width: 20px;
+        height: 20px;
+        display: block;
+        float: none;
+        opacity: 1;
+        border-bottom-left-radius: @border-radius;
+        border-top-right-radius: @border-radius;
+        transition: background-color @default-animation;
+        outline: none;
+
+        &:hover {
+            background-color: @red !important;
+        }
+
+        &::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            left: 5px;
+            top: 5px;
+            background-image: url('images/remove-white.svg');
+        }
+
+        span {
+            display: none;
+        }
+    }
+
+    &.message--success-box {
+        .close {
+            background-color: tint(@green, 85%);
+        }
+    }
+
+    &.message--error-box {
+        .close {
+            background-color: tint(@red, 85%);
+        }
+    }
+
+    &.message--warning {
+        .close {
+            background-color: tint(@orange, 85%);
+        }
+    }
+
+    &.message--info {
+        .close {
+            background-color: tint(@blue, 85%);
+        }
+    }
 }
 
 ////////////////////////////
