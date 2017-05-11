@@ -1,7 +1,4 @@
-from collections import defaultdict
-from decimal import Decimal
-
-from dash.views import helpers
+import dash.views.helpers
 from dash import models
 from dash import constants
 from dash import campaign_goals
@@ -9,8 +6,11 @@ from dash import campaign_goals
 from utils import api_common
 from utils import exc
 
-import stats.constants
+import stats.api_breakdowns
 import stats.api_dailystats
+import stats.constraints_helper
+
+import helpers
 
 MAX_DAILY_STATS_BREAKDOWNS = 3
 
@@ -21,9 +21,9 @@ class BaseDailyStatsView(api_common.BaseApiView):
         return {
             'user': request.user,
             'breakdown': breakdown,
-            'start_date': helpers.get_stats_start_date(request.GET.get('start_date')),
-            'end_date': helpers.get_stats_end_date(request.GET.get('end_date')),
-            'filtered_sources': helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources')),
+            'start_date': dash.views.helpers.get_stats_start_date(request.GET.get('start_date')),
+            'end_date': dash.views.helpers.get_stats_end_date(request.GET.get('end_date')),
+            'filtered_sources': dash.views.helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources')),
         }
 
     def get_stats(self, request, group_key, should_use_publishers_view=False):
@@ -32,17 +32,18 @@ class BaseDailyStatsView(api_common.BaseApiView):
 
         result = []
         if totals:
-            result.append(self.get_stats_totals(
+            result += self.get_stats_totals(
                 request,
                 metrics,
                 should_use_publishers_view=should_use_publishers_view,
-            ))
+            )
 
         if self.selected_objects:
             result += self.get_stats_selected(
                 request,
                 metrics,
                 group_key,
+                [obj.id for obj in self.selected_objects],
                 should_use_publishers_view=should_use_publishers_view,
             )
 
@@ -56,22 +57,33 @@ class BaseDailyStatsView(api_common.BaseApiView):
         constraints = self.prepare_constraints(request, breakdown)
         goals = stats.api_breakdowns.get_goals(constraints)
 
-        query_results = self._query_stats(
-            request.user, breakdown, metrics, constraints, goals, should_use_publishers_view)
-        return {
-            'id': 'totals',
-            'name': 'Totals',
-            'series_data': self._format_metric(query_results, metrics)['totals'],
-        }
+        query_results = stats.api_dailystats.query(
+            request.user,
+            breakdown,
+            metrics,
+            constraints,
+            goals,
+            'day',
+            should_use_publishers_view=should_use_publishers_view
+        )
+        return helpers.format_metrics(
+            query_results,
+            metrics,
+            {
+                'totals': 'Totals',
+            },
+            default_group='totals',
+        )
 
     def get_stats_selected(
             self,
             request,
             metrics,
             group_key,
+            selected_ids,
             should_use_publishers_view
     ):
-        join_selected = len(self.selected_ids) > MAX_DAILY_STATS_BREAKDOWNS
+        join_selected = len(selected_ids) > MAX_DAILY_STATS_BREAKDOWNS
 
         breakdown = ['day']
         if not join_selected:
@@ -79,66 +91,39 @@ class BaseDailyStatsView(api_common.BaseApiView):
 
         constraints = self.prepare_constraints(request, breakdown, selected_only=True)
         goals = stats.api_breakdowns.get_goals(constraints)
-        query_results = self._query_stats(
-            request.user, breakdown, metrics, constraints, goals, should_use_publishers_view)
-
-        if join_selected:
-            return [{
-                'id': 'selected',
-                'name': 'Selected',
-                'series_data': self._format_metric(query_results, metrics)['totals'],
-            }]
-
-        data = self._get_series_groups_dict(self.selected_objects)
-        formatted = self._format_metric(query_results, metrics, group_key=group_key, group_ids=self.selected_ids)
-        for group_id in self.selected_ids:
-            data[group_id]['series_data'] = formatted[group_id]
-        return data.values()
-
-    def _query_stats(self, user, breakdown, metrics, constraints, goals, should_use_publishers_view):
-        order = 'day'
-        return stats.api_dailystats.query(
-            user,
+        query_results = stats.api_dailystats.query(
+            request.user,
             breakdown,
             metrics,
             constraints,
             goals,
-            order,
+            'day',
             should_use_publishers_view=should_use_publishers_view
         )
+
+        if join_selected:
+            return helpers.format_metrics(
+                query_results,
+                metrics,
+                {
+                    'selected': 'Selected',
+                },
+                default_group='selected',
+            )
+        else:
+            return helpers.format_metrics(
+                query_results,
+                metrics,
+                helpers.get_object_mapping(self.selected_objects),
+                group_key=group_key,
+            )
 
     def _get_selected_objects(self, request, objects):
         select_all = request.GET.get('select_all', False)
         select_batch_id = request.GET.get('select_batch')
         selected_ids = [int(id) for id in request.GET.getlist('selected_ids')]
         not_selected_ids = [int(id) for id in request.GET.getlist('not_selected_ids')]
-        return helpers.get_selected_entities(objects, select_all, selected_ids, not_selected_ids, True, select_batch_id)
-
-    def _format_metric(self, stats, metrics, group_key=None, group_ids=None):
-        data = defaultdict(lambda: defaultdict(list))
-        for stat in stats:
-            for metric in metrics:
-                if not group_key:
-                    group_id = 'totals'
-                elif group_ids and group_key in stat and stat[group_key] in group_ids:
-                    group_id = stat[group_key]
-                else:
-                    continue
-                data[group_id][metric].append(
-                    (stat['day'], float(stat[metric]) if isinstance(stat.get(metric), Decimal) else stat.get(metric))
-                )
-                # when all values are None we treat this as no data (an empty array)
-                if all(x[1] is None for x in data[group_id][metric]):
-                    data[group_id][metric] = []
-        return data
-
-    def _get_series_groups_dict(self, objects):
-        result = {obj.id: {
-            'id': obj.id,
-            'name': getattr(obj, 'name', None) or obj.title,
-        } for obj in objects}
-
-        return result
+        return dash.views.helpers.get_selected_entities(objects, select_all, selected_ids, not_selected_ids, True, select_batch_id)
 
     def get_goals(
             self,
@@ -147,15 +132,15 @@ class BaseDailyStatsView(api_common.BaseApiView):
             campaign=None,
             pixels=None):
         user = request.user
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+        start_date = dash.views.helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = dash.views.helpers.get_stats_end_date(request.GET.get('end_date'))
 
         result = {}
         if conversion_goals is not None:
-            result['conversion_goals'] = helpers.get_conversion_goals_wo_pixels(conversion_goals)
+            result['conversion_goals'] = dash.views.helpers.get_conversion_goals_wo_pixels(conversion_goals)
 
         if pixels:
-            result['pixels'] = helpers.get_pixels_list(pixels)
+            result['pixels'] = dash.views.helpers.get_pixels_list(pixels)
 
         can_see_campaign_goals = user.has_perm('zemauth.campaign_goal_performance')
         if campaign is not None and can_see_campaign_goals:
@@ -180,16 +165,6 @@ class BaseDailyStatsView(api_common.BaseApiView):
                     )
                 )
         return result
-
-    def merge(self, *arg):
-        '''
-        Merge an arbitrary number of dictionaries
-        '''
-        ret = {}
-        for d in arg:
-            if d:
-                ret.update(d)
-        return ret
 
 
 class AllAccountsDailyStatsView(BaseDailyStatsView):
@@ -217,14 +192,13 @@ class AllAccountsAccountsDailyStats(AllAccountsDailyStatsView):
         if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
             raise exc.MissingDataError()
 
-        self.view_filter = helpers.ViewFilter(request=request)
+        self.view_filter = dash.views.helpers.ViewFilter(request=request)
         accounts = models.Account.objects.all()\
             .filter_by_user(request.user)\
             .filter_by_agencies(self.view_filter.filtered_agencies)\
             .filter_by_account_types(self.view_filter.filtered_account_types)
 
         self.selected_objects = self._get_selected_objects(request, accounts)
-        self.selected_ids = [obj.id for obj in self.selected_objects]
 
         return self.create_api_response(
             self.get_stats(
@@ -248,11 +222,10 @@ class AllAccountsSourcesDailyStats(AllAccountsDailyStatsView):
         if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
             raise exc.MissingDataError()
 
-        self.view_filter = helpers.ViewFilter(request=request)
+        self.view_filter = dash.views.helpers.ViewFilter(request=request)
         sources = models.Source.objects.all()
 
         self.selected_objects = self._get_selected_objects(request, sources)
-        self.selected_ids = [obj.id for obj in self.selected_objects]
 
         return self.create_api_response(
             self.get_stats(
@@ -276,10 +249,9 @@ class AllAccountsPublishersDailyStats(AllAccountsDailyStatsView):
         if not request.user.has_perm('zemauth.can_see_publishers'):
             raise exc.MissingDataError()
 
-        self.view_filter = helpers.ViewFilter(request=request)
+        self.view_filter = dash.views.helpers.ViewFilter(request=request)
 
         self.selected_objects = None
-        self.selected_ids = None
 
         return self.create_api_response(
             self.get_stats(
@@ -311,15 +283,14 @@ class AccountCampaignsDailyStats(AccountDailyStatsView):
         return params
 
     def get(self, request, account_id):
-        self.account = helpers.get_account(request.user, account_id)
+        self.account = dash.views.helpers.get_account(request.user, account_id)
         pixels = self.account.conversionpixel_set.filter(archived=False)
 
         campaigns = self.account.campaign_set.all().filter_by_user(request.user)
         self.selected_objects = self._get_selected_objects(request, campaigns)
-        self.selected_ids = [obj.id for obj in self.selected_objects]
 
         return self.create_api_response(
-            self.merge(
+            helpers.merge(
                 self.get_stats(
                     request,
                     'campaign_id',
@@ -343,15 +314,14 @@ class AccountSourcesDailyStats(AccountDailyStatsView):
         return params
 
     def get(self, request, account_id):
-        self.account = helpers.get_account(request.user, account_id)
+        self.account = dash.views.helpers.get_account(request.user, account_id)
         pixels = self.account.conversionpixel_set.filter(archived=False)
 
         sources = models.Source.objects.all()
         self.selected_objects = self._get_selected_objects(request, sources)
-        self.selected_ids = [obj.id for obj in self.selected_objects]
 
         return self.create_api_response(
-            self.merge(
+            helpers.merge(
                 self.get_stats(
                     request,
                     'source_id',
@@ -378,15 +348,14 @@ class AccountPublishersDailyStats(AccountDailyStatsView):
         if not request.user.has_perm('zemauth.can_see_publishers'):
             raise exc.MissingDataError()
 
-        self.account = helpers.get_account(request.user, account_id)
+        self.account = dash.views.helpers.get_account(request.user, account_id)
 
         pixels = self.account.conversionpixel_set.filter(archived=False)
 
         self.selected_objects = None
-        self.selected_ids = None
 
         return self.create_api_response(
-            self.merge(
+            helpers.merge(
                 self.get_stats(
                     request,
                     None,
@@ -419,16 +388,15 @@ class CampaignAdGroupsDailyStats(CampaignDailyStatsView):
         return params
 
     def get(self, request, campaign_id):
-        self.campaign = helpers.get_campaign(request.user, campaign_id)
+        self.campaign = dash.views.helpers.get_campaign(request.user, campaign_id)
         conversion_goals = self.campaign.conversiongoal_set.all()
         pixels = self.campaign.account.conversionpixel_set.filter(archived=False)
 
         ad_groups = self.campaign.adgroup_set.all()
         self.selected_objects = self._get_selected_objects(request, ad_groups)
-        self.selected_ids = [obj.id for obj in self.selected_objects]
 
         return self.create_api_response(
-            self.merge(
+            helpers.merge(
                 self.get_stats(
                     request,
                     'ad_group_id',
@@ -454,16 +422,15 @@ class CampaignSourcesDailyStats(CampaignDailyStatsView):
         return params
 
     def get(self, request, campaign_id):
-        self.campaign = helpers.get_campaign(request.user, campaign_id)
+        self.campaign = dash.views.helpers.get_campaign(request.user, campaign_id)
         conversion_goals = self.campaign.conversiongoal_set.all()
         pixels = self.campaign.account.conversionpixel_set.filter(archived=False)
 
         sources = models.Source.objects.all()
         self.selected_objects = self._get_selected_objects(request, sources)
-        self.selected_ids = [obj.id for obj in self.selected_objects]
 
         return self.create_api_response(
-            self.merge(
+            helpers.merge(
                 self.get_stats(
                     request,
                     'source_id',
@@ -492,16 +459,15 @@ class CampaignPublishersDailyStats(CampaignDailyStatsView):
         if not request.user.has_perm('zemauth.can_see_publishers'):
             raise exc.MissingDataError()
 
-        self.campaign = helpers.get_campaign(request.user, campaign_id)
+        self.campaign = dash.views.helpers.get_campaign(request.user, campaign_id)
 
         conversion_goals = self.campaign.conversiongoal_set.all()
         pixels = self.campaign.account.conversionpixel_set.filter(archived=False)
 
         self.selected_objects = None
-        self.selected_ids = None
 
         return self.create_api_response(
-            self.merge(
+            helpers.merge(
                 self.get_stats(
                     request,
                     None,
@@ -536,16 +502,15 @@ class AdGroupContentAdsDailyStats(AdGroupDailyStatsView):
         return params
 
     def get(self, request, ad_group_id):
-        self.ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        self.ad_group = dash.views.helpers.get_ad_group(request.user, ad_group_id)
         conversion_goals = self.ad_group.campaign.conversiongoal_set.all()
         pixels = self.ad_group.campaign.account.conversionpixel_set.filter(archived=False)
 
         content_ads = self.ad_group.contentad_set.all()
         self.selected_objects = self._get_selected_objects(request, content_ads)
-        self.selected_ids = [obj.id for obj in self.selected_objects]
 
         return self.create_api_response(
-            self.merge(
+            helpers.merge(
                 self.get_stats(
                     request,
                     'content_ad_id',
@@ -571,16 +536,15 @@ class AdGroupSourcesDailyStats(AdGroupDailyStatsView):
         return params
 
     def get(self, request, ad_group_id):
-        self.ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        self.ad_group = dash.views.helpers.get_ad_group(request.user, ad_group_id)
         conversion_goals = self.ad_group.campaign.conversiongoal_set.all()
         pixels = self.ad_group.campaign.account.conversionpixel_set.filter(archived=False)
 
         sources = models.Source.objects.all()
         self.selected_objects = self._get_selected_objects(request, sources)
-        self.selected_ids = [obj.id for obj in self.selected_objects]
 
         return self.create_api_response(
-            self.merge(
+            helpers.merge(
                 self.get_stats(
                     request,
                     'source_id',
@@ -609,16 +573,15 @@ class AdGroupPublishersDailyStats(AdGroupDailyStatsView):
         if not request.user.has_perm('zemauth.can_see_publishers'):
             raise exc.MissingDataError()
 
-        self.ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        self.ad_group = dash.views.helpers.get_ad_group(request.user, ad_group_id)
 
         conversion_goals = self.ad_group.campaign.conversiongoal_set.all()
         pixels = self.ad_group.campaign.account.conversionpixel_set.filter(archived=False)
 
         self.selected_objects = None
-        self.selected_ids = None
 
         return self.create_api_response(
-            self.merge(
+            helpers.merge(
                 self.get_stats(
                     request,
                     None,

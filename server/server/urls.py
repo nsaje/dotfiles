@@ -14,8 +14,9 @@ import k1api.views
 import etl.crossvalidation.views
 import zemauth.views
 
-import dash.views.daily_stats
 import dash.features.contentupload.views
+import dash.features.daily_stats.views
+import dash.features.scheduled_reports.views
 import dash.views.bcm
 import dash.views.breakdown
 import dash.views.export
@@ -28,7 +29,6 @@ import dash.views.audiences
 import dash.views.alerts
 import dash.views.bulk_actions
 import dash.views.publishers
-import dash.features.scheduled_reports.views
 
 
 admin.site.login = login_required(admin.site.login)
@@ -272,62 +272,62 @@ urlpatterns += [
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/daily_stats/',
-        login_required(dash.views.daily_stats.AdGroupContentAdsDailyStats.as_view()),
+        login_required(dash.features.daily_stats.views.AdGroupContentAdsDailyStats.as_view()),
         name='ad_group_content_ads_daily_stats'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/daily_stats/',
-        login_required(dash.views.daily_stats.AdGroupSourcesDailyStats.as_view()),
+        login_required(dash.features.daily_stats.views.AdGroupSourcesDailyStats.as_view()),
         name='ad_group_sources_daily_stats'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/publishers/daily_stats/',
-        login_required(dash.views.daily_stats.AdGroupPublishersDailyStats.as_view()),
+        login_required(dash.features.daily_stats.views.AdGroupPublishersDailyStats.as_view()),
         name='ad_group_publishers_daily_stats'
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/daily_stats/',
-        login_required(dash.views.daily_stats.CampaignAdGroupsDailyStats.as_view()),
+        login_required(dash.features.daily_stats.views.CampaignAdGroupsDailyStats.as_view()),
         name='campaign_ad_groups_daily_stats'
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/sources/daily_stats/',
-        login_required(dash.views.daily_stats.CampaignSourcesDailyStats.as_view()),
+        login_required(dash.features.daily_stats.views.CampaignSourcesDailyStats.as_view()),
         name='campaign_sources_daily_stats'
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/publishers/daily_stats/',
-        login_required(dash.views.daily_stats.CampaignPublishersDailyStats.as_view()),
+        login_required(dash.features.daily_stats.views.CampaignPublishersDailyStats.as_view()),
         name='campaign_publishers_daily_stats'
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/campaigns/daily_stats/',
-        login_required(dash.views.daily_stats.AccountCampaignsDailyStats.as_view()),
+        login_required(dash.features.daily_stats.views.AccountCampaignsDailyStats.as_view()),
         name='account_campaigns_daily_stats'
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/sources/daily_stats/',
-        login_required(dash.views.daily_stats.AccountSourcesDailyStats.as_view()),
+        login_required(dash.features.daily_stats.views.AccountSourcesDailyStats.as_view()),
         name='account_sources_daily_stats'
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/publishers/daily_stats/',
-        login_required(dash.views.daily_stats.AccountPublishersDailyStats.as_view()),
+        login_required(dash.features.daily_stats.views.AccountPublishersDailyStats.as_view()),
         name='account_publishers_daily_stats'
     ),
     url(
         r'^api/all_accounts/accounts/daily_stats/',
-        login_required(dash.views.daily_stats.AllAccountsAccountsDailyStats.as_view()),
+        login_required(dash.features.daily_stats.views.AllAccountsAccountsDailyStats.as_view()),
         name='accounts_accounts_daily_stats'
     ),
     url(
         r'^api/all_accounts/sources/daily_stats/',
-        login_required(dash.views.daily_stats.AllAccountsSourcesDailyStats.as_view()),
+        login_required(dash.features.daily_stats.views.AllAccountsSourcesDailyStats.as_view()),
         name='accounts_sources_daily_stats'
     ),
     url(
         r'^api/all_accounts/publishers/daily_stats/',
-        login_required(dash.views.daily_stats.AllAccountsPublishersDailyStats.as_view()),
+        login_required(dash.features.daily_stats.views.AllAccountsPublishersDailyStats.as_view()),
         name='accounts_publishers_daily_stats'
     ),
     url(

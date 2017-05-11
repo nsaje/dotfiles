@@ -2,9 +2,10 @@
     <a href class="button button--dropdown-toggle-icon" uib-dropdown-toggle title="Show/hide breakdowns">Breakdowns</a>
     <div class="dropdown-menu dropdown-menu-right" uib-dropdown-menu>
         <div class="dropdown-menu__container custom-scroller">
-            <div class="dropdown-menu__category" ng-repeat="group in $ctrl.breakdownGroups" ng-click="$event.stopPropagation()">
-                <div class="dropdown-menu__category-name" ng-if="group.breakdowns.length > 0"
-                     is-internal="{{group.internal}}">{{ group.name }}</div>
+            <div class="dropdown-menu__category" ng-repeat="group in $ctrl.breakdownGroups" ng-click="$event.stopPropagation()" ng-if="group.breakdowns.length > 0">
+                <div class="dropdown-menu__category-name" is-internal="{{group.internal}}">
+                    {{ group.name }}
+                </div>
                 <ul class="dropdown-menu__list">
                     <li class="dropdown-menu__list-item" ng-repeat="breakdown in group.breakdowns"
                         is-internal="{{breakdown.internal}}">
