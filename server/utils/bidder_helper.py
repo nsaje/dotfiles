@@ -40,7 +40,7 @@ def _call_api_retry(url, data=None, method='POST', num_retries=NUM_RETRIES):
 def _call_api(url, data, method='POST'):
     request = urllib2.Request(url, data)
     request.get_method = lambda: method
-    response = request_signer.urllib2_secure_open(request, settings.BIDDER_API_SIGN_KEY)
+    response = request_signer.urllib2_secure_open(request, settings.BIDDER_API_SIGN_KEY[0])
 
     status_code = response.getcode()
     if status_code != 200:
