@@ -35,6 +35,7 @@ class K1ApiTest(TestCase):
     def setUp(self):
         self.test_signature = True
         settings.K1_API_SIGN_KEY = 'test_api_key'
+        settings.BIDDER_API_SIGN_KEY = 'test_api_key2'
         self.verify_patcher = patch('utils.request_signer.verify_wsgi_request')
         self.mock_verify_wsgi_request = self.verify_patcher.start()
 
@@ -42,7 +43,7 @@ class K1ApiTest(TestCase):
 
     def tearDown(self):
         if self.test_signature:
-            self.mock_verify_wsgi_request.assert_called_with(ANY, 'test_api_key')
+            self.mock_verify_wsgi_request.assert_called_with(ANY, ['test_api_key', 'test_api_key2'])
         self.verify_patcher.stop()
 
     def _test_signature(self, path):
@@ -400,7 +401,7 @@ class K1ApiTest(TestCase):
         self.assertEqual(data['ga_accounts'][1]['account_id'], 2)
         self.assertEqual(data['ga_accounts'][1]['ga_account_id'], '123')
         self.assertEqual(data['ga_accounts'][1]['ga_web_property_id'], 'UA-123-3')
-        
+
     def test_get_ga_accounts_since_ever(self):
         campaign_settings = dash.models.Campaign.objects.get(pk=1).get_current_settings().copy_settings()
         campaign_settings.ga_property_id = 'UA-123-4'
@@ -410,7 +411,7 @@ class K1ApiTest(TestCase):
             reverse('k1api.ga_accounts'),
             QUERY_STRING=urllib.urlencode({'date_since': '2014-07-01'}),
         )
-        
+
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
         data = data['response']
