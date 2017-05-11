@@ -592,8 +592,8 @@ Property         | Type                          | Description                 |
 type             | [enum](#conversion-goal-type) | conversion goal type        | required | read only
 name             | string                        | name of the conversion goal | required | read only
 conversionWindow | [enum](#conversion-window)    | conversion goal type        | required | read only
-goalId           | string                        | goal id                     | required | optional
-pixelUrl         | url                           | pixel url, if applicable    | optional | optional
+goalId           | string                        | goal id                     | N/A      | read only
+pixelUrl         | url                           | pixel url, if applicable    | N/A      | read only
 
 
 ### List campaign goals [GET /rest/v1/campaigns/{campaignId}/goals/]

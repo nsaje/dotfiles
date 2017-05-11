@@ -582,8 +582,6 @@ class CampaignGoalsSerializer(serializers.BaseSerializer):
             return conversion_goal
         return {
             'goal_id': conversion_goal['goalId'],
-            'name': conversion_goal['name'],
-            'pixel_url': conversion_goal['pixelUrl'],
             'conversion_window': fields.DashConstantField(constants.ConversionWindows).to_internal_value(conversion_goal['conversionWindow']),
             'type': fields.DashConstantField(constants.ConversionGoalType).to_internal_value(conversion_goal['type']),
         }

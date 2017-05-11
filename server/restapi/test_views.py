@@ -10,6 +10,7 @@ from rest_framework.test import APIClient
 from zemauth.models import User
 from django.core.urlresolvers import reverse
 from rest_framework import exceptions
+from mixer.backend.django import mixer
 
 import dash.models
 import fields
@@ -347,7 +348,7 @@ class CampaignGoalsTest(RESTAPITest):
         if conversiongoal_db:
             pixel_url = conversiongoal_db.pixel.get_url() if conversiongoal_db.pixel else None
             expected_conversiongoal = dict(
-                goalId=conversiongoal_db.goal_id,
+                goalId=conversiongoal_db.goal_id or conversiongoal_db.pixel.id,
                 name=conversiongoal_db.name,
                 pixelUrl=pixel_url,
                 conversionWindow=constants.ConversionWindows.get_name(conversiongoal_db.conversion_window),
@@ -401,6 +402,27 @@ class CampaignGoalsTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
         self.validate_campaigngoal(resp_json['data'])
         self.assertEqual(resp_json['data']['value'], test_campaigngoal['value'])
+
+    def test_campaigngoals_cpa_post(self):
+        account = dash.models.Account.objects.get(pk=186)
+        pixel = mixer.blend(dash.models.ConversionPixel, account=account)
+        test_campaigngoal = self.campaigngoal_repr(
+            type=constants.CampaignGoalKPI.CPA,
+            value='0.33',
+            primary=True,
+            conversionGoal=dict(
+                type='PIXEL',
+                conversionWindow='LEQ_7_DAYS',
+                goalId=pixel.id
+            )
+        )
+        post_data = test_campaigngoal.copy()
+        del post_data['id']
+        r = self.client.post(
+            reverse('campaigngoals_list', kwargs={'campaign_id': 608}),
+            data=post_data, format='json')
+        resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
+        self.validate_campaigngoal(resp_json['data'])
 
 
 class BudgetsTest(RESTAPITest):
