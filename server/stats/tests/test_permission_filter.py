@@ -36,6 +36,7 @@ class FilterTestCase(TestCase):
             }},
             'video_start': 1, 'video_first_quartile': 1, 'video_midpoint': 1,
             'video_third_quartile': 1, 'video_complete': 1, 'video_progress_3s': 1,
+            'video_cpv': 1, 'video_cpcv': 1,
         }
 
         # add all possible fields
@@ -88,6 +89,7 @@ class FilterTestCase(TestCase):
                 }},
                 'video_start': 1, 'video_first_quartile': 1, 'video_midpoint': 1,
                 'video_third_quartile': 1, 'video_complete': 1, 'video_progress_3s': 1,
+                'video_cpv': 1, 'video_cpcv': 1,
             },
         ]
 

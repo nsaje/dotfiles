@@ -120,6 +120,8 @@ _FIELD_MAPPING = {
     'video_third_quartile': ('Video Third Quartile',),
     'video_complete': ('Video Complete',),
     'video_progress_3s': ('Video Progress 3s',),
+    'video_cpv': ('Avg. CPV',),
+    'video_cpcv': ('Avg. CPCV',),
 }
 
 _PUBLISHERS_FIELD_MAPPING = {

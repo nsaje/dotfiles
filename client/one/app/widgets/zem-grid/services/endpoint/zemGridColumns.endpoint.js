@@ -998,6 +998,32 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
+        videoCpv: {
+            name: 'Avg. CPV',
+            field: 'video_cpv',
+            type: zemGridConstants.gridColumnTypes.CURRENCY,
+            shown: 'zemauth.fea_can_see_video_metrics',
+            internal: 'zemauth.fea_can_see_video_metrics',
+            fractionSize: 3,
+            help: '<p>The average cost per 3 seconds video watch.</p>' +
+                  '<p>The metric is calculated as the media cost divided by total amount of views.</p>',
+            totalRow: true,
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
+        },
+        videoCpcv: {
+            name: 'Avg. CPCV',
+            field: 'video_cpcv',
+            type: zemGridConstants.gridColumnTypes.CURRENCY,
+            shown: 'zemauth.fea_can_see_video_metrics',
+            internal: 'zemauth.fea_can_see_video_metrics',
+            fractionSize: 3,
+            help: '<p>The average cost per completed video watch.</p>' +
+                  '<p>The metric is calculated as the media cost divided by total amount of completed views.</p>',
+            totalRow: true,
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
+        },
     };
 
     // ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1213,7 +1239,9 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         COLUMNS.videoFirstQuartile,
         COLUMNS.videoMidpoint,
         COLUMNS.videoThirdQuartile,
-        COLUMNS.videoComplete
+        COLUMNS.videoComplete,
+        COLUMNS.videoCpv,
+        COLUMNS.videoCpcv,
     ];
 
     var METRICS_GROUP = [].concat(

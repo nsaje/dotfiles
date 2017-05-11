@@ -7,6 +7,7 @@ TRAFFIC_FIELDS = [
     'margin', 'agency_total', 'cpm',
     'video_start', 'video_first_quartile', 'video_midpoint',
     'video_third_quartile', 'video_complete', 'video_progress_3s',
+    'video_cpv', 'video_cpcv',
 ]
 POSTCLICK_ACQUISITION_FIELDS = ['click_discrepancy', ]
 POSTCLICK_ENGAGEMENT_FIELDS = [
