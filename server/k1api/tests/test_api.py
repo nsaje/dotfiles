@@ -34,8 +34,8 @@ class K1ApiTest(TestCase):
 
     def setUp(self):
         self.test_signature = True
-        settings.K1_API_SIGN_KEY = 'test_api_key'
-        settings.BIDDER_API_SIGN_KEY = 'test_api_key2'
+        settings.K1_API_SIGN_KEY = ['test_api_key']
+        settings.BIDDER_API_SIGN_KEY = ['test_api_key2']
         self.verify_patcher = patch('utils.request_signer.verify_wsgi_request')
         self.mock_verify_wsgi_request = self.verify_patcher.start()
 

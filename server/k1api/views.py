@@ -40,7 +40,7 @@ class K1APIView(View):
     @staticmethod
     def _validate_signature(request):
         try:
-            request_signer.verify_wsgi_request(request, [settings.K1_API_SIGN_KEY, settings.BIDDER_API_SIGN_KEY])
+            request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY + settings.BIDDER_API_SIGN_KEY)
         except request_signer.SignatureError:
             logger.exception('Invalid K1 signature.')
             raise Http404
