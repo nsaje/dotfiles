@@ -9,7 +9,7 @@ from utils import bidder_helper
 
 
 @override_settings(
-    BIDDER_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA',
+    BIDDER_API_SIGN_KEY=['AAAAAAAAAAAAAAAAAAAAAAAA'],
     BIDDER_API_URL_BASE='https://b1api.zemanta.com',
 )
 @patch('utils.request_signer._secure_opener.open')
