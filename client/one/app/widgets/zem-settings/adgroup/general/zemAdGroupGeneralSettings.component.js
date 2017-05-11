@@ -42,15 +42,12 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
 
         function goToBudgets () {
             var campaignId = zemNavigationNewService.getActiveEntity().parent.id;
-            if (zemPermissions.hasPermission('zemauth.can_see_new_budgets')) {
-                $state.go('main.campaigns.ad_groups', {
-                    id: campaignId,
-                    settings: true,
-                    settingsScrollTo: 'zemCampaignBudgetsSettings'
-                });
-            } else {
-                $state.go('main.campaigns.budget', {id: campaignId});
-            }
+            $state.go('v2.analytics', {
+                id: campaignId,
+                level: 'campaign',
+                settings: true,
+                settingsScrollTo: 'zemCampaignBudgetsSettings'
+            });
         }
 
         function initializeWatches () {
