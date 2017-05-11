@@ -1456,6 +1456,17 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         });
     }
 
+    function adjustOrder (columns, breakdowns) {
+        // status not orderable on publisher tabs
+        if (breakdowns.indexOf(constants.breakdown.PUBLISHER) >= 0) {
+            columns.forEach(function (column) {
+                if (column.field === COLUMNS.status.field) {
+                    column.order = false;
+                }
+            });
+        }
+    }
+
     function brandColumns (columns, breakdown) {
         function findColumn (column) {
             return columns.filter(function (c) { return column.field === c.field; })[0];
@@ -1481,7 +1492,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
     function intersects (array1, array2) {
         // Simple solution for finding if arrays are having common element
         return array1.filter(function (n) {
-            return array2.indexOf(n) != -1;
+            return array2.indexOf(n) !== -1;
         }).length > 0;
     }
 
@@ -1503,6 +1514,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
     function createColumns (level, breakdowns) {
         // Create columns definitions array based on base level and breakdown
         var columns = angular.copy(getColumns(level, breakdowns));
+        adjustOrder(columns, breakdowns);
         checkPermissions(columns);
         brandColumns(columns, breakdowns[0]);
         return columns;
