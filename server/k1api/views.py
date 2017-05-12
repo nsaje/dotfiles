@@ -597,6 +597,31 @@ class AdGroupConversionStatsView(K1APIView):
         })
 
 
+class AdGroupContentAdPublisherStatsView(K1APIView):
+    """
+    Returns conversion stats for an adgroup (used for post kpi optimization in bidder)
+    """
+
+    def get(self, request):
+        try:
+            from_date = datetime.datetime.strptime(request.GET.get('from_date'), '%Y-%m-%d').date()
+            to_date = datetime.datetime.strptime(request.GET.get('to_date'), '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            return self.response_error('Invalid date format', status=400)
+
+        ad_group_ids = request.GET.get('ad_group_ids')
+        if ad_group_ids:
+            ad_group_ids = ad_group_ids.split(',')
+
+        stats_generator = redshiftapi.internal_stats.content_ad_publishers.query_conversions(from_date, to_date, ad_group_ids)
+        path = etl.materialize_views.upload_csv("content_ad_publishers", from_date, uuid.uuid4().hex, lambda: stats_generator)
+
+        return self.response_ok({
+            'path': path,
+            'bucket': settings.S3_BUCKET_STATS,
+        })
+
+
 class AdGroupSourcesView(K1APIView):
 
     def get(self, request):
