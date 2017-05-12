@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.widgets').directive('zemGridBody', function (zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
+angular.module('one.widgets').directive('zemGridBody', function (zemGridConstants) { // eslint-disable-line max-len
 
     return {
         restrict: 'E',
@@ -78,39 +78,7 @@ angular.module('one.widgets').directive('zemGridBody', function (zemGridConstant
                 }
 
                 scope.ctrl.grid.body.visibleRows = visibleRows;
-                var renderedRows = visibleRows.slice(0, grid.body.ui.numOfRows);
-                graduallyPopulateRenderedRows(renderedRows);
-            }
-
-            function graduallyPopulateRenderedRows (renderedRows) {
-                // Add rows gradually (step by step in 50ms interval) to avoid browser freeze
-                // All rows will be hidden when added to scope.renderedRows collection
-                // After first draw, grid columns will be resized and newly added rows will become visible
-                renderedRows.forEach(function (row) { row.dummy = true; });
-                var step = zemGridConstants.gridBodyRendering.GRADUAL_POPULATE_STEP;
-
-                scope.state.renderedRows = renderedRows.slice(0, scope.state.renderedRows.length);
-                scope.state.renderedRows.forEach(function (row) { row.dummy = false; });
-
-                doLoadingStep();
-
-                var interval = setInterval(function () {
-                    if (renderedRows.length <= scope.state.renderedRows.length) {
-                        clearInterval(interval);
-                        return;
-                    }
-                    doLoadingStep ();
-                    scope.$digest();
-                }, 50);
-
-                function doLoadingStep () {
-                    scope.state.renderedRows = renderedRows.slice(0, scope.state.renderedRows.length + step);
-                    setTimeout(function () {
-                        scope.state.renderedRows.forEach(function (row) { row.dummy = false; });
-                        zemGridUIService.resizeGridColumns(scope.ctrl.grid);
-                        scope.$digest();
-                    }, 0);
-                }
+                scope.state.renderedRows =  visibleRows.slice(0, grid.body.ui.numOfRows);
             }
 
             function getTranslateYStyle (top) {
@@ -141,11 +109,11 @@ angular.module('one.widgets').directive('zemGridBody', function (zemGridConstant
 
 
             // Initialize dummy rows to optimize initial data rendering
-            // Delay 0.5s to allow quick page switch and before data is loaded (delayed for 1s)
-            setTimeout(initialLoad, 500);
+            // Delay 0.25s to allow quick page switch and before data is loaded (delayed for 1s)
+            setTimeout(initialLoad, 250);
             function initialLoad () {
                 if (scope.state.renderedRows.length > 0) return;
-                for (var idx = 0; idx < zemGridConstants.gridBodyRendering.GRADUAL_POPULATE_STEP; ++idx) {
+                for (var idx = 0; idx < zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS; ++idx) {
                     scope.state.renderedRows.push({index: idx});
                 }
                 scope.$digest();

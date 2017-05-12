@@ -18,10 +18,10 @@ angular.module('one.widgets').factory('zemGridEndpointApi', function ($q, $http,
 
             $http.post(url, {params: data}, httpConfig).success(function (response) {
                 var breakdowns = response.data;
-                breakdowns = breakdowns.map(function (breakdown) {
+                breakdowns = breakdowns ? breakdowns.map(function (breakdown) {
                     breakdown = zemGridEndpointApiConverter.convertBreakdownFromApi(config, breakdown, metaData);
                     return breakdown;
-                });
+                }) : [];
                 deferred.resolve(breakdowns);
             }).error(function (data) {
                 deferred.reject(data);

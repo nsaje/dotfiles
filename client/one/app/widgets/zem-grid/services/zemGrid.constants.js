@@ -7,7 +7,7 @@ angular.module('one.widgets').factory('zemGridConstants', function () {
         gridBodyRendering: {
             ROW_HEIGHT: 45,
             MIN_NUM_OF_ROWS_PER_PAGE: 25,
-            GRADUAL_POPULATE_STEP: 5,
+            NUM_OF_PRERENDERED_ROWS: 10,
         },
         gridColumnOrder: {
             NONE: 'none',
