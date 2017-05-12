@@ -20,6 +20,7 @@ from utils import redirector_helper, email_helper
 from utils import url_helper, request_signer, converters
 import redshiftapi.quickstats
 import redshiftapi.internal_stats.conversions
+import redshiftapi.internal_stats.content_ad_publishers
 import etl.materialize_views
 import dash.features.geolocation
 
@@ -613,7 +614,7 @@ class AdGroupContentAdPublisherStatsView(K1APIView):
         if ad_group_ids:
             ad_group_ids = ad_group_ids.split(',')
 
-        stats_generator = redshiftapi.internal_stats.content_ad_publishers.query_conversions(from_date, to_date, ad_group_ids)
+        stats_generator = redshiftapi.internal_stats.content_ad_publishers.query_content_ad_publishers(from_date, to_date, ad_group_ids)
         path = etl.materialize_views.upload_csv("content_ad_publishers", from_date, uuid.uuid4().hex, lambda: stats_generator)
 
         return self.response_ok({
