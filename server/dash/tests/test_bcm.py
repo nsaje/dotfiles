@@ -1964,6 +1964,22 @@ class BCMCommandTestCase(TestCase):
                                stderr=err)
         self.assertEqual(err.getvalue(), 'Could not free assets. Budget status is Active\n')
 
+    def test_transfer_budget(self):
+        c = create_credit(
+            account_id=2,
+            start_date=TODAY - datetime.timedelta(10),
+            end_date=TODAY + datetime.timedelta(10),
+            amount=1000,
+            license_fee=Decimal('0.1'),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+        self.assertEqual(models.BudgetLineItem.objects.get(pk=self.b1.pk).amount, 200)
+        self._call_command('bcm', 'transfer', 'budgets', str(self.b1.pk), '--no-confirm',
+                           '--transfer-amount', 100, '--transfer-credit', c.pk)
+        self.assertEqual(models.BudgetLineItem.objects.get(pk=self.b1.pk).amount, 100)
+        self.assertEqual(models.BudgetLineItem.objects.get(credit=c).amount, 100)
+
     def test_release_nonactive_budget(self):
         c = create_credit(
             account_id=2,

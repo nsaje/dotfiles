@@ -19,15 +19,17 @@ ACTION_DELETE = 'delete'
 ACTION_UPDATE = 'update'
 ACTION_RELEASE = 'release'
 ACTION_LIST = 'list'
+ACTION_TRANSFER = 'transfer'
 ACTIONS = (
     ACTION_DELETE,
     ACTION_UPDATE,
     ACTION_RELEASE,
     ACTION_LIST,
+    ACTION_TRANSFER,
 )
 VALID_ACTIONS = {
     MODEL_CREDITS: (ACTION_DELETE, ACTION_UPDATE, ACTION_LIST),
-    MODEL_BUDGETS: (ACTION_DELETE, ACTION_UPDATE, ACTION_RELEASE, ACTION_LIST),
+    MODEL_BUDGETS: (ACTION_DELETE, ACTION_UPDATE, ACTION_RELEASE, ACTION_LIST, ACTION_TRANSFER),
 }
 
 CONSTRAINTS = {
@@ -114,7 +116,7 @@ def _updates_to_sql(updates):
 
 class Command(BaseCommand):
     help = """Manage credits and budgets
-    Usage: ./manage.py bcm list|update|delete|release budgets|credits ids [options]
+    Usage: ./manage.py bcm list|update|delete|release|transfer budgets|credits ids [options]
 
     Options can be any fields that have to be updated.
 
@@ -125,6 +127,10 @@ class Command(BaseCommand):
       --agency - update credits that belong to specified agencies
     All constraint values have to be comma separated list of ids.
     Example: --campaigns 1,2,3
+
+    When transfering amounts from one credit to another, additional options are mandatory:
+      --transfer-credit
+      --transfer-amount
     """
 
     def add_arguments(self, parser):
@@ -137,6 +143,10 @@ class Command(BaseCommand):
         parser.add_argument('--campaigns', dest='campaigns', nargs='?', type=str)
         parser.add_argument('--accounts', dest='accounts', nargs='?', type=str)
         parser.add_argument('--agencies', dest='agencies', nargs='?', type=str)
+
+        parser.add_argument('--transfer-credit', dest='transfer_credit', nargs='?',
+                            type=int, help='Credit to which a transfer is made')
+        parser.add_argument('--transfer-amount', dest='transfer_amount', nargs='?', type=int, help='Amount to transfer')
 
         parser.add_argument('--no-confirm', dest='no_confirm', action='store_true')
         parser.add_argument('--skip-spend-validation', dest='skip_spend_validation',
@@ -228,6 +238,7 @@ class Command(BaseCommand):
             raise CommandError('Wrong fields.')
 
     def _handle_action(self, action, model, object_list, options):
+        need_confirm = not options.get('no_confirm')
         if action == ACTION_UPDATE:
             updates = self._get_updates(options)
             if not updates:
@@ -256,7 +267,7 @@ class Command(BaseCommand):
         elif action == ACTION_RELEASE:
             for obj in object_list:
                 if obj.freed_cc:
-                    if self._confirm('Budget was already released. Do you want to clear it?'):
+                    if need_confirm and self._confirm('Budget was already released. Do you want to clear it?'):
                         obj.freed_cc = 0
                 try:
                     obj.free_inactive_allocated_assets()
@@ -270,6 +281,30 @@ class Command(BaseCommand):
                     raise CommandError('Could not free assets. Budget status is {}'.format(
                         obj.state_text()
                     ))
+
+        elif action == ACTION_TRANSFER:
+            if len(object_list) != 1:
+                raise CommandError('You can transfer assets from one budget at a time only.')
+            delta = options['transfer_amount']
+            credit = dash.models.CreditLineItem.objects.get(pk=options['transfer_credit'])
+            confirm_msg = 'You are transfering ${} from selected budget to credit item {}. Are you sure?'.format(
+                delta, credit)
+            if need_confirm and not self._confirm(confirm_msg):
+                return
+            new_budgets = []
+            obj = object_list[0]
+            with transaction.atomic():
+                new_budgets.append(dash.models.BudgetLineItem.objects.create(
+                    amount=delta,
+                    credit_id=credit.id,
+                    start_date=obj.start_date,
+                    end_date=obj.end_date,
+                    campaign_id=obj.campaign_id,
+                ))
+                update_budgets([obj], {'amount': (obj.amount - delta)})
+            self._print('New budget: ')
+            self._print_object_list(action, model, new_budgets, list_only=True)
+            self._print('WARNING: Daily statements have to be reprocessed')
 
     def _get_objects(self, model, ids, options):
         constraints = {}
