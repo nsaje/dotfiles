@@ -684,6 +684,19 @@ class K1ApiTest(TestCase):
             u'account_id': 1,
             u'agency_id': 20,
             u'goal_types': [2, 5],
+            u'goals': [{
+                           u'campaign_id': 1,
+                           u'conversion_goal': None,
+                           u'id': 2,
+                           u'primary': True,
+                           u'type': 2,
+                       }, {
+                           u'campaign_id': 1,
+                           u'conversion_goal': None,
+                           u'id': 1,
+                           u'primary': False,
+                           u'type': 5,
+                       }],
             u'b1_sources_group': {
                 u'daily_budget': u'10.0000',
                 u'enabled': True,

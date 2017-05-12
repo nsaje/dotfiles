@@ -406,6 +406,7 @@ class AdGroupsView(K1APIView):
         ad_groups_settings, campaigns_settings_map, accounts_settings_map = \
             self._get_settings_maps(ad_group_ids, source_types, slugs)
         campaign_goal_types = self._get_campaign_goal_types(campaigns_settings_map.keys())
+        campaign_goals = self._get_campaign_goals(campaigns_settings_map.keys())
 
         ad_groups = []
         for ad_group_settings in ad_groups_settings:
@@ -446,6 +447,7 @@ class AdGroupsView(K1APIView):
                 'account_id': ad_group.campaign.account.id,
                 'agency_id': ad_group.campaign.account.agency_id,
                 'goal_types': campaign_goal_types[ad_group.campaign.id],
+                'goals': campaign_goals[ad_group.campaign.id],
                 'dayparting': ad_group_settings.dayparting,
                 'max_cpm': ad_group_settings.max_cpm,
                 'b1_sources_group': {
@@ -493,6 +495,21 @@ class AdGroupsView(K1APIView):
         for cid in campaign_goals.keys():
             campaign_goals[cid] = [tup[1] for tup in sorted(campaign_goals[cid], reverse=True)]
         return campaign_goals
+
+    @staticmethod
+    def _get_campaign_goals(campaign_ids):
+        '''
+        returns a map campaign_id:[goals_dict,...]
+        the first element in the list is the type of the primary goal
+        '''
+        campaign_goals = {cid: [] for cid in campaign_ids}
+        for goal in dash.models.CampaignGoal.objects.filter(campaign__in=campaign_ids):
+            campaign_goals[goal.campaign_id].append(goal)
+
+        campaign_goals_dicts = {}
+        for cid, goals in campaign_goals.iteritems():
+            campaign_goals_dicts[cid] = [goal.to_dict() for goal in sorted(goals, key=lambda x: x.primary, reverse=True)]
+        return campaign_goals_dicts
 
     @staticmethod
     def _get_settings_maps(ad_group_ids, source_types, slugs):
