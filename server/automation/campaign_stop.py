@@ -1681,7 +1681,9 @@ def _send_campaign_stop_notification_email(campaign):
     args = {
         'campaign': campaign,
         'account': campaign.account,
-        'link_url': url_helper.get_full_z1_url('/campaigns/{}/budget'.format(campaign.pk)),
+        'link_url': url_helper.get_full_z1_url(
+            '/v2/analytics/campaign/{}?settings&settingsScrollTo=zemCampaignBudgetsSettings'.format(campaign.pk)
+        ),
     }
     subject, body, _ = email_helper.format_email(
         dash.constants.EmailTemplateType.CAMPAIGN_LANDING_MODE_SWITCH,
@@ -1694,7 +1696,9 @@ def _send_depleting_budget_notification_email(campaign):
     args = {
         'campaign': campaign,
         'account': campaign.account,
-        'link_url': url_helper.get_full_z1_url('/campaigns/{}/budget'.format(campaign.pk)),
+        'link_url': url_helper.get_full_z1_url(
+            '/v2/analytics/campaign/{}?settings&settingsScrollTo=zemCampaignBudgetsSettings'.format(campaign.pk)
+        ),
     }
 
     subject, body, _ = email_helper.format_email(

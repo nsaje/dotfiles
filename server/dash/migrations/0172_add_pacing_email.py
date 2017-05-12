@@ -16,7 +16,7 @@ def load_data(apps, schema_editor):
 
 your campaign {campaign.name} ({account.name}) is {alert} with a rate of {pacing}%.
 
-Please consider adjusting daily spend caps on ad group source settings. Visit https://one.zemanta.com/campaigns/{campaign.id}/ad_groups to get a list of all active ad groups.
+Please consider adjusting daily spend caps on ad group source settings. Visit https://one.zemanta.com/v2/analytics/campaign/{campaign.id} to get a list of all active ad groups.
 
 Yours truly,
 Zemanta'''

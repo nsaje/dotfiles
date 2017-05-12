@@ -75,7 +75,7 @@ def _prepare_table_rows(date):
     for account in dash.models.Account.objects.filter(pk__in=active_account_ids):
         rows.append(TableRow([
             TableCell(Url(
-                'https://one.zemanta.com/accounts/{}/campaigns'.format(account.pk),
+                'https://one.zemanta.com/v2/analytics/campaign/{}'.format(account.pk),
                 account.get_long_name()
             ).as_html()),
             TableCell(blacklist.get(account.pk, 0)),

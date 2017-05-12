@@ -101,7 +101,7 @@ class Command(utils.command_helpers.ExceptionCommand):
                 campaign.get_long_name(),
                 base,
                 new,
-                'https://one.zemanta.com/campaigns/{}/ad_groups?page=1'.format(campaign.pk)
+                'https://one.zemanta.com/v2/analytics/campaign/{}'.format(campaign.pk)
             )
             self._print(text)
             self.email_body += text + '\n'
@@ -119,7 +119,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             self._print('- {} {}'.format(account.name, account.pk))
             self.email_body += u' - {} {}\n'.format(
                 account.get_long_name(),
-                'https://one.zemanta.com/accounts/{}/credit'.format(account.pk),
+                'https://one.zemanta.com/v2/credit/account/{}'.format(account.pk),
             )
         self.email_body += '\n'
 
@@ -138,7 +138,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             self._print(u'- {} {}'.format(ad_group.name, ad_group.pk))
             self.email_body += u' - {} {}\n'.format(
                 ad_group.name,
-                u'https://one.zemanta.com/ad_groups/{}/ads'.format(ad_group.pk)
+                u'https://one.zemanta.com/v2/analytics/adgroup/{}'.format(ad_group.pk)
             )
         self.email_body += '\n'
 
@@ -160,7 +160,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             self._print(u'- {} {}'.format(ad_group.name, ad_group.pk))
             self.email_body += u' - {} {}\n'.format(
                 ad_group.name,
-                u'https://one.zemanta.com/ad_groups/{}/ads'.format(ad_group.pk)
+                u'https://one.zemanta.com/v2/analytics/adgroup/{}'.format(ad_group.pk)
             )
         self.email_body += '\n'
 
@@ -176,7 +176,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             self._print(u'- {} {}'.format(ad_group.name, ad_group.pk))
             self.email_body += u' - {} {}\n'.format(
                 ad_group.name,
-                u'https://one.zemanta.com/ad_groups/{}/ads'.format(ad_group.pk)
+                u'https://one.zemanta.com/v2/analytics/adgroup/{}'.format(ad_group.pk)
             )
         self.email_body += '\n'
 
@@ -190,7 +190,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         for campaign in undefined_iab_running_campaigns:
             text = u' - {}: {}'.format(
                 campaign.get_long_name(),
-                u'https://one.zemanta.com/campaigns/{}/ad_groups?page=1'.format(campaign.pk)
+                u'https://one.zemanta.com/v2/analytics/campaign/{}'.format(campaign.pk)
             )
             self._print(text)
             self.email_body += text + u'\n'
@@ -243,7 +243,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             text = ' - {} ({}%): {}'.format(
                 campaign.get_long_name(),
                 int(pacing),
-                'https://one.zemanta.com/campaigns/{}/ad_groups?page=1'.format(campaign.pk)
+                'https://one.zemanta.com/v2/analytics/campaign/{}'.format(campaign.pk)
             )
             self._print(text)
             self.email_body += text + '\n'
@@ -253,7 +253,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             text = ' - {} ({}%): {}'.format(
                 campaign.get_long_name(),
                 int(pacing),
-                'https://one.zemanta.com/campaigns/{}/ad_groups?page=1'.format(campaign.pk)
+                'https://one.zemanta.com/v2/analytics/campaign/{}'.format(campaign.pk)
             )
             self._print(text)
             self.email_body += text + '\n'

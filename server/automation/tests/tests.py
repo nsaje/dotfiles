@@ -67,7 +67,7 @@ class BudgetDepletionTestCase(test.TestCase):
 
         mock.assert_called_with(
             campaign,
-            'https://one.zemanta.com/campaigns/1/budget',
+            'https://one.zemanta.com/v2/analytics/campaign/1?settings&settingsScrollTo=zemCampaignBudgetsSettings',
             ['em@il.com', 'accountmanager@test.com'],
             100, 150,
             decimal.Decimal('60.0000')

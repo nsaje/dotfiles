@@ -172,7 +172,7 @@ def send_ad_group_notification_email(ad_group, request, changes_text):
     if not should_send_notification_mail(ad_group.campaign, request.user, request):
         return
 
-    link_url = request.build_absolute_uri('/ad_groups/{}/history'.format(ad_group.pk))
+    link_url = request.build_absolute_uri('/v2/analytics/adgroup/{}?history'.format(ad_group.pk))
     link_url = link_url.replace('http://', 'https://')
     args = {
         'user': request.user,
@@ -196,7 +196,7 @@ def send_campaign_notification_email(campaign, request, changes_text):
     if not should_send_notification_mail(campaign, request.user, request):
         return
 
-    link_url = request.build_absolute_uri('/campaigns/{}/history'.format(campaign.pk))
+    link_url = request.build_absolute_uri('/v2/analytics/campaign/{}?history'.format(campaign.pk))
     link_url = link_url.replace('http://', 'https://')
 
     args = {
@@ -220,7 +220,7 @@ def send_account_notification_email(account, request, changes_text):
     if not should_send_account_notification_mail(account, request.user, request):
         return
 
-    link_url = request.build_absolute_uri('/accounts/{}/history'.format(account.pk))
+    link_url = request.build_absolute_uri('/v2/analytics/account/{}?history'.format(account.pk))
     link_url = link_url.replace('http://', 'https://')
 
     args = {
@@ -240,7 +240,7 @@ def send_budget_notification_email(campaign, request, changes_text):
     if not should_send_notification_mail(campaign, request.user, request):
         return
 
-    link_url = request.build_absolute_uri('/campaigns/{}/history'.format(campaign.pk))
+    link_url = request.build_absolute_uri('/v2/analytics/campaign/{}?history'.format(campaign.pk))
     link_url = link_url.replace('http://', 'https://')
     args = {
         'user': request.user,
@@ -261,7 +261,7 @@ def send_budget_notification_email(campaign, request, changes_text):
 def send_account_pixel_notification(account, request):
     if not should_send_account_notification_mail(account, request.user, request):
         return
-    link_url = request.build_absolute_uri('/accounts/{}/settings'.format(account.pk))
+    link_url = request.build_absolute_uri('/v2/analytics/account/{}?settings'.format(account.pk))
     link_url = link_url.replace('http://', 'https://')
     args = {
         'user': request.user,
@@ -638,7 +638,7 @@ def send_depleting_credits_email(user, accounts):
     for account in accounts:
         accounts_list += ' - {} {}\n'.format(
             account.get_long_name(),
-            'https://one.zemanta.com/accounts/{}/credit'.format(account.pk)
+            'https://one.zemanta.com/v2/credit/account/{}'.format(account.pk)
         )
     subject, plain_body, recipients = format_email(
         dash.constants.EmailTemplateType.DEPLETING_CREDITS,

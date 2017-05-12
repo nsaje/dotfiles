@@ -4,23 +4,15 @@ from automation import campaign_stop
 from dash import constants
 
 
-def _get_campaign_link(request, campaign, tab, query_string=None):
-        link = '/campaigns/{}/{}'.format(campaign.id, tab)
-        if query_string:
-            link += '?' + query_string
+def _get_campaign_budget_link(request, campaign):
+        query_string = 'settings&settingsScrollTo=zemCampaignBudgetsSettings'
+        link = '/v2/analytics/campaign/{}?{}'.format(campaign.id, query_string)
         return request.build_absolute_uri(link)
 
 
-def _get_campaign_budget_link(request, campaign):
-        if request.user.has_perm('zemauth.can_see_new_budgets'):
-            query_string = 'settings'
-            query_string += '&' + 'settingsScrollTo=zemCampaignBudgetsSettings'
-            return _get_campaign_link(request, campaign, 'ad_groups', query_string)
-        return _get_campaign_link(request, campaign, 'budget')
-
-
 def _get_campaign_ad_groups_link(request, campaign):
-        return _get_campaign_link(request, campaign, 'ad_groups')
+        link = '/v2/analytics/campaign/{}'.format(campaign.id)
+        return request.build_absolute_uri(link)
 
 
 def _construct_depleting_items(request, campaigns):

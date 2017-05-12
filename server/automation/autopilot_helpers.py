@@ -160,7 +160,7 @@ def send_autopilot_changes_email(campaign, emails, changes_data):
     args = {
         'campaign': campaign,
         'account': campaign.account,
-        'link_url': url_helper.get_full_z1_url('/campaigns/{}/'.format(campaign.id)),
+        'link_url': url_helper.get_full_z1_url('/v2/analytics/campaign/{}'.format(campaign.id)),
         'changes': ''.join(changes_text)
     }
     subject, body, _ = format_email(dash.constants.EmailTemplateType.AUTOPILOT_AD_GROUP_CHANGE, **args)
@@ -205,7 +205,7 @@ def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
     args = {
         'campaign': campaign,
         'account': campaign.account,
-        'link_url': url_helper.get_full_z1_url('/campaigns/{}/'.format(campaign.id)),
+        'link_url': url_helper.get_full_z1_url('/v2/analytics/campaign/{}'.format(campaign.id)),
         'changes': ''.join(changes_text)
     }
     subject, body, _ = format_email(dash.constants.EmailTemplateType.AUTOPILOT_AD_GROUP_BUDGET_INIT, **args)
@@ -242,7 +242,7 @@ def _get_email_adgroup_text(adgroup):
 
 AdGroup: {adg_name} ({adg_url}):'''.format(
         adg_name=adgroup.name,
-        adg_url=url_helper.get_full_z1_url('/ad_groups/{}/sources/'.format(adgroup.id)),
+        adg_url=url_helper.get_full_z1_url('/v2/analytics/adgroup/{}/sources'.format(adgroup.id)),
     )
 
 

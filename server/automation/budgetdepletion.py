@@ -46,7 +46,9 @@ def notify_campaign_with_depleting_budget(campaign, available_budget, yesterdays
         emails.append(sales_rep.email)
 
     total_daily_budget = automation.helpers.get_total_daily_budget_amount(campaign)
-    campaign_url = url_helper.get_full_z1_url('/campaigns/{}/budget'.format(campaign.pk))
+    campaign_url = url_helper.get_full_z1_url(
+        '/v2/analytics/campaign/{}?settings&settingsScrollTo=zemCampaignBudgetsSettings'.format(campaign.pk)
+    )
 
     _send_depleting_budget_notification_email(
         campaign,
@@ -200,7 +202,9 @@ def _notify_depleted_budget_campaign_stopped(campaign, available_budget, yesterd
     if sales_rep is not None:
         emails.append(sales_rep.email)
 
-    campaign_url = url_helper.get_full_z1_url('/campaigns/{}/budget'.format(campaign.pk))
+    campaign_url = url_helper.get_full_z1_url(
+        '/v2/analytics/campaign/{}?settings&settingsScrollTo=zemCampaignBudgetsSettings'.format(campaign.pk)
+    )
     _send_campaign_stopped_notification_email(
         campaign,
         campaign_url,

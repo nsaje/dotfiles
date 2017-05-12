@@ -101,14 +101,14 @@ class ManagementReportTestCase(test.TestCase):
         html = analytics.management_report.get_daily_report_html(
             today
         )
-        self.assertIn('<li><a href="https://one.zemanta.com/accounts/1/campaigns">1 - test account 1 - $5000 - ', html)
-        self.assertIn('<li><a href="https://one.zemanta.com/campaigns/1/ad_groups">$5000', html)
+        self.assertIn('<li><a href="https://one.zemanta.com/v2/analytics/account/1">1 - test account 1 - $5000 - ', html)
+        self.assertIn('<li><a href="https://one.zemanta.com/v2/analytics/campaign/1">$5000', html)
 
         html = analytics.management_report.get_daily_report_html(
             today + datetime.timedelta(1)
         )
-        self.assertNotIn('<li><a href="https://one.zemanta.com/accounts/1/campaigns">1 - test account 1 - $5000', html)
-        self.assertNotIn('<li><a href="https://one.zemanta.com/accounts/1/campaigns">$5000', html)
+        self.assertNotIn('<li><a href="https://one.zemanta.com/v2/anlaytics/account/1">1 - test account 1 - $5000', html)
+        self.assertNotIn('<li><a href="https://one.zemanta.com/v2/anlaytics/account/1">$5000', html)
 
     def test_daily_account_campaign_lists(self):
         class Request(object):
@@ -130,8 +130,8 @@ class ManagementReportTestCase(test.TestCase):
         )
 
         self.assertIn(
-            '<li><a href="https://one.zemanta.com/campaigns/3/ad_groups">Account Account 2, Campaign Campaign 2</a></li>', html)
-        self.assertIn('<li><a href="https://one.zemanta.com/accounts/2/campaigns">Account Account 2</a></li>', html)
+            '<li><a href="https://one.zemanta.com/v2/analytics/campaign/3">Account Account 2, Campaign Campaign 2</a></li>', html)
+        self.assertIn('<li><a href="https://one.zemanta.com/v2/analytics/account/2">Account Account 2</a></li>', html)
 
     def test_fixture_context(self):
         context = analytics.management_report.ReportContext(self.today)

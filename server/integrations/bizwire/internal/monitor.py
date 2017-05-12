@@ -81,7 +81,7 @@ def monitor_remaining_budget():
     subject = '[BIZWIRE] Campaign is running out of budget'
     body = '''Hi,
 
-Businesswire campaign is running out of budget. Configure any additional budgets: https://one.zemanta.com/campaigns/{}/budget'''.format(config.AUTOMATION_CAMPAIGN)  # noqa
+Businesswire campaign is running out of budget. Configure any additional budgets: https://one.zemanta.com/v2/analytics/campaign/{}?settings&settingsScrollTo=zemCampaignBudgetsSettings'''.format(config.AUTOMATION_CAMPAIGN)  # noqa
     email_helper.send_notification_mail(emails, subject, body)
 
 

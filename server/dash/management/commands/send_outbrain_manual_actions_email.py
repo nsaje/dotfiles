@@ -95,7 +95,7 @@ def get_campaign_name(ad_group_source):
         name=ad_group_source.get_external_name(),
         marketer_name=get_outbrain_marketer_name(ad_group_source),
         one_dash_url=get_full_z1_url(
-            '/ad_groups/{}/sources'.format(ad_group_source.ad_group_id)
+            '/v2/analytics/adgroup/{}/sources'.format(ad_group_source.ad_group_id)
         ),
         supply_dash_url=get_full_z1_url(
             ad_group_source.get_supply_dash_url()

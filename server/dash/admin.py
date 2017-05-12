@@ -540,7 +540,7 @@ class CampaignAdmin(admin.ModelAdmin):
     settings_.allow_tags = True
 
     def view_on_site(self, obj):
-        return '/campaigns/{}/ad_groups'.format(obj.id)
+        return '/v2/analytics/campaign/{}'.format(obj.id)
 
 
 class SourceAdmin(admin.ModelAdmin):
@@ -754,7 +754,7 @@ class AdGroupAdmin(admin.ModelAdmin):
     )
 
     def view_on_site(self, obj):
-        return '/ad_groups/{}/ads'.format(obj.id)
+        return '/v2/analytics/adgroup/{}'.format(obj.id)
 
     def is_archived_(self, obj):
         try:

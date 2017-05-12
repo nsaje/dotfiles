@@ -93,7 +93,7 @@ class EmailHelperTestCase(TestCase):
         email_helper.send_ad_group_notification_email(ad_group, self.request, 'Something changed, yo')
 
         subject = 'Settings change - ad group , campaign , account '
-        body = 'Hi account manager of ad group \n\nWe\'d like to notify you that test@user.com has made the following change in the settings of the ad group , campaign , account :\n\n- Something changed, yo.\n\nPlease check https://testserver/ad_groups/8/history for further details.\n\nYours truly,\nZemanta\n    '
+        body = 'Hi account manager of ad group \n\nWe\'d like to notify you that test@user.com has made the following change in the settings of the ad group , campaign , account :\n\n- Something changed, yo.\n\nPlease check https://testserver/v2/analytics/adgroup/8?history for further details.\n\nYours truly,\nZemanta\n    '
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, subject)
@@ -154,7 +154,7 @@ class EmailHelperTestCase(TestCase):
         email_helper.send_campaign_notification_email(campaign, self.request, 'Something changed, yo')
 
         subject = 'Settings change - campaign , account '
-        body = 'Hi account manager of campaign \n\nWe\'d like to notify you that test@user.com has made the following change in the settings of campaign , account :\n\n- Something changed, yo.\n\nPlease check https://testserver/campaigns/48/history for further details.\n\nYours truly,\nZemanta\n    '
+        body = 'Hi account manager of campaign \n\nWe\'d like to notify you that test@user.com has made the following change in the settings of campaign , account :\n\n- Something changed, yo.\n\nPlease check https://testserver/v2/analytics/campaign/48?history for further details.\n\nYours truly,\nZemanta\n    '
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, subject)
@@ -181,7 +181,7 @@ class EmailHelperTestCase(TestCase):
         email_helper.send_account_notification_email(account, self.request, 'Something changed, yo')
 
         subject = 'Settings change - account '
-        body = 'Hi account manager of account \n\nWe\'d like to notify you that test@user.com has made the following change in the settings of the account :\n\n- Something changed, yo.\n\nPlease check https://testserver/accounts/{}/history for further details.\n\nYours truly,\nZemanta\n    '.format(
+        body = 'Hi account manager of account \n\nWe\'d like to notify you that test@user.com has made the following change in the settings of the account :\n\n- Something changed, yo.\n\nPlease check https://testserver/v2/analytics/account/{}?history for further details.\n\nYours truly,\nZemanta\n    '.format(
             account.pk)
 
         self.assertEqual(len(mail.outbox), 1)
@@ -293,7 +293,7 @@ Zemanta
 
 your campaign Test campaign (Test account) is underpacing with a rate of 15.12%.
 
-Please consider adjusting daily spend caps on ad group source settings. Visit https://one.zemanta.com/campaigns/55/ad_groups to get a list of all active ad groups.
+Please consider adjusting daily spend caps on ad group source settings. Visit https://one.zemanta.com/v2/analytics/campaign/55 to get a list of all active ad groups.
 
 Yours truly,
 Zemanta''')
@@ -322,7 +322,7 @@ Zemanta''')
 
 your campaign Test campaign (Test account) is overpacing with a rate of 155.12%.
 
-Please consider adjusting daily spend caps on ad group source settings. Visit https://one.zemanta.com/campaigns/55/ad_groups to get a list of all active ad groups.
+Please consider adjusting daily spend caps on ad group source settings. Visit https://one.zemanta.com/v2/analytics/campaign/55 to get a list of all active ad groups.
 
 Yours truly,
 Zemanta''')
@@ -351,7 +351,7 @@ Zemanta''')
         email_helper.send_budget_notification_email(campaign, self.request, 'Something changed, yo')
 
         subject = 'Settings change - campaign , account '
-        body = 'Hi account manager of campaign \n\nWe\'d like to notify you that test@user.com has made the following change in the budget of campaign , account :\n\n- Something changed, yo.\n\nPlease check https://testserver/campaigns/48/history for further details.\n\nYours truly,\nZemanta\n    '
+        body = 'Hi account manager of campaign \n\nWe\'d like to notify you that test@user.com has made the following change in the budget of campaign , account :\n\n- Something changed, yo.\n\nPlease check https://testserver/v2/analytics/campaign/48?history for further details.\n\nYours truly,\nZemanta\n    '
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, subject)
