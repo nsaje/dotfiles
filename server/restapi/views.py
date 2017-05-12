@@ -39,7 +39,7 @@ import dash.features.geolocation
 logger = logging.getLogger(__name__)
 
 
-REALTIME_STATS_AGENCIES = [55]
+REALTIME_STATS_AGENCIES = [55, 78]
 
 
 class RESTAPIJSONRenderer(JSONRenderer):
