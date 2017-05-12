@@ -79,3 +79,16 @@ source '/home/nsaje/Downloads/google-cloud-sdk/path.bash.inc'
 
 # The next line enables shell command completion for gcloud.
 source '/home/nsaje/Downloads/google-cloud-sdk/completion.bash.inc'
+
+__git ()
+{
+  cmd=$1
+  shift
+  extra=""
+  if [ "$cmd" == "for-each-ref" ]; then
+    extra="--sort=-committerdate"
+  fi
+  
+  git ${__git_C_args:+"${__git_C_args[@]}"} \
+      ${__git_dir:+--git-dir="$__git_dir"} "$cmd" "$extra" "$@" 2>/dev/null
+}

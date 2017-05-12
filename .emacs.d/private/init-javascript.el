@@ -47,7 +47,7 @@
   (unless (featurep 'js-comint) (require 'js-comint)))
 
 (defun mo-js-mode-hook ()
-  (when (and (not (is-buffer-file-temp)) (not (derived-mode-p 'js2-mode)))
+  (when (and (not (derived-mode-p 'js2-mode)))
     (my-common-js-setup)
     (setq imenu-create-index-function 'mo-js-imenu-make-index)
     (flymake-mode 1)))
@@ -261,7 +261,6 @@ Merge RLT and EXTRA-RLT, items in RLT has *higher* priority."
 ;; }}
 
 (defun my-js2-mode-setup()
-  (unless (is-buffer-file-temp)
     (my-common-js-setup)
     ;; if use node.js we need nice output
     (js2-imenu-extras-mode)
@@ -273,7 +272,7 @@ Merge RLT and EXTRA-RLT, items in RLT has *higher* priority."
     ;; call js-doc commands through `counsel-M-x'!
 
     ;; @see https://github.com/mooz/js2-mode/issues/350
-    (setq forward-sexp-function nil)))
+    (setq forward-sexp-function nil))
 
 (add-hook 'js2-mode-hook 'my-js2-mode-setup)
 

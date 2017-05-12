@@ -141,7 +141,7 @@ filetype plugin on
 " theme
 syntax enable
 set background=light
-"colorscheme solarized
+colorscheme solarized
 
 
 " ---------------------------------------------------------------------------------

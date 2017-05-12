@@ -36,6 +36,7 @@ values."
      yaml
      rust
      python
+     csharp
      sql
      go
      gtags
@@ -45,8 +46,9 @@ values."
      ;; <M-m f e R> (Emacs style) to install them.
      ;; ----------------------------------------------------------------
      helm
-     auto-completion
-     ;; company
+     (auto-completion :variables
+                      auto-completion-enable-snippets-in-popup t
+                      auto-completion-enable-help-tooltip t)
      better-defaults
      emacs-lisp
      git
@@ -68,7 +70,11 @@ values."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '(simpleclip flyspell-lazy)
+   dotspacemacs-additional-packages '(simpleclip
+                                      flyspell-lazy
+                                      github-theme
+                                      solarized-theme
+                                      js-comint)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
@@ -141,12 +147,11 @@ values."
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press <SPC> T n to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
-   dotspacemacs-themes '(leuven
-                         solarized-light
-                         material-light
-                         zenburn
-                         ;; spacemacs-dark
-                         ;; spacemacs-light
+   dotspacemacs-themes '(solarized-light
+                         leuven
+                         github
+                         flatui
+                         spacemacs-light
                          )
    ;; If non nil the cursor color matches the state color in GUI Emacs.
    dotspacemacs-colorize-cursor-according-to-state nil
@@ -269,7 +274,7 @@ values."
    ;; If non nil line numbers are turned on in all `prog-mode' and `text-mode'
    ;; derivatives. If set to `relative', also turns on relative line numbers.
    ;; (default nil)
-   dotspacemacs-line-numbers nil
+   dotspacemacs-line-numbers t
    ;; Code folding method. Possible values are `evil' and `origami'.
    ;; (default 'evil)
    dotspacemacs-folding-method 'evil
@@ -326,6 +331,18 @@ This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
     (global-linum-mode)
+    (global-company-mode t)
+
+    ;; window control bindings for special buffers
+    (with-eval-after-load 'neotree
+      (define-key neotree-mode-map (kbd "C-w l") 'evil-window-right)
+      (define-key neotree-mode-map (kbd "C-w C-w") 'evil-window-next)
+      (define-key neotree-mode-map (kbd "C-w q") 'delete-window))
+    (with-eval-after-load 'imenu-list
+      (define-key imenu-list-major-mode-map (kbd "C-w h") 'evil-window-left)
+      (define-key imenu-list-major-mode-map (kbd "C-w C-w") 'evil-window-next)
+      (define-key imenu-list-major-mode-map (kbd "C-w q") 'delete-window))
+
     ;; (with-eval-after-load 'org-agenda
     ;;   (require 'org-projectile)
     ;;   (push "~/org/TODOs.org" org-agenda-files))
@@ -338,50 +355,6 @@ you should place your code here."
     (remove-hook 'prog-mode-hook #'smartparens-mode)
     (spacemacs/toggle-smartparens-globally-off)
     (define-key evil-window-map "q" 'delete-window)
-
-    ; mu4e
-    ;;location of my maildir
-    ;; (setq mu4e-maildir (expand-file-name "~/mbsync"))
-    ;; (setq mu4e-enable-notifications t)
-
-    ;; reply/forward citation
-    ;; (setq message-citation-line-format "\n\nOn %a %d %b %Y at %R, %f wrote:\n")
-    ;; (setq message-citation-line-function 'message-insert-formatted-citation-line)
-
-    ;; (with-eval-after-load 'mu4e-alert
-    ;;   ;; Enable Desktop notifications
-    ;;   (mu4e-alert-set-default-style 'notifications)) ; For linux
-    ;; (setq mu4e-alert-interesting-mail-query "flag:unread AND maildir:/INBOX"
-    ;;       mu4e-enable-mode-line t)
-    ;; ;;rename files when moving
-    ;; ;;NEEDED FOR MBSYNC
-    ;; (setq mu4e-change-filenames-when-moving t)
-    ;; (defun my-render-html-message ()
-    ;;   (let ((dom (libxml-parse-html-region (point-min) (point-max))))
-    ;;     (erase-buffer)
-    ;;     (shr-insert-document dom)
-    ;;     (goto-char (point-min))))
-    ;; (setq mu4e-html2text-command 'my-render-html-message)
-    ;; (setq mu4e-get-mail-command "mbsync gmail"
-    ;;       mu4e-update-interval 30)
-    ;; (setq mu4e-sent-messages-behavior 'delete)
-    ;; (setq mu4e-compose-format-flowed t)
-    ;; ;; (add-hook 'mu4e-compose-mode-hook
-    ;; ;;   (lambda ()
-    ;; ;;     (use-hard-newlines t 'guess)))
-    ;; (setq mu4e-compose-signature-auto-include nil)
-    ;; (setq
-    ;;   user-mail-address "nejc.saje@zemanta.com"
-    ;;   user-full-name  "Nejc Saje"
-    ;;   mu4e-compose-signature nil
-    ;;   )
-    ;; (setq message-send-mail-function 'smtpmail-send-it
-    ;;     smtpmail-stream-type 'starttls
-    ;;     smtpmail-default-smtp-server "smtp.gmail.com"
-    ;;     smtpmail-smtp-server "smtp.gmail.com"
-    ;;     smtpmail-smtp-service 587)
-    ;; ;; don't keep message buffers around
-    ;; (setq message-kill-buffer-on-exit t)
 
     (setq-default frame-title-format "Spacemacs - %b (%f)")
 
@@ -425,19 +398,20 @@ you should place your code here."
                   "* %? :NOTE:\n")
                   ("m" "Meeting" entry (file+headline "~/Dropbox/org/TODOs.org" "Meetings")
                   "* MEETING with %? :MEETING:\n%U\n\n"))))
+    (global-set-key (kbd "<f12>") 'org-agenda)
     (setq org-mu4e-link-query-in-headers-mode nil)
 
     ;; persp keybindings
-    (define-key window-numbering-keymap "\M-0" 'spacemacs/persp-switch-to-0)
-    (define-key window-numbering-keymap "\M-1" 'spacemacs/persp-switch-to-1)
-    (define-key window-numbering-keymap "\M-2" 'spacemacs/persp-switch-to-2)
-    (define-key window-numbering-keymap "\M-3" 'spacemacs/persp-switch-to-3)
-    (define-key window-numbering-keymap "\M-4" 'spacemacs/persp-switch-to-4)
-    (define-key window-numbering-keymap "\M-5" 'spacemacs/persp-switch-to-5)
-    (define-key window-numbering-keymap "\M-6" 'spacemacs/persp-switch-to-6)
-    (define-key window-numbering-keymap "\M-7" 'spacemacs/persp-switch-to-7)
-    (define-key window-numbering-keymap "\M-8" 'spacemacs/persp-switch-to-8)
-    (define-key window-numbering-keymap "\M-9" 'spacemacs/persp-switch-to-9)
+    (define-key winum-keymap "\M-0" 'spacemacs/persp-switch-to-0)
+    (define-key winum-keymap "\M-1" 'spacemacs/persp-switch-to-1)
+    (define-key winum-keymap "\M-2" 'spacemacs/persp-switch-to-2)
+    (define-key winum-keymap "\M-3" 'spacemacs/persp-switch-to-3)
+    (define-key winum-keymap "\M-4" 'spacemacs/persp-switch-to-4)
+    (define-key winum-keymap "\M-5" 'spacemacs/persp-switch-to-5)
+    (define-key winum-keymap "\M-6" 'spacemacs/persp-switch-to-6)
+    (define-key winum-keymap "\M-7" 'spacemacs/persp-switch-to-7)
+    (define-key winum-keymap "\M-8" 'spacemacs/persp-switch-to-8)
+    (define-key winum-keymap "\M-9" 'spacemacs/persp-switch-to-9)
 
     ;; display which function we're in
     (which-function-mode)
@@ -446,8 +420,10 @@ you should place your code here."
     (with-eval-after-load 'projectile
       (push '("html" "js") projectile-other-file-alist) ;; switch from html -> js
       (push '("js" "html") projectile-other-file-alist) ;; switch from js -> html
-      (push '("component.js" "component.html") projectile-other-file-alist) ;; switch from js -> html
-      (push '("component.html" "component.js") projectile-other-file-alist) ;; switch from html -> js
+      (push '("component.js" "component.html" "state.js") projectile-other-file-alist)
+      (push '("component.html" "component.js" "state.js") projectile-other-file-alist)
+      (push '("state.js" "state.spec.js" "component.js" "component.html") projectile-other-file-alist)
+      (push '("state.spec.js" "state.js") projectile-other-file-alist)
      )
 
     ;; (push "dist" 'projectile-globally-ignored-directories)
@@ -459,7 +435,16 @@ you should place your code here."
 
     ; JS
     (setq-default js2-basic-offset 4)
-    (load (expand-file-name "private/init-javascript.el" user-emacs-directory))
+    (with-eval-after-load 'js2-mode
+      (load (expand-file-name "private/init-javascript.el" user-emacs-directory)))
+
+    ; switch buffers
+    (global-set-key (kbd "C-l") 'next-buffer)
+    (global-set-key (kbd "C-h") 'previous-buffer)
+
+    ; neotree hidden
+    (setq neo-hidden-regexp-list '("^\\." "\\.cs\\.meta$" "\\.pyc$" "~$" "^#.*#$" "\\.elc$" "__pycache__"))
+    (setq projectile-switch-project-action 'neotree-projectile-action)
 )
 
 ;; Do not write anything past this comment. This is where Emacs will
@@ -469,7 +454,8 @@ you should place your code here."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(solarized-high-contrast-mode-line nil)
+ '(solarized-use-more-italic t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
