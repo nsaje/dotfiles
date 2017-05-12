@@ -405,7 +405,7 @@ class AddCandidateTestCase(TestCase):
 
     def test_add_candidate(self):
         ad_group = models.AdGroup.objects.get(id=1)
-        new_batch = contentupload.upload.create_empty_batch(None, ad_group.id, 'test')
+        new_batch = models.UploadBatch.objects.create(None, 'test', ad_group.id)
 
         candidate = contentupload.upload.add_candidate(new_batch)
         self.assertEqual(ad_group.id, candidate.ad_group_id)
@@ -434,7 +434,7 @@ class AddCandidateTestCase(TestCase):
 
     def test_with_defaults(self):
         ad_group = models.AdGroup.objects.get(id=1)
-        new_batch = contentupload.upload.create_empty_batch(None, ad_group.id, 'test')
+        new_batch = models.UploadBatch.objects.create(None, 'test', ad_group.id)
         new_batch.default_image_crop = 'abc'
         new_batch.default_display_url = 'example.com'
         new_batch.default_brand_name = 'Example'
@@ -465,22 +465,6 @@ class AddCandidateTestCase(TestCase):
             'url_status': constants.AsyncUploadJobStatus.PENDING_START,
             'hosted_image_url': None,
         }, candidate.to_dict())
-
-
-class CreateEmptyBatchTestCase(TestCase):
-    fixtures = ['test_upload.yaml']
-
-    def test_create_empty_batch(self):
-        ad_group_id = 1
-        empty_batch = contentupload.upload.create_empty_batch(None, ad_group_id, 'test')
-        self.assertEqual(ad_group_id, empty_batch.ad_group_id)
-        self.assertEqual('test', empty_batch.name)
-        self.assertEqual(None, empty_batch.original_filename)
-
-        another_empty_batch = contentupload.upload.create_empty_batch(None, ad_group_id, 'test', 'filename')
-        self.assertEqual(ad_group_id, another_empty_batch.ad_group_id)
-        self.assertEqual('test', another_empty_batch.name)
-        self.assertEqual('filename', another_empty_batch.original_filename)
 
 
 class GetCandidatesWithErrorsTestCase(TestCase):

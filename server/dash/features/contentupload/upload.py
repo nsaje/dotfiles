@@ -27,9 +27,8 @@ VALID_UPDATE_FIELDS = set(['url', 'brand_name', 'display_url', 'description', 'i
 
 def insert_candidates(user, candidates_data, ad_group, batch_name, filename, auto_save=False, is_edit=False):
     with transaction.atomic():
-        batch = create_empty_batch(
-            user, ad_group.id, batch_name, original_filename=filename,
-            auto_save=auto_save, is_edit=is_edit)
+        batch = models.UploadBatch.objects.create_for_file(
+            user, batch_name, ad_group.id, filename, auto_save, is_edit)
         candidates = _create_candidates(candidates_data, ad_group, batch)
 
     for candidate in candidates:
@@ -46,21 +45,6 @@ def insert_edit_candidates(user, content_ads, ad_group):
         content_ads_data.append(content_ad_dict)
 
     return insert_candidates(user, content_ads_data, ad_group, '', '', is_edit=True)
-
-
-def create_empty_batch(user, ad_group_id, batch_name, original_filename=None, auto_save=False, is_edit=False):
-    batch = models.UploadBatch(
-        name=batch_name,
-        ad_group_id=ad_group_id,
-        original_filename=original_filename,
-        auto_save=auto_save,
-    )
-
-    if is_edit:
-        batch.type = constants.UploadBatchType.EDIT
-
-    batch.save(user=user)
-    return batch
 
 
 def _reset_candidate_async_status(candidate):

@@ -5,6 +5,31 @@ from django.db import models
 from dash import constants
 
 
+class UploadBatchManager(models.Manager):
+
+    def create(self, user, name, ad_group_id):
+        batch = UploadBatch(
+            name=name,
+            ad_group_id=ad_group_id,
+        )
+        batch.save(user=user)
+        return batch
+
+    def create_for_file(self, user, name, ad_group_id, original_filename, auto_save, is_edit):
+        batch = UploadBatch(
+            name=name,
+            ad_group_id=ad_group_id,
+            original_filename=original_filename,
+            auto_save=auto_save,
+        )
+
+        if is_edit:
+            batch.type = constants.UploadBatchType.EDIT
+
+        batch.save(user=user)
+        return batch
+
+
 class UploadBatch(models.Model):
     class Meta:
         app_label = 'dash'
@@ -42,6 +67,8 @@ class UploadBatch(models.Model):
         null=True, blank=True, default=constants.DEFAULT_CALL_TO_ACTION)
 
     auto_save = models.BooleanField(default=False)
+
+    objects = UploadBatchManager()
 
     def get_approved_content_ads(self):
         return self.contentad_set.all().order_by('pk')

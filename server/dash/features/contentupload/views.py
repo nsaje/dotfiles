@@ -24,7 +24,9 @@ class UploadBatch(api_common.BaseApiView):
         if not form.is_valid():
             raise utils.exc.ValidationError(errors=form.errors)
 
-        batch = upload.create_empty_batch(request.user, ad_group_id, form.cleaned_data['batch_name'])
+        batch = models.UploadBatch.objects.create(
+            request.user, form.cleaned_data['batch_name'], ad_group_id)
+
         candidate = upload.add_candidate(batch)
         return self.create_api_response({
             'batch_id': batch.id,
