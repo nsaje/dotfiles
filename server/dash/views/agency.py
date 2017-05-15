@@ -637,7 +637,7 @@ class CampaignGoalValidation(api_common.BaseApiView):
         if not goal_form.is_valid():
             errors.update(dict(goal_form.errors))
 
-        if campaign_goal['type'] == constants.CampaignGoalKPI.CPA:
+        if 'type' in campaign_goal and campaign_goal['type'] == constants.CampaignGoalKPI.CPA:
             if not campaign_goal.get('id'):
                 conversion_form = forms.ConversionGoalForm(
                     campaign_goal.get('conversion_goal', {}),

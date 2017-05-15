@@ -62,7 +62,13 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
                 })
                 .catch(function (error) {
                     $ctrl.isEntityEnabled = !$ctrl.isEntityEnabled;
-                    zemToastsService.error(error.data.message, {timeout: 5000});
+                    var message = '';
+                    if (error) {
+                        message = error.data.message;
+                    } else {
+                        message = 'Something went wrong.';
+                    }
+                    zemToastsService.error(message, {timeout: 5000});
                 })
                 .finally(function () {
                     requestInProgress = false;

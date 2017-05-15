@@ -111,6 +111,10 @@ angular.module('one.widgets').controller('ZemUploadStep2Ctrl', function ($scope,
                 if (candidate.id === updatedCandidate.id) return true;
             })[0];
 
+            if (!candidate) {
+                return;
+            }
+
             Object.keys(updatedCandidate).forEach(function (field) {
                 if (field === 'errors') return;
                 if (fields && fields.length && fields.indexOf(field) < 0) return;
@@ -145,7 +149,7 @@ angular.module('one.widgets').controller('ZemUploadStep2Ctrl', function ($scope,
         $event.stopPropagation();
         vm.batchNameEdit = !vm.batchNameEdit;
         if (vm.batchNameEdit) {
-            vm.focusBatchNameEdit();
+            setTimeout(vm.focusBatchNameEdit, 0);
         }
     };
 

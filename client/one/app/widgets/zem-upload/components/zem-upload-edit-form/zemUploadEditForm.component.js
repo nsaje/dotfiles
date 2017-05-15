@@ -120,8 +120,8 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
         var persistUpdate = function () {
             vm.endpoint.updateCandidate(vm.batchId, data, defaults).then(function (data) {
                 vm.updateCallback(defaults);
-                if (selectedId !== vm.selectedCandidate.id) {
-                    // selection changed
+                if (!vm.selectedCandidate || selectedId !== vm.selectedCandidate.id) {
+                    // edit form closed or selection changed in the mean time
                     return;
                 }
 
