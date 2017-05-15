@@ -1,3 +1,5 @@
+/* globals Raven */
+
 angular.module('one.services').service('zemUserService', function (zemPubSubService, zemUserEndpoint) { // eslint-disable-line max-len
 
     var currentUser = null;
@@ -29,6 +31,14 @@ angular.module('one.services').service('zemUserService', function (zemPubSubServ
         return zemUserEndpoint.get('current').then(function (user) {
             currentUser = user;
             pubsub.notify(EVENTS.ON_CURRENT_USER_UPDATED, user);
+
+            // Configure Raven/Sentry user context
+            if (Raven) {
+                Raven.setUserContext({
+                    username: user.name,
+                    email: user.email,
+                });
+            }
         });
     }
 
