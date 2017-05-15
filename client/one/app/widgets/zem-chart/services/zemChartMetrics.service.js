@@ -46,6 +46,14 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
         COST_PER_VISIT: {name: 'Avg. Cost per Visit', value: 'avg_cost_per_visit', type: TYPE_CURRENCY, fractionSize: 2},
         COST_PER_NON_BOUNCED_VISIT: {name: 'Avg. Cost per Non-Bounced Visit', value: 'avg_cost_per_non_bounced_visit', type: TYPE_CURRENCY, fractionSize: 2},
         COST_PER_NEW_VISITOR: {name: 'Avg. Cost for New Visitor', value: 'avg_cost_for_new_visitor', type: TYPE_CURRENCY, fractionSize: 2},
+        VIDEO_START: {name: 'Video Start', value: 'video_start', type: TYPE_NUMBER, permission: 'zemauth.fea_can_see_video_metrics'},
+        VIDEO_PROGRESS_3S: {name: 'Video Progress 3s', value: 'video_progress_3s', type: TYPE_NUMBER, permission: 'zemauth.fea_can_see_video_metrics'},
+        VIDEO_FIRST_QUARTILE: {name: 'Video First Quartile', value: 'video_first_quartile', type: TYPE_NUMBER, permission: 'zemauth.fea_can_see_video_metrics'},
+        VIDEO_MIDPOINT: {name: 'Video Midpoint', value: 'video_midpoint', type: TYPE_NUMBER, permission: 'zemauth.fea_can_see_video_metrics'},
+        VIDEO_THIRD_QUARTILE: {name: 'Video Third Quartile', value: 'video_third_quartile', type: TYPE_NUMBER, permission: 'zemauth.fea_can_see_video_metrics'},
+        VIDEO_COMPLETE: {name: 'Video Complete', value: 'video_complete', type: TYPE_NUMBER, permission: 'zemauth.fea_can_see_video_metrics'},
+        VIDEO_CPV: {name: 'Avg. CPV', value: 'video_cpv', type: TYPE_CURRENCY, fractionSize: 3, permission: 'zemauth.fea_can_see_video_metrics'},
+        VIDEO_CPCV: {name: 'Avg. CPCV', value: 'video_cpcv', type: TYPE_CURRENCY, fractionSize: 3, permission: 'zemauth.fea_can_see_video_metrics'},
     };
     /* eslint-enable max-len */
 
@@ -79,7 +87,15 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
         METRICS.NON_BOUNCED_VISITS,
         METRICS.BOUNCE_RATE,
         METRICS.TOTAL_SECONDS,
-        METRICS.AVG_TOS
+        METRICS.AVG_TOS,
+        METRICS.VIDEO_START,
+        METRICS.VIDEO_PROGRESS_3S,
+        METRICS.VIDEO_FIRST_QUARTILE,
+        METRICS.VIDEO_MIDPOINT,
+        METRICS.VIDEO_THIRD_QUARTILE,
+        METRICS.VIDEO_COMPLETE,
+        METRICS.VIDEO_CPV,
+        METRICS.VIDEO_CPCV,
     ];
 
     var GOAL_METRICS = [
