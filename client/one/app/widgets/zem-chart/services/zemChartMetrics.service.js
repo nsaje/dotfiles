@@ -12,6 +12,7 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
     var COSTS_CATEGORY_NAME = 'Costs';
     var TRAFFIC_CATEGORY_NAME = 'Traffic Acquisition';
     var AUDIENCE_CATEGORY_NAME = 'Audience Metrics';
+    var VIDEO_CATEGORY_NAME = 'Video Metrics';
     var CONVERSIONS_CATEGORY_NAME = 'Google & Adobe Analytics Goals';
     var PIXELS_CATEGORY_NAME = 'Conversions & CPAs';
 
@@ -88,14 +89,6 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
         METRICS.BOUNCE_RATE,
         METRICS.TOTAL_SECONDS,
         METRICS.AVG_TOS,
-        METRICS.VIDEO_START,
-        METRICS.VIDEO_PROGRESS_3S,
-        METRICS.VIDEO_FIRST_QUARTILE,
-        METRICS.VIDEO_MIDPOINT,
-        METRICS.VIDEO_THIRD_QUARTILE,
-        METRICS.VIDEO_COMPLETE,
-        METRICS.VIDEO_CPV,
-        METRICS.VIDEO_CPCV,
     ];
 
     var GOAL_METRICS = [
@@ -104,6 +97,17 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
         METRICS.COST_PER_PAGEVIEW,
         METRICS.COST_PER_NON_BOUNCED_VISIT,
         METRICS.COST_PER_MINUTE
+    ];
+
+    var VIDEO_METRICS = [
+        METRICS.VIDEO_START,
+        METRICS.VIDEO_PROGRESS_3S,
+        METRICS.VIDEO_FIRST_QUARTILE,
+        METRICS.VIDEO_MIDPOINT,
+        METRICS.VIDEO_THIRD_QUARTILE,
+        METRICS.VIDEO_COMPLETE,
+        METRICS.VIDEO_CPV,
+        METRICS.VIDEO_CPCV,
     ];
 
     var AUDIENCE_METRICS = [].concat(POST_CLICK_METRICS, GOAL_METRICS);
@@ -116,6 +120,7 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
         categories.push({name: COSTS_CATEGORY_NAME, metrics: createMetrics(COST_METRICS)});
         categories.push({name: TRAFFIC_CATEGORY_NAME, metrics: createMetrics(TRAFFIC_ACQUISITION)});
         categories.push({name: AUDIENCE_CATEGORY_NAME, metrics: createMetrics(AUDIENCE_METRICS)});
+        categories.push({name: VIDEO_CATEGORY_NAME, metrics: createMetrics(VIDEO_METRICS)});
 
         return categories;
     }
