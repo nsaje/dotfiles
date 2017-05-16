@@ -232,15 +232,19 @@ def apply_pixel_columns(breakdown, row_by_breakdown, pixels, touchpoint_rows):
                     count = sum(x['count'] for x in pixel_rows if x['window'] <= conversion_window)
                     cost = row['e_media_cost'] or 0
                     avg_cost = float(cost) / count if count else None
+                    value = sum(x['conversion_value'] for x in pixel_rows if x['window'] <= conversion_window if x['conversion_value'])
+                    roas = (value - cost) if value else None
                 else:
                     count = None
                     avg_cost = None
+                    roas = None
 
                 pixel_key = pixel.get_view_key(conversion_window)
 
                 row.update({
                     pixel_key: count,
                     'avg_cost_per_' + pixel_key: avg_cost,
+                    'roas_' + pixel_key: roas,
                 })
 
 

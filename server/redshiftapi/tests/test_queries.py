@@ -222,6 +222,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.source_id AS source_id,
             base_table.slug AS slug,
             base_table.conversion_window AS window,
+            SUM(base_table.conversion_value_nano)/1000000000.0 conversion_value,
             SUM(base_table.conversion_count) count
         FROM mv_touch_account base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
@@ -250,6 +251,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.date AS day,
             base_table.slug AS slug,
             base_table.conversion_window AS window,
+            SUM(base_table.conversion_value_nano)/1000000000.0 conversion_value,
             SUM(base_table.conversion_count) count,
             MAX(base_table.publisher || '__' || base_table.source_id) publisher_id
         FROM mv_touchpointconversions base_table
@@ -580,9 +582,13 @@ class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
         temp_touchpoints AS (
          SELECT   a.account_id AS account_id ,
                   SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=24 THEN conversion_count ELSE 0 END) pixel_1_24,
+                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=24 THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_24,
                   SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168 THEN conversion_count ELSE 0 END) pixel_1_168,
+                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168 THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_168,
                   SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720 THEN conversion_count ELSE 0 END) pixel_1_720,
-                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=2160 THEN conversion_count ELSE 0 END) pixel_1_2160
+                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720 THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_720,
+                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=2160 THEN conversion_count ELSE 0 END) pixel_1_2160,
+                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=2160 THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_2160
          FROM     mv_touch_account a
          WHERE    (a.DATE >=%s AND a.DATE <=%s)
          GROUP BY 1 ),
@@ -610,17 +616,25 @@ class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
                 temp_conversions.conversion_goal_4,
                 temp_conversions.conversion_goal_5 ,
                 temp_touchpoints.pixel_1_24,
+                temp_touchpoints.total_conversion_value_pixel_1_24,
                 temp_touchpoints.pixel_1_168,
+                temp_touchpoints.total_conversion_value_pixel_1_168,
                 temp_touchpoints.pixel_1_720,
+                temp_touchpoints.total_conversion_value_pixel_1_720,
                 temp_touchpoints.pixel_1_2160 ,
+                temp_touchpoints.total_conversion_value_pixel_1_2160 ,
                 e_media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2 ,
                 e_media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3 ,
                 e_media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4 ,
                 e_media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5 ,
                 e_media_cost / NULLIF(pixel_1_24, 0)        avg_cost_per_pixel_1_24 ,
+                total_conversion_value_pixel_1_24 - e_media_cost roas_pixel_1_24 ,
                 e_media_cost / NULLIF(pixel_1_168, 0)       avg_cost_per_pixel_1_168 ,
+                total_conversion_value_pixel_1_168 - e_media_cost roas_pixel_1_168 ,
                 e_media_cost / NULLIF(pixel_1_720, 0)       avg_cost_per_pixel_1_720 ,
+                total_conversion_value_pixel_1_720 - e_media_cost roas_pixel_1_720 ,
                 e_media_cost / NULLIF(pixel_1_2160, 0)      avg_cost_per_pixel_1_2160 ,
+                total_conversion_value_pixel_1_2160 - e_media_cost roas_pixel_1_2160 ,
                 CASE
                     WHEN TRUE AND TRUNC(NVL(e_media_cost, 0), 2) > 0
                             AND NVL(TRUNC(CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END, 2), 0) = 0
@@ -694,9 +708,13 @@ class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
          SELECT   a.account_id AS account_id ,
                   a.campaign_id AS campaign_id,
                   SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=24 THEN conversion_count ELSE 0 END) pixel_1_24,
+                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=24 THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_24,
                   SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168 THEN conversion_count ELSE 0 END) pixel_1_168,
+                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168 THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_168,
                   SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720 THEN conversion_count ELSE 0 END) pixel_1_720,
-                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=2160 THEN conversion_count ELSE 0 END) pixel_1_2160
+                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720 THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_720,
+                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=2160 THEN conversion_count ELSE 0 END) pixel_1_2160,
+                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=2160 THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_2160
          FROM     mv_touch_campaign a
          WHERE    (a.DATE >=%s AND a.DATE <=%s)
          GROUP BY 1, 2 ),
@@ -728,17 +746,25 @@ class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
              b.conversion_goal_4,
              b.conversion_goal_5 ,
              b.pixel_1_24,
+             b.total_conversion_value_pixel_1_24,
              b.pixel_1_168,
+             b.total_conversion_value_pixel_1_168,
              b.pixel_1_720,
+             b.total_conversion_value_pixel_1_720,
              b.pixel_1_2160 ,
+             b.total_conversion_value_pixel_1_2160 ,
              b.avg_cost_per_conversion_goal_2,
              b.avg_cost_per_conversion_goal_3,
              b.avg_cost_per_conversion_goal_4,
              b.avg_cost_per_conversion_goal_5,
              b.avg_cost_per_pixel_1_24,
+             b.roas_pixel_1_24,
              b.avg_cost_per_pixel_1_168,
+             b.roas_pixel_1_168,
              b.avg_cost_per_pixel_1_720,
+             b.roas_pixel_1_720,
              b.avg_cost_per_pixel_1_2160,
+             b.roas_pixel_1_2160,
              b.performance_campaign_goal_1,
              b.performance_campaign_goal_2
         FROM
@@ -754,17 +780,25 @@ class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
                     a.conversion_goal_4,
                     a.conversion_goal_5 ,
                     a.pixel_1_24,
+                    a.total_conversion_value_pixel_1_24,
                     a.pixel_1_168,
+                    a.total_conversion_value_pixel_1_168,
                     a.pixel_1_720,
+                    a.total_conversion_value_pixel_1_720,
                     a.pixel_1_2160 ,
+                    a.total_conversion_value_pixel_1_2160 ,
                     a.avg_cost_per_conversion_goal_2,
                     a.avg_cost_per_conversion_goal_3,
                     a.avg_cost_per_conversion_goal_4,
                     a.avg_cost_per_conversion_goal_5,
                     a.avg_cost_per_pixel_1_24,
+                    a.roas_pixel_1_24,
                     a.avg_cost_per_pixel_1_168,
+                    a.roas_pixel_1_168,
                     a.avg_cost_per_pixel_1_720,
+                    a.roas_pixel_1_720,
                     a.avg_cost_per_pixel_1_2160,
+                    a.roas_pixel_1_2160,
                     a.performance_campaign_goal_1,
                     a.performance_campaign_goal_2,
                     ROW_NUMBER() OVER (PARTITION BY a.account_id ORDER BY a.total_seconds ASC NULLS LAST) AS r
@@ -781,17 +815,25 @@ class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
                         temp_conversions.conversion_goal_4,
                         temp_conversions.conversion_goal_5 ,
                         temp_touchpoints.pixel_1_24,
+                        temp_touchpoints.total_conversion_value_pixel_1_24,
                         temp_touchpoints.pixel_1_168,
+                        temp_touchpoints.total_conversion_value_pixel_1_168,
                         temp_touchpoints.pixel_1_720,
+                        temp_touchpoints.total_conversion_value_pixel_1_720,
                         temp_touchpoints.pixel_1_2160 ,
+                        temp_touchpoints.total_conversion_value_pixel_1_2160 ,
                         e_media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2 ,
                         e_media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3 ,
                         e_media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4 ,
                         e_media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5 ,
                         e_media_cost / NULLIF(pixel_1_24, 0)        avg_cost_per_pixel_1_24 ,
+                        total_conversion_value_pixel_1_24 - e_media_cost roas_pixel_1_24 ,
                         e_media_cost / NULLIF(pixel_1_168, 0)       avg_cost_per_pixel_1_168 ,
+                        total_conversion_value_pixel_1_168 - e_media_cost roas_pixel_1_168 ,
                         e_media_cost / NULLIF(pixel_1_720, 0)       avg_cost_per_pixel_1_720 ,
+                        total_conversion_value_pixel_1_720 - e_media_cost roas_pixel_1_720 ,
                         e_media_cost / NULLIF(pixel_1_2160, 0)      avg_cost_per_pixel_1_2160 ,
+                        total_conversion_value_pixel_1_2160 - e_media_cost roas_pixel_1_2160 ,
                         CASE
                             WHEN TRUE AND TRUNC(NVL(e_media_cost, 0), 2) > 0
                                     AND NVL(TRUNC(CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END, 2), 0) = 0

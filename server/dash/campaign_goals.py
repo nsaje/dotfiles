@@ -736,4 +736,5 @@ def get_allowed_pixels_fields(pixels):
             view_key = pixel.get_view_key(conversion_window)
             allowed.append(view_key)
             allowed.append('avg_cost_per_' + view_key)
+            allowed.append('roas_' + view_key)
     return allowed

@@ -8,7 +8,8 @@ INSERT INTO {{ destination_table}} (
         a.slug as slug,
         a.conversion_window as conversion_window,
         SUM(a.touchpoint_count) as touchpoint_count,
-        SUM(a.conversion_count) as conversion_count
+        SUM(a.conversion_count) as conversion_count,
+        SUM(a.conversion_value_nano) as conversion_value_nano
 
     FROM {{ source_table }} a
     WHERE a.date BETWEEN %(date_from)s AND %(date_to)s

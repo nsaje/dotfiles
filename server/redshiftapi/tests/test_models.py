@@ -205,7 +205,7 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
         )
 
     def test_get_aggregates(self):
-        self.assertItemsEqual([x.alias for x in self.model.get_aggregates()], ['count'])
+        self.assertItemsEqual([x.alias for x in self.model.get_aggregates()], ['count', 'conversion_value'])
 
     def test_get_best_view(self):
         self.assertEqual(self.model.get_best_view(['account_id'], False), 'mv_touch_account')
@@ -259,12 +259,20 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
         self.assertListEqual([x.column_as_alias('a') for x in touchpoint_columns], [
             backtosql.SQLMatcher("""SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=24
             THEN conversion_count ELSE 0 END) pixel_1_24"""),
+            backtosql.SQLMatcher("""SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=24
+            THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_24"""),
             backtosql.SQLMatcher("""SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168
             THEN conversion_count ELSE 0 END) pixel_1_168"""),
+            backtosql.SQLMatcher("""SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168
+            THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_168"""),
             backtosql.SQLMatcher("""SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720
             THEN conversion_count ELSE 0 END) pixel_1_720"""),
+            backtosql.SQLMatcher("""SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720
+            THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_720"""),
             backtosql.SQLMatcher("""SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=2160
             THEN conversion_count ELSE 0 END) pixel_1_2160"""),
+            backtosql.SQLMatcher("""SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=2160
+            THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_2160"""),
         ])
 
         # prefixes should be added afterwards
@@ -274,9 +282,13 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
             backtosql.SQLMatcher('e_media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4'),
             backtosql.SQLMatcher('e_media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5'),
             backtosql.SQLMatcher('e_media_cost / NULLIF(pixel_1_24, 0) avg_cost_per_pixel_1_24'),
+            backtosql.SQLMatcher('total_conversion_value_pixel_1_24 - e_media_cost roas_pixel_1_24'),
             backtosql.SQLMatcher('e_media_cost / NULLIF(pixel_1_168, 0) avg_cost_per_pixel_1_168'),
+            backtosql.SQLMatcher('total_conversion_value_pixel_1_168 - e_media_cost roas_pixel_1_168'),
             backtosql.SQLMatcher('e_media_cost / NULLIF(pixel_1_720, 0) avg_cost_per_pixel_1_720'),
+            backtosql.SQLMatcher('total_conversion_value_pixel_1_720 - e_media_cost roas_pixel_1_720'),
             backtosql.SQLMatcher('e_media_cost / NULLIF(pixel_1_2160, 0) avg_cost_per_pixel_1_2160'),
+            backtosql.SQLMatcher('total_conversion_value_pixel_1_2160 - e_media_cost roas_pixel_1_2160'),
         ])
 
     def test_get_query_joint_context(self):
@@ -317,9 +329,13 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
 
         self.assertListEqual(context['touchpoints_aggregates'], m.select_columns([
             'pixel_1_24',
+            'total_conversion_value_pixel_1_24',
             'pixel_1_168',
+            'total_conversion_value_pixel_1_168',
             'pixel_1_720',
+            'total_conversion_value_pixel_1_720',
             'pixel_1_2160',
+            'total_conversion_value_pixel_1_2160',
         ]))
 
         self.assertListEqual(context['after_join_aggregates'], m.select_columns([
@@ -328,9 +344,13 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
             'avg_cost_per_conversion_goal_4',
             'avg_cost_per_conversion_goal_5',
             'avg_cost_per_pixel_1_24',
+            'roas_pixel_1_24',
             'avg_cost_per_pixel_1_168',
+            'roas_pixel_1_168',
             'avg_cost_per_pixel_1_720',
+            'roas_pixel_1_720',
             'avg_cost_per_pixel_1_2160',
+            'roas_pixel_1_2160',
         ]))
 
         self.assertEquals(context['orders'][0].alias, 'pixel_1_24')

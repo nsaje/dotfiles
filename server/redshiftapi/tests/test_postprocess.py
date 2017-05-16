@@ -166,6 +166,9 @@ class PostprocessTest(TestCase):
 class PostprocessGoalsTest(TestCase):
     fixtures = ['test_augmenter.yaml']
 
+    def setUp(self):
+        self.maxDiff = None
+
     def test_apply_conversion_goal_columns(self):
         rows = {
             (1, 1): {'campaign_id': 1, 'ad_group_id': 1, 'clicks': 1, 'e_media_cost': 10},
@@ -261,10 +264,10 @@ class PostprocessGoalsTest(TestCase):
             rows,
             dash.models.ConversionPixel.objects.filter(account_id=1),
             [
-                {'campaign_id': 1, 'ad_group_id': 1, 'slug': 'bla', 'window': 24, 'count': 11},  # does not exist
-                {'campaign_id': 1, 'ad_group_id': 1, 'slug': 'test', 'window': 24, 'count': 22},
-                {'campaign_id': 1, 'ad_group_id': 2, 'slug': 'test', 'window': 168, 'count': 33},
-                {'campaign_id': 1, 'ad_group_id': 2, 'slug': 'test', 'window': 2160, 'count': 44},
+                {'campaign_id': 1, 'ad_group_id': 1, 'slug': 'bla', 'window': 24, 'count': 11, 'conversion_value': 100.0},  # does not exist
+                {'campaign_id': 1, 'ad_group_id': 1, 'slug': 'test', 'window': 24, 'count': 22, 'conversion_value': 200.0},
+                {'campaign_id': 1, 'ad_group_id': 2, 'slug': 'test', 'window': 168, 'count': 33, 'conversion_value': 300.0},
+                {'campaign_id': 1, 'ad_group_id': 2, 'slug': 'test', 'window': 2160, 'count': 44, 'conversion_value': 400.0},
             ]
         )
 
@@ -273,12 +276,16 @@ class PostprocessGoalsTest(TestCase):
                 (1, 1): {
                     'pixel_1_24': 22,
                     'avg_cost_per_pixel_1_24': 10.0 / 22,
+                    'roas_pixel_1_24': 200.0 - 10,
                     'pixel_1_168': 22,
                     'avg_cost_per_pixel_1_168': 10.0 / 22,
+                    'roas_pixel_1_168': 200.0 - 10,
                     'pixel_1_720': 22,
                     'avg_cost_per_pixel_1_720': 10.0 / 22,
+                    'roas_pixel_1_720': 200.0 - 10,
                     'pixel_1_2160': 22,
                     'avg_cost_per_pixel_1_2160': 10.0 / 22,
+                    'roas_pixel_1_2160': 200.0 - 10,
                     'ad_group_id': 1,
                     'campaign_id': 1,
                     'e_media_cost': 10,
@@ -287,12 +294,16 @@ class PostprocessGoalsTest(TestCase):
                 (1, 2): {
                     'pixel_1_24': 0,
                     'avg_cost_per_pixel_1_24': None,
+                    'roas_pixel_1_24': None,
                     'pixel_1_168': 33,
                     'avg_cost_per_pixel_1_168': 20.0 / 33,
+                    'roas_pixel_1_168': 300.0 - 20,
                     'pixel_1_720': 33,
                     'avg_cost_per_pixel_1_720': 20.0 / 33,
+                    'roas_pixel_1_720': 300.0 - 20,
                     'pixel_1_2160': 77,
                     'avg_cost_per_pixel_1_2160': 20.0 / 77,
+                    'roas_pixel_1_2160': 700.0 - 20,
                     'ad_group_id': 2,
                     'campaign_id': 1,
                     'e_media_cost': 20,
@@ -310,10 +321,10 @@ class PostprocessGoalsTest(TestCase):
             rows,
             dash.models.ConversionPixel.objects.filter(account_id=1),
             [
-                {'slug': 'bla', 'window': 24, 'count': 11},  # does not exist
-                {'slug': 'test', 'window': 24, 'count': 22},
-                {'slug': 'test', 'window': 168, 'count': 33},
-                {'slug': 'test', 'window': 2160, 'count': 44},
+                {'slug': 'bla', 'window': 24, 'count': 11, 'conversion_value': 100.0},  # does not exist
+                {'slug': 'test', 'window': 24, 'count': 22, 'conversion_value': 200.0},
+                {'slug': 'test', 'window': 168, 'count': 33, 'conversion_value': 300.0},
+                {'slug': 'test', 'window': 2160, 'count': 44, 'conversion_value': 400.0},
             ]
         )
 
@@ -322,12 +333,16 @@ class PostprocessGoalsTest(TestCase):
                 tuple([]): {
                     'pixel_1_24': 22,
                     'avg_cost_per_pixel_1_24': 10.0 / 22,
+                    'roas_pixel_1_24': 200.0 - 10,
                     'pixel_1_168': 55,
                     'avg_cost_per_pixel_1_168': 10.0 / 55,
+                    'roas_pixel_1_168': 500.0 - 10,
                     'pixel_1_720': 55,
                     'avg_cost_per_pixel_1_720': 10.0 / 55,
+                    'roas_pixel_1_720': 500.0 - 10,
                     'pixel_1_2160': 99,
                     'avg_cost_per_pixel_1_2160': 10.0 / 99,
+                    'roas_pixel_1_2160': 900.0 - 10,
                     'e_media_cost': 10,
                     'clicks': 1,
                 },

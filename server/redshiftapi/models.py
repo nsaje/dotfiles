@@ -223,6 +223,7 @@ class MVTouchpointConversions(BreakdownsBase):
     window = backtosql.Column('conversion_window', BREAKDOWN)
 
     count = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'conversion_count'}, AGGREGATE)
+    conversion_value = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'conversion_value_nano'}, AGGREGATE)
 
     @classmethod
     def get_best_view(cls, needed_dimensions, use_publishers_view):
@@ -293,11 +294,24 @@ class MVJointMaster(MVMaster):
                     alias=pixel_key, group=TOUCHPOINTS_AGGREGATES)
                 self.add_column(column)
 
+                total_conversion_value_column = backtosql.TemplateColumn(
+                    'part_total_conversion_value.sql', {
+                        'account_id': pixel.account_id,
+                        'slug': pixel.slug,
+                        'window': conversion_window,
+                    },
+                    alias='total_conversion_value_' + pixel_key, group=TOUCHPOINTS_AGGREGATES)
+                self.add_column(total_conversion_value_column)
+
                 avg_cost_column = backtosql.TemplateColumn(
                     'part_avg_cost_per_conversion_goal.sql', {'conversion_key': pixel_key},
                     alias='avg_cost_per_' + pixel_key, group=AFTER_JOIN_AGGREGATES)
-
                 self.add_column(avg_cost_column)
+
+                roas_column = backtosql.TemplateColumn(
+                    'part_roas.sql', {'conversion_key': pixel_key},
+                    alias='roas_' + pixel_key, group=AFTER_JOIN_AGGREGATES)
+                self.add_column(roas_column)
 
     def init_performance_columns(self, campaign_goals, campaign_goal_values, conversion_goals, pixels,
                                  supports_conversions=True):

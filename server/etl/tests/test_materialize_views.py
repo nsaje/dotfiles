@@ -1220,7 +1220,10 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
                     ELSE 2160
                     END AS conversion_window,
                     COUNT(a.touchpoint_id) as touchpoint_count,
-                    SUM(CASE WHEN a.conversion_id_ranked = 1 THEN 1 ELSE 0 END) AS conversion_count
+                    SUM(CASE WHEN a.conversion_id_ranked = 1 THEN 1 ELSE 0 END) AS conversion_count,
+
+                    SUM(a.conversion_value_nano) as conversion_value_nano,
+                    a.conversion_label as conversion_label
                 FROM (
                     SELECT
                         c.date as date,
@@ -1236,11 +1239,14 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
 
                         c.touchpoint_id as touchpoint_id,
                         RANK() OVER
-                            (PARTITION BY c.conversion_id, c.ad_group_id ORDER BY c.touchpoint_timestamp DESC) AS conversion_id_ranked
+                            (PARTITION BY c.conversion_id, c.ad_group_id ORDER BY c.touchpoint_timestamp DESC) AS conversion_id_ranked,
+
+                        c.value_nano as conversion_value_nano,
+                        c.label as conversion_label
                     FROM conversions c
                     WHERE c.conversion_lag <= 2160 AND c.date BETWEEN %(date_from)s AND %(date_to)s
                 ) a join mvh_adgroup_structure s on a.ad_group_id=s.ad_group_id
-                GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);"""), {
+                GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, conversion_label);"""), {
                 'date_from': datetime.date(2016, 7, 1),
                 'date_to': datetime.date(2016, 7, 3),
             })
@@ -1286,7 +1292,10 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
                     ELSE 2160
                     END AS conversion_window,
                     COUNT(a.touchpoint_id) as touchpoint_count,
-                    SUM(CASE WHEN a.conversion_id_ranked = 1 THEN 1 ELSE 0 END) AS conversion_count
+                    SUM(CASE WHEN a.conversion_id_ranked = 1 THEN 1 ELSE 0 END) AS conversion_count,
+
+                    SUM(a.conversion_value_nano) as conversion_value_nano,
+                    a.conversion_label as conversion_label
                 FROM (
                     SELECT
                         c.date as date,
@@ -1302,11 +1311,14 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
 
                         c.touchpoint_id as touchpoint_id,
                         RANK() OVER
-                            (PARTITION BY c.conversion_id, c.ad_group_id ORDER BY c.touchpoint_timestamp DESC) AS conversion_id_ranked
+                            (PARTITION BY c.conversion_id, c.ad_group_id ORDER BY c.touchpoint_timestamp DESC) AS conversion_id_ranked,
+
+                        c.value_nano as conversion_value_nano,
+                        c.label as conversion_label
                     FROM conversions c
                     WHERE c.conversion_lag <= 2160 AND c.date BETWEEN %(date_from)s AND %(date_to)s AND c.account_id=%(account_id)s
                 ) a join mvh_adgroup_structure s on a.ad_group_id=s.ad_group_id
-                GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);"""), {
+                GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, conversion_label);"""), {
                     'date_from': datetime.date(2016, 7, 1),
                     'date_to': datetime.date(2016, 7, 3),
                     'account_id': 1,

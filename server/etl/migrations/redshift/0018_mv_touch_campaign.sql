@@ -10,5 +10,7 @@ CREATE TABLE mv_touch_campaign (
     conversion_window integer encode lzo,
 
     touchpoint_count integer encode lzo,
-    conversion_count integer encode lzo
+    conversion_count integer encode lzo,
+
+    conversion_value_nano bigint encode lzo
 ) sortkey(date, source_id, account_id, campaign_id, slug, conversion_window, agency_id);
