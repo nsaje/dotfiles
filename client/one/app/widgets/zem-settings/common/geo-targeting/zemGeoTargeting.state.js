@@ -78,13 +78,18 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
                 .concat(targetings[constants.geolocationType.CITY]);
         }
 
+        var lastSearchTerm;
         function refresh (searchTerm) {
             var targetings = getEnabledTargetings();
             if (searchTerm.length < 2) {
+                lastSearchTerm = null;
                 state.targetings = targetings;
                 return;
             }
+            lastSearchTerm = searchTerm;
             zemGeoTargetingEndpoint.search(searchTerm).then(function (response) {
+                if (searchTerm !== lastSearchTerm) return; // There is a more recent search in progress
+
                 var SECTION_RESULTS_SIZE = 10;
                 var sectionItems = {};
                 response.forEach(function (geolocation) {
@@ -102,6 +107,7 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
                     }
                 });
                 state.targetings = targetings;
+                lastSearchTerm = null;
             });
         }
 
