@@ -117,12 +117,14 @@ class BudgetProjections(object):
             types_map = self.campaign_types
         return types_map.get(key) in BudgetProjections.MANAGED_ACCOUNT_TYPES
 
+    @newrelic.agent.function_trace()
     def _breakdown_field(self, budget):
         if self.breakdown == 'account':
             return budget.campaign.account.pk
         if self.breakdown == 'campaign':
             return budget.campaign.pk
 
+    @newrelic.agent.function_trace()
     def _prepare_data_by_breakdown(self):
         for budget in self.budgets:
             self.calculation_groups.setdefault(self._breakdown_field(budget), []).append(budget)
