@@ -509,7 +509,10 @@ class AdGroupsView(K1APIView):
 
         campaign_goals_dicts = {}
         for cid, goals in campaign_goals.iteritems():
-            campaign_goals_dicts[cid] = [goal.to_dict() for goal in sorted(goals, key=lambda x: x.primary, reverse=True)]
+            sorted_goals = sorted(goals, key=lambda x: (x.primary, x.pk), reverse=True)
+            campaign_goals_dicts[cid] = [
+                goal.to_dict(with_values=True) for goal in sorted_goals
+            ]
         return campaign_goals_dicts
 
     @staticmethod
