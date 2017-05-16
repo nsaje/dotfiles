@@ -11,7 +11,7 @@ angular.module('one.widgets').factory('zemGridBulkPublishersActionsService', fun
         var bulkUpdateDefered;
 
         var BLACKLIST_ADGROUP = {
-            name: 'Blacklist in this adgroup',
+            name: 'Add to ad group blacklist',
             value: 'blacklist-adgroup',
             entityType: constants.entityType.AD_GROUP,
             configEntityId: 'ad_group',
@@ -21,7 +21,7 @@ angular.module('one.widgets').factory('zemGridBulkPublishersActionsService', fun
             hasPermission: gridApi.hasPermission('zemauth.can_modify_publisher_blacklist_status'),
         };
         var BLACKLIST_CAMPAIGN = {
-            name: 'Blacklist in this campaign',
+            name: 'Add to campaign blacklist',
             value: 'blacklist-campaign',
             entityType: constants.entityType.CAMPAIGN,
             configEntityId: 'campaign',
@@ -32,7 +32,7 @@ angular.module('one.widgets').factory('zemGridBulkPublishersActionsService', fun
                 gridApi.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
         };
         var BLACKLIST_ACCOUNT = {
-            name: 'Blacklist in this account',
+            name: 'Add to account blacklist',
             value: 'blacklist-account',
             entityType: constants.entityType.ACCOUNT,
             configEntityId: 'account',
@@ -43,7 +43,7 @@ angular.module('one.widgets').factory('zemGridBulkPublishersActionsService', fun
                 gridApi.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
         };
         var BLACKLIST_GLOBAL = {
-            name: 'Blacklist globally on RTB sources',
+            name: 'Add to global blacklist',
             value: 'blacklist-global',
             level: constants.publisherBlacklistLevel.GLOBAL,
             status: constants.publisherTargetingStatus.BLACKLISTED,
@@ -54,7 +54,7 @@ angular.module('one.widgets').factory('zemGridBulkPublishersActionsService', fun
         };
 
         var UNLIST_ADGROUP = {
-            name: 'Re-enable in this adgroup',
+            name: 'Remove from ad group blacklist',
             value: 'unlist-adgroup',
             entityType: constants.entityType.AD_GROUP,
             configEntityId: 'ad_group',
@@ -63,7 +63,7 @@ angular.module('one.widgets').factory('zemGridBulkPublishersActionsService', fun
             hasPermission: gridApi.hasPermission('zemauth.can_modify_publisher_blacklist_status')
         };
         var UNLIST_CAMPAIGN = {
-            name: 'Re-enable in this campaign',
+            name: 'Remove from campaign blacklist',
             value: 'unlist-campaign',
             entityType: constants.entityType.CAMPAIGN,
             configEntityId: 'campaign',
@@ -73,7 +73,7 @@ angular.module('one.widgets').factory('zemGridBulkPublishersActionsService', fun
                 gridApi.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
         };
         var UNLIST_ACCOUNT = {
-            name: 'Re-enable in this account',
+            name: 'Remove from account blacklist',
             value: 'unlist-account',
             entityType: constants.entityType.ACCOUNT,
             configEntityId: 'account',
@@ -83,7 +83,7 @@ angular.module('one.widgets').factory('zemGridBulkPublishersActionsService', fun
                 gridApi.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
         };
         var UNLIST_GLOBAL = {
-            name: 'Re-enable globally on RTB sources',
+            name: 'Remove from global blacklist',
             value: 'unlist-global',
             level: constants.publisherBlacklistLevel.GLOBAL,
             status: constants.publisherTargetingStatus.UNLISTED,
