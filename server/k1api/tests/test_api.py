@@ -690,12 +690,14 @@ class K1ApiTest(TestCase):
                            u'id': 2,
                            u'primary': True,
                            u'type': 2,
+                           u'values': [],
                        }, {
                            u'campaign_id': 1,
                            u'conversion_goal': None,
                            u'id': 1,
                            u'primary': False,
                            u'type': 5,
+                           u'values': [],
                        }],
             u'b1_sources_group': {
                 u'daily_budget': u'10.0000',
