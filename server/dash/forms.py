@@ -12,7 +12,6 @@ from collections import OrderedDict
 from collections import Counter
 
 import xlrd
-import searchableselect.widgets
 
 from django import forms
 from django.contrib.postgres import forms as postgres_forms
@@ -154,48 +153,12 @@ class PublisherGroupsFormMixin(forms.Form):
         return [x.id for x in publisher_groups]
 
 
-class GeolocationAdminWidget(forms.MultiWidget):
-
-    def __init__(self, *args, **kwargs):
-        super(GeolocationAdminWidget, self).__init__(
-            widgets=[
-                searchableselect.widgets.SearchableSelect(model='dash.Geolocation', search_field='name', many=True, limit=20),
-                forms.Textarea(attrs={'placeholder': 'Example: US:123456'})
-            ],
-            *args, **kwargs
-        )
-
-    def render(self, name, value, attrs=None):
-        # force a decompress call since our value is already a list
-        value = self.decompress(value)
-        return super(GeolocationAdminWidget, self).render(name, value, attrs)
-
-    def decompress(self, values):
-        value = map(str, values)
-        zips = []
-        non_zips = []
-        for value in value:
-            if ':' in value:
-                zips.append(value)
-            else:
-                non_zips.append(value)
-        return [non_zips, '\n'.join(zips)]
-
-    def value_from_datadict(self, data, files, name):
-        res = []
-        res.extend(self.widgets[0].value_from_datadict(data, files, name + '_0'))  # non-zips
-        res.extend(self.widgets[1].value_from_datadict(data, files, name + '_1').splitlines())  # zips
-        return res
-
-
 class AdGroupAdminForm(forms.ModelForm):
     SETTINGS_FIELDS = [
         'notes',
         'bluekai_targeting',
         'interest_targeting',
         'exclusion_interest_targeting',
-        'target_regions',
-        'exclusion_target_regions',
         'redirect_pixel_urls',
         'redirect_javascript',
         'target_devices',
@@ -204,14 +167,6 @@ class AdGroupAdminForm(forms.ModelForm):
     ]
     notes = forms.CharField(required=False, widget=forms.Textarea,
                             help_text='Describe what kind of additional targeting was setup on the backend.')
-    target_regions = GeolocationMultipleChoiceField(
-        required=False,
-        help_text='Enter ZIP codes in the format of "US:123456", one ZIP code per line.',
-        widget=GeolocationAdminWidget())
-    exclusion_target_regions = GeolocationMultipleChoiceField(
-        required=False,
-        help_text='Enter ZIP codes in the format of "US:123456", one ZIP code per line.',
-        widget=GeolocationAdminWidget())
     bluekai_targeting = postgres_forms.JSONField(
         required=False, help_text='Example: ["and", "bluekai:446103", ["not", ["or", "bluekai:510120", "bluekai:510122"]]]')
     interest_targeting = forms.MultipleChoiceField(

@@ -58,7 +58,6 @@ INSTALLED_APPS = [
     'analytics',
     'prodops',
     'integrations.bizwire',
-    'searchableselect',
 ]
 
 MIDDLEWARE_CLASSES = [
