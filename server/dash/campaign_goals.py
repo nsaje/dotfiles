@@ -431,7 +431,7 @@ def fetch_goals(campaign_ids, end_date):
 
 
 def _prepare_performance_output(campaign_goal, stats, conversion_goals):
-    goal_values = campaign_goal.values.all()
+    goal_values = campaign_goal.values.all().order_by('-created_dt')
     last_goal_value = goal_values and goal_values[0]
     planned_value = last_goal_value and last_goal_value.value or None
     e_media_cost = extract_e_media_cost(stats)
