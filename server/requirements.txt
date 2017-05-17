@@ -17,7 +17,7 @@ unicodecsv==0.14.1
 XlsxWriter==0.9.6
 xlrd==1.0.0
 python-slugify==1.2.1
-newrelic==2.78.0.57
+newrelic==2.86.0.65
 raven==5.32.0
 boto==2.45.0
 celery==4.0.2
