@@ -294,7 +294,7 @@ class PostprocessGoalsTest(TestCase):
                 (1, 2): {
                     'pixel_1_24': 0,
                     'avg_cost_per_pixel_1_24': None,
-                    'roas_pixel_1_24': None,
+                    'roas_pixel_1_24': -20,
                     'pixel_1_168': 33,
                     'avg_cost_per_pixel_1_168': 20.0 / 33,
                     'roas_pixel_1_168': 300.0 - 20,
