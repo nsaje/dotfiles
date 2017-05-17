@@ -233,7 +233,7 @@ def apply_pixel_columns(breakdown, row_by_breakdown, pixels, touchpoint_rows):
                     cost = row['e_media_cost'] or 0
                     avg_cost = float(cost) / count if count else None
                     value = sum(x['conversion_value'] for x in pixel_rows if x['window'] <= conversion_window if x['conversion_value'])
-                    roas = (value - cost) if value else None
+                    roas = value - cost
                 else:
                     count = None
                     avg_cost = None
