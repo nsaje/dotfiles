@@ -3,6 +3,7 @@
 
 angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPermissions, zemGridConstants) {
     var AVG_COST_PREFIX = 'avg_cost_per_';
+    var ROAS_PREFIX = 'roas_';
 
     var CONVERSION_GOALS_PLACEHOLDER = 'conversion_goals_placeholder';
     var PIXELS_PLACEHOLDER = 'pixels_placeholder';
@@ -930,6 +931,15 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
+        conversionRoas: {
+            type: zemGridConstants.gridColumnTypes.CURRENCY,
+            help: 'Return on advertising spend.',
+            internal: 'zemauth.fea_can_see_roas',
+            shown: 'zemauth.fea_can_see_roas',
+            totalRow: true,
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
+        },
 
         // Video Metrics
         videoStart: {
@@ -1595,9 +1605,17 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
                 cpaCol.autoSelect = conversionsField;
                 cpaCol.goal = true;
 
+                var roasName = 'ROAS (' + name + ')';
+                var roasField = ROAS_PREFIX + conversionsField;
+                var roasCol = angular.copy(COLUMNS.conversionRoas);
+                roasCol.name = roasName;
+                roasCol.field = roasField;
+                roasCol.autoSelect = conversionsField;
+
                 subcategory.fields.push(conversionsField);
                 orderedColumns.push(conversionsCol);
                 orderedColumns.push(cpaCol);
+                orderedColumns.push(roasCol);
             });
         });
 
