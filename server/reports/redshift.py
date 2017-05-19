@@ -214,16 +214,16 @@ def get_audience_sample_size(account_id, slug, ttl, rules):
                 value = value.strip()
 
                 if rule.type == AudienceRuleType.STARTS_WITH:
-                    rule_query.append('referer LIKE %s')
+                    rule_query.append('referer ILIKE %s')
                     params.append(value + "%")
                 elif rule.type == AudienceRuleType.CONTAINS:
-                    rule_query.append('referer LIKE %s')
+                    rule_query.append('referer ILIKE %s')
                     params.append("%" + value + "%")
                 elif rule.type == AudienceRuleType.NOT_STARTS_WITH:
-                    rule_query.append('referer NOT LIKE %s')
+                    rule_query.append('referer NOT ILIKE %s')
                     params.append(value + "%")
                 elif rule.type == AudienceRuleType.NOT_CONTAINS:
-                    rule_query.append('referer NOT LIKE %s')
+                    rule_query.append('referer NOT ILIKE %s')
                     params.append("%" + value + "%")
                 else:
                     raise Exception('Unknown rule: %s'.format(rule.type))

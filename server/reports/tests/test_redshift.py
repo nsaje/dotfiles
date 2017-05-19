@@ -143,7 +143,7 @@ class RedshiftTest(TestCase):
         redshift.get_audience_sample_size(1, 'slug1', 10, rules)
 
         expected_query = 'SELECT COUNT(DISTINCT(zuid)) FROM pixie_sample WHERE account_id = %s AND slug = %s AND timestamp > %s ' \
-                         'AND (referer LIKE %s OR referer LIKE %s OR referer LIKE %s OR referer NOT LIKE %s OR referer NOT LIKE %s)'
+                         'AND (referer ILIKE %s OR referer ILIKE %s OR referer ILIKE %s OR referer NOT ILIKE %s OR referer NOT ILIKE %s)'
         time = datetime.datetime.now().date() - datetime.timedelta(days=10)
         expected_params = [1, 'slug1', time.isoformat(), 'a%', 'b%', '%c%', 'd%', 'e%']
         mock_cursor.execute.assert_called_once_with(expected_query, expected_params)
