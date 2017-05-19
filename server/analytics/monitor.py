@@ -56,7 +56,7 @@ def _get_rs_spend(table_name, date, account_id=None):
     return {}
 
 
-def audit_spend_integrity(date, account_id=None):
+def audit_spend_integrity(date, account_id=None, max_err=MAX_ERR):
     if date is None:
         date = datetime.datetime.utcnow().date() - datetime.timedelta(1)
     views = [
@@ -84,7 +84,7 @@ def audit_spend_integrity(date, account_id=None):
         rs_spend = _get_rs_spend(table_name, date, account_id=account_id)
         for key in rs_spend:
             err = daily_spend[key] - rs_spend[key]
-            if abs(err) > MAX_ERR:
+            if abs(err) > max_err:
                 integrity_issues.append((date, table_name, key, err))
     return integrity_issues
 
