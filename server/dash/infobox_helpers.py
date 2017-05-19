@@ -727,8 +727,13 @@ def _compute_daily_cap(ad_groups):
 
         ret += ags.b1_sources_group_daily_budget
 
-    if not ad_groups_with_active_b1_sources and ags.b1_sources_group_enabled:
-        ret += ags.b1_sources_group_daily_budget
+    if not ad_groups_with_active_b1_sources:
+        for ags in ad_group_settings.values():
+            if not ags.b1_sources_group_enabled:
+                continue
+            if ags.b1_sources_group_state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
+                continue
+            ret += ags.b1_sources_group_daily_budget or 0
 
     return ret
 
