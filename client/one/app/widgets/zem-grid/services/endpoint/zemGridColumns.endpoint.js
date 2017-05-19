@@ -1615,7 +1615,9 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
                 subcategory.fields.push(conversionsField);
                 orderedColumns.push(conversionsCol);
                 orderedColumns.push(cpaCol);
-                orderedColumns.push(roasCol);
+                if (zemPermissions.hasPermission('zemauth.fea_can_see_roas')) {
+                    orderedColumns.push(roasCol);
+                }
             });
         });
 
