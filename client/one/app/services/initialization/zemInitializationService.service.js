@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemInitializationService', function ($q, zemUserService, zemMediaSourcesService, zemNavigationNewService, zemNavigationService, zemDataFilterService, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemDesignHelpersService) { // eslint-disable-line max-len
+angular.module('one.services').service('zemInitializationService', function ($q, zemUserService, zemMediaSourcesService, zemNavigationNewService, zemNavigationService, zemDataFilterService, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemDesignHelpersService, zemGoogleAnalyticsService) { // eslint-disable-line max-len
     this.initApp = initApp;
     this.initSequence = initSequence;
 
@@ -9,6 +9,7 @@ angular.module('one.services').service('zemInitializationService', function ($q,
         zemMediaSourcesService.init();
         zemNavigationService.reload();
 
+        zemGoogleAnalyticsService.init();
         zemDesignHelpersService.init();
 
         // Service initializers that need to resolve before user can use the app
