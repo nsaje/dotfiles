@@ -39,7 +39,7 @@ class ReportJobAdmin(admin.ModelAdmin):
     link_to_scheduled_report.allow_tags = True
 
     def is_scheduled(self, obj):
-        return obj.scheduled_report is  not None
+        return obj.scheduled_report is not None
     is_scheduled.boolean = True
 
 
