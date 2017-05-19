@@ -1,14 +1,38 @@
 from decimal import Decimal
 import json
+import logging
+
+from django.forms.models import model_to_dict
 
 from dash import models, constants, forms
-from utils import api_common, exc
+from utils import api_common, exc, slack
 from dash.views import helpers
 from automation import campaign_stop
+
+logger = logging.getLogger(__name__)
 
 EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK = (
     431, 305
 )
+
+ACCOUNT_URL = "https://one.zemanta.com/v2/credit/account/{}"
+CAMPAIGN_URL = "https://one.zemanta.com/v2/analytics/campaign/{}?settings"
+
+SLACK_NEW_CREDIT_MSG = u"New credit #{credit_id} added on account <{url}|{account_name}> with amount ${amount} and end date {end_date}."
+SLACK_UPDATED_CREDIT_MSG = u"Credit #{credit_id} on account <{url}|{account_name}> updated: {history}"
+SLACK_NEW_BUDGET_MSG = u"New budget #{budget_id} added on campaign <{url}|{campaign_name}> with amount ${amount} and end date {end_date}."
+SLACK_UPDATED_BUDGET_MSG = u"Budget #{budget_id} on campaign <{url}|{campaign_name}> updated: {history}"
+
+
+def log_to_slack(msg):
+    try:
+        slack.publish(
+            msg,
+            channel='bcm',
+            username='z1'
+        )
+    except:
+        logger.exception('Failed to publish to slack')
 
 
 class AccountCreditView(api_common.BaseApiView):
@@ -68,7 +92,14 @@ class AccountCreditView(api_common.BaseApiView):
 
         item.instance.created_by = request.user
         item.save(request=request, action_type=constants.HistoryActionType.CREATE)
-
+        log_to_slack(SLACK_NEW_CREDIT_MSG.format(
+            credit_id=item.instance.pk,
+            url=ACCOUNT_URL.format(account_id),
+            account_id=account_id,
+            account_name=account.get_long_name(),
+            amount=item.instance.amount,
+            end_date=item.instance.end_date
+        ))
         return self.create_api_response(item.instance.pk)
 
     def _prepare_credit(self, credit):
@@ -123,7 +154,8 @@ class AccountCreditView(api_common.BaseApiView):
         ]
 
     def _get_credit_totals(self, account_id, credit_items):
-        valid_credit_items = [credit for credit in credit_items if credit.status != constants.CreditLineItemStatus.PENDING]
+        valid_credit_items = [credit for credit in credit_items if credit.status !=
+                              constants.CreditLineItemStatus.PENDING]
         total = sum(credit.effective_amount() for credit in valid_credit_items)
         allocated = sum(
             credit.get_allocated_amount() for credit in valid_credit_items if not credit.is_past()
@@ -199,6 +231,14 @@ class AccountCreditItemView(api_common.BaseApiView):
             raise exc.ValidationError(errors=item_form.errors)
 
         item_form.save(request=request, action_type=constants.HistoryActionType.CREDIT_CHANGE)
+        changes = item_form.instance.get_model_state_changes(model_to_dict(item_form.instance))
+        log_to_slack(SLACK_UPDATED_CREDIT_MSG.format(
+            credit_id=credit_id,
+            url=ACCOUNT_URL.format(account_id),
+            account_id=account_id,
+            account_name=account.get_long_name(),
+            history=item_form.instance.get_history_changes_text(changes),
+        ))
         return self.create_api_response(credit_id)
 
     def _get_response(self, account_id, item):
@@ -257,7 +297,14 @@ class CampaignBudgetView(api_common.BaseApiView):
         item.instance.created_by = request.user
         item.save(request=request, action_type=constants.HistoryActionType.CREATE)
         campaign_stop.perform_landing_mode_check(campaign, campaign.get_current_settings())
-
+        log_to_slack(SLACK_NEW_BUDGET_MSG.format(
+            budget_id=item.instance.pk,
+            url=CAMPAIGN_URL.format(campaign_id),
+            campaign_id=campaign_id,
+            campaign_name=campaign.get_long_name(),
+            amount=item.instance.amount,
+            end_date=item.instance.end_date
+        ))
         return self.create_api_response(item.instance.pk)
 
     def _prepare_item(self, user, item):
@@ -420,6 +467,14 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             campaign.get_current_settings()
         )
 
+        changes = item.instance.get_model_state_changes(model_to_dict(item.instance))
+        log_to_slack(SLACK_UPDATED_BUDGET_MSG.format(
+            budget_id=budget_id,
+            url=CAMPAIGN_URL.format(campaign_id),
+            campaign_id=campaign_id,
+            campaign_name=campaign.get_long_name(),
+            history=item.instance.get_history_changes_text(changes),
+        ))
         return self.create_api_response({
             'id': item.instance.pk,
             'state_changed': state_changed,

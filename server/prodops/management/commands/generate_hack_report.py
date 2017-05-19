@@ -118,7 +118,7 @@ class Command(utils.command_helpers.ExceptionCommand):
 
         self._print('Most hacked accounts:')
         for account, cnt in stats_by_client['account'].most_common(3):
-            media = spend_data['account'].get(campaign.pk, Decimal(0))
+            media = spend_data['account'].get(account.pk, Decimal(0))
             self._print(' - #{} {}: {} ({}, {})'.format(
                 account.pk,
                 account.get_long_name(),
@@ -211,7 +211,6 @@ class Command(utils.command_helpers.ExceptionCommand):
                 removed_dt__isnull=True,
                 created_dt__lt=today + datetime.timedelta(1)):
             hacks_per_summary.setdefault(hack.summary, []).append(hack)
-        print hacks_per_summary
         return hacks_per_summary
 
     def _get_stats_by_client(self, today):
