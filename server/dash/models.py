@@ -24,6 +24,7 @@ from dash.features.geolocation import *
 from dash.features.scheduled_reports import *
 from dash.features.reports.models import *
 from dash.features.supply_reports.models import *
+from dash.features.bluekai.models import *
 
 # FIXME: Legacy import - accessing constants through dash.modals
 from dash import constants

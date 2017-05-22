@@ -280,6 +280,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_publishers_all_levels', 'User can see publishers on all levels.'),
             ('fea_can_see_video_metrics', 'User can see video metrics.'),
             ('fea_can_see_roas', 'User can see ROAS-related things.'),
+            ('can_use_bluekai_targeting', 'User can use bluekai targeting'),
         )
 
     def get_full_name(self):
