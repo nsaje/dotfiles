@@ -15,10 +15,10 @@ class UserCreationForm(forms.UserCreationForm):
 
 
 class UserChangeForm(forms.UserChangeForm):
-    username = None
 
     class Meta(forms.UserChangeForm.Meta):
         model = models.User
+        field_classes = {'username': None}
 
 
 class UserAdmin(authadmin.UserAdmin):
