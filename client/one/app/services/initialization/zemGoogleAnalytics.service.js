@@ -5,6 +5,7 @@ angular.module('one.services').factory('zemGoogleAnalyticsService', function ($w
         if (!$window.ga) return;
 
         $window.ga('create', GA_KEY, 'auto');
+        $window.ga('send', 'pageview', $location.path());
 
         $rootScope.$on('$stateChangeSuccess', function () {
             $window.ga('send', 'pageview', $location.path());
