@@ -11,7 +11,7 @@ DIMENSION_FIELDS |= set([
 
 CONTENT_ADS_FIELDS = [
     'url', 'title', 'display_url', 'brand_name', 'description', 'call_to_action', 'label', 'batch_name', 'batch_id',
-    'upload_time', 'image_hash', 'image_urls', 'image_url', 'redirector_url', 'status_per_source'
+    'upload_time', 'image_hash', 'image_urls', 'image_url', 'redirector_url', 'status_per_source', 'tracker_urls',
 ]
 
 SOURCE_FIELDS = [
