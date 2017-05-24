@@ -1,9 +1,13 @@
+import json
 import logging
+import urllib2
 
 import newrelic.agent
 from django.conf import settings
 
 from server.celery import app
+
+from utils import request_signer
 
 logger = logging.getLogger(__name__)
 
@@ -63,3 +67,26 @@ def _send_task(queue_name, task_name, **kwargs):
         logger.exception("Error sending ping to k1. Task: %s", task_name, extra={
             'data': kwargs,
         })
+
+
+def _call_api(url, data=None, method='GET'):
+    if settings.K1_DEMO_MODE and method != 'GET':
+        return {}
+
+    request = urllib2.Request(url, data)
+    request.get_method = lambda: method
+    response = request_signer.urllib2_secure_open(request, settings.K1_API_SIGN_KEY[0])
+
+    status_code = response.getcode()
+    if status_code != 200:
+        raise Exception('Invalid response status code. status code: {}'.format(status_code))
+
+    ret = json.loads(response.read())
+    if ret['error']:
+        raise Exception('Request not successful. error: {}'.format(ret['error']))
+
+    return ret.get('response')
+
+
+def get_adgroup_realtimestats(ad_group_id):
+    return _call_api(settings.K1_REALTIMESTATS_ADGROUP_URL.format(ad_group_id=ad_group_id))
