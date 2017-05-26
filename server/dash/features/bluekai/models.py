@@ -19,11 +19,11 @@ class BlueKaiCategory(models.Model, managers.BlueKaiCategoryMixin):
     parent_category_id = models.PositiveIntegerField()
     name = models.TextField()
     description = models.TextField()
-    reach = models.PositiveIntegerField()
+    reach = models.BigIntegerField()
     price = models.DecimalField(max_digits=5, decimal_places=2)
     navigation_only = models.BooleanField()
     status = models.PositiveSmallIntegerField(
         default=constants.BlueKaiCategoryStatus.INACTIVE,
         choices=constants.BlueKaiCategoryStatus.get_choices())
 
-    objects = managers.BlueKaiCategoryManager.from_queryset(BlueKaiCategoryQuerySet)
+    objects = managers.BlueKaiCategoryManager.from_queryset(BlueKaiCategoryQuerySet)()

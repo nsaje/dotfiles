@@ -41,7 +41,7 @@ def get_taxonomy(parent_category_id=PARENT_CATEGORY_ID):
 def get_audience(audience_id):
     url = AUDIENCES_URL + str(audience_id)
     response = _perform_request('GET', url, params={})
-    return response
+    return json.loads(response.content)
 
 
 def _get_signed_params(method, url, params, data):

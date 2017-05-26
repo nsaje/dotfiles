@@ -39,11 +39,11 @@ def cross_check_audience_categories():
     segments = audience['segments']
     if segments.keys() != ['AND']:
         messages.append('Operator AND expected on top level')
-    elif len(segments['AND'] != 1):
+    elif len(segments['AND']) != 1:
         messages.append('Top level AND has more than one child')
     elif segments['AND'][0].keys() != ['AND']:
         messages.append('Operator AND expected on second level')
-    elif len(segments['AND'][0]['AND'] != 1):
+    elif len(segments['AND'][0]['AND']) != 1:
         messages.append('Second level AND has more than one child')
     elif segments['AND'][0]['AND'][0].keys() != ['OR']:
         messages.append('Operator OR expected on third level')
