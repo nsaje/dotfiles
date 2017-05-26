@@ -1,4 +1,4 @@
-from django.core.management.base import BaseCommand
+# flake8: noqa
 from django.db.models import Sum
 
 import reports.models

@@ -11,7 +11,6 @@ import os
 import signal
 import sys
 
-import sys
 import cdecimal
 # Ensure any import of decimal gets cdecimal instead.
 sys.modules['decimal'] = cdecimal  # noqa
@@ -50,6 +49,7 @@ def sigterm_handler(signum, frame):
     print "Cleaning up the test database %s" % db
     connection.creation.destroy_test_db(db, keepdb=args.keepdb)
     sys.exit(0)
+
 
 signal.signal(signal.SIGTERM, sigterm_handler)
 signal.signal(signal.SIGINT, sigterm_handler)

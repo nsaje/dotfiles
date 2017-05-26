@@ -1,8 +1,7 @@
 import datetime
 from decimal import Decimal
-from mock import patch, MagicMock
+from mock import patch
 
-from django.db.models import Sum
 from django.test import TestCase
 
 import dash.models

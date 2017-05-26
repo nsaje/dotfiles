@@ -51,13 +51,13 @@ class ValidateBreakdownTest(TestCase):
             validate_breakdown_by_structure(Level.AD_GROUPS, ['publisher_id', 'content_ad_id'])
 
     def test_breakdown_validate_delivery(self):
-        user = User.objects.get(pk=1)
+        User.objects.get(pk=1)
         for dimension in constants.DeliveryDimension._ALL:
             with self.assertRaises(exc.InvalidBreakdownError):
                 validate_breakdown_by_structure(Level.AD_GROUPS, [dimension])
 
     def test_breakdown_validate_time(self):
-        user = User.objects.get(pk=1)
+        User.objects.get(pk=1)
         for dimension in constants.TimeDimension._ALL:
             validate_breakdown_by_structure(Level.AD_GROUPS, [dimension])
 

@@ -1,6 +1,5 @@
 import logging
 
-from django.core.management.base import BaseCommand
 
 from dash import models
 from utils import redirector_helper

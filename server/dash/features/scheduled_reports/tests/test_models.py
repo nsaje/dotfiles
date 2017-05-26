@@ -61,15 +61,15 @@ class ScheduledReportTestCase(TestCase):
         query = {
             'filters': [
                 {
-                  'field': 'Ad Group Id',
-                  'operator': '=',
-                  'value': '2040'
+                    'field': 'Ad Group Id',
+                    'operator': '=',
+                    'value': '2040'
                 },
                 {
-                  'field': 'Date',
-                  'operator': 'between',
-                  'from': '2016-10-01',
-                  'to': '2016-10-31'
+                    'field': 'Date',
+                    'operator': 'between',
+                    'from': '2016-10-01',
+                    'to': '2016-10-31'
                 },
             ]
         }

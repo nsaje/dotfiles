@@ -60,7 +60,7 @@ class Command(ExceptionCommand):
                 'username': demo_instance['username'],
                 'password': demo_instance['password'],
                 'csrfmiddlewaretoken': session.cookies['csrftoken']
-                },
+            },
             headers={'Referer': '%s/signin?next=/' % demo_instance['url']}
         )
         if response.status_code != 200:

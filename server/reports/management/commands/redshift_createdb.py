@@ -1,6 +1,5 @@
 import logging
 
-from django.core.management.base import BaseCommand
 from django.conf import settings
 from django.db import connections
 from django.db.utils import ProgrammingError

@@ -2,7 +2,6 @@ import logging
 
 from django.db import connections
 from django.conf import settings
-from django.core.management.base import BaseCommand
 
 from utils.command_helpers import set_logger_verbosity, ExceptionCommand
 

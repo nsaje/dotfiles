@@ -1319,10 +1319,10 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
                     WHERE c.conversion_lag <= 2160 AND c.date BETWEEN %(date_from)s AND %(date_to)s AND c.account_id=%(account_id)s
                 ) a join mvh_adgroup_structure s on a.ad_group_id=s.ad_group_id
                 GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, conversion_label);"""), {
-                    'date_from': datetime.date(2016, 7, 1),
-                    'date_to': datetime.date(2016, 7, 3),
-                    'account_id': 1,
-                }
+                'date_from': datetime.date(2016, 7, 1),
+                'date_to': datetime.date(2016, 7, 3),
+                'account_id': 1,
+            }
             )
         ])
 

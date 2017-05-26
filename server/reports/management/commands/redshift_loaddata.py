@@ -6,7 +6,6 @@ import collections
 from django.utils._os import upath
 from django.utils.functional import cached_property
 from django.apps import apps
-from django.core.management.base import BaseCommand
 from django.conf import settings
 from django.db import transaction
 

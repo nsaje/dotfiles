@@ -1,7 +1,5 @@
-import traceback
 import logging
 
-from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 import rest_framework.views
 from rest_framework.response import Response

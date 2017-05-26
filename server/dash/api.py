@@ -1,4 +1,3 @@
-import datetime
 import decimal
 import logging
 import newrelic.agent
@@ -6,11 +5,9 @@ import newrelic.agent
 from django.db import transaction
 from django.db.models import Q
 
-import dash.models
 from utils import redirector_helper
 from utils import email_helper
 from utils import k1_helper
-from utils import converters
 
 from dash import models
 from dash import constants

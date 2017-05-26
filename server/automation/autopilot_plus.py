@@ -111,7 +111,7 @@ def _set_paused_ad_group_sources_to_minimum_values(ad_group_settings):
         {ad_group: ad_group_settings}, dash.constants.AdGroupSettingsState.INACTIVE)
     if (ad_group_settings.b1_sources_group_enabled and
             ad_group_settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.INACTIVE):
-                ags_settings.append(dash.constants.SourceAllRTB)
+        ags_settings.append(dash.constants.SourceAllRTB)
 
     new_budgets = {}
     for ag_source_setting in ags_settings:

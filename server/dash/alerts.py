@@ -5,39 +5,39 @@ from dash import constants
 
 
 def _get_campaign_budget_link(request, campaign):
-        query_string = 'settings&settingsScrollTo=zemCampaignBudgetsSettings'
-        link = '/v2/analytics/campaign/{}?{}'.format(campaign.id, query_string)
-        return request.build_absolute_uri(link)
+    query_string = 'settings&settingsScrollTo=zemCampaignBudgetsSettings'
+    link = '/v2/analytics/campaign/{}?{}'.format(campaign.id, query_string)
+    return request.build_absolute_uri(link)
 
 
 def _get_campaign_ad_groups_link(request, campaign):
-        link = '/v2/analytics/campaign/{}'.format(campaign.id)
-        return request.build_absolute_uri(link)
+    link = '/v2/analytics/campaign/{}'.format(campaign.id)
+    return request.build_absolute_uri(link)
 
 
 def _construct_depleting_items(request, campaigns):
-        campaign_items = []
-        for campaign in sorted(campaigns, key=lambda x: x.name):
-            campaign_items.append(
-                    u'{} - <a href="{}">Add budget</a> or <a href="{}">Lower daily caps</a>'.format(
-                            campaign.name,
-                            _get_campaign_budget_link(request, campaign),
-                            _get_campaign_ad_groups_link(request, campaign),
-                    )
+    campaign_items = []
+    for campaign in sorted(campaigns, key=lambda x: x.name):
+        campaign_items.append(
+            u'{} - <a href="{}">Add budget</a> or <a href="{}">Lower daily caps</a>'.format(
+                campaign.name,
+                _get_campaign_budget_link(request, campaign),
+                _get_campaign_ad_groups_link(request, campaign),
             )
-        return campaign_items
+        )
+    return campaign_items
 
 
 def _construct_landing_items(request, campaigns):
-        campaign_items = []
-        for campaign in sorted(campaigns, key=lambda x: x.name):
-            campaign_items.append(
-                    u'{} - <a href="{}">Add budget</a>'.format(
-                            campaign.name,
-                            _get_campaign_budget_link(request, campaign),
-                    )
+    campaign_items = []
+    for campaign in sorted(campaigns, key=lambda x: x.name):
+        campaign_items.append(
+            u'{} - <a href="{}">Add budget</a>'.format(
+                campaign.name,
+                _get_campaign_budget_link(request, campaign),
             )
-        return campaign_items
+        )
+    return campaign_items
 
 
 def get_account_landing_mode_alerts(request, account):
@@ -106,8 +106,8 @@ def get_campaign_landing_mode_alerts(request, campaign):
         alerts.append({
             'type': constants.AlertType.WARNING,
             'message': message.format(
-                    budget_link=_get_campaign_budget_link(request, campaign),
-                    sources_link=_get_campaign_ad_groups_link(request, campaign),
+                budget_link=_get_campaign_budget_link(request, campaign),
+                sources_link=_get_campaign_ad_groups_link(request, campaign),
             ),
             'permission': 'zemauth.can_see_landing_mode_alerts',
         })
@@ -121,7 +121,7 @@ def get_campaign_landing_mode_alerts(request, campaign):
         alerts.append({
             'type': constants.AlertType.INFO,
             'message': message.format(
-                    budget_link=_get_campaign_budget_link(request, campaign),
+                budget_link=_get_campaign_budget_link(request, campaign),
             ),
             'permission': 'zemauth.can_see_landing_mode_alerts',
         })

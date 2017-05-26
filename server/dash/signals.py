@@ -13,4 +13,5 @@ def add_account_to_groups(sender, instance, created, **kwargs):
     existing_groups = instance.groups.all()
     instance.groups = list(set(existing_groups or [] + [x.pk for x in groups]))
 
+
 post_save.connect(add_account_to_groups, sender=dash.models.Account)

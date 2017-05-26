@@ -18,6 +18,7 @@ class CampaignBudgetDepletionNotificationAdmin(admin.ModelAdmin):
     )
     readonly_fields = ['created_dt']
 
+
 admin.site.register(models.CampaignBudgetDepletionNotification, CampaignBudgetDepletionNotificationAdmin)
 
 
@@ -37,6 +38,7 @@ class AutopilotAdGroupSourceBidCpcLogAdmin(admin.ModelAdmin):
     )
     readonly_fields = ['created_dt']
     date_hierarchy = 'created_dt'
+
 
 admin.site.register(models.AutopilotAdGroupSourceBidCpcLog, AutopilotAdGroupSourceBidCpcLogAdmin)
 
@@ -67,6 +69,7 @@ class AutopilotLogAdmin(admin.ModelAdmin):
     def get_campaign(self, obj):
         return obj.ad_group.campaign
     get_campaign.short_description = 'Campaign'
+
 
 admin.site.register(models.AutopilotLog, AutopilotLogAdmin)
 
@@ -116,5 +119,6 @@ class CampaignStopLogAdmin(admin.ModelAdmin):
             obj.campaign.name
         )
     campaign_link.short_description = 'Campaign'
+
 
 admin.site.register(models.CampaignStopLog, CampaignStopLogAdmin)

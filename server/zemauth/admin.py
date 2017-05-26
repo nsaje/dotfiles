@@ -46,6 +46,7 @@ class UserAdmin(authadmin.UserAdmin):
 class InternalGroupAdmin(admin.ModelAdmin):
     pass
 
+
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.InternalGroup, InternalGroupAdmin)
 admin.site.register(Permission)

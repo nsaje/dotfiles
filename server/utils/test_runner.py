@@ -2,7 +2,6 @@ import os
 import logging
 import time
 import operator
-import mock
 
 import unittest
 

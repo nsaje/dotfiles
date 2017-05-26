@@ -110,8 +110,8 @@ class AutopilotCpcTestCase(test.TestCase):
             self.assertEqual(
                 (new_cpc, comments),
                 (Decimal(test_case[4]), test_case[5]),
-                msg=('Expected cpc: '+test_case[4]+' Actual: '+str(new_cpc) +
-                     ' | Expected Comments: "'+str(test_case[5])+'" Actual: "'+str(comments)+'"'
+                msg=('Expected cpc: ' + test_case[4] + ' Actual: ' + str(new_cpc) +
+                     ' | Expected Comments: "' + str(test_case[5]) + '" Actual: "' + str(comments) + '"'
                      ))
 
     @patch('automation.autopilot_settings.AUTOPILOT_MIN_CPC', Decimal('0.1'))

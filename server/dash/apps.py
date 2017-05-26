@@ -5,4 +5,4 @@ class DashAppConfig(AppConfig):
     name = 'dash'
 
     def ready(self):
-        import dash.signals
+        import dash.signals  # noqa: F401

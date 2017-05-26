@@ -1,6 +1,5 @@
 from django import test
 import ast
-import sys
 import os
 import glob
 

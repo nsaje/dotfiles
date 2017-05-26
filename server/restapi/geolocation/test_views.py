@@ -1,7 +1,6 @@
 from django.core.urlresolvers import reverse
 
 import restapi.test_views
-import dash.constants
 
 
 class GeolocationListViewTest(restapi.test_views.RESTAPITest):

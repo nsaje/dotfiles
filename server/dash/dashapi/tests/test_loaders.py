@@ -640,7 +640,7 @@ class PublisherBlacklistLoaderTest(TestCase):
         })
         del row[id_field]
 
-        row['publisher_id'] = 'test.'+row['publisher_id']
+        row['publisher_id'] = 'test.' + row['publisher_id']
         self.assertEqual(self.loader.find_blacklisted_status_by_subdomain(row), status)
 
         row[id_field] = 1

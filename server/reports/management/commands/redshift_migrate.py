@@ -43,7 +43,7 @@ def _select_migrations_after_index(migration_files, start_index):
     for mf in migration_files:
         try:
             index = int(mf[:4])
-        except ValueError as e:
+        except ValueError:
             logger.exception("Migration file not in the right format")
 
         if index >= start_index:

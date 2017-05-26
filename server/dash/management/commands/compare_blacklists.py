@@ -1,4 +1,3 @@
-import datetime
 import influx
 import logging
 import termcolor

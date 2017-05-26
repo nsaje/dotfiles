@@ -2,7 +2,6 @@ from utils.command_helpers import ExceptionCommand
 import datetime
 
 from etl import maintenance
-from etl import refresh_k1
 
 
 class Command(ExceptionCommand):

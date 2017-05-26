@@ -598,7 +598,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         mock_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
         john = self._make_a_john()
-        ual = dash.models.History.objects.create(
+        dash.models.History.objects.create(
             action_type=dash.constants.HistoryActionType.CONTENT_AD_CREATE,
             level=dash.constants.HistoryLevel.AD_GROUP,
             ad_group=dash.models.AdGroup.objects.get(pk=1),
@@ -608,7 +608,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         self.assertEqual(1, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
 
         mock_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
-        ual = dash.models.History.objects.create(
+        dash.models.History.objects.create(
             action_type=dash.constants.HistoryActionType.SETTINGS_CHANGE,
             ad_group=dash.models.AdGroup.objects.get(pk=1),
             level=dash.constants.HistoryLevel.AD_GROUP,

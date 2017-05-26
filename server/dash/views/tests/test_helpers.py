@@ -2,7 +2,6 @@
 import datetime
 import decimal
 
-from django.db import connection
 from django.test import TestCase, RequestFactory
 from django.http.request import HttpRequest
 from django.core.exceptions import MultipleObjectsReturned
@@ -14,7 +13,7 @@ from dash import constants
 from dash import publisher_helpers
 from utils.test_helper import fake_request
 from utils import exc
-from mock import patch, ANY
+from mock import patch
 from zemauth.models import User
 
 

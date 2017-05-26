@@ -3,7 +3,6 @@ import datetime
 from django import test
 from mock import patch
 
-from dash import models as dashmodels
 from reports import api
 from reports import refresh
 
@@ -28,18 +27,18 @@ class RollupTestCase(test.TestCase):
         self.assertEqual(rows[0]['clicks'], 32)
         self.assertEqual(rows[0]['impressions'], 3034)
         self.assertEqual(rows[0]['cost'], 1.4728)
-        self.assertEqual(int(rows[0]['ctr'] * 10000)/10000.0, 1.0547)
+        self.assertEqual(int(rows[0]['ctr'] * 10000) / 10000.0, 1.0547)
 
         self.assertEqual(rows[1]['clicks'], 80)
         self.assertEqual(rows[1]['impressions'], 5570)
         self.assertEqual(rows[1]['cost'], 2.8346)
-        self.assertEqual(int(rows[1]['ctr'] * 10000)/10000.0, 1.4362)
+        self.assertEqual(int(rows[1]['ctr'] * 10000) / 10000.0, 1.4362)
         self.assertEqual(rows[1]['cpc'], 0.0354)
 
         self.assertEqual(rows[2]['clicks'], 106)
         self.assertEqual(rows[2]['impressions'], 6829)
         self.assertEqual(rows[2]['cost'], 3.0292)
-        self.assertEqual(int(rows[2]['ctr'] * 10000)/10000.0, 1.5522)
+        self.assertEqual(int(rows[2]['ctr'] * 10000) / 10000.0, 1.5522)
         self.assertEqual(rows[2]['cpc'], 0.0286)
 
     def test_by_source_for_campaign(self):
@@ -50,13 +49,13 @@ class RollupTestCase(test.TestCase):
         self.assertEqual(rows[0]['clicks'], 36)
         self.assertEqual(rows[0]['impressions'], 2235)
         self.assertEqual(rows[0]['cost'], 1.5103)
-        self.assertEqual(int(rows[0]['ctr'] * 10000)/10000.0, 1.6107)
+        self.assertEqual(int(rows[0]['ctr'] * 10000) / 10000.0, 1.6107)
         self.assertEqual(rows[0]['cpc'], 0.042)
 
         self.assertEqual(rows[1]['clicks'], 57)
         self.assertEqual(rows[1]['impressions'], 3726)
         self.assertEqual(rows[1]['cost'], 2.2844)
-        self.assertEqual(int(rows[1]['ctr'] * 10000)/10000.0, 1.5297)
+        self.assertEqual(int(rows[1]['ctr'] * 10000) / 10000.0, 1.5297)
         self.assertEqual(rows[1]['cpc'], 0.0401)
 
     def test_by_campaign_for_account(self):

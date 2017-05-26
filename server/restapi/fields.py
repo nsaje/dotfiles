@@ -16,6 +16,7 @@ class NotProvided(object):
         return
         yield
 
+
 NOT_PROVIDED = NotProvided()
 
 
@@ -62,6 +63,7 @@ class CommaListField(fields.ListField):
     """ Allows list query parameters in the form of both
         ?param=1,2,3 and ?param=1&param=2&param=3
     """
+
     def __init__(self, *args, **kwargs):
         self.child = kwargs.pop('child')
         return super(CommaListField, self).__init__(*args, **kwargs)

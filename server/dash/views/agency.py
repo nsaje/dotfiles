@@ -14,7 +14,6 @@ from automation import autopilot_budgets, autopilot_plus, autopilot_settings, ca
 from dash.views import helpers
 from dash import forms
 from dash import models
-from dash import api
 from dash import constants
 from dash import retargeting_helper
 from dash import campaign_goals

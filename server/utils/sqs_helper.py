@@ -45,4 +45,4 @@ def delete_messages(queue_name, messages):
     queue = _get_queue(connection, queue_name)
     for i in range(0, len(messages), MAX_MESSAGES_PER_BATCH):
         connection.delete_message_batch(
-            queue, messages[i:i+MAX_MESSAGES_PER_BATCH])
+            queue, messages[i:i + MAX_MESSAGES_PER_BATCH])

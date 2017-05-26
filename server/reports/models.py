@@ -1,6 +1,5 @@
 from django.db import models
 
-import dash.models
 from reports import constants
 
 

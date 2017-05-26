@@ -10,23 +10,19 @@ function green {
   echo -e "\e[32m$1\e[0m"
 }
 
-# PEP 8 ------------------------------------------------------------------------
+# Flake8 ------------------------------------------------------------------------
 
-blue "PEP8 lint in progress ..."
-pep8 \
-  --first \
-  --exclude="__init__.py,test_api.py,settings.py,wsgi.py,migrations,localsettings.py,regions.py" \
-  --max-line-length=700 \
-  ./server/
+blue "Flake8 lint in progress ..."
+flake8 ./server/
 
 if [ $? != 0 ]
   then
     red "+-------------------------+"
-    red "|    PEP8 CHECK FAILED    |"
+    red "|    Flake8 CHECK FAILED    |"
     red "+-------------------------+"
     exit 1
 fi
-green "PEP8 check successful"
+green "Flake8 check successful"
 
 # ES Lint ----------------------------------------------------------------------
 

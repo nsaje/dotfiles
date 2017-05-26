@@ -2083,6 +2083,7 @@ class OperatingSystemVersion(ConstantBase):
         MACOSX_10_12: '10.12 Sierra',
     }
 
+
 OSV_MAPPING = {
     # Versions mapped to OS and ordered based on the release date
 

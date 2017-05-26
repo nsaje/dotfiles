@@ -877,7 +877,7 @@ def _adjust_source_caps(campaign, daily_caps):
                       u'New daily caps:\n{}.'.format(
                           ad_group.id,
                           '\n'.join(["{}: {}".format(ags.source.name, c)
-                                    for ags, c in sorted(sources_new_cap, key=lambda x: x[1])]),
+                                     for ags, c in sorted(sources_new_cap, key=lambda x: x[1])]),
                       )
             )
 
@@ -888,7 +888,7 @@ def _adjust_source_caps(campaign, daily_caps):
                     campaign=campaign,
                     notes=u'Stopping rtb sources on ad group {}.\n'
                           'Lowering minimum autopilot budget not possible.'.format(
-                               ad_group.id,
+                              ad_group.id,
                           )
                 )
             elif b1_group_new_cap:
@@ -897,8 +897,8 @@ def _adjust_source_caps(campaign, daily_caps):
                     campaign=campaign,
                     notes=u'Updating rtb sources on ad group {}:\n'
                           u'New daily cap: {}'.format(
-                               ad_group.id,
-                               b1_group_new_cap,
+                              ad_group.id,
+                              b1_group_new_cap,
                           )
                 )
 

@@ -304,10 +304,10 @@ def process_report(date, parsed_report_rows, report_type):
 
         _delete_and_restore_bulk_stats(report_type, bulk_contentad_stats, bulk_goal_conversion_stats)
 
-        campaigns_ids = dash.models.AdGroup.objects.filter(contentad__id__in=content_ad_ids)\
-                                                   .order_by('campaign_id')\
-                                                   .distinct('campaign_id')\
-                                                   .values_list('campaign_id', flat=True)
+        dash.models.AdGroup.objects.filter(contentad__id__in=content_ad_ids)\
+                                   .order_by('campaign_id')\
+                                   .distinct('campaign_id')\
+                                   .values_list('campaign_id', flat=True)
     except:
         logger.exception('Failed processing report')
         raise

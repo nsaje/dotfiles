@@ -22,7 +22,7 @@ class SQLMatcher():
     def __eq__(self, other):
         try:
             assert_sql_equals(self.obj, other)
-        except AssertionError as e:
+        except AssertionError:
             return False
         return True
 
@@ -36,7 +36,7 @@ class TestSQLMixin(object):
 class TestRenderMixin(object):
 
     def assertTemplateRenderEquals(self, template, context, output):
-        t = Template('{% load backtosql_tags %}'+template)
+        t = Template('{% load backtosql_tags %}' + template)
         c = Context(context)
         self.assertEqual(t.render(c), SQLMatcher(output))
 
@@ -241,10 +241,6 @@ class ModelTestCase(TestCase):
 
 
 class FiltersTestCase(TestCase, TestRenderMixin):
-
-    def setUp(self):
-        c1 = backtosql.Column('cat', alias='py_cat')
-        c2 = backtosql.TemplateColumn('test_col.sql', {'column_name': 'dog', 'multiplier': 131}, alias='py_dog')
 
     def test_only_column(self):
         c1 = backtosql.Column('cat', alias='py_cat')

@@ -1,4 +1,3 @@
-from functools import partial
 
 from django import forms
 from django.test import TestCase

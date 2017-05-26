@@ -61,6 +61,7 @@ class TimeLimits:
     WEEK = 30
     MONTH = 12
 
+
 DimensionIdentifierMapping = {
     'account': 'account_id',
     'campaign': 'campaign_id',

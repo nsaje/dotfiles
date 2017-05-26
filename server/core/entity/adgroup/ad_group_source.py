@@ -122,8 +122,8 @@ class AdGroupSource(models.Model):
 
         try:
             return core.entity.settings.AdGroupSourceSettings.objects\
-                                        .filter(ad_group_source_id=self.pk)\
-                                        .latest('created_dt')
+                .filter(ad_group_source_id=self.pk)\
+                .latest('created_dt')
         except ObjectDoesNotExist:
             return None
 

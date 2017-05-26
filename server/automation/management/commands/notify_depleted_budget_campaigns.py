@@ -1,6 +1,5 @@
 import logging
 
-from django.core.management.base import BaseCommand
 
 from automation import budgetdepletion
 from utils.command_helpers import ExceptionCommand

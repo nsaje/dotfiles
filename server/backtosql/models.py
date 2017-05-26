@@ -1,5 +1,4 @@
 import helpers
-import q
 from columns import TemplateColumn
 
 

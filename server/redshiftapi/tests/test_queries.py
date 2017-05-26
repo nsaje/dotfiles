@@ -1,13 +1,10 @@
 import backtosql
-import copy
 import datetime
 import mock
 
 from django.test import TestCase
 
-from stats import constants
 from stats.helpers import Goals
-from utils import exc
 
 import dash.models
 

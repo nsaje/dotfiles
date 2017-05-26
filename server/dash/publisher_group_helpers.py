@@ -440,7 +440,7 @@ def _prepare_entries(entry_dicts, publisher_group):
 
 def validate_blacklist_entry(obj, entry):
     if (entry.source and entry.source.source_type.type == constants.SourceType.OUTBRAIN and
-       ((obj and obj.get_publisher_level() != constants.PublisherBlacklistLevel.ACCOUNT) or not obj)):
+            ((obj and obj.get_publisher_level() != constants.PublisherBlacklistLevel.ACCOUNT) or not obj)):
         raise PublisherGroupTargetingException("Outbrain specific blacklisting is only available on account level")
 
 

@@ -32,7 +32,7 @@ class Command(ExceptionCommand):
                 for batch_start_id in range(min_id, max_id, BATCH_SIZE):
                     current_batch = models.ArticleStats.objects.filter(
                         id__gte=batch_start_id,
-                        id__lte=batch_start_id+BATCH_SIZE
+                        id__lte=batch_start_id + BATCH_SIZE
                     )
                     if end_date is not None:
                         current_batch = current_batch.filter(date__lte=end_date)

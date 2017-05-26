@@ -2,7 +2,6 @@ import collections
 
 from automation import campaign_stop
 
-from dash import models
 import dash.campaign_goals
 from dash import constants
 from dash.views import helpers
@@ -97,7 +96,7 @@ def format_report_rows_content_ad_editable_fields(rows):
 
             source_status_text = ''
             if ('source_status' in source_status and
-               source_status['source_status'] != constants.AdGroupSourceSettingsState.ACTIVE):
+                    source_status['source_status'] != constants.AdGroupSourceSettingsState.ACTIVE):
                 source_status_text = '(paused)'
 
             submission_status = source_status['submission_status']

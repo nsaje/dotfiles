@@ -1,7 +1,6 @@
 import urlparse
 import urllib
 
-from django.core.urlresolvers import reverse
 from django.conf import settings
 
 

@@ -65,6 +65,7 @@ class RSTouchpointConversionsPublishersModel(redshift.RSModel):
     DEFAULT_RETURNED_FIELDS_APP = [f['app'] for f in _CONVERSION_FIELDS]
     ALLOWED_BREAKDOWN_FIELDS_APP = set(f['app'] for f in _BREAKDOWN_FIELDS)
 
+
 RSTouchpointConversions = RSTouchpointConversionsModel()
 RSTouchpointConversionsPublishers = RSTouchpointConversionsPublishersModel()
 

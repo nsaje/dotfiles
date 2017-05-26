@@ -8,6 +8,7 @@ This module is only _proxy_ for real localsettings.
 
 sys.dont_write_bytecode = True
 
+
 def is_valid_attribute(attribute_name):
     if attribute_name.startswith("_"):
         return False

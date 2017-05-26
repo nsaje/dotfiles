@@ -15,4 +15,5 @@ class SupplyReportRecipientAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('created_dt', 'modified_dt')
 
+
 admin.site.register(models.SupplyReportRecipient, SupplyReportRecipientAdmin)

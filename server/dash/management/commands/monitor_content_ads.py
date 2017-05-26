@@ -1,7 +1,7 @@
+# flake8: noqa
 import datetime
 import logging
 
-from django.core.management.base import BaseCommand
 
 import dash.constants
 import dash.models

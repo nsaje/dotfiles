@@ -1,4 +1,3 @@
-import functools
 import json
 
 from django import forms

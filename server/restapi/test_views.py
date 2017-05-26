@@ -5,11 +5,9 @@ import json
 import mock
 
 from django.test import TestCase, override_settings
-from django.http import Http404
 from rest_framework.test import APIClient
 from zemauth.models import User
 from django.core.urlresolvers import reverse
-from rest_framework import exceptions
 from mixer.backend.django import mixer
 
 import dash.models
@@ -19,7 +17,6 @@ from dash import constants
 import redshiftapi.quickstats
 from automation import autopilot_plus
 
-from dash import constants
 from dash.features import contentupload
 from utils import json_helper
 from utils import redirector_helper
@@ -81,7 +78,7 @@ class AccountsTest(RESTAPITest):
         name='My test account',
         whitelist_publisher_groups=[153],
         blacklist_publisher_groups=[154],
-            ):
+    ):
         representation = {
             'id': str(id),
             'name': name,
@@ -144,7 +141,7 @@ class AccountCreditsTest(RESTAPITest):
         total='500',
         allocated='200.0',
         available='300.0',
-            ):
+    ):
         return normalize({
             'id': id,
             'createdOn': createdOn,
@@ -195,7 +192,7 @@ class CampaignsTest(RESTAPITest):
         target_devices=[constants.AdTargetDevice.DESKTOP],
         target_placements=[constants.Placement.APP],
         target_os=[{'name': constants.OperatingSystem.ANDROID}],
-            ):
+    ):
         representation = {
             'id': str(id),
             'accountId': str(account_id),
@@ -331,7 +328,7 @@ class CampaignGoalsTest(RESTAPITest):
         type=constants.CampaignGoalKPI.TIME_ON_SITE,
         conversionGoal=None,
         value='30.00'
-            ):
+    ):
         representation = {
             'id': id,
             'primary': primary,
@@ -438,7 +435,7 @@ class BudgetsTest(RESTAPITest):
         state=constants.BudgetLineItemState.ACTIVE,
         spend='200.0000',
         available='300.0000',
-            ):
+    ):
         representation = {
             'id': str(id),
             'creditId': str(creditId),
@@ -723,7 +720,7 @@ class AdGroupSourcesTest(RESTAPITest):
         cpc='0.600',
         daily_budget='50.00',
         state=constants.AdGroupSourceSettingsState.ACTIVE
-            ):
+    ):
         representation = {
             'source': source,
             'cpc': cpc,
@@ -770,7 +767,7 @@ class AdGroupSourcesRTBTest(RESTAPITest):
         daily_budget=constants.SourceAllRTB.DEFAULT_DAILY_BUDGET,
         state=constants.AdGroupSourceSettingsState.ACTIVE,
         cpc=constants.SourceAllRTB.DEFAULT_CPC_CC
-            ):
+    ):
         representation = {
             'groupEnabled': group_enabled,
             'dailyBudget': daily_budget,
@@ -863,7 +860,7 @@ class ContentAdsTest(RESTAPITest):
         label='My label',
         image_crop='center',
         tracker_urls=[]
-            ):
+    ):
         representation = {
             'id': str(id),
             'adGroupId': str(ad_group_id),

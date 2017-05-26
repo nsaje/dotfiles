@@ -10,7 +10,6 @@ from analytics.projections import BudgetProjections
 from dash import models
 from dash import constants
 from dash import publisher_helpers
-from dash import publisher_group_helpers
 from dash.views import helpers as view_helpers
 from dash.dashapi import data_helper
 

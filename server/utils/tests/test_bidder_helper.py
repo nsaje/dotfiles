@@ -3,7 +3,6 @@ import json
 from mock import patch, Mock
 
 from django.test import TestCase, override_settings
-from django.conf import settings
 
 from utils import bidder_helper
 

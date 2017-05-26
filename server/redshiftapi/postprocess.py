@@ -2,8 +2,6 @@ import collections
 import datetime
 from dateutil import rrule, relativedelta
 
-import newrelic.agent
-
 from utils import sort_helper
 from dash import conversions_helper
 

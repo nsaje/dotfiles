@@ -44,7 +44,7 @@ def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, cam
             if len(_get_active_sources_with_spend(active_sources, data, new_budgets)) < 1:
                 new_budgets = _uniformly_redistribute_remaining_budget(active_sources, budget_left, new_budgets)
                 logger.info(str(ad_group) +
-                            ' used up all smart budget, now uniformly redistributed remaining $'+str(budget_left)+'.')
+                            ' used up all smart budget, now uniformly redistributed remaining $' + str(budget_left) + '.')
                 comments.append(
                     automation.constants.DailyBudgetChangeComment.USED_UP_BUDGET_THEN_UNIFORMLY_REDISTRIBUTED)
                 break

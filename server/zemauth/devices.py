@@ -20,7 +20,7 @@ IP_INFO_TIMEOUT_SECONDS = 0.5
 IP_INFO_URL = 'https://ipinfo.io/{ip}/json'
 
 DEVICE_COOKIE_NAME = 'deviceid'
-DEVICE_KEY_EXPIRY = datetime.timedelta(seconds=5*365*24*60*60)
+DEVICE_KEY_EXPIRY = datetime.timedelta(seconds=5 * 365 * 24 * 60 * 60)
 VALID_KEY_CHARS = string.ascii_letters + string.digits
 
 MAX_RETRIES = 20

@@ -970,6 +970,8 @@ def reject_content_ad_sources(modeladmin, request, queryset):
     if len(ignored) > 0:
         messages.warning(request, 'Marking content ad sources as rejected is only supported for the Outbrain source,\
                                    content ad sources with content ad ids {0} were ignored'.format(ignored))
+
+
 reject_content_ad_sources.short_description = 'Mark selected content ad sources as REJECTED'
 
 
@@ -1007,6 +1009,8 @@ def resubmit_content_ads(modeladmin, request, queryset):
         )
     )
     _resubmit_content_ad(queryset, clear=True)
+
+
 resubmit_content_ads.short_description = 'Resubmit selected content ads'
 
 

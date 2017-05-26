@@ -81,7 +81,7 @@ class PublisherGroupHelpersTest(TestCase):
     @mock.patch('utils.email_helper.send_obj_changes_notification_email')
     def test_unlist_whitelisted_publisher_ad_group(self, mock_email):
         obj = models.AdGroup.objects.get(pk=1)
-        entry = models.PublisherGroupEntry.objects.create(
+        models.PublisherGroupEntry.objects.create(
             publisher_group=obj.default_whitelist,
             source=None,
             publisher='cnn.com')
@@ -104,7 +104,7 @@ class PublisherGroupHelpersTest(TestCase):
     @mock.patch('utils.email_helper.send_obj_changes_notification_email')
     def test_unlist_blacklisted_publisher_ad_group(self, mock_email):
         obj = models.AdGroup.objects.get(pk=1)
-        entry = models.PublisherGroupEntry.objects.create(
+        models.PublisherGroupEntry.objects.create(
             publisher_group=obj.default_blacklist,
             source=None,
             publisher='cnn.com')
@@ -179,7 +179,7 @@ class PublisherGroupHelpersTest(TestCase):
         obj.default_whitelist = publisher_group
         obj.save(self.request)
 
-        entry = models.PublisherGroupEntry.objects.create(
+        models.PublisherGroupEntry.objects.create(
             publisher_group=obj.default_whitelist,
             source=None,
             publisher='cnn.com')
@@ -208,7 +208,7 @@ class PublisherGroupHelpersTest(TestCase):
         obj.default_blacklist = publisher_group
         obj.save(self.request)
 
-        entry = models.PublisherGroupEntry.objects.create(
+        models.PublisherGroupEntry.objects.create(
             publisher_group=obj.default_blacklist,
             source=None,
             publisher='cnn.com')
@@ -311,7 +311,7 @@ class PublisherGroupHelpersTest(TestCase):
         obj.default_whitelist = publisher_group
         obj.save(self.request)
 
-        entry = models.PublisherGroupEntry.objects.create(
+        models.PublisherGroupEntry.objects.create(
             publisher_group=obj.default_whitelist,
             source=None,
             publisher='cnn.com')
@@ -364,7 +364,7 @@ class PublisherGroupHelpersTest(TestCase):
         global_group = models.PublisherGroup(name='imglobal')
         global_group.save(self.request)
 
-        entry = models.PublisherGroupEntry.objects.create(
+        models.PublisherGroupEntry.objects.create(
             publisher_group=global_group,
             source=None,
             publisher='cnn.com')

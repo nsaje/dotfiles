@@ -1,6 +1,6 @@
 import datetime
 from decimal import Decimal
-from mock import patch, MagicMock
+from mock import patch
 
 from django.test import TestCase, override_settings
 from django.test.client import RequestFactory
@@ -398,7 +398,7 @@ Zemanta''')
         self.assertTrue(mock_email.called)
 
     @patch('utils.email_helper.send_ad_group_notification_email')
-    def test_send_obj_notification_email_account(self, mock_email):
+    def test_send_obj_notification_email_adgroup(self, mock_email):
         email_helper.send_obj_changes_notification_email(dash_models.AdGroup(), self.request, "")
         self.assertTrue(mock_email.called)
 

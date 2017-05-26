@@ -463,16 +463,16 @@ class SettingsViewList(RESTAPIBaseView):
         view_internal = self.internal_view_cls(rest_proxy=True)
         settings_list = self._get_settings_list(request)
         data_list_internal = [{'data': {
-                                   'settings': view_internal.get_dict(
-                                       request,
-                                       settings,
-                                       (getattr(settings, 'ad_group', None) or
-                                           getattr(settings, 'campaign', None) or
-                                           getattr(settings, 'account'))
-                                    ),
-                                   'archived': settings.archived
-                              }}
-                              for settings in settings_list]
+            'settings': view_internal.get_dict(
+                request,
+                settings,
+                (getattr(settings, 'ad_group', None) or
+                 getattr(settings, 'campaign', None) or
+                 getattr(settings, 'account'))
+            ),
+            'archived': settings.archived
+        }}
+            for settings in settings_list]
         serializer = self.serializer_cls(request, view_internal, data_list_internal, many=True)
         return self.response_ok(serializer.data)
 

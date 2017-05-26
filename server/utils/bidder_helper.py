@@ -1,6 +1,5 @@
 import json
 import logging
-import time
 import urllib2
 
 from django.conf import settings

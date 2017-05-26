@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import copy
 import datetime
-import json
 
 from django.test import TestCase
 

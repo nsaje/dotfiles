@@ -256,6 +256,7 @@ def get_yesterday_cost(constraints, breakdown=None):
     result = {row['source']: row['cost'] + row['data_cost'] for row in rs}
     return result
 
+
 get_actual_yesterday_cost = get_yesterday_cost  # compatibility alias
 
 
@@ -352,7 +353,7 @@ def _get_ad_group_ids_with_postclick_data(key, objects, exclude_archived=True):
     queryset = queryset.filter(**kwargs).\
         values('ad_group').annotate(
             has_any_postclick_metrics=Max('has_postclick_metrics')
-        ).filter(has_any_postclick_metrics=1)
+    ).filter(has_any_postclick_metrics=1)
 
     return [item['ad_group'] for item in queryset]
 

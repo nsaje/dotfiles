@@ -1,6 +1,5 @@
 import pytz
 from django import forms
-from django.contrib.postgres import forms as postgres_forms
 
 
 class DayField(forms.Field):

@@ -751,7 +751,7 @@ class AdGroupTestCase(TestCase):
         agency = models.Agency.objects.get(pk=1)
         agency.users.add(self.user)
         qs = models.AdGroup.objects.all().filter_by_user(self.user)
-        self.assertEqual(oldcount+1, qs.count())
+        self.assertEqual(oldcount + 1, qs.count())
 
     def test_filter_by_agencies(self):
         agencies = models.Agency.objects.filter(pk=1)
@@ -1204,7 +1204,7 @@ class HistoryTest(TestCase):
         hist = account.write_history(
             "",
             changes=adgss.get_settings_dict(),
-            )
+        )
 
         self.assertEqual(account, hist.account)
         self.assertFalse(hist.changes['archived'])

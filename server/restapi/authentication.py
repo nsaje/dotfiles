@@ -1,5 +1,5 @@
 from rest_framework.authentication import BaseAuthentication
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.authentication import SessionAuthentication  # noqa
 from oauth2_provider.oauth2_backends import get_oauthlib_core
 
 

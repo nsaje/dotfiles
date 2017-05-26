@@ -156,7 +156,7 @@ class InsertEditCandidatesTestCase(TestCase):
         in_progress_after = ad_group.uploadbatch_set.filter(
             status=constants.UploadBatchStatus.IN_PROGRESS,
         ).count()
-        self.assertEqual(in_progress_before+1, in_progress_after)
+        self.assertEqual(in_progress_before + 1, in_progress_after)
 
         batch = ad_group.uploadbatch_set.get(
             status=constants.UploadBatchStatus.IN_PROGRESS,

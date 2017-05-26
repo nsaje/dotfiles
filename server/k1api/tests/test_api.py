@@ -435,7 +435,7 @@ class K1ApiTest(TestCase):
             reverse('k1api.ga_accounts'),
             QUERY_STRING=urllib.urlencode({'date_since': str(datetime.date.today() - datetime.timedelta(1))}),
         )
-        
+
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
         data = data['response']
@@ -691,14 +691,14 @@ class K1ApiTest(TestCase):
                            u'primary': True,
                            u'type': 2,
                            u'values': [],
-                       }, {
-                           u'campaign_id': 1,
-                           u'conversion_goal': None,
-                           u'id': 1,
-                           u'primary': False,
-                           u'type': 5,
-                           u'values': [],
-                       }],
+            }, {
+                u'campaign_id': 1,
+                u'conversion_goal': None,
+                u'id': 1,
+                u'primary': False,
+                u'type': 5,
+                u'values': [],
+            }],
             u'b1_sources_group': {
                 u'daily_budget': u'10.0000',
                 u'enabled': True,

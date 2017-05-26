@@ -3,8 +3,6 @@
 import base64
 import json
 import requests
-import unicodecsv
-import slugify
 import logging
 
 from dash import models

@@ -1,3 +1,4 @@
+# flake8: noqa
 # Core models
 from core.audiences import *
 from core.bcm import *

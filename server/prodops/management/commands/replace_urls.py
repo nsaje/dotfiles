@@ -2,7 +2,7 @@ import logging
 import unicodecsv
 import argparse
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import CommandError
 
 from dash.models import ContentAd
 

@@ -1,4 +1,5 @@
-from read_only_helpers import ReadOnlyQuerySet, ReadOnlyModelMixin
+from read_only_helpers import ReadOnlyModelMixin
+from read_only_helpers import ReadOnlyQuerySet
 from query_set_manager import QuerySetManager
 from permission_mixin import PermissionMixin
 from footprint_model import FootprintModel

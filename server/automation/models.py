@@ -2,7 +2,6 @@ from django.db import models
 from django.conf import settings
 import dash.models
 import dash.constants
-from automation import constants
 
 
 class CampaignBudgetDepletionNotification(models.Model):

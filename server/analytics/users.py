@@ -14,6 +14,7 @@ def _get_api_user_emails():
         if not u.email.endswith('@zemanta.com') and 'andraz.tori' not in u.email and not u.email.endswith('@zemanta-test.com')
     )
 
+
 HEADER = (
     'id', 'agency', 'account', 'campaign', 'ad_group',
     'level', 'action_type', 'changes_text', 'created_dt', 'system_user', 'created_by',

@@ -1,5 +1,4 @@
-from rest_framework import status, permissions
-from rest_framework.response import Response
+from rest_framework import permissions
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 
 import restapi.views

@@ -37,6 +37,7 @@ def _update_redirect(redirect_id, url):
 
     return ret['data']
 
+
 redirect_ids_before = {}
 for ad_group_id in AD_GROUP_IDS:
     content_ads = models.ContentAd.objects.filter(ad_group_id=ad_group_id)

@@ -147,10 +147,10 @@ class GroupRowsByBreakdownTest(unittest.TestCase):
         # should preserve order
         self.assertEqual(
             sort_helper.group_rows_by_breakdown_key([], [
-                    {'account_id': 1, 'clicks': 1},
-                    {'account_id': 1, 'clicks': 2},
-                    {'account_id': 2, 'clicks': 3},
-                ]),
+                {'account_id': 1, 'clicks': 1},
+                {'account_id': 1, 'clicks': 2},
+                {'account_id': 2, 'clicks': 3},
+            ]),
             {
                 tuple([]): [
                     {'account_id': 1, 'clicks': 1},

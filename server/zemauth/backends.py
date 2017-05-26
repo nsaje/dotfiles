@@ -2,7 +2,6 @@ from django.conf import settings
 from django.core.validators import validate_email
 from django.contrib.auth import backends
 from django.forms import ValidationError
-from oauth2_provider.backends import OAuth2Backend
 from oauth2_provider.oauth2_backends import get_oauthlib_core
 
 import influx

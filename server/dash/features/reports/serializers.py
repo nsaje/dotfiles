@@ -23,6 +23,8 @@ class ReportFiltersSerializer(serializers.Serializer):
     values = serializers.ListField(child=serializers.CharField(), required=False)
     frm = serializers.CharField(required=False)  # remapped to 'from' below
     to = serializers.CharField(required=False)
+
+
 # from is a reserved keyword, remap it directly
 ReportFiltersSerializer._declared_fields['from'] = ReportFiltersSerializer._declared_fields['frm']
 del ReportFiltersSerializer._declared_fields['frm']

@@ -1,5 +1,4 @@
 import datetime
-import logging
 
 from django import test
 from django import http

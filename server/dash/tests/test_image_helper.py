@@ -1,7 +1,7 @@
 import datetime
 import time
 
-from mock import patch, Mock
+from mock import patch
 from django.test import TestCase, override_settings
 
 from dash import image_helper

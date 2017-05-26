@@ -10,8 +10,6 @@ from django.conf import settings
 from django.db import connections
 
 import dash.models
-import reports.models
-import reports.api
 from etl import helpers
 
 import utils.email_helper

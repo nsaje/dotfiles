@@ -1,5 +1,3 @@
-from utils import sort_helper
-
 from stats import permission_filter
 
 import redshiftapi.api_breakdowns

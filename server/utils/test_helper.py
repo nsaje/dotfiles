@@ -4,7 +4,6 @@ import operator
 import mock
 from contextlib import contextmanager
 
-import mock
 import unittest
 
 from django.test import TestCase
@@ -129,7 +128,7 @@ def format_csv_content(content):
         if not line:
             continue
         fields = line.split(',')
-        fields_formatted = map(lambda f: '"'+f+'"', fields)
+        fields_formatted = map(lambda f: '"' + f + '"', fields)
         line_formatted = ','.join(fields_formatted)
         lines_formatted.append(line_formatted)
 

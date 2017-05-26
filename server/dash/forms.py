@@ -4,7 +4,6 @@ import decimal
 import mimetypes
 import re
 
-import json
 import unicodecsv
 import dateutil.parser
 import rfc3987
@@ -19,7 +18,6 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.core import validators
 from django.utils.html import strip_tags
 
-from automation import autopilot_budgets, autopilot_settings
 from dash import constants
 from dash import fields
 from dash import models

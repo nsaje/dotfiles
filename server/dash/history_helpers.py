@@ -1,6 +1,5 @@
 import dash.constants
 import dash.models
-import utils.json_helper
 
 
 def write_global_history(changes_text,

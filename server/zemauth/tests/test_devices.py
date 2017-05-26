@@ -56,8 +56,8 @@ class DeviceCookieTestCase(TestCase):
     @patch('utils.email_helper.send_new_user_device_email')
     def test_known_device_new_user(self, mock_send_email):
         existing_device = models.Device.objects.create(
-            device_key='a'*32,
-            expire_date=MOCK_NOW-datetime.timedelta(seconds=5*60)+devices.DEVICE_KEY_EXPIRY
+            device_key='a' * 32,
+            expire_date=MOCK_NOW - datetime.timedelta(seconds=5 * 60) + devices.DEVICE_KEY_EXPIRY
         )
         existing_user = models.User.objects.get(id=1)
         models.UserDevice.objects.create(
@@ -91,8 +91,8 @@ class DeviceCookieTestCase(TestCase):
     @patch('utils.email_helper.send_new_user_device_email')
     def test_known_device_existing_user(self, mock_send_email):
         existing_device = models.Device.objects.create(
-            device_key='a'*32,
-            expire_date=MOCK_NOW-datetime.timedelta(seconds=5*60)+devices.DEVICE_KEY_EXPIRY
+            device_key='a' * 32,
+            expire_date=MOCK_NOW - datetime.timedelta(seconds=5 * 60) + devices.DEVICE_KEY_EXPIRY
         )
         models.UserDevice.objects.create(
             device=existing_device,
@@ -120,7 +120,7 @@ class DeviceCookieTestCase(TestCase):
         self.assertEqual(user_device.device, existing_device)
         self.assertEqual(
             user_device.device.expire_date,
-            MOCK_NOW - datetime.timedelta(seconds=5*60) + devices.DEVICE_KEY_EXPIRY
+            MOCK_NOW - datetime.timedelta(seconds=5 * 60) + devices.DEVICE_KEY_EXPIRY
         )
         self.assertEqual(user_device.user, self.user)
         self.assertFalse(mock_send_email.called)
