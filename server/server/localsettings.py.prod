@@ -86,7 +86,7 @@ elif os.path.isfile('build_number.txt'):
     with open('build_number.txt', 'r') as build_number:
         BUILD_NUMBER = build_number.read().strip()
 
-_ROOT_STATIC_URL = 'https://s3.amazonaws.com/z1-static/build-{}'.format(BUILD_NUMBER)
+_ROOT_STATIC_URL = 'https://one-static.zemanta.com/build-{}'.format(BUILD_NUMBER)
 SERVER_STATIC_URL = _ROOT_STATIC_URL + '/server'
 CLIENT_STATIC_URL = _ROOT_STATIC_URL + '/client'
 
