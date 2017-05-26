@@ -10,7 +10,6 @@ import urllib2
 import pytz
 import threading
 
-from django.db import transaction
 from django.db.models import Q
 from django.conf import settings
 from django.core.mail import send_mail

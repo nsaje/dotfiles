@@ -67,7 +67,7 @@ class AdGroupSourceManager(core.common.QuerySetManager):
             try:
                 ad_group_source = self.create(request, ad_group, source, write_history=False, k1_sync=False)
                 added_ad_group_sources.append(ad_group_source)
-            except utils.exc.MissingDataError as e:
+            except utils.exc.MissingDataError:
                 # skips ad group sources creation without default sources
                 logger.exception('Exception occurred on campaign with id %s', ad_group.campaign_id)
                 continue
@@ -117,7 +117,7 @@ class AdGroupSourceManager(core.common.QuerySetManager):
                     ad_group_source = self.create(request, ad_group, source, write_history=False, k1_sync=False)
 
                 added_ad_group_sources.append(ad_group_source)
-            except utils.exc.MissingDataError as e:
+            except utils.exc.MissingDataError:
                 # skips ad group sources creation without default sources
                 logger.exception('Exception occurred on campaign with id %s', ad_group.campaign_id)
                 continue

@@ -242,9 +242,6 @@ class AdGroup(models.Model):
             self.id
         )
 
-    def get_name_with_id(self):
-        return "{} ({})".format(self.name, self.id)
-
     @classmethod
     def is_ad_group_active(cls, ad_group_settings):
         if ad_group_settings and ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE:
