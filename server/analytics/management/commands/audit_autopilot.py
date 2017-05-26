@@ -1,7 +1,6 @@
 import utils.command_helpers
 import utils.slack
 import analytics.monitor
-from analytics.constants import SlackMsgTypes
 
 ALERT_MSG_AD_GROUPS = u"""Autopilot did not run today on the following ad groups:
 {}"""
@@ -49,7 +48,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         if self.slack:
             utils.slack.publish(
                 ALERT_MSG_AD_GROUPS.format(details),
-                msg_type=SlackMsgTypes.CRITICAL,
+                utils.slack.MESSAGE_TYPE_CRITICAL,
                 username='Autopilot'
             )
 
@@ -68,7 +67,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         if self.slack:
             utils.slack.publish(
                 ALERT_MSG_BUDGET_TOTALS.format(details),
-                msg_type=SlackMsgTypes.CRITICAL,
+                utils.slack.MESSAGE_TYPE_CRITICAL,
                 username='Autopilot'
             )
 
@@ -87,7 +86,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         if self.slack:
             utils.slack.publish(
                 ALERT_MSG_BUDGET_CHANGES.format(details),
-                msg_type=SlackMsgTypes.CRITICAL,
+                utils.slack.MESSAGE_TYPE_CRITICAL,
                 username='Autopilot'
             )
 
@@ -108,6 +107,6 @@ class Command(utils.command_helpers.ExceptionCommand):
         if self.slack:
             utils.slack.publish(
                 ALERT_MSG_CPC_CHANGES.format(details),
-                msg_type=SlackMsgTypes.WARNING,
+                utils.slack.MESSAGE_TYPE_WARNING,
                 username='Autopilot'
             )

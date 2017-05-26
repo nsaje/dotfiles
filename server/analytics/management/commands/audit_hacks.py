@@ -2,8 +2,6 @@ import utils.command_helpers
 import utils.slack
 import analytics.monitor
 
-from analytics.constants import SlackMsgTypes
-
 ALERT_MSG = """{} {} ({}) is spending ({}) with an unconfirmed hack - *{}*"""
 
 
@@ -34,4 +32,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             )
             self._print(message)
             if options.get('slack'):
-                utils.slack.publish(message, msg_type=SlackMsgTypes.WARNING, username='Hacks')
+                utils.slack.publish(
+                    message,
+                    msg_type=utils.slack.MESSAGE_TYPE_WARNING,
+                    username='Hacks')

@@ -4,7 +4,6 @@ import influx
 
 import automation.autopilot_plus
 from utils.command_helpers import ExceptionCommand
-from analytics.constants import SlackMsgTypes
 import utils.slack
 
 logger = logging.getLogger(__name__)
@@ -36,7 +35,8 @@ class Command(ExceptionCommand):
             )
         except Exception as exc:
             if not dry_run:
-                utils.slack.publish(ALERT_MSG.format(repr(exc)),
-                                    msg_type=SlackMsgTypes.CRITICAL,
-                                    username='Autopilot')
+                utils.slack.publish(
+                    ALERT_MSG.format(repr(exc)),
+                    msg_type=utils.slack.MESSAGE_TYPE_CRITICAL,
+                    username='Autopilot')
             raise

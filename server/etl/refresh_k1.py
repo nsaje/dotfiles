@@ -13,7 +13,6 @@ from etl import materialize_views
 from etl import maintenance
 
 import utils.slack
-from analytics.constants import SlackMsgTypes
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +70,7 @@ SLACK_MIN_DAYS_TO_PROCESS = 10
 def _post_to_slack(status, update_since, account_id=None):
     utils.slack.publish('Materialization since {}{} *{}*.'.format(
         str(update_since.date()), account_id and ' for *account {}*'.format(account_id) or '', status
-    ), msg_type=SlackMsgTypes.INFO, username='Refresh k1')
+    ), msg_type=utils.slack.MESSAGE_TYPE_INFO, username='Refresh k1')
 
 
 @influx.timer('etl.refresh_k1.refresh_k1_timer', type='all')

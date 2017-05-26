@@ -4,10 +4,13 @@ import urllib2
 
 from django.conf import settings
 
-from analytics.constants import SlackMsgTypes
-
 DEFAULT_USERNAME = 'z1'
 AD_GROUP_URL = 'https://one.zemanta.com/v2/anlaytics/adgroup/{id}/{tab}'
+
+MESSAGE_TYPE_SUCCESS = ':sunglasses:'
+MESSAGE_TYPE_INFO = ':information_source:'
+MESSAGE_TYPE_WARNING = ':warning:'
+MESSAGE_TYPE_CRITICAL = ':rage:'
 
 
 def _post_to_slack(data):
@@ -31,7 +34,7 @@ def ad_group_url(ad_group, tab='ads'):
     return link(url, ad_group.name)
 
 
-def publish(text, channel=None, msg_type=SlackMsgTypes.INFO, username=DEFAULT_USERNAME):
+def publish(text, channel=None, msg_type=MESSAGE_TYPE_INFO, username=DEFAULT_USERNAME):
     data = {
         'text': text,
         'username': username,

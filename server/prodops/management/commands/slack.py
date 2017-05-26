@@ -2,7 +2,6 @@ import sys
 
 import utils.slack
 import utils.command_helpers
-from analytics.constants import SlackMsgTypes
 
 
 class Command(utils.command_helpers.ExceptionCommand):
@@ -18,11 +17,11 @@ class Command(utils.command_helpers.ExceptionCommand):
                             help='Success')
 
     def handle(self, *args, **options):
-        msg_type = SlackMsgTypes.INFO
+        msg_type = utils.slack.MESSAGE_TYPE_INFO
         if options.get('is_error'):
-            msg_type = SlackMsgTypes.CRITICAL
+            msg_type = utils.slack.MESSAGE_TYPE_CRITICAL
         elif options.get('is_warning'):
-            msg_type = SlackMsgTypes.WARNING
+            msg_type = utils.slack.MESSAGE_TYPE_WARNING
         elif options.get('is_success'):
-            msg_type = SlackMsgTypes.SUCCESS
+            msg_type = utils.slack.MESSAGE_TYPE_SUCCESS
         utils.slack.publish(options.get('msg') or sys.stdin.read(), msg_type=msg_type, username='Slack command')

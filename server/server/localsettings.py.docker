@@ -258,3 +258,7 @@ INFLUX_DATABASES = {
         'verify_ssl': True,
     },
 }
+
+BLUEKAI_API_PARTNER_ID = '2661'
+BLUEKAI_API_USER_KEY = ''
+BLUEKAI_API_SECRET_KEY = Secret('').get()

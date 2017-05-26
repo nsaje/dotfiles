@@ -6,7 +6,6 @@ import analytics.monitor
 import dash.models
 import dash.constants
 from utils import converters
-from analytics.constants import SlackMsgTypes
 
 VALID_ACCOUNT_TYPES = (
     dash.constants.AccountType.ACTIVATED,
@@ -86,4 +85,4 @@ class Command(utils.command_helpers.ExceptionCommand):
                     err=converters.nano_to_decimal(err),
                     tbl=table,
                     col=key
-                ), msg_type=SlackMsgTypes.CRITICAL, username='Spend patterns')
+                ), utils.slack.MESSAGE_TYPE_CRITICAL, username='Spend patterns')
