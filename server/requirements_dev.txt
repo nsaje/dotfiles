@@ -1,4 +1,5 @@
-pygraphviz==1.2    # make sure to install $ sudo apt-get install libgraphviz-dev graphviz
+# Commented as it is not usually needed
+# pygraphviz==1.2    # make sure to install $ sudo apt-get install libgraphviz-dev graphviz
 Fabric==1.9.0
 
 # tests in circle ci
@@ -11,5 +12,10 @@ django-extensions==1.6.1
 django-queryinspect==0.1.0
 
 django-debug-panel==0.8.3
-django-debug-toolbar==1.5
+django-debug-toolbar==1.8
 django-debug-toolbar-template-profiler==1.0.1
+
+# local development
+autoflake==0.7
+flake8==3.3.0
+pep8==1.7.0

@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
 from django.views.generic import TemplateView
+from django.conf import settings
 import django.views.defaults
 from django.shortcuts import render
 import oauth2_provider.views
@@ -49,7 +50,15 @@ def oauth2_permission_wrap(view):
     return login_required(check)
 
 
-urlpatterns = [
+urlpatterns = []
+
+if settings.DEBUG and settings.ENABLE_DEBUG_TOOLBAR:
+    import debug_toolbar
+    urlpatterns += [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ]
+
+urlpatterns += [
     url(r'^signin$',
         zemauth.views.login,
         {'authentication_form': AuthenticationForm, 'template_name': 'zemauth/signin.html'},
