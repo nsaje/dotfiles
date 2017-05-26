@@ -20,6 +20,7 @@ from dash import history_helpers
 
 from utils import exc
 from utils import test_helper
+from utils.magic_mixer import magic_mixer
 
 from reports import redshift
 
@@ -485,110 +486,20 @@ class CampaignAdGroups(TestCase):
         self.client.login(username=user.email, password='secret')
 
     @patch('utils.redirector_helper.insert_adgroup', autospec=True)
-    @patch('utils.k1_helper.update_ad_group', autospec=True)
     @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group', autospec=True)
-    def test_put(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup):
+    def test_put(self, mock_autopilot_init, mock_r1):
         campaign = models.Campaign.objects.get(pk=1)
-        models.CampaignGoal.objects.create(
-            type=constants.CampaignGoalKPI.TIME_ON_SITE,
-            campaign=campaign,
-            primary=True,
-        )
-        models.Source.objects.all().update(maintenance=False)
+        goal = magic_mixer.blend(models.CampaignGoal,
+                                 type=constants.CampaignGoalKPI.TIME_ON_SITE,
+                                 campaign=campaign, primary=True)
+        magic_mixer.blend(models.CampaignGoalValue, campaign_goal=goal)
         response = self.client.put(
             reverse('campaign_ad_groups', kwargs={'campaign_id': campaign.id}),
         )
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(mock_insert_adgroup.called)
-        self.assertTrue(mock_autopilot_init.called)
 
         response_dict = json.loads(response.content)
-        mock_k1_ping.assert_called_with(response_dict['data']['id'], msg='CampaignAdGroups.put')
         self.assertDictContainsSubset({'name': 'New ad group'}, response_dict['data'])
-
-        ad_group = models.AdGroup.objects.get(pk=response_dict['data']['id'])
-        ad_group_settings = ad_group.get_current_settings()
-        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
-
-        hist = history_helpers.get_ad_group_history(ad_group)
-        self.assertEqual(hist.first().created_by, self.user)
-        self.assertEqual(hist.first().action_type, constants.HistoryActionType.CREATE)
-
-        self.assertIsNone(hist[1].created_by)
-        self.assertIsNone(hist[2].created_by)
-        self.assertEqual(constants.HistoryActionType.MEDIA_SOURCE_SETTINGS_CHANGE,
-                         hist[2].action_type)
-
-        self.assertIsNotNone(ad_group_settings.id)
-        self.assertIsNotNone(hist.first().changes_text)
-        self.assertEquals(ad_group.name, ad_group_settings.ad_group_name)
-        self.assertEqual(len(ad_group_sources), 1)
-
-        # check if default settings from campaign level are
-        # copied to the newly created settings
-        self.assertEqual(ad_group_settings.target_devices, ['mobile'])
-        self.assertEqual(ad_group_settings.target_regions, ['NC', '501'])
-
-    def test_create_ad_group(self):
-        campaign = models.Campaign.objects.get(pk=1)
-        request = HttpRequest()
-        request.META['SERVER_NAME'] = 'testname'
-        request.META['SERVER_PORT'] = 1234
-        request.user = User.objects.get(pk=1)
-        view = views.CampaignAdGroups()
-        ad_group, ad_group_settings, changes_text = view._create_ad_group(campaign, request)
-
-        self.assertIsNotNone(ad_group)
-        self.assertIsNotNone(ad_group_settings)
-
-    def test_create_ad_group_no_add_media_sources_automatically_permission(self):
-        campaign = models.Campaign.objects.get(pk=1)
-        request = HttpRequest()
-        request.user = User.objects.get(pk=2)
-        view = views.CampaignAdGroups()
-        ad_group, ad_group_settings, changes_text = view._create_ad_group(campaign, request)
-
-        self.assertIsNotNone(ad_group)
-        self.assertIsNotNone(ad_group_settings)
-
-    def test_add_media_sources(self):
-        ad_group = models.AdGroup.objects.get(pk=2)
-        ad_group_settings = ad_group.get_current_settings()
-        request = None
-        models.Source.objects.all().update(maintenance=False)
-
-        view = views.CampaignAdGroups()
-        changes_text = view._add_media_sources(ad_group, ad_group_settings, request)
-
-        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
-        added_source = models.Source.objects.get(pk=1)
-
-        self.assertEqual(len(ad_group_sources), 1)
-        self.assertEqual(ad_group_sources[0].source, added_source)
-
-        self.assertEqual(
-            changes_text,
-            'Created settings and automatically created campaigns for 1 sources (AdBlade)'
-        )
-
-        ad_group_source_settings = models.AdGroupSourceSettings.objects.all().filter(
-            ad_group_source__ad_group=ad_group
-        ).group_current_settings()
-        self.assertTrue(all(
-            [adgss.state == constants.AdGroupSourceSettingsState.ACTIVE for adgss in ad_group_source_settings]
-        ))
-
-    def test_add_media_sources_maintenance(self):
-        ad_group = models.AdGroup.objects.get(pk=2)
-        ad_group_settings = ad_group.get_current_settings()
-        request = None
-        models.Source.objects.all().update(maintenance=True)
-
-        view = views.CampaignAdGroups()
-        view._add_media_sources(ad_group, ad_group_settings, request)
-
-        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
-        self.assertEqual(len(ad_group_sources), 0)
 
     def test_add_media_sources_with_retargeting(self):
         ad_group = models.AdGroup.objects.get(pk=2)
@@ -613,36 +524,6 @@ class CampaignAdGroups(TestCase):
         self.assertTrue(all(
             [adgss.state == constants.AdGroupSourceSettingsState.ACTIVE for adgss in ad_group_source_settings]
         ))
-
-    @patch('dash.views.helpers.set_initial_ad_group_source_settings')
-    def test_create_ad_group_source(self, mock_set_ad_group_source_settings):
-        # adblade must not be in maintenance for this particular test
-        # so it supports retargeting - which is checked on adgroupsourc creation
-        adblade = models.Source.objects.filter(name__icontains='adblade').first()
-        adblade.maintenance = False
-        adblade.save()
-
-        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
-        source_settings = models.DefaultSourceSettings.objects.get(pk=1)
-        request = None
-        view = views.CampaignAdGroups()
-        ad_group_source = view._create_ad_group_source(request, source_settings, ad_group_settings)
-
-        self.assertIsNotNone(ad_group_source)
-        self.assertTrue(mock_set_ad_group_source_settings.called)
-        named_call_args = mock_set_ad_group_source_settings.call_args[1]
-        self.assertEqual(named_call_args['mobile_only'], True)
-
-    def test_create_new_settings(self):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        request = None
-
-        view = views.CampaignAdGroups()
-        new_settings = view._create_new_settings(ad_group, request)
-        campaign_settings = ad_group.campaign.get_current_settings()
-
-        self.assertEqual(new_settings.target_devices, campaign_settings.target_devices)
-        self.assertEqual(new_settings.target_regions, campaign_settings.target_regions)
 
 
 class AdGroupArchiveRestoreTest(TestCase):

@@ -11,11 +11,65 @@ from dash import constants
 from utils import dates_helper
 from utils import exc
 from utils import json_helper
+from utils import k1_helper
+from utils import redirector_helper
 
 import core.common
 import core.history
 import core.source
-import core.entity.helpers
+import core.entity
+
+
+class AdGroupManager(core.common.QuerySetManager):
+    def _create_default_name(self, campaign):
+        return core.entity.helpers.create_default_name(
+            AdGroup.objects.filter(campaign=campaign), 'New ad group')
+
+    def _create_cloned_name(self, campaign, source_ad_group):
+        return core.entity.helpers.create_default_name(
+            AdGroup.objects.filter(campaign=campaign), '{} (Copy)'.format(source_ad_group.name))
+
+    def _create(self, request, campaign, **kwargs):
+        ad_group = AdGroup(campaign=campaign, **kwargs)
+        ad_group.save(request)
+        return ad_group
+
+    def _post_create(self, ad_group, ad_group_settings):
+        if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+            from automation import autopilot_plus
+            autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False)
+
+        k1_helper.update_ad_group(ad_group.pk, msg='CampaignAdGroups.put')
+        redirector_helper.insert_adgroup(ad_group, ad_group_settings, ad_group.campaign.get_current_settings())
+
+    def create(self, request, campaign, is_restapi=False, **kwargs):
+        with transaction.atomic():
+            ad_group = self._create(request, campaign, name=self._create_default_name(campaign))
+
+            if is_restapi:
+                ad_group_settings = core.entity.settings.AdGroupSettings.objects.create_restapi_default(ad_group)
+            else:
+                ad_group_settings = core.entity.settings.AdGroupSettings.objects.create_default(ad_group)
+
+            core.entity.AdGroupSource.objects.bulk_create_on_allowed_sources(
+                request, ad_group, write_history=False, k1_sync=False)
+
+        self._post_create(ad_group, ad_group_settings)
+        ad_group.write_history_created(request)
+        return ad_group
+
+    def clone(self, request, source_ad_group, campaign):
+        with transaction.atomic():
+            ad_group = self._create(request, campaign, name=self._create_cloned_name(campaign, source_ad_group))
+            ad_group_settings = core.entity.settings.AdGroupSettings.objects.clone(
+                request, ad_group, source_ad_group.get_current_settings())
+
+            core.entity.AdGroupSource.objects.bulk_clone_on_allowed_sources(
+                request, ad_group, source_ad_group, write_history=False, k1_sync=False)
+
+        self._post_create(ad_group, ad_group_settings)
+        ad_group.write_history_cloned(request, source_ad_group)
+        return ad_group
 
 
 class AdGroup(models.Model):
@@ -46,7 +100,7 @@ class AdGroup(models.Model):
     default_blacklist = models.ForeignKey('PublisherGroup', related_name='blacklisted_ad_groups',
                                           on_delete=models.PROTECT, null=True, blank=True)
 
-    objects = core.common.QuerySetManager()
+    objects = AdGroupManager()
 
     def __unicode__(self):
         return self.name
@@ -188,6 +242,9 @@ class AdGroup(models.Model):
             self.id
         )
 
+    def get_name_with_id(self):
+        return "{} ({})".format(self.name, self.id)
+
     @classmethod
     def is_ad_group_active(cls, ad_group_settings):
         if ad_group_settings and ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE:
@@ -248,6 +305,33 @@ class AdGroup(models.Model):
 
     def get_account(self):
         return self.campaign.account
+
+    def write_history_created(self, request):
+        source_names = list(self.adgroupsource_set.all().values_list('source__name', flat=True))
+        if source_names:
+            changes_text = 'Created settings and automatically created campaigns for {} sources ({})'.format(
+                len(source_names), ', '.join(source_names))
+        else:
+            changes_text = None
+
+        self.write_history(changes_text, user=request.user, action_type=constants.HistoryActionType.CREATE)
+
+    def write_history_cloned(self, request, source_ad_group):
+        source_names = list(self.adgroupsource_set.all().values_list('source__name', flat=True))
+        if source_names:
+            changes_text = 'Cloned settings from {} and automatically created campaigns for {} sources ({})'.format(
+                source_ad_group.get_name_with_id(),
+                len(source_names), ', '.join(source_names))
+        else:
+            changes_text = None
+
+        self.write_history(changes_text, user=request.user, action_type=constants.HistoryActionType.CREATE)
+
+    def write_history_source_added(self, request, ad_group_source):
+        self.write_history(
+            '{} campaign created.'.format(ad_group_source.source.name),
+            user=request.user,
+            action_type=constants.HistoryActionType.MEDIA_SOURCE_ADD)
 
     def write_history(self, changes_text, changes=None,
                       user=None, system_user=None,

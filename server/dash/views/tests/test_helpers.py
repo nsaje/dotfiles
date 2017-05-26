@@ -1050,8 +1050,7 @@ class SetAdGroupSourceTest(TestCase):
 
     def test_set_ad_group_source_settings_mobile(self):
         ad_group_source, source_settings = self.prepare_ad_group_source()
-        helpers.set_initial_ad_group_source_settings(
-            self.request, ad_group_source, mobile_only=True, active=True)
+        ad_group_source.set_initial_settings(self.request, mobile_only=True, active=True)
 
         ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source)
         self.assertEqual(ad_group_source_settings.count(), 2)
@@ -1063,8 +1062,7 @@ class SetAdGroupSourceTest(TestCase):
 
     def test_set_ad_group_source_settings_desktop(self):
         ad_group_source, source_settings = self.prepare_ad_group_source()
-        helpers.set_initial_ad_group_source_settings(
-            self.request, ad_group_source, mobile_only=False, active=False)
+        ad_group_source.set_initial_settings(self.request, mobile_only=False, active=False)
 
         ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source)
         self.assertEqual(ad_group_source_settings.count(), 2)

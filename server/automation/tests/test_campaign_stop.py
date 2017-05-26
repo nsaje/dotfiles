@@ -9,6 +9,7 @@ from dash import constants
 import dash.models
 
 from utils import dates_helper, test_helper
+from utils.magic_mixer import magic_mixer
 
 
 class GetMinimumRemainingBudgetTestCase(TestCase):
@@ -1918,7 +1919,7 @@ class GetMatchingPairsTestCase(TestCase):
         new_ag_settings.autopilot_state = dash.constants.AdGroupSettingsAutopilotState.INACTIVE
         new_ag_settings.save(None)
 
-        ags = dash.models.AdGroupSource.objects.create(ad_group=ag, source=dash.models.Source.objects.get(id=1))
+        ags = magic_mixer.blend(dash.models.AdGroupSource, ad_group=ag, source=dash.models.Source.objects.get(id=1))
 
         new_ags = ags.get_current_settings().copy_settings()
         new_ags.state = 2

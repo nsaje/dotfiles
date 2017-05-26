@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from decimal import Decimal
-
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 import core.common
 import core.entity
 from dash import constants
+
+import core.common
+import core.entity
+import utils.exc
 
 
 class Source(models.Model):
@@ -140,6 +143,17 @@ class Source(models.Model):
 
     def can_set_max_cpm(self):
         return self.source_type.can_set_max_cpm() and not self.maintenance and not self.deprecated
+
+    def get_default_settings(self):
+        try:
+            default_settings = core.source.DefaultSourceSettings.objects.get(source=self)
+        except core.source.DefaultSourceSettings.DoesNotExist:
+            raise utils.exc.MissingDataError('No default settings set for {}.'.format(self.name))
+
+        if not default_settings.credentials:
+            raise utils.exc.MissingDataError('No default credentials set in {}.'.format(default_settings))
+
+        return default_settings
 
     class QuerySet(models.QuerySet):
 

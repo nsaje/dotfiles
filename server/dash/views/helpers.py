@@ -921,33 +921,6 @@ def adjust_max_cpc(proposed_cpc, ad_group_settings):
     return proposed_cpc
 
 
-def set_initial_ad_group_source_settings(
-        request, ad_group_source, mobile_only=False, active=False, max_cpc=None):
-    cpc_cc = ad_group_source.source.default_cpc_cc
-    if mobile_only:
-        cpc_cc = ad_group_source.source.default_mobile_cpc_cc
-    ag_settings = ad_group_source.ad_group.get_current_settings()
-    if (ag_settings.b1_sources_group_enabled and
-            ag_settings.b1_sources_group_cpc_cc > 0.0 and
-            ad_group_source.source.source_type.type == constants.SourceType.B1):
-        cpc_cc = ag_settings.b1_sources_group_cpc_cc
-    if max_cpc:
-        cpc_cc = min(max_cpc, cpc_cc)
-
-    resource = {
-        'daily_budget_cc': ad_group_source.source.default_daily_budget_cc,
-        'cpc_cc': cpc_cc,
-        'state': constants.ContentAdSourceState.ACTIVE if active else constants.ContentAdSourceState.INACTIVE
-    }
-
-    api.set_ad_group_source_settings(
-        ad_group_source,
-        resource,
-        request,
-        ping_k1=False,
-    )
-
-
 def format_decimal_to_percent(num):
     return '{:.2f}'.format(num * 100).rstrip('0').rstrip('.')
 

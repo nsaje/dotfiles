@@ -47,15 +47,6 @@ def add_content_ad_sources(ad_group_source):
     return content_ad_sources_added
 
 
-def update_ad_group_redirector_settings(ad_group, ad_group_settings):
-    campaign_settings = ad_group.campaign.get_current_settings()
-    redirector_helper.insert_adgroup(
-        ad_group,
-        ad_group_settings,
-        campaign_settings,
-    )
-
-
 @newrelic.agent.function_trace()
 def update_content_ads_state(content_ads, state, request):
     with transaction.atomic():

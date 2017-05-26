@@ -33,6 +33,8 @@ from automation import autopilot_plus
 
 from automation import campaign_stop
 
+import core.entity.helpers
+
 from dash import models, region_targeting_helper, retargeting_helper, campaign_goals
 from dash import constants
 from dash import api
@@ -55,27 +57,6 @@ ACCOUNTS_WITHOUT_CAMPAIGN_STOP = {490}
 
 
 LANDING_MODE_PREVENT_UPDATE = ['daily_budget_cc', 'state']
-
-
-def create_name(objects, name):
-    objects = objects.filter(name__regex=r'^{}( [0-9]+)?$'.format(name))
-
-    if len(objects):
-        num = len(objects) + 1
-
-        nums = [int(a.name.replace(name, '').strip() or 1) for a in objects]
-        nums.sort()
-
-        for i, j in enumerate(nums):
-            # value can be used if index is smaller than value
-            if (i + 1) < j:
-                num = i + 1
-                break
-
-        if num > 1:
-            name += ' {}'.format(num)
-
-    return name
 
 
 def index(request):
@@ -461,94 +442,8 @@ class CampaignAdGroups(api_common.BaseApiView):
                 }
             )
 
-        ad_group, ad_group_settings, changes_text = self._create_ad_group(campaign, request)
-        ad_group_settings.save(None)
-
-        if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-            autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False)
-
-        api.update_ad_group_redirector_settings(ad_group, ad_group_settings)
-
-        ad_group.write_history(
-            changes_text,
-            user=request.user,
-            action_type=constants.HistoryActionType.CREATE)
-        response = {
-            'name': ad_group.name,
-            'id': ad_group.id,
-        }
-
-        return self.create_api_response(response)
-
-    def _create_ad_group(self, campaign, request):
-        changes_text = None
-        with transaction.atomic():
-            ad_group = models.AdGroup(
-                name=create_name(models.AdGroup.objects.filter(campaign=campaign), 'New ad group'),
-                campaign=campaign
-            )
-            ad_group.save(request)
-            ad_group_settings = self._create_new_settings(ad_group, request)
-            if request.user.has_perm('zemauth.add_media_sources_automatically'):
-                changes_text = self._add_media_sources(ad_group, ad_group_settings, request)
-
-        k1_helper.update_ad_group(ad_group.pk,
-                                  msg='CampaignAdGroups.put')
-
-        return ad_group, ad_group_settings, changes_text
-
-    def _create_new_settings(self, ad_group, request):
-        current_settings = ad_group.get_current_settings()  # get default ad group settings
-        new_settings = current_settings.copy_settings()
-        campaign_settings = ad_group.campaign.get_current_settings()
-
-        new_settings.target_devices = campaign_settings.target_devices
-        new_settings.target_os = campaign_settings.target_os
-        new_settings.target_placements = campaign_settings.target_placements
-        new_settings.target_regions = campaign_settings.target_regions
-        new_settings.ad_group_name = ad_group.name
-
-        if self.rest_proxy:
-            new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
-            new_settings.autopilot_daily_budget = 0
-            new_settings.b1_sources_group_enabled = False
-            new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.INACTIVE
-
-        return new_settings
-
-    def _add_media_sources(self, ad_group, ad_group_settings, request):
-        sources = ad_group.campaign.account.allowed_sources.all()
-        added_sources = []
-        for source in sources:
-            if source.maintenance:
-                continue
-            try:
-                source_default_settings = helpers.get_source_default_settings(source)
-            except exc.MissingDataError:
-                logger.exception('Exception occurred on campaign with id %s', ad_group.campaign.pk)
-                continue
-
-            self._create_ad_group_source(request, source_default_settings, ad_group_settings)
-            added_sources.append(source)
-
-        changes_text = None
-        if added_sources:
-            changes_text = 'Created settings and automatically created campaigns for {} sources ({})'.format(
-                len(added_sources), ', '.join([source.name for source in added_sources]))
-
-        return changes_text
-
-    def _create_ad_group_source(self, request, source_settings, ad_group_settings):
-        ad_group = ad_group_settings.ad_group
-        ad_group_source = helpers.add_source_to_ad_group(source_settings, ad_group)
-        ad_group_source.save(None)
-        helpers.set_initial_ad_group_source_settings(
-            None,
-            ad_group_source,
-            active=helpers.get_source_initial_state(ad_group_source),
-            mobile_only=ad_group_settings.is_mobile_only()
-        )
-        return ad_group_source
+        ad_group = core.entity.AdGroup.objects.create(request, campaign, is_restapi=self.rest_proxy)
+        return self.create_api_response({'name': ad_group.name, 'id': ad_group.id})
 
 
 class CampaignOverview(api_common.BaseApiView):
@@ -982,11 +877,10 @@ class AdGroupSources(api_common.BaseApiView):
             '{} campaign created.'.format(ad_group_source.source.name),
             user=request.user,
             action_type=constants.HistoryActionType.MEDIA_SOURCE_ADD)
-        helpers.set_initial_ad_group_source_settings(
-            None, ad_group_source,
+        ad_group_source.set_initial_settings(
+            None,
             mobile_only=ad_group_settings.is_mobile_only(),
-            max_cpc=ad_group_settings.cpc_cc
-        )
+            max_cpc=ad_group_settings.cpc_cc)
 
         if settings.K1_CONSISTENCY_SYNC:
             api.add_content_ad_sources(ad_group_source)
@@ -1002,7 +896,7 @@ class Account(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.all_accounts_accounts_add_account'):
             raise exc.MissingDataError()
 
-        account = models.Account(name=create_name(models.Account.objects, 'New account'))
+        account = models.Account(name=core.entity.helpers.create_default_name(models.Account.objects, 'New account'))
 
         managed_agency = models.Agency.objects.all().filter(
             users=request.user
@@ -1044,7 +938,7 @@ class AccountCampaigns(api_common.BaseApiView):
 
         account = helpers.get_account(request.user, account_id)
 
-        name = create_name(models.Campaign.objects.filter(account=account), 'New campaign')
+        name = core.entity.helpers.create_default_name(models.Campaign.objects.filter(account=account), 'New campaign')
 
         campaign = models.Campaign(
             name=name,

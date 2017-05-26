@@ -3,6 +3,7 @@ from django.conf.urls import url
 import views
 import geolocation
 from dash.features.bulkactions import clonecontent
+from dash.features import cloneadgroup
 
 urlpatterns = [
     url(
@@ -145,3 +146,4 @@ urlpatterns = [
 ]
 
 urlpatterns += clonecontent.urls.urlpatterns
+urlpatterns += cloneadgroup.urls.urlpatterns
