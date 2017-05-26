@@ -39,20 +39,12 @@ def add_content_ad_sources(ad_group_source):
     content_ad_sources_added = []
     with transaction.atomic():
         content_ads = models.ContentAd.objects.filter(ad_group=ad_group_source.ad_group)
-
         for content_ad in content_ads:
             try:
-                content_ad_source = models.ContentAdSource.objects.get(
-                    content_ad=content_ad,
-                    source=ad_group_source.source
-                )
+                models.ContentAdSource.objects.get(content_ad=content_ad, source=ad_group_source.source)
             except models.ContentAdSource.DoesNotExist:
                 content_ad_source = models.ContentAdSource.objects.create(
-                    source=ad_group_source.source,
-                    content_ad=content_ad,
-                    submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
-                    state=content_ad.state
-                )
+                    content_ad, ad_group_source.source)
                 content_ad_sources_added.append(content_ad_source)
 
     return content_ad_sources_added

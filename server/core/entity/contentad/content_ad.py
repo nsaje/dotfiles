@@ -3,10 +3,12 @@ import urlparse
 
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
-from django.db import models
+from django.db import models, transaction
 
+import utils.redirector_helper
 import utils.demo_anonymizer
 import utils.string_helper
+
 from dash import constants
 from dash import image_helper
 
@@ -14,6 +16,61 @@ import core.common
 import core.entity
 import core.history
 import core.source
+
+
+class ContentAdManager(models.Manager):
+    def _create(self, batch, sources, **kwargs):
+        content_ad = ContentAd(
+            ad_group=batch.ad_group,
+            batch=batch,
+        )
+
+        for field in kwargs:
+            if not hasattr(content_ad, field):
+                continue
+            setattr(content_ad, field, kwargs[field])
+
+        content_ad.save()
+
+        core.entity.ContentAdSource.objects.bulk_create(content_ad, sources)
+
+        return content_ad
+
+    @transaction.atomic
+    def create(self, batch, sources, **kwargs):
+        content_ad = self._create(batch, sources, **kwargs)
+        self.insert_redirects([content_ad])
+        return content_ad
+
+    @transaction.atomic
+    def bulk_create_from_candidates(self, candidate_dicts, batch):
+        ad_group_sources = core.entity.AdGroupSource.objects.filter(ad_group=batch.ad_group)\
+                                                            .filter_can_manage_content_ads()
+        sources = core.source.Source.objects.filter(id__in=ad_group_sources.values_list('source_id', flat=True))
+
+        content_ads = []
+        for candidate in candidate_dicts:
+            content_ads.append(self._create(batch, sources, **candidate))
+
+        self.insert_redirects(content_ads)
+
+        return content_ads
+
+    def bulk_clone(self, source_content_ads, batch, overridden_state=None):
+        candidates = [x.to_cloned_candidate_dict() for x in source_content_ads]
+        if overridden_state is not None:
+            for x in candidates:
+                x['state'] = overridden_state
+
+        return self.bulk_create_from_candidates(candidates, batch)
+
+    @transaction.atomic
+    def insert_redirects(self, content_ads):
+        redirector_batch = utils.redirector_helper.insert_redirects(content_ads)
+        for content_ad in content_ads:
+            content_ad.url = redirector_batch[str(content_ad.id)]["redirect"]["url"]
+            content_ad.redirect_id = redirector_batch[str(content_ad.id)]["redirectid"]
+            content_ad.save()
 
 
 class ContentAd(models.Model):
@@ -62,8 +119,6 @@ class ContentAd(models.Model):
 
     archived = models.BooleanField(default=False)
     tracker_urls = ArrayField(models.CharField(max_length=2048), null=True)
-
-    objects = core.common.QuerySetManager()
 
     def get_original_image_url(self, width=None, height=None):
         if self.image_id is None:
@@ -137,6 +192,15 @@ class ContentAd(models.Model):
             'secondary_tracker_url': self.tracker_urls[1] if self.tracker_urls and len(self.tracker_urls) > 1 else None,
         }
 
+    def to_cloned_candidate_dict(self):
+        fields = ('label', 'url', 'title', 'display_url', 'brand_name', 'description', 'call_to_action',
+                  'image_id', 'image_width', 'image_height', 'image_hash', 'crop_areas', 'image_crop',
+                  'state', 'tracker_urls')
+        candidate = {}
+        for field in fields:
+            candidate[field] = getattr(self, field)
+        return candidate
+
     class QuerySet(models.QuerySet):
 
         def filter_by_user(self, user):
@@ -162,3 +226,5 @@ class ContentAd(models.Model):
                 return self
 
             return self.filter(archived=False)
+
+    objects = ContentAdManager.from_queryset(QuerySet)()

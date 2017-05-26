@@ -4090,13 +4090,14 @@ class CampaignContentInsightsTest(TestCase):
         add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
 
         campaign = models.Campaign.objects.get(pk=1)
-        cad = models.ContentAd.objects.create(
+        cad = models.ContentAd(
             ad_group=campaign.adgroup_set.first(),
             title='Test Ad',
             url='http://www.zemanta.com',
             batch_id=1,
             archived=True,
         )
+        cad.save()
 
         mock_query_all.return_value = [
             {
@@ -4123,12 +4124,13 @@ class CampaignContentInsightsTest(TestCase):
         add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
 
         campaign = models.Campaign.objects.get(pk=1)
-        cad = models.ContentAd.objects.create(
+        cad = models.ContentAd(
             ad_group=campaign.adgroup_set.first(),
             title='Test Ad',
             url='http://www.zemanta.com',
             batch_id=1
         )
+        cad.save()
 
         mock_query_all.return_value = [
             {
@@ -4165,19 +4167,21 @@ class CampaignContentInsightsTest(TestCase):
         add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
 
         campaign = models.Campaign.objects.get(pk=1)
-        cad1 = models.ContentAd.objects.create(
+        cad1 = models.ContentAd(
             ad_group=campaign.adgroup_set.first(),
             title='Test Ad',
             url='http://www.zemanta.com',
             batch_id=1
         )
+        cad1.save()
 
-        cad2 = models.ContentAd.objects.create(
+        cad2 = models.ContentAd(
             ad_group=campaign.adgroup_set.first(),
             title='Test Ad',
             url='http://www.bidder.com',
             batch_id=1
         )
+        cad2.save()
 
         mock_query_all.return_value = [
             {
@@ -4220,19 +4224,21 @@ class CampaignContentInsightsTest(TestCase):
         add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
 
         campaign = models.Campaign.objects.get(pk=1)
-        cad1 = models.ContentAd.objects.create(
+        cad1 = models.ContentAd(
             ad_group=campaign.adgroup_set.first(),
             title='Test Ad',
             url='http://www.zemanta.com',
             batch_id=1
         )
+        cad1.save()
 
-        cad2 = models.ContentAd.objects.create(
+        cad2 = models.ContentAd(
             ad_group=campaign.adgroup_set.first(),
             title='Awesome Ad',
             url='http://www.bidder.com',
             batch_id=1
         )
+        cad2.save()
 
         mock_query_all.return_value = [
             {

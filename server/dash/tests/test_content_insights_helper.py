@@ -19,13 +19,14 @@ class ContentInsightsHelperTestCase(test.TestCase):
         campaign = dash.models.Campaign.objects.get(pk=1)
         ids = []
         for i in range(3):
-            cad = dash.models.ContentAd.objects.create(
+            cad = dash.models.ContentAd(
                 ad_group=campaign.adgroup_set.first(),
                 title='Test Ad {}'.format(i),
                 url='http://www.zemanta.com',
                 batch_id=1,
                 archived=False,
             )
+            cad.save()
             ids.append(cad.id)
 
         mock_query_all.return_value = [
@@ -68,13 +69,14 @@ class ContentInsightsHelperTestCase(test.TestCase):
         campaign = dash.models.Campaign.objects.get(pk=1)
         ids = []
         for i in range(3):
-            cad = dash.models.ContentAd.objects.create(
+            cad = dash.models.ContentAd(
                 ad_group=campaign.adgroup_set.first(),
                 title='Test Ad {}'.format(i),
                 url='http://www.zemanta.com',
                 batch_id=1,
                 archived=False,
             )
+            cad.save()
             ids.append(cad.id)
 
         mock_query_all.return_value = [
@@ -137,13 +139,14 @@ class ContentInsightsHelperTestCase(test.TestCase):
         campaign = dash.models.Campaign.objects.get(pk=1)
         ids = set()
         for i in range(10):
-            cad = dash.models.ContentAd.objects.create(
+            cad = dash.models.ContentAd(
                 ad_group=campaign.adgroup_set.first(),
                 title='Test Ad',
                 url='http://www.zemanta.com',
                 batch_id=1,
                 archived=False,
             )
+            cad.save()
             ids.add(cad.id)
         res = content_insights_helper._deduplicate_content_ad_titles(
             campaign=campaign
@@ -158,13 +161,14 @@ class ContentInsightsHelperTestCase(test.TestCase):
         self.assertEqual(ids, set(res['Test Ad']))
 
         for i in range(10):
-            cad = dash.models.ContentAd.objects.create(
+            cad = dash.models.ContentAd(
                 ad_group=campaign.adgroup_set.first(),
                 title='Test Ad',
                 url='http://www.zemanta.com',
                 batch_id=1,
                 archived=True,
             )
+            cad.save()
 
         res = content_insights_helper._deduplicate_content_ad_titles(
             campaign=campaign

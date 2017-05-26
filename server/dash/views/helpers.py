@@ -26,6 +26,8 @@ from utils import k1_helper
 from utils import columns
 from utils import redirector_helper
 
+from restapi.access import get_content_ad, get_ad_group, get_campaign, get_account
+
 import zemauth.models
 
 STATS_START_DELTA = 30
@@ -172,60 +174,6 @@ def get_publisher_group(user, account_id, publisher_group_id):
                                                   .get(pk=publisher_group_id)
     except models.PublisherGroup.DoesNotExist:
         raise exc.MissingDataError('Publisher group does not exist')
-
-
-def get_account(user, account_id, sources=None):
-    try:
-        account = models.Account.objects.all().filter_by_user(user)
-
-        if sources:
-            account = account.filter_by_sources(sources)
-
-        return account.filter(id=int(account_id)).get()
-    except models.Account.DoesNotExist:
-        raise exc.MissingDataError('Account does not exist')
-
-
-def get_ad_group(user, ad_group_id, select_related=False, sources=None):
-    try:
-        ad_group = models.AdGroup.objects.all().filter_by_user(user).\
-            filter(id=int(ad_group_id))
-
-        if sources:
-            ad_group = ad_group.filter_by_sources(sources)
-
-        if select_related:
-            ad_group = ad_group.select_related('campaign__account')
-
-        return ad_group.get()
-    except models.AdGroup.DoesNotExist:
-        raise exc.MissingDataError('Ad Group does not exist')
-
-
-def get_content_ad(user, content_ad_id, select_related=False):
-    try:
-        content_ad = models.ContentAd.objects.all().filter_by_user(user). \
-            filter(id=int(content_ad_id))
-
-        if select_related:
-            content_ad = content_ad.select_related('ad_group')
-
-        return content_ad.get()
-    except models.AdGroup.DoesNotExist:
-        raise exc.MissingDataError('Content Ad does not exist')
-
-
-def get_campaign(user, campaign_id, sources=None):
-    try:
-        campaign = models.Campaign.objects.all()\
-                                          .filter_by_user(user)\
-                                          .filter(id=int(campaign_id))
-        if sources:
-            campaign = campaign.filter_by_sources(sources)
-
-        return campaign.get()
-    except models.Campaign.DoesNotExist:
-        raise exc.MissingDataError('Campaign does not exist')
 
 
 def get_user_agency(user):
@@ -469,7 +417,6 @@ def get_content_ad_data_status(ad_group, content_ads):
             if content_ad_source.state != content_ad_source.source_state:
                 out_of_sync.append(content_ad_source.source.name)
 
-        message = ''
         if not out_of_sync:
             message = 'All data is OK.'
         else:

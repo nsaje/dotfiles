@@ -63,35 +63,7 @@ class ValidateURLTest(TestCase):
     R1_DEMO_MODE=False
 )
 @patch('utils.request_signer._secure_opener.open')
-class InsertRedirectTest(TestCase):
-    def test_insert_redirect(self, mock_urlopen):
-        url = "https://example.com"
-        content_ad_id = 123
-        ad_group_id = 345
-
-        redirect_id = "u123456"
-
-        response = Mock()
-        response.read.return_value = json.dumps({
-            "status": "ok",
-            "data": {
-                "redirectid": redirect_id,
-                "redirect": {
-                    "url": url
-                },
-            },
-        })
-        response.getcode = lambda: 200
-        mock_urlopen.return_value = response
-
-        response_dict = redirector_helper.insert_redirect(url, content_ad_id, ad_group_id)
-        self.assertEqual(response_dict["redirectid"], redirect_id)
-
-        call = mock_urlopen.call_args[0][0]
-
-        self.assertEqual(call.get_full_url(), settings.R1_REDIRECTS_API_URL)
-        self.assertEqual(call.data, json.dumps({"url": "https://example.com", "creativeid": content_ad_id, "adgroupid": ad_group_id}))
-
+class UpdateRedirectTest(TestCase):
     def test_update_redirect(self, mock_urlopen):
         url = "https://example.com"
 
@@ -117,29 +89,6 @@ class InsertRedirectTest(TestCase):
 
         self.assertEqual(call.get_full_url(), settings.R1_REDIRECTS_API_URL + redirect_id + '/')
         self.assertEqual(call.data, json.dumps({"url": "https://example.com"}))
-
-    def test_code_error(self, mock_urlopen):
-        url = 'https://example.com/image'
-
-        response = Mock()
-        response.getcode = lambda: 500
-        mock_urlopen.return_value = response
-
-        with self.assertRaises(Exception):
-            redirector_helper.insert_redirect(url, 0, 0)
-        self.assertEqual(len(mock_urlopen.call_args_list), 3)
-
-    def test_status_not_success(self, mock_urlopen):
-        url = 'https://example.com/image'
-
-        response = Mock()
-        response.read.return_value = '{"status": "error"}'
-        response.getcode = lambda: 200
-        mock_urlopen.return_value = response
-
-        with self.assertRaises(Exception):
-            redirector_helper.insert_redirect(url, 0, 0)
-        self.assertEqual(len(mock_urlopen.call_args_list), 3)
 
 
 @override_settings(

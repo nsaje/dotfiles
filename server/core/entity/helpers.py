@@ -25,7 +25,7 @@ def should_filter_by_sources(sources):
     all_source_ids = cache.get('all_source_ids')
     if not all_source_ids:
         all_source_ids = core.source.Source.objects.all().values_list('id', flat=True)
-        cache.set('all_source_ids', all_source_ids)
+        cache.set('all_source_ids', list(all_source_ids))
 
     ids = set(s.id for s in sources)
     return len(set(all_source_ids) - ids) > 0

@@ -35,13 +35,14 @@ class ContentAdBatchMigrationTest(MigrationTest):
                                            brand_name="Brand inc.",
                                            description="This desc!",
                                            call_to_action="Act!",)
-        content_ad1 = ContentAd.objects.create(
+        content_ad1 = ContentAd(
             url='test.com',
             title='test',
             ad_group_id=ad_group.id,
             batch_id=batch.id,
 
         )
+        content_ad1.save()
         # Trigger the migration
         self.run_migration()
 

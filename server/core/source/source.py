@@ -5,6 +5,8 @@ from decimal import Decimal
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+import core.common
+import core.entity
 from dash import constants
 
 
@@ -74,6 +76,8 @@ class Source(models.Model):
     default_daily_budget_cc = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('10.00'),
                                                   verbose_name='Default daily spend cap')
 
+    objects = core.common.QuerySetManager()
+
     def get_clean_slug(self):
         return self.bidder_slug[3:] if self.bidder_slug.startswith('b1_') else self.bidder_slug
 
@@ -136,6 +140,11 @@ class Source(models.Model):
 
     def can_set_max_cpm(self):
         return self.source_type.can_set_max_cpm() and not self.maintenance and not self.deprecated
+
+    class QuerySet(models.QuerySet):
+
+        def filter_can_manage_content_ads(self):
+            return self.filter(id__in=[x.id for x in self.select_related('source_type') if x.can_manage_content_ads()])
 
     def __unicode__(self):
         return self.name

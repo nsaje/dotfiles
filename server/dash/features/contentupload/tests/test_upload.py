@@ -405,7 +405,7 @@ class AddCandidateTestCase(TestCase):
 
     def test_add_candidate(self):
         ad_group = models.AdGroup.objects.get(id=1)
-        new_batch = models.UploadBatch.objects.create(None, 'test', ad_group.id)
+        new_batch = models.UploadBatch.objects.create(None, 'test', ad_group)
 
         candidate = contentupload.upload.add_candidate(new_batch)
         self.assertEqual(ad_group.id, candidate.ad_group_id)
@@ -434,7 +434,7 @@ class AddCandidateTestCase(TestCase):
 
     def test_with_defaults(self):
         ad_group = models.AdGroup.objects.get(id=1)
-        new_batch = models.UploadBatch.objects.create(None, 'test', ad_group.id)
+        new_batch = models.UploadBatch.objects.create(None, 'test', ad_group)
         new_batch.default_image_crop = 'abc'
         new_batch.default_display_url = 'example.com'
         new_batch.default_brand_name = 'Example'

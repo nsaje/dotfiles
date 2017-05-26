@@ -1,0 +1,80 @@
+from rest_framework import permissions
+
+import core.entity
+import utils.exc
+
+
+def gen_permission_class(*perms):
+    class CustomPermissions(permissions.BasePermission):
+        def has_permission(self, request, view):
+            return bool(request.user and request.user.has_perms(perms))
+    return CustomPermissions
+
+
+class HasAccountAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.user and get_account(request.user, view.kwargs['account_id']))
+
+
+class HasCampaignAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.user and get_campaign(request.user, view.kwargs['campaign_id']))
+
+
+class HasAdGroupAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.user and get_ad_group(request.user, view.kwargs['ad_group_id']))
+
+
+def get_account(user, account_id, sources=None):
+    try:
+        account = core.entity.Account.objects.all().filter_by_user(user)
+
+        if sources:
+            account = account.filter_by_sources(sources)
+
+        return account.filter(id=int(account_id)).get()
+    except core.entity.Account.DoesNotExist:
+        raise utils.exc.MissingDataError('Account does not exist')
+
+
+def get_ad_group(user, ad_group_id, select_related=False, sources=None):
+    try:
+        ad_group = core.entity.AdGroup.objects.all().filter_by_user(user).\
+            filter(id=int(ad_group_id))
+
+        if sources:
+            ad_group = ad_group.filter_by_sources(sources)
+
+        if select_related:
+            ad_group = ad_group.select_related('campaign__account')
+
+        return ad_group.get()
+    except core.entity.AdGroup.DoesNotExist:
+        raise utils.exc.MissingDataError('Ad Group does not exist')
+
+
+def get_content_ad(user, content_ad_id, select_related=False):
+    try:
+        content_ad = core.entity.ContentAd.objects.all().filter_by_user(user). \
+            filter(id=int(content_ad_id))
+
+        if select_related:
+            content_ad = content_ad.select_related('ad_group')
+
+        return content_ad.get()
+    except core.entity.AdGroup.DoesNotExist:
+        raise utils.exc.MissingDataError('Content Ad does not exist')
+
+
+def get_campaign(user, campaign_id, sources=None):
+    try:
+        campaign = core.entity.Campaign.objects.all()\
+                                               .filter_by_user(user)\
+                                               .filter(id=int(campaign_id))
+        if sources:
+            campaign = campaign.filter_by_sources(sources)
+
+        return campaign.get()
+    except core.entity.Campaign.DoesNotExist:
+        raise utils.exc.MissingDataError('Campaign does not exist')

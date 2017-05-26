@@ -270,6 +270,9 @@ class AdGroup(models.Model):
         )
         return history
 
+    def get_name_with_id(self):
+        return "{} ({})".format(self.name, self.id)
+
     def save(self, request, *args, **kwargs):
         self.modified_by = request.user
         super(AdGroup, self).save(*args, **kwargs)

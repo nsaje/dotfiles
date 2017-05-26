@@ -17,7 +17,7 @@ import exc
 class UploadBatch(api_common.BaseApiView):
 
     def post(self, request, ad_group_id):
-        helpers.get_ad_group(request.user, ad_group_id)  # check access permission
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)  # check access permission
 
         resource = json.loads(request.body)
         form = forms.AdGroupAdsUploadBaseForm(resource)
@@ -25,7 +25,7 @@ class UploadBatch(api_common.BaseApiView):
             raise utils.exc.ValidationError(errors=form.errors)
 
         batch = models.UploadBatch.objects.create(
-            request.user, form.cleaned_data['batch_name'], ad_group_id)
+            request.user, form.cleaned_data['batch_name'], ad_group)
 
         candidate = upload.add_candidate(batch)
         return self.create_api_response({

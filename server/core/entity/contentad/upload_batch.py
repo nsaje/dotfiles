@@ -3,22 +3,26 @@ from django.conf import settings
 from django.db import models
 
 from dash import constants
+from utils import dates_helper
 
 
 class UploadBatchManager(models.Manager):
 
-    def create(self, user, name, ad_group_id):
+    def create(self, user, name, ad_group):
         batch = UploadBatch(
             name=name,
-            ad_group_id=ad_group_id,
+            ad_group=ad_group,
         )
         batch.save(user=user)
         return batch
 
-    def create_for_file(self, user, name, ad_group_id, original_filename, auto_save, is_edit):
+    def clone(self, user, source_ad_group, ad_group):
+        return self.create(user, UploadBatch.generate_cloned_name(source_ad_group), ad_group)
+
+    def create_for_file(self, user, name, ad_group, original_filename, auto_save, is_edit):
         batch = UploadBatch(
             name=name,
-            ad_group_id=ad_group_id,
+            ad_group=ad_group,
             original_filename=original_filename,
             auto_save=auto_save,
         )
@@ -78,3 +82,13 @@ class UploadBatch(models.Model):
             user = kwargs.pop('user', None)
             self.created_by = user
         super(UploadBatch, self).save(*args, **kwargs)
+
+    @classmethod
+    def generate_cloned_name(cls, source_ad_group):
+        return u"Cloned from {} on {}".format(
+            source_ad_group.get_name_with_id(),
+            dates_helper.format_date_mmddyyyy(dates_helper.local_now()))
+
+    def mark_save_done(self):
+        self.status = constants.UploadBatchStatus.DONE
+        self.save()

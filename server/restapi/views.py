@@ -60,6 +60,13 @@ class RESTAPIBaseView(APIView):
     renderer_classes = [RESTAPIJSONRenderer]
     permission_classes = (permissions.IsAuthenticated, CanUseRESTAPIPermission,)
 
+    def get_serializer_context(self):
+        return {
+            'request': self.request,
+            'format': self.format_kwarg,
+            'view': self
+        }
+
     def initialize_request(self, request, *args, **kwargs):
         drf_request = super(RESTAPIBaseView, self).initialize_request(request, *args, **kwargs)
         drf_request.method = request.method

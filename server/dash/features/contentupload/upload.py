@@ -28,7 +28,7 @@ VALID_UPDATE_FIELDS = set(['url', 'brand_name', 'display_url', 'description', 'i
 def insert_candidates(user, candidates_data, ad_group, batch_name, filename, auto_save=False, is_edit=False):
     with transaction.atomic():
         batch = models.UploadBatch.objects.create_for_file(
-            user, batch_name, ad_group.id, filename, auto_save, is_edit)
+            user, batch_name, ad_group, filename, auto_save, is_edit)
         candidates = _create_candidates(candidates_data, ad_group, batch)
 
     for candidate in candidates:
@@ -130,11 +130,9 @@ def persist_batch(batch):
         raise exc.CandidateErrorsRemaining('Save not permitted - candidate errors exist')
 
     with transaction.atomic():
-        content_ads = _persist_candidates(batch, cleaned_candidates)
-        _create_redirect_ids(content_ads)
+        content_ads = models.ContentAd.objects.bulk_create_from_candidates(cleaned_candidates, batch)
 
-        batch.status = constants.UploadBatchStatus.DONE
-        batch.save()
+        batch.mark_save_done()
         candidates.delete()
 
         _save_history(batch, content_ads)
@@ -190,14 +188,6 @@ def _save_history(batch, content_ads):
         action_type=action_type)
 
 
-def _create_redirect_ids(content_ads):
-    redirector_batch = redirector_helper.insert_redirects(content_ads)
-    for content_ad in content_ads:
-        content_ad.url = redirector_batch[str(content_ad.id)]["redirect"]["url"]
-        content_ad.redirect_id = redirector_batch[str(content_ad.id)]["redirectid"]
-        content_ad.save()
-
-
 def get_candidates_with_errors(candidates):
     _, errors = _clean_candidates(candidates)
     result = []
@@ -213,21 +203,6 @@ def get_candidates_with_errors(candidates):
 def get_candidates_csv(batch):
     candidates = batch.contentadcandidate_set.all()
     return _get_candidates_csv(candidates)
-
-
-def _persist_candidates(batch, new_content_ads):
-    ad_group_sources = []
-    for ags in models.AdGroupSource.objects.filter(
-            ad_group=batch.ad_group,
-    ).select_related('source__source_type'):
-        if ags.can_manage_content_ads and ags.source.can_manage_content_ads():
-            ad_group_sources.append(ags)
-
-    saved_content_ads = []
-    for content_ad in new_content_ads:
-        saved_content_ads.append(_create_content_ad(content_ad, batch.ad_group_id, batch.id, ad_group_sources))
-
-    return saved_content_ads
 
 
 def _update_content_ads(update_candidates):
@@ -491,23 +466,6 @@ def _create_candidates(content_ads_data, ad_group, batch):
     return candidates_added
 
 
-def _create_content_ad(candidate, ad_group_id, batch_id, ad_group_sources):
-    content_ad = models.ContentAd(
-        ad_group_id=ad_group_id,
-        batch_id=batch_id,
-    )
-
-    for field in candidate:
-        if not hasattr(content_ad, field):
-            continue
-        setattr(content_ad, field, candidate[field])
-
-    content_ad.save()
-
-    _create_content_ad_sources(content_ad, ad_group_sources)
-    return content_ad
-
-
 def _apply_content_ad_edit(candidate):
     content_ad = candidate.original_content_ad
     if not content_ad:
@@ -532,13 +490,3 @@ def _apply_content_ad_edit(candidate):
 
     content_ad.save()
     return content_ad
-
-
-def _create_content_ad_sources(content_ad, ad_group_sources):
-    for ad_group_source in ad_group_sources:
-            models.ContentAdSource.objects.create(
-                source=ad_group_source.source,
-                content_ad=content_ad,
-                submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
-                state=constants.ContentAdSourceState.ACTIVE
-            )

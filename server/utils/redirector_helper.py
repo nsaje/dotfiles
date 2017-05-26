@@ -22,28 +22,6 @@ def validate_url(url, ad_group_id):
         raise
 
 
-def insert_redirect(url, content_ad_id, ad_group_id):
-    # Demo V3 hack
-    if settings.R1_DEMO_MODE:
-        data = {
-            'redirect': {'url': 'http://example.com/FAKE'},
-            'redirectid': 'XXXXXXXXXXXXX'
-        }
-        return data
-
-    try:
-        data = json.dumps({
-            'url': url,
-            'creativeid': int(content_ad_id),
-            'adgroupid': int(ad_group_id),
-        })
-
-        return _call_api_retry(settings.R1_REDIRECTS_API_URL, data)
-    except Exception:
-        logger.exception('Exception in insert_redirect')
-        raise
-
-
 def insert_redirects(content_ads):
     if settings.R1_DEMO_MODE:
         data = {

@@ -2,6 +2,7 @@ from django.conf.urls import url
 
 import views
 import geolocation
+from dash.features.bulkactions import clonecontent
 
 urlpatterns = [
     url(
@@ -142,3 +143,5 @@ urlpatterns = [
         name='geolocation_list'
     ),
 ]
+
+urlpatterns += clonecontent.urls.urlpatterns
