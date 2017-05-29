@@ -14,10 +14,10 @@ def query_content_ad_publishers(date_from, date_to, ad_group_ids=None):
         constraints['ad_group_id'] = ad_group_ids
 
     sql, params = queries.prepare_query_all_base(
-        breakdown=['ad_group_id', 'content_ad_id', 'publisher', 'source_id'],
+        breakdown=['ad_group_id', 'content_ad_id', 'publisher_id', 'source_id'],
         constraints=constraints,
         parents=None,
-        use_publishers_view=True
+        use_publishers_view=False,
     )
 
     cursor = db.get_stats_cursor()

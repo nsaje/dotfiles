@@ -36,14 +36,15 @@ class BreakdownsBase(backtosql.Model):
         """ Returns the SQL view that best fits the breakdown """
         raise NotImplementedError()
 
-    def get_breakdown(self, breakdown):
-        """ Selects breakdown subset of columns """
-
+    def _get_breakdown_fields(self, breakdown):
         if 'publisher_id' in breakdown:
             publisher_id_idx = breakdown.index('publisher_id')
             breakdown = breakdown[:publisher_id_idx] + ['publisher', 'source_id'] + breakdown[publisher_id_idx + 1:]
+        return breakdown
 
-        return self.select_columns(subset=breakdown)
+    def get_breakdown(self, breakdown):
+        """ Selects breakdown subset of columns """
+        return self.select_columns(subset=self._get_breakdown_fields(breakdown))
 
     def get_aggregates(self):
         """ Returns all the aggregate columns """
@@ -93,7 +94,7 @@ class BreakdownsBase(backtosql.Model):
             'constraints': self.get_constraints(constraints, parents),
             'view': self.get_best_view(helpers.get_all_dimensions(
                 breakdown, constraints, parents), use_publishers_view),
-            'orders': [self.get_column(x).as_order(x, nulls='last') for x in orders],
+            'orders': [self.get_column(x).as_order(x, nulls='last') for x in self._get_breakdown_fields(orders)],
         }
 
     def get_query_all_yesterday_context(self, breakdown, constraints, parents, orders, use_publishers_view):
