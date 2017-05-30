@@ -1,5 +1,7 @@
 import logging
+import traceback
 
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 import rest_framework.views
 from rest_framework.response import Response
@@ -33,6 +35,8 @@ def custom_exception_handler(exception, context):
     logger.error('REST API exception', exc_info=True)
     error_data['errorCode'] = "ServerError"
     error_data['details'] = "An error occurred."
+    if settings.DEBUG or settings.TESTING:
+        error_data['stackTrace'] = traceback.format_exc()
     status_code = 500
     return Response(error_data, status=status_code)
 

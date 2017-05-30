@@ -128,6 +128,7 @@ S3_BUCKET_DEMO = ''
 S3_BUCKET_THUMBNAILER = ''
 S3_BUCKET_CUSTOM_REPORTS = ''
 S3_BUCKET_PUBLISHER_GROUPS = ''
+S3_BUCKET_VIDEO = ''
 USE_S3 = False
 
 # adgroup-level reports aggregations

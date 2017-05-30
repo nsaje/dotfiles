@@ -51,7 +51,7 @@ class DashConstantField(serializers.Field):
         return map(lambda x: self.to_internal_value(x), data)
 
     def to_representation(self, value):
-        if not value:
+        if value is None:
             return None
         return self.const_cls.get_name(value)
 

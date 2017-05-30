@@ -131,6 +131,7 @@ S3_BUCKET_DEMO = 'z1-demo'
 S3_BUCKET_THUMBNAILER = 'zemthumbnailer'
 S3_BUCKET_CUSTOM_REPORTS = 'z1-custom-reports'
 S3_BUCKET_PUBLISHER_GROUPS = 'z1-publisher-groups-csv-upload'
+S3_BUCKET_VIDEO = 'zemvideos'
 USE_S3 = True
 
 # adgroup-level reports aggregations
