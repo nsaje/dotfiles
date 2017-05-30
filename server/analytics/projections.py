@@ -65,6 +65,10 @@ class BudgetProjections(object):
         self.projections = {}
         self.accounts = {acc.id: acc for acc in (accounts or dash.models.Account.objects.all())}
 
+        self.agency_credits = {}
+        for cli in dash.models.CreditLineItem.objects.filter(agency_id__isnull=False):
+            self.agency_credits.setdefault(cli.agency_id, []).append(cli)
+
         self._prepare_account_types()
 
         self._prepare_data_by_breakdown()
@@ -325,7 +329,7 @@ class BudgetProjections(object):
 
         agency_flat_fee_share = Decimal(sum(
             credit.get_flat_fee_on_date_range(self.start_date, self.end_date)
-            for credit in account.agency.credits.all()
+            for credit in self.agency_credits.get(account.agency_id, [])
         )) / Decimal(agency_account_count)
         return agency_flat_fee_share
 
