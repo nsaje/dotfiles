@@ -39,7 +39,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
                                'cpm', 'returning_users', 'unique_users', 'bounced_visits',
                                'video_start', 'video_first_quartile', 'video_midpoint',
                                'video_third_quartile', 'video_complete', 'video_progress_3s',
-                               'video_cpv', 'video_cpcv', 'publisher_id'])
+                               'video_cpv', 'video_cpcv'])
 
     def test_get_constraints(self):
         date_from = datetime.date(2016, 7, 1)
@@ -446,7 +446,7 @@ class MVJointMasterTest(TestCase, backtosql.TestSQLMixin):
                                'cpm', 'returning_users', 'unique_users', 'bounced_visits',
                                'video_start', 'video_first_quartile', 'video_midpoint',
                                'video_third_quartile', 'video_complete', 'video_progress_3s',
-                               'video_cpv', 'video_cpcv', 'publisher_id'])
+                               'video_cpv', 'video_cpcv'])
 
     @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
     def test_get_query_joint_context(self, mock_today):

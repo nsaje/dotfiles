@@ -121,8 +121,6 @@ class BreakdownsBase(backtosql.Model):
 
 
 class MVMaster(BreakdownsBase):
-    publisher_id = backtosql.TemplateColumn('part_publisher_id.sql', None, AGGREGATE)
-
     device_type = backtosql.Column('device_type', BREAKDOWN)
     country = backtosql.Column('country', BREAKDOWN)
     state = backtosql.Column('state', BREAKDOWN)
@@ -209,6 +207,8 @@ class MVMaster(BreakdownsBase):
 
 
 class MVMasterPublishers(MVMaster):
+
+    publisher_id = backtosql.TemplateColumn('part_publisher_id.sql', None, AGGREGATE)
     external_id = backtosql.TemplateColumn('part_max.sql', {'column_name': 'external_id'}, AGGREGATE)
 
     def get_query_all_yesterday_context(self, breakdown, constraints, parents, orders, use_publishers_view):
