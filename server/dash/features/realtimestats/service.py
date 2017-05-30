@@ -27,7 +27,7 @@ def get_adgroup_infobox_spend(user, ad_group, filtered_sources):
         stats = []
 
     today_spend = infobox_helpers.OverviewSetting(
-        'Today spend:',
+        'Today\'s spend:',
         total_today_spend,
         internal=not user.get_all_permissions_with_access_levels().get('zemauth.can_see_realtime_spend'),
         warning='''Today's spend is calculated in real-time and represents the amount of money spent on media and data costs today.
