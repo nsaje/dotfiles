@@ -3,7 +3,7 @@ module.exports = function (grunt) {
 
     function getS3BuildPath () {
         if (grunt.option('build-number') !== undefined) {
-            return 'https://s3.amazonaws.com/z1-static/build-' + grunt.option('build-number');
+            return 'https://one-static.zemanta.com/build-' + grunt.option('build-number');
         }
 
         return '';
