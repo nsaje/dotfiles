@@ -54,18 +54,15 @@ def cross_check_audience_categories():
             if category.category_id not in audience_categories:
                 messages.append(
                     'Category {} is active in the system but '
-                    'isn\'t added to the audience'
+                    'isn\'t added to the audience'.format(category.category_id)
                 )
 
     if messages:
         messages = ['BlueKai campaign is out of sync with Z1. '
                     'Check https://partner.bluekai.com/rails/campaigns/{}. '
                     'Details:'.format(CAMPAIGN_ID)] + messages
-        utils.slack.publish(
-            '\n'.join(messages),
-            msg_type=utils.slack.MESSAGE_TYPE_WARNING,
-            username='BlueKai Categories Sync'
-        )
+
+    return '\n'.join(messages)
 
 
 def _get_existing_categories():
@@ -93,6 +90,7 @@ def _get_updated_categories(taxonomy, existing_categories):
             'price': bluekai_category['categoryPrice'],
             'navigation_only': bluekai_category['isForNavigationOnlyFlag'],
         }
+        print bluekai_category['stats']['reach'], bluekai_category['categoryPrice']
 
         existing_category = existing_categories.get(bluekai_category['id'])
         if not existing_category:
