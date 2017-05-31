@@ -14,10 +14,11 @@ class TestBlueKaiCategorySerializer(TestCase):
 
     def _check_node(self, node, category, child_categories):
         for key in set(node.keys()) - set(['child_nodes']):
-            value = getattr(category, key)
-            if isinstance(value, decimal.Decimal):
-                value = format(value, '0.2f')
-            self.assertEqual(value, node[key])
+            db_value = getattr(category, key)
+            if isinstance(db_value, decimal.Decimal):
+                db_value = format(db_value, '0.2f')
+            out_value = node[key]
+            self.assertEqual(db_value, out_value)
 
         self.assertEqual(
             set([child['category_id'] for child in node['child_nodes']]),
