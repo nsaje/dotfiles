@@ -2,7 +2,6 @@ import logging
 
 import bluekaiapi
 from dash.features.bluekai import models
-import utils.slack
 
 logger = logging.getLogger(__name__)
 
