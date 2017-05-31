@@ -3,6 +3,7 @@ from django.conf.urls import url
 import views
 import geolocation
 import dash.features.videoassets.urls
+import dash.features.bluekai.urls
 from dash.features.bulkactions import clonecontent
 from dash.features import cloneadgroup
 
@@ -149,3 +150,4 @@ urlpatterns = [
 urlpatterns += clonecontent.urls.urlpatterns
 urlpatterns += cloneadgroup.urls.urlpatterns
 urlpatterns += dash.features.videoassets.urls.urlpatterns
+urlpatterns += dash.features.bluekai.urls.urlpatterns

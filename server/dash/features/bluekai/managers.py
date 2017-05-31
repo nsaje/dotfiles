@@ -23,6 +23,7 @@ class BlueKaiCategoryManager(models.Manager):
 
 
 class BlueKaiCategoryMixin(object):
+
     def mark_active(self):
         self.status = constants.BlueKaiCategoryStatus.ACTIVE
         self.save()
