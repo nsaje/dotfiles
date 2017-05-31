@@ -15,6 +15,10 @@ angular.module('one.widgets').service('zemReportFieldsService', function (zemPer
     var FIELDS_WITH_IDS = ['Content Ad', 'Ad Group', 'Campaign', 'Account', 'Agency'];
     var FIELDS_WITH_STATUSES = ['Account', 'Campaign', 'Ad Group', 'Content Ad', 'Publisher'];
 
+    var BREAKDOWN_REQUIRED_FIELDS = {
+        'content_ad': ['Label'],
+    };
+
     // Public API
     this.getFields = getFields;
 
@@ -28,6 +32,7 @@ angular.module('one.widgets').service('zemReportFieldsService', function (zemPer
 
         for (var i = 0; i < breakdown.length; i++) {
             fields.push(breakdown[i].report_query);
+            fields = addBreakdownRequiredFields(fields, breakdown[i].query);
         }
 
         fields = fields.concat(getGridFields(gridApi));
@@ -61,6 +66,10 @@ angular.module('one.widgets').service('zemReportFieldsService', function (zemPer
             }
         }
         return newFields;
+    }
+
+    function addBreakdownRequiredFields (fields, breakdown) {
+        return fields.concat(BREAKDOWN_REQUIRED_FIELDS[breakdown] || []);
     }
 
     function deduplicateFields (fields) {
