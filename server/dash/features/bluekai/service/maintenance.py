@@ -90,7 +90,6 @@ def _get_updated_categories(taxonomy, existing_categories):
             'price': bluekai_category['categoryPrice'],
             'navigation_only': bluekai_category['isForNavigationOnlyFlag'],
         }
-        print bluekai_category['stats']['reach'], bluekai_category['categoryPrice']
 
         existing_category = existing_categories.get(bluekai_category['id'])
         if not existing_category:

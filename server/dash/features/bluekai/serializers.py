@@ -8,3 +8,5 @@ class BlueKaiCategorySerializer(serializers.Serializer):
     description = serializers.CharField()
     navigation_only = serializers.BooleanField()
     child_nodes = serializers.ListField(child=RecursiveField())
+    reach = serializers.IntegerField()
+    price = serializers.DecimalField(max_digits=None, decimal_places=2)

@@ -1,3 +1,5 @@
+import decimal
+
 from django.test import TestCase
 from mock import patch
 from mixer.backend.django import mixer
@@ -12,7 +14,10 @@ class TestBlueKaiCategorySerializer(TestCase):
 
     def _check_node(self, node, category, child_categories):
         for key in set(node.keys()) - set(['child_nodes']):
-            self.assertEqual(getattr(category, key), node[key])
+            value = getattr(category, key)
+            if isinstance(value, decimal.Decimal):
+                value = format(value, '0.2f')
+            self.assertEqual(value, node[key])
 
         self.assertEqual(
             set([child['category_id'] for child in node['child_nodes']]),
