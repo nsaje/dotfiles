@@ -1,5 +1,6 @@
 from django.db.models import Q
 from rest_framework import serializers
+from rest_framework import fields
 
 from dash import constants
 
@@ -12,8 +13,7 @@ import restapi.fields
 class CloneContentAdsSerializer(serializers.Serializer):
     ad_group_id = restapi.fields.IdField()
     batch_id = restapi.fields.IdField(required=False)
-    content_ad_ids = restapi.fields.CommaListField(
-        child=restapi.fields.IdField())
+    content_ad_ids = fields.ListField(child=restapi.fields.IdField(), required=False)
 
     destination_ad_group_id = restapi.fields.IdField()
 
@@ -26,9 +26,8 @@ class CloneContentAdsSerializer(serializers.Serializer):
 
 class CloneContentAdsInternalSerializer(CloneContentAdsSerializer):
 
-    deselected_content_ad_ids = restapi.fields.CommaListField(
-        child=restapi.fields.IdField())
-    state = restapi.fields.DashConstantField(constants.ContentAdSourceState, required=False)
+    deselected_content_ad_ids = fields.ListField(child=restapi.fields.IdField(), required=False)
+    state = restapi.fields.DashConstantField(constants.ContentAdSourceState, required=False, allow_null=True)
 
     def validate(self, data):
         return data
@@ -43,9 +42,26 @@ class UploadBatchSerializer(serializers.ModelSerializer):
     ad_group_id = restapi.fields.IdField()
 
 
+class AdGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = core.entity.UploadBatch
+        fields = ('id', 'name')
+
+    id = restapi.fields.IdField()
+
+
+class UploadBatchInternalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = core.entity.UploadBatch
+        fields = ('id', 'name', 'ad_group')
+
+    id = restapi.fields.IdField()
+    ad_group = AdGroupSerializer()
+
+
 def get_content_ads(objects, data):
-    if data.get('not_selected_content_ad_ids'):
-        objects = objects.exclude(id__in=data['not_selected_content_ad_ids'])
+    if data.get('deselected_content_ad_ids'):
+        objects = objects.exclude(id__in=data['deselected_content_ad_ids'])
 
     batch_id = data.get('batch_id')
     content_ad_ids = data.get('content_ad_ids')

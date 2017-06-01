@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.widgets').factory('zemGridBulkActionsService', function ($q, $window, zemEntityService, zemContentAdService, zemGridEndpointColumns, zemGridConstants, zemAlertsService, zemUploadService, zemUploadApiConverter) { // eslint-disable-line max-len
+angular.module('one.widgets').factory('zemGridBulkActionsService', function ($q, $window, zemEntityService, zemGridEndpointColumns, zemGridConstants, zemAlertsService, zemUploadService, zemUploadApiConverter, zemCloneContentService) { // eslint-disable-line max-len
 
     function BulkActionsService (gridApi) {
         this.getActions = getActions;
@@ -82,6 +82,13 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($q,
                 hasPermission: gridApi.hasPermission('zemauth.can_edit_content_ads'),
                 internal: gridApi.isPermissionInternal('zemauth.can_edit_content_ads'),
                 execute: edit,
+            },
+            clone: {
+                name: 'Clone',
+                value: 'clone',
+                hasPermission: gridApi.hasPermission('zemauth.can_clone_contentads'),
+                internal: gridApi.isPermissionInternal('zemauth.can_clone_contentads'),
+                execute: clone,
             }
         };
 
@@ -103,6 +110,7 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($q,
                     },
                     ACTIONS.restore,
                     ACTIONS.edit,
+                    ACTIONS.clone,
                 ];
             } else if (metaData.level === constants.level.ACCOUNTS
                         && metaData.breakdown === constants.breakdown.CAMPAIGN) {
@@ -220,6 +228,11 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($q,
                     gridApi.loadData
                 );
             }, handleError);
+        }
+
+        function clone (selection) {
+            var metaData = gridApi.getMetaData();
+            return zemCloneContentService.openCloneModal(metaData.id, selection);
         }
 
         function download (selection) {

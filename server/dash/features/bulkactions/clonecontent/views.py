@@ -41,3 +41,4 @@ class CloneContentAds(restapi.views.RESTAPIBaseView):
 class InternalCloneContentAds(CloneContentAds):
 
     input_serializer = serializers.CloneContentAdsInternalSerializer
+    output_serializer = serializers.UploadBatchInternalSerializer

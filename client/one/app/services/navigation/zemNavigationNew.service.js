@@ -4,6 +4,7 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
     this.refreshState = refreshState;
     this.getEntityHref = getEntityHref;
     this.getHomeHref = getHomeHref;
+    this.getEntityById = getEntityById;
     this.getActiveEntity = getActiveEntity;
     this.getActiveEntityByType = getActiveEntityByType;
     this.getActiveAccount = getActiveAccount;

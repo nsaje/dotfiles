@@ -548,6 +548,7 @@ var constants = {
         ARCHIVE: 'archive',
         RESTORE: 'restore',
         EDIT: 'edit',
+        CLONE: 'clone',
     },
     entityActionType: {
         SINGLE: 'single',

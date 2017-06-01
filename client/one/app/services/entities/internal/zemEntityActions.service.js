@@ -20,6 +20,7 @@ angular.module('one.services').service('zemEntityActionsService', function ($htt
         this.deactivate = createExecuteAction(constants.entityAction.DEACTIVATE);
         this.archive = createExecuteAction(constants.entityAction.ARCHIVE);
         this.restore = createExecuteAction(constants.entityAction.RESTORE);
+        this.clone = createExecuteAction(constants.entityAction.CLONE);
 
         // Bulk Entity actions
         this.activateEntities = createBulkExecuteAction(constants.entityAction.ACTIVATE, parentLevel, breakdown);
@@ -27,6 +28,7 @@ angular.module('one.services').service('zemEntityActionsService', function ($htt
         this.restoreEntities = createBulkExecuteAction(constants.entityAction.RESTORE, parentLevel, breakdown);
         this.archiveEntities = createBulkExecuteAction(constants.entityAction.ARCHIVE, parentLevel, breakdown);
         this.editEntities = createBulkExecuteAction(constants.entityAction.EDIT, parentLevel, breakdown);
+        this.cloneEntities = createBulkExecuteAction(constants.entityAction.CLONE, parentLevel, breakdown);
 
         // Bulk Sources actions
         this.activateSources =
@@ -128,6 +130,8 @@ angular.module('one.services').service('zemEntityActionsService', function ($htt
                 return zemEntityBulkActionsEndpoint.restore;
             case constants.entityAction.EDIT:
                 return zemEntityBulkActionsEndpoint.edit;
+            case constants.entityAction.CLONE:
+                return zemEntityBulkActionsEndpoint.clone;
             }
         }
 
