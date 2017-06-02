@@ -1,6 +1,6 @@
 describe('component: zemInterestTargeting', function () {
     describe('initialization', function () {
-        var $ctrl; // eslint-disable-line no-unused-vars
+        var $ctrl;
 
         beforeEach(module('one'));
         beforeEach(module('one.mocks.zemInitializationService'));
@@ -20,7 +20,7 @@ describe('component: zemInterestTargeting', function () {
     });
 
     describe('component updates targeting attributes appropriately', function () {
-        var $ctrl; // eslint-disable-line no-unused-vars
+        var $ctrl;
 
         beforeEach(module('one'));
         beforeEach(module('one.mocks.zemInitializationService'));
@@ -41,22 +41,22 @@ describe('component: zemInterestTargeting', function () {
         }));
 
         it('should add inclusion interest targeting', function () {
-            $ctrl.addTargeting({id: 'education', included: true, excluded: false});
+            $ctrl.addIncluded({id: 'education'});
             expect($ctrl.entity.settings.interestTargeting).toEqual(['music', 'cars', 'education']);
         });
 
         it('should add exclusion interest targeting', function () {
-            $ctrl.addTargeting({id: 'education', included: false, excluded: true});
+            $ctrl.addExcluded({id: 'education'});
             expect($ctrl.entity.settings.exclusionInterestTargeting).toEqual(['hobbies', 'education']);
         });
 
         it('should remove inclusion targeting', function () {
-            $ctrl.removeTargeting({id: 'music', included: false, excluded: false});
+            $ctrl.removeTargeting({id: 'music'});
             expect($ctrl.entity.settings.interestTargeting).toEqual(['cars']);
         });
 
         it('should remove exclusion targeting', function () {
-            $ctrl.removeTargeting({id: 'hobbies', included: false, excluded: false});
+            $ctrl.removeTargeting({id: 'hobbies'});
             expect($ctrl.entity.settings.exclusionInterestTargeting).toEqual([]);
         });
     });

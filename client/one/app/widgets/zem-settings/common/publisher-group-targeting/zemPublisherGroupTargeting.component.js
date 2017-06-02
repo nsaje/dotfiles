@@ -20,8 +20,8 @@ angular.module('one.widgets').component('zemPublisherGroupTargeting', {
         };
         $ctrl.publisherGroups = null;
 
-        $ctrl.allTargetings = [];
-        $ctrl.addTargeting = addTargeting;
+        $ctrl.addIncluded = addIncluded;
+        $ctrl.addExcluded = addExcluded;
         $ctrl.removeTargeting = removeTargeting;
 
         $ctrl.$onInit = function () {
@@ -31,78 +31,85 @@ angular.module('one.widgets').component('zemPublisherGroupTargeting', {
         $ctrl.$onChanges = function () {
             if ($ctrl.entity) {
                 if ($ctrl.publisherGroups && $ctrl.previousEntityId === $ctrl.entity.id) {
-                    $ctrl.allTargetings = getPublisherGroups();
+                    $ctrl.targetings = getPublisherGroups();
                 } else {
                     $ctrl.publisherGroups = null;
                     zemPublisherGroupTargetingService.getPublisherGroups($ctrl.entity).then(function (data) {
                         $ctrl.publisherGroups = data;
-                        $ctrl.allTargetings = getPublisherGroups();
+                        $ctrl.targetings = getPublisherGroups();
                     });
                 }
                 $ctrl.previousEntityId = $ctrl.entity.id;
             }
         };
 
-        function addTargeting (targeting) {
-            if (targeting.included) {
-                if (!$ctrl.entity.settings.whitelistPublisherGroups) {
-                    $ctrl.entity.settings.whitelistPublisherGroups = [];
-                }
-                $ctrl.entity.settings.whitelistPublisherGroups.push(targeting.id);
+        function addIncluded (targeting) {
+            if (!$ctrl.entity.settings.whitelistPublisherGroups) {
+                $ctrl.entity.settings.whitelistPublisherGroups = [];
             }
+            $ctrl.entity.settings.whitelistPublisherGroups.push(targeting.id);
+            $ctrl.targetings = getPublisherGroups();
+        }
 
-            if (targeting.excluded) {
-                if (!$ctrl.entity.settings.blacklistPublisherGroups) {
-                    $ctrl.entity.settings.blacklistPublisherGroups = [];
-                }
-                $ctrl.entity.settings.blacklistPublisherGroups.push(targeting.id);
+        function addExcluded (targeting) {
+            if (!$ctrl.entity.settings.blacklistPublisherGroups) {
+                $ctrl.entity.settings.blacklistPublisherGroups = [];
             }
+            $ctrl.entity.settings.blacklistPublisherGroups.push(targeting.id);
+            $ctrl.targetings = getPublisherGroups();
         }
 
         function removeTargeting (targeting) {
-            var index = -1;
-
-            index = $ctrl.entity.settings.whitelistPublisherGroups.indexOf(targeting.id);
-            if (index >= 0) {
-                $ctrl.entity.settings.whitelistPublisherGroups.splice(index, 1);
+            var index = $ctrl.entity.settings.whitelistPublisherGroups.indexOf(targeting.id);
+            if (index !== -1) {
+                $ctrl.entity.settings.whitelistPublisherGroups =
+                    $ctrl.entity.settings.whitelistPublisherGroups.slice(0, index)
+                    .concat($ctrl.entity.settings.whitelistPublisherGroups.slice(index + 1));
             }
 
             index = $ctrl.entity.settings.blacklistPublisherGroups.indexOf(targeting.id);
-            if (index >= 0) {
-                $ctrl.entity.settings.blacklistPublisherGroups.splice(index, 1);
+            if (index !== -1) {
+                $ctrl.entity.settings.blacklistPublisherGroups =
+                    $ctrl.entity.settings.blacklistPublisherGroups.slice(0, index)
+                    .concat($ctrl.entity.settings.blacklistPublisherGroups.slice(index + 1));
             }
+
+            $ctrl.targetings = getPublisherGroups();
         }
 
         function getPublisherGroups () {
-            if ($ctrl.publisherGroups === null) return;
+            var targetings = {
+                included: [],
+                excluded: [],
+                notSelected: [],
+            };
+            if (!$ctrl.entity || $ctrl.publisherGroups === null) return targetings;
 
-            var groups = $ctrl.publisherGroups.slice(), result = [];
-
-            if (!$ctrl.entity) {
-                return result;
-            }
+            var groups = $ctrl.publisherGroups.slice();
             groups.sort(function (opt1, opt2) {
                 return opt1.name.localeCompare(opt2.name);
             });
 
             groups.forEach(function (pg) {
-                var included = $ctrl.entity.settings.whitelistPublisherGroups.indexOf(pg.id) >= 0,
-                    excluded = $ctrl.entity.settings.blacklistPublisherGroups.indexOf(pg.id) >= 0;
-                result.push(getTargetingEntity(pg, included, excluded));
+                if ($ctrl.entity.settings.whitelistPublisherGroups.indexOf(pg.id) !== -1) {
+                    targetings.included.push(getTargetingEntity(pg));
+                } else if ($ctrl.entity.settings.blacklistPublisherGroups.indexOf(pg.id) !== -1) {
+                    targetings.excluded.push(getTargetingEntity(pg));
+                } else {
+                    targetings.notSelected.push(getTargetingEntity(pg));
+                }
             });
 
-            return result;
+            return targetings;
         }
 
-        function getTargetingEntity (pg, included, excluded) {
+        function getTargetingEntity (pg) {
             return {
                 section: 'Publisher groups',
                 id: pg.id,
                 archived: false,
                 name: pg.name,
                 title: pg.name,
-                included: included,
-                excluded: excluded,
             };
         }
     }

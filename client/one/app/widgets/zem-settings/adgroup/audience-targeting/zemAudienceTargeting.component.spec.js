@@ -16,7 +16,6 @@ describe('component: zemAudienceTargeting', function () {
 
         it('should initialize without errors', function () {
             $ctrl.$onInit();
-            expect($ctrl.allTargetings).toEqual([]);
         });
     });
 
@@ -27,61 +26,62 @@ describe('component: zemAudienceTargeting', function () {
         beforeEach(module('one.mocks.zemInitializationService'));
 
         beforeEach(inject(function ($rootScope, $componentController) {
-            targetings = [{
-                type: 'audienceTargeting',
-                section: 'Custom Audiences',
-                id: 11,
-                archived: undefined,
-                name: 'Audience 11 [11]',
-                title: 'Audience "Audience 11" [11]',
-                included: true,
-                excluded: false,
-            }, {
-                type: 'audienceTargeting',
-                section: 'Custom Audiences',
-                id: 22,
-                archived: undefined,
-                name: 'Audience 22 [22]',
-                title: 'Audience "Audience 22" [22]',
-                included: false,
-                excluded: true,
-            }, {
-                type: 'audienceTargeting',
-                section: 'Custom Audiences',
-                id: 33,
-                archived: undefined,
-                name: 'Audience 33 [33]',
-                title: 'Audience "Audience 33" [33]',
-                included: false,
-                excluded: false,
-            }, {
-                type: 'adGroupTargeting',
-                section: 'Campaign 1',
-                id: 1,
-                archived: undefined,
-                name: 'Ad Group 1 [1]',
-                title: 'Ad group "Ad Group 1" [1]',
-                included: true,
-                excluded: false,
-            }, {
-                type: 'adGroupTargeting',
-                section: 'Campaign 1',
-                id: 2,
-                archived: undefined,
-                name: 'Ad Group 2 [2]',
-                title: 'Ad group "Ad Group 2" [2]',
-                included: false,
-                excluded: true,
-            }, {
-                type: 'adGroupTargeting',
-                section: 'Campaign 2',
-                id: 3,
-                archived: undefined,
-                name: 'Ad Group 3 [3]',
-                title: 'Ad group "Ad Group 3" [3]',
-                included: false,
-                excluded: false,
-            }];
+            targetings = {
+                included: [
+                    {
+                        type: 'audienceTargeting',
+                        section: 'Custom Audiences',
+                        id: 11,
+                        archived: undefined,
+                        name: 'Audience 11 [11]',
+                        title: 'Audience "Audience 11" [11]',
+                    },
+                    {
+                        type: 'adGroupTargeting',
+                        section: 'Campaign 1',
+                        id: 1,
+                        archived: undefined,
+                        name: 'Ad Group 1 [1]',
+                        title: 'Ad group "Ad Group 1" [1]',
+                    },
+                ],
+                excluded: [
+                    {
+                        type: 'audienceTargeting',
+                        section: 'Custom Audiences',
+                        id: 22,
+                        archived: undefined,
+                        name: 'Audience 22 [22]',
+                        title: 'Audience "Audience 22" [22]',
+                    },
+                    {
+                        type: 'adGroupTargeting',
+                        section: 'Campaign 1',
+                        id: 2,
+                        archived: undefined,
+                        name: 'Ad Group 2 [2]',
+                        title: 'Ad group "Ad Group 2" [2]',
+                    },
+                ],
+                notSelected: [
+                    {
+                        type: 'audienceTargeting',
+                        section: 'Custom Audiences',
+                        id: 33,
+                        archived: undefined,
+                        name: 'Audience 33 [33]',
+                        title: 'Audience "Audience 33" [33]',
+                    },
+                    {
+                        type: 'adGroupTargeting',
+                        section: 'Campaign 2',
+                        id: 3,
+                        archived: undefined,
+                        name: 'Ad Group 3 [3]',
+                        title: 'Ad group "Ad Group 3" [3]',
+                    },
+                ],
+            };
 
             var bindings = {
                 entity: {
@@ -111,18 +111,16 @@ describe('component: zemAudienceTargeting', function () {
         }));
 
         it('should set targetings', function () {
-            expect($ctrl.allTargetings).toEqual(targetings);
+            expect($ctrl.targetings).toEqual(targetings);
         });
 
         it('should add inclusion audience targeting', function () {
             var targeting = {
                 type: 'audienceTargeting',
                 id: 33,
-                included: true,
-                excluded: false,
             };
 
-            $ctrl.addTargeting(targeting);
+            $ctrl.addIncluded(targeting);
             expect($ctrl.entity.settings.audienceTargeting).toEqual([11, 33]);
             expect($ctrl.entity.settings.exclusionAudienceTargeting).toEqual([22]);
         });
@@ -131,11 +129,9 @@ describe('component: zemAudienceTargeting', function () {
             var targeting = {
                 type: 'audienceTargeting',
                 id: 33,
-                included: false,
-                excluded: true,
             };
 
-            $ctrl.addTargeting(targeting);
+            $ctrl.addExcluded(targeting);
             expect($ctrl.entity.settings.audienceTargeting).toEqual([11]);
             expect($ctrl.entity.settings.exclusionAudienceTargeting).toEqual([22, 33]);
         });
@@ -144,8 +140,6 @@ describe('component: zemAudienceTargeting', function () {
             var targeting = {
                 type: 'audienceTargeting',
                 id: 11,
-                included: false,
-                excluded: false,
             };
 
             $ctrl.removeTargeting(targeting);
@@ -157,8 +151,6 @@ describe('component: zemAudienceTargeting', function () {
             var targeting = {
                 type: 'audienceTargeting',
                 id: 22,
-                included: false,
-                excluded: false,
             };
 
             $ctrl.removeTargeting(targeting);
@@ -171,11 +163,9 @@ describe('component: zemAudienceTargeting', function () {
             var targeting = {
                 type: 'adGroupTargeting',
                 id: 3,
-                included: true,
-                excluded: false,
             };
 
-            $ctrl.addTargeting(targeting);
+            $ctrl.addIncluded(targeting);
             expect($ctrl.entity.settings.retargetingAdGroups).toEqual([1, 3]);
             expect($ctrl.entity.settings.exclusionRetargetingAdGroups).toEqual([2]);
         });
@@ -184,11 +174,9 @@ describe('component: zemAudienceTargeting', function () {
             var targeting = {
                 type: 'adGroupTargeting',
                 id: 3,
-                included: false,
-                excluded: true,
             };
 
-            $ctrl.addTargeting(targeting);
+            $ctrl.addExcluded(targeting);
             expect($ctrl.entity.settings.retargetingAdGroups).toEqual([1]);
             expect($ctrl.entity.settings.exclusionRetargetingAdGroups).toEqual([2, 3]);
         });
@@ -197,8 +185,6 @@ describe('component: zemAudienceTargeting', function () {
             var targeting = {
                 type: 'adGroupTargeting',
                 id: 1,
-                included: false,
-                excluded: false,
             };
 
             $ctrl.removeTargeting(targeting);
@@ -210,8 +196,6 @@ describe('component: zemAudienceTargeting', function () {
             var targeting = {
                 type: 'adGroupTargeting',
                 id: 2,
-                included: false,
-                excluded: false,
             };
 
             $ctrl.removeTargeting(targeting);

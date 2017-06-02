@@ -3,8 +3,9 @@
     <div class="form__text">Define your publisher targeting by whitelisting or blacklisting publisher groups.</div>
     <zem-inclusion-targeting-list
         texts="$ctrl.texts"
-        targetings="$ctrl.allTargetings"
-        add-targeting="$ctrl.addTargeting(targeting)"
+        targetings="$ctrl.targetings"
+        add-included="$ctrl.addIncluded(targeting)"
+        add-excluded="$ctrl.addExcluded(targeting)"
         remove-targeting="$ctrl.removeTargeting(targeting)"
     ></zem-inclusion-targeting-list>
     <div class="more-messages__container">

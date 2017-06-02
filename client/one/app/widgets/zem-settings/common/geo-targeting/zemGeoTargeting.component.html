@@ -8,7 +8,8 @@
     <zem-inclusion-targeting-list
         texts="$ctrl.texts"
         targetings="$ctrl.state.targetings"
-        add-targeting="$ctrl.stateService.addTargeting(targeting)"
+        add-included="$ctrl.stateService.addIncluded(targeting)"
+        add-excluded="$ctrl.stateService.addExcluded(targeting)"
         remove-targeting="$ctrl.stateService.removeTargeting(targeting)"
         refresh-targetings="$ctrl.stateService.refresh(searchTerm)"
         display-sections="true"

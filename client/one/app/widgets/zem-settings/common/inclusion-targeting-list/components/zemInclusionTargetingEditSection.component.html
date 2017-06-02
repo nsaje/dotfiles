@@ -1,10 +1,10 @@
 <div class="two-columns-list__title {{$ctrl.selectedTitleClass}}">{{ $ctrl.selectedTitle }}</div>
-<div ng-repeat="(section, targetings) in $ctrl.selectedItems" class="two-columns-list__section">
+<div ng-repeat="section in $ctrl.sectionOrder" class="two-columns-list__section">
     <div class="two-columns-list__section-name" ng-show="$ctrl.displaySections">
         {{ section }}
     </div>
     <ul class="two-columns-list__list list-with-bullets">
-        <li ng-repeat="targeting in targetings | orderBy:'type' | limitTo: $ctrl.getSectionLimit(section)"
+        <li ng-repeat="targeting in $ctrl.selectedItemsBySection[section] | limitTo: $ctrl.getSectionLimit(section)"
             ng-class="{
                 'two-columns-list__list--one-icon': targeting.badges.length === 1,
                 'two-columns-list__list--two-icons': targeting.badges.length === 2,
@@ -14,13 +14,13 @@
             <span class="text-gray" ng-show="targeting.archived">(Archived)</span>
             <div class="targeting-not-supported" ng-show="targeting.badges">
                 <div class="targeting-not-supported__icon targeting-not-supported__icon--{{badge.class}}"
-                     ng-repeat="badge in targeting.badges"
-                     title="{{badge.text}}"
-                     alt="{{badge.text}}">
+                    ng-repeat="badge in targeting.badges"
+                    title="{{badge.text}}"
+                    alt="{{badge.text}}">
                 </div>
             </div>
             <a class="button button--extra-small button--with-icon button--only-icon remove-icon"
-               ng-click="$ctrl.remove(targeting)" href>
+            ng-click="$ctrl.remove(targeting)" href>
             </a>
         </li>
         <li class="two-columns-list__show-more" ng-if="targetings.length > $ctrl.getSectionLimit(section)">
@@ -28,7 +28,7 @@
         </li>
     </ul>
 </div>
-<div class="two-columns-list__empty" ng-show="!$ctrl.selectedItems">
+<div class="two-columns-list__empty" ng-show="!$ctrl.sectionOrder.length">
     List is currently empty. To add items click in the field below.
 </div>
 <ui-select ng-model="$ctrl.currentlySelected"

@@ -17,7 +17,6 @@ angular.module('one.widgets').component('zemAudienceTargeting', {
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
 
         // inclusion component
-        $ctrl.allTargetings = [];
         $ctrl.texts = {
             selectedIncludedTitle: 'Included Audiences',
             selectedExcludedTitle: 'Excluded Audiences',
@@ -25,7 +24,8 @@ angular.module('one.widgets').component('zemAudienceTargeting', {
             noChoice: 'No available ad group or audience',
             toggleTargetingEditSection: 'Enable audience targeting',
         };
-        $ctrl.addTargeting = addTargeting;
+        $ctrl.addIncluded = addIncluded;
+        $ctrl.addExcluded = addExcluded;
         $ctrl.removeTargeting = removeTargeting;
 
         $ctrl.$onInit = function () {
@@ -33,7 +33,7 @@ angular.module('one.widgets').component('zemAudienceTargeting', {
         };
 
         $ctrl.$onChanges = function () {
-            $ctrl.allTargetings = getAllAudiencesAndAdGroups();
+            $ctrl.targetings = getTargetings();
         };
 
         function getTargetingWarningMessage () {
@@ -48,26 +48,29 @@ angular.module('one.widgets').component('zemAudienceTargeting', {
             return null;
         }
 
-        function addTargeting (targeting) {
+        function addIncluded (targeting) {
             if (targeting.type === AD_GROUP_TARGETING) {
-                addTargetingToCollection(targeting, 'retargetingAdGroups', 'exclusionRetargetingAdGroups');
+                addTargetingToCollection(targeting, 'retargetingAdGroups');
             } else if (targeting.type === AUDIENCE_TARGETING) {
-                addTargetingToCollection(targeting, 'audienceTargeting', 'exclusionAudienceTargeting');
+                addTargetingToCollection(targeting, 'audienceTargeting');
             }
+            $ctrl.targetings = getTargetings();
         }
 
-        function addTargetingToCollection (targeting, inclusionCollectionName, exclusionCollectionName) {
-            if (targeting.included) {
-                if (!$ctrl.entity.settings[inclusionCollectionName]) {
-                    $ctrl.entity.settings[inclusionCollectionName] = [];
-                }
-                $ctrl.entity.settings[inclusionCollectionName].push(targeting.id);
-            } else if (targeting.excluded) {
-                if (!$ctrl.entity.settings[exclusionCollectionName]) {
-                    $ctrl.entity.settings[exclusionCollectionName] = [];
-                }
-                $ctrl.entity.settings[exclusionCollectionName].push(targeting.id);
+        function addExcluded (targeting) {
+            if (targeting.type === AD_GROUP_TARGETING) {
+                addTargetingToCollection(targeting, 'exclusionRetargetingAdGroups');
+            } else if (targeting.type === AUDIENCE_TARGETING) {
+                addTargetingToCollection(targeting, 'exclusionAudienceTargeting');
             }
+            $ctrl.targetings = getTargetings();
+        }
+
+        function addTargetingToCollection (targeting, collectionName) {
+            if (!$ctrl.entity.settings[collectionName]) {
+                $ctrl.entity.settings[collectionName] = [];
+            }
+            $ctrl.entity.settings[collectionName].push(targeting.id);
         }
 
         function removeTargeting (targeting) {
@@ -76,78 +79,96 @@ angular.module('one.widgets').component('zemAudienceTargeting', {
             } else if (targeting.type === AUDIENCE_TARGETING) {
                 removeTargetingFromCollection(targeting, 'audienceTargeting', 'exclusionAudienceTargeting');
             }
+            $ctrl.targetings = getTargetings();
         }
 
         function removeTargetingFromCollection (targeting, inclusionCollectionName, exclusionCollectionName) {
             var index = -1;
             if ($ctrl.entity.settings[inclusionCollectionName]) {
                 index = $ctrl.entity.settings[inclusionCollectionName].indexOf(targeting.id);
-                if (index >= 0) {
-                    $ctrl.entity.settings[inclusionCollectionName].splice(index, 1);
+                if (index !== -1) {
+                    $ctrl.entity.settings[inclusionCollectionName] =
+                        $ctrl.entity.settings[inclusionCollectionName].slice(0, index)
+                        .concat($ctrl.entity.settings[inclusionCollectionName].slice(index + 1));
                 }
             }
 
             if ($ctrl.entity.settings[exclusionCollectionName]) {
                 index = $ctrl.entity.settings[exclusionCollectionName].indexOf(targeting.id);
-                if (index >= 0) {
-                    $ctrl.entity.settings[exclusionCollectionName].splice(index, 1);
+                if (index !== -1) {
+                    $ctrl.entity.settings[exclusionCollectionName] =
+                        $ctrl.entity.settings[exclusionCollectionName].slice(0, index)
+                        .concat($ctrl.entity.settings[exclusionCollectionName].slice(index + 1));
                 }
             }
+
+            $ctrl.targetings = getTargetings();
         }
 
-        function getAllAudiencesAndAdGroups () {
-            var audiences = getAllAudiences(),
-                adGroups = getAllAdGroups();
+        function getTargetings () {
+            var audiences = getAudiences();
+            var adGroups = getAdGroups();
 
-            return audiences.concat(adGroups);
+            return {
+                included: audiences.included.concat(adGroups.included),
+                excluded: audiences.excluded.concat(adGroups.excluded),
+                notSelected: audiences.notSelected.concat(adGroups.notSelected),
+            };
         }
 
-        function getAllAudiences () {
-            var included, excluded, i, audience = null, result = [];
+        function getAudiences () {
+            var audiences = {
+                included: [],
+                excluded: [],
+                notSelected: [],
+            };
 
-            if (!$ctrl.entity) return result;
+            if (!$ctrl.entity) return audiences;
 
             var availableAudiences = $ctrl.entity.audiences;
-            if (!availableAudiences) return result;
+            if (!availableAudiences) return audiences;
 
-            for (i = 0; i < availableAudiences.length; i++) {
-                audience = availableAudiences[i];
-                included = $ctrl.entity.settings.audienceTargeting.indexOf(audience.id) >= 0;
-                excluded = $ctrl.entity.settings.exclusionAudienceTargeting.indexOf(audience.id) >= 0;
-
-                if (included || excluded || !audience.archived) {
-                    result.push(getTargetingEntity(AUDIENCE_TARGETING, audience, included, excluded));
+            availableAudiences.forEach(function (audience) {
+                if ($ctrl.entity.settings.audienceTargeting.indexOf(audience.id) !== -1) {
+                    audiences.included.push(getTargetingEntity(AUDIENCE_TARGETING, audience));
+                } else if ($ctrl.entity.settings.exclusionAudienceTargeting.indexOf(audience.id) !== -1) {
+                    audiences.excluded.push(getTargetingEntity(AUDIENCE_TARGETING, audience));
+                } else if (!audience.archived) {
+                    audiences.notSelected.push(getTargetingEntity(AUDIENCE_TARGETING, audience));
                 }
-            }
+            });
 
-            return result;
+            return audiences;
         }
 
-        function getAllAdGroups () {
-            var included, excluded, i, adGroup = null, result = [];
+        function getAdGroups () {
+            var adGroups = {
+                included: [],
+                excluded: [],
+                notSelected: [],
+            };
 
-            if (!$ctrl.entity) return result;
+            if (!$ctrl.entity) return adGroups;
 
             var availableAdGroups = $ctrl.entity.retargetableAdGroups;
-            if (!availableAdGroups) return result;
+            if (!availableAdGroups) return adGroups;
 
-            for (i = 0; i < availableAdGroups.length; i++) {
-                adGroup = availableAdGroups[i];
-                included = $ctrl.entity.settings.retargetingAdGroups.indexOf(adGroup.id) >= 0;
-                excluded = $ctrl.entity.settings.exclusionRetargetingAdGroups.indexOf(adGroup.id) >= 0;
+            availableAdGroups.forEach(function (adGroup) {
+                if (adGroup.id === parseInt($ctrl.entity.settings.id, 10)) return;
 
-                // it is not the same ad group
-                if (adGroup.id !== parseInt($ctrl.entity.settings.id, 10)
-                    && (included || excluded || !adGroup.archived)) {
-
-                    result.push(getTargetingEntity(AD_GROUP_TARGETING, adGroup, included, excluded));
+                if ($ctrl.entity.settings.retargetingAdGroups.indexOf(adGroup.id) !== -1) {
+                    adGroups.included.push(getTargetingEntity(AD_GROUP_TARGETING, adGroup));
+                } else if ($ctrl.entity.settings.exclusionRetargetingAdGroups.indexOf(adGroup.id) !== -1) {
+                    adGroups.excluded.push(getTargetingEntity(AD_GROUP_TARGETING, adGroup));
+                } else if (!adGroup.archived) {
+                    adGroups.notSelected.push(getTargetingEntity(AD_GROUP_TARGETING, adGroup));
                 }
-            }
+            });
 
-            return result;
+            return adGroups;
         }
 
-        function getTargetingEntity (type, targeting, included, excluded) {
+        function getTargetingEntity (type, targeting) {
             if (type === AD_GROUP_TARGETING) {
                 return {
                     type: AD_GROUP_TARGETING,
@@ -156,8 +177,6 @@ angular.module('one.widgets').component('zemAudienceTargeting', {
                     archived: targeting.archived,
                     name: targeting.name + ' [' + targeting.id + ']',
                     title: 'Ad group "' + targeting.name + '" [' + targeting.id + ']',
-                    included: included,
-                    excluded: excluded,
                 };
             }
 
@@ -168,8 +187,6 @@ angular.module('one.widgets').component('zemAudienceTargeting', {
                 archived: targeting.archived,
                 name: targeting.name + ' [' + targeting.id + ']',
                 title: 'Audience "' + targeting.name + '" [' + targeting.id + ']',
-                included: included,
-                excluded: excluded,
             };
         }
     }

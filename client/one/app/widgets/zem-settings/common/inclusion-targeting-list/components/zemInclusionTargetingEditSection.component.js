@@ -22,6 +22,24 @@ angular.module('one.widgets').component('zemInclusionTargetingEditSection', {
         $ctrl.getSectionLimit = getSectionLimit;
         $ctrl.onItemSelected = onItemSelected;
 
+        $ctrl.$onChanges = function (changes) {
+            if (!changes.selectedItems) return;
+
+            var sectionOrder = [];
+            var selectedItemsBySection = {};
+            ($ctrl.selectedItems || []).forEach(function (targeting) {
+                if (sectionOrder.indexOf(targeting.section) === -1) {
+                    sectionOrder.push(targeting.section);
+                }
+                if (!selectedItemsBySection[targeting.section]) {
+                    selectedItemsBySection[targeting.section] = [];
+                }
+                selectedItemsBySection[targeting.section].push(targeting);
+            });
+            $ctrl.sectionOrder = sectionOrder;
+            $ctrl.selectedItemsBySection = selectedItemsBySection;
+        };
+
         function expandSection (section) {
             $ctrl.expandedSections.push(section);
         }

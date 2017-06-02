@@ -42,7 +42,11 @@ describe('zemGeoTargetingStateService', function () {
     it('should create new state instance', function () {
         var stateService = zemGeoTargetingStateService.createInstance(mockedEntity);
         expect(stateService.getState()).toEqual({
-            targetings: [],
+            targetings: {
+                included: [],
+                excluded: [],
+                notSelected: [],
+            },
             messages: {
                 warnings: [],
                 infos: [],
@@ -54,7 +58,9 @@ describe('zemGeoTargetingStateService', function () {
         var stateService = zemGeoTargetingStateService.createInstance(mockedEntity);
         stateService.init();
         $rootScope.$digest();
-        expect(stateService.getState().targetings.length).toEqual(4);
+        expect(stateService.getState().targetings.included.length).toEqual(2);
+        expect(stateService.getState().targetings.excluded.length).toEqual(2);
+        expect(stateService.getState().targetings.notSelected.length).toEqual(0);
         expect(stateService.getState().messages.warnings.length).toEqual(1);
         expect(stateService.getState().messages.infos.length).toEqual(2);
     });
@@ -65,15 +71,17 @@ describe('zemGeoTargetingStateService', function () {
         $rootScope.$digest();
         stateService.refresh('Location E');
         $rootScope.$digest();
-        expect(stateService.getState().targetings.length).toEqual(5);
+        expect(stateService.getState().targetings.included.length).toEqual(2);
+        expect(stateService.getState().targetings.excluded.length).toEqual(2);
+        expect(stateService.getState().targetings.notSelected.length).toEqual(1);
     });
 
     it('should correcty add targetings', function () {
         var stateService = zemGeoTargetingStateService.createInstance(mockedEntity);
         stateService.init();
         $rootScope.$digest();
-        stateService.addTargeting({id: 'inc', included: true, geolocation: {type: 'COUNTRY'}});
-        stateService.addTargeting({id: 'exc', excluded: true, geolocation: {type: 'COUNTRY'}});
+        stateService.addIncluded({id: 'inc', geolocation: {type: 'COUNTRY'}});
+        stateService.addExcluded({id: 'exc', geolocation: {type: 'COUNTRY'}});
         expect(mockedEntity.settings.targetRegions).toEqual(['a', 'b', 'inc']);
         expect(mockedEntity.settings.exclusionTargetRegions).toEqual(['c', 'd', 'exc']);
     });
@@ -82,8 +90,8 @@ describe('zemGeoTargetingStateService', function () {
         var stateService = zemGeoTargetingStateService.createInstance(mockedEntity);
         stateService.init();
         $rootScope.$digest();
-        stateService.removeTargeting({id: 'b', included: true, geolocation: {type: 'COUNTRY'}});
-        stateService.removeTargeting({id: 'd', excluded: true, geolocation: {type: 'COUNTRY'}});
+        stateService.removeTargeting({id: 'b', geolocation: {type: 'COUNTRY'}});
+        stateService.removeTargeting({id: 'd', geolocation: {type: 'COUNTRY'}});
         expect(mockedEntity.settings.targetRegions).toEqual(['a']);
         expect(mockedEntity.settings.exclusionTargetRegions).toEqual(['c']);
     });

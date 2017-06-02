@@ -19,8 +19,8 @@ angular.module('one.widgets').component('zemInterestTargeting', {
             noChoice: 'No available interests',
             toggleTargetingEditSection: 'Enable interest targeting',
         };
-        $ctrl.allTargetings = [];
-        $ctrl.addTargeting = addTargeting;
+        $ctrl.addIncluded = addIncluded;
+        $ctrl.addExcluded = addExcluded;
         $ctrl.removeTargeting = removeTargeting;
 
         $ctrl.$onInit = function () {
@@ -28,70 +28,75 @@ angular.module('one.widgets').component('zemInterestTargeting', {
         };
 
         $ctrl.$onChanges = function () {
-            $ctrl.allTargetings = getInterests();
+            $ctrl.targetings = getTargetings();
         };
 
-        function addTargeting (targeting) {
-            if (targeting.included) {
-                if (!$ctrl.entity.settings.interestTargeting) {
-                    $ctrl.entity.settings.interestTargeting = [];
-                }
-                $ctrl.entity.settings.interestTargeting.push(targeting.id);
+        function addIncluded (targeting) {
+            if (!$ctrl.entity.settings.interestTargeting) {
+                $ctrl.entity.settings.interestTargeting = [];
             }
+            $ctrl.entity.settings.interestTargeting.push(targeting.id);
+            $ctrl.targetings = getTargetings();
+        }
 
-            if (targeting.excluded) {
-                if (!$ctrl.entity.settings.exclusionInterestTargeting) {
-                    $ctrl.entity.settings.exclusionInterestTargeting = [];
-                }
-                $ctrl.entity.settings.exclusionInterestTargeting.push(targeting.id);
+        function addExcluded (targeting) {
+            if (!$ctrl.entity.settings.exclusionInterestTargeting) {
+                $ctrl.entity.settings.exclusionInterestTargeting = [];
             }
+            $ctrl.entity.settings.exclusionInterestTargeting.push(targeting.id);
+            $ctrl.targetings = getTargetings();
         }
 
         function removeTargeting (targeting) {
-            var id = targeting.id, index = -1;
-
-            index = $ctrl.entity.settings.interestTargeting.indexOf(id);
-            if (index >= 0) {
-                $ctrl.entity.settings.interestTargeting.splice(index, 1);
+            var index = $ctrl.entity.settings.interestTargeting.indexOf(targeting.id);
+            if (index !== -1) {
+                $ctrl.entity.settings.interestTargeting = $ctrl.entity.settings.interestTargeting.slice(0, index)
+                    .concat($ctrl.entity.settings.interestTargeting.slice(index + 1));
             }
 
-            index = $ctrl.entity.settings.exclusionInterestTargeting.indexOf(id);
-            if (index >= 0) {
-                $ctrl.entity.settings.exclusionInterestTargeting.splice(index, 1);
+            index = $ctrl.entity.settings.exclusionInterestTargeting.indexOf(targeting.id);
+            if (index !== -1) {
+                $ctrl.entity.settings.exclusionInterestTargeting =
+                    $ctrl.entity.settings.exclusionInterestTargeting.slice(0, index)
+                    .concat($ctrl.entity.settings.exclusionInterestTargeting.slice(index + 1));
             }
+
+            $ctrl.targetings = getTargetings();
         }
 
-        function getInterests () {
-            var interests = options.interests.slice(),
-                included, excluded, result = [];
+        function getTargetings () {
+            var targetings = {
+                included: [],
+                excluded: [],
+                notSelected: [],
+            };
 
-            if (!$ctrl.entity) {
-                return result;
-            }
+            if (!$ctrl.entity) return targetings;
+
+            var interests = options.interests.slice();
             interests.sort(function (opt1, opt2) {
                 return opt1.name.localeCompare(opt2.name);
             });
             interests.forEach(function (interest) {
-                included = $ctrl.entity.settings.interestTargeting.indexOf(interest.value) >= 0;
-                excluded = $ctrl.entity.settings.exclusionInterestTargeting.indexOf(interest.value) >= 0;
-
-                if (included || excluded || !interest.internal) {
-                    result.push(getTargetingEntity(interest, included, excluded));
+                if ($ctrl.entity.settings.interestTargeting.indexOf(interest.value) !== -1) {
+                    targetings.included.push(getTargetingEntity(interest));
+                } else if ($ctrl.entity.settings.exclusionInterestTargeting.indexOf(interest.value) !== -1) {
+                    targetings.excluded.push(getTargetingEntity(interest));
+                } else if (!interest.internal) {
+                    targetings.notSelected.push(getTargetingEntity(interest));
                 }
             });
 
-            return result;
+            return targetings;
         }
 
-        function getTargetingEntity (interest, included, excluded) {
+        function getTargetingEntity (interest) {
             return {
                 section: 'Interests',
                 id: interest.value,
                 archived: interest.internal,
                 name: interest.name,
                 title: interest.name,
-                included: included,
-                excluded: excluded,
             };
         }
     }

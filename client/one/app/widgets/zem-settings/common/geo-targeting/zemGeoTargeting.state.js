@@ -12,6 +12,13 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
     var INFO_FACEBOOK_EXCLUDED = 'Facebook media source will be paused because it doesn\'t support excluded locations.';
     var INFO_FACEBOOK_INCLUDED = 'Facebook media source will be paused because it doesn\'t support any of the included locations.'; // eslint-disable-line max-len
 
+    var TARGETING_SECTIONS_TEMPLATE = {};
+    TARGETING_SECTIONS_TEMPLATE[constants.geolocationType.COUNTRY] = [];
+    TARGETING_SECTIONS_TEMPLATE[constants.geolocationType.REGION] = [];
+    TARGETING_SECTIONS_TEMPLATE[constants.geolocationType.DMA] = [];
+    TARGETING_SECTIONS_TEMPLATE[constants.geolocationType.CITY] = [];
+
+
     function createInstance (entity) {
         return new zemGeoTargetingStateService(entity);
     }
@@ -20,11 +27,16 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
         this.getState = getState;
         this.init = init;
         this.refresh = refresh;
-        this.addTargeting = addTargeting;
+        this.addIncluded = addIncluded;
+        this.addExcluded = addExcluded;
         this.removeTargeting = removeTargeting;
 
         var state = {
-            targetings: [],
+            targetings: {
+                included: [],
+                excluded: [],
+                notSelected: [],
+            },
             messages: {
                 warnings: [],
                 infos: [],
@@ -32,6 +44,7 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
         };
 
         var geolocationMappings = {};
+        var searchResults = [];
 
         function getState () {
             return state;
@@ -40,114 +53,119 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
         function init () {
             fetchMappings().then(function (mappings) {
                 geolocationMappings = mappings;
-                state.targetings = getEnabledTargetings();
+                state.targetings = getTargetings();
                 updateMessages();
             });
         }
 
-        function getEnabledTargetings () {
-            var isIncluded;
-            var isExcluded;
+        function getTargetings () {
             var geolocation;
-            var targetings = {};
-            targetings[constants.geolocationType.COUNTRY] = [];
-            targetings[constants.geolocationType.REGION] = [];
-            targetings[constants.geolocationType.DMA] = [];
-            targetings[constants.geolocationType.CITY] = [];
+            var alreadySelectedIds = [];
+            var included = angular.copy(TARGETING_SECTIONS_TEMPLATE);
+            var excluded = angular.copy(TARGETING_SECTIONS_TEMPLATE);
+            var notSelected = angular.copy(TARGETING_SECTIONS_TEMPLATE);
 
             entity.settings.targetRegions.forEach(function (key) {
-                isIncluded = true;
-                isExcluded = false;
                 geolocation = geolocationMappings[key];
                 if (geolocation) {
-                    targetings[geolocation.type].push(generateGeolocationObject(geolocation, isIncluded, isExcluded));
+                    included[geolocation.type].push(generateGeolocationObject(geolocation));
+                    alreadySelectedIds.push(key);
                 }
             });
             entity.settings.exclusionTargetRegions.forEach(function (key) {
-                isIncluded = false;
-                isExcluded = true;
                 geolocation = geolocationMappings[key];
                 if (geolocation) {
-                    targetings[geolocation.type].push(generateGeolocationObject(geolocation, isIncluded, isExcluded));
+                    excluded[geolocation.type].push(generateGeolocationObject(geolocation));
+                    alreadySelectedIds.push(key);
                 }
             });
-            return []
-                .concat(targetings[constants.geolocationType.COUNTRY])
-                .concat(targetings[constants.geolocationType.REGION])
-                .concat(targetings[constants.geolocationType.DMA])
-                .concat(targetings[constants.geolocationType.CITY]);
+
+            var SECTION_RESULTS_SIZE = 10;
+            var sectionItems = {};
+            searchResults.forEach(function (geolocation) {
+                if (alreadySelectedIds.indexOf(geolocation.key) !== -1) {
+                    return;
+                }
+                sectionItems[geolocation.type] = sectionItems[geolocation.type] || 0;
+                if (sectionItems[geolocation.type] < SECTION_RESULTS_SIZE) {
+                    sectionItems[geolocation.type]++;
+                    notSelected[geolocation.type].push(generateGeolocationObject(geolocation));
+                }
+            });
+
+            function flattenSections (sections) {
+                return []
+                    .concat(sections[constants.geolocationType.COUNTRY])
+                    .concat(sections[constants.geolocationType.REGION])
+                    .concat(sections[constants.geolocationType.DMA])
+                    .concat(sections[constants.geolocationType.CITY]);
+            }
+
+            var targetings = {};
+            targetings.included = flattenSections(included);
+            targetings.excluded = flattenSections(excluded);
+            targetings.notSelected = flattenSections(notSelected);
+
+            return targetings;
         }
 
         var lastSearchTerm;
         function refresh (searchTerm) {
-            var targetings = getEnabledTargetings();
             if (searchTerm.length < 2) {
                 lastSearchTerm = null;
-                state.targetings = targetings;
+                searchResults = [];
+                state.targetings = getTargetings();
                 return;
             }
             lastSearchTerm = searchTerm;
             zemGeoTargetingEndpoint.search(searchTerm).then(function (response) {
                 if (searchTerm !== lastSearchTerm) return; // There is a more recent search in progress
 
-                var SECTION_RESULTS_SIZE = 10;
-                var sectionItems = {};
-                response.forEach(function (geolocation) {
-                    for (var i = 0; i < targetings.length; i++) {
-                        if (targetings[i].id === geolocation.key) {
-                            return;
-                        }
-                    }
-                    sectionItems[geolocation.type] = sectionItems[geolocation.type] || 0;
-                    if (sectionItems[geolocation.type] < SECTION_RESULTS_SIZE) {
-                        sectionItems[geolocation.type]++;
-                        var isIncluded = false;
-                        var isExcluded = false;
-                        targetings.push(generateGeolocationObject(geolocation, isIncluded, isExcluded));
-                    }
-                });
-                state.targetings = targetings;
+                searchResults = response;
+                state.targetings = getTargetings();
                 lastSearchTerm = null;
             });
         }
 
-        function addTargeting (targeting) {
-            if (targeting.included) {
-                if (!entity.settings.targetRegions) {
-                    entity.settings.targetRegions = [];
-                }
-                entity.settings.targetRegions = entity.settings.targetRegions.concat(targeting.id);
+        function addIncluded (targeting) {
+            if (!entity.settings.targetRegions) {
+                entity.settings.targetRegions = [];
             }
-
-            if (targeting.excluded) {
-                if (!entity.settings.exclusionTargetRegions) {
-                    entity.settings.exclusionTargetRegions = [];
-                }
-                entity.settings.exclusionTargetRegions = entity.settings.exclusionTargetRegions.concat(targeting.id);
-            }
+            entity.settings.targetRegions = entity.settings.targetRegions.concat(targeting.id);
 
             geolocationMappings[targeting.id] = targeting.geolocation;
-            state.targetings = getEnabledTargetings();
+            state.targetings = getTargetings();
+            updateMessages();
+        }
+
+        function addExcluded (targeting) {
+            if (!entity.settings.exclusionTargetRegions) {
+                entity.settings.exclusionTargetRegions = [];
+            }
+            entity.settings.exclusionTargetRegions = entity.settings.exclusionTargetRegions.concat(targeting.id);
+
+            geolocationMappings[targeting.id] = targeting.geolocation;
+            state.targetings = getTargetings();
             updateMessages();
         }
 
         function removeTargeting (targeting) {
             var index = entity.settings.targetRegions.indexOf(targeting.id);
-            if (index >= 0) {
+            if (index !== -1) {
                 entity.settings.targetRegions = entity.settings.targetRegions.slice(0, index)
                     .concat(entity.settings.targetRegions.slice(index + 1));
             }
 
             index = entity.settings.exclusionTargetRegions.indexOf(targeting.id);
-            if (index >= 0) {
+            if (index !== -1) {
                 entity.settings.exclusionTargetRegions = entity.settings.exclusionTargetRegions.slice(0, index)
                     .concat(entity.settings.exclusionTargetRegions.slice(index + 1));
             }
-            state.targetings = getEnabledTargetings();
+            state.targetings = getTargetings();
             updateMessages();
         }
 
-        function generateGeolocationObject (geolocation, included, excluded) {
+        function generateGeolocationObject (geolocation) {
             var badges = [];
             if (!geolocation.outbrainId) {
                 badges.push({
@@ -173,8 +191,6 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
                 name: geolocation.name,
                 title: geolocation.name,
                 badges: badges,
-                included: included,
-                excluded: excluded,
                 geolocation: geolocation,
             };
         }
