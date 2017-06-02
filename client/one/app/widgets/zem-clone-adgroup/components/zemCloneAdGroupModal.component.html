@@ -1,0 +1,18 @@
+<div class="modal__header">
+    <div class="modal__title">Clone Ad Group</div>
+</div>
+<div class="modal__body">
+
+    <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.destinationCampaignId}">
+        <label class="form__label" for="campaign-input">Campaign</label>
+        <input class="input-text" type="text" zem-focus-select id="campaign-input" ng-model="$ctrl.destinationCampaignId" />
+        <div class="message message--error" for="campaign-input">{{ $ctrl.errors.destinationCampaignId[0] }}</div>
+    </div>
+
+</div>
+<div class="modal__footer buttons-panel">
+    <div ng-show="$ctrl.destinationAdGroup">Ad group "{{ $ctrl.adGroup.name}}" was copied as <a href ng-click="$ctrl.navigate()">"{{ $ctrl.destinationAdGroup.name }}"</a>.</div>
+    <button class="button button--highlight button--with-icon check-icon" ng-disabled="!!$ctrl.requestInProgress" ng-click="$ctrl.submit()">Clone</button>
+    <button type="button" class="button button--outline" ng-disabled="!!$ctrl.requestInProgress" ng-click="$ctrl.modalInstance.dismiss()">Cancel</button>
+    <div class="loader" ng-show="$ctrl.requestInProgress"></div>
+</div>

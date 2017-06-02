@@ -7,6 +7,8 @@
 
         <zem-grid-cell-edit-button ng-if="ctrl.type === ctrl.gridColumnTypes.EDIT_BUTTON" data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-edit-button>
 
+        <zem-grid-cell-clone-button ng-if="ctrl.type === ctrl.gridColumnTypes.CLONE_BUTTON" data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-clone-button>
+
         <zem-grid-cell-submission-status ng-if="ctrl.type === ctrl.gridColumnTypes.SUBMISSION_STATUS" data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-submission-status>
 
         <zem-grid-cell-performance-indicator ng-if="ctrl.type === ctrl.gridColumnTypes.PERFORMANCE_INDICATOR" data="ctrl.data" row="ctrl.row"></zem-grid-cell-performance-indicator>

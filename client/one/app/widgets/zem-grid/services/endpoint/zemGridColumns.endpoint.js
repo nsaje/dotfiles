@@ -97,6 +97,16 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             totalRow: false,
             archivedField: 'archived',
         },
+        cloneButton: {
+            name: '',
+            help: '',
+            field: 'cloneButton',
+            type: zemGridConstants.gridColumnTypes.CLONE_BUTTON,
+            order: false,
+            internal: 'zemauth.can_clone_adgroups',
+            shown: 'zemauth.can_clone_adgroups',
+            totalRow: false,
+        },
         editButton: {
             name: '',
             help: '',
@@ -1115,6 +1125,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
     var PERMANENT_COLUMNS_GROUP = [
         COLUMNS.state,
         COLUMNS.editButton,
+        COLUMNS.cloneButton,
         COLUMNS.name,
         COLUMNS.exchange,
         COLUMNS.status,
@@ -1316,6 +1327,11 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
     COLUMNS.editButton.exceptions.breakdowns = [constants.breakdown.CONTENT_AD];
     COLUMNS.editButton.exceptions.levels = [constants.level.AD_GROUPS];
     COLUMNS.editButton.exceptions.breakdownBaseLevelOnly = true;
+
+    // Exceptions (clone button - only available on base ad group level)
+    COLUMNS.cloneButton.exceptions.breakdowns = [constants.breakdown.AD_GROUP];
+    COLUMNS.cloneButton.exceptions.levels = [constants.level.CAMPAIGNS];
+    COLUMNS.cloneButton.exceptions.breakdownBaseLevelOnly = true;
 
     // Exceptions (submission status - only shown on AD_GROUPS level for CONTENT_AD breakdown)
     COLUMNS.submissionStatus.exceptions.breakdowns = [constants.breakdown.CONTENT_AD];
