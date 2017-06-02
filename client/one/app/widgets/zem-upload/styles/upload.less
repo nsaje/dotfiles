@@ -457,7 +457,7 @@
     background-image: url('images/check-green.svg');
 }
 
-.content-upload__zem-file-input {
+.content-upload__image-input {
     width: @form-input-width-content-upload;
     height: 30px;
     float: left;
@@ -483,4 +483,36 @@
 .content-upload__uploading-completed-title {
     color: @green;
     font-size: 24px;
+}
+
+.content-upload__video-uploader {
+    width: @form-input-width-content-upload;
+    height: 30px;
+    float: left;
+}
+
+.content-upload__video-uploader-progress {
+    height: 100%;
+}
+
+.content-upload__video-uploader-processing,
+.content-upload__video-uploader-preview {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    color: @gray;
+}
+
+.content-upload__video-uploader-processing {
+    .loader {
+        width: 20px;
+        height: 10px;
+        margin: 2px @default-spacing 0 0;
+    }
+}
+
+.content-upload__video-uploader-preview {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

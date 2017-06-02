@@ -2,11 +2,15 @@
 /* eslint-disable camelcase */
 'use strict';
 
-angular.module('one.widgets').factory('zemUploadEndpointService', function ($http, $q, zemUploadApiConverter) {
+angular.module('one.widgets').factory('zemUploadEndpointService', function ($http, $q, zemUploadApiConverter, zemNavigationNewService) { // eslint-disable-line max-len
     function UploadEndpoint (baseUrl) {
+        var DIRECT_UPLOAD = 'DIRECT_UPLOAD';
 
         this.upload = upload;
         this.createBatch = createBatch;
+
+        this.uploadVideo = uploadVideo;
+        this.getVideoAsset = getVideoAsset;
 
         this.save = save;
         this.cancel = cancel;
@@ -81,6 +85,67 @@ angular.module('one.widgets').factory('zemUploadEndpointService', function ($htt
                 }
                 deferred.reject(errors);
             });
+
+            return deferred.promise;
+        }
+
+        function uploadVideo (file, progressEventHandler) {
+            return createVideoAsset(file.name)
+                .then(function (videoAsset) {
+                    return uploadVideoToS3(file, videoAsset, progressEventHandler);
+                });
+        }
+
+        function createVideoAsset (name) {
+            var deferred = $q.defer();
+            var url = '/rest/v1/accounts/' + zemNavigationNewService.getActiveAccount().id + '/videoassets/';
+            var data = {
+                name: name,
+                upload: {
+                    type: DIRECT_UPLOAD,
+                }
+            };
+
+            $http.post(url, data)
+                .then(function (data) {
+                    deferred.resolve(data.data.data);
+                })
+                .catch(function (error) {
+                    deferred.reject(error);
+                });
+
+            return deferred.promise;
+        }
+
+        function uploadVideoToS3 (file, videoAsset, progressEventHandler) {
+            var config = {
+                headers: {'Content-Type': 'application/octet-stream'},
+                uploadEventHandlers: {
+                    progress: progressEventHandler,
+                }
+            };
+            var deferred = $q.defer();
+            $http.put(videoAsset.upload.url, file, config)
+                .then(function () {
+                    deferred.resolve(videoAsset);
+                })
+                .catch(function () {
+                    deferred.reject();
+                });
+            return deferred.promise;
+        }
+
+        function getVideoAsset (id) {
+            var deferred = $q.defer();
+            var url = '/rest/v1/accounts/' + zemNavigationNewService.getActiveAccount().id + '/videoassets/' + id;
+
+            $http.get(url)
+                .then(function (data) {
+                    deferred.resolve(data.data.data);
+                })
+                .catch(function (error) {
+                    deferred.reject(error);
+                });
 
             return deferred.promise;
         }

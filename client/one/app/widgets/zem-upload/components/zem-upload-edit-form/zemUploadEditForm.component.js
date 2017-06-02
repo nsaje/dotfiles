@@ -31,7 +31,7 @@ angular.module('one.widgets').directive('zemUploadEditForm', function () { // es
     };
 });
 
-angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (config, $q, $timeout, $scope) {
+angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (config, $q, $timeout, $scope, zemPermissions) { // eslint-disable-line max-len
     var vm = this;
     vm.config = config;
 
@@ -45,6 +45,9 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
     vm.MAX_CALL_TO_ACTION_LENGTH = 25;
     vm.MAX_LABEL_LENGTH = 100;
 
+    vm.videoAssetStatus = constants.videoAssetStatus;
+    vm.hasPermission = zemPermissions.hasPermission;
+
     vm.imageCrops = options.imageCrops;
     vm.callToActionOptions = defaults.callToAction;
     vm.candidateStatuses = constants.contentAdCandidateStatus;
@@ -56,6 +59,10 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
     vm.api.selectedId = null;
     vm.api.open = open;
     vm.api.close = refreshAndClose;
+
+    $scope.$on('$destroy', function () {
+        stopVideoStatusPolling();
+    });
 
     function open (candidate) {
         vm.requestFailed = false;
@@ -79,6 +86,7 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
     }
 
     function close () {
+        stopVideoStatusPolling();
         vm.api.selectedId = null;
         vm.selectedCandidate = null;
     }
@@ -201,4 +209,52 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
         },
         data: defaults.callToAction,
     };
+
+    // TODO (Bajt): Add cancel upload functionality
+
+    vm.videoUploadCallback = function (file) {
+        vm.selectedCandidate.video = {
+            status: constants.videoAssetStatus.NOT_UPLOADED,
+            uploadProgress: 0,
+        };
+        vm.fieldsApiErrors['video'] = false;
+        vm.endpoint.uploadVideo(file, updateVideoUploadProgressBar)
+            .then(function (video) {
+                vm.selectedCandidate.video.name = video.name;
+                pollVideoStatus(video.id);
+            })
+            .catch(function () {
+                vm.fieldsApiErrors['video'] = true;
+                delete vm.selectedCandidate.video;
+            });
+    };
+
+    function updateVideoUploadProgressBar (event) {
+        var progress = Math.round(event.loaded / event.total * 100);
+        vm.selectedCandidate.video.uploadProgress = progress;
+    }
+
+    // TODO (Bajt): Handle status polling when editing multiple candidates
+    function pollVideoStatus (id) {
+        vm.endpoint.getVideoAsset(id)
+            .then(function (videoAsset) {
+                if (vm.selectedCandidate.video.status !== videoAsset.status) {
+                    vm.selectedCandidate.video.status = videoAsset.status;
+                    vm.selectedCandidate.video.statusMessage = videoAsset.statusMessage;
+                }
+
+                if (vm.selectedCandidate.video.status === constants.videoAssetStatus.NOT_UPLOADED
+                    || vm.selectedCandidate.video.status === constants.videoAssetStatus.PROCESSING) {
+                    vm.selectedCandidate.video.statusPollingTimeout = $timeout(function () {
+                        pollVideoStatus(id);
+                    }, 2000);
+                }
+            });
+    }
+
+    function stopVideoStatusPolling () {
+        if (vm.selectedCandidate && vm.selectedCandidate.video && vm.selectedCandidate.video.statusPollingTimeout) {
+            $timeout.cancel(vm.selectedCandidate.video.statusPollingTimeout);
+        }
+    }
 });

@@ -680,6 +680,12 @@ var constants = {
         TOP: 'top',
         BOTTOM: 'bottom',
     },
+    videoAssetStatus: {
+        NOT_UPLOADED: 'NOT_UPLOADED',
+        PROCESSING: 'PROCESSING',
+        READY_FOR_USE: 'READY_FOR_USE',
+        PROCESSING_ERROR: 'PROCESSING_ERROR',
+    },
     gaTrackingType: {
         EMAIL: 1,
         API: 2,
