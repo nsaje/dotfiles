@@ -11,16 +11,26 @@ from utils import s3helpers
 import utils.csv_utils
 
 DOWNLOAD_URL = 'https://one.zemanta.com/api/custom_report_download/'
-INVENTORY_REPORT_QUERY = """SELECT source_id, publisher, country, device_type,
-  SUM(impressions)
-FROM mv_pubs_master
-WHERE date >= '{from_date}' AND date < current_date AND source_id not in (3, 4)
-GROUP BY source_id, publisher, country, device_type;"""
+INVENTORY_REPORT_QUERY = """SELECT {breakdown}, SUM(bid_reqs)
+FROM supply_stats
+WHERE date >= '{from_date}' AND date < current_date
+GROUP BY {breakdown};"""
 
 SOURCE_PERFORMANCE_REPORT_QUERY = """SELECT source_id, {metrics}
 FROM mv_master
 WHERE date >= '{from_date}' AND date < '{till_date}'
 GROUP BY source_id;"""
+
+BIDDER_DEVICE_TYPES = {
+    0: 'unknown',
+    1: 'mobile',
+    2: 'PC',
+    3: 'TV',
+    4: 'phone',
+    5: 'tablet',
+    6: 'connected',
+    7: 'settopbox',
+}
 
 
 def get_media_source_performance_report(from_date, till_date):
@@ -42,23 +52,24 @@ def get_media_source_performance_report(from_date, till_date):
 
 
 def get_inventory_report(days=30):
-    sources = {s.pk: s for s in dash.models.Source.objects.all()}
+    sources = {s.get_clean_slug(): s for s in dash.models.Source.objects.all()}
     from_date = datetime.date.today() - datetime.timedelta(days)
     with redshiftapi.db.get_stats_cursor() as c:
         c.execute(INVENTORY_REPORT_QUERY.format(
+            breakdown='exchange, country, device_type',
             from_date=from_date,
             days=days
         ))
         return [
-            (sources[row[0]], row[1], row[2], dash.constants.DeviceType.get_text(row[3]),
-             row[4], float(row[4]) / days)
+            (sources[row[0]], row[1],  BIDDER_DEVICE_TYPES.get(row[2], 'undefined'),
+             row[3], float(row[3]) / days)
             for row in c.fetchall()
         ]
 
 
 def inventory_report_csv(days=30):
     return utils.csv_utils.tuplelist_to_csv([
-        ('Exchange', 'Publisher', 'Country', 'Device', 'Impressions', 'Avg. impressions per day')
+        ('Exchange', 'Country', 'Device', 'Impressions on offer', 'Avg. impressions on offer per day')
     ] + get_inventory_report(days=days))
 
 

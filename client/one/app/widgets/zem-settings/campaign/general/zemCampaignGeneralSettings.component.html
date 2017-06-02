@@ -38,7 +38,7 @@
             <select ui-select2="{minimumResultsForSearch: 2}" id="iab-category-select"
                     class="button button--plain button--full-width button--dropdown-toggle-icon"
                     ng-model="$ctrl.entity.settings.iabCategory">
-                <option ng-repeat="category in $ctrl.options.iabCategories" value="{{category.value}}">{{category.name}}</option>
+                <option ng-repeat="category in $ctrl.iabCategoriesSorted" value="{{category.value}}">{{category.name}}</option>
             </select>
             <div class="message message--error" ng-repeat="error in $ctrl.errors.iabCategory"
                  for="iab-category-select">{{ error }}</div>

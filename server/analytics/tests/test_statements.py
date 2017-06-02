@@ -36,16 +36,22 @@ class TestStatements(TestCase):
     def test_get_inventory_report(self, mock_cursor):
         cur = mock.MagicMock(name='cursor')
         cur.fetchall = mock.MagicMock(return_value=[
-            (5, 'abc.com', 'US', 1, 10),
-            (5, 'xyz.com', 'US', 1, 10),
+            ('yahoo', 'US', 2, 10),
+            ('yahoo', 'DE', 2, 10),
         ])
         get_cursor = mock.Mock()
         get_cursor.__exit__ = mock.MagicMock(return_value=False)
         get_cursor.__enter__ = mock.MagicMock(return_value=cur)
         mock_cursor.return_value = get_cursor
+
+        for source in dash.models.Source.objects.all():
+            if not source.bidder_slug:
+                source.bidder_slug = source.tracking_slug
+                source.save()
+
         yahoo = dash.models.Source.objects.get(pk=5)
         self.assertEqual(
             statements.get_inventory_report(),
-            [(yahoo, 'abc.com', 'US', 'Desktop', 10, 0.3333333333333333),
-             (yahoo, 'xyz.com', 'US', 'Desktop', 10, 0.3333333333333333)]
+            [(yahoo, 'US', 'PC', 10, 0.3333333333333333),
+             (yahoo, 'DE', 'PC', 10, 0.3333333333333333)]
         )

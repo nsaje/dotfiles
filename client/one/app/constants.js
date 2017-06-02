@@ -1407,7 +1407,7 @@ var defaults = {
         {id: constants.campaignGoalKPI.PAGES_PER_SESSION, value: 1.2},
         {id: constants.campaignGoalKPI.CPC, value: 0.35},
         {id: constants.campaignGoalKPI.CPA, value: 50},
-        {id: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, value: 0.1},
+        {id: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, value: 85},
         {id: constants.campaignGoalKPI.CPV, value: 0.50},
         {id: constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT, value: 2.75},
     ],
