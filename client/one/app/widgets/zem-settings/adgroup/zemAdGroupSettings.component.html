@@ -12,6 +12,13 @@
                 errors="$container.errors"
                 api="$container.childApi"
         ></zem-device-targeting-settings>
+        <zem-demographic-targeting
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
+            ng-if="$ctrl.hasPermission('zemauth.can_use_bluekai_targeting')"
+        ></zem-demographic-targeting>
         <zem-region-targeting-settings
                 class="zem-settings-component"
                 entity="$container.entity"

@@ -4,6 +4,7 @@ angular.module('one.services').service('zemUtils', function ($q) { // eslint-dis
     this.convertToUnderscore = convertToUnderscore;
     this.convertToElementName = convertToElementName;
     this.createAbortableDefer = createAbortableDefer;
+    this.traverseTree = traverseTree;
 
     function convertToCamelCase (obj) {
         if (!(obj instanceof Object)) return obj;
@@ -53,6 +54,25 @@ angular.module('one.services').service('zemUtils', function ($q) { // eslint-dis
         var tagName = componentName.replace(/([A-Z])/g, function ($1) { return '-' + $1.toLowerCase(); });
         if (tagName[0] === '-') tagName = tagName.substring(1);
         return tagName;
+    }
+
+    function traverseTree (root, callback) {
+        var queue = [root];
+        var n;
+
+        while (queue.length > 0) {
+
+            n = queue.shift();
+            callback(n);
+
+            if (!n.childNodes) {
+                continue;
+            }
+
+            for (var i = 0; i < n.childNodes.length; i++) {
+                queue.push(n.childNodes[i]);
+            }
+        }
     }
 
 });

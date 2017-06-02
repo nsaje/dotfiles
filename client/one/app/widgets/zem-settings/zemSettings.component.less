@@ -278,7 +278,7 @@
         padding: 0;
         display: block;
         cursor: pointer;
-        transition: all @default-animation;
+        transition: background-image @default-animation;
     }
 
     .form__checkbox {
@@ -632,6 +632,69 @@
 }
 
 ///////////////////////////
+// Demographic targeting //
+///////////////////////////
+
+.zem-demographic-targeting__overview {
+    padding: 15px 0;
+    margin-bottom: 15px;
+    border-top: 1px solid @light-gray;
+    border-bottom: 1px solid @light-gray;
+    display: table;
+    width: 100%;
+}
+
+.zem-demographic-targeting-overview__box {
+    display: table-cell;
+    text-align: center;
+    position: relative;
+    vertical-align: middle;
+    color: @secondary-color;
+
+    &:last-child {
+        padding-left: @default-spacing;
+    }
+
+    .loader {
+        display: block;
+    }
+
+    .zem-progress-bar {
+        margin-top: 5px;
+    }
+}
+
+.zem-demographic-targeting-overview__box--price {
+    background-color: fade(@secondary-color,10%);
+    width: 180px;
+}
+
+.zem-demographic-targeting-overview__box--reach {
+    .zem-demographic-targeting-overview__value {
+        display: inline;
+    }
+}
+
+.zem-demographic-targeting-overview__value {
+    font-size: 18px;
+    font-weight: 500;
+    display: block;
+}
+
+.zem-demographic-targeting__group {
+    margin-top: @default-spacing;
+}
+
+.zem-demographic-targeting--inactive {
+    padding: 20px;
+    background: lightgray;
+}
+
+.zem-demographic-targeting__actions {
+    margin-top: 10px;
+}
+
+///////////////////////////
 // Targeting //
 ///////////////////////////
 
@@ -764,6 +827,7 @@
         margin-bottom: 10px;
     }
 }
+
 
 ///////////////////////////
 // Bakcend hacks //

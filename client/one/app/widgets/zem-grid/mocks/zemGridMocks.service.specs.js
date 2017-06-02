@@ -1,6 +1,3 @@
-/**
- * Created by jure on 10/11/16.
- */
 angular.module('one.widgets').service('zemGridMocks', function ($q, zemGridEndpointService) { // eslint-disable-line max-len
 
     this.createMetaData = createMetaData;

@@ -1,0 +1,62 @@
+<div class="custom-panel zem-settings-component__container zem-demographic-targeting">
+    <h2 class="custom-panel__title">Bluekai audience targeting</h2>
+    <div class="custom-panel__description">Setup audience targeting based on Bluekai audience segments. For setting up Liveramp targeting please contact your account manager.</div>
+
+    <div ng-if="$ctrl.isEnabled()">
+        <div class="zem-demographic-targeting__overview">
+            <div class="zem-demographic-targeting-overview__box zem-demographic-targeting-overview__box--price">
+                Price:
+                <strong class="zem-demographic-targeting-overview__value">${{$ctrl.state.info.price}}</strong>
+            </div>
+            <div class="zem-demographic-targeting-overview__box zem-demographic-targeting-overview__box--reach">
+                Reach:
+                <div class="loader" ng-if="$ctrl.state.info.reach === undefined"></div>
+                <strong class="zem-demographic-targeting-overview__value" ng-if="$ctrl.state.info.reach !== undefined">{{$ctrl.state.info.reach.value}}</strong>
+                <div class="zem-progress-bar" ng-if="$ctrl.state.info.reach !== undefined">
+                    <div class="zem-progress-bar__progress--background"></div>
+                    <div class="zem-progress-bar__progress" ng-style="{width: (100-$ctrl.state.info.reach.relative) + '%'}"></div>
+                    <div class="zem-progress-bar__legend zem-progress-bar__legend--left">Low</div>
+                    <div class="zem-progress-bar__legend zem-progress-bar__legend--center">Medium</div>
+                    <div class="zem-progress-bar__legend zem-progress-bar__legend--right">High</div>
+                </div>
+            </div>
+        </div>
+
+        <div ng-if="$ctrl.state.editable">
+            <div class="zem-demographic-targeting__group"
+                 ng-repeat="node in $ctrl.state.expressionTree.childNodes"
+            >
+                <zem-bluekai-group
+                        node="node"
+                        state-service="$ctrl.stateService"
+                ></zem-bluekai-group>
+            </div>
+
+            <div class="zem-demographic-targeting__actions">
+                <a class="alternative-link"
+                        ng-if="$ctrl.canAddInclusion()"
+                        ng-click="$ctrl.addInclusion()">
+                    Include audience
+                </a>
+                <span class="v-line" ng-if="$ctrl.canAddInclusion() && $ctrl.canAddExclusion()"></span>
+                <a class="alternative-link"
+                        ng-if="$ctrl.canAddExclusion()"
+                        ng-click="$ctrl.addExclusion()">
+                    Exclude audience
+                </a>
+            </div>
+
+        </div>
+        <div ng-if="!$ctrl.state.editable"
+             class="zem-demographic-targeting__group zem-demographic-targeting__group--inactive">
+            <div class="message message--success message--with-icon m-t">Audience targeting set up.</div>
+        </div>
+    </div>
+
+    <div ng-if="!$ctrl.isEnabled()">
+        <button class="button button--with-icon check-icon" ng-click="$ctrl.enable()">
+            Enable targeting
+        </button>
+    </div>
+
+</div>
