@@ -574,49 +574,49 @@ class InfoBoxAccountHelpersTest(TestCase):
         john.save()
         self.assertEqual(1, dash.infobox_helpers.count_weekly_logged_in_users(None, None))
 
-    @mock.patch('django.utils.timezone.now')
-    def test_count_weekly_active_users(self, mock_now):
-        # should be 0 by default
-        self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
-        self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
+    # @mock.patch('django.utils.timezone.now')
+    # def test_count_weekly_active_users(self, mock_now):
+    #     # should be 0 by default
+    #     self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
+    #     self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
 
-        for u in zemauth.models.User.objects.all():
-            if 'zemanta' not in u.email:
-                continue
+    #     for u in zemauth.models.User.objects.all():
+    #         if 'zemanta' not in u.email:
+    #             continue
 
-            mock_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
-            dash.models.History.objects.create(
-                action_type=dash.constants.HistoryActionType.CONTENT_AD_CREATE,
-                level=dash.constants.HistoryLevel.AD_GROUP,
-                ad_group=dash.models.AdGroup.objects.get(pk=1),
-                created_by=u,
-            )
+    #         mock_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
+    #         dash.models.History.objects.create(
+    #             action_type=dash.constants.HistoryActionType.CONTENT_AD_CREATE,
+    #             level=dash.constants.HistoryLevel.AD_GROUP,
+    #             ad_group=dash.models.AdGroup.objects.get(pk=1),
+    #             created_by=u,
+    #         )
 
-        # zemanta mail should be skipped when counting mails
-        self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
-        self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
+    #     # zemanta mail should be skipped when counting mails
+    #     self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
+    #     self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
 
-        mock_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
-        john = self._make_a_john()
-        dash.models.History.objects.create(
-            action_type=dash.constants.HistoryActionType.CONTENT_AD_CREATE,
-            level=dash.constants.HistoryLevel.AD_GROUP,
-            ad_group=dash.models.AdGroup.objects.get(pk=1),
-            created_by=john,
-        )
-        self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
-        self.assertEqual(1, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
+    #     mock_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
+    #     john = self._make_a_john()
+    #     dash.models.History.objects.create(
+    #         action_type=dash.constants.HistoryActionType.CONTENT_AD_CREATE,
+    #         level=dash.constants.HistoryLevel.AD_GROUP,
+    #         ad_group=dash.models.AdGroup.objects.get(pk=1),
+    #         created_by=john,
+    #     )
+    #     self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
+    #     self.assertEqual(1, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
 
-        mock_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
-        dash.models.History.objects.create(
-            action_type=dash.constants.HistoryActionType.SETTINGS_CHANGE,
-            ad_group=dash.models.AdGroup.objects.get(pk=1),
-            level=dash.constants.HistoryLevel.AD_GROUP,
-            created_by=john
-        )
+    #     mock_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
+    #     dash.models.History.objects.create(
+    #         action_type=dash.constants.HistoryActionType.SETTINGS_CHANGE,
+    #         ad_group=dash.models.AdGroup.objects.get(pk=1),
+    #         level=dash.constants.HistoryLevel.AD_GROUP,
+    #         created_by=john
+    #     )
 
-        self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
-        self.assertEqual(2, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
+    #     self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
+    #     self.assertEqual(2, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
 
     def test_calculate_yesterday_account_spend(self):
         account = dash.models.Account.objects.get(pk=1)
