@@ -526,7 +526,7 @@ class AdGroupsTest(RESTAPITest):
         target_os=[{'name': constants.OperatingSystem.ANDROID}],
         interest_targeting=['women', 'fashion'],
         exclusion_interest_targeting=['politics'],
-        demographic_targeting=['and', 'bluekai:123', ['or', 'liveramp:123', 'outbrain:123']],
+        demographic_targeting=['and', 'bluekai:123', ['or', 'lotame:123', 'outbrain:123']],
         autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE,
         autopilot_daily_budget='50.00',
         dayparting={},

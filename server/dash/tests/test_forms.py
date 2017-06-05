@@ -390,7 +390,7 @@ class AdGroupSettingsFormTest(TestCase):
             'interest_targeting': ['fun', 'games'],
             'exclusion_interest_targeting': ['science', 'religion'],
             'exclusion_audience_targeting': [3, 4],
-            'bluekai_targeting': ['and', 'bluekai:123', ['or', 'liveramp:123', 'outbrain:321']],
+            'bluekai_targeting': ['and', 'bluekai:123', ['or', 'lotame:123', 'outbrain:321']],
             'autopilot_state': 2,
             'autopilot_daily_budget': '100.00',
             'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 23], "timezone": "America/New_York"},
@@ -430,7 +430,7 @@ class AdGroupSettingsFormTest(TestCase):
             'exclusion_interest_targeting': ['science', 'religion'],
             'audience_targeting': ListMatcher([1, 2]),
             'exclusion_audience_targeting': ListMatcher([3, 4]),
-            'bluekai_targeting': ['and', 'bluekai:123', ['or', 'liveramp:123', 'outbrain:321']],
+            'bluekai_targeting': ['and', 'bluekai:123', ['or', 'lotame:123', 'outbrain:321']],
             'autopilot_state': 2,
             'autopilot_daily_budget': Decimal('100.00'),
             'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 23], "timezone": "America/New_York"},
@@ -568,24 +568,35 @@ class AdGroupSettingsFormTest(TestCase):
     @patch('utils.dates_helper.local_today')
     def test_bluekai_targeting_validation(self, mock_today):
         mock_today.return_value = datetime.date(2014, 12, 31)
-        self.data['bluekai_targeting'] = ["and", "bluekai:446103",
-                                          ["not", ["or", "liveramp:510120", "outbrain:510122"]]]
+        self.data['bluekai_targeting'] = {
+            "and": [
+                {"category": "bluekai:446103"},
+                {
+                    "not": [{
+                        "or": [
+                            {"category": "lotame:510120"},
+                            {"category": "outbrain:510122"}
+                        ]
+                    }]
+                }
+            ]
+        }
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
 
         self.assertTrue(form.is_valid())
-        self.data['bluekai_targeting'] = ["xor", "bluekai:446103"]
+        self.data['bluekai_targeting'] = {"xor": [{"category": "bluekai:446103"}]}
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertFalse(form.is_valid())
 
-        self.data['bluekai_targeting'] = ["or", "nonexistent:446103"]
+        self.data['bluekai_targeting'] = {"or": [{"category": "nonexistent:446103"}]}
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertFalse(form.is_valid())
 
-        self.data['bluekai_targeting'] = ["or", "bluekai446103"]
+        self.data['bluekai_targeting'] = {"or": [{"category": "bluekai446103"}]}
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertFalse(form.is_valid())
 
-        self.data['bluekai_targeting'] = ["or", "bluekai:abcdef"]
+        self.data['bluekai_targeting'] = {"or": [{"category": "bluekai:abcdef"}]}
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
 

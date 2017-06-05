@@ -7,5 +7,10 @@ urlpatterns = [
         r'^internal/bluekai/taxonomy/$',
         views.TaxonomyTreeView.as_view(),
         name='internal_bluekai_taxonomy'
+    ),
+    url(
+        r'^internal/bluekai/reach/$',
+        views.SegmentReachView.as_view(),
+        name='internal_bluekai_reach'
     )
 ]

@@ -350,8 +350,10 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
         }
     )
 
-    bluekai_targeting = fields.TargetingExpressionField(
-        required=False, help_text='Example: ["and", "bluekai:446103", ["not", ["or", "bluekai:510120", "bluekai:510122"]]]')
+    bluekai_targeting = dash.compatibility.forms.RestFrameworkSerializer(
+        restapi.serializers.targeting.DemographicSerializer,
+        required=False,
+    )
 
     dayparting = fields.DaypartingField(required=False,
                                         help_text='Example: {"monday": [0,1,2,3], "tuesday": [20, 21, 22, 23], "timezone": "America/New_York"}')

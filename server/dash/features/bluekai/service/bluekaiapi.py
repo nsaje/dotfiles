@@ -38,6 +38,20 @@ def get_taxonomy(parent_category_id=PARENT_CATEGORY_ID):
     return json.loads(response.content)['items']
 
 
+def get_segment_reach(expression):
+    params = collections.OrderedDict([
+        ('countries', 'ALL'),
+    ])
+    response = _perform_request(
+        'POST', SEGMENT_INVENTORY_URL, params=params,
+        data=json.dumps(_transform_expression(expression)).replace(' ', ''),
+    )
+    query_result = json.loads(response.content)
+    if query_result['status'] != 'QUERY_SUCCESS':
+        raise Exception('BlueKai query didn\'t complete successfully')
+    return query_result['reach']
+
+
 def get_audience(audience_id):
     url = AUDIENCES_URL + str(audience_id)
     response = _perform_request('GET', url, params={})
@@ -66,3 +80,20 @@ def _perform_request(method, url, params=None, data=''):
     params_signed = _get_signed_params(method, url, params, data)
     return requests.request(method, url, params=params_signed,
                             headers=HEADERS, data=data)
+
+
+def _transform_expression(expression):
+    if isinstance(expression, basestring) and expression.startswith('bluekai:'):
+        return {'cat': int(expression.replace('bluekai:', ''))}
+    operator = expression[0].upper()
+    subexpression = [_transform_expression(s) for s in expression[1:]]
+    if operator == 'NOT':
+        # NOT must hold a dict instead of a list
+        return {
+            operator: {
+                subexpression[0].keys()[0]: subexpression[0].values()[0],
+            }
+        }
+    return {
+        operator: subexpression
+    }

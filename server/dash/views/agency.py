@@ -437,7 +437,6 @@ class AdGroupSettings(api_common.BaseApiView):
             'retargeting_ad_groups': settings.retargeting_ad_groups,
             'exclusion_retargeting_ad_groups': settings.exclusion_retargeting_ad_groups,
             'notes': settings.notes,
-            'bluekai_targeting': settings.bluekai_targeting,
             'interest_targeting': settings.interest_targeting,
             'exclusion_interest_targeting': settings.exclusion_interest_targeting,
             'audience_targeting': settings.audience_targeting,
@@ -458,10 +457,14 @@ class AdGroupSettings(api_common.BaseApiView):
         }
 
         # TODO (refactor-workaround) Re-use restapi serializers
-        from restapi.serializers.targeting import DevicesSerializer, OSsSerializer, PlacementsSerializer
+        from restapi.serializers.targeting import\
+            DevicesSerializer, OSsSerializer,\
+            PlacementsSerializer, DemographicSerializer
         result['target_devices'] = DevicesSerializer(settings.target_devices).data
         result['target_os'] = OSsSerializer(settings.target_os).data
         result['target_placements'] = PlacementsSerializer(settings.target_placements).data
+        result['bluekai_targeting'] = DemographicSerializer(
+            settings.bluekai_targeting, context={'request': request}).data
 
         return result
 

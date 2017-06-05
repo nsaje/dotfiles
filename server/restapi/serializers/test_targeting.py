@@ -1,6 +1,7 @@
 from django.test import TestCase
 
 import targeting
+from utils.magic_mixer import magic_mixer
 
 
 class PlacementsSerializerTests(TestCase):
@@ -110,3 +111,67 @@ class OsSerializerTests(TestCase):
 
         serializer = targeting.OSSerializer(data=data)
         self.assertTrue(serializer.is_valid())
+
+
+class DemographicSerializerTests(TestCase):
+
+    def setUp(self):
+        self.serialized = {
+            'AND': [
+                {
+                    'OR': [
+                        {'category': 'bluekai:12345'},
+                        {'category': 'lotame:23456'},
+                        {'category': 'lr-test:34567'},
+                    ]
+                }, {
+                    'OR': [
+                        {'category': 'outbrain:45678'},
+                        {'category': 'lotame:56789'},
+                    ]
+                }, {
+                    'NOT': [
+                        {'category': 'bluekai:98765'},
+                    ]
+                }]
+        }
+        self.deserialized = [
+            'and',
+            ['or', 'bluekai:12345', 'lotame:23456', 'lr-test:34567'],
+            ['or', 'outbrain:45678', 'lotame:56789'],
+            ['not', 'bluekai:98765']]
+
+    def test_deserialization(self):
+        data = self.serialized
+        serializer = targeting.DemographicSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+        self.assertEqual(
+            serializer.validated_data,
+            self.deserialized)
+
+    def test_serialization(self):
+        request = magic_mixer.blend_request_user(
+            permissions=['can_use_bluekai_targeting'])
+        data = self.deserialized
+        serializer = targeting.DemographicSerializer(
+            data, context={'request': request})
+        self.assertEqual(serializer.data, self.serialized)
+
+    def test_serialization_with_list(self):
+        data = self.deserialized
+        serializer = targeting.DemographicSerializer(data)
+        self.assertEqual(serializer.data, data)
+
+    def test_serialization_error(self):
+        data = {
+            'AND': [
+                {
+                    'XOR': [
+                        {'category': '12345'},
+                        {'category': '23456'},
+                        {'category': '34567'},
+                    ]
+                }]
+        }
+        serializer = targeting.DemographicSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
