@@ -6,20 +6,29 @@ angular.module('one.widgets').component('zemCloneContentModal', {
     templateUrl: '/app/widgets/zem-clone-content/components/zemCloneContentModal.component.html',
     controller: function ($q, zemNavigationNewService, zemCloneContentService, zemSelectionService, zemSelectDataStore) { //eslint-disable-line max-len
         var $ctrl = this;
-
-        $ctrl.submit = submit;
-        $ctrl.navigate = navigate;
-        $ctrl.onAdGroupSelected = onAdGroupSelected;
-
-        $ctrl.requestInProgress = false;
         $ctrl.texts = {
             placeholder: 'Select Ad group to clone to ...'
         };
 
+        //
+        // Public
+        //
+        $ctrl.submit = submit;
+        $ctrl.onAdGroupSelected = onAdGroupSelected;
+
+        //
+        // Private
+        //
         $ctrl.destinationAdGroupId = $ctrl.resolve.adGroup.id;
         $ctrl.destinationBatch = null;
         $ctrl.clonedContentState = null;
+
         $ctrl.errors = null;
+        $ctrl.requestInProgress = false;
+
+        $ctrl.$onInit = function () {
+            $ctrl.store = getDataStore();
+        };
 
         $ctrl.$onInit = function () {
             $ctrl.store = getDataStore();
@@ -34,7 +43,8 @@ angular.module('one.widgets').component('zemCloneContentModal', {
                 destinationAdGroupId: $ctrl.destinationAdGroupId,
                 state: $ctrl.clonedContentState
             }).then(function (data) {
-                $ctrl.destinationBatch = data;
+                zemCloneContentService.openResultsModal(data);
+                $ctrl.modalInstance.close();
             }, function (errors) {
                 $ctrl.errors = errors;
             }).finally(function () {
@@ -42,18 +52,8 @@ angular.module('one.widgets').component('zemCloneContentModal', {
             });
         }
 
-        function navigate () {
-            var navigationEntity = zemNavigationNewService.getEntityById(
-                constants.entityType.AD_GROUP, $ctrl.destinationBatch.adGroup.id);
-
-            return zemNavigationNewService
-                .navigateTo(navigationEntity)
-                .then(function () {
-                    $ctrl.modalInstance.close();
-                    zemSelectionService.setSelection({
-                        batch: $ctrl.destinationBatch.id});
-                });
-        }
+        // zem UI select properties
+        //
 
         function getDataStore () {
             var promise;

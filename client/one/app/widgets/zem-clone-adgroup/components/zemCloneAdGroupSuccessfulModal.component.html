@@ -1,0 +1,13 @@
+<div class="modal__header">
+    <div class="modal__title">Clone Successful</div>
+</div>
+<div class="modal__body">
+    <div>
+        Ad group was successfully copied as "{{ $ctrl.resolve.destinationAdGroup.name }}".
+    </div>
+
+    <button class="button button--highlight button--with-icon check-icon" ng-click="$ctrl.navigate()">Take me there</button>
+</div>
+<div class="modal__footer buttons-panel">
+    <button type="button" class="button button--outline" ng-click="$ctrl.modalInstance.dismiss()">Close</button>
+</div>

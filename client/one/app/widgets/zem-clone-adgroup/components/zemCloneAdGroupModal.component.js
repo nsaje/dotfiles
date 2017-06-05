@@ -6,16 +6,28 @@ angular.module('one.widgets').component('zemCloneAdGroupModal', {
     templateUrl: '/app/widgets/zem-clone-adgroup/components/zemCloneAdGroupModal.component.html',
     controller: function ($q, zemNavigationNewService, zemCloneAdGroupService, zemSelectDataStore) {
         var $ctrl = this;
+        $ctrl.texts = {
+            placeholder: 'Select Campaign to clone to ...'
+        };
 
+        //
+        // Public
+        //
         $ctrl.submit = submit;
-        $ctrl.navigate = navigate;
         $ctrl.onCampaignSelected = onCampaignSelected;
 
-        $ctrl.requestInProgress = false;
-
+        //
+        // Private
+        //
         $ctrl.destinationCampaignId = $ctrl.resolve.campaign.id;
         $ctrl.destinationAdGroup = null;
+
         $ctrl.errors = null;
+        $ctrl.requestInProgress = false;
+
+        $ctrl.$onInit = function () {
+            $ctrl.store = getDataStore();
+        };
 
         $ctrl.$onInit = function () {
             $ctrl.store = getDataStore();
@@ -28,20 +40,12 @@ angular.module('one.widgets').component('zemCloneAdGroupModal', {
                 adGroupId: $ctrl.resolve.adGroup.id,
                 destinationCampaignId: $ctrl.destinationCampaignId,
             }).then(function (data) {
-                $ctrl.destinationAdGroup = data;
+                zemCloneAdGroupService.openResultsModal(data);
+                $ctrl.modalInstance.close();
             }, function (errors) {
                 $ctrl.errors = errors;
             }).finally(function () {
                 $ctrl.requestInProgress = false;
-            });
-        }
-
-        function navigate () {
-            var navigationEntity = zemNavigationNewService.getEntityById(
-                constants.entityType.AD_GROUP, $ctrl.destinationAdGroup.id);
-
-            return zemNavigationNewService.navigateTo(navigationEntity).then(function () {
-                $ctrl.modalInstance.close();
             });
         }
 
