@@ -32,7 +32,7 @@ angular.module('one.widgets').service('zemDemographicTargetingConverter', functi
     }
 
     function formatNode (node) {
-        if (!node) return null;
+        if (!node) return [];
 
         if (node.type === 'category') {
             return node.provider + ':' + node.value;
@@ -42,6 +42,6 @@ angular.module('one.widgets').service('zemDemographicTargetingConverter', functi
         if (childs.length > 0) {
             return [node.type].concat(childs);
         }
-        return null;
+        return [];
     }
 });
