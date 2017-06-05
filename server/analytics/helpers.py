@@ -37,3 +37,34 @@ def get_spend(date, **lookup):
     with db.get_stats_cursor() as c:
         c.execute(sql)
         return db.dictfetchall(c)
+
+
+def get_stats_multiple(date, **lookup):
+    """
+    Get RS stats for a certan date.
+    Usage: get_spend(date, **lookup)
+    Examples:
+     - get_stats_multiple(date, ad_group=ad_group_list)
+     - get_stats_multiple(date, campaign=campaign_list)
+     - get_stats_multiple(date, account=account_list)
+     - get_stats_multiple(date, agency=agency_list)
+
+    Only one lookup entry is expected (ad_group, campaign, account or agency).
+    """
+    if not lookup:
+        return None
+    context = {
+        'date': str(date),
+    }
+    for key, objects in lookup.iteritems():
+        if objects is None:
+            continue
+        context['key'] = key
+        context['value'] = ','.join([str(obj.pk) for obj in objects])
+        break
+    sql = backtosql.generate_sql('sql/helpers_get_stats_multiple.sql', context)
+    with db.get_stats_cursor() as c:
+        c.execute(sql)
+        return {
+            row[key + '_id']: row for row in db.dictfetchall(c)
+        }

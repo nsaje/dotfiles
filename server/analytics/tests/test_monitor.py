@@ -249,12 +249,3 @@ class AuditSpendIntegrity(TestCase):
             (datetime.date(2015, 10, 29), 'mv_ad_group', 'fee', -20000000000),
             (datetime.date(2015, 10, 29), 'mv_campaign', 'fee', -20000000000),
             (datetime.date(2015, 10, 29), 'mv_account', 'fee', -20000000000)])
-
-
-class AuditIABCategories(TestCase):
-    fixtures = ['test_projections']
-
-    def test_audit_iab_categories(self):
-        self.assertEqual(set(c.pk for c in monitor.audit_iab_categories()), set([
-            1, 2,
-        ]))

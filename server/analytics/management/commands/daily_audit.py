@@ -8,6 +8,7 @@ import utils.email_helper
 import analytics.monitor
 import analytics.statements
 import analytics.users
+import analytics.delivery
 import utils.csv_utils
 import dash.models
 
@@ -54,9 +55,8 @@ class Command(utils.command_helpers.ExceptionCommand):
         self.alarms = False
         self.email_body = ''
 
+        self.delivery(options)
         self.wau(options)
-        self.audit_iab_categories(options)
-        self.audit_campaign_pacing(options)
         self.audit_autopilot(options)
         self.audit_activated_running_ad_groups(options)
         self.audit_pilot_managed_running_ad_groups(options)
@@ -65,7 +65,7 @@ class Command(utils.command_helpers.ExceptionCommand):
 
         if self.alarms and self.send_emails:
             email = utils.email_helper.EmailMultiAlternatives(
-                'Daily audit',
+                'Daily audit v2',
                 self.email_body,
                 'Zemanta <{}>'.format(
                     settings.FROM_EMAIL
@@ -75,6 +75,18 @@ class Command(utils.command_helpers.ExceptionCommand):
                 "text/html"
             )
             email.send()
+
+    def delivery(self, options):
+        reports = analytics.delivery.generate_delivery_reports()
+        out = [
+            'Delivery report',
+            ' - campaign level: {}'.format(reports['campaign']),
+            ' - ad group level: {}'.format(reports['ad_group']),
+        ]
+        for line in out:
+            self._print(line)
+            self.email_body += line + '\n'
+        self._print('\n')
 
     def wau(self, options):
         url = analytics.statements.generate_csv(
@@ -178,83 +190,4 @@ class Command(utils.command_helpers.ExceptionCommand):
                 ad_group.name,
                 u'https://one.zemanta.com/v2/analytics/adgroup/{}'.format(ad_group.pk)
             )
-        self.email_body += '\n'
-
-    def audit_iab_categories(self, options):
-        undefined_iab_running_campaigns = analytics.monitor.audit_iab_categories(running_only=True)
-        if undefined_iab_running_campaigns:
-            self.alarms = True
-            self.email_body += u'Active campaigns with undefined IAB categories:\n'
-            self._print(u'Active campaigns with undefined IAB categories: ')
-
-        for campaign in undefined_iab_running_campaigns:
-            text = u' - {}: {}'.format(
-                campaign.get_long_name(),
-                u'https://one.zemanta.com/v2/analytics/campaign/{}'.format(campaign.pk)
-            )
-            self._print(text)
-            self.email_body += text + u'\n'
-        self.email_body += '\n'
-
-    def audit_campaign_pacing(self, options):
-        date = datetime.datetime.utcnow().date() - datetime.timedelta(1)
-        if options['date']:
-            date = datetime.datetime.strptime(options['date'], "%Y-%m-%d").date()
-
-        days_running = int(options['days_running'])
-        flying_ad_groups = [
-            ad_group for ad_group in
-            dash.models.AdGroup.objects.all().filter_running().exclude_archived()
-            if (date - ad_group.get_current_settings().start_date).days >= days_running
-        ]
-        flying_campaigns = {
-            c.pk: c
-            for c in dash.models.Campaign.objects.filter(
-                id__in=set(adg.campaign_id for adg in flying_ad_groups)
-            ).exclude_landing().select_related('account')
-            if c.account.get_current_settings().account_type in VALID_PACING_ACCOUNT_TYPES
-        }
-
-        alarms = analytics.monitor.audit_pacing(
-            date,
-            campaign__in=flying_campaigns.values(),
-        )
-
-        if not alarms:
-            self._print('Pacing OK')
-            return
-
-        self.alarms = True
-        self._print('Pacing FAIL')
-        overpaced = [
-            (flying_campaigns[campaign_id], pacing)
-            for campaign_id, pacing, reason, projections in alarms
-            if reason == 'high'
-        ]
-
-        underpaced = [
-            (flying_campaigns[campaign_id], pacing)
-            for campaign_id, pacing, reason, projections in alarms
-            if reason == 'low'
-        ]
-
-        self.email_body += 'Overpacing campaigns:\n'
-        for campaign, pacing in overpaced:
-            text = ' - {} ({}%): {}'.format(
-                campaign.get_long_name(),
-                int(pacing),
-                'https://one.zemanta.com/v2/analytics/campaign/{}'.format(campaign.pk)
-            )
-            self._print(text)
-            self.email_body += text + '\n'
-        self.email_body += '\n'
-        self.email_body += 'Underpacing campaigns:\n'
-        for campaign, pacing in underpaced:
-            text = ' - {} ({}%): {}'.format(
-                campaign.get_long_name(),
-                int(pacing),
-                'https://one.zemanta.com/v2/analytics/campaign/{}'.format(campaign.pk)
-            )
-            self._print(text)
-            self.email_body += text + '\n'
         self.email_body += '\n'

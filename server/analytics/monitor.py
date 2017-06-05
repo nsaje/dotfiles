@@ -132,28 +132,6 @@ def audit_pacing(date, max_pacing=Decimal('200.0'), min_pacing=Decimal('50.0'), 
     return alarms
 
 
-def audit_iab_categories(running_only=False, paused_only=False):
-    running_campaign_ids = set(dash.models.AdGroup.objects.all().filter_running().values_list(
-        'campaign_id', flat=True
-    ))
-    campaigns = dash.models.Campaign.objects.all().exclude_archived().exclude(
-        account__agency_id__in=(29, )
-    )
-    if running_only:
-        campaigns = campaigns.filter(
-            pk__in=running_campaign_ids
-        )
-    if paused_only:
-        campaigns = campaigns.exclude(
-            pk__in=running_campaign_ids
-        )
-    alarms = []
-    for campaign in campaigns:
-        if campaign.get_current_settings().iab_category == dash.constants.IABCategory.IAB24:
-            alarms.append(campaign)
-    return alarms
-
-
 def audit_autopilot_ad_groups():
     date = datetime.date.today()
     ap_logs = automation.models.AutopilotLog.objects.filter(
