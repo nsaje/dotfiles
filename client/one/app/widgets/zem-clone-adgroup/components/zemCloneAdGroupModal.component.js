@@ -4,17 +4,22 @@ angular.module('one.widgets').component('zemCloneAdGroupModal', {
         modalInstance: '<',
     },
     templateUrl: '/app/widgets/zem-clone-adgroup/components/zemCloneAdGroupModal.component.html',
-    controller: function (zemNavigationNewService, zemCloneAdGroupService) {
+    controller: function ($q, zemNavigationNewService, zemCloneAdGroupService, zemSelectDataStore) {
         var $ctrl = this;
 
         $ctrl.submit = submit;
         $ctrl.navigate = navigate;
+        $ctrl.onCampaignSelected = onCampaignSelected;
 
         $ctrl.requestInProgress = false;
 
-        $ctrl.destinationCampaignId = null;
+        $ctrl.destinationCampaignId = $ctrl.resolve.campaign.id;
         $ctrl.destinationAdGroup = null;
         $ctrl.errors = null;
+
+        $ctrl.$onInit = function () {
+            $ctrl.store = getDataStore();
+        };
 
         function submit () {
             $ctrl.requestInProgress = true;
@@ -38,6 +43,40 @@ angular.module('one.widgets').component('zemCloneAdGroupModal', {
             return zemNavigationNewService.navigateTo(navigationEntity).then(function () {
                 $ctrl.modalInstance.close();
             });
+        }
+
+        function getDataStore () {
+            var promise;
+
+            if (zemNavigationNewService.getNavigationHierarchy()) {
+                promise = $q.resolve(getDataStoreItems());
+            } else {
+                var deferred = $q.defer();
+                zemNavigationNewService.onHierarchyUpdate(function () {
+                    deferred.resolve(getDataStoreItems());
+                });
+                promise = deferred.promise;
+            }
+
+            return zemSelectDataStore.createInstance(promise);
+        }
+
+        function getDataStoreItems () {
+            var campaigns = [];
+            angular.forEach(zemNavigationNewService.getNavigationHierarchy().ids.campaigns, function (value) {
+                campaigns.push({
+                    id: value.id,
+                    name: value.name,
+                    h1: value.parent.name,
+                    searchableName: value.parent.name + ' ' + value.name,
+                });
+
+            });
+            return campaigns;
+        }
+
+        function onCampaignSelected (item) {
+            $ctrl.destinationCampaignId = item ? item.id : null;
         }
     }
 });

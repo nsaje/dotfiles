@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.widgets').factory('zemGridEndpointApi', function ($q, $http, zemGridEndpointApiConverter) { // eslint-disable-line max-len
+angular.module('one.widgets').factory('zemGridEndpointApi', function ($q, $http, zemGridEndpointApiConverter, zemUtils) { // eslint-disable-line max-len
     //
     // EndpointApi - data retrieval (get) and settings persistence (save)
     //
@@ -12,7 +12,7 @@ angular.module('one.widgets').factory('zemGridEndpointApi', function ($q, $http,
 
         function get (config) {
             var url = createGetUrl(config);
-            var deferred = createAbortableDefer();
+            var deferred = zemUtils.createAbortableDefer();
             var data = zemGridEndpointApiConverter.convertConfigToApi(config);
             var httpConfig = {timeout: deferred.abortPromise};
 
@@ -113,22 +113,6 @@ angular.module('one.widgets').factory('zemGridEndpointApi', function ($q, $http,
 
             return '/api/grid/' + breakdownKey + '/' + rowId + '/edit/';
         }
-    }
-
-    function createAbortableDefer () {
-        var deferred = $q.defer();
-        var deferredAbort = $q.defer();
-        deferred.promise.abort = function () {
-            deferredAbort.resolve();
-        };
-        deferred.promise.finally(
-            function () {
-                deferred.promise.abort = angular.noop;
-            }
-        );
-
-        deferred.abortPromise = deferredAbort.promise;
-        return deferred;
     }
 
     return {

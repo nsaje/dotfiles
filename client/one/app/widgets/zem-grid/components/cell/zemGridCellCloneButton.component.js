@@ -28,7 +28,7 @@ angular.module('one.widgets').directive('zemGridCellCloneButton', function () {
             function cloneRow () {
                 zemCloneAdGroupService.openCloneModal(
                     vm.grid.meta.data.id,
-                    vm.row.entity
+                    vm.row.entity.id
                 ).then(function () {
                     vm.grid.meta.api.loadData();
                 });

@@ -5,7 +5,12 @@
 
     <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.destinationAdGroupId}">
         <label class="form__label" for="ad-group-input">Ad Group</label>
-        <input class="input-text" type="text" zem-focus-select id="ad-group-input" ng-model="$ctrl.destinationAdGroupId"/>
+        <zem-select
+            store="$ctrl.store"
+            texts="$ctrl.texts"
+            selected-id="$ctrl.destinationAdGroupId"
+            on-select="$ctrl.onAdGroupSelected(item);"
+        ></zem-select>
         <div class="message message--error" for="ad-group-input">{{ $ctrl.errors.destinationAdGroupId[0] }}</div>
     </div>
 

@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemCloneContentService', function ($uibModal, zemCloneContentEndpoint) { //eslint-disable-line max-len
+angular.module('one.widgets').service('zemCloneContentService', function ($uibModal, zemCloneContentEndpoint, zemNavigationNewService) { //eslint-disable-line max-len
 
     this.openCloneModal = openCloneModal;
     this.clone = clone;
@@ -9,8 +9,8 @@ angular.module('one.widgets').service('zemCloneContentService', function ($uibMo
             backdrop: 'static',
             keyboard: false,
             resolve: {
-                adGroupId: adGroupId,
-                selection: selection,
+                adGroup: zemNavigationNewService.getEntityById(constants.entityType.AD_GROUP, adGroupId),
+                selection: selection
             }
         });
 

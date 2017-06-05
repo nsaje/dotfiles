@@ -1,0 +1,34 @@
+<div class="zem-select">
+    <div class="search">
+        <input type="text"
+               placeholder="{{ $ctrl.texts.placeholder }}"
+               class="input-text"
+               ng-model="$ctrl.searchQuery"
+               ng-change="$ctrl.search($ctrl.searchQuery)"
+               ng-focus="$ctrl.focus()"
+        />
+    </div>
+
+    <div class="zem-select-dropdown" ng-class="{ 'zem-select-dropdown--active': $ctrl.dropdownVisible }">
+
+        <ul class="zem-select-dropdown__list scroll-container custom-scroller"
+            vs-repeat vs-scroll-parent=".scroll-container" vs-size="$ctrl.getItemHeight(item)">
+
+            <li ng-repeat="item in $ctrl.list.items"
+                class="zem-select-dropdown-item"
+                ng-click="$ctrl.toggleSelection(item); $event.stopPropagation();"
+                ng-mouseover="$ctrl.toggleHighlighted(item)" ng-class="{
+                           'zem-select-dropdown-item--highlighted': item === $ctrl.highlighted,
+                           'zem-select-dropdown-item--selected': item === $ctrl.selected,
+                           'zem-select-dropdown-item--search-result': $ctrl.searchQuery
+                           }">
+                <span
+                    ng-class="$ctrl.getItemClasses(item)"
+                    title="{{ item.name }}"
+                    ng-bind-html="item.name | highlight: item.isHeader ? '' : $ctrl.searchQuery">
+                </span>
+            </li>
+        </ul>
+
+    </div>
+</div>
