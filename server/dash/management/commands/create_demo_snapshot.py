@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 demo_anonymizer.set_fake_factory(faker.Faker())
 
-TIMEOUT = 10 * 60
+TIMEOUT = 20 * 60
 
 IGNORE_FIELDS = {
     dash.models.PublisherGroup: {'account'},  # due to cyclical foreign key dependency, we want to ignore the account field
@@ -229,10 +229,17 @@ def _prepare_demo_objects(serialize_list, demo_mappings, demo_users_set):
         fake_global_blacklist = _create_global_blacklist()
 
         # extract dependencies and anonymize
-        start_extracting_at = len(serialize_list)
         _add_explicit_object_dependents(serialize_list, account, ACCOUNT_DUMP_SETTINGS['dependents'])
         _add_to_serialize_list(serialize_list, [fake_credit, fake_global_blacklist])
-        _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects, start_extracting_at)
+        _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects)
+        # TODO optimize somehow so we don't need to rescan the whole list for every account.
+        # The reason we run _extract_dependencies_and_anonymize for every account is that
+        # anonymizer name pools are globally scoped. Maybe we could figure out a way to anonymize
+        # the correct objects with the correct name pools, or find a way to mark already extracted
+        # items...
+        # Comment by domen: Just an idea: could you do whatever you do in
+        # _extract_dependencies_and_anonymize when you are adding objects in _add_to_serialize_list?
+        # This way you would not have to loop over the serialize_list again.
 
 
 def _create_fake_credit(account):
