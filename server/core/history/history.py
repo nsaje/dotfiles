@@ -60,7 +60,7 @@ class History(models.Model):
     def get_changed_by_text(self):
         if self.created_by is None and self.system_user is not None:
             return constants.SystemUserType.get_text(self.system_user)
-        elif self.created_by is None and self.system_user is None:
+        elif self.created_by is None and self.system_user is None or self.created_by.is_service:
             return 'System User'
         else:
             return self.created_by.email

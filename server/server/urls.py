@@ -107,6 +107,11 @@ urlpatterns += [
     url(r'^rest/', include('restapi.urls')),
 ]
 
+# Service APIs
+urlpatterns += [
+    url(r'^service/', include('serviceapi.urls')),
+]
+
 # Custom integrations API
 urlpatterns += [
     url(r'^integrations/businesswire/', include('integrations.bizwire.urls')),

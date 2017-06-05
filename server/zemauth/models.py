@@ -40,6 +40,12 @@ class UserManager(auth_models.BaseUserManager):
     def create_superuser(self, email, password, **extra_fields):
         return self._create_user(email, password, True, True, **extra_fields)
 
+    def get_or_create_service_user(self, service_name):
+        user, _ = self.get_or_create(username=service_name,
+                                     email='%s@service.zemanta.com' % service_name,
+                                     is_service=True)
+        return user
+
     def get_users_with_perm(self, perm_name, include_superusers=False):
         perm = auth_models.Permission.objects.get(codename=perm_name)
 
@@ -97,6 +103,11 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
     is_test_user = models.BooleanField(
         default=False,
         help_text=_('Designates whether user is an internal testing user and will not contribute towards certain statistics.')
+    )
+
+    is_service = models.BooleanField(
+        default=False,
+        help_text=_('Designates whether a user represents an internal service.')
     )
 
     objects = UserManager()

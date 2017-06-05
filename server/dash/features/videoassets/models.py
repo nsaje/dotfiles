@@ -48,3 +48,7 @@ class VideoAsset(models.Model):
 
     def get_status_message(self):
         return constants.VideoAssetStatus.get_text(self.status)
+
+    def set_status(self, new_status):
+        self.status = new_status
+        self.save()

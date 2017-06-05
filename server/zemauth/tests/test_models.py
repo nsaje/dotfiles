@@ -23,6 +23,15 @@ class UserManagerTestCase(test.TestCase):
         self.assertIs(user.username, None)
         self.assertTrue(user.has_usable_password())
 
+    def test_get_or_create_service_user(self):
+        user = models.User.objects.get_or_create_service_user('test-service')
+        self.assertEqual(user.username, 'test-service')
+        self.assertEqual(user.email, 'test-service@service.zemanta.com')
+        self.assertFalse(user.has_usable_password())
+        self.assertFalse(user.is_staff)
+        self.assertFalse(user.is_superuser)
+        self.assertTrue(user.is_service)
+
     def test_create_user_email_domain_normalize_rfc3696(self):
         # According to  http://tools.ietf.org/html/rfc3696#section-3
         # the "@" symbol can be part of the local part of an email address

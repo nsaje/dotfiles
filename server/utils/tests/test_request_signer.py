@@ -51,10 +51,10 @@ class EncryptionHelperTestCase(unittest.TestCase):
     @mock.patch('time.time')
     def test_verify(self, mock_time):
         mock_time.return_value = 123456789
-        header_sig = request_signer._get_wsgi_header_field_name(
+        header_sig = request_signer.get_wsgi_header_field_name(
             request_signer.SIGNATURE_HEADER,
         )
-        header_ts = request_signer._get_wsgi_header_field_name(
+        header_ts = request_signer.get_wsgi_header_field_name(
             request_signer.TS_HEADER,
         )
 
@@ -70,10 +70,10 @@ class EncryptionHelperTestCase(unittest.TestCase):
     @mock.patch('time.time')
     def test_verify_invalid_timestamp(self, mock_time):
         mock_time.return_value = 987654321
-        header_sig = request_signer._get_wsgi_header_field_name(
+        header_sig = request_signer.get_wsgi_header_field_name(
             request_signer.SIGNATURE_HEADER,
         )
-        header_ts = request_signer._get_wsgi_header_field_name(
+        header_ts = request_signer.get_wsgi_header_field_name(
             request_signer.TS_HEADER,
         )
 

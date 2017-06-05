@@ -83,7 +83,7 @@ def sign_urllib2_request(urllib_request, secret_key):
     urllib_request.add_header(SIGNATURE_HEADER, signature)
 
 
-def _get_wsgi_header_field_name(header):
+def get_wsgi_header_field_name(header):
     return 'HTTP_{}'.format(header.upper().replace('-', '_'))
 
 
@@ -98,10 +98,10 @@ def verify_wsgi_request(wsgi_request, secret_keys):
     Otherwise SignatureError is raised.
     '''
     header_signature = wsgi_request.META.get(
-        _get_wsgi_header_field_name(SIGNATURE_HEADER)
+        get_wsgi_header_field_name(SIGNATURE_HEADER)
     )
     header_ts = wsgi_request.META.get(
-        _get_wsgi_header_field_name(TS_HEADER)
+        get_wsgi_header_field_name(TS_HEADER)
     )
 
     if not header_signature:
