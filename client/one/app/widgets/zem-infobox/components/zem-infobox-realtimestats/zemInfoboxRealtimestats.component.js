@@ -15,7 +15,7 @@ angular.module('one.widgets').component('zemInfoboxRealtimestats', {
         var pollInterval, entity;
         $ctrl.$onInit = function () {
             entity = zemNavigationNewService.getActiveEntity();
-            if (entity.type === constants.entityType.AD_GROUP) {
+            if (entity && entity.type === constants.entityType.AD_GROUP) {
                 update();
                 pollInterval = $interval(update, 10000);
                 $ctrl.spendRow = spendRow;
