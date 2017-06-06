@@ -3,16 +3,19 @@ describe('state: zemDemographicTargetingStateService', function () {
     var zemDemographicTaxonomyService;
     var $q;
 
-    var expressionEditable = ['and',
-        ['or', 'bluekai:678218', 'bluekai:678219'],
-        ['or', 'bluekai:678188'],
-        ['not', ['or', 'bluekai:678206']]
-    ];
-
-    var expressionNonEditable = [
-        ['or', 'bluekai:678218', ['and', 'bluekai:678219']],
-        ['not', ['or', 'bluekai:678206']]
-    ];
+    var expressionEditable = {
+        AND: [
+            {OR: [{category: 'bluekai: 123'}, {category: 'bluekai: 234'}]},
+            {OR: [{category: 'bluekai: 345'}]},
+            {NOT: [{OR: [{category: 'bluekai: 432'}]}]}
+        ]
+    };
+    var expressionNonEditable = {
+        AND: [
+            {OR: [{category: 'bluekai: 123'}, {AND: [{category: 'bluekai: 234'}]}]},
+            {NOT: [{OR: [{category: 'bluekai: 432'}]}]}
+        ]
+    };
 
     var entity = {
         settings: {

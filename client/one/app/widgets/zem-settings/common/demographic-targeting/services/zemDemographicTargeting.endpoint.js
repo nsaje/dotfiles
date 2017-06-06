@@ -6,32 +6,39 @@ angular.module('one.widgets').service('zemDemographicTargetingEndpoint', functio
 
     function getTaxonomy () {
         var url = '/rest/internal/bluekai/taxonomy/';
-        return getDeferredPromise(url);
+
+        var deferred = $q.defer();
+        $http.get(url).then(function (data) {
+            deferred.resolve(data.data.data);
+        }).catch(function (data) {
+            deferred.reject(data);
+        });
+        return deferred.promise;
     }
 
     function getReach (expression) {
-        // FIXME: Only for DEBUGGING purposes
         if (getReach.deferred) getReach.deferred.promise.abort();
-        getReach.deferred = zemUtils.createAbortableDefer();
 
-        if (REACH_CACHE[expression]) {
-            return $q.resolve(REACH_CACHE[expression]);
+        var cacheKey = JSON.stringify(expression);
+        if (REACH_CACHE[cacheKey]) {
+            return $q.resolve(REACH_CACHE[cacheKey]);
         }
 
-        var t = setTimeout(function () {
-            var data = {};
-            data.value = Math.round(Math.random() * 5 * Math.pow(10, 9));
-            data.relative = getRelativeReach(data.value);
-
-            REACH_CACHE[expression] = data;
-            getReach.deferred.resolve(data);
-        }, 1000);
-
-        getReach.deferred.abortPromise.then(function () {
-            clearTimeout(t);
+        var url = '/rest/internal/bluekai/reach/';
+        var deferred = zemUtils.createAbortableDefer();
+        var httpConfig = {timeout: deferred.abortPromise};
+        $http.post(url, expression, httpConfig).success(function (data) {
+            var reach = {};
+            reach.value = data.data.reach;
+            reach.relative = getRelativeReach(reach.value);
+            REACH_CACHE[cacheKey] = reach;
+            deferred.resolve(reach);
+        }).error(function () {
+            deferred.reject();
         });
 
-        return getReach.deferred.promise;
+        getReach.deferred = deferred;
+        return deferred.promise;
     }
 
     function getRelativeReach (reach) {
@@ -42,15 +49,5 @@ angular.module('one.widgets').service('zemDemographicTargetingEndpoint', functio
         }
 
         return Math.ceil(reach / mid * 100 / 2);
-    }
-
-    function getDeferredPromise (url, config) {
-        var deferred = $q.defer();
-        $http.get(url, config).then(function (data) {
-            deferred.resolve(data.data.data);
-        }).catch(function (data) {
-            deferred.reject(data);
-        });
-        return deferred.promise;
     }
 });

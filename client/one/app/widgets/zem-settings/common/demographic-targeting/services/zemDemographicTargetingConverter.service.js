@@ -3,24 +3,29 @@ angular.module('one.widgets').service('zemDemographicTargetingConverter', functi
     this.convertToApi = convertToApi;
 
     function convertFromApi (apiData) {
-        if (!apiData || apiData.length === 0) return null;
+        if (!apiData) return null;
         return parseNode(apiData);
     }
 
     function parseNode (dataNode, parent) {
         var node;
-        if (Array.isArray(dataNode)) {
+        var key = Object.keys(dataNode)[0];
+        var value = dataNode[key];
+
+        if (!key) return null;
+
+        if (Array.isArray(value)) {
             node = {
-                type: dataNode[0],
+                type: key.toLowerCase(),
                 parent: parent,
             };
-            node.childNodes = dataNode.slice(1).map(function (n) { return parseNode(n, node); });
+            node.childNodes = value.map(function (n) { return parseNode(n, node); });
         } else {
             node = {
-                type: 'category',
+                type: key.toLowerCase(),
                 parent: parent,
-                provider: dataNode.split(':')[0],
-                value: dataNode.split(':')[1]
+                provider: value.split(':')[0],
+                value: value.split(':')[1]
             };
         }
 
@@ -28,20 +33,23 @@ angular.module('one.widgets').service('zemDemographicTargetingConverter', functi
     }
 
     function convertToApi (data) {
-        return formatNode(data);
+        return formatNode(data) || {};
     }
 
     function formatNode (node) {
-        if (!node) return [];
+        if (!node) return null;
+        var formattedNode = {};
 
         if (node.type === 'category') {
-            return node.provider + ':' + node.value;
+            formattedNode[node.type] = node.provider + ':' + node.value;
+            return formattedNode;
         }
 
         var childs = node.childNodes.map(formatNode).filter(function (n) { return n; });
         if (childs.length > 0) {
-            return [node.type].concat(childs);
+            formattedNode[node.type.toUpperCase()] = childs;
+            return formattedNode;
         }
-        return [];
+        return null;
     }
 });

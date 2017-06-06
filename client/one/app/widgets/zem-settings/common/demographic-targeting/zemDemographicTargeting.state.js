@@ -73,6 +73,11 @@ angular.module('one.widgets').service('zemDemographicTargetingStateService', fun
         }
 
         function updateInfo () {
+            if (!state.editable) {
+                state.info = null;
+                return;
+            }
+
             state.info = {};
             var categories = getCategories(state.expressionTree);
 
@@ -82,14 +87,11 @@ angular.module('one.widgets').service('zemDemographicTargetingStateService', fun
                 return;
             }
 
-            var data = zemDemographicTargetingConverter.convertToApi (state.expressionTree);
-            state.info.expression = data;
-
             state.info.price = categories.reduce(function (max, c) {
                 return c.price > max ? c.price : max;
             }, 0);
 
-            zemDemographicTargetingEndpoint.getReach(data).then (function (data) {
+            zemDemographicTargetingEndpoint.getReach(entity.settings.bluekaiTargeting).then (function (data) {
                 state.info.reach = {
                     value: $filter('number')(data.value),
                     relative: data.relative

@@ -1,11 +1,13 @@
 describe('state: zemDemographicTargetingStateService', function () {
     var zemDemographicTargetingConverter;
 
-    var testApiData = ['and',
-        ['or', 'bluekai: 123', 'bluekai: 234'],
-        ['or', 'bluekai: 345'],
-        ['not', ['or', 'bluekai: 432']]
-    ];
+    var testApiData = {
+        AND: [
+            {OR: [{category: 'bluekai: 123'}, {category: 'bluekai: 234'}]},
+            {OR: [{category: 'bluekai: 345'}]},
+            {NOT: [{OR: [{category: 'bluekai: 432'}]}]}
+        ]
+    };
 
     beforeEach(module('one'));
     beforeEach(inject(function ($injector) {

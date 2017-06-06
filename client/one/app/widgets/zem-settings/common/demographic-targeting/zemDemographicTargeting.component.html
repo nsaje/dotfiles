@@ -3,7 +3,7 @@
     <div class="custom-panel__description">Setup audience targeting based on Bluekai audience segments. For setting up Liveramp targeting please contact your account manager.</div>
 
     <div ng-if="$ctrl.isEnabled()">
-        <div class="zem-demographic-targeting__overview">
+        <div ng-if="$ctrl.state.info" class="zem-demographic-targeting__overview">
             <div class="zem-demographic-targeting-overview__box zem-demographic-targeting-overview__box--price">
                 Price:
                 <strong class="zem-demographic-targeting-overview__value">${{$ctrl.state.info.price}}</strong>
