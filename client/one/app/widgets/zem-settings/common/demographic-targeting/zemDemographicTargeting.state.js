@@ -26,7 +26,7 @@ angular.module('one.widgets').service('zemDemographicTargetingStateService', fun
         function initialize () {
             state.expressionTree = zemDemographicTargetingConverter.convertFromApi(entity.settings.bluekaiTargeting);
             state.editable = isEditable(state.expressionTree);
-            updateInfo();
+            if (state.editable) updateInfo();
         }
 
         function getState () {
@@ -113,26 +113,28 @@ angular.module('one.widgets').service('zemDemographicTargetingStateService', fun
             for (var i = 0; i < expressionTree.childNodes.length; ++i) {
                 var node = expressionTree.childNodes[i];
                 if (node.type === zemDemographicTargetingConstants.EXPRESSION_TYPE.OR
-                    && !isFlatNode(node))
+                    && !isBlukaiCategoriesNode(node))
                     return false;
 
                 if (node.type === zemDemographicTargetingConstants.EXPRESSION_TYPE.NOT) {
                     if (node.childNodes.length !== 1) return false;
 
                     if (!(node.childNodes[0].type === zemDemographicTargetingConstants.EXPRESSION_TYPE.OR
-                        && isFlatNode(node.childNodes[0]))) return false;
+                        && isBlukaiCategoriesNode(node.childNodes[0]))) return false;
                 }
             }
 
             return true;
         }
 
-        function isFlatNode (node) {
+        function isBlukaiCategoriesNode (node) {
             if (node.type === zemDemographicTargetingConstants.EXPRESSION_TYPE.CATEGORY) return false;
 
             for (var i = 0; i < node.childNodes.length; ++i) {
-                if (node.childNodes[i].type !== zemDemographicTargetingConstants.EXPRESSION_TYPE.CATEGORY) return false;
-                if (node.childNodes[i].provider !== zemDemographicTargetingConstants.PROVIDER.BLUEKAI) return false;
+                var childNode = node.childNodes[i];
+                if (childNode.type !== zemDemographicTargetingConstants.EXPRESSION_TYPE.CATEGORY) return false;
+                if (childNode.provider !== zemDemographicTargetingConstants.PROVIDER.BLUEKAI) return false;
+                if (!zemDemographicTaxonomyService.getNodeById(childNode.value)) return false;
             }
 
             return true;

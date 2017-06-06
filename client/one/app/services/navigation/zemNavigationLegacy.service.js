@@ -3,6 +3,12 @@
 
 angular.module('one.services').factory('zemNavigationService', function ($rootScope, $q, zemNavigationLegacyEndpoint) { // eslint-disable-line max-len
 
+    var postoponedUpdates = {
+        accounts: [],
+        campaigns: [],
+        adGroups: []
+    };
+
     var accounts = [];
     var accountsAccess;
 
@@ -191,7 +197,7 @@ angular.module('one.services').factory('zemNavigationService', function ($rootSc
         $rootScope.$emit('navigation-loading', true);
         return zemNavigationLegacyEndpoint.list().then(function (data) {
             accounts = data;
-
+            updatePostponedData();
             notifyCacheUpdate();
             return data;
         }).finally(function () {
@@ -199,9 +205,36 @@ angular.module('one.services').factory('zemNavigationService', function ($rootSc
         });
     }
 
+    function postponeDataUpdate (data) {
+        if (data.account) postoponedUpdates.accounts.push(data.account);
+        if (data.campaign) postoponedUpdates.campaigns.push(data.campaign);
+        if (data.adGroup) postoponedUpdates.adGroups.push(data.adGroup);
+    }
+
+    function updatePostponedData () {
+        postoponedUpdates.accounts.forEach(function (account) {
+            updateModel(findAccountInNavTree(account.id).account, account);
+        });
+        postoponedUpdates.campaigns.forEach(function (campaign) {
+            updateModel(findCampaignInNavTree(campaign.id).campaign, campaign);
+        });
+        postoponedUpdates.adGroups.forEach(function (adGroup) {
+            updateModel(findAdGroupInNavTree(adGroup.id).adGroup, adGroup);
+        });
+
+        postoponedUpdates.accounts = [];
+        postoponedUpdates.campaigns = [];
+        postoponedUpdates.adGroups = [];
+    }
+
+
     function reloadAccount (id) {
         return zemNavigationLegacyEndpoint.getAccount(id).then(function (accountData) {
             var accountCached = findAccountInNavTree(id);
+            if (accounts.length === 0) {
+                postponeDataUpdate(accountData);
+                return accountData;
+            }
             updateModel(accountCached.account, accountData.account);
             notifyCacheUpdate();
             return accountData;
@@ -210,6 +243,10 @@ angular.module('one.services').factory('zemNavigationService', function ($rootSc
 
     function reloadCampaign (id) {
         return zemNavigationLegacyEndpoint.getCampaign(id).then(function (campaignData) {
+            if (accounts.length === 0) {
+                postponeDataUpdate(campaignData);
+                return campaignData;
+            }
             var campaignCached = findCampaignInNavTree(id);
             updateModel(campaignCached.account, campaignData.account);
             updateModel(campaignCached.campaign, campaignData.campaign);
@@ -222,6 +259,10 @@ angular.module('one.services').factory('zemNavigationService', function ($rootSc
         notifyAdGroupReloading(id, true);
 
         return zemNavigationLegacyEndpoint.getAdGroup(id).then(function (adGroupData) {
+            if (accounts.length === 0) {
+                postponeDataUpdate(adGroupData);
+                return adGroupData;
+            }
             var adGroupCached = findAdGroupInNavTree(id);
             updateModel(adGroupCached.account, adGroupData.account);
             updateModel(adGroupCached.campaign, adGroupData.campaign);

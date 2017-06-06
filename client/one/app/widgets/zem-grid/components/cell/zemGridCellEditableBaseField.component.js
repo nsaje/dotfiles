@@ -120,7 +120,12 @@ angular.module('one.widgets').directive('zemGridCellEditableBaseField', function
             }
 
             function filterInput () {
-                if (zemGridDataValidator.validate(vm.editFormInputValue, vm.column.data)) {
+                var options = {
+                    type: vm.column.data.type,
+                    fractionSize: vm.column.data.fractionSize,
+                    maxValue: 999999
+                };
+                if (zemGridDataValidator.validate(vm.editFormInputValue, options)) {
                     prevValidInputValue = vm.editFormInputValue;
                 } else {
                     vm.editFormInputValue = prevValidInputValue;

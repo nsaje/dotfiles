@@ -54,7 +54,7 @@
         </div>
     </div>
 
-    <div ng-if="!$ctrl.isEnabled()">
+    <div ng-if="$ctrl.state && !$ctrl.isEnabled()">
         <button class="button button--with-icon check-icon" ng-click="$ctrl.enable()">
             Enable targeting
         </button>

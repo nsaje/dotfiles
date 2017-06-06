@@ -50,6 +50,7 @@ angular.module('one.widgets').directive('zemGridModal', function ($rootScope, $t
 
         // Focus element with 'focus' attribute
         $timeout(function () {
+            if (!modal) return;
             var inputToFocus = modal.find('[focus]');
             if (inputToFocus.length) {
                 inputToFocus[0].focus();

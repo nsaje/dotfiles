@@ -16,6 +16,7 @@ angular.module('one.widgets').directive('zemGridBody', function (zemGridConstant
             var grid = scope.ctrl.grid;
             var pubsub = grid.meta.pubsub;
 
+            grid.body.visibleRows = [];
             grid.body.ui.numOfRows = calculateNumOfRows();
             grid.body.ui.element = element;
             grid.body.ui.scrollLeft = 0;
@@ -23,8 +24,6 @@ angular.module('one.widgets').directive('zemGridBody', function (zemGridConstant
             scope.state = {
                 renderedRows: [],
             };
-
-            var visibleRows;
 
             function calculateNumOfRows () {
                 // Calculate how much rows we need to fill the entire page
@@ -61,7 +60,7 @@ angular.module('one.widgets').directive('zemGridBody', function (zemGridConstant
             var visibleRowsCount;
 
             function updateVisibleRows () {
-                visibleRows = [];
+                var visibleRows = [];
                 visibleRowsCount = 0;
                 grid.body.rows.forEach(function (row) {
                     if (row.visible) {

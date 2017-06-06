@@ -102,7 +102,7 @@ angular.module('one.widgets').component('zemTreeSelect', {
         }
 
         function initializeDropdownHandler () {
-            $element.focusin(function () {
+            $element.find('.input-text').focusin(function () {
                 if (!$ctrl.dropdownVisible) {
                     toggleDropdown();
                     $scope.$digest();

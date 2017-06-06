@@ -1,4 +1,4 @@
-fdescribe('state: zemDemographicTargetingStateService', function () {
+describe('state: zemDemographicTargetingStateService', function () {
     var zemDemographicTargetingStateService;
     var zemDemographicTaxonomyService;
     var $q;

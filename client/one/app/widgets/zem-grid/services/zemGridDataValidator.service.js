@@ -32,6 +32,9 @@ angular.module('one.widgets').factory('zemGridDataValidator', function (zemGridC
         }
 
         if (currencyRegex.exec(value)) {
+            if (options.maxValue) {
+                return (parseInt(value) || 0) <= options.maxValue;
+            }
             return true;
         }
         return false;

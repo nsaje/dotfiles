@@ -83,6 +83,8 @@ angular.module('one.widgets').controller('ZemUploadStep2Ctrl', function ($scope,
                 if (candidate.id === updatedCandidate.id) return true;
             })[0];
 
+            if (!candidate) return;
+
             if (updatedCandidate.imageStatus !== constants.asyncUploadJobStatus.PENDING_START) {
                 candidate.imageStatus = updatedCandidate.imageStatus;
                 if (updatedCandidate.errors.hasOwnProperty('imageUrl')) {
