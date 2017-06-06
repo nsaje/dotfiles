@@ -1,5 +1,6 @@
 import json
 import logging
+import urllib
 import urllib2
 
 import newrelic.agent
@@ -88,5 +89,8 @@ def _call_api(url, data=None, method='GET'):
     return ret.get('response')
 
 
-def get_adgroup_realtimestats(ad_group_id):
-    return _call_api(settings.K1_REALTIMESTATS_ADGROUP_URL.format(ad_group_id=ad_group_id))
+def get_adgroup_realtimestats(ad_group_id, params={}):
+    url = settings.K1_REALTIMESTATS_ADGROUP_URL.format(ad_group_id=ad_group_id)
+    if params:
+        url += '?' + urllib.urlencode(params)
+    return _call_api(url)

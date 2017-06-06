@@ -1,7 +1,7 @@
 import logging
 from operator import itemgetter
 
-from dash import models
+from dash import constants, models
 from utils import k1_helper
 from utils import redirector_helper
 
@@ -30,7 +30,28 @@ def get_ad_group_sources_stats(ad_group):
 
 def _get_k1_adgroup_stats(ad_group):
     try:
-        stats = k1_helper.get_adgroup_realtimestats(ad_group.id)
+        source_types = [
+            constants.SourceType.OUTBRAIN,
+            constants.SourceType.YAHOO,
+            constants.SourceType.FACEBOOK,
+        ]
+        ad_group_sources = (models.AdGroupSource.objects.select_related('source__source_type')
+                            .filter(ad_group=ad_group)
+                            .filter(source__source_type__type__in=source_types))
+
+        params = {}
+        for ad_group_source in ad_group_sources:
+            if ad_group_source.source.source_type.type == constants.SourceType.OUTBRAIN \
+                    and 'campaign_id' in ad_group_source.source_campaign_key:
+                params['outbrain_campaign_id'] = ad_group_source.source_campaign_key['campaign_id']
+            elif ad_group_source.source.source_type.type == constants.SourceType.YAHOO \
+                    and ad_group_source.source_campaign_key:
+                params['yahoo_campaign_id'] = ad_group_source.source_campaign_key
+            elif ad_group_source.source.source_type.type == constants.SourceType.FACEBOOK \
+                    and ad_group_source.source_campaign_key:
+                params['facebook_campaign_id'] = ad_group_source.source_campaign_key
+
+        stats = k1_helper.get_adgroup_realtimestats(ad_group.id, params)
     except Exception as e:
         logger.exception(e)
         stats = []
