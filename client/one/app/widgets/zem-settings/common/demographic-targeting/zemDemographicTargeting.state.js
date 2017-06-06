@@ -36,7 +36,12 @@ angular.module('one.widgets').service('zemDemographicTargetingStateService', fun
         function createNode (type, parent) {
             var node = {type: type};
             if (type !== zemDemographicTargetingConstants.EXPRESSION_TYPE.CATEGORY) node.childNodes = [];
-            addNodeSorted(node, parent);
+            if (parent) {
+                addNodeSorted(node, parent);
+            } else {
+                state.expressionTree = node;
+            }
+
             update();
             return node;
         }
