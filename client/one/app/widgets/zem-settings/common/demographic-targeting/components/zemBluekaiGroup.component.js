@@ -10,31 +10,31 @@ angular.module('one.widgets').component('zemBluekaiGroup', {
             $ctrl.bluekaiTaxonomy = data;
         });
 
+        $ctrl.getHeaderText = getHeaderText;
         $ctrl.removeGroup = removeGroup;
         $ctrl.onSelectionUpdate = onSelectionUpdate;
 
         $ctrl.$onInit = function () {
-
-            var excludeGroup = false;
             $ctrl.mainGroup = $ctrl.node;
             if ($ctrl.node.type === zemDemographicTargetingConstants.EXPRESSION_TYPE.NOT) {
-                excludeGroup = true;
                 $ctrl.mainGroup = $ctrl.node.childNodes[0];
             }
 
             $ctrl.initialCategories = $ctrl.mainGroup.childNodes.map(function (node) {
                 return node.value;
             });
-
-
-            if ($ctrl.stateService.getState().expressionTree.childNodes[0] === $ctrl.node) {
-                $ctrl.header = excludeGroup ? 'DON\'T target users belonging to any of the following segments:'
-                                            : 'Target users belonging to any of the following segments:';
-            } else {
-                $ctrl.header = excludeGroup ? 'AND DON\'T target users belonging to any of the following segments:'
-                                            : 'AND target users belonging to any of the following segments:';
-            }
         };
+
+        function getHeaderText () {
+            var prefix = 'INCLUDE';
+            if ($ctrl.node.type === zemDemographicTargetingConstants.EXPRESSION_TYPE.NOT) {
+                prefix = 'EXCLUDE';
+            } else if ($ctrl.stateService.getState().expressionTree.childNodes[0] !== $ctrl.node) {
+                prefix = 'AND INCLUDE';
+            }
+
+            return prefix + ' target users belonging to any of the following segments:';
+        }
 
         function onSelectionUpdate (categories) {
             $ctrl.stateService.updateCategories($ctrl.mainGroup, categories,

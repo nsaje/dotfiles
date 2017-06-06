@@ -36,13 +36,20 @@ angular.module('one.widgets').service('zemDemographicTargetingStateService', fun
         function createNode (type, parent) {
             var node = {type: type};
             if (type !== zemDemographicTargetingConstants.EXPRESSION_TYPE.CATEGORY) node.childNodes = [];
-            node.parent = parent;
-
-            if (parent) parent.childNodes.push(node);
-            else state.expressionTree = node;
-
+            addNodeSorted(node, parent);
             update();
             return node;
+        }
+
+        function addNodeSorted (node, parent) {
+            // Push 'NOT' nodes to back
+            node.parent = parent;
+            parent.childNodes.push(node);
+            parent.childNodes.sort(function (n1, n2) {
+                if (n1.type === zemDemographicTargetingConstants.EXPRESSION_TYPE.NOT) return 1;
+                if (n2.type === zemDemographicTargetingConstants.EXPRESSION_TYPE.NOT) return -1;
+                return 0;
+            });
         }
 
         function removeNode (node) {

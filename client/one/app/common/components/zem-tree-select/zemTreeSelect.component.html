@@ -8,6 +8,9 @@
                ng-click="$ctrl.toggleSelection(item); $event.stopPropagation()" href>
             </a>
         </li>
+        <li class="zem-tree-select-list__item" ng-if="!$ctrl.selectedItems.length">
+            <span class="zem-tree-select-list__item-details"> List is currently empty. To add segments click in the field below. </span>
+        </li>
     </ul>
     <div class="search">
         <input type="text" placeholder="Select targeting categories ..." class="input-text"
@@ -56,25 +59,26 @@
         </ul>
 
         <!-- FIXME: Move Info to separate component (transclude) - it depends on demographic/bluekai input data -->
-        <div class="zem-tree-select-dropdown__info">
+        <div class="zem-tree-select-dropdown__info custom-scroller">
             <h2 class="zem-tree-select-dropdown-info__title">{{ $ctrl.highlightedItem.name }}</h2>
             <div class="zem-tree-select-dropdown-info__id">{{ $ctrl.highlightedItem.value.id }}</div>
-            <div class="zem-tree-select-dropdown-info__reach">
-                Reach:
-                <strong>{{ $ctrl.highlightedItem.value.reach }}</strong>
-                <div class="zem-progress-bar">
-                    <div class="zem-progress-bar__progress--background"></div>
-                    <div class="zem-progress-bar__progress" style="width: 5%;"></div>
-                    <div class="zem-progress-bar__legend zem-progress-bar__legend--left">Low</div>
-                    <div class="zem-progress-bar__legend zem-progress-bar__legend--center">Medium</div>
-                    <div class="zem-progress-bar__legend zem-progress-bar__legend--right">High</div>
+            <div class="zem-tree-select-dropdown-info__data-row">
+                CPM price: <strong>${{ $ctrl.highlightedItem.value.price }}</strong>
+            </div>
+            <div class="zem-tree-select-dropdown-info__data-row m-b-s">
+                Reach: <strong>{{ $ctrl.highlightedItem.value.reach }}</strong>
+                <div class="zem-reach-bar">
+                    <div class="zem-reach-bar__progress--background"></div>
+                    <div class="zem-reach-bar__progress" style="width: 5%;"></div>
+                    <div class="zem-reach-bar__legend zem-reach-bar__legend--left">Specific</div>
+                    <div class="zem-reach-bar__legend zem-reach-bar__legend--right">Broad</div>
                 </div>
             </div>
-            <div class="zem-tree-select-dropdown-info__description">
-                {{ $ctrl.highlightedItem.value.description }}
+            <div class="zem-tree-select-dropdown-info__text m-b-s">
+                Category: Media & Entertainment > Sports > Team Sports
             </div>
-            <div class="zem-tree-select-dropdown-info__price">
-                ${{ $ctrl.highlightedItem.value.price }}
+            <div class="zem-tree-select-dropdown-info__text">
+                {{ $ctrl.highlightedItem.value.description }}
             </div>
         </div>
     </div>

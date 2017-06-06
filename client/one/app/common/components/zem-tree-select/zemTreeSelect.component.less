@@ -21,7 +21,7 @@
 .zem-tree-select-list {
     border: solid 1px @light-gray;
     border-bottom: none;
-    height: 150px;
+    max-height: 150px;
     overflow-y: auto;
     padding: 6px 0px;
     margin: 0px;
@@ -188,6 +188,7 @@
     height: 100%;
     background-color: tint(@secondary-color, 90%);
     padding: 10px;
+    overflow: auto;
 }
 
 .zem-tree-select-dropdown-info__title {
@@ -200,19 +201,17 @@
     margin-bottom: 10px;
 }
 
-.zem-tree-select-dropdown-info__reach {
-    margin-bottom: 10px;
-
+.zem-tree-select-dropdown-info__data-row {
     strong {
         font-size: 18px;
         font-weight: 500;
     }
 
-    .zem-progress-bar__progress {
+    .zem-reach-bar__progress {
         background-color:  tint(@secondary-color, 82%);
     }
 }
 
-.zem-tree-select-dropdown-info__description {
+.zem-tree-select-dropdown-info__text {
 
 }

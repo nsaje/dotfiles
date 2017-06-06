@@ -156,6 +156,57 @@ h4 {
 }
 
 ////////////////////////////
+// Reach Bar //
+////////////////////////////
+
+.zem-reach-bar {
+    width: auto;
+    position: relative;
+    height: 24px;
+}
+
+.zem-reach-bar__progress {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: @light-gray;
+    height: 10px;
+    border-top-right-radius: @border-radius;
+    border-bottom-right-radius: @border-radius;
+}
+
+.zem-reach-bar__progress--background {
+    border-radius: @border-radius;
+    position: absolute;
+    .position-properties(0);
+    height: 10px;
+    background: @green; /* Old browsers */
+    background: -moz-linear-gradient(left, @red 0%, @orange 50%, @green 100%);
+    background: -webkit-linear-gradient(left, @red 0%, @orange 50%, @green 100%);
+    background: linear-gradient(to right, @red 0%, @orange 50%, @green 100%);
+}
+
+
+.zem-reach-bar__legend {
+    position: absolute;
+    top: 12px;
+    left: 0;
+    font-size: 9px;
+    color: @gray;
+}
+
+.zem-reach-bar__legend--center {
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.zem-reach-bar__legend--right {
+    right: 0;
+    left: auto;
+}
+
+////////////////////////////
 // Scroll to top button //
 ////////////////////////////
 
@@ -2140,57 +2191,6 @@ h4 {
         width: 500px;
         display: inline-block;
     }
-}
-
-////////////////////////////
-// Progress Bar //
-////////////////////////////
-
-.zem-progress-bar {
-    width: auto;
-    position: relative;
-    height: 24px;
-}
-
-.zem-progress-bar__progress {
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    background-color: @light-gray;
-    height: 10px;
-    border-top-right-radius: @border-radius;
-    border-bottom-right-radius: @border-radius;
-}
-
-.zem-progress-bar__progress--background {
-    border-radius: @border-radius;
-    position: absolute;
-    .position-properties(0);
-    height: 10px;
-    background: @green; /* Old browsers */
-    background: -moz-linear-gradient(left, @red 0%, @orange 50%, @green 100%);
-    background: -webkit-linear-gradient(left, @red 0%, @orange 50%, @green 100%);
-    background: linear-gradient(to right, @red 0%, @orange 50%, @green 100%);
-}
-
-
-.zem-progress-bar__legend {
-    position: absolute;
-    top: 12px;
-    left: 0;
-    font-size: 9px;
-    color: @gray;
-}
-
-.zem-progress-bar__legend--center {
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.zem-progress-bar__legend--right {
-    right: 0;
-    left: auto;
 }
 
 ////////////////////////////

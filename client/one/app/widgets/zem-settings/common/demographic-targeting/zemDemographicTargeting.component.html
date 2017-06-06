@@ -1,24 +1,24 @@
 <div class="custom-panel zem-settings-component__container zem-demographic-targeting">
-    <h2 class="custom-panel__title">Bluekai audience targeting</h2>
-    <div class="custom-panel__description">Setup audience targeting based on Bluekai audience segments. For setting up Liveramp targeting please contact your account manager.</div>
+    <h2 class="custom-panel__title">BlueKai audience targeting</h2>
+    <div class="custom-panel__description">Setup audience targeting based on BlueKai audience segments. For setting up Liveramp targeting please contact your account manager.</div>
 
     <div ng-if="$ctrl.isEnabled()">
         <div ng-if="$ctrl.state.info" class="zem-demographic-targeting__overview">
             <div class="zem-demographic-targeting-overview__box zem-demographic-targeting-overview__box--price">
-                Price:
+                CPM price:
+                <span class="help-popover" zem-lazy-popover-html-unsafe="..." zem-lazy-popover-placement="top" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span>
                 <strong class="zem-demographic-targeting-overview__value">${{$ctrl.state.info.price}}</strong>
             </div>
             <div class="zem-demographic-targeting-overview__box zem-demographic-targeting-overview__box--reach">
                 Reach:
-                <div class="loader" ng-if="!$ctrl.state.info.reach"></div>
-                <span class="zem-demographic-targeting-overview__error" ng-if="$ctrl.state.info.reach.error">Bluekai not accessible at the moment.</span>
                 <strong class="zem-demographic-targeting-overview__value" ng-if="$ctrl.state.info.reach.value">{{$ctrl.state.info.reach.value}}</strong>
-                <div class="zem-progress-bar" ng-if="$ctrl.state.info.reach.relative">
-                    <div class="zem-progress-bar__progress--background"></div>
-                    <div class="zem-progress-bar__progress" ng-style="{width: (100-$ctrl.state.info.reach.relative) + '%'}"></div>
-                    <div class="zem-progress-bar__legend zem-progress-bar__legend--left">Low</div>
-                    <div class="zem-progress-bar__legend zem-progress-bar__legend--center">Medium</div>
-                    <div class="zem-progress-bar__legend zem-progress-bar__legend--right">High</div>
+                <div class="message message--error" ng-if="$ctrl.state.info.reach.error">Bluekai not accessible at the moment.</div>
+                <div class="loader" ng-if="!$ctrl.state.info.reach"></div>
+                <div class="zem-reach-bar" ng-if="$ctrl.state.info.reach.relative">
+                    <div class="zem-reach-bar__progress--background"></div>
+                    <div class="zem-reach-bar__progress" ng-style="{width: (100-$ctrl.state.info.reach.relative) + '%'}"></div>
+                    <div class="zem-reach-bar__legend zem-reach-bar__legend--left">Specific</div>
+                    <div class="zem-reach-bar__legend zem-reach-bar__legend--right">Broad</div>
                 </div>
             </div>
         </div>
@@ -37,7 +37,7 @@
                 <a class="alternative-link"
                         ng-if="$ctrl.canAddInclusion()"
                         ng-click="$ctrl.addInclusion()">
-                    Include audience
+                    Narrow audience
                 </a>
                 <span class="v-line" ng-if="$ctrl.canAddInclusion() && $ctrl.canAddExclusion()"></span>
                 <a class="alternative-link"
