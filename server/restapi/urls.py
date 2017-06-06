@@ -6,6 +6,7 @@ import dash.features.videoassets.urls
 import dash.features.bluekai.urls
 from dash.features.bulkactions import clonecontent
 from dash.features import cloneadgroup
+from dash.features import realtimestats
 
 urlpatterns = [
     url(
@@ -84,11 +85,6 @@ urlpatterns = [
         name='publishers_list'
     ),
     url(
-        r'^v1/adgroups/(?P<ad_group_id>\d+)/realtimestats/$',
-        views.AdGroupRealtimeStatsView.as_view(),
-        name='adgroups_realtimestats'
-    ),
-    url(
         r'^v1/contentads/batch/$',
         views.ContentAdBatchViewList.as_view(),
         name='contentads_batch_list'
@@ -151,3 +147,4 @@ urlpatterns += clonecontent.urls.urlpatterns
 urlpatterns += cloneadgroup.urls.urlpatterns
 urlpatterns += dash.features.videoassets.urls.urlpatterns
 urlpatterns += dash.features.bluekai.urls.urlpatterns
+urlpatterns += realtimestats.urls.urlpatterns

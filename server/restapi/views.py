@@ -5,7 +5,6 @@ import ipware.ip
 import time
 
 from django.db import transaction
-from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
@@ -17,7 +16,7 @@ from rest_framework import exceptions
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
 
-from utils import json_helper, exc, dates_helper, redirector_helper, bidder_helper
+from utils import json_helper, exc, dates_helper
 
 from dash.views import agency, bulk_actions, views, bcm, helpers, publishers
 from dash import campaign_goals
@@ -37,9 +36,6 @@ import fields
 import dash.features.geolocation
 
 logger = logging.getLogger(__name__)
-
-
-REALTIME_STATS_AGENCIES = [55, 78]
 
 
 class RESTAPIJSONRenderer(JSONRenderer):
@@ -791,28 +787,6 @@ class PublisherSerializer(serializers.Serializer):
         view_internal = publishers.PublisherTargeting(rest_proxy=True)
         request.body = RESTAPIJSONRenderer().render(post_data)
         data_internal, status_code = view_internal.post(request)
-
-
-class AdGroupRealtimeStatsSerializer(serializers.Serializer):
-    spend = serializers.DecimalField(20, 2)
-    clicks = serializers.IntegerField()
-
-
-class AdGroupRealtimeStatsView(RESTAPIBaseView):
-    """ Outbrain only """
-    renderer_classes = (CamelCaseJSONRenderer,)
-
-    def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
-
-        # agency check
-        if ad_group.campaign.account.agency_id not in REALTIME_STATS_AGENCIES:
-            raise Http404()
-
-        stats = {}
-        stats.update(redirector_helper.get_adgroup_realtimestats(ad_group.id))
-        stats.update(bidder_helper.get_adgroup_realtimespend(ad_group.id))
-        return self.response_ok(AdGroupRealtimeStatsSerializer(stats).data)
 
 
 class PublishersViewList(RESTAPIBaseView):

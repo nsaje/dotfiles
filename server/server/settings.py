@@ -376,17 +376,6 @@ OAUTH2_PROVIDER = {
     'SCOPES': {'read': 'Read scope', 'write': 'Write scope'}
 }
 
-REST_FRAMEWORK = {
-    'UNICODE_JSON': False,
-    'EXCEPTION_HANDLER': 'restapi.exceptions.custom_exception_handler',
-    'DEFAULT_THROTTLE_CLASSES': (
-        'rest_framework.throttling.UserRateThrottle',
-    ),
-    'DEFAULT_THROTTLE_RATES': {
-        'user': '20/second'
-    }
-}
-
 CELERY_TASK_SERIALIZER = 'pickle'
 CELERY_RESULT_SERIALIZER = 'pickle'
 CELERY_ACCEPT_CONTENT = {'pickle'}

@@ -39,7 +39,6 @@ from dash import constants
 from dash import api
 from dash import forms
 from dash import infobox_helpers
-from dash.features import realtimestats
 
 import analytics.projections
 
@@ -356,8 +355,6 @@ class AdGroupOverview(api_common.BaseApiView):
     def _performance_settings(self, ad_group, user, ad_group_settings, start_date, end_date,
                               daily_cap, async_query, filtered_sources):
         settings = []
-
-        settings.extend(realtimestats.get_adgroup_infobox_spend(user, ad_group, filtered_sources))
 
         async_query.join()
         yesterday_cost = async_query.yesterday_cost

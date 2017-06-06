@@ -290,3 +290,14 @@ INFLUX_DATABASES = {
 BLUEKAI_API_PARTNER_ID = '2661'
 BLUEKAI_API_USER_KEY = '3956332bd95021a9ad6f9ed4029cd7fb4d6e8354'
 BLUEKAI_API_SECRET_KEY = Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAKIwgZ8GCSqGSIb3DQEHBqCBkTCBjgIBADCBiAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwU4iH/qrCVZeygTyoCARCAW77zWNJzDXcJsVW3vhVV/MQYziSRj102+GAz9x3VM03VP70dvIgwFtAyNVTJnZUH/GkA4p2YydiJS2+PmZKKcobeO6MT/9SDPa/vGRZsOfsvZu4kioV2DpqU5Nk=').get()
+
+REST_FRAMEWORK = {
+    'UNICODE_JSON': False,
+    'EXCEPTION_HANDLER': 'restapi.exceptions.custom_exception_handler',
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.UserRateThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '20/second'
+    }
+}
