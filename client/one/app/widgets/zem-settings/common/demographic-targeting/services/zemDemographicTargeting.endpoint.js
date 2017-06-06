@@ -33,8 +33,8 @@ angular.module('one.widgets').service('zemDemographicTargetingEndpoint', functio
             reach.relative = getRelativeReach(reach.value);
             REACH_CACHE[cacheKey] = reach;
             deferred.resolve(reach);
-        }).error(function () {
-            deferred.reject();
+        }).error(function (err) {
+            deferred.reject(err);
         });
 
         getReach.deferred = deferred;

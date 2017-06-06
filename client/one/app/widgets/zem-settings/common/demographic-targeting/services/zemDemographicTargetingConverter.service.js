@@ -47,7 +47,7 @@ angular.module('one.widgets').service('zemDemographicTargetingConverter', functi
 
         var childs = node.childNodes.map(formatNode).filter(function (n) { return n; });
         if (childs.length > 0) {
-            formattedNode[node.type.toUpperCase()] = childs;
+            formattedNode[node.type] = childs;
             return formattedNode;
         }
         return null;

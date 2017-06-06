@@ -96,6 +96,12 @@ angular.module('one.widgets').service('zemDemographicTargetingStateService', fun
                     value: $filter('number')(data.value),
                     relative: data.relative
                 };
+            }, function (error) {
+                if (!error) return; // Promise aborted
+
+                state.info.reach = {
+                    error: true
+                };
             });
         }
 

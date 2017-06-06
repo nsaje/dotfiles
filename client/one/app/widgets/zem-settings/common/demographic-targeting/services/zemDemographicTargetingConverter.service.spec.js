@@ -2,10 +2,10 @@ describe('state: zemDemographicTargetingStateService', function () {
     var zemDemographicTargetingConverter;
 
     var testApiData = {
-        AND: [
-            {OR: [{category: 'bluekai: 123'}, {category: 'bluekai: 234'}]},
-            {OR: [{category: 'bluekai: 345'}]},
-            {NOT: [{OR: [{category: 'bluekai: 432'}]}]}
+        and: [
+            {or: [{category: 'bluekai: 123'}, {category: 'bluekai: 234'}]},
+            {or: [{category: 'bluekai: 345'}]},
+            {not: [{or: [{category: 'bluekai: 432'}]}]}
         ]
     };
 

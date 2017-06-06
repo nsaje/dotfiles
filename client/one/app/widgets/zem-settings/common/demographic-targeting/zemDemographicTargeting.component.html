@@ -10,9 +10,10 @@
             </div>
             <div class="zem-demographic-targeting-overview__box zem-demographic-targeting-overview__box--reach">
                 Reach:
-                <div class="loader" ng-if="$ctrl.state.info.reach === undefined"></div>
-                <strong class="zem-demographic-targeting-overview__value" ng-if="$ctrl.state.info.reach !== undefined">{{$ctrl.state.info.reach.value}}</strong>
-                <div class="zem-progress-bar" ng-if="$ctrl.state.info.reach !== undefined">
+                <div class="loader" ng-if="!$ctrl.state.info.reach"></div>
+                <span class="zem-demographic-targeting-overview__error" ng-if="$ctrl.state.info.reach.error">Bluekai not accessible at the moment.</span>
+                <strong class="zem-demographic-targeting-overview__value" ng-if="$ctrl.state.info.reach.value">{{$ctrl.state.info.reach.value}}</strong>
+                <div class="zem-progress-bar" ng-if="$ctrl.state.info.reach.relative">
                     <div class="zem-progress-bar__progress--background"></div>
                     <div class="zem-progress-bar__progress" ng-style="{width: (100-$ctrl.state.info.reach.relative) + '%'}"></div>
                     <div class="zem-progress-bar__legend zem-progress-bar__legend--left">Low</div>
