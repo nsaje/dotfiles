@@ -44,7 +44,7 @@ class VideoAsset(models.Model):
                 'ContentType': 'application/octet-stream',
                 'Metadata': {
                     'videoassetid': str(self.id),
-                    'callbackurl': settings.LAMBDA_CALLBACK_HOST,
+                    'callbackhost': settings.LAMBDA_CALLBACK_HOST,
                     'environment': settings.LAMBDA_ENVIRONMENT,
                 },
             }
