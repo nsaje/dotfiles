@@ -42,12 +42,8 @@ angular.module('one.widgets').service('zemDemographicTargetingEndpoint', functio
     }
 
     function getRelativeReach (reach) {
-        var mid = Math.pow(10, 9);
-        var max = 5 * Math.pow(10, 9);
-        if (reach > mid) {
-            return 50 + Math.ceil((reach - mid) / (max - mid) * 100 / 2);
-        }
-
-        return Math.ceil(reach / mid * 100 / 2);
+        var x = reach / 10000000;
+        var relative  = 1 - (1 / (x + 1));
+        return Math.round(relative * 100);
     }
 });
