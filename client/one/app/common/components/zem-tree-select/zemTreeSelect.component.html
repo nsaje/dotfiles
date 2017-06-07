@@ -66,7 +66,7 @@
                 CPM price: <strong>${{ $ctrl.highlightedItem.value.price }}</strong>
             </div>
             <div class="zem-tree-select-dropdown-info__data-row m-b-s">
-                Reach: <strong>{{ $ctrl.highlightedItem.value.reach }}</strong>
+                Reach: <strong>{{ $ctrl.highlightedItem.value.reach | number }}</strong>
                 <div class="zem-reach-bar">
                     <div class="zem-reach-bar__progress--background"></div>
                     <div class="zem-reach-bar__progress" style="width: 5%;"></div>
