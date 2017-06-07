@@ -41,7 +41,12 @@ class VideoAsset(models.Model):
             Params={
                 'Bucket': settings.S3_BUCKET_VIDEO,
                 'Key': S3_UPLOAD_PATH_FORMAT.format(videoasset_id=self.id),
-                'ContentType': 'application/octet-stream'
+                'ContentType': 'application/octet-stream',
+                'Metadata': {
+                    'videoassetid': str(self.id),
+                    'callbackurl': settings.LAMBDA_CALLBACK_HOST,
+                    'environment': settings.LAMBDA_ENVIRONMENT,
+                },
             }
         )
         return url
