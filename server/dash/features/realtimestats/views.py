@@ -1,5 +1,6 @@
 from django.http import Http404
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
+from rest_framework import permissions
 
 from restapi.views import RESTAPIBaseView
 
@@ -28,6 +29,7 @@ class AdGroupRealtimeStatsView(RESTAPIBaseView):
 
 class AdGroupSourcesRealtimeStatsView(RESTAPIBaseView):
     renderer_classes = (CamelCaseJSONRenderer,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)

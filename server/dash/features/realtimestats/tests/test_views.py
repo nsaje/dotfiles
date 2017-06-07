@@ -1,11 +1,13 @@
 import mock
 
+from django.contrib.auth.models import Permission
 from django.core.urlresolvers import reverse
 
 from restapi.test_views import RESTAPITest
 
 from dash import models
 from dash.features import realtimestats
+from zemauth.models import User
 
 
 class RealtimestatsViewsTest(RESTAPITest):
@@ -30,6 +32,10 @@ class RealtimestatsViewsTest(RESTAPITest):
 
     @mock.patch('dash.features.realtimestats.service.get_ad_group_sources_stats')
     def test_adgroup_sources_realtimestats(self, mock_get):
+        permission = Permission.objects.get(codename='can_use_restapi')
+        user = User.objects.get(pk=1)
+        user.user_permissions.remove(permission)
+
         data = [{'source': 's1', 'spend': 12.3}, {'source': 's2', 'spend': 0.1}]
 
         mock_get.return_value = data
