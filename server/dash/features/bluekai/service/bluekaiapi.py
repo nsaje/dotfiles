@@ -83,10 +83,37 @@ def _perform_request(method, url, params=None, data=''):
 
 
 def _transform_expression(expression):
+    expression = _transform_expression_recur(expression)
+    return _format_expression(expression)
+
+
+def _format_expression(expression):
+    if expression.keys() == ['OR']:
+        expression = {'AND': [{'AND': [expression]}]}
+    elif expression.keys() == ['NOT'] or\
+        (expression.keys() == ['AND'] and
+         any(el.keys() == ['OR'] for el in expression['AND'])):
+        expression = {'AND': [expression]}
+
+    for subexp in expression['AND']:
+        if subexp.keys() != ['AND']:
+            continue
+
+        for i, subsubexp in enumerate(subexp['AND']):
+            if subsubexp.keys() == ['NOT']:
+                # extract NOT into top level AND
+                expression['AND'][0]['AND'].pop(i)
+                expression['AND'].append(subsubexp)
+                break
+
+    return expression
+
+
+def _transform_expression_recur(expression):
     if isinstance(expression, basestring) and expression.startswith('bluekai:'):
         return {'cat': int(expression.replace('bluekai:', ''))}
     operator = expression[0].upper()
-    subexpression = [_transform_expression(s) for s in expression[1:]]
+    subexpression = [_transform_expression_recur(s) for s in expression[1:]]
     if operator == 'NOT':
         # NOT must hold a dict instead of a list
         return {
