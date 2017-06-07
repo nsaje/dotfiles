@@ -370,6 +370,7 @@
     primary_tracker_url: 'https://t.zemanta.com/px1.png'
     secondary_tracker_url: 'https://t.zemanta.com/px2.png'
     image_id: 'abc12345'
+    video_asset: '12345678-abcd-1234-abcd-123abcd12345'
   model: dash.contentadcandidate
   pk: 2
 
@@ -463,5 +464,16 @@
     secondary_tracker_url: 'https://t.zemanta.com/px2.png'
     image_id: 'abc12345'
     original_content_ad_id: 2
+    video_asset: '12345678-abcd-1234-abcd-123abcd12345'
   model: dash.contentadcandidate
   pk: 6
+
+# video assets
+- fields:
+    account: 1
+    created_dt: '2017-06-06T09:00:00'
+    modified_dt: '2017-06-06T09:00:00'
+    status: 2
+    name: 'Successfully processed video'
+  model: dash.videoasset
+  pk: '12345678-abcd-1234-abcd-123abcd12345'

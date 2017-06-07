@@ -18,9 +18,9 @@
             <table class="custom-table content-upload__ads-table">
                 <tr ng-repeat="candidate in ctrl.candidates" ng-class="{'content-upload__selected-ad': candidate.id === ctrl.editFormApi.selectedId}" ng-click="ctrl.editFormApi.open(candidate)">
                     <td class="content-upload__ad-status" ng-class="{
-                        'content-upload__ad-status--loading': ctrl.getStatus(candidate) === 'loading',
-                        'content-upload__ad-status--ok': ctrl.getStatus(candidate) === 'ok',
-                        'content-upload__ad-status--error': ctrl.getStatus(candidate) === 'errors'
+                        'content-upload__ad-status--loading': ctrl.isCandidateStatusLoading(candidate),
+                        'content-upload__ad-status--ok': ctrl.isCandidateStatusOk(candidate),
+                        'content-upload__ad-status--error': ctrl.isCandidateStatusError(candidate)
                     }">
                     </td>
                     <td class="content-upload__ad-image-container">
@@ -65,7 +65,14 @@
             </div>
         </div>
 
-        <zem-upload-edit-form endpoint="ctrl.endpoint" api="ctrl.editFormApi" update-callback="ctrl.updateCandidateCallback" refresh-callback="ctrl.refreshCandidatesCallback" batch-id="ctrl.batchId" is-edit="ctrl.isEdit"></zem-upload-edit-form>
+        <zem-upload-edit-form endpoint="ctrl.endpoint"
+                              api="ctrl.editFormApi"
+                              update-callback="ctrl.updateCandidateCallback"
+                              refresh-callback="ctrl.refreshCandidatesCallback"
+                              start-polling-video-asset-status="ctrl.startPollingVideoAssetStatus"
+                              batch-id="ctrl.batchId"
+                              is-edit="ctrl.isEdit">
+        </zem-upload-edit-form>
         <div class="clear"></div>
     </div>
     <div class="modal__footer buttons-panel">

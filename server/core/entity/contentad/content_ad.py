@@ -106,6 +106,8 @@ class ContentAd(models.Model):
     image_crop = models.CharField(
         max_length=25, default=constants.ImageCrop.CENTER)
 
+    video_asset = models.ForeignKey('VideoAsset', blank=True, null=True, on_delete=models.PROTECT)
+
     redirect_id = models.CharField(max_length=128, null=True)
 
     created_dt = models.DateTimeField(
@@ -184,6 +186,7 @@ class ContentAd(models.Model):
             'image_width': self.image_width,
             'image_height': self.image_height,
             'image_crop': self.image_crop,
+            'video_asset_id': str(self.video_asset.id) if self.video_asset else None,
             'display_url': self.display_url,
             'description': self.description,
             'brand_name': self.brand_name,

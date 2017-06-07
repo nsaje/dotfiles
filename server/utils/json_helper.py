@@ -3,6 +3,7 @@ import datetime
 import decimal
 import json
 import pytz
+import uuid
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -25,6 +26,8 @@ class JSONEncoder(json.JSONEncoder):
         elif isinstance(obj, (datetime.date, datetime.time)):
             return obj.isoformat()
         elif isinstance(obj, decimal.Decimal):
+            return str(obj)
+        elif isinstance(obj, uuid.UUID):
             return str(obj)
         else:
             return json.JSONEncoder.default(self, obj)

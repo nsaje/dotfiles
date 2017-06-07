@@ -16,6 +16,7 @@ from dash import models
 from utils import test_helper
 from zemauth.models import User
 from utils.test_helper import ListMatcher
+from utils.magic_mixer import magic_mixer
 
 EXAMPLE_CSV_CONTENT = [
     forms.EXAMPLE_CSV_CONTENT['url'],
@@ -1023,6 +1024,7 @@ class ContentAdCandidateFormTestCase(TestCase):
             'call_to_action': 'Read more',
             'primary_tracker_url': 'https://zemanta.com/px1',
             'secondary_tracker_url': 'https://zemanta.com/px2',
+            'video_asset_id': '12345678-abcd-1234-abcd-123abcd12345',
         }
         files = {
             'image': self.valid_image,
@@ -1030,6 +1032,8 @@ class ContentAdCandidateFormTestCase(TestCase):
         return data, files
 
     def setUp(self):
+        magic_mixer.blend(models.VideoAsset, id='12345678-abcd-1234-abcd-123abcd12345')
+
         self.valid_image = SimpleUploadedFile(
             name='test.jpg',
             content=open('./dash/tests/test.jpg').read(),
@@ -1051,6 +1055,7 @@ class ContentAdCandidateFormTestCase(TestCase):
             'image': self.valid_image,
             'image_url': 'http://zemanta.com/img.jpg',
             'image_crop': 'center',
+            'video_asset_id': '12345678-abcd-1234-abcd-123abcd12345',
             'display_url': 'zemanta.com',
             'brand_name': 'Zemanta',
             'description': 'Description',

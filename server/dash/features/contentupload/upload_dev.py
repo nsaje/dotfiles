@@ -11,7 +11,7 @@ from dash import constants
 class MockAsyncValidation(threading.Thread):
 
     def __init__(self, candidate, batch_callback, fail_probability=0.0, sleep_time=None, *args, **kwargs):
-        assert settings.DEBUG
+        assert settings.DEBUG or settings.TESTING
         super(MockAsyncValidation, self).__init__(*args, **kwargs)
         self.candidate = candidate
         self.batch_callback = batch_callback

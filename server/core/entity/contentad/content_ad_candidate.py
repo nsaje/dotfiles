@@ -19,6 +19,8 @@ class ContentAdCandidate(core.common.FootprintModel):
     image_crop = models.TextField(
         null=True, blank=True, default=constants.ImageCrop.CENTER)
 
+    video_asset = models.ForeignKey('VideoAsset', blank=True, null=True, on_delete=models.PROTECT)
+
     display_url = models.TextField(null=True, blank=True, default="")
     brand_name = models.TextField(null=True, blank=True, default="")
     description = models.TextField(null=True, blank=True, default="")
@@ -63,6 +65,7 @@ class ContentAdCandidate(core.common.FootprintModel):
             'image_width': self.image_width,
             'image_height': self.image_height,
             'image_crop': self.image_crop,
+            'video_asset_id': str(self.video_asset.id) if self.video_asset else None,
             'display_url': self.display_url,
             'description': self.description,
             'brand_name': self.brand_name,

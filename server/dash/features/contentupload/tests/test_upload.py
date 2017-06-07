@@ -430,6 +430,7 @@ class AddCandidateTestCase(TestCase):
             'image_status': constants.AsyncUploadJobStatus.PENDING_START,
             'url_status': constants.AsyncUploadJobStatus.PENDING_START,
             'hosted_image_url': None,
+            'video_asset_id': None,
         }, candidate.to_dict())
 
     def test_with_defaults(self):
@@ -464,6 +465,7 @@ class AddCandidateTestCase(TestCase):
             'image_status': constants.AsyncUploadJobStatus.PENDING_START,
             'url_status': constants.AsyncUploadJobStatus.PENDING_START,
             'hosted_image_url': None,
+            'video_asset_id': None,
         }, candidate.to_dict())
 
 
@@ -503,6 +505,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
             'url_status': constants.AsyncUploadJobStatus.WAITING_RESPONSE,
             'image_status': constants.AsyncUploadJobStatus.WAITING_RESPONSE,
             'id': candidates[0].id,
+            'video_asset_id': None,
         }], result)
 
     @patch('utils.lambda_helper.invoke_lambda', Mock())
@@ -548,6 +551,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
             'image_status': constants.AsyncUploadJobStatus.WAITING_RESPONSE,
             'secondary_tracker_url': 'http://example.com/px2.png',
             'id': candidates[0].id,
+            'video_asset_id': None,
         }], result)
 
 

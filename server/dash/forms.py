@@ -1444,6 +1444,8 @@ class ContentAdCandidateForm(forms.ModelForm):
             'invalid_image': 'Invalid image file',
         }
     )
+    # TODO: Set queryset in __init__ to filter video assets by account
+    video_asset_id = forms.ModelChoiceField(queryset=models.VideoAsset.objects.all(), required=False)
 
     def __init__(self, data, files=None):
         if files and 'image' in files:
@@ -1456,6 +1458,10 @@ class ContentAdCandidateForm(forms.ModelForm):
             return constants.ImageCrop.CENTER
 
         return image_crop.lower()
+
+    def clean_video_asset_id(self):
+        video_asset = self.cleaned_data.get('video_asset_id')
+        return str(video_asset.id) if video_asset else None
 
     def clean_call_to_action(self):
         call_to_action = self.cleaned_data.get('call_to_action')
@@ -1472,6 +1478,7 @@ class ContentAdCandidateForm(forms.ModelForm):
             'title',
             'image_url',
             'image_crop',
+            'video_asset_id',
             'display_url',
             'brand_name',
             'description',
@@ -1515,6 +1522,8 @@ class ContentAdForm(ContentAdCandidateForm):
             'required': 'Choose a valid image crop',
         },
     )
+    # TODO: Set queryset in __init__ to filter video assets by account
+    video_asset_id = forms.ModelChoiceField(queryset=models.VideoAsset.objects.all(), required=False)
     display_url = DisplayURLField(
         error_messages={
             'required': 'Missing display URL',
@@ -1680,6 +1689,10 @@ class ContentAdForm(ContentAdCandidateForm):
         secondary_tracker_url = self.cleaned_data.get('secondary_tracker_url')
         if secondary_tracker_url:
             cleaned_data['tracker_urls'].append(secondary_tracker_url)
+
+    def clean_video_asset_id(self):
+        video_asset = self.cleaned_data.get('video_asset_id')
+        return str(video_asset.id) if video_asset else None
 
     def clean(self):
         cleaned_data = super(ContentAdForm, self).clean()

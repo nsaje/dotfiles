@@ -11,6 +11,7 @@ angular.module('one.widgets').directive('zemUploadEditForm', function () { // es
             endpoint: '=',
             refreshCallback: '=',
             updateCallback: '=',
+            startPollingVideoAssetStatus: '=',
             batchId: '=',
             isEdit: '=',
         },
@@ -60,10 +61,6 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
     vm.api.open = open;
     vm.api.close = refreshAndClose;
 
-    $scope.$on('$destroy', function () {
-        stopVideoStatusPolling();
-    });
-
     function open (candidate) {
         vm.requestFailed = false;
         vm.selectedCandidate = candidate;
@@ -86,7 +83,6 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
     }
 
     function close () {
-        stopVideoStatusPolling();
         vm.api.selectedId = null;
         vm.selectedCandidate = null;
     }
@@ -213,48 +209,30 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
     // TODO (Bajt): Add cancel upload functionality
 
     vm.videoUploadCallback = function (file) {
-        vm.selectedCandidate.video = {
+        // Save reference to the candidate to which video is uploaded to be available in async closures
+        var candidate = vm.selectedCandidate;
+        candidate.videoUploadProgress = 0;
+        candidate.videoAsset = {
             status: constants.videoAssetStatus.NOT_UPLOADED,
-            uploadProgress: 0,
         };
-        vm.fieldsApiErrors['video'] = false;
-        vm.endpoint.uploadVideo(file, updateVideoUploadProgressBar)
-            .then(function (video) {
-                vm.selectedCandidate.video.name = video.name;
-                pollVideoStatus(video.id);
+
+        vm.fieldsApiErrors['videoAssetId'] = false;
+
+        vm.endpoint.uploadVideo(
+                file,
+                function updateUploadProgress (event) {
+                    candidate.videoUploadProgress = Math.round(event.loaded / event.total * 100);
+                }
+            )
+            .then(function (videoAsset) {
+                candidate.videoAsset = videoAsset;
+                candidate.videoAssetId = videoAsset.id;
+                vm.updateField('videoAssetId');
+                vm.startPollingVideoAssetStatus(candidate);
             })
             .catch(function () {
-                vm.fieldsApiErrors['video'] = true;
-                delete vm.selectedCandidate.video;
+                vm.fieldsApiErrors['videoAssetId'] = true;
+                delete candidate.videoAsset;
             });
     };
-
-    function updateVideoUploadProgressBar (event) {
-        var progress = Math.round(event.loaded / event.total * 100);
-        vm.selectedCandidate.video.uploadProgress = progress;
-    }
-
-    // TODO (Bajt): Handle status polling when editing multiple candidates
-    function pollVideoStatus (id) {
-        vm.endpoint.getVideoAsset(id)
-            .then(function (videoAsset) {
-                if (vm.selectedCandidate.video.status !== videoAsset.status) {
-                    vm.selectedCandidate.video.status = videoAsset.status;
-                    vm.selectedCandidate.video.statusMessage = videoAsset.statusMessage;
-                }
-
-                if (vm.selectedCandidate.video.status === constants.videoAssetStatus.NOT_UPLOADED
-                    || vm.selectedCandidate.video.status === constants.videoAssetStatus.PROCESSING) {
-                    vm.selectedCandidate.video.statusPollingTimeout = $timeout(function () {
-                        pollVideoStatus(id);
-                    }, 2000);
-                }
-            });
-    }
-
-    function stopVideoStatusPolling () {
-        if (vm.selectedCandidate && vm.selectedCandidate.video && vm.selectedCandidate.video.statusPollingTimeout) {
-            $timeout.cancel(vm.selectedCandidate.video.statusPollingTimeout);
-        }
-    }
 });

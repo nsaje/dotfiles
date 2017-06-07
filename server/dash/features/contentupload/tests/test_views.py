@@ -696,6 +696,7 @@ class CandidateTest(TestCase):
                     u'url_status': constants.AsyncUploadJobStatus.PENDING_START,
                     u'primary_tracker_url': None,
                     u'secondary_tracker_url': None,
+                    u'video_asset_id': None,
                 }]
             },
             u'success': True,
@@ -741,6 +742,7 @@ class CandidateTest(TestCase):
                     'image_status': constants.AsyncUploadJobStatus.PENDING_START,
                     'url_status': constants.AsyncUploadJobStatus.PENDING_START,
                     'hosted_image_url': None,
+                    'video_asset_id': None,
                 }
             },
             'success': True,

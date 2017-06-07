@@ -50,6 +50,11 @@ angular.module('one.widgets').controller('ZemUploadStep2Ctrl', function ($scope,
     vm.saveErrors = null;
     vm.editFormApi = {};
 
+    vm.startPollingVideoAssetStatus = startPollingVideoAssetStatus;
+    vm.isCandidateStatusLoading = isCandidateStatusLoading;
+    vm.isCandidateStatusOk = isCandidateStatusOk;
+    vm.isCandidateStatusError = isCandidateStatusError;
+
     vm.pollInterval = null;
     vm.startPolling = function () {
         if (vm.pollInterval !== null) {
@@ -76,6 +81,68 @@ angular.module('one.widgets').controller('ZemUploadStep2Ctrl', function ($scope,
             vm.pollInterval = null;
         }
     };
+
+    function startPollingVideoAssetStatus (candidate) {
+        if (candidate.videoAssetStatusPollerInterval) return;
+        candidate.videoAssetStatusPollerInterval = $interval(function () {
+            videoAssetStatusPoller(candidate);
+        }, 2000);
+    }
+
+    function stopPollingVideoAssetStatus (candidate) {
+        if (candidate && candidate.videoAssetStatusPollerInterval) {
+            $interval.cancel(candidate.videoAssetStatusPollerInterval);
+            candidate.videoAssetStatusPollerInterval = null;
+        }
+    }
+
+    function stopPollingAllVideoAssetsStatuses () {
+        vm.candidates.forEach(function (candidate) {
+            stopPollingVideoAssetStatus(candidate);
+        });
+    }
+
+    function videoAssetStatusPoller (candidate) {
+        vm.endpoint.getVideoAsset(candidate.videoAsset.id)
+            .then(function (asset) {
+                candidate.videoAsset = asset;
+                if (!isVideoAssetBeingProcessed(candidate)) {
+                    stopPollingVideoAssetStatus(candidate);
+                }
+            });
+    }
+
+    function isVideoAssetBeingProcessed (candidate) {
+        return !!candidate.videoAsset
+               && !isVideoAssetReadyForUse(candidate)
+               && !isVideoAssetProcessingErrorPresent(candidate);
+    }
+
+    function isVideoAssetReadyForUse (candidate) {
+        return !!candidate.videoAsset && candidate.videoAsset.status === constants.videoAssetStatus.READY_FOR_USE;
+    }
+
+    function isVideoAssetProcessingErrorPresent (candidate) {
+        return !!candidate.videoAsset && candidate.videoAsset.status === constants.videoAssetStatus.PROCESSING_ERROR;
+    }
+
+    function isAnyVideoAssetBeingProcessed () {
+        for (var i = 0; i < vm.candidates.length; i++) {
+            if (isVideoAssetBeingProcessed(vm.candidates[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function areAnyVideoAssetProcessingErrorsPresent () {
+        for (var i = 0; i < vm.candidates.length; i++) {
+            if (isVideoAssetProcessingErrorPresent(vm.candidates[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     function updateCandidatesStatuses (updatedCandidates) {
         angular.forEach(updatedCandidates, function (updatedCandidate) {
@@ -137,7 +204,7 @@ angular.module('one.widgets').controller('ZemUploadStep2Ctrl', function ($scope,
 
     function getWaitingCandidateIds () {
         var ret = vm.candidates.filter(function (candidate) {
-            if (vm.getStatus(candidate) === constants.contentAdCandidateStatus.LOADING) {
+            if (getAsyncUploadJobStatus(candidate) === constants.contentAdCandidateStatus.LOADING) {
                 return true;
             }
             return false;
@@ -161,14 +228,16 @@ angular.module('one.widgets').controller('ZemUploadStep2Ctrl', function ($scope,
 
     vm.isLoading = function () {
         return getWaitingCandidateIds().length ||
-            vm.editFormApi.requestInProgress ||
-            vm.saveRequestInProgress;
+               isAnyVideoAssetBeingProcessed() ||
+               vm.editFormApi.requestInProgress ||
+               vm.saveRequestInProgress;
     };
 
     vm.isSaveDisabled = function () {
         return vm.isLoading() ||
-            !vm.candidates.length ||
-            checkAllCandidateErrors();
+               isAnyVideoAssetBeingProcessed() ||
+               !vm.candidates.length ||
+               checkAllCandidateErrors();
     };
 
     vm.removeCandidate = function (candidate, event) {
@@ -176,6 +245,8 @@ angular.module('one.widgets').controller('ZemUploadStep2Ctrl', function ($scope,
 
         candidate.removeRequestInProgress = true;
         candidate.removeRequestFailed = false;
+
+        stopPollingVideoAssetStatus(candidate);
 
         if (vm.editFormApi && vm.editFormApi.selectedId === candidate.id) {
             vm.editFormApi.close();
@@ -238,10 +309,36 @@ angular.module('one.widgets').controller('ZemUploadStep2Ctrl', function ($scope,
             }
         }
 
+        if (areAnyVideoAssetProcessingErrorsPresent()) {
+            return true;
+        }
+
         return false;
     };
 
-    vm.getStatus = function (candidate) {
+    function isCandidateStatusLoading (candidate) {
+        var asyncUploadJobStatus = getAsyncUploadJobStatus(candidate);
+        return asyncUploadJobStatus === constants.contentAdCandidateStatus.LOADING
+               || isVideoAssetBeingProcessed(candidate);
+    }
+
+    function isCandidateStatusOk (candidate) {
+        if (isCandidateStatusLoading(candidate)) return false;
+
+        var asyncUploadJobStatus = getAsyncUploadJobStatus(candidate);
+        return asyncUploadJobStatus === constants.contentAdCandidateStatus.OK
+               && isVideoAssetReadyForUse(candidate);
+    }
+
+    function isCandidateStatusError (candidate) {
+        if (isCandidateStatusLoading(candidate)) return false;
+
+        var asyncUploadJobStatus = getAsyncUploadJobStatus(candidate);
+        return asyncUploadJobStatus === constants.contentAdCandidateStatus.ERRORS
+               || isVideoAssetProcessingErrorPresent(candidate);
+    }
+
+    function getAsyncUploadJobStatus (candidate) {
         if (candidate.imageStatus === constants.asyncUploadJobStatus.PENDING_START &&
             candidate.urlStatus === constants.asyncUploadJobStatus.PENDING_START) {
             // newly added candidate
@@ -264,7 +361,7 @@ angular.module('one.widgets').controller('ZemUploadStep2Ctrl', function ($scope,
         }
 
         return constants.contentAdCandidateStatus.OK;
-    };
+    }
 
     vm.updateCandidateCallback = function (fields) {
         vm.endpoint.getCandidates(vm.batchId).then(function (result) {
@@ -386,6 +483,7 @@ angular.module('one.widgets').controller('ZemUploadStep2Ctrl', function ($scope,
 
     $scope.$on('$destroy', function () {
         vm.stopPolling();
+        stopPollingAllVideoAssetsStatuses();
     });
 
     if (vm.autoOpenEditForm) {
