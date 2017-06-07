@@ -325,9 +325,11 @@ angular.module('one.widgets').controller('ZemUploadStep2Ctrl', function ($scope,
     function isCandidateStatusOk (candidate) {
         if (isCandidateStatusLoading(candidate)) return false;
 
-        var asyncUploadJobStatus = getAsyncUploadJobStatus(candidate);
-        return asyncUploadJobStatus === constants.contentAdCandidateStatus.OK
-               && isVideoAssetReadyForUse(candidate);
+        var response = getAsyncUploadJobStatus(candidate) === constants.contentAdCandidateStatus.OK;
+        if (candidate.videoAsset) {
+            response = response && isVideoAssetReadyForUse(candidate);
+        }
+        return response;
     }
 
     function isCandidateStatusError (candidate) {
