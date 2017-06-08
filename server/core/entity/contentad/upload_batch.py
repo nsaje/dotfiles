@@ -59,7 +59,7 @@ class UploadBatch(models.Model):
         default=constants.UploadBatchType.INSERT,
         choices=constants.UploadBatchType.get_choices()
     )
-    ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT, null=True)
+    ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT, null=True)  # TODO this should not be null
     original_filename = models.CharField(max_length=1024, null=True)
 
     default_image_crop = models.TextField(

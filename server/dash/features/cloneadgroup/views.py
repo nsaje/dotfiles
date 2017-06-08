@@ -4,6 +4,7 @@ from djangorestframework_camel_case.parser import CamelCaseJSONParser
 
 from restapi.views import RESTAPIBaseView
 import restapi.access
+import dash.views.navigation_helpers
 
 import serializers
 import service
@@ -26,4 +27,6 @@ class CloneAdGroup(RESTAPIBaseView):
                                  restapi.access.get_campaign(
                                      user, form.validated_data['destination_campaign_id']))
 
-        return self.response_ok(serializers.AdGroupSerializer(ad_group).data)
+        response = dash.views.navigation_helpers.get_ad_group_dict(
+            request.user, ad_group, ad_group.get_current_settings(), ad_group.campaign.get_current_settings())
+        return self.response_ok(serializers.AdGroupSerializer(response).data)

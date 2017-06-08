@@ -1,5 +1,4 @@
 angular.module('one.widgets').directive('zemGridCellCloneButton', function () {
-
     return {
         restrict: 'E',
         replace: true,

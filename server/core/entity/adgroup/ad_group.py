@@ -4,6 +4,7 @@ import datetime
 import newrelic.agent
 from django.conf import settings
 from django.db import models, transaction
+from django.template.defaultfilters import pluralize
 
 import utils.demo_anonymizer
 import utils.string_helper
@@ -68,7 +69,8 @@ class AdGroupManager(core.common.QuerySetManager):
                 request, ad_group, source_ad_group, write_history=False, k1_sync=False)
 
         self._post_create(ad_group, ad_group_settings)
-        ad_group.write_history_cloned(request, source_ad_group)
+        ad_group.write_history_cloned_from(request, source_ad_group)
+        source_ad_group.write_history_cloned_to(request, ad_group)
         return ad_group
 
 
@@ -313,14 +315,33 @@ class AdGroup(models.Model):
 
         self.write_history(changes_text, user=request.user, action_type=constants.HistoryActionType.CREATE)
 
-    def write_history_cloned(self, request, source_ad_group):
+    def write_history_cloned_to(self, request, destination_ad_group):
+        changes_text = 'This Ad group was cloned to {}'.format(destination_ad_group.get_name_with_id())
+        self.write_history(changes_text, user=request.user, action_type=constants.HistoryActionType.CREATE)
+
+    def write_history_cloned_from(self, request, source_ad_group):
         source_names = list(self.adgroupsource_set.all().values_list('source__name', flat=True))
         if source_names:
-            changes_text = 'Cloned settings from {} and automatically created campaigns for {} sources ({})'.format(
+            changes_text = 'Cloned settings and content ads from {} and automatically created campaigns for {} sources ({})'.format(
                 source_ad_group.get_name_with_id(),
                 len(source_names), ', '.join(source_names))
         else:
             changes_text = None
+
+        self.write_history(changes_text, user=request.user, action_type=constants.HistoryActionType.CREATE)
+
+    def write_history_content_ads_cloned(self, request, content_ads, batch, source_ad_group, overriden_state):
+        state_text = 'Cloned content ads state was left intact.'
+        if overriden_state is not None:
+            state_text = 'State of all cloned content ads was set to "{}".'.format(
+                constants.ContentAdSourceState.get_text(overriden_state))
+
+        changes_text = 'Cloned {} content ad{} from "{}" as batch "{}". {}'.format(
+            len(content_ads),
+            pluralize(len(content_ads)),
+            source_ad_group.get_name_with_id(),
+            batch.name,
+            state_text)
 
         self.write_history(changes_text, user=request.user, action_type=constants.HistoryActionType.CREATE)
 

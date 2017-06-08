@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemCloneContentService', function ($uibModal, zemCloneContentEndpoint, zemNavigationNewService) { //eslint-disable-line max-len
+angular.module('one.widgets').service('zemCloneContentService', function ($uibModal, zemCloneContentEndpoint) { //eslint-disable-line max-len
 
     this.openCloneModal = openCloneModal;
     this.openResultsModal = openResultsModal;
@@ -10,8 +10,8 @@ angular.module('one.widgets').service('zemCloneContentService', function ($uibMo
             backdrop: 'static',
             keyboard: false,
             resolve: {
-                adGroup: zemNavigationNewService.getEntityById(constants.entityType.AD_GROUP, adGroupId),
-                selection: selection
+                adGroupId: adGroupId,
+                selection: selection,
             }
         });
 
@@ -22,13 +22,14 @@ angular.module('one.widgets').service('zemCloneContentService', function ($uibMo
         return zemCloneContentEndpoint.clone(config);
     }
 
-    function openResultsModal (destinationBatch) {
+    function openResultsModal (adGroup, destinationBatch) {
         var modal = $uibModal.open({
             component: 'zemCloneContentSuccessfulModal',
             backdrop: 'static',
             keyboard: false,
             resolve: {
-                destinationBatch: destinationBatch
+                adGroup: adGroup,
+                destinationBatch: destinationBatch,
             }
         });
 

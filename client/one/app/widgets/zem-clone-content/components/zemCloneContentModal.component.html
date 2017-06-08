@@ -1,28 +1,30 @@
 <div class="modal__header">
-    <div class="modal__title">Clone Content Ads</div>
+    <div class="modal__title">Clone ads</div>
 </div>
 <div class="modal__body">
 
+    <span>Clone selected ads from ad group <strong>{{ $ctrl.adGroup.name }}</strong> to the destination ad group.</span>
+
     <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.destinationAdGroupId}">
-        <label class="form__label" for="ad-group-input">Ad Group</label>
+        <label class="form__label" for="ad-group-input">Destination ad group</label>
         <zem-select
             store="$ctrl.store"
             texts="$ctrl.texts"
+            class="zem-select--zem-clone-content"
             selected-id="$ctrl.destinationAdGroupId"
             on-select="$ctrl.onAdGroupSelected(item);"
         ></zem-select>
-        <div class="message message--error" for="ad-group-input">{{ $ctrl.errors.destinationAdGroupId[0] }}</div>
+        <div class="message message--error" for="ad-group-input" ng-if="!!$ctrl.errors.destinationAdGroupId">{{ $ctrl.errors.destinationAdGroupId[0] }}</div>
     </div>
 
-
-    Cloned content state
     <div class="form__group">
+        <label class="form__label" for="cloned-content-state">State of cloned ads</label>
         <div class="form__radio">
             <label>
                 <input class="input-radio" type="radio" id="cloned-content-state"
                     ng-model="$ctrl.clonedContentState" ng-value="null">
                 <span class="radio-text">
-                    Cloned content ads will keep their state
+                    Cloned ads will keep their state
                 </span>
             </label>
         </div>
@@ -31,7 +33,7 @@
                 <input class="input-radio" type="radio" id="cloned-content-state"
                     ng-model="$ctrl.clonedContentState" ng-value="true">
                 <span class="radio-text">
-                    All cloned content ads will be <b>enabled</b>
+                    All cloned ads will be <b>enabled</b>
                 </span>
             </label>
         </div>
@@ -40,7 +42,7 @@
                 <input class="input-radio" type="radio" id="cloned-content-state"
                     ng-model="$ctrl.clonedContentState" ng-value="false">
                 <span class="radio-text">
-                    All cloned content ads will be <b>paused</b>
+                    All cloned ads will be <b>paused</b>
                 </span>
             </label>
         </div>
@@ -48,7 +50,7 @@
 
 </div>
 <div class="modal__footer buttons-panel">
-    <button class="button button--highlight button--with-icon check-icon" ng-disabled="!!$ctrl.requestInProgress" ng-click="$ctrl.submit()">Clone</button>
+    <button class="button button--highlight button--with-icon copy-icon" ng-disabled="!!$ctrl.requestInProgress" ng-click="$ctrl.submit()">Clone</button>
     <button type="button" class="button button--outline" ng-disabled="!!$ctrl.requestInProgress" ng-click="$ctrl.modalInstance.dismiss()">Cancel</button>
     <div class="loader" ng-show="$ctrl.requestInProgress"></div>
 </div>

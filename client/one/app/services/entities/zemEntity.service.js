@@ -7,6 +7,7 @@ angular.module('one.services').service('zemEntityService', function ($http, $q, 
     //
     this.getEntity = getEntity;
     this.createEntity = createEntity;
+    this.cloneEntity = cloneEntity;
     this.updateEntity = updateEntity;
     this.getEntityService = getEntityService;
     this.executeAction = executeAction;
@@ -22,6 +23,10 @@ angular.module('one.services').service('zemEntityService', function ($http, $q, 
 
     function createEntity (entityType, parentId) {
         return getEntityService(entityType).create(parentId);
+    }
+
+    function cloneEntity (entityType, id, data) {
+        return getEntityService(entityType).clone(id, data);
     }
 
     function executeAction (action, entityType, id) {

@@ -7,18 +7,16 @@ angular.module('one.widgets').component('zemCloneContentSuccessfulModal', {
     controller: function ($q, zemNavigationNewService, zemSelectionService) {
         var $ctrl = this;
 
-        $ctrl.navigate = navigate;
+        $ctrl.navigateTo = navigateTo;
 
-        function navigate () {
+        function navigateTo () {
+            $ctrl.modalInstance.close();
+
             var navigationEntity = zemNavigationNewService.getEntityById(
                 constants.entityType.AD_GROUP, $ctrl.resolve.destinationBatch.adGroup.id);
-
             return zemNavigationNewService
-                .navigateTo(navigationEntity)
-                .then(function () {
-                    $ctrl.modalInstance.close();
-                    zemSelectionService.setSelection({
-                        batch: $ctrl.destinationBatch.id});
+                .navigateTo(navigationEntity).then(function () {
+                    zemSelectionService.setSelection({batch: parseInt($ctrl.resolve.destinationBatch.id)});
                 });
         }
     }

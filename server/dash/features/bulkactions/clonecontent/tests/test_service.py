@@ -14,9 +14,9 @@ class Clone(TestCase):
         source_content_ads = magic_mixer.cycle(5).blend(core.entity.ContentAd)
         source_ad_group = magic_mixer.blend(core.entity.AdGroup)
         ad_group = magic_mixer.blend(core.entity.AdGroup)
-        user = magic_mixer.blend_user()
+        request = magic_mixer.blend_request_user()
 
-        batch = clonecontent.service.clone(user, source_ad_group, source_content_ads, ad_group)
+        batch = clonecontent.service.clone(request, source_ad_group, source_content_ads, ad_group)
 
         self.assertItemsEqual(
             [x.to_cloned_candidate_dict() for x in source_content_ads],

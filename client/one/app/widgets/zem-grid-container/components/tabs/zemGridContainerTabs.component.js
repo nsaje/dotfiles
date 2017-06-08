@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemGridContainerTabs', {
         tabs: '<',
         entity: '<',
     },
-    controller: function ($rootScope, $state, $location, $window) {
+    controller: function ($rootScope, $state, $location, $window, zemUtils) {
         var $ctrl = this;
 
         $ctrl.navigateTo = navigateTo;
@@ -23,7 +23,7 @@ angular.module('one.widgets').component('zemGridContainerTabs', {
                 breakdown: breakdownStateParam
             };
 
-            if (shouldOpenInNewTab(event)) {
+            if (zemUtils.shouldOpenInNewTab(event)) {
                 $window.open(getStateHrefWithQueryParams(params), '_blank');
             } else {
                 // [WORKAROUND] Silently change state (notify: false) to avoid component reinitialization
@@ -33,11 +33,6 @@ angular.module('one.widgets').component('zemGridContainerTabs', {
                     $rootScope.$broadcast('$zemStateChangeSuccess');
                 });
             }
-        }
-
-        function shouldOpenInNewTab (event) {
-            // Has user clicked with middle mouse button or while ctrl/cmd keys were pressed
-            return event.ctrlKey || event.metaKey || event.which === 2;
         }
 
         function getStateHrefWithQueryParams (params) {

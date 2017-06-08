@@ -12,7 +12,7 @@ import restapi.fields
 
 class CloneContentAdsSerializer(serializers.Serializer):
     ad_group_id = restapi.fields.IdField()
-    batch_id = restapi.fields.IdField(required=False)
+    batch_id = restapi.fields.IdField(required=False, allow_null=True)
     content_ad_ids = fields.ListField(child=restapi.fields.IdField(), required=False)
 
     destination_ad_group_id = restapi.fields.IdField()

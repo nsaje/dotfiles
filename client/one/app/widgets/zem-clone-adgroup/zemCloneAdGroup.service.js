@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemCloneAdGroupService', function ($uibModal, zemCloneAdGroupEndpoint, zemNavigationNewService) { //eslint-disable-line max-len
+angular.module('one.widgets').service('zemCloneAdGroupService', function ($uibModal, zemCloneAdGroupEndpoint) { //eslint-disable-line max-len
 
     this.openCloneModal = openCloneModal;
     this.openResultsModal = openResultsModal;
@@ -10,24 +10,26 @@ angular.module('one.widgets').service('zemCloneAdGroupService', function ($uibMo
             backdrop: 'static',
             keyboard: false,
             resolve: {
-                campaign: zemNavigationNewService.getEntityById(constants.entityType.CAMPAIGN, campaignId),
-                adGroup: zemNavigationNewService.getEntityById(constants.entityType.AD_GROUP, adGroupId)
+                campaignId: campaignId,
+                adGroupId: adGroupId,
             }
         });
 
         return modal.result;
     }
 
-    function clone (config) {
-        return zemCloneAdGroupEndpoint.clone(config);
+    function clone (adGroupId, data) {
+        return zemCloneAdGroupEndpoint.clone(adGroupId, data);
     }
 
-    function openResultsModal (destinationAdGroup) {
+    function openResultsModal (adGroup, destinationCampaign, destinationAdGroup) {
         var modal = $uibModal.open({
             component: 'zemCloneAdGroupSuccessfulModal',
             backdrop: 'static',
             keyboard: false,
             resolve: {
+                adGroup: adGroup,
+                destinationCampaign: destinationCampaign,
                 destinationAdGroup: destinationAdGroup
             }
         });

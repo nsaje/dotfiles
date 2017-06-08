@@ -99,6 +99,7 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($q,
                 return [
                     ACTIONS.pause,
                     ACTIONS.enable,
+                    ACTIONS.clone,
                     ACTIONS.download,
                     {
                         name: 'Archive',
@@ -110,7 +111,6 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($q,
                     },
                     ACTIONS.restore,
                     ACTIONS.edit,
-                    ACTIONS.clone,
                 ];
             } else if (metaData.level === constants.level.ACCOUNTS
                         && metaData.breakdown === constants.breakdown.CAMPAIGN) {
@@ -232,7 +232,13 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($q,
 
         function clone (selection) {
             var metaData = gridApi.getMetaData();
-            return zemCloneContentService.openCloneModal(metaData.id, selection);
+            return zemCloneContentService.openCloneModal(metaData.id, selection).then(
+                function (destinationBatch) {
+                    // reloads data in case cloned upload batch is in the same ad group as source content ads
+                    if (destinationBatch.adGroup.id == metaData.id) {
+                        refreshData({});
+                    }
+                });
         }
 
         function download (selection) {

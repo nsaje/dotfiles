@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemEntityInstanceService', function ($http, $q, zemEntityInstanceEndpoint, zemPubSubService) { // eslint-disable-line max-len
+angular.module('one.services').service('zemEntityInstanceService', function ($http, $q, zemEntityInstanceEndpoint, zemPubSubService, zemCloneAdGroupService) { // eslint-disable-line max-len
 
     function EntityInstanceService (entityType) {
 
@@ -14,6 +14,7 @@ angular.module('one.services').service('zemEntityInstanceService', function ($ht
         //
         this.get = get;
         this.create = create;
+        this.clone = clone;
         this.update = update;
 
         this.onEntityCreated = onEntityCreated;
@@ -27,6 +28,17 @@ angular.module('one.services').service('zemEntityInstanceService', function ($ht
                 pubsub.notify(EVENTS.ON_ENTITY_CREATED, {
                     entityType: entityType,
                     parentId: parentId,
+                    data: data
+                });
+                return data;
+            });
+        }
+
+        function clone (id, data) {
+            return zemCloneAdGroupService.clone(id, data).then(function (data) {
+                pubsub.notify(EVENTS.ON_ENTITY_CREATED, {
+                    entityType: entityType,
+                    parentId: data.parentId,
                     data: data
                 });
                 return data;

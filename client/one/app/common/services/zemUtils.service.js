@@ -5,6 +5,7 @@ angular.module('one.services').service('zemUtils', function ($q) { // eslint-dis
     this.convertToElementName = convertToElementName;
     this.createAbortableDefer = createAbortableDefer;
     this.traverseTree = traverseTree;
+    this.shouldOpenInNewTab = shouldOpenInNewTab;
 
     function convertToCamelCase (obj) {
         if (!(obj instanceof Object)) return obj;
@@ -73,6 +74,11 @@ angular.module('one.services').service('zemUtils', function ($q) { // eslint-dis
                 queue.push(n.childNodes[i]);
             }
         }
+    }
+
+    function shouldOpenInNewTab (event) {
+        // Has user clicked with middle mouse button or while ctrl/cmd keys were pressed
+        return event.ctrlKey || event.metaKey || event.which === 2;
     }
 
 });

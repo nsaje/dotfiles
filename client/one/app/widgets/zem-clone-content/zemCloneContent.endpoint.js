@@ -5,7 +5,7 @@ angular.module('one.widgets').service('zemCloneContentEndpoint', function ($q, $
         var url = '/rest/internal/contentads/batch/clone/',
             params = {
                 adGroupId: config.adGroupId,
-                batchId: config.selection.selectedBatchId,
+                batchId: config.selection.filterId,
                 contentAdIds: config.selection.selectedIds,
                 deselectedContentAdIds: config.selection.unselectedIds,
                 destinationAdGroupId: config.destinationAdGroupId,

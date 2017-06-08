@@ -56,13 +56,17 @@ class ContentAdManager(models.Manager):
 
         return content_ads
 
-    def bulk_clone(self, source_content_ads, batch, overridden_state=None):
+    def bulk_clone(self, request, source_content_ads, ad_group, batch, overridden_state=None):
         candidates = [x.to_cloned_candidate_dict() for x in source_content_ads]
         if overridden_state is not None:
             for x in candidates:
                 x['state'] = overridden_state
 
-        return self.bulk_create_from_candidates(candidates, batch)
+        content_ads = self.bulk_create_from_candidates(candidates, batch)
+        ad_group.write_history_content_ads_cloned(
+            request, content_ads, batch, source_content_ads[0].ad_group, overridden_state)
+
+        return content_ads
 
     @transaction.atomic
     def insert_redirects(self, content_ads):

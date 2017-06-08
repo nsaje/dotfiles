@@ -9,6 +9,7 @@ angular.module('one.services').service('zemAdGroupService', function ($http, $q,
     this.get = entityInstanceService.get;
     this.update = entityInstanceService.update;
     this.create = entityInstanceService.create;
+    this.clone = entityInstanceService.clone;
     this.archive = entityActionsService.archive;
     this.restore = entityActionsService.restore;
     this.activate = entityActionsService.activate;

@@ -59,7 +59,7 @@ angular.module('one.widgets').factory('zemSelectList', function () { //eslint-di
         }
 
         function previous (idx) {
-            if (idx < 0) idx = vm.items.length;
+            if (idx <= 0) idx = vm.items.length;
 
             var item;
             do {

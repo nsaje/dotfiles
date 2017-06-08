@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemInfobox', {
         entity: '<',
     },
     templateUrl: '/app/widgets/zem-infobox/zemInfobox.component.html',
-    controller: function (zemInfoboxService, zemNavigationNewService, zemDataFilterService, zemEntityService, zemHistoryService, zemPermissions, $state, $location, $window) { // eslint-disable-line max-len
+    controller: function (zemInfoboxService, zemNavigationNewService, zemDataFilterService, zemEntityService, zemHistoryService, zemPermissions, zemUtils, $state, $location, $window) { // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.openHistory = openHistory;
@@ -104,16 +104,11 @@ angular.module('one.widgets').component('zemInfobox', {
         }
 
         function openHistory (event) {
-            if (shouldOpenInNewTab(event)) {
+            if (zemUtils.shouldOpenInNewTab(event)) {
                 openInNewTabWithParam(zemHistoryService.QUERY_PARAM);
             } else {
                 zemHistoryService.open();
             }
-        }
-
-        function shouldOpenInNewTab (event) {
-            // Has user clicked with middle mouse button or while ctrl/cmd keys were pressed
-            return event.ctrlKey || event.metaKey || event.which === 2;
         }
 
         function openInNewTabWithParam (param) {

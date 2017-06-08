@@ -24,6 +24,10 @@ a:active {
     }
 }
 
+a:focus {
+    color: inherit;
+}
+
 a.alternative-link,
 a.alternative-link:hover,
 a.alternative-link:active {
@@ -290,6 +294,8 @@ h4 {
 
     &:focus, &:visited, &:active {
         text-decoration: none;
+        outline: none;
+        color: @secondary-color;
     }
 
     .button__inline-arrow-icon {
@@ -303,12 +309,16 @@ h4 {
 
 .button--highlight {
     background: @primary-color;
-    color: @white;
+    color: white;
 
     &:not(.button--disabled):not([disabled]):hover {
         background: darken(@primary-color, 8%);
         color: @white;
         box-shadow: 0px 0px 6px 0px fade(@primary-color,60%);
+    }
+
+    &:focus, &:visited, &:active {
+        color: white;
     }
 
     .button__inline-arrow-icon {
@@ -333,12 +343,15 @@ h4 {
 }
 
 .button--dark-backgrounds {
-    background-color: fade(@white,10%);
-    color: @white;
+    background-color: fade(white,10%);
+    color: white;
 
     &:not(.button--disabled):not([disabled]):hover {
-        background-color: fade(@white,20%);
-        color: @white;
+        background-color: fade(white,20%);
+        color: white;
+    }
+    &:focus, &:visited, &:active {
+        color: white;
     }
 }
 
@@ -354,6 +367,10 @@ h4 {
         border: 1px solid darken(@input-border-color, 20%);
         outline: none;
         box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.2);
+        color: @text-color;
+    }
+
+    &:focus, &:visited, &:active {
         color: @text-color;
     }
 }
@@ -505,6 +522,25 @@ h4 {
 
 .button__inline-arrow-icon--left {
     transform: rotate(180deg);
+}
+
+.button--search {
+
+}
+
+.button__search-selection {
+    outline: none;
+}
+
+.button__search-input {
+    outline: none;
+    height: @default-button-input-height - 2;
+    line-height: @default-button-input-height - 2;
+    padding: 0;
+    border: none;
+    background-color: transparent;
+    font-size: 14px;
+    font-weight: 400;
 }
 
 ////////////////////////////

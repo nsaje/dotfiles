@@ -19,77 +19,97 @@ angular.module('one.widgets').component('zemSelect', {
         // Template methods and variables
         //
 
-        $ctrl.search = search;
-        $ctrl.focus = focus;
-        $ctrl.toggleSelection = toggleSelection;
+        $ctrl.onSearch = onSearch;
+        $ctrl.onItemClick = onItemClick;
         $ctrl.toggleHighlighted = toggleHighlighted;
         $ctrl.getItemHeight = getItemHeight;
         $ctrl.getItemClasses = getItemClasses;
 
         $ctrl.selected = null;
+        $ctrl.highlighted = null;
 
         $ctrl.$onInit = function () {
-            $element.keydown(handleKeyDown);
-            $ctrl.search('', function () {
-                $timeout(function () {
-                    if ($ctrl.selectedId) {
-
-                        // init selected based on id
-                        for (var i = 0; i < $ctrl.list.items.length; i++) {
-                            if ($ctrl.list.items[i].id === $ctrl.selectedId) {
-                                $ctrl.selected = $ctrl.list.items[i];
-                                break;
-                            }
-                        }
-
-                        selectItem($ctrl.selected);
-                        scrollToItem($ctrl.selected, true);
-                    }
-                });
-            });
+            initializeSelection();
+            initializeDropdownHandler();
         };
 
         $ctrl.$onDestroy = function () {
             $element.unbind();
         };
 
-        function getItemHeight () {
-            return ITEM_HEIGHT_DEFAULT;
-        }
-
-        function focus () {
-            if (!$ctrl.dropdownVisible) openDropdown();
-        }
-
-        function closeDrowdown () {
-            $ctrl.dropdownVisible = false;
-            $ctrl.highlighted = $ctrl.selected;
-        }
-
-        function openDropdown () {
-            $ctrl.dropdownVisible = true;
-            $ctrl.highlighted = $ctrl.selected;
-
-            // Close dropdown when user clicks outside of this element
-            angular.element(document).one('click', function closeMenu (e) {
-                if ($element.has(e.target).length === 0) {
-                    // Use $timeout to make sure that this happens inside $digest loop
-                    $timeout(closeDrowdown);
-                } else {
-                    angular.element(document).one('click', closeMenu);
+        function initializeSelection () {
+            filterList('').then(function () {
+                if ($ctrl.selectedId) {
+                    for (var i = 0; i < $ctrl.list.items.length; i++) {
+                        if ($ctrl.list.items[i].id === $ctrl.selectedId) {
+                            selectItem($ctrl.list.items[i]);
+                            break;
+                        }
+                    }
                 }
             });
         }
 
-        function toggleSelection (item) {
+        function initializeDropdownHandler () {
+            $element.keydown(function (event) {
+                if (!$ctrl.list) return;
+                if (event.keyCode === KEY_UP_ARROW) upSelection(event);
+                if (event.keyCode === KEY_DOWN_ARROW) downSelection(event);
+                if (event.keyCode === KEY_ENTER) enterSelection(event);
+                $scope.$digest();
+            });
+
+            $element.on('click', function () {
+                $timeout(function () {
+                    if (!$ctrl.dropdownVisible) {
+                        openDropdown(true);
+                    }
+                });
+            });
+
+            $element.focusout(function (event) {
+                if (event.target === getSelectedLabelElement()) {
+                    return;
+                }
+                $timeout(function () {
+                    var elementLostFocus = $element.has(':focus').length === 0;
+                    if (elementLostFocus && $ctrl.dropdownVisible) {
+                        closeDrowdown();
+                    }
+                });
+            });
+        }
+
+        function getItemHeight () {
+            return ITEM_HEIGHT_DEFAULT;
+        }
+
+        function closeDrowdown () {
+            $ctrl.dropdownVisible = false;
+            $timeout(function () {
+                focusSelected();
+            });
+        }
+
+        function openDropdown (timeout) {
+            $ctrl.dropdownVisible = true;
+
+            if (timeout) {
+                $timeout(function () {
+                    focusInput();
+                    scrollToItem($ctrl.highlighted, true);
+                });
+            } else {
+                focusInput();
+                scrollToItem($ctrl.highlighted, true);
+            }
+        }
+
+        function onItemClick (item) {
             if (item.isHeader) return;
 
-            if ($ctrl.selected === item) {
-                unselectItem();
-            } else {
-                selectItem(item);
-                closeDrowdown();
-            }
+            selectItem(item);
+            closeDrowdown();
         }
 
         function toggleHighlighted (item) {
@@ -97,21 +117,18 @@ angular.module('one.widgets').component('zemSelect', {
             $ctrl.highlighted = item;
         }
 
-        function unselectItem () {
-            $ctrl.selected = null;
-            $ctrl.onSelect({'item': $ctrl.selected});
-        }
-
         function selectItem (item) {
             $ctrl.selected = item;
+            $ctrl.highlighted = item;
             $ctrl.onSelect({'item': $ctrl.selected});
-
-            $ctrl.searchQuery = item.name;
         }
 
-        function search (searchQuery, locatedFn) {
+        function onSearch (searchQuery) {
             if (!$ctrl.dropdownVisible) openDropdown();
+            filterList(searchQuery);
+        }
 
+        function filterList (searchQuery) {
             if ($ctrl.previousPromise) {
                 $ctrl.previousPromise.abort();
             }
@@ -122,20 +139,11 @@ angular.module('one.widgets').component('zemSelect', {
                 deferred.resolve(items);
             });
 
-            deferred.promise.then(function (items) {
-                $ctrl.list = zemSelectList.createInstance(items);
-                if (locatedFn) locatedFn();
-            });
-
             $ctrl.previousPromise = deferred.promise;
-        }
 
-        function handleKeyDown (event) {
-            if (!$ctrl.list) return;
-            if (event.keyCode === KEY_UP_ARROW) upSelection(event);
-            if (event.keyCode === KEY_DOWN_ARROW) downSelection(event);
-            if (event.keyCode === KEY_ENTER) enterSelection(event);
-            $scope.$digest();
+            return deferred.promise.then(function (items) {
+                $ctrl.list = zemSelectList.createInstance(items);
+            });
         }
 
         function upSelection (event) {
@@ -148,12 +156,11 @@ angular.module('one.widgets').component('zemSelect', {
                 if (!$ctrl.highlighted) {
                     $ctrl.highlighted = $ctrl.list.last();
                 }
+                scrollToItem($ctrl.highlighted);
             } else {
                 $ctrl.highlighted = $ctrl.selected || $ctrl.list.last();
-                openDropdown();
+                openDropdown(true);
             }
-
-            scrollToItem($ctrl.highlighted);
         }
 
         function downSelection (event) {
@@ -166,25 +173,27 @@ angular.module('one.widgets').component('zemSelect', {
                 if (!$ctrl.highlighted) {
                     $ctrl.highlighted = $ctrl.list.first();
                 }
+                scrollToItem($ctrl.highlighted);
             } else {
                 $ctrl.highlighted = $ctrl.selected || $ctrl.list.first();
-                openDropdown();
+                openDropdown(true);
             }
-
-            scrollToItem($ctrl.highlighted);
         }
 
         function enterSelection () {
-            if (!$ctrl.dropdownVisible) return openDropdown();
+            if (!$ctrl.dropdownVisible) {
+                openDropdown();
+            } else {
+                // dropdown is opened, select item
+                var item = $ctrl.highlighted;
+                if (!item && $ctrl.searchQuery.length > 0) {
+                    // If searching select first item if no selection has been made
+                    item = $ctrl.list.first();
+                }
 
-            var item = $ctrl.highlighted;
-            if (!item && $ctrl.searchQuery.length > 0) {
-                // If searching select first item if no selection has been made
-                item = $ctrl.list.first();
+                selectItem(item);
+                closeDrowdown();
             }
-
-            selectItem(item);
-            closeDrowdown();
         }
 
         function scrollToItem (item, scrollToMiddleIfOutside) {
@@ -219,6 +228,26 @@ angular.module('one.widgets').component('zemSelect', {
             } else if (selectedPos >= viewTo) {
                 $scrollContainer.scrollTop(selectedPos - height + getItemHeight($ctrl.list.getItem(idx)));
             }
+        }
+
+        function focusInput () {
+            $timeout(function () {
+                getInputElement().focus();
+            });
+        }
+
+        function focusSelected () {
+            $timeout(function () {
+                getSelectedLabelElement().focus();
+            });
+        }
+
+        function getInputElement () {
+            return $element.find('input')[0];
+        }
+
+        function getSelectedLabelElement () {
+            return $element.find('#selected-item-label')[0];
         }
 
         function getItemClasses (item) {

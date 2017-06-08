@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemNavigationNewService', function ($rootScope, $location, $state, zemNavigationService, zemPermissions) { // eslint-disable-line max-len
+angular.module('one.services').service('zemNavigationNewService', function ($rootScope, $q, $location, $state, zemNavigationService, zemPermissions) { // eslint-disable-line max-len
     this.init = init;
     this.navigateTo = navigateTo;
     this.refreshState = refreshState;
@@ -9,6 +9,7 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
     this.getActiveEntityByType = getActiveEntityByType;
     this.getActiveAccount = getActiveAccount;
     this.getNavigationHierarchy = getNavigationHierarchy;
+    this.getNavigationHierarchyPromise = getNavigationHierarchyPromise;
     this.onHierarchyUpdate = onHierarchyUpdate;
     this.onActiveEntityChange = onActiveEntityChange;
 
@@ -231,6 +232,20 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
 
     function getNavigationHierarchy () {
         return hierarchyRoot;
+    }
+
+    function getNavigationHierarchyPromise () {
+
+        if (hierarchyRoot) {
+            return $q.resolve(getNavigationHierarchy());
+        }
+
+        var deferred = $q.defer();
+        onHierarchyUpdate(function () {
+            deferred.resolve(getNavigationHierarchy());
+        });
+
+        return deferred.promise;
     }
 
     //

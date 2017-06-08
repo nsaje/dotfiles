@@ -7,7 +7,7 @@ angular.module('one.widgets').component('zemCloneContentModal', {
     controller: function ($q, zemNavigationNewService, zemCloneContentService, zemSelectionService, zemSelectDataStore) { //eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.texts = {
-            placeholder: 'Select Ad group to clone to ...'
+            placeholder: 'Search ad group ...'
         };
 
         //
@@ -19,8 +19,8 @@ angular.module('one.widgets').component('zemCloneContentModal', {
         //
         // Private
         //
-        $ctrl.destinationAdGroupId = $ctrl.resolve.adGroup.id;
-        $ctrl.destinationBatch = null;
+        $ctrl.adGroup = null;
+        $ctrl.destinationAdGroupId = null;
         $ctrl.clonedContentState = null;
 
         $ctrl.errors = null;
@@ -28,23 +28,23 @@ angular.module('one.widgets').component('zemCloneContentModal', {
 
         $ctrl.$onInit = function () {
             $ctrl.store = getDataStore();
-        };
-
-        $ctrl.$onInit = function () {
-            $ctrl.store = getDataStore();
+            zemNavigationNewService.getNavigationHierarchyPromise().then(function () {
+                $ctrl.adGroup = zemNavigationNewService.getEntityById(
+                    constants.entityType.AD_GROUP, $ctrl.resolve.adGroupId);
+            });
         };
 
         function submit () {
             $ctrl.requestInProgress = true;
 
             zemCloneContentService.clone({
-                adGroupId: $ctrl.resolve.adGroup.id,
+                adGroupId: $ctrl.resolve.adGroupId,
                 selection: $ctrl.resolve.selection,
                 destinationAdGroupId: $ctrl.destinationAdGroupId,
                 state: $ctrl.clonedContentState
             }).then(function (data) {
-                zemCloneContentService.openResultsModal(data);
-                $ctrl.modalInstance.close();
+                $ctrl.modalInstance.close(data);
+                zemCloneContentService.openResultsModal($ctrl.adGroup, data);
             }, function (errors) {
                 $ctrl.errors = errors;
             }).finally(function () {
@@ -56,17 +56,9 @@ angular.module('one.widgets').component('zemCloneContentModal', {
         //
 
         function getDataStore () {
-            var promise;
-
-            if (zemNavigationNewService.getNavigationHierarchy()) {
-                promise = $q.resolve(getDataStoreItems());
-            } else {
-                var deferred = $q.defer();
-                zemNavigationNewService.onHierarchyUpdate(function () {
-                    deferred.resolve(getDataStoreItems());
-                });
-                promise = deferred.promise;
-            }
+            var promise = zemNavigationNewService.getNavigationHierarchyPromise().then(function () {
+                return getDataStoreItems();
+            });
 
             return zemSelectDataStore.createInstance(promise);
         }
@@ -74,13 +66,15 @@ angular.module('one.widgets').component('zemCloneContentModal', {
         function getDataStoreItems () {
             var adGroups = [];
             angular.forEach(zemNavigationNewService.getNavigationHierarchy().ids.adGroups, function (value) {
-                adGroups.push({
-                    id: value.id,
-                    name: value.name,
-                    h1: value.parent.parent.name,
-                    h2: value.parent.name,
-                    searchableName: value.parent.parent.name + ' ' + value.parent.name + ' ' + value.name,
-                });
+                if (!value.data.archived) {
+                    adGroups.push({
+                        id: value.id,
+                        name: value.name,
+                        h1: value.parent.parent.name,
+                        h2: value.parent.name,
+                        searchableName: value.parent.parent.name + ' ' + value.parent.name + ' ' + value.name,
+                    });
+                }
             });
             return adGroups;
         }
