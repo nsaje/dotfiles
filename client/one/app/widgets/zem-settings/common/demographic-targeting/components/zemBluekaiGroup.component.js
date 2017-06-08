@@ -6,11 +6,17 @@ angular.module('one.widgets').component('zemBluekaiGroup', {
     templateUrl: '/app/widgets/zem-settings/common/demographic-targeting/components/zemBluekaiGroup.component.html',
     controller: function (zemUtils, zemDemographicTargetingConstants, zemDemographicTaxonomyService) {
         var $ctrl = this;
+        $ctrl.GROUP_TYPES = {
+            DEFAULT: 0,
+            NARROW: 1,
+            EXCLUDE: 2
+        };
+
         zemDemographicTaxonomyService.getTaxonomy().then(function (data) {
             $ctrl.bluekaiTaxonomy = data;
         });
 
-        $ctrl.getHeaderText = getHeaderText;
+        $ctrl.getGroupType = getGroupType;
         $ctrl.removeGroup = removeGroup;
         $ctrl.onSelectionUpdate = onSelectionUpdate;
 
@@ -25,15 +31,13 @@ angular.module('one.widgets').component('zemBluekaiGroup', {
             });
         };
 
-        function getHeaderText () {
-            var prefix = 'INCLUDE';
+        function getGroupType () {
             if ($ctrl.node.type === zemDemographicTargetingConstants.EXPRESSION_TYPE.NOT) {
-                prefix = 'EXCLUDE';
+                return $ctrl.GROUP_TYPES.EXCLUDE;
             } else if ($ctrl.stateService.getState().expressionTree.childNodes[0] !== $ctrl.node) {
-                prefix = 'AND INCLUDE';
+                return $ctrl.GROUP_TYPES.NARROW;
             }
-
-            return prefix + ' target users belonging to any of the following segments:';
+            return $ctrl.GROUP_TYPES.DEFAULT;
         }
 
         function onSelectionUpdate (categories) {

@@ -14,6 +14,7 @@ angular.module('one.widgets').component('zemTreeSelect', {
         //
 
         var $ctrl = this;
+        $ctrl.ITEM_HEIGHT = 30;
         $ctrl.toggleItemState = toggleItemState;
         $ctrl.toggleCollapse = toggleCollapse;
         $ctrl.toggleSelection = toggleSelection;
@@ -52,6 +53,7 @@ angular.module('one.widgets').component('zemTreeSelect', {
 
         function onSearch (searchQuery) {
             $ctrl.filteredList = zemTreeSelectService.filterList($ctrl.list, searchQuery);
+            highlightItem($ctrl.filteredList[0]);
         }
 
         function toggleCollapse (category) {
@@ -111,23 +113,89 @@ angular.module('one.widgets').component('zemTreeSelect', {
 
             $element.focusout(function () {
                 $timeout(function () {
-                    var elementLostFocus  = $element.has(':focus').length === 0;
+                    var elementLostFocus = $element.has(':focus').length === 0;
                     if (elementLostFocus && $ctrl.dropdownVisible) {
                         toggleDropdown();
                     }
                 });
             });
 
-            $element.on('keydown', function closeMenu (e) {
-                if (e.which === 27) { // ESC
-                    if ($ctrl.dropdownVisible) {
-                        toggleDropdown();
-                        e.stopPropagation();
+            $element.on('keydown', handleKeyDown);
+        }
 
-                        $scope.$digest();
-                    }
+        //
+        // Key interactions handlers
+        //
+        var KEY_ENTER = 13;
+        var KEY_ESC = 27;
+        var KEY_SPACE = 32;
+        var KEY_LEFT_ARROW = 37;
+        var KEY_UP_ARROW = 38;
+        var KEY_RIGHT_ARROW = 39;
+        var KEY_DOWN_ARROW = 40;
+        var HANDLED_KEYS = [KEY_UP_ARROW, KEY_DOWN_ARROW, KEY_LEFT_ARROW,
+            KEY_RIGHT_ARROW, KEY_ENTER, KEY_SPACE, KEY_ESC];
+
+        function handleKeyDown (event) {
+            if (!$ctrl.dropdownVisible || HANDLED_KEYS.indexOf(event.keyCode) < 0) return;
+
+            if (event.keyCode === KEY_UP_ARROW || event.keyCode === KEY_DOWN_ARROW) handleBasicMovement(event);
+            if (event.keyCode === KEY_LEFT_ARROW || event.keyCode === KEY_RIGHT_ARROW) handleCollapse(event);
+            if (event.keyCode === KEY_ENTER || event.keyCode === KEY_SPACE) toggleSelection($ctrl.highlightedItem);
+            if (event.keyCode === KEY_ESC) toggleDropdown();
+
+            event.preventDefault();
+            event.stopPropagation();
+            $scope.$digest();
+        }
+
+
+        function handleBasicMovement (event) {
+            var lastIdx = $ctrl.filteredList.length - 1;
+            var idx = $ctrl.filteredList.indexOf($ctrl.highlightedItem);
+            if (event.keyCode === KEY_UP_ARROW) idx = (idx <= 0 ? lastIdx : --idx);
+            if (event.keyCode === KEY_DOWN_ARROW) idx = (idx >= lastIdx ? 0 : ++idx);
+
+            $ctrl.highlightedItem = $ctrl.filteredList[idx];
+            scrollToItem($ctrl.highlightedItem);
+        }
+
+        function handleCollapse (event) {
+            if ($ctrl.searchQuery) return;
+
+            if (event.keyCode === KEY_LEFT_ARROW) {
+                if ($ctrl.highlightedItem.isCollapsed && $ctrl.highlightedItem.level === 1) return;
+                if ($ctrl.highlightedItem.isCollapsed) $ctrl.highlightedItem = $ctrl.highlightedItem.parent;
+                toggleCollapse($ctrl.highlightedItem);
+            }
+
+            if (event.keyCode === KEY_RIGHT_ARROW && !$ctrl.highlightedItem.isLeaf) {
+                if ($ctrl.highlightedItem.isCollapsed) {
+                    toggleCollapse($ctrl.highlightedItem);
                 }
-            });
+            }
+        }
+
+        function scrollToItem (item) {
+            if (!item) return;
+
+            // Scroll to item in case that is currently not shown
+            // If it is lower in list scroll down so that it is displayed at the bottom,
+            // otherwise scroll up to show it at the top.
+            var $scrollContainer = $element.find('.scroll-container');
+            var height = $scrollContainer.height();
+
+            var idx = $ctrl.filteredList.indexOf(item);
+            var selectedPos = idx * $ctrl.ITEM_HEIGHT;
+
+            var viewFrom = $scrollContainer.scrollTop();
+            var viewTo = viewFrom + height;
+
+            if (selectedPos < viewFrom) {
+                $scrollContainer.scrollTop(selectedPos);
+            } else if (selectedPos >= viewTo) {
+                $scrollContainer.scrollTop(selectedPos - height + $ctrl.ITEM_HEIGHT);
+            }
         }
     }
 });

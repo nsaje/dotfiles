@@ -19,7 +19,7 @@
         />
     </div>
     <div class="zem-tree-select-dropdown" ng-class="{ 'zem-tree-select-dropdown--active': $ctrl.dropdownVisible }" tabindex="1" >
-        <ul class="zem-tree-select-dropdown__list scroll-container custom-scroller" vs-repeat vs-scroll-parent=".scroll-container" vs-size="30">
+        <ul class="zem-tree-select-dropdown__list scroll-container custom-scroller" vs-repeat vs-scroll-parent=".scroll-container" vs-size="{{$ctrl.ITEM_HEIGHT}}">
             <li ng-repeat="item in $ctrl.filteredList"
                 class="zem-tree-select-dropdown-item"
                 ng-click="$ctrl.toggleItemState(item); $event.stopPropagation();"
