@@ -62,20 +62,17 @@
         <div class="zem-tree-select-dropdown__info custom-scroller">
             <h2 class="zem-tree-select-dropdown-info__title">{{ $ctrl.highlightedItem.name }}</h2>
             <div class="zem-tree-select-dropdown-info__id">{{ $ctrl.highlightedItem.value.id }}</div>
-            <div class="zem-tree-select-dropdown-info__data-row">
+            <div ng-show="$ctrl.highlightedItem.isSelectable" class="zem-tree-select-dropdown-info__data-row">
                 CPM price: <strong>${{ $ctrl.highlightedItem.value.price }}</strong>
             </div>
-            <div class="zem-tree-select-dropdown-info__data-row m-b-s">
-                Reach: <strong>{{ $ctrl.highlightedItem.value.reach | number }}</strong>
+            <div ng-show="$ctrl.highlightedItem.isSelectable" class="zem-tree-select-dropdown-info__data-row m-b-s">
+                Reach: <strong>{{ $ctrl.highlightedItem.value.reach.value | number }}</strong>
                 <div class="zem-reach-bar">
                     <div class="zem-reach-bar__progress--background"></div>
-                    <div class="zem-reach-bar__progress" style="width: 5%;"></div>
+                    <div class="zem-reach-bar__progress" ng-style="{width: (100 - $ctrl.highlightedItem.value.reach.relative) + '%'}"></div>
                     <div class="zem-reach-bar__legend zem-reach-bar__legend--left">Specific</div>
                     <div class="zem-reach-bar__legend zem-reach-bar__legend--right">Broad</div>
                 </div>
-            </div>
-            <div class="zem-tree-select-dropdown-info__text m-b-s">
-                Category: Media & Entertainment > Sports > Team Sports
             </div>
             <div class="zem-tree-select-dropdown-info__text">
                 {{ $ctrl.highlightedItem.value.description }}

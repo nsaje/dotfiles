@@ -33,8 +33,6 @@ class SegmentReachView(restapi.views.RESTAPIBaseView):
             serializer.is_valid(raise_exception=True)
         except Exception as e:
             return self.response_ok({'errors': [e.message]})
-        try:
-            reach = service.get_segment_reach(serializer.validated_data)
-        except Exception as e:
-            reach = None
-        return self.response_ok({'reach': reach})
+
+        reach = service.get_reach(serializer.validated_data)
+        return self.response_ok(serializers.BlueKaiReachSerializer(reach).data)

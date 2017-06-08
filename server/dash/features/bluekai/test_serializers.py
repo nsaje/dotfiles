@@ -17,7 +17,11 @@ class TestBlueKaiCategorySerializer(TestCase):
             db_value = getattr(category, key)
             if isinstance(db_value, decimal.Decimal):
                 db_value = format(db_value, '0.2f')
+
             out_value = node[key]
+            if key == 'reach':
+                out_value = out_value['value']
+
             self.assertEqual(db_value, out_value)
 
         self.assertEqual(

@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemDemographicTargetingEndpoint', function ($q, $http, zemUtils) {
+angular.module('one.widgets').service('zemDemographicTargetingEndpoint', function ($q, $http, $filter, zemUtils) {
     this.getReach = getReach;
     this.getTaxonomy = getTaxonomy;
 
@@ -28,9 +28,7 @@ angular.module('one.widgets').service('zemDemographicTargetingEndpoint', functio
         var deferred = zemUtils.createAbortableDefer();
         var httpConfig = {timeout: deferred.abortPromise};
         $http.post(url, expression, httpConfig).success(function (data) {
-            var reach = {};
-            reach.value = data.data.reach;
-            reach.relative = getRelativeReach(reach.value);
+            var reach = data.data;
             REACH_CACHE[cacheKey] = reach;
             deferred.resolve(reach);
         }).error(function (err) {
@@ -39,11 +37,5 @@ angular.module('one.widgets').service('zemDemographicTargetingEndpoint', functio
 
         getReach.deferred = deferred;
         return deferred.promise;
-    }
-
-    function getRelativeReach (reach) {
-        var x = reach / 10000000;
-        var relative  = 1 - (1 / (x + 1));
-        return Math.round(relative * 100);
     }
 });

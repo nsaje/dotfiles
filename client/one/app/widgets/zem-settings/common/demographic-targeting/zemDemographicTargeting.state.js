@@ -103,11 +103,22 @@ angular.module('one.widgets').service('zemDemographicTargetingStateService', fun
                 return c.price > max ? c.price : max;
             }, 0);
 
+            updateReach();
+        }
+
+        function updateReach () {
             zemDemographicTargetingEndpoint.getReach(entity.settings.bluekaiTargeting).then (function (data) {
-                state.info.reach = {
-                    value: $filter('number')(data.value),
-                    relative: data.relative
-                };
+                if (data && data.value) {
+                    state.info.reach = {
+                        value: $filter('number')(data.value),
+                        relative: data.relative,
+                    };
+                } else {
+                    state.info.reach = {
+                        value: 'N/A',
+                        relative: 0,
+                    };
+                }
             }, function (error) {
                 if (!error) return; // Promise aborted
 

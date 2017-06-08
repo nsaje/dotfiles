@@ -1,5 +1,5 @@
 from .. import models
-
+import reach
 
 ROOT_NODE_ID = 671901
 
@@ -16,7 +16,10 @@ def get_tree():
             'description': category.description,
             'navigation_only': category.navigation_only,
             'price': category.price,
-            'reach': category.reach,
+            'reach': {
+                'value': category.reach,
+                'relative': reach.calculate_relative_reach(category.reach)
+            },
             'child_nodes': [],
         }
 

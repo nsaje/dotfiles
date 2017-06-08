@@ -18,9 +18,9 @@ class SegmentReachViewTestCase(TestCase):
         )
         self.client.force_authenticate(user=self.user)
 
-    @patch('dash.features.bluekai.service.get_segment_reach')
+    @patch('dash.features.bluekai.service.get_reach')
     def test_post(self, mock_get_reach):
-        mock_get_reach.return_value = 1000000
+        mock_get_reach.return_value = {'value': pow(10, 9), 'relative': 90}
         response = self.client.post(
             reverse('internal_bluekai_reach'),
             data={'AND': [{'OR': [{'category': 'bluekai:12345'}]}]},
@@ -30,6 +30,7 @@ class SegmentReachViewTestCase(TestCase):
         response_json = json.loads(response.content)
         self.assertEqual({
             'data': {
-                'reach': 1000000
+                'value': pow(10, 9),
+                'relative': 90
             }
         }, response_json)
