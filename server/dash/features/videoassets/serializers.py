@@ -22,12 +22,15 @@ class VideoAssetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.VideoAsset
-        fields = ('id', 'account', 'status', 'status_message', 'name', 'upload')
-        read_only_fields = ('id', 'account', 'status', 'status_message',)
+        fields = ('id', 'account', 'status', 'status_message', 'error_code',
+                  'error_message', 'name', 'upload', 'preview_url')
+        read_only_fields = ('id', 'account', 'status',)
 
     account = restapi.fields.IdField()
     status = restapi.fields.DashConstantField(constants.VideoAssetStatus)
     status_message = fields.CharField(read_only=True, source='get_status_message')
+    error_message = fields.CharField(read_only=True, source='get_error_message')
+    preview_url = fields.CharField(read_only=True, source='get_preview_url')
     name = fields.CharField()
     upload = UploadInfoSerializer(required=False)
 

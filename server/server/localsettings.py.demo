@@ -229,6 +229,7 @@ LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = 'https://{INSTANCE_NAME}.demo.zemanta.com/a
 LAMBDA_VIDEO_UPLOAD_SIGN_KEY = Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAIswgYgGCSqGSIb3DQEHBqB7MHkCAQAwdAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAzWH1/lXkjwsk2ck1wCARCAR4GeCQ7kKdCv0QWcyabSJ+96wQ30liQr8I6vHHzI1S8KaahSjhrPE98bRpI3OtMNfYeLB8a/sflXGLgLP8U9pfWeccf89MpL')
 LAMBDA_CALLBACK_HOST = 'https://{INSTANCE_NAME}.demo.zemanta.com/'.format(INSTANCE_NAME=os.environ.get('INSTANCE_NAME', 'demo123'))
 LAMBDA_ENVIRONMENT = 'demo'
+VIDEO_PREVIEW_URL = 'https://s3.amazonaws.com/zemvideos/transcoded/{videoasset_id}_1080p.mp4'
 
 # Slack hooks
 SLACK_INCOMING_HOOK_URL = Secret('').get()

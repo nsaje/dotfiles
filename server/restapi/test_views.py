@@ -53,17 +53,17 @@ class RESTAPITest(TestCase):
         self.maxDiff = None
 
     def assertResponseValid(self, r, status_code=200, data_type=dict):
-        self.assertNotIn('errorCode', r.content)
-        self.assertEqual(r.status_code, status_code)
         resp_json = json.loads(r.content)
+        self.assertNotIn('errorCode', resp_json)
+        self.assertEqual(r.status_code, status_code)
         self.assertIsInstance(resp_json['data'], data_type)
         if data_type == list:
             self.assertGreater(len(resp_json['data']), 0)
         return resp_json
 
     def assertResponseError(self, r, error_code):
-        self.assertIn('errorCode', r.content)
         resp_json = json.loads(r.content)
+        self.assertIn('errorCode', resp_json)
         self.assertEqual(resp_json['errorCode'], error_code)
 
 

@@ -28,12 +28,14 @@ class VideoAssetTest(restapi.test_views.RESTAPITest):
         r = self.assertResponseError(r, 'MissingDataError')
 
     def test_get(self):
-        video_asset = magic_mixer.blend(models.VideoAsset, account=self.account, name='myvideo')
+        video_asset = magic_mixer.blend(models.VideoAsset, account=self.account, name='myvideo',
+                                        error_code='4006')
         r = self.client.get(reverse('videoassets_details',
                                     kwargs=dict(videoasset_id=video_asset.id,
                                                 account_id=video_asset.account.id)))
         r = self.assertResponseValid(r)
-        self.assertEqual(r['data']['name'], 'myvideo')
+        self.assertEqual(r['data']['name'], video_asset.name)
+        self.assertEqual(r['data']['errorCode'], video_asset.error_code)
 
     def test_post(self):
         mock_s3_client = mock.Mock()
