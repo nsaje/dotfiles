@@ -113,12 +113,12 @@
                             <span class="loader"></span>Processing uploaded video
                         </div>
                         <div class="content-upload__video-uploader-preview" ng-if="ctrl.selectedCandidate.videoAsset.status === ctrl.videoAssetStatus.READY_FOR_USE">
-                            <a href>{{ctrl.selectedCandidate.videoAsset.name}}</a>
+                            <a href="{{ctrl.selectedCandidate.videoAsset.previewUrl}}" target="_blank">{{ctrl.selectedCandidate.videoAsset.name}}</a>
                         </div>
                     </div>
                 </div>
                 <div class="message message--error" ng-if="ctrl.fieldsApiErrors['videoAssetId']">Something went wrong. Please try again.</div>
-                <div class="message message--error" ng-if="ctrl.selectedCandidate.videoAsset.status === ctrl.videoAssetStatus.PROCESSING_ERROR">{{ctrl.selectedCandidate.videoAsset.statusMessage}}</div>
+                <div class="message message--error" ng-if="ctrl.selectedCandidate.videoAsset.status === ctrl.videoAssetStatus.PROCESSING_ERROR">{{ctrl.selectedCandidate.videoAsset.errorMessage}}</div>
             </div>
 
             <div class="form__group" ng-class="{'form--error': ctrl.fieldsHaveErrors('description')}">
