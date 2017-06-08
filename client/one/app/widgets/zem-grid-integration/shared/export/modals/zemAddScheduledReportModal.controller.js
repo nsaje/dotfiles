@@ -124,7 +124,7 @@ angular.module('one.widgets').service('zemAddScheduledReportModalEndpoint', func
             }).
             error(function (data) {
                 var errors = null;
-                if (data.data && data.data.errors) {
+                if (data && data.data && data.data.errors) {
                     errors = data.data.errors;
                 }
                 return deferred.reject(errors);

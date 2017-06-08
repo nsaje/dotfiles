@@ -80,7 +80,7 @@ angular.module('one.widgets').factory('zemUploadEndpointService', function ($htt
                 });
             }).error(function (data) {
                 var errors = null;
-                if (data.data && data.data.errors) {
+                if (data && data.data && data.data.errors) {
                     errors = zemUploadApiConverter.convertBatchErrorsFromApi(data.data.errors);
                 }
                 deferred.reject(errors);

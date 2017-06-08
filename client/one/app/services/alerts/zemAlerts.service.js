@@ -43,7 +43,9 @@ angular.module('one.services').service('zemAlertsService', function (zemAlertsEn
         alerts = [];
         zemAlertsEndpoint.getAlerts(level, entityId)
             .then(function (result) {
-                alerts = result.data.data.alerts.concat(alerts);
+                if (result.data && result.data.data) {
+                    alerts = result.data.data.alerts.concat(alerts);
+                }
                 pubSub.notify(EVENTS.ON_ALERTS_CHANGE);
             });
     }

@@ -122,6 +122,7 @@ angular.module('one.widgets').factory('zemGridEndpointService', function ($http,
     }
 
     function extendMetaData (breakdown, metaData) {
+        if (!breakdown) return;
 
         if (breakdown.batches) {
             metaData.ext.batches = breakdown.batches;

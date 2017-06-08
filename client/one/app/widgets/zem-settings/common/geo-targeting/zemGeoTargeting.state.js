@@ -239,7 +239,8 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
             }
 
             var outbrainNotSupported = function (id) {
-                return !geolocationMappings[id].outbrainId;
+                var geolocation = geolocationMappings[id];
+                return !(geolocation && geolocation.outbrainId);
             };
             if (exclusionRegionsWithoutZips.length > 0) {
                 infos.push(INFO_OUTBRAIN_EXCLUDED);
