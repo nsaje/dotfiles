@@ -11,12 +11,12 @@ S3_UPLOAD_PATH_FORMAT = 'upload/{videoasset_id}'
 
 
 ERROR_CODE_MESSAGES = {
-    4000: "File format not supported",
-    4001: "Width and height too large",
-    4002: "File size too large",
-    4006: "File format not supported",
-    4008: "Invalid file: Missing audio or video",
-    4100: "Invalid file: Could not interpret embedded caption track",
+    '4000': "File format not supported",
+    '4001': "Width and height too large",
+    '4002': "File size too large",
+    '4006': "File format not supported",
+    '4008': "Invalid file: Missing audio or video",
+    '4100': "Invalid file: Could not interpret embedded caption track",
 }
 
 
