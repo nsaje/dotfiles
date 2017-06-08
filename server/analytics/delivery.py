@@ -116,8 +116,8 @@ def check_campaign_delivery(campaign, campaign_settings, campaign_stats, prev_ca
 
 
 def check_ad_group_delivery(ad_group, ad_group_settings, ad_group_stats):
-    media = ad_group_stats.get('media')
-    data = ad_group_stats.get('data')
+    # media = ad_group_stats.get('media')
+    # data = ad_group_stats.get('data')
     content_ads = dash.models.ContentAd.objects.filter(ad_group=ad_group)
     active_sources = dash.models.AdGroupSource.objects.filter(ad_group=ad_group).filter_active()
     b1_active_sources = active_sources.filter(
@@ -140,8 +140,8 @@ def check_ad_group_delivery(ad_group, ad_group_settings, ad_group_stats):
             return 'whitelist-and-interest-targeting'
         if ad_group_settings.bluekai_targeting:
             return 'whitelist-and-data-targeting'
-    if _extract_unbillable_data_segments(ad_group_settings.bluekai_targeting) and media and not data:
-        return 'missing-data-cost'
+    # if _extract_unbillable_data_segments(ad_group_settings.bluekai_targeting) and media and not data:
+    #     return 'missing-data-cost'
     return 'ok'
 
 
