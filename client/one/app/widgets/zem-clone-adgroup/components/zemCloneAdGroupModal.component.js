@@ -28,14 +28,16 @@ angular.module('one.widgets').component('zemCloneAdGroupModal', {
         $ctrl.requestInProgress = false;
 
         $ctrl.$onInit = function () {
-            $ctrl.store = getDataStore();
-            zemNavigationNewService.getNavigationHierarchyPromise().then(function () {
+            var promise = zemNavigationNewService.getNavigationHierarchyPromise().then(function () {
                 $ctrl.campaign = zemNavigationNewService.getEntityById(
                     constants.entityType.CAMPAIGN, $ctrl.resolve.campaignId);
                 $ctrl.adGroup = zemNavigationNewService.getEntityById(
                     constants.entityType.AD_GROUP, $ctrl.resolve.adGroupId);
                 $ctrl.destinationAdGroupName = $ctrl.adGroup.name + ' (Copy)';
+
+                return getDataStoreItems();
             });
+            $ctrl.store = zemSelectDataStore.createInstance(promise);
         };
 
         function submit () {
@@ -60,27 +62,25 @@ angular.module('one.widgets').component('zemCloneAdGroupModal', {
             });
         }
 
-        function getDataStore () {
-            var promise = zemNavigationNewService.getNavigationHierarchyPromise().then(function () {
-                return getDataStoreItems();
-            });
-
-            return zemSelectDataStore.createInstance(promise);
-        }
-
         function getDataStoreItems () {
-            var campaigns = [];
+            var item, campaigns = [], top = [];
             angular.forEach(zemNavigationNewService.getNavigationHierarchy().ids.campaigns, function (value) {
                 if (!value.data.archived) {
-                    campaigns.push({
+                    item = {
                         id: value.id,
                         name: value.name,
                         h1: value.parent.name,
                         searchableName: value.parent.name + ' ' + value.name,
-                    });
+                    };
+                    if (value.parent.id === $ctrl.campaign.parent.id) {
+                        // put current account campaigns to the top
+                        top.push(item);
+                    } else {
+                        campaigns.push(item);
+                    }
                 }
             });
-            return campaigns;
+            return top.concat(campaigns);
         }
 
         function onCampaignSelected (item) {

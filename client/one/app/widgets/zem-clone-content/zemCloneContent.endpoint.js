@@ -27,9 +27,12 @@ angular.module('one.widgets').service('zemCloneContentEndpoint', function ($q, $
             destinationBatchName: config.destinationBatchName,
         };
 
-        if (converted.state !== null) {
-            var state = config.state ? constants.settingsState.ACTIVE : constants.settingsState.INACTIVE;
-            converted.state = constants.convertToName(state, constants.settingsState);
+        if (config.state === true) {
+            converted.state = constants.convertToName(constants.settingsState.ACTIVE, constants.settingsState);
+        } else if (config.state === false) {
+            converted.state = constants.convertToName(constants.settingsState.INACTIVE, constants.settingsState);
+        } else {
+            converted.state = null;
         }
 
         return converted;

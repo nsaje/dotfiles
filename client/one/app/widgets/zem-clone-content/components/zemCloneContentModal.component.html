@@ -28,7 +28,7 @@
         <div class="form__radio">
             <label>
                 <input class="input-radio" type="radio" id="cloned-content-state"
-                    ng-model="$ctrl.clonedContentState" ng-value="null">
+                    ng-model="$ctrl.clonedContentState" ng-value="{{ null }}">
                 <span class="radio-text">
                     Cloned ads will keep their state
                 </span>
@@ -37,7 +37,7 @@
         <div class="form__radio">
             <label>
                 <input class="input-radio" type="radio" id="cloned-content-state"
-                    ng-model="$ctrl.clonedContentState" ng-value="true">
+                       ng-model="$ctrl.clonedContentState" ng-value="{{ true }}">
                 <span class="radio-text">
                     All cloned ads will be <b>enabled</b>
                 </span>
@@ -46,7 +46,7 @@
         <div class="form__radio">
             <label>
                 <input class="input-radio" type="radio" id="cloned-content-state"
-                    ng-model="$ctrl.clonedContentState" ng-value="false">
+                       ng-model="$ctrl.clonedContentState" ng-value="{{ false }}">
                 <span class="radio-text">
                     All cloned ads will be <b>paused</b>
                 </span>

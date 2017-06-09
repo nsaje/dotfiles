@@ -12,6 +12,7 @@
                placeholder="{{ $ctrl.texts.placeholder }}"
                ng-model="$ctrl.searchQuery"
                ng-change="$ctrl.onSearch($ctrl.searchQuery)"
+               ng-model-options="{ debounce: { default: 250, blur: 0 } }"
         />
         <div class="zem-select-dropdown" ng-class="{ 'zem-select-dropdown--active': $ctrl.dropdownVisible }" tabindex="3">
             <ul class="zem-select-dropdown__list scroll-container custom-scroller"

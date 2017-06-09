@@ -28,15 +28,17 @@ angular.module('one.widgets').component('zemCloneContentModal', {
         $ctrl.requestInProgress = false;
 
         $ctrl.$onInit = function () {
-            $ctrl.store = getDataStore();
-            zemNavigationNewService.getNavigationHierarchyPromise().then(function () {
+            var promise = zemNavigationNewService.getNavigationHierarchyPromise().then(function () {
                 $ctrl.adGroup = zemNavigationNewService.getEntityById(
                     constants.entityType.AD_GROUP, $ctrl.resolve.adGroupId);
                 var user = zemUserService.current(),
                     time = moment().utc().add(user ? user.timezoneOffset : 0, 'seconds').format('M/D/YYYY h:mm A');
 
                 $ctrl.destinationBatchName = 'Cloned from ' + $ctrl.adGroup.name + ' on ' + time;
+
+                return getDataStoreItems();
             });
+            $ctrl.store = zemSelectDataStore.createInstance(promise);
         };
 
         function submit () {
@@ -60,29 +62,26 @@ angular.module('one.widgets').component('zemCloneContentModal', {
 
         // zem UI select properties
         //
-
-        function getDataStore () {
-            var promise = zemNavigationNewService.getNavigationHierarchyPromise().then(function () {
-                return getDataStoreItems();
-            });
-
-            return zemSelectDataStore.createInstance(promise);
-        }
-
         function getDataStoreItems () {
-            var adGroups = [];
+            var item, adGroups = [], top = [];
             angular.forEach(zemNavigationNewService.getNavigationHierarchy().ids.adGroups, function (value) {
                 if (!value.data.archived) {
-                    adGroups.push({
+                    item = {
                         id: value.id,
                         name: value.name,
                         h1: value.parent.parent.name,
                         h2: value.parent.name,
                         searchableName: value.parent.parent.name + ' ' + value.parent.name + ' ' + value.name,
-                    });
+                    };
+                    if (value.parent.parent.id === $ctrl.adGroup.parent.parent.id) {
+                        // put current account to top
+                        top.push(item);
+                    } else {
+                        adGroups.push(item);
+                    }
                 }
             });
-            return adGroups;
+            return top.concat(adGroups);
         }
 
         function onAdGroupSelected (item) {
