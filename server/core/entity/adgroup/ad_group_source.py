@@ -87,8 +87,7 @@ class AdGroupSourceManager(core.common.QuerySetManager):
             ad_group.write_history_source_added(request, ad_group_source)
 
         from dash.views import helpers  # TODO circular dependency
-        ad_group_source.set_cloned_settings(None, source_ad_group_source,
-                                            active=helpers.get_source_initial_state(ad_group_source))
+        ad_group_source.set_cloned_settings(None, source_ad_group_source)
 
         if settings.K1_CONSISTENCY_SYNC:
             from dash import api  # TODO circular dependency
@@ -101,7 +100,8 @@ class AdGroupSourceManager(core.common.QuerySetManager):
 
     @transaction.atomic
     def bulk_clone_on_allowed_sources(self, request, ad_group, source_ad_group, write_history=True, k1_sync=True):
-        map_source_ad_group_sources = {x.source_id: x for x in source_ad_group.adgroupsource_set.all()}
+        ad_group_sources = source_ad_group.adgroupsource_set.all().select_related('source')
+        map_source_ad_group_sources = {x.source_id: x for x in ad_group_sources}
 
         added_ad_group_sources = []
         for source in ad_group.campaign.account.allowed_sources.all():
@@ -205,13 +205,12 @@ class AdGroupSource(models.Model):
         from dash import api  # TODO circular import
         api.set_ad_group_source_settings(self, resource, request, ping_k1=False)
 
-    def set_cloned_settings(self, request, source_ad_group_source, active=False):
+    def set_cloned_settings(self, request, source_ad_group_source):
         source_ad_group_source_settings = source_ad_group_source.get_current_settings()
         resource = {
             'daily_budget_cc': source_ad_group_source_settings.daily_budget_cc,
             'cpc_cc': source_ad_group_source_settings.cpc_cc,
-            'state': (constants.AdGroupSourceSettingsState.ACTIVE if active
-                      else constants.AdGroupSourceSettingsState.INACTIVE),
+            'state': source_ad_group_source_settings.state,
         }
 
         from dash import api  # TODO circular import
