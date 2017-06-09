@@ -122,7 +122,7 @@ class AdGroupSettings(api_common.BaseApiView):
             changes, current_settings, new_settings)
 
         if current_settings.bluekai_targeting != new_settings.bluekai_targeting:
-            influx.incr('dash.agency.bluekai_targeting_change', adgroup=str(ad_group.id))
+            influx.incr('dash.agency.bluekai_targeting_change', 1, adgroup=str(ad_group.id))
 
         # save
         ad_group.save(request)
