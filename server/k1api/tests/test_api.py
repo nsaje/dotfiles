@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-class K1ApiTest(TestCase):
+class K1ApiBaseTest(TestCase):
 
     fixtures = ['test_publishers.yaml', 'test_k1_api.yaml']
 
@@ -58,6 +58,15 @@ class K1ApiTest(TestCase):
         )
         self.assertEqual(response.status_code, 404)
 
+    def _assert_response_ok(self, response, data):
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('error', data)
+        self.assertEqual(data['error'], None)
+        self.assertIn('response', data)
+        self.assertNotEqual(data['response'], None)
+
+
+class K1ApiTest(K1ApiBaseTest):
     def test_404_without_signature(self):
         self.test_signature = False
         self.mock_verify_wsgi_request.side_effect = request_signer.SignatureError
@@ -75,13 +84,6 @@ class K1ApiTest(TestCase):
         ]
         for path in test_paths:
             self._test_signature(path)
-
-    def _assert_response_ok(self, response, data):
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('error', data)
-        self.assertEqual(data['error'], None)
-        self.assertIn('response', data)
-        self.assertNotEqual(data['response'], None)
 
     def test_get_accounts(self):
         response = self.client.get(
@@ -708,6 +710,7 @@ class K1ApiTest(TestCase):
             u'max_cpm': u'1.6000',
             u'whitelist_publisher_groups': ListMatcher([1, 2, 5, 6, 9, 10]),
             u'blacklist_publisher_groups': ListMatcher([3, 4, 7, 8, 11, 12]),
+            u'budget_pacing_type': 1,
         })
 
     def test_get_ad_groups(self):
@@ -1276,7 +1279,7 @@ class K1ApiTest(TestCase):
         self.assertEqual(response.status_code, 400)
 
 
-class GeolocationsTest(K1ApiTest):
+class GeolocationsTest(K1ApiBaseTest):
 
     def setUp(self):
         self.locs = [{'key': 'US', 'name': 'america', 'outbrain_id': 'abcdef', 'woeid': '123'},

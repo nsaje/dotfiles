@@ -2197,3 +2197,13 @@ class VideoPlaybackMethod(ConstantBase):
         ON_VIEWPORT_ENTER_SOUND_ON: "On Viewport Enter Sound On",
         ON_VIEWPORT_ENTER_SOUND_OFF: "On Viewport Enter Sound Off",
     }
+
+
+class BudgetPacingType(ConstantBase):
+    STANDARD = 1
+    ACCELERATED = 2
+
+    _VALUES = {
+        STANDARD: 'Standard',
+        ACCELERATED: 'Accelerated',
+    }

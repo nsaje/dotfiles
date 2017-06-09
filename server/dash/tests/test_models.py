@@ -86,6 +86,7 @@ class AdGroupSettingsTest(TestCase):
             'b1_sources_group_cpc_cc': Decimal('0.1'),
             'whitelist_publisher_groups': [1],
             'blacklist_publisher_groups': [2],
+            'budget_pacing_type': 1,
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),

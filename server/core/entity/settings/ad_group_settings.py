@@ -126,6 +126,7 @@ class AdGroupSettings(SettingsBase):
         'b1_sources_group_state',
         'dayparting',
         'max_cpm',
+        'budget_pacing_type',
     ]
     history_fields = list(_settings_fields)
 
@@ -233,6 +234,11 @@ class AdGroupSettings(SettingsBase):
         blank=True,
         null=True,
         verbose_name='Maximum CPM'
+    )
+
+    budget_pacing_type = models.IntegerField(
+        default=constants.BudgetPacingType.STANDARD,
+        choices=constants.BudgetPacingType.get_choices(),
     )
 
     def get_settings_dict(self):
@@ -346,6 +352,7 @@ class AdGroupSettings(SettingsBase):
             'b1_sources_group_daily_budget': 'Daily budget for all RTB sources',
             'b1_sources_group_cpc_cc': 'Bid CPC for all RTB sources',
             'b1_sources_group_state': 'State of all RTB sources',
+            'budget_pacing_type': 'Budget pacing type',
         }
 
         return NAMES[prop_name]
