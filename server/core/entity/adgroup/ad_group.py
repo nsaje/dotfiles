@@ -26,10 +26,6 @@ class AdGroupManager(core.common.QuerySetManager):
         return core.entity.helpers.create_default_name(
             AdGroup.objects.filter(campaign=campaign), 'New ad group')
 
-    def _create_cloned_name(self, campaign, source_ad_group):
-        return core.entity.helpers.create_default_name(
-            AdGroup.objects.filter(campaign=campaign), '{} (Copy)'.format(source_ad_group.name))
-
     def _create(self, request, campaign, **kwargs):
         ad_group = AdGroup(campaign=campaign, **kwargs)
         ad_group.save(request)
@@ -59,9 +55,9 @@ class AdGroupManager(core.common.QuerySetManager):
         ad_group.write_history_created(request)
         return ad_group
 
-    def clone(self, request, source_ad_group, campaign):
+    def clone(self, request, source_ad_group, campaign, new_name):
         with transaction.atomic():
-            ad_group = self._create(request, campaign, name=self._create_cloned_name(campaign, source_ad_group))
+            ad_group = self._create(request, campaign, name=new_name)
             ad_group_settings = core.entity.settings.AdGroupSettings.objects.clone(
                 request, ad_group, source_ad_group.get_current_settings())
 

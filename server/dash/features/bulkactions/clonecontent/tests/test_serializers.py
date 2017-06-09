@@ -1,5 +1,4 @@
 from django.test import TestCase
-from rest_framework.serializers import ValidationError
 
 from utils.magic_mixer import magic_mixer
 from utils import test_helper
@@ -11,62 +10,25 @@ from .. import serializers
 
 class CloneContentAdsSerializer(TestCase):
 
-    def test_validate_no_select_all(self):
-        form = serializers.CloneContentAdsSerializer(data={
-            'ad_group_id': '123',
-            'destination_ad_group_id': '223',
-        })
-
-        with self.assertRaises(ValidationError):
-            form.is_valid(raise_exception=True)
-
-    def test_validate_select_batch(self):
-        form = serializers.CloneContentAdsSerializer(data={
-            'ad_group_id': '123',
-            'destination_ad_group_id': '223',
-            'batch_id': '1',
-        })
-
-        form.is_valid(raise_exception=True)
-        self.assertEqual(form.validated_data, {
-            'ad_group_id': 123,
-            'destination_ad_group_id': 223,
-            'batch_id': 1,
-        })
-
-    def test_validate_select_content_ads(self):
-        form = serializers.CloneContentAdsSerializer(data={
-            'ad_group_id': '123',
-            'destination_ad_group_id': '223',
-            'content_ad_ids': ['1'],
-        })
-
-        form.is_valid(raise_exception=True)
-        self.assertEqual(form.validated_data, {
-            'ad_group_id': 123,
-            'destination_ad_group_id': 223,
-            'content_ad_ids': [1],
-        })
-
-
-class CloneContentAdsInternalSerializer(TestCase):
-
     def test_validate_select_all(self):
-        form = serializers.CloneContentAdsInternalSerializer(data={
+        form = serializers.CloneContentAdsSerializer(data={
             'ad_group_id': '123',
             'destination_ad_group_id': '223',
+            'destination_batch_name': 'asd',
         })
 
         form.is_valid(raise_exception=True)
         self.assertEqual(form.validated_data, {
             'ad_group_id': 123,
             'destination_ad_group_id': 223,
+            'destination_batch_name': 'asd',
         })
 
     def test_validate_select_batch(self):
-        form = serializers.CloneContentAdsInternalSerializer(data={
+        form = serializers.CloneContentAdsSerializer(data={
             'ad_group_id': '123',
             'destination_ad_group_id': '223',
+            'destination_batch_name': 'asd',
             'batch_id': '1',
         })
 
@@ -74,13 +36,15 @@ class CloneContentAdsInternalSerializer(TestCase):
         self.assertEqual(form.validated_data, {
             'ad_group_id': 123,
             'destination_ad_group_id': 223,
+            'destination_batch_name': 'asd',
             'batch_id': 1,
         })
 
     def test_validate_select_content_ads(self):
-        form = serializers.CloneContentAdsInternalSerializer(data={
+        form = serializers.CloneContentAdsSerializer(data={
             'ad_group_id': '123',
             'destination_ad_group_id': '223',
+            'destination_batch_name': 'asd',
             'content_ad_ids': ['1'],
         })
 
@@ -88,6 +52,7 @@ class CloneContentAdsInternalSerializer(TestCase):
         self.assertEqual(form.validated_data, {
             'ad_group_id': 123,
             'destination_ad_group_id': 223,
+            'destination_batch_name': 'asd',
             'content_ad_ids': [1],
         })
 

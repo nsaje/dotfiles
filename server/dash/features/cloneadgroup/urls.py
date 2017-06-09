@@ -4,7 +4,7 @@ import views
 
 urlpatterns = [
     url(
-        r'^v1/adgroups/clone/$',
+        r'^internal/adgroups/clone/$',
         views.CloneAdGroup.as_view(),
         name='ad_group_clone'
     ),

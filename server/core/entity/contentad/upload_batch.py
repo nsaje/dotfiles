@@ -16,8 +16,8 @@ class UploadBatchManager(models.Manager):
         batch.save(user=user)
         return batch
 
-    def clone(self, user, source_ad_group, ad_group):
-        return self.create(user, UploadBatch.generate_cloned_name(source_ad_group), ad_group)
+    def clone(self, user, source_ad_group, ad_group, new_batch_name=None):
+        return self.create(user, new_batch_name or UploadBatch.generate_cloned_name(source_ad_group), ad_group)
 
     def create_for_file(self, user, name, ad_group, original_filename, auto_save, is_edit):
         batch = UploadBatch(

@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemCloneContentModal', {
         modalInstance: '<',
     },
     templateUrl: '/app/widgets/zem-clone-content/components/zemCloneContentModal.component.html',
-    controller: function ($q, zemNavigationNewService, zemCloneContentService, zemSelectionService, zemSelectDataStore) { //eslint-disable-line max-len
+    controller: function ($q, zemUserService, zemNavigationNewService, zemCloneContentService, zemSelectionService, zemSelectDataStore) { //eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.texts = {
             placeholder: 'Search ad group ...'
@@ -21,6 +21,7 @@ angular.module('one.widgets').component('zemCloneContentModal', {
         //
         $ctrl.adGroup = null;
         $ctrl.destinationAdGroupId = null;
+        $ctrl.destinationBatchName = null;
         $ctrl.clonedContentState = null;
 
         $ctrl.errors = null;
@@ -31,6 +32,10 @@ angular.module('one.widgets').component('zemCloneContentModal', {
             zemNavigationNewService.getNavigationHierarchyPromise().then(function () {
                 $ctrl.adGroup = zemNavigationNewService.getEntityById(
                     constants.entityType.AD_GROUP, $ctrl.resolve.adGroupId);
+                var user = zemUserService.current(),
+                    time = moment().utc().add(user ? user.timezoneOffset : 0, 'seconds').format('M/D/YYYY h:mm A');
+
+                $ctrl.destinationBatchName = 'Cloned from ' + $ctrl.adGroup.name + ' on ' + time;
             });
         };
 
@@ -41,6 +46,7 @@ angular.module('one.widgets').component('zemCloneContentModal', {
                 adGroupId: $ctrl.resolve.adGroupId,
                 selection: $ctrl.resolve.selection,
                 destinationAdGroupId: $ctrl.destinationAdGroupId,
+                destinationBatchName: $ctrl.destinationBatchName,
                 state: $ctrl.clonedContentState
             }).then(function (data) {
                 $ctrl.modalInstance.close(data);

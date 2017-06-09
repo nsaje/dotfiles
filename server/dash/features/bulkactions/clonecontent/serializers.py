@@ -14,32 +14,17 @@ class CloneContentAdsSerializer(serializers.Serializer):
     ad_group_id = restapi.fields.IdField()
     batch_id = restapi.fields.IdField(required=False, allow_null=True)
     content_ad_ids = fields.ListField(child=restapi.fields.IdField(), required=False)
-
-    destination_ad_group_id = restapi.fields.IdField()
-
-    def validate(self, data):
-        if not data.get('batch_id') and not data.get('content_ad_ids'):
-            # public endpoint does not allow select all
-            raise serializers.ValidationError('Upload batch or content ads should be selected')
-        return data
-
-
-class CloneContentAdsInternalSerializer(CloneContentAdsSerializer):
-
     deselected_content_ad_ids = fields.ListField(child=restapi.fields.IdField(), required=False)
+
+    destination_ad_group_id = restapi.fields.IdField(error_messages={
+        'required': 'Please select destination ad group',
+        'null': 'Please select destination ad group',
+    })
+    destination_batch_name = serializers.CharField(required=True, error_messages={
+        'required': 'Please provide a name for destination upload batch',
+        'blank': 'Please provide a name for destination upload batch'
+    })
     state = restapi.fields.DashConstantField(constants.ContentAdSourceState, required=False, allow_null=True)
-
-    def validate(self, data):
-        return data
-
-
-class UploadBatchSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = core.entity.UploadBatch
-        fields = ('id', 'name', 'ad_group_id')
-
-    id = restapi.fields.IdField()
-    ad_group_id = restapi.fields.IdField()
 
 
 class AdGroupSerializer(serializers.ModelSerializer):
@@ -50,7 +35,7 @@ class AdGroupSerializer(serializers.ModelSerializer):
     id = restapi.fields.IdField()
 
 
-class UploadBatchInternalSerializer(serializers.ModelSerializer):
+class UploadBatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = core.entity.UploadBatch
         fields = ('id', 'name', 'ad_group')

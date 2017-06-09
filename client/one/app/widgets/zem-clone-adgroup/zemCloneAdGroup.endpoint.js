@@ -2,24 +2,40 @@ angular.module('one.widgets').service('zemCloneAdGroupEndpoint', function ($q, $
     this.clone = clone;
 
     function clone (adGroupId, config) {
-        var url = '/rest/v1/adgroups/clone/',
+        var url = '/rest/internal/adgroups/clone/',
             params = {
                 adGroupId: adGroupId,
                 destinationCampaignId: config.destinationCampaignId,
+                destinationAdGroupName: config.destinationAdGroupName,
             };
 
         var deferred = $q.defer();
         $http.post(url, params)
             .then(function (data) {
-                // TODO Using RESTAPI, convert fields to the right entity representation
-                data.id = parseInt(data.id);
-                data.parentId = parseInt(config.destinationCampaignId);
-                deferred.resolve(data.data.data);
+                deferred.resolve(convertFromApi(data.data.data));
             })
             .catch(function (data) {
-                deferred.reject(data.data.details);
+                deferred.reject(convertErrorsFromApi(data));
             });
 
         return deferred.promise;
+    }
+
+    function convertFromApi (data) {
+        var converted = angular.extend({}, data);
+        converted.id = parseInt(data.id);
+        converted.parentId = parseInt(data.destinationCampaignId);
+        converted.state = constants.convertFromName(data.state, constants.settingsState);
+        converted.status = constants.convertFromName(data.status, constants.adGroupRunningStatus);
+        converted.active = constants.convertFromName(data.active, constants.infoboxStatus);
+        return converted;
+    }
+
+    function convertErrorsFromApi (data) {
+        return {
+            destinationCampaignId: data.data.destinationCampaignId ? data.data.destinationCampaignId[0] : null,
+            destinationAdGroupName: data.data.destinationAdGroupName ? data.data.destinationAdGroupName[0] : null,
+            message: data.status === 500 ? 'Something went wrong' : null,
+        };
     }
 });

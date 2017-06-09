@@ -46,10 +46,11 @@ class AdGroupClone(TestCase):
         source_ad_group = magic_mixer.blend(core.entity.AdGroup)
 
         campaign = magic_mixer.blend(core.entity.Campaign)
-        ad_group = core.entity.AdGroup.objects.clone(request, source_ad_group, campaign)
+        ad_group = core.entity.AdGroup.objects.clone(request, source_ad_group, campaign, 'asd')
 
         self.assertNotEqual(ad_group.pk, source_ad_group.pk)
         self.assertEqual(ad_group.campaign, campaign)
+        self.assertEqual(ad_group.name, 'asd')
 
         self.assertTrue(mock_bulk_clone.called)
         self.assertTrue(mock_insert_adgroup.called)

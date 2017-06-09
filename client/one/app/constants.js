@@ -2,6 +2,21 @@
 
 var constants = {
     /**
+     * The following two functions are used to convert constants to its property names
+     * and vice versa. This comes in handy when dealing with the new REST api endpoints
+     * that convert eg. 1 to "ACTIVE".
+     */
+    convertToName: function (value, constantsObj) {
+        for (var prop in constantsObj) {
+            if (constantsObj.hasOwnProperty(prop) && constantsObj[prop] === value) {
+                return prop;
+            }
+        }
+    },
+    convertFromName: function (value, constantsObj) {
+        return constantsObj[value];
+    },
+    /**
      * Max. selected media sources in on sources tabs.
      */
     maxSelectedSources: 3,

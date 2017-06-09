@@ -17,13 +17,10 @@ class CloneContentAds(restapi.views.RESTAPIBaseView):
     renderer_classes = (CamelCaseJSONRenderer,)
     parser_classes = (CamelCaseJSONParser,)
 
-    input_serializer = serializers.CloneContentAdsSerializer
-    output_serializer = serializers.UploadBatchSerializer
-
     def post(self, request):
         user = request.user
 
-        form = self.input_serializer(data=request.data, context=self.get_serializer_context())
+        form = serializers.CloneContentAdsSerializer(data=request.data, context=self.get_serializer_context())
         form.is_valid(raise_exception=True)
 
         ad_group = restapi.access.get_ad_group(user, form.validated_data['ad_group_id'])
@@ -34,12 +31,6 @@ class CloneContentAds(restapi.views.RESTAPIBaseView):
             ad_group,
             serializers.get_content_ads(content_ads, form.validated_data),
             restapi.access.get_ad_group(user, form.validated_data['destination_ad_group_id']),
-            form.validated_data.get('state'))
+            form.validated_data['destination_batch_name'], form.validated_data.get('state'))
 
-        return self.response_ok(self.output_serializer(destination_batch).data)
-
-
-class InternalCloneContentAds(CloneContentAds):
-
-    input_serializer = serializers.CloneContentAdsInternalSerializer
-    output_serializer = serializers.UploadBatchInternalSerializer
+        return self.response_ok(serializers.UploadBatchSerializer(destination_batch).data)
