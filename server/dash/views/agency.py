@@ -3,6 +3,8 @@ import re
 import logging
 import decimal
 
+import influx
+
 from django.db import transaction
 from django.db.models import Prefetch
 from django.db.models import Q
@@ -118,6 +120,9 @@ class AdGroupSettings(api_common.BaseApiView):
         changes = current_settings.get_setting_changes(new_settings)
         changes, current_settings, new_settings = self.b1_sources_group_adjustments(
             changes, current_settings, new_settings)
+
+        if current_settings.bluekai_targeting != new_settings.bluekai_targeting:
+            influx.incr('dash.agency.bluekai_targeting_change', adgroup=str(ad_group.id))
 
         # save
         ad_group.save(request)
