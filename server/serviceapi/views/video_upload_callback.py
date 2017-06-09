@@ -11,12 +11,21 @@ from .. import authentication
 SERVICE_NAME = 'l1-video-upload'
 
 
+class FormatSerializer(serializers.Serializer):
+    width = serializers.IntegerField()
+    height = serializers.IntegerField()
+    bitrate = serializers.IntegerField()
+    mime = serializers.CharField()
+    filename = serializers.CharField()
+
+
 class PutSerializer(serializers.ModelSerializer):
     class Meta:
         model = dash.features.videoassets.models.VideoAsset
-        fields = ('status', 'error_code')
+        fields = ('status', 'error_code', 'duration', 'formats')
 
     status = restapi.fields.DashConstantField(dash.features.videoassets.constants.VideoAssetStatus)
+    formats = FormatSerializer(many=True, required=False)
 
 
 class VideoUploadCallbackView(base.ServiceAPIBaseView):
@@ -28,6 +37,9 @@ class VideoUploadCallbackView(base.ServiceAPIBaseView):
         serializer.is_valid(raise_exception=True)
 
         videoasset = dash.features.videoassets.models.VideoAsset.objects.get(pk=videoasset_id)
-        videoasset.update_progress(serializer.validated_data['status'], serializer.validated_data.get('error_code'))
+        videoasset.update_progress(status=serializer.validated_data['status'],
+                                   error_code=serializer.validated_data.get('error_code'),
+                                   duration=serializer.validated_data.get('duration'),
+                                   formats=serializer.validated_data.get('formats'))
 
         return self.response_ok('ok')

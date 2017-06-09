@@ -19,13 +19,22 @@ class VideoUploadCallbackTestCase(TestCase):
                                             status=dash.features.videoassets.constants.VideoAssetStatus.NOT_UPLOADED)
 
     def test_put(self):
-        data = {'status': 'PROCESSING'}
+        data = {'status': 'PROCESSING', 'duration': 23, 'formats': [{
+            'width': 123,
+            'height': 321,
+            'bitrate': 4500,
+            'mime': 'video/mp4',
+            'filename': 'x.mp4'
+        }]}
         r = self.client.put(
             reverse('service.videoassets', kwargs={'videoasset_id': self.videoasset.id}),
             data=data, format='json')
         self.assertEqual(r.content, '{"data":"ok"}')
         self.videoasset.refresh_from_db()
         self.assertEqual(self.videoasset.status, dash.features.videoassets.constants.VideoAssetStatus.PROCESSING)
+        self.assertEqual(self.videoasset.duration, 23)
+        self.assertEqual(self.videoasset.formats[0]['width'], 123)
+        self.assertEqual(self.videoasset.formats[0]['filename'], 'x.mp4')
 
     def test_put_error(self):
         data = {'status': 'PROCESSING_ERROR', 'errorCode': 4006}

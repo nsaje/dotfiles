@@ -1,5 +1,6 @@
 import uuid
 import boto3
+import jsonfield
 
 from django.db import models
 from django.conf import settings
@@ -18,6 +19,14 @@ ERROR_CODE_MESSAGES = {
     '4008': "Invalid file: Missing audio or video",
     '4100': "Invalid file: Could not interpret embedded caption track",
 }
+
+
+def validate_format(item):
+    assert isinstance(item.get('width'), int)
+    assert isinstance(item.get('height'), int)
+    assert isinstance(item.get('bitrate'), int)
+    assert isinstance(item.get('mime'), basestring)
+    assert isinstance(item.get('filename'), basestring)
 
 
 class VideoAssetManager(models.Manager):
@@ -43,6 +52,8 @@ class VideoAsset(models.Model):
     error_code = models.CharField(max_length=20, blank=True, null=True)
 
     name = models.CharField(max_length=255)
+    duration = models.IntegerField(null=True, blank=True)
+    formats = jsonfield.fields.JSONField(blank=True, null=True)
 
     def get_s3_presigned_url(self):
         if self.status != constants.VideoAssetStatus.NOT_UPLOADED:
@@ -71,10 +82,18 @@ class VideoAsset(models.Model):
             return ERROR_CODE_MESSAGES.get(self.error_code, "Unknown error, please contact support.")
 
     def get_preview_url(self):
-        if self.status == constants.VideoAssetStatus.READY_FOR_USE:
-            return settings.VIDEO_PREVIEW_URL.format(videoasset_id=self.id)  # TODO(nsaje): fix format when width x height is saved
+        if self.status == constants.VideoAssetStatus.READY_FOR_USE and len(self.formats) > 0:
+            format = self.formats[0]
+            return settings.VIDEO_PREVIEW_URL.format(filename=format['filename'])
 
-    def update_progress(self, new_status, error_code=None):
-        self.status = new_status
-        self.error_code = error_code
+    def update_progress(self, status, error_code=None, duration=None, formats=None):
+        self.status = status
+        if error_code is not None:
+            self.error_code = error_code
+        if duration is not None:
+            self.duration = duration
+        if formats is not None:
+            for item in formats:
+                validate_format(item)
+            self.formats = formats
         self.save()
