@@ -86,7 +86,6 @@ class AdGroupSourceManager(core.common.QuerySetManager):
         if write_history:
             ad_group.write_history_source_added(request, ad_group_source)
 
-        from dash.views import helpers  # TODO circular dependency
         ad_group_source.set_cloned_settings(None, source_ad_group_source)
 
         if settings.K1_CONSISTENCY_SYNC:
