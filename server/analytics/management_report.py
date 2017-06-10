@@ -30,7 +30,7 @@ LIST_REPORT_DISPLAY = {
         _url(['v2', 'analytics', 'account', obj.pk]),
         obj.get_long_name()
     ).as_html(),
-    'credits': lambda obj: '{} ({})'.format(
+    'credits': lambda obj: u'{} ({})'.format(
         Url(
             obj.account and _url(['v2', 'analytics', 'account', obj.account_id]) or
             obj.agency and _url(['v2', 'analytics', 'account', obj.agency.account_set.all().first().pk]) or
@@ -38,7 +38,7 @@ LIST_REPORT_DISPLAY = {
             str(obj)
         ).as_html(), _get_bcm_changes('credit', obj)
     ),
-    'budgets': lambda obj: '{} ({})'.format(Url(
+    'budgets': lambda obj: u'{} ({})'.format(Url(
         _url(['v2', 'analytics', 'campaign', obj.campaign_id]),
         '{}, {}'.format(str(obj), obj.campaign.account.get_long_name())
     ).as_html(), _get_bcm_changes('budget', obj)),
@@ -62,10 +62,10 @@ def _get_dict_change(d_prev, d_after):
 def _get_bcm_changes(name, obj):
     history = obj.history.all().order_by('-created_dt')[:2]
     if len(history) < 2:
-        return ''
+        return u''
     changes = _get_dict_change(history[1].snapshot, history[0].snapshot)
-    return ', '.join([
-        '{}: {} -> {}'.format(key, *_format_change(key, chng))
+    return u', '.join([
+        u'{}: {} -> {}'.format(key, *_format_change(key, chng))
         for key, chng in changes.iteritems()
     ])
 
