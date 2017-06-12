@@ -2,15 +2,16 @@
 'use strict';
 
 describe('ZemUploadStep2Ctrl', function () {
-    var scope, $q, ctrl, $interval;
+    var scope, $q, ctrl, $interval, $injector;
 
     beforeEach(module('one'));
     beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(module('stateMock'));
 
-    beforeEach(inject(function ($controller, $rootScope, _$q_, _$interval_) {
+    beforeEach(inject(function ($controller, $rootScope, _$q_, _$interval_, _$injector_) {
         $q = _$q_;
         $interval = _$interval_;
+        $injector = _$injector_;
         scope = $rootScope.$new();
         var mockEndpoint = {
             upload: function () {},
@@ -20,6 +21,7 @@ describe('ZemUploadStep2Ctrl', function () {
             addCandidate: function () {},
             save: function () {},
             cancel: function () {},
+            getVideoAsset: function () {},
         };
 
         ctrl = $controller(
@@ -461,4 +463,67 @@ describe('ZemUploadStep2Ctrl', function () {
         });
     });
 
+    describe('video uploader', function () {
+        var candidate;
+
+        beforeEach(function () {
+            spyOn(ctrl.endpoint, 'checkStatus').and.callFake(zemSpecsHelper.getMockedAsyncFunction($injector, {}));
+            candidate = {
+                videoAsset: {id: 1},
+            };
+        });
+
+        it('keeps polling if video asset is being uploaded', function () {
+            spyOn(ctrl.endpoint, 'getVideoAsset').and.callFake(
+                zemSpecsHelper.getMockedAsyncFunction($injector, {status: constants.videoAssetStatus.NOT_UPLOADED})
+            );
+
+            ctrl.startPollingVideoAssetStatus(candidate);
+            $interval.flush(7000);
+            expect(ctrl.endpoint.getVideoAsset).toHaveBeenCalledTimes(3);
+        });
+
+        it('keeps polling if video asset is being processed', function () {
+            spyOn(ctrl.endpoint, 'getVideoAsset').and.callFake(
+                zemSpecsHelper.getMockedAsyncFunction($injector, {status: constants.videoAssetStatus.PROCESSING})
+            );
+
+            ctrl.startPollingVideoAssetStatus(candidate);
+            $interval.flush(7000);
+            expect(ctrl.endpoint.getVideoAsset).toHaveBeenCalledTimes(3);
+        });
+
+        it('stops polling if video asset is ready for use', function () {
+            spyOn(ctrl.endpoint, 'getVideoAsset').and.callFake(
+                zemSpecsHelper.getMockedAsyncFunction($injector, {status: constants.videoAssetStatus.READY_FOR_USE})
+            );
+
+            ctrl.startPollingVideoAssetStatus(candidate);
+            $interval.flush(7000);
+            expect(ctrl.endpoint.getVideoAsset).toHaveBeenCalledTimes(1);
+        });
+
+        it('stops polling if video asset processing error', function () {
+            spyOn(ctrl.endpoint, 'getVideoAsset').and.callFake(
+                zemSpecsHelper.getMockedAsyncFunction($injector, {status: constants.videoAssetStatus.PROCESSING_ERROR})
+            );
+
+            ctrl.startPollingVideoAssetStatus(candidate);
+            $interval.flush(7000);
+            expect(ctrl.endpoint.getVideoAsset).toHaveBeenCalledTimes(1);
+        });
+
+        it('stops polling if modal is closed', function () {
+            spyOn(ctrl.endpoint, 'getVideoAsset').and.callFake(
+                zemSpecsHelper.getMockedAsyncFunction($injector, {status: constants.videoAssetStatus.PROCESSING})
+            );
+
+            ctrl.candidates = [candidate];
+            ctrl.startPollingVideoAssetStatus(candidate);
+            $interval.flush(4000);
+            scope.$destroy();
+            $interval.flush(3000);
+            expect(ctrl.endpoint.getVideoAsset).toHaveBeenCalledTimes(2);
+        });
+    });
 });

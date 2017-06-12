@@ -2,15 +2,16 @@
 'use strict';
 
 describe('ZemUploadEditFormCtrl', function () {
-    var scope, $q, ctrl, $timeout;
+    var scope, $q, ctrl, $timeout, $injector;
 
     beforeEach(module('one'));
     beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(module('stateMock'));
 
-    beforeEach(inject(function ($controller, $rootScope, _$q_, _$timeout_) {
+    beforeEach(inject(function ($controller, $rootScope, _$q_, _$timeout_, _$injector_) {
         $q = _$q_;
         $timeout = _$timeout_;
+        $injector = _$injector_;
         scope = $rootScope.$new();
         var mockEndpoint = {
             upload: function () {},
@@ -20,6 +21,7 @@ describe('ZemUploadEditFormCtrl', function () {
             getCandidates: function () {},
             save: function () {},
             cancel: function () {},
+            uploadVideo: function () {},
         };
 
         ctrl = $controller(
@@ -30,6 +32,7 @@ describe('ZemUploadEditFormCtrl', function () {
                 endpoint: mockEndpoint,
                 refreshCallback: function () {},
                 updateCallback: function () {},
+                startPollingVideoAssetStatus: function () {},
                 batchId: 1,
                 scrollTop: function () {}, // directive link function
             }
@@ -298,6 +301,25 @@ describe('ZemUploadEditFormCtrl', function () {
                 title: ['Invalid title'],
             });
             expect(ctrl.updateCallback).toHaveBeenCalled();
+        });
+    });
+
+    describe('video uploader', function () {
+        it('should upload video and start polling', function () {
+            spyOn(ctrl, 'startPollingVideoAssetStatus').and.stub();
+            spyOn(ctrl, 'updateField').and.stub();
+            spyOn(ctrl.endpoint, 'uploadVideo').and.callFake(
+                zemSpecsHelper.getMockedAsyncFunction($injector, {id: 1})
+            );
+
+            ctrl.selectedCandidate = {};
+            ctrl.videoUploadCallback();
+            scope.$digest();
+            expect(ctrl.startPollingVideoAssetStatus).toHaveBeenCalledWith({
+                videoAsset: {id: 1},
+                videoAssetId: 1,
+                videoUploadProgress: 0,
+            });
         });
     });
 });
