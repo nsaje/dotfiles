@@ -6,7 +6,7 @@
         <div ng-if="$ctrl.state.info" class="zem-demographic-targeting__overview">
             <div class="zem-demographic-targeting-overview__box zem-demographic-targeting-overview__box--price">
                 CPM price:
-                <span class="help-popover" zem-lazy-popover-html-unsafe="" zem-lazy-popover-placement="top" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span>
+                <span class="help-popover" zem-lazy-popover-html-unsafe="The CPM displays the cost charged for using BlueKai targeting. <br>The cost depends on the segments used. <br>The CPM data targeting cost is calculated into your bid CPC." zem-lazy-popover-placement="top" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span>
                 <strong class="zem-demographic-targeting-overview__value">${{$ctrl.state.info.price}}</strong>
             </div>
             <div class="zem-demographic-targeting-overview__box zem-demographic-targeting-overview__box--reach">
@@ -60,4 +60,5 @@
         </button>
     </div>
 
+    <div class="zem-demographic-targeting__notification message message--info message--with-icon">Outbrain, Yahoo, Facebook and Instagram don't support publisher targeting.</div>
 </div>
