@@ -1197,3 +1197,19 @@
         created_dt: '2015-09-23T09:57:22'
     model: dash.exportreport
     pk: 1
+
+
+# bluekai taxonomy
+
+-   fields:
+        category_id: 123
+        parent_category_id: 1
+        name: "Parent category name"
+        description: "Parent category description"
+        navigation_only: False
+        status: 1
+        price: 1
+        reach: 1000000000
+        created_dt: '2014-06-04T00:00:00'
+    model: dash.bluekaicategory
+    pk: 600

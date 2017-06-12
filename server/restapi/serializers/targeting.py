@@ -101,14 +101,25 @@ class DemographicSerializer(rest_framework.serializers.BaseSerializer):
     def _handle_expression(self, data):
         if len(data) != 1:
             raise rest_framework.serializers.ValidationError(
-                'Invalid expression - expected exactly '
-                'one operator, got {}'.format(len(data))
+                'Invalid expression - expected one operator, '
+                'got [{}]'.format(', '.join(str(k) for k in data.keys()))
             )
 
         op, exp = list(data.items())[0]
         if op.lower() not in self.operators:
             raise rest_framework.serializers.ValidationError(
                 'Invalid expression - unknown operator "{}"'.format(op)
+            )
+
+        if not exp:
+            raise rest_framework.serializers.ValidationError(
+                'Invalid expression - empty subexpression '
+                'for operator "{}"'.format(op)
+            )
+
+        if op.lower() == 'not' and len(exp) != 1:
+            raise rest_framework.serializers.ValidationError(
+                'Invalid expression - NOT has to have exactly one child node'
             )
 
         return [op.lower()] +\

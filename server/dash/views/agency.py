@@ -23,6 +23,7 @@ from dash import facebook_helper
 from dash import ga_helper
 from dash import content_insights_helper
 from dash import cpc_constraints
+import dash.features.bluekai.models
 
 from utils import api_common
 from utils import exc
@@ -112,6 +113,7 @@ class AdGroupSettings(api_common.BaseApiView):
         self.validate_yahoo_desktop_targeting(ad_group, current_settings, new_settings)
         self.validate_all_rtb_campaign_stop(ad_group, current_settings, new_settings, campaign_settings)
         self.validate_autopilot_campaign_stop(ad_group, current_settings, new_settings, campaign_settings)
+        self.validate_bluekai_targeting_change(current_settings, new_settings)
 
         # update ad group name
         current_settings.ad_group_name = previous_ad_group_name
@@ -353,6 +355,24 @@ class AdGroupSettings(api_common.BaseApiView):
             campaign_settings,
             new_settings.state,
         )
+
+    def _validate_bluekai_tageting(self, bluekai_targeting):
+        if isinstance(bluekai_targeting, list):
+            for subexp in bluekai_targeting[1:]:
+                self._validate_bluekai_tageting(subexp)
+        else:
+            typ, id_ = bluekai_targeting.split(':', 1)
+            if typ == 'bluekai' and not dash.features.bluekai.models.\
+               BlueKaiCategory.objects.active().filter(category_id=id_):
+                raise exc.ValidationError(
+                    'Invalid BlueKai category id: "{}"'.format(id_)
+                )
+
+    def validate_bluekai_targeting_change(self, current_settings, new_settings):
+        if current_settings.bluekai_targeting == new_settings.bluekai_targeting:
+            return
+
+        self._validate_bluekai_tageting(new_settings.bluekai_targeting)
 
     @staticmethod
     def validate_yahoo_desktop_targeting(ad_group, settings, new_settings):
