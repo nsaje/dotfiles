@@ -810,6 +810,14 @@ class ContentAdsView(K1APIView):
 
         response = []
         for item in content_ads:
+            video_asset = None
+            video_asset_obj = item.video_asset
+            if video_asset_obj:
+                video_asset = {
+                    'id': str(video_asset_obj.id),
+                    'duration': video_asset_obj.duration,
+                    'formats': video_asset_obj.formats,
+                }
             content_ad = {
                 'id': item.id,
                 'ad_group_id': item.ad_group_id,
@@ -826,6 +834,7 @@ class ContentAdsView(K1APIView):
                 'display_url': item.display_url,
                 'call_to_action': item.call_to_action,
                 'tracker_urls': item.tracker_urls,
+                'video_asset': video_asset,
             }
             response.append(content_ad)
 

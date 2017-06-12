@@ -21,6 +21,7 @@ import logging
 from utils.test_helper import ListMatcher
 from utils import request_signer
 from utils import email_helper
+from utils.magic_mixer import magic_mixer
 
 from redshiftapi import quickstats
 
@@ -861,6 +862,7 @@ class K1ApiTest(K1ApiBaseTest):
             "brand_name": "",
             "image_width": None,
             "image_id": "123456789",
+            "video_asset": None,
             "image_height": None,
             "display_url": "",
             "redirect_id": None,
@@ -868,6 +870,45 @@ class K1ApiTest(K1ApiBaseTest):
             "tracker_urls": None
         }]
         self.assertEqual(data, expected)
+
+    def test_get_content_ads_video_asset(self):
+        formats = [
+            {
+                "width": 1920,
+                "height": 1080,
+                "bitrate": 4500,
+                "mime": "video/mp4",
+                "filename": "xyz_1080p.mp4",
+            },
+            {
+                "width": 1920,
+                "height": 1080,
+                "bitrate": 4500,
+                "mime": "video/flv",
+                "filename": "xyz_1080p.flv",
+            }
+        ]
+        content_ad = dash.models.ContentAd.objects.get(pk=1)
+        video_asset = magic_mixer.blend(dash.models.VideoAsset)
+        video_asset.update_progress(0, duration=31, formats=formats)
+        content_ad.video_asset = video_asset
+        content_ad.save()
+
+        response = self.client.get(
+            reverse('k1api.content_ads'),
+            {'content_ad_ids': 1,
+             'ad_group_ids': 1},
+        )
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        expected_video_asset = {
+            'id': str(video_asset.id),
+            'duration': 31,
+            'formats': formats,
+        }
+        self.assertEqual(data[0]['video_asset'], expected_video_asset)
 
     def test_get_content_ads(self):
         response = self.client.get(
