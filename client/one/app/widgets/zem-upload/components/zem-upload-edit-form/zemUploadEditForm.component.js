@@ -74,6 +74,10 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
         vm.fieldsLoading = {};
         vm.fieldsSaved = {};
         vm.fieldsApiErrors = {};
+
+        if (vm.isEdit && vm.selectedCandidate.videoAssetId) {
+            vm.startPollingVideoAssetStatus(candidate);
+        }
     }
 
     function refreshAndClose () {

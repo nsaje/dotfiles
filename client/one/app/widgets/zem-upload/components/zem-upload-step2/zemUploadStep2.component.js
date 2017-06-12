@@ -103,7 +103,7 @@ angular.module('one.widgets').controller('ZemUploadStep2Ctrl', function ($scope,
     }
 
     function videoAssetStatusPoller (candidate) {
-        vm.endpoint.getVideoAsset(candidate.videoAsset.id)
+        vm.endpoint.getVideoAsset(candidate.videoAssetId)
             .then(function (asset) {
                 candidate.videoAsset = asset;
                 if (!isVideoAssetBeingProcessed(candidate)) {
