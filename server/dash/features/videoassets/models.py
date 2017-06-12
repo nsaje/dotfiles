@@ -82,7 +82,7 @@ class VideoAsset(models.Model):
             return ERROR_CODE_MESSAGES.get(self.error_code, "Unknown error, please contact support.")
 
     def get_preview_url(self):
-        if self.status == constants.VideoAssetStatus.READY_FOR_USE and len(self.formats) > 0:
+        if self.status == constants.VideoAssetStatus.READY_FOR_USE and self.formats and len(self.formats) > 0:
             format = self.formats[0]
             return settings.VIDEO_PREVIEW_URL.format(filename=format['filename'])
 
