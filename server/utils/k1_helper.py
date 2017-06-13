@@ -91,6 +91,8 @@ def _call_api(url, data=None, method='GET'):
 
 def get_adgroup_realtimestats(ad_group_id, params={}):
     url = settings.K1_REALTIMESTATS_ADGROUP_URL.format(ad_group_id=ad_group_id)
+    if not url:
+        return []
     if params:
         url += '?' + urllib.urlencode(params)
     return _call_api(url)
