@@ -89,4 +89,25 @@ describe('zemUtils', function () {
             },
         });
     });
+    it('converter should correctly handle constants', function () {
+        var obj = {
+            AND: 1,
+            OR: 2,
+            propNOT: 3,
+            complexProp: {
+                OR: 4,
+            },
+        };
+
+        var converted = zemUtils.convertToUnderscore(obj);
+        expect(converted).toEqual({
+            and: 1,
+            or: 2,
+            prop_not: 3,
+            complex_prop: {
+                or: 4,
+            },
+        });
+
+    });
 });
