@@ -6,7 +6,7 @@ describe('component: zemTreeSelect', function () {
 
     beforeEach(inject(function ($rootScope, $componentController) {
         var bindings = {
-            rootNode: {name: 'root', childNodes: []},
+            rootNode: {name: 'root', id: 0, childNodes: []},
             onUpdate: null
         };
         var locals = {
