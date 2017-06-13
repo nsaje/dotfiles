@@ -147,7 +147,6 @@ class Goals(object):
 
 
 def get_goals(constraints):
-    # do not populate campaign_goals because we do not have performance columns in reports
     campaign_goals, conversion_goals, campaign_goal_values, pixels = [], [], [], []
     primary_goals = []
 
