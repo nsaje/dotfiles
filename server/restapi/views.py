@@ -81,7 +81,7 @@ class RESTAPIBaseView(APIView):
             status=str(response.status_code),
             user=user_email
         )
-        logger.info('REST API request/response: endpoint={endpoint}, method={method}, status={status}, user={user}, ip={ip}'.format(
+        logger.debug('REST API request/response: endpoint={endpoint}, method={method}, status={status}, user={user}, ip={ip}'.format(
             endpoint=self.__class__.__name__,
             method=request.method,
             status=str(response.status_code),
