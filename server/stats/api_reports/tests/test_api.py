@@ -55,13 +55,16 @@ class CampaignGoalTest(TestCase):
             'allowed_campaigns': dash.models.Campaign.objects.filter(pk=1),
         })
 
-        self.assertEqual(goals.campaign_goals, [])
+        self.assertEqual(goals.campaign_goals,
+                         test_helper.QuerySetMatcher(dash.models.CampaignGoal.objects.filter(pk__in=[1, 2])))
         self.assertEqual(goals.conversion_goals,
                          test_helper.QuerySetMatcher(dash.models.ConversionGoal.objects.filter(pk__in=[1, 2, 3, 4, 5])))
-        self.assertEqual(goals.campaign_goal_values, [])
+        self.assertEqual(goals.campaign_goal_values,
+                         test_helper.QuerySetMatcher(dash.models.CampaignGoalValue.objects.filter(pk__in=[1, 2])))
         self.assertEqual(goals.pixels,
                          test_helper.QuerySetMatcher(dash.models.ConversionPixel.objects.filter(pk=1)))
-        self.assertEqual(goals.primary_goals, [])
+        self.assertEqual(goals.primary_goals,
+                         test_helper.QuerySetMatcher(dash.models.CampaignGoal.objects.filter(pk__in=[2])))
 
     def test_get_goals_no_constraints(self):
         sources = dash.models.Source.objects.all()
@@ -96,10 +99,13 @@ class CampaignGoalTest(TestCase):
             'allowed_campaigns': dash.models.Campaign.objects.filter(pk__in=[1, 2]),
         })
 
-        self.assertEqual(goals.campaign_goals, [])
+        self.assertEqual(goals.campaign_goals,
+                         test_helper.QuerySetMatcher(dash.models.CampaignGoal.objects.filter(pk__in=[1, 2])))
         self.assertEqual(goals.conversion_goals,
                          test_helper.QuerySetMatcher(dash.models.ConversionGoal.objects.filter(pk__in=[1, 2, 3, 4, 5])))
-        self.assertEqual(goals.campaign_goal_values, [])
+        self.assertEqual(goals.campaign_goal_values,
+                         test_helper.QuerySetMatcher(dash.models.CampaignGoalValue.objects.filter(pk__in=[1, 2])))
         self.assertEqual(goals.pixels,
                          test_helper.QuerySetMatcher(dash.models.ConversionPixel.objects.filter(pk=1)))
-        self.assertEqual(goals.primary_goals, [])
+        self.assertEqual(goals.primary_goals,
+                         test_helper.QuerySetMatcher(dash.models.CampaignGoal.objects.filter(pk__in=[2])))

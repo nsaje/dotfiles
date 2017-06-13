@@ -27,9 +27,13 @@ class ColumnNamesTest(TestCase):
             columns.get_conversion_goals_field_names_mapping(dash.models.ConversionGoal.objects.all()),
             {
                 'test conversion goal 2': 'conversion_goal_2',
+                'CPA (test conversion goal 2)': 'avg_cost_per_conversion_goal_2',
                 'test conversion goal 3': 'conversion_goal_3',
+                'CPA (test conversion goal 3)': 'avg_cost_per_conversion_goal_3',
                 'test conversion goal 4': 'conversion_goal_4',
+                'CPA (test conversion goal 4)': 'avg_cost_per_conversion_goal_4',
                 'test conversion goal 5': 'conversion_goal_5',
+                'CPA (test conversion goal 5)': 'avg_cost_per_conversion_goal_5',
             }
         )
 

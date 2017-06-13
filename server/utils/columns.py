@@ -190,9 +190,8 @@ def get_pixel_field_names_mapping(pixels):
             column_name = '{} {}'.format(pixel.name, window_title)
             field_names[column_name] = field_name
 
-            field_name = 'avg_cost_per_{}'.format(field_name)
-            column_name = 'CPA ({})'.format(column_name)
-            field_names[column_name] = field_name
+            cpa_field_name, cpa_column_name = _get_cpa_column(field_name, column_name)
+            field_names[cpa_column_name] = cpa_field_name
     return field_names
 
 
@@ -202,7 +201,16 @@ def get_conversion_goals_field_names_mapping(conversion_goals):
         field_name = goal.get_view_key(conversion_goals)
         column_name = goal.name
         field_names[column_name] = field_name
+
+        cpa_field_name, cpa_column_name = _get_cpa_column(field_name, column_name)
+        field_names[cpa_column_name] = cpa_field_name
     return field_names
+
+
+def _get_cpa_column(field_name, column_name):
+    field_name = 'avg_cost_per_{}'.format(field_name)
+    column_name = 'CPA ({})'.format(column_name)
+    return field_name, column_name
 
 
 def get_conversion_goals_column_names_mapping(conversion_goals):
