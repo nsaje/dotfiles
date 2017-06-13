@@ -12,13 +12,6 @@
                 errors="$container.errors"
                 api="$container.childApi"
         ></zem-device-targeting-settings>
-        <zem-demographic-targeting
-            class="zem-settings-component"
-            entity="$container.entity"
-            errors="$container.errors"
-            api="$container.childApi"
-            ng-if="$ctrl.hasPermission('zemauth.can_use_bluekai_targeting')"
-        ></zem-demographic-targeting>
         <zem-region-targeting-settings
                 class="zem-settings-component"
                 entity="$container.entity"
@@ -33,6 +26,13 @@
                 api="$container.childApi"
                 ng-if="$ctrl.hasPermission('zemauth.fea_new_geo_targeting')"
         ></zem-geo-targeting>
+        <zem-demographic-targeting
+                class="zem-settings-component"
+                entity="$container.entity"
+                errors="$container.errors"
+                api="$container.childApi"
+                ng-if="$ctrl.hasPermission('zemauth.can_use_bluekai_targeting')"
+        ></zem-demographic-targeting>
         <zem-ad-group-targeting-settings
                 class="zem-settings-component"
                 entity="$container.entity"

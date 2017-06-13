@@ -28,7 +28,7 @@ angular.module('one.widgets').service('zemTreeSelectService', function () { //es
 
     function createItem (node, parent) {
         var item = {
-            id: node.id,
+            id: node.id.toString(),
             name: node.name,
             value: node,
             parent: parent,
@@ -46,7 +46,8 @@ angular.module('one.widgets').service('zemTreeSelectService', function () { //es
         if (searchQuery) {
             searchQuery = searchQuery.toLowerCase();
             return list.filter(function (item) {
-                return item.name.toLowerCase().indexOf(searchQuery) >= 0;
+                return item.name.toLowerCase().indexOf(searchQuery) >= 0 ||
+                       item.id.indexOf(searchQuery) >= 0;
             });
         }
 
