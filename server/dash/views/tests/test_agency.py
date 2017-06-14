@@ -186,7 +186,7 @@ class AdGroupSettingsTest(TestCase):
                     'autopilot_min_budget': '10',
                     'autopilot_optimization_goal': None,
                     'notes': 'Some note',
-                    'bluekai_targeting': {'OR': [{'category': '3'}, {'category': '4'}]},
+                    'bluekai_targeting': {'or': [{'category': '3'}, {'category': '4'}]},
                     'bluekai_targeting_old': ['or', '3', '4'],
                     'interest_targeting': ['fun', 'games'],
                     'exclusion_interest_targeting': ['religion', 'weather'],
