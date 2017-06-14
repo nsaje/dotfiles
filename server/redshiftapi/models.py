@@ -370,13 +370,18 @@ class MVJointMaster(MVMaster):
         needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
         supports_conversions = view_selector.supports_conversions(needed_dimensions, use_publishers_view)
 
+        # FIXME: temp fix account level publishers view with lots of campaign goals
+        skip_performance_columns = 'publisher_id' in breakdown and\
+                                   not set(['campaign_id', 'ad_group_id']) & set(constraints.keys())
+
         if supports_conversions:
             self.init_conversion_columns(goals.conversion_goals)
             self.init_pixel_columns(goals.pixels)
 
-        self.init_performance_columns(
-            goals.campaign_goals, goals.campaign_goal_values, goals.conversion_goals, goals.pixels,
-            supports_conversions=supports_conversions)
+        if not skip_performance_columns:
+            self.init_performance_columns(
+                goals.campaign_goals, goals.campaign_goal_values, goals.conversion_goals, goals.pixels,
+                supports_conversions=supports_conversions)
 
         order_cols = self.select_columns(orders)
         orders = [x.as_order(orders[i], nulls='last') for i, x in enumerate(order_cols)]
