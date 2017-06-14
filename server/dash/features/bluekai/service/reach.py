@@ -1,15 +1,38 @@
+import logging
+
+from django.core.cache import caches
+
 import bluekaiapi
+from utils import cache_helper
+
+logger = logging.getLogger(__name__)
+
+
+CACHE_TIMEOUT = 3 * 24 * 60 * 60  # 3 days
+
+
+def _get_reach(expression):
+    cache = caches['dash_db_cache']
+    cache_key = cache_helper.get_cache_key('bluekai_reach', expression)
+    cached = cache.get(cache_key)
+    if cached:
+        return cached
+
+    reach = bluekaiapi.get_segment_reach(expression)
+    ret = {
+        'value': reach,
+        'relative': calculate_relative_reach(reach)
+    }
+
+    cache.set(cache_key, ret, timeout=CACHE_TIMEOUT)
+    return ret
 
 
 def get_reach(expression):
     try:
-        # TODO: Caching
-        reach = bluekaiapi.get_segment_reach(expression)
-        return {
-            'value': reach,
-            'relative': calculate_relative_reach(reach)
-        }
+        return _get_reach(expression)
     except Exception:
+        logger.exception('Exception occured when fetching reach from BlueKai')
         return None
 
 
