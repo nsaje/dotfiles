@@ -58,4 +58,7 @@ def get_content_ads(objects, data):
     elif content_ad_ids:
         objects = objects.filter(id__in=content_ad_ids)
 
+    if not objects.exists():
+        raise serializers.ValidationError('Please select at least one content ad to copy.')
+
     return objects

@@ -1,5 +1,6 @@
 from django.test import TestCase
 
+import rest_framework.serializers
 from utils.magic_mixer import magic_mixer
 from utils import test_helper
 
@@ -97,6 +98,17 @@ class GetContentAds(TestCase):
             test_helper.QuerySetMatcher(
                 serializers.get_content_ads(core.entity.ContentAd.objects.all(), {
                     'batch_id': self.ads[0].batch_id,
-                    'deselected_content_ad_ids': [self.ads[0].id],
+                    'deselected_content_ad_ids': [self.ads[1].id],
                 })),
-            [x for x in self.ads if x.batch_id == self.ads[0].batch_id and x.id != self.ads[0].id])
+            [x for x in self.ads if x.batch_id == self.ads[0].batch_id and x.id != self.ads[1].id])
+
+    def test_no_ads(self):
+        with self.assertRaises(rest_framework.serializers.ValidationError):
+            serializers.get_content_ads(core.entity.ContentAd.objects.none(), {})
+
+    def test_all_deselected(self):
+        ads = core.entity.ContentAd.objects.all()
+        with self.assertRaises(rest_framework.serializers.ValidationError):
+            serializers.get_content_ads(ads, {
+                'deselected_content_ad_ids': [x.id for x in ads],
+            })
