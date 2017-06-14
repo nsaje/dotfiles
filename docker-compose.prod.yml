@@ -73,8 +73,8 @@ eins-rest-api:
     environment:
       VIRTUAL_HOST: "oneapi.zemanta.com"
       NEW_RELIC_APP_NAME: "Zemanta One (REST API)"
-      GUNICORN_WORKERS: "4"
-      GUNICORN_WORKER_CLASS: "gthread"
+      GUNICORN_WORKERS: "8"
+      GUNICORN_WORKER_CLASS: "sync"
       GUNICORN_LOG_LEVEL: "debug"
     mem_limit: 2g
     #   default cpu.cfs_period_us is 100000. That is 100% of one CPU core
