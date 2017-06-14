@@ -72,7 +72,7 @@ class AudienceSerializer(rest_framework.serializers.BaseSerializer):
             return {}
         op, exp = obj[0], obj[1:]
         return {
-            op.lower(): [self._to_representation_recur(subexp) for subexp in exp]
+            op.upper(): [self._to_representation_recur(subexp) for subexp in exp]
         }
 
     def to_representation(self, obj):

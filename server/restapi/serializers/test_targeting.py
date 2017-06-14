@@ -116,20 +116,20 @@ class DemographicSerializerTests(TestCase):
 
     def setUp(self):
         self.serialized = {
-            'and': [
+            'AND': [
                 {
-                    'or': [
+                    'OR': [
                         {'category': 'bluekai:12345'},
                         {'category': 'lotame:23456'},
                         {'category': 'lr-test:34567'},
                     ]
                 }, {
-                    'or': [
+                    'OR': [
                         {'category': 'outbrain:45678'},
                         {'category': 'lotame:56789'},
                     ]
                 }, {
-                    'not': [
+                    'NOT': [
                         {'category': 'bluekai:98765'},
                     ]
                 }]
