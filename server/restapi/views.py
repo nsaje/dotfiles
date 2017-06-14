@@ -350,7 +350,8 @@ class AdGroupSerializer(SettingsSerializer):
                     'included': map(lambda x: fields.DashConstantField(constants.InterestCategory).to_representation(x), settings['interest_targeting']),
                     'excluded': map(lambda x: fields.DashConstantField(constants.InterestCategory).to_representation(x), settings['exclusion_interest_targeting']),
                 },
-                'demographic': settings['bluekai_targeting'],
+                'demographic': settings['bluekai_targeting_old'],
+                'audience': settings['bluekai_targeting'],
                 'publisherGroups': {
                     'included': settings['whitelist_publisher_groups'],
                     'excluded': settings['blacklist_publisher_groups'],
@@ -381,7 +382,7 @@ class AdGroupSerializer(SettingsSerializer):
             'exclusion_target_regions': self._unpartition_regions(data['targeting']['geo']['excluded']),
             'interest_targeting': fields.DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['included']),
             'exclusion_interest_targeting': fields.DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['excluded']),
-            'bluekai_targeting': data['targeting']['demographic'],
+            'bluekai_targeting': self._handle_audience_targeting(data),
             'autopilot_state': fields.DashConstantField(constants.AdGroupSettingsAutopilotState).to_internal_value(data['autopilot']['state']),
             'autopilot_daily_budget': data['autopilot']['dailyBudget'],
             'dayparting': data['dayparting'],
@@ -431,6 +432,12 @@ class AdGroupSerializer(SettingsSerializer):
         target_regions.extend(geo['cities'])
         target_regions.extend(geo['postalCodes'])
         return target_regions
+
+    @staticmethod
+    def _handle_audience_targeting(data):
+        if data['targeting']['audience'] != fields.NOT_PROVIDED:
+            return data['targeting']['audience']
+        return data['targeting']['demographic']
 
 
 class SettingsViewDetails(RESTAPIBaseView):

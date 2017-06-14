@@ -56,16 +56,14 @@ class DevicesSerializer(rest_framework.serializers.ListSerializer):
         super(DevicesSerializer, self).__init__(*args, **kwargs)
 
 
-class DemographicSerializer(rest_framework.serializers.BaseSerializer):
+class AudienceSerializer(rest_framework.serializers.BaseSerializer):
 
     operators = ('and', 'not', 'or')
     types = ('bluekai', 'outbrain', 'lotame')
 
-    def _should_use_list_representation(self):
-        if 'request' not in self.context:
-            return True
-        return not self.context['request'].user.has_perm(
-            'zemauth.can_use_bluekai_targeting')
+    def __init__(self, *args, **kwargs):
+        self.use_list_repr = kwargs.pop('use_list_repr', False)
+        super(AudienceSerializer, self).__init__(*args, **kwargs)
 
     def _to_representation_recur(self, obj):
         if isinstance(obj, six.string_types):
@@ -78,7 +76,7 @@ class DemographicSerializer(rest_framework.serializers.BaseSerializer):
         }
 
     def to_representation(self, obj):
-        if self._should_use_list_representation():
+        if self.use_list_repr:
             return obj
 
         return self._to_representation_recur(obj)

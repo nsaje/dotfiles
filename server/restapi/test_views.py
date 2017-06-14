@@ -572,6 +572,7 @@ class AdGroupsTest(RESTAPITest):
                     'included': [constants.InterestCategory.get_name(i) for i in interest_targeting],
                     'excluded': [constants.InterestCategory.get_name(i) for i in exclusion_interest_targeting],
                 },
+                'audience': restapi.serializers.targeting.AudienceSerializer(demographic_targeting).data,
                 'demographic': demographic_targeting,
                 'publisherGroups': {
                     'included': whitelist_publisher_groups,

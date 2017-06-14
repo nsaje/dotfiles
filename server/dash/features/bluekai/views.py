@@ -2,7 +2,7 @@ from rest_framework import permissions
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 
 import restapi.views
-from restapi.serializers.targeting import DemographicSerializer
+from restapi.serializers.targeting import AudienceSerializer
 
 import service
 import serializers
@@ -28,7 +28,7 @@ class SegmentReachView(restapi.views.RESTAPIBaseView):
     )
 
     def post(self, request, *args, **kwargs):
-        serializer = DemographicSerializer(data=request.data)
+        serializer = AudienceSerializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
         except Exception as e:

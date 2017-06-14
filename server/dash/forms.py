@@ -351,7 +351,7 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
     )
 
     bluekai_targeting = dash.compatibility.forms.RestFrameworkSerializer(
-        restapi.serializers.targeting.DemographicSerializer,
+        restapi.serializers.targeting.AudienceSerializer,
         required=False,
     )
 

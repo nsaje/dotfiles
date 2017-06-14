@@ -1,7 +1,6 @@
 from django.test import TestCase
 
 import targeting
-from utils.magic_mixer import magic_mixer
 
 
 class PlacementsSerializerTests(TestCase):
@@ -143,23 +142,20 @@ class DemographicSerializerTests(TestCase):
 
     def test_deserialization(self):
         data = self.serialized
-        serializer = targeting.DemographicSerializer(data=data)
+        serializer = targeting.AudienceSerializer(data=data)
         self.assertTrue(serializer.is_valid())
         self.assertEqual(
             serializer.validated_data,
             self.deserialized)
 
     def test_serialization(self):
-        request = magic_mixer.blend_request_user(
-            permissions=['can_use_bluekai_targeting'])
         data = self.deserialized
-        serializer = targeting.DemographicSerializer(
-            data, context={'request': request})
+        serializer = targeting.AudienceSerializer(data)
         self.assertEqual(serializer.data, self.serialized)
 
     def test_serialization_with_list(self):
         data = self.deserialized
-        serializer = targeting.DemographicSerializer(data)
+        serializer = targeting.AudienceSerializer(data, use_list_repr=True)
         self.assertEqual(serializer.data, data)
 
     def test_serialization_error(self):
@@ -173,5 +169,5 @@ class DemographicSerializerTests(TestCase):
                     ]
                 }]
         }
-        serializer = targeting.DemographicSerializer(data=data)
+        serializer = targeting.AudienceSerializer(data=data)
         self.assertFalse(serializer.is_valid())
