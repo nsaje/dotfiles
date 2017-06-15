@@ -69,7 +69,7 @@
             </div>
             <div class="message message--error" ng-repeat="error in $ctrl.errors.amount" for="amount">{{ error }}</div>
         </div>
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.margin}" ng-if="$ctrl.hasPermission('zemauth.can_manage_agency_margin')">
+        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.margin}" ng-if="false && $ctrl.hasPermission('zemauth.can_manage_agency_margin')">
             <label class="form__label" for="margin-input" is-internal="zemauth.can_manage_agency_margin">Margin</label>
             <div class="postfixed-field postfixed-field--narrow">
                 <input id="margin-select" class="input-text" ng-model="$ctrl.budgetItem.margin" ng-disabled="!$ctrl.isNew"/>
