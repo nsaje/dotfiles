@@ -184,6 +184,7 @@ def _prepare_ad_group_data(running_ad_groups, ad_group_settings_map, ad_group_st
             ad_group_settings.landing_mode and 'on' or 'off',
             delivery,
         ))
+    return ad_group_data
 
 
 def _extract_unbillable_data_segments(targeting_exp):
