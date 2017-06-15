@@ -2199,7 +2199,7 @@ class VideoPlaybackMethod(ConstantBase):
     }
 
 
-class BudgetPacingType(ConstantBase):
+class AdGroupDeliveryType(ConstantBase):
     STANDARD = 1
     ACCELERATED = 2
 

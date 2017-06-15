@@ -401,6 +401,7 @@ class AdGroupSettingsFormTest(TestCase):
             'b1_sources_group_cpc_cc': Decimal('0.1'),
             'whitelist_publisher_groups': [1],
             'blacklist_publisher_groups': [1],
+            'delivery_type': '1',
         }
 
     @patch('utils.dates_helper.local_today')
@@ -441,6 +442,7 @@ class AdGroupSettingsFormTest(TestCase):
             'b1_sources_group_cpc_cc': Decimal('0.1'),
             'whitelist_publisher_groups': [1],
             'blacklist_publisher_groups': [1],
+            'delivery_type': 1,
         })
 
     @patch('utils.dates_helper.local_today')

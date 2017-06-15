@@ -293,6 +293,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_use_bluekai_targeting', 'User can use bluekai targeting'),
             ('can_see_realtime_spend', 'User can see realtime spend'),
             ('fea_video_upload', 'User can upload videos'),
+            ('can_set_delivery_type', 'User can set delivery type.'),
         )
 
     def get_full_name(self):

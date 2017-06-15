@@ -67,6 +67,7 @@ class AdGroupSettingsTest(TestCase):
                 'b1_sources_group_cpc_cc': '0.25',
                 'whitelist_publisher_groups': [1],
                 'blacklist_publisher_groups': [1],
+                'delivery_type': 2,
             }
         }
 
@@ -200,6 +201,7 @@ class AdGroupSettingsTest(TestCase):
                     'whitelist_publisher_groups': [],
                     'blacklist_publisher_groups': [],
                     'landing_mode': False,
+                    'delivery_type': 1,
                 },
                 'warnings': {}
             },
@@ -306,6 +308,7 @@ class AdGroupSettingsTest(TestCase):
                 'can_view_retargeting_settings',
                 'can_target_custom_audiences',
                 'can_set_white_blacklist_publisher_groups',
+                'can_set_delivery_type',
             ])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
@@ -367,6 +370,7 @@ class AdGroupSettingsTest(TestCase):
                         'whitelist_publisher_groups': [1],
                         'blacklist_publisher_groups': [1],
                         'landing_mode': False,
+                        'delivery_type': 2,
                     }
                 },
                 'success': True
@@ -378,6 +382,7 @@ class AdGroupSettingsTest(TestCase):
             self.assertEqual(new_settings.brand_name, 'Example')
             self.assertEqual(new_settings.description, 'Example description')
             self.assertEqual(new_settings.call_to_action, 'Call to action')
+            self.assertEqual(new_settings.delivery_type, 2)
 
             mock_validate_all_rtb_campaign_stop.assert_called_with(ANY, ad_group, ANY, ANY, ANY)
             mock_redirector_insert_adgroup.assert_called_with(ad_group, ANY, ANY)
@@ -468,6 +473,7 @@ class AdGroupSettingsTest(TestCase):
                         'whitelist_publisher_groups': [],  # no permission to set
                         'blacklist_publisher_groups': [],  # no permission to set
                         'landing_mode': False,
+                        'delivery_type': 1,
                     }
                 },
                 'success': True
@@ -648,6 +654,7 @@ class AdGroupSettingsTest(TestCase):
                         'whitelist_publisher_groups': [1],
                         'blacklist_publisher_groups': [1],
                         'landing_mode': False,
+                        'delivery_type': 1,
                     }
                 },
                 'success': True
@@ -745,6 +752,7 @@ class AdGroupSettingsTest(TestCase):
                         'whitelist_publisher_groups': [],  # no permission to set
                         'blacklist_publisher_groups': [],  # no permission to set
                         'landing_mode': False,
+                        'delivery_type': 1,
                     }
                 },
                 'success': True
@@ -873,6 +881,7 @@ class AdGroupSettingsTest(TestCase):
                         'whitelist_publisher_groups': [],  # no permission to set
                         'blacklist_publisher_groups': [],  # no permission to set
                         'landing_mode': False,
+                        'delivery_type': 1,
                     }
                 },
                 'success': True
@@ -1003,6 +1012,7 @@ class AdGroupSettingsTest(TestCase):
             self.assertNotEqual(response_settings_dict['autopilot_state'], 2)
             self.assertNotEqual(response_settings_dict['autopilot_daily_budget'], '0.00')
             self.assertNotEqual(response_settings_dict['retargeting_ad_groups'], [2])
+            self.assertEqual(response_settings_dict['delivery_type'], 1)
 
     @patch('automation.autopilot_budgets.get_adgroup_minimum_daily_budget', autospec=True)
     def test_validate_autopilot_settings_to_full_ap_wo_all_rtb_enabled(self, mock_get_min_budget):

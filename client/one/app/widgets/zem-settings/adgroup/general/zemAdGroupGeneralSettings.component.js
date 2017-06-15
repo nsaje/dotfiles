@@ -16,6 +16,10 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
             'Please add the budget and continue to adjust settings by your needs. ',
             WARNING_MAX_CPM: ''
         };
+        $ctrl.deliveryType = {
+            STANDARD: 1,
+            ACCELERATED: 2,
+        };
 
         $ctrl.startDatePicker = {isOpen: false};
         $ctrl.endDatePicker = {isOpen: false};

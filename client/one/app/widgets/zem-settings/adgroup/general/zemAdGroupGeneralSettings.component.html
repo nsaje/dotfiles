@@ -84,5 +84,34 @@
             <div class="message message--error" ng-if="$ctrl.entity.warnings.maxCpm === undefined"
                  ng-repeat="error in $ctrl.errors.maxCpm" for="cpm-input">{{ error }}</div>
         </div>
+
+        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_delivery_type')">
+            <label class="form__label" is-internal="zemauth.can_set_delivery_type">
+                Delivery type:
+            </label>
+            <div class="form__radio">
+                <label>
+                    <input class="input-radio" type="radio"
+                        ng-model="$ctrl.entity.settings.deliveryType" ng-value="$ctrl.deliveryType.STANDARD">
+                    <span class="radio-text">
+                        Standard
+                        <zem-help-popover content="Deliver ads throughout the day." placement="top"></zem-help-popover>
+                    </span>
+                </label>
+            </div>
+            <div class="form__radio">
+                <label>
+                    <input class="input-radio" type="radio"
+                           ng-model="$ctrl.entity.settings.deliveryType" ng-value="{{ $ctrl.deliveryType.ACCELERATED }}">
+                    <span class="radio-text">
+                        Accelerated
+                        <zem-help-popover content="Deliver ads as soon as possible." placement="top"></zem-help-popover>
+                    </span>
+                </label>
+            </div>
+            <div class="message message--error" ng-repeat="error in $ctrl.errors.deliveryType">
+                {{ error }}
+            </div>
+        </div>
     </div>
 </div>

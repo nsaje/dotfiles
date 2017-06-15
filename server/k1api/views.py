@@ -458,7 +458,7 @@ class AdGroupsView(K1APIView):
                 },
                 'whitelist_publisher_groups': whitelist,
                 'blacklist_publisher_groups': blacklist,
-                'budget_pacing_type': ad_group_settings.budget_pacing_type,
+                'delivery_type': ad_group_settings.delivery_type,
             }
 
             ad_groups.append(ad_group)

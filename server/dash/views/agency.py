@@ -479,6 +479,7 @@ class AdGroupSettings(api_common.BaseApiView):
             'whitelist_publisher_groups': settings.whitelist_publisher_groups,
             'blacklist_publisher_groups': settings.blacklist_publisher_groups,
             'landing_mode': settings.landing_mode,
+            'delivery_type': settings.delivery_type,
         }
 
         # TODO (refactor-workaround) Re-use restapi serializers
@@ -547,6 +548,9 @@ class AdGroupSettings(api_common.BaseApiView):
         if user.has_perm('zemauth.can_set_advanced_device_targeting'):
             settings.target_os = resource['target_os']
             settings.target_placements = resource['target_placements']
+
+        if user.has_perm('zemauth.can_set_delivery_type'):
+            settings.delivery_type = resource['delivery_type']
 
     def get_default_settings_dict(self, ad_group):
         settings = ad_group.campaign.get_current_settings()

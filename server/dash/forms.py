@@ -377,6 +377,12 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
         empty_value=None
     )
 
+    delivery_type = forms.TypedChoiceField(
+        choices=constants.AdGroupDeliveryType.get_choices(),
+        coerce=int,
+        empty_value=None,
+    )
+
     def __init__(self, ad_group, user, *args, **kwargs):
         self.ad_group = ad_group
         self.account = ad_group.campaign.account
