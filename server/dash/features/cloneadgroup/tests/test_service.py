@@ -9,9 +9,10 @@ import core.source
 
 @patch.object(core.entity.ContentAd.objects, 'insert_redirects')
 @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
+@patch('utils.redirector_helper.insert_adgroup')
 class Clone(TestCase):
 
-    def test_clone(self, mock_redirects, mock_autopilot):
+    def test_clone(self, mock_insert_adgroup, mock_redirects, mock_autopilot):
         ad_group = magic_mixer.blend(core.entity.AdGroup)
         magic_mixer.cycle(5).blend(core.entity.ContentAd, ad_group=ad_group, archived=False)
         dest_campaign = magic_mixer.blend(core.entity.Campaign)
@@ -22,7 +23,7 @@ class Clone(TestCase):
         self.assertNotEqual(ad_group, cloned_ad_group)
         self.assertTrue(core.entity.ContentAd.objects.filter(ad_group=cloned_ad_group).exists())
 
-    def test_clone_no_content(self, mock_redirects, mock_autopilot):
+    def test_clone_no_content(self, mock_insert_adgroup, mock_redirects, mock_autopilot):
         ad_group = magic_mixer.blend(core.entity.AdGroup)
         magic_mixer.cycle(5).blend(core.entity.ContentAd, ad_group=ad_group, archived=True)
         dest_campaign = magic_mixer.blend(core.entity.Campaign)
