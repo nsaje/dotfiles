@@ -725,30 +725,31 @@ autopilot    | [autopilot](#autopilot)   | Zemanta Autopilot settings           
 <a name="targeting"></a>
 #### Targeting Settings
 
-Targeting        | Property | Property  | Type                                          | Description
------------------|----------|-----------|-----------------------------------------------|---------------------------------------------------------------------------------------------|
-devices          |          |           | array[[device](#device)]                      | A list of device types to target. If none specified, content is served to all device types.
-placements       |          |           | array[[placement](#placement)]                | A list of placements to target. If none specified, content is served to all placements.
-os               |          |           | array[[operatingSystem](#os-targeting)]       | A list of operating systems and their versions to target. If none specified, content is served to any operating system or version. 
-geo              |          |           |
-&nbsp;           | included |           |                                               |
-&nbsp;           |          | countries | array[[country](#country)]                    | countries to target
-&nbsp;           |          | regions   | array[[region](#region)]                      | regions to target
-&nbsp;           |          | dma       | array[[DMA](#dma)]                            | DMA IDs to target
-&nbsp;           |          | cities    | array[[City](#city)]                          | cities to target
-&nbsp;           |          | postalCodes| array[[PostalCode](#postalcode)]             | postal codes to target
-&nbsp;           | excluded |           |                                               |
-&nbsp;           |          | countries | array[[country](#country)]                    | countries to target
-&nbsp;           |          | regions   | array[[region](#region)]                      | regions to target
-&nbsp;           |          | dma       | array[[DMA](#dma)]                            | DMA IDs to target
-&nbsp;           |          | cities    | array[[City](#city)]                          | cities to target
-&nbsp;           |          | postalCodes| array[[PostalCode](#postalcode)]             | postal codes to target
-interest         |          |           |
-&nbsp;           | included |           | array[[interestCategory](#interest-category)] | interest categories to target
-&nbsp;           | excluded |           | array[[interestCategory](#interest-category)] | interest categories to avoid
-publisherGroups  |          |           |                                               |
-&nbsp;           | included |           | array[[publisherGroupId](#publishers-management-publisher-groups)]   | whitelisted publisher group IDs
-&nbsp;           | excluded |           | array[[publisherGroupId](#publishers-management-publisher-groups)]   | blacklisted publisher group IDs
+Targeting        | Property | Property   | Type                                                                 | Description
+-----------------|----------|------------|----------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
+devices          |          |            | array[[device](#device)]                                             | A list of device types to target. If none specified, content is served to all device types.
+placements       |          |            | array[[placement](#placement)]                                       | A list of placements to target. If none specified, content is served to all placements.
+os               |          |            | array[[operatingSystem](#os-targeting)]                              | A list of operating systems and their versions to target. If none specified, content is served to any operating system or version. 
+geo              |          |            |
+&nbsp;           | included |            |                                                                      |
+&nbsp;           |          | countries  | array[[country](#country)]                                           | countries to target
+&nbsp;           |          | regions    | array[[region](#region)]                                             | regions to target
+&nbsp;           |          | dma        | array[[DMA](#dma)]                                                   | DMA IDs to target
+&nbsp;           |          | cities     | array[[City](#city)]                                                 | cities to target
+&nbsp;           |          | postalCodes| array[[PostalCode](#postalcode)]                                     | postal codes to target
+&nbsp;           | excluded |            |                                                                      |
+&nbsp;           |          | countries  | array[[country](#country)]                                           | countries to target
+&nbsp;           |          | regions    | array[[region](#region)]                                             | regions to target
+&nbsp;           |          | dma        | array[[DMA](#dma)]                                                   | DMA IDs to target
+&nbsp;           |          | cities     | array[[City](#city)]                                                 | cities to target
+&nbsp;           |          | postalCodes| array[[PostalCode](#postalcode)]                                     | postal codes to target
+interest         |          |            |
+&nbsp;           | included |            | array[[interestCategory](#interest-category)]                        | interest categories to target
+&nbsp;           | excluded |            | array[[interestCategory](#interest-category)]                        | interest categories to avoid
+publisherGroups  |          |            |                                                                      |
+&nbsp;           | included |            | array[[publisherGroupId](#publishers-management-publisher-groups)]   | whitelisted publisher group IDs
+&nbsp;           | excluded |            | array[[publisherGroupId](#publishers-management-publisher-groups)]   | blacklisted publisher group IDs
+audience         |          |            | [audienceTargetingExpression](#audience-targeting-expression)        | audience targeting expression
 
 <a name="os-targeting"></a>
 #### Operating System Targeting Settings
@@ -777,6 +778,26 @@ thursday  | array[integer]                                           | active ho
 friday    | array[integer]                                           | active hours
 saturday  | array[integer]                                           | active hours
 timezone  | [TZ timezone](https://en.wikipedia.org/wiki/Tz_database) | Timezone in which the hours are evaluated. If not specified, the timezone of the user being shown the ad is used.
+
+<a name="audience-targeting-expression"></a>
+#### Audience Targeting
+
+Property      | Type                                                                                           | Description
+--------------|------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+operator      | string                                                                                         | Valid operators are `AND`,  `OR` and `NOT`. `NOT` is an unary operator - it has to have exactly one nested subexpression. 
+subexpression | array[audienceTargeting or [audienceTargetingCategory](#audience-targeting-category)] | Either a nested audience expression or a leaf category object.
+
+<a name="audience-targeting-category"></a>
+##### Audience Targeting Category
+
+Audience targeting subexpressions can either be a nested audience targeting expressions or a leaf category node.
+
+Property | Type    | Description
+---------|---------|-------------------------
+category | string  | Composed of two parts - the data provider and category id separated by `:`. (E.g. `bluekai:671901`)
+
+Currently the only supported provider is `bluekai`. See [BlueKai Taxonomy API](#utilities-bluekai-taxonomy) for a list of all available
+BlueKai categories.
 
 <a name="autopilot"></a>
 #### Zemanta Autopilot Settings
@@ -1658,6 +1679,14 @@ Time breakdown:
 
     + Attributes (GeolocationResponse)
 
+<a name="bluekai-taxonomy"></a>
+## BlueKai Taxonomy [/rest/v1/bluekai/taxonomy/]
+
+### List BlueKai Categories [GET /rest/v1/bluekai/taxonomy/]
+
++ Response 200 (application/json)
+
+    + Attributes (BlueKaiTaxonomyResponse)
 
 # Group Additional Types
 
@@ -2631,3 +2660,28 @@ Examples:
 ## GeolocationResponse
 
 - `data` (array[GeolocationCountry, GeolocationRegion])
+
+<!-- BLUEKAI -->
+## BlueKaiCategory (object)
+
+- `categoryId`: `671901` (number)
+- `name`: `Parent category name` (string)
+- `desctiption`: `Parent category description` (string)
+- `navigationOnly`: `false` (boolean)
+- `price`: `1.0` (string)
+- `reach`: 1000000000 (number)
+- `childNodes`: (array[BlueKaiChildCategory])
+
+## BlueKaiChildCategory (object)
+
+- `categoryId`: `671902` (number)
+- `name`: `Child category name` (string)
+- `desctiption`: `Child category description` (string)
+- `navigationOnly`: `false` (boolean)
+- `price`: `1.20` (string)
+- `reach`: 1000000000 (number)
+- `childNodes`: (array)
+
+## BlueKaiTaxonomyResponse
+
+- `data` (BlueKaiCategory)

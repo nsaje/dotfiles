@@ -31,6 +31,7 @@
       - ['can_set_white_blacklist_publisher_groups', 'zemauth', 'user']
       - ['can_modify_campaign_iab_category', 'zemauth', 'user']
       - ['can_set_advanced_device_targeting', 'zemauth', 'user']
+      - ['can_use_bluekai_targeting', 'zemauth', 'user']
 
 - model: oauth2_provider.application
   pk: 1
@@ -454,7 +455,7 @@
 # bluekai taxonomy
 
 -   fields:
-        category_id: 123
+        category_id: 671901
         parent_category_id: 1
         name: "Parent category name"
         description: "Parent category description"
@@ -465,3 +466,16 @@
         created_dt: '2014-06-04T00:00:00'
     model: dash.bluekaicategory
     pk: 600
+
+-   fields:
+        category_id: 671902
+        parent_category_id: 671901
+        name: "Child category name"
+        description: "Child category description"
+        navigation_only: False
+        status: 1
+        price: 1.2
+        reach: 1000000000
+        created_dt: '2014-06-04T00:00:00'
+    model: dash.bluekaicategory
+    pk: 601
