@@ -327,6 +327,7 @@
         bottom: 0;
         left: @default-spacing;
         right: 0;
+        padding-bottom: @default-spacing;
     }
 
     .form__indented-group {
@@ -351,12 +352,15 @@
         }
 
         .textarea,
+        .form__checkbox,
+        .form__radio,
         .input-text,
         .multiselect,
         .prefixed-field,
         .postfixed-field,
         .form__information {
             width: @form-input-width-content-upload;
+            float: left;
         }
 
         .textarea {

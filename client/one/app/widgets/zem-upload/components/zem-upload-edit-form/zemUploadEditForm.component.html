@@ -199,8 +199,10 @@
                 <div class="message message--error" for="call-to-action-input" ng-repeat="error in ctrl.selectedCandidate.errors.callToAction">{{ error }}</div>
             </div>
 
+            <hr>
+
             <div class="form__group" ng-class="{'form--error': ctrl.fieldsHaveErrors('label')}">
-                <label class="form__label" for="url-input">Label</label>
+                <label class="form__label form__label--optional" for="url-input">Label</label>
                 <input class="input-text" type="text" id="label-input" ng-model="ctrl.selectedCandidate.label"
                        ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }"
                        ng-change="ctrl.updateField('label')"
@@ -210,21 +212,21 @@
                      'content-upload__change-status--successful': ctrl.fieldsSaved.label && !ctrl.fieldsHaveErrors('label')}">
                     {{ ctrl.selectedCandidate.label.length }}/{{ ctrl.MAX_LABEL_LENGTH }}
                 </div>
+                <div class="form__text--small">Label is an internal field and is not part of the ad placement.</div>
                 <div class="message message--error" for="label-input" ng-if="ctrl.fieldsApiErrors['label']">Something went wrong. <a href ng-click="ctrl.updateField('label')" tabindex="-1">Try again</a></div>
                 <div class="message message--error" for="label-input" ng-repeat="error in ctrl.selectedCandidate.errors.label">{{ error }}</div>
             </div>
 
-            <div class="form__indented-group">
+            <div class="form__group" ng-if="!ctrl.selectedCandidate.usePrimaryTracker">
+                <label class="form__label form__label--optional">Tracking</label>
                 <div class="form__checkbox">
-                    <label>
-                        <input class="input-checkbox" type="checkbox" ng-model="ctrl.selectedCandidate.useTrackers"
-                               ng-change="ctrl.toggleUseTrackers()" id="use-impression-trackers" />
-                        <span class="checkbox-text">Use impression trackers</span>
-                    </label>
+                    <a href class="inline-link" ng-click="ctrl.addPrimaryTracker(ctrl.selectedCandidate)" tabindex="-1">
+                        Add primary tracker
+                    </a>
                 </div>
             </div>
 
-            <div class="form__group" ng-class="{'form--error': ctrl.fieldsHaveErrors('primaryTrackerUrl')}" ng-if="ctrl.selectedCandidate.useTrackers">
+            <div class="form__group" ng-if="!!ctrl.selectedCandidate.usePrimaryTracker" ng-class="{'form--error': ctrl.fieldsHaveErrors('primaryTrackerUrl')}">
                 <label class="form__label" for="impression-trackers-input">Primary tracker</label>
                 <input type="text" class="input-text" id="primary-tracker-input"
                        ng-model="ctrl.selectedCandidate.primaryTrackerUrl"
@@ -234,6 +236,9 @@
                 <div class="content-upload__field-additional-info content-upload__change-status" ng-class="{
                      'content-upload__change-status--loading': ctrl.fieldsLoading.primaryTrackerUrl,
                      'content-upload__change-status--successful': ctrl.fieldsSaved.primaryTrackerUrl && !ctrl.fieldsHaveErrors('primaryTrackerUrl')}">
+                    <a href ng-click="ctrl.removePrimaryTracker(ctrl.selectedCandidate)" ng-if="!ctrl.selectedCandidate.useSecondaryTracker" tabindex="-1">
+                        Remove
+                    </a>
                 </div>
                 <div class="form__text--small">Paste your impression tracker link to track impressions.</div>
                 <div class="message message--error" for="primary-tracker-input" ng-if="ctrl.fieldsApiErrors['primaryTrackerUrl']">Something went wrong. <a href ng-click="ctrl.updateField('primaryTrackerUrl')" tabindex="-1">Try again</a></div>
@@ -259,7 +264,7 @@
                 <div class="message message--error" for="secondary-tracker-input" ng-repeat="error in ctrl.selectedCandidate.errors.secondaryTrackerUrl">{{ error }}</div>
             </div>
 
-            <div class="form__indented-group" ng-if="!ctrl.selectedCandidate.useSecondaryTracker && ctrl.selectedCandidate.useTrackers">
+            <div class="form__indented-group" ng-if="!ctrl.selectedCandidate.useSecondaryTracker && !!ctrl.selectedCandidate.usePrimaryTracker">
                 <a href class="inline-link" ng-click="ctrl.addSecondaryTracker(ctrl.selectedCandidate)" tabindex="-1">
                     Add secondary tracker
                 </a>

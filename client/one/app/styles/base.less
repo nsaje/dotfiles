@@ -1043,6 +1043,16 @@ h4 {
     }
 }
 
+.form__label--optional {
+    font-weight: 400;
+
+    &::after {
+        content: " (optional)";
+        color: @gray;
+        font-size: @default-font-size - 2;
+    }
+}
+
 .form__information {
     float: left;
     width: 100%;

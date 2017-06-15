@@ -152,6 +152,18 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
         persistUpdate();
     };
 
+    vm.addPrimaryTracker = function (candidate) {
+        vm.fieldsSaved['primaryTrackerUrl'] = false;
+        candidate.usePrimaryTracker = true;
+    };
+
+    vm.removePrimaryTracker = function (candidate) {
+        candidate.usePrimaryTracker = false;
+        candidate.primaryTrackerUrl = null;
+        vm.updateField('primaryTrackerUrl');
+        vm.clearSelectedCandidateErrors('primaryTrackerUrl');
+    };
+
     vm.addSecondaryTracker = function (candidate) {
         vm.fieldsSaved['secondaryTrackerUrl'] = false;
         candidate.useSecondaryTracker = true;
@@ -172,23 +184,6 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
             }
         }
         return false;
-    };
-
-    vm.toggleUseTrackers = function () {
-        vm.fieldsSaved['primaryTrackerUrl'] = false;
-
-        if (vm.selectedCandidate.useTrackers) {
-            return;
-        }
-
-        vm.selectedCandidate.primaryTrackerUrl = null;
-        vm.updateField('primaryTrackerUrl');
-
-        if (vm.selectedCandidate.useSecondaryTracker) {
-            vm.selectedCandidate.useSecondaryTracker = false;
-            vm.selectedCandidate.secondaryTrackerUrl = null;
-            vm.updateField('secondaryTrackerUrl');
-        }
     };
 
     vm.toggleImageUpload = function () {
