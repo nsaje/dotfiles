@@ -1,0 +1,11 @@
+# https://stackoverflow.com/questions/6241200/how-can-i-see-the-details-of-an-exception-in-pythons-debugger
+
+!global __currentframe, __stack; from inspect import currentframe as __currentframe, stack as __stack
+!global __format_exception_only, __print_stack; from traceback import format_exception_only as __format_exception_only, print_stack as __print_stack
+!global __Pdb; from pdb import Pdb as __Pdb
+
+# find the last frame on the stack with an object named "pdb" or "self" that is a pdb.Pdb object
+# works for pdb called the usual way, or pdb.pm(), or pdb.set_trace()
+!global __pdb; __pdb = [__framerec[0].f_locals.get("pdb") or __framerec[0].f_locals.get("self") for __framerec in __stack() if (__framerec[0].f_locals.get("pdb") or __framerec[0].f_locals.get("self")).__class__ == __Pdb][-1]
+
+alias traceback __print_stack(__pdb.stack[-1][0]); print "".join(__format_exception_only(*__exception__))
