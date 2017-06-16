@@ -30,7 +30,7 @@ class IdField(serializers.Field):
         return int(data)
 
 
-class DashConstantField(serializers.Field):
+class DashConstantField(serializers.CharField):
 
     def __init__(self, const_cls, *args, **kwargs):
         self.const_cls = const_cls

@@ -6,6 +6,7 @@ import time
 
 from django.db import transaction
 from rest_framework.views import APIView
+from rest_framework.viewsets import ViewSetMixin
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework import serializers
@@ -96,6 +97,11 @@ class RESTAPIBaseView(APIView):
         if errors:
             data['errors'] = errors
         return Response(data, **kwargs)
+
+
+class RESTAPIBaseViewSet(ViewSetMixin, RESTAPIBaseView):
+    renderer_classes = (CamelCaseJSONRenderer,)
+    parser_classes = (CamelCaseJSONParser,)
 
 
 class DataNodeSerializerMixin(object):

@@ -16,6 +16,34 @@ import core.entity.helpers
 import core.history
 import core.source
 
+# These agencies should have campaign stop turned off
+# (for example Outbrain)
+AGENCIES_WITHOUT_CAMPAIGN_STOP = {55}
+ACCOUNTS_WITHOUT_CAMPAIGN_STOP = {490}
+
+
+class CampaignManager(core.common.QuerySetManager):
+
+    @transaction.atomic
+    def create(self, user, account, name, iab_category=constants.IABCategory.IAB24):
+        campaign = Campaign(
+            name=name,
+            account=account
+        )
+        campaign.save(user=user)
+
+        settings = campaign.get_current_settings()  # creates new settings with default values
+        settings.name = name
+        settings.campaign_manager = user
+        settings.iab_category = iab_category
+
+        if account.id in ACCOUNTS_WITHOUT_CAMPAIGN_STOP or account.agency_id in AGENCIES_WITHOUT_CAMPAIGN_STOP:
+            settings.automatic_campaign_stop = False
+
+        settings.save(user=user, action_type=constants.HistoryActionType.CREATE)
+
+        return campaign
+
 
 class Campaign(models.Model, core.common.PermissionMixin):
     class Meta:
@@ -47,7 +75,7 @@ class Campaign(models.Model, core.common.PermissionMixin):
 
     USERS_FIELD = 'users'
 
-    objects = core.common.QuerySetManager()
+    objects = CampaignManager()
 
     def __unicode__(self):
         return self.name
@@ -183,10 +211,12 @@ class Campaign(models.Model, core.common.PermissionMixin):
     def get_account(self):
         return self.account
 
-    def save(self, request, *args, **kwargs):
+    def save(self, request=None, user=None, *args, **kwargs):
         self.modified_by = None
         if request is not None:
             self.modified_by = request.user
+        if user is not None:
+            self.modified_by = user
         super(Campaign, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):

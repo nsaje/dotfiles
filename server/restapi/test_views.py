@@ -49,7 +49,8 @@ class RESTAPITest(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.client.force_authenticate(user=User.objects.get(pk=1))
+        self.user = User.objects.get(pk=1)
+        self.client.force_authenticate(user=self.user)
         self.maxDiff = None
 
     def assertResponseValid(self, r, status_code=200, data_type=dict):
@@ -65,6 +66,7 @@ class RESTAPITest(TestCase):
         resp_json = json.loads(r.content)
         self.assertIn('errorCode', resp_json)
         self.assertEqual(resp_json['errorCode'], error_code)
+        return resp_json
 
 
 class AccountsTest(RESTAPITest):

@@ -48,11 +48,6 @@ YAHOO_DASH_URL = 'https://gemini.yahoo.com/advertiser/{advertiser_id}/campaign/{
 OUTBRAIN_DASH_URL = 'https://my.outbrain.com/amplify/site/marketers/{marketer_id}/reports/content?campaignId={campaign_id}'
 FACEBOOK_DASH_URL = 'https://business.facebook.com/ads/manager/campaign/?ids={campaign_id}&business_id={business_id}'
 
-# These agencies should have campaign stop turned off
-# (for example Outbrain)
-AGENCIES_WITHOUT_CAMPAIGN_STOP = {55}
-ACCOUNTS_WITHOUT_CAMPAIGN_STOP = {490}
-
 
 LANDING_MODE_PREVENT_UPDATE = ['daily_budget_cc', 'state']
 
@@ -936,20 +931,7 @@ class AccountCampaigns(api_common.BaseApiView):
 
         name = core.entity.helpers.create_default_name(models.Campaign.objects.filter(account=account), 'New campaign')
 
-        campaign = models.Campaign(
-            name=name,
-            account=account
-        )
-        campaign.save(request)
-
-        settings = campaign.get_current_settings()  # creates new settings with default values
-        settings.name = name
-        settings.campaign_manager = request.user
-
-        if account.id in ACCOUNTS_WITHOUT_CAMPAIGN_STOP or account.agency_id in AGENCIES_WITHOUT_CAMPAIGN_STOP:
-            settings.automatic_campaign_stop = False
-
-        settings.save(request, action_type=constants.HistoryActionType.CREATE)
+        campaign = models.Campaign.objects.create(request.user, account, name)
 
         response = {
             'name': campaign.name,

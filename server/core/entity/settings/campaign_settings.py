@@ -125,14 +125,17 @@ class CampaignSettings(SettingsBase):
     objects = core.common.QuerySetManager()
 
     def save(self,
-             request,
+             request=None,
+             user=None,
              action_type=None,
              *args, **kwargs):
         if self.pk is None:
-            if request is None:
-                self.created_by = None
-            else:
+            if request is not None:
                 self.created_by = request.user
+            elif user is not None:
+                self.created_by = user
+            else:
+                self.created_by = None
         super(CampaignSettings, self).save(*args, **kwargs)
         self.add_to_history(request and request.user, action_type)
 
