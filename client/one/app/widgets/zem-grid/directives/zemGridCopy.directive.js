@@ -24,6 +24,8 @@ angular.module('one.widgets').directive('zemGridCopy', function ($timeout, zemGr
 
                 var from = getExportIndex(anchorElement);
                 var to = getExportIndex(extentElement);
+                if (from === to) return;
+
                 if (from > to) {
                     var temp = from;
                     from = to;
