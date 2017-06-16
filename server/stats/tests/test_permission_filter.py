@@ -175,7 +175,7 @@ class FilterTestCase(TestCase):
         permission_filter.filter_columns_by_permission(user, self.rows, self.goals)
 
         self.default_cleaned_rows[0].update({
-            'pacing': 1, 'allocated_budgets': 1, 'spend_projection': 1, 'license_fee_projection': 1,
+            'allocated_budgets': 1,
             'flat_fee': 1, 'total_fee': 1, 'total_fee_projection': 1,
             'e_data_cost': 1, 'e_media_cost': 1, 'e_yesterday_cost': 1, 'license_fee': 1,
         })

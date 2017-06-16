@@ -647,8 +647,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             help: 'Media spend divided by ideal media budget for selected date range.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            internal: 'zemauth.can_see_projections',
-            shown: ['zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'],
+            shown: ['zemauth.can_view_platform_cost_breakdown'],
         },
         spendProjection: {
             name: 'Spend Projection',
@@ -659,8 +658,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
                   'selected date range based on the spend in the previous days.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            internal: 'zemauth.can_see_projections',
-            shown: ['zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'],
+            shown: ['zemauth.can_view_platform_cost_breakdown'],
         },
         licenseFeeProjection: {
             name: 'License Fee Projection',
@@ -671,8 +669,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
                   'license fee in the previous days.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            internal: 'zemauth.can_see_projections',
-            shown: ['zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'],
+            shown: ['zemauth.can_view_platform_cost_breakdown'],
         },
         totalFeeProjection: {
             name: 'Total Fee Projection',
@@ -683,8 +680,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
                   'license fee in the previous days and recognized flat fee.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            internal: 'zemauth.can_see_projections',
-            shown: ['zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown', 'zemauth.can_view_flat_fees'], // eslint-disable-line max-len
+            shown: ['zemauth.can_view_platform_cost_breakdown', 'zemauth.can_view_flat_fees'], // eslint-disable-line max-len
         },
 
         // Optimisation metrics

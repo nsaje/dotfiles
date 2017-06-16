@@ -48,15 +48,14 @@ FIELD_PERMISSION_MAPPING = {
     'margin':           ('zemauth.can_view_agency_margin',),
     'agency_total':     ('zemauth.can_view_agency_margin',),
 
-    'pacing':                 ('zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'),
+    'pacing':                 ('zemauth.can_view_platform_cost_breakdown'),
     'allocated_budgets':      ('zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'),
-    'spend_projection':       ('zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'),
-    'license_fee_projection': ('zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'),
+    'spend_projection':       ('zemauth.can_view_platform_cost_breakdown'),
+    'license_fee_projection': ('zemauth.can_view_platform_cost_breakdown'),
     'total_fee':              ('zemauth.can_view_flat_fees', 'zemauth.can_view_platform_cost_breakdown'),
     'flat_fee':               ('zemauth.can_view_flat_fees', 'zemauth.can_view_platform_cost_breakdown'),
 
-    'total_fee_projection':   ('zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown',
-                               'zemauth.can_view_flat_fees'),
+    'total_fee_projection':   ('zemauth.can_view_platform_cost_breakdown', 'zemauth.can_view_flat_fees'),
 
     'default_account_manager':      ('zemauth.can_see_managers_in_accounts_table',),
     'default_sales_representative': ('zemauth.can_see_managers_in_accounts_table',),
