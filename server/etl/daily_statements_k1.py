@@ -311,7 +311,7 @@ def reprocess_daily_statements(date_since, account_id=None):
     total_spend = {}
     all_dates = set()
 
-    campaigns = dash.models.Campaign.objects.prefetch_related('adgroup_set').all().exclude_archived()
+    campaigns = dash.models.Campaign.objects.prefetch_related('adgroup_set').all().exclude_archived(not account_id)
 
     # get campaigns that have spend in the last 3 days and might be archived
     campaigns_w_spend = get_campaigns_with_spend(date_since)
