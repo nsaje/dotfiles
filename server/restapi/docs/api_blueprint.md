@@ -784,7 +784,7 @@ timezone  | [TZ timezone](https://en.wikipedia.org/wiki/Tz_database) | Timezone 
 
 Property      | Type                                                                                           | Description
 --------------|------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
-operator      | string                                                                                         | Valid operators are `AND`,  `OR` and `NOT`. `NOT` is an unary operator - it has to have exactly one nested subexpression. 
+operator      | string                                                                                         | Valid operators are `AND`,  `OR` and `NOT`. `NOT` has to have exactly one nested subexpression in the child array. 
 subexpression | array[audienceTargeting or [audienceTargetingCategory](#audience-targeting-category)] | Either a nested audience expression or a leaf category object.
 
 <a name="audience-targeting-category"></a>
