@@ -1,4 +1,3 @@
-import datetime
 import pytz
 
 from django.conf import settings
@@ -60,12 +59,12 @@ class ScheduledReportManager(models.Manager):
 
 class ScheduledReportQuerySet(models.QuerySet):
     def filter_due(self):
-        today = pytz.UTC.localize(dates_helper.utc_now())
+        today = pytz.UTC.localize(dates_helper.utc_now()).date()
 
         due_reports = self.filter(state=constants.ScheduledReportState.ACTIVE)
 
         due_reports = due_reports.exclude(
-            last_sent_dt__gt=dates_helper.yesterday(today) + datetime.timedelta(hours=1)
+            last_sent_dt__gt=today
         )
 
         due_reports = due_reports.exclude(
