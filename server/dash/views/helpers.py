@@ -855,17 +855,6 @@ def _enabling_autopilot_sources_allowed(ad_group_settings, number_of_sources_to_
         automation.autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group_settings.ad_group, ad_group_settings)
 
 
-def add_source_to_ad_group(default_source_settings, ad_group):
-    ad_group_source = models.AdGroupSource(
-        source=default_source_settings.source,
-        ad_group=ad_group,
-        source_credentials=default_source_settings.credentials,
-        can_manage_content_ads=default_source_settings.source.can_manage_content_ads(),
-    )
-
-    return ad_group_source
-
-
 def get_adjusted_ad_group_sources_cpcs(ad_group, ad_group_settings):
     adjusted_cpcs = {}
     for ad_group_source in ad_group.adgroupsource_set.all().select_related('source__source_type', 'ad_group'):
@@ -927,18 +916,6 @@ def format_decimal_to_percent(num):
 
 def format_percent_to_decimal(num):
     return Decimal(str(num).replace(',', '').strip('%')) / 100
-
-
-def get_source_default_settings(source):
-    try:
-        default_settings = models.DefaultSourceSettings.objects.get(source=source)
-    except models.DefaultSourceSettings.DoesNotExist:
-        raise exc.MissingDataError('No default settings set for {}.'.format(source.name))
-
-    if not default_settings.credentials:
-        raise exc.MissingDataError('No default credentials set in {}.'.format(default_settings))
-
-    return default_settings
 
 
 def _update_ad_groups_redirector_settings(campaign, campaign_settings):

@@ -843,40 +843,12 @@ class AdGroupSources(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        ad_group_settings = ad_group.get_current_settings()
 
         source_id = json.loads(request.body)['source_id']
         source = models.Source.objects.get(id=source_id)
 
-        if models.AdGroupSource.objects.filter(source=source, ad_group=ad_group).exists():
-            raise exc.ValidationError(
-                '{} media source for ad group {} already exists.'.format(source.name, ad_group_id))
+        core.entity.AdGroupSource.objects.create(request, ad_group, source, write_history=True, k1_sync=True, active=False)
 
-        if not region_targeting_helper.can_target_existing_regions(source, ad_group_settings):
-            raise exc.ValidationError('{} media source can not be added because it does not support selected region targeting.'
-                                      .format(source.name))
-
-        if not retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings):
-            raise exc.ValidationError('{} media source can not be added because it does not support retargeting.'
-                                      .format(source.name))
-
-        default_settings = helpers.get_source_default_settings(source)
-        ad_group_source = helpers.add_source_to_ad_group(default_settings, ad_group)
-        ad_group_source.save(None)
-
-        ad_group.write_history(
-            '{} campaign created.'.format(ad_group_source.source.name),
-            user=request.user,
-            action_type=constants.HistoryActionType.MEDIA_SOURCE_ADD)
-        ad_group_source.set_initial_settings(
-            None,
-            mobile_only=ad_group_settings.is_mobile_only(),
-            max_cpc=ad_group_settings.cpc_cc)
-
-        if settings.K1_CONSISTENCY_SYNC:
-            api.add_content_ad_sources(ad_group_source)
-
-        k1_helper.update_ad_group(ad_group_id, msg='AdGroupSources.put')
         return self.create_api_response(None)
 
 

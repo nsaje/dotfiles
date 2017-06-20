@@ -6,7 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
 
-from dash import constants
+from dash import constants, retargeting_helper
 
 import core.common
 import core.entity
@@ -32,18 +32,27 @@ class AdGroupSourceManager(core.common.QuerySetManager):
         return ad_group_source
 
     @transaction.atomic
-    def create(self, request, ad_group, source, write_history=True, k1_sync=True):
+    def create(self, request, ad_group, source, write_history=True, k1_sync=True, active=True):
+        ad_group_settings = ad_group.get_current_settings()
+
+        if AdGroupSource.objects.filter(source=source, ad_group=ad_group).exists():
+            raise utils.exc.ValidationError(
+                '{} media source for ad group {} already exists.'.format(source.name, ad_group.id))
+
+        if not retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings):
+            raise utils.exc.ValidationError(
+                '{} media source can not be added because it does not support retargeting.'.format(source.name))
+
         ad_group_source = self._create(ad_group, source)
         if write_history:
             ad_group.write_history_source_added(request, ad_group_source)
-
-        ad_group_settings = ad_group.get_current_settings()
 
         # circular dependency
         from dash.views import helpers
         ad_group_source.set_initial_settings(
             None,
-            active=helpers.get_source_initial_state(ad_group_source),  # TODO move this
+            active=active and helpers.get_source_initial_state(ad_group_source),  # TODO move this
+            max_cpc=ad_group_settings.cpc_cc,
             mobile_only=ad_group_settings.is_mobile_only())
 
         if settings.K1_CONSISTENCY_SYNC:

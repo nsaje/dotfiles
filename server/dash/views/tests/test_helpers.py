@@ -1033,30 +1033,10 @@ class SetAdGroupSourceTest(TestCase):
         self.request.META['SERVER_PORT'] = 1234
         self.request.user = User(id=1)
 
-    def test_add_source_to_ad_group(self):
-        ad_group_source_id = 2
-        default_settings = models.DefaultSourceSettings.objects.get(pk=1)
-        self.assertEqual(default_settings.source_id, ad_group_source_id)
-
-        ad_group = models.AdGroup.objects.get(pk=10)
-        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
-
-        # ensure sources are not added before we actually try to add them
-        self.assertFalse(ad_group_sources.exists())
-
-        ad_group_source = helpers.add_source_to_ad_group(default_settings, ad_group)
-        ad_group_source.save()
-
-        self.assertTrue(ad_group_sources.count(), 1)
-
-        ad_group_source = ad_group_sources[0]
-        self.assertEqual(ad_group_source.source, default_settings.source)
-
     def prepare_ad_group_source(self):
         ad_group_settings = models.AdGroupSettings.objects.get(pk=6)
         source_settings = models.DefaultSourceSettings.objects.get(pk=1)
-        ad_group_source = helpers.add_source_to_ad_group(source_settings, ad_group_settings.ad_group)
-        ad_group_source.save(self.request)
+        ad_group_source = models.AdGroupSource.objects.create(None, ad_group_settings.ad_group, source_settings.source, write_history=False, k1_sync=False)
         return ad_group_source, source_settings
 
     def test_set_ad_group_source_settings_mobile(self):
@@ -1064,7 +1044,7 @@ class SetAdGroupSourceTest(TestCase):
         ad_group_source.set_initial_settings(self.request, mobile_only=True, active=True)
 
         ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source)
-        self.assertEqual(ad_group_source_settings.count(), 2)
+        self.assertEqual(ad_group_source_settings.count(), 3)
 
         ad_group_source_settings = ad_group_source_settings.latest()
         self.assertEqual(ad_group_source_settings.daily_budget_cc, source_settings.source.default_daily_budget_cc)
@@ -1076,7 +1056,7 @@ class SetAdGroupSourceTest(TestCase):
         ad_group_source.set_initial_settings(self.request, mobile_only=False, active=False)
 
         ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source)
-        self.assertEqual(ad_group_source_settings.count(), 2)
+        self.assertEqual(ad_group_source_settings.count(), 3)
 
         ad_group_source_settings = ad_group_source_settings.latest()
         self.assertEqual(ad_group_source_settings.daily_budget_cc, source_settings.source.default_daily_budget_cc)
