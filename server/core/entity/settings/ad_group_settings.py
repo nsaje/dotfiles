@@ -245,7 +245,7 @@ class AdGroupSettings(SettingsBase):
 
     click_capping_type = models.IntegerField(
         blank=True,
-        null=True,
+        null=False,
         default=constants.ClickCappingType.DISABLED,
         choices=constants.ClickCappingType.get_choices(),
     )
