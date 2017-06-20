@@ -88,6 +88,7 @@
         <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_delivery_type')">
             <label class="form__label" is-internal="zemauth.can_set_delivery_type">
                 Delivery type:
+                <zem-help-popover content="Delivery type determines how your ads will be delivered throughout the day. Standard option is optimal in most cases as it makes sure that people from various timezones and with different browsing habits can be reached. Accelerated campaign will deliver ads within first hours of the day and stop once it reaches daily cap." placement="top"></zem-help-popover>
             </label>
             <div class="form__radio">
                 <label>
@@ -95,7 +96,7 @@
                         ng-model="$ctrl.entity.settings.deliveryType" ng-value="$ctrl.deliveryType.STANDARD">
                     <span class="radio-text">
                         Standard
-                        <zem-help-popover content="Deliver ads throughout the day." placement="top"></zem-help-popover>
+                        <span class="form__text">- Deliver ads throughout the day.</span>
                     </span>
                 </label>
             </div>
@@ -105,7 +106,7 @@
                            ng-model="$ctrl.entity.settings.deliveryType" ng-value="{{ $ctrl.deliveryType.ACCELERATED }}">
                     <span class="radio-text">
                         Accelerated
-                        <zem-help-popover content="Deliver ads as soon as possible." placement="top"></zem-help-popover>
+                        <span class="form__text">- Deliver ads as soon as possible.</span>
                     </span>
                 </label>
             </div>
