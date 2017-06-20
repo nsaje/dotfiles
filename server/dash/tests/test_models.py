@@ -87,6 +87,8 @@ class AdGroupSettingsTest(TestCase):
             'whitelist_publisher_groups': [1],
             'blacklist_publisher_groups': [2],
             'delivery_type': 1,
+            'click_capping_type': 1,
+            'click_capping_max_clicks': 10,
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),
@@ -183,7 +185,9 @@ class AdGroupSettingsTest(TestCase):
             'Ad group name set to "AdGroup name"',
             'Call to action set to "Call to action"',
             'Group all RTB sources set to "True"',
-            'Data targeting set to "["or", 3, 4]"'
+            'Data targeting set to "["or", 3, 4]"',
+            'Click capping type set to "1"',
+            'Maximum number of clicks set to "10"',
         ]
         self.assertItemsEqual(expected, actual)
 

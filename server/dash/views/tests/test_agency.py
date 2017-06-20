@@ -68,6 +68,8 @@ class AdGroupSettingsTest(TestCase):
                 'whitelist_publisher_groups': [1],
                 'blacklist_publisher_groups': [1],
                 'delivery_type': 2,
+                'click_capping_type': 1,
+                'click_capping_max_clicks': 10,
             }
         }
 
@@ -202,6 +204,8 @@ class AdGroupSettingsTest(TestCase):
                     'blacklist_publisher_groups': [],
                     'landing_mode': False,
                     'delivery_type': 1,
+                    'click_capping_type': 1,
+                    'click_capping_max_clicks': 10,
                 },
                 'warnings': {}
             },
@@ -371,6 +375,8 @@ class AdGroupSettingsTest(TestCase):
                         'blacklist_publisher_groups': [1],
                         'landing_mode': False,
                         'delivery_type': 2,
+                        'click_capping_type': 1,
+                        'click_capping_max_clicks': 10,
                     }
                 },
                 'success': True
@@ -474,6 +480,8 @@ class AdGroupSettingsTest(TestCase):
                         'blacklist_publisher_groups': [],  # no permission to set
                         'landing_mode': False,
                         'delivery_type': 1,
+                        'click_capping_type': 1,
+                        'click_capping_max_clicks': 10,
                     }
                 },
                 'success': True
@@ -655,6 +663,8 @@ class AdGroupSettingsTest(TestCase):
                         'blacklist_publisher_groups': [1],
                         'landing_mode': False,
                         'delivery_type': 1,
+                        'click_capping_type': 1,
+                        'click_capping_max_clicks': 10,
                     }
                 },
                 'success': True
@@ -753,6 +763,8 @@ class AdGroupSettingsTest(TestCase):
                         'blacklist_publisher_groups': [],  # no permission to set
                         'landing_mode': False,
                         'delivery_type': 1,
+                        'click_capping_type': 1,
+                        'click_capping_max_clicks': 10,
                     }
                 },
                 'success': True
@@ -882,6 +894,8 @@ class AdGroupSettingsTest(TestCase):
                         'blacklist_publisher_groups': [],  # no permission to set
                         'landing_mode': False,
                         'delivery_type': 1,
+                        'click_capping_type': 1,
+                        'click_capping_max_clicks': 10,
                     }
                 },
                 'success': True

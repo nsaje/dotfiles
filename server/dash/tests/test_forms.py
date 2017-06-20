@@ -402,6 +402,8 @@ class AdGroupSettingsFormTest(TestCase):
             'whitelist_publisher_groups': [1],
             'blacklist_publisher_groups': [1],
             'delivery_type': '1',
+            'click_capping_type': 1,
+            'click_capping_max_clicks': 10,
         }
 
     @patch('utils.dates_helper.local_today')
@@ -443,6 +445,8 @@ class AdGroupSettingsFormTest(TestCase):
             'whitelist_publisher_groups': [1],
             'blacklist_publisher_groups': [1],
             'delivery_type': 1,
+            'click_capping_type': 1,
+            'click_capping_max_clicks': 10,
         })
 
     @patch('utils.dates_helper.local_today')

@@ -119,6 +119,17 @@ class ViewHelpersTestCase(TestCase):
     def test_save_campaign_settings_and_propagate(self, mock_insert_adgroup):
         campaign = models.Campaign.objects.get(pk=1)
         s1 = models.CampaignSettings(campaign=campaign)
+        s1.name = ''
+        s2 = models.CampaignSettings(campaign=campaign)
+        s2.name = 'cid'
+
+        request = HttpRequest()
+        request.user = User.objects.get(pk=1)
+        helpers.save_campaign_settings_and_propagate(campaign, s1, s2, request)
+        self.assertFalse(mock_insert_adgroup.called)
+
+        campaign = models.Campaign.objects.get(pk=1)
+        s1 = models.CampaignSettings(campaign=campaign)
         s1.enable_ga_tracking = False
         s1.enable_adobe_tracking = False
         s1.adobe_tracking_param = ''

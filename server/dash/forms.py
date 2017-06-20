@@ -383,6 +383,17 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
         empty_value=None,
     )
 
+    click_capping_type = forms.TypedChoiceField(
+        required=False,
+        choices=constants.ClickCappingType.get_choices(),
+        coerce=int,
+        empty_value=None,
+    )
+
+    click_capping_max_clicks = forms.IntegerField(
+        required=False
+    )
+
     def __init__(self, ad_group, user, *args, **kwargs):
         self.ad_group = ad_group
         self.account = ad_group.campaign.account

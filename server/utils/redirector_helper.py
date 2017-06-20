@@ -83,6 +83,10 @@ def insert_adgroup(ad_group, ad_group_settings, campaign_settings):
             data['specialredirecttrackers'] = ad_group_settings.redirect_pixel_urls
         if ad_group_settings.redirect_javascript:
             data['specialredirectjavascript'] = ad_group_settings.redirect_javascript
+        if ad_group_settings.click_capping_type:
+            data['clickcappingtype'] = ad_group_settings.click_capping_type
+        if ad_group_settings.click_capping_max_clicks:
+            data['clickcappingmaxclicks'] = ad_group_settings.click_capping_max_clicks
         return _call_api_retry(url, json.dumps(data), method='PUT')
     except Exception:
         logger.exception('Exception in insert_adgroup')
@@ -98,6 +102,8 @@ def get_adgroup(ad_group_id):
             'enable_adobe_tracking': adgroup_dict.get('enableadobetracking'),
             'adobe_tracking_param': adgroup_dict.get('adobetrackingparam'),
             'tracking_code': adgroup_dict.get('trackingcode'),
+            'click_capping_type': adgroup_dict.get('clickcappingtype'),
+            'click_capping_max_clicks': adgroup_dict.get('clickcappingmaxclicks'),
         }
     except Exception:
         logger.exception('Exception in get_adgroup')

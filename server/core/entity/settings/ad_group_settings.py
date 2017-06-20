@@ -127,6 +127,8 @@ class AdGroupSettings(SettingsBase):
         'dayparting',
         'max_cpm',
         'delivery_type',
+        'click_capping_type',
+        'click_capping_max_clicks',
     ]
     history_fields = list(_settings_fields)
 
@@ -241,6 +243,14 @@ class AdGroupSettings(SettingsBase):
         choices=constants.AdGroupDeliveryType.get_choices(),
     )
 
+    click_capping_type = models.IntegerField(
+        blank=True,
+        null=True,
+        default=constants.ClickCappingType.DISABLED,
+        choices=constants.ClickCappingType.get_choices(),
+    )
+    click_capping_max_clicks = models.PositiveIntegerField(blank=True, null=True)
+
     def get_settings_dict(self):
         # ad group settings form expects 'name' instead of 'ad_group_name'
         settings_dict = super(AdGroupSettings, self).get_settings_dict()
@@ -353,6 +363,8 @@ class AdGroupSettings(SettingsBase):
             'b1_sources_group_cpc_cc': 'Bid CPC for all RTB sources',
             'b1_sources_group_state': 'State of all RTB sources',
             'delivery_type': 'Delivery type',
+            'click_capping_type': 'Click capping type',
+            'click_capping_max_clicks': 'Maximum number of clicks',
         }
 
         return NAMES[prop_name]

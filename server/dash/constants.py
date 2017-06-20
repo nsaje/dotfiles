@@ -2207,3 +2207,15 @@ class AdGroupDeliveryType(ConstantBase):
         STANDARD: 'Standard',
         ACCELERATED: 'Accelerated',
     }
+
+
+class ClickCappingType(ConstantBase):
+    DISABLED = 0
+    AD_GROUP = 1
+    CONTENT_AD = 2
+
+    _VALUES = {
+        DISABLED: 'Disabled',
+        AD_GROUP: 'Ad Group',
+        CONTENT_AD: 'Content Ad',
+    }

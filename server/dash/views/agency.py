@@ -129,7 +129,7 @@ class AdGroupSettings(api_common.BaseApiView):
         # save
         ad_group.save(request)
         if changes:
-            if new_settings.id is None or 'tracking_code' in changes:
+            if new_settings.id is None or 'tracking_code' in changes or 'click_capping_type' in changes or 'click_capping_max_clicks' in changes:
                 redirector_helper.insert_adgroup(
                     ad_group,
                     new_settings,
@@ -480,6 +480,8 @@ class AdGroupSettings(api_common.BaseApiView):
             'blacklist_publisher_groups': settings.blacklist_publisher_groups,
             'landing_mode': settings.landing_mode,
             'delivery_type': settings.delivery_type,
+            'click_capping_type': settings.click_capping_type,
+            'click_capping_max_clicks': settings.click_capping_max_clicks,
         }
 
         # TODO (refactor-workaround) Re-use restapi serializers
@@ -511,6 +513,8 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.ad_group_name = resource['name']
         settings.tracking_code = resource['tracking_code']
         settings.dayparting = resource['dayparting']
+        settings.click_capping_type = resource['click_capping_type']
+        settings.click_capping_max_clicks = resource['click_capping_max_clicks']
 
         if user.has_perm('zemauth.can_set_ad_group_max_cpc'):
             settings.cpc_cc = resource['cpc_cc']
