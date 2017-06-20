@@ -374,6 +374,10 @@ class AdGroupSerializer(SettingsSerializer):
                 'dailyBudget': settings['autopilot_daily_budget'],
             },
             'dayparting': settings['dayparting'],
+            'clickCapping': {
+                'state': constants.ClickCappingType.get_name(settings['click_capping_type']),
+                'maxClicks': settings['click_capping_max_clicks'],
+            }
         }
         return ret
 
@@ -405,6 +409,9 @@ class AdGroupSerializer(SettingsSerializer):
             'target_devices': data['targeting']['devices'],
             'target_placements': data['targeting']['placements'],
             'target_os': data['targeting']['os'],
+
+            'click_capping_type': fields.DashConstantField(constants.ClickCappingType).to_internal_value(data['clickCapping']['state']),
+            'click_capping_max_clicks': data['clickCapping']['maxClicks'],
         }
         return {'settings': {k: v for k, v in settings.items() if v != fields.NOT_PROVIDED}}
 

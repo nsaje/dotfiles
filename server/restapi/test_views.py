@@ -532,6 +532,8 @@ class AdGroupsTest(RESTAPITest):
         dayparting={},
         whitelist_publisher_groups=[153],
         blacklist_publisher_groups=[154],
+        click_capping_type=constants.ClickCappingType.AD_GROUP,
+        click_capping_max_clicks=120,
     ):
         final_target_regions = {
             'countries': [],
@@ -586,6 +588,10 @@ class AdGroupsTest(RESTAPITest):
                 'dailyBudget': autopilot_daily_budget,
             },
             'dayparting': dayparting,
+            'clickCapping': {
+                'state': constants.ClickCappingType.get_name(click_capping_type),
+                'maxClicks': click_capping_max_clicks,
+            },
         }
 
         return normalize(representation)
@@ -640,6 +646,8 @@ class AdGroupsTest(RESTAPITest):
             target_devices=settings_db.target_devices,
             target_placements=settings_db.target_placements,
             target_os=settings_db.target_os,
+            click_capping_type=settings_db.click_capping_type,
+            click_capping_max_clicks=settings_db.click_capping_max_clicks,
         )
         self.assertEqual(expected, adgroup)
 
