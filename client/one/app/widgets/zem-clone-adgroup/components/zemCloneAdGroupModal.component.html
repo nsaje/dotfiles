@@ -23,6 +23,16 @@
         <div class="message message--error" for="campaign-input" ng-if="!!$ctrl.errors.destinationCampaignId">{{ $ctrl.errors.destinationCampaignId }}</div>
     </div>
 
+    <div class="form__group">
+        <label class="form__label" for="clone-ads">Clone ads</label>
+        <div class="form__checkbox">
+            <label>
+                <input class="input-checkbox" type="checkbox" id="clone-ads" ng-model="$ctrl.cloneAds"><span class="checkbox-text"></span>
+                <span class="checkbox-text"></span>
+            </label>
+        </div>
+    </div>
+
 </div>
 <div class="modal__footer buttons-panel">
     <button class="button button--highlight button--with-icon copy-icon" ng-disabled="!!$ctrl.requestInProgress" ng-click="$ctrl.submit()">Clone</button>

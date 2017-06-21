@@ -18,7 +18,7 @@ class Clone(TestCase):
         dest_campaign = magic_mixer.blend(core.entity.Campaign)
         request = magic_mixer.blend_request_user()
 
-        cloned_ad_group = cloneadgroup.service.clone(request, ad_group, dest_campaign, 'Something')
+        cloned_ad_group = cloneadgroup.service.clone(request, ad_group, dest_campaign, 'Something', clone_ads=True)
 
         self.assertNotEqual(ad_group, cloned_ad_group)
         self.assertTrue(core.entity.ContentAd.objects.filter(ad_group=cloned_ad_group).exists())
@@ -29,7 +29,18 @@ class Clone(TestCase):
         dest_campaign = magic_mixer.blend(core.entity.Campaign)
         request = magic_mixer.blend_request_user()
 
-        cloned_ad_group = cloneadgroup.service.clone(request, ad_group, dest_campaign, 'Something')
+        cloned_ad_group = cloneadgroup.service.clone(request, ad_group, dest_campaign, 'Something', clone_ads=True)
+
+        self.assertNotEqual(ad_group, cloned_ad_group)
+        self.assertFalse(core.entity.ContentAd.objects.filter(ad_group=cloned_ad_group).exists())
+
+    def test_clone_skip_content(self, mock_insert_adgroup, mock_redirects, mock_autopilot):
+        ad_group = magic_mixer.blend(core.entity.AdGroup)
+        magic_mixer.cycle(5).blend(core.entity.ContentAd, ad_group=ad_group, archived=False)
+        dest_campaign = magic_mixer.blend(core.entity.Campaign)
+        request = magic_mixer.blend_request_user()
+
+        cloned_ad_group = cloneadgroup.service.clone(request, ad_group, dest_campaign, 'Something', clone_ads=False)
 
         self.assertNotEqual(ad_group, cloned_ad_group)
         self.assertFalse(core.entity.ContentAd.objects.filter(ad_group=cloned_ad_group).exists())

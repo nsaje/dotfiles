@@ -26,8 +26,10 @@ class CloneAdGroup(RESTAPIBaseView):
                                  restapi.access.get_ad_group(user, form.validated_data['ad_group_id']),
                                  restapi.access.get_campaign(
                                      user, form.validated_data['destination_campaign_id']),
-                                 form.validated_data['destination_ad_group_name'])
+                                 form.validated_data['destination_ad_group_name'],
+                                 form.validated_data['clone_ads'])
 
         response = dash.views.navigation_helpers.get_ad_group_dict(
             request.user, ad_group, ad_group.get_current_settings(), ad_group.campaign.get_current_settings())
+        response['campaign_id'] = ad_group.campaign_id
         return self.response_ok(serializers.AdGroupSerializer(response).data)

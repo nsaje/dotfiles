@@ -7,6 +7,7 @@ angular.module('one.widgets').service('zemCloneAdGroupEndpoint', function ($q, $
                 adGroupId: adGroupId,
                 destinationCampaignId: config.destinationCampaignId,
                 destinationAdGroupName: config.destinationAdGroupName,
+                cloneAds: !!config.cloneAds,
             };
 
         var deferred = $q.defer();
@@ -24,7 +25,8 @@ angular.module('one.widgets').service('zemCloneAdGroupEndpoint', function ($q, $
     function convertFromApi (data) {
         var converted = angular.extend({}, data);
         converted.id = parseInt(data.id);
-        converted.parentId = parseInt(data.destinationCampaignId);
+        converted.parentId = parseInt(data.campaignId);
+        converted.campaignId = parseInt(data.campaignId);
         converted.state = constants.convertFromName(data.state, constants.settingsState);
         converted.status = constants.convertFromName(data.status, constants.adGroupRunningStatus);
         converted.active = constants.convertFromName(data.active, constants.infoboxStatus);
@@ -35,6 +37,7 @@ angular.module('one.widgets').service('zemCloneAdGroupEndpoint', function ($q, $
         return {
             destinationCampaignId: data.data.destinationCampaignId ? data.data.destinationCampaignId[0] : null,
             destinationAdGroupName: data.data.destinationAdGroupName ? data.data.destinationAdGroupName[0] : null,
+            cloneAds: data.data.cloneAds ? data.data.cloneAds[0] : null,
             message: data.status === 500 ? 'Something went wrong' : null,
         };
     }

@@ -14,10 +14,12 @@ class CloneAdGroupSerializer(serializers.Serializer):
         'required': 'Please provide a name for destination ad group',
         'blank': 'Please provide a name for destination ad group',
     })
+    clone_ads = serializers.BooleanField(required=False)
 
 
 class AdGroupSerializer(serializers.Serializer):
     id = restapi.fields.IdField()
+    campaign_id = restapi.fields.IdField()
     name = serializers.ReadOnlyField()
 
     state = restapi.fields.DashConstantField(constants.AdGroupSettingsState)

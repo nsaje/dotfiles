@@ -23,6 +23,7 @@ angular.module('one.widgets').component('zemCloneAdGroupModal', {
         $ctrl.adGroup = null;
         $ctrl.destinationCampaignId = null;
         $ctrl.destinationAdGroupName = null;
+        $ctrl.cloneAds = false;
 
         $ctrl.errors = null;
         $ctrl.requestInProgress = false;
@@ -47,6 +48,7 @@ angular.module('one.widgets').component('zemCloneAdGroupModal', {
                 adGroupId: $ctrl.resolve.adGroupId,
                 destinationCampaignId: $ctrl.destinationCampaignId,
                 destinationAdGroupName: $ctrl.destinationAdGroupName,
+                cloneAds: $ctrl.cloneAds,
             }).then(function (data) {
                 reloadCache($ctrl.destinationCampaignId, data);
 
@@ -54,7 +56,7 @@ angular.module('one.widgets').component('zemCloneAdGroupModal', {
                     constants.entityType.CAMPAIGN, $ctrl.destinationCampaignId);
                 zemCloneAdGroupService.openResultsModal($ctrl.adGroup, destinationCampaign, data);
 
-                $ctrl.modalInstance.close(data);
+                $ctrl.modalInstance.close();
             }, function (errors) {
                 $ctrl.errors = errors;
             }).finally(function () {
