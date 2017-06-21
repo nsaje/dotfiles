@@ -480,8 +480,10 @@ class AdGroupSettings(api_common.BaseApiView):
             'blacklist_publisher_groups': settings.blacklist_publisher_groups,
             'landing_mode': settings.landing_mode,
             'delivery_type': settings.delivery_type,
-            'click_capping_daily_ad_group_max_clicks': settings.click_capping_daily_ad_group_max_clicks,
         }
+
+        if request.user.has_perm('zemauth.can_set_click_capping'):
+            result['click_capping_daily_ad_group_max_clicks'] = settings.click_capping_daily_ad_group_max_clicks
 
         # TODO (refactor-workaround) Re-use restapi serializers
         from restapi.serializers.targeting import\
@@ -512,7 +514,9 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.ad_group_name = resource['name']
         settings.tracking_code = resource['tracking_code']
         settings.dayparting = resource['dayparting']
-        settings.click_capping_daily_ad_group_max_clicks = resource['click_capping_daily_ad_group_max_clicks']
+
+        if user.has_perm('zemauth.can_set_click_capping'):
+            settings.click_capping_daily_ad_group_max_clicks = resource['click_capping_daily_ad_group_max_clicks']
 
         if user.has_perm('zemauth.can_set_ad_group_max_cpc'):
             settings.cpc_cc = resource['cpc_cc']

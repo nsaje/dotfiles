@@ -374,8 +374,10 @@ class AdGroupSerializer(SettingsSerializer):
                 'dailyBudget': settings['autopilot_daily_budget'],
             },
             'dayparting': settings['dayparting'],
-            'clickCappingDailyAdGroupMaxClicks': settings['click_capping_daily_ad_group_max_clicks'],
         }
+        if 'click_capping_daily_ad_group_max_clicks' in settings:
+            ret['clickCappingDailyAdGroupMaxClicks'] = settings['click_capping_daily_ad_group_max_clicks']
+
         return ret
 
     def to_internal_value(self, external_data):

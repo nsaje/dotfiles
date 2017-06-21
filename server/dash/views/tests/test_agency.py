@@ -31,6 +31,7 @@ class AdGroupSettingsTest(TestCase):
     fixtures = ['test_api', 'test_views', 'test_non_superuser', 'test_geolocations']
 
     def setUp(self):
+        self.maxDiff = None
         self.settings_dict = {
             'settings': {
                 'state': constants.AdGroupRunningStatus.INACTIVE,
@@ -73,6 +74,7 @@ class AdGroupSettingsTest(TestCase):
         }
 
         self.user = User.objects.get(pk=1)
+        add_permissions(self.user, ['can_set_click_capping'])
 
         self.assertFalse(self.user.is_superuser)
 

@@ -32,6 +32,7 @@
       - ['can_modify_campaign_iab_category', 'zemauth', 'user']
       - ['can_set_advanced_device_targeting', 'zemauth', 'user']
       - ['can_use_bluekai_targeting', 'zemauth', 'user']
+      - ['can_set_click_capping', 'zemauth', 'user']
 
 - model: oauth2_provider.application
   pk: 1
