@@ -86,6 +86,10 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
             if ($state.includes('**.publisherGroups') || $state.includes('v2.publisherGroups')) {
                 return {typeName: 'Account Settings', name: 'Publisher groups', href: $location.absUrl()};
             }
+            if ($state.includes('v2.campaignLauncher')) {
+                // TODO (jurebajt): Change typeName and name
+                return {typeName: 'Campaign management', name: 'Campaign launcher', href: $location.absUrl()};
+            }
             return null;
         }
 

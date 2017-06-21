@@ -1,0 +1,64 @@
+.zem-campaign-launcher-objectives {
+    .zem-campaign-launcher-objectives__objective {
+        display: block;
+        width: 19%;
+        float: left;
+        margin-right: 1.25%;
+        position: relative;
+        height: 230px;
+        padding: 80px 10px 20px 10px;
+        text-align: center;
+
+        &::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            left: 50%;
+            top: 20px;
+            margin-left: -20px;
+            background: center center no-repeat;
+        }
+
+        strong {
+            display: block;
+            font-size: 16px;
+            line-height: 20px;
+            font-weight: 700;
+        }
+
+        span {
+            display: block;
+            font-size: @default-font-size;
+            line-height: @default-font-size+4;
+            font-weight: normal;
+            margin-top: 5px;
+        }
+    }
+
+    .zem-campaign-launcher-objectives__objective--content::before {
+        background-image: url('@{images-folder}/campaign-launcher-content-sec.svg');
+    }
+
+    .zem-campaign-launcher-objectives__objective--video::before {
+        background-image: url('@{images-folder}/campaign-launcher-video-sec.svg');
+    }
+
+    .zem-campaign-launcher-objectives__objective--ecommerce::before {
+        background-image: url('@{images-folder}/campaign-launcher-ecommerce-sec.svg');
+    }
+
+    .zem-campaign-launcher-objectives__objective--performance-marketing::before {
+        background-image: url('@{images-folder}/campaign-launcher-performance-sec.svg');
+    }
+
+    .zem-campaign-launcher-objectives__objective--mobile-app {
+        margin-right: 0;
+    }
+
+    .zem-campaign-launcher-objectives__objective--mobile-app::before {
+        background-image: url('@{images-folder}/campaign-launcher-mobile-app-sec.svg');
+    }
+}
+

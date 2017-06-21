@@ -1,0 +1,13 @@
+<div ng-if="$ctrl.state.steps.generalSettings">
+    <h3>
+        {{$ctrl.state.steps.generalSettings.title}}
+        <button class="button button--small button--with-icon edit-icon pull-right"
+                ng-click="$ctrl.goToStep($ctrl.state.steps.generalSettings)">
+            Edit
+        </button>
+    </h3>
+    <div class="form__group form__group--informative"  ng-class="{'form--error': !!$ctrl.state.fieldsErrors.campaignName}">
+        <label class="form__label">Name:</label>
+        <div class="form__information">{{$ctrl.state.fields.campaignName}}</div>
+    </div>
+</div>

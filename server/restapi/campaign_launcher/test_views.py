@@ -14,7 +14,7 @@ class CampaignLauncherValidateTest(restapi.test_views.RESTAPITest):
 
     def test_validate(self):
         data = {
-            'name': 'Hi!'
+            'campaign_name': 'Hi!'
         }
         r = self.client.post(
             reverse('campaignlauncher_validate',
@@ -46,7 +46,7 @@ class CampaignLauncherLaunchTest(restapi.test_views.RESTAPITest):
     def test_launch(self):
         account = magic_mixer.blend(models.Account, users=[self.user])
         data = {
-            'name': 'xyz',
+            'campaign_name': 'xyz',
             'iabCategory': 'IAB1_1',
         }
         r = self.client.post(

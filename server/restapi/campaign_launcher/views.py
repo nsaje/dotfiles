@@ -21,7 +21,7 @@ class CampaignLauncherViewSet(RESTAPIBaseViewSet):
         campaign = models.Campaign.objects.create(
             user=request.user,
             account=account,
-            name=serializer.validated_data['name'],
+            name=serializer.validated_data['campaign_name'],
             iab_category=serializer.validated_data['iab_category'],
         )
 

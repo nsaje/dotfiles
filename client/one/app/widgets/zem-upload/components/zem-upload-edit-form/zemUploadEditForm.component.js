@@ -205,7 +205,7 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
         data: defaults.callToAction,
     };
 
-    // TODO (Bajt): Add cancel upload functionality
+    // TODO (jurebajt): Add cancel upload functionality
 
     vm.videoUploadCallback = function (file) {
         // Save reference to the candidate to which video is uploaded to be available in async closures

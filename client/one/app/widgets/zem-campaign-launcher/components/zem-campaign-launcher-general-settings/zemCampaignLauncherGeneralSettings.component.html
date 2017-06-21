@@ -1,0 +1,37 @@
+<div class="form m-b-xl">
+    <div class="form__group" ng-class="{'form--error': !!$ctrl.state.fieldsErrors.campaignName}">
+        <label class="form__label" for="campaign-name-input">Campaign name:</label>
+        <input class="input-text"
+               id="campaign-name-input"
+               type="text"
+               ng-model="$ctrl.state.fields.campaignName"
+               ng-change="$ctrl.onFieldChange()"
+               ng-model-options="{debounce: 1000}">
+        <div class="message message--error" ng-repeat="error in $ctrl.state.fieldsErrors.campaignName" for="campaign-name-input">
+            {{ error }}
+        </div>
+    </div>
+
+    <div class="form__group" ng-class="{'form--error': !!$ctrl.state.fieldsErrors.iabCategory}">
+        <label class="form__label" for="iab-category-select">
+            Campaign Category:
+            <zem-help-popover content="Specify campaign's content category. All campaigns must list one top-level category. If you are using mixed content consider splitting your campaign."
+                              placement="top">
+            </zem-help-popover>
+        </label>
+        <ui-select class="button button--plain button--full-width button--dropdown-toggle-icon"
+                   theme="select2"
+                   id="iab-category-select"
+                   ng-model="$ctrl.state.fields.iabCategory"
+                   on-select="$ctrl.onFieldChange()"
+                   search-enabled="true">
+            <ui-select-match>{{ $select.selected.name }}</ui-select-match>
+            <ui-select-choices repeat="category.value as category in $ctrl.availableIabCategories | filter: $select.search">
+                {{ category.name }}
+            </ui-select-choices>
+        </ui-select>
+        <div class="message message--error" ng-repeat="error in $ctrl.state.fieldsErrors.iabCategory" for="iab-category-select">
+            {{ error }}
+        </div>
+    </div>
+</div>

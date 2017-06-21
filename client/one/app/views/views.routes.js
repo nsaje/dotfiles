@@ -78,6 +78,15 @@ angular.module('one.views').config(function ($stateProvider) {
         },
     });
 
+    $stateProvider.state('v2.campaignLauncher', {
+        url: '/campaignlauncher/account/{id:int}',
+        templateUrl: '/app/views/campaign-launcher/zemCampaignLauncherView.partial.html',
+        controller: 'zemCampaignLauncherView as $ctrl',
+        params: {
+            level: constants.levelStateParam.ACCOUNT,
+        },
+    });
+
     $stateProvider.state('v2.archived', {
         url: '/archived/{level:account|campaign|adgroup}/{id:int}',
         templateUrl: '/app/views/archived/zemArchivedView.partial.html',

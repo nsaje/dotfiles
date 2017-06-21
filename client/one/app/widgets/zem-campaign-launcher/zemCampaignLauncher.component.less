@@ -1,0 +1,97 @@
+.zem-campaign-launcher {
+    display: block;
+    width: @min-app-width - 2*@default-spacing;
+    margin: 0 auto;
+
+    .content-container__title {
+        margin-bottom: 10px;
+    }
+
+    .buttons-panel {
+        margin-top: @default-spacing;
+    }
+
+    .buttons-panel--right {
+        text-align: right;
+        float: right;
+
+        .button {
+            margin-right: 0;
+            margin-left: 10px;
+        }
+    }
+
+    .zem-campaign-launcher__step-indicator-container {
+        display: table;
+        width: 100%;
+        padding: 10px 10px 20px 10px;
+        margin: 20px 0 -@default-spacing*1.5 0;
+        background-color: fade(white, 25%);
+    }
+
+    .zem-campaign-launcher__step-indicator {
+        list-style: none;
+        display: table-cell;
+        width: 20%;
+        text-align: center;
+        position: relative;
+        padding-bottom: 10px;
+        color: @gray;
+
+        &::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            bottom: 0px;
+            background-color: darken(@light-gray, 10%);
+        }
+
+        &::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            left: 50%;
+            bottom: -4px;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 10px;
+            border: 1px solid darken(@light-gray, 10%);
+            background-color: #f0f0f0;
+        }
+
+        &:first-child {
+            &::before {
+                width: 50%;
+                right: 0;
+            }
+        }
+
+        &:last-child {
+            &::before {
+                width: 50%;
+                left: 0;
+            }
+        }
+    }
+
+    .zem-campaign-launcher__step-indicator--done {
+        color: @green;
+
+        &::after,
+        &::before {
+            background-color: @green;
+            border-color: @green;
+        }
+    }
+
+    .zem-campaign-launcher__step-indicator--current {
+        font-weight: 500;
+        color: @text-color;
+
+        &::after {
+            background-color: darken(@light-gray, 10%);
+        }
+    }
+}

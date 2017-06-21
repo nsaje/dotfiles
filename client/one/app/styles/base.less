@@ -286,7 +286,7 @@ h4 {
     outline: none; // TODO: style for outline
 
     &:not(.button--disabled):not([disabled]):hover {
-        background: tint(@secondary-color, 80%);
+        background-color: tint(@secondary-color, 80%);
         border-color: tint(@secondary-color, 80%);
         color: @secondary-color;
         text-decoration: none;
@@ -308,11 +308,11 @@ h4 {
 }
 
 .button--highlight {
-    background: @primary-color;
+    background-color: @primary-color;
     color: white;
 
     &:not(.button--disabled):not([disabled]):hover {
-        background: darken(@primary-color, 8%);
+        background-color: darken(@primary-color, 8%);
         color: @white;
         box-shadow: 0px 0px 6px 0px fade(@primary-color,60%);
     }
@@ -333,7 +333,7 @@ h4 {
     color: @secondary-color;
 
     &:not(.button--disabled):not([disabled]):hover {
-        background: tint(@secondary-color, 80%);
+        background-color: tint(@secondary-color, 80%);
         box-shadow: 0px 0px 6px 0px fade(@secondary-color,10%);
     }
 
@@ -359,11 +359,11 @@ h4 {
     border: 1px solid @input-border-color;
     line-height: (@default-button-input-height)-2;
     color: @text-color;
-    background: white;
+    background-color: white;
     box-shadow: inset 3px 3px 3px 0px rgba(0,0,0,0.05);
 
     &:not(.button--disabled):not([disabled]):hover {
-        background: white;
+        background-color: white;
         border: 1px solid darken(@input-border-color, 20%);
         outline: none;
         box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.2);
@@ -390,6 +390,70 @@ h4 {
         top: 50%;
         transform: translateY(-50%) rotate(90deg);
         right: 10px;
+        width: 6px;
+        height: 10px;
+        background-image: url('@{images-folder}/arrow-sec.svg');
+        background-repeat: no-repeat;
+    }
+
+    &.button--highlight:after {
+        background-image: url('images/arrow-white.svg');
+    }
+
+    &.button--outline:after {
+        background-image: url('@{images-folder}/arrow-sec.svg');
+    }
+
+    &.button--dark-backgrounds:after {
+        background-image: url('images/arrow-white.svg');
+    }
+
+    &.button--plain:after {
+        background-image: url('images/arrow-gray.svg');
+    }
+}
+
+.button--next-step {
+    padding-right: 30px;
+
+    &:after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        right: 10px;
+        width: 6px;
+        height: 10px;
+        background-image: url('@{images-folder}/arrow-sec.svg');
+        background-repeat: no-repeat;
+    }
+
+    &.button--highlight:after {
+        background-image: url('images/arrow-white.svg');
+    }
+
+    &.button--outline:after {
+        background-image: url('@{images-folder}/arrow-sec.svg');
+    }
+
+    &.button--dark-backgrounds:after {
+        background-image: url('images/arrow-white.svg');
+    }
+
+    &.button--plain:after {
+        background-image: url('images/arrow-gray.svg');
+    }
+}
+
+.button--previous-step {
+    padding-left: 30px;
+
+    &:after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%) rotate(180deg);
+        left: 10px;
         width: 6px;
         height: 10px;
         background-image: url('@{images-folder}/arrow-sec.svg');
@@ -1591,6 +1655,12 @@ h4 {
 
     .form__label {
         padding-top: 0;
+    }
+
+    &.form--error {
+        .form__label {
+            color: @red;
+        }
     }
 }
 
