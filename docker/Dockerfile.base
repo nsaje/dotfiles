@@ -14,7 +14,8 @@ RUN apt-get update && \
         openssh-server \
         postgresql-client \
         curl \
-        mime-support && \
+        mime-support \
+        libxml2 && \
     apt-get -y autoremove && \
     mkdir /var/run/sshd
 
