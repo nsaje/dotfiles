@@ -22,7 +22,7 @@ def validate_url(url, ad_group_id):
         raise
 
 
-def insert_redirects(content_ads):
+def insert_redirects(content_ads, clickthrough_resolve=True):
     if settings.R1_DEMO_MODE:
         data = {
             str(content_ad.id): {
@@ -37,6 +37,7 @@ def insert_redirects(content_ads):
             'url': content_ad.url,
             'creativeid': content_ad.id,
             'adgroupid': content_ad.ad_group_id,
+            'noclickthroughresolve': not clickthrough_resolve,
         } for content_ad in content_ads])
 
         return _call_api_retry(settings.R1_REDIRECTS_BATCH_API_URL, data)

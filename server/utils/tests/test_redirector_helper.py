@@ -137,8 +137,8 @@ class InsertRedirectsBatchTest(TestCase):
 
         self.assertEqual(call.get_full_url(), settings.R1_REDIRECTS_BATCH_API_URL)
         self.assertEqual(call.data, json.dumps([
-            {"url": content_ads[0].url, "creativeid": 1, "adgroupid": content_ads[0].ad_group_id},
-            {"url": content_ads[1].url, "creativeid": 2, "adgroupid": content_ads[1].ad_group_id},
+            {"url": content_ads[0].url, "creativeid": 1, "adgroupid": content_ads[0].ad_group_id, 'noclickthroughresolve': False},
+            {"url": content_ads[1].url, "creativeid": 2, "adgroupid": content_ads[1].ad_group_id, 'noclickthroughresolve': False},
         ]))
 
     @override_settings(

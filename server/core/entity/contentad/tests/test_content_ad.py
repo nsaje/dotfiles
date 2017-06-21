@@ -21,8 +21,7 @@ class CreateContentAd(TestCase):
         self.assertEqual(content_ad.brand_name, 'Zemanta')
 
         self.assertEqual(content_ad.contentadsource_set.all().count(), 5)
-
-        mock_insert_redirects.assert_called_with([content_ad])
+        mock_insert_redirects.assert_called_with([content_ad], clickthrough_resolve=True)
 
     def _blend_a_batch(self):
         ad_group = magic_mixer.blend(core.entity.AdGroup)
@@ -55,7 +54,7 @@ class CreateContentAd(TestCase):
 
         # check redirector sync
         self.assertEqual(mock_insert_redirects.call_count, 1)
-        mock_insert_redirects.assert_called_with(content_ads)
+        mock_insert_redirects.assert_called_with(content_ads, clickthrough_resolve=True)
 
     def test_bulk_clone(self, mock_insert_redirects):
         request = magic_mixer.blend_request_user()
@@ -78,7 +77,7 @@ class CreateContentAd(TestCase):
 
         # check redirector sync
         self.assertEqual(mock_insert_redirects.call_count, 1)
-        mock_insert_redirects.assert_called_with(content_ads)
+        mock_insert_redirects.assert_called_with(content_ads, clickthrough_resolve=False)
 
     def test_bulk_clone_override_state(self, mock_insert_redirects):
         request = magic_mixer.blend_request_user()
@@ -102,4 +101,4 @@ class CreateContentAd(TestCase):
 
         # check redirector sync
         self.assertEqual(mock_insert_redirects.call_count, 1)
-        mock_insert_redirects.assert_called_with(content_ads)
+        mock_insert_redirects.assert_called_with(content_ads, clickthrough_resolve=False)

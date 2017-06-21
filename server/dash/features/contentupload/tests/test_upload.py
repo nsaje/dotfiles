@@ -193,7 +193,7 @@ class PersistBatchTestCase(TestCase):
     @patch('utils.redirector_helper.insert_redirects')
     @patch.object(utils.s3helpers.S3Helper, 'put')
     def test_valid_candidates(self, mock_s3helper_put, mock_insert_redirects):
-        def redirector_response(content_ads):
+        def redirector_response(content_ads, clickthrough_resolve):
             return {
                 str(content_ad.id): {
                     'redirect': {

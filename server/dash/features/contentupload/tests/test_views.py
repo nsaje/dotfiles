@@ -261,7 +261,7 @@ class UploadSaveTestCase(TestCase):
     fixtures = ['test_upload.yaml']
 
     @staticmethod
-    def _mock_insert_redirects(content_ads):
+    def _mock_insert_redirects(content_ads, clickthrough_resolve):
         return {
             str(content_ad.id): {
                 'redirect': {

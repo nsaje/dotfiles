@@ -37,13 +37,13 @@ class ContentAdManager(models.Manager):
         return content_ad
 
     @transaction.atomic
-    def create(self, batch, sources, **kwargs):
+    def create(self, batch, sources, r1_resolve=True, **kwargs):
         content_ad = self._create(batch, sources, **kwargs)
-        self.insert_redirects([content_ad])
+        self.insert_redirects([content_ad], clickthrough_resolve=r1_resolve)
         return content_ad
 
     @transaction.atomic
-    def bulk_create_from_candidates(self, candidate_dicts, batch):
+    def bulk_create_from_candidates(self, candidate_dicts, batch, r1_resolve=True):
         ad_group_sources = core.entity.AdGroupSource.objects.filter(ad_group=batch.ad_group)\
                                                             .filter_can_manage_content_ads()
         sources = core.source.Source.objects.filter(id__in=ad_group_sources.values_list('source_id', flat=True))
@@ -52,7 +52,7 @@ class ContentAdManager(models.Manager):
         for candidate in candidate_dicts:
             content_ads.append(self._create(batch, sources, **candidate))
 
-        self.insert_redirects(content_ads)
+        self.insert_redirects(content_ads, clickthrough_resolve=r1_resolve)
 
         return content_ads
 
@@ -62,15 +62,17 @@ class ContentAdManager(models.Manager):
             for x in candidates:
                 x['state'] = overridden_state
 
-        content_ads = self.bulk_create_from_candidates(candidates, batch)
+        # no need to resolve url in r1, because it was done before it was uploaded
+        content_ads = self.bulk_create_from_candidates(candidates, batch, r1_resolve=False)
         ad_group.write_history_content_ads_cloned(
             request, content_ads, batch, source_content_ads[0].ad_group, overridden_state)
 
         return content_ads
 
     @transaction.atomic
-    def insert_redirects(self, content_ads):
-        redirector_batch = utils.redirector_helper.insert_redirects(content_ads)
+    def insert_redirects(self, content_ads, clickthrough_resolve):
+        redirector_batch = utils.redirector_helper.insert_redirects(
+            content_ads, clickthrough_resolve=clickthrough_resolve)
         for content_ad in content_ads:
             content_ad.url = redirector_batch[str(content_ad.id)]["redirect"]["url"]
             content_ad.redirect_id = redirector_batch[str(content_ad.id)]["redirectid"]
@@ -202,7 +204,7 @@ class ContentAd(models.Model):
     def to_cloned_candidate_dict(self):
         fields = ('label', 'url', 'title', 'display_url', 'brand_name', 'description', 'call_to_action',
                   'image_id', 'image_width', 'image_height', 'image_hash', 'crop_areas', 'image_crop',
-                  'state', 'tracker_urls')
+                  'state', 'tracker_urls', 'video_asset_id')
         candidate = {}
         for field in fields:
             candidate[field] = getattr(self, field)
