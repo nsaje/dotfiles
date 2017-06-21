@@ -383,14 +383,7 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
         empty_value=None,
     )
 
-    click_capping_type = forms.TypedChoiceField(
-        required=False,
-        choices=constants.ClickCappingType.get_choices(),
-        coerce=int,
-        empty_value=None,
-    )
-
-    click_capping_max_clicks = forms.IntegerField(
+    click_capping_daily_ad_group_max_clicks = forms.IntegerField(
         required=False
     )
 
