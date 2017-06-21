@@ -36,7 +36,7 @@ class Command(ExceptionCommand):
                                                                       credentials['access_token'])
                     if not ad_account_id:
                         raise CommandError('Error while creating facebook account for account %s.',
-                                           pending_account.name)
+                                           pending_account.account.name)
                     pending_account.ad_account_id = ad_account_id
                     pending_account.save()
                     logger.info('Facebook ad account for account %s created with id %s.', pending_account.account.name,
