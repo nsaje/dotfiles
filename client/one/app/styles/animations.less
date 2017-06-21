@@ -43,3 +43,9 @@
     from { opacity: 1; bottom: 0; }
     to { opacity: 0; bottom: -50px; }
 }
+
+@keyframes update {
+    0% { color: @secondary-color; padding: 0 3px; margin: 0 -3px; border-radius: @border-radius; }
+    50% { color: white; background-color: @secondary-color; padding: 0 3px; margin: 0 -3px; border-radius: @border-radius; }
+    100% { color: @secondary-color; padding: 0 3px; margin: 0 -3px; border-radius: @border-radius; }
+}

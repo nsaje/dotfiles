@@ -2,7 +2,7 @@ angular.module('one.widgets').component('zemInfoboxRealtimestats', {
     bindings: {
     },
     templateUrl: '/app/widgets/zem-infobox/components/zem-infobox-realtimestats/zemInfoboxRealtimestats.component.html',
-    controller: function (zemNavigationNewService, zemRealtimestatsService, $filter, $interval) {
+    controller: function (zemNavigationNewService, zemRealtimestatsService, $filter, $interval, $timeout) {
         var $ctrl = this;
 
         var spendRow = {
@@ -32,12 +32,21 @@ angular.module('one.widgets').component('zemInfoboxRealtimestats', {
 
         function update () {
             zemRealtimestatsService.getAdGroupSourcesStats(entity.id).then(function (sourceStats) {
+                var oldValue = spendRow.value;
+
                 spendRow.value = formatSpend(sourceStats.reduce(function (sum, stat) {
                     return sum + stat.spend;
                 }, 0));
                 spendRow.detailsContent = sourceStats.map(function (stat) {
                     return stat.source + ': ' + formatSpend(stat.spend);
                 }).join('<br />');
+
+                if (oldValue !== spendRow.value) {
+                    spendRow.class = 'zem-infobox-data-row--update';
+                    $timeout(function () {
+                        spendRow.class = '';
+                    }, 1000);
+                }
             });
         }
 
