@@ -5,12 +5,12 @@
 15 9 * * *          /home/ubuntu/docker-manage-py.sh run_autopilot --daily-run
 15 10 * * *          /home/ubuntu/docker-manage-py.sh audit_autopilot --slack
 0 12 * * *          /home/ubuntu/docker-manage-py.sh run_campaign_stop
-#25 * * * *          /home/ubuntu/docker-manage-py.sh refresh_k1 3
+25 * * * *          /home/ubuntu/docker-manage-py.sh refresh_k1 3
 0 12 * * *          /home/ubuntu/docker-manage-py.sh send_outbrain_manual_actions_email
 40 * * * *          /home/ubuntu/docker-manage-py.sh monitor_adgroup_propagation
 10 9 * * *          /home/ubuntu/docker-manage-py.sh send_scheduled_reports
 30 16 * * *         /home/ubuntu/docker-manage-py.sh send_supply_report_emails
-#* 12 * * *          /home/ubuntu/docker-manage-py.sh free_inactive_allocated_assets
+* 12 * * *          /home/ubuntu/docker-manage-py.sh free_inactive_allocated_assets
 */20 * * * *        /home/ubuntu/docker-manage-py.sh notify_depleted_budget_campaigns
 0 8 * * *           /home/ubuntu/docker-manage-py.sh create_demo_snapshot
 */5 * * * *         /home/ubuntu/docker-manage-py.sh check_facebook_page_approval
