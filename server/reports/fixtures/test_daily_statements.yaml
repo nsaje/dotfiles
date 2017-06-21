@@ -97,6 +97,20 @@
     model: dash.creditlineitem
     pk: 3
 
+-   fields:
+        account: 1
+        start_date: '2017-06-01'
+        end_date: '2017-12-31'
+        amount: 3000
+        license_fee: '0.2'
+        status: 1
+        created_dt: '2015-11-01 00:00:01'
+        modified_dt: '2015-11-01 00:00:01'
+        created_by: 1
+    model: dash.creditlineitem
+    pk: 4
+
+
 # test budget line items
 
 -   fields:
@@ -171,3 +185,16 @@
         created_by: 1
     model: dash.budgetlineitem
     pk: 6
+
+-   fields:
+        campaign: 3
+        credit: 4
+        start_date: '2017-06-21'
+        end_date: '2017-06-30'
+        amount: 3000
+        created_dt: '2015-11-01 00:00:01'
+        modified_dt: '2015-11-01 00:00:01'
+        margin: '0.15'
+        created_by: 1
+    model: dash.budgetlineitem
+    pk: 7

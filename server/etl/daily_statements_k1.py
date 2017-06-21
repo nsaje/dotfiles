@@ -22,9 +22,18 @@ from etl import materialize_views
 
 logger = logging.getLogger(__name__)
 
+FIXED_MARGIN_START_DATE = datetime.date(2017, 6, 21)
+
 
 def _get_license_fee_pct_of_total(license_fee_pct):
     return (1 / (1 - license_fee_pct)) - 1
+
+
+def _get_margin_pct_of_total(budget):
+    if budget.start_date >= FIXED_MARGIN_START_DATE:
+        return (1 / (1 - budget.margin)) - 1
+    else:
+        return budget.margin
 
 
 def _generate_statements(date, campaign, campaign_spend):
@@ -85,7 +94,8 @@ def _generate_statements(date, campaign, campaign_spend):
         total_media_nano -= attributed_media_nano
         total_data_nano -= attributed_data_nano
 
-        margin_nano = (attributed_media_nano + attributed_data_nano + license_fee_nano) * budget.margin
+        margin_pct_of_total = _get_margin_pct_of_total(budget)
+        margin_nano = (attributed_media_nano + attributed_data_nano + license_fee_nano) * margin_pct_of_total
         dash.models.BudgetDailyStatement.objects.create(
             budget_id=budget.id,
             date=date,

@@ -83,6 +83,32 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(500000000000, statements[0].license_fee_nano)
         self.assertEqual(250000000000, statements[0].margin_nano)
 
+    def test_budget_with_fixed_margin(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
+        return_values = {
+            datetime.date(2017, 6, 21): {
+                self.campaign3.id: {
+                    'media_nano': 1000000000000,
+                    'data_nano': 360000000000,
+                },
+            },
+        }
+        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
+        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2017, 6, 21, 12))
+
+        update_from = datetime.date(2017, 6, 21)
+        daily_statements.reprocess_daily_statements(update_from)
+
+        statements = dash.models.BudgetDailyStatement.objects.filter(
+            budget__campaign=self.campaign3).order_by('-date')
+        self.assertEqual(7, statements[0].budget_id)
+        self.assertEqual(datetime.date(2017, 6, 21), statements[0].date)
+
+        # $1000 media + $360 data + $340 fee = $1700; $1700 == $2000 * 85% (margin pct)
+        self.assertEqual(1000000000000, statements[0].media_spend_nano)
+        self.assertEqual(360000000000, statements[0].data_spend_nano)
+        self.assertEqual(340000000000, statements[0].license_fee_nano)
+        self.assertEqual(300000000000, statements[0].margin_nano)
+
     def test_first_day_cost_none(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {}
         self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
