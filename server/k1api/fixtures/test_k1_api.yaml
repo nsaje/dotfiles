@@ -489,6 +489,7 @@
         max_cpm: '1.6'
         whitelist_publisher_groups: [1, 2]
         blacklist_publisher_groups: [3, 4]
+        click_capping_daily_ad_group_max_clicks: 15
     model: dash.adgroupsettings
     pk: 1
 

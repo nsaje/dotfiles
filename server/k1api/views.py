@@ -459,6 +459,7 @@ class AdGroupsView(K1APIView):
                 'whitelist_publisher_groups': whitelist,
                 'blacklist_publisher_groups': blacklist,
                 'delivery_type': ad_group_settings.delivery_type,
+                'click_capping_daily_ad_group_max_clicks': ad_group_settings.click_capping_daily_ad_group_max_clicks,
             }
 
             ad_groups.append(ad_group)
