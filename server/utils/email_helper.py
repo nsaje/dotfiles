@@ -31,6 +31,7 @@ WHITELABEL_PRODUCTS = {
 
 URLS_RE = re.compile(r"((https?):((//)|(\\\\))+[\w\d:#@%/;$()~_?\+\-=\\\.&]*[\w\d#@%/$()~_\+\-=\\&])", re.MULTILINE | re.UNICODE)
 
+NO_REPLY_EMAIL = 'noreply@zemanta.com'
 
 def _lookup_whitelabel(user=None, agency=None):
     if user and not agency:
@@ -462,7 +463,7 @@ def send_scheduled_export_report(report_name, frequency, granularity,
     if not email_adresses:
         raise Exception('No recipient emails: ' + report_name)
     email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
-        settings.FROM_EMAIL
+        NO_REPLY_EMAIL
     ), email_adresses)
     email.attach(report_filename + '.csv', report_contents, 'text/csv')
     email.attach_alternative(format_template(subject, body, user=user, agency=agency), "text/html")
