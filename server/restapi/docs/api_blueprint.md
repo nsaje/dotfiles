@@ -721,6 +721,7 @@ targeting    | [targeting](#targeting)   | targeting settings                   
 dayparting   | [dayparting](#dayparting) | dayparting settings                                                                                                              | optional | optional
 trackingCode | string                    | tracking codes appended to all content ads URLs ([more](http://help.zemanta.com/article/show/12985-tracking-parameters--macros)) | optional | optional
 autopilot    | [autopilot](#autopilot)   | Zemanta Autopilot settings                                                                                                       | optional | optional
+deliveryType | [delivery](#delivery)     | Delivery Type. Set to `STANDARD` to deliver ads throughout the day and to `ACCELERATED` to deliver ads as soon as possible.      | optional | optional
 
 <a name="targeting"></a>
 #### Targeting Settings
@@ -729,7 +730,7 @@ Targeting        | Property | Property   | Type                                 
 -----------------|----------|------------|----------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
 devices          |          |            | array[[device](#device)]                                             | A list of device types to target. If none specified, content is served to all device types.
 placements       |          |            | array[[placement](#placement)]                                       | A list of placements to target. If none specified, content is served to all placements.
-os               |          |            | array[[operatingSystem](#os-targeting)]                              | A list of operating systems and their versions to target. If none specified, content is served to any operating system or version. 
+os               |          |            | array[[operatingSystem](#os-targeting)]                              | A list of operating systems and their versions to target. If none specified, content is served to any operating system or version.
 geo              |          |            |
 &nbsp;           | included |            |                                                                      |
 &nbsp;           |          | countries  | array[[country](#country)]                                           | countries to target
@@ -758,7 +759,7 @@ Property | Property | Type        | Description
 name     |          | [os](#os)   | Operating system.
 version  |          |             | Operating system version. If none specified all versions are targeted.
 &nbsp;   | min      | [osv](#osv) | Minimum version. If none specified, any version that is lower than maximum version is targeted.
-&nbsp;   | max      | [osv](#osv) | Maximum version. If none specified, any version that is greater than minimum version is targeted. 
+&nbsp;   | max      | [osv](#osv) | Maximum version. If none specified, any version that is greater than minimum version is targeted.
 
 <a name="dayparting"></a>
 #### Dayparting
@@ -784,7 +785,7 @@ timezone  | [TZ timezone](https://en.wikipedia.org/wiki/Tz_database) | Timezone 
 
 Property      | Type                                                                                           | Description
 --------------|------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
-operator      | string                                                                                         | Valid operators are `AND`,  `OR` and `NOT`. `NOT` has to have exactly one nested subexpression in the child array. 
+operator      | string                                                                                         | Valid operators are `AND`,  `OR` and `NOT`. `NOT` has to have exactly one nested subexpression in the child array.
 subexpression | array[audienceTargeting or [audienceTargetingCategory](#audience-targeting-category)] | Either a nested audience expression or a leaf category object.
 
 <a name="audience-targeting-category"></a>
@@ -2125,6 +2126,11 @@ A string representing a decimal number. Example: `"15.48"`
 - `IN_PROGRESS`
 - `CANCELLED`
 
+<a name="delivery"></a>
+## Delivery Type
+- `STANDARD` - Deliver ads throughout the day.
+- `ACCELERATED` - Deliver ads as soon as possible.
+
 <a name="device"></a>
 ## Device targeting
 
@@ -2576,6 +2582,7 @@ Examples:
 - `trackingCode`: `this=1&that=2` (string)
 - `autopilot` (autopilot)
 - `dayparting` (dayparting)
+- `deliveryType`: `STANDARD` (string)
 
 ## AdGroupIds (object)
 

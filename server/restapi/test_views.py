@@ -532,6 +532,7 @@ class AdGroupsTest(RESTAPITest):
         dayparting={},
         whitelist_publisher_groups=[153],
         blacklist_publisher_groups=[154],
+        delivery_type=constants.AdGroupDeliveryType.STANDARD,
         click_capping_daily_ad_group_max_clicks=120,
     ):
         final_target_regions = {
@@ -587,6 +588,7 @@ class AdGroupsTest(RESTAPITest):
                 'dailyBudget': autopilot_daily_budget,
             },
             'dayparting': dayparting,
+            'deliveryType': constants.AdGroupDeliveryType.get_name(delivery_type),
             'clickCappingDailyAdGroupMaxClicks': click_capping_daily_ad_group_max_clicks,
         }
 
