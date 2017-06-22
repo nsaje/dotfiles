@@ -632,7 +632,7 @@ def send_async_scheduled_report(
     html_body = _url_to_link(html_body)
 
     email = EmailMultiAlternatives(subject, plain_body, 'Zemanta <{}>'.format(
-        settings.FROM_EMAIL
+        NO_REPLY_EMAIL
     ), (recipients or []))
     email.attach_alternative(format_template(subject, html_body, user=user), "text/html")
     email.send(fail_silently=False)
