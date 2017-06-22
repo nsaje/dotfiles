@@ -38,12 +38,18 @@ class AdGroupSourceStateTest(TestCase):
     @patch('dash.legacy.get_updated_ad_group_sources_changes')
     @patch('dash.views.bulk_actions.AdGroupSourceState._check_can_set_state')
     @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
-    @patch('dash.views.bulk_actions.api.set_ad_group_source_settings')
     @patch('utils.k1_helper.update_ad_group')
-    def test_post(self, mock_k1_ping, mock_set_ags_settings, mock_autopilot_initialize, mock_check, mock_table_update):
+    def test_post(self, mock_k1_ping, mock_autopilot_initialize, mock_check, mock_table_update):
         ad_group_id = 1
         source_id = 1
         maintenance_source_id = 6
+
+        settings = models.AdGroup.objects.get(pk=ad_group_id).get_current_settings().copy_settings()
+        settings.retargeting_ad_groups = False
+        settings.exclusion_retargeting_ad_groups = False
+        settings.audience_targeting = False
+        settings.exclusion_audience_targeting = False
+        settings.save(None)
 
         data = {
             'state': constants.AdGroupSourceSettingsState.ACTIVE,
@@ -88,11 +94,9 @@ class AdGroupSourceStateTest(TestCase):
             },
         })
 
-        mock_set_ags_settings.assert_called_once_with(
-            models.AdGroupSource.objects.get(ad_group_id=ad_group_id, source_id=source_id),
-            {'state': constants.AdGroupSourceSettingsState.ACTIVE},
-            response.wsgi_request,
-        )
+        agss = models.AdGroupSource.objects.get(ad_group_id=ad_group_id, source_id=source_id).get_current_settings()
+        self.assertEqual(constants.AdGroupSourceSettingsState.ACTIVE, agss.state)
+
         adgs = models.AdGroup.objects.get(pk=ad_group_id).get_current_settings()
         mock_autopilot_initialize.assert_called_once_with(adgs, send_mail=False)
         self.assertEqual(1, mock_check.call_count)

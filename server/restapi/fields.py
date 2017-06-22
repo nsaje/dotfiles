@@ -3,6 +3,8 @@ import django.db.models
 from rest_framework import serializers
 from rest_framework import fields
 
+import dash.models
+
 import utils.list_helper
 
 
@@ -73,3 +75,18 @@ class CommaListField(fields.ListField):
         unsplit_data = super(CommaListField, self).get_value(dictionary)
         data = utils.list_helper.flatten(x.split(',') for x in unsplit_data)
         return data
+
+
+class SourceIdSlugField(serializers.Field):
+
+    def to_internal_value(self, data):
+        try:
+            if data.startswith('b1_'):
+                data = data[3:]
+            source = dash.models.Source.objects.get(bidder_slug=data)
+            return source
+        except AttributeError:
+            self.fail('invalid_choice', data)
+
+    def to_representation(self, source):
+        return source.bidder_slug

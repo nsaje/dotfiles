@@ -24,11 +24,8 @@ from dash.views import helpers
 from utils import lc_helper
 from utils import api_common
 from utils import exc
-from utils import k1_helper
 from utils import email_helper
 from utils import request_signer
-
-from automation import autopilot_plus
 
 from automation import campaign_stop
 
@@ -36,7 +33,6 @@ import core.entity.helpers
 
 from dash import models, region_targeting_helper, retargeting_helper, campaign_goals
 from dash import constants
-from dash import api
 from dash import forms
 from dash import infobox_helpers
 
@@ -47,9 +43,6 @@ logger = logging.getLogger(__name__)
 YAHOO_DASH_URL = 'https://gemini.yahoo.com/advertiser/{advertiser_id}/campaign/{campaign_id}'
 OUTBRAIN_DASH_URL = 'https://my.outbrain.com/amplify/site/marketers/{marketer_id}/reports/content?campaignId={campaign_id}'
 FACEBOOK_DASH_URL = 'https://business.facebook.com/ads/manager/campaign/?ids={campaign_id}&business_id={business_id}'
-
-
-LANDING_MODE_PREVENT_UPDATE = ['daily_budget_cc', 'state']
 
 
 def index(request):
@@ -847,7 +840,7 @@ class AdGroupSources(api_common.BaseApiView):
         source_id = json.loads(request.body)['source_id']
         source = models.Source.objects.get(id=source_id)
 
-        core.entity.AdGroupSource.objects.create(request, ad_group, source, write_history=True, k1_sync=True, active=False)
+        core.entity.AdGroupSource.objects.create(request, ad_group, source, write_history=True, k1_sync=True)
 
         return self.create_api_response(None)
 
@@ -925,109 +918,17 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         except models.AdGroupSource.DoesNotExist:
             raise exc.MissingDataError(message='Requested source not found')
 
-        ad_group_source_settings = ad_group_source.get_current_settings()
-        campaign_settings = ad_group.campaign.get_current_settings()
+        form = forms.AdGroupSourceSettingsForm(resource)
+        if not form.is_valid():
+            raise exc.ValidationError(errors=dict(form.errors))
 
-        errors = {}
+        data = {k: v for k, v in form.cleaned_data.items() if v is not None}
 
-        state_form = forms.AdGroupSourceSettingsStateForm(resource)
-        if 'state' in resource and not state_form.is_valid():
-            errors.update(state_form.errors)
-
-        cpc_form = forms.AdGroupSourceSettingsCpcForm(resource, ad_group_source=ad_group_source)
-        if 'cpc_cc' in resource and not cpc_form.is_valid():
-            errors.update(cpc_form.errors)
-
-        daily_budget_form = forms.AdGroupSourceSettingsDailyBudgetForm(resource, ad_group_source=ad_group_source)
-        if 'daily_budget_cc' in resource and not daily_budget_form.is_valid():
-            errors.update(daily_budget_form.errors)
-
-        ad_group_settings = ad_group.get_current_settings()
-        source = models.Source.objects.get(pk=source_id)
-        if 'state' in resource and state_form.cleaned_data.get('state') == constants.AdGroupSettingsState.ACTIVE:
-            if not retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings):
-                errors.update(
-                    {
-                        'state': 'Cannot enable media source that does not support'
-                        'retargeting on adgroup with retargeting enabled.'
-                    }
-                )
-            elif not helpers.check_facebook_source(ad_group_source):
-                errors.update(
-                    {
-                        'state': 'Cannot enable Facebook media source that isn\'t connected to a Facebook page.',
-                    }
-                )
-            elif not helpers.check_yahoo_min_cpc(ad_group_settings, ad_group_source_settings):
-                errors.update(
-                    {
-                        'state': 'Cannot enable Yahoo media source with the current settings - CPC too low',
-                    }
-                )
-
-        if campaign_settings.landing_mode:
-            for key in resource.keys():
-                if key not in LANDING_MODE_PREVENT_UPDATE:
-                    continue
-                errors.update({key: 'Not allowed'})
-        elif campaign_settings.automatic_campaign_stop:
-            if 'daily_budget_cc' in resource:
-                new_daily_budget = decimal.Decimal(resource['daily_budget_cc'])
-                max_daily_budget = campaign_stop.get_max_settable_source_budget(
-                    ad_group_source,
-                    ad_group.campaign,
-                    ad_group_source_settings,
-                    ad_group_settings,
-                    campaign_settings
-                )
-                if max_daily_budget is not None and new_daily_budget > max_daily_budget:
-                    errors.update({
-                        'daily_budget_cc': [
-                            'Daily Spend Cap is too high. Maximum daily spend cap can be up to ${max_daily_budget}.'.format(
-                                max_daily_budget=max_daily_budget
-                            )
-                        ]
-                    })
-
-            if 'state' in resource:
-                can_enable_media_source = campaign_stop.can_enable_media_source(
-                    ad_group_source, ad_group.campaign, campaign_settings, ad_group_settings)
-                if not can_enable_media_source:
-                    errors.update({
-                        'state': ['Please add additional budget to your campaign to make changes.']
-                    })
-
-                if resource['state'] == constants.AdGroupSourceSettingsState.ACTIVE:
-                    enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(
-                        ad_group_settings,
-                        [ad_group_source],
-                    )
-                    if not enabling_autopilot_sources_allowed:
-                        errors.update({
-                            'state': ['Please increase Autopilot Daily Spend Cap to enable this source.']
-                        })
-
-        if errors:
-            raise exc.ValidationError(errors=errors)
-
-        if 'cpc_cc' in resource:
-            resource['cpc_cc'] = decimal.Decimal(resource['cpc_cc'])
-        if 'daily_budget_cc' in resource:
-            resource['daily_budget_cc'] = decimal.Decimal(resource['daily_budget_cc'])
+        response = ad_group_source.update(request, k1_sync=True, **data)
 
         allowed_sources = {source.id for source in ad_group.campaign.account.allowed_sources.all()}
-
-        api.set_ad_group_source_settings(ad_group_source, resource, request)
-        autopilot_changed_sources_text = ''
-        ad_group_settings = ad_group_source.ad_group.get_current_settings()
-        if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
-                'state' in resource:
-            changed_sources = autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False)
-            autopilot_changed_sources_text = ', '.join([s.source.name if s != constants.SourceAllRTB else
-                                                        constants.SourceAllRTB.NAME for s in changed_sources])
-
-        k1_helper.update_ad_group(ad_group.pk,
-                                  msg='AdGroupSourceSettings.put')
+        campaign_settings = ad_group.campaign.get_current_settings()
+        ad_group_settings = ad_group.get_current_settings()
 
         return self.create_api_response({
             'editable_fields': helpers.get_editable_fields(
@@ -1040,7 +941,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 campaign_stop.can_enable_media_source(
                     ad_group_source, ad_group.campaign, campaign_settings, ad_group_settings)
             ),
-            'autopilot_changed_sources': autopilot_changed_sources_text,
+            'autopilot_changed_sources': response['autopilot_changed_sources_text'],
             'enabling_autopilot_sources_allowed': helpers.enabling_autopilot_single_source_allowed(
                 ad_group_settings,
             )

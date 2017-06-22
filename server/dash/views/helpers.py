@@ -15,7 +15,6 @@ import automation
 
 from dash import models
 from dash import constants
-from dash import api
 from dash import cpc_constraints
 
 from dash.dashapi import data_helper
@@ -881,11 +880,9 @@ def set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, ad_group_settings
         if ad_group_source_settings.cpc_cc == adjusted_cpc:
             continue
 
-        api.set_ad_group_source_settings(
-            ad_group_source,
-            {'cpc_cc': adjusted_cpc},
-            request=None,
-            ping_k1=False
+        ad_group_source.update(
+            cpc_cc=adjusted_cpc,
+            k1_sync=False,
         )
 
 

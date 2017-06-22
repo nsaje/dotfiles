@@ -15,11 +15,11 @@ import core.common
 import core.history
 import core.source
 
-from copy_settings_mixin import CopySettingsMixin
+from settings_base import SettingsBase
 from settings_query_set import SettingsQuerySet
 
 
-class AdGroupSourceSettings(models.Model, CopySettingsMixin, core.history.HistoryMixin):
+class AdGroupSourceSettings(SettingsBase):
 
     class Meta:
         get_latest_by = 'created_dt'
@@ -81,9 +81,6 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, core.history.Histor
 
     objects = core.common.QuerySetManager()
 
-    def get_settings_dict(self):
-        return {settings_key: getattr(self, settings_key) for settings_key in self._settings_fields}
-
     @classmethod
     def get_human_prop_name(cls, prop_name):
         NAMES = {
@@ -107,9 +104,6 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, core.history.Histor
         return value
 
     def save(self, request, action_type=None, *args, **kwargs):
-        if self.pk is not None:
-            raise AssertionError('Updating settings object not allowed.')
-
         if self.pk is None and request is not None:
             self.created_by = request.user
 
@@ -134,13 +128,6 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, core.history.Histor
             action_type=action_type,
             system_user=self.system_user,
         )
-
-    def delete(self, *args, **kwargs):
-        raise AssertionError('Deleting settings object not allowed.')
-
-    @classmethod
-    def get_defaults_dict(cls):
-        return {}
 
     @classmethod
     def get_current_settings(cls, ad_group, sources):

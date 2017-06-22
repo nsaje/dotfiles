@@ -23,7 +23,6 @@ from dash import fields
 from dash import models
 from dash import regions
 from dash import validation_helpers
-from dash import cpc_constraints
 from dash.views import helpers
 from utils import dates_helper
 
@@ -519,54 +518,19 @@ class B1SourcesGroupSettingsForm(forms.Form):
         return cpc_cc
 
 
-class AdGroupSourceSettingsCpcForm(forms.Form):
+class AdGroupSourceSettingsForm(forms.Form):
     cpc_cc = forms.DecimalField(
         decimal_places=4,
-        error_messages={
-            'required': 'This value is required'
-        }
+        required=False,
     )
-
-    def __init__(self, *args, **kwargs):
-        self.ad_group_source = kwargs.pop('ad_group_source')
-        super(AdGroupSourceSettingsCpcForm, self).__init__(*args, **kwargs)
-
-    def clean_cpc_cc(self):
-        cpc_cc = self.cleaned_data.get('cpc_cc')
-        validation_helpers.validate_ad_group_source_cpc_cc(
-            cpc_cc, self.ad_group_source)
-        cpc_constraints.validate_cpc(
-            decimal.Decimal(cpc_cc),
-            ad_group=self.ad_group_source.ad_group,
-            source=self.ad_group_source.source,
-        )
-
-
-class AdGroupSourceSettingsDailyBudgetForm(forms.Form):
     daily_budget_cc = forms.DecimalField(
         decimal_places=4,
-        error_messages={
-            'required': 'This value is required',
-        }
+        required=False,
     )
-
-    def __init__(self, *args, **kwargs):
-        self.ad_group_source = kwargs.pop('ad_group_source')
-        super(AdGroupSourceSettingsDailyBudgetForm,
-              self).__init__(*args, **kwargs)
-
-    def clean_daily_budget_cc(self):
-        daily_budget_cc = self.cleaned_data.get('daily_budget_cc')
-        source_type = self.ad_group_source.source.source_type
-
-        validation_helpers.validate_daily_budget_cc(
-            daily_budget_cc, source_type)
-
-
-class AdGroupSourceSettingsStateForm(forms.Form):
     state = forms.TypedChoiceField(
         choices=constants.AdGroupSettingsState.get_choices(),
         coerce=int,
+        required=False,
         empty_value=None
     )
 

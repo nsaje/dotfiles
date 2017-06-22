@@ -14,6 +14,7 @@ from integrations.bizwire import config, models
 from integrations.bizwire.internal import helpers
 
 import restapi.views
+import restapi.adgroupsource.views
 
 from utils import dates_helper
 from utils import k1_helper
@@ -196,7 +197,7 @@ def _set_all_rtb_default_cpc(ad_group_id):
 
 def _list_ad_group_sources(ad_group_id):
     url = 'rest/v1/adgroups/{}/sources/'.format(ad_group_id)
-    return _make_restapi_fake_get_request(restapi.views.AdGroupSourcesViewList, url, view_args=[ad_group_id])
+    return _make_restapi_fake_get_request(restapi.adgroupsource.views.AdGroupSourcesViewList, url, view_args=[ad_group_id])
 
 
 def _set_initial_rtb_settings(ad_group_id):
@@ -212,7 +213,7 @@ def _set_initial_sources_settings(ad_group_id):
         'state': 'ACTIVE',
     } for source in sources]
     url = 'rest/v1/adgroups/{}/sources/'.format(ad_group_id)
-    return _make_restapi_fake_put_request(restapi.views.AdGroupSourcesViewList, url, data, view_args=[ad_group_id])
+    return _make_restapi_fake_put_request(restapi.adgroupsource.views.AdGroupSourcesViewList, url, data, view_args=[ad_group_id])
 
 
 def _set_source_daily_budget(ad_group_id, source, daily_budget):
@@ -222,7 +223,7 @@ def _set_source_daily_budget(ad_group_id, source, daily_budget):
         'state': 'ACTIVE',
     }]
     url = 'rest/v1/adgroups/{}/sources/'.format(ad_group_id)
-    return _make_restapi_fake_put_request(restapi.views.AdGroupSourcesViewList, url, data, view_args=[ad_group_id])
+    return _make_restapi_fake_put_request(restapi.adgroupsource.views.AdGroupSourcesViewList, url, data, view_args=[ad_group_id])
 
 
 def _set_rtb_daily_budget(ad_group_id, daily_budget):

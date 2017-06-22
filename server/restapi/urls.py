@@ -1,6 +1,7 @@
 from django.conf.urls import url
 
 import views
+import adgroupsource.views
 import geolocation
 import dash.features.videoassets.urls
 import dash.features.bluekai.urls
@@ -72,7 +73,7 @@ urlpatterns = [
     ),
     url(
         r'^v1/adgroups/(?P<ad_group_id>\d+)/sources/$',
-        views.AdGroupSourcesViewList.as_view(),
+        adgroupsource.views.AdGroupSourcesViewList.as_view(),
         name='adgroups_sources_list'
     ),
     url(

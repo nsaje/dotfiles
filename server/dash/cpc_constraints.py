@@ -54,8 +54,9 @@ def enforce_rule(min_cpc=None, max_cpc=None, **levels):
         adjusted_cpc = max(min_cpc or current_cpc, current_cpc)
         adjusted_cpc = min(max_cpc or adjusted_cpc, adjusted_cpc)
         if current_cpc != adjusted_cpc:
-            resource = {'cpc_cc': adjusted_cpc}
-            dash.api.set_ad_group_source_settings(agss.ad_group_source, resource, None)
+            agss.ad_group_source.update(
+                cpc_cc=adjusted_cpc,
+            )
             changes.append((agss.ad_group_source, adjusted_cpc, ))
     return changes
 

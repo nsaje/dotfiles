@@ -125,8 +125,3 @@ def stop_campaign(campaign):
         new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
         new_settings.save(None)
         utils.k1_helper.update_ad_group(ad_group.id, msg="automation.stop_campaign")
-
-
-def update_ad_group_source_value(ad_group_source, field, new_value):
-    resource = {field: new_value}
-    dash.api.set_ad_group_source_settings(ad_group_source, resource, None)

@@ -1076,24 +1076,20 @@ def _restore_user_sources_settings(ad_group):
         user_settings = user_ad_group_sources_settings[ad_group_source.id]
         current_settings = current_ad_group_sources_settings[ad_group_source.id]
 
-        for key in ['state', 'cpc_cc', 'daily_budget_cc']:
+        changes = {}
+        for key in ['state', 'cpc_cc', 'daily_budget_cc', 'landing_mode']:
             if getattr(user_settings, key) == getattr(current_settings, key):
                 continue
 
-            dash.api.set_ad_group_source_settings(
-                ad_group_source,
-                {
-                    key: getattr(user_settings, key),
-                },
-                request=None,
-                system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
-                ping_k1=False,
-            )
+            changes[key] = getattr(user_settings, key)
 
-        if current_settings.landing_mode:
-            new_settings = ad_group_source.get_current_settings().copy_settings()
-            new_settings.landing_mode = False
-            new_settings.save(None)
+        ad_group_source.update(
+            request=None,
+            system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
+            k1_sync=False,
+            skip_automation=True,
+            **changes
+        )
 
 
 def _stop_ad_group(ad_group):
@@ -1122,24 +1118,24 @@ def _set_ad_group_end_date(ad_group, end_date):
 
 
 def _stop_ad_group_source(ad_group_source):
-    dash.api.set_ad_group_source_settings(
-        ad_group_source,
-        {'state': dash.constants.AdGroupSourceSettingsState.INACTIVE},
+    ad_group_source.update(
         request=None,
         system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
+        k1_sync=False,
         landing_mode=True,
-        ping_k1=False
+        skip_automation=True,
+        state=dash.constants.AdGroupSourceSettingsState.INACTIVE,
     )
 
 
 def _update_ad_group_source_cap(ad_group_source, cap):
-    dash.api.set_ad_group_source_settings(
-        ad_group_source,
-        {'daily_budget_cc': cap},
+    ad_group_source.update(
         request=None,
         system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
+        k1_sync=False,
         landing_mode=True,
-        ping_k1=False,
+        skip_automation=True,
+        daily_budget_cc=cap,
     )
 
 

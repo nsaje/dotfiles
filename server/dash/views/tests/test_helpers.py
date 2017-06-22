@@ -1041,10 +1041,16 @@ class SetAdGroupSourceTest(TestCase):
 
     def test_set_ad_group_source_settings_mobile(self):
         ad_group_source, source_settings = self.prepare_ad_group_source()
-        ad_group_source.set_initial_settings(self.request, mobile_only=True, active=True)
+        new_ad_group_settings = ad_group_source.ad_group.get_current_settings().copy_settings()
+        new_ad_group_settings.target_devices = [constants.AdTargetDevice.MOBILE]
+        new_ad_group_settings.save(None)
+
+        ad_group_source.set_initial_settings(
+            self.request,
+            ad_group_source.ad_group.get_current_settings(),
+        )
 
         ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source)
-        self.assertEqual(ad_group_source_settings.count(), 3)
 
         ad_group_source_settings = ad_group_source_settings.latest()
         self.assertEqual(ad_group_source_settings.daily_budget_cc, source_settings.source.default_daily_budget_cc)
@@ -1053,10 +1059,13 @@ class SetAdGroupSourceTest(TestCase):
 
     def test_set_ad_group_source_settings_desktop(self):
         ad_group_source, source_settings = self.prepare_ad_group_source()
-        ad_group_source.set_initial_settings(self.request, mobile_only=False, active=False)
+        ad_group_source.set_initial_settings(
+            self.request,
+            ad_group_source.ad_group.get_current_settings(),
+            state=constants.AdGroupSourceSettingsState.INACTIVE,
+        )
 
         ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source)
-        self.assertEqual(ad_group_source_settings.count(), 3)
 
         ad_group_source_settings = ad_group_source_settings.latest()
         self.assertEqual(ad_group_source_settings.daily_budget_cc, source_settings.source.default_daily_budget_cc)

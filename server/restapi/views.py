@@ -19,7 +19,6 @@ from djangorestframework_camel_case.parser import CamelCaseJSONParser
 
 from utils import json_helper, exc, dates_helper
 
-import core
 from dash.views import agency, bulk_actions, views, bcm, helpers, publishers
 from dash import campaign_goals
 from dash import constants
@@ -767,24 +766,9 @@ class CampaignStatsView(RESTAPIBaseView):
         return self.response_ok(StatsSerializer(stats).data)
 
 
-class SourceIdSlugField(serializers.Field):
-
-    def to_internal_value(self, data):
-        try:
-            if data.startswith('b1_'):
-                data = data[3:]
-            source = dash.models.Source.objects.get(bidder_slug=data)
-            return source
-        except AttributeError:
-            self.fail('invalid_choice', data)
-
-    def to_representation(self, source):
-        return source.bidder_slug
-
-
 class PublisherSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=127)
-    source = SourceIdSlugField(required=False, allow_null=True)
+    source = fields.SourceIdSlugField(required=False, allow_null=True)
     externalId = serializers.CharField(max_length=127, required=False, allow_null=True)
     status = fields.DashConstantField(constants.PublisherStatus)
     level = fields.DashConstantField(constants.PublisherBlacklistLevel, label='level')
@@ -855,60 +839,6 @@ class PublishersViewList(RESTAPIBaseView):
         serializer.is_valid(raise_exception=True)
         serializer.save(request=request, ad_group_id=ad_group_id)
         return self.response_ok(serializer.initial_data)
-
-
-class AdGroupSourceSerializer(serializers.Serializer):
-    source = SourceIdSlugField(source='ad_group_source.source')
-    cpc = serializers.DecimalField(max_digits=10, decimal_places=4, source='cpc_cc', required=False)
-    dailyBudget = serializers.DecimalField(max_digits=10, decimal_places=4, source='daily_budget_cc', required=False)
-    state = fields.DashConstantField(constants.AdGroupSourceSettingsState, required=False)
-
-    def create(self, validated_data):
-        request = validated_data['request']
-        ad_group_id = validated_data['ad_group_id']
-        source_id = validated_data['ad_group_source']['source'].id
-        put_data = {field: validated_data[field]
-                    for field in ['cpc_cc', 'daily_budget_cc', 'state'] if field in validated_data}
-        request.body = RESTAPIJSONRenderer().render(put_data)
-        view_internal = views.AdGroupSourceSettings(rest_proxy=True)
-        data_internal, status_code = view_internal.put(request, ad_group_id, source_id)
-        # TODO: this should return valid object, but it is not used anywhere
-        return data_internal
-
-
-class AdGroupSourcesViewList(RESTAPIBaseView):
-
-    def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        settings = dash.models.AdGroupSourceSettings.objects.filter(
-            ad_group_source__ad_group=ad_group).group_current_settings()
-        serializer = AdGroupSourceSerializer(settings, many=True)
-        return self.response_ok(serializer.data)
-
-    def put(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        serializer = AdGroupSourceSerializer(data=request.data, many=True)
-        serializer.is_valid(raise_exception=True)
-        with transaction.atomic():
-            serializer.save(request=request, ad_group_id=ad_group.id)
-        return self.get(request, ad_group.id)
-
-    def post(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
-        serializer = AdGroupSourceSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        with transaction.atomic():
-            ad_group_source = core.entity.AdGroupSource.objects.create(
-                request, ad_group, serializer.validated_data['ad_group_source']['source'],
-                write_history=True, k1_sync=True, active=False,
-            )
-
-            serializer.save(request=request, ad_group_id=ad_group.id)
-
-        serializer = AdGroupSourceSerializer(ad_group_source.get_current_settings())
-        return self.response_ok(serializer.data)
 
 
 class AdGroupSourcesRTBSerializer(serializers.Serializer):
@@ -1146,7 +1076,7 @@ class PublisherGroupEntrySerializer(DataNodeSerializerMixin, serializers.ModelSe
 
     id = fields.IdField(read_only=True)
     publisher_group_id = fields.IdField(read_only=True)
-    source = SourceIdSlugField(required=False, allow_null=True)
+    source = fields.SourceIdSlugField(required=False, allow_null=True)
 
 
 class OutbrainPublisherGroupEntrySerializer(PublisherGroupEntrySerializer):

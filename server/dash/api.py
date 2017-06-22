@@ -1,4 +1,3 @@
-import decimal
 import logging
 import newrelic.agent
 
@@ -6,7 +5,6 @@ from django.db import transaction
 from django.db.models import Q
 
 from utils import email_helper
-from utils import k1_helper
 
 from dash import models
 from dash import constants
@@ -103,109 +101,3 @@ def format_bulk_ids_into_description(ids, description_template):
                              ' and {} more'.format(len(ids) - num_id_limit) if shorten else '')
 
     return description_template.format(ids=ids_text)
-
-
-def set_ad_group_source_settings(
-    ad_group_source,
-    settings_obj,
-    request,
-    system_user=None,
-    landing_mode=None,
-    ping_k1=True
-):
-    latest_settings = ad_group_source.get_current_settings()
-
-    state = settings_obj.get('state')
-    cpc_cc = settings_obj.get('cpc_cc')
-    daily_budget_cc = settings_obj.get('daily_budget_cc')
-
-    assert cpc_cc is None or isinstance(cpc_cc, decimal.Decimal)
-    assert daily_budget_cc is None or isinstance(daily_budget_cc, decimal.Decimal)
-
-    if not _has_any_ad_group_source_setting_changed(latest_settings, state, cpc_cc, daily_budget_cc, landing_mode):
-        return
-    _update_ad_group_source_setting(
-        ad_group_source,
-        request,
-        latest_settings,
-        settings_obj,
-        state,
-        cpc_cc,
-        daily_budget_cc,
-        landing_mode,
-        system_user=system_user
-    )
-
-    if ping_k1:
-        k1_helper.update_ad_group(ad_group_source.ad_group_id, msg="dash.api.set_ad_group_source_settings")
-
-
-def _has_any_ad_group_source_setting_changed(latest_settings, state, cpc_cc, daily_budget_cc, landing_mode):
-    if state is not None and state != latest_settings.state:
-        return True
-
-    if cpc_cc is not None and cpc_cc != latest_settings.cpc_cc:
-        return True
-
-    if daily_budget_cc is not None and daily_budget_cc != latest_settings.daily_budget_cc:
-        return True
-
-    if landing_mode is not None and landing_mode != latest_settings.landing_mode:
-        return True
-
-    return False
-
-
-def _update_ad_group_source_setting(
-    ad_group_source,
-    request,
-    latest_settings,
-    settings_obj,
-    state,
-    cpc_cc,
-    daily_budget_cc,
-    landing_mode,
-    system_user=None
-):
-    new_settings = latest_settings.copy_settings()
-    old_settings_obj = {}
-    if state is not None:
-        new_settings.state = state
-    if cpc_cc is not None:
-        old_settings_obj['cpc_cc'] = latest_settings.cpc_cc
-        new_settings.cpc_cc = cpc_cc
-    if daily_budget_cc is not None:
-        old_settings_obj['daily_budget_cc'] = latest_settings.daily_budget_cc
-        new_settings.daily_budget_cc = daily_budget_cc
-    if landing_mode is not None:
-        new_settings.landing_mode = landing_mode
-    if not request:
-        new_settings.system_user = system_user
-    else:
-        new_settings.created_by = request.user
-    new_settings.save(request, action_type=constants.HistoryActionType.MEDIA_SOURCE_SETTINGS_CHANGE)
-    _notify_ad_group_source_settings_changed(ad_group_source, settings_obj, old_settings_obj, request)
-    return new_settings
-
-
-def _notify_ad_group_source_settings_changed(ad_group_source, change_obj, old_change_obj, request):
-    if not request:
-        return
-
-    changes_text_parts = []
-    for key, val in change_obj.items():
-        if val is None:
-            continue
-        field = models.AdGroupSettings.get_human_prop_name(key)
-        val = models.AdGroupSettings.get_human_value(key, val)
-        source_name = ad_group_source.source.name
-        old_val = old_change_obj.get(key)
-        if old_val is None:
-            text = '%s %s set to %s' % (source_name, field, val)
-        else:
-            old_val = models.AdGroupSettings.get_human_value(key, old_val)
-            text = '%s %s set from %s to %s' % (source_name, field, old_val, val)
-        changes_text_parts.append(text)
-
-    email_helper.send_ad_group_notification_email(
-        ad_group_source.ad_group, request, '\n'.join(changes_text_parts))

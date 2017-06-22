@@ -86,8 +86,14 @@ def ad_group_source_is_synced(ad_group_source):
 
 
 def update_ad_group_source_values(ad_group_source, changes, system_user=None, landing_mode=None):
-    dash.api.set_ad_group_source_settings(
-        ad_group_source, changes, None, system_user=system_user, landing_mode=landing_mode, ping_k1=False)
+    if landing_mode is not None:
+        changes['landing_mode'] = landing_mode
+    ad_group_source.update(
+        system_user=system_user,
+        k1_sync=False,
+        skip_automation=True,
+        **changes
+    )
 
 
 def update_ad_group_b1_sources_group_values(ad_group, changes, system_user=None):

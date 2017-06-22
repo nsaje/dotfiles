@@ -32,6 +32,11 @@ class SettingsBase(models.Model, CopySettingsMixin, core.history.HistoryMixin):
     def get_settings_dict(self):
         return {settings_key: getattr(self, settings_key) for settings_key in self._settings_fields}
 
+    def set_settings_dict(self, dict):
+        for settings_key in self._settings_fields:
+            if settings_key in dict:
+                setattr(self, settings_key, dict[settings_key])
+
     def get_setting_changes(self, new_settings):
         current_settings_dict = self.get_settings_dict()
         new_settings_dict = new_settings.get_settings_dict()

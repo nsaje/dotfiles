@@ -13,9 +13,11 @@ import core.entity
 import core.history
 import core.source
 
+import utils.email_helper
 import utils.exc
 import utils.k1_helper
 
+import validation
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +34,7 @@ class AdGroupSourceManager(core.common.QuerySetManager):
         return ad_group_source
 
     @transaction.atomic
-    def create(self, request, ad_group, source, write_history=True, k1_sync=True, active=True):
+    def create(self, request, ad_group, source, write_history=True, k1_sync=True, **updates):
         ad_group_settings = ad_group.get_current_settings()
 
         if AdGroupSource.objects.filter(source=source, ad_group=ad_group).exists():
@@ -47,13 +49,11 @@ class AdGroupSourceManager(core.common.QuerySetManager):
         if write_history:
             ad_group.write_history_source_added(request, ad_group_source)
 
-        # circular dependency
-        from dash.views import helpers
         ad_group_source.set_initial_settings(
-            None,
-            active=active and helpers.get_source_initial_state(ad_group_source),  # TODO move this
-            max_cpc=ad_group_settings.cpc_cc,
-            mobile_only=ad_group_settings.is_mobile_only())
+            request,
+            ad_group_settings,
+            **updates
+        )
 
         if settings.K1_CONSISTENCY_SYNC:
             # circular dependency
@@ -191,38 +191,99 @@ class AdGroupSource(models.Model):
                 source_id__in=core.source.Source.objects.all().filter_can_manage_content_ads().values_list(
                     'id', flat=True))
 
-    def set_initial_settings(self, request, mobile_only=False, active=False, max_cpc=None):
-        cpc_cc = self.source.default_cpc_cc
-        if mobile_only:
-            cpc_cc = self.source.default_mobile_cpc_cc
-        ag_settings = self.ad_group.get_current_settings()
-        if (ag_settings.b1_sources_group_enabled and
-                ag_settings.b1_sources_group_cpc_cc > 0.0 and
-                self.source.source_type.type == constants.SourceType.B1):
-            cpc_cc = ag_settings.b1_sources_group_cpc_cc
-        if max_cpc:
-            cpc_cc = min(max_cpc, cpc_cc)
+    @transaction.atomic
+    def update(self, request=None, k1_sync=True, system_user=None, skip_automation=False, **updates):
+        ad_group_source_settings = self.get_current_settings()
+        ad_group_settings = self.ad_group.get_current_settings()
+        campaign_settings = self.ad_group.campaign.get_current_settings()
 
-        resource = {
-            'daily_budget_cc': self.source.default_daily_budget_cc,
-            'cpc_cc': cpc_cc,
-            'state': (constants.AdGroupSourceSettingsState.ACTIVE if active
-                      else constants.AdGroupSourceSettingsState.INACTIVE),
+        validation.validate_ad_group_source_updates(
+            self,
+            updates,
+            ad_group_settings,
+            ad_group_source_settings,
+        )
+
+        if not skip_automation:
+            validation.validate_ad_group_source_campaign_stop(
+                self,
+                updates,
+                campaign_settings,
+                ad_group_settings,
+                ad_group_source_settings,
+            )
+
+        latest_settings = self.get_current_settings()
+        new_settings = latest_settings.copy_settings()
+        new_settings.set_settings_dict(updates)
+
+        changes = latest_settings.get_setting_changes(new_settings)
+        if not changes:
+            return
+
+        if not request:
+            new_settings.system_user = system_user
+        else:
+            new_settings.created_by = request.user
+
+        new_settings.save(request, action_type=constants.HistoryActionType.MEDIA_SOURCE_SETTINGS_CHANGE)
+
+        from automation import autopilot_plus
+        autopilot_changed_sources_text = ''
+        if not skip_automation and\
+                ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
+                'state' in updates:
+            changed_sources = autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False)
+            autopilot_changed_sources_text = ', '.join([s.source.name if s != constants.SourceAllRTB else
+                                                        constants.SourceAllRTB.NAME for s in changed_sources])
+
+        self._notify_ad_group_source_settings_changed(request, changes, latest_settings)
+
+        if k1_sync:
+            utils.k1_helper.update_ad_group(self.ad_group.pk, 'AdGroupSource.update')
+
+        return {
+            'autopilot_changed_sources_text': autopilot_changed_sources_text,
         }
 
-        from dash import api  # TODO circular import
-        api.set_ad_group_source_settings(self, resource, request, ping_k1=False)
+    def set_initial_settings(self, request, ad_group_settings, **updates):
+        from dash.views import helpers
+
+        if 'cpc_cc' not in updates:
+            updates['cpc_cc'] = self.source.default_cpc_cc
+            if ad_group_settings.is_mobile_only():
+                updates['cpc_cc'] = self.source.default_mobile_cpc_cc
+            if (ad_group_settings.b1_sources_group_enabled and
+                    ad_group_settings.b1_sources_group_cpc_cc > 0.0 and
+                    self.source.source_type.type == constants.SourceType.B1):
+                updates['cpc_cc'] = ad_group_settings.b1_sources_group_cpc_cc
+            if ad_group_settings.cpc_cc:
+                updates['cpc_cc'] = min(ad_group_settings.cpc_cc, updates['cpc_cc'])
+        if 'state' not in updates:
+            if helpers.get_source_initial_state(self):
+                updates['state'] = constants.AdGroupSourceSettingsState.ACTIVE
+            else:
+                updates['state'] = constants.AdGroupSourceSettingsState.INACTIVE
+        if 'daily_budget_cc' not in updates:
+            updates['daily_budget_cc'] = self.source.default_daily_budget_cc
+
+        self.update(
+            request,
+            k1_sync=False,
+            skip_automation=True,
+            **updates
+        )
 
     def set_cloned_settings(self, request, source_ad_group_source):
         source_ad_group_source_settings = source_ad_group_source.get_current_settings()
-        resource = {
-            'daily_budget_cc': source_ad_group_source_settings.daily_budget_cc,
-            'cpc_cc': source_ad_group_source_settings.cpc_cc,
-            'state': source_ad_group_source_settings.state,
-        }
-
-        from dash import api  # TODO circular import
-        api.set_ad_group_source_settings(self, resource, request, ping_k1=False)
+        self.update(
+            request,
+            k1_sync=False,
+            skip_automation=True,
+            daily_budget_cc=source_ad_group_source_settings.daily_budget_cc,
+            cpc_cc=source_ad_group_source_settings.cpc_cc,
+            state=source_ad_group_source_settings.state,
+        )
 
     def get_tracking_ids(self):
         msid = self.source.tracking_slug or ''
@@ -297,3 +358,25 @@ class AdGroupSource(models.Model):
 
     def __str__(self):
         return unicode(self).encode('ascii', 'ignore')
+
+    def _notify_ad_group_source_settings_changed(self, request, changes, old_settings):
+        if not request:
+            return
+
+        changes_text_parts = []
+        for key, val in changes.items():
+            if val is None:
+                continue
+            field = old_settings.get_human_prop_name(key)
+            val = old_settings.get_human_value(key, val)
+            source_name = self.source.name
+            old_val = getattr(old_settings, key)
+            if old_val is None:
+                text = '%s %s set to %s' % (source_name, field, val)
+            else:
+                old_val = old_settings.get_human_value(key, old_val)
+                text = '%s %s set from %s to %s' % (source_name, field, old_val, val)
+            changes_text_parts.append(text)
+
+        utils.email_helper.send_ad_group_notification_email(
+            self.ad_group, request, '\n'.join(changes_text_parts))
