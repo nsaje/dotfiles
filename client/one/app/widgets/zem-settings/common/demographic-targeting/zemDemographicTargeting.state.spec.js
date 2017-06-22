@@ -68,7 +68,7 @@ describe('state: zemDemographicTargetingStateService', function () {
     });
 
 
-    it('should allow editing on predefined flat structure', function () {
+    it('should allow editing on predefined structure', function () {
         var stateService = zemDemographicTargetingStateService.createInstance(entity);
 
         stateService.initialize();

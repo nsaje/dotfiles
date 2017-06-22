@@ -135,15 +135,17 @@ angular.module('one.widgets').service('zemDemographicTargetingStateService', fun
 
             for (var i = 0; i < expressionTree.childNodes.length; ++i) {
                 var node = expressionTree.childNodes[i];
-                if (node.type === zemDemographicTargetingConstants.EXPRESSION_TYPE.OR
-                    && !isBlukaiCategoriesNode(node))
-                    return false;
-
-                if (node.type === zemDemographicTargetingConstants.EXPRESSION_TYPE.NOT) {
+                if (node.type === zemDemographicTargetingConstants.EXPRESSION_TYPE.OR) {
+                    if (!isBlukaiCategoriesNode(node)) {
+                        return false;
+                    }
+                } else if (node.type === zemDemographicTargetingConstants.EXPRESSION_TYPE.NOT) {
                     if (node.childNodes.length !== 1) return false;
 
                     if (!(node.childNodes[0].type === zemDemographicTargetingConstants.EXPRESSION_TYPE.OR
                         && isBlukaiCategoriesNode(node.childNodes[0]))) return false;
+                } else {
+                    return false;
                 }
             }
 
