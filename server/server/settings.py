@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'dash',
     'restapi',
     'zemauth',
-    'reports',
     'k1api',
     'raven.contrib.django.raven_compat',
     'automation',

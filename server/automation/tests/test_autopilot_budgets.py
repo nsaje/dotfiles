@@ -7,14 +7,10 @@ from django import test
 from automation import autopilot_budgets
 import dash.models
 import dash.constants
-from reports import refresh
 
 
 class AutopilotBudgetsTestCase(test.TestCase):
     fixtures = ['test_automation.yaml']
-
-    def setUp(self):
-        refresh.refresh_adgroup_stats()
 
     def test_uniformly_redistribute_remaining_budget(self):
         sources = [

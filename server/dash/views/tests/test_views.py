@@ -22,8 +22,6 @@ from utils import exc
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 
-from reports import redshift
-
 import zemauth.models
 
 
@@ -837,7 +835,6 @@ class AdGroupOverviewTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = zemauth.models.User.objects.get(email='chuck.norris@zemanta.com')
-        redshift.STATS_DB_NAME = 'default'
 
     def setUpPermissions(self):
         campaign = models.Campaign.objects.get(pk=1)
@@ -976,9 +973,8 @@ class AdGroupOverviewTest(TestCase):
         yesterday_spend = self._get_setting(settings, 'yesterday')
         self.assertEqual('$0.00', yesterday_spend['value'])
 
-    @patch('reports.redshift.get_cursor')
     @patch('redshiftapi.api_breakdowns.query_all')
-    def test_run_mid(self, mock_query_all, cursor):
+    def test_run_mid(self, mock_query_all):
         self.setUpPermissions()
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
         end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
@@ -1023,12 +1019,6 @@ class AdGroupOverviewTest(TestCase):
             license_fee_nano=0,
             margin_nano=0,
         )
-
-        cursor().diftfetchall.return_value = {
-            1: {
-                'cost_cc_sum': 500000.0,
-            }
-        }
 
         mock_query_all.return_value = [{
             'e_yesterday_cost': decimal.Decimal('60.0'),
@@ -1076,7 +1066,6 @@ class CampaignOverviewTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = zemauth.models.User.objects.get(email='chuck.norris@zemanta.com')
-        redshift.STATS_DB_NAME = 'default'
 
     def setUpPermissions(self):
         campaign = models.Campaign.objects.get(pk=1)
@@ -1206,7 +1195,6 @@ class AccountOverviewTest(TestCase):
 
     def setUp(self):
         self.client = Client()
-        redshift.STATS_DB_NAME = 'default'
 
         self.user = zemauth.models.User.objects.get(pk=2)
 
@@ -1225,9 +1213,8 @@ class AccountOverviewTest(TestCase):
     def _get_setting(self, settings, name):
         return [s for s in settings if name in s['name'].lower()][0]
 
-    @patch('reports.redshift.get_cursor')
     @patch('dash.models.Account.get_current_settings')
-    def test_run_empty(self, mock_current_settings, cursor):
+    def test_run_empty(self, mock_current_settings):
         req = RequestFactory().get('/')
         req.user = self.user
 
@@ -1253,11 +1240,6 @@ class AccountOverviewTest(TestCase):
         mock_current_settings.return_value = settings
 
         # do some extra setup to the account
-        cursor().dictfetchall.return_value = [{
-            'adgroup_id': 1,
-            'source_id': 9,
-            'cost_cc_sum': 0.0
-        }]
         response = self._get_account_overview(1)
         settings = response['data']['basic_settings']
 
@@ -1265,9 +1247,8 @@ class AccountOverviewTest(TestCase):
         self.assertEqual('2', count_setting['value'])
         self.assertTrue(response['success'])
 
-    @patch('reports.redshift.get_cursor')
     @patch('dash.models.Account.get_current_settings')
-    def test_run_empty_non_archived(self, mock_current_settings, cursor):
+    def test_run_empty_non_archived(self, mock_current_settings):
         req = RequestFactory().get('/')
         req.user = self.user
 
@@ -1302,11 +1283,6 @@ class AccountOverviewTest(TestCase):
         new_adgroup_settings.save(req)
 
         # do some extra setup to the account
-        cursor().dictfetchall.return_value = [{
-            'adgroup_id': 1,
-            'source_id': 9,
-            'cost_cc_sum': 0.0
-        }]
         response = self._get_account_overview(1)
         settings = response['data']['basic_settings']
 
@@ -1320,7 +1296,6 @@ class AllAccountsOverviewTest(TestCase):
 
     def setUp(self):
         self.client = Client()
-        redshift.STATS_DB_NAME = 'default'
 
     def _get_all_accounts_overview(self, campaign_id, user_id=2, with_status=False):
         user = User.objects.get(pk=user_id)

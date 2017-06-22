@@ -1296,6 +1296,10 @@ class ConversionGoalType(ConstantBase):
     }
 
 
+REPORT_GOAL_TYPES = [ConversionGoalType.GA, ConversionGoalType.OMNITURE]
+PIXEL_GOAL_TYPE = ConversionGoalType.PIXEL
+
+
 class UploadBatchStatus(ConstantBase):
     DONE = 1
     FAILED = 2

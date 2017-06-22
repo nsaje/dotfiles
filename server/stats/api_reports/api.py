@@ -3,8 +3,6 @@ from django.utils.text import slugify
 import redshiftapi.api_reports
 import dash.dashapi.api_reports
 
-import dash.export
-
 from stats import api_breakdowns
 from stats import constants
 from stats import helpers

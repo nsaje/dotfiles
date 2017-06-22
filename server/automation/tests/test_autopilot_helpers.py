@@ -6,14 +6,10 @@ from django import test
 from automation import autopilot_helpers
 import dash.models
 from dash.constants import AdGroupSettingsAutopilotState, AdGroupRunningStatus, AdGroupSettingsState
-from reports import refresh
 
 
 class AutopilotHelpersTestCase(test.TestCase):
     fixtures = ['test_automation.yaml']
-
-    def setUp(self):
-        refresh.refresh_adgroup_stats()
 
     @patch('dash.models.AdGroup.get_running_status_by_sources_setting')
     @patch('dash.models.AdGroup.get_running_status')

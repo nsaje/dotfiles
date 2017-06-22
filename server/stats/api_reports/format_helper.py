@@ -1,8 +1,29 @@
 import datetime
 from decimal import Decimal
 
-import dash.export
 from stats import constants
+
+FORMAT_1_DECIMAL = []
+FORMAT_2_DECIMALS = []
+FORMAT_3_DECIMALS = []
+FORMAT_4_DECIMALS = ['pv_per_visit', 'data_cost', 'media_cost',
+                     'e_media_cost', 'e_data_cost',
+                     'billing_cost', 'margin', 'agency_total',
+                     'license_fee', 'total_fee', 'flat_fee',
+                     'allocated_budgets', 'spend_projection',
+                     'license_fee_projection', 'total_fee_projection',
+                     'avg_cost_per_minute', 'avg_cost_per_pageview',
+                     'avg_cost_per_visit', 'avg_cost_per_non_bounced_visit',
+                     'avg_cost_for_new_visitor', 'avg_tos', 'cpc', 'ctr']
+FORMAT_DIVIDE_100 = ['percent_new_users', 'bounce_rate', 'ctr', 'click_discrepancy', 'pacing']
+FORMAT_EMPTY_TO_0 = [
+    'data_cost', 'cpc',
+    'clicks', 'impressions', 'ctr', 'e_media_cost', 'media_cost', 'e_data_cost',
+    'billing_cost', 'license_fee', 'total_fee', 'flat_fee',
+    'margin', 'agency_total',
+]
+FORMAT_HASH = ['image_hash']
+
 
 formatters = {}
 
@@ -16,7 +37,7 @@ def format_values(rows, columns):
         else:
             formatter = formatters.get(column)
 
-        if column in dash.export.FORMAT_EMPTY_TO_0:
+        if column in FORMAT_EMPTY_TO_0:
             empty_value = 0
         else:
             empty_value = ''
@@ -72,15 +93,15 @@ formatters[constants.TimeDimension.DAY] = format_date
 formatters[constants.TimeDimension.WEEK] = format_week
 formatters[constants.TimeDimension.MONTH] = format_month
 
-for column in dash.export.FORMAT_DIVIDE_100:
+for column in FORMAT_DIVIDE_100:
     formatters[column] = format_percentages
-for column in dash.export.FORMAT_1_DECIMAL:
+for column in FORMAT_1_DECIMAL:
     formatters[column] = format_1_decimal
-for column in dash.export.FORMAT_2_DECIMALS:
+for column in FORMAT_2_DECIMALS:
     formatters[column] = format_2_decimal
-for column in dash.export.FORMAT_3_DECIMALS:
+for column in FORMAT_3_DECIMALS:
     formatters[column] = format_3_decimal
-for column in dash.export.FORMAT_4_DECIMALS:
+for column in FORMAT_4_DECIMALS:
     formatters[column] = format_4_decimal
-for column in dash.export.FORMAT_HASH:
+for column in FORMAT_HASH:
     formatters[column] = format_hash

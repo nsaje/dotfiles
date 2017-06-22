@@ -10,10 +10,9 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('dash', '0206_auto_20170419_1449'),
-        ('reports', '0010_auto_20170414_1449'),
     ]
 
-    state_operations = [
+    operations = [
         migrations.CreateModel(
             name='SupplyReportRecipient',
             fields=[
@@ -28,10 +27,4 @@ class Migration(migrations.Migration):
                 ('source', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='dash.Source')),
             ],
         ),
-    ]
-
-    operations = [
-        migrations.SeparateDatabaseAndState(
-            state_operations=state_operations,
-        )
     ]

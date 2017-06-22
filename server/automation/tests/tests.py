@@ -10,7 +10,6 @@ from django.http.request import HttpRequest
 from automation import budgetdepletion, helpers
 from automation import models as automationmodels
 from dash import models
-from reports import refresh
 import automation.settings
 import automation.constants
 import automation.autopilot_budgets
@@ -28,9 +27,6 @@ class DatetimeMock(datetime):
 
 class BudgetDepletionTestCase(test.TestCase):
     fixtures = ['test_automation.yaml']
-
-    def setUp(self):
-        refresh.refresh_adgroup_stats()
 
     def test_get_active_campaigns(self):
         campaigns = helpers.get_active_campaigns()
@@ -151,7 +147,6 @@ class BCMDepletionTestCase(test.TestCase):
         self.campaigns = models.Campaign.objects.all()
         self.request = HttpRequest()
         self.request.user = User.objects.get(pk=1)
-        refresh.refresh_adgroup_stats()
 
     @patch('datetime.datetime', DatetimeMock)
     def test_get_yesterdays_spends(self):
@@ -167,24 +162,19 @@ class BCMDepletionTestCase(test.TestCase):
 
     @patch('datetime.datetime', DatetimeMock)
     def test_get_available_budgets(self):
-        with patch('reports.api.query') as query:
-            query.return_value = {'cost': 200.0}
-            self.assertEqual(
-                helpers.get_available_budgets(self.campaigns),
-                {
-                    1: decimal.Decimal('0.0'),
-                    2: decimal.Decimal('100.0000'),
-                    3: decimal.Decimal('49879.0000'),
-                    4: decimal.Decimal('49923.0000')
-                },
-            )
+        self.assertEqual(
+            helpers.get_available_budgets(self.campaigns),
+            {
+                1: decimal.Decimal('0.0'),
+                2: decimal.Decimal('100.0000'),
+                3: decimal.Decimal('49879.0000'),
+                4: decimal.Decimal('49923.0000')
+            },
+        )
 
 
 class BetaBanditTestCase(test.TestCase):
     fixtures = ['test_automation.yaml']
-
-    def setUp(self):
-        refresh.refresh_adgroup_stats()
 
     def test_naiive(self):
         ags = models.AdGroupSource.objects.filter(ad_group=4)

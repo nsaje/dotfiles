@@ -3,7 +3,6 @@ import copy
 
 import dash.constants
 import stats.constants
-from dash import conversions_helper
 
 from redshiftapi import helpers
 from redshiftapi import view_selector
@@ -263,7 +262,7 @@ class MVJointMaster(MVMaster):
 
         # dynamically generate columns based on conversion goals
         for conversion_goal in conversion_goals:
-            if conversion_goal.type not in conversions_helper.REPORT_GOAL_TYPES:
+            if conversion_goal.type not in dash.constants.REPORT_GOAL_TYPES:
                 continue
 
             conversion_key = conversion_goal.get_view_key(conversion_goals)

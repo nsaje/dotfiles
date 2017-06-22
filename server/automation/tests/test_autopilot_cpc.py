@@ -8,14 +8,10 @@ from automation import autopilot_cpc
 from automation.constants import CpcChangeComment
 import dash.models
 import dash.constants
-from reports import refresh
 
 
 class AutopilotCpcTestCase(test.TestCase):
     fixtures = ['test_automation.yaml']
-
-    def setUp(self):
-        refresh.refresh_adgroup_stats()
 
     @patch('automation.autopilot_settings.AUTOPILOT_CPC_CHANGE_TABLE', (
         {'underspend_upper_limit': -1, 'underspend_lower_limit': -0.5,

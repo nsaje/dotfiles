@@ -3,7 +3,6 @@ import datetime
 from dateutil import rrule, relativedelta
 
 from utils import sort_helper
-from dash import conversions_helper
 
 from dash import constants as dash_constants
 import dash.models
@@ -186,7 +185,7 @@ def apply_conversion_goal_columns(breakdown, row_by_breakdown, conversion_goals,
 
     for breakdown_key, row in row_by_breakdown.iteritems():
         for conversion_goal in conversion_goals:
-            if conversion_goal.type not in conversions_helper.REPORT_GOAL_TYPES:
+            if conversion_goal.type not in dash_constants.REPORT_GOAL_TYPES:
                 continue
 
             stats_key = conversion_goal.get_stats_key()

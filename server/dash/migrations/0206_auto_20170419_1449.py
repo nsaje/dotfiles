@@ -10,10 +10,9 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('dash', '0205_auto_20170418_1501'),
-        ('reports', '0008_auto_20170413_1418')
     ]
 
-    state_operations = [
+    operations = [
         migrations.CreateModel(
             name='BudgetDailyStatement',
             fields=[
@@ -33,10 +32,4 @@ class Migration(migrations.Migration):
             name='budgetdailystatement',
             unique_together=set([('budget', 'date')]),
         ),
-    ]
-
-    operations = [
-        migrations.SeparateDatabaseAndState(
-            state_operations=state_operations,
-        )
     ]

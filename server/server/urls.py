@@ -20,7 +20,6 @@ import dash.features.daily_stats.views
 import dash.features.scheduled_reports.views
 import dash.views.bcm
 import dash.views.breakdown
-import dash.views.export
 import dash.views.agency
 import dash.views.views
 import dash.views.navigation
@@ -158,14 +157,6 @@ urlpatterns += [
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/(?P<source_id>\d+)/settings/',
         login_required(dash.views.views.AdGroupSourceSettings.as_view()),
         name='ad_group_source_settings'
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/allowed/',
-        login_required(dash.views.export.AdGroupAdsExportAllowed.as_view())
-    ),
-    url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/export/allowed/',
-        login_required(dash.views.export.CampaignAdGroupsExportAllowed.as_view())
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/csv/',
@@ -486,66 +477,6 @@ urlpatterns += [
         name='user'
     ),
     url(
-        r'^api/(?P<level_>(ad_groups|campaigns|accounts))/(?P<id_>\d+)/export/allowed/',
-        login_required(dash.views.export.ExportAllowed.as_view())
-    ),
-    url(
-        r'^api/(?P<level_>(all_accounts))/export/allowed/',
-        login_required(dash.views.export.ExportAllowed.as_view())
-    ),
-    url(
-        r'^api/(?P<level_>(ad_groups|campaigns|accounts|all_accounts))/(?P<id_>\d+)/sources/export/allowed/',
-        login_required(dash.views.export.SourcesExportAllowed.as_view())
-    ),
-    url(
-        r'^api/(?P<level_>(all_accounts))/sources/export/allowed/',
-        login_required(dash.views.export.SourcesExportAllowed.as_view())
-    ),
-    url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/export/',
-        login_required(dash.views.export.CampaignAdGroupsExport.as_view())
-    ),
-    url(
-        r'^api/accounts/(?P<account_id>\d+)/export/',
-        login_required(dash.views.export.AccountCampaignsExport.as_view())
-    ),
-    url(
-        r'^api/all_accounts/reports/',
-        login_required(dash.views.export.ScheduledReports.as_view())
-    ),
-    url(
-        r'^api/accounts/(?P<account_id>\d+)/reports/',
-        login_required(dash.views.export.ScheduledReports.as_view())
-    ),
-    url(
-        r'^api/accounts/reports/remove/(?P<scheduled_report_id>\d+)',
-        login_required(dash.views.export.ScheduledReports.as_view())
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/export/',
-        login_required(dash.views.export.AdGroupAdsExport.as_view())
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/export/',
-        login_required(dash.views.export.AdGroupSourcesExport.as_view())
-    ),
-    url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/sources/export/',
-        login_required(dash.views.export.CampaignSourcesExport.as_view())
-    ),
-    url(
-        r'^api/accounts/(?P<account_id>\d+)/sources/export/',
-        login_required(dash.views.export.AccountSourcesExport.as_view())
-    ),
-    url(
-        r'^api/all_accounts/sources/export/',
-        login_required(dash.views.export.AllAccountsSourcesExport.as_view())
-    ),
-    url(
-        r'^api/all_accounts/export/',
-        login_required(dash.views.export.AllAccountsExport.as_view())
-    ),
-    url(
         r'^api/all_accounts/breakdown(?P<breakdown>(/\w+)+/?)',
         login_required(dash.views.breakdown.AllAccountsBreakdown.as_view()),
         name='breakdown_all_accounts'
@@ -649,11 +580,6 @@ urlpatterns += [
         r'^api/accounts/(?P<account_id>\d+)/publisher_groups/errors/(?P<csv_key>[a-zA-Z0-9]+)$',
         login_required(dash.views.publishers.PublisherGroupsUpload.as_view()),
         name='accounts_publisher_groups_upload'
-    ),
-    url(
-        r'^api/custom_report_download/',
-        login_required(dash.views.export.CustomReportDownload.as_view()),
-        name='custom_report_download'
     ),
     url(
         r'^api/scheduled_reports/$',

@@ -11,18 +11,10 @@ import automation.constants
 import dash.models
 import dash.views.helpers
 import dash.api
-from reports import refresh
 
 
 class AutopilotPlusTestCase(test.TestCase):
     fixtures = ['test_automation.yaml']
-
-    def setUp(self):
-        refresh.refresh_adgroup_stats()
-
-        # patcher = patch('dash.api.k1_helper')
-        # self.k1_helper_mock = patcher.start()
-        # self.addCleanup(patcher.stop)
 
     @patch('urllib2.urlopen')
     @test.override_settings(
