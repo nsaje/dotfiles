@@ -6,6 +6,7 @@ import influx
 
 
 class Command(ExceptionCommand):
+    @influx.timer('etl.vacuum')
     def handle(self, *args, **options):
         tables = [
             'stats',
@@ -17,11 +18,9 @@ class Command(ExceptionCommand):
         ]
 
         for table in tables:
-            with influx.block_timer('etl.vacuum', table=table):
-                maintenance.vacuum(table)
-                maintenance.analyze(table)
+            maintenance.vacuum(table)
+            maintenance.analyze(table)
 
         table = 'supply_stats'
-        with influx.block_timer('etl.vacuum', table=table):
-            maintenance.vacuum(table, delete_only=True)
-            maintenance.analyze(table)
+        maintenance.vacuum(table, delete_only=True)
+        maintenance.analyze(table)
