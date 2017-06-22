@@ -947,6 +947,32 @@ dailyBudget | [money](#money)     | daily budget for the given source
             ]
         }
 
+### Add a new ad group source [POST /rest/v1/adgroups/{adGroupId}/sources/]
+
++ Parameters
+    + adGroupId: 2040 (required)
+
+
++ Request (application/json)
+
+        {
+            "source": "adiant",
+            "state": "ACTIVE",
+            "dailyBudget": "15.0",
+            "cpc": "0.25"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "source": "adiant",
+                "state": "ACTIVE",
+                "cpc": "0.25",
+                "dailyBudget": "15.0"
+            }
+        }
+
 ## All Real-time bidding sources as one [/rest/v1/adgroups/{adGroupId}/sources/rtb/]
 <a name="all-rtb-as-one"></a>
 

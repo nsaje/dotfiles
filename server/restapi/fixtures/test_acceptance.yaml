@@ -219,6 +219,16 @@
     model: dash.source
     pk: 3
 
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Adiant
+        tracking_slug: 'b1_adiant'
+        source_type: 1
+        bidder_slug: 'adiant'
+    model: dash.source
+    pk: 4
+
 # test source credentials
 -   fields:
         created_dt: '2014-06-04T00:00:00'
@@ -247,7 +257,40 @@
     model: dash.sourcecredentials
     pk: 3
 
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        source: 4
+        name: 'Test credentials 2'
+        credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
+    model: dash.sourcecredentials
+    pk: 4
 
+# test default source settings
+
+-   fields:
+        source: 1
+        credentials: 1
+    model: dash.defaultsourcesettings
+    pk: 1
+
+-   fields:
+        source: 2
+        credentials: 2
+    model: dash.defaultsourcesettings
+    pk: 2
+
+-   fields:
+        source: 3
+        credentials: 3
+    model: dash.defaultsourcesettings
+    pk: 3
+
+-   fields:
+        source: 4
+        credentials: 4
+    model: dash.defaultsourcesettings
+    pk: 4
 
 # test ad group
 -   fields:
