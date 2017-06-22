@@ -23,7 +23,7 @@ angular.module('one.widgets').component('zemCloneAdGroupModal', {
         $ctrl.adGroup = null;
         $ctrl.destinationCampaignId = null;
         $ctrl.destinationAdGroupName = null;
-        $ctrl.cloneAds = false;
+        $ctrl.cloneAds = true;
 
         $ctrl.errors = null;
         $ctrl.requestInProgress = false;

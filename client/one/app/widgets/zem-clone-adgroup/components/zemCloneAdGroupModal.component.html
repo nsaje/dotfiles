@@ -3,7 +3,7 @@
 </div>
 <div class="modal__body">
 
-    Clone ad group <strong>{{ $ctrl.adGroup.name }}</strong>, its settings and ads to the selected destination campaign.
+    Clone ad group <strong>{{ $ctrl.adGroup.name }}</strong> to the selected destination campaign.
 
     <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.destinationAdGroupName}">
         <label class="form__label" for="ad-group-name">Ad group name</label>
@@ -24,15 +24,25 @@
     </div>
 
     <div class="form__group">
-        <label class="form__label" for="clone-ads">Clone ads</label>
-        <div class="form__checkbox">
+        <div class="form__radio">
             <label>
-                <input class="input-checkbox" type="checkbox" id="clone-ads" ng-model="$ctrl.cloneAds"><span class="checkbox-text"></span>
-                <span class="checkbox-text"></span>
+                <input class="input-radio" type="radio" id="clone-ads"
+                    ng-model="$ctrl.cloneAds" ng-value="{{ true }}">
+                <span class="radio-text">
+                    Clone ad group settings and ads
+                </span>
+            </label>
+        </div>
+        <div class="form__radio">
+            <label>
+                <input class="input-radio" type="radio" id="clone-ads"
+                       ng-model="$ctrl.cloneAds" ng-value="{{ false }}">
+                <span class="radio-text">
+                    Clone ad group settings only
+                </span>
             </label>
         </div>
     </div>
-
 </div>
 <div class="modal__footer buttons-panel">
     <button class="button button--highlight button--with-icon copy-icon" ng-disabled="!!$ctrl.requestInProgress" ng-click="$ctrl.submit()">Clone</button>
