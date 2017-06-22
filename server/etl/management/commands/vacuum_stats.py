@@ -6,7 +6,7 @@ import influx
 
 
 class Command(ExceptionCommand):
-    @influx.timer('etl.vacuum')
+    @influx.timer('etl.vacuum_other_tables')
     def handle(self, *args, **options):
         tables = [
             'stats',
