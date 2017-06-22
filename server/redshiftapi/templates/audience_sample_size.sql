@@ -12,13 +12,13 @@ WHERE
              {% for rule in rules %}
                   {% for val in rule.values %}
                       {% if rule.type == rule_type.STARTS_WITH %}
-                          referer ILIKE %s%
+                          referer ILIKE '%' + %s + '%%'
                       {% elif rule.type == rule_type.CONTAINS %}
-                          referer ILIKE %%s%
+                          referer ILIKE '%%' + %s + '%%'
                       {% elif rule.type == rule_type.NOT_STARTS_WITH %}
-                          referer NOT ILIKE %s%
+                          referer NOT ILIKE '%' + %s + '%%'
                       {% elif rule.type == rule_type.NOT_CONTAINS %}
-                          referer NOT ILIKE %%s%
+                          referer NOT ILIKE '%%' + %s + '%%'
                       {% endif %}
                       {% if not forloop.last %}
                           OR
