@@ -120,6 +120,8 @@ class FilterTestCase(TestCase):
         self.default_cleaned_rows[0].update({
             'license_fee': 1, 'e_media_cost': 1,
             'e_data_cost': 1, 'e_yesterday_cost': 1,
+            'spend_projection': 1, 'license_fee_projection': 1,
+            'pacing': 1,
         })
 
         self.assertItemsEqual(self.rows, self.default_cleaned_rows)
@@ -178,6 +180,7 @@ class FilterTestCase(TestCase):
             'allocated_budgets': 1,
             'flat_fee': 1, 'total_fee': 1, 'total_fee_projection': 1,
             'e_data_cost': 1, 'e_media_cost': 1, 'e_yesterday_cost': 1, 'license_fee': 1,
+            'spend_projection': 1, 'license_fee_projection': 1, 'pacing': 1,
         })
         self.assertItemsEqual(self.rows, self.default_cleaned_rows)
 
