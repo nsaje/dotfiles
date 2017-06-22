@@ -5,7 +5,7 @@ from django.db import transaction
 from dash import constants
 from dash import forms
 from dash import models
-from reports import redshift
+import redshiftapi.api_audiences
 from utils import api_common
 from utils import exc
 from utils import k1_helper
@@ -139,10 +139,16 @@ class AudiencesView(api_common.BaseApiView):
         rows = []
         for audience in audiences:
             if include_size:
-                count = redshift.get_audience_sample_size(audience.pixel.account.id, audience.pixel.slug, audience.ttl,
-                                                          audience.audiencerule_set.all()) * 100
-                count_yesterday = redshift.get_audience_sample_size(audience.pixel.account.id, audience.pixel.slug, 1,
-                                                                    audience.audiencerule_set.all()) * 100
+                count = redshiftapi.api_audiences.get_audience_sample_size(
+                    audience.pixel.account.id,
+                    audience.pixel.slug,
+                    audience.ttl,
+                    audience.audiencerule_set.all()) * 100
+                count_yesterday = redshiftapi.api_audiences.get_audience_sample_size(
+                    audience.pixel.account.id,
+                    audience.pixel.slug,
+                    1,
+                    audience.audiencerule_set.all()) * 100
 
             rows.append({
                 'id': str(audience.pk),

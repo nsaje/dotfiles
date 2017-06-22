@@ -1,9 +1,8 @@
 import datetime
-from mock import patch, Mock, call, MagicMock
+from mock import patch, Mock, call
 
 from django.test import TestCase, override_settings
 
-from dash import models
 from reports import redshift
 from reports.db_raw_helpers import MyCursor
 
@@ -129,24 +128,6 @@ class RedshiftTest(TestCase):
         query = 'VACUUM FULL touchpointconversions'
 
         mock_cursor.execute.assert_called_with(query, [])
-
-    def test_get_audience_sample_size(self, mock_get_cursor):
-        mock_cursor = MagicMock()
-        mock_cursor.dictfetchall.return_value = [{'count': 0}]
-        mock_get_cursor.return_value = mock_cursor
-
-        rules = [
-            models.AudienceRule(type=1, value='a,b'),
-            models.AudienceRule(type=2, value='c'),
-            models.AudienceRule(type=3, value='d,e'),
-        ]
-        redshift.get_audience_sample_size(1, 'slug1', 10, rules)
-
-        expected_query = 'SELECT COUNT(DISTINCT(zuid)) FROM pixie_sample WHERE account_id = %s AND slug = %s AND timestamp > %s ' \
-                         'AND (referer ILIKE %s OR referer ILIKE %s OR referer ILIKE %s OR referer NOT ILIKE %s OR referer NOT ILIKE %s)'
-        time = datetime.datetime.now().date() - datetime.timedelta(days=10)
-        expected_params = [1, 'slug1', time.isoformat(), 'a%', 'b%', '%c%', 'd%', 'e%']
-        mock_cursor.execute.assert_called_once_with(expected_query, expected_params)
 
 
 class TestModel(redshift.RSModel):

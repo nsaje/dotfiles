@@ -9,7 +9,6 @@ import mock
 
 from dash import constants
 from dash import models
-from reports import redshift
 from zemauth import models as zmodels
 
 
@@ -141,7 +140,7 @@ class AudiencesTest(TestCase):
         }
         self.assertEqual(json.loads(response.content), response_dict)
 
-    @mock.patch.object(redshift, 'get_audience_sample_size')
+    @mock.patch('redshiftapi.api_audiences.get_audience_sample_size')
     def test_get_audiences(self, redshift_mock):
         def side_effect(*args):
             return 10 if args[2] != 1 else 1

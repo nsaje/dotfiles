@@ -5,8 +5,6 @@ from django.db import connections
 
 import influx
 
-from datetime import datetime, timedelta
-from dash.constants import AudienceRuleType
 from reports import exc
 from reports.db_raw_helpers import MyCursor, is_collection
 
@@ -198,45 +196,6 @@ def execute_multi_insert_sql(cursor, table, fields_sql, all_row_tuples, max_at_a
 
         row_tuples_flat = [item for sublist in row_tuples for item in sublist]
         cursor.execute(statement, row_tuples_flat)
-
-
-def get_audience_sample_size(account_id, slug, ttl, rules):
-    query = 'SELECT COUNT(DISTINCT(zuid)) FROM pixie_sample WHERE account_id = %s AND slug = %s AND timestamp > %s '
-
-    timelimit = datetime.now().date() - timedelta(days=ttl)
-    params = [account_id, slug, timelimit.isoformat()]
-
-    if not [rule for rule in rules if rule.type == AudienceRuleType.VISIT]:
-        rule_query = []
-        for rule in rules:
-            values = rule.value.split(',')
-            for value in values:
-                value = value.strip()
-
-                if rule.type == AudienceRuleType.STARTS_WITH:
-                    rule_query.append('referer ILIKE %s')
-                    params.append(value + "%")
-                elif rule.type == AudienceRuleType.CONTAINS:
-                    rule_query.append('referer ILIKE %s')
-                    params.append("%" + value + "%")
-                elif rule.type == AudienceRuleType.NOT_STARTS_WITH:
-                    rule_query.append('referer NOT ILIKE %s')
-                    params.append(value + "%")
-                elif rule.type == AudienceRuleType.NOT_CONTAINS:
-                    rule_query.append('referer NOT ILIKE %s')
-                    params.append("%" + value + "%")
-                else:
-                    raise Exception('Unknown rule: %s'.format(rule.type))
-
-        query += 'AND (' + ' OR '.join(rule_query) + ')'
-
-    cursor = get_cursor(read_only=True)
-    cursor.execute(query, params)
-
-    result = cursor.dictfetchall()
-
-    cursor.close()
-    return result[0]['count']
 
 
 class RSQ(object):
