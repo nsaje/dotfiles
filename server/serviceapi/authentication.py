@@ -1,4 +1,5 @@
 from rest_framework import authentication
+import utils.rest_common.authentication
 
 from utils import request_signer
 from zemauth.models import User
@@ -14,3 +15,17 @@ def gen_service_authentication(service_name, keys):
             except:
                 return None
     return RequestSignerAuthentication
+
+
+def gen_oauth_authentication(service_name):
+    class OAuth2Authentication(utils.rest_common.authentication.OAuth2Authentication):
+
+        def authenticate(self, request):
+            status = super(OAuth2Authentication, self).authenticate(request)
+            if not status:
+                return None
+            user, token = status
+            if user.email != '{}@service.zemanta.com'.format(service_name):
+                return None
+            return user, token
+    return OAuth2Authentication

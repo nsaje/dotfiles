@@ -31,8 +31,7 @@ import dash.models
 from dash.features import contentupload
 import redshiftapi.quickstats
 
-import restapi.authentication
-import restapi.serializers.targeting
+import utils.rest_common.authentication
 import fields
 
 import dash.features.geolocation
@@ -45,14 +44,15 @@ class RESTAPIJSONRenderer(JSONRenderer):
 
 
 class CanUseRESTAPIPermission(permissions.BasePermission):
+
     def has_permission(self, request, view):
         return bool(request.user and request.user.has_perm('zemauth.can_use_restapi'))
 
 
 class RESTAPIBaseView(APIView):
     authentication_classes = [
-        restapi.authentication.OAuth2Authentication,
-        restapi.authentication.SessionAuthentication,
+        utils.rest_common.authentication.OAuth2Authentication,
+        utils.rest_common.authentication.SessionAuthentication,
     ]
 
     renderer_classes = [RESTAPIJSONRenderer]
@@ -106,6 +106,7 @@ class RESTAPIBaseViewSet(ViewSetMixin, RESTAPIBaseView):
 
 
 class DataNodeSerializerMixin(object):
+
     @property
     def data(self):
         return {
@@ -235,7 +236,9 @@ class CampaignSerializer(SettingsSerializer):
             if new_archived is not None and new_archived != old_archived:
                 entity_id = int(id_)
                 self.request.body = ''
-                internal_view = views.CampaignArchive(rest_proxy=True) if new_archived else views.CampaignRestore(rest_proxy=True)
+                internal_view = views.CampaignArchive(
+                    rest_proxy=True
+                ) if new_archived else views.CampaignRestore(rest_proxy=True)
                 data_internal_archived, _ = internal_view.post(self.request, entity_id)
                 data_internal_new['data']['archived'] = new_archived
 
@@ -296,7 +299,8 @@ class CampaignSerializer(SettingsSerializer):
         if (settings['iab_category'] != fields.NOT_PROVIDED and
                 settings['iab_category'] != dash.constants.IABCategory.IAB24 and
                 '-' not in settings['iab_category']):
-            raise serializers.ValidationError({'iabCategory': 'Tier 1 IAB categories not allowed, please use Tier 2 IAB categories.'})
+            raise serializers.ValidationError(
+                {'iabCategory': 'Tier 1 IAB categories not allowed, please use Tier 2 IAB categories.'})
         return {'settings': {k: v for k, v in settings.items() if v != fields.NOT_PROVIDED}}
 
 
@@ -325,7 +329,8 @@ class AdGroupSerializer(SettingsSerializer):
             if new_archived is not None and new_archived != old_archived:
                 entity_id = int(id_)
                 self.request.body = ''
-                internal_view = views.AdGroupArchive(rest_proxy=True) if new_archived else views.AdGroupRestore(rest_proxy=True)
+                internal_view = views.AdGroupArchive(
+                    rest_proxy=True) if new_archived else views.AdGroupRestore(rest_proxy=True)
                 data_internal_archived, _ = internal_view.post(self.request, entity_id)
                 data_internal_new['data']['archived'] = new_archived
 
@@ -412,7 +417,8 @@ class AdGroupSerializer(SettingsSerializer):
             'cities': [],
             'postalCodes': [],
         }
-        non_zips = {loc.key: loc for loc in dash.features.geolocation.Geolocation.objects.filter(key__in=target_regions)}
+        non_zips = {loc.key: loc for loc in dash.features.geolocation.Geolocation.objects.filter(
+            key__in=target_regions)}
         zips = set(target_regions) - set(non_zips.keys())
         for location in target_regions:
             if location in non_zips:
@@ -515,7 +521,8 @@ class AccountViewList(SettingsViewList):
 
     def _get_settings_list(self, request):
         accounts = dash.models.Account.objects.all().filter_by_user(request.user)
-        account_settings = dash.models.AccountSettings.objects.filter(account__in=accounts).group_current_settings().select_related('account')
+        account_settings = dash.models.AccountSettings.objects.filter(
+            account__in=accounts).group_current_settings().select_related('account')
         return account_settings
 
 
@@ -534,7 +541,8 @@ class CampaignViewList(SettingsViewList):
     def _get_settings_list(self, request):
         account_id = request.query_params.get('accountId', None)
         campaigns = dash.models.Campaign.objects.all().filter_by_user(request.user)
-        campaign_settings = dash.models.CampaignSettings.objects.filter(campaign__in=campaigns).group_current_settings().select_related('campaign')
+        campaign_settings = dash.models.CampaignSettings.objects.filter(
+            campaign__in=campaigns).group_current_settings().select_related('campaign')
         if account_id:
             campaign_settings = campaign_settings.filter(campaign__account_id=int(account_id))
         return campaign_settings
@@ -555,7 +563,8 @@ class AdGroupViewList(SettingsViewList):
     def _get_settings_list(self, request):
         campaign_id = request.query_params.get('campaignId', None)
         ad_groups = dash.models.AdGroup.objects.all().filter_by_user(request.user)
-        ag_settings = dash.models.AdGroupSettings.objects.filter(ad_group__in=ad_groups).group_current_settings().select_related('ad_group')
+        ag_settings = dash.models.AdGroupSettings.objects.filter(
+            ad_group__in=ad_groups).group_current_settings().select_related('ad_group')
         if campaign_id:
             ag_settings = ag_settings.filter(ad_group__campaign_id=int(campaign_id))
         return ag_settings
@@ -852,7 +861,8 @@ class AdGroupSourceSerializer(serializers.Serializer):
         request = validated_data['request']
         ad_group_id = validated_data['ad_group_id']
         source_id = validated_data['ad_group_source']['source'].id
-        put_data = {field: validated_data[field] for field in ['cpc_cc', 'daily_budget_cc', 'state'] if field in validated_data}
+        put_data = {field: validated_data[field]
+                    for field in ['cpc_cc', 'daily_budget_cc', 'state'] if field in validated_data}
         request.body = RESTAPIJSONRenderer().render(put_data)
         view_internal = views.AdGroupSourceSettings(rest_proxy=True)
         data_internal, status_code = view_internal.put(request, ad_group_id, source_id)
@@ -864,7 +874,8 @@ class AdGroupSourcesViewList(RESTAPIBaseView):
 
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group=ad_group).group_current_settings()
+        settings = dash.models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__ad_group=ad_group).group_current_settings()
         serializer = AdGroupSourceSerializer(settings, many=True)
         return self.response_ok(serializer.data)
 
@@ -929,6 +940,7 @@ class AdGroupSourcesRTBViewDetails(RESTAPIBaseView):
 
 
 class ContentAdSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = dash.models.ContentAd
         fields = ('id', 'ad_group_id', 'state', 'url', 'title', 'image_url', 'display_url', 'brand_name',
@@ -985,6 +997,7 @@ class ContentAdViewDetails(RESTAPIBaseView):
 
 
 class ContentAdCandidateSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = dash.models.ContentAdCandidate
         fields = ('url', 'title', 'image_url', 'display_url', 'brand_name',
@@ -1096,6 +1109,7 @@ class ReportsViewDetails(RESTAPIBaseView):
 
 
 class PublisherGroupSerializer(DataNodeSerializerMixin, serializers.ModelSerializer):
+
     class Meta:
         model = dash.models.PublisherGroup
         fields = ('id', 'name', 'account_id')
@@ -1118,6 +1132,7 @@ class PublisherGroupSerializer(DataNodeSerializerMixin, serializers.ModelSeriali
 
 
 class PublisherGroupEntrySerializer(DataNodeSerializerMixin, serializers.ModelSerializer):
+
     class Meta:
         model = dash.models.PublisherGroupEntry
         fields = ('id', 'publisher', 'publisher_group_id', 'source', 'include_subdomains')
@@ -1129,6 +1144,7 @@ class PublisherGroupEntrySerializer(DataNodeSerializerMixin, serializers.ModelSe
 
 
 class OutbrainPublisherGroupEntrySerializer(PublisherGroupEntrySerializer):
+
     class Meta:
         model = dash.models.PublisherGroupEntry
         fields = ('id', 'publisher', 'publisher_group_id', 'source', 'include_subdomains', 'outbrain_publisher_id')
@@ -1136,6 +1152,7 @@ class OutbrainPublisherGroupEntrySerializer(PublisherGroupEntrySerializer):
 
 
 class CanEditPublisherGroupsPermission(permissions.BasePermission):
+
     def has_permission(self, request, view):
         return bool(request.user and request.user.has_perm('zemauth.can_edit_publisher_groups'))
 

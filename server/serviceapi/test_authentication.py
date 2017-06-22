@@ -1,6 +1,10 @@
 import urllib2
+
 from django.test import TestCase
 from django.test.client import RequestFactory
+from django.utils.timezone import now, timedelta
+from oauth2_provider.models import AccessToken, Application
+
 
 import authentication
 import zemauth.models
@@ -18,7 +22,7 @@ def urllib2_to_wsgi_request(request):
     return wsgi_request
 
 
-class TestAuthentication(TestCase):
+class TestServiceAuthentication(TestCase):
 
     def test_gen_service_authentication(self):
         request = urllib2.Request(url='https://www.example.com/test?my=q')
@@ -29,3 +33,51 @@ class TestAuthentication(TestCase):
         wsgi_request = urllib2_to_wsgi_request(request)
         ret = auth.authenticate(wsgi_request)
         self.assertEqual(ret, (user, None))
+
+
+class TestOAuthServiceAuthentication(TestCase):
+
+    def setUp(self):
+        self.user = zemauth.models.User.objects.get_or_create_service_user('test-service')
+        self.app = Application.objects.create(
+            name='app',
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_CLIENT_CREDENTIALS,
+            user=self.user
+        )
+        self.token = AccessToken.objects.create(
+            user=self.user, token='oauth-token', application=self.app,
+            expires=now() + timedelta(days=365)
+        )
+        self.factory = RequestFactory()
+
+    def test_gen_oauth_authentication_valid(self):
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Bearer ' + 'oauth-token',
+        }
+        request = self.factory.get('/some-url/', **auth_headers)
+
+        backend = authentication.gen_oauth_authentication('test-service')()
+        credentials = {"request": request}
+        u, _ = backend.authenticate(**credentials)
+        self.assertEqual(u, self.user)
+
+    def test_gen_oauth_authentication_invalid_token(self):
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Bearer ' + 'invalid-token',
+        }
+        request = self.factory.get('/some-url/', **auth_headers)
+
+        backend = authentication.gen_oauth_authentication('test-service')()
+        credentials = {"request": request}
+        self.assertEqual(backend.authenticate(**credentials), None)
+
+    def test_gen_oauth_authentication_invalid_user(self):
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Bearer ' + 'oauth-token',
+        }
+        request = self.factory.get('/some-url/', **auth_headers)
+
+        backend = authentication.gen_oauth_authentication('invalid-service')()
+        credentials = {"request": request}
+        self.assertEqual(backend.authenticate(**credentials), None)
