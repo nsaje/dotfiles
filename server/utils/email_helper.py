@@ -29,9 +29,13 @@ WHITELABEL_PRODUCTS = {
     dash.constants.Whitelabel.ADTECHNACITY: 'adtechnacity',
 }
 
-URLS_RE = re.compile(r"((https?):((//)|(\\\\))+[\w\d:#@%/;$()~_?\+\-=\\\.&]*[\w\d#@%/$()~_\+\-=\\&])", re.MULTILINE | re.UNICODE)
+URLS_RE = re.compile(
+    r"((https?):((//)|(\\\\))+[\w\d:#@%/;$()~_?\+\-=\\\.&]*[\w\d#@%/$()~_\+\-=\\&])",
+    re.MULTILINE | re.UNICODE
+)
 
 NO_REPLY_EMAIL = 'noreply@zemanta.com'
+
 
 def _lookup_whitelabel(user=None, agency=None):
     if user and not agency:
