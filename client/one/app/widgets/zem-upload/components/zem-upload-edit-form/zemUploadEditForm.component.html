@@ -217,7 +217,7 @@
                 <div class="message message--error" for="label-input" ng-repeat="error in ctrl.selectedCandidate.errors.label">{{ error }}</div>
             </div>
 
-            <div class="form__group" ng-if="!ctrl.selectedCandidate.usePrimaryTracker">
+            <div class="form__group" ng-if="!ctrl.selectedCandidate.usePrimaryTracker && !ctrl.selectedCandidate.primaryTrackerUrl">
                 <label class="form__label form__label--optional">Tracking</label>
                 <div class="form__checkbox">
                     <a href class="inline-link" ng-click="ctrl.addPrimaryTracker(ctrl.selectedCandidate)" tabindex="-1">
@@ -226,7 +226,7 @@
                 </div>
             </div>
 
-            <div class="form__group" ng-if="!!ctrl.selectedCandidate.usePrimaryTracker" ng-class="{'form--error': ctrl.fieldsHaveErrors('primaryTrackerUrl')}">
+            <div class="form__group" ng-if="!!ctrl.selectedCandidate.usePrimaryTracker || !!ctrl.selectedCandidate.primaryTrackerUrl" ng-class="{'form--error': ctrl.fieldsHaveErrors('primaryTrackerUrl')}">
                 <label class="form__label" for="impression-trackers-input">Primary tracker</label>
                 <input type="text" class="input-text" id="primary-tracker-input"
                        ng-model="ctrl.selectedCandidate.primaryTrackerUrl"
@@ -245,7 +245,7 @@
                 <div class="message message--error" for="primary-tracker-input" ng-repeat="error in ctrl.selectedCandidate.errors.primaryTrackerUrl">{{ error }}</div>
             </div>
 
-            <div class="form__group" ng-if="!!ctrl.selectedCandidate.useSecondaryTracker" ng-class="{'form--error': ctrl.fieldsHaveErrors('secondaryTrackerUrl')}">
+            <div class="form__group" ng-if="!!ctrl.selectedCandidate.useSecondaryTracker || !!ctrl.selectedCandidate.secondaryTrackerUrl" ng-class="{'form--error': ctrl.fieldsHaveErrors('secondaryTrackerUrl')}">
                 <label class="form__label" for="secondary-tracker-input">Secondary tracker</label>
                 <input type="text" class="input-text" id="secondary-tracker-input"
                        ng-model="ctrl.selectedCandidate.secondaryTrackerUrl"
@@ -264,7 +264,7 @@
                 <div class="message message--error" for="secondary-tracker-input" ng-repeat="error in ctrl.selectedCandidate.errors.secondaryTrackerUrl">{{ error }}</div>
             </div>
 
-            <div class="form__indented-group" ng-if="!ctrl.selectedCandidate.useSecondaryTracker && !!ctrl.selectedCandidate.usePrimaryTracker">
+            <div class="form__indented-group" ng-if="!ctrl.selectedCandidate.useSecondaryTracker && !!ctrl.selectedCandidate.usePrimaryTracker && !ctrl.selectedCandidate.secondaryTrackerUrl">
                 <a href class="inline-link" ng-click="ctrl.addSecondaryTracker(ctrl.selectedCandidate)" tabindex="-1">
                     Add secondary tracker
                 </a>
