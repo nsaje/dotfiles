@@ -14,12 +14,10 @@ def get_updated_ad_group_sources_changes(user, last_change_dt, filtered_sources,
     ad_group_settings = ad_group.get_current_settings()
     ad_group_sources = helpers.get_active_ad_group_sources(models.AdGroup, [ad_group])
     ad_group_sources_settings = helpers.get_ad_group_sources_settings(ad_group_sources)
-    ad_group_sources_states = helpers.get_ad_group_sources_states(ad_group_sources)
 
     new_last_change_dt, changed_ad_group_sources = helpers.get_ad_group_sources_last_change_dt(
         ad_group_sources,
         ad_group_sources_settings,
-        ad_group_sources_states,
         last_change_dt=last_change_dt
     )
 
@@ -27,7 +25,6 @@ def get_updated_ad_group_sources_changes(user, last_change_dt, filtered_sources,
         ad_group_sources,
         ad_group_settings,
         ad_group_sources_settings,
-        ad_group_sources_states
     )
 
     response = {
@@ -36,38 +33,35 @@ def get_updated_ad_group_sources_changes(user, last_change_dt, filtered_sources,
     }
 
     if new_last_change_dt is not None:
-        states = ad_group_sources_states
-        settings = ad_group_sources_settings
+        settings_map = {
+            s.ad_group_source_id: s for s in ad_group_sources_settings
+        }
 
         rows = {}
         for ad_group_source in changed_ad_group_sources:
-            source_states = [s for s in states if s.ad_group_source.id == ad_group_source.id]
-            source_settings = [s for s in settings if s.ad_group_source.id == ad_group_source.id]
+            ags_setting = settings_map.get(ad_group_source.id)
 
-            state = source_states[0] if len(source_states) else None
-            setting = source_settings[0] if len(source_settings) else None
+            current_bid_cpc = None
+            current_daily_budget = None
+            status = None
+            if ags_setting and ad_group_settings:
+                current_bid_cpc = ags_setting.cpc_cc
+                current_daily_budget = ags_setting.daily_budget_cc
+                status = ad_group_settings.state
+                if status == constants.AdGroupSettingsState.ACTIVE:
+                    status = ags_setting.state
 
-            status = state.state if state is not None else None
             status_setting = status
-            if ad_group_source.source.can_update_state() and\
-               setting is not None and\
-               setting.state is not None:
-                status_setting = setting.state
+            if ags_setting and ags_setting.state:
+                status_setting = ags_setting.state
 
-            current_daily_budget = state.daily_budget_cc if state is not None else None
             daily_budget = current_daily_budget
-            if (ad_group_source.source.can_update_daily_budget_automatic() or
-                    ad_group_source.source.can_update_daily_budget_manual()) and\
-                    setting is not None and\
-                    setting.daily_budget_cc is not None:
-                daily_budget = setting.daily_budget_cc
+            if ags_setting and ags_setting.daily_budget_cc:
+                daily_budget = ags_setting.daily_budget_cc
 
-            current_bid_cpc = state.cpc_cc if state is not None else None
             bid_cpc = current_bid_cpc
-            if ad_group_source.source.can_update_cpc() and\
-               setting is not None and\
-               setting.cpc_cc is not None:
-                bid_cpc = setting.cpc_cc
+            if ags_setting and ags_setting.cpc_cc:
+                bid_cpc = ags_setting.cpc_cc
 
             rows[ad_group_source.source_id] = {
                 'status_setting': status_setting,
@@ -83,8 +77,7 @@ def get_updated_ad_group_sources_changes(user, last_change_dt, filtered_sources,
                                        ad_group_source, rows, notifications)
 
         response['rows'] = rows
-
-        daily_budget = _get_daily_budget(ad_group_settings, ad_group_sources_states)
+        daily_budget = _get_daily_budget(ad_group_settings, ad_group_sources_settings)
         response['totals'] = {
             'daily_budget': daily_budget,
             'current_daily_budget': daily_budget,
@@ -113,7 +106,7 @@ def _update_rtb_source_row(ad_group_settings, ad_group_source, rows, notificatio
             }
 
 
-def _get_daily_budget(ad_group_settings, ad_group_sources_states):
+def _get_daily_budget(ad_group_settings, ad_group_sources_settings):
     # MVP for all-RTB-sources-as-one
     all_rtb_budget = 0
     include_rtb_sources = True
@@ -124,15 +117,15 @@ def _get_daily_budget(ad_group_settings, ad_group_sources_states):
                 constants.AdGroupSourceSettingsState.ACTIVE:
             all_rtb_budget = ad_group_settings.b1_sources_group_daily_budget
 
-    daily_budget = _get_daily_budget_total(ad_group_sources_states, include_rtb_sources)
+    daily_budget = _get_daily_budget_total(ad_group_sources_settings, include_rtb_sources)
     if not include_rtb_sources:
         daily_budget = daily_budget + all_rtb_budget if daily_budget else all_rtb_budget
 
     return daily_budget
 
 
-def _get_daily_budget_total(states, include_rtb_sources=True):
-    budgets = [s.daily_budget_cc for s in states if
+def _get_daily_budget_total(ad_group_sources_settings, include_rtb_sources=True):
+    budgets = [s.daily_budget_cc for s in ad_group_sources_settings if
                s is not None and s.daily_budget_cc is not None and
                s.state == constants.AdGroupSourceSettingsState.ACTIVE and
                (include_rtb_sources or s.ad_group_source.source.source_type.type != constants.SourceType.B1)

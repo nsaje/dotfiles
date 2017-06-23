@@ -585,11 +585,9 @@ class SourceAdmin(admin.ModelAdmin):
     actions = [deprecate_selected]
 
     def _stop_ad_group_sources(self, source):
-        # Deactivate all AdGroup Sources - there is no need to propagate settings updates
         stopped_ad_group_sources = set()
         settings = models.AdGroupSourceSettings.objects.filter(ad_group_source__source=source).group_current_settings()
-        states = models.AdGroupSourceState.objects.filter(ad_group_source__source=source).group_current_states()
-        for s in list(settings) + list(states):
+        for s in list(settings):
             if s and s.state == constants.AdGroupSourceSettingsState.ACTIVE:
                 stopped_ad_group_sources.add(s.ad_group_source_id)
                 s = s.copy_settings()
@@ -865,18 +863,6 @@ class AdGroupSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
 
 
 class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
-    raw_id_fields = ('ad_group_source', )
-    search_fields = ['ad_group_source__ad_group__name', 'ad_group_source__source__name']
-    list_display = (
-        'ad_group_source',
-        'state',
-        'cpc_cc',
-        'daily_budget_cc',
-        'created_dt',
-    )
-
-
-class AdGroupSourceStateAdmin(admin.ModelAdmin):
     raw_id_fields = ('ad_group_source', )
     search_fields = ['ad_group_source__ad_group__name', 'ad_group_source__source__name']
     list_display = (
@@ -1723,7 +1709,6 @@ admin.site.register(models.AdGroup, AdGroupAdmin)
 admin.site.register(models.AdGroupSource, AdGroupSourceAdmin)
 admin.site.register(models.AdGroupSettings, AdGroupSettingsAdmin)
 admin.site.register(models.AdGroupSourceSettings, AdGroupSourceSettingsAdmin)
-admin.site.register(models.AdGroupSourceState, AdGroupSourceStateAdmin)
 admin.site.register(models.SourceCredentials, SourceCredentialsAdmin)
 admin.site.register(models.SourceType, SourceTypeAdmin)
 admin.site.register(models.DefaultSourceSettings, DefaultSourceSettingsAdmin)

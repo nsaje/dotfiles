@@ -24,8 +24,7 @@ class CopySettingsMixin(object):
         elif type(self) == core.entity.settings.AdGroupSettings:
             new_settings.ad_group = self.ad_group
             new_settings.snapshot(previous=self)
-        elif type(self) == core.entity.settings.AdGroupSourceSettings \
-                or type(self) == core.entity.settings.AdGroupSourceState:
+        elif type(self) == core.entity.settings.AdGroupSourceSettings:
             new_settings.ad_group_source = self.ad_group_source
             new_settings.snapshot(previous=self)
 

@@ -185,17 +185,6 @@
     model: dash.adgroupsource
     pk: 6
 
-# test adgroupsourcestate
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        ad_group_source: 1
-        cpc_cc: '0.12'
-        daily_budget_cc: '50.'
-        state: 1
-    model: dash.adgroupsourcestate
-    pk: 1
-
 # test adgroupsourcesettings
 
 -   fields:

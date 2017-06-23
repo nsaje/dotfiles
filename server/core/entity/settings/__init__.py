@@ -8,7 +8,6 @@ from publisher_group import PublisherGroup
 from ad_group_settings import AdGroupSettings
 from account_settings_read_only import AccountSettingsReadOnly
 from publisher_group_entry import PublisherGroupEntry
-from ad_group_source_state import AdGroupSourceState
 from copy_settings_mixin import CopySettingsMixin
 from campaign_settings_read_only import CampaignSettingsReadOnly
 from cpc_constraint import CpcConstraint

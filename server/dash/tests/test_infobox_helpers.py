@@ -288,8 +288,7 @@ class InfoBoxHelpersTest(TestCase):
         self.assertEqual(550, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
 
         # use raw sql to bypass model restrictions
-        q = 'DELETE FROM dash_adgroupsourcestate; DELETE FROM dash_adgroupsourcesettings; '\
-            'DELETE FROM dash_adgroupsettings'
+        q = 'DELETE FROM dash_adgroupsourcesettings; DELETE FROM dash_adgroupsettings'
         cursor = connection.cursor()
         cursor.execute(q, [])
 
@@ -471,10 +470,6 @@ class InfoBoxAccountHelpersTest(TestCase):
     def test_count_active_accounts(self):
         today = datetime.datetime.utcnow()
 
-        for adgss in dash.models.AdGroupSourceState.objects.all():
-            adgss.state = dash.constants.AdGroupSourceSettingsState.INACTIVE
-            adgss.save()
-
         self.assertEqual(0, dash.infobox_helpers.count_active_accounts(None, None))
 
         all_adgset = dash.models.AdGroupSettings.objects.filter(
@@ -485,27 +480,12 @@ class InfoBoxAccountHelpersTest(TestCase):
             new_adgset.start_date = today
             new_adgset.end_date = today + datetime.timedelta(days=1)
             new_adgset.save(None)
-
-        all_adgs_1 = dash.models.AdGroupSource.objects.filter(
-            ad_group__campaign__account__id=1
-        )
-        for adgs in all_adgs_1:
-            dash.models.AdGroupSourceState.objects.create(
-                ad_group_source=adgs,
-                state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
-                cpc_cc=10,
-                daily_budget_cc=10
-            )
 
         self.assertEqual(1, dash.infobox_helpers.count_active_accounts(None, None))
 
     def test_count_active_agency_accounts(self):
         today = datetime.datetime.utcnow()
 
-        for adgss in dash.models.AdGroupSourceState.objects.all():
-            adgss.state = dash.constants.AdGroupSourceSettingsState.INACTIVE
-            adgss.save()
-
         self.assertEqual(0, dash.infobox_helpers.count_active_accounts(None, None))
 
         all_adgset = dash.models.AdGroupSettings.objects.filter(
@@ -516,17 +496,6 @@ class InfoBoxAccountHelpersTest(TestCase):
             new_adgset.start_date = today
             new_adgset.end_date = today + datetime.timedelta(days=1)
             new_adgset.save(None)
-
-        all_adgs_1 = dash.models.AdGroupSource.objects.filter(
-            ad_group__campaign__account__id=1
-        )
-        for adgs in all_adgs_1:
-            dash.models.AdGroupSourceState.objects.create(
-                ad_group_source=adgs,
-                state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
-                cpc_cc=10,
-                daily_budget_cc=10
-            )
 
         user1 = self._make_a_john()
         self.assertEqual(0, dash.infobox_helpers.count_active_agency_accounts(user1))

@@ -108,16 +108,6 @@ def get_total_daily_budget_amount(campaign):
     return total_daily_budget
 
 
-def get_latest_ad_group_source_state(ad_group_source):
-    try:
-        latest_state = dash.models.AdGroupSourceState.objects\
-            .filter(ad_group_source=ad_group_source)\
-            .latest('created_dt')
-        return latest_state
-    except dash.models.AdGroupSourceState.DoesNotExist:
-        return None
-
-
 def stop_campaign(campaign):
     for ad_group in get_active_ad_groups(campaign):
         current_settings = ad_group.get_current_settings()

@@ -324,14 +324,6 @@ class AdGroupSource(models.Model):
             self.source.id
         )
 
-    def get_latest_state(self):
-        try:
-            return core.entity.settings.AdGroupSourceState.objects.filter(
-                ad_group_source=self
-            ).latest()
-        except core.entity.settings.AdGroupSourceState.DoesNotExist:
-            return None
-
     def get_current_settings(self):
         current_settings = self.get_current_settings_or_none()
         return current_settings if current_settings else \

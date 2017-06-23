@@ -224,35 +224,19 @@ def get_source_initial_state(ad_group_source):
     return True
 
 
-def get_ad_group_sources_last_change_dt(ad_group_sources, ad_group_sources_settings,
-                                        ad_group_sources_states, last_change_dt=None):
-    def get_last_change(ad_group_source):
-        current_settings = _get_ad_group_source_settings_from_filter_qs(ad_group_source, ad_group_sources_settings)
-        current_state = _get_ad_group_source_state_from_filter_qs(ad_group_source, ad_group_sources_states)
-
-        if current_state is None and current_settings is None:
-            return None
-
-        if current_state and current_settings is None:
-            return current_state.created_dt
-
-        if current_settings and current_state is None:
-            return current_settings.created_dt
-
-        return max(
-            current_state.created_dt,
-            current_settings.created_dt
-        )
+def get_ad_group_sources_last_change_dt(
+        ad_group_sources, ad_group_sources_settings, last_change_dt=None):
 
     changed_ad_group_sources = []
     last_change_dts = []
 
     for ad_group_source in ad_group_sources:
-        source_last_change = get_last_change(ad_group_source)
+        current_settings = _get_ad_group_source_settings_from_filter_qs(ad_group_source, ad_group_sources_settings)
 
-        if source_last_change is None:
+        if not current_settings or not current_settings.created_dt:
             continue
 
+        source_last_change = current_settings.created_dt
         if last_change_dt is not None and source_last_change <= last_change_dt:
             continue
 
@@ -266,7 +250,7 @@ def get_ad_group_sources_last_change_dt(ad_group_sources, ad_group_sources_setti
 
 
 def get_ad_group_sources_notifications(ad_group_sources, ad_group_settings,
-                                       ad_group_sources_settings, ad_group_sources_states):
+                                       ad_group_sources_settings):
     notifications = {}
 
     for ags in ad_group_sources:
@@ -374,62 +358,6 @@ def get_data_status(objects):
     return data_status
 
 
-def get_content_ad_data_status(ad_group, content_ads):
-    ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
-    ad_group_sources_states = get_ad_group_sources_states(ad_group_sources)
-    content_ad_sources = models.ContentAdSource.objects.filter(
-        content_ad__in=content_ads
-    ).select_related('source')
-
-    data_status = {}
-    for content_ad in content_ads:
-        out_of_sync = []
-        for content_ad_source in content_ad_sources:
-            if content_ad_source.content_ad_id != content_ad.id:
-                continue
-
-            # we ignore deprecated and in maintenance sources
-            if content_ad_source.source.deprecated or content_ad_source.source.maintenance:
-                continue
-
-            # we ignore pending content ads
-            if content_ad_source.submission_status == constants.ContentAdSubmissionStatus.PENDING:
-                continue
-
-            # we ignore rejected content ads
-            if content_ad_source.submission_status == constants.ContentAdSubmissionStatus.REJECTED:
-                continue
-
-            ad_group_source = None
-            for ags in ad_group_sources:
-                if content_ad_source.source.id == ags.source_id:
-                    ad_group_source = ags
-                    break
-
-            if ad_group_source is not None:
-                latest_state = _get_ad_group_source_state_from_filter_qs(ad_group_source, ad_group_sources_states)
-                if latest_state is not None and latest_state.state == constants.AdGroupSourceSettingsState.INACTIVE:
-                    # in case media source is disabled we ignore content ad state
-                    # difference
-                    continue
-
-            if content_ad_source.state != content_ad_source.source_state:
-                out_of_sync.append(content_ad_source.source.name)
-
-        if not out_of_sync:
-            message = 'All data is OK.'
-        else:
-            message = 'The status of this Content Ad differs on these media sources: {}.'.format(
-                ", ".join(sorted(out_of_sync)))
-
-        data_status[str(content_ad.id)] = {
-            'message': message,
-            'ok': len(out_of_sync) == 0,
-        }
-
-    return data_status
-
-
 def get_selected_entities(objects, select_all, selected_ids, not_selected_ids, include_archived, select_batch_id=None, **constraints):
     objects = objects.filter(Q(**constraints))
     if select_all:
@@ -477,71 +405,6 @@ def _get_ad_group_source_settings_from_filter_qs(ad_group_source, ad_group_sourc
             return ags_settings
 
     return None
-
-
-def _get_ad_group_source_state_from_filter_qs(ad_group_source, ad_group_sources_states):
-    for ags_state in ad_group_sources_states:
-        if ags_state.ad_group_source_id == ad_group_source.id:
-            return ags_state
-
-    return None
-
-
-def get_ad_group_sources_states(ad_group_sources):
-    """
-    Return ad group sources states in a list.
-    NOTE: uses a workaround function that calculates AdGroupSourceState as those are not
-    saved anymore.
-    """
-
-    ad_group_sources_settings = {
-        ags.ad_group_source_id: ags for ags in models.AdGroupSourceSettings.objects.filter(
-            ad_group_source__in=ad_group_sources,
-        ).group_current_settings()
-    }
-
-    ad_groups_settings = {
-        ag.ad_group_id: ag for ag in models.AdGroupSettings.objects.filter(
-            ad_group__in=[ags.ad_group_id for ags in ad_group_sources],
-        ).group_current_settings()
-    }
-
-    return get_fake_ad_group_source_states(ad_group_sources, ad_group_sources_settings, ad_groups_settings)
-
-
-def get_fake_ad_group_source_states(ad_group_sources, ad_group_sources_settings_map, ad_groups_settings_map):
-    states = []
-    for ags in ad_group_sources:
-        ad_group_settings = ad_groups_settings_map.get(ags.ad_group.id)
-        agss = ad_group_sources_settings_map.get(ags.id)
-
-        if ad_group_settings is None or agss is None:
-            logger.error("Missing settings got ad group source: %s", ags.id)
-            continue
-
-        state = ad_group_settings.state
-        if state == constants.AdGroupSettingsState.ACTIVE:
-            state = agss.state
-
-        states.append(
-            models.AdGroupSourceState(
-                ad_group_source=ags,
-
-                state=state,
-                cpc_cc=agss.cpc_cc,
-                daily_budget_cc=agss.daily_budget_cc,
-                created_dt=agss.created_dt,
-            )
-        )
-
-    return states
-
-
-def get_source_status_from_ad_group_source_states(ad_group_source_states):
-    if any(s.state == constants.AdGroupSourceSettingsState.ACTIVE for s in ad_group_source_states):
-        return constants.AdGroupSourceSettingsState.ACTIVE
-
-    return constants.AdGroupSourceSettingsState.INACTIVE
 
 
 def get_ad_group_sources_settings(ad_group_sources):
