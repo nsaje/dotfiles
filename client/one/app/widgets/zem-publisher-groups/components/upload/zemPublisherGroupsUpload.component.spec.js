@@ -59,7 +59,7 @@ describe('component: zemPublisherGroupsUpload', function () {
         it('should initialize create mode', function () {
             $ctrl.$onInit();
 
-            expect($ctrl.formData).toEqual({});
+            expect($ctrl.formData).toEqual({include_subdomains: true});
             expect($ctrl.isCreationMode).toBe(true);
         });
 
@@ -71,6 +71,7 @@ describe('component: zemPublisherGroupsUpload', function () {
 
             expect(zemPublisherGroupsEndpoint.upsert).toHaveBeenCalledWith(1, {
                 name: 'asd',
+                include_subdomains: true,
             });
         });
     });
