@@ -29,6 +29,7 @@ import dash.views.audiences
 import dash.views.alerts
 import dash.views.bulk_actions
 import dash.views.publishers
+import dash.views.custom_report
 
 
 admin.site.login = login_required(admin.site.login)
@@ -570,6 +571,11 @@ urlpatterns += [
         r'^api/accounts/(?P<account_id>\d+)/publisher_groups/upload/$',
         login_required(dash.views.publishers.PublisherGroupsUpload.as_view()),
         name='accounts_publisher_groups_upload'
+    ),
+    url(
+        r'^api/custom_report_download/',
+        login_required(dash.views.custom_report.CustomReportDownload.as_view()),
+        name='custom_report_download'
     ),
     url(
         r'^api/publisher_groups/download/example/$',
