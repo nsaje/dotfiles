@@ -74,7 +74,8 @@ values."
                                       flyspell-lazy
                                       github-theme
                                       solarized-theme
-                                      js-comint)
+                                      js-comint
+                                      sr-speedbar)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
@@ -348,6 +349,7 @@ you should place your code here."
     ;;   (push "~/org/TODOs.org" org-agenda-files))
     (with-eval-after-load 'company
       (define-key company-active-map (kbd "C-w") 'evil-delete-backward-word)
+      (define-key company-active-map (kbd "C-k") 'company-select-previous)
       )
     (with-eval-after-load 'helm
       (define-key helm-map (kbd "C-w") 'evil-delete-backward-word)
@@ -397,7 +399,7 @@ you should place your code here."
                   ("n" "note" entry (file+headline "~/Dropbox/org/TODOs.org" "Notes")
                   "* %? :NOTE:\n")
                   ("m" "Meeting" entry (file+headline "~/Dropbox/org/TODOs.org" "Meetings")
-                  "* MEETING with %? :MEETING:\n%U\n\n"))))
+                  "* MEETING with %? :MEETING:\n%U\n"))))
     (global-set-key (kbd "<f12>") 'org-agenda)
     (setq org-mu4e-link-query-in-headers-mode nil)
 
@@ -454,6 +456,8 @@ you should place your code here."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(company-idle-delay 0)
+ '(flycheck-check-syntax-automatically (quote (save new-line mode-enabled)))
  '(solarized-high-contrast-mode-line nil)
  '(solarized-use-more-italic t))
 (custom-set-faces

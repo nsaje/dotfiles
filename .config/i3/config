@@ -31,6 +31,9 @@ exec ~/.local/bin/lowbattery.sh
 
 #exec compton -bCG  # too much battery drain
 
+# network manager in tray
+exec --no-startup-id nm-applet
+
 # redshift
 exec --no-startup-id redshift
 
@@ -72,10 +75,10 @@ bindsym $mod+Return exec gnome-terminal --hide-menubar
 
 # start browser
 #bindsym $mod+backslash exec google-chrome --new-window --force-device-scale-factor=1.25
-#bindsym $mod+backslash exec google-chrome --new-window --force-device-scale-factor=1.25 --profile-directory="Profile 1"
-#bindsym $mod+bracketright exec google-chrome --new-window --force-device-scale-factor=1.25 --profile-directory="Default"
-bindsym $mod+bracketright exec firefox -P "Zemanta"
-bindsym $mod+backslash exec firefox -P "Nejc"
+bindsym $mod+backslash exec google-chrome --new-window --force-device-scale-factor=1.00 --profile-directory="Profile 1"
+bindsym $mod+bracketright exec google-chrome --new-window --force-device-scale-factor=1.00 --profile-directory="Default"
+#bindsym $mod+bracketright exec firefox -P "Zemanta"
+#bindsym $mod+backslash exec firefox -P "Nejc"
 bindsym $mod+apostrophe exec emacsclient -c
 # firefox:
 # devpixelsperpx 1.25
