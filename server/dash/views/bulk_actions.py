@@ -83,6 +83,7 @@ class AdGroupSourceState(BaseBulkActionView):
                     state=state,
                     k1_sync=False,
                     skip_automation=True,
+                    skip_validation=False
                 )
 
         if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:

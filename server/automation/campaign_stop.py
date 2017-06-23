@@ -1088,6 +1088,7 @@ def _restore_user_sources_settings(ad_group):
             system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
             k1_sync=False,
             skip_automation=True,
+            skip_validation=True,
             **changes
         )
 
@@ -1124,6 +1125,7 @@ def _stop_ad_group_source(ad_group_source):
         k1_sync=False,
         landing_mode=True,
         skip_automation=True,
+        skip_validation=True,
         state=dash.constants.AdGroupSourceSettingsState.INACTIVE,
     )
 
@@ -1135,6 +1137,7 @@ def _update_ad_group_source_cap(ad_group_source, cap):
         k1_sync=False,
         landing_mode=True,
         skip_automation=True,
+        skip_validation=True,
         daily_budget_cc=cap,
     )
 

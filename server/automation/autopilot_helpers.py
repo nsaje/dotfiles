@@ -92,6 +92,7 @@ def update_ad_group_source_values(ad_group_source, changes, system_user=None, la
         system_user=system_user,
         k1_sync=False,
         skip_automation=True,
+        skip_validation=True,
         **changes
     )
 

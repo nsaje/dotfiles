@@ -56,6 +56,7 @@ def enforce_rule(min_cpc=None, max_cpc=None, **levels):
         if current_cpc != adjusted_cpc:
             agss.ad_group_source.update(
                 cpc_cc=adjusted_cpc,
+                skip_validation=False
             )
             changes.append((agss.ad_group_source, adjusted_cpc, ))
     return changes

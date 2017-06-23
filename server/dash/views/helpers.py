@@ -883,6 +883,7 @@ def set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, ad_group_settings
         ad_group_source.update(
             cpc_cc=adjusted_cpc,
             k1_sync=False,
+            skip_validation=False
         )
 
 

@@ -192,17 +192,18 @@ class AdGroupSource(models.Model):
                     'id', flat=True))
 
     @transaction.atomic
-    def update(self, request=None, k1_sync=True, system_user=None, skip_automation=False, **updates):
+    def update(self, request=None, k1_sync=True, system_user=None, skip_automation=False, skip_validation=False, **updates):
         ad_group_source_settings = self.get_current_settings()
         ad_group_settings = self.ad_group.get_current_settings()
         campaign_settings = self.ad_group.campaign.get_current_settings()
 
-        validation.validate_ad_group_source_updates(
-            self,
-            updates,
-            ad_group_settings,
-            ad_group_source_settings,
-        )
+        if not skip_validation:
+            validation.validate_ad_group_source_updates(
+                self,
+                updates,
+                ad_group_settings,
+                ad_group_source_settings,
+            )
 
         if not skip_automation:
             validation.validate_ad_group_source_campaign_stop(
@@ -271,6 +272,7 @@ class AdGroupSource(models.Model):
             request,
             k1_sync=False,
             skip_automation=True,
+            skip_validation=True,
             **updates
         )
 
@@ -280,6 +282,7 @@ class AdGroupSource(models.Model):
             request,
             k1_sync=False,
             skip_automation=True,
+            skip_validation=True,
             daily_budget_cc=source_ad_group_source_settings.daily_budget_cc,
             cpc_cc=source_ad_group_source_settings.cpc_cc,
             state=source_ad_group_source_settings.state,
