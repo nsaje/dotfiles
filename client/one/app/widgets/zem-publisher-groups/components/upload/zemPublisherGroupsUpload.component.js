@@ -27,7 +27,10 @@ angular.module('one.widgets').component('zemPublisherGroupsUpload', {
                     include_subdomains: $ctrl.resolve.publisherGroup.include_subdomains,
                 };
             }
-            $ctrl.isCreationMode = !$ctrl.formData.id;
+            if (!$ctrl.formData.id) {
+                $ctrl.isCreationMode = true;
+                $ctrl.formData.include_subdomains = true;
+            }
         };
 
         function upsert () {
