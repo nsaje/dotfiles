@@ -75,7 +75,8 @@ values."
                                       github-theme
                                       solarized-theme
                                       js-comint
-                                      sr-speedbar)
+                                      sr-speedbar
+                                      all-the-icons)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
@@ -239,7 +240,7 @@ values."
    ;; `right-then-bottom'. right-then-bottom tries to display the frame to the
    ;; right; if there is insufficient space it displays it at the bottom.
    ;; (default 'bottom)
-   dotspacemacs-which-key-position 'bottom
+   dotspacemacs-which-key-position 'right-then-bottom
    ;; If non nil a progress bar is displayed when spacemacs is loading. This
    ;; may increase the boot time on some systems and emacs builds, set it to
    ;; nil to boost the loading time. (default t)
@@ -390,16 +391,18 @@ you should place your code here."
 
     ;; Capture templates for: TODO tasks, Notes, appointments, phone calls, meetings, and org-protocol
     (setq org-capture-templates
-          (quote (("t" "todo" entry (file+headline "~/Dropbox/org/TODOs.org" "General")
-                  "* TODO %?\n")
-                  ;; ("r" "respond" entry (file+headline "~/Dropbox/org/TODOs.org" "General")
-                  ;; "* NEXT Respond to %:from on %:subject\nSCHEDULED: %t\n%U\n%a\n" :clock-in t :clock-resume t :immediate-finish t)
-                  ;; ("r" "respond" entry (file+headline "~/Dropbox/org/TODOs.org" "General")
-                  ;;  "* NEXT Respond to %f on %s\nSCHEDULED: %t\n%U\n%a\n" :clock-in t :clock-resume t :immediate-finish t)
-                  ("n" "note" entry (file+headline "~/Dropbox/org/TODOs.org" "Notes")
-                  "* %? :NOTE:\n")
+          (quote (("i" "inbox" entry (file+headline "~/Dropbox/org/TODOs.org" "INBOX")
+                  "* TODO %?\n:PROPERTIES:\n:CREATED: %U\n:END:")
+                  ("n" "note" entry (file+headline "~/Dropbox/org/TODOs.org" "INBOX")
+                  "* %? :NOTE:\n%U\n")
                   ("m" "Meeting" entry (file+headline "~/Dropbox/org/TODOs.org" "Meetings")
-                  "* MEETING with %? :MEETING:\n%U\n"))))
+                  "* MEETING on %U with %? :MEETING:\n:PROPERTIES:\n:CREATED: %U\n:END:"))))
+    (setq org-agenda-custom-commands
+      '(("n" todo "NEXT")))
+    (setq org-refile-targets '((nil :maxlevel . 9)
+                                (org-agenda-files :maxlevel . 9)))
+    (setq org-outline-path-complete-in-steps nil)         ; Refile in a single go
+    (setq org-refile-use-outline-path t)                  ; Show full paths for refiling
     (global-set-key (kbd "<f12>") 'org-agenda)
     (setq org-mu4e-link-query-in-headers-mode nil)
 
@@ -443,10 +446,13 @@ you should place your code here."
     ; switch buffers
     (global-set-key (kbd "C-l") 'next-buffer)
     (global-set-key (kbd "C-h") 'previous-buffer)
+    (global-set-key (kbd "C-\\") 'neotree-find-project-root)
 
     ; neotree hidden
     (setq neo-hidden-regexp-list '("^\\." "\\.cs\\.meta$" "\\.pyc$" "~$" "^#.*#$" "\\.elc$" "__pycache__"))
     (setq projectile-switch-project-action 'neotree-projectile-action)
+    (setq neo-theme 'icons)
+
 )
 
 ;; Do not write anything past this comment. This is where Emacs will
@@ -458,6 +464,33 @@ you should place your code here."
  ;; If there is more than one, they won't work right.
  '(company-idle-delay 0)
  '(flycheck-check-syntax-automatically (quote (save new-line mode-enabled)))
+ '(org-capture-templates
+   (quote
+    (("p" "Project Todo" entry
+      (function
+       (lambda nil
+         (org-projectile:location-for-project
+          (org-projectile:project-heading-from-file
+           (org-capture-get :original-file)))))
+      "* TODO %?
+" :empty-lines 1)
+     ("t" "todo" entry
+      (file+headline "~/Dropbox/org/TODOs.org" "General")
+      "* TODO %?
+")
+     ("n" "note" entry
+      (file+headline "~/Dropbox/org/TODOs.org" "Notes")
+      "* %? :NOTE:
+")
+     ("m" "Meeting" entry
+      (file+headline "~/Dropbox/org/TODOs.org" "Meetings")
+      "* MEETING with %? :MEETING:
+%U
+
+"))))
+ '(package-selected-packages
+   (quote
+    (all-the-icons memoize font-lock+ yapfify yaml-mode xterm-color ws-butler winum which-key web-mode web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package unfill toml-mode toc-org tagedit sr-speedbar sql-indent spaceline solarized-theme smeargle slim-mode simpleclip shell-pop scss-mode sass-mode restart-emacs rainbow-delimiters racer pyvenv pytest pyenv-mode py-isort pug-mode popwin pip-requirements persp-mode pcre2el paradox orgit org-projectile org-present org-pomodoro org-download org-bullets open-junk-file omnisharp neotree mwim multi-term move-text mmm-mode markdown-toc magit-gitflow macrostep lorem-ipsum livid-mode live-py-mode linum-relative link-hint less-css-mode json-mode js2-refactor js-doc js-comint info+ indent-guide imenu-list hy-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-pydoc helm-projectile helm-mode-manager helm-make helm-gtags helm-gitignore helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag google-translate golden-ratio go-guru go-eldoc gnuplot github-theme gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ gh-md ggtags fuzzy flyspell-lazy flyspell-correct-helm flycheck-rust flycheck-pos-tip flx-ido flatui-theme fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help emmet-mode elisp-slime-nav dumb-jump diff-hl define-word cython-mode company-web company-tern company-statistics company-quickhelp company-go company-anaconda column-enforce-mode coffee-mode clean-aindent-mode cargo auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell)))
  '(solarized-high-contrast-mode-line nil)
  '(solarized-use-more-italic t))
 (custom-set-faces
