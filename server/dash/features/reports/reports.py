@@ -183,7 +183,7 @@ class ReportJobExecutor(JobExecutor):
                 if field_name in row:
                     csv_row[csv_column] = row[field_name]
                 else:
-                    csv_row[csv_column] = dash.export._format_empty_value(None, field_name)
+                    csv_row[csv_column] = ''
             writer.writerow(csv_row)
         return output.getvalue()
 
