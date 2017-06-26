@@ -680,7 +680,7 @@ class ConversionGoalFormTestCase(TestCase):
         self.assertTrue(form.is_valid())
 
     def test_unique_goal_id(self):
-        models.ConversionGoal.objects.create(campaign_id=1, type=2, goal_id='1', name='Conversion goal')
+        models.ConversionGoal.objects.create_unsafe(campaign_id=1, type=2, goal_id='1', name='Conversion goal')
         data = {
             'type': 2,
             'goal_id': '1'

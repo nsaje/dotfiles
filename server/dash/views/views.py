@@ -896,7 +896,7 @@ class AccountCampaigns(api_common.BaseApiView):
 
         name = core.entity.helpers.create_default_name(models.Campaign.objects.filter(account=account), 'New campaign')
 
-        campaign = models.Campaign.objects.create(request.user, account, name)
+        campaign = models.Campaign.objects.create(request, account, name)
 
         response = {
             'name': campaign.name,

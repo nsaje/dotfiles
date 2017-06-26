@@ -25,22 +25,22 @@ ACCOUNTS_WITHOUT_CAMPAIGN_STOP = {490}
 class CampaignManager(core.common.QuerySetManager):
 
     @transaction.atomic
-    def create(self, user, account, name, iab_category=constants.IABCategory.IAB24):
+    def create(self, request, account, name, iab_category=constants.IABCategory.IAB24):
         campaign = Campaign(
             name=name,
             account=account
         )
-        campaign.save(user=user)
+        campaign.save(request=request)
 
         settings = campaign.get_current_settings()  # creates new settings with default values
         settings.name = name
-        settings.campaign_manager = user
+        settings.campaign_manager = request.user if request else None
         settings.iab_category = iab_category
 
         if account.id in ACCOUNTS_WITHOUT_CAMPAIGN_STOP or account.agency_id in AGENCIES_WITHOUT_CAMPAIGN_STOP:
             settings.automatic_campaign_stop = False
 
-        settings.save(user=user, action_type=constants.HistoryActionType.CREATE)
+        settings.save(request=request, action_type=constants.HistoryActionType.CREATE)
 
         return campaign
 

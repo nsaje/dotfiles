@@ -1476,7 +1476,7 @@ class AdGroupSettingsStateTest(TestCase):
         mock_campaign_stop.return_value = True
 
         # ensure this campaign has a goal
-        models.CampaignGoal.objects.create(campaign_id=ad_group.campaign_id)
+        models.CampaignGoal.objects.create_unsafe(campaign_id=ad_group.campaign_id)
 
         add_permissions(self.user, ['can_control_ad_group_state_in_table'])
         response = self.client.post(
@@ -1499,7 +1499,7 @@ class AdGroupSettingsStateTest(TestCase):
         mock_campaign_stop.return_value = True
 
         # ensure this campaign has a goal
-        models.CampaignGoal.objects.create(campaign_id=ad_group.campaign_id)
+        models.CampaignGoal.objects.create_unsafe(campaign_id=ad_group.campaign_id)
 
         add_permissions(self.user, ['can_control_ad_group_state_in_table'])
         response = self.client.post(
@@ -2415,7 +2415,7 @@ class CampaignSettingsTest(TestCase):
         self.assertNotEqual(settings.adobe_tracking_param, 'cid')
 
         # ensure this campaign has a goal
-        models.CampaignGoal.objects.create(campaign_id=campaign.id)
+        models.CampaignGoal.objects.create_unsafe(campaign_id=campaign.id)
 
         response = self.client.put(
             '/api/campaigns/1/settings/',
@@ -2560,7 +2560,7 @@ class CampaignSettingsTest(TestCase):
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     def test_put_goals_modified(self, p1, p3):
-        goal = models.CampaignGoal.objects.create(
+        goal = models.CampaignGoal.objects.create_unsafe(
             type=1,
             primary=True,
             campaign_id=1,
@@ -2617,9 +2617,9 @@ class CampaignSettingsTest(TestCase):
         campaign_id = 1
 
         # ensure this campaign has more than 1 goal
-        models.CampaignGoal.objects.create(campaign_id=campaign_id)
+        models.CampaignGoal.objects.create_unsafe(campaign_id=campaign_id)
 
-        goal = models.CampaignGoal.objects.create(
+        goal = models.CampaignGoal.objects.create_unsafe(
             type=1,
             primary=True,
             campaign_id=campaign_id,
@@ -2707,7 +2707,7 @@ class CampaignSettingsTest(TestCase):
             account=ad_group.campaign.account,
             name='janez_name',
         )
-        convg = models.ConversionGoal.objects.create(
+        convg = models.ConversionGoal.objects.create_unsafe(
             campaign=ad_group.campaign,
             type=constants.ConversionGoalType.PIXEL,
             name='janezjanez',
@@ -2716,7 +2716,7 @@ class CampaignSettingsTest(TestCase):
             goal_id='9',
         )
 
-        models.CampaignGoal.objects.create(
+        models.CampaignGoal.objects.create_unsafe(
             campaign=ad_group.campaign,
             type=constants.CampaignGoalKPI.CPA,
             conversion_goal=convg,

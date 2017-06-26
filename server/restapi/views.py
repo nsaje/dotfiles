@@ -665,10 +665,10 @@ class CampaignGoalsViewDetails(RESTAPIBaseView):
             goal = dash.models.CampaignGoal.objects.get(pk=goal_id, campaign=campaign)
             value = serializer.validated_data.get('value', None)
             if value:
-                campaign_goals.add_campaign_goal_value(request, goal, value, goal.campaign)
+                goal.add_value(request, value)
             primary = serializer.validated_data.get('primary', None)
             if primary:
-                campaign_goals.set_campaign_goal_primary(request, goal.campaign, goal_id)
+                goal.set_primary(request)
             goal.refresh_from_db()
             return self.response_ok(CampaignGoalsSerializer(goal.to_dict(with_values=True)).data)
 

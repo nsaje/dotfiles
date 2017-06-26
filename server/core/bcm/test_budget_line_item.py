@@ -1,4 +1,4 @@
-from cdecimal import Decimal
+from decimal import Decimal
 import mock
 import datetime
 
@@ -21,6 +21,7 @@ class TestBudgetLineItemManager(TestCase):
 
     @mock.patch.object(automation.campaign_stop, 'perform_landing_mode_check', autospec=True)
     def test_create(self, mock_landing_mode_check):
+        request = magic_mixer.blend_request_user()
         credit = magic_mixer.blend(
             dash.models.CreditLineItem,
             account=self.account,
@@ -30,7 +31,7 @@ class TestBudgetLineItemManager(TestCase):
         )
         start_date = datetime.date(2017, 1, 1)
         end_date = datetime.date(2017, 1, 2)
-        item = BudgetLineItem.objects.create(self.user, self.campaign, credit, start_date, end_date, 100, Decimal('0.15'), 'test')
+        item = BudgetLineItem.objects.create(request, self.campaign, credit, start_date, end_date, 100, Decimal('0.15'), 'test')
         self.assertEqual(item.campaign, self.campaign)
         self.assertEqual(item.credit, credit)
         self.assertEqual(item.start_date, start_date)

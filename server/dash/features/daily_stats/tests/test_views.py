@@ -455,7 +455,7 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
         # set up a campaign and conversion goal
         campaign = models.Campaign.objects.get(pk=1)
 
-        cg1 = models.CampaignGoal.objects.create(
+        cg1 = models.CampaignGoal.objects.create_unsafe(
             campaign=campaign,
             type=constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS,
             created_dt=created_dt,
@@ -467,7 +467,7 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
             created_dt=created_dt,
         )
 
-        convg = models.ConversionGoal.objects.create(
+        convg = models.ConversionGoal.objects.create_unsafe(
             campaign=campaign,
             type=constants.ConversionGoalType.GA,
             name='Test Cg',
@@ -475,7 +475,7 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
             goal_id='6',
         )
 
-        convg1 = models.CampaignGoal.objects.create(
+        convg1 = models.CampaignGoal.objects.create_unsafe(
             campaign=campaign,
             conversion_goal=convg,
             type=constants.CampaignGoalKPI.CPA,

@@ -4,7 +4,7 @@ from decimal import Decimal, ROUND_DOWN
 from django.db import transaction
 from django.db.models import Prefetch
 
-from dash import models, constants, forms
+from dash import models, constants
 import dash.history_helpers
 
 import stats.api_breakdowns
@@ -122,30 +122,6 @@ def format_campaign_goal(goal_type, value, conversion_goal):
     return description
 
 
-def create_campaign_goal(request, form, campaign, value=None, conversion_goal=None):
-    if not form.is_valid():
-        raise exc.ValidationError(errors=form.errors)
-
-    goal = models.CampaignGoal.objects.create(
-        type=form.cleaned_data['type'],
-        primary=form.cleaned_data['primary'],
-        campaign=campaign,
-        conversion_goal=conversion_goal,
-    )
-
-    _add_entry_to_history(
-        request,
-        campaign,
-        constants.HistoryActionType.GOAL_CHANGE,
-        u'Added campaign goal "{}{}"'.format(
-            (str(value) + ' ') if value else '',
-            constants.CampaignGoalKPI.get_text(goal.type)
-        )
-    )
-
-    return goal
-
-
 def delete_campaign_goal(request, goal_id, campaign):
     goal = models.CampaignGoal.objects.all().select_related('campaign').get(pk=goal_id)
 
@@ -161,41 +137,6 @@ def delete_campaign_goal(request, goal_id, campaign):
         campaign,
         constants.HistoryActionType.GOAL_CHANGE,
         u'Deleted campaign goal "{}"'.format(
-            constants.CampaignGoalKPI.get_text(goal.type)
-        )
-    )
-
-
-def add_campaign_goal_value(request, goal, value, campaign, skip_history=False):
-    goal_value = models.CampaignGoalValue(
-        campaign_goal_id=goal.pk,
-        value=value
-    )
-    goal_value.save(request)
-
-    if not skip_history:
-        _add_entry_to_history(
-            request,
-            campaign,
-            constants.HistoryActionType.GOAL_CHANGE,
-            u'Changed campaign goal value: "{}"'.format(
-                CAMPAIGN_GOAL_NAME_FORMAT[goal.type].format(value)
-            )
-        )
-
-
-def set_campaign_goal_primary(request, campaign, goal_id):
-    goal = models.CampaignGoal.objects.get(pk=goal_id)
-
-    models.CampaignGoal.objects.filter(campaign=campaign).update(primary=False)
-    goal.primary = True
-    goal.save()
-
-    _add_entry_to_history(
-        request,
-        campaign,
-        constants.HistoryActionType.GOAL_CHANGE,
-        u'Campaign goal "{}" set as primary'.format(
             constants.CampaignGoalKPI.get_text(goal.type)
         )
     )
@@ -242,57 +183,6 @@ def delete_conversion_goal(request, conversion_goal_id, campaign):
                 constants.ConversionGoalType.get_text(conversion_goal.type)
             )
         )
-
-
-def create_conversion_goal(request, form, campaign, value=None):
-    if not form.is_valid():
-        raise exc.ValidationError(errors=form.errors)
-
-    goals_count = models.ConversionGoal.objects.filter(campaign_id=campaign.id).count()
-    if goals_count >= constants.MAX_CONVERSION_GOALS_PER_CAMPAIGN:
-        raise exc.ValidationError(message='Max conversion goals per campaign exceeded')
-
-    conversion_goal = models.ConversionGoal(campaign_id=campaign.id, type=form.cleaned_data['type'],
-                                            name=form.cleaned_data['name'])
-
-    if form.cleaned_data['type'] == constants.ConversionGoalType.PIXEL:
-        try:
-            pixel = models.ConversionPixel.objects.get(id=form.cleaned_data['goal_id'],
-                                                       account_id=campaign.account_id)
-        except models.ConversionPixel.DoesNotExist:
-            raise exc.MissingDataError(message='Invalid conversion pixel')
-
-        if pixel.archived:
-            raise exc.MissingDataError(message='Invalid conversion pixel')
-
-        conversion_goal.pixel = pixel
-        conversion_goal.conversion_window = form.cleaned_data['conversion_window']
-    else:
-        conversion_goal.goal_id = form.cleaned_data['goal_id']
-
-    with transaction.atomic():
-        conversion_goal.save()
-
-        campaign_goal_form = forms.CampaignGoalForm(dict(
-            type=constants.CampaignGoalKPI.CPA,
-            primary=False
-        ), campaign_id=campaign.pk)
-
-        campaign_goal = create_campaign_goal(
-            request, campaign_goal_form, campaign, conversion_goal=conversion_goal, value=value
-        )
-
-    _add_entry_to_history(
-        request,
-        campaign,
-        constants.HistoryActionType.GOAL_CHANGE,
-        u'Added conversion goal with name "{}" of type {}'.format(
-            conversion_goal.name,
-            constants.ConversionGoalType.get_text(conversion_goal.type)
-        )
-    )
-
-    return conversion_goal, campaign_goal
 
 
 def extract_e_media_cost(data):

@@ -1,3 +1,4 @@
+from decimal import Decimal
 import mock
 import datetime
 
@@ -51,6 +52,7 @@ class CampaignLauncherLaunchTest(restapi.test_views.RESTAPITest):
     def test_launch(self, mock_launch):
         account = magic_mixer.blend(dash.models.Account, users=[self.user])
         campaign = magic_mixer.blend(dash.models.Campaign, name='xyz')
+        pixel = magic_mixer.blend(dash.models.ConversionPixel, account=account)
         mock_launch.return_value = campaign
 
         data = {
@@ -58,7 +60,16 @@ class CampaignLauncherLaunchTest(restapi.test_views.RESTAPITest):
             'iabCategory': 'IAB1_1',
             'startDate': '2017-01-01',
             'endDate': '2017-01-01',
-            'budgetAmount': 123
+            'budgetAmount': 123,
+            'goal': {
+                'type': 'CPA',
+                'value': '30.0',
+                'conversionGoal': {
+                    'type': 'PIXEL',
+                    'goalId': pixel.id,
+                    'conversionWindow': 'LEQ_1_DAY'
+                },
+            },
         }
         r = self.client.post(
             reverse('campaignlauncher_launch',
@@ -69,11 +80,16 @@ class CampaignLauncherLaunchTest(restapi.test_views.RESTAPITest):
         r = self.assertResponseValid(r, data_type=dict)
         self.assertIn('campaignId', r['data'])
         mock_launch.assert_called_once_with(
-            user=self.user,
+            request=mock.ANY,
             account=account,
             name='xyz',
             iab_category='IAB1-1',
             start_date=datetime.date(2017, 1, 1),
             end_date=datetime.date(2017, 1, 1),
             budget_amount=123,
+            goal_type=dash.constants.CampaignGoalKPI.CPA,
+            goal_value=Decimal(30.0),
+            conversion_goal_type=dash.constants.ConversionGoalType.PIXEL,
+            conversion_goal_goal_id=str(pixel.id),
+            conversion_goal_window=dash.constants.ConversionWindows.LEQ_1_DAY,
         )

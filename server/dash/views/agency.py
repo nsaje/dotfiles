@@ -804,31 +804,39 @@ class CampaignSettings(api_common.BaseApiView):
                     },
                     campaign_id=campaign.pk,
                 )
+                if not conversion_form.is_valid():
+                    raise exc.ValidationError(errors=conversion_form.errors)
                 errors.append(dict(conversion_form.errors))
-                conversion_goal, goal_added = campaign_goals.create_conversion_goal(
-                    request,
-                    conversion_form,
-                    campaign,
-                    value=goal['value']
-                )
+
+                with transaction.atomic():
+                    conversion_goal = models.ConversionGoal.objects.create(
+                        request, campaign,
+                        conversion_goal_type=conversion_form.cleaned_data['type'],
+                        goal_id=conversion_form.cleaned_data['goal_id'],
+                        conversion_window=conversion_form.cleaned_data['conversion_window'],
+                    )
+
+                    goal_added = models.CampaignGoal.objects.create(
+                        request, campaign,
+                        goal_type=constants.CampaignGoalKPI.CPA, primary=False,
+                        value=goal['value'], conversion_goal=conversion_goal
+                    )
 
             else:
                 goal_form = forms.CampaignGoalForm(goal, campaign_id=campaign.pk)
                 errors.append(dict(goal_form.errors))
-                goal_added = campaign_goals.create_campaign_goal(
-                    request, goal_form, campaign, value=goal['value']
+                if not goal_form.is_valid():
+                    raise exc.ValidationError(errors=goal_form.errors)
+                goal_added = models.CampaignGoal.objects.create(
+                    request, campaign, goal_form.cleaned_data['type'], value=goal['value'], primary=goal_form.cleaned_data['primary']
                 )
 
             if is_primary:
                 new_primary_id = goal_added.pk
 
-            campaign_goals.add_campaign_goal_value(
-                request, goal_added, goal['value'], campaign, skip_history=True
-            )
-
         for goal_id, value in changes['modified'].iteritems():
             goal = models.CampaignGoal.objects.get(pk=goal_id)
-            campaign_goals.add_campaign_goal_value(request, goal, value, campaign)
+            goal.add_value(request, value)
 
         removed_goals = {goal['id'] for goal in changes['removed']}
         for goal_id in removed_goals:
@@ -837,7 +845,8 @@ class CampaignSettings(api_common.BaseApiView):
         new_primary_id = new_primary_id or changes['primary']
         if new_primary_id and new_primary_id not in removed_goals:
             try:
-                campaign_goals.set_campaign_goal_primary(request, campaign, new_primary_id)
+                goal = models.CampaignGoal.objects.get(pk=new_primary_id)
+                goal.set_primary(request)
             except exc.ValidationError as error:
                 errors.append(str(error))
 

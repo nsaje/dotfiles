@@ -5,8 +5,7 @@ import datetime
 from django.test import TestCase
 from django.http.request import HttpRequest
 
-from utils import exc
-from dash import models, constants, forms
+from dash import models, constants
 from dash import campaign_goals
 from dash import infobox_helpers
 from dash import history_helpers
@@ -27,7 +26,7 @@ class CampaignGoalsTestCase(TestCase):
 
         all_goal_types = constants.CampaignGoalKPI.get_all()
         for i, goal_type in enumerate(all_goal_types):
-            models.CampaignGoal.objects.create(
+            models.CampaignGoal.objects.create_unsafe(
                 campaign=self.campaign,
                 type=goal_type,
                 primary=not i,
@@ -35,7 +34,7 @@ class CampaignGoalsTestCase(TestCase):
             )
 
         cpa_goal = self._goal(constants.CampaignGoalKPI.CPA)
-        conversion_goal = models.ConversionGoal.objects.create(
+        conversion_goal = models.ConversionGoal.objects.create_unsafe(
             campaign=self.campaign,
             type=constants.ConversionGoalType.GA,
             name='test conversion goal',
@@ -62,12 +61,12 @@ class CampaignGoalsTestCase(TestCase):
         campaign = models.Campaign.objects.get(pk=1)
         self.assertTrue(campaign_goals.get_primary_campaign_goal(campaign) is None)
 
-        models.CampaignGoal.objects.create(
+        models.CampaignGoal.objects.create_unsafe(
             type=1,
             campaign=campaign,
             primary=False,
         )
-        models.CampaignGoal.objects.create(
+        models.CampaignGoal.objects.create_unsafe(
             type=2,
             campaign=campaign,
             primary=True,
@@ -75,44 +74,28 @@ class CampaignGoalsTestCase(TestCase):
         self.assertEqual(campaign_goals.get_primary_campaign_goal(campaign).type, 2)
 
         models.CampaignGoal.objects.all().delete()
-        models.CampaignGoal.objects.create(
+        models.CampaignGoal.objects.create_unsafe(
             type=1,
             campaign_id=2,
             primary=False,
         )
-        models.CampaignGoal.objects.create(
+        models.CampaignGoal.objects.create_unsafe(
             type=2,
             campaign_id=2,
             primary=True,
         )
         self.assertTrue(campaign_goals.get_primary_campaign_goal(campaign) is None)
 
-    def test_set_campaign_goal_primary(self):
-        models.CampaignGoal.objects.all().delete()
-        goal = models.CampaignGoal.objects.create(
-            type=1,
-            campaign_id=2,
-            primary=False,
-        )
-        campaign_goals.set_campaign_goal_primary(self.request, self.campaign, goal.pk)
-        self.assertTrue(models.CampaignGoal.objects.all()[0].primary)
-
-        hist = history_helpers.get_campaign_history(self.campaign).first()
-        self.assertIsNotNone(hist.created_by)
-        self.assertEqual(constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
-        self.assertEqual('Campaign goal "Time on Site - Seconds" set as primary', hist.changes_text)
-
     def test_cpa_goal_primary(self):
-        campaign_goals.set_campaign_goal_primary(
-            self.request, self.campaign, self._goal(constants.CampaignGoalKPI.CPA).pk)
+        self._goal(constants.CampaignGoalKPI.CPA).set_primary(self.request)
         self.assertTrue(self._goal(constants.CampaignGoalKPI.CPA).primary)
 
         self.assertEqual(
             models.CampaignGoal.objects.filter(campaign=self.campaign, primary=True).get().type,
             constants.CampaignGoalKPI.CPA
         )
-        campaign_goals.set_campaign_goal_primary(
-            self.request, self.campaign, self._goal(constants.CampaignGoalKPI.PAGES_PER_SESSION).pk)
+
+        self._goal(constants.CampaignGoalKPI.PAGES_PER_SESSION).set_primary(self.request)
         self.assertFalse(self._goal(constants.CampaignGoalKPI.CPA).primary)
         self.assertTrue(self._goal(constants.CampaignGoalKPI.PAGES_PER_SESSION).primary)
         self.assertEqual(
@@ -120,38 +103,11 @@ class CampaignGoalsTestCase(TestCase):
             constants.CampaignGoalKPI.PAGES_PER_SESSION
         )
 
-    def test_create_campaign_goal(self):
-        models.CampaignGoal.objects.all().delete()
-
-        goal_form = forms.CampaignGoalForm({'type': 1, }, campaign_id=self.campaign.pk)
-        goal = campaign_goals.create_campaign_goal(
-            self.request,
-            goal_form,
-            self.campaign,
-        )
-
-        self.assertTrue(goal.pk)
-        self.assertEqual(goal.type, 1)
-        self.assertEqual(goal.campaign_id, 1)
-
-        hist = history_helpers.get_campaign_history(self.campaign).first()
-        self.assertIsNotNone(hist.created_by)
-        self.assertEqual(constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
-        self.assertEqual(hist.changes_text, 'Added campaign goal "Time on Site - Seconds"')
-
-        with self.assertRaises(exc.ValidationError):
-            goal_form = forms.CampaignGoalForm({}, campaign_id=self.campaign.pk)
-            campaign_goals.create_campaign_goal(
-                self.request,
-                goal_form,
-                self.campaign,
-            )
-
     def test_delete_campaign_goal(self):
         models.CampaignGoal.objects.all().delete()
         models.ConversionGoal.objects.all().delete()
 
-        goal = models.CampaignGoal.objects.create(
+        goal = models.CampaignGoal.objects.create_unsafe(
             type=1,
             primary=True,
             campaign_id=1,
@@ -170,13 +126,13 @@ class CampaignGoalsTestCase(TestCase):
         self.assertEqual(constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
         self.assertEqual(hist.changes_text, 'Deleted campaign goal "Time on Site - Seconds"')
 
-        conv_goal = models.ConversionGoal.objects.create(
+        conv_goal = models.ConversionGoal.objects.create_unsafe(
             goal_id='123',
             name='123',
             type=3,
             campaign_id=1,
         )
-        goal = models.CampaignGoal.objects.create(
+        goal = models.CampaignGoal.objects.create_unsafe(
             type=1,
             primary=True,
             campaign_id=1,
@@ -196,28 +152,6 @@ class CampaignGoalsTestCase(TestCase):
         self.assertIsNotNone(hist.created_by)
         self.assertEqual(constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
         self.assertEqual(hist.changes_text, 'Deleted conversion goal "123"')
-
-    def test_add_campaign_goal_value(self):
-        goal = models.CampaignGoal.objects.create(
-            type=1,
-            primary=True,
-            campaign_id=1,
-        )
-        models.CampaignGoalValue.objects.create(
-            value=Decimal('10'),
-            campaign_goal=goal,
-        )
-        campaign_goals.add_campaign_goal_value(self.request, goal, Decimal('15'), self.campaign)
-
-        self.assertEqual(
-            [val.value for val in models.CampaignGoalValue.objects.all()],
-            [Decimal('10'), Decimal('15')]
-        )
-
-        hist = history_helpers.get_campaign_history(models.Campaign.objects.get(pk=1)).first()
-        self.assertIsNotNone(hist.created_by)
-        self.assertEqual(constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
-        self.assertEqual(hist.changes_text, 'Changed campaign goal value: "15 Time on Site - Seconds"')
 
     def test_get_campaign_goal_values(self):
         self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 1)
@@ -607,7 +541,7 @@ class CampaignGoalsTestCase(TestCase):
     def test_generate_series(self):
         campaign = models.Campaign.objects.get(pk=1)
 
-        goal = models.CampaignGoal.objects.create(
+        goal = models.CampaignGoal.objects.create_unsafe(
             type=constants.CampaignGoalKPI.MAX_BOUNCE_RATE,
             primary=False,
             campaign_id=1,
@@ -739,7 +673,7 @@ class CampaignGoalsTestCase(TestCase):
         )
         self.assertEqual({}, pre_values)
 
-        goal = models.CampaignGoal.objects.create(
+        goal = models.CampaignGoal.objects.create_unsafe(
             type=constants.CampaignGoalKPI.MAX_BOUNCE_RATE,
             primary=False,
             campaign_id=1,
@@ -778,7 +712,7 @@ class CampaignGoalsTestCase(TestCase):
     def test_get_pre_campaign_goal_values_latest(self):
         campaign = models.Campaign.objects.get(pk=1)
 
-        goal = models.CampaignGoal.objects.create(
+        goal = models.CampaignGoal.objects.create_unsafe(
             type=constants.CampaignGoalKPI.MAX_BOUNCE_RATE,
             primary=False,
             campaign_id=1,
@@ -809,7 +743,7 @@ class CampaignGoalsTestCase(TestCase):
         self.assertEqual(Decimal(10), pre_values[goal.id].value)
 
     def test_goal_name(self):
-        goal = models.CampaignGoal.objects.create(
+        goal = models.CampaignGoal.objects.create_unsafe(
             type=constants.CampaignGoalKPI.MAX_BOUNCE_RATE,
             primary=False,
             campaign_id=1,
@@ -821,13 +755,13 @@ class CampaignGoalsTestCase(TestCase):
             campaign_goals.goal_name(goal)
         )
 
-        conv_goal = models.ConversionGoal.objects.create(
+        conv_goal = models.ConversionGoal.objects.create_unsafe(
             goal_id='123',
             name='123',
             type=3,
             campaign_id=1,
         )
-        goal = models.CampaignGoal.objects.create(
+        goal = models.CampaignGoal.objects.create_unsafe(
             type=constants.CampaignGoalKPI.CPA,
             primary=False,
             campaign_id=1,

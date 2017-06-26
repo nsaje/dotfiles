@@ -18,6 +18,8 @@ class SplitTestsRunner(django.test.runner.DiscoverRunner):
     def add_arguments(cls, parser):
         super(SplitTestsRunner, cls).add_arguments(parser)
 
+        parser.set_defaults(pattern='*test*.py')
+
         parser.add_argument(
             '--integration-tests',
             action='store_true',

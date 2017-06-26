@@ -28,7 +28,7 @@ import bcm_slack
 class BudgetLineItemManager(core.common.QuerySetManager):
 
     @transaction.atomic
-    def create(self, user, campaign, credit, start_date, end_date, amount, margin=None, comment=None):
+    def create(self, request, campaign, credit, start_date, end_date, amount, margin=None, comment=None):
         item = BudgetLineItem(
             campaign=campaign,
             credit=credit,
@@ -40,7 +40,7 @@ class BudgetLineItemManager(core.common.QuerySetManager):
             item.margin = margin
         if comment is not None:
             item.comment = comment
-        item.save(user=user, action_type=constants.HistoryActionType.CREATE)
+        item.save(request=request, action_type=constants.HistoryActionType.CREATE)
 
         automation.campaign_stop.perform_landing_mode_check(campaign, campaign.get_current_settings())
 

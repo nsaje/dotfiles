@@ -19,13 +19,18 @@ class CampaignLauncherViewSet(RESTAPIBaseViewSet):
         serializer.is_valid(raise_exception=True)
 
         campaign = dash.features.campaignlauncher.launch(
-            user=request.user,
+            request=request,
             account=account,
             name=serializer.validated_data['campaign_name'],
             iab_category=serializer.validated_data['iab_category'],
             start_date=serializer.validated_data['start_date'],
             end_date=serializer.validated_data['end_date'],
             budget_amount=serializer.validated_data['budget_amount'],
+            goal_type=serializer.validated_data['goal']['type'],
+            goal_value=serializer.validated_data['goal']['value'],
+            conversion_goal_type=serializer.validated_data['goal']['conversion_goal']['type'],
+            conversion_goal_goal_id=serializer.validated_data['goal']['conversion_goal']['goal_id'],
+            conversion_goal_window=serializer.validated_data['goal']['conversion_goal']['conversion_window'],
         )
 
         return self.response_ok({'campaignId': campaign.id})

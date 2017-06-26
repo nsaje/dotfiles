@@ -3,10 +3,14 @@
 from django.db import models
 
 from dash import constants
+import dash.models
 import dash.features.performance_tracking.constants
 
+import manager
+import validator
 
-class ConversionGoal(models.Model):
+
+class ConversionGoal(validator.ConversionGoalValidator, models.Model):
     class Meta:
         app_label = 'dash'
         unique_together = (('campaign', 'name'),
@@ -20,12 +24,14 @@ class ConversionGoal(models.Model):
     name = models.CharField(max_length=100)
 
     pixel = models.ForeignKey(
-        'ConversionPixel', null=True, on_delete=models.PROTECT)
+        'ConversionPixel', null=True, on_delete=models.PROTECT, blank=True)
     conversion_window = models.PositiveSmallIntegerField(null=True, blank=True)
     goal_id = models.CharField(max_length=100, null=True, blank=True)
 
     created_dt = models.DateTimeField(
         auto_now_add=True, verbose_name='Created on')
+
+    objects = manager.ConversionGoalManager()
 
     def get_stats_key(self):
         # map conversion goal to the key under which they are stored in stats

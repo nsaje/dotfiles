@@ -295,7 +295,7 @@ class Command(BaseCommand):
             obj = object_list[0]
             with transaction.atomic():
                 new_budgets.append(dash.models.BudgetLineItem.objects.create(
-                    user=None,
+                    request=None,
                     amount=delta,
                     credit=credit,
                     start_date=obj.start_date,

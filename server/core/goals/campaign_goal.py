@@ -4,8 +4,60 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.db import models
+from django.db import transaction
 
 from dash import constants
+import core.common
+import utils.exc
+
+from campaign_goal_value import CampaignGoalValue
+
+CAMPAIGN_GOAL_NAME_FORMAT = {
+    constants.CampaignGoalKPI.TIME_ON_SITE: '{} Time on Site - Seconds',
+    constants.CampaignGoalKPI.MAX_BOUNCE_RATE: '{} Max Bounce Rate',
+    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: '{} New Unique Visitors',
+    constants.CampaignGoalKPI.PAGES_PER_SESSION: '{} Pageviews per Visit',
+    constants.CampaignGoalKPI.CPA: '{} CPA',
+    constants.CampaignGoalKPI.CPC: '{} CPC',
+    constants.CampaignGoalKPI.CPV: '{} Cost Per Visit',
+    constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: '{} Cost Per Non-Bounced Visit',
+}
+
+
+class CampaignGoalManager(core.common.BaseManager):
+
+    @transaction.atomic
+    def create(self, request, campaign, goal_type, value, conversion_goal=None, primary=False):
+        self._validate_goal_count(campaign, goal_type)
+
+        if conversion_goal is not None:
+            goal_type = constants.CampaignGoalKPI.CPA
+
+        goal = super(CampaignGoalManager, self).create(
+            type=goal_type,
+            campaign=campaign,
+            conversion_goal=conversion_goal,
+        )
+
+        goal.add_value(request, value, skip_history=True)
+        if primary:
+            goal.set_primary(request)
+
+        campaign.write_history(
+            u'Added campaign goal "{}{}"'.format(
+                (str(value) + ' ') if value else '',
+                constants.CampaignGoalKPI.get_text(goal.type)
+            ),
+            action_type=constants.HistoryActionType.GOAL_CHANGE,
+            user=request.user
+        )
+
+        return goal
+
+    def _validate_goal_count(self, campaign, goal_type):
+        goals = CampaignGoal.objects.filter(campaign=campaign, type=goal_type)
+        if goal_type != constants.CampaignGoalKPI.CPA and goals.count() > 1:
+            raise utils.exc.ValidationError('Multiple goals of the same type not allowed')
 
 
 class CampaignGoal(models.Model):
@@ -27,6 +79,8 @@ class CampaignGoal(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
                                    verbose_name='Created by',
                                    on_delete=models.PROTECT, null=True, blank=True)
+
+    objects = CampaignGoalManager()
 
     def to_dict(self, with_values=False):
         campaign_goal = {
@@ -68,3 +122,33 @@ class CampaignGoal(models.Model):
 
     def get_view_key(self):
         return 'campaign_goal_' + str(self.id)
+
+    def add_value(self, request, value, skip_history=False):
+        goal_value = CampaignGoalValue(
+            campaign_goal=self,
+            value=value
+        )
+        goal_value.save(request)
+
+        if not skip_history:
+            self.campaign.write_history(
+                u'Changed campaign goal value: "{}"'.format(
+                    CAMPAIGN_GOAL_NAME_FORMAT[self.type].format(value)
+                ),
+                action_type=constants.HistoryActionType.GOAL_CHANGE,
+                user=request.user
+            )
+
+    @transaction.atomic
+    def set_primary(self, request):
+        CampaignGoal.objects.filter(campaign=self.campaign).update(primary=False)
+        self.primary = True
+        self.save()
+
+        self.campaign.write_history(
+            u'Campaign goal "{}" set as primary'.format(
+                constants.CampaignGoalKPI.get_text(self.type)
+            ),
+            action_type=constants.HistoryActionType.GOAL_CHANGE,
+            user=request.user
+        )

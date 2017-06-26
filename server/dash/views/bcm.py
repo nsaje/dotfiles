@@ -261,7 +261,7 @@ class CampaignBudgetView(api_common.BaseApiView):
             raise exc.ValidationError(errors=form.errors)
 
         item = core.bcm.BudgetLineItem.objects.create(
-            user=request.user,
+            request=request,
             campaign=campaign,
             credit=form.cleaned_data['credit'],
             start_date=form.cleaned_data['start_date'],
