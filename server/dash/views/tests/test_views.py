@@ -872,7 +872,7 @@ class AdGroupOverviewTest(TestCase):
             created_by=self.user,
         )
 
-        models.BudgetLineItem.objects.create(
+        models.BudgetLineItem.objects.create_unsafe(
             campaign=ad_group.campaign,
             credit=credit,
             amount=100,
@@ -993,7 +993,7 @@ class AdGroupOverviewTest(TestCase):
             created_by=self.user,
         )
 
-        budget = models.BudgetLineItem.objects.create(
+        budget = models.BudgetLineItem.objects.create_unsafe(
             campaign=ad_group.campaign,
             credit=credit,
             amount=100,
@@ -1121,7 +1121,7 @@ class CampaignOverviewTest(TestCase):
             created_by=self.user,
         )
 
-        models.BudgetLineItem.objects.create(
+        models.BudgetLineItem.objects.create_unsafe(
             campaign=campaign,
             credit=credit,
             amount=100,

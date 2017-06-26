@@ -69,7 +69,7 @@ class InfoBoxHelpersTest(TestCase):
             created_by=user,
         )
 
-        budget = dash.models.BudgetLineItem.objects.create(
+        budget = dash.models.BudgetLineItem.objects.create_unsafe(
             campaign=campaign,
             credit=credit,
             amount=100,
@@ -115,7 +115,7 @@ class InfoBoxHelpersTest(TestCase):
             created_by=user,
         )
 
-        dash.models.BudgetLineItem.objects.create(
+        dash.models.BudgetLineItem.objects.create_unsafe(
             campaign=campaign,
             credit=credit,
             amount=30,
@@ -124,7 +124,7 @@ class InfoBoxHelpersTest(TestCase):
             created_by=user,
         )
 
-        dash.models.BudgetLineItem.objects.create(
+        dash.models.BudgetLineItem.objects.create_unsafe(
             campaign=campaign,
             credit=credit,
             amount=30,
@@ -133,7 +133,7 @@ class InfoBoxHelpersTest(TestCase):
             created_by=user,
         )
 
-        dash.models.BudgetLineItem.objects.create(
+        dash.models.BudgetLineItem.objects.create_unsafe(
             campaign=campaign,
             credit=credit,
             amount=40,
@@ -179,7 +179,7 @@ class InfoBoxHelpersTest(TestCase):
             created_by=user,
         )
 
-        dash.models.BudgetLineItem.objects.create(
+        dash.models.BudgetLineItem.objects.create_unsafe(
             campaign=campaign,
             credit=credit,
             amount=60,
@@ -188,7 +188,7 @@ class InfoBoxHelpersTest(TestCase):
             created_by=user,
         )
 
-        dash.models.BudgetLineItem.objects.create(
+        dash.models.BudgetLineItem.objects.create_unsafe(
             campaign=campaign,
             credit=credit,
             amount=60,
@@ -232,7 +232,7 @@ class InfoBoxHelpersTest(TestCase):
             status=dash.constants.CreditLineItemStatus.SIGNED,
             created_by=user,
         )
-        budget = dash.models.BudgetLineItem.objects.create(
+        budget = dash.models.BudgetLineItem.objects.create_unsafe(
             campaign=campaign,
             credit=credit,
             amount=500,
@@ -353,7 +353,7 @@ class InfoBoxAccountHelpersTest(TestCase):
             created_by=user,
         )
 
-        self.budget = dash.models.BudgetLineItem.objects.create(
+        self.budget = dash.models.BudgetLineItem.objects.create_unsafe(
             campaign=campaign,
             credit=self.credit,
             amount=100,
@@ -862,7 +862,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
         self.assertEqual(100, available_credit)
 
-        dash.models.BudgetLineItem.objects.create(
+        dash.models.BudgetLineItem.objects.create_unsafe(
             campaign=campaign,
             credit=credit,
             amount=40,
@@ -875,7 +875,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         self.assertEqual(40, allocated_credit)
         self.assertEqual(60, available_credit)
 
-        dash.models.BudgetLineItem.objects.create(
+        dash.models.BudgetLineItem.objects.create_unsafe(
             campaign=campaign,
             credit=credit,
             amount=60,
@@ -921,7 +921,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
         self.assertEqual(100, available_credit)
 
-        dash.models.BudgetLineItem.objects.create(
+        dash.models.BudgetLineItem.objects.create_unsafe(
             campaign=campaign,
             credit=credit,
             amount=40,
@@ -934,7 +934,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         self.assertEqual(40, allocated_credit)
         self.assertEqual(60, available_credit)
 
-        dash.models.BudgetLineItem.objects.create(
+        dash.models.BudgetLineItem.objects.create_unsafe(
             campaign=campaign,
             credit=credit,
             amount=60,
@@ -969,7 +969,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
         self.assertEqual(100, available_credit)
 
-        dash.models.BudgetLineItem.objects.create(
+        dash.models.BudgetLineItem.objects.create_unsafe(
             campaign=campaign,
             credit=credit,
             amount=40,
@@ -1008,7 +1008,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         # as long as there are no budgets available there-s nothing to spend
         self.assertEqual(0, budget_available)
 
-        budget = dash.models.BudgetLineItem.objects.create(
+        budget = dash.models.BudgetLineItem.objects.create_unsafe(
             campaign=campaign,
             credit=credit,
             amount=40,
@@ -1022,7 +1022,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         # as long as there are no budgets available there-s nothing to spend
         self.assertEqual(36, budget_available)
 
-        dash.models.BudgetLineItem.objects.create(
+        dash.models.BudgetLineItem.objects.create_unsafe(
             campaign=campaign,
             credit=credit,
             amount=60,
@@ -1087,7 +1087,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         # as long as there are no budgets available there-s nothing to spend
         self.assertEqual(0, budget_available)
 
-        budget = dash.models.BudgetLineItem.objects.create(
+        budget = dash.models.BudgetLineItem.objects.create_unsafe(
             campaign=campaign,
             credit=credit,
             amount=40,
@@ -1101,7 +1101,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         # as long as there are no budgets available there-s nothing to spend
         self.assertEqual(36, budget_available)
 
-        dash.models.BudgetLineItem.objects.create(
+        dash.models.BudgetLineItem.objects.create_unsafe(
             campaign=campaign,
             credit=credit,
             amount=60,

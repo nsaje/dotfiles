@@ -90,7 +90,7 @@ class ManagementReportTestCase(test.TestCase):
             end_date=today + datetime.timedelta(10),
             status=1,
         )
-        dash.models.BudgetLineItem.objects.create(
+        dash.models.BudgetLineItem.objects.create_unsafe(
             campaign_id=1,
             credit=credit,
             amount=5000,

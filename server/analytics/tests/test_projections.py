@@ -153,7 +153,7 @@ class ProjectionsTestCase(test.TestCase):
         )
         cam.save(fake_request(User.objects.get(pk=1)))
 
-        bud = dash.models.BudgetLineItem.objects.create(
+        bud = dash.models.BudgetLineItem.objects.create_unsafe(
             campaign=cam,
             credit=credit,
             amount=100,
@@ -265,7 +265,7 @@ class ProjectionsTestCase(test.TestCase):
             )
             cam.save(fake_request(User.objects.get(pk=1)))
 
-            bud = dash.models.BudgetLineItem.objects.create(
+            bud = dash.models.BudgetLineItem.objects.create_unsafe(
                 campaign=cam,
                 credit=credit,
                 amount=100,

@@ -17,7 +17,7 @@ TODAY = datetime.datetime(2015, 12, 1).date()
 YESTERDAY = TODAY - datetime.timedelta(1)
 
 create_credit = models.CreditLineItem.objects.create
-create_budget = models.BudgetLineItem.objects.create
+create_budget = models.BudgetLineItem.objects.create_unsafe
 create_statement = models.BudgetDailyStatement.objects.create
 
 
@@ -1513,7 +1513,7 @@ class BudgetReserveTestCase(TestCase):
 
     def test_asset_return(self):
         today = datetime.date(2015, 11, 11)
-        credit = models.CreditLineItem.objects.create(
+        credit = create_credit(
             account_id=1,
             start_date=datetime.date(2015, 11, 1),
             end_date=datetime.date(2015, 11, 30),
@@ -1522,7 +1522,7 @@ class BudgetReserveTestCase(TestCase):
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
         )
-        budget = models.BudgetLineItem.objects.create(
+        budget = create_budget(
             credit=credit,
             amount=1000,
             start_date=datetime.date(2015, 11, 1),
@@ -1530,7 +1530,7 @@ class BudgetReserveTestCase(TestCase):
             campaign_id=1,
         )
 
-        models.BudgetDailyStatement.objects.create(
+        create_statement(
             budget=budget,
             date=today - datetime.timedelta(1),
             media_spend_nano=100 * converters.DOLAR_TO_NANO,
@@ -1576,7 +1576,7 @@ class BudgetReserveTestCase(TestCase):
 
     def test_asset_return_overlaping_budgets(self):
         today = datetime.date(2015, 11, 11)
-        credit = models.CreditLineItem.objects.create(
+        credit = create_credit(
             account_id=1,
             start_date=datetime.date(2015, 11, 1),
             end_date=datetime.date(2015, 11, 30),
@@ -1585,7 +1585,7 @@ class BudgetReserveTestCase(TestCase):
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
         )
-        budget1 = models.BudgetLineItem.objects.create(
+        budget1 = create_budget(
             credit=credit,
             amount=500,
             freed_cc=1000000,
@@ -1593,7 +1593,7 @@ class BudgetReserveTestCase(TestCase):
             end_date=datetime.date(2015, 11, 10),
             campaign_id=1,
         )
-        models.BudgetLineItem.objects.create(
+        create_budget(
             credit=credit,
             amount=600,
             start_date=datetime.date(2015, 11, 1),
@@ -1601,7 +1601,7 @@ class BudgetReserveTestCase(TestCase):
             campaign_id=1,
         )
 
-        models.BudgetDailyStatement.objects.create(
+        create_statement(
             budget=budget1,
             date=today - datetime.timedelta(1),
             media_spend_nano=300 * converters.DOLAR_TO_NANO,
@@ -1617,7 +1617,7 @@ class BudgetReserveTestCase(TestCase):
         self.assertEqual(budget1.freed_cc, 200 * converters.DOLAR_TO_CC)
 
         with self.assertRaises(ValidationError):
-            models.BudgetLineItem.objects.create(
+            create_budget(
                 credit=credit,
                 amount=200,
                 start_date=datetime.date(2015, 11, 1),

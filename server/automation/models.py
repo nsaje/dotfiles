@@ -1,7 +1,9 @@
 from django.db import models
 from django.conf import settings
-import dash.models
 import dash.constants
+
+import core.entity.campaign
+import core.entity.adgroup
 
 
 class CampaignBudgetDepletionNotification(models.Model):
@@ -12,7 +14,7 @@ class CampaignBudgetDepletionNotification(models.Model):
         on_delete=models.PROTECT
     )
     campaign = models.ForeignKey(
-        dash.models.Campaign,
+        core.entity.campaign.Campaign,
         related_name='+',
         on_delete=models.PROTECT
     )
@@ -47,17 +49,17 @@ class CampaignBudgetDepletionNotification(models.Model):
 
 class AutopilotAdGroupSourceBidCpcLog(models.Model):
     campaign = models.ForeignKey(
-        dash.models.Campaign,
+        core.entity.campaign.Campaign,
         related_name='+',
         on_delete=models.PROTECT
     )
     ad_group = models.ForeignKey(
-        dash.models.AdGroup,
+        core.entity.adgroup.AdGroup,
         related_name='+',
         on_delete=models.PROTECT
     )
     ad_group_source = models.ForeignKey(
-        dash.models.AdGroupSource,
+        core.entity.adgroup.AdGroupSource,
         related_name='+',
         on_delete=models.PROTECT
     )
@@ -109,12 +111,12 @@ class AutopilotAdGroupSourceBidCpcLog(models.Model):
 
 class AutopilotLog(models.Model):
     ad_group = models.ForeignKey(
-        dash.models.AdGroup,
+        core.entity.adgroup.AdGroup,
         related_name='+',
         on_delete=models.PROTECT
     )
     ad_group_source = models.ForeignKey(
-        dash.models.AdGroupSource,
+        core.entity.adgroup.AdGroupSource,
         related_name='+',
         on_delete=models.PROTECT,
         null=True
@@ -199,7 +201,7 @@ class AutopilotLog(models.Model):
 
 
 class CampaignStopLog(models.Model):
-    campaign = models.ForeignKey(dash.models.Campaign, on_delete=models.PROTECT)
+    campaign = models.ForeignKey(core.entity.campaign.Campaign, on_delete=models.PROTECT)
     notes = models.TextField()
     created_dt = models.DateTimeField(
         auto_now_add=True,

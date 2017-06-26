@@ -1,6 +1,6 @@
 from ..views import RESTAPIBaseViewSet
 import restapi.access
-from dash import models
+import dash.features.campaignlauncher
 
 import serializers
 
@@ -18,11 +18,14 @@ class CampaignLauncherViewSet(RESTAPIBaseViewSet):
         serializer = serializers.CampaignLauncherSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        campaign = models.Campaign.objects.create(
+        campaign = dash.features.campaignlauncher.launch(
             user=request.user,
             account=account,
             name=serializer.validated_data['campaign_name'],
             iab_category=serializer.validated_data['iab_category'],
+            start_date=serializer.validated_data['start_date'],
+            end_date=serializer.validated_data['end_date'],
+            budget_amount=serializer.validated_data['budget_amount'],
         )
 
         return self.response_ok({'campaignId': campaign.id})

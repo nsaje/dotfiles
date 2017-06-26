@@ -295,11 +295,12 @@ class Command(BaseCommand):
             obj = object_list[0]
             with transaction.atomic():
                 new_budgets.append(dash.models.BudgetLineItem.objects.create(
+                    user=None,
                     amount=delta,
-                    credit_id=credit.id,
+                    credit=credit,
                     start_date=obj.start_date,
                     end_date=obj.end_date,
-                    campaign_id=obj.campaign_id,
+                    campaign=obj.campaign,
                 ))
                 update_budgets([obj], {'amount': (obj.amount - delta)})
             self._print('New budget: ')

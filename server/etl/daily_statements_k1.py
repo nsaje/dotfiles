@@ -129,7 +129,7 @@ def _handle_overspend(date, campaign, media_nano, data_nano):
             end_date__gte=date,
         ).latest('created_dt')
 
-        budget = dash.models.BudgetLineItem.objects.create(
+        budget = dash.models.BudgetLineItem.objects.create_unsafe(
             credit=credit,
             campaign_id=campaign.id,
             start_date=date,

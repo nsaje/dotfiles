@@ -5,37 +5,18 @@ import logging
 from django.forms.models import model_to_dict
 
 from dash import models, constants, forms
-from utils import api_common, exc, slack
+from utils import api_common, exc
 from dash.views import helpers
 from automation import campaign_stop
+
+import core.bcm
+import core.bcm.bcm_slack
 
 logger = logging.getLogger(__name__)
 
 EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK = (
     431, 305
 )
-
-ACCOUNT_URL = "https://one.zemanta.com/v2/credit/account/{}"
-CAMPAIGN_URL = "https://one.zemanta.com/v2/analytics/campaign/{}?settings"
-
-SLACK_SKIP_LOG_ACCOUNTS = (305, )
-SLACK_NEW_CREDIT_MSG = u"New credit #{credit_id} added on account <{url}|{account_name}> with amount ${amount} and end date {end_date}."
-SLACK_UPDATED_CREDIT_MSG = u"Credit #{credit_id} on account <{url}|{account_name}> updated: {history}"
-SLACK_NEW_BUDGET_MSG = u"New budget #{budget_id} added on campaign <{url}|{campaign_name}> with amount ${amount} and end date {end_date}."
-SLACK_UPDATED_BUDGET_MSG = u"Budget #{budget_id} on campaign <{url}|{campaign_name}> updated: {history}"
-
-
-def log_to_slack(account_id, msg):
-    if account_id in SLACK_SKIP_LOG_ACCOUNTS:
-        return
-    try:
-        slack.publish(
-            msg,
-            channel='bcm',
-            username='z1'
-        )
-    except:
-        logger.exception('Failed to publish to slack')
 
 
 class AccountCreditView(api_common.BaseApiView):
@@ -44,7 +25,7 @@ class AccountCreditView(api_common.BaseApiView):
         if not self.rest_proxy and not request.user.has_perm('zemauth.account_credit_view'):
             raise exc.AuthorizationError()
         account = helpers.get_account(request.user, account_id)
-        return self._get_response(account.id, account.agency)
+        return self._get_response(account)
 
     def post(self, request, account_id):
         if not request.user.has_perm('zemauth.account_credit_view'):
@@ -53,13 +34,7 @@ class AccountCreditView(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         request_data = json.loads(request.body)
         response_data = {'canceled': []}
-        account_credits_to_cancel = models.CreditLineItem.objects.filter(
-            account_id=account_id, pk__in=request_data['cancel']
-        )
-        if account.agency is not None:
-            account_credits_to_cancel |= models.CreditLineItem.objects.filter(
-                agency=account.agency, pk__in=request_data['cancel']
-            )
+        account_credits_to_cancel = models.CreditLineItem.objects.for_account(account).filter(pk__in=request_data['cancel'])
 
         for credit in account_credits_to_cancel:
             credit.cancel()
@@ -95,9 +70,9 @@ class AccountCreditView(api_common.BaseApiView):
 
         item.instance.created_by = request.user
         item.save(request=request, action_type=constants.HistoryActionType.CREATE)
-        log_to_slack(account_id, SLACK_NEW_CREDIT_MSG.format(
+        core.bcm.bcm_slack.log_to_slack(account_id, core.bcm.bcm_slack.SLACK_NEW_CREDIT_MSG.format(
             credit_id=item.instance.pk,
-            url=ACCOUNT_URL.format(account_id),
+            url=core.bcm.bcm_slack.ACCOUNT_URL.format(account_id),
             account_id=account_id,
             account_name=account.get_long_name(),
             amount=item.instance.amount,
@@ -128,35 +103,29 @@ class AccountCreditView(api_common.BaseApiView):
             'available': credit.effective_amount() - allocated,
         }
 
-    def _get_response(self, account_id, agency):
-        credit_items = models.CreditLineItem.objects.filter(
-            account_id=account_id
-        ).prefetch_related('budgets').order_by('-start_date', '-end_date', '-created_dt')
-
-        if agency is not None:
-            credit_items |= models.CreditLineItem.objects.filter(
-                agency=agency
-            ).prefetch_related('budgets').order_by('-start_date', '-end_date', '-created_dt')
+    def _get_response(self, account):
+        credit_items = models.CreditLineItem.objects.for_account(account)
+        credit_items = credit_items.prefetch_related('budgets').order_by('-start_date', '-end_date', '-created_dt')
 
         return self.create_api_response({
-            'active': self._get_active_credit(account_id, credit_items),
-            'past': self._get_past_credit(account_id, credit_items),
-            'totals': self._get_credit_totals(account_id, credit_items),
+            'active': self._get_active_credit(credit_items),
+            'past': self._get_past_credit(credit_items),
+            'totals': self._get_credit_totals(credit_items),
         })
 
-    def _get_active_credit(self, account_id, credit_items):
+    def _get_active_credit(self, credit_items):
         return [
             self._prepare_credit(item)
             for item in credit_items if not item.is_past()
         ]
 
-    def _get_past_credit(self, account_id, credit_items):
+    def _get_past_credit(self, credit_items):
         return [
             self._prepare_credit(item)
             for item in credit_items if item.is_past()
         ]
 
-    def _get_credit_totals(self, account_id, credit_items):
+    def _get_credit_totals(self, credit_items):
         valid_credit_items = [credit for credit in credit_items if credit.status !=
                               constants.CreditLineItemStatus.PENDING]
         total = sum(credit.effective_amount() for credit in valid_credit_items)
@@ -179,10 +148,8 @@ class AccountCreditItemView(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
-        item = models.CreditLineItem.objects.filter(account_id=account.id, pk=credit_id).first()
-        if item is None:
-            item = models.CreditLineItem.objects.get(agency=account.agency, pk=credit_id)
-        return self._get_response(account.id, item)
+        item = models.CreditLineItem.objects.for_account(account).get(pk=credit_id)
+        return self._get_response(account, item)
 
     def delete(self, request, account_id, credit_id):
         if not request.user.has_perm('zemauth.account_credit_view'):
@@ -190,9 +157,7 @@ class AccountCreditItemView(api_common.BaseApiView):
 
         account = helpers.get_account(request.user, account_id)
 
-        item = models.CreditLineItem.objects.filter(account_id=account.id, pk=credit_id).first()
-        if item is None:
-            item = models.CreditLineItem.objects.get(agency=account.agency, pk=credit_id)
+        item = models.CreditLineItem.objects.for_account(account).get(pk=credit_id)
         item.delete()
 
         account.write_history(
@@ -207,9 +172,7 @@ class AccountCreditItemView(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
-        item = models.CreditLineItem.objects.filter(account_id=account.id, pk=credit_id).first()
-        if item is None:
-            item = models.CreditLineItem.objects.get(agency=account.agency, pk=credit_id)
+        item = models.CreditLineItem.objects.for_account(account).get(pk=credit_id)
         request_data = json.loads(request.body)
 
         data = {}
@@ -235,16 +198,16 @@ class AccountCreditItemView(api_common.BaseApiView):
 
         item_form.save(request=request, action_type=constants.HistoryActionType.CREDIT_CHANGE)
         changes = item_form.instance.get_model_state_changes(model_to_dict(item_form.instance))
-        log_to_slack(account_id, SLACK_UPDATED_CREDIT_MSG.format(
+        core.bcm.bcm_slack.log_to_slack(account_id, core.bcm.bcm_slack.SLACK_UPDATED_CREDIT_MSG.format(
             credit_id=credit_id,
-            url=ACCOUNT_URL.format(account_id),
+            url=core.bcm.bcm_slack.ACCOUNT_URL.format(account_id),
             account_id=account_id,
             account_name=account.get_long_name(),
             history=item_form.instance.get_history_changes_text(changes),
         ))
         return self.create_api_response(credit_id)
 
-    def _get_response(self, account_id, item):
+    def _get_response(self, account, item):
         return self.create_api_response({
             'id': item.pk,
             'created_by': str(item.created_by or 'Zemanta One'),
@@ -255,7 +218,7 @@ class AccountCreditItemView(api_common.BaseApiView):
             'is_canceled': item.status == constants.CreditLineItemStatus.CANCELED,
             'license_fee': helpers.format_decimal_to_percent(item.license_fee) + '%',
             'amount': item.amount,
-            'account_id': account_id,
+            'account_id': account.id,
             'comment': item.comment,
             'is_agency': item.is_agency(),
             'budgets': [
@@ -293,22 +256,22 @@ class CampaignBudgetView(api_common.BaseApiView):
             else:
                 data['margin'] = helpers.format_percent_to_decimal(data['margin'] or '0')
 
-        item = forms.BudgetLineItemForm(data)
-        if item.errors:
-            raise exc.ValidationError(errors=item.errors)
+        form = forms.BudgetLineItemForm(data)
+        if form.errors:
+            raise exc.ValidationError(errors=form.errors)
 
-        item.instance.created_by = request.user
-        item.save(request=request, action_type=constants.HistoryActionType.CREATE)
-        campaign_stop.perform_landing_mode_check(campaign, campaign.get_current_settings())
-        log_to_slack(campaign.account_id, SLACK_NEW_BUDGET_MSG.format(
-            budget_id=item.instance.pk,
-            url=CAMPAIGN_URL.format(campaign_id),
-            campaign_id=campaign_id,
-            campaign_name=campaign.get_long_name(),
-            amount=item.instance.amount,
-            end_date=item.instance.end_date
-        ))
-        return self.create_api_response(item.instance.pk)
+        item = core.bcm.BudgetLineItem.objects.create(
+            user=request.user,
+            campaign=campaign,
+            credit=form.cleaned_data['credit'],
+            start_date=form.cleaned_data['start_date'],
+            end_date=form.cleaned_data['end_date'],
+            amount=form.cleaned_data['amount'],
+            margin=form.cleaned_data['margin'],
+            comment=form.cleaned_data['comment']
+        )
+
+        return self.create_api_response(item.pk)
 
     def _prepare_item(self, user, item):
         spend = item.get_spend_data(use_decimal=True)['total']
@@ -346,16 +309,7 @@ class CampaignBudgetView(api_common.BaseApiView):
         })
 
     def _get_available_credit_items(self, user, campaign):
-        available_credits = models.CreditLineItem.objects.filter(
-            account=campaign.account
-        )
-
-        agency = campaign.account.agency
-        if agency is not None:
-            available_credits |= models.CreditLineItem.objects.filter(
-                agency=agency
-            )
-
+        available_credits = models.CreditLineItem.objects.for_account(campaign.account)
         return [
             {
                 'id': credit.pk,
@@ -401,12 +355,7 @@ class CampaignBudgetView(api_common.BaseApiView):
         if user.has_perm('zemauth.can_view_agency_margin'):
             data['lifetime']['margin'] = Decimal('0.0000')
 
-        credits = models.CreditLineItem.objects.filter(account=campaign.account)
-
-        agency = campaign.account.agency
-        if agency is not None:
-            credits |= models.CreditLineItem.objects.filter(agency=campaign.account.agency)
-
+        credits = models.CreditLineItem.objects.for_account(campaign.account)
         for item in credits:
             if item.status != constants.CreditLineItemStatus.SIGNED or item.is_past():
                 continue
@@ -471,9 +420,9 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         )
 
         changes = item.instance.get_model_state_changes(model_to_dict(item.instance))
-        log_to_slack(campaign.account_id, SLACK_UPDATED_BUDGET_MSG.format(
+        core.bcm.bcm_slack.log_to_slack(campaign.account_id, core.bcm.bcm_slack.SLACK_UPDATED_BUDGET_MSG.format(
             budget_id=budget_id,
-            url=CAMPAIGN_URL.format(campaign_id),
+            url=core.bcm.bcm_slack.CAMPAIGN_URL.format(campaign_id),
             campaign_id=campaign_id,
             campaign_name=campaign.get_long_name(),
             history=item.instance.get_history_changes_text(changes),

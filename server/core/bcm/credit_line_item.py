@@ -18,6 +18,19 @@ import core.common
 import core.history
 
 
+class CreditLineItemManager(core.common.QuerySetManager):
+
+    def for_account(self, account):
+        credit_items = CreditLineItem.objects.filter(account=account)
+        if account.agency is not None:
+            credit_items |= CreditLineItem.objects.filter(agency=account.agency)
+        return credit_items
+
+    def get_any_for_budget_creation(self, account):
+        credit_items = self.for_account(account)
+        return credit_items.prefetch_related('budgets').order_by('-start_date', '-end_date', '-created_dt').first()
+
+
 class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixin):
     class Meta:
         app_label = 'dash'
@@ -72,7 +85,7 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixin):
                                    verbose_name='Created by',
                                    on_delete=models.PROTECT, null=True, blank=True)
 
-    objects = core.common.QuerySetManager()
+    objects = CreditLineItemManager()
 
     def is_active(self, date=None):
         if date is None:

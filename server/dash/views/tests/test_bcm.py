@@ -1419,7 +1419,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
         )
-        budget = models.BudgetLineItem.objects.create(
+        budget = models.BudgetLineItem.objects.create_unsafe(
             credit=credit,
             amount=10000,
             start_date=datetime.date(2015, 11, 1),

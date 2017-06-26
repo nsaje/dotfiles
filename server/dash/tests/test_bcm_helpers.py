@@ -10,7 +10,7 @@ import dash.bcm_helpers
 from utils import converters
 
 create_credit = dash.models.CreditLineItem.objects.create
-create_budget = dash.models.BudgetLineItem.objects.create
+create_budget = dash.models.BudgetLineItem.objects.create_unsafe
 create_statement = dash.models.BudgetDailyStatement.objects.create
 
 

@@ -1,8 +1,12 @@
+import mock
+import datetime
+
 from django.core.urlresolvers import reverse
 
 import restapi.test_views
-from dash import models
-from dash import constants
+import dash.models
+import dash.constants
+import dash.features.campaignlauncher
 from utils.magic_mixer import magic_mixer
 
 
@@ -43,11 +47,18 @@ class CampaignLauncherValidateTest(restapi.test_views.RESTAPITest):
 
 class CampaignLauncherLaunchTest(restapi.test_views.RESTAPITest):
 
-    def test_launch(self):
-        account = magic_mixer.blend(models.Account, users=[self.user])
+    @mock.patch.object(dash.features.campaignlauncher, 'launch', autospec=True)
+    def test_launch(self, mock_launch):
+        account = magic_mixer.blend(dash.models.Account, users=[self.user])
+        campaign = magic_mixer.blend(dash.models.Campaign, name='xyz')
+        mock_launch.return_value = campaign
+
         data = {
             'campaign_name': 'xyz',
             'iabCategory': 'IAB1_1',
+            'startDate': '2017-01-01',
+            'endDate': '2017-01-01',
+            'budgetAmount': 123
         }
         r = self.client.post(
             reverse('campaignlauncher_launch',
@@ -56,9 +67,13 @@ class CampaignLauncherLaunchTest(restapi.test_views.RESTAPITest):
             format='json'
         )
         r = self.assertResponseValid(r, data_type=dict)
-
         self.assertIn('campaignId', r['data'])
-        campaign = models.Campaign.objects.get(pk=r['data']['campaignId'])
-        campaign_settings = campaign.get_current_settings()
-        self.assertEqual(campaign_settings.name, 'xyz')
-        self.assertEqual(campaign_settings.iab_category, constants.IABCategory.IAB1_1)
+        mock_launch.assert_called_once_with(
+            user=self.user,
+            account=account,
+            name='xyz',
+            iab_category='IAB1-1',
+            start_date=datetime.date(2017, 1, 1),
+            end_date=datetime.date(2017, 1, 1),
+            budget_amount=123,
+        )

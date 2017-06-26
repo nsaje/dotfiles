@@ -545,7 +545,7 @@ class ArchiveRestoreTestCase(TestCase):
             end_date=datetime.date.today(),
             status=1,
         )
-        models.BudgetLineItem.objects.create(
+        models.BudgetLineItem.objects.create_unsafe(
             amount=credit.amount,
             start_date=credit.start_date,
             end_date=credit.end_date,
@@ -1373,7 +1373,7 @@ class HistoryTest(TestCase):
                        ed=end_date.isoformat()))
             .replace('\n', ''), history.changes_text)
 
-        budget = models.BudgetLineItem.objects.create(
+        budget = models.BudgetLineItem.objects.create_unsafe(
             campaign=ad_group.campaign,
             credit=credit,
             amount=100,

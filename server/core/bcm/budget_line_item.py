@@ -5,21 +5,55 @@ from decimal import Decimal
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db import transaction
 from django.db.models import Sum
 from django.forms.models import model_to_dict
 
 import utils.demo_anonymizer
 import utils.string_helper
+import utils.dates_helper
 from dash import constants
 from utils import converters
-from utils import dates_helper
 from utils import lc_helper
 
-
+import automation.campaign_stop
 import core.bcm
 import core.bcm.helpers
 import core.common
 import core.history
+
+import bcm_slack
+
+
+class BudgetLineItemManager(core.common.QuerySetManager):
+
+    @transaction.atomic
+    def create(self, user, campaign, credit, start_date, end_date, amount, margin=None, comment=None):
+        item = BudgetLineItem(
+            campaign=campaign,
+            credit=credit,
+            start_date=start_date,
+            end_date=end_date,
+            amount=amount
+        )
+        if margin is not None:
+            item.margin = margin
+        if comment is not None:
+            item.comment = comment
+        item.save(user=user, action_type=constants.HistoryActionType.CREATE)
+
+        automation.campaign_stop.perform_landing_mode_check(campaign, campaign.get_current_settings())
+
+        bcm_slack.log_to_slack(campaign.account_id, bcm_slack.SLACK_NEW_BUDGET_MSG.format(
+            budget_id=item.pk,
+            url=bcm_slack.CAMPAIGN_URL.format(campaign.id),
+            campaign_id=campaign.id,
+            campaign_name=campaign.get_long_name(),
+            amount=item.amount,
+            end_date=item.end_date
+        ))
+
+        return item
 
 
 class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
@@ -61,7 +95,7 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
                                    verbose_name='Created by',
                                    on_delete=models.PROTECT, null=True, blank=True)
 
-    objects = core.common.QuerySetManager()
+    objects = BudgetLineItemManager()
 
     def __unicode__(self):
         return u'${} - from {} to {} (id: {}, campaign: {})'.format(
@@ -104,19 +138,21 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
     def get_settings_dict(self):
         return {history_key: getattr(self, history_key) for history_key in self.history_fields}
 
-    def save(self, request=None, action_type=None, *args, **kwargs):
+    def save(self, request=None, user=None, action_type=None, *args, **kwargs):
         import core.bcm
         self.full_clean()
-        if request and not self.pk:
+        if user and not self.pk:
+            self.created_by = user
+        elif request and not self.pk:
             self.created_by = request.user
         super(BudgetLineItem, self).save(*args, **kwargs)
         core.bcm.BudgetHistory.objects.create(
-            created_by=request.user if request else None,
+            created_by=request.user if request else user or None,
             snapshot=model_to_dict(self),
             budget=self,
         )
         self.add_to_history(
-            request and request.user,
+            request and request.user or user or None,
             action_type)
 
     def add_to_history(self, user, action_type):
@@ -151,17 +187,17 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
         super(BudgetLineItem, self).delete()
 
     def get_overlap(self, start_date, end_date):
-        return dates_helper.get_overlap(self.start_date, self.end_date, start_date, end_date)
+        return utils.dates_helper.get_overlap(self.start_date, self.end_date, start_date, end_date)
 
     def get_available_amount(self, date=None):
         if date is None:
-            date = dates_helper.local_today()
+            date = utils.dates_helper.local_today()
         total_spend = self.get_spend_data(date=date, use_decimal=True)['total']
         return self.allocated_amount() - total_spend
 
     def state(self, date=None):
         if date is None:
-            date = dates_helper.local_today()
+            date = utils.dates_helper.local_today()
         if self.get_available_amount(date) <= 0:
             return constants.BudgetLineItemState.DEPLETED
         if self.end_date and self.end_date < date:
@@ -194,7 +230,7 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
         reserve = self.get_reserve_amount_cc()
         free_date = self.end_date + \
             datetime.timedelta(days=settings.LAST_N_DAY_REPORTS)
-        is_over_sync_time = dates_helper.local_today() > free_date
+        is_over_sync_time = utils.dates_helper.local_today() > free_date
 
         if is_over_sync_time:
             # After we completed all syncs, free all the assets including
@@ -364,7 +400,7 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
 
         def filter_active(self, date=None):
             if date is None:
-                date = dates_helper.local_today()
+                date = utils.dates_helper.local_today()
             return self.exclude(
                 end_date__lt=date
             ).filter(
