@@ -17,7 +17,9 @@ eins:
       NEW_RELIC_APP_NAME: "Zemanta One"
       NEW_RELIC_PROCESS_HOST_DISPLAY_NAME: "${HOSTNAME}-docker"
       GUNICORN_TIMEOUT: "180"
-      GUNICORN_WORKERS: "4"
+      GUNICORN_WORKERS: "8"
+      GUNICORN_WORKER_CLASS: "sync"
+      GUNICORN_LOG_LEVEL: "warn"
     labels:
       traefik.backend: "one.zemanta.com"
       traefik.frontend.rule: "Host:one.zemanta.com"
@@ -75,7 +77,7 @@ eins-rest-api:
       NEW_RELIC_APP_NAME: "Zemanta One (REST API)"
       GUNICORN_WORKERS: "8"
       GUNICORN_WORKER_CLASS: "sync"
-      GUNICORN_LOG_LEVEL: "debug"
+      GUNICORN_LOG_LEVEL: "warn"
     mem_limit: 2g
     #   default cpu.cfs_period_us is 100000. That is 100% of one CPU core
     cpu_quota: 200000
