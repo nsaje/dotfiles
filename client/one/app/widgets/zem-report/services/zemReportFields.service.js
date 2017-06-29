@@ -16,7 +16,7 @@ angular.module('one.widgets').service('zemReportFieldsService', function (zemPer
     var FIELDS_WITH_STATUSES = ['Account', 'Campaign', 'Ad Group', 'Content Ad', 'Publisher'];
 
     var BREAKDOWN_REQUIRED_FIELDS = {
-        'content_ad': ['URL', 'Description', 'Label', 'Call to action', 'Impression Trackers'],
+        'content_ad': ['URL', 'Description', 'Label', 'Call to action', 'Impression trackers'],
     };
 
     // Public API
