@@ -1,7 +1,7 @@
 FORMAT: 1A
 HOST: https://oneapi.zemanta.com
 
-# Zemanta One API
+# Zemanta API
 
 This document describes the Zemanta One REST Campaign Management API.
 
@@ -1639,6 +1639,17 @@ Time breakdown:
 - Avg. Cost per Pageview
 - Avg. Cost per Non-Bounced Visit
 - Avg. Cost per Minute
+
+#### Conversion Fields
+To get conversion data in the report, simply specify the same column names as you see them in the Zemanta Dashboard.
+
+For example, if your conversion goal name is "MyGoal", the valid column names would be
+
+- MyGoal 1 day
+- MyGoal 7 days
+- MyGoal 30 days
+- MyGoal 90 days
+
 
 ## Report jobs [/rest/v1/reports/]
 
