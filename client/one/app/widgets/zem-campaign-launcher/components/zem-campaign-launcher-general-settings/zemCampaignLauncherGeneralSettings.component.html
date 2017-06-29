@@ -1,4 +1,4 @@
-<div class="form m-b-xl">
+<div class="form">
     <div class="form__group" ng-class="{'form--error': !!$ctrl.state.fieldsErrors.campaignName}">
         <label class="form__label" for="campaign-name-input">Campaign name:</label>
         <input class="input-text"
@@ -14,7 +14,7 @@
 
     <div class="form__group" ng-class="{'form--error': !!$ctrl.state.fieldsErrors.iabCategory}">
         <label class="form__label" for="iab-category-select">
-            Campaign Category:
+            Campaign category:
             <zem-help-popover content="Specify campaign's content category. All campaigns must list one top-level category. If you are using mixed content consider splitting your campaign."
                               placement="top">
             </zem-help-popover>
@@ -34,4 +34,70 @@
             {{ error }}
         </div>
     </div>
+
+    <div class="form__group" ng-class="{'form--error': !!$ctrl.state.fieldsErrors.startDate}">
+        <label class="form__label" for="start-date-input">
+            Start date:
+            <zem-help-popover content="The date when content promotion commenced." placement="top"></zem-help-popover>
+        </label>
+        <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon">
+            <input class="input-text"
+                   id="start-date-input"
+                   type="text"
+                   uib-datepicker-popup="MM/dd/yyyy"
+                   datepicker-options="$ctrl.datePickers.startDatePicker.options"
+                   ng-model="$ctrl.state.fields.startDate"
+                   is-open="$ctrl.datePickers.startDatePicker.isOpen"
+                   ng-click="$ctrl.datePickers.startDatePicker.isOpen = true"
+                   ng-change="$ctrl.onFieldChange()">
+        </div>
+        <div class="message message--error" ng-repeat="error in $ctrl.state.fieldsErrors.startDate" for="start-date-input">
+            {{ error }}
+        </div>
+    </div>
+
+    <div class="form__group" ng-class="{'form--error': !!$ctrl.state.fieldsErrors.endDate}">
+        <label class="form__label" for="end-date-input">
+            End date:
+            <zem-help-popover content="The date when content promotion paused." placement="top"></zem-help-popover>
+        </label>
+        <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon">
+            <input class="input-text"
+                   id="end-date-input"
+                   type="text"
+                   datepicker-options="$ctrl.datePickers.endDatePicker.options"
+                   uib-datepicker-popup="MM/dd/yyyy"
+                   ng-model="$ctrl.state.fields.endDate"
+                   is-open="$ctrl.datePickers.endDatePicker.isOpen"
+                   ng-click="$ctrl.datePickers.endDatePicker.isOpen = true"
+                   ng-change="$ctrl.onFieldChange()">
+        </div>
+        <div class="message message--error" ng-repeat="error in $ctrl.state.fieldsErrors.endDate" for="end-date-input">
+            {{ error }}
+        </div>
+    </div>
+
+    <div class="form__group" ng-class="{'form--error': !!$ctrl.state.fieldsErrors.budgetAmount}">
+        <label class="form__label" for="budget-amount-input">Total budget:</label>
+        <div class="prefixed-field postfixed-field prefixed-field--narrow postfixed-field--narrow">
+            <span class="prefixed-field__prefix">$</span>
+            <input class="input-text"
+                   id="budget-amount-input"
+                   type="text"
+                   zem-currency-input
+                   fraction-size="0"
+                   ng-model="$ctrl.state.fields.budgetAmount"
+                   ng-change="$ctrl.onFieldChange()"
+                   ng-model-options="{debounce: 1000}">
+            <span class="postfixed-field__postfix">.00</span>
+        </div>
+        <div ng-repeat="error in $ctrl.state.fieldsErrors.budgetAmount" class="message message--error" for="budget-amount-input">
+            {{ error }}
+        </div>
+    </div>
+
+    <zem-campaign-launcher-goal class="zem-campaign-launcher-goal"
+                                state-service="$ctrl.stateService"
+                                account="$ctrl.account">
+    </zem-campaign-launcher-goal>
 </div>

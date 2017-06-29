@@ -12,6 +12,10 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
             fields: [
                 {name: 'campaignName', required: true},
                 {name: 'iabCategory', required: true},
+                {name: 'startDate', required: true},
+                {name: 'endDate', required: true},
+                {name: 'budgetAmount', required: true},
+                {name: 'campaignGoal', required: true},
             ],
             controls: {
                 previous: true,
@@ -98,6 +102,7 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
             var validationPromise = state.requests.validate.promise =
                 zemCampaignLauncherEndpoint.validate(account, fields)
                 .then(function () {
+                    if (validationPromise !== state.requests.validate.promise) return; // There's a more recent request
                     angular.forEach(fields, function (value, name) {
                         state.fieldsErrors[name] = null;
                     });

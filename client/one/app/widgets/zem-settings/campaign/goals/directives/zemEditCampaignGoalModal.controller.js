@@ -4,17 +4,12 @@
 // TODO: On major update, refactor to component
 //
 angular.module('one.widgets').controller('zemEditCampaignGoalModalCtrl', function ($scope, zemConversionPixelsEndpoint, zemCampaignGoalValidationEndpoint) { // eslint-disable-line max-len
-    $scope.conversionGoalTypes = options.conversionGoalTypes;
-    $scope.conversionWindows = options.conversionWindows;
     $scope.addConversionGoalInProgress = false;
     $scope.error = false;
     $scope.newCampaignGoal = false;
-    $scope.unit = '';
-    $scope.availablePixels = [];
-    $scope.loadingPixels = true;
-    $scope.pixel = {};
+    $scope.pixels = {};
+    $scope.newPixel = {};
     $scope.savingInProgress = false;
-    $scope.prevValue = null;
 
     var MAX_CONVERSION_GOALS = 15;
 
@@ -25,18 +20,12 @@ angular.module('one.widgets').controller('zemEditCampaignGoalModalCtrl', functio
             conversionGoal: {},
         };
     } else {
-        options.campaignGoalKPIs.forEach(function (kpiDefault) {
-            if (kpiDefault.value === $scope.campaignGoal.type) {
-                $scope.unit = kpiDefault.unit;
-            }
-        });
         $scope.prevValue = $scope.campaignGoal.value;
     }
 
     $scope.errors = {
         conversionGoal: {},
     };
-
 
     function getTypeId (goal) {
         if (goal.conversionGoal.type !== constants.conversionGoalType.PIXEL) {
@@ -49,21 +38,7 @@ angular.module('one.widgets').controller('zemEditCampaignGoalModalCtrl', functio
         ].join('::');
     }
 
-    $scope.setDefaultValue = function () {
-        var defaultValue = null;
-        if (!$scope.newCampaignGoal) {
-            return;
-        }
-        defaults.campaignGoalKPI.forEach(function (kpiDefault) {
-            if (kpiDefault.id === $scope.campaignGoal.type) {
-                defaultValue = kpiDefault.value;
-            }
-        });
-
-        $scope.campaignGoal.value = defaultValue;
-    };
-
-    $scope.isGoalAvailable = function (option) {
+    function isGoalAvailable (option) {
         var isAvailable = true,
             goal = $scope.campaignGoal,
             countConversionGoals = 0;
@@ -80,7 +55,7 @@ angular.module('one.widgets').controller('zemEditCampaignGoalModalCtrl', functio
             return true;
         }
         return isAvailable;
-    };
+    }
 
     $scope.validate = function (newGoal, allErrors) {
         var goalTypeIds = {},
@@ -131,8 +106,7 @@ angular.module('one.widgets').controller('zemEditCampaignGoalModalCtrl', functio
 
     $scope.save = function () {
         $scope.savingInProgress = true;
-        $scope.clearErrors('type');
-        $scope.clearErrors('value');
+        $scope.errors = {};
 
         $scope.campaignGoal.value = Math.abs($scope.campaignGoal.value);
 
@@ -150,12 +124,12 @@ angular.module('one.widgets').controller('zemEditCampaignGoalModalCtrl', functio
         if ($scope.campaignGoal.conversionGoal &&
             ($scope.campaignGoal.conversionGoal.type === constants.conversionGoalType.PIXEL) &&
             ($scope.campaignGoal.conversionGoal.goalId === '___new___')) {
-            zemConversionPixelsEndpoint.post($scope.account.id, $scope.pixel).then(
+            zemConversionPixelsEndpoint.post($scope.account.id, $scope.newPixel).then(
                 function (data) {
                     $scope.campaignGoal.conversionGoal.goalId = data.id;
                     $scope.campaignGoal.conversionGoal.pixelUrl = data.url;
 
-                    $scope.saveApi($scope.campaign.id, $scope.campaignGoal);
+                    saveApi($scope.campaign.id, $scope.campaignGoal);
                 },
                 function (data) {
                     if (data && data.message) {
@@ -167,11 +141,11 @@ angular.module('one.widgets').controller('zemEditCampaignGoalModalCtrl', functio
                 }
             );
         } else {
-            $scope.saveApi($scope.campaign.id, $scope.campaignGoal);
+            saveApi($scope.campaign.id, $scope.campaignGoal);
         }
     };
 
-    $scope.saveApi = function (campaignId, campaignGoal) {
+    function saveApi (campaignId, campaignGoal) {
         zemCampaignGoalValidationEndpoint.post(
             campaignId,
             campaignGoal
@@ -183,79 +157,15 @@ angular.module('one.widgets').controller('zemEditCampaignGoalModalCtrl', functio
             $scope.errors = errors;
             $scope.savingInProgress = false;
         });
-    };
-
-    $scope.clearErrors = function (name) {
-        if (!$scope.errors) {
-            return;
-        }
-        delete $scope.errors[name];
-    };
+    }
 
     $scope.showAddConversionGoalForm = function () {
         return $scope.campaignGoal.type === constants.campaignGoalKPI.CPA;
     };
 
-    $scope.showConversionPixelForm = function () {
-        return $scope.campaignGoal.conversionGoal.type === constants.conversionGoalType.PIXEL;
-    };
+    $scope.campaignGoalKPIs = options.campaignGoalKPIs.filter(isGoalAvailable);
 
-    $scope.showGAForm = function () {
-        return $scope.campaignGoal.conversionGoal.type === constants.conversionGoalType.GA;
-    };
-
-    $scope.showOmnitureForm = function () {
-        return $scope.campaignGoal.conversionGoal.type === constants.conversionGoalType.OMNITURE;
-    };
-
-    $scope.updateTypeChange = function (unit) {
-        delete $scope.campaignGoal.conversionGoal.goalId;
-        delete $scope.campaignGoal.conversionGoal.conversionWindow;
-
-        $scope.clearErrors('type');
-        $scope.clearErrors('conversionGoal');
-
-        if ((unit !== undefined) ||
-            ($scope.campaignGoal && $scope.campaignGoal.type === constants.campaignGoalKPI.PAGES_PER_SESSION)) {
-            $scope.setDefaultValue();
-        }
-        $scope.unit = unit || '';
-    };
-
-    $scope.prepareName = function (option) {
-        if ($scope.newCampaignGoal) {
-            return option && option.name || undefined;
-        }
-        if ($scope.campaignGoal.type !== constants.campaignGoalKPI.CPA) {
-            return option.name;
-        }
-        return 'CPA - ' + $scope.campaignGoal.conversionGoal.name;
-    };
-
-    $scope.campaignGoalKPIs = options.campaignGoalKPIs.filter($scope.isGoalAvailable);
-
-    $scope.refreshConversionWindows = function (goalId) {
-        var counts = {};
-        $scope.conversionWindows = [];
-        $scope.campaignGoals.forEach(function (goal) {
-            if (goal.type !== constants.campaignGoalKPI.CPA) {
-                return;
-            }
-            if (goal.conversionGoal.goalId === goalId) {
-                if (!counts[goal.conversionGoal.conversionWindow]) {
-                    counts[goal.conversionGoal.conversionWindow] = 0;
-                }
-                counts[goal.conversionGoal.conversionWindow]++;
-            }
-        });
-        options.conversionWindows.forEach(function (opt) {
-            if (!counts[opt.value]) {
-                $scope.conversionWindows.push(opt);
-            }
-        });
-    };
-
-    $scope.filterPixels = function (pixels) {
+    function filterPixels (pixels) {
         var availablePixels = [];
         pixels.forEach(function (p) {
             var counts = {},
@@ -288,12 +198,41 @@ angular.module('one.widgets').controller('zemEditCampaignGoalModalCtrl', functio
             name: 'Create new pixel',
         });
         return availablePixels;
-    };
+    }
 
+    function getPixelsWithAvailableConversionWindows (pixels) {
+        var pixelsWithAvailableConversionWindows = [];
+        pixels.forEach(function (pixel) {
+            pixel = angular.copy(pixel);
+            pixel.conversionWindows = [];
 
+            var counts = {};
+            $scope.campaignGoals.forEach(function (goal) {
+                if (goal.type !== constants.campaignGoalKPI.CPA) {
+                    return;
+                }
+                if (goal.conversionGoal.goalId === pixel.id) {
+                    if (!counts[goal.conversionGoal.conversionWindow]) {
+                        counts[goal.conversionGoal.conversionWindow] = 0;
+                    }
+                    counts[goal.conversionGoal.conversionWindow]++;
+                }
+            });
+            options.conversionWindows.forEach(function (conversionWindow) {
+                if (!counts[conversionWindow.value]) {
+                    pixel.conversionWindows.push(conversionWindow);
+                }
+            });
+            pixelsWithAvailableConversionWindows.push(pixel);
+        });
+        return pixelsWithAvailableConversionWindows;
+    }
+
+    $scope.pixels.loading = true;
     zemConversionPixelsEndpoint.list($scope.account.id).then(function (data) {
-        $scope.availablePixels = $scope.filterPixels(data.rows);
-        $scope.loadingPixels = false;
+        var availablePixels = filterPixels(data.rows);
+        $scope.pixels.list = getPixelsWithAvailableConversionWindows(availablePixels);
+        $scope.pixels.loading = false;
     });
 });
 

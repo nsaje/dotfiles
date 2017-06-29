@@ -89,7 +89,7 @@ describe('zemEditCampaignGoalModalCtrl', function () {
                 },
             };
             $scope.errors = {};
-            $scope.pixel = {
+            $scope.newPixel = {
                 name: 'awesome pixel',
             };
 

@@ -10,6 +10,7 @@ globals:
   zemSpecsHelper: false
   constants: false
   options: false
+  defaults: false
   # Jasmine
   jasmine: false
   describe: false

@@ -109,7 +109,6 @@ angular.module('one.widgets').directive('zemCampaignGoals', function ($filter) {
                 }
 
                 return $uibModal.open({
-
                     templateUrl: PARTIALS_URL + 'zemEditCampaignGoalModal.partial.html', // TODO: Create component
                     controller: 'zemEditCampaignGoalModalCtrl',
                     scope: scope,

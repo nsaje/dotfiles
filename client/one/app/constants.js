@@ -952,6 +952,12 @@ var constants = {
         2: 'Google Analytics',
         3: 'Adobe Analytics',
     },
+    conversionWindow: {
+        LEQ_1_DAY: 24,
+        LEQ_7_DAYS: 168,
+        LEQ_30_DAYS: 720,
+        LEQ_90_DAYS: 2160,
+    },
     conversionWindowText: {
         24: '1 day',
         168: '7 days',
@@ -2087,10 +2093,10 @@ var options = {
         {name: 'Adobe Analytics', value: constants.conversionGoalType.OMNITURE},
     ],
     conversionWindows: [
-        {name: '1 day', value: 24},
-        {name: '7 days', value: 168},
-        {name: '30 days', value: 720},
-        {name: '90 days', value: 2160},
+        {name: '1 day', value: constants.conversionWindow.LEQ_1_DAY},
+        {name: '7 days', value: constants.conversionWindow.LEQ_7_DAYS},
+        {name: '30 days', value: constants.conversionWindow.LEQ_30_DAYS},
+        {name: '90 days', value: constants.conversionWindow.LEQ_90_DAYS},
     ],
     exportFrequency: [
         {name: 'Daily', value: constants.exportFrequency.DAILY},
