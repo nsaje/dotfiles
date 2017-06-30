@@ -732,18 +732,31 @@ def _compute_daily_cap(ad_groups):
 
 
 def get_primary_campaign_goal(user, campaign, start_date, end_date):
-    settings = []
-
     primary_goal = dash.campaign_goals.fetch_goals([campaign.pk], end_date).first()
     if primary_goal is None or not primary_goal.primary:
-        return settings
+        return []
+
+    performance = dash.campaign_goals.get_goals_performance_campaign(
+        user, campaign, start_date, end_date)
+    return _get_primary_campaign_goal(user, campaign, performance)
+
+
+def get_primary_campaign_goal_ad_group(user, ad_group, start_date, end_date):
+    primary_goal = dash.campaign_goals.fetch_goals([ad_group.campaign_id], end_date).first()
+    if primary_goal is None or not primary_goal.primary:
+        return []
+
+    performance = dash.campaign_goals.get_goals_performance_ad_group(
+        user, ad_group, start_date, end_date)
+    return _get_primary_campaign_goal(user, ad_group.campaign, performance)
+
+
+def _get_primary_campaign_goal(user, campaign, performance):
+    settings = []
 
     permissions = user.get_all_permissions_with_access_levels()
 
-    performance = dash.campaign_goals.get_goals_performance(
-        user, campaign, start_date, end_date)
     status, metric_value, planned_value, campaign_goal = performance[0]
-
     goal_description = dash.campaign_goals.format_campaign_goal(
         campaign_goal.type,
         metric_value,
