@@ -21,6 +21,8 @@ services:
           GUNICORN_WORKERS: "8"
           GUNICORN_WORKER_CLASS: "sync"
           GUNICORN_LOG_LEVEL: "warn"
+          MEMCACHED_PORT_11211_TCP_ADDR: memcached
+          MEMCACHED_PORT_11211_TCP_PORT: 11211
         labels:
           traefik.backend: "one.zemanta.com"
           traefik.frontend.rule: "Host:one.zemanta.com"
