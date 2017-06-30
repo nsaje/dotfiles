@@ -247,7 +247,7 @@ class CampaignGoalsTestCase(TestCase):
             'avg_cost_per_visit': 35,
             'avg_cost_per_non_bounced_visit': 8,
         }
-        performance = campaign_goals.get_goals_performance(
+        performance = campaign_goals.get_goals_performance_campaign(
             self.user, self.campaign, start_date, end_date)
         self.assertEqual(
             [(p[1], p[2]) for p in performance],
@@ -263,7 +263,7 @@ class CampaignGoalsTestCase(TestCase):
         )
 
         mock_totals.return_value['conversion_goal_1'] = None
-        performance = campaign_goals.get_goals_performance(
+        performance = campaign_goals.get_goals_performance_campaign(
             self.user, self.campaign, start_date, end_date)
         self.assertEqual(
             [p[0] for p in performance],

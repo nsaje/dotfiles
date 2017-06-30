@@ -346,12 +346,29 @@ def get_goal_performance_metric(campaign_goal, conversion_goals):
     return CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type]
 
 
-def get_goals_performance(user, campaign, start_date, end_date):
-    constraints = stats.constraints_helper.prepare_campaign_constraints(
-        user, campaign, [], start_date, end_date, models.Source.objects.all())
-    stats_goals = stats.api_breakdowns.get_goals(constraints)
-    query_results = stats.api_breakdowns.totals(user, constants.Level.CAMPAIGNS, [], constraints, stats_goals)
+def get_goals_performance_campaign(user, campaign, start_date, end_date):
+    stats_constraints = stats.constraints_helper.prepare_campaign_constraints(
+        user, campaign, [], start_date, end_date,
+        models.Source.objects.all())
+    stats_goals = stats.api_breakdowns.get_goals(stats_constraints)
+    query_results = stats.api_breakdowns.totals(
+        user, constants.Level.CAMPAIGNS, [], stats_constraints, stats_goals)
 
+    return _get_goals_performance_output(stats_goals, query_results)
+
+
+def get_goals_performance_ad_group(user, ad_group, start_date, end_date):
+    stats_constraints = stats.constraints_helper.prepare_ad_group_constraints(
+        user, ad_group, [], start_date, end_date,
+        models.Source.objects.all())
+    stats_goals = stats.api_breakdowns.get_goals(stats_constraints)
+    query_results = stats.api_breakdowns.totals(
+        user, constants.Level.AD_GROUPS, [], stats_constraints, stats_goals)
+
+    return _get_goals_performance_output(stats_goals, query_results)
+
+
+def _get_goals_performance_output(stats_goals, query_results):
     performance = []
     for campaign_goal in stats_goals.campaign_goals:
         performance.append(_prepare_performance_output(
