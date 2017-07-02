@@ -40,7 +40,7 @@ LIST_REPORT_DISPLAY = {
     ),
     'budgets': lambda obj: u'{} ({})'.format(Url(
         _url(['v2', 'analytics', 'campaign', obj.campaign_id]),
-        '{}, {}'.format(str(obj), obj.campaign.account.get_long_name())
+        u'{}, {}'.format(unicode(obj), obj.campaign.account.get_long_name())
     ).as_html(), _get_bcm_changes('budget', obj)),
 }
 
