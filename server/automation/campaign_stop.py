@@ -1032,10 +1032,15 @@ def _turn_off_landing_mode(campaign, pause_ad_groups=False):
 
 
 def _get_last_user_ad_group_settings(ad_group):
-    return dash.models.AdGroupSettings.objects.filter(
-        ad_group=ad_group,
-        landing_mode=False
-    ).latest('created_dt')
+    try:
+        return dash.models.AdGroupSettings.objects.filter(
+            ad_group=ad_group,
+            landing_mode=False
+        ).latest('created_dt')
+    except dash.models.AdGroupSettings.DoesNotExist:
+        # ad group created by copying while in landing
+        # mode doesn't have previous settings
+        return None
 
 
 def _restore_user_ad_group_settings(ad_group, pause_ad_group=False):
@@ -1044,12 +1049,14 @@ def _restore_user_ad_group_settings(ad_group, pause_ad_group=False):
     current_settings = ad_group.get_current_settings()
 
     new_settings = current_settings.copy_settings()
-    new_settings.state = user_settings.state
-    new_settings.end_date = user_settings.end_date
     new_settings.landing_mode = False
     new_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
-    new_settings.b1_sources_group_state = user_settings.b1_sources_group_state
-    new_settings.b1_sources_group_daily_budget = user_settings.b1_sources_group_daily_budget
+
+    if user_settings:
+        new_settings.state = user_settings.state
+        new_settings.end_date = user_settings.end_date
+        new_settings.b1_sources_group_state = user_settings.b1_sources_group_state
+        new_settings.b1_sources_group_daily_budget = user_settings.b1_sources_group_daily_budget
 
     if pause_ad_group:
         new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
