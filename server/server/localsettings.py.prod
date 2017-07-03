@@ -135,17 +135,12 @@ S3_BUCKET_VIDEO = 'zemvideos'
 USE_S3 = True
 
 # adgroup-level reports aggregations
-QUERY_AGGREGATE_REPORTS=True
-
-# cache settings
-_MEMCACHED_ADDR = os.environ.get('MEMCACHED_PORT_11211_TCP_ADDR', '127.0.0.1')
-_MEMCACHED_PORT = os.environ.get('MEMCACHED_PORT_11211_TCP_PORT', '11211')
+QUERY_AGGREGATE_REPORTS = True
 
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
-        'LOCATION': ['%s:%s' % (_MEMCACHED_ADDR, _MEMCACHED_PORT),
-        ]
+        'LOCATION': ['memcached:11211']
     },
     'breakdowns_rs': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',

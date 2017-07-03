@@ -134,14 +134,10 @@ USE_S3 = False
 # adgroup-level reports aggregations
 QUERY_AGGREGATE_REPORTS = False
 
-# cache settings
-_MEMCACHED_ADDR = os.environ.get('MEMCACHED_PORT_11211_TCP_ADDR', '127.0.0.1')
-_MEMCACHED_PORT = os.environ.get('MEMCACHED_PORT_11211_TCP_PORT', '11211')
-
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
-        'LOCATION': ['%s:%s' % (_MEMCACHED_ADDR, _MEMCACHED_PORT), ]
+        'LOCATION': ['memcached:11211']
     },
     'breakdowns_rs': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',

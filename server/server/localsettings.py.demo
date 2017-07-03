@@ -123,11 +123,7 @@ S3_BUCKET_VIDEO = ''
 USE_S3 = False
 
 # adgroup-level reports aggregations
-QUERY_AGGREGATE_REPORTS=False
-
-# cache settings
-_MEMCACHED_ADDR = os.environ.get('MEMCACHED_PORT_11211_TCP_ADDR', '127.0.0.1')
-_MEMCACHED_PORT = os.environ.get('MEMCACHED_PORT_11211_TCP_PORT', '11211')
+QUERY_AGGREGATE_REPORTS = False
 
 CACHES = {
     'default': {
