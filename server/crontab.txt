@@ -32,4 +32,4 @@
 50 * * * *          /home/ubuntu/docker-manage-py.sh compare_blacklists
 0 6 * * *          /home/ubuntu/docker-manage-py.sh vacuum_stats
 30 6 * * *          /home/ubuntu/docker-manage-py.sh bi_to_influx
-0 12 * * *          /home/ubuntu/docker-manage-py.sh refresh_bluekai --slack
+0 12 * * *          /home/ubuntu/docker-manage-py.sh bluekai_refresh --slack

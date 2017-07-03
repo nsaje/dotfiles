@@ -1,3 +1,4 @@
+import copy
 import logging
 
 import bluekaiapi
@@ -28,6 +29,34 @@ def refresh_bluekai_categories():
             price=category['price'],
             navigation_only=category['navigation_only'],
         )
+
+
+def add_category_to_audience(category_id):
+    audience = bluekaiapi.get_audience(AUDIENCE_ID)
+    segments = copy.deepcopy(audience['segments'])
+
+    found = False
+    for category in segments['AND'][0]['AND'][0]['OR']:
+        if category_id == category['cat']:
+            found = True
+
+        # update only with relevant fields
+        for k in list(category.keys()):
+            if k not in ['cat', 'freq']:
+                del category[k]
+
+    if not found:
+        segments['AND'][0]['AND'][0]['OR'].append({
+            'cat': category_id,
+            'freq': [1, None],
+        })
+        data = {
+            'name': audience['name'],
+            'prospecting': audience['prospecting'],
+            'retargeting': audience['retargeting'],
+            'segments': segments,
+        }
+        bluekaiapi.update_audience(AUDIENCE_ID, data)
 
 
 def cross_check_audience_categories():

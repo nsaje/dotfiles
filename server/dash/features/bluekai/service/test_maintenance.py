@@ -168,3 +168,55 @@ class RefreshBluekaiCategoriesTestCase(TestCase):
             price=TEST_TAXONOMY[0]['categoryPrice'],
             navigation_only=TEST_TAXONOMY[0]['isForNavigationOnlyFlag'],
         )
+
+
+class AddCategoryTestCase(TestCase):
+
+    test_audience = {
+        'name': 'Test Audience',
+        'prospecting': True,
+        'retargeting': False,
+        'segments': {
+            'AND': [{
+                'AND': [{
+                    'OR': [{
+                        'cat': 1234,
+                        'freq': [1, None],
+                    }]
+                }]
+            }]
+        }
+    }
+
+    @patch('dash.features.bluekai.service.bluekaiapi.update_audience')
+    @patch('dash.features.bluekai.service.bluekaiapi.get_audience')
+    def test_add_category(self, mock_get_audience, mock_update_audience):
+        mock_get_audience.return_value = self.test_audience
+        maintenance.add_category_to_audience(4321)
+        mock_update_audience.assert_called_with(
+            maintenance.AUDIENCE_ID, {
+                'name': 'Test Audience',
+                'prospecting': True,
+                'retargeting': False,
+                'segments': {
+                    'AND': [{
+                        'AND': [{
+                            'OR': [{
+                                'cat': 1234,
+                                'freq': [1, None],
+                            }, {
+                                'cat': 4321,
+                                'freq': [1, None],
+                            }]
+                        }]
+                    }]
+                }
+            }
+        )
+
+    @patch('dash.features.bluekai.service.bluekaiapi.update_audience')
+    @patch('dash.features.bluekai.service.bluekaiapi.get_audience')
+    def test_add_existing_category(self, mock_get_audience, mock_update_audience):
+        mock_get_audience.return_value = self.test_audience
+        maintenance.add_category_to_audience(1234)
+        self.assertFalse(mock_update_audience.called)

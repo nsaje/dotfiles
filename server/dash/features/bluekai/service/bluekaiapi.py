@@ -58,6 +58,12 @@ def get_audience(audience_id):
     return json.loads(response.content)
 
 
+def update_audience(audience_id, data):
+    url = AUDIENCES_URL + str(audience_id)
+    response = _perform_request('PUT', url, params={}, data=json.dumps(data))
+    return json.loads(response.content)
+
+
 def _get_signed_params(method, url, params, data):
     path = urlparse.urlparse(url).path
     params_vals = ''.join(urllib.quote(val) for val in params.values())
