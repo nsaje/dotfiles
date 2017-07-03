@@ -105,7 +105,7 @@ services:
 
     einsworker_reports:
         extends: eins
-        mem_limit: 2g
+        mem_limit: 3g
         labels:
           traefik.enable: "false"
         entrypoint: ""
