@@ -728,7 +728,7 @@ class ArchiveRestoreTestCase(TestCase):
         cs = ag.get_current_settings()
         self.assertFalse(cs.archived)
         self.assertTrue(ag.can_archive())
-        self.assertEqual([x for x in ag.settings.all() if x.state == constants.AdGroupSettingsState.ACTIVE], [])
+        self.assertEqual([x for x in ag.adgroupsettings_set.all() if x.state == constants.AdGroupSettingsState.ACTIVE], [])
 
         with test_helper.disable_auto_now_add(models.AdGroupSettings, 'created_dt'):
             cs = cs.copy_settings()

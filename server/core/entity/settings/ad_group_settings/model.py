@@ -1,14 +1,12 @@
-# -*- coding: utf-8 -*-
-import datetime
-import json
-from collections import OrderedDict
-from decimal import Decimal
-
-import jsonfield
 import pytz
+import datetime
+import jsonfield
+import json
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
+from collections import OrderedDict
+from decimal import Decimal
 
 import utils.demo_anonymizer
 import utils.string_helper
@@ -23,63 +21,28 @@ import core.entity
 import core.history
 import core.source
 
-import helpers
 
-from settings_base import SettingsBase
-from settings_query_set import SettingsQuerySet
+from ..settings_base import SettingsBase
 
-
-class AdGroupSettingsManager(core.common.QuerySetManager):
-
-    def _create_default_obj(self, ad_group):
-        current_settings = ad_group.get_current_settings()  # get default ad group settings
-        new_settings = current_settings.copy_settings()
-        campaign_settings = ad_group.campaign.get_current_settings()
-
-        new_settings.target_devices = campaign_settings.target_devices
-        new_settings.target_os = campaign_settings.target_os
-        new_settings.target_placements = campaign_settings.target_placements
-        new_settings.target_regions = campaign_settings.target_regions
-        new_settings.ad_group_name = ad_group.name
-        return new_settings
-
-    def create_default(self, ad_group):
-        new_settings = self._create_default_obj(ad_group)
-        new_settings.save(None)
-        return new_settings
-
-    def create_restapi_default(self, ad_group):
-        new_settings = self._create_default_obj(ad_group)
-        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
-        new_settings.autopilot_daily_budget = 0
-        new_settings.b1_sources_group_enabled = False
-        new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.INACTIVE
-        new_settings.save(None)
-        return new_settings
-
-    def clone(self, request, ad_group, source_ad_group_settings, state=constants.AdGroupSettingsState.INACTIVE):
-        new_settings = self._create_default_obj(ad_group)
-        for field in AdGroupSettings._settings_fields:
-            setattr(new_settings, field, getattr(source_ad_group_settings, field))
-
-        new_settings.state = state
-        new_settings.archived = False
-        if (source_ad_group_settings.end_date is not None and
-           source_ad_group_settings.end_date <= dates_helper.local_today()):
-            new_settings.start_date = dates_helper.local_today()
-            new_settings.end_date = None
-
-        new_settings.save(request)
-        return new_settings
+import manager
+import queryset
+import instance
+import validation
+from .. import helpers
 
 
-class AdGroupSettings(SettingsBase):
+class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
+                      instance.AdGroupSettingsMixin,
+                      SettingsBase):
     class Meta:
         ordering = ('-created_dt',)
         permissions = (
             ("settings_view", "Can view settings in dashboard."),
         )
         app_label = 'dash'
+
+    objects = manager.AdGroupSettingsManager()
+    QuerySet = queryset.QuerySet
 
     _demo_fields = {
         'display_url': utils.demo_anonymizer.fake_display_url,
@@ -133,7 +96,7 @@ class AdGroupSettings(SettingsBase):
 
     id = models.AutoField(primary_key=True)
     ad_group = models.ForeignKey(
-        core.entity.AdGroup, related_name='settings', on_delete=models.PROTECT)
+        core.entity.AdGroup, on_delete=models.PROTECT)
     created_dt = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
@@ -243,58 +206,6 @@ class AdGroupSettings(SettingsBase):
     )
 
     click_capping_daily_ad_group_max_clicks = models.PositiveIntegerField(blank=True, null=True)
-
-    def get_settings_dict(self):
-        # ad group settings form expects 'name' instead of 'ad_group_name'
-        settings_dict = super(AdGroupSettings, self).get_settings_dict()
-        settings_dict['name'] = settings_dict['ad_group_name']
-        return settings_dict
-
-    def _convert_date_utc_datetime(self, date):
-        dt = datetime.datetime(
-            date.year,
-            date.month,
-            date.day,
-            tzinfo=pytz.timezone(settings.DEFAULT_TIME_ZONE)
-        )
-        return dt.astimezone(pytz.timezone('UTC')).replace(tzinfo=None)
-
-    def get_utc_start_datetime(self):
-        if self.start_date is None:
-            return None
-
-        return self._convert_date_utc_datetime(self.start_date)
-
-    def get_utc_end_datetime(self):
-        if self.end_date is None:
-            return None
-
-        dt = self._convert_date_utc_datetime(self.end_date)
-        dt += datetime.timedelta(days=1)
-        return dt
-
-    def targets_region_type(self, region_type):
-        regions = region_targeting_helper.get_list_for_region_type(region_type)
-
-        return any(target_region in regions for target_region in self.target_regions or [])
-
-    def get_targets_for_region_type(self, region_type):
-        regions_of_type = region_targeting_helper.get_list_for_region_type(
-            region_type)
-
-        return [target_region for target_region in self.target_regions or [] if target_region in regions_of_type]
-
-    def get_target_names_for_region_type(self, region_type):
-        regions_of_type = region_targeting_helper.get_list_for_region_type(
-            region_type)
-
-        return [regions_of_type[target_region] for target_region
-                in self.target_regions or [] if target_region in regions_of_type]
-
-    def is_mobile_only(self):
-        return bool(self.target_devices) \
-            and len(self.target_devices) == 1 \
-            and constants.AdTargetDevice.MOBILE in self.target_devices
 
     @classmethod
     def get_defaults_dict(cls):
@@ -501,47 +412,59 @@ class AdGroupSettings(SettingsBase):
         }
         return core.history.helpers.get_changes_text_from_dict(cls, valid_changes, separator=separator)
 
-    objects = AdGroupSettingsManager()
+    def get_settings_dict(self):
+        # ad group settings form expects 'name' instead of 'ad_group_name'
+        settings_dict = super(AdGroupSettings, self).get_settings_dict()
+        settings_dict['name'] = settings_dict['ad_group_name']
+        return settings_dict
+
+    def _convert_date_utc_datetime(self, date):
+        dt = datetime.datetime(
+            date.year,
+            date.month,
+            date.day,
+            tzinfo=pytz.timezone(settings.DEFAULT_TIME_ZONE)
+        )
+        return dt.astimezone(pytz.timezone('UTC')).replace(tzinfo=None)
+
+    def get_utc_start_datetime(self):
+        if self.start_date is None:
+            return None
+
+        return self._convert_date_utc_datetime(self.start_date)
+
+    def get_utc_end_datetime(self):
+        if self.end_date is None:
+            return None
+
+        dt = self._convert_date_utc_datetime(self.end_date)
+        dt += datetime.timedelta(days=1)
+        return dt
+
+    def targets_region_type(self, region_type):
+        regions = region_targeting_helper.get_list_for_region_type(region_type)
+
+        return any(target_region in regions for target_region in self.target_regions or [])
+
+    def get_targets_for_region_type(self, region_type):
+        regions_of_type = region_targeting_helper.get_list_for_region_type(
+            region_type)
+
+        return [target_region for target_region in self.target_regions or [] if target_region in regions_of_type]
+
+    def get_target_names_for_region_type(self, region_type):
+        regions_of_type = region_targeting_helper.get_list_for_region_type(
+            region_type)
+
+        return [regions_of_type[target_region] for target_region
+                in self.target_regions or [] if target_region in regions_of_type]
+
+    def is_mobile_only(self):
+        return bool(self.target_devices) \
+            and len(self.target_devices) == 1 \
+            and constants.AdTargetDevice.MOBILE in self.target_devices
 
     def get_tracking_codes(self):
         # Strip the first '?' as we don't want to send it as a part of query
         # string
         return self.tracking_code.lstrip('?')
-
-    def save(self,
-             request,
-             action_type=None,
-             changes_text=None,
-             *args, **kwargs):
-        if self.pk is None:
-            if request is None:
-                self.created_by = None
-            else:
-                self.created_by = request.user
-        super(AdGroupSettings, self).save(*args, **kwargs)
-        self.add_to_history(request and request.user,
-                            action_type, changes_text)
-
-    def add_to_history(self, user, action_type, history_changes_text):
-        changes = self.get_model_state_changes(
-            self.get_settings_dict()
-        )
-        changes_text = history_changes_text or self.get_changes_text_from_dict(
-            changes)
-        self.ad_group.write_history(
-            self.changes_text or changes_text,
-            changes=changes,
-            action_type=action_type,
-            user=user,
-            system_user=self.system_user
-        )
-
-    class QuerySet(SettingsQuerySet):
-
-        def group_current_settings(self):
-            return self.order_by('ad_group_id', '-created_dt').distinct('ad_group')
-
-        def only_state_fields(self):
-            """ Only select fields that are releant to calculating ad group state """
-
-            return self.only('ad_group_id', 'state', 'start_date', 'end_date')

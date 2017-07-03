@@ -319,7 +319,7 @@
         description: 'Example description'
         call_to_action: 'Call to action'
         daily_budget_cc: 100
-        ad_group_name: 'AdGroup name'
+        ad_group_name: 'My ad group'
         start_date: '2015-03-02'
         autopilot_state: 2
         autopilot_daily_budget: '50.0000'

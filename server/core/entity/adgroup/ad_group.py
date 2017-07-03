@@ -41,12 +41,13 @@ class AdGroupManager(core.common.QuerySetManager):
 
     def create(self, request, campaign, is_restapi=False, **kwargs):
         with transaction.atomic():
-            ad_group = self._create(request, campaign, name=self._create_default_name(campaign))
+            name = self._create_default_name(campaign)
+            ad_group = self._create(request, campaign, name=name)
 
             if is_restapi:
-                ad_group_settings = core.entity.settings.AdGroupSettings.objects.create_restapi_default(ad_group)
+                ad_group_settings = core.entity.settings.AdGroupSettings.objects.create_restapi_default(ad_group, name=name)
             else:
-                ad_group_settings = core.entity.settings.AdGroupSettings.objects.create_default(ad_group)
+                ad_group_settings = core.entity.settings.AdGroupSettings.objects.create_default(ad_group, name=name)
 
             core.entity.AdGroupSource.objects.bulk_create_on_allowed_sources(
                 request, ad_group, write_history=False, k1_sync=False)
@@ -70,7 +71,9 @@ class AdGroupManager(core.common.QuerySetManager):
         return ad_group
 
 
-class AdGroup(models.Model):
+class AdGroup(models.Model, core.common.SettingsProxyMixin):
+    _current_settings = None
+
     class Meta:
         app_label = 'dash'
         ordering = ('name',)

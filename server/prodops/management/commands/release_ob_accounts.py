@@ -75,7 +75,7 @@ class Command(ExceptionCommand):
             Account.objects.filter(outbrain_marketer_id__isnull=False).exclude(
                 outbrain_marketer_id=''
             )
-            if acc.settings.all().count() and acc.get_current_settings().created_dt < youngest_change_date
+            if acc.adgroupsettings_set.all().count() and acc.get_current_settings().created_dt < youngest_change_date
         )
         unarchived_accounts = set(acc.pk for acc in Account.objects.all().exclude_archived())
         accounts_with_spend = set(acc.pk for acc in Account.objects.all().filter_with_spend())

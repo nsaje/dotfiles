@@ -339,7 +339,7 @@
         description: 'Example description'
         call_to_action: 'Call to action'
         daily_budget_cc: 100
-        ad_group_name: 'AdGroup name'
+        ad_group_name: 'test adgroup 1'
         start_date: '2015-03-02'
         end_date: '2015-04-02'
         autopilot_state: 1
@@ -376,6 +376,7 @@
         created_by: 1
         archived: False
         ad_group: 2
+        ad_group_name: 'test adgroup 2'
         tracking_code: 'param1=foo&param2=bar'
         display_url: 'example.com'
         brand_name: 'Example'

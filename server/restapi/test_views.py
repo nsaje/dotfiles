@@ -623,7 +623,7 @@ class AdGroupsTest(RESTAPITest):
         expected = self.adgroup_repr(
             id=adgroup_db.id,
             campaign_id=adgroup_db.campaign_id,
-            name=adgroup_db.name,
+            name=settings_db.ad_group_name,
             state=settings_db.state,
             archived=settings_db.archived,
             start_date=settings_db.start_date,

@@ -1,9 +1,6 @@
 import json
 import re
 import logging
-import decimal
-
-import influx
 
 from django.db import transaction
 from django.db.models import Prefetch
@@ -12,7 +9,7 @@ from django.conf import settings
 from django.contrib.auth import models as authmodels
 from django.http import Http404
 
-from automation import autopilot_budgets, autopilot_plus, autopilot_settings, campaign_stop
+from automation import autopilot_budgets
 from dash.views import helpers
 from dash import forms
 from dash import models
@@ -22,8 +19,6 @@ from dash import campaign_goals
 from dash import facebook_helper
 from dash import ga_helper
 from dash import content_insights_helper
-from dash import cpc_constraints
-import dash.features.bluekai.models
 
 from utils import api_common
 from utils import exc
@@ -80,9 +75,6 @@ class AdGroupSettings(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
-        previous_ad_group_name = ad_group.name
-
-        current_settings = ad_group.get_current_settings()
 
         resource = json.loads(request.body)
 
@@ -90,307 +82,16 @@ class AdGroupSettings(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        self.set_ad_group(ad_group, form.cleaned_data)
-
-        new_settings = current_settings.copy_settings()
-        latest_ad_group_source_settings = models.AdGroupSourceSettings.objects.all().\
-            filter(ad_group_source__ad_group=ad_group).\
-            group_current_settings().\
-            select_related('ad_group_source')
-        self.set_settings(
-            ad_group,
-            latest_ad_group_source_settings,
-            new_settings,
-            form.cleaned_data,
-            request.user
-        )
-
-        campaign_settings = ad_group.campaign.get_current_settings()
-
-        self.validate_state_change(ad_group, current_settings, new_settings, campaign_settings)
-        self.validate_autopilot_settings(request, ad_group, current_settings, new_settings)
-        self.validate_all_rtb_state(request, current_settings, new_settings)
-        self.validate_yahoo_desktop_targeting(ad_group, current_settings, new_settings)
-        self.validate_all_rtb_campaign_stop(ad_group, current_settings, new_settings, campaign_settings)
-        self.validate_autopilot_campaign_stop(ad_group, current_settings, new_settings, campaign_settings)
-        self.validate_bluekai_targeting_change(current_settings, new_settings)
-
-        # update ad group name
-        current_settings.ad_group_name = previous_ad_group_name
-        new_settings.ad_group_name = ad_group.name
-
-        changes = current_settings.get_setting_changes(new_settings)
-        changes, current_settings, new_settings = self.b1_sources_group_adjustments(
-            changes, current_settings, new_settings)
-
-        if current_settings.bluekai_targeting != new_settings.bluekai_targeting:
-            influx.incr('dash.agency.bluekai_targeting_change', 1, adgroup=str(ad_group.id))
-
-        # save
-        ad_group.save(request)
-        if changes:
-            if new_settings.id is None or 'tracking_code' in changes or 'click_capping_daily_ad_group_max_clicks' in changes:
-                redirector_helper.insert_adgroup(
-                    ad_group,
-                    new_settings,
-                    campaign_settings,
-                )
-
-            if self.should_set_cpc_autopilot_initial_cpcs(current_settings, new_settings):
-                self.set_cpc_autopilot_initial_cpcs(request, ad_group, new_settings)
-
-            ad_group_sources_cpcs = helpers.get_adjusted_ad_group_sources_cpcs(ad_group, new_settings)
-            if self.should_validate_cpc_constraints(changes, new_settings):
-                try:
-                    helpers.validate_ad_group_sources_cpc_constraints(ad_group_sources_cpcs)
-                except cpc_constraints.ValidationError as err:
-                    raise exc.ValidationError(errors={
-                        'b1_sources_group_cpc_cc': list(set(err))
-                    })
-            helpers.set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, new_settings)
-
-            self.check_settings_consistency(request, new_settings, ad_group)
-
-            new_settings.save(
-                request,
-                action_type=constants.HistoryActionType.SETTINGS_CHANGE)
-            k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
-
-            if self.should_initialize_budget_autopilot(changes, new_settings):
-                autopilot_plus.initialize_budget_autopilot_on_ad_group(new_settings, send_mail=True)
-
-            changes_text = models.AdGroupSettings.get_changes_text(
-                current_settings, new_settings, request.user, separator='\n')
-
-            email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
+        ad_group.settings.update(request, **form.cleaned_data)
 
         response = {
-            'settings': self.get_dict(request, new_settings, ad_group),
+            'settings': self.get_dict(request, ad_group.settings, ad_group),
             'default_settings': self.get_default_settings_dict(ad_group),
             'action_is_waiting': False,
-            'archived': new_settings.archived,
+            'archived': ad_group.settings.archived,
         }
 
         return self.create_api_response(response)
-
-    def check_settings_consistency(self, request, settings, ad_group):
-        settings_dict = self.get_dict(request, settings, ad_group)
-        form = forms.AdGroupSettingsForm(ad_group, request.user, settings_dict)
-        if not form.is_valid():
-            logger.error('Inconsistent settings change. errors=%s', form.errors.as_data())
-
-    def should_initialize_budget_autopilot(self, changes, new_settings):
-        if new_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-            return False
-
-        ap_budget_fields = ['autopilot_daily_budget', 'autopilot_state', 'b1_sources_group_state']
-        if not any(field in changes for field in ap_budget_fields):
-            return False
-
-        return True
-
-    def should_set_cpc_autopilot_initial_cpcs(self, current_settings, new_settings):
-        return current_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
-            new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC and\
-            new_settings.b1_sources_group_enabled
-
-    def should_validate_cpc_constraints(self, changes, new_settings):
-        return 'b1_sources_group_cpc_cc' in changes
-
-    def validate_autopilot_settings(self, request, ad_group, settings, new_settings):
-        if new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-            if not new_settings.b1_sources_group_enabled:
-                msg = 'To enable Daily Cap Autopilot, RTB Sources have to be managed as a group.'
-                raise exc.ValidationError(errors={
-                    'autopilot_state': msg
-                })
-
-            if settings.b1_sources_group_daily_budget != new_settings.b1_sources_group_daily_budget:
-                msg = 'Autopilot has to be disabled in order to manage Daily Cap of RTB Sources'
-                raise exc.ValidationError(errors={
-                    'b1_sources_group_daily_budget': msg,
-                })
-
-        if new_settings.autopilot_state in (
-                constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
-                constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-        ):
-            if settings.b1_sources_group_cpc_cc != new_settings.b1_sources_group_cpc_cc:
-                msg = 'Autopilot has to be disabled in order to manage Daily Cap of RTB Sources'
-                raise exc.ValidationError(errors={
-                    'b1_sources_group_daily_budget': msg,
-                })
-
-        min_autopilot_daily_budget = autopilot_budgets.get_adgroup_minimum_daily_budget(
-            ad_group, new_settings
-        )
-        if new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
-           new_settings.autopilot_daily_budget < min_autopilot_daily_budget:
-            msg = 'Total Daily Spend Cap must be at least ${min_budget}. Autopilot '\
-                  'requires ${min_per_source} or more per active media source.'
-            raise exc.ValidationError(errors={
-                'autopilot_daily_budget': msg.format(
-                    min_budget=min_autopilot_daily_budget,
-                    min_per_source=autopilot_settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC,
-                )
-            })
-
-    def validate_autopilot_campaign_stop(self, ad_group, current_settings, new_settings, campaign_settings):
-        if new_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-            return
-
-        if current_settings.autopilot_daily_budget >= new_settings.autopilot_daily_budget:
-            return
-
-        max_settable = campaign_stop.get_max_settable_autopilot_budget(
-            ad_group,
-            ad_group.campaign,
-            new_settings,
-            campaign_settings,
-        )
-        if max_settable is not None and new_settings.autopilot_daily_budget > max_settable:
-            msg = 'Total Daily Spend Cap is too high. Maximum daily spend can be up to ${}'.format(max_settable)
-            raise exc.ValidationError(errors={
-                'autopilot_daily_budget': msg
-            })
-
-    def validate_all_rtb_state(self, request, settings, new_settings):
-        # MVP for all-RTB-sources-as-one
-        # Ensure that AdGroup is paused when enabling/disabling All RTB functionality
-        # For now this is the easiest solution to avoid conflicts with ad group budgets and state validations
-        if new_settings.state == constants.AdGroupSettingsState.INACTIVE:
-            return
-
-        if settings.b1_sources_group_enabled != new_settings.b1_sources_group_enabled:
-            msg = 'To manage Daily Spend Cap for All RTB as one, ad group must be paused first.'
-            if not new_settings.b1_sources_group_enabled:
-                'To disable managing Daily Spend Cap for All RTB as one, ad group must be paused first.'
-            raise exc.ValidationError(errors={'b1_sources_group_enabled': [msg]})
-
-    def validate_all_rtb_campaign_stop(self, ad_group, current_settings, new_settings, campaign_settings):
-        changes = current_settings.get_setting_changes(new_settings)
-        if 'b1_sources_group_daily_budget' in changes:
-            new_daily_budget = decimal.Decimal(changes['b1_sources_group_daily_budget'])
-            max_daily_budget = campaign_stop.get_max_settable_b1_sources_group_budget(
-                ad_group,
-                ad_group.campaign,
-                new_settings,
-                campaign_settings,
-            )
-            if max_daily_budget is not None and new_daily_budget > max_daily_budget:
-                raise exc.ValidationError(errors={
-                    'daily_budget_cc': [
-                        'Daily Spend Cap is too high. Maximum daily spend '
-                        'cap can be up to ${max_daily_budget}.'.format(
-                            max_daily_budget=max_daily_budget
-                        )
-                    ]
-                })
-
-        if 'b1_sources_group_state' in changes:
-            can_enable_b1_sources_group = campaign_stop.can_enable_b1_sources_group(
-                ad_group,
-                ad_group.campaign,
-                new_settings,
-                campaign_settings,
-            )
-            if not can_enable_b1_sources_group:
-                raise exc.ValidationError(errors={
-                    'state': ['Please add additional budget to your campaign to make changes.']
-                })
-
-    def b1_sources_group_adjustments(self, changes, current_settings, new_settings):
-        # Turning on RTB-as-one
-        if 'b1_sources_group_enabled' in changes and changes['b1_sources_group_enabled']:
-            new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.ACTIVE
-
-            new_b1_sources_group_cpc = constants.SourceAllRTB.DEFAULT_CPC_CC
-            if changes.get('b1_sources_group_cpc_cc'):
-                new_b1_sources_group_cpc = changes['b1_sources_group_cpc_cc']
-            new_settings.b1_sources_group_cpc_cc = new_b1_sources_group_cpc
-
-            if changes.get('b1_sources_group_daily_budget'):
-                new_settings.b1_sources_group_daily_budget = changes.get('b1_sources_group_daily_budget')
-            else:
-                new_settings.b1_sources_group_daily_budget = constants.SourceAllRTB.DEFAULT_DAILY_BUDGET
-
-        # Changing adgroup max cpc
-        if changes.get('cpc_cc') and new_settings.b1_sources_group_enabled:
-            new_settings.b1_sources_group_cpc_cc = min(changes.get('cpc_cc'), new_settings.b1_sources_group_cpc_cc)
-
-        new_settings.b1_sources_group_cpc_cc = helpers.adjust_max_cpc(
-            new_settings.b1_sources_group_cpc_cc,
-            new_settings
-        )
-        return current_settings.get_setting_changes(new_settings), current_settings, new_settings
-
-    def set_cpc_autopilot_initial_cpcs(self, request, ad_group, new_ad_group_settings):
-        all_b1_sources = ad_group.adgroupsource_set.filter(
-            source__source_type__type=constants.SourceType.B1
-        )
-        active_b1_sources = all_b1_sources.filter_active()
-        active_b1_sources_settings = models.AdGroupSourceSettings.objects.filter(
-            ad_group_source__in=active_b1_sources
-        ).group_current_settings()
-
-        if active_b1_sources.count() < 1:
-            return
-
-        avg_cpc_cc = (
-            sum(agss.cpc_cc for agss in active_b1_sources_settings) /
-            len(active_b1_sources_settings)
-        )
-
-        new_ad_group_settings.b1_sources_group_cpc_cc = avg_cpc_cc
-        new_ad_group_sources_cpcs = {ad_group_source: avg_cpc_cc for ad_group_source in all_b1_sources}
-        helpers.set_ad_group_sources_cpcs(new_ad_group_sources_cpcs, ad_group, new_ad_group_settings)
-
-    def validate_state_change(self, ad_group, current_settings, new_settings, campaign_settings):
-        if current_settings.state == new_settings.state:
-            return
-
-        helpers.validate_ad_groups_state(
-            [ad_group],
-            ad_group.campaign,
-            campaign_settings,
-            new_settings.state,
-        )
-
-    def _validate_bluekai_tageting(self, bluekai_targeting):
-        if isinstance(bluekai_targeting, list):
-            for subexp in bluekai_targeting[1:]:
-                self._validate_bluekai_tageting(subexp)
-        else:
-            typ, id_ = bluekai_targeting.split(':', 1)
-            if typ == 'bluekai' and not dash.features.bluekai.models.\
-               BlueKaiCategory.objects.active().filter(category_id=id_):
-                raise exc.ValidationError(
-                    'Invalid BlueKai category id: "{}"'.format(id_)
-                )
-
-    def validate_bluekai_targeting_change(self, current_settings, new_settings):
-        if current_settings.bluekai_targeting == new_settings.bluekai_targeting:
-            return
-
-        self._validate_bluekai_tageting(new_settings.bluekai_targeting)
-
-    @staticmethod
-    def validate_yahoo_desktop_targeting(ad_group, settings, new_settings):
-        # optimization: only check when targeting is changed to desktop only
-        if not (settings.target_devices != new_settings.target_devices and
-                new_settings.target_devices == [constants.AdTargetDevice.DESKTOP]):
-            return
-
-        for ags in ad_group.adgroupsource_set.all():
-            if ags.source.source_type.type != constants.SourceType.YAHOO:
-                continue
-            curr_ags_settings = ags.get_current_settings()
-            if curr_ags_settings.state != constants.AdGroupSettingsState.ACTIVE:
-                continue
-            min_cpc = ags.source.source_type.get_min_cpc(new_settings)
-            if min_cpc and curr_ags_settings.cpc_cc < min_cpc:
-                msg = 'CPC on Yahoo is too low for desktop-only targeting. Please set it to at least $0.25.'
-                raise exc.ValidationError(errors={'target_devices': [msg]})
 
     def _supports_max_cpm(self, latest_ad_group_source_settings):
         unsupported_sources = []
@@ -440,7 +141,7 @@ class AdGroupSettings(api_common.BaseApiView):
         result = {
             'id': str(ad_group.pk),
             'campaign_id': str(ad_group.campaign_id),
-            'name': ad_group.name,
+            'name': settings.ad_group_name,
             'state': settings.state,
             'start_date': settings.start_date,
             'end_date': settings.end_date,
@@ -497,66 +198,6 @@ class AdGroupSettings(api_common.BaseApiView):
             settings.bluekai_targeting, use_list_repr=True).data
 
         return result
-
-    def set_ad_group(self, ad_group, resource):
-        ad_group.name = resource['name']
-
-    def set_settings(self, ad_group, latest_ad_group_source_settings, settings, resource, user):
-        settings.state = resource['state']
-        settings.start_date = resource['start_date']
-        settings.end_date = resource['end_date']
-        settings.daily_budget_cc = resource['daily_budget_cc']
-        settings.target_devices = resource['target_devices']
-        settings.target_regions = resource['target_regions']
-        settings.exclusion_target_regions = resource['exclusion_target_regions']
-        settings.interest_targeting = resource['interest_targeting']
-        settings.exclusion_interest_targeting = resource['exclusion_interest_targeting']
-        settings.ad_group_name = resource['name']
-        settings.tracking_code = resource['tracking_code']
-        settings.dayparting = resource['dayparting']
-
-        if user.has_perm('zemauth.can_set_click_capping'):
-            settings.click_capping_daily_ad_group_max_clicks = resource['click_capping_daily_ad_group_max_clicks']
-
-        if user.has_perm('zemauth.can_set_ad_group_max_cpc'):
-            settings.cpc_cc = resource['cpc_cc']
-
-        if user.has_perm('zemauth.can_set_ad_group_max_cpm'):
-            settings.max_cpm = resource['max_cpm']
-
-        if not settings.landing_mode and user.has_perm('zemauth.can_set_adgroup_to_auto_pilot'):
-            settings.autopilot_state = resource['autopilot_state']
-            if resource['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-                settings.autopilot_daily_budget = resource['autopilot_daily_budget']
-
-        if user.has_perm('zemauth.can_view_retargeting_settings') and\
-                retargeting_helper.supports_retargeting(latest_ad_group_source_settings):
-            settings.retargeting_ad_groups = resource['retargeting_ad_groups']
-
-        if user.has_perm('zemauth.can_target_custom_audiences') and\
-                retargeting_helper.supports_retargeting(latest_ad_group_source_settings):
-            settings.exclusion_retargeting_ad_groups = resource['exclusion_retargeting_ad_groups']
-            settings.audience_targeting = resource['audience_targeting']
-            settings.exclusion_audience_targeting = resource['exclusion_audience_targeting']
-
-        settings.b1_sources_group_enabled = resource['b1_sources_group_enabled']
-        settings.b1_sources_group_daily_budget = resource['b1_sources_group_daily_budget']
-        settings.b1_sources_group_state = resource['b1_sources_group_state']
-        if user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc') and settings.b1_sources_group_enabled:
-            settings.b1_sources_group_cpc_cc = resource['b1_sources_group_cpc_cc']
-
-        settings.bluekai_targeting = resource['bluekai_targeting']
-
-        if user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
-            settings.whitelist_publisher_groups = resource['whitelist_publisher_groups']
-            settings.blacklist_publisher_groups = resource['blacklist_publisher_groups']
-
-        if user.has_perm('zemauth.can_set_advanced_device_targeting'):
-            settings.target_os = resource['target_os']
-            settings.target_placements = resource['target_placements']
-
-        if user.has_perm('zemauth.can_set_delivery_type'):
-            settings.delivery_type = resource['delivery_type']
 
     def get_default_settings_dict(self, ad_group):
         settings = ad_group.campaign.get_current_settings()

@@ -111,6 +111,7 @@
     ad_group_id: 1
     created_dt: '2016-02-29T09:58:21'
     created_by: 1
+    ad_group_name: 'Test AdGroup 1'
     state: 2
     start_date: '2016-01-01'
     display_url: 'example.com'
