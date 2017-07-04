@@ -70,6 +70,8 @@ describe('zemCampaignLauncherStateService', function () {
             startDate: null,
             endDate: null,
             budgetAmount: null,
+            maxCpc: null,
+            dailyBudget: null,
             campaignGoal: null,
         });
     });
