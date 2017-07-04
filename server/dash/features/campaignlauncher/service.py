@@ -4,7 +4,8 @@ from dash import models
 
 
 def launch(request, account, name, iab_category, start_date, end_date, budget_amount,
-           goal_type, goal_value, conversion_goal_type=None, conversion_goal_goal_id=None, conversion_goal_window=None):
+           goal_type, goal_value, max_cpc, daily_budget,
+           conversion_goal_type=None, conversion_goal_goal_id=None, conversion_goal_window=None):
     campaign = models.Campaign.objects.create(
         request=request,
         account=account,
@@ -32,5 +33,14 @@ def launch(request, account, name, iab_category, start_date, end_date, budget_am
         conversion_goal = models.ConversionGoal.objects.create(
             request, campaign, conversion_goal_type, conversion_goal_goal_id, conversion_goal_window)
     models.CampaignGoal.objects.create(request, campaign, goal_type, goal_value, conversion_goal, primary=True)
+
+    ad_group = models.AdGroup.objects.create(request, campaign)
+    ad_group.settings.update(
+        request,
+        start_date=start_date,
+        end_date=end_date,
+        cpc_cc=max_cpc,
+        daily_budget_cc=daily_budget
+    )
 
     return campaign

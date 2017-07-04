@@ -61,6 +61,8 @@ class CampaignLauncherLaunchTest(restapi.test_views.RESTAPITest):
             'startDate': '2017-01-01',
             'endDate': '2017-01-01',
             'budgetAmount': 123,
+            'maxCpc': '0.6',
+            'dailyBudget': '15.0',
             'goal': {
                 'type': 'CPA',
                 'value': '30.0',
@@ -87,6 +89,8 @@ class CampaignLauncherLaunchTest(restapi.test_views.RESTAPITest):
             start_date=datetime.date(2017, 1, 1),
             end_date=datetime.date(2017, 1, 1),
             budget_amount=123,
+            max_cpc=Decimal('0.6'),
+            daily_budget=Decimal('15.0'),
             goal_type=dash.constants.CampaignGoalKPI.CPA,
             goal_value=Decimal(30.0),
             conversion_goal_type=dash.constants.ConversionGoalType.PIXEL,

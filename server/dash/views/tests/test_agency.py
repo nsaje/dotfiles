@@ -306,13 +306,11 @@ class AdGroupSettingsTest(TestCase):
 
             add_permissions(self.user, [
                 'settings_view',
-                'can_set_ad_group_max_cpc',
                 'can_set_ad_group_max_cpm',
-                'can_set_adgroup_to_auto_pilot',
-                'can_view_retargeting_settings',
-                'can_target_custom_audiences',
-                'can_set_white_blacklist_publisher_groups',
                 'can_set_delivery_type',
+                'can_set_rtb_sources_as_one_cpc',
+                'can_set_white_blacklist_publisher_groups',
+                'can_set_advanced_device_targeting',
             ])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
@@ -370,7 +368,7 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_enabled': True,
                         'b1_sources_group_daily_budget': '500.0000',
                         'b1_sources_group_state': 1,
-                        'b1_sources_group_cpc_cc': '0.0100',
+                        'b1_sources_group_cpc_cc': '0.25',
                         'whitelist_publisher_groups': [1],
                         'blacklist_publisher_groups': [1],
                         'landing_mode': False,
@@ -412,6 +410,11 @@ class AdGroupSettingsTest(TestCase):
                 'can_set_adgroup_to_auto_pilot',
                 'can_view_retargeting_settings',
                 'can_target_custom_audiences',
+                'can_set_white_blacklist_publisher_groups',
+                'can_set_delivery_type',
+                'can_set_rtb_sources_as_one_cpc',
+                'can_set_white_blacklist_publisher_groups',
+                'can_set_advanced_device_targeting',
             ])
             new_settings = {}
             new_settings.update(self.settings_dict)
@@ -473,11 +476,11 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_enabled': True,
                         'b1_sources_group_daily_budget': '500.0000',
                         'b1_sources_group_state': 1,
-                        'b1_sources_group_cpc_cc': '0.0100',
-                        'whitelist_publisher_groups': [],  # no permission to set
-                        'blacklist_publisher_groups': [],  # no permission to set
+                        'b1_sources_group_cpc_cc': '0.05',
+                        'whitelist_publisher_groups': [1],
+                        'blacklist_publisher_groups': [1],
                         'landing_mode': False,
-                        'delivery_type': 1,
+                        'delivery_type': 2,
                         'click_capping_daily_ad_group_max_clicks': 10,
                     }
                 },
@@ -555,6 +558,7 @@ class AdGroupSettingsTest(TestCase):
             new_settings.save(None)
 
             self.assertIsNotNone(old_settings.pk)
+            self.settings_dict['settings']['b1_sources_group_cpc_cc'] = '0.01'  # in order to not change it
             self.settings_dict['settings']['autopilot_state'] = 1
             self.settings_dict['settings']['autopilot_daily_budget'] = '200.00'
 
@@ -599,6 +603,11 @@ class AdGroupSettingsTest(TestCase):
                 'can_view_retargeting_settings',
                 'can_target_custom_audiences',
                 'can_set_white_blacklist_publisher_groups',
+                'can_set_white_blacklist_publisher_groups',
+                'can_set_delivery_type',
+                'can_set_rtb_sources_as_one_cpc',
+                'can_set_white_blacklist_publisher_groups',
+                'can_set_advanced_device_targeting',
             ])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
@@ -655,11 +664,11 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_enabled': True,
                         'b1_sources_group_daily_budget': '500.0000',
                         'b1_sources_group_state': 1,
-                        'b1_sources_group_cpc_cc': '0.3000',
+                        'b1_sources_group_cpc_cc': '0.25',
                         'whitelist_publisher_groups': [1],
                         'blacklist_publisher_groups': [1],
                         'landing_mode': False,
-                        'delivery_type': 1,
+                        'delivery_type': 2,
                         'click_capping_daily_ad_group_max_clicks': 10,
                     }
                 },
@@ -693,6 +702,11 @@ class AdGroupSettingsTest(TestCase):
                 'can_view_retargeting_settings',
                 'can_target_custom_audiences',
                 'can_set_rtb_sources_as_one_cpc',
+                'can_set_white_blacklist_publisher_groups',
+                'can_set_delivery_type',
+                'can_set_rtb_sources_as_one_cpc',
+                'can_set_white_blacklist_publisher_groups',
+                'can_set_advanced_device_targeting',
             ])
             new_settings = {}
             new_settings.update(self.settings_dict)
@@ -755,10 +769,10 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_daily_budget': '500.0000',
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.1',
-                        'whitelist_publisher_groups': [],  # no permission to set
-                        'blacklist_publisher_groups': [],  # no permission to set
+                        'whitelist_publisher_groups': [1],
+                        'blacklist_publisher_groups': [1],
                         'landing_mode': False,
-                        'delivery_type': 1,
+                        'delivery_type': 2,
                         'click_capping_daily_ad_group_max_clicks': 10,
                     }
                 },
@@ -821,6 +835,11 @@ class AdGroupSettingsTest(TestCase):
                 'can_view_retargeting_settings',
                 'can_target_custom_audiences',
                 'can_set_rtb_sources_as_one_cpc',
+                'can_set_white_blacklist_publisher_groups',
+                'can_set_delivery_type',
+                'can_set_rtb_sources_as_one_cpc',
+                'can_set_white_blacklist_publisher_groups',
+                'can_set_advanced_device_targeting',
             ])
             new_settings = {}
             new_settings.update(self.settings_dict)
@@ -885,10 +904,10 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_daily_budget': '500.0000',
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.2150',
-                        'whitelist_publisher_groups': [],  # no permission to set
-                        'blacklist_publisher_groups': [],  # no permission to set
+                        'whitelist_publisher_groups': [1],
+                        'blacklist_publisher_groups': [1],
                         'landing_mode': False,
-                        'delivery_type': 1,
+                        'delivery_type': 2,
                         'click_capping_daily_ad_group_max_clicks': 10,
                     }
                 },
@@ -1016,11 +1035,7 @@ class AdGroupSettingsTest(TestCase):
 
             response_settings_dict = json.loads(response.content)['data']['settings']
 
-            self.assertNotEqual(response_settings_dict['cpc_cc'], '0.3000')
-            self.assertNotEqual(response_settings_dict['autopilot_state'], 2)
-            self.assertNotEqual(response_settings_dict['autopilot_daily_budget'], '0.00')
-            self.assertNotEqual(response_settings_dict['retargeting_ad_groups'], [2])
-            self.assertEqual(response_settings_dict['delivery_type'], 1)
+            self.assertNotEqual(response_settings_dict['max_cpm'], '1.600')
 
 
 class AdGroupSettingsRetargetableAdgroupsTest(TestCase):

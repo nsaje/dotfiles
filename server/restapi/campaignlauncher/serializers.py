@@ -1,3 +1,4 @@
+import decimal
 from rest_framework import serializers
 from rest_framework import fields
 
@@ -34,4 +35,15 @@ class CampaignLauncherSerializer(serializers.Serializer):
     start_date = fields.DateField()
     end_date = fields.DateField()
     budget_amount = fields.IntegerField(min_value=0)
+    max_cpc = fields.DecimalField(
+        max_digits=None,
+        decimal_places=4,
+        min_value=decimal.Decimal('0.05'),
+        max_value=decimal.Decimal('10'),
+        error_messages={
+            'min_value': 'Maximum CPC can\'t be lower than $0.05.',
+            'max_value': 'Maximum CPC can\'t be higher than $10.00.'
+        }
+    )
+    daily_budget = fields.DecimalField(max_digits=10, decimal_places=4)
     goal = CampaignGoalSerializer()

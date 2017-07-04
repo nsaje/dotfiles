@@ -26,6 +26,8 @@ class CampaignLauncherViewSet(RESTAPIBaseViewSet):
             start_date=serializer.validated_data['start_date'],
             end_date=serializer.validated_data['end_date'],
             budget_amount=serializer.validated_data['budget_amount'],
+            max_cpc=serializer.validated_data['max_cpc'],
+            daily_budget=serializer.validated_data['daily_budget'],
             goal_type=serializer.validated_data['goal']['type'],
             goal_value=serializer.validated_data['goal']['value'],
             conversion_goal_type=serializer.validated_data['goal']['conversion_goal']['type'],

@@ -61,12 +61,12 @@ class AdGroupSettingsMixin(object):
             filter(ad_group_source__ad_group=ad_group).\
             group_current_settings().\
             select_related('ad_group_source')
+        kwargs = self._remove_unsupported_fields(kwargs, latest_ad_group_source_settings)
+        kwargs = self._remap_fields_for_compatibility(kwargs)
         self._set_settings(
-            ad_group,
-            latest_ad_group_source_settings,
+            request,
             new_settings,
-            kwargs,
-            request.user
+            kwargs
         )
 
         campaign_settings = ad_group.campaign.get_current_settings()
@@ -120,65 +120,46 @@ class AdGroupSettingsMixin(object):
         # since we no longer have to manually replace the object on the parent entity
         return new_settings
 
-    def _set_ad_group(self, ad_group, resource):
-        ad_group.name = resource['name']
+    @staticmethod
+    def _set_ad_group(ad_group, resource):
+        if 'name' in resource:
+            ad_group.name = resource['name']
 
-    def _set_settings(self, ad_group, latest_ad_group_source_settings, settings, resource, user):
-        settings.state = resource['state']
-        settings.start_date = resource['start_date']
-        settings.end_date = resource['end_date']
-        settings.daily_budget_cc = resource['daily_budget_cc']
-        settings.target_devices = resource['target_devices']
-        settings.target_regions = resource['target_regions']
-        settings.exclusion_target_regions = resource['exclusion_target_regions']
-        settings.interest_targeting = resource['interest_targeting']
-        settings.exclusion_interest_targeting = resource['exclusion_interest_targeting']
-        settings.ad_group_name = resource['name']
-        settings.tracking_code = resource['tracking_code']
-        settings.dayparting = resource['dayparting']
+    @staticmethod
+    def _remove_unsupported_fields(kwargs, latest_ad_group_source_settings):
+        if not retargeting_helper.supports_retargeting(latest_ad_group_source_settings):
+            kwargs.pop('retargeting_ad_groups', None)
+            kwargs.pop('exclusion_retargeting_ad_groups', None)
+            kwargs.pop('audience_targeting', None)
+            kwargs.pop('exclusion_audience_targeting', None)
+        return kwargs
 
-        if user.has_perm('zemauth.can_set_click_capping'):
-            settings.click_capping_daily_ad_group_max_clicks = resource['click_capping_daily_ad_group_max_clicks']
+    @staticmethod
+    def _remap_fields_for_compatibility(kwargs):
+        if 'name' in kwargs:
+            kwargs['ad_group_name'] = kwargs['name']
+        return kwargs
 
-        if user.has_perm('zemauth.can_set_ad_group_max_cpc'):
-            settings.cpc_cc = resource['cpc_cc']
+    @classmethod
+    def _set_settings(cls, request, new_settings, kwargs):
+        user = request.user
+        special_case_fields = {'autopilot_state', 'autopilot_daily_budget'}
+        valid_fields = set(cls._settings_fields) - special_case_fields
 
-        if user.has_perm('zemauth.can_set_ad_group_max_cpm'):
-            settings.max_cpm = resource['max_cpm']
+        for field, value in kwargs.items():
+            required_permission = cls._permissioned_fields.get(field)
+            if required_permission and not user.has_perm(required_permission):
+                continue
+            if field in valid_fields:
+                setattr(new_settings, field, value)
 
-        if not settings.landing_mode and user.has_perm('zemauth.can_set_adgroup_to_auto_pilot'):
-            settings.autopilot_state = resource['autopilot_state']
-            if resource['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-                settings.autopilot_daily_budget = resource['autopilot_daily_budget']
+        if 'autopilot_state' in kwargs and not new_settings.landing_mode:
+            new_settings.autopilot_state = kwargs['autopilot_state']
+        if kwargs.get('autopilot_state') == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+            new_settings.autopilot_daily_budget = kwargs['autopilot_daily_budget']
 
-        if user.has_perm('zemauth.can_view_retargeting_settings') and\
-                retargeting_helper.supports_retargeting(latest_ad_group_source_settings):
-            settings.retargeting_ad_groups = resource['retargeting_ad_groups']
-
-        if user.has_perm('zemauth.can_target_custom_audiences') and\
-                retargeting_helper.supports_retargeting(latest_ad_group_source_settings):
-            settings.exclusion_retargeting_ad_groups = resource['exclusion_retargeting_ad_groups']
-            settings.audience_targeting = resource['audience_targeting']
-            settings.exclusion_audience_targeting = resource['exclusion_audience_targeting']
-
-        settings.b1_sources_group_enabled = resource['b1_sources_group_enabled']
-        settings.b1_sources_group_daily_budget = resource['b1_sources_group_daily_budget']
-        settings.b1_sources_group_state = resource['b1_sources_group_state']
-        if user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc') and settings.b1_sources_group_enabled:
-            settings.b1_sources_group_cpc_cc = resource['b1_sources_group_cpc_cc']
-
-        settings.bluekai_targeting = resource['bluekai_targeting']
-
-        if user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
-            settings.whitelist_publisher_groups = resource['whitelist_publisher_groups']
-            settings.blacklist_publisher_groups = resource['blacklist_publisher_groups']
-
-        if user.has_perm('zemauth.can_set_advanced_device_targeting'):
-            settings.target_os = resource['target_os']
-            settings.target_placements = resource['target_placements']
-
-        if user.has_perm('zemauth.can_set_delivery_type'):
-            settings.delivery_type = resource['delivery_type']
+        if 'b1_sources_group_cpc_cc' in kwargs and new_settings.b1_sources_group_enabled:
+            new_settings.b1_sources_group_cpc_cc = kwargs['b1_sources_group_cpc_cc']
 
     @staticmethod
     def _b1_sources_group_adjustments(changes, current_settings, new_settings):
@@ -207,7 +188,8 @@ class AdGroupSettingsMixin(object):
         )
         return current_settings.get_setting_changes(new_settings), current_settings, new_settings
 
-    def _set_cpc_autopilot_initial_cpcs(self, request, ad_group, new_ad_group_settings):
+    @staticmethod
+    def _set_cpc_autopilot_initial_cpcs(request, ad_group, new_ad_group_settings):
         import dash.views.helpers
         all_b1_sources = ad_group.adgroupsource_set.filter(
             source__source_type__type=constants.SourceType.B1
@@ -229,7 +211,8 @@ class AdGroupSettingsMixin(object):
         new_ad_group_sources_cpcs = {ad_group_source: avg_cpc_cc for ad_group_source in all_b1_sources}
         dash.views.helpers.set_ad_group_sources_cpcs(new_ad_group_sources_cpcs, ad_group, new_ad_group_settings)
 
-    def _should_initialize_budget_autopilot(self, changes, new_settings):
+    @staticmethod
+    def _should_initialize_budget_autopilot(changes, new_settings):
         if new_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
             return False
 
@@ -239,10 +222,12 @@ class AdGroupSettingsMixin(object):
 
         return True
 
-    def _should_set_cpc_autopilot_initial_cpcs(self, current_settings, new_settings):
+    @staticmethod
+    def _should_set_cpc_autopilot_initial_cpcs(current_settings, new_settings):
         return current_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
             new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC and\
             new_settings.b1_sources_group_enabled
 
-    def _should_validate_cpc_constraints(self, changes, new_settings):
+    @staticmethod
+    def _should_validate_cpc_constraints(changes, new_settings):
         return 'b1_sources_group_cpc_cc' in changes

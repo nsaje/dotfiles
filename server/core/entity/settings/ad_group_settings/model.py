@@ -92,6 +92,10 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         'delivery_type',
         'click_capping_daily_ad_group_max_clicks',
     ]
+    _permissioned_fields = {
+        'click_capping_daily_ad_group_max_clicks': 'zemauth.can_set_click_capping',
+        'max_cpm': 'zemauth.can_set_ad_group_max_cpm',
+    }
     history_fields = list(_settings_fields)
 
     id = models.AutoField(primary_key=True)
