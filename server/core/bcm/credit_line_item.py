@@ -67,8 +67,8 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixin):
     flat_fee_end_date = models.DateField(blank=True, null=True)
 
     # Salesforce integration
-    contract_id = models.IntegerField(blank=True, null=True, verbose_name='SalesForce Contract ID')
-    part_id = models.IntegerField(blank=True, null=True, verbose_name='SalesForce Contract Part ID')
+    contract_id = models.CharField(max_length=256, blank=True, null=True, verbose_name='SalesForce Contract ID')
+    part_id = models.CharField(max_length=256, blank=True, null=True, verbose_name='SalesForce Contract Part ID')
 
     status = models.IntegerField(
         default=constants.CreditLineItemStatus.PENDING,

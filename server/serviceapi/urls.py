@@ -20,4 +20,9 @@ urlpatterns = [
         views.salesforce.CreateCreditLineView.as_view(),
         name='service.salesforce.credit'
     ),
+    url(
+        r'^salesforce/agency-accounts/$',
+        views.salesforce.AgencyAccountsView.as_view(),
+        name='service.salesforce.agency_accounts'
+    ),
 ]
