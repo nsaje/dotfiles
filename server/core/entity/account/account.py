@@ -61,6 +61,9 @@ class Account(models.Model):
 
     salesforce_url = models.URLField(null=True, blank=True, max_length=255)
 
+    # migration to the new system introduced by margings and fees project
+    uses_bcm_v2 = models.BooleanField(default=False)
+
     def __unicode__(self):
         return self.name
 
