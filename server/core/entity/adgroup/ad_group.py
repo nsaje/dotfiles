@@ -22,6 +22,7 @@ import core.entity
 
 
 class AdGroupManager(core.common.QuerySetManager):
+
     def _create_default_name(self, campaign):
         return core.entity.helpers.create_default_name(
             AdGroup.objects.filter(campaign=campaign), 'New ad group')
@@ -45,7 +46,8 @@ class AdGroupManager(core.common.QuerySetManager):
             ad_group = self._create(request, campaign, name=name)
 
             if is_restapi:
-                ad_group_settings = core.entity.settings.AdGroupSettings.objects.create_restapi_default(ad_group, name=name)
+                ad_group_settings = core.entity.settings.AdGroupSettings.objects.create_restapi_default(
+                    ad_group, name=name)
             else:
                 ad_group_settings = core.entity.settings.AdGroupSettings.objects.create_default(ad_group, name=name)
 
@@ -57,6 +59,9 @@ class AdGroupManager(core.common.QuerySetManager):
         return ad_group
 
     def clone(self, request, source_ad_group, campaign, new_name):
+        if campaign.get_current_settings().landing_mode:
+            raise exc.ValidationError('Please select a destination campaign that is not in landing mode')
+
         with transaction.atomic():
             ad_group = self._create(request, campaign, name=new_name)
             ad_group_settings = core.entity.settings.AdGroupSettings.objects.clone(
