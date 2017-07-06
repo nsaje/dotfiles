@@ -27,8 +27,8 @@ class AdGroupManager(core.common.QuerySetManager):
         return core.entity.helpers.create_default_name(
             AdGroup.objects.filter(campaign=campaign), 'New ad group')
 
-    def _create(self, request, campaign, **kwargs):
-        ad_group = AdGroup(campaign=campaign, **kwargs)
+    def _create(self, request, campaign, name, **kwargs):
+        ad_group = AdGroup(campaign=campaign, name=name, **kwargs)
         ad_group.save(request)
         return ad_group
 

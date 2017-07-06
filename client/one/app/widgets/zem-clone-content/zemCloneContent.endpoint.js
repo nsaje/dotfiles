@@ -39,9 +39,10 @@ angular.module('one.widgets').service('zemCloneContentEndpoint', function ($q, $
     }
 
     function convertErrorsFromApi (data) {
+        var errors = data.data.details;
         return {
-            destinationAdGroupId: data.data.destinationAdGroupId ? data.data.destinationAdGroupId[0] : null,
-            destinationBatchName: data.data.destinationBatchName ? data.data.destinationBatchName[0] : null,
+            destinationAdGroupId: errors.destinationAdGroupId ? errors.destinationAdGroupId[0] : null,
+            destinationBatchName: errors.destinationBatchName ? errors.destinationBatchName[0] : null,
             message: data.status === 500 ? 'Something went wrong' : null,
         };
     }

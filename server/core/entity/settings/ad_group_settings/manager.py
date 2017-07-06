@@ -35,7 +35,7 @@ class AdGroupSettingsManager(core.common.QuerySetManager):
 
     def clone(self, request, ad_group, source_ad_group_settings, state=constants.AdGroupSettingsState.INACTIVE):
         new_settings = self._create_default_obj(ad_group)
-        for field in self.model._settings_fields:
+        for field in set(self.model._settings_fields) - {'ad_group_name'}:
             setattr(new_settings, field, getattr(source_ad_group_settings, field))
 
         new_settings.state = state

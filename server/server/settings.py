@@ -181,6 +181,12 @@ RESTAPI_REPORTS_BUCKET = 'z1-rest-reports'
 
 GLOBAL_BLACKLIST_ID = 1
 
+REST_FRAMEWORK = {
+    'UNICODE_JSON': False,
+    'EXCEPTION_HANDLER': 'restapi.exceptions.custom_exception_handler',
+}
+
+
 from localsettings import *
 
 if ENABLE_DJANGO_EXTENSIONS:

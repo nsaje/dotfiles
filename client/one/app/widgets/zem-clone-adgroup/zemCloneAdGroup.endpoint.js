@@ -34,10 +34,12 @@ angular.module('one.widgets').service('zemCloneAdGroupEndpoint', function ($q, $
     }
 
     function convertErrorsFromApi (data) {
+        var errors = data.data.details;
+
         return {
-            destinationCampaignId: data.data.destinationCampaignId ? data.data.destinationCampaignId[0] : null,
-            destinationAdGroupName: data.data.destinationAdGroupName ? data.data.destinationAdGroupName[0] : null,
-            cloneAds: data.data.cloneAds ? data.data.cloneAds[0] : null,
+            destinationCampaignId: errors.destinationCampaignId ? errors.destinationCampaignId[0] : null,
+            destinationAdGroupName: errors.destinationAdGroupName ? errors.destinationAdGroupName[0] : null,
+            cloneAds: errors.cloneAds ? errors.cloneAds[0] : null,
             message: data.status === 500 ? 'Something went wrong' : null,
         };
     }
