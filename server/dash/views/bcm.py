@@ -34,7 +34,7 @@ class AccountCreditView(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         request_data = json.loads(request.body)
         response_data = {'canceled': []}
-        account_credits_to_cancel = models.CreditLineItem.objects.for_account(account).filter(pk__in=request_data['cancel'])
+        account_credits_to_cancel = models.CreditLineItem.objects.filter_by_account(account).filter(pk__in=request_data['cancel'])
 
         for credit in account_credits_to_cancel:
             credit.cancel()
@@ -104,7 +104,7 @@ class AccountCreditView(api_common.BaseApiView):
         }
 
     def _get_response(self, account):
-        credit_items = models.CreditLineItem.objects.for_account(account)
+        credit_items = models.CreditLineItem.objects.filter_by_account(account)
         credit_items = credit_items.prefetch_related('budgets').order_by('-start_date', '-end_date', '-created_dt')
 
         return self.create_api_response({
@@ -148,7 +148,7 @@ class AccountCreditItemView(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
-        item = models.CreditLineItem.objects.for_account(account).get(pk=credit_id)
+        item = models.CreditLineItem.objects.filter_by_account(account).get(pk=credit_id)
         return self._get_response(account, item)
 
     def delete(self, request, account_id, credit_id):
@@ -157,7 +157,7 @@ class AccountCreditItemView(api_common.BaseApiView):
 
         account = helpers.get_account(request.user, account_id)
 
-        item = models.CreditLineItem.objects.for_account(account).get(pk=credit_id)
+        item = models.CreditLineItem.objects.filter_by_account(account).get(pk=credit_id)
         item.delete()
 
         account.write_history(
@@ -172,7 +172,7 @@ class AccountCreditItemView(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
-        item = models.CreditLineItem.objects.for_account(account).get(pk=credit_id)
+        item = models.CreditLineItem.objects.filter_by_account(account).get(pk=credit_id)
         request_data = json.loads(request.body)
 
         data = {}
@@ -309,7 +309,7 @@ class CampaignBudgetView(api_common.BaseApiView):
         })
 
     def _get_available_credit_items(self, user, campaign):
-        available_credits = models.CreditLineItem.objects.for_account(campaign.account)
+        available_credits = models.CreditLineItem.objects.filter_by_account(campaign.account)
         return [
             {
                 'id': credit.pk,
@@ -355,7 +355,7 @@ class CampaignBudgetView(api_common.BaseApiView):
         if user.has_perm('zemauth.can_view_agency_margin'):
             data['lifetime']['margin'] = Decimal('0.0000')
 
-        credits = models.CreditLineItem.objects.for_account(campaign.account)
+        credits = models.CreditLineItem.objects.filter_by_account(campaign.account)
         for item in credits:
             if item.status != constants.CreditLineItemStatus.SIGNED or item.is_past():
                 continue

@@ -20,14 +20,14 @@ import core.history
 
 class CreditLineItemManager(core.common.QuerySetManager):
 
-    def for_account(self, account):
+    def filter_by_account(self, account):
         credit_items = CreditLineItem.objects.filter(account=account)
         if account.agency is not None:
             credit_items |= CreditLineItem.objects.filter(agency=account.agency)
         return credit_items
 
     def get_any_for_budget_creation(self, account):
-        credit_items = self.for_account(account)
+        credit_items = self.filter_by_account(account)
         return credit_items.prefetch_related('budgets').order_by('-start_date', '-end_date', '-created_dt').first()
 
 
