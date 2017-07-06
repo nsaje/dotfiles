@@ -12,8 +12,11 @@ from utils import k1_helper
 from utils import redirector_helper
 import helpers
 
+AUDIENCE_NUM_LIMIT = 100
+
 
 class AudiencesView(api_common.BaseApiView):
+
     def get(self, request, account_id, audience_id=None):
         if not request.user.has_perm('zemauth.account_custom_audiences_view'):
             raise exc.AuthorizationError()
@@ -137,8 +140,9 @@ class AudiencesView(api_common.BaseApiView):
         count = None
         count_yesterday = None
         rows = []
+        num_of_audiences = len(audiences)
         for audience in audiences:
-            if False and include_size:
+            if include_size and num_of_audiences < AUDIENCE_NUM_LIMIT:
                 count = redshiftapi.api_audiences.get_audience_sample_size(
                     audience.pixel.account.id,
                     audience.pixel.slug,
@@ -153,8 +157,8 @@ class AudiencesView(api_common.BaseApiView):
             rows.append({
                 'id': str(audience.pk),
                 'name': audience.name,
-                'count': 'N/A',
-                'count_yesterday': 'N/A',
+                'count': count,
+                'count_yesterday': count_yesterday,
                 'archived': audience.archived,
                 'created_dt': audience.created_dt,
             })
@@ -185,6 +189,7 @@ class AudiencesView(api_common.BaseApiView):
 
 
 class AudienceArchive(api_common.BaseApiView):
+
     def post(self, request, account_id, audience_id):
         if not request.user.has_perm('zemauth.account_custom_audiences_view'):
             raise exc.AuthorizationError()
@@ -217,6 +222,7 @@ class AudienceArchive(api_common.BaseApiView):
 
 
 class AudienceRestore(api_common.BaseApiView):
+
     def post(self, request, account_id, audience_id):
         if not request.user.has_perm('zemauth.account_custom_audiences_view'):
             raise exc.AuthorizationError()
