@@ -138,7 +138,7 @@ class AudiencesView(api_common.BaseApiView):
         count_yesterday = None
         rows = []
         for audience in audiences:
-            if include_size:
+            if False and include_size:
                 count = redshiftapi.api_audiences.get_audience_sample_size(
                     audience.pixel.account.id,
                     audience.pixel.slug,
@@ -153,8 +153,8 @@ class AudiencesView(api_common.BaseApiView):
             rows.append({
                 'id': str(audience.pk),
                 'name': audience.name,
-                'count': count,
-                'count_yesterday': count_yesterday,
+                'count': 'N/A',
+                'count_yesterday': 'N/A',
                 'archived': audience.archived,
                 'created_dt': audience.created_dt,
             })
