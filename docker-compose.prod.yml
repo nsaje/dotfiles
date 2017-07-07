@@ -19,6 +19,7 @@ services:
           NEW_RELIC_PROCESS_HOST_DISPLAY_NAME: "${HOSTNAME}-docker"
           GUNICORN_TIMEOUT: "180"
           GUNICORN_WORKERS: "8"
+          GUNICORN_THREADS: "1"
           GUNICORN_WORKER_CLASS: "sync"
           GUNICORN_LOG_LEVEL: "warn"
         labels:
@@ -80,6 +81,7 @@ services:
           VIRTUAL_HOST: "oneapi.zemanta.com"
           NEW_RELIC_APP_NAME: "Zemanta One (REST API)"
           GUNICORN_WORKERS: "8"
+          GUNICORN_THREADS: "1"
           GUNICORN_WORKER_CLASS: "sync"
           GUNICORN_LOG_LEVEL: "warn"
         mem_limit: 2g
