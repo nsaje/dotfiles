@@ -5,12 +5,17 @@ from django.core.management import CommandError
 
 from utils.command_helpers import ExceptionCommand
 from dash import models, constants, facebook_helper
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
 
 class Command(ExceptionCommand):
     def handle(self, *args, **options):
+        # TODO matijav 07.07.2017 facebook disabled
+        if settings.DISABLE_FACEBOOK:
+            return
+
         credentials = facebook_helper.get_credentials()
         pending_accounts = models.FacebookAccount.objects.filter(status=constants.FacebookPageRequestType.PENDING)
         pages = facebook_helper.get_all_pages(credentials['business_id'], credentials['access_token'])

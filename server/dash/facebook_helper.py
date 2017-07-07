@@ -6,6 +6,7 @@ import requests
 
 from dash import constants, models
 from utils import k1_helper
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,10 @@ ERROR_ALREADY_ACCESS = 'Your business already have access to the object.'
 
 
 def update_facebook_account(facebook_account, new_url, business_id, access_token):
+    # TODO matijav 07.07.2017 facebook disabled
+    if settings.DISABLE_FACEBOOK:
+        return
+
     if new_url == facebook_account.page_url:
         return
 

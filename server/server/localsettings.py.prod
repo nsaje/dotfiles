@@ -307,3 +307,5 @@ REST_FRAMEWORK = {
         'user': '20/second'
     }
 }
+
+DISABLE_FACEBOOK = True

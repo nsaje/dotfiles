@@ -272,3 +272,5 @@ REST_FRAMEWORK = {
     'UNICODE_JSON': False,
     'EXCEPTION_HANDLER': 'restapi.exceptions.custom_exception_handler',
 }
+
+DISABLE_FACEBOOK = False
