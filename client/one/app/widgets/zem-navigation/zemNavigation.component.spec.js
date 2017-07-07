@@ -17,21 +17,31 @@ describe('ZemNavigationCtrl', function () {
             data: {},
             type: constants.entityType.ACCOUNT,
         };
-        expect(ctrl.getItemClasses(item)).toEqual(['account']);
+        expect(ctrl.getItemClasses(item)).toEqual(
+            ['zem-navigation__item--account']
+        );
 
         ctrl.activeEntity = item;
         item.type = constants.entityType.CAMPAIGN;
-        expect(ctrl.getItemClasses(item)).toEqual(['active', 'campaign']);
+        expect(ctrl.getItemClasses(item)).toEqual(
+            ['zem-navigation__item--active', 'zem-navigation__item--campaign']
+        );
 
         ctrl.selectedEntity = item;
-        expect(ctrl.getItemClasses(item)).toEqual(['active', 'selected', 'campaign']);
+        expect(ctrl.getItemClasses(item)).toEqual(
+            ['zem-navigation__item--active', 'zem-navigation__item--selected', 'zem-navigation__item--campaign']
+        );
 
         ctrl.activeEntity = null;
-        expect(ctrl.getItemClasses(item)).toEqual(['selected', 'campaign']);
+        expect(ctrl.getItemClasses(item)).toEqual(
+            ['zem-navigation__item--selected', 'zem-navigation__item--campaign']
+        );
 
         item.type = constants.entityType.AD_GROUP;
         item.data.archived = true;
-        expect(ctrl.getItemClasses(item)).toEqual(['archived', 'selected', 'group']);
+        expect(ctrl.getItemClasses(item)).toEqual(
+            ['zem-navigation__item--archived', 'zem-navigation__item--selected', 'zem-navigation__item--group']
+        );
 
 
     });
@@ -41,21 +51,21 @@ describe('ZemNavigationCtrl', function () {
             data: {},
             type: constants.entityType.ACCOUNT,
         };
-        expect(ctrl.getItemIconClass(item)).toEqual('none');
+        expect(ctrl.getItemIconClass(item)).toEqual('zem-navigation__item-icon--none');
 
         item.type = constants.entityType.AD_GROUP;
-        expect(ctrl.getItemIconClass(item)).toEqual('active');
+        expect(ctrl.getItemIconClass(item)).toEqual('zem-navigation__item-icon--active');
 
         item.data.active = constants.infoboxStatus.STOPPED;
-        expect(ctrl.getItemIconClass(item)).toEqual('stopped');
+        expect(ctrl.getItemIconClass(item)).toEqual('zem-navigation__item-icon--stopped');
 
         item.data.active = constants.infoboxStatus.INACTIVE;
-        expect(ctrl.getItemIconClass(item)).toEqual('inactive');
+        expect(ctrl.getItemIconClass(item)).toEqual('zem-navigation__item-icon--inactive');
 
         item.data.active = constants.infoboxStatus.AUTOPILOT;
-        expect(ctrl.getItemIconClass(item)).toEqual('autopilot');
+        expect(ctrl.getItemIconClass(item)).toEqual('zem-navigation__item-icon--autopilot');
 
         item.data.active = constants.infoboxStatus.LANDING_MODE;
-        expect(ctrl.getItemIconClass(item)).toEqual('landing');
+        expect(ctrl.getItemIconClass(item)).toEqual('zem-navigation__item-icon--landing');
     });
 });

@@ -110,7 +110,7 @@ h4 {
 .loader--takeover {
     display: block;
     position: absolute;
-    z-index: 999;
+    z-index: 998;
     top: 50%;
     left: 50%;
     margin: -10px 0 0 -25px;
@@ -279,7 +279,7 @@ h4 {
     font-weight: 400;
     border-radius: @border-radius;
     box-shadow: none;
-    transition: all 250ms ease-in-out;
+    transition: all @default-animation;
     display: inline-block;
     cursor: pointer;
     text-decoration: none;
@@ -411,6 +411,10 @@ h4 {
     &.button--plain:after {
         background-image: url('images/arrow-gray.svg');
     }
+
+    .button__input-field {
+        padding-right: 30px;
+    }
 }
 
 .button--next-step {
@@ -495,6 +499,30 @@ h4 {
     &.button--only-icon {
         padding-left: 27px;
     }
+
+    .button__input-field {
+        padding-left: 33px;
+    }
+}
+
+.button--with-input {
+    padding: 0px;
+
+    &::before,
+    &::after {
+        pointer-events: none;
+    }
+}
+
+.button__input-field {
+    padding: 0 10px;
+    width: 100%;
+    height: @default-button-input-height;
+    border: none;
+    background-color: transparent;
+    line-height: @default-button-input-height;
+    transition: all @default-animation;
+    outline: none;
 }
 
 .button--big {
@@ -767,6 +795,24 @@ h4 {
 
     &.button--dark-backgrounds::before {
         background-image: url('images/filter-white.svg');
+    }
+}
+
+.calendar-icon {
+    &::before {
+        background-image: url('@{images-folder}/calendar-sec.svg');
+    }
+
+    &.button--highlight::before {
+        background-image: url('images/calendar-white.svg');
+    }
+
+    &.button--outline::before {
+        background-image: url('@{images-folder}/calendar-sec.svg');
+    }
+
+    &.button--dark-backgrounds::before {
+        background-image: url('images/calendar-white.svg');
     }
 }
 

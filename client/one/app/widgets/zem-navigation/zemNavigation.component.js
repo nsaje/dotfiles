@@ -89,25 +89,25 @@ angular.module('one.widgets').component('zemNavigation', {
 
         function getItemClasses (item) {
             var classes = [];
-            if (item.data.archived) classes.push('archived');
-            if (item === $ctrl.activeEntity) classes.push('active');
-            if (item === $ctrl.selectedEntity) classes.push('selected');
-            if (item.type === constants.entityType.ACCOUNT) classes.push('account');
-            if (item.type === constants.entityType.CAMPAIGN) classes.push('campaign');
-            if (item.type === constants.entityType.AD_GROUP) classes.push('group');
+            if (item.data.archived) classes.push('zem-navigation__item--archived');
+            if (item === $ctrl.activeEntity) classes.push('zem-navigation__item--active');
+            if (item === $ctrl.selectedEntity) classes.push('zem-navigation__item--selected');
+            if (item.type === constants.entityType.ACCOUNT) classes.push('zem-navigation__item--account');
+            if (item.type === constants.entityType.CAMPAIGN) classes.push('zem-navigation__item--campaign');
+            if (item.type === constants.entityType.AD_GROUP) classes.push('zem-navigation__item--group');
             return classes;
         }
 
         function getItemIconClass (item) {
-            if (item.type !== constants.entityType.AD_GROUP) return 'none';
+            if (item.type !== constants.entityType.AD_GROUP) return 'zem-navigation__item-icon--none';
 
             var adGroup = item.data;
-            if (adGroup.reloading) return 'reloading';
-            if (adGroup.active === constants.infoboxStatus.STOPPED) return 'stopped';
-            if (adGroup.active === constants.infoboxStatus.LANDING_MODE) return 'landing';
-            if (adGroup.active === constants.infoboxStatus.INACTIVE) return 'inactive';
-            if (adGroup.active === constants.infoboxStatus.AUTOPILOT) return 'autopilot';
-            return 'active';
+            if (adGroup.reloading) return 'zem-navigation__item-icon--reloading';
+            if (adGroup.active === constants.infoboxStatus.STOPPED) return 'zem-navigation__item-icon--stopped';
+            if (adGroup.active === constants.infoboxStatus.LANDING_MODE) return 'zem-navigation__item-icon--landing';
+            if (adGroup.active === constants.infoboxStatus.INACTIVE) return 'zem-navigation__item-icon--inactive';
+            if (adGroup.active === constants.infoboxStatus.AUTOPILOT) return 'zem-navigation__item-icon--autopilot';
+            return 'zem-navigation__item-icon--active';
         }
 
         function initializeList () {
@@ -145,7 +145,7 @@ angular.module('one.widgets').component('zemNavigation', {
         }
 
         function scrollToTop () {
-            $element.find('.scroll-container').scrollTop(0);
+            $element.find('.zem-navigation__results').scrollTop(0);
         }
 
         function scrollToItem (item, scrollToMiddleIfOutside) {
@@ -154,7 +154,7 @@ angular.module('one.widgets').component('zemNavigation', {
             // Scroll to item in case that is currently not shown
             // If it is lower in list scroll down so that it is displayed at the bottom,
             // otherwise scroll up to show it at the top.
-            var $scrollContainer = $element.find('.scroll-container');
+            var $scrollContainer = $element.find('.zem-navigation__results');
             var height = $scrollContainer.height();
 
             var selectedPos = 0;

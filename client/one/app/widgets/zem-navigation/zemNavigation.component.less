@@ -2,160 +2,161 @@
     display: block;
     position: relative;
     color: @black;
+    height: 100%;
+}
 
-    .search {
-        color: @text-color;
-        padding: @default-spacing;
-        border-bottom: 1px solid @border-color;
-        background-color: fade(@black, 5%);
+.zem-navigation__search {
+    color: @text-color;
+    padding: @default-spacing;
+    border-bottom: 1px solid @border-color;
+    background-color: fade(@black, 5%);
 
-        input[type="text"] {
-            width: 100%;
-            padding: 0 5px;
-            height: 40px;
-			background-color: @white;
-
-            &:focus {
-                outline: none;
-            }
-        }
-    }
-
-    .scroll-container {
-        overflow-y: scroll;
-        overflow-x: hidden;
+    .input-text {
         width: 100%;
-        position: absolute;
-        top: 80px;
-        bottom: 0;
-        margin-bottom: 10px;
-    }
-
-    .empty {
-        text-align: center;
-    }
-
-    .loader {
-        margin: 10px auto 0 auto;
-		display: block !important;
-    }
-
-    .scroll-container ul {
-        margin: 0 4px 0 @default-spacing;
-        padding: 0;
-        list-style: none;
-
-        .item {
-            color: @text-color;
-            display: block;
-
-            cursor: pointer;
-            position: relative;
-
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-size: @default-font-size;
-            line-height: 16px;
-            height: 24px; /* NOTE: Change in JavaScript too! */
-            padding: 4px 0;
-
-            &.active {
-                border-right: 3px solid @primary-color;
-                background-color: fade(@primary-color, 10%);
-                color: @primary-color;
-                font-weight: 500 !important;
-            }
-
-            &.selected {
-                background: @very-light-gray;
-                color: @text-color !important;
-
-				&.active {
-					color: @primary-color !important;
-				}
-            }
-
-            &.archived {
-                color: #gray;
-            }
-
-            &:not(.selected):not(.active):hover {
-                background: @very-light-gray;
-                text-decoration: none;
-            }
-
-            &.account {
-                height: 28px; // NOTE: Change in JavaScript too!
-                font-weight: 500;
-                font-size: @default-font-size;
-                color: @primary-color;
-                border-bottom: 1px solid @primary-color;
-                padding: 6px 0;
-
-                &.selected {
-                    color: @primary-color !important;
-                }
-
-                .agency {
-                    color: @gray;
-                    font-size: 12px;
-                    font-weight: 200;
-                }
-            }
-
-            &.campaign {
-                padding-left: 10px;
-                font-weight: 500;
-                height: 24px; /* NOTE: Change in JavaScript too! */
-            }
-
-            &.group {
-                font-weight: 300;
-                height: 24px; /* NOTE: Change in JavaScript too! */
-                padding: 4px 0 4px 35px;
-            }
-        }
-
-        // TODO: states --> reloading
-        .circle {
-            display: block;
-            position: absolute;
-            left: 16px;
-            border-radius: 50%;
-            background-color: @light-gray;
-            width: 10px;
-            height: 10px;
-            top: 50%;
-            margin-top: -6px;
-
-            &.none {
-                display: none;
-            }
-            &.active {
-                background-color: @green;
-            }
-            &.inactive {
-                background-color: @red;
-            }
-            &.landing {
-                background-color: transparent;
-                background: url("images/autopilot-landing-green.svg") no-repeat;
-                width: 16px;
-                height: 16px;
-                left: 14px;
-                margin-top: -12px;
-                border-radius: 0;
-            }
-            &.autopilot {
-                background-color: transparent;
-                background: url("images/autopilot-green.svg") no-repeat;
-                width: 14px;
-                height: 14px;
-                left: 14px;
-                margin-top: -8px;
-            }
-        }
+        padding: 0 5px;
+        height: 40px;
+        background-color: @white;
     }
 }
 
+.zem-navigation__results {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    max-height: 70vh;
+    margin: 10px 0;
+
+    .loader {
+        margin: 5px auto 0 auto;
+        display: block !important;
+    }
+}
+
+.zem-navigation__no-results {
+    text-align: center;
+}
+
+.zem-navigation__results-list {
+    margin: 0 4px 0 @default-spacing;
+    padding: 0;
+    list-style: none;
+}
+
+.zem-navigation__item {
+    color: @text-color;
+    display: block;
+
+    cursor: pointer;
+    position: relative;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: @default-font-size;
+    line-height: 16px;
+    height: 24px; /* NOTE: Change in JavaScript too! */
+    padding: 4px 0;
+
+    &:hover {
+        color: @text-color;
+    }
+}
+
+.zem-navigation__item--active {
+    border-right: 3px solid @primary-color;
+    background-color: fade(@primary-color, 10%);
+    color: @primary-color;
+    font-weight: 500 !important;
+}
+
+.zem-navigation__item--selected {
+    background: @very-light-gray;
+    color: @text-color !important;
+
+    &.zem-navigation__item--active {
+        color: @primary-color !important;
+    }
+}
+
+.zem-navigation__item--archived {
+    color: @gray;
+}
+
+.zem-navigation__item:not(.zem-navigation__item--active):not(.zem-navigation__item--selected):hover {
+    background: @very-light-gray;
+    text-decoration: none;
+}
+
+.zem-navigation__item--account {
+    height: 28px; // NOTE: Change in JavaScript too!
+    font-weight: 500;
+    font-size: @default-font-size;
+    color: @primary-color;
+    border-bottom: 1px solid @primary-color;
+    padding: 6px 0;
+
+    &.zem-navigation__item--selected,
+    &:hover {
+        color: @primary-color !important;
+    }
+}
+
+.zem-navigation__item--campaign {
+    padding-left: 10px;
+    font-weight: 500;
+    height: 24px; /* NOTE: Change in JavaScript too! */
+}
+
+.zem-navigation__item--group {
+    font-weight: 300;
+    height: 24px; /* NOTE: Change in JavaScript too! */
+    padding: 4px 0 4px 35px;
+}
+
+.zem-navigation__item-agency {
+    color: @gray;
+    font-size: 12px;
+    font-weight: 200;
+}
+
+.zem-navigation__item-icon {
+    display: block;
+    position: absolute;
+    left: 16px;
+    border-radius: 50%;
+    background-color: @light-gray;
+    width: 10px;
+    height: 10px;
+    top: 50%;
+    margin-top: -6px;
+}
+
+.zem-navigation__item-icon--none {
+    display: none;
+}
+
+.zem-navigation__item-icon--active {
+    background-color: @green;
+}
+
+.zem-navigation__item-icon--inactive {
+    background-color: @red;
+}
+
+.zem-navigation__item-icon--landing {
+    background-color: transparent;
+    background: url("images/autopilot-landing-green.svg") no-repeat;
+    width: 16px;
+    height: 16px;
+    left: 14px;
+    margin-top: -12px;
+    border-radius: 0;
+}
+
+.zem-navigation__item-icon--autopilot {
+    background-color: transparent;
+    background: url("images/autopilot-green.svg") no-repeat;
+    width: 14px;
+    height: 14px;
+    left: 14px;
+    margin-top: -8px;
+}

@@ -1,3 +1,7 @@
+////////////////////////////
+// Header //
+////////////////////////////
+
 .zem-header {
     display: block;
     height: @header-height;
@@ -11,370 +15,526 @@
     transform: translateZ(0);
     will-change: transform;
 
-    .logo-container {
-        height: 60px;
-        width: 160px;
-        padding: 19px 20px 19px @default-spacing;
-        background: url(images/zemanta-logo-squares-white.svg) no-repeat top left;
-        background-size: 20px;
-        transition: all @default-animation;
-
-        a {
-            display: block;
-            height: 22px;
-            background: @logo;
-            transition: all @default-animation;
-            margin: 0 auto;
-        }
-    }
-
-    .btn-default {
-        background: transparent !important;
-    }
-
-    .dropdown-menu {
-        margin: 0;
-        padding: 0;
-        height: 0;
-        opacity: 0;
-        visibility: hidden;
-        overflow: hidden;
-        border: none !important;
-        background-color: white;
-        display: block;
-        z-index: 999;
-        border-radius: 0;
-        .border-bottom-radius (@border-radius);
-        box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
-        transition: all @default-animation;
-
-        // bug fix for mac os scroll bars
-        transform: translateZ(0);
-
-        .shadow {
-            background: linear-gradient(to bottom, fade(black,20%), fade(black,0%));
-            position: absolute;
-            top: 0;
-            width: 100%;
-            height: 6px;
-        }
-    }
-
-    .dropdown-toggle {
-        display: block;
-        height: 40px;
-        padding: 10px 20px;
-        transition: all @default-animation;
-
-        &:hover {
-            background-color: fade(white, 10%);
-        }
-    }
-
-    .zem-header-navigation {
-        display: block;
-        margin: 10px 0;
-        border-right: 1px solid fade(white, 20%);
-        border-left: 1px solid fade(white, 20%);
-        transition: all @default-animation;
-
-        .dropdown-toggle img {
-            width: 20px;
-            transition: all @default-animation;
-        }
-
-        .dropdown .dropdown-menu {
-            margin-top: 10px;
-            width: 650px;
-            height: 85vh;
-
-            zem-navigation {
-                height: 100%;
-            }
-        }
-
-        .dropdown.open .dropdown-menu {
+    .dropdown.open {
+        .zem-header__dropdown-menu {
             opacity: 1;
             visibility: visible;
         }
     }
 
-    .zem-header-breadcrumb {
-        display: block;
+    .button {
         height: 40px;
-        margin: 10px 0 10px 12px;
-        color: white;
-        line-height: 16px;
-        font-size: 12px;
+        background-color: fade(white,20%);
+        border: none;
+        border-left: 1px solid fade(white,0%);
+        color: white !important;
+        margin: 10px 0;
         transition: all @default-animation;
 
-        .breadcrumb {
-            float: left;
-            height: 40px;
-            padding: 0;
-            margin: 0;
-            background-color: transparent;
-            transition: all @default-animation;
+        &::before {
+            top: 10px;
+            transform: none;
+        }
 
-            .slash {
-                padding: 0 2px;
-                color: fade(white, 20%);
-                font-size: 34px;
-                line-height: 40px;
-                font-weight: 100;
-                float: left;
-                height: 40px;
-                transition: all @default-animation;
-            }
-
-            .item {
-                float: left;
-
-                a {
-                    padding: 4px 8px;
-                    line-height: 16px;
-                    color: white;
-                    font-size: 14px;
-                    max-width: 115px;
-                    display: block;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    transition: padding @default-animation, background-color @default-animation;
-
-                    .type-name {
-                        color: fade(white, 50%);
-                        display: block;
-                        font-size: 12px;
-                        height: 16px;
-                        transition: all @default-animation;
-                        transition-property: font-size, height, opacity;
-                    }
-
-                    &:hover {
-                        color: white;
-                        background-color: fade(white, 10%);
-                        text-decoration: none;
-                    }
-
-                    &:active, &:focus {
-                        text-decoration: none;
-                    }
-                }
-
-                @media only screen and (min-width: 1250px) {
-                    a { max-width: 120px; }
-                }
-
-                @media only screen and (min-width: 1280px) {
-                    a { max-width: 130px; }
-                }
-
-                @media only screen and (min-width: 1300px) {
-                    a { max-width: 152px; }
-                }
-
-                @media only screen and (min-width: 1350px) {
-                    a { max-width: 168px; }
-                }
-
-                @media only screen and (min-width: 1400px) {
-                    a { max-width: 186px; }
-                }
-
-                @media only screen and (min-width: 1450px) {
-                    a { max-width: 202px; }
-                }
-
-                @media only screen and (min-width: 1500px) {
-                    a { max-width: 218px; }
-                }
-
-                @media only screen and (min-width: 1550px) {
-                    a { max-width: 234px; }
-                }
-
-                @media only screen and (min-width: 1600px) {
-                    a { max-width: 250px; }
-                }
-
-                @media only screen and (min-width: 1650px) {
-                    a { max-width: 266px; }
-                }
-
-                @media only screen and (min-width: 1700px) {
-                    a { max-width: 282px; }
-                }
-
-                @media only screen and (min-width: 1750px) {
-                    a { max-width: 298px; }
-                }
-
-                @media only screen and (min-width: 1800px) {
-                    a { max-width: 314px; }
-                }
-            }
+        &:not(.button--disabled):not([disabled]):hover {
+            background-color: fade(white, 50%);
+            border-left: 1px solid fade(white,0%);
+            color: white;
         }
     }
 
-    .zem-header-filter-selector-toggle {
-        display: block;
-        height: 40px;
-        margin: 10px 20px 10px 0;
-        transition: all @default-animation;
+    .button--zem-header-filter-active {
+        background-color: @very-dark-gray;
+        height: 50px;
+        border-bottom-left-radius: 0px;
+        border-bottom-right-radius: 0px;
+        box-sizing: border-box;
+        padding-bottom: 10px;
 
-        .button {
-            height: 40px;
-            background-color: fade(white,20%);
-            border: none;
-            border-left: 1px solid fade(white,0%);
-            color: white !important;
+        &:not(.button--disabled):not([disabled]):hover {
+            background-color: @very-dark-gray;
+        }
+
+        &::before {
+            top: 10px;
+            transform: none;
+        }
+    }
+
+    .button--dropdown-toggle-icon:after {
+        background-image: url('images/arrow-white.svg');
+    }
+
+    .button--with-icon {
+        padding-left: 38px;
+
+        &:before {
+            left: 10px;
+            width: 22px;
+            height: 22px;
+            background-size: 22px;
             transition: all @default-animation;
+        }
 
-            &::before {
-                top: 10px;
-                transform: none;
-            }
+        .button__input-field {
+            padding-left: 45px;
+        }
+    }
 
-            &:hover {
-                background-color: fade(white, 50%);
-                border-left: 1px solid fade(white,0%);
-                color: white !important;
-            }
+    .button--with-input {
+        padding: 0;
 
-            &.zem-header__filter-active {
-                background-color: @very-dark-gray;
-                height: 50px;
-                border-bottom-left-radius: 0px;
-                border-bottom-right-radius: 0px;
-                box-sizing: border-box;
-                padding-bottom: 10px;
+        .button__input-field {
+            width: 255px;
+            height: 40px;
+            line-height: 40px;
+        }
+    }
 
-                &::before {
-                    top: 10px;
-                    transform: none;
-                }
-            }
+    .filter-icon {
+        &:before {
+            background-image: url('images/filter-white.svg');
+        }
+    }
+
+    .calendar-icon {
+        &:before {
+            background-image: url('images/calendar-white.svg');
+        }
+    }
+}
+
+.zem-header__logo-container {
+    float: left;
+    height: 60px;
+    width: 160px;
+    padding: 19px 20px 19px @default-spacing;
+    background: url(images/zemanta-logo-squares-white.svg) no-repeat top left;
+    background-size: 20px;
+    transition: all @default-animation;
+}
+
+.zem-header__logo {
+    display: block;
+    height: 22px;
+    background: @logo;
+    transition: all @default-animation;
+    margin: 0 auto;
+}
+
+.zem-header__dropdown-button {
+    display: block;
+    margin: 10px 0;
+    height: 40px;
+    padding: 10px 20px;
+    transition: all @default-animation;
+
+
+    &:hover {
+        background-color: fade(white, 10%);
+    }
+}
+
+.zem-header__dropdown-button-icon {
+    width: 20px;
+    transition: all @default-animation;
+}
+
+.zem-header__dropdown-button-icon--bigger {
+    width: 30px;
+    background-size: 30px;
+}
+
+.zem-header__dropdown-button--right-border {
+    border-right: 1px solid fade(white, 20%);
+}
+
+.zem-header__dropdown-button--left-border {
+    border-left: 1px solid fade(white, 20%);
+}
+
+.zem-header__dropdown-menu {
+    opacity: 0;
+    visibility: hidden;
+    overflow: hidden;
+    background-color: white;
+    display: block;
+    z-index: 999;
+    border-radius: 0;
+    .border-bottom-radius (@border-radius);
+    box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
+    transition: all @default-animation;
+    transform: translateZ(0);
+
+    &::after {
+        content: " ";
+        display: block;
+        background: linear-gradient(to bottom, fade(black,20%), fade(black,0%));
+        position: absolute;
+        top: 0;
+        width: 100%;
+        height: 6px;
+    }
+}
+
+.zem-header__dropdown-menu--navigation {
+    margin-top: 10px;
+    width: 650px;
+}
+
+.zem-header__dropdown-menu--header-menu {
+    margin-top: 10px;
+    padding: 0;
+    height: auto;
+    min-width: 100px;
+    max-width: 300px;
+    background-color: @primary-color;
+    right: 0;
+    left: auto;
+}
+
+.zem-header-navigation {
+    float: left;
+}
+
+.zem-header-breadcrumb {
+    float: left;
+    display: block;
+    height: 40px;
+    margin: 10px 0 10px 12px;
+    color: white;
+    line-height: 16px;
+    font-size: 12px;
+    transition: all @default-animation;
+}
+
+.zem-header-breadcrumb__item {
+    float: left;
+    height: 40px;
+    padding: 0;
+    margin: 0;
+    background-color: transparent;
+    transition: all @default-animation;
+}
+
+.zem-header-breadcrumb__item--with-slash {
+    padding-left: 13px;
+    position: relative;
+
+    &::before {
+        content: "";
+        display: block;
+        position: absolute;
+        top: 5px;
+        left: 6px;
+        background-color: fade(white, 20%);
+        height: 30px;
+        width: 1px;
+        transition: all @default-animation;
+        transform: rotate(-20deg);
+    }
+}
+
+.zem-header-breadcrumb__link {
+    padding: 4px 8px;
+    line-height: 16px;
+    color: white;
+    font-size: 14px;
+    max-width: 115px;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: padding @default-animation, background-color @default-animation;
+
+    &:hover {
+        color: white;
+        background-color: fade(white, 10%);
+        text-decoration: none;
+        border-radius: @border-radius;
+    }
+
+    &:active, &:focus {
+        text-decoration: none;
+    }
+}
+
+.zem-header-breadcrumb__type-name {
+    color: fade(white, 50%);
+    display: block;
+    font-size: 12px;
+    height: 16px;
+    transition: all @default-animation;
+    transition-property: font-size, height, opacity;
+}
+
+.zem-header-menu {
+    float: right;
+}
+
+.zem-header-menu__logged-in-user {
+    background-color: fade(black, 10%);
+    color: fade(white, 50%);
+    margin: 0;
+    padding: @default-spacing;
+    border-bottom: none;
+    line-height: 16px;
+}
+
+.zem-header-menu__logged-in-user-title {
+    font-size: 10px;
+    text-transform: uppercase;
+}
+
+.zem-header-menu__group {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.zem-header-menu__link {
+    color: white;
+    padding: 8px @default-spacing;
+    transition: background-color @default-animation;
+    display: block;
+
+    .internal-feature {
+        top: 0px;
+        left: 0px;
+    }
+}
+
+.zem-header-menu__link:hover {
+    color: white;
+    background-color: fade(white, 10%);
+    text-decoration: none;
+
+    .internal-feature {
+        top: 0px;
+        left: 0px;
+    }
+}
+
+.zem-header-menu__group-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: fade(white,50%);
+    padding: 10px @default-spacing 2px @default-spacing;
+    border-bottom: 1px solid fade(white, 10%);
+}
+
+
+.zem-header-date-range-picker {
+    float: right;
+    display: block;
+    margin-right: 20px;
+    transition: all @default-animation;
+}
+
+.zem-header-filter-selector-toggle {
+    float: right;
+    display: block;
+    margin-right: 20px;
+    transition: all @default-animation;
+}
+
+@media only screen and (max-width: 1190px) {
+    .zem-header-filter-selector-toggle {
+        .button {
+            font-size: 0;
         }
 
         .button--with-icon {
-            padding-left: 38px;
-
-            &:before {
-                left: 10px;
-                width: 22px;
-                height: 22px;
-                background-size: 22px;
-                transition: all @default-animation;
-            }
+            padding-left: 33px;
         }
+    }
+}
 
-        .filter-icon {
-            &:before {
-                background-image: url('images/filter-white.svg');
-            }
-        }
+@media only screen and (min-width: 1250px) {
+    .zem-header-breadcrumb__link { max-width: 120px; }
+}
 
-        @media only screen and (max-width: 1190px) {
+@media only screen and (min-width: 1280px) {
+    .zem-header-breadcrumb__link { max-width: 130px; }
+}
+
+@media only screen and (min-width: 1300px) {
+    .zem-header-breadcrumb__link { max-width: 152px; }
+}
+
+@media only screen and (min-width: 1350px) {
+    .zem-header-breadcrumb__link { max-width: 168px; }
+}
+
+@media only screen and (min-width: 1400px) {
+    .zem-header-breadcrumb__link { max-width: 186px; }
+}
+
+@media only screen and (min-width: 1450px) {
+    .zem-header-breadcrumb__link { max-width: 202px; }
+}
+
+@media only screen and (min-width: 1500px) {
+    .zem-header-breadcrumb__link { max-width: 218px; }
+}
+
+@media only screen and (min-width: 1550px) {
+    .zem-header-breadcrumb__link { max-width: 234px; }
+}
+
+@media only screen and (min-width: 1600px) {
+    .zem-header-breadcrumb__link { max-width: 250px; }
+}
+
+@media only screen and (min-width: 1650px) {
+    .zem-header-breadcrumb__link { max-width: 266px; }
+}
+
+@media only screen and (min-width: 1700px) {
+    .zem-header-breadcrumb__link { max-width: 282px; }
+}
+
+@media only screen and (min-width: 1750px) {
+    .zem-header-breadcrumb__link { max-width: 298px; }
+}
+
+@media only screen and (min-width: 1800px) {
+    .zem-header-breadcrumb__link { max-width: 314px; }
+}
+
+@media only screen and (min-width: @min-app-width) {
+    .fixed-header {
+        .zem-header {
+            height: @header-height-minimized;
+
             .button {
-                font-size: 0;
-            }
-            .button--with-icon {
-                padding-left: 33px;
-            }
-        }
-    }
-
-    .zem-header-date-range-picker {
-        display: block;
-
-        .date-range-picker-container {
-            border-left: 1px solid fade(white, 0%);
-            position: relative;
-            height: 40px;
-            margin: 10px 20px 10px 0;
-            transition: all @default-animation;
-
-            .date-range-picker-icon {
-                position: absolute;
-                top: 9px;
-                left: 10px;
-                width: 24px;
-                pointer-events: none;
-                transition: all @default-animation;
-            }
-
-            .arrow-icon {
-                position: absolute;
-                height: 12px;
-                right: 15px;
-                top: 14px;
-                transform: rotate(90deg);
-                pointer-events: none;
-                transition: all @default-animation;
-            }
-
-            .date-range-picker-input {
-                cursor: pointer;
-                padding-left: 45px;
-                padding-right: 35px;
-                background-color: fade(white, 20%);
-                height: 100%;
-                width: 255px;
-                border: none;
+                height: 30px;
+                background-color: fade(white, 0%);
+                border-left: 1px solid fade(white, 20%);
                 color: white;
-                border-radius: @border-radius;
-                box-shadow: none;
-                font-size: 14px;
-                transition: all @default-animation;
+                border-radius: 0;
+                margin: 0;
 
-                &:focus {
-                    outline: none;
+                &:not(.button--disabled):not([disabled]):hover {
+                    background-color: fade(white, 10%);
+                    border-left: 1px solid fade(white, 20%);
                 }
 
-                &:hover {
-                    background-color: fade(white, 40%);
+                &::before {
+                    top: 50%;
+                    transform: translateY(-50%);
+                }
+            }
+
+            .button--zem-header-filter-active {
+                background-color: @very-dark-gray;
+
+                &:not(.button--disabled):not([disabled]):hover {
+                    background-color: @very-dark-gray;
                 }
             }
 
-            @media only screen and (max-width: 1155px) {
-                .date-range-picker-input {
-                    font-size: 0;
-                    width: auto;
-                    padding-right: 25px;
-                    cursor: pointer !important;
+            .button--with-icon {
+                padding-left: 38px;
+
+                &:before {
+                    left: 10px;
+                    width: 16px;
+                    height: 16px;
+                    background-size: 16px;
+                }
+
+                &.button--with-input input {
+                    padding-left: 35px;
+                }
+            }
+
+            .button--with-input {
+                padding: 0;
+
+                input {
+                    height: 30px;
+                    line-height: 30px;
+                }
+            }
+
+            .filter-icon {
+                &:before {
+                    background-image: url('images/filter-white.svg');
                 }
             }
         }
-    }
 
-    .zem-header-menu {
-        display: block;
-        margin: 10px 0;
-        border-left: 1px solid fade(white, 20%);
-        transition: all @default-animation;
-
-        .dropdown-toggle img {
-            width: 30px;
-            background-size: 30px;
-            transition: all @default-animation;
+        .zem-header__logo-container {
+            height: 30px;
+            padding: 8px 20px 8px @default-spacing;
+            background-size: 12px;
         }
 
-        .dropdown .dropdown-menu {
-            margin-top: 10px;
-            height: auto;
-            min-width: 100px;
-            max-width: 300px;
-            background-color: @primary-color;
+        .zem-header__logo {
+            height: 14px;
+        }
 
-            zem-navigation {
-                height: 100%;
+        .zem-header__dropdown-button {
+            height: 30px;
+            padding: 5px 20px;
+            margin: 0;
+
+            &:hover {
+                background-color: fade(white, 10%);
             }
         }
 
-        .dropdown.open .dropdown-menu {
-            opacity: 1;
-            visibility: visible;
+        .zem-header__dropdown-menu {
+            margin-top: 0;
+        }
+
+        .zem-header__dropdown-button-icon {
+            width: 16px;
+        }
+
+        .zem-header__dropdown-button-icon--bigger {
+            width: 20px;
+            background-size: 20px;
+        }
+
+        .zem-header-breadcrumb {
+            margin-top: 0;
+            margin-bottom: 0;
+            height: 30px;
+        }
+
+        .zem-header-breadcrumb__item {
+            margin-bottom: 0px;
+            height: 30px;
+        }
+
+        .zem-header-breadcrumb__item--with-slash::before {
+            height: 20px;
+        }
+
+        .zem-header-breadcrumb__link {
+            line-height: 18px;
+            padding-top: 6px;
+            padding-bottom: 6px;
+        }
+
+        .zem-header-breadcrumb__type-name {
+            opacity: 0;
+            font-size: 0;
+            height: 0;
+        }
+
+        .zem-header-filter-selector-toggle,
+        .zem-header-date-range-picker {
+            height: 30px;
+            margin: 0;
+        }
+
+        .zem-header-date-range-picker-dropdown {
+            position: fixed;
+            top: 30px!important;
+            margin-top: 0!important;
         }
     }
 }
@@ -386,281 +546,55 @@
     }
 }
 
-.dropdown-menu__logged-in-user {
-    background-color: fade(black, 10%);
-    color: fade(white, 50%);
-    margin: 0;
-    padding: @default-spacing;
-    border-bottom: none;
-    line-height: 16px;
-}
-
-.logged-in-user__title {
-    font-size: 10px;
-    text-transform: uppercase;
-}
-
-.dropdown-menu__group {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-
-    a {
-        color: white;
-        padding: 8px @default-spacing;
-        transition: background-color @default-animation;
-        display: block;
-
-        .internal-feature {
-            top: 0px;
-            left: 0px;
-        }
-    }
-
-    a:hover {
-        background-color: fade(white, 10%);
-        text-decoration: none;
-    }
-}
-
-.dropdown-menu-group__title {
-    font-size: 10px;
-    text-transform: uppercase;
-    color: fade(white,50%);
-    padding: 10px @default-spacing 2px @default-spacing;
-    border-bottom: 1px solid fade(white, 10%);
-}
-
-@media only screen and (min-width: @min-app-width) {
-    .fixed-header {
-        .zem-header {
-            height: @header-height-minimized;
-
-            .logo-container {
-                height: 30px;
-                padding: 8px 20px 8px @default-spacing;
-                background-size: 12px;
-
-                a {
-                    height: 14px;
-                }
-
-                img {
-                    height: 14px;
-                    margin: 0 auto;
-                }
-            }
-
-            .zem-header-navigation,
-            .zem-header-menu {
-                .dropdown-toggle {
-                    height: 30px;
-                    padding: 5px 20px;
-
-                    &:hover {
-                        background-color: fade(white, 10%);
-                    }
-                }
-
-                .dropdown-menu {
-                    margin-top: 0;
-                }
-            }
-
-            .zem-header-navigation {
-                margin: 0;
-
-                .dropdown-toggle img {
-                    width: 16px;
-                }
-            }
-
-            .zem-header-breadcrumb {
-                margin-top: 0;
-                margin-bottom: 0;
-                height: 30px;
-
-                .breadcrumb {
-                    margin-bottom: 0px;
-                    height: 30px;
-
-                    .slash {
-                        font-size: 22px;
-                        line-height: 30px;
-                        height: 30px;
-                    }
-
-                    .item {
-                        a {
-                            line-height: 18px;
-                            padding-top: 6px;
-                            padding-bottom: 6px;
-
-                            .type-name {
-                                opacity: 0;
-                                font-size: 0;
-                                height: 0;
-                            }
-                        }
-                    }
-                }
-            }
-
-            .zem-header-menu {
-                margin: 0;
-
-                .dropdown-toggle img {
-                    width: 20px;
-                    background-size: 20px;
-                }
-            }
-
-            .zem-header-filter-selector-toggle {
-                height: 30px;
-                margin: 0;
-
-                .zem-filter-toggle {
-                    display: inline-block;
-                    height: 30px;
-                    line-height: 30px;
-                    padding: 0 10px;
-                    background-color: transparent;
-                    border-left: 1px solid fade(white, 20%);
-                    border-radius: 0;
-
-                    &:hover, &:focus, &:active {
-                        background-color: fade(white, 10%);
-                    }
-
-                    .filter-icon {
-                        width: 16px;
-                        height: 16px;
-                    }
-                }
-
-                .button {
-                    height: 30px;
-                    background-color: fade(white, 0%);
-                    border-left: 1px solid fade(white, 20%);
-                    color: white;
-                    border-radius: 0;
-
-                    &:hover {
-                        background-color: fade(white, 10%);
-                    }
-
-                    &::before {
-                        top: 50%;
-                        transform: translateY(-50%);
-                    }
-
-                    &.zem-header__filter-active {
-                        background-color: @very-dark-gray;
-                    }
-                }
-
-                .button--with-icon {
-                    padding-left: 38px;
-
-                    &:before {
-                        left: 10px;
-                        width: 16px;
-                        height: 16px;
-                        background-size: 16px;
-                    }
-                }
-
-                .filter-icon {
-                    &:before {
-                        background-image: url('images/filter-white.svg');
-                    }
-                }
-            }
-
-            .zem-header-date-range-picker .date-range-picker-container {
-                height: 30px;
-                margin: 0;
-                border-left: 1px solid fade(white, 20%);
-
-                .date-range-picker-input {
-                    padding-left: 42px;
-                    padding-right: 41px;
-                    width: 262px;
-                    background-color: transparent;
-                    border-radius: 0;
-
-                    &:hover {
-                        background-color: fade(white, 10%);
-                    }
-                }
-
-                .date-range-picker-icon {
-                    top: 8px;
-                    width: 16px;
-                    left: 16px;
-                }
-
-                .arrow-icon {
-                    top: 10px;
-                    right: 21px;
-                }
-            }
-        }
-
-        .zem-header-date-range-picker-dropdown {
-            position: fixed;
-            top: 30px !important;
-            margin-top: 0 !important;
-        }
-    }
-}
-
 @media only screen and (min-width: @min-app-width) and (max-width: 1190px) {
     .fixed-header .zem-header .zem-header-filter-selector-toggle .button--with-icon {
         padding-left: 26px;
     }
 }
 
-@media only screen and (min-width: @min-app-width) and (max-width: 1155px) {
-    .fixed-header .zem-header .zem-header-date-range-picker .date-range-picker-container .date-range-picker-input {
+@media only screen and (max-width: 1155px) {
+    .zem-header-date-range-picker .button--with-input input {
+        font-size: 0;
         width: auto;
-        padding-right: 30px;
+        padding-right: 25px;
         cursor: pointer !important;
     }
 }
 
-.zem-header-date-range-picker-dropdown.dropdown-menu {
-    z-index: 9999;
-    margin-top: 10px;
-    overflow: hidden;
-    border: none !important;
-    opacity: 0;
-    visibility: hidden;
-    display: block !important;
-    border-radius: 0;
-    .border-bottom-radius (@border-radius);
-    box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
-    transition: opacity @default-animation;
+.zem-header-date-range-picker-dropdown {
+    &.dropdown-menu {
+        z-index: 9999;
+        margin-top: 10px;
+        overflow: hidden;
+        border: none !important;
+        opacity: 0;
+        visibility: hidden;
+        display: block !important;
+        border-radius: 0;
+        .border-bottom-radius (@border-radius);
+        box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
+        transition: opacity @default-animation;
 
-    &.open {
-        opacity: 1;
-        visibility: visible;
-    }
+        &.open {
+            opacity: 1;
+            visibility: visible;
+        }
 
-    .ranges:before {
-        background: linear-gradient(to bottom, fade(black,20%), fade(black,0%));
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 6px;
-        content: "";
-        display: block;
-    }
+        .ranges:before {
+            background: linear-gradient(to bottom, fade(black,20%), fade(black,0%));
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            content: "";
+            display: block;
+        }
 
-    .calendar {
-        .daterangepicker_input {
-            display: none;
+        .calendar {
+            .daterangepicker_input {
+                display: none;
+            }
         }
     }
 }
