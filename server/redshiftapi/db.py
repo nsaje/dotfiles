@@ -61,13 +61,13 @@ def xnamedtuplefetchall(cursor):
         yield nt_result(*row)
 
 
-def execute_query(sql, params, query_name):
+def execute_query(sql, params, query_name, cache_name='breakdowns_rs', refresh_cache=False):
     cache_key = cache_helper.get_cache_key(sql, params)
-    cache = caches['breakdowns_rs']
+    cache = caches[cache_name]
 
     results = cache.get(cache_key, CACHE_MISS_FLAG)
 
-    if results is CACHE_MISS_FLAG:
+    if results is CACHE_MISS_FLAG or refresh_cache:
         influx.incr('redshiftapi.cache', 1, outcome='miss')
         logger.info('Cache miss %s (%s)', cache_key, query_name)
 

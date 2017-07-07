@@ -147,7 +147,15 @@ CACHES = {
         'LOCATION': 'breakdowns_rs_cache',
         'TIMEOUT': 60 * 60 * 2,  # 2 hours
         'OPTIONS': {
-            'MAX_ENTRIES': 1000,
+            'MAX_ENTRIES': 5000,
+        }
+    },
+    'audience_sample_size': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'audience_sample_size_rs_cache',
+        'TIMEOUT': 60 * 60 * 6,  # 6 hours
+        'OPTIONS': {
+            'MAX_ENTRIES': 2000,
         }
     },
     'dash_db_cache': {

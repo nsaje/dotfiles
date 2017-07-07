@@ -12,8 +12,6 @@ from utils import k1_helper
 from utils import redirector_helper
 import helpers
 
-AUDIENCE_NUM_LIMIT = 100
-
 
 class AudiencesView(api_common.BaseApiView):
 
@@ -137,22 +135,23 @@ class AudiencesView(api_common.BaseApiView):
 
         include_size = request.GET.get('include_size', '') == '1'
 
-        count = None
-        count_yesterday = None
         rows = []
-        num_of_audiences = len(audiences)
         for audience in audiences:
-            if include_size and num_of_audiences < AUDIENCE_NUM_LIMIT:
+            count = None
+            count_yesterday = None
+
+            if include_size:
+                rules = audience.audiencerule_set.all()
                 count = redshiftapi.api_audiences.get_audience_sample_size(
                     audience.pixel.account.id,
                     audience.pixel.slug,
                     audience.ttl,
-                    audience.audiencerule_set.all()) * 100
+                    rules) * 100
                 count_yesterday = redshiftapi.api_audiences.get_audience_sample_size(
                     audience.pixel.account.id,
                     audience.pixel.slug,
                     1,
-                    audience.audiencerule_set.all()) * 100
+                    rules) * 100
 
             rows.append({
                 'id': str(audience.pk),

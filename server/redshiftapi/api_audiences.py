@@ -5,7 +5,7 @@ from dash import constants
 import db
 
 
-def get_audience_sample_size(account_id, slug, ttl, rules):
+def get_audience_sample_size(account_id, slug, ttl, rules, refresh_cache=False):
     timelimit = datetime.datetime.now().date() - datetime.timedelta(days=ttl)
 
     valid_rule_types = [
@@ -41,6 +41,8 @@ def get_audience_sample_size(account_id, slug, ttl, rules):
             }
         ),
         params,
-        'audience_sample_size'
+        'audience_sample_size',
+        cache_name='audience_sample_size',
+        refresh_cache=refresh_cache
     )
     return result[0]['count']
