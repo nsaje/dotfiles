@@ -494,6 +494,7 @@ class AdGroupInline(admin.TabularInline):
     exclude = ('users', 'created_dt', 'modified_dt', 'modified_by')
     ordering = ('-created_dt',)
     readonly_fields = ('admin_link',)
+    raw_id_fields = ('default_whitelist', 'default_blacklist')
 
 
 class CampaignAdmin(admin.ModelAdmin):
@@ -505,6 +506,7 @@ class CampaignAdmin(admin.ModelAdmin):
         'settings_'
     )
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'settings_')
+    raw_id_fields = ('default_whitelist', 'default_blacklist')
     exclude = ('users', 'groups')
     inlines = (CampaignUserInline, CampaignGroupInline, AdGroupInline)
     form = dash_forms.CampaignAdminForm
