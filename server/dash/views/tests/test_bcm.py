@@ -589,6 +589,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertEqual(data, {
             "active": [
                 {
+                    u"credit": 1,
                     "available": "100000.0000",
                     "is_editable": False,
                     "is_updatable": True,
@@ -640,6 +641,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertEqual(data, {
             "active": [
                 {
+                    "credit": 1,
                     "available": "100000.0000",
                     "is_editable": True,
                     "is_updatable": False,
@@ -695,6 +697,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertEqual(data, {
             "active": [
                 {
+                    u"credit": 1,
                     "available": "100000.0000",
                     "is_editable": True,
                     "is_updatable": False,
@@ -1342,6 +1345,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
         self.assertEqual(data, {
             "active": [
                 {
+                    u"credit": 1,
                     u"available": u"99789.5000",
                     u"is_editable": False,
                     u"is_updatable": True,
@@ -1356,6 +1360,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
                     u"start_date": u"2015-10-01",
                 },
                 {
+                    u"credit": 1,
                     u"available": u"99450.0000",
                     u"is_editable": False,
                     u"is_updatable": True,

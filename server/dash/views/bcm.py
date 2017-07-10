@@ -279,6 +279,7 @@ class CampaignBudgetView(api_common.BaseApiView):
         result = {
             'id': item.pk,
             'start_date': item.start_date,
+            'credit': item.credit.id,  # FIXME(nsaje) hack to return credit id in REST API
             'end_date': item.end_date,
             'state': item.state(),
             'license_fee': helpers.format_decimal_to_percent(item.credit.license_fee) + '%',

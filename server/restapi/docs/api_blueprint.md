@@ -479,6 +479,7 @@ available | [money](#money) | the amount of the budget still available         |
             "data": [
                 {
                     "id": "1910",
+                    "creditId": "861",
                     "amount": "400",
                     "startDate": "2016-01-01",
                     "endDate": "2016-01-31",
@@ -529,6 +530,7 @@ available | [money](#money) | the amount of the budget still available         |
         {
             "data": {
                 "id": "1910",
+                "creditId": "861",
                 "amount": "400",
                 "startDate": "2016-01-01",
                 "endDate": "2016-01-31",
@@ -556,6 +558,7 @@ available | [money](#money) | the amount of the budget still available         |
         {
             "data": {
                 "id": "1911",
+                "creditId": "861",
                 "amount": "800",
                 "startDate": "2016-01-01",
                 "endDate": "2016-01-31",

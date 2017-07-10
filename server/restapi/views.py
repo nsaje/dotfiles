@@ -684,7 +684,7 @@ class CampaignGoalsViewDetails(RESTAPIBaseView):
 
 class CampaignBudgetSerializer(serializers.Serializer):
     id = fields.IdField(read_only=True)
-    creditId = fields.IdField(source='credit', write_only=True)
+    creditId = fields.IdField(source='credit')
     amount = serializers.DecimalField(max_digits=20, decimal_places=0)
     startDate = serializers.DateField(source='start_date')
     endDate = serializers.DateField(source='end_date')
@@ -728,6 +728,7 @@ class CampaignBudgetViewDetails(RESTAPIBaseView):
     def get(self, request, campaign_id, budget_id):
         internal_view = bcm.CampaignBudgetItemView(rest_proxy=True)
         data_internal, _ = internal_view.get(request, campaign_id, budget_id)
+        data_internal['data']['credit'] = data_internal['data']['credit']['id']
         serializer = CampaignBudgetSerializer(data_internal['data'])
         return self.response_ok(serializer.data)
 

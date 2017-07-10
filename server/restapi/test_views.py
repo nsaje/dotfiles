@@ -454,6 +454,7 @@ class BudgetsTest(RESTAPITest):
         allocated = budget_db.allocated_amount()
         expected = self.budget_repr(
             id=budget_db.id,
+            creditId=budget_db.credit.id,
             amount=budget_db.amount,
             startDate=budget_db.start_date,
             endDate=budget_db.end_date,
@@ -461,7 +462,6 @@ class BudgetsTest(RESTAPITest):
             spend=spend,
             available=allocated,
         )
-        del expected['creditId']
         self.assertEqual(expected, budget)
 
     @mock.patch('dash.forms.dates_helper.local_today', lambda: TODAY)
