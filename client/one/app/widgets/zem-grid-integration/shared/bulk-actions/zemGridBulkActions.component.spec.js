@@ -12,7 +12,7 @@ describe('component: zemGridBulkActions', function () {
         zemGridConstants = $injector.get('zemGridConstants');
 
         var zemGridMocks = $injector.get('zemGridMocks');
-        api = zemGridMocks.createApi (constants.level.CAMPAIGNS, constants.breakdown.AD_GROUP);
+        api = zemGridMocks.createApi(constants.level.CAMPAIGNS, constants.breakdown.AD_GROUP);
 
         var locals = {};
         var bindings = {api: api};
@@ -23,7 +23,7 @@ describe('component: zemGridBulkActions', function () {
         spyOn(zemGridBulkActionsService, 'createInstance').and.callThrough();
         $ctrl.$onInit();
         expect(zemGridBulkActionsService.createInstance).toHaveBeenCalled();
-        expect ($ctrl.actions).toBeDefined();
+        expect($ctrl.actions).toBeDefined();
     });
 
     it('should enable actions when data row (level 1) is selected', function () {

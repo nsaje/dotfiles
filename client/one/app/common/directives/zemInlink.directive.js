@@ -1,5 +1,3 @@
-/* globals angular */
-
 // Heavily based on https://github.com/angular-ui/ui-router/blob/a7d25c6/src/stateDirectives.js
 // Lots of code lifted
 

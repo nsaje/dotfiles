@@ -1,6 +1,3 @@
-/* globals angular, constants */
-'use strict';
-
 angular.module('one.widgets').directive('zemGridCellBreakdownField', function () {
     var ENTITIES_WITH_INTERNAL_LINKS = [
         constants.entityType.ACCOUNT,

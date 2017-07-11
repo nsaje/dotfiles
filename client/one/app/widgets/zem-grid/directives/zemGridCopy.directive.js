@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.widgets').directive('zemGridCopy', function ($timeout, zemGridConstants, zemGridDataFormatter) {
     return {
         restrict: 'A',

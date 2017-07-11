@@ -23,13 +23,13 @@ angular.module('one.widgets').component('zemOsDeviceTargetingSettings', {
 
         function getAvailableOptions () {
             return zemDeviceTargetingConstants.OPERATING_SYSTEMS
-            .filter (function (option) { // Remove already added options
+            .filter(function (option) { // Remove already added options
                 return $ctrl.state.operatingSystems.filter(function (operatingSystem) {
                     return option.value === operatingSystem.value;
                 }).length === 0;
             })
-            .filter (function (option) { // Filter based on device compatibility
-                return $ctrl.state.devices.filter (function (device) {
+            .filter(function (option) { // Filter based on device compatibility
+                return $ctrl.state.devices.filter(function (device) {
                     if (!device.checked) return false;
                     return option.devices.indexOf(device.value) >= 0;
                 }).length > 0;

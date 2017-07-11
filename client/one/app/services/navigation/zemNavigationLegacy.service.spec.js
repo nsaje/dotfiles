@@ -1,6 +1,3 @@
-/* globals describe, beforeEach, module, spyOn, expect, it, inject */
-'use strict';
-
 describe('zemNavigationService', function () {
 
     var zemNavigationService,

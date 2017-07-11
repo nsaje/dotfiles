@@ -5,8 +5,13 @@ globals:
   angular: false
   $: false
   moment: false
+  Raven: false
   # Zemanta
+  zemSpecsHelper: false
   constants: false
+  options: false
+  defaults: false
+  overwrittes: false
   # Jasmine
   jasmine: false
   describe: false
@@ -16,6 +21,7 @@ globals:
   module: false
   inject: false
   beforeEach: false
+  afterEach: false
   expect: false
   spyOn: false
 
@@ -39,19 +45,19 @@ rules:
     - 2
     - 10
   dot-notation:
-    - 0
+    - 2
   eqeqeq:
-    - 0
+    - 2
   guard-for-in:
-    - 0
+    - 2
   no-alert:
-    - 0
+    - 2
   no-else-return:
     - 2
   no-trailing-spaces:
     - 2
   max-len:
-    - 0
+    - 2
     - 120
     - 4
   brace-style:
@@ -89,10 +95,21 @@ rules:
     - 2
   space-unary-ops:
     - 2
+  func-call-spacing:
+    - 2
+    - never
   no-unused-vars:
-    - 0
+    - 2
   no-undef:
     - 2
+  jasmine/new-line-between-declarations:
+    - 0
+  jasmine/no-suite-dupes:
+    - 2
+    - branch
+  jasmine/no-spec-dupes:
+    - 2
+    - branch
 
 env:
   browser: true

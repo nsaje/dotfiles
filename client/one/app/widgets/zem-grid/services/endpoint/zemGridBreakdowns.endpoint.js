@@ -1,6 +1,3 @@
-/* globals angular, constants */
-'use strict';
-
 angular.module('one.widgets').factory('zemGridEndpointBreakdowns', function (zemPermissions) {
     var BASE_LEVEL_GROUP_NAME = 'Base level';
     var STRUCTURE_GROUP_NAME = 'By structure';

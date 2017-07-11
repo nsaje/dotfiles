@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.services').factory('zemNavigationService', function ($rootScope, $q, zemNavigationLegacyEndpoint) { // eslint-disable-line max-len
 
     var postoponedUpdates = {

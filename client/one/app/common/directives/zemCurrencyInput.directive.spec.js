@@ -1,5 +1,3 @@
-'use strict';
-
 describe('zemCurrencyInput', function () {
     var $scope;
     var $compile;

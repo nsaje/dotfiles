@@ -79,7 +79,7 @@ angular.module('one.widgets').service('zemDeviceTargetingStateService', function
         }
 
         function validateOperatingSystems () {
-            state.operatingSystems.forEach (function validateVersions (operatingSystem) {
+            state.operatingSystems.forEach(function validateVersions (operatingSystem) {
                 if (!operatingSystem.version) return;
 
                 var minVersionIdex = operatingSystem.versions.indexOf(operatingSystem.version.min);
@@ -197,7 +197,7 @@ angular.module('one.widgets').service('zemDeviceTargetingStateService', function
         function convertPlacementsToApi (placements) {
             var data = placements
             .filter(function (placement) { return placement.selected; })
-            .map (function (placement) {
+            .map(function (placement) {
                 return placement.value;
             });
 

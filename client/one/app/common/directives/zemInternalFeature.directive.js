@@ -1,6 +1,3 @@
-/*global $,angular*/
-'use strict';
-
 angular.module('one.common').directive('zemInternalFeature', function () {
     return {
         restrict: 'E',

@@ -1,4 +1,3 @@
-/* globals angular, constants */
 angular.module('one.views').controller('zemPixelsView', function (zemNavigationNewService) {
     var $ctrl = this;
 

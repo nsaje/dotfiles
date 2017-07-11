@@ -1,6 +1,3 @@
-/* global describe,beforeEach,module,it,inject,expect */
-'use strict';
-
 describe('zemCampaignGoals', function () {
     var $scope, element, isolate;
 
@@ -73,7 +70,7 @@ describe('zemCampaignGoals', function () {
     });
 
     describe('setPrimary', function () {
-        it ('sets a goal as primary', function () {
+        it('sets a goal as primary', function () {
             isolate.campaignGoals = [
                 {type: 1, primary: true},
                 {type: 2, primary: false},
@@ -97,7 +94,7 @@ describe('zemCampaignGoals', function () {
     });
 
     describe('deleteGoal', function () {
-        it ('removes goal only from model & ui if new', function () {
+        it('removes goal only from model & ui if new', function () {
             isolate.campaignGoals = [
                 {type: 1, primary: true},
                 {type: 2, primary: false, id: 10},
@@ -111,7 +108,7 @@ describe('zemCampaignGoals', function () {
 
         });
 
-        it ('removes goal only from model, ui and db if existing', function () {
+        it('removes goal only from model, ui and db if existing', function () {
             isolate.campaignGoals = [
                 {type: 1, primary: true},
                 {type: 2, primary: false, id: 10},

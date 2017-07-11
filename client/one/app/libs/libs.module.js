@@ -1,5 +1,3 @@
-/* global angular */
-
 /**
  * Module used to inject all externall libraries' modules used by One app.
  */

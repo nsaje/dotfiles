@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.widgets').factory('zemDataSourceService', function ($rootScope, $http, $q) { // eslint-disable-line max-len
 
     //

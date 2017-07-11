@@ -1,6 +1,4 @@
-/* globals angular */
 /* eslint-disable camelcase */
-'use strict';
 
 angular.module('one.widgets').factory('zemGridDebugEndpoint', function ($rootScope, $controller, $http, $q, $timeout, zemGridConstants) { // eslint-disable-line max-len
 

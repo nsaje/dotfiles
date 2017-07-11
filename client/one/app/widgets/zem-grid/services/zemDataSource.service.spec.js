@@ -1,6 +1,3 @@
-/* globals angular, jasmine, describe, it, beforeEach, expect, module, inject, spyOn */
-
-
 describe('zemDataSource', function () {
     var $scope;
     var $q;

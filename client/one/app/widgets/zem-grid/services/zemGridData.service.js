@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.widgets').factory('zemGridDataService', function ($q, $timeout, zemGridParser, zemAlertsService) { // eslint-disable-line max-len
 
     // GridDataService is responsible to request data from DataSource and listen to any DataSource changes

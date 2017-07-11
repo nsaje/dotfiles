@@ -1,6 +1,3 @@
-/* globals options,constants,angular */
-'use strict';
-
 angular.module('one.widgets').factory('zemChartMetricsService', function (zemPermissions) {
     ////////////////////////////////////////////////////////////////////////////////////
     // Definitions - Metrics, Categories

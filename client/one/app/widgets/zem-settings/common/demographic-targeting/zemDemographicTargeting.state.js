@@ -80,7 +80,7 @@ angular.module('one.widgets').service('zemDemographicTargetingStateService', fun
         }
 
         function update () {
-            entity.settings.bluekaiTargeting = zemDemographicTargetingConverter.convertToApi (state.expressionTree);
+            entity.settings.bluekaiTargeting = zemDemographicTargetingConverter.convertToApi(state.expressionTree);
             updateInfo();
         }
 
@@ -107,7 +107,7 @@ angular.module('one.widgets').service('zemDemographicTargetingStateService', fun
         }
 
         function updateReach () {
-            zemDemographicTargetingEndpoint.getReach(entity.settings.bluekaiTargeting).then (function (data) {
+            zemDemographicTargetingEndpoint.getReach(entity.settings.bluekaiTargeting).then(function (data) {
                 if (data && data.value) {
                     state.info.reach = {
                         value: $filter('number')(data.value),

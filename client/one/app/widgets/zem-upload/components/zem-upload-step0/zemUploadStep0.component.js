@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.widgets').directive('zemUploadStep0', function () { // eslint-disable-line max-len
     return {
         restrict: 'E',

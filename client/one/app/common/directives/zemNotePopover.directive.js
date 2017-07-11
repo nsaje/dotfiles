@@ -1,6 +1,3 @@
-/*global $,angular*/
-'use strict';
-
 angular.module('one.common').directive('zemNotePopover', function ($window) {
     return {
         restrict: 'E',

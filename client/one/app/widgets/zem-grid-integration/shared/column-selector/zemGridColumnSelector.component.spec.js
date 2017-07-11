@@ -15,7 +15,7 @@ describe('component: zemGridColumnSelector', function () {
         ]);
 
         var zemGridMocks = $injector.get('zemGridMocks');
-        api = zemGridMocks.createApi (constants.level.ACCOUNTS, constants.breakdown.MEDIA_SOURCE);
+        api = zemGridMocks.createApi(constants.level.ACCOUNTS, constants.breakdown.MEDIA_SOURCE);
 
         var locals = {};
         var bindings = {api: api};

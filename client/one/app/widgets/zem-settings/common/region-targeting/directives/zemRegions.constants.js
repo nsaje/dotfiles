@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.widgets').constant('zemRegionsConstants', {
     _regionIndexByCode: undefined,
     getByCode: function (code) {

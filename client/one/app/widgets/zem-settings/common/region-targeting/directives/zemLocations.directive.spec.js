@@ -1,5 +1,3 @@
-'use strict';
-
 describe('zemLocations', function () {
     var $scope, element, isolate;
 

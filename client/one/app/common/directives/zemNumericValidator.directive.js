@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.common').directive('zemNumericValidator', function () {
     return {
         require: 'ngModel',

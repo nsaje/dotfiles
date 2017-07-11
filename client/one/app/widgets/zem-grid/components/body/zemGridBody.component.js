@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.widgets').directive('zemGridBody', function (zemGridConstants) { // eslint-disable-line max-len
 
     return {
@@ -30,9 +27,9 @@ angular.module('one.widgets').directive('zemGridBody', function (zemGridConstant
                 // To simplify handling (window resize, etc.) we enforce that MIN_NUM_OF_ROWS_PER_PAGE (25)
                 // is always prepared and can be greater if viewport is higher than 1125px + 90px (footer+header).
                 // TODO: This can be improved in future if we find it necessary
-                var numOfRows = Math.ceil (document.documentElement.clientHeight /
+                var numOfRows = Math.ceil(document.documentElement.clientHeight /
                                            zemGridConstants.gridBodyRendering.ROW_HEIGHT);
-                numOfRows = Math.max (numOfRows, zemGridConstants.gridBodyRendering.MIN_NUM_OF_ROWS_PER_PAGE);
+                numOfRows = Math.max(numOfRows, zemGridConstants.gridBodyRendering.MIN_NUM_OF_ROWS_PER_PAGE);
                 return numOfRows;
             }
 
@@ -77,7 +74,7 @@ angular.module('one.widgets').directive('zemGridBody', function (zemGridConstant
                 }
 
                 scope.ctrl.grid.body.visibleRows = visibleRows;
-                scope.state.renderedRows =  visibleRows.slice(0, grid.body.ui.numOfRows);
+                scope.state.renderedRows = visibleRows.slice(0, grid.body.ui.numOfRows);
             }
 
             function getTranslateYStyle (top) {
@@ -123,7 +120,7 @@ angular.module('one.widgets').directive('zemGridBody', function (zemGridConstant
             element.on('scroll', scrollListener);
             window.addEventListener('scroll', scrollWindowListener);
             scope.$on('$destroy', function () {
-                window.removeEventListener ('scroll', scrollWindowListener);
+                window.removeEventListener('scroll', scrollWindowListener);
             });
         },
         controller: function () {},

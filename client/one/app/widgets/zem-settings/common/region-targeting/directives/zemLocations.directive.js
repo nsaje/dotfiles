@@ -1,6 +1,3 @@
-/*globals angular */
-'use strict';
-
 // TODO: on major update refactor to component
 angular.module('one.widgets').directive('zemLocations', function (config, $state, zemRegionsConstants) {
     return {

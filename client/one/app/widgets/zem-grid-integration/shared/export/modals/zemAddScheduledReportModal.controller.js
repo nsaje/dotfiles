@@ -1,5 +1,3 @@
-/* globals angular, options, constants */
-
 //
 // TODO: On major update, refactor to component
 //
@@ -117,7 +115,7 @@ angular.module('one.widgets').service('zemAddScheduledReportModalEndpoint', func
         var deferred = $q.defer();
         $http.put(url, data).
             success(function (data, status) {
-                if (status != 200) {
+                if (parseInt(status) !== 200) {
                     deferred.reject(data);
                 }
                 deferred.resolve();

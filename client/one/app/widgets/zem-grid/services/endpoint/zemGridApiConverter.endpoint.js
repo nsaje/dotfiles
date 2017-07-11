@@ -1,6 +1,4 @@
-/* globals angular, constants */
 /* eslint-disable camelcase*/
-'use strict';
 
 angular.module('one.widgets').factory('zemGridEndpointApiConverter', function (zemGridConstants, zemGridEndpointColumns, zemUtils) { // eslint-disable-line max-len
 
@@ -49,20 +47,20 @@ angular.module('one.widgets').factory('zemGridEndpointApiConverter', function (z
     }
 
     function createGroups (breakdown) {
-        breakdown.rows.filter (function (row) {
+        breakdown.rows.filter(function (row) {
             return row.group;
-        }).forEach (function (groupRow) {
+        }).forEach(function (groupRow) {
             createGroup(breakdown, groupRow);
         });
     }
 
     function createGroup (breakdown, groupRow) {
-        var groupedRows = breakdown.rows.filter (function (row) {
+        var groupedRows = breakdown.rows.filter(function (row) {
             return groupRow.group.ids.indexOf(row.breakdownId) >= 0;
         });
 
         groupedRows.forEach(function (row) {
-            var idx = breakdown.rows.indexOf (row);
+            var idx = breakdown.rows.indexOf(row);
             breakdown.rows.splice(idx, 1);
         });
 
@@ -100,10 +98,10 @@ angular.module('one.widgets').factory('zemGridEndpointApiConverter', function (z
         Object.keys(settings).forEach(function (key) {
             switch (key) {
             case zemGridEndpointColumns.COLUMNS.bidCpcSetting.field:
-                convertedSettings['cpc_cc'] = settings[key];
+                convertedSettings.cpc_cc = settings[key];
                 break;
             case zemGridEndpointColumns.COLUMNS.dailyBudgetSetting.field:
-                convertedSettings['daily_budget_cc'] = settings[key];
+                convertedSettings.daily_budget_cc = settings[key];
                 break;
             default:
                 convertedSettings[key] = settings[key];

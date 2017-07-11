@@ -1,6 +1,3 @@
-/* globals options, defaults, constants, angular, $ */
-'use strict';
-
 angular.module('one.widgets').directive('zemUploadEditForm', function () { // eslint-disable-line max-len
     return {
         restrict: 'E',
@@ -153,7 +150,7 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
     };
 
     vm.addPrimaryTracker = function (candidate) {
-        vm.fieldsSaved['primaryTrackerUrl'] = false;
+        vm.fieldsSaved.primaryTrackerUrl = false;
         candidate.usePrimaryTracker = true;
     };
 
@@ -165,7 +162,7 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
     };
 
     vm.addSecondaryTracker = function (candidate) {
-        vm.fieldsSaved['secondaryTrackerUrl'] = false;
+        vm.fieldsSaved.secondaryTrackerUrl = false;
         candidate.useSecondaryTracker = true;
     };
 
@@ -188,8 +185,8 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
 
     vm.toggleImageUpload = function () {
         if (vm.isEdit) return;
-        vm.fieldsSaved['image'] = false;
-        vm.fieldsSaved['imageUrl'] = false;
+        vm.fieldsSaved.image = false;
+        vm.fieldsSaved.imageUrl = false;
         vm.showImageUpload = !vm.showImageUpload;
     };
 
@@ -215,7 +212,7 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
             status: constants.videoAssetStatus.NOT_UPLOADED,
         };
 
-        vm.fieldsApiErrors['videoAssetId'] = false;
+        vm.fieldsApiErrors.videoAssetId = false;
 
         vm.endpoint.uploadVideo(
                 file,
@@ -230,7 +227,7 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
                 vm.startPollingVideoAssetStatus(candidate);
             })
             .catch(function () {
-                vm.fieldsApiErrors['videoAssetId'] = true;
+                vm.fieldsApiErrors.videoAssetId = true;
                 delete candidate.videoAsset;
             });
     };

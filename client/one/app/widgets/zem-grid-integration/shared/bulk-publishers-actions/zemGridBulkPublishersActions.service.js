@@ -1,6 +1,3 @@
-/* globals angular, constants */
-'use strict';
-
 angular.module('one.widgets').factory('zemGridBulkPublishersActionsService', function (zemDataFilterService, zemGridBulkPublishersActionsEndpoint, zemGridEndpointColumns, zemGridConstants, zemNavigationNewService) { // eslint-disable-line max-len
     function BulkActionsService (gridApi) {
         this.getBlacklistActions = getBlacklistActions;

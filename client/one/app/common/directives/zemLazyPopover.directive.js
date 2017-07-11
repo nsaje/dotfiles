@@ -1,6 +1,3 @@
-/*global $,angular*/
-'use strict';
-
 $zemLazyPopoverDirective.$inject = ['$http', '$templateCache', '$compile', '$parse', '$timeout', '$uibPosition', '$document']; // eslint-disable-line max-len
 function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $timeout, $position, $document) {
     // zem-lazy-popover-template = path to template (evaluated)

@@ -1,6 +1,3 @@
-/* globals angular, constants, options */
-'use strict';
-
 angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPermissions, zemGridConstants) {
     var AVG_COST_PREFIX = 'avg_cost_per_';
     var ROAS_PREFIX = 'roas_';

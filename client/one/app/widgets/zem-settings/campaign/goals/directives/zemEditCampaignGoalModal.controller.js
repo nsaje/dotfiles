@@ -1,5 +1,3 @@
-/* globals options,constants,defaults,angular */
-
 //
 // TODO: On major update, refactor to component
 //

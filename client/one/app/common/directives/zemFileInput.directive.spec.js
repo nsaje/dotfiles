@@ -1,5 +1,3 @@
-'use strict';
-
 describe('zemFileInput', function () {
     var element, buttonElement, inputElement;
 

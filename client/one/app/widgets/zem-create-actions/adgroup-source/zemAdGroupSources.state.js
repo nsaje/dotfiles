@@ -74,7 +74,7 @@ angular.module('one.widgets').service('zemAdGroupSourcesStateService', function 
                     state.requests.list.error = true;
                     return $q.reject(err);
                 }
-            ).finally (function () {
+            ).finally(function () {
                 state.requests.list.inProgress = false;
             });
         }

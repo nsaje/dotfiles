@@ -1,6 +1,3 @@
-/* globals describe, beforeEach, inject, module, it, expect, spyOn, jasmine */
-'use strict';
-
 describe('zemUpload', function () {
     var scope, $compileProvider, $compile;
     var template = '<zem-upload data-ad-group="ctrl.adGroup" data-on-save="ctrl.onSave" data-close-modal="ctrl.nop">' +

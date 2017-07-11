@@ -1,5 +1,3 @@
-/* globals describe, it, beforeEach, expect, module, inject */
-
 describe('zemGridDataFormatter', function () {
     var zemGridDataFormatter,
         tests,

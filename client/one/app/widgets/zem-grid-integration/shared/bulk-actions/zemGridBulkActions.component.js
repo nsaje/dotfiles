@@ -1,5 +1,3 @@
-/* global angular, constants */
-
 angular.module('one.widgets').component('zemGridBulkActions', {
     bindings: {
         api: '=',

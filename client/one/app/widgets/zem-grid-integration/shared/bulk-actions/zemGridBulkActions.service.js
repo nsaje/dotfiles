@@ -1,6 +1,3 @@
-/* globals angular, constants */
-'use strict';
-
 angular.module('one.widgets').factory('zemGridBulkActionsService', function ($q, $window, zemEntityService, zemGridEndpointColumns, zemGridConstants, zemAlertsService, zemUploadService, zemUploadApiConverter, zemCloneContentService) { // eslint-disable-line max-len
 
     function BulkActionsService (gridApi) {
@@ -9,7 +6,7 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($q,
 
         function setSelectionConfig () {
             var metaData = gridApi.getMetaData();
-            if (metaData.level == constants.level.AD_GROUPS && metaData.breakdown === constants.breakdown.CONTENT_AD) {
+            if (metaData.level === constants.level.AD_GROUPS && metaData.breakdown === constants.breakdown.CONTENT_AD) {
                 initializeContentAdsSelectionConfig();
                 gridApi.onMetaDataUpdated(null, initializeContentAdsCustomFilters);
             }
@@ -235,7 +232,7 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($q,
             return zemCloneContentService.openCloneModal(metaData.id, selection).then(
                 function (destinationBatch) {
                     // reloads data in case cloned upload batch is in the same ad group as source content ads
-                    if (destinationBatch.adGroup.id == metaData.id) {
+                    if (parseInt(destinationBatch.adGroup.id) === parseInt(metaData.id)) {
                         refreshData({});
                     }
                 });

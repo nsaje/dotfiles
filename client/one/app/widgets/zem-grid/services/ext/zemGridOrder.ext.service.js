@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.widgets').factory('zemGridOrderService', function (zemGridConstants, zemGridUIService, zemGridStorageService) { // eslint-disable-line max-len
 
     function OrderService (grid) {

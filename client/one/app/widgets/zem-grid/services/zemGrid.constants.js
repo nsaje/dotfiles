@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.widgets').factory('zemGridConstants', function () {
 
     var constants = {

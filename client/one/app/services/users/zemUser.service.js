@@ -1,5 +1,3 @@
-/* globals Raven */
-
 angular.module('one.services').service('zemUserService', function (zemPubSubService, zemUserEndpoint) { // eslint-disable-line max-len
 
     var currentUser = null;

@@ -1,5 +1,3 @@
-/* globals angular, jasmine, describe, it, beforeEach, expect, module, inject, spyOn */
-
 describe('zemGridPubSub', function () {
     var $rootScope;
     var zemGridPubSub;

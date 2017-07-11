@@ -1,6 +1,3 @@
-/*globals angular*/
-'use strict';
-
 function numberWithCommas (num) {
     var parts = num.toString().split('.');
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');

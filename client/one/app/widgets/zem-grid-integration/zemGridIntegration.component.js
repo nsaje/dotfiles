@@ -1,5 +1,3 @@
-/* globals angular, constants */
-
 angular.module('one.widgets').component('zemGridIntegration', {
     bindings: {
         api: '=api',

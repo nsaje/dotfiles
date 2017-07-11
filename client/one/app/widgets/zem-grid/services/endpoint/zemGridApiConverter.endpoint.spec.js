@@ -1,6 +1,5 @@
-/* globals describe, it, beforeEach, expect, module, inject, moment */
-
 /* eslint-disable camelcase */
+
 describe('zemGridEndpointApiConverter', function () {
     var zemGridEndpointApiConverter,
         config,

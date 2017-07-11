@@ -1,5 +1,3 @@
-/* globals describe, it, beforeEach, expect, module, inject, spyOn */
-
 describe('zemGridCellStateSelector', function () {
     var scope, element, $compile, $q;
 

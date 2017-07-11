@@ -1,6 +1,3 @@
-/* globals angular, constants */
-'use strict';
-
 angular.module('one.widgets').factory('zemGridUIService', function ($timeout, $state, zemGridConstants, zemGridDataFormatter) { // eslint-disable-line max-len
     var requestAnimationFrame = (function () {
         return window.requestAnimationFrame ||
@@ -248,7 +245,7 @@ angular.module('one.widgets').factory('zemGridUIService', function ($timeout, $s
             // Fix entire breakdown row
             var row = angular.element(_row);
             var style = getTranslateStyle(leftOffset);
-            style['position'] = 'absolute';
+            style.position = 'absolute';
             row.css(style);
             // Add style to primary cell to be consistent with data rows/cells
             row.find('.breakdown-row-primary-cell').css(getBreakdownColumnStyle(leftOffset));
@@ -283,7 +280,7 @@ angular.module('one.widgets').factory('zemGridUIService', function ($timeout, $s
             };
 
             if (animate) {
-                style['transition'] = 'transform 50ms ease-out';
+                style.transition = 'transform 50ms ease-out';
             }
             return style;
         }

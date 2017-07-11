@@ -11,7 +11,7 @@ angular.module('one').component('zemArchivedEntity', {
         function restore () {
             $ctrl.requestInProgress = true;
             zemEntityService.executeAction(constants.entityAction.RESTORE, $ctrl.entity.type, $ctrl.entity.id)
-            .then(updateNavigationCache).then(zemNavigationNewService.refreshState).finally (function () {
+            .then(updateNavigationCache).then(zemNavigationNewService.refreshState).finally(function () {
                 $ctrl.requestInProgress = false;
             });
         }

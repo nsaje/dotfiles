@@ -66,7 +66,7 @@ angular.module('one.widgets').service('zemAccessPermissionsStateService', functi
         }
 
         function remove (user, fromAllAccounts) {
-            if (!confirm(getRemoveConfirmMessage(user, fromAllAccounts))) {
+            if (!confirm(getRemoveConfirmMessage(user, fromAllAccounts))) { // eslint-disable-line no-alert
                 return null;
             }
             user.requestInProgress = true;

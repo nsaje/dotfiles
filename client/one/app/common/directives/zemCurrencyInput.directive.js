@@ -1,6 +1,3 @@
-/*globals angular,$*/
-'use strict';
-
 angular.module('one.common').directive('zemCurrencyInput', function ($filter) {
     return {
         require: 'ngModel',

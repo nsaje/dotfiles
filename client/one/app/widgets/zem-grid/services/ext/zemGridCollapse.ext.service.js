@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.widgets').factory('zemGridCollapseService', function (zemGridConstants) { // eslint-disable-line max-len
 
     function CollapseService (grid) {

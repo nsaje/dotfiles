@@ -53,7 +53,7 @@ angular.module('one.widgets').component('zemConversionPixelModal', {
         }
 
         function clearError () {
-            $ctrl.stateService.clearRequestError (getRequest());
+            $ctrl.stateService.clearRequestError(getRequest());
         }
     }
 });

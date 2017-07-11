@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.widgets').directive('zemGridHeader', function ($timeout, zemGridUIService) {
 
     return {
@@ -27,11 +24,11 @@ angular.module('one.widgets').directive('zemGridHeader', function ($timeout, zem
                 pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, scope, handleHorizontalScroll);
                 pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, scope, handleHorizontalScrollPivotColumns);
 
-                window.addEventListener ('resize', resizeColumns);
+                window.addEventListener('resize', resizeColumns);
                 window.addEventListener('scroll', updateStickyElements);
                 scope.$on('$destroy', function () {
-                    window.removeEventListener ('scroll', updateStickyElements);
-                    window.removeEventListener ('resize', resizeColumns);
+                    window.removeEventListener('scroll', updateStickyElements);
+                    window.removeEventListener('resize', resizeColumns);
                 });
             }
 
@@ -137,7 +134,7 @@ angular.module('one.widgets').directive('zemGridHeader', function ($timeout, zem
                 vm.grid.header.visibleColumns = vm.model.visibleColumns;
 
                 // [UI/UX] Resize columns before first render (avoid jumps)
-                $timeout (function () {
+                $timeout(function () {
                     zemGridUIService.resizeGridColumns(vm.grid);
                     vm.visible = true;
                 });

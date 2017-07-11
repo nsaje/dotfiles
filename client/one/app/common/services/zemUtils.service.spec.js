@@ -63,7 +63,7 @@ describe('zemUtils', function () {
         });
     });
 
-    it('should correctly convert underscore properties to camelcase (recursively)', function () {
+    it('should correctly convert camelcase properties to underscore (recursively)', function () {
         var obj = {
             prop: 1,
             complexProp: {

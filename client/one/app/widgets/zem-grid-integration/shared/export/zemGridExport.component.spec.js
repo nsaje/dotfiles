@@ -10,7 +10,7 @@ describe('component: zemGridExport', function () {
         zemGridExportOptions = $injector.get('zemGridExportOptions');
 
         var zemGridMocks = $injector.get('zemGridMocks');
-        api = zemGridMocks.createApi (constants.level.ACCOUNTS, constants.breakdown.MEDIA_SOURCE);
+        api = zemGridMocks.createApi(constants.level.ACCOUNTS, constants.breakdown.MEDIA_SOURCE);
 
         $scope = {};
         var locals = {$scope: $scope};
@@ -50,6 +50,6 @@ describe('component: zemGridExport', function () {
         });
         var columns = $scope.getAdditionalColumns();
         expect(api.getVisibleColumns).toHaveBeenCalled();
-        expect(columns).toEqual (['additional']);
+        expect(columns).toEqual(['additional']);
     });
 });

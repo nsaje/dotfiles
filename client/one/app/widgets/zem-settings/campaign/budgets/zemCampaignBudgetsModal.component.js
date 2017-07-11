@@ -1,4 +1,3 @@
-/* globals angular,moment,constants */
 angular.module('one.widgets').component('zemCampaignBudgetsModal', {
     templateUrl: '/app/widgets/zem-settings/campaign/budgets/zemCampaignBudgetsModal.component.html',
     bindings: {
@@ -119,7 +118,7 @@ angular.module('one.widgets').component('zemCampaignBudgetsModal', {
                     $ctrl.initStartDate = $ctrl.minDate;
                     $ctrl.initEndDate = $ctrl.maxDate;
 
-                    $ctrl.canDelete = data.state == constants.budgetLineItemStatus.PENDING;
+                    $ctrl.canDelete = parseInt(data.state) === constants.budgetLineItemStatus.PENDING;
                     $ctrl.availableCredit = getAvailableCredit(false, data.credit.id);
                     $ctrl.minDate = creditStartDate;
                     $ctrl.maxDate = moment($ctrl.availableCredit[0].endDate, 'MM/DD/YYYY').toDate();

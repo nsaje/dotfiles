@@ -1,6 +1,4 @@
-/* globals angular, constants */
 /* eslint-disable camelcase */
-'use strict';
 
 angular.module('one.widgets').factory('zemUploadEndpointService', function ($http, $q, zemUploadApiConverter, zemNavigationNewService) { // eslint-disable-line max-len
     function UploadEndpoint (baseUrl) {

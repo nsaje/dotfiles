@@ -1,6 +1,3 @@
-/*global $,angular*/
-'use strict';
-
 angular.module('one.common').directive('zemSelect2ModelTransform', function () {
     return {
         restrict: 'A',
@@ -16,7 +13,7 @@ angular.module('one.common').directive('zemSelect2ModelTransform', function () {
 
             ngModel.$formatters.push(function (value) {
                 var text;
-                if (attr.zemSelect2ModelTransform == 'percentage') {
+                if (attr.zemSelect2ModelTransform === 'percentage') {
                     text = isNaN(value) ? '' : value + '%';
                 } else { text = value; }
                 return {id: value, text: text};

@@ -1,6 +1,3 @@
-/*global $,angular,moment,constants*/
-'use strict';
-
 angular.module('one.common').directive('zemFocusSelect', function ($window) {
     return {
         restrict: 'A',

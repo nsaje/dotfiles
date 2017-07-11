@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.widgets').directive('zemGridHeaderCellCheckbox', function () {
     return {
         restrict: 'E',

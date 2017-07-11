@@ -1,6 +1,3 @@
-/* global angular,constants*/
-'use strict';
-
 angular.module('one.widgets').directive('zemCampaignGoals', function ($filter) {
     return {
         restrict: 'E',

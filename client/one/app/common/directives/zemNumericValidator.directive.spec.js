@@ -1,6 +1,3 @@
-/* globals describe, it, inject, module, expect, beforeEach */
-'use strict';
-
 describe('zemNumericValidator', function () {
     var $scope, httpBackend, element;
     var template = '<input id="input" type="text" zem-numeric-validator ' +

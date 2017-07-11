@@ -1,6 +1,3 @@
-/* globals angular, constants */
-'use strict';
-
 angular.module('one.widgets').factory('zemGridDataFormatter', function ($filter, zemGridConstants) {
     return {
         formatValue: formatValue,

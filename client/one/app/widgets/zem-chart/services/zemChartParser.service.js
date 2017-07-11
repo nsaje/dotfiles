@@ -1,4 +1,3 @@
-/* global overwrittes */
 angular.module('one.widgets').service('zemChartParser', function ($window, zemChartMetricsService) {
     var COMMON_Y_AXIS_METRICS = ['clicks', 'visits', 'pageviews'];
     var COLORS = angular.extend({

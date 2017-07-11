@@ -16,7 +16,7 @@ angular.module('one.widgets').service('zemContentInsightsEndpoint', function ($q
             then(function (response) {
                 if (response.data && response.data.data) {
                     var data = response.data.data;
-                    var convertedData = zemUtils.convertToCamelCase (data);
+                    var convertedData = zemUtils.convertToCamelCase(data);
                     deferred.resolve(convertedData);
                 }
             }).

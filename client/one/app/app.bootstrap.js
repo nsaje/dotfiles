@@ -1,4 +1,3 @@
-/* globals Raven */
 (function () {
 
     // Initialize app when document is loaded

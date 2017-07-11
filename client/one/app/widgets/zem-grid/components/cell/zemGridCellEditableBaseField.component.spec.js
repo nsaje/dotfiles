@@ -1,5 +1,3 @@
-/* globals describe, it, beforeEach, expect, module, inject, spyOn */
-
 describe('zemGridCellEditableBaseField', function () {
     var scope, element, $compileProvider, $compile, $q;
 

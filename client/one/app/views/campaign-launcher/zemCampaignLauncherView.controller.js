@@ -1,7 +1,7 @@
 angular.module('one.views').controller('zemCampaignLauncherView', function (zemNavigationNewService) {
     var $ctrl = this;
 
-    initialize ();
+    initialize();
 
     function initialize () {
         var activeEntity = zemNavigationNewService.getActiveEntity();

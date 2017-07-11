@@ -28,9 +28,9 @@ describe('component: zemGridIntegration', function () {
         spyOn(zemDataSourceService, 'createInstance').and.callThrough();
         $ctrl.$onInit();
 
-        expect (zemGridEndpointService.createMetaData).toHaveBeenCalled();
-        expect (zemGridEndpointService.createEndpoint).toHaveBeenCalled();
-        expect (zemDataSourceService.createInstance).toHaveBeenCalled();
+        expect(zemGridEndpointService.createMetaData).toHaveBeenCalled();
+        expect(zemGridEndpointService.createEndpoint).toHaveBeenCalled();
+        expect(zemDataSourceService.createInstance).toHaveBeenCalled();
 
         expect($ctrl.grid).toBeDefined();
         expect($ctrl.grid.options).toBeDefined();

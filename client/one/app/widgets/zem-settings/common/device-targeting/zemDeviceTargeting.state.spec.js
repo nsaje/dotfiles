@@ -152,7 +152,7 @@ describe('state: zemDeviceTargetingStateService', function () {
         os.version.max = os.versions[1];
         stateService.update();
 
-        expect(stateService.getState().operatingSystems[0].version).toEqual ({
+        expect(stateService.getState().operatingSystems[0].version).toEqual({
             min: {value: 'IOS_4_0', name: '4.0'},
             max: {value: 'IOS_4_0', name: '4.0'}
         });

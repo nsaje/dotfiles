@@ -32,13 +32,13 @@ angular.module('one.services').service('zemEntityService', function ($http, $q, 
     function executeAction (action, entityType, id) {
         var service = getEntityService(entityType);
         var actionFn = service.getAction(constants.entityActionType.SINGLE, action);
-        return actionFn (id);
+        return actionFn(id);
     }
 
     function executeBulkAction (action, level, breakdown, id, selection) {
-        var service = getEntityServiceByLevel (level, breakdown);
+        var service = getEntityServiceByLevel(level, breakdown);
         var actionFn = service.getAction(constants.entityActionType.BULK, action, breakdown);
-        return actionFn (id, selection);
+        return actionFn(id, selection);
     }
 
     function getEntityService (entityType) {

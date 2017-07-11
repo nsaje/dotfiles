@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.widgets').factory('zemGridSelectionService', function (zemGridConstants) { // eslint-disable-line max-len
 
     //
@@ -53,7 +50,7 @@ angular.module('one.widgets').factory('zemGridSelectionService', function (zemGr
         function restoreSelectionCollection (oldSelectionCollection) {
             var selectionCollection = [];
             oldSelectionCollection.forEach(function (oldRow) {
-                grid.body.rows.forEach (function (newRow) {
+                grid.body.rows.forEach(function (newRow) {
                     if (oldRow.id === newRow.id) {
                         selectionCollection.push(newRow);
                     }

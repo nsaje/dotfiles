@@ -163,7 +163,7 @@ angular.module('one.widgets').component('zemSettingsContainer', {
             if (element.length !== 1) return;
 
             $timeout(function () {
-                $('.zem-settings__body').animate ({
+                $('.zem-settings__body').animate({
                     scrollTop: element.offset().top - HEADER_OFFSET,
                 }, 500);
             });

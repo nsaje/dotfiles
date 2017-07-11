@@ -1,5 +1,3 @@
-/* globals angular, constants, moment, jasmine, describe, it, beforeEach, expect, module, inject, spyOn */
-
 describe('zemGridEndpointServiceSpec', function () {
     var $scope;
     var $q;

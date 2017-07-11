@@ -1,4 +1,3 @@
-/* globals describe, beforeEach, inject, module, it, expect, spyOn */
 describe('zemUploadTrigger', function () {
     var scope, $compile, $uibModal;
     var template = '<button type="button" zem-upload-trigger ' +

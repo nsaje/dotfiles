@@ -1,5 +1,3 @@
-/* global angular, constants */
-
 angular.module('one.widgets').component('zemGridBulkPublishersActions', {
     bindings: {
         api: '=',
@@ -128,7 +126,7 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
             var action = actions[actionValue];
 
             if (action.level === constants.publisherBlacklistLevel.GLOBAL) {
-                if (!confirm(MSG_GLOBAL_UPDATE_ALERT)) {
+                if (!confirm(MSG_GLOBAL_UPDATE_ALERT)) { // eslint-disable-line no-alert
                     return;
                 }
             }
@@ -142,7 +140,7 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
                 })
                 .catch(function (err) {
                     if (!err.data.errors || !err.data.errors.cpc_constraints) { return; }
-                    if (!confirm('If you want to blacklist more than 30 Outbrain publishers, Outbrain bid CPC will be automatically set to at least $0.65 in all ad groups within this account. Are you sure you want to proceed with blaklisting?')) { // eslint-disable-line max-len
+                    if (!confirm('If you want to blacklist more than 30 Outbrain publishers, Outbrain bid CPC will be automatically set to at least $0.65 in all ad groups within this account. Are you sure you want to proceed with blaklisting?')) { // eslint-disable-line max-len, no-alert
                         return;
                     }
                     $ctrl.service.execute(action, true).then(refreshData).catch(function (err) {

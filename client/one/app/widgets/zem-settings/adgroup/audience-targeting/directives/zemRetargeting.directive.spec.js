@@ -1,6 +1,3 @@
-/* globals describe, it, inject, module, beforeEach, expect, spyOn */
-'use strict';
-
 describe('zemRetargeting', function () {
     var $scope, element, isolate;
 

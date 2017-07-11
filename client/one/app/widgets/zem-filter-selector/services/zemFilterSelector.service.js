@@ -1,4 +1,3 @@
-/* globals options */
 angular.module('one.widgets').service('zemFilterSelectorService', function ($rootScope, $state, $filter, zemPermissions, zemDataFilterService, zemFilterSelectorSharedService, zemMediaSourcesService, zemAgenciesService, zemPubSubService) { // eslint-disable-line max-len
     this.init = init;
     this.getVisibleSections = getVisibleSections;

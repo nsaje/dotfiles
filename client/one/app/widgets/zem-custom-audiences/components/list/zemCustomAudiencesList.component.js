@@ -1,6 +1,3 @@
-/*globals angular*/
-'use strict';
-
 angular.module('one.widgets').component('zemCustomAudiencesList', {
     templateUrl: '/app/widgets/zem-custom-audiences/components/list/zemCustomAudiencesList.component.html',
     bindings: {

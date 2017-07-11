@@ -1,6 +1,3 @@
-/* globals describe, beforeEach, module, inject, it, expect, constants, angular, spyOn */
-'use strict';
-
 describe('ZemUploadEditFormCtrl', function () {
     var scope, $q, ctrl, $timeout, $injector;
 

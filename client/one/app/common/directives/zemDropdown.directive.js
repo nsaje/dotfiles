@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.common').directive('zemDropdown', function () {
     return {
         restrict: 'E',
@@ -19,7 +16,7 @@ angular.module('one.common').directive('zemDropdown', function () {
             var formatSelection = function (object) {
                 var option;
                 $scope.dropdownOptions.forEach(function (item) {
-                    if (item.value == object.id) {
+                    if (parseInt(item.value) === parseInt(object.id)) {
                         option = item;
                     }
                 });

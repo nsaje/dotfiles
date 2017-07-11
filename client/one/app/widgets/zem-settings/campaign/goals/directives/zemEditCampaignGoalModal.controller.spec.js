@@ -1,6 +1,3 @@
-/* global describe,beforeEach,module,it,inject,expect,spyOn,constants */
-'use strict';
-
 describe('zemEditCampaignGoalModalCtrl', function () {
     var $timeout, $scope, $state, $q, api;
 
@@ -146,7 +143,7 @@ describe('zemEditCampaignGoalModalCtrl', function () {
     });
 
     describe('validate', function () {
-        it ('catches duplicate conversion goal ids', function () {
+        it('catches duplicate conversion goal ids', function () {
             var newGoal = {},
                 errors = {};
             $scope.campaignGoals = [
@@ -189,7 +186,7 @@ describe('zemEditCampaignGoalModalCtrl', function () {
 
             expect($scope.validate(newGoal, errors)).toBe(true);
         });
-        it ('recognizes modified existing goals', function () {
+        it('recognizes modified existing goals', function () {
             var newGoal = {},
                 errors = {};
             $scope.campaignGoals = [
@@ -224,7 +221,7 @@ describe('zemEditCampaignGoalModalCtrl', function () {
             expect($scope.validate(newGoal, errors)).toBe(true);
         });
 
-        it ('allows only different conversion windows for same pixie', function () {
+        it('allows only different conversion windows for same pixie', function () {
             var newGoal = {},
                 errors = {};
             $scope.campaignGoals = [

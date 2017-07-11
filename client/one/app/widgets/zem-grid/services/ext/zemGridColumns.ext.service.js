@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.widgets').factory('zemGridColumnsService', function (zemGridConstants, zemGridStorageService) { // eslint-disable-line max-len
 
     function ColumnsService (grid) {
@@ -58,7 +55,7 @@ angular.module('one.widgets').factory('zemGridColumnsService', function (zemGrid
         function intersects (array1, array2) {
             // Simple solution for finding if arrays are having common element
             return array1.filter(function (n) {
-                return array2.indexOf(n) != -1;
+                return array2.indexOf(n) !== -1;
             }).length > 0;
         }
 

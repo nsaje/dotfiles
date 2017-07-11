@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.widgets').factory('zemGridStorageService', function (zemLocalStorageService, zemNavigationNewService) { // eslint-disable-line max-len
     var LOCAL_STORAGE_NAMESPACE = 'zemGrid';
     var ALL_ACCOUNTS_KEY = 'allAccounts';
@@ -102,7 +99,7 @@ angular.module('one.widgets').factory('zemGridStorageService', function (zemLoca
         // TODO: move to util service
         // Simple solution for finding if arrays are having common element
         return array1.filter(function (n) {
-            return array2.indexOf(n) != -1;
+            return array2.indexOf(n) !== -1;
         }).length > 0;
     }
 

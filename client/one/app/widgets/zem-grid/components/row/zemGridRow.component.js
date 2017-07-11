@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.widgets').directive('zemGridRow', function (zemGridConstants) {
     var DUMMY_ROW = {
         entity: constants.entityType.ACCOUNT,

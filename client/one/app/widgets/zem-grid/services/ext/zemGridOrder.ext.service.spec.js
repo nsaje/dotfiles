@@ -1,5 +1,3 @@
-/* globals angular, jasmine, describe, it, beforeEach, expect, module, inject, spyOn */
-
 describe('zemGridOrderService', function () {
     var $rootScope;
     var zemGridConstants;
@@ -60,7 +58,7 @@ describe('zemGridOrderService', function () {
         expect(orderService.getColumnOrder(grid.header.columns[1])).toBe(undefined);
         expect(orderService.getColumnOrder(grid.header.columns[2])).toBe(undefined);
 
-        spyOn (grid.meta.dataService, 'getOrder').and.returnValue('orderField1');
+        spyOn(grid.meta.dataService, 'getOrder').and.returnValue('orderField1');
         pubsub.notify(pubsub.EVENTS.DATA_UPDATED);
         expect(orderService.getColumnOrder(grid.header.columns[0])).toBe(zemGridConstants.gridColumnOrder.ASC);
         expect(orderService.getColumnOrder(grid.header.columns[1])).toBe(zemGridConstants.gridColumnOrder.NONE);

@@ -1,5 +1,3 @@
-'use strict';
-
 describe('decimalCurrency', function () {
     var filter;
 

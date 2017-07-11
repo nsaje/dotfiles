@@ -1,5 +1,3 @@
-/* globals angular, constants, moment, jasmine, describe, it, beforeEach, expect, module, inject, spyOn */
-
 describe('zemGridEndpointColumnsSpec', function () {
     var zemGridEndpointColumns;
 
@@ -23,22 +21,22 @@ describe('zemGridEndpointColumnsSpec', function () {
     it('should configure columns', function () {
         var columns = zemGridEndpointColumns.createColumns(constants.level.CAMPAIGNS, [constants.breakdown.AD_GROUP, constants.breakdown.CONTENT_AD, constants.breakdown.MEDIA_SOURCE]); // eslint-disable-line max-len
         var nameColumn = findColumn(zemGridEndpointColumns.COLUMNS.name, columns);
-        expect (nameColumn.permanent).toBe(true);
-        expect (nameColumn.default).toBe(true);
-        expect (nameColumn.exceptions.breakdowns).toBeFalsy();
-        expect (nameColumn.goal).toBeFalsy();
+        expect(nameColumn.permanent).toBe(true);
+        expect(nameColumn.default).toBe(true);
+        expect(nameColumn.exceptions.breakdowns).toBeFalsy();
+        expect(nameColumn.goal).toBeFalsy();
 
         var cpcColumn = findColumn(zemGridEndpointColumns.COLUMNS.cpc, columns);
-        expect (cpcColumn.permanent).toBeFalsy();
-        expect (cpcColumn.default).toBe(true);
-        expect (cpcColumn.exceptions.breakdowns).toBeFalsy();
-        expect (cpcColumn.goal).toBeFalsy();
+        expect(cpcColumn.permanent).toBeFalsy();
+        expect(cpcColumn.default).toBe(true);
+        expect(cpcColumn.exceptions.breakdowns).toBeFalsy();
+        expect(cpcColumn.goal).toBeFalsy();
 
         var avgCostPerMinuteColumn = findColumn(zemGridEndpointColumns.COLUMNS.avgCostPerMinute, columns);
-        expect (avgCostPerMinuteColumn.permanent).toBeFalsy();
-        expect (avgCostPerMinuteColumn.default).toBeFalsy();
-        expect (avgCostPerMinuteColumn.exceptions.breakdowns).toBeFalsy();
-        expect (avgCostPerMinuteColumn.goal).toBe(true);
+        expect(avgCostPerMinuteColumn.permanent).toBeFalsy();
+        expect(avgCostPerMinuteColumn.default).toBeFalsy();
+        expect(avgCostPerMinuteColumn.exceptions.breakdowns).toBeFalsy();
+        expect(avgCostPerMinuteColumn.goal).toBe(true);
     });
 
     it('should brand permanent columns', function () {
@@ -46,16 +44,16 @@ describe('zemGridEndpointColumnsSpec', function () {
             [constants.breakdown.AD_GROUP, constants.breakdown.CONTENT_AD, constants.breakdown.MEDIA_SOURCE]);
 
         var nameColumn = findColumn(zemGridEndpointColumns.COLUMNS.name, columns);
-        expect(nameColumn.name).toBe ('Ad Group');
-        expect(nameColumn.help).toBe ('Name of the ad group.');
+        expect(nameColumn.name).toBe('Ad Group');
+        expect(nameColumn.help).toBe('Name of the ad group.');
 
         var statusColumn = findColumn(zemGridEndpointColumns.COLUMNS.status, columns);
-        expect(statusColumn.name).toBe ('Status');
-        expect(statusColumn.help.indexOf('Status of an ad group')).toBe (0);
+        expect(statusColumn.name).toBe('Status');
+        expect(statusColumn.help.indexOf('Status of an ad group')).toBe(0);
 
         var stateColumn = findColumn(zemGridEndpointColumns.COLUMNS.state, columns);
-        expect(stateColumn.name).toBe ('\u25CF');
-        expect(stateColumn.help).toBe ('A setting for enabling and pausing Ad Groups.');
+        expect(stateColumn.name).toBe('\u25CF');
+        expect(stateColumn.help).toBe('A setting for enabling and pausing Ad Groups.');
 
     });
 

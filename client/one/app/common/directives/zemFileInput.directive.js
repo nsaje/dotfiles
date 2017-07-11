@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.common').component('zemFileInput', {
     template: '<ng-transclude></ng-transclude>' +
         '<input tabindex="-1" type="file" ' +

@@ -27,7 +27,7 @@ green "Flake8 check successful"
 # ES Lint ----------------------------------------------------------------------
 
 blue "ESLint in progress ..."
-eslint client/one client/test
+eslint client/one
 
 if [ $? != 0 ]
   then

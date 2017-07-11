@@ -1,5 +1,3 @@
-/* globals options */
-
 angular.module('one.services').service('zemEntityConverter', function ($http, $q, zemUtils) { // eslint-disable-line max-len
     //
     // API Converter - converting local entity data to api format and vice-versa (variable format, etc.)

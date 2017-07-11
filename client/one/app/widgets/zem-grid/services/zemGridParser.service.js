@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.widgets').factory('zemGridParser', function ($filter, zemGridConstants, zemGridObject) { // eslint-disable-line max-len
 
     //

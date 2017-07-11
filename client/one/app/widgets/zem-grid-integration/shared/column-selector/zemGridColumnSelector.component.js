@@ -1,4 +1,3 @@
-/* globals angular */
 angular.module('one.widgets').component('zemGridColumnSelector', {
     bindings: {
         api: '=',

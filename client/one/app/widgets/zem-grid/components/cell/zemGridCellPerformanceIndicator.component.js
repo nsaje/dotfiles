@@ -1,6 +1,3 @@
-/* globals angular, constants */
-'use strict';
-
 angular.module('one.widgets').directive('zemGridCellPerformanceIndicator', function (zemGridConstants) {
 
     var statusIcons = {},

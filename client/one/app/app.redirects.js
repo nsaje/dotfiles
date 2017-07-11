@@ -1,4 +1,5 @@
-/* global angular */
+/* eslint-disable dot-notation */
+
 angular.module('one').config(function ($urlRouterProvider) {
     var mapLegacyLevelToLevelParam = {};
     mapLegacyLevelToLevelParam['all_accounts'] = constants.levelStateParam.ACCOUNTS;

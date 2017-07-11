@@ -1,5 +1,3 @@
-'use strict';
-
 describe('zemDropdown', function () {
     var $scope, element, isolate;
 

@@ -1,6 +1,3 @@
-/* globals JSON, angular */
-'use strict';
-
 angular.module('one.services').factory('zemLocalStorageService', function (zemUserService) {
     function getKey (key, namespace) {
         // FIXME: Some tests fails, because current().id throws error, since there is not current user configured

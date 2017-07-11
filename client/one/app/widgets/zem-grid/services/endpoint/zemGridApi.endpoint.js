@@ -1,6 +1,3 @@
-/* globals angular, constants */
-'use strict';
-
 angular.module('one.widgets').factory('zemGridEndpointApi', function ($q, $http, zemGridEndpointApiConverter, zemUtils) { // eslint-disable-line max-len
     //
     // EndpointApi - data retrieval (get) and settings persistence (save)

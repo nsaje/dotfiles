@@ -7,7 +7,7 @@ describe('zemPubSubService', function () {
         pubSub = _zemPubSubService_.createInstance();
     }));
 
-    it ('should call registered handler', function () {
+    it('should call registered handler', function () {
         var testHandler = jasmine.createSpy();
         pubSub.register('test', testHandler);
         expect(testHandler).not.toHaveBeenCalled();

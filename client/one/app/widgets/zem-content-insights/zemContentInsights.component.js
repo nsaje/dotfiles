@@ -1,6 +1,3 @@
-/* globals angular,$ */
-'use strict';
-
 angular.module('one.widgets').component('zemContentInsights', {
     bindings: {
         entity: '<'
@@ -18,7 +15,7 @@ angular.module('one.widgets').component('zemContentInsights', {
         function loadData () {
             if (!$ctrl.entity) return;
 
-            zemContentInsightsEndpoint.getData($ctrl.entity).then (function (data) {
+            zemContentInsightsEndpoint.getData($ctrl.entity).then(function (data) {
                 $ctrl.data = data;
                 $ctrl.loading = false;
             });

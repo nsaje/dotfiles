@@ -1,5 +1,3 @@
-/* globals angular, jasmine, describe, it, beforeEach, expect, module, inject, spyOn */
-
 describe('zemGridDataService', function () {
     var $timeout;
     var zemGridParser;
@@ -123,7 +121,7 @@ describe('zemGridDataService', function () {
         grid.meta.scope.$apply();
         $timeout.flush();
 
-        expect(dataSource.loadData).toHaveBeenCalledWith (row.data, 5);
+        expect(dataSource.loadData).toHaveBeenCalledWith(row.data, 5);
         expect(grid.body.rows.length).toBeGreaterThan(rowsCount);
     });
 

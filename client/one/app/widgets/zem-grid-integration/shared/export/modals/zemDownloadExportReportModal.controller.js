@@ -1,5 +1,3 @@
-/* globals angular, constants */
-
 //
 // TODO: On major update, refactor to component
 //
@@ -114,7 +112,7 @@ angular.module('one.widgets').service('zemDownloadExportReportModalEndpoint', fu
         var deferred = $q.defer();
 
         var filteredSources = zemDataFilterService.getFilteredSources();
-        var urlId = ((level_ == constants.level.ALL_ACCOUNTS) ? '' : id_ + '/');
+        var urlId = ((level_ === constants.level.ALL_ACCOUNTS) ? '' : id_ + '/');
         var urlSources = ((exportSources.valueOf()) ? 'sources/' : '');
         var urlFilteredSources = ((exportSources.valueOf()) ? '?filtered_sources=' + filteredSources.join(',') : '');
         var url = '/api/' + level_ + '/' + urlId + urlSources + 'export/allowed/' + urlFilteredSources;

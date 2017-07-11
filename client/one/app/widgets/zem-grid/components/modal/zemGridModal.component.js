@@ -1,6 +1,3 @@
-/* globals angular */
-'use strict';
-
 angular.module('one.widgets').directive('zemGridModal', function ($rootScope, $timeout, $http, $templateCache, $compile, $document) { // eslint-disable-line max-len
     var body;
     var pubsub;

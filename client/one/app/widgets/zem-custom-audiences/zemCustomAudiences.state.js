@@ -49,7 +49,7 @@ angular.module('one.widgets').service('zemCustomAudiencesStateService', function
             return $q.all(
                 list(),
                 listAudiencePixels()
-            ).then (function () {
+            ).then(function () {
                 state.initialized = true;
             });
         }

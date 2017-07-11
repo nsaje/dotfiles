@@ -1,5 +1,3 @@
-/*globals $*/
-
 (function () {
     function init() {
         var $usernameInput = $('#id_username');
@@ -32,7 +30,7 @@
                 }
             }
         }
-        
+
         $signInForm.on('submit', function (e) {
             if (gauthEnabled) {
                 var username = $usernameInput.val();

@@ -1,6 +1,3 @@
-/*globals angular*/
-'use strict';
-
 angular.module('one.services').factory('zemIntercomService', function ($window) {
     var INTERCOM_APP_ID = 'anyekw96';
 
@@ -18,7 +15,7 @@ angular.module('one.services').factory('zemIntercomService', function ($window) 
 
         companyObject = getCompanyObjectFromEmail(user.email);
         if (companyObject) {
-            userDict['company'] = companyObject;
+            userDict.company = companyObject;
         }
 
         $window.Intercom('boot', userDict);

@@ -11,7 +11,7 @@ angular.module('one.services').service('zemDesignHelpersService', function () {
 
     function initScrollToTop () {
         $(window).scroll(function () {
-            if ($(this).scrollTop () >= 600) {
+            if ($(this).scrollTop() >= 600) {
                 $('.scroll-to-top').addClass('scroll-to-top--visible');
             } else {
                 $('.scroll-to-top').removeClass('scroll-to-top--visible');
@@ -40,10 +40,10 @@ angular.module('one.services').service('zemDesignHelpersService', function () {
         var boxSize = 50,
             position = [],
             wrapper = $('.ee-wrapper'),
-            x = Math.round(wrapper.width () / boxSize) +
-            (wrapper.width () % boxSize ? 1 : 0),
-            y = Math.round(wrapper.height () / boxSize) +
-            (wrapper.height () % boxSize ? 1 : 0),
+            x = Math.round(wrapper.width() / boxSize) +
+            (wrapper.width() % boxSize ? 1 : 0),
+            y = Math.round(wrapper.height() / boxSize) +
+            (wrapper.height() % boxSize ? 1 : 0),
             html = '';
 
         for (var i = 0; i < x; i++) {
@@ -56,7 +56,7 @@ angular.module('one.services').service('zemDesignHelpersService', function () {
         }
 
         function Shuffle (el) {
-            for (var a, c, b = el.length; b; a = parseInt(Math.random () * b), c = el[--b], el[b] = el[a], el[a] = c);
+            for (var a, c, b = el.length; b; a = parseInt(Math.random() * b), c = el[--b], el[b] = el[a], el[a] = c);
             return el;
         }
 

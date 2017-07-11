@@ -1,5 +1,3 @@
-/* globals describe, it, beforeEach, expect, module, inject */
-
 describe('zemGridCellBreakdownField', function () {
     var scope, element, $compile;
 

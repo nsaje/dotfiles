@@ -1,5 +1,3 @@
-/* global angular */
-
 angular.module('one').config(function ($urlRouterProvider) {
     $urlRouterProvider.when('/signout', function ($location) {
         window.location = $location.absUrl();
