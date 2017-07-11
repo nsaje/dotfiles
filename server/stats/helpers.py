@@ -312,11 +312,11 @@ def merge_rows(breakdown, dash_rows, stats_rows):
     necessarily true in cases where there is no stats.
     """
 
-    group_a = sort_helper.group_rows_by_breakdown_key(breakdown, dash_rows, max_1=True)
     group_b = sort_helper.group_rows_by_breakdown_key(breakdown, stats_rows, max_1=True)
 
     rows = []
-    for key, row_a in group_a.iteritems():
+    for row_a in dash_rows:
+        key = sort_helper.get_breakdown_key(row_a, breakdown)
         row_b = group_b.pop(key, None)
         if row_b:
             row_a = merge_row(row_a, row_b)

@@ -146,13 +146,12 @@ def postprocess_joint_query_rows(rows):
             row[column] = dash.campaign_goals.get_goal_performance_category(row[column])
 
 
-def merge_rows(breakdown, base_rows, yesterday_rows, touchpoint_rows, conversion_rows, goals):
+def merge_rows(breakdown, base_rows, yesterday_rows, touchpoint_rows, conversion_rows, goals, calculate_performance_column=True):
     """
     Applys conversions, pixels and goals columns to rows. Equivalent to what redshiftapi joint model
     does, the only difference is that joint model calculates this in SQL directly.
     """
 
-    rows = base_rows
     rows = stats.helpers.merge_rows(breakdown, base_rows, yesterday_rows)
 
     # set others to 0
@@ -162,20 +161,18 @@ def merge_rows(breakdown, base_rows, yesterday_rows, touchpoint_rows, conversion
         if row.get('e_yesterday_cost') is None:
             row['e_yesterday_cost'] = 0
 
-    row_by_breakdown = sort_helper.group_rows_by_breakdown_key(breakdown, rows, max_1=True)
-
     if goals:
         if goals.conversion_goals:
-            apply_conversion_goal_columns(breakdown, row_by_breakdown, goals.conversion_goals, conversion_rows)
+            apply_conversion_goal_columns(breakdown, rows, goals.conversion_goals, conversion_rows)
         if goals.pixels:
-            apply_pixel_columns(breakdown, row_by_breakdown, goals.pixels, touchpoint_rows)
-        if goals.campaign_goals:
-            apply_performance_columns(breakdown, row_by_breakdown, goals.campaign_goals, goals.campaign_goal_values,
+            apply_pixel_columns(breakdown, rows, goals.pixels, touchpoint_rows)
+        if goals.campaign_goals and calculate_performance_column:
+            apply_performance_columns(breakdown, rows, goals.campaign_goals, goals.campaign_goal_values,
                                       goals.conversion_goals, goals.pixels)
     return rows
 
 
-def apply_conversion_goal_columns(breakdown, row_by_breakdown, conversion_goals, conversion_rows):
+def apply_conversion_goal_columns(breakdown, rows, conversion_goals, conversion_rows):
     if not conversion_goals:
         return
 
@@ -183,14 +180,15 @@ def apply_conversion_goal_columns(breakdown, row_by_breakdown, conversion_goals,
     conversion_rows_map = sort_helper.group_rows_by_breakdown_key(
         conversion_breakdown, conversion_rows, max_1=True)
 
-    for breakdown_key, row in row_by_breakdown.iteritems():
-        for conversion_goal in conversion_goals:
-            if conversion_goal.type not in dash_constants.REPORT_GOAL_TYPES:
-                continue
+    for conversion_goal in conversion_goals:
+        if conversion_goal.type not in dash_constants.REPORT_GOAL_TYPES:
+            continue
 
-            stats_key = conversion_goal.get_stats_key()
+        stats_key = conversion_goal.get_stats_key()
+        conversion_key = conversion_goal.get_view_key(conversion_goals)
 
-            conversion_breakdown_id = breakdown_key + (stats_key,)
+        for row in rows:
+            conversion_breakdown_id = sort_helper.get_breakdown_key(row, breakdown) + (stats_key,)
             conversion_row = conversion_rows_map.get(conversion_breakdown_id)
 
             if conversion_row:
@@ -202,14 +200,13 @@ def apply_conversion_goal_columns(breakdown, row_by_breakdown, conversion_goals,
                 count = None
                 avg_cost = None
 
-            conversion_key = conversion_goal.get_view_key(conversion_goals)
             row.update({
                 conversion_key: count,
                 'avg_cost_per_' + conversion_key: avg_cost,
             })
 
 
-def apply_pixel_columns(breakdown, row_by_breakdown, pixels, touchpoint_rows):
+def apply_pixel_columns(breakdown, rows, pixels, touchpoint_rows):
     if not pixels:
         return
 
@@ -218,16 +215,17 @@ def apply_pixel_columns(breakdown, row_by_breakdown, pixels, touchpoint_rows):
 
     conversion_windows = sorted(dash.constants.ConversionWindows.get_all())
 
-    for breakdown_key, row in row_by_breakdown.iteritems():
+    for row in rows:
+        cost = row['e_media_cost'] or 0
+        breakdown_key = sort_helper.get_breakdown_key(row, breakdown)
+
         for pixel in pixels:
             pixel_breakdown_key = breakdown_key + (pixel.slug,)
             pixel_rows = pixel_rows_map.get(pixel_breakdown_key)
 
             for conversion_window in conversion_windows:
-
                 if pixel_rows:
                     count = sum(x['count'] for x in pixel_rows if x['window'] <= conversion_window)
-                    cost = row['e_media_cost'] or 0
                     avg_cost = float(cost) / count if count else None
                     value = sum(x['conversion_value'] for x in pixel_rows if x['window'] <= conversion_window if x['conversion_value'])
                     roas = value - cost
@@ -245,7 +243,7 @@ def apply_pixel_columns(breakdown, row_by_breakdown, pixels, touchpoint_rows):
                 })
 
 
-def apply_performance_columns(breakdown, row_by_breakdown, campaign_goals, campaign_goal_values,
+def apply_performance_columns(breakdown, rows, campaign_goals, campaign_goal_values,
                               conversion_goals, pixels):
     map_camp_goal_vals = {x.campaign_goal_id: x for x in campaign_goal_values or []}
     map_conversion_goals = {x.id: x for x in conversion_goals or []}
@@ -280,7 +278,7 @@ def apply_performance_columns(breakdown, row_by_breakdown, campaign_goals, campa
 
         goal_key = campaign_goal.get_view_key()
 
-        for _, row in row_by_breakdown.iteritems():
+        for row in rows:
             cost = row['e_media_cost']
             metric_value = metric_value_fn(row)
             goal_category = dash.campaign_goals.get_goal_performance_status(

@@ -155,6 +155,7 @@ def _get_fields_to_keep(user):
 
 
 def _remove_fields(rows, fields_to_keep):
+    fields_to_keep = set(fields_to_keep)
     for row in rows:
         for row_field in row.keys():
             if row_field not in fields_to_keep:

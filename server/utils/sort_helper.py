@@ -72,11 +72,7 @@ def dissect_order(order):
 
 def get_breakdown_key(row, breakdown):
     # returns a pickable breakdown identifier
-
-    d = []
-    for dim in breakdown:
-        d.append(row[dim])
-    return tuple(d)
+    return tuple(row[dim] for dim in breakdown)
 
 
 def group_rows_by_breakdown_key(breakdown, rows, max_1=False):

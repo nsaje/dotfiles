@@ -170,10 +170,10 @@ class PostprocessGoalsTest(TestCase):
         self.maxDiff = None
 
     def test_apply_conversion_goal_columns(self):
-        rows = {
-            (1, 1): {'campaign_id': 1, 'ad_group_id': 1, 'clicks': 1, 'e_media_cost': 10},
-            (1, 2): {'campaign_id': 1, 'ad_group_id': 2, 'clicks': 1, 'e_media_cost': 20},
-        }
+        rows = [
+            {'campaign_id': 1, 'ad_group_id': 1, 'clicks': 1, 'e_media_cost': 10},
+            {'campaign_id': 1, 'ad_group_id': 2, 'clicks': 1, 'e_media_cost': 20},
+        ]
 
         postprocess.apply_conversion_goal_columns(
             ['campaign_id', 'ad_group_id'],
@@ -187,10 +187,10 @@ class PostprocessGoalsTest(TestCase):
             ]
         )
 
-        self.assertDictEqual(
+        self.assertEqual(
             rows,
-            {
-                (1, 1): {
+            [
+                {
                     'conversion_goal_2': 22,
                     'avg_cost_per_conversion_goal_2': 10.0 / 22,
                     'conversion_goal_3': None,
@@ -204,7 +204,7 @@ class PostprocessGoalsTest(TestCase):
                     'clicks': 1,
                     'e_media_cost': 10,
                 },
-                (1, 2): {
+                {
                     'conversion_goal_2': 33,
                     'avg_cost_per_conversion_goal_2': 20.0 / 33,
                     'conversion_goal_3': 44,
@@ -218,12 +218,12 @@ class PostprocessGoalsTest(TestCase):
                     'clicks': 1,
                     'e_media_cost': 20,
                 },
-            })
+            ])
 
     def test_apply_conversion_goal_columns_totals(self):
-        rows = {
-            tuple([]): {'clicks': 1, 'e_media_cost': 10},
-        }
+        rows = [
+            {'clicks': 1, 'e_media_cost': 10},
+        ]
 
         postprocess.apply_conversion_goal_columns(
             [],
@@ -236,10 +236,10 @@ class PostprocessGoalsTest(TestCase):
             ]
         )
 
-        self.assertDictEqual(
+        self.assertEqual(
             rows,
-            {
-                tuple([]): {
+            [
+                {
                     'conversion_goal_2': 22,
                     'avg_cost_per_conversion_goal_2': 10.0 / 22,
                     'conversion_goal_3': 44,
@@ -251,13 +251,13 @@ class PostprocessGoalsTest(TestCase):
                     'clicks': 1,
                     'e_media_cost': 10,
                 },
-            })
+            ])
 
     def test_apply_apply_pixel_columns(self):
-        rows = {
-            (1, 1): {'campaign_id': 1, 'ad_group_id': 1, 'clicks': 1, 'e_media_cost': 10},
-            (1, 2): {'campaign_id': 1, 'ad_group_id': 2, 'clicks': 1, 'e_media_cost': 20},
-        }
+        rows = [
+            {'campaign_id': 1, 'ad_group_id': 1, 'clicks': 1, 'e_media_cost': 10},
+            {'campaign_id': 1, 'ad_group_id': 2, 'clicks': 1, 'e_media_cost': 20},
+        ]
 
         postprocess.apply_pixel_columns(
             ['campaign_id', 'ad_group_id'],
@@ -271,9 +271,9 @@ class PostprocessGoalsTest(TestCase):
             ]
         )
 
-        self.assertDictEqual(
-            rows, {
-                (1, 1): {
+        self.assertEqual(
+            rows, [
+                {
                     'pixel_1_24': 22,
                     'avg_cost_per_pixel_1_24': 10.0 / 22,
                     'roas_pixel_1_24': 200.0 - 10,
@@ -291,7 +291,7 @@ class PostprocessGoalsTest(TestCase):
                     'e_media_cost': 10,
                     'clicks': 1,
                 },
-                (1, 2): {
+                {
                     'pixel_1_24': 0,
                     'avg_cost_per_pixel_1_24': None,
                     'roas_pixel_1_24': -20,
@@ -309,12 +309,12 @@ class PostprocessGoalsTest(TestCase):
                     'e_media_cost': 20,
                     'clicks': 1,
                 }
-            })
+            ])
 
     def test_apply_apply_pixel_columns_totals(self):
-        rows = {
-            tuple([]): {'clicks': 1, 'e_media_cost': 10},
-        }
+        rows = [
+            {'clicks': 1, 'e_media_cost': 10},
+        ]
 
         postprocess.apply_pixel_columns(
             [],
@@ -328,9 +328,9 @@ class PostprocessGoalsTest(TestCase):
             ]
         )
 
-        self.assertDictEqual(
-            rows, {
-                tuple([]): {
+        self.assertEqual(
+            rows, [
+                {
                     'pixel_1_24': 22,
                     'avg_cost_per_pixel_1_24': 10.0 / 22,
                     'roas_pixel_1_24': 200.0 - 10,
@@ -346,11 +346,11 @@ class PostprocessGoalsTest(TestCase):
                     'e_media_cost': 10,
                     'clicks': 1,
                 },
-            })
+            ])
 
     def test_apply_performance_columns(self):
-        rows = {
-            (1, 1): {
+        rows = [
+            {
                 'campaign_id': 1,
                 'ad_group_id': 1,
                 'clicks': 1,
@@ -373,7 +373,7 @@ class PostprocessGoalsTest(TestCase):
                 'pixel_1_2160': 22,
                 'avg_cost_per_pixel_1_2160': 10.0 / 22,
             },
-            (1, 2): {
+            {
                 'campaign_id': 1,
                 'ad_group_id': 2,
                 'clicks': 1,
@@ -396,7 +396,7 @@ class PostprocessGoalsTest(TestCase):
                 'pixel_1_2160': 5,
                 'avg_cost_per_pixel_1_2160': 20.0 / 5,
             },
-        }
+        ]
 
         postprocess.apply_performance_columns(
             ['campaign_id', 'ad_group_id'],
@@ -407,9 +407,9 @@ class PostprocessGoalsTest(TestCase):
             dash.models.ConversionPixel.objects.all()
         )
 
-        self.assertDictEqual(
-            rows, {
-                (1, 1): {
+        self.assertEqual(
+            rows, [
+                {
                     'performance_campaign_goal_1': dash.constants.CampaignGoalPerformance.SUPERPERFORMING,
                     'performance_campaign_goal_2': dash.constants.CampaignGoalPerformance.SUPERPERFORMING,
                     'campaign_id': 1,
@@ -434,7 +434,7 @@ class PostprocessGoalsTest(TestCase):
                     'pixel_1_2160': 22,
                     'avg_cost_per_pixel_1_2160': 10.0 / 22,
                 },
-                (1, 2): {
+                {
                     'performance_campaign_goal_1': dash.constants.CampaignGoalPerformance.AVERAGE,
                     'performance_campaign_goal_2': dash.constants.CampaignGoalPerformance.AVERAGE,
                     'campaign_id': 1,
@@ -459,4 +459,4 @@ class PostprocessGoalsTest(TestCase):
                     'pixel_1_2160': 5,
                     'avg_cost_per_pixel_1_2160': 20.0 / 5,
                 },
-            })
+            ])
