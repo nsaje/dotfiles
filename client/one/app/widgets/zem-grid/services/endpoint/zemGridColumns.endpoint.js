@@ -963,7 +963,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             name: 'Video Progress 3s',
             field: 'video_progress_3s',
             type: zemGridConstants.gridColumnTypes.NUMBER,
-            shown: 'zemauth.fea_can_see_video_metrics',
+            shown: false,
             internal: 'zemauth.fea_can_see_video_metrics',
             help: 'Video Progress 3s.',
             totalRow: true,
