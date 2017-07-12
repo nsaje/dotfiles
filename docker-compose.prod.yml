@@ -18,9 +18,9 @@ services:
           NEW_RELIC_APP_NAME: "Zemanta One"
           NEW_RELIC_PROCESS_HOST_DISPLAY_NAME: "${HOSTNAME}-docker"
           GUNICORN_TIMEOUT: "180"
-          GUNICORN_WORKERS: "16"
+          GUNICORN_WORKERS: "8"
           GUNICORN_THREADS: "1"
-          GUNICORN_WORKER_CLASS: "sync"
+          GUNICORN_WORKER_CLASS: "gevent"
           GUNICORN_LOG_LEVEL: "warn"
         labels:
           traefik.backend: "one.zemanta.com"
