@@ -497,7 +497,8 @@ class AdGroupSettingsTest(TestCase):
             for ags in ad_group.adgroupsource_set.all():
                 cpc = ags.get_current_settings().cpc_cc
                 # All cpc are adjusted to be lower or equal to 0.05
-                self.assertTrue(cpc <= Decimal('0.05'))
+                if ags.source.source_type.type == constants.SourceType.B1:
+                    self.assertTrue(cpc <= Decimal('0.05'))
 
             mock_insert_adgroup.assert_called_with(ad_group, ANY, ANY)
 
@@ -914,9 +915,10 @@ class AdGroupSettingsTest(TestCase):
                 'success': True
             })
 
-            for ags in ad_group.adgroupsource_set.filter(source__source_type__type=constants.SourceType.B1):
+            for ags in ad_group.adgroupsource_set.all():
                 agss = ags.get_current_settings()
-                self.assertEqual(Decimal('0.2150'), agss.cpc_cc)
+                if ags.source.source_type.type == constants.SourceType.B1:
+                    self.assertEqual(Decimal('0.2150'), agss.cpc_cc)
 
             mock_insert_adgroup.assert_called_with(ad_group, ANY, ANY)
 
