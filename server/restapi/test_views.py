@@ -8,7 +8,6 @@ from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 from zemauth.models import User
 from django.core.urlresolvers import reverse
-from mixer.backend.django import mixer
 
 import dash.models
 import fields
@@ -20,6 +19,7 @@ from automation import autopilot_plus
 from dash.features import contentupload
 from utils import json_helper
 from utils import test_helper
+from utils.magic_mixer import magic_mixer
 
 import restapi.serializers.targeting
 
@@ -402,7 +402,7 @@ class CampaignGoalsTest(RESTAPITest):
 
     def test_campaigngoals_cpa_post(self):
         account = dash.models.Account.objects.get(pk=186)
-        pixel = mixer.blend(dash.models.ConversionPixel, account=account)
+        pixel = magic_mixer.blend(dash.models.ConversionPixel, account=account)
         test_campaigngoal = self.campaigngoal_repr(
             type=constants.CampaignGoalKPI.CPA,
             value='0.33',
@@ -505,7 +505,6 @@ class BudgetsTest(RESTAPITest):
 
 class AdGroupsTest(RESTAPITest):
 
-    @classmethod
     def adgroup_repr(
         cls,
         id=1,
@@ -532,6 +531,10 @@ class AdGroupsTest(RESTAPITest):
         dayparting={},
         whitelist_publisher_groups=[153],
         blacklist_publisher_groups=[154],
+        audience_targeting=[123],
+        exclusion_audience_targeting=[124],
+        retargeting_ad_groups=[2050],
+        exclusion_retargeting_ad_groups=[2051],
         delivery_type=constants.AdGroupDeliveryType.STANDARD,
         click_capping_daily_ad_group_max_clicks=120,
     ):
@@ -581,6 +584,14 @@ class AdGroupsTest(RESTAPITest):
                 'publisherGroups': {
                     'included': whitelist_publisher_groups,
                     'excluded': blacklist_publisher_groups,
+                },
+                'customAudiences': {
+                    'included': audience_targeting,
+                    'excluded': exclusion_audience_targeting,
+                },
+                'retargetingAdGroups': {
+                    'included': retargeting_ad_groups,
+                    'excluded': exclusion_retargeting_ad_groups,
                 }
             },
             'autopilot': {
@@ -641,6 +652,10 @@ class AdGroupsTest(RESTAPITest):
             dayparting=settings_db.dayparting,
             whitelist_publisher_groups=settings_db.whitelist_publisher_groups,
             blacklist_publisher_groups=settings_db.blacklist_publisher_groups,
+            audience_targeting=settings_db.audience_targeting,
+            exclusion_audience_targeting=settings_db.exclusion_audience_targeting,
+            retargeting_ad_groups=settings_db.retargeting_ad_groups,
+            exclusion_retargeting_ad_groups=settings_db.exclusion_retargeting_ad_groups,
             target_devices=settings_db.target_devices,
             target_placements=settings_db.target_placements,
             target_os=settings_db.target_os,

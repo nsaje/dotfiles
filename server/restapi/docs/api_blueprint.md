@@ -754,6 +754,12 @@ publisherGroups  |          |            |                                      
 &nbsp;           | included |            | array[[publisherGroupId](#publishers-management-publisher-groups)]   | whitelisted publisher group IDs
 &nbsp;           | excluded |            | array[[publisherGroupId](#publishers-management-publisher-groups)]   | blacklisted publisher group IDs
 audience         |          |            | [audienceTargetingExpression](#audience-targeting-expression)        | audience targeting expression
+customAudiences  |          |            |                                                                      |
+&nbsp;           | included |            | array[customAudienceId]                                              | IDs of custom audiences to target
+&nbsp;           | excluded |            | array[customAudienceId]                                              | IDs of custom audiences to avoid
+retargetingAdGroups |       |            |                                                                      |
+&nbsp;           | included |            | array[adGroupId]                                                     | IDs of ad groups to retarget
+&nbsp;           | excluded |            | array[adGroupId]                                                     | IDs of ad groups to avoid
 
 <a name="os-targeting"></a>
 #### Operating System Targeting Settings
@@ -2578,6 +2584,16 @@ Examples:
 - `included`: `153` (array[string])
 - `excluded`: `154` (array[string])
 
+## `customAudiences` (object)
+
+- `included`: `123` (array[string])
+- `excluded`: `124` (array[string])
+
+## `retargetingAdGroups` (object)
+
+- `included`: `2050` (array[string])
+- `excluded`: `2051` (array[string])
+
 ## `os` (object)
 
 - `name`: `ANDROID` (string)
@@ -2596,6 +2612,8 @@ Examples:
 - `geo` (geo)
 - `interest` (interest)
 - `publisherGroups` (publisherGroups)
+- `customAudiences` (customAudiences)
+- `retargetingAdGroups` (retargetingAdGroups)
 
 ## `autopilot` (object)
 

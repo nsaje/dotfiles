@@ -196,6 +196,8 @@
         tracking_slug: 'b1_gumgum'
         source_type: 1
         bidder_slug: 'gumgum'
+        supports_retargeting: True
+        maintenance: False
     model: dash.source
     pk: 1
 
@@ -206,6 +208,8 @@
         tracking_slug: 'b1_triplelift'
         source_type: 1
         bidder_slug: 'triplelift'
+        supports_retargeting: True
+        maintenance: False
     model: dash.source
     pk: 2
 
@@ -216,6 +220,8 @@
         tracking_slug: 'yahoo'
         source_type: 3
         bidder_slug: 'yahoo'
+        supports_retargeting: True
+        maintenance: False
     model: dash.source
     pk: 3
 
@@ -226,6 +232,8 @@
         tracking_slug: 'b1_adiant'
         source_type: 1
         bidder_slug: 'adiant'
+        supports_retargeting: True
+        maintenance: False
     model: dash.source
     pk: 4
 
@@ -523,3 +531,54 @@
         created_dt: '2014-06-04T00:00:00'
     model: dash.bluekaicategory
     pk: 601
+
+
+# test retargeting ad groups
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 608
+        name: 'My retargeting ad group 1'
+    model: dash.adgroup
+    pk: 2050
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 608
+        name: 'My retargeting ad group 2'
+    model: dash.adgroup
+    pk: 2051
+
+
+# test custom audiences
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        account: 186
+        name: 'My custom audience pixel'
+    model: dash.conversionpixel
+    pk: 101
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        pixel: 101
+        ttl: 1
+        name: 'My custom audience 1'
+    model: dash.audience
+    pk: 123
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        pixel: 101
+        ttl: 1
+        name: 'My custom audience 2'
+    model: dash.audience
+    pk: 124

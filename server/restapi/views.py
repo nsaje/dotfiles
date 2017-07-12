@@ -366,6 +366,14 @@ class AdGroupSerializer(SettingsSerializer):
                 'publisherGroups': {
                     'included': settings['whitelist_publisher_groups'],
                     'excluded': settings['blacklist_publisher_groups'],
+                },
+                'customAudiences': {
+                    'included': settings['audience_targeting'],
+                    'excluded': settings['exclusion_audience_targeting'],
+                },
+                'retargetingAdGroups': {
+                    'included': settings['retargeting_ad_groups'],
+                    'excluded': settings['exclusion_retargeting_ad_groups'],
                 }
             },
             'autopilot': {
@@ -403,6 +411,10 @@ class AdGroupSerializer(SettingsSerializer):
             'dayparting': data['dayparting'],
             'whitelist_publisher_groups': data['targeting']['publisherGroups']['included'],
             'blacklist_publisher_groups': data['targeting']['publisherGroups']['excluded'],
+            'audience_targeting': data['targeting']['customAudiences']['included'],
+            'exclusion_audience_targeting': data['targeting']['customAudiences']['excluded'],
+            'retargeting_ad_groups': data['targeting']['retargetingAdGroups']['included'],
+            'exclusion_retargeting_ad_groups': data['targeting']['retargetingAdGroups']['excluded'],
 
             # TODO (refactor-workaround) Deserialization done in Django Views
             'target_devices': data['targeting']['devices'],
