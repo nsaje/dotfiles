@@ -722,6 +722,9 @@ def get_adjusted_ad_group_sources_cpcs(ad_group, ad_group_settings):
     for ad_group_source in ad_group.adgroupsource_set.all().select_related('source__source_type', 'ad_group'):
         proposed_cpc = ad_group_source.get_current_settings().cpc_cc
         adjusted_cpc = _get_adjusted_ad_group_source_cpc(proposed_cpc, ad_group_source, ad_group_settings)
+        if ad_group_source.source.source_type != constants.SourceType.B1 \
+           and ad_group_source.get_current_settings().state == constants.AdGroupSourceSettingsState.INACTIVE:
+            continue
         adjusted_cpcs[ad_group_source] = adjusted_cpc
     return adjusted_cpcs
 
@@ -742,7 +745,6 @@ def set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, ad_group_settings
         ad_group_source_settings = ad_group_source.get_current_settings()
         if ad_group_source_settings.cpc_cc == adjusted_cpc:
             continue
-
         ad_group_source.update(
             cpc_cc=adjusted_cpc,
             k1_sync=False,
@@ -757,7 +759,6 @@ def _get_adjusted_ad_group_source_cpc(proposed_cpc, ad_group_source, ad_group_se
             ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
     ):
         proposed_cpc = ad_group_settings.b1_sources_group_cpc_cc
-
     return adjust_max_cpc(proposed_cpc, ad_group_settings)
 
 
