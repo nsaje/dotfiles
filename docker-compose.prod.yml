@@ -18,7 +18,7 @@ services:
           NEW_RELIC_APP_NAME: "Zemanta One"
           NEW_RELIC_PROCESS_HOST_DISPLAY_NAME: "${HOSTNAME}-docker"
           GUNICORN_TIMEOUT: "180"
-          GUNICORN_WORKERS: "8"
+          GUNICORN_WORKERS: "16"
           GUNICORN_THREADS: "1"
           GUNICORN_WORKER_CLASS: "sync"
           GUNICORN_LOG_LEVEL: "warn"
@@ -32,7 +32,7 @@ services:
             max-size: "50m"
             max-file: "3"
             labels: "eins"
-        mem_limit: 4g
+        mem_limit: 8g
         networks:
           - legacynet
 
