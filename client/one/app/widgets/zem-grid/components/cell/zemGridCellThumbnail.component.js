@@ -11,7 +11,7 @@ angular.module('one.widgets').directive('zemGridCellThumbnail', function () {
             row: '=',
             grid: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/cell/zemGridCellThumbnail.component.html',
+        template: require('./zemGridCellThumbnail.component.html'),
         controller: function () {},
     };
 });

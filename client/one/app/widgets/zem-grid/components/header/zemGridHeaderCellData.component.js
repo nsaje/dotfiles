@@ -9,7 +9,7 @@ angular.module('one.widgets').directive('zemGridHeaderCellData', function () {
             column: '=',
             grid: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/header/zemGridHeaderCellData.component.html',
+        template: require('./zemGridHeaderCellData.component.html'),
         controller: function ($scope, zemGridConstants) {
             var vm = this;
             var pubsub = this.grid.meta.pubsub;

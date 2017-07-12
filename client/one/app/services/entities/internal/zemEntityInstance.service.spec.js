@@ -2,8 +2,8 @@ describe('zemEntityInstance', function () {
     var zemEntityInstanceService, zemEntityInstanceEndpoint;
     var $rootScope, $q;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($injector) {
         $q = $injector.get('$q');
         $rootScope = $injector.get('$rootScope');

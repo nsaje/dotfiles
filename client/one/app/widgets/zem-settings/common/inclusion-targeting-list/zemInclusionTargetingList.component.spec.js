@@ -1,8 +1,8 @@
 describe('component: zemInclusionTargetingList', function () {
     var $componentController;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($rootScope, _$componentController_) {
         $componentController = _$componentController_;

@@ -8,7 +8,7 @@ angular.module('one.widgets').directive('zemGridFooter', function () {
         bindToController: {
             grid: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/footer/zemGridFooter.component.html',
+        template: require('./zemGridFooter.component.html'),
         link: function postLink (scope, element) {
             var pubsub = scope.ctrl.grid.meta.pubsub;
             var grid = scope.ctrl.grid;

@@ -1,9 +1,9 @@
 describe('ZemUploadStep2Ctrl', function () {
     var scope, $q, ctrl, $interval, $injector;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
-    beforeEach(module('stateMock'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('stateMock'));
 
     beforeEach(inject(function ($controller, $rootScope, _$q_, _$interval_, _$injector_) {
         $q = _$q_;

@@ -4,8 +4,8 @@ describe('zemChartStorageService', function () {
     var zemLocalStorageService;
     var zemNavigationNewService;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function (_$injector_) {
         $injector = _$injector_;
         zemChartStorageService = $injector.get('zemChartStorageService');

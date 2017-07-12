@@ -64,7 +64,7 @@ node('master') {
                         -v ${WORKSPACE}/client:/data \
                         -e CHROME_BIN=/run-chrome.sh \
                         zemanta/z1-static \
-                        bash -c "Xvfb :99 -screen 0 1280x1024x24 & npm prune && npm install && bower install && grunt prod --build-number ${BUILD_NUMBER}"
+                        bash -c "npm prune && npm install && bower install && npm run tests && npm run prod --build-number=${BUILD_NUMBER}"
                         """
                 } finally {
                     junit 'client/test-results.xml'

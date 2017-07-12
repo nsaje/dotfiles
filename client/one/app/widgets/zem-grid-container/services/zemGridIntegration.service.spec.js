@@ -6,8 +6,8 @@ describe('component: zemGridIntegrationService', function () {
     var defaultEntity;
     var $scope;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($injector) {
         $timeout = $injector.get('$timeout');
 

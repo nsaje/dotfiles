@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemConversionPixels', {
         account: '<',
         onAudiencePixelUpdate: '&'
     },
-    templateUrl: '/app/widgets/zem-conversion-pixels/zemConversionPixels.component.html',
+    template: require('./zemConversionPixels.component.html'),
     controller: function ($scope, $uibModal, zemPermissions, zemConversionPixelsStateService, zemDataFilterService) { // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;

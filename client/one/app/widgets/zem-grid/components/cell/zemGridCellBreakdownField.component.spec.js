@@ -3,8 +3,8 @@ describe('zemGridCellBreakdownField', function () {
 
     var template = '<zem-grid-cell-breakdown-field data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-breakdown-field>'; // eslint-disable-line max-len
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($rootScope, _$compile_) {
         $compile = _$compile_;

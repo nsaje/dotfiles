@@ -10,7 +10,7 @@ angular.module('one.widgets').directive('zemGridCellEditButton', function () {
             column: '=',
             grid: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/cell/zemGridCellEditButton.component.html',
+        template: require('./zemGridCellEditButton.component.html'),
         controller: function ($scope, zemGridConstants, zemUploadService, zemUploadApiConverter) { // eslint-disable-line max-len
             var vm = this;
             vm.editRow = editRow;

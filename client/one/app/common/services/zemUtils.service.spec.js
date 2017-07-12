@@ -1,7 +1,7 @@
 describe('zemUtils', function () {
     var zemUtils;
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function (_zemUtils_) {
         zemUtils = _zemUtils_;
     }));

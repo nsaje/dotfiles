@@ -1,7 +1,7 @@
 angular.module('one.views').config(function ($stateProvider) {
     $stateProvider.state('v2', {
         url: '/v2',
-        templateUrl: '/app/views/main/zemMainView.partial.html',
+        template: require('./main/zemMainView.partial.html'),
         controller: 'zemMainView as $ctrl',
         resolve: {
             // Don't resolve until app is initialized
@@ -13,7 +13,7 @@ angular.module('one.views').config(function ($stateProvider) {
 
     $stateProvider.state('v2.analytics', {
         url: '/analytics/{level:accounts|account|campaign|adgroup}/{id:int}/{breakdown}',
-        templateUrl: '/app/views/analytics/zemAnalyticsView.partial.html',
+        template: require('./analytics/zemAnalyticsView.partial.html'),
         controller: 'zemAnalyticsView as $ctrl',
         params: {
             id: {
@@ -32,7 +32,7 @@ angular.module('one.views').config(function ($stateProvider) {
 
     $stateProvider.state('v2.reports', {
         url: '/reports/{level:accounts|account}/{id:int}',
-        templateUrl: '/app/views/scheduled-reports/zemScheduledReports.partial.html',
+        template: require('./scheduled-reports/zemScheduledReports.partial.html'),
         controller: 'zemScheduledReportsView as $ctrl',
         params: {
             id: {
@@ -44,7 +44,7 @@ angular.module('one.views').config(function ($stateProvider) {
 
     $stateProvider.state('v2.accountCredit', {
         url: '/credit/account/{id:int}',
-        templateUrl: '/app/views/account-credit/zemAccountCreditView.partial.html',
+        template: require('./account-credit/zemAccountCreditView.partial.html'),
         controller: 'zemAccountCreditView as $ctrl',
         params: {
             level: constants.levelStateParam.ACCOUNT,
@@ -53,7 +53,7 @@ angular.module('one.views').config(function ($stateProvider) {
 
     $stateProvider.state('v2.publisherGroups', {
         url: '/publishergroups/account/{id:int}',
-        templateUrl: '/app/views/publisher-groups/zemPublisherGroupsView.partial.html',
+        template: require('./publisher-groups/zemPublisherGroupsView.partial.html'),
         controller: 'zemPublisherGroupsView as $ctrl',
         params: {
             level: constants.levelStateParam.ACCOUNT,
@@ -62,7 +62,7 @@ angular.module('one.views').config(function ($stateProvider) {
 
     $stateProvider.state('v2.users', {
         url: '/users/account/{id:int}',
-        templateUrl: '/app/views/users/zemUsersView.partial.html',
+        template: require('./users/zemUsersView.partial.html'),
         controller: 'zemUsersView as $ctrl',
         params: {
             level: constants.levelStateParam.ACCOUNT,
@@ -71,7 +71,7 @@ angular.module('one.views').config(function ($stateProvider) {
 
     $stateProvider.state('v2.pixels', {
         url: '/pixels/account/{id:int}',
-        templateUrl: '/app/views/pixels/zemPixelsView.partial.html',
+        template: require('./pixels/zemPixelsView.partial.html'),
         controller: 'zemPixelsView as $ctrl',
         params: {
             level: constants.levelStateParam.ACCOUNT,
@@ -80,7 +80,7 @@ angular.module('one.views').config(function ($stateProvider) {
 
     $stateProvider.state('v2.campaignLauncher', {
         url: '/campaignlauncher/account/{id:int}',
-        templateUrl: '/app/views/campaign-launcher/zemCampaignLauncherView.partial.html',
+        template: require('./campaign-launcher/zemCampaignLauncherView.partial.html'),
         controller: 'zemCampaignLauncherView as $ctrl',
         params: {
             level: constants.levelStateParam.ACCOUNT,
@@ -89,7 +89,7 @@ angular.module('one.views').config(function ($stateProvider) {
 
     $stateProvider.state('v2.archived', {
         url: '/archived/{level:account|campaign|adgroup}/{id:int}',
-        templateUrl: '/app/views/archived/zemArchivedView.partial.html',
+        template: require('./archived/zemArchivedView.partial.html'),
         controller: 'zemArchivedView as $ctrl',
     });
 
@@ -101,6 +101,6 @@ angular.module('one.views').config(function ($stateProvider) {
 
     $stateProvider.state('error.forbidden', {
         url: '/forbidden',
-        templateUrl: '/app/views/common/403.partial.html',
+        template: require('./common/403.partial.html'),
     });
 });

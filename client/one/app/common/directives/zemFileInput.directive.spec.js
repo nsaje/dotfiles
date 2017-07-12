@@ -1,9 +1,9 @@
 describe('zemFileInput', function () {
     var element, buttonElement, inputElement;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
-    beforeEach(module('stateMock'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('stateMock'));
 
     beforeEach(inject(function ($compile, $rootScope) {
         element = $compile('<zem-file-input zem-file-input-callback="callback" zem-file-input-accept="image/*">' +

@@ -2,8 +2,8 @@ describe('component: zemAudienceTargeting', function () {
     describe('initialization', function () {
         var $ctrl; // eslint-disable-line no-unused-vars
 
-        beforeEach(module('one'));
-        beforeEach(module('one.mocks.zemInitializationService'));
+        beforeEach(angular.mock.module('one'));
+        beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
         beforeEach(inject(function ($rootScope, $componentController) {
             var bindings = {
@@ -22,8 +22,8 @@ describe('component: zemAudienceTargeting', function () {
     describe('component updates targeting attributes appropriately', function () {
         var $ctrl, targetings; // eslint-disable-line no-unused-vars
 
-        beforeEach(module('one'));
-        beforeEach(module('one.mocks.zemInitializationService'));
+        beforeEach(angular.mock.module('one'));
+        beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
         beforeEach(inject(function ($rootScope, $componentController) {
             targetings = {

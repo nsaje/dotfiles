@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemBluekaiGroup', {
         node: '<',
         stateService: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/common/demographic-targeting/components/zemBluekaiGroup.component.html',
+    template: require('./zemBluekaiGroup.component.html'),
     controller: function (zemUtils, zemDemographicTargetingConstants, zemDemographicTaxonomyService) {
         var $ctrl = this;
         $ctrl.GROUP_TYPES = {

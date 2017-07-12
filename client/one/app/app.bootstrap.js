@@ -1,5 +1,8 @@
 (function () {
 
+    // Fixme [Webpack Workaround]: Don't bootstrap app when running tests
+    if (window.jasmine) return;
+
     // Initialize app when document is loaded
     // This is standard AngularJS bootstrap hook
     document.onreadystatechange = function () {

@@ -2,8 +2,8 @@ describe('zemCreateAdGroupSourceAction', function () {
     var $ctrl;
     var zemAdGroupSourcesStateService;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($injector, $componentController) {
         zemAdGroupSourcesStateService = $injector.get('zemAdGroupSourcesStateService');

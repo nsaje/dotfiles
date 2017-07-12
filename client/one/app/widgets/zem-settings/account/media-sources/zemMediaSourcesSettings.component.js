@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemMediaSourcesSettings', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/account/media-sources/zemMediaSourcesSettings.component.html',
+    template: require('./zemMediaSourcesSettings.component.html'),
     controller: function (zemPermissions) {
         var $ctrl = this;
         $ctrl.options = options;

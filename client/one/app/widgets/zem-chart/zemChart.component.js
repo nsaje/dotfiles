@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemChart', {
         breakdown: '<',
         entityId: '<',
     },
-    templateUrl: '/app/widgets/zem-chart/zemChart.component.html',
+    template: require('./zemChart.component.html'),
     controller: function ($scope, $window, config, zemDataFilterService, zemChartService, zemChartObject, zemChartStorageService, zemChartMetricsService, zemGridConstants, zemNavigationNewService, zemSelectionService) { //eslint-disable-line max-len
         var $ctrl = this;
 
@@ -42,7 +42,6 @@ angular.module('one.widgets').component('zemChart', {
                 $ctrl.chart, $ctrl.level, $ctrl.breakdown, $ctrl.entityId);
             $ctrl.chartDataService.initialize();
 
-            initializeWindowResizeListeners();
             subscribeToEvents();
             loadMetrics(true); // Initially use placeholder fallback for dynamic metrics
             loadData();
@@ -97,25 +96,6 @@ angular.module('one.widgets').component('zemChart', {
                     }
                 }
             });
-        }
-
-        function initializeWindowResizeListeners () {
-            var w = angular.element($window);
-            w.bind('resize', updateSize);
-            $scope.$on('$destroy', function () {
-                w.unbind('resize', updateSize);
-            });
-
-            function updateSize () {
-                var chart = $('.chart').highcharts();
-
-                var w = $('.chart').parent().width(),
-                    h = $('.chart').height();
-                // setsize will trigger the graph redraw
-                if (chart && $('.graph-container').css('display') !== 'none') {
-                    chart.setSize(w, h, false);
-                }
-            }
         }
 
         function removeLegendItem (item) {

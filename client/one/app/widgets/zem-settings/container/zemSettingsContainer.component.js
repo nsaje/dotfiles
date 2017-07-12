@@ -8,7 +8,7 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         entityType: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/container/zemSettingsContainer.component.html',
+    template: require('./zemSettingsContainer.component.html'),
     controller: function ($transclude, $timeout, $element, $q, zemPermissions, zemUtils, zemPubSubService, zemEntityService, zemNavigationService, zemNavigationNewService, $state) { // eslint-disable-line max-len
         var STATUS_CODE_NONE = 0;
         var STATUS_CODE_IN_PROGRESS = 1;

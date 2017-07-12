@@ -2,7 +2,7 @@ angular.module('one.widgets').component('zemContentInsights', {
     bindings: {
         entity: '<'
     },
-    templateUrl: '/app/widgets/zem-content-insights/zemContentInsights.component.html',
+    template: require('./zemContentInsights.component.html'),
     controller: function ($scope, $element, $window, $timeout, zemNavigationNewService, zemContentInsightsEndpoint) {
         var $ctrl = this;
 

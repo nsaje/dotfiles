@@ -1,5 +1,5 @@
 angular.module('one.widgets').component('zemHistory', {
-    templateUrl: '/app/widgets/zem-history/zemHistory.component.html',
+    template: require('./zemHistory.component.html'),
     controller: function (hotkeys, zemHistoryService, zemNavigationNewService) {
         var $ctrl = this;
         $ctrl.close = zemHistoryService.close;

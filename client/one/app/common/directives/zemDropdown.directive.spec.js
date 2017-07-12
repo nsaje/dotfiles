@@ -6,8 +6,8 @@ describe('zemDropdown', function () {
                         'zem-dropdown-options="options">' +
                     '</zem-dropdown>';
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($compile, $rootScope) {
         $scope = $rootScope.$new();

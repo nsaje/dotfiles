@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/adgroup/autopilot/zemAdGroupAutopilotSettings.component.html',
+    template: require('./zemAdGroupAutopilotSettings.component.html'),
     controller: function ($q, $state, config) {
         var MSG_ALL_RTB_ENABLED_AD_GROUP_INACTIVE = 'One joint Bid CPC and Daily Spend Cap for will be set for all ' +
             'RTB sources. Please check the Daily Spend Cap in the Media Sources tab before enabling the ad group.';

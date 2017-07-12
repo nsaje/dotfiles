@@ -1,8 +1,8 @@
 describe('ZemNavigationUtils', function () {
     var zemNavigationUtils;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function (_zemNavigationUtils_) {
         zemNavigationUtils = _zemNavigationUtils_;
     }));

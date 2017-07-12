@@ -1,8 +1,8 @@
 describe('component: zemSettings', function () {
     var $ctrl;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($rootScope, $componentController) {
         $ctrl = $componentController('zemSettings', {}, {});

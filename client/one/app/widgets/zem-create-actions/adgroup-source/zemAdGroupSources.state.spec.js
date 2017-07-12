@@ -2,8 +2,8 @@ describe('state: zemAdGroupSourcesStateService', function () {
     var $q, $state, $rootScope;
     var zemAdGroupSourcesStateService, zemAdGroupSourcesEndpoint;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($injector) {
         $q = $injector.get('$q');
         $state = $injector.get('$state');

@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemAdGroupTrackingSettings', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/adgroup/tracking/zemAdGroupTrackingSettings.component.html',
+    template: require('./zemAdGroupTrackingSettings.component.html'),
     controller: function ($q, config, zemPermissions) {
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;

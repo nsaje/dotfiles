@@ -12,7 +12,7 @@ angular.module('one').directive('zemChartLegacy', function (config, $compile, $w
             localStoragePrefix: '=localStoragePrefix',
             isLoading: '=zemIsLoading'
         },
-        templateUrl: '/app/widgets/zem-chart/zemChart.legacy.component.html',
+        template: require('./zemChart.legacy.component.html'),
         controller: function ($scope) {
             var commonYAxisMetricIds = ['clicks', 'visits', 'pageviews'];
             var usedColors = {};

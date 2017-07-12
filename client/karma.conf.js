@@ -1,93 +1,52 @@
 // Karma configuration
 // Generated on Tue Jul 01 2014 10:34:40 GMT+0200 (CEST)
-
-module.exports = function (config) {
+// Reference: http://karma-runner.github.io/0.12/config/configuration-file.html
+module.exports = function karmaConfig (config) {
     config.set({
-        // base path that will be used to resolve all patterns (eg. files, exclude)
-        basePath: '',
-
-        // frameworks to use
-        // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-        frameworks: ['jasmine'],
-
-
-        // list of files / patterns to load in the browser
-        files: [
-            'dist/one/zemanta-one.lib.js',
-            'dist/one/zemanta-one.templates.js',
-            'one/app/app.module.js',
-            'one/app/**/*.module.js',
-            'one/app/test/**/*.js',
-            'one/app/**/*.js',
-            'one/js/**/*.js',
-            'one/components/**/*.js',
-            'test/unit/**/*.js',
+        frameworks: [
+            // Reference: https://github.com/karma-runner/karma-jasmine
+            // Set framework to jasmine
+            'jasmine'
         ],
-        exclude: [
-            'one/app/app.bootstrap.js',
+
+        reporters: [
+            // Reference: https://github.com/mlex/karma-spec-reporter
+            // Set reporter to print detailed results to console
+            'progress',
+
+            // Output test results in JUnit XML format
+            'junit'
+        ],
+
+        junitReporter: {
+            useBrowserName: false,
+            outputFile: './test-results.xml'
+        },
+
+        files: [
+            // Grab all files in the app folder that contain .spec.
+            'one/tests.webpack.js'
         ],
 
         preprocessors: {
-            '{one}/js/**/*.js': 'coverage'
+            // Reference: http://webpack.github.io/docs/testing.html
+            // Reference: https://github.com/webpack/karma-webpack
+            // Convert files with webpack and load sourcemaps
+            'one/tests.webpack.js': ['webpack', 'sourcemap']
         },
 
-        // test results reporter to use
-        // possible values: 'dots', 'progress'
-        // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-        reporters: ['progress', 'coverage', 'junit'],
-
-        // web server port
-        port: 9876,
-
-        // enable / disable colors in the output (reporters and logs)
-        colors: true,
-
-        // level of logging
-        // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-        logLevel: config.LOG_INFO,
-
-        // enable / disable watching file and executing tests whenever any file changes
-        autoWatch: true,
-
-        // start these browsers
-        // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-        browsers: ['Chrome'],
-
-        // Continuous Integration mode
-        // if true, Karma captures browsers, runs the tests and exits
-        singleRun: false,
-
-        // allow 60 seconds of no messages from chrome
-        browserNoActivityTimeout: 60000,
-
-        coverageReporter: {
-            reporters: [
-                {
-                    type: 'text-summary',
-                    dir: 'coverage/text/',
-                    file: 'coverage.txt',
-                },
-                {
-                    type: 'html',
-                    dir: 'coverage/html',
-                },
-                {
-                    type: 'cobertura',
-                    dir: 'coverage/cobertura',
-                    file: 'cobertura.xml',
-                },
-                {
-                    type: 'lcov',
-                    dir: 'coverage/lcov',
-                },
-            ],
-        },
-
-        plugins: [
-            'karma-jasmine',
-            'karma-chrome-launcher',
-            'karma-coverage',
-            'karma-junit-reporter',
+        browsers: [
+            // Run tests using PhantomJS
+            'PhantomJS'
         ],
+
+        singleRun: true,
+
+        webpack: require('./webpack.config'),
+
+        // Hide webpack build information from output
+        webpackMiddleware: {
+            noInfo: 'errors-only'
+        },
     });
 };

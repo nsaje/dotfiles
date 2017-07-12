@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemCampaignGeneralSettings', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/campaign/general/zemCampaignGeneralSettings.component.html',
+    template: require('./zemCampaignGeneralSettings.component.html'),
     controller: function (zemPermissions) {
         var $ctrl = this,
             iabCategoriesSorted = options.legacyIabCategories.slice();

@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemDeviceTargetingSettings', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/common/device-targeting/zemDeviceTargetingSettings.component.html',
+    template: require('./zemDeviceTargetingSettings.component.html'),
     controller: function ($q, config, zemPermissions, zemDeviceTargetingStateService) {
         var $ctrl = this;
         $ctrl.options = options;

@@ -9,7 +9,7 @@ describe('state: zemDemographicTargetingStateService', function () {
         ]
     };
 
-    beforeEach(module('one'));
+    beforeEach(angular.mock.module('one'));
     beforeEach(inject(function ($injector) {
         zemDemographicTargetingConverter = $injector.get('zemDemographicTargetingConverter');
     }));

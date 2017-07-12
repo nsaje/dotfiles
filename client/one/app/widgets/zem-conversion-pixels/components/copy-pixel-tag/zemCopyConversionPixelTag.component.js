@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemCopyConversionPixelTag', {
         resolve: '<',
         close: '&'
     },
-    templateUrl: '/app/widgets/zem-conversion-pixels/components/copy-pixel-tag/zemCopyConversionPixelTag.component.html', // eslint-disable-line max-len
+    template: require('./zemCopyConversionPixelTag.component.html'), // eslint-disable-line max-len
     controller: function () {
         var $ctrl = this;
         $ctrl.$onInit = function () {

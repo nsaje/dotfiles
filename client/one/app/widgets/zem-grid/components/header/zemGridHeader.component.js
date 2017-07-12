@@ -8,7 +8,7 @@ angular.module('one.widgets').directive('zemGridHeader', function ($timeout, zem
         bindToController: {
             grid: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/header/zemGridHeader.component.html',
+        template: require('./zemGridHeader.component.html'),
         link: function (scope, element, attributes, ctrl) {
             var pubsub = ctrl.grid.meta.pubsub;
             var requestAnimationFrame = zemGridUIService.requestAnimationFrame;

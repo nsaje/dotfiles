@@ -11,7 +11,7 @@ angular.module('one.widgets').directive('zemUploadStep0', function () { // eslin
             close: '=',
         },
         controllerAs: 'ctrl',
-        templateUrl: '/app/widgets/zem-upload/components/zem-upload-step0/zemUploadStep0.component.html',
+        template: require('./zemUploadStep0.component.html'),
         controller: 'ZemUploadStep0Ctrl',
     };
 });

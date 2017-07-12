@@ -2,7 +2,7 @@ angular.module('one.widgets').component('zemAccessPermissionsSettings', {
     bindings: {
         entity: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/account/access-permissions/zemAccessPermissionsSettings.component.html',
+    template: require('./zemAccessPermissionsSettings.component.html'),
     controller: function (zemAccessPermissionsSettingsEndpoint, $state, zemPermissions, zemUserService) { // eslint-disable-line max-len
 
         // TODO: update settings after user added/removed

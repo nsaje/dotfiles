@@ -1,5 +1,5 @@
 angular.module('one.widgets').component('zemHeaderBreadcrumb', {
-    templateUrl: '/app/widgets/zem-header/components/zem-header-breadcrumb/zemHeaderBreadcrumb.component.html',
+    template: require('./zemHeaderBreadcrumb.component.html'),
     controller: function ($rootScope, $state, $location, $document, $window, config, zemPermissions, zemNavigationNewService) { // eslint-disable-line max-len
 
         var $ctrl = this;

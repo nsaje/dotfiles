@@ -17,9 +17,9 @@ describe('zemFilterSelectorService', function () {
         });
     }
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
-    beforeEach(module('one.mocks.zemPermissions'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one.mocks.zemPermissions'));
     beforeEach(inject(function (_$injector_) {
         $injector = _$injector_;
         $rootScope = $injector.get('$rootScope');

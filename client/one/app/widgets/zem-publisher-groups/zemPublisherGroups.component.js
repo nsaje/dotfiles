@@ -1,5 +1,5 @@
 angular.module('one.widgets').component('zemPublisherGroups', {
-    templateUrl: '/app/widgets/zem-publisher-groups/zemPublisherGroups.component.html',
+    template: require('./zemPublisherGroups.component.html'),
     bindings: {
         account: '<',
     },

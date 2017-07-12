@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemDemographicTargeting', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/common/demographic-targeting/zemDemographicTargeting.component.html',
+    template: require('./zemDemographicTargeting.component.html'),
     controller: function (zemUtils, zemDemographicTaxonomyService, zemDemographicTargetingConstants, zemDemographicTargetingStateService) { // eslint-disable-line max-len
         var $ctrl = this;
 

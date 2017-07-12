@@ -1,8 +1,8 @@
 describe('zemCampaignGoals', function () {
     var $scope, element, isolate;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($compile, $rootScope) {
         var template = '<zem-campaign-goals account="account" ' +

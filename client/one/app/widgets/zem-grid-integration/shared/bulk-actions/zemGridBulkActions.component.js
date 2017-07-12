@@ -2,7 +2,7 @@ angular.module('one.widgets').component('zemGridBulkActions', {
     bindings: {
         api: '=',
     },
-    templateUrl: '/app/widgets/zem-grid-integration/shared/bulk-actions/zemGridBulkActions.component.html',
+    template: require('./zemGridBulkActions.component.html'),
     controller: function (zemGridConstants, zemGridBulkActionsService) { // eslint-disable-line max-len
         // TODO: alert, update daily stats
 

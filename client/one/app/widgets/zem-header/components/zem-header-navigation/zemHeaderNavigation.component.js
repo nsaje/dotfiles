@@ -1,5 +1,5 @@
 angular.module('one.widgets').component('zemHeaderNavigation', {
-    templateUrl: '/app/widgets/zem-header/components/zem-header-navigation/zemHeaderNavigation.component.html',
+    template: require('./zemHeaderNavigation.component.html'),
     controller: function ($scope, $element, $timeout, config, hotkeys, zemHeaderNavigationService) { // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.config = config;

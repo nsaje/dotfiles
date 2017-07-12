@@ -2,8 +2,8 @@ describe('zemGridPubSub', function () {
     var $rootScope;
     var zemGridPubSub;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function (_$rootScope_, _zemGridPubSub_) {
         $rootScope = _$rootScope_;

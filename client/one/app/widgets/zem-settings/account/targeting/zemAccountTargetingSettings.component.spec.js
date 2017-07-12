@@ -1,7 +1,7 @@
 describe('component: zemAccountTargetingSettings', function () {
     var $ctrl; // eslint-disable-line no-unused-vars
 
-    beforeEach(module('one'));
+    beforeEach(angular.mock.module('one'));
 
     beforeEach(inject(function ($rootScope, $componentController) {
         var bindings = {

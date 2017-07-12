@@ -51,7 +51,7 @@ angular.module('one.widgets').directive('zemGridCellPerformanceIndicator', funct
             data: '=',
             row: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/cell/zemGridCellPerformanceIndicator.component.html',
+        template: require('./zemGridCellPerformanceIndicator.component.html'),
         controller: function ($scope, config) {
             var vm = this;
 

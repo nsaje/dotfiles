@@ -2,8 +2,8 @@ describe('zemZipTargetingStateService', function () {
     var zemZipTargetingStateService;
     var mockedEntity;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($injector, $q) {
         zemZipTargetingStateService = $injector.get('zemZipTargetingStateService');
 

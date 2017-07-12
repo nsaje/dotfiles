@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemBackendHacks', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/common/backend-hacks/zemBackendHacks.component.html',
+    template: require('./zemBackendHacks.component.html'),
     controller: function ($q, config, zemPermissions) {
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;

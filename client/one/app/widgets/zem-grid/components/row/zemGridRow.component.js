@@ -16,7 +16,7 @@ angular.module('one.widgets').directive('zemGridRow', function (zemGridConstants
             index: '=',
             grid: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/row/zemGridRow.component.html',
+        template: require('./zemGridRow.component.html'),
         link: function (scope, element) {
             var grid = scope.ctrl.grid;
             var pubsub = scope.ctrl.grid.meta.pubsub;

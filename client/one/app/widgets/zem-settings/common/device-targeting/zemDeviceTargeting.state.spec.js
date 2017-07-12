@@ -1,8 +1,8 @@
 describe('state: zemDeviceTargetingStateService', function () {
     var zemDeviceTargetingStateService, zemPubSubService, zemDeviceTargetingConstants;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($injector) {
         zemDeviceTargetingStateService = $injector.get('zemDeviceTargetingStateService');
         zemDeviceTargetingConstants = $injector.get('zemDeviceTargetingConstants');

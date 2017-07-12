@@ -6,7 +6,7 @@ angular.module('one.widgets').component('zemRegionTargetingSettings', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/common/region-targeting/zemRegionTargetingSettings.component.html',
+    template: require('./zemRegionTargetingSettings.component.html'),
     controller: function ($q, config, zemPermissions) {
         var $ctrl = this;
         $ctrl.options = options;

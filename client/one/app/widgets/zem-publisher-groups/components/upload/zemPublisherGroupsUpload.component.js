@@ -1,5 +1,5 @@
 angular.module('one.widgets').component('zemPublisherGroupsUpload', {
-    templateUrl: '/app/widgets/zem-publisher-groups/components/upload/zemPublisherGroupsUpload.component.html',
+    template: require('./zemPublisherGroupsUpload.component.html'),
     bindings: {
         resolve: '<',
         modalInstance: '<',

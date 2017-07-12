@@ -2,7 +2,7 @@ angular.module('one').component('zemAccessPermissions', {
     bindings: {
         entity: '<',
     },
-    templateUrl: '/app/widgets/zem-access-permissions/zemAccessPermissions.component.html',
+    template: require('./zemAccessPermissions.component.html'),
     controller: function ($state, zemPermissions, zemUserService, zemAccessPermissionsStateService) { // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;

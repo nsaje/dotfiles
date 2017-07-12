@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemConversionPixelModal', {
         resolve: '<',
         close: '&'
     },
-    templateUrl: '/app/widgets/zem-conversion-pixels/components/modal/zemConversionPixelModal.component.html',
+    template: require('./zemConversionPixelModal.component.html'),
     controller: function ($rootScope, zemPermissions) {
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;

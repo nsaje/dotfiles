@@ -3,8 +3,8 @@ describe('component: zemGridIntegration', function () {
     var zemGridEndpointService, zemDataSourceService;
     var $ctrl;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($injector) {
         $componentController = $injector.get('$componentController');
         zemGridEndpointService = $injector.get('zemGridEndpointService');

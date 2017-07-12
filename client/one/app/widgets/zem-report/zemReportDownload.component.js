@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemReportDownload', {
         close: '&',
         resolve: '<',
     },
-    templateUrl: '/app/widgets/zem-report/zemReportDownload.component.html',
+    template: require('./zemReportDownload.component.html'),
     controller: function ($interval, zemReportService, zemPermissions, zemUserService, zemDataFilterService) {  // eslint-disable-line max-len
         var $ctrl = this;
 

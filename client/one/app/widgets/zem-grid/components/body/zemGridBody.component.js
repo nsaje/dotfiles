@@ -8,7 +8,7 @@ angular.module('one.widgets').directive('zemGridBody', function (zemGridConstant
         bindToController: {
             grid: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/body/zemGridBody.component.html',
+        template: require('./zemGridBody.component.html'),
         link: function (scope, element) {
             var grid = scope.ctrl.grid;
             var pubsub = grid.meta.pubsub;

@@ -4,8 +4,8 @@ describe('zemLocations', function () {
     var template = '<zem-locations zem-selected-location-codes="selectedCodes" zem-has-permission="hasPermission">' +
                    '</zem-locations>';
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($compile, $rootScope) {
         $scope = $rootScope.$new();

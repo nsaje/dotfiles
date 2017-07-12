@@ -6,8 +6,8 @@ describe('zemUploadService', function () {
         'name': 'Test ad group',
     };
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($injector) {
         $uibModal = $injector.get('$uibModal');
         zemUploadService = $injector.get('zemUploadService');

@@ -24,6 +24,7 @@ globals:
   afterEach: false
   expect: false
   spyOn: false
+  require: false
 
 rules:
   indent:

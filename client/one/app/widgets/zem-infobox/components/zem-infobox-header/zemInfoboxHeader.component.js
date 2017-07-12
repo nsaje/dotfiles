@@ -2,7 +2,7 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
     bindings: {
         entity: '<',
     },
-    templateUrl: '/app/widgets/zem-infobox/components/zem-infobox-header/zemInfoboxHeader.component.html',
+    template: require('./zemInfoboxHeader.component.html'),
     controller: function ($timeout, zemSettingsService, zemEntityService, zemNavigationService, zemPermissions, zemToastsService) { // eslint-disable-line max-len
         var $ctrl = this;
 

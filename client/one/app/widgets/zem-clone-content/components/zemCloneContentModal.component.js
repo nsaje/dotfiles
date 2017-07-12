@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemCloneContentModal', {
         resolve: '<',
         modalInstance: '<',
     },
-    templateUrl: '/app/widgets/zem-clone-content/components/zemCloneContentModal.component.html',
+    template: require('./zemCloneContentModal.component.html'),
     controller: function ($q, zemUserService, zemNavigationNewService, zemCloneContentService, zemSelectionService, zemSelectDataStore) { //eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.texts = {

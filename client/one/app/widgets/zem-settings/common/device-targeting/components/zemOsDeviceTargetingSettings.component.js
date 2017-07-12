@@ -2,7 +2,7 @@ angular.module('one.widgets').component('zemOsDeviceTargetingSettings', {
     bindings: {
         stateService: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/common/device-targeting/components/zemOsDeviceTargetingSettings.component.html', // eslint-disable-line max-len
+    template: require('./zemOsDeviceTargetingSettings.component.html'), // eslint-disable-line max-len
     controller: function (zemDeviceTargetingConstants) {
         var $ctrl = this;
         $ctrl.getAvailableOptions = getAvailableOptions;

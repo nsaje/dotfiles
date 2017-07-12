@@ -3,9 +3,9 @@ describe('zemDataFilterService', function () {
     var zemDataFilterService;
     var zemPermissions;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
-    beforeEach(module('one.mocks.zemPermissions'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one.mocks.zemPermissions'));
     beforeEach(inject(function (_$location_, _zemDataFilterService_, _zemPermissions_) {
         $location = _$location_;
         zemDataFilterService = _zemDataFilterService_;

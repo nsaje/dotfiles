@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemCampaignGoalsSettings', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/campaign/goals/zemCampaignGoalsSettings.component.html',
+    template: require('./zemCampaignGoalsSettings.component.html'),
     controller: function ($q, zemPermissions, zemNavigationNewService) { // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.options = options;

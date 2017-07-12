@@ -11,7 +11,7 @@ angular.module('one.common').directive('zemDropdown', function () {
             cssClass: '@zemCssClass',
             noMatchesPlaceholder: '@zemNoMatchesPlaceholder'
         },
-        templateUrl: '/app/common/directives/zemDropdown.directive.html',
+        template: require('./zemDropdown.directive.html'),
         controller: function ($scope, $compile) {
             var formatSelection = function (object) {
                 var option;

@@ -2,7 +2,7 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
     bindings: {
         api: '=',
     },
-    templateUrl: '/app/widgets/zem-grid-integration/shared/bulk-publishers-actions/zemGridBulkPublishersActions.component.html', // eslint-disable-line max-len
+    template: require('./zemGridBulkPublishersActions.component.html'), // eslint-disable-line max-len
     controller: function ($scope, $window, zemGridConstants, zemGridBulkPublishersActionsService, zemAlertsService) { // eslint-disable-line max-len
         var MAX_BLACKLISTED_PUBLISHERS_YAHOO = 0;
         var MSG_GLOBAL_UPDATE_ALERT = 'This action will affect all accounts. Are you sure you want to proceed?';

@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/adgroup/general/zemAdGroupGeneralSettings.component.html',
+    template: require('./zemAdGroupGeneralSettings.component.html'),
     controller: function ($scope, $state, zemPermissions, zemNavigationNewService) {
         var $ctrl = this;
         $ctrl.options = options;

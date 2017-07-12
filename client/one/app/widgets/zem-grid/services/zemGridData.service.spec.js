@@ -7,10 +7,10 @@ describe('zemGridDataService', function () {
     var dataSource;
     var endpoint;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    beforeEach(module(function ($provide, zemGridDebugEndpointProvider) {
+    beforeEach(angular.mock.module(function ($provide, zemGridDebugEndpointProvider) {
         $provide.value('zemLocalStorageService', {get: function () {}});
         $provide.value('zemGridEndpointService', zemGridDebugEndpointProvider.$get());
         $provide.value('zemGridStorageService', {saveColumns: angular.noop, loadColumns: angular.noop});

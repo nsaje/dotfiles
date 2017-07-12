@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemGrid', {
         options: '<',
         onInitialized: '&',
     },
-    templateUrl: '/app/widgets/zem-grid/zemGrid.component.html',
+    template: require('./zemGrid.component.html'),
     controller: function ($scope, $element, zemPermissions, zemGridObject, zemGridPubSub, zemGridDataService, zemGridColumnsService, zemGridOrderService, zemGridSelectionService, zemGridCollapseService, zemGridApi) { // eslint-disable-line max-len
         var $ctrl = this;
 

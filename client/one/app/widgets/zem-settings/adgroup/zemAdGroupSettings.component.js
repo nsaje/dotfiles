@@ -2,7 +2,7 @@ angular.module('one.widgets').component('zemAdGroupSettings', {
     bindings: {
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/adgroup/zemAdGroupSettings.component.html',
+    template: require('./zemAdGroupSettings.component.html'),
     controller: function (zemPermissions) {
         var $ctrl = this;
         $ctrl.constants = constants;

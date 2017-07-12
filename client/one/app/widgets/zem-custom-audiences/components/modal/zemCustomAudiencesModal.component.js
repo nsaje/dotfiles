@@ -1,5 +1,5 @@
 angular.module('one.widgets').component('zemCustomAudiencesModal', {
-    templateUrl: '/app/widgets/zem-custom-audiences/components/modal/zemCustomAudiencesModal.component.html',
+    template: require('./zemCustomAudiencesModal.component.html'),
     bindings: {
         resolve: '<',
         modalInstance: '<',

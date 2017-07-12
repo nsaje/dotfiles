@@ -1,10 +1,10 @@
-angular.module('one.widgets').component('zemTreeSelect', {
+angular.module('one.common').component('zemTreeSelect', {
     bindings: {
         rootNode: '<',
         initialSelection: '<',
         onUpdate: '&',
     },
-    templateUrl: '/app/common/components/zem-tree-select/zemTreeSelect.component.html',
+    template: require('./zemTreeSelect.component.html'),
     controller: function ($scope, $element, $timeout, zemTreeSelectService) {
         //
         // Tree Node (input: $ctrl.rootNode)

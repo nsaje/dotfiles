@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         disabled: '<',
         config: '=',
     },
-    templateUrl: '/app/widgets/zem-report/shared/zem-report-query-config/zemReportQueryConfig.component.html',
+    template: require('./zemReportQueryConfig.component.html'),
     controller: function (zemFilterSelectorService, zemReportBreakdownService, zemReportFieldsService, zemPermissions) {
         var $ctrl = this;
 

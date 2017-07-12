@@ -16,13 +16,13 @@ describe('zemCurrencyInput', function () {
         }
     };
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     // $state needs to be mocked because of
     // some strange issues with ui-router
     // https://github.com/angular-ui/ui-router/issues/212
-    beforeEach(module('stateMock'));
+    beforeEach(angular.mock.module('stateMock'));
 
     beforeEach(inject(function ($rootScope, _$compile_) {
         $scope = $rootScope.$new();

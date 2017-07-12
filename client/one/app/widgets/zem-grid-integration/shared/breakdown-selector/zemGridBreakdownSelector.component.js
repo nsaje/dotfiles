@@ -2,7 +2,7 @@ angular.module('one.widgets').component('zemGridBreakdownSelector', {
     bindings: {
         api: '=',
     },
-    templateUrl: '/app/widgets/zem-grid-integration/shared/breakdown-selector/zemGridBreakdownSelector.component.html',
+    template: require('./zemGridBreakdownSelector.component.html'),
     controller: function () {
         var $ctrl = this;
 

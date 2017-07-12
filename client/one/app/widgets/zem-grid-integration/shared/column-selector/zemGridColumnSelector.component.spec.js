@@ -2,9 +2,9 @@ describe('component: zemGridColumnSelector', function () {
     var $componentController;
     var $ctrl, api, zemPermissions;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
-    beforeEach(module('one.mocks.zemPermissions'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one.mocks.zemPermissions'));
 
     beforeEach(inject(function ($injector) {
         $componentController = $injector.get('$componentController');

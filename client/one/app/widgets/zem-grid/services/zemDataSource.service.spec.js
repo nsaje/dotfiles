@@ -5,8 +5,8 @@ describe('zemDataSource', function () {
     var dataSource;
     var endpoint;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($httpBackend) {
         $httpBackend.when('GET', '/api/users/current/').respond({});

@@ -23,8 +23,8 @@ describe('service: zemGridBulkPublishersActionsService', function () {
         return params;
     }
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($q, _zemDataFilterService_, _zemGridBulkPublishersActionsService_, _zemGridBulkPublishersActionsEndpoint_, _zemGridConstants_, _zemGridMocks_, _zemNavigationNewService_) { // eslint-disable-line max-len
         zemDataFilterService = _zemDataFilterService_;
         zemGridBulkPublishersActionsEndpoint = _zemGridBulkPublishersActionsEndpoint_;

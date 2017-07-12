@@ -1,5 +1,5 @@
 angular.module('one.widgets').component('zemCreateEntityAction', {
-    templateUrl: '/app/widgets/zem-create-actions/entity/zemCreateEntityAction.component.html',
+    template: require('./zemCreateEntityAction.component.html'),
     bindings: {
         parentEntity: '<',
     },

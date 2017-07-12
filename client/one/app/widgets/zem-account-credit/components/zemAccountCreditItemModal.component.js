@@ -3,7 +3,7 @@ angular.module('one').component('zemAccountCreditItemModal', {
         close: '&',
         resolve: '<',
     },
-    templateUrl: '/app/widgets/zem-account-credit/components/zemAccountCreditItemModal.component.html',
+    template: require('./zemAccountCreditItemModal.component.html'),
     controller: function (zemUserService, $filter, $timeout) {
         var $ctrl = this;
 

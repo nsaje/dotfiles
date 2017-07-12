@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemPerformanceTrackingSettings', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/campaign/performance-tracking/zemPerformanceTrackingSettings.component.html', // eslint-disable-line max-len
+    template: require('./zemPerformanceTrackingSettings.component.html'), // eslint-disable-line max-len
     controller: function ($q, config, zemPermissions) {
         var $ctrl = this;
         $ctrl.options = options;

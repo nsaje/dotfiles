@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemCampaignBudgetsSettings', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/campaign/budgets/zemCampaignBudgetsSettings.component.html',
+    template: require('./zemCampaignBudgetsSettings.component.html'),
     controller: function ($scope, $q, $uibModal, zemPermissions, zemCampaignBudgetsEndpoint) { // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.options = options;

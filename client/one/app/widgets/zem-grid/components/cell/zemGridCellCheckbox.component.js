@@ -10,7 +10,7 @@ angular.module('one.widgets').directive('zemGridCellCheckbox', function () {
             row: '=',
             grid: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/cell/zemGridCellCheckbox.component.html',
+        template: require('./zemGridCellCheckbox.component.html'),
         controller: function ($scope) {
             var vm = this;
             var selectionService = this.grid.meta.selectionService;

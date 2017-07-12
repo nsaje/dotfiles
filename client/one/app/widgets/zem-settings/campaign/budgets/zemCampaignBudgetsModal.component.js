@@ -1,5 +1,5 @@
 angular.module('one.widgets').component('zemCampaignBudgetsModal', {
-    templateUrl: '/app/widgets/zem-settings/campaign/budgets/zemCampaignBudgetsModal.component.html',
+    template: require('./zemCampaignBudgetsModal.component.html'),
     bindings: {
         resolve: '<',
         modalInstance: '<',

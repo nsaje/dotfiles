@@ -11,7 +11,7 @@ angular.module('one.widgets').directive('zemGridCellSubmissionStatus', function 
             row: '=',
             grid: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/cell/zemGridCellSubmissionStatus.component.html',
+        template: require('./zemGridCellSubmissionStatus.component.html'),
         controller: function ($scope) {
             var vm = this;
 

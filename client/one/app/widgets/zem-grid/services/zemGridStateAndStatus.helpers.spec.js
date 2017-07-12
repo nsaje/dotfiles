@@ -2,8 +2,8 @@ describe('zemGridStateAndStatusHelpers', function () {
     var zemGridStateAndStatusHelpers,
         tests;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function (_zemGridStateAndStatusHelpers_) {
         zemGridStateAndStatusHelpers = _zemGridStateAndStatusHelpers_;

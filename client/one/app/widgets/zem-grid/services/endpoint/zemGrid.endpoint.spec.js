@@ -7,8 +7,8 @@ describe('zemGridEndpointServiceSpec', function () {
     var zemGridEndpointColumns;
     var zemGridEndpointApi;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function (_$httpBackend_) {
         $httpBackend = _$httpBackend_;

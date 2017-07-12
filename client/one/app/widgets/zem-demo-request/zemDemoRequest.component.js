@@ -2,7 +2,7 @@ angular.module('one.widgets').component('zemDemoRequest', {
     bindings: {
         modalInstance: '<',
     },
-    templateUrl: '/app/widgets/zem-demo-request/zemDemoRequest.component.html',
+    template: require('./zemDemoRequest.component.html'),
     controller: function (zemDemoRequestService) {
         var $ctrl = this;
 

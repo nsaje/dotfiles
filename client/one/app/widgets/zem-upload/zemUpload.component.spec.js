@@ -18,10 +18,10 @@ describe('zemUpload', function () {
         });
     }
 
-    beforeEach(module('one', function (_$compileProvider_) {
+    beforeEach(angular.mock.module('one', function (_$compileProvider_) {
         $compileProvider = _$compileProvider_;
     }));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($rootScope, _$compile_) {
         $compile = _$compile_;
@@ -95,8 +95,8 @@ describe('ZemUploadCtrl', function () {
     };
     var onUploadSave = function () {};
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($rootScope, _zemUploadEndpointService_, $controller) {
         zemUploadEndpointService = _zemUploadEndpointService_;
 

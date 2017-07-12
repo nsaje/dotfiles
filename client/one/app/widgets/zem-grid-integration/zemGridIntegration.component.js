@@ -7,7 +7,7 @@ angular.module('one.widgets').component('zemGridIntegration', {
         breakdown: '=breakdown',
         entityId: '=entityId',
     },
-    templateUrl: '/app/widgets/zem-grid-integration/zemGridIntegration.component.html',
+    template: require('./zemGridIntegration.component.html'),
     controller: function ($scope, zemGridIntegrationService) { // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.grid = undefined;

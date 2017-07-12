@@ -11,7 +11,7 @@ angular.module('one.widgets').directive('zemGridCellBaseField', function () {
             row: '=',
             grid: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/cell/zemGridCellBaseField.component.html',
+        template: require('./zemGridCellBaseField.component.html'),
         controller: function ($scope, zemGridConstants, zemGridDataFormatter, zemGridUIService) { // eslint-disable-line max-len
             var vm = this;
 

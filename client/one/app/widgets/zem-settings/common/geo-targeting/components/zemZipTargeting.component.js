@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemZipTargeting', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/common/geo-targeting/components/zemZipTargeting.component.html',  // eslint-disable-line max-len
+    template: require('./zemZipTargeting.component.html'),  // eslint-disable-line max-len
     controller: function ($scope, zemZipTargetingStateService) {
         var $ctrl = this;
         var zipTargetingEnabled = false;

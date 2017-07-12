@@ -2,8 +2,8 @@ describe('zemEntityService', function () {
     var zemEntityService, zemAccountService, zemCampaignService, zemAdGroupService, zemContentAdService;
     var $httpBackend;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($injector) {
         $httpBackend = $injector.get('$httpBackend');

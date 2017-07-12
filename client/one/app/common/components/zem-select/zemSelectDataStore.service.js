@@ -1,4 +1,4 @@
-angular.module('one.widgets').factory('zemSelectDataStore', function () {
+angular.module('one.common').factory('zemSelectDataStore', function () {
     function UISelectDataStore (initialPromise) {
         //
         // Data store for zemSelect. It provides a very simple interface with a

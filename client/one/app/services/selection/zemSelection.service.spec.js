@@ -2,8 +2,8 @@ describe('zemSelectionService', function () {
     var $location;
     var zemSelectionService;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function (_$location_, _zemSelectionService_) {
         $location = _$location_;
         zemSelectionService = _zemSelectionService_;

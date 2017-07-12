@@ -2274,3 +2274,8 @@ constants.geolocationTypeText[constants.geolocationType.REGION] = 'Region';
 constants.geolocationTypeText[constants.geolocationType.DMA] = 'DMA®';
 constants.geolocationTypeText[constants.geolocationType.CITY] = 'City';
 constants.geolocationTypeText[constants.geolocationType.ZIP] = 'Postal Code';
+
+// [Workaround - Webpack] Make constants/options global
+window.constants = constants;
+window.options = options;
+window.defaults = defaults;

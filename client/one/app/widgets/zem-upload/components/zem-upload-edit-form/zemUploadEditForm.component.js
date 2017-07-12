@@ -13,7 +13,7 @@ angular.module('one.widgets').directive('zemUploadEditForm', function () { // es
             isEdit: '=',
         },
         controllerAs: 'ctrl',
-        templateUrl: '/app/widgets/zem-upload/components/zem-upload-edit-form/zemUploadEditForm.component.html',
+        template: require('./zemUploadEditForm.component.html'),
         link: function (scope, element, attrs, ctrl) {
             ctrl.scrollTop = function () {
                 element[0].scrollTop = 0;

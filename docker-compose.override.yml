@@ -19,7 +19,7 @@ einsstatic:
     volumes:
       - "./client/:/data/:ro"
     entrypoint: /bin/bash
-    command: -c "npm prune && npm install; grunt dev"
+    command: -c "npm prune && npm install; npm run dev"
     tty: true
 
 eins:

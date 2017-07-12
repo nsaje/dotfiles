@@ -1,4 +1,4 @@
-var zemSpecsHelper = new zemSpecsHelperProvider(); // eslint-disable-line no-unused-vars
+window.zemSpecsHelper = new zemSpecsHelperProvider(); // eslint-disable-line no-unused-vars
 function zemSpecsHelperProvider () {
     this.getMockedAsyncFunction = getMockedAsyncFunction;
 

@@ -6,7 +6,7 @@ angular.module('one.widgets').component('zemAccountGeneralSettings', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/account/general/zemAccountGeneralSettings.component.html',
+    template: require('./zemAccountGeneralSettings.component.html'),
     controller: function (zemPermissions) {
         var $ctrl = this;
         $ctrl.options = options;

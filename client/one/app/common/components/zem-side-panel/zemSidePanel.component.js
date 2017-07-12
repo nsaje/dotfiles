@@ -1,10 +1,10 @@
-angular.module('one.widgets').component('zemSidePanel', {
+angular.module('one.common').component('zemSidePanel', {
     transclude: true,
     bindings: {
         api: '<',
         onCloseRequest: '&'
     },
-    templateUrl: '/app/common/components/zem-side-panel/zemSidePanel.component.html',
+    template: require('./zemSidePanel.component.html'),
     controller: function ($window, hotkeys) {
         var $ctrl = this;
 

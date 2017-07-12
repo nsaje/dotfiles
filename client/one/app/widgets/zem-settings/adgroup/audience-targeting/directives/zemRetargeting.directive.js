@@ -7,7 +7,7 @@ angular.module('one.widgets').directive('zemRetargeting', function (config, $sta
             account: '=zemAccount',
             retargetableAdgroups: '=zemRetargetableAdgroups',
         },
-        templateUrl: '/app/widgets/zem-settings/adgroup/audience-targeting/directives/zemRetargeting.directive.html',
+        template: require('./zemRetargeting.directive.html'),
         controller: function ($scope) {
             $scope.config = config;
             $scope.selected = {adgroup: undefined};

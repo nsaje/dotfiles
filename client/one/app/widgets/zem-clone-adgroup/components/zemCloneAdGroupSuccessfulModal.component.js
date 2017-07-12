@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemCloneAdGroupSuccessfulModal', {
         resolve: '<',
         modalInstance: '<',
     },
-    templateUrl: '/app/widgets/zem-clone-adgroup/components/zemCloneAdGroupSuccessfulModal.component.html',
+    template: require('./zemCloneAdGroupSuccessfulModal.component.html'),
     controller: function (zemNavigationNewService) {
         var $ctrl = this;
 

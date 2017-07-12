@@ -10,7 +10,7 @@ angular.module('one.widgets').directive('zemUploadStep1', function () { // eslin
             defaultBatchName: '=',
         },
         controllerAs: 'ctrl',
-        templateUrl: '/app/widgets/zem-upload/components/zem-upload-step1/zemUploadStep1.component.html',
+        template: require('./zemUploadStep1.component.html'),
         controller: 'ZemUploadStep1Ctrl',
     };
 });

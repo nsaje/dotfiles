@@ -12,10 +12,10 @@
 ></zem-chart-metric-selector>
 <ul class="zem-chart__legend">
     <li class="zem-chart__legend-item" ng-repeat="item in $ctrl.chart.legend.items"
-        style="background-color: {{ item.color2 }}; color: {{ item.color1 }}" title="{{ item.name }}">
+        ng-style="{'background-color': item.color2, color: item.color1}" title="{{ item.name }}">
         <div class="button-remove"
              ng-class="{disabled: (item.id === null && $ctrl.chart.legend.items.length === 1) || !item.removable }"
-             ng-click="$ctrl.removeLegendItem(item)" style="background-color: {{ item.color1 }};">
+             ng-click="$ctrl.removeLegendItem(item)" ng-style="{'background-color': item.color1}">
             <img ng-src="{{ $ctrl.config.static_url }}/one/images/remove-white.svg">
         </div>
         {{ item.name }}

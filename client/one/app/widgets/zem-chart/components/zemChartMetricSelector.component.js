@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemChartMetricSelector', {
         nullable: '<',
         onMetricChanged: '&'
     },
-    templateUrl: '/app/widgets/zem-chart/components/zemChartMetricSelector.component.html',
+    template: require('./zemChartMetricSelector.component.html'),
     controller: function () {
         var $ctrl = this;
 

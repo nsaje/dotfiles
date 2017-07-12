@@ -3,8 +3,8 @@ describe('component: zemGridExport', function () {
     var zemGridExportOptions;
     var $ctrl, $scope, api;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($injector) {
         $componentController = $injector.get('$componentController');
         zemGridExportOptions = $injector.get('zemGridExportOptions');

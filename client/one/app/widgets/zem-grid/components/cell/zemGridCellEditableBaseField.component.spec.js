@@ -15,10 +15,10 @@ describe('zemGridCellEditableBaseField', function () {
         });
     }
 
-    beforeEach(module('one', function (_$compileProvider_) {
+    beforeEach(angular.mock.module('one', function (_$compileProvider_) {
         $compileProvider = _$compileProvider_;
     }));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($rootScope, _$compile_, _$q_) {
         $compile = _$compile_;

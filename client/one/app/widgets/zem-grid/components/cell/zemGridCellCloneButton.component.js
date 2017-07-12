@@ -10,7 +10,7 @@ angular.module('one.widgets').directive('zemGridCellCloneButton', function () {
             column: '=',
             grid: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/cell/zemGridCellCloneButton.component.html',
+        template: require('./zemGridCellCloneButton.component.html'),
         controller: function ($scope, zemGridConstants, zemCloneAdGroupService) { // eslint-disable-line max-len
             var vm = this;
             vm.cloneRow = cloneRow;

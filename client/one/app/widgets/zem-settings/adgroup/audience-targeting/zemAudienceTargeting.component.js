@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemAudienceTargeting', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/adgroup/audience-targeting/zemAudienceTargeting.component.html',  // eslint-disable-line max-len
+    template: require('./zemAudienceTargeting.component.html'),  // eslint-disable-line max-len
     controller: function (config, zemPermissions) {
         var AD_GROUP_TARGETING = 'adGroupTargeting';
         var AUDIENCE_TARGETING = 'audienceTargeting';

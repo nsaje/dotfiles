@@ -5,8 +5,8 @@ describe('zemGridSelectionService', function () {
     var zemGridPubSub;
     var zemGridSelectionService;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function (_$rootScope_, _zemGridConstants_, _zemGridObject_, _zemGridPubSub_, _zemGridSelectionService_) { // eslint-disable-line max-len
         $rootScope = _$rootScope_;

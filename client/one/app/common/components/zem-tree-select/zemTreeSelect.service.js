@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemTreeSelectService', function () { //eslint-disable-line max-len
+angular.module('one.common').service('zemTreeSelectService', function () { //eslint-disable-line max-len
 
     this.createList = createList;
     this.filterList = filterList;

@@ -15,8 +15,9 @@ RUN test ! -x /opt/google/chrome/chrome \
     && chmod +x /run-chrome.sh \
     && rm -f google-chrome-stable_current_amd64.deb
 
+RUN npm install -g npm
 RUN npm install -g eslint
 RUN npm install -g grunt
-#RUN cd $(npm root -g)/bower ; npm install bower
+RUN npm update -g
 
 USER 1000

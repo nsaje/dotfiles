@@ -3,7 +3,7 @@ angular.module('one.widgets').directive('zemUpload', function () { // eslint-dis
         restrict: 'E',
         replace: true,
         scope: {},
-        templateUrl: '/app/widgets/zem-upload/zemUpload.component.html',
+        template: require('./zemUpload.component.html'),
         bindToController: {
             adGroup: '=',
             onSave: '=',

@@ -2,7 +2,7 @@ angular.module('one.widgets').component('zemScheduledReports', {
     bindings: {
         account: '<',
     },
-    templateUrl: '/app/widgets/zem-scheduled-reports/zemScheduledReports.component.html',
+    template: require('./zemScheduledReports.component.html'),
     controller: function (zemScheduledReportsStateService, zemPermissions) {
         var $ctrl = this;
 

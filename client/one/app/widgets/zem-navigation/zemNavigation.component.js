@@ -1,5 +1,5 @@
 angular.module('one.widgets').component('zemNavigation', {
-    templateUrl: '/app/widgets/zem-navigation/zemNavigation.component.html',
+    template: require('./zemNavigation.component.html'),
     controller: function ($scope, $element, $timeout, hotkeys, zemPermissions, zemNavigationUtils, zemNavigationNewService, zemDataFilterService) { // eslint-disable-line max-len
         var KEY_UP_ARROW = 38;
         var KEY_DOWN_ARROW = 40;

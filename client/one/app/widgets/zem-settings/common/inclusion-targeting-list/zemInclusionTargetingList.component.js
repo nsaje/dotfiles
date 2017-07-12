@@ -8,7 +8,7 @@ angular.module('one.widgets').component('zemInclusionTargetingList', {
         removeTargeting: '&',
         refreshTargetings: '&?',
     },
-    templateUrl: '/app/widgets/zem-settings/common/inclusion-targeting-list/zemInclusionTargetingList.component.html',
+    template: require('./zemInclusionTargetingList.component.html'),
     controller: function () {
         var $ctrl = this;
         var showTargetingEditSection;

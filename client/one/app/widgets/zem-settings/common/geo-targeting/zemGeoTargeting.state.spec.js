@@ -3,8 +3,8 @@ describe('zemGeoTargetingStateService', function () {
     var zemGeoTargetingStateService;
     var mockedEntity;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($injector) {
         $rootScope = $injector.get('$rootScope');
         zemGeoTargetingStateService = $injector.get('zemGeoTargetingStateService');

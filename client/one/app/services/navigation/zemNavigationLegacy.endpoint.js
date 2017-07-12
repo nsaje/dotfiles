@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemNavigationLegacyEndpoint', function ($q, $http, zemDataFilterService) {
+angular.module('one.services').service('zemNavigationLegacyEndpoint', function ($q, $http, zemDataFilterService) {
     this.get = get;
     this.list = list;
     this.getAdGroup = getAdGroup;

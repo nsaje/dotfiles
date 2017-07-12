@@ -3,8 +3,8 @@ describe('zemNumericValidator', function () {
     var template = '<input id="input" type="text" zem-numeric-validator ' +
         'ng-model="value" placeholder="0.00" maxlength="5" />';
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($compile, $rootScope, $httpBackend) {
         $scope = $rootScope.$new();
         httpBackend = $httpBackend;

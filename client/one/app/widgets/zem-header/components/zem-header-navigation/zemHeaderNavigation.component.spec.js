@@ -3,8 +3,8 @@ describe('component: zemHeaderNavigation', function () {
     var hotkeys;
     var ctrl;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function (_$componentController_, _hotkeys_) {
         $componentController = _$componentController_;
         hotkeys = _hotkeys_;

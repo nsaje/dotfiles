@@ -1,9 +1,9 @@
 describe('zemEditCampaignGoalModalCtrl', function () {
     var $timeout, $scope, $state, $q, api;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
-    beforeEach(module('stateMock'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('stateMock'));
 
     beforeEach(function () {
         inject(function ($rootScope, $controller, _$state_, _$q_, _$timeout_) {

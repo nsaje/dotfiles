@@ -5,9 +5,9 @@ describe('component: zemHeaderBreadcrumb', function () {
     var ctrl;
     var zemNavigationNewService;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
-    beforeEach(module('one.mocks.zemPermissions'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one.mocks.zemPermissions'));
     beforeEach(inject(function (_$document_, _$componentController_, _zemNavigationNewService_, _zemPermissions_) {
         $document = _$document_;
         $componentController = _$componentController_;

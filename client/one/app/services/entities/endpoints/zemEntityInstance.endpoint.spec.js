@@ -2,8 +2,8 @@ describe('zemEntityInstanceEndpoint', function () {
     var zemEntityInstanceEndpoint, zemEntityConverter;
     var $httpBackend;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($injector) {
         $httpBackend = $injector.get('$httpBackend');

@@ -1,7 +1,7 @@
 angular.module('one.widgets').component('zemInfoboxRealtimestats', {
     bindings: {
     },
-    templateUrl: '/app/widgets/zem-infobox/components/zem-infobox-realtimestats/zemInfoboxRealtimestats.component.html',
+    template: require('./zemInfoboxRealtimestats.component.html'),
     controller: function (zemNavigationNewService, zemRealtimestatsService, $filter, $interval, $timeout) {
         var $ctrl = this;
 

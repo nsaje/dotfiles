@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemAdGroupTargetingSettings', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/adgroup/targeting/zemAdGroupTargetingSettings.component.html',
+    template: require('./zemAdGroupTargetingSettings.component.html'),
     controller: function ($q, config, zemPermissions) {
         var $ctrl = this;
         $ctrl.config = config;

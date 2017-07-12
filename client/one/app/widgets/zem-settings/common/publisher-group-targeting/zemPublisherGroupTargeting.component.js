@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemPublisherGroupTargeting', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/common/publisher-group-targeting/zemPublisherGroupTargeting.component.html',  // eslint-disable-line max-len
+    template: require('./zemPublisherGroupTargeting.component.html'),  // eslint-disable-line max-len
     controller: function (zemPermissions, zemPublisherGroupsEndpoint, zemPublisherGroupTargetingService) {  // eslint-disable-line max-len
         var $ctrl = this;
 

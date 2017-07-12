@@ -3,7 +3,7 @@ describe('component: zemPublisherGroupsEndpoint', function () {
     var $http;
     var zemPublisherGroupsEndpoint;
 
-    beforeEach(module('one'));
+    beforeEach(angular.mock.module('one'));
     beforeEach(inject(function (_$injector_, _$http_, _zemPublisherGroupsEndpoint_) {
         $injector = _$injector_;
         $http = _$http_;

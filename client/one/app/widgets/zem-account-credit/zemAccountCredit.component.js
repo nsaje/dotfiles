@@ -2,7 +2,7 @@ angular.module('one').component('zemAccountCredit', {
     bindings: {
         account: '<',
     },
-    templateUrl: '/app/widgets/zem-account-credit/zemAccountCredit.component.html',
+    template: require('./zemAccountCredit.component.html'),
     controller: function (zemAccountCreditStateService, $window, $uibModal) {
         var $ctrl = this;
 

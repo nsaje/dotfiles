@@ -4,11 +4,9 @@ angular.module('one.widgets').component('zemFacebookPageSettings', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/account/facebook-page/zemFacebookPageSettings.component.html',
+    template: require('./zemFacebookPageSettings.component.html'),
     controller: function ($q, $uibModal, config, zemPermissions) {
         var $ctrl = this;
-
-        var PARTIALS_URL = '/app/widgets/zem-settings/account/facebook-page/partials/';
 
         $ctrl.config = config;
         $ctrl.constants = constants;
@@ -43,7 +41,7 @@ angular.module('one.widgets').component('zemFacebookPageSettings', {
 
         function askIfSave () {
             var modal = $uibModal.open({
-                templateUrl: PARTIALS_URL + 'facebook_page_changed_modal.html', // TODO: Create component
+                template: require('./partials/facebook_page_changed_modal.html'),
                 backdrop: 'static',
                 keyboard: false,
                 controller: function ($scope) {

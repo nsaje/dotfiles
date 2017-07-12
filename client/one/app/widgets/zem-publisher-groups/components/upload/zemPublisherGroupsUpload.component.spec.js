@@ -3,7 +3,7 @@ describe('component: zemPublisherGroupsUpload', function () {
     var zemPublisherGroupsEndpoint;
     var bindings;
 
-    beforeEach(module('one'));
+    beforeEach(angular.mock.module('one'));
 
     beforeEach(inject(function ($componentController, _zemPublisherGroupsEndpoint_) {
         zemPublisherGroupsEndpoint = _zemPublisherGroupsEndpoint_;

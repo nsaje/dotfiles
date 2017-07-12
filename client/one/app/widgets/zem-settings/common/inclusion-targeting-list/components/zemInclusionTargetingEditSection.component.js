@@ -13,7 +13,7 @@ angular.module('one.widgets').component('zemInclusionTargetingEditSection', {
         selectTargetingButtonText: '@',
         noChoiceText: '@',
     },
-    templateUrl: '/app/widgets/zem-settings/common/inclusion-targeting-list/components/zemInclusionTargetingEditSection.component.html', // eslint-disable-line max-len
+    template: require('./zemInclusionTargetingEditSection.component.html'), // eslint-disable-line max-len
     controller: function () {
         var $ctrl = this;
         var SECTION_LIMIT = 5;

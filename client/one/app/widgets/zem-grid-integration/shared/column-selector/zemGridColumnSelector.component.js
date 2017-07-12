@@ -2,7 +2,7 @@ angular.module('one.widgets').component('zemGridColumnSelector', {
     bindings: {
         api: '=',
     },
-    templateUrl: '/app/widgets/zem-grid-integration/shared/column-selector/zemGridColumnSelector.component.html',
+    template: require('./zemGridColumnSelector.component.html'),
     controller: function () {
         var MSG_DISABLED_COLUMN = 'Column is available when coresponding breakdown is visible.';
 

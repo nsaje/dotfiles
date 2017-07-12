@@ -15,7 +15,7 @@ angular.module('one.widgets').directive('zemUploadStep2', function () { // eslin
             isEdit: '=',
         },
         controllerAs: 'ctrl',
-        templateUrl: '/app/widgets/zem-upload/components/zem-upload-step2/zemUploadStep2.component.html',
+        template: require('./zemUploadStep2.component.html'),
         link: function (scope, element, attrs, ctrl) {
             var batchNameInput = element.find('#batch-name-input');
             batchNameInput.on('click', function (event) {

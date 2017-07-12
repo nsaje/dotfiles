@@ -2,7 +2,7 @@ angular.module('one').component('zemArchivedEntity', {
     bindings: {
         entity: '<',
     },
-    templateUrl: '/app/widgets/zem-archived-entity/zemArchivedEntity.component.html',
+    template: require('./zemArchivedEntity.component.html'),
     controller: function (zemEntityService, zemNavigationNewService, zemNavigationService) {
         var $ctrl = this;
         $ctrl.restore = restore;

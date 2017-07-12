@@ -1,9 +1,9 @@
 describe('ZemUploadEditFormCtrl', function () {
     var scope, $q, ctrl, $timeout, $injector;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
-    beforeEach(module('stateMock'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('stateMock'));
 
     beforeEach(inject(function ($controller, $rootScope, _$q_, _$timeout_, _$injector_) {
         $q = _$q_;

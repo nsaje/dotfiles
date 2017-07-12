@@ -1,5 +1,5 @@
 angular.module('one.widgets').component('zemToasts', {
-    templateUrl: '/app/widgets/zem-toasts/zemToasts.component.html',
+    template: require('./zemToasts.component.html'),
     controller: function ($timeout, zemToastsService) {
         var $ctrl = this;
 

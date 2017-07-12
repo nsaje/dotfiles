@@ -2,7 +2,7 @@ angular.module('one').component('zemCampaignLauncher', {
     bindings: {
         account: '<',
     },
-    templateUrl: '/app/widgets/zem-campaign-launcher/zemCampaignLauncher.component.html',
+    template: require('./zemCampaignLauncher.component.html'),
     controller: function (zemCampaignLauncherStateService) {
         var $ctrl = this;
 

@@ -20,7 +20,7 @@ angular.module('one.widgets').directive('zemGridCellBreakdownField', function ()
             column: '=',
             grid: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/cell/zemGridCellBreakdownField.component.html',
+        template: require('./zemGridCellBreakdownField.component.html'),
         controller: function ($scope, config, zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
             var vm = this;
             var collapseService = vm.grid.meta.collapseService;

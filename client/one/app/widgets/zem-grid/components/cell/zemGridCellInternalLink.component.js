@@ -11,7 +11,7 @@ angular.module('one.widgets').directive('zemGridCellInternalLink', function () {
             column: '=',
             grid: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/cell/zemGridCellInternalLink.component.html',
+        template: require('./zemGridCellInternalLink.component.html'),
         controller: function ($scope, zemNavigationNewService) {
             var vm = this;
 

@@ -6,7 +6,7 @@ angular.module('one.widgets').component('zemAlerts', {
         level: '<',
         entityId: '<'
     },
-    templateUrl: '/app/widgets/zem-alerts/zemAlerts.component.html',
+    template: require('./zemAlerts.component.html'),
     controller: function (zemAlertsService, zemPermissions) {
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;

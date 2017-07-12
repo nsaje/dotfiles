@@ -10,8 +10,8 @@ describe('zemUploadTrigger', function () {
         id: 1,
     };
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($rootScope, _$compile_, _$uibModal_) {
         $compile = _$compile_;
         $uibModal = _$uibModal_;

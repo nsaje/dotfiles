@@ -7,7 +7,7 @@ angular.module('one.widgets').directive('zemGridHeaderCellCheckbox', function ()
         bindToController: {
             grid: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/header/zemGridHeaderCellCheckbox.component.html',
+        template: require('./zemGridHeaderCellCheckbox.component.html'),
         controller: function ($scope, $element, zemGridConstants) {
             var vm = this;
             var pubsub = this.grid.meta.pubsub;

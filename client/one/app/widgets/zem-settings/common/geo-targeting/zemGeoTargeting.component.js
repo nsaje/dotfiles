@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemGeoTargeting', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/common/geo-targeting/zemGeoTargeting.component.html',
+    template: require('./zemGeoTargeting.component.html'),
     controller: function ($scope, zemGeoTargetingStateService) {
         var $ctrl = this;
 

@@ -6,7 +6,6 @@ angular.module(
     [
         'ngRaven',
         'config',
-        'templates-one',
         'ngSanitize',
         'ui.router',
         'ui.bootstrap',

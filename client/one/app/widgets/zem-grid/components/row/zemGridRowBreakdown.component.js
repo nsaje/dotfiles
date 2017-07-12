@@ -9,7 +9,7 @@ angular.module('one.widgets').directive('zemGridRowBreakdown', function () {
             row: '=',
             grid: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/row/zemGridRowBreakdown.component.html',
+        template: require('./zemGridRowBreakdown.component.html'),
         controller: function (config, zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
             var vm = this;
             vm.config = config;

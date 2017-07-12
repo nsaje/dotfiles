@@ -1,5 +1,5 @@
 angular.module('one.widgets').component('zemFilterSelector', {
-    templateUrl: '/app/widgets/zem-filter-selector/zemFilterSelector.component.html',
+    template: require('./zemFilterSelector.component.html'),
     controller: function ($element, $timeout, zemDataFilterService, zemFilterSelectorService, zemFilterSelectorSharedService, zemPermissions) { // eslint-disable-line max-len
         var $ctrl = this;
 

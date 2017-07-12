@@ -1,11 +1,11 @@
-angular.module('one.widgets').component('zemSelect', {
+angular.module('one.common').component('zemSelect', {
     bindings: {
         selectedId: '<',
         onSelect: '&',
         store: '<',
         texts: '<',
     },
-    templateUrl: '/app/common/components/zem-select/zemSelect.component.html',
+    template: require('./zemSelect.component.html'),
     controller: function ($scope, $element, $timeout, hotkeys, zemSelectList, zemUtils) {
         var KEY_UP_ARROW = 38;
         var KEY_DOWN_ARROW = 40;

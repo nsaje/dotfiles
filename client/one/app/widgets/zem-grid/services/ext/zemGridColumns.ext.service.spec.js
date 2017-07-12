@@ -5,10 +5,10 @@ describe('zemGridColumnsService', function () {
     var zemGridColumnsService;
     var zemGridStorageService;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    beforeEach(module(function ($provide) {
+    beforeEach(angular.mock.module(function ($provide) {
         $provide.value('zemGridStorageService', {saveColumns: angular.noop, loadColumns: angular.noop});
         $provide.value('zemGridUIService', {resizeGridColumns: angular.noop});
     }));

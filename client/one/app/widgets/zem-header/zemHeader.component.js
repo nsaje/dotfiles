@@ -1,5 +1,5 @@
 angular.module('one.widgets').component('zemHeader', {
-    templateUrl: '/app/widgets/zem-header/zemHeader.component.html',
+    template: require('./zemHeader.component.html'),
     controller: function ($window, config) {
         var $ctrl = this;
         $ctrl.config = config;

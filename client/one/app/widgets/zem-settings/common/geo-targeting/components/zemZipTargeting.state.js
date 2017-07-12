@@ -64,7 +64,7 @@ angular.module('one.widgets').service('zemZipTargetingStateService', function (z
 
                 var zipCodes = [];
                 zipsToDisplay.forEach(function (zipWithCountryCode) {
-                    if (!zipWithCountryCode.startsWith(countryCode)) {
+                    if (zipWithCountryCode.indexOf(countryCode) !== 0) {
                         setAPIOnlySettingsBlocker();
                         return;
                     }
@@ -117,8 +117,8 @@ angular.module('one.widgets').service('zemZipTargetingStateService', function (z
             var isSelectedCountry = function (key) {
                 return key === state.selectedCountry.key;
             };
-            var countryIncluded = entity.settings.targetRegions.find(isSelectedCountry);
-            var countryExcluded = entity.settings.exclusionTargetRegions.find(isSelectedCountry);
+            var countryIncluded = entity.settings.targetRegions.filter(isSelectedCountry)[0];
+            var countryExcluded = entity.settings.exclusionTargetRegions.filter(isSelectedCountry)[0];
             state.blockers.countryIncluded = false;
             if (countryIncluded || countryExcluded) {
                 state.blockers.countryIncluded = true;

@@ -74,7 +74,7 @@ angular.module('one.common').directive('zemCurrencyInput', function ($filter) {
                     var decimalPart;
 
                     // replace all except digits and decimal dots
-                    value = value.replace(/[^\d\.]+/g, '');
+                    value = value.replace(/[^\d.]+/g, '');
 
                     integerPart = value.split('.')[0];
 

@@ -2,7 +2,7 @@ angular.module('one.widgets').component('zemReportDropdown', {
     bindings: {
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-report/shared/zem-report-dropdown/zemReportDropdown.component.html',
+    template: require('./zemReportDropdown.component.html'),
     controller: function ($uibModal, zemPermissions) {
         var $ctrl = this;
 

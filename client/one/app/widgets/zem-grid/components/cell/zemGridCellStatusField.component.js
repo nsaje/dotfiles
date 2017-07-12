@@ -22,7 +22,7 @@ angular.module('one.widgets').directive('zemGridCellStatusField', function () {
             row: '=',
             grid: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/cell/zemGridCellStatusField.component.html',
+        template: require('./zemGridCellStatusField.component.html'),
         controller: function ($scope, zemGridStateAndStatusHelpers) {
             var vm = this;
             var pubsub = vm.grid.meta.pubsub;

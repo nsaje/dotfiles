@@ -1,5 +1,5 @@
 angular.module('one.widgets').component('zemCustomAudiencesList', {
-    templateUrl: '/app/widgets/zem-custom-audiences/components/list/zemCustomAudiencesList.component.html',
+    template: require('./zemCustomAudiencesList.component.html'),
     bindings: {
         stateService: '<',
     },

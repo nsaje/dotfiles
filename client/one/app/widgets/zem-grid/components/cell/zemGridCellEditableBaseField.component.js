@@ -11,7 +11,7 @@ angular.module('one.widgets').directive('zemGridCellEditableBaseField', function
             row: '=',
             grid: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/cell/zemGridCellEditableBaseField.component.html',
+        template: require('./zemGridCellEditableBaseField.component.html'),
         controller: function ($scope, zemGridConstants, zemGridDataFormatter, zemGridDataValidator, zemGridStateAndStatusHelpers, zemGridEndpointColumns) { // eslint-disable-line max-len
             var vm = this;
             var initialValue;

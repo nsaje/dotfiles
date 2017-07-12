@@ -6,7 +6,7 @@ angular.module('one.widgets').directive('zemLocations', function (config, $state
             selectedLocationCodes: '=zemSelectedLocationCodes',
             hasPermission: '=zemHasPermission'
         },
-        templateUrl: '/app/widgets/zem-settings/common/region-targeting/directives/zemLocations.directive.html',
+        template: require('./zemLocations.directive.html'),
         controller: function ($scope, $compile) {
             $scope.zemRegionsConstants = zemRegionsConstants;
             $scope.config = config;

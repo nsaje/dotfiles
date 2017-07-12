@@ -7,7 +7,7 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
         errors: '=',
         isEdit: '=',
     },
-    templateUrl: '/app/widgets/zem-settings/campaign/goals/components/zemCampaignGoalEditForm.component.html',
+    template: require('./zemCampaignGoalEditForm.component.html'),
     controller: function () {
         var $ctrl = this;
 

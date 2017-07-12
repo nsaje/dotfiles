@@ -4,8 +4,8 @@ describe('zemGridCellStateSelector', function () {
     var template = '<zem-grid-cell-state-selector data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid">' +
         '</zem-grid-cell-state-selector>';
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($rootScope, _$compile_, _$q_) {
         $compile = _$compile_;

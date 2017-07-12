@@ -2,8 +2,8 @@ describe('component: zemInterestTargeting', function () {
     describe('initialization', function () {
         var $ctrl;
 
-        beforeEach(module('one'));
-        beforeEach(module('one.mocks.zemInitializationService'));
+        beforeEach(angular.mock.module('one'));
+        beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
         beforeEach(inject(function ($rootScope, $componentController) {
             var bindings = {
@@ -22,8 +22,8 @@ describe('component: zemInterestTargeting', function () {
     describe('component updates targeting attributes appropriately', function () {
         var $ctrl;
 
-        beforeEach(module('one'));
-        beforeEach(module('one.mocks.zemInitializationService'));
+        beforeEach(angular.mock.module('one'));
+        beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
         beforeEach(inject(function ($rootScope, $componentController) {
             var bindings = {

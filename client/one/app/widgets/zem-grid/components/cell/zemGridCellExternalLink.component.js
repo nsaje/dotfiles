@@ -11,7 +11,7 @@ angular.module('one.widgets').directive('zemGridCellExternalLink', function () {
             column: '=',
             grid: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/cell/zemGridCellExternalLink.component.html',
+        template: require('./zemGridCellExternalLink.component.html'),
         controller: function ($scope, $window, config, zemGridConstants) { // eslint-disable-line max-len
             var vm = this;
             vm.config = config;

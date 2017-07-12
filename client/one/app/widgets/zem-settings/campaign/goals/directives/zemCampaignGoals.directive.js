@@ -9,10 +9,8 @@ angular.module('one.widgets').directive('zemCampaignGoals', function ($filter) {
             account: '=account',
             campaignGoals: '=goals',
         },
-        templateUrl: '/app/widgets/zem-settings/campaign/goals/directives/zemCampaignGoals.directive.html',
+        template: require('./zemCampaignGoals.directive.html'),
         controller: function ($uibModal, $scope) {
-            var PARTIALS_URL = '/app/widgets/zem-settings/campaign/goals/directives/';
-
             $scope.campaignGoals = $scope.campaignGoals || [];
             $scope.i = 0;
 
@@ -106,7 +104,7 @@ angular.module('one.widgets').directive('zemCampaignGoals', function ($filter) {
                 }
 
                 return $uibModal.open({
-                    templateUrl: PARTIALS_URL + 'zemEditCampaignGoalModal.partial.html', // TODO: Create component
+                    template: require('./zemEditCampaignGoalModal.partial.html'), // eslint-disable-line max-len
                     controller: 'zemEditCampaignGoalModalCtrl',
                     scope: scope,
                     backdrop: 'static',
@@ -164,7 +162,7 @@ angular.module('one.widgets').directive('zemCampaignGoals', function ($filter) {
                     conversionGoal.name, conversionGoal.pixelUrl);
 
                 var modalInstance = $uibModal.open({
-                    templateUrl: PARTIALS_URL + 'zemCopyConversionPixelModal.partial.html', // TODO: Create component
+                    template: require('./zemCopyConversionPixelModal.partial.html'), // eslint-disable-line max-len
                     scope: scope,
                 });
                 modalInstance.result.then(function () {});

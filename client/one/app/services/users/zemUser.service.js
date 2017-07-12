@@ -31,12 +31,10 @@ angular.module('one.services').service('zemUserService', function (zemPubSubServ
             pubsub.notify(EVENTS.ON_CURRENT_USER_UPDATED, user);
 
             // Configure Raven/Sentry user context
-            if (Raven) {
-                Raven.setUserContext({
-                    username: user.name,
-                    email: user.email,
-                });
-            }
+            window.Raven.setUserContext({
+                username: user.name,
+                email: user.email,
+            });
         });
     }
 

@@ -11,7 +11,7 @@ angular.module('one.widgets').directive('zemGridCell', function () {
             row: '=',
             grid: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/cell/zemGridCell.component.html',
+        template: require('./zemGridCell.component.html'),
         controller: function ($scope, zemGridConstants) {
             var ctrl = this;
             ctrl.gridColumnTypes = zemGridConstants.gridColumnTypes;

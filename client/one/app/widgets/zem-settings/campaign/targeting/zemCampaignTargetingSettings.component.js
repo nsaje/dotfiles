@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemCampaignTargetingSettings', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/campaign/targeting/zemCampaignTargetingSettings.component.html',
+    template: require('./zemCampaignTargetingSettings.component.html'),
     controller: function ($q, config, zemPermissions) {
         var $ctrl = this;
         $ctrl.config = config;

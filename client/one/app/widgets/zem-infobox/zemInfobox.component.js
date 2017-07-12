@@ -2,7 +2,7 @@ angular.module('one.widgets').component('zemInfobox', {
     bindings: {
         entity: '<',
     },
-    templateUrl: '/app/widgets/zem-infobox/zemInfobox.component.html',
+    template: require('./zemInfobox.component.html'),
     controller: function (zemInfoboxService, zemNavigationNewService, zemDataFilterService, zemEntityService, zemHistoryService, zemPermissions, zemUtils, $state, $location, $window) { // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;

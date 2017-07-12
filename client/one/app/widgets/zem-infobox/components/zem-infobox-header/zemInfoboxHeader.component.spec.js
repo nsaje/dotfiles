@@ -7,8 +7,8 @@ describe('zemInfoboxHeader', function () {
     var zemNavigationService;
     var zemToastsService;
 
-    beforeEach(module('one'));
-    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function (_$injector_) {
         $injector = _$injector_;
         $componentController = $injector.get('$componentController');

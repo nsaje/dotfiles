@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemInterestTargeting', {
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/adgroup/interest-targeting/zemInterestTargeting.component.html',  // eslint-disable-line max-len
+    template: require('./zemInterestTargeting.component.html'),  // eslint-disable-line max-len
     controller: function (zemPermissions) {
         var $ctrl = this;
 

@@ -2,11 +2,9 @@ angular.module('one.widgets').component('zemGridExport', {
     bindings: {
         api: '=',
     },
-    templateUrl: '/app/widgets/zem-grid-integration/shared/export/zemGridExport.component.html',
+    template: require('./zemGridExport.component.html'),
     controller: function ($scope, $uibModal, zemGridExportOptions) {
         var $ctrl = this;
-
-        var MODALS_URL = '/app/widgets/zem-grid-integration/shared/export/modals/';
 
         $ctrl.showScheduledReportModal = showScheduledReportModal;
         $ctrl.exportModalTypes = [
@@ -54,7 +52,7 @@ angular.module('one.widgets').component('zemGridExport', {
 
             if (exportModalType === 'schedule') {
                 $uibModal.open({
-                    templateUrl: MODALS_URL + 'zemAddScheduledReportModal.partial.html', // TODO: Create component
+                    template: require('./modals/zemAddScheduledReportModal.partial.html'), // eslint-disable-line max-len
                     controller: 'zemAddScheduledReportModalCtrl',
                     backdrop: 'static',
                     keyboard: false,
@@ -71,7 +69,7 @@ angular.module('one.widgets').component('zemGridExport', {
                 });
             } else {
                 $uibModal.open({
-                    templateUrl: MODALS_URL + 'zemDownloadExportReportModal.partial.html', // TODO: Create component
+                    template: require('./modals/zemDownloadExportReportModal.partial.html'), // eslint-disable-line max-len
                     controller: 'zemDownloadExportReportModalCtrl',
                     backdrop: 'static',
                     keyboard: false,

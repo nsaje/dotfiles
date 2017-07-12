@@ -1,5 +1,5 @@
 angular.module('one.widgets').component('zemGridContainerTabs', {
-    templateUrl: '/app/widgets/zem-grid-container/components/tabs/zemGridContainerTabs.component.html',
+    template: require('./zemGridContainerTabs.component.html'),
     bindings: {
         tabs: '<',
         entity: '<',

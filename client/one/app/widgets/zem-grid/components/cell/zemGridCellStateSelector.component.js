@@ -11,7 +11,7 @@ angular.module('one.widgets').directive('zemGridCellStateSelector', function () 
             column: '=',
             grid: '=',
         },
-        templateUrl: '/app/widgets/zem-grid/components/cell/zemGridCellStateSelector.component.html',
+        template: require('./zemGridCellStateSelector.component.html'),
         controller: function ($scope, zemGridConstants, zemGridStateAndStatusHelpers) { // eslint-disable-line max-len
             var vm = this;
 

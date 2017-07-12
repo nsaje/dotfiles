@@ -11,7 +11,7 @@ angular.module('one.widgets').directive('zemUploadStep3', function () { // eslin
             onSave: '=',
         },
         controllerAs: 'ctrl',
-        templateUrl: '/app/widgets/zem-upload/components/zem-upload-step3/zemUploadStep3.component.html',
+        template: require('./zemUploadStep3.component.html'),
         controller: function (config) {
             var vm = this;
             vm.config = config;

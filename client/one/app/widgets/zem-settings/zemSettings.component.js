@@ -1,5 +1,5 @@
 angular.module('one.widgets').component('zemSettings', {
-    templateUrl: '/app/widgets/zem-settings/zemSettings.component.html',
+    template: require('./zemSettings.component.html'),
     controller: function ($timeout, $state, hotkeys, zemSettingsService, zemEntityService) {
         var $ctrl = this;
         $ctrl.currentContainer = null;

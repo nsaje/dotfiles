@@ -2,7 +2,7 @@ angular.module('one.widgets').component('zemAccountSettings', {
     bindings: {
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/account/zemAccountSettings.component.html',
+    template: require('./zemAccountSettings.component.html'),
     controller: function (zemPermissions) {
         var $ctrl = this;
         $ctrl.constants = constants;

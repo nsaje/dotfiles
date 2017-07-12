@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemCampaignLauncherGoal', {
         stateService: '<',
         account: '<',
     },
-    templateUrl: '/app/widgets/zem-campaign-launcher/components/zem-campaign-launcher-general-settings/zem-campaign-launcher-goal/zemCampaignLauncherGoal.component.html', // eslint-disable-line max-len
+    template: require('./zemCampaignLauncherGoal.component.html'),
     controller: function ($filter, zemConversionPixelsEndpoint) {
         var $ctrl = this;
         var campaignEditFormVisible = true;

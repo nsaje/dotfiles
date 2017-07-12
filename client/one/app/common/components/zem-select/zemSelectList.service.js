@@ -1,4 +1,4 @@
-angular.module('one.widgets').factory('zemSelectList', function () { //eslint-disable-line max-len
+angular.module('one.common').factory('zemSelectList', function () { //eslint-disable-line max-len
 
     function UISelectList (items) {
         var vm = this;

@@ -24,3 +24,6 @@ var overwrittes = {
         },
     },
 };
+
+// [Workaround - Webpack] Make constants/options global
+window.overwrittes = overwrittes;

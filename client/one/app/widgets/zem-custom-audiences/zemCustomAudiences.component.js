@@ -1,5 +1,5 @@
 angular.module('one.widgets').component('zemCustomAudiences', {
-    templateUrl: '/app/widgets/zem-custom-audiences/zemCustomAudiences.component.html',
+    template: require('./zemCustomAudiences.component.html'),
     bindings: {
         account: '<',
     },
