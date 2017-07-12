@@ -863,7 +863,7 @@ class AdGroupOverviewTest(TestCase):
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
         end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
 
-        credit = models.CreditLineItem.objects.create(
+        credit = models.CreditLineItem.objects.create_unsafe(
             account=ad_group.campaign.account,
             start_date=start_date,
             end_date=end_date,
@@ -984,7 +984,7 @@ class AdGroupOverviewTest(TestCase):
         new_settings.state = constants.AdGroupSourceSettingsState.ACTIVE
         new_settings.save(None)
 
-        credit = models.CreditLineItem.objects.create(
+        credit = models.CreditLineItem.objects.create_unsafe(
             account=ad_group.campaign.account,
             start_date=start_date,
             end_date=end_date,
@@ -1112,7 +1112,7 @@ class CampaignOverviewTest(TestCase):
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
         end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
 
-        credit = models.CreditLineItem.objects.create(
+        credit = models.CreditLineItem.objects.create_unsafe(
             account=campaign.account,
             start_date=start_date,
             end_date=end_date,

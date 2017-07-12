@@ -12,7 +12,16 @@ import core.history
 import core.source
 
 
+class AgencyManager(core.common.QuerySetManager):
+
+    def create(self, request, name, **kwargs):
+        agency = Agency(name=name, **kwargs)
+        agency.save(request)
+        return agency
+
+
 class Agency(models.Model):
+
     class Meta:
         app_label = 'dash'
         verbose_name_plural = 'Agencies'
@@ -71,10 +80,11 @@ class Agency(models.Model):
         choices=constants.AccountType.get_choices()
     )
 
-    objects = core.common.QuerySetManager()
-
     def get_long_name(self):
         return u'Agency {}'.format(self.name)
+
+    def get_salesforce_id(self):
+        return 'a{}'.format(self.pk)
 
     def write_history(self, changes_text, changes=None,
                       user=None, system_user=None,
@@ -95,8 +105,13 @@ class Agency(models.Model):
         self.modified_by = request.user
         super(Agency, self).save(*args, **kwargs)
 
-    class QuerySet(models.QuerySet):
+    def __str__(self):
+        return self.name
 
+    def __unicode__(self):
+        return self.name
+
+    class QuerySet(models.QuerySet):
         def filter_by_user(self, user):
             return self.filter(
                 models.Q(users__id=user.id) |
@@ -105,8 +120,4 @@ class Agency(models.Model):
                 models.Q(account__groups__user__id=user.id)
             ).distinct()
 
-    def __str__(self):
-        return self.name
-
-    def __unicode__(self):
-        return self.name
+    objects = AgencyManager.from_queryset(QuerySet)()

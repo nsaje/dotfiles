@@ -538,7 +538,7 @@ class ArchiveRestoreTestCase(TestCase):
         c2 = models.Campaign.objects.get(id=2)
         c3 = models.Campaign.objects.get(id=3)
 
-        credit = models.CreditLineItem.objects.create(
+        credit = models.CreditLineItem.objects.create_unsafe(
             amount=10,
             account=c3.account,
             start_date=datetime.date.today(),
@@ -1346,7 +1346,7 @@ class HistoryTest(TestCase):
         ad_group = models.AdGroup.objects.get(pk=1)
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
         end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
-        credit = models.CreditLineItem.objects.create(
+        credit = models.CreditLineItem.objects.create_unsafe(
             account=ad_group.campaign.account,
             start_date=start_date,
             end_date=end_date,
@@ -1363,11 +1363,11 @@ class HistoryTest(TestCase):
             , End Date set to "{ed}"
             , Flat Fee Start Date set to ""
             , Flat Fee (cc) set to "$0.00"
-            , Comment set to ""
             , Start Date set to "{sd}"
             , Flat Fee End Date set to ""
             , Amount set to "$100.00"
             , License Fee set to "20.00%"
+            , Comment set to ""
             '''.format(cid=credit.id,
                        sd=start_date.isoformat(),
                        ed=end_date.isoformat()))

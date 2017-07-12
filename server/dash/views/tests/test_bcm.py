@@ -179,7 +179,7 @@ class AccountCreditViewTest(BCMViewTestCase):
     def test_post(self):
         url = reverse('accounts_credit', kwargs={'account_id': 1})
 
-        credit = models.CreditLineItem.objects.create(
+        credit = models.CreditLineItem.objects.create_unsafe(
             account_id=1,
             start_date=datetime.date(2015, 11, 1),
             end_date=datetime.date(2015, 11, 30),
@@ -801,7 +801,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
 
     @patch('automation.campaign_stop.perform_landing_mode_check')
     def test_put(self, mock_lmode):
-        c = models.CreditLineItem.objects.create(
+        c = models.CreditLineItem.objects.create_unsafe(
             account_id=10,
             start_date=datetime.date(2015, 10, 1),
             end_date=datetime.date(2015, 11, 30),
@@ -859,7 +859,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
 
     @patch('automation.campaign_stop.perform_landing_mode_check')
     def test_put_margin_no_permission(self, mock_lmode):
-        c = models.CreditLineItem.objects.create(
+        c = models.CreditLineItem.objects.create_unsafe(
             account_id=10,
             start_date=datetime.date(2015, 10, 1),
             end_date=datetime.date(2015, 11, 30),
@@ -893,7 +893,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
 
     @patch('automation.campaign_stop.perform_landing_mode_check')
     def test_put_margin(self, mock_lmode):
-        c = models.CreditLineItem.objects.create(
+        c = models.CreditLineItem.objects.create_unsafe(
             account_id=10,
             start_date=datetime.date(2015, 10, 1),
             end_date=datetime.date(2015, 11, 30),
@@ -1415,7 +1415,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
 
         self.add_permission('account_credit_view')
 
-        credit = models.CreditLineItem.objects.create(
+        credit = models.CreditLineItem.objects.create_unsafe(
             account_id=1,
             start_date=datetime.date(2015, 11, 1),
             end_date=datetime.date(2015, 11, 30),

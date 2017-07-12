@@ -238,7 +238,7 @@ class DailyStatementsK1TestCase(TestCase):
         self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 10, 1, 12))
 
-        dash.models.CreditLineItem.objects.create(
+        dash.models.CreditLineItem.objects.create_unsafe(
             account_id=self.campaign1.id,
             start_date=datetime.date(2015, 10, 1),
             end_date=datetime.date(2015, 10, 1),

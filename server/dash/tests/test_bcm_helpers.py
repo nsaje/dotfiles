@@ -9,7 +9,7 @@ import dash.bcm_helpers
 
 from utils import converters
 
-create_credit = dash.models.CreditLineItem.objects.create
+create_credit = dash.models.CreditLineItem.objects.create_unsafe
 create_budget = dash.models.BudgetLineItem.objects.create_unsafe
 create_statement = dash.models.BudgetDailyStatement.objects.create
 
@@ -111,16 +111,6 @@ class CreditImportTestCase(TestCase):
             ),
             (1, datetime.date(2014, 8, 11), datetime.date(2014, 8, 30), 5000, Decimal('0.30'), ''),
         )
-
-    def test_credit_import(self):
-        self.assertEqual(len(dash.models.CreditLineItem.objects.filter(account_id=1)), 1)
-        credit = dash.bcm_helpers.import_credit(
-            *(1, datetime.date(2015, 1, 1), datetime.date(2015, 12, 31), 10000, Decimal('0.01'), 'Test note')
-        )
-        self.assertEqual(len(dash.models.CreditLineItem.objects.filter(account_id=1)), 2)
-        self.assertEqual(credit.start_date, datetime.date(2015, 1, 1))
-        self.assertEqual(credit.end_date, datetime.date(2015, 12, 31))
-        self.assertEqual(credit.amount, 10000)
 
 
 class DeleteCreditTestCase(TestCase):

@@ -83,7 +83,7 @@ class ManagementReportTestCase(test.TestCase):
 
     def test_daily_bcm_lists(self):
         today = datetime.date.today()
-        credit = dash.models.CreditLineItem.objects.create(
+        credit = dash.models.CreditLineItem.objects.create_unsafe(
             account_id=1,
             amount=5000,
             start_date=today,

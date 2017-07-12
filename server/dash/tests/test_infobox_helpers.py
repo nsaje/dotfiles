@@ -60,7 +60,7 @@ class InfoBoxHelpersTest(TestCase):
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=99)
 
-        credit = dash.models.CreditLineItem.objects.create(
+        credit = dash.models.CreditLineItem.objects.create_unsafe(
             account=campaign.account,
             start_date=start_date,
             end_date=end_date,
@@ -106,7 +106,7 @@ class InfoBoxHelpersTest(TestCase):
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=100)
 
-        credit = dash.models.CreditLineItem.objects.create(
+        credit = dash.models.CreditLineItem.objects.create_unsafe(
             account=campaign.account,
             start_date=start_date,
             end_date=end_date,
@@ -170,7 +170,7 @@ class InfoBoxHelpersTest(TestCase):
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=100)
 
-        credit = dash.models.CreditLineItem.objects.create(
+        credit = dash.models.CreditLineItem.objects.create_unsafe(
             account=campaign.account,
             start_date=start_date,
             end_date=end_date,
@@ -224,7 +224,7 @@ class InfoBoxHelpersTest(TestCase):
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=99)
 
-        credit = dash.models.CreditLineItem.objects.create(
+        credit = dash.models.CreditLineItem.objects.create_unsafe(
             account=campaign.account,
             start_date=start_date,
             end_date=end_date,
@@ -344,7 +344,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         start_date = today - datetime.timedelta(days=days_of_month - 1)
         end_date = today + datetime.timedelta(days=days_of_month - 1)
 
-        self.credit = dash.models.CreditLineItem.objects.create(
+        self.credit = dash.models.CreditLineItem.objects.create_unsafe(
             account=account,
             start_date=start_date,
             end_date=end_date,
@@ -850,7 +850,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         user = zemauth.models.User.objects.get(pk=1)
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=99)
-        credit = dash.models.CreditLineItem.objects.create(
+        credit = dash.models.CreditLineItem.objects.create_unsafe(
             account=account,
             start_date=start_date,
             end_date=end_date,
@@ -909,7 +909,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
 
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=99)
-        credit = dash.models.CreditLineItem.objects.create(
+        credit = dash.models.CreditLineItem.objects.create_unsafe(
             agency=agency,
             start_date=start_date,
             end_date=end_date,
@@ -957,7 +957,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         user = zemauth.models.User.objects.get(pk=1)
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=99)
-        credit = dash.models.CreditLineItem.objects.create(
+        credit = dash.models.CreditLineItem.objects.create_unsafe(
             account=account,
             start_date=start_date,
             end_date=end_date,
@@ -993,7 +993,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         user = zemauth.models.User.objects.get(pk=1)
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=99)
-        credit = dash.models.CreditLineItem.objects.create(
+        credit = dash.models.CreditLineItem.objects.create_unsafe(
             account=account,
             start_date=start_date,
             end_date=end_date,
@@ -1072,7 +1072,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         user = zemauth.models.User.objects.get(pk=1)
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=99)
-        credit = dash.models.CreditLineItem.objects.create(
+        credit = dash.models.CreditLineItem.objects.create_unsafe(
             agency=agency,
             start_date=start_date,
             end_date=end_date,

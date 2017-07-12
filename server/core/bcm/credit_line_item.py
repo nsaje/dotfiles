@@ -20,18 +20,20 @@ import core.history
 
 class CreditLineItemManager(core.common.QuerySetManager):
 
-    def filter_by_account(self, account):
-        credit_items = CreditLineItem.objects.filter(account=account)
-        if account.agency is not None:
-            credit_items |= CreditLineItem.objects.filter(agency=account.agency)
-        return credit_items
-
-    def get_any_for_budget_creation(self, account):
-        credit_items = self.filter_by_account(account)
-        return credit_items.prefetch_related('budgets').order_by('-start_date', '-end_date', '-created_dt').first()
+    def create(self, request, start_date, end_date, amount, **kwargs):
+        cli = CreditLineItem(
+            start_date=start_date,
+            end_date=end_date,
+            amount=amount,
+            **kwargs
+        )
+        cli.created_by = request.user
+        cli.save()
+        return cli
 
 
 class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixin):
+
     class Meta:
         app_label = 'dash'
 
@@ -68,7 +70,7 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixin):
 
     # Salesforce integration
     contract_id = models.CharField(max_length=256, blank=True, null=True, verbose_name='SalesForce Contract ID')
-    part_id = models.CharField(max_length=256, blank=True, null=True, verbose_name='SalesForce Contract Part ID')
+    contract_number = models.CharField(max_length=256, blank=True, null=True, verbose_name='SalesForce Contract Number')
 
     status = models.IntegerField(
         default=constants.CreditLineItemStatus.PENDING,
@@ -76,6 +78,7 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixin):
     )
     refund = models.BooleanField(null=False, blank=False, default=False)
     comment = models.CharField(max_length=256, blank=True, null=True)
+    special_terms = models.CharField(max_length=256, blank=True, null=True)
 
     created_dt = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')
@@ -84,8 +87,6 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixin):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
                                    verbose_name='Created by',
                                    on_delete=models.PROTECT, null=True, blank=True)
-
-    objects = CreditLineItemManager()
 
     def is_active(self, date=None):
         if date is None:
@@ -353,3 +354,15 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixin):
             if self.exclude(status=constants.CreditLineItemStatus.PENDING).count() != 0:
                 raise AssertionError('Some credit items are not pending')
             super(CreditLineItem.QuerySet, self).delete()
+
+        def filter_by_account(self, account):
+            credit_items = CreditLineItem.objects.filter(account=account)
+            if account.agency is not None:
+                credit_items |= CreditLineItem.objects.filter(agency=account.agency)
+            return credit_items
+
+        def get_any_for_budget_creation(self, account):
+            credit_items = self.filter_by_account(account)
+            return credit_items.prefetch_related('budgets').order_by('-start_date', '-end_date', '-created_dt').first()
+
+    objects = CreditLineItemManager.from_queryset(QuerySet)()

@@ -17,7 +17,16 @@ import core.history
 import core.entity.helpers
 
 
+class AccountManager(core.common.QuerySetManager):
+
+    def create(self, request, name, agency_id=None):
+        acc = Account(name=name, agency_id=agency_id)
+        acc.save(request)
+        return acc
+
+
 class Account(models.Model):
+
     class Meta:
         ordering = ('-created_dt',)
 
@@ -53,7 +62,6 @@ class Account(models.Model):
     default_blacklist = models.ForeignKey('PublisherGroup', related_name='blacklisted_accounts',
                                           on_delete=models.PROTECT, null=True, blank=True)
 
-    objects = core.common.QuerySetManager()
     allowed_sources = models.ManyToManyField('Source')
 
     outbrain_marketer_id = models.CharField(
@@ -72,6 +80,9 @@ class Account(models.Model):
         if self.agency:
             agency = self.agency.get_long_name() + u', '
         return u'{}Account {}'.format(agency, self.name)
+
+    def get_salesforce_id(self):
+        return 'b{}'.format(self.pk)
 
     def get_current_settings(self):
         if not self.pk:
@@ -192,6 +203,7 @@ class Account(models.Model):
         super(Account, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
+
         def filter_by_user(self, user):
             return self.filter(
                 models.Q(users__id=user.id) |
@@ -202,7 +214,6 @@ class Account(models.Model):
         def filter_by_sources(self, sources):
             if not core.entity.helpers.should_filter_by_sources(sources):
                 return self
-
             return self.filter(campaign__adgroup__adgroupsource__source__id__in=sources)
 
         def filter_by_agencies(self, agencies):
@@ -256,3 +267,5 @@ class Account(models.Model):
                     'budget__campaign__account_id', flat=True
                 ))
             )
+
+    objects = AccountManager.from_queryset(QuerySet)()

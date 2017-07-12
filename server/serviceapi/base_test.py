@@ -19,7 +19,7 @@ urlpatterns = [
 ]
 
 
-@override_settings(ROOT_URLCONF='serviceapi.test_base')
+@override_settings(ROOT_URLCONF='serviceapi.base_test')
 class TestUnauthenticated(TestCase):
 
     def setUp(self):

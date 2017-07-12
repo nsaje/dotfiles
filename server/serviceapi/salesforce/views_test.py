@@ -23,13 +23,14 @@ class CreateClientTestCase(TestCase):
         }
         url = reverse('service.salesforce.client')
         r = self.client.put(url, data=data, format='json')
-        self.assertEqual(r.status_code, 200)
+        client = core.entity.agency.Agency.objects.all().order_by('-created_dt').first()
         self.assertEqual(r.json(), {
             'data': {
-                'z1_accountId': 'aNone',
+                'z1_accountId': client.get_salesforce_id(),
                 'z1_data': 'Agency Agency 1',
             },
         })
+        self.assertEqual(r.status_code, 200)
 
     def test_put_valid_account(self):
         data = {
@@ -39,13 +40,14 @@ class CreateClientTestCase(TestCase):
         }
         url = reverse('service.salesforce.client')
         r = self.client.put(url, data=data, format='json')
-        self.assertEqual(r.status_code, 200)
+        client = core.entity.account.Account.objects.all().order_by('-created_dt').first()
         self.assertEqual(r.json(), {
             'data': {
-                'z1_accountId': 'bNone',
+                'z1_accountId': client.get_salesforce_id(),
                 'z1_data': 'Account Brand 1'
             },
         })
+        self.assertEqual(r.status_code, 200)
 
     def test_put_invalid(self):
         url = reverse('service.salesforce.client')
@@ -103,7 +105,9 @@ class CreateCreditTestCase(TestCase):
         self.client = APIClient()
         self.user = magic_mixer.blend(User)
         self.client.force_authenticate(user=self.user)
-        self.maxDiff = None
+
+        self.account = magic_mixer.blend(core.entity.account.Account, id=1)
+        self.agency = magic_mixer.blend(core.entity.agency.Agency, id=1)
 
     def test_missing_fields(self):
         url = reverse('service.salesforce.credit')
@@ -113,7 +117,6 @@ class CreateCreditTestCase(TestCase):
         self.assertEqual(r.json(), {
             'details': {
                 u'amountAtSigning': [u'This field is required.'],
-                u'billingContract': [u'This field is required.'],
                 u'contractNumber': [u'This field is required.'],
                 u'description': [u'This field is required.'],
                 u'endDate': [u'This field is required.'],
@@ -186,9 +189,10 @@ class CreateCreditTestCase(TestCase):
             u'pct_of_budget': '0.1',
         }
         r = self.client.put(url, data=data, format='json')
+        cli = core.bcm.credit_line_item.CreditLineItem.objects.all().order_by('-created_dt').first()
         self.assertEqual(r.json(), {
             u'data': {
-                u'z1_cliId': None,
+                u'z1_cliId': cli.pk,
                 u'z1_data': {
                     u'amount': 500.0,
                     u'comment': u'Some description',
@@ -210,8 +214,8 @@ class CreateCreditTestCase(TestCase):
             u'billingContract': 'contract',
             u'contractNumber': '00',
             u'description': 'Some description',
-            u'endDate': '2017-05-10',
-            u'startDate': '2017-06-20',
+            u'startDate': '2017-05-10',
+            u'endDate': '2017-06-20',
             u'pfSchedule': 'monthly as used',
             u'salesforceAccountId': '123',
             u'salesforceContractId': '111',
@@ -219,18 +223,19 @@ class CreateCreditTestCase(TestCase):
             u'pct_of_budget': '0.1',
         }
         r = self.client.put(url, data=data, format='json')
+        cli = core.bcm.credit_line_item.CreditLineItem.objects.all().order_by('-created_dt').first()
         self.assertEqual(r.json(), {
             u'data': {
-                u'z1_cliId': None,
+                u'z1_cliId': cli.pk,
                 u'z1_data': {
                     u'amount': 500.0,
                     u'comment': u'Some description',
-                    u'endDate': u'2017-05-10',
+                    u'startDate': u'2017-05-10',
                     u'flatFeeCc': 0,
                     u'flatFeeEndDate': None,
                     u'flatFeeStartDate': None,
                     u'licenseFee': 0.1,
-                    u'startDate': u'2017-06-20',
+                    u'endDate': u'2017-06-20',
                     u'status': 1
                 }
             }
@@ -252,9 +257,10 @@ class CreateCreditTestCase(TestCase):
             u'calc_variable_fee': '100.0',
         }
         r = self.client.put(url, data=data, format='json')
+        cli = core.bcm.credit_line_item.CreditLineItem.objects.all().order_by('-created_dt').first()
         self.assertEqual(r.json(), {
             u'data': {
-                u'z1_cliId': None,
+                u'z1_cliId': cli.pk,
                 u'z1_data': {
                     u'amount': 500.0,
                     u'comment': u'Some description',
@@ -285,9 +291,10 @@ class CreateCreditTestCase(TestCase):
             u'calc_variable_fee': '100.0',
         }
         r = self.client.put(url, data=data, format='json')
+        cli = core.bcm.credit_line_item.CreditLineItem.objects.all().order_by('-created_dt').first()
         self.assertEqual(r.json(), {
             u'data': {
-                u'z1_cliId': None,
+                u'z1_cliId': cli.pk,
                 u'z1_data': {
                     u'amount': 500.0,
                     u'comment': u'Some description',
@@ -309,7 +316,6 @@ class AgencyAccountsTestCase(TestCase):
         self.client = APIClient()
         self.user = magic_mixer.blend(User)
         self.client.force_authenticate(user=self.user)
-        self.maxDiff = None
 
         self.request_mock = RequestFactory()
         self.request_mock.user = self.user

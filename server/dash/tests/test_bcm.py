@@ -16,7 +16,7 @@ from django.http.request import HttpRequest
 TODAY = datetime.datetime(2015, 12, 1).date()
 YESTERDAY = TODAY - datetime.timedelta(1)
 
-create_credit = models.CreditLineItem.objects.create
+create_credit = models.CreditLineItem.objects.create_unsafe
 create_budget = models.BudgetLineItem.objects.create_unsafe
 create_statement = models.BudgetDailyStatement.objects.create
 
