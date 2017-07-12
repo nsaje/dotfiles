@@ -9,7 +9,11 @@ from dash.views import helpers
 import serializers
 import service
 
-REALTIME_STATS_AGENCIES = [55, 78]
+REALTIME_STATS_AGENCIES = [
+    55,  # Outbrain, nsaje, 7.12.2016
+    78,  # Adtechnacity, nsaje, 12.5.2017
+    33,  # inPowered, nsaje, 12.6.2017
+]
 
 
 class AdGroupRealtimeStatsView(RESTAPIBaseView):
