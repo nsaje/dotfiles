@@ -1,7 +1,6 @@
 angular.module('one.widgets').component('zemZipTargeting', {
     bindings: {
         entity: '<',
-        errors: '<',
         api: '<',
     },
     template: require('./zemZipTargeting.component.html'),  // eslint-disable-line max-len
@@ -16,7 +15,9 @@ angular.module('one.widgets').component('zemZipTargeting', {
         $ctrl.isZipTargetingVisible = isZipTargetingVisible;
 
         $ctrl.$onInit = function () {
-            $ctrl.api.register({});
+            if ($ctrl.api) {
+                $ctrl.api.register({});
+            }
         };
 
         $ctrl.$onChanges = function (changes) {

@@ -31,7 +31,7 @@ class ContentAdCandidate(core.common.FootprintModel):
     secondary_tracker_url = models.TextField(
         null=True, blank=True, default=None)
 
-    ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT)
+    ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT, null=True, blank=True)
     batch = models.ForeignKey('UploadBatch', on_delete=models.PROTECT)
 
     image_status = models.IntegerField(

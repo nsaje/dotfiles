@@ -4,7 +4,7 @@ describe('component: zemCampaignLauncher', function () {
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    beforeEach(inject(function ($rootScope, $componentController) {
+    beforeEach(inject(function ($componentController) {
         var bindings = {};
         $ctrl = $componentController('zemCampaignLauncher', {}, bindings);
         $ctrl.stateService = {

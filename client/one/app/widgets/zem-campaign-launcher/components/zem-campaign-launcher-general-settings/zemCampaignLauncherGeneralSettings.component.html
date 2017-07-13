@@ -106,14 +106,15 @@
             <input class="input-text"
                    id="cpc-input"
                    type="text"
-                   ng-model="$ctrl.state.fields.maxCpc"
-                   ng-change="$ctrl.onFieldChange()"
                    zem-currency-input
                    fraction-size="3"
-                   empty-text="No limit">
+                   empty-text="No limit"
+                   ng-model="$ctrl.state.fields.maxCpc"
+                   ng-change="$ctrl.onFieldChange()"
+                   ng-model-options="{debounce: 1000}">
         </div>
         <div ng-repeat="error in $ctrl.state.fieldsErrors.maxCpc" class="message message--error" for="cpc-input">
-          {{ error }}
+            {{ error }}
         </div>
     </div>
 
@@ -127,13 +128,16 @@
             <input class="input-text"
                    id="autopilot-budget"
                    type="text"
+                   zem-currency-input
+                   fraction-size="0"
                    ng-model="$ctrl.state.fields.dailyBudget"
                    ng-change="$ctrl.onFieldChange()"
-                   zem-currency-input
-                   fraction-size="0">
+                   ng-model-options="{debounce: 1000}">
         </div>
 
-        <div class="message message--error" for="autopilot-budget">{{ $ctrl.state.fieldsErrors.dailyBudget }}</div>
+        <div ng-repeat="error in $ctrl.state.fieldsErrors.dailyBudget" class="message message--error" for="autopilot-budget">
+            {{ error }}
+        </div>
     </div>
 
     <zem-campaign-launcher-goal class="zem-campaign-launcher-goal"

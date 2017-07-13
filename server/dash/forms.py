@@ -997,6 +997,8 @@ class DisplayURLField(forms.URLField):
 
 
 class AdGroupAdsUploadBaseForm(forms.Form):
+    account_id = forms.IntegerField(required=False)
+    ad_group_id = forms.IntegerField(required=False)
     batch_name = forms.CharField(
         required=True,
         max_length=255,

@@ -11,7 +11,8 @@ import core.source
 class CreateContentAd(TestCase):
 
     def test_create(self, mock_insert_redirects):
-        batch = magic_mixer.blend(core.entity.UploadBatch)
+        ad_group = magic_mixer.blend(core.entity.AdGroup)
+        batch = magic_mixer.blend(core.entity.UploadBatch, ad_group=ad_group)
         sources = magic_mixer.cycle(5).blend(core.source.Source)
 
         content_ad = core.entity.ContentAd.objects.create(batch, sources, url='zemanta.com', brand_name='Zemanta')

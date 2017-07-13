@@ -1,10 +1,11 @@
 import rest_framework
 
 from dash import models
+from dash.features import contentupload
 
 
 def launch(request, account, name, iab_category, start_date, end_date, budget_amount,
-           goal_type, goal_value, max_cpc, daily_budget,
+           goal_type, goal_value, max_cpc, daily_budget, upload_batch,
            conversion_goal_type=None, conversion_goal_goal_id=None, conversion_goal_window=None):
     campaign = models.Campaign.objects.create(
         request=request,
@@ -42,5 +43,8 @@ def launch(request, account, name, iab_category, start_date, end_date, budget_am
         cpc_cc=max_cpc,
         daily_budget_cc=daily_budget
     )
+
+    upload_batch.set_ad_group(ad_group)
+    contentupload.upload.persist_batch(upload_batch)
 
     return campaign

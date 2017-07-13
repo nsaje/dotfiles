@@ -53,6 +53,7 @@ class CampaignLauncherLaunchTest(restapi.test_views.RESTAPITest):
         account = magic_mixer.blend(dash.models.Account, users=[self.user])
         campaign = magic_mixer.blend(dash.models.Campaign, name='xyz')
         pixel = magic_mixer.blend(dash.models.ConversionPixel, account=account)
+        upload_batch = magic_mixer.blend(dash.models.UploadBatch, account=account)
         mock_launch.return_value = campaign
 
         data = {
@@ -63,7 +64,8 @@ class CampaignLauncherLaunchTest(restapi.test_views.RESTAPITest):
             'budgetAmount': 123,
             'maxCpc': '0.6',
             'dailyBudget': '15.0',
-            'goal': {
+            'uploadBatchId': str(upload_batch.id),
+            'campaignGoal': {
                 'type': 'CPA',
                 'value': '30.0',
                 'conversionGoal': {
@@ -91,6 +93,7 @@ class CampaignLauncherLaunchTest(restapi.test_views.RESTAPITest):
             budget_amount=123,
             max_cpc=Decimal('0.6'),
             daily_budget=Decimal('15.0'),
+            upload_batch=upload_batch,
             goal_type=dash.constants.CampaignGoalKPI.CPA,
             goal_value=Decimal(30.0),
             conversion_goal_type=dash.constants.ConversionGoalType.PIXEL,

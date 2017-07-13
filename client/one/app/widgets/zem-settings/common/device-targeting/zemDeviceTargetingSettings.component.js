@@ -2,7 +2,7 @@ angular.module('one.widgets').component('zemDeviceTargetingSettings', {
     bindings: {
         entity: '<',
         errors: '<',
-        api: '<',
+        api: '<?',
     },
     template: require('./zemDeviceTargetingSettings.component.html'),
     controller: function ($q, config, zemPermissions, zemDeviceTargetingStateService) {
@@ -17,7 +17,9 @@ angular.module('one.widgets').component('zemDeviceTargetingSettings', {
         $ctrl.isDefault = isDefault;
 
         $ctrl.$onInit = function () {
-            $ctrl.api.register({});
+            if ($ctrl.api) {
+                $ctrl.api.register({});
+            }
         };
 
         $ctrl.$onChanges = function (changes) {

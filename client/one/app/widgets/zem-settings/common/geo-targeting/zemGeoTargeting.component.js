@@ -2,7 +2,7 @@ angular.module('one.widgets').component('zemGeoTargeting', {
     bindings: {
         entity: '<',
         errors: '<',
-        api: '<',
+        api: '<?',
     },
     template: require('./zemGeoTargeting.component.html'),
     controller: function ($scope, zemGeoTargetingStateService) {
@@ -31,13 +31,19 @@ angular.module('one.widgets').component('zemGeoTargeting', {
         };
 
         $ctrl.$onInit = function () {
-            $ctrl.api.register({});
+            if ($ctrl.api) {
+                $ctrl.api.register({});
+            }
         };
 
         $ctrl.$onChanges = function (changes) {
             if (changes.entity && $ctrl.entity) {
+                $ctrl.entity.settings.targetRegions = $ctrl.entity.settings.targetRegions || [];
+                $ctrl.entity.settings.exclusionTargetRegions = $ctrl.entity.settings.exclusionTargetRegions || [];
+
                 $ctrl.stateService = zemGeoTargetingStateService.createInstance($ctrl.entity);
                 $ctrl.state = $ctrl.stateService.getState();
+
                 $ctrl.stateService.init();
                 initializeWatches();
                 setTexts();

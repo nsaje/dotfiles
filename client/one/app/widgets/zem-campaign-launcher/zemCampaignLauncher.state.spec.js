@@ -73,6 +73,12 @@ describe('zemCampaignLauncherStateService', function () {
             maxCpc: null,
             dailyBudget: null,
             campaignGoal: null,
+            uploadBatchId: null,
+            targetRegions: null,
+            exclusionTargetRegions: null,
+            targetDevices: null,
+            targetOs: null,
+            targetPlacements: null,
         });
     });
 

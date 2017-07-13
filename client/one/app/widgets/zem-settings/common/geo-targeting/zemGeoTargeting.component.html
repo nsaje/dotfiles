@@ -1,9 +1,11 @@
-<div class="custom-panel zem-settings-component__container zem-region-targeting-settings">
+<div class="custom-panel zem-settings-component__container">
     <h2 class="custom-panel__title" is-internal="zemauth.fea_new_geo_targeting">
         Location targeting
         <div class="zem-settings__different-than-default" ng-if="!$ctrl.isEqualToDefaultSettings()">Different than campaign default</div>
     </h2>
-    <div class="custom-panel__description">The countries, states and DMA regions where your content ads will be shown.</div>
+    <div class="custom-panel__description">
+        The countries, states and DMA regions where your content ads will be shown.
+    </div>
 
     <zem-inclusion-targeting-list
         texts="$ctrl.texts"
@@ -31,8 +33,8 @@
     </div>
 
     <hr>
+
     <zem-zip-targeting entity="$ctrl.entity"
-                       errors="$ctrl.errors"
                        api="$ctrl.api"
                        class="zem-zip-targeting"
     ></zem-zip-targeting>

@@ -1,7 +1,7 @@
 describe('zemRetargeting', function () {
     var $scope, element, isolate;
 
-    var template = '<zem-retargeting zem-selected-adgroup-ids="selectedAdgroupIds" zem-retargetable-adgroups="retargetableAdgroups" zem-account="account"></zem-locations>'; // eslint-disable-line max-len
+    var template = '<zem-retargeting zem-selected-adgroup-ids="selectedAdgroupIds" zem-retargetable-adgroups="retargetableAdgroups" zem-account="account"></zem-retargeting>'; // eslint-disable-line max-len
 
 
     beforeEach(angular.mock.module('one'));

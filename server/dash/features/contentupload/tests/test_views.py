@@ -9,6 +9,7 @@ from django.test import TestCase, Client
 from dash import constants
 from dash import models
 from zemauth.models import User
+from utils.magic_mixer import magic_mixer
 
 
 def _get_client(superuser=True):
@@ -39,10 +40,12 @@ class UploadCsvTestCase(TestCase):
             'https://t.zemanta.com/px2.png,Zemanta,zemanta.com,Click for more,description'
         )
         response = _get_client().post(
-            reverse('upload_csv', kwargs={'ad_group_id': ad_group_id}),
+            reverse('upload_csv', kwargs={}),
             {
                 'candidates': mock_file,
                 'batch_name': 'batch 1',
+                'ad_group_id': 1,
+                'account_id': 1,
             },
             follow=True
         )
@@ -95,10 +98,12 @@ class UploadCsvTestCase(TestCase):
             'https://t.zemanta.com/px2.png,description,example.com,Example'
         )
         response = _get_client().post(
-            reverse('upload_csv', kwargs={'ad_group_id': ad_group_id}),
+            reverse('upload_csv', kwargs={}),
             {
                 'candidates': mock_file,
                 'batch_name': 'batch 1',
+                'ad_group_id': ad_group_id,
+                'account_id': 1,
             },
             follow=True
         )
@@ -147,10 +152,12 @@ class UploadCsvTestCase(TestCase):
             'http://t.zemanta.com/px1.png,https://t.zemanta.com/px2.png'
         )
         response = _get_client().post(
-            reverse('upload_csv', kwargs={'ad_group_id': ad_group_id}),
+            reverse('upload_csv', kwargs={}),
             {
                 'candidates': mock_file,
                 'batch_name': 'batch 1',
+                'ad_group_id': ad_group_id,
+                'account_id': 1,
             },
             follow=True
         )
@@ -195,7 +202,7 @@ class UploadStatusTestCase(TestCase):
         }
 
         response = _get_client().get(
-            reverse('upload_status', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_status', kwargs={'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(200, response.status_code)
@@ -217,7 +224,7 @@ class UploadStatusTestCase(TestCase):
         expected_candidate['errors'] = {}
 
         response = _get_client().get(
-            reverse('upload_status', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_status', kwargs={'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(200, response.status_code)
@@ -242,7 +249,7 @@ class UploadStatusTestCase(TestCase):
         }
 
         response = _get_client().get(
-            reverse('upload_status', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_status', kwargs={'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(200, response.status_code)
@@ -278,7 +285,7 @@ class UploadSaveTestCase(TestCase):
         ad_group_id = 3
 
         response = _get_client().post(
-            reverse('upload_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_save', kwargs={'batch_id': batch_id}),
             json.dumps({}),
             content_type='application/json',
             follow=True,
@@ -303,10 +310,9 @@ class UploadSaveTestCase(TestCase):
         mock_insert_batch.side_effect = self._mock_insert_redirects
 
         batch_id = 2
-        ad_group_id = 3
 
         response = _get_client().post(
-            reverse('upload_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_save', kwargs={'batch_id': batch_id}),
             json.dumps({
                 'batch_name': 'new batch name'
             }),
@@ -326,10 +332,9 @@ class UploadSaveTestCase(TestCase):
 
     def test_invalid_batch_name(self):
         batch_id = 2
-        ad_group_id = 3
 
         response = _get_client().post(
-            reverse('upload_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_save', kwargs={'batch_id': batch_id}),
             json.dumps({
                 'batch_name': 'new batch name' * 50
             }),
@@ -357,10 +362,9 @@ class UploadSaveTestCase(TestCase):
         mock_insert_batch.side_effect = self._mock_insert_redirects
 
         batch_id = 3
-        ad_group_id = 4
 
         response = _get_client().post(
-            reverse('upload_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_save', kwargs={'batch_id': batch_id}),
             json.dumps({}),
             content_type='application/json',
             follow=True,
@@ -384,7 +388,7 @@ class UploadSaveTestCase(TestCase):
         ad_group_id = 3
 
         response = _get_client().post(
-            reverse('upload_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_save', kwargs={'batch_id': batch_id}),
             json.dumps({}),
             content_type='application/json',
             follow=True,
@@ -401,13 +405,12 @@ class UploadSaveTestCase(TestCase):
 
     def test_invalid_batch_status(self):
         batch_id = 4
-        ad_group_id = 5
 
         batch = models.UploadBatch.objects.get(id=batch_id)
         self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
 
         response = _get_client().post(
-            reverse('upload_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_save', kwargs={'batch_id': batch_id}),
             json.dumps({}),
             content_type='application/json',
             follow=True,
@@ -427,14 +430,12 @@ class UploadSaveTestCase(TestCase):
         self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
 
     def test_invalid_batch_id(self):
-        batch_id = 1
-        ad_group_id = 1
-
-        batch = models.UploadBatch.objects.get(id=batch_id)
-        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+        ad_group = magic_mixer.blend(models.AdGroup)
+        account = ad_group.campaign.account
+        batch = magic_mixer.blend(models.UploadBatch, ad_group=ad_group, account=account)
 
         response = _get_client().post(
-            reverse('upload_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_save', kwargs={'batch_id': batch.id}),
             json.dumps({}),
             content_type='application/json',
             follow=True,
@@ -458,13 +459,12 @@ class CandidatesDownloadTestCase(TestCase):
 
     def test_valid(self):
         batch_id = 1
-        ad_group_id = 2
 
         batch = models.UploadBatch.objects.get(id=batch_id)
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
         response = _get_client().get(
-            reverse('upload_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_candidates_download', kwargs={'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(200, response.status_code)
@@ -478,10 +478,9 @@ class CandidatesDownloadTestCase(TestCase):
 
     def test_custom_batch_name(self):
         batch_id = 1
-        ad_group_id = 2
 
         response = _get_client().get(
-            reverse('upload_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_candidates_download', kwargs={'batch_id': batch_id}),
             {'batch_name': 'Another batch'},
             follow=True,
         )
@@ -489,14 +488,12 @@ class CandidatesDownloadTestCase(TestCase):
         self.assertEqual('attachment; filename="Another batch.csv"', response.get('Content-Disposition'))
 
     def test_wrong_batch_id(self):
-        batch_id = 1
-        ad_group_id = 1
-
-        batch = models.UploadBatch.objects.get(id=batch_id)
-        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+        ad_group = magic_mixer.blend(models.AdGroup)
+        account = ad_group.campaign.account
+        batch = magic_mixer.blend(models.UploadBatch, ad_group=ad_group, account=account)
 
         response = _get_client().get(
-            reverse('upload_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_candidates_download', kwargs={'batch_id': batch.id}),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -518,13 +515,12 @@ class UploadCancelTestCase(TestCase):
 
     def test_valid(self):
         batch_id = 1
-        ad_group_id = 2
 
         batch = models.UploadBatch.objects.get(id=batch_id)
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
         response = _get_client().post(
-            reverse('upload_cancel', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_cancel', kwargs={'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(200, response.status_code)
@@ -537,7 +533,6 @@ class UploadCancelTestCase(TestCase):
 
     def test_invalid(self):
         batch_id = 1
-        ad_group_id = 2
 
         batch = models.UploadBatch.objects.get(id=batch_id)
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
@@ -546,7 +541,7 @@ class UploadCancelTestCase(TestCase):
         batch.save()
 
         response = _get_client().post(
-            reverse('upload_cancel', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_cancel', kwargs={'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(400, response.status_code)
@@ -566,14 +561,12 @@ class UploadCancelTestCase(TestCase):
         self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
 
     def test_wrong_batch_id(self):
-        batch_id = 1
-        ad_group_id = 1
-
-        batch = models.UploadBatch.objects.get(id=batch_id)
-        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+        ad_group = magic_mixer.blend(models.AdGroup)
+        account = ad_group.campaign.account
+        batch = magic_mixer.blend(models.UploadBatch, ad_group=ad_group, account=account)
 
         response = _get_client().post(
-            reverse('upload_cancel', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_cancel', kwargs={'batch_id': batch.id}),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -594,12 +587,15 @@ class UploadBatchTest(TestCase):
     fixtures = ['test_upload.yaml']
 
     def test_create_empty_batch(self):
-        ad_group_id = 1
         batch_name = 'test'
 
         response = _get_client().post(
-            reverse('upload_batch', kwargs={'ad_group_id': ad_group_id}),
-            json.dumps({'batch_name': batch_name}),
+            reverse('upload_batch', kwargs={}),
+            json.dumps({
+                'batch_name': batch_name,
+                'account_id': 1,
+                'ad_group_id': 1,
+            }),
             content_type='application/json',
             follow=True,
         )
@@ -620,11 +616,10 @@ class UploadBatchTest(TestCase):
         }, response)
 
     def test_create_empty_batch_invalid_batch_name(self):
-        ad_group_id = 1
         batch_name = ''
 
         response = _get_client().post(
-            reverse('upload_batch', kwargs={'ad_group_id': ad_group_id}),
+            reverse('upload_batch', kwargs={}),
             json.dumps({'batch_name': batch_name}),
             content_type='application/json',
             follow=True,
@@ -638,14 +633,12 @@ class CandidateTest(TestCase):
 
     def test_get_candidate(self):
         batch_id = 1
-        ad_group_id = 2
         candidate_id = 1
 
         response = _get_client().get(
             reverse(
                 'upload_candidate',
                 kwargs={
-                    'ad_group_id': ad_group_id,
                     'batch_id': batch_id,
                     'candidate_id': candidate_id
                 }
@@ -656,13 +649,11 @@ class CandidateTest(TestCase):
 
     def test_get_candidate_list(self):
         batch_id = 1
-        ad_group_id = 2
 
         response = _get_client().get(
             reverse(
                 'upload_candidate',
                 kwargs={
-                    'ad_group_id': ad_group_id,
                     'batch_id': batch_id,
                 }
             ),
@@ -704,13 +695,11 @@ class CandidateTest(TestCase):
 
     def test_add_candidate(self):
         batch_id = 1
-        ad_group_id = 2
 
         response = _get_client().post(
             reverse(
                 'upload_candidate',
                 kwargs={
-                    'ad_group_id': ad_group_id,
                     'batch_id': batch_id,
                 }
             ),
@@ -750,14 +739,12 @@ class CandidateTest(TestCase):
 
     def test_add_candidate_with_id(self):
         batch_id = 1
-        ad_group_id = 2
         candidate_id = 1
 
         response = _get_client().post(
             reverse(
                 'upload_candidate',
                 kwargs={
-                    'ad_group_id': ad_group_id,
                     'batch_id': batch_id,
                     'candidate_id': candidate_id
                 }
@@ -768,14 +755,12 @@ class CandidateTest(TestCase):
 
     def test_delete_candidate(self):
         batch_id = 5
-        ad_group_id = 4
         candidate_id = 4
 
         response = _get_client().delete(
             reverse(
                 'upload_candidate',
                 kwargs={
-                    'ad_group_id': ad_group_id,
                     'batch_id': batch_id,
                     'candidate_id': candidate_id
                 }
@@ -792,14 +777,12 @@ class CandidateTest(TestCase):
 
     def test_delete_non_existing_candidate(self):
         batch_id = 5
-        ad_group_id = 4
         candidate_id = 555
 
         response = _get_client().delete(
             reverse(
                 'upload_candidate',
                 kwargs={
-                    'ad_group_id': ad_group_id,
                     'batch_id': batch_id,
                     'candidate_id': candidate_id
                 }
@@ -816,16 +799,16 @@ class CandidateTest(TestCase):
         }, json.loads(response.content))
 
     def test_delete_wrong_batch_id(self):
-        batch_id = 4
-        ad_group_id = 1
+        ad_group = magic_mixer.blend(models.AdGroup)
+        account = ad_group.campaign.account
+        batch = magic_mixer.blend(models.UploadBatch, ad_group=ad_group, account=account)
         candidate_id = 4
 
         response = _get_client().delete(
             reverse(
                 'upload_candidate',
                 kwargs={
-                    'ad_group_id': ad_group_id,
-                    'batch_id': batch_id,
+                    'batch_id': batch.id,
                     'candidate_id': candidate_id
                 }
             ),
@@ -847,7 +830,6 @@ class CandidateUpdateTest(TestCase):
 
     def test_update_candidate(self):
         batch_id = 5
-        ad_group_id = 4
         candidate_id = 4
 
         resource = {
@@ -872,7 +854,6 @@ class CandidateUpdateTest(TestCase):
             reverse(
                 'upload_candidate_update',
                 kwargs={
-                    'ad_group_id': ad_group_id,
                     'batch_id': batch_id,
                     'candidate_id': candidate_id
                 }
@@ -905,7 +886,6 @@ class CandidateUpdateTest(TestCase):
 
     def test_non_existing_candidate(self):
         batch_id = 5
-        ad_group_id = 4
         candidate_id = 555
 
         resource = {
@@ -930,7 +910,6 @@ class CandidateUpdateTest(TestCase):
             reverse(
                 'upload_candidate_update',
                 kwargs={
-                    'ad_group_id': ad_group_id,
                     'batch_id': batch_id,
                     'candidate_id': candidate_id
                 }
@@ -948,19 +927,20 @@ class CandidateUpdateTest(TestCase):
         }, json.loads(response.content))
 
     def test_wrong_batch_id(self):
-        batch_id = 4
-        ad_group_id = 1
+        ad_group = magic_mixer.blend(models.AdGroup)
+        account = ad_group.campaign.account
+        batch = magic_mixer.blend(models.UploadBatch, ad_group=ad_group, account=account)
         candidate_id = 4
 
         response = _get_client().post(
             reverse(
                 'upload_candidate_update',
                 kwargs={
-                    'ad_group_id': ad_group_id,
-                    'batch_id': batch_id,
+                    'batch_id': batch.id,
                     'candidate_id': candidate_id
-                }
+                },
             ),
+            {'data': 'x'},
             follow=True,
         )
         self.assertEqual(404, response.status_code)

@@ -28,6 +28,7 @@ class CloneContentAds(restapi.views.RESTAPIBaseView):
 
         destination_batch = service.clone(
             request,
+            ad_group.campaign.account,
             ad_group,
             serializers.get_content_ads(content_ads, form.validated_data),
             restapi.access.get_ad_group(user, form.validated_data['destination_ad_group_id']),

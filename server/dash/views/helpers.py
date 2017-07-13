@@ -25,7 +25,7 @@ from utils import k1_helper
 from utils import columns
 from utils import redirector_helper
 
-from restapi.access import get_content_ad, get_ad_group, get_campaign, get_account  # noqa
+from restapi.access import get_content_ad, get_ad_group, get_campaign, get_account, get_upload_batch  # noqa
 
 import zemauth.models
 

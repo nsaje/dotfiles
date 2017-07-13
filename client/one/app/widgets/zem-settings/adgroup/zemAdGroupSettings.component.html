@@ -12,19 +12,11 @@
                 errors="$container.errors"
                 api="$container.childApi"
         ></zem-device-targeting-settings>
-        <zem-region-targeting-settings
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
-                ng-if="!$ctrl.hasPermission('zemauth.fea_new_geo_targeting')"
-        ></zem-region-targeting-settings>
         <zem-geo-targeting
                 class="zem-settings-component"
                 entity="$container.entity"
                 errors="$container.errors"
                 api="$container.childApi"
-                ng-if="$ctrl.hasPermission('zemauth.fea_new_geo_targeting')"
         ></zem-geo-targeting>
         <zem-demographic-targeting
                 class="zem-settings-component"

@@ -79,7 +79,7 @@ angular.module('one.views').config(function ($stateProvider) {
     });
 
     $stateProvider.state('v2.campaignLauncher', {
-        url: '/campaignlauncher/account/{id:int}',
+        url: '/campaign-launcher/account/{id:int}',
         template: require('./campaign-launcher/zemCampaignLauncherView.partial.html'),
         controller: 'zemCampaignLauncherView as $ctrl',
         params: {

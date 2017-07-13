@@ -13,10 +13,11 @@ import service
 
 class TestService(TestCase):
 
+    @mock.patch('dash.features.contentupload.upload.persist_batch', autospec=True)
     @mock.patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group', autospec=True)
     @mock.patch('utils.redirector_helper.insert_adgroup', autospec=True)
     @mock.patch('utils.k1_helper.update_ad_group', autospec=True)
-    def test_launch(self, mock_k1_update, mock_redirector_insert, mock_autopilot):
+    def test_launch(self, mock_k1_update, mock_redirector_insert, mock_autopilot, mock_persist_batch):
         request = magic_mixer.blend_request_user()
         account = magic_mixer.blend(dash.models.Account)
         credit = magic_mixer.blend(
@@ -27,6 +28,7 @@ class TestService(TestCase):
             amount=500
         )
         pixel = magic_mixer.blend(dash.models.ConversionPixel, account=account)
+        upload_batch = magic_mixer.blend(dash.models.UploadBatch, account=account)
 
         campaign = service.launch(
             request=request,
@@ -36,6 +38,7 @@ class TestService(TestCase):
             start_date=datetime.date(2017, 1, 1),
             end_date=datetime.date(2017, 1, 2),
             budget_amount=123,
+            upload_batch=upload_batch,
             goal_type=dash.constants.CampaignGoalKPI.CPA,
             goal_value=Decimal(30.0),
             max_cpc=Decimal('0.5'),
@@ -63,3 +66,6 @@ class TestService(TestCase):
         self.assertEqual(ad_group.settings.end_date, datetime.date(2017, 1, 2))
         self.assertEqual(ad_group.settings.cpc_cc, Decimal('0.5'))
         self.assertEqual(ad_group.settings.daily_budget_cc, Decimal('15.2'))
+
+        self.assertEqual(upload_batch.ad_group, ad_group)
+        mock_persist_batch.assert_called_with(upload_batch)

@@ -160,37 +160,37 @@ urlpatterns += [
         name='ad_group_source_settings'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/csv/',
+        r'^api/contentads/upload/csv/',
         login_required(dash.features.contentupload.views.UploadCsv.as_view()), name='upload_csv'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/batch/',
+        r'^api/contentads/upload/batch/',
         login_required(dash.features.contentupload.views.UploadBatch.as_view()), name='upload_batch'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/status/',
+        r'^api/contentads/upload/(?P<batch_id>\d+)/status/',
         login_required(dash.features.contentupload.views.UploadStatus.as_view()), name='upload_status'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/download/',
+        r'^api/contentads/upload/(?P<batch_id>\d+)/download/',
         login_required(
             dash.features.contentupload.views.CandidatesDownload.as_view()), name='upload_candidates_download'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/save/',
+        r'^api/contentads/upload/(?P<batch_id>\d+)/save/',
         login_required(dash.features.contentupload.views.UploadSave.as_view()), name='upload_save'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/cancel/',
+        r'^api/contentads/upload/(?P<batch_id>\d+)/cancel/',
         login_required(dash.features.contentupload.views.UploadCancel.as_view()), name='upload_cancel'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload'
+        r'^api/contentads/upload'
         '/(?P<batch_id>\d+)/candidate/(?:(?P<candidate_id>\d+)/)?',
         login_required(dash.features.contentupload.views.Candidate.as_view()), name='upload_candidate'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload'
+        r'^api/contentads/upload'
         '/(?P<batch_id>\d+)/candidate_update/(?:(?P<candidate_id>\d+)/)?',
         login_required(
             dash.features.contentupload.views.CandidateUpdate.as_view()), name='upload_candidate_update'

@@ -46,4 +46,5 @@ class CampaignLauncherSerializer(serializers.Serializer):
         }
     )
     daily_budget = fields.DecimalField(max_digits=10, decimal_places=4)
-    goal = CampaignGoalSerializer()
+    upload_batch_id = restapi.fields.IdField()
+    campaign_goal = CampaignGoalSerializer()

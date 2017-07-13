@@ -866,6 +866,8 @@ class AdGroupAdsUploadFormTest(TestCase):
         self.assertTrue(form.is_valid())
         self.maxDiff = None
         self.assertEqual(form.cleaned_data, {
+            'ad_group_id': None,
+            'account_id': None,
             'batch_name': self.batch_name,
             'candidates': [{
                 u'image_url': self.image_url,

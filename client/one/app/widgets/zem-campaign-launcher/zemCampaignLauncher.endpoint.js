@@ -30,8 +30,19 @@ angular.module('one.widgets').service('zemCampaignLauncherEndpoint', function ($
 
     function convertFieldsToApi (fields) {
         var convertedFields = angular.copy(fields);
+        convertedFields = convertDateFieldsToApi(convertedFields);
         convertedFields.campaignGoal = convertCampaignGoalFieldToApi(convertedFields.campaignGoal);
         return convertedFields;
+    }
+
+    function convertDateFieldsToApi (fields) {
+        if (fields.startDate) {
+            fields.startDate = moment(fields.startDate).format('YYYY-MM-DD');
+        }
+        if (fields.endDate) {
+            fields.endDate = moment(fields.endDate).format('YYYY-MM-DD');
+        }
+        return fields;
     }
 
     function convertCampaignGoalFieldToApi (campaignGoal) {

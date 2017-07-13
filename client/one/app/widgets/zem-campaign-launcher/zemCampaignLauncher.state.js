@@ -25,6 +25,36 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
                 review: true,
             }
         },
+        creatives: {
+            title: 'Creatives',
+            stepIndicatorTitle: 'Creatives',
+            description: 'Submit your creatives.',
+            fields: [
+                {name: 'uploadBatchId', required: true},
+            ],
+            controls: {
+                previous: true,
+                next: true,
+                review: true,
+            }
+        },
+        targeting: {
+            title: 'Targeting',
+            stepIndicatorTitle: 'Targeting',
+            description: 'Setup your targeting.',
+            fields: [
+                {name: 'targetRegions', required: false},
+                {name: 'exclusionTargetRegions', required: false},
+                {name: 'targetDevices', required: false},
+                {name: 'targetOs', required: false},
+                {name: 'targetPlacements', required: false},
+            ],
+            controls: {
+                previous: true,
+                next: true,
+                review: true,
+            }
+        },
         review: {
             title: 'Review & Launch',
             stepIndicatorTitle: 'Review & Launch',
@@ -42,10 +72,12 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
             orderedSteps: [],
             currentStep: null,
             campaignObjective: null,
+            creatives: {},
             fields: {},
             fieldsErrors: {},
             requests: {
                 validate: {},
+                createCreativesBatch: {},
                 launchCampaign: {},
             },
         };
@@ -80,6 +112,7 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
         }
 
         function initLauncherWithObjective (objective) {
+            // TODO (jurebajt): Should we preserve fields' values after user changes objective?
             if (state.campaignObjective !== objective) {
                 state.campaignObjective = objective || null;
                 state.steps = angular.copy(LAUNCHER_STEPS),
@@ -182,6 +215,8 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
         function getDefaultOrderedSteps (steps) {
             return [
                 steps.generalSettings,
+                steps.creatives,
+                steps.targeting,
                 steps.review,
             ];
         }

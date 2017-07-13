@@ -26,6 +26,16 @@
                                             account="$ctrl.account">
     </zem-campaign-launcher-general-settings>
 
+    <zem-campaign-launcher-targeting ng-if="$ctrl.isCurrentStep($ctrl.state.steps.targeting)"
+                                     class="zem-campaign-launcher-targeting"
+                                     state-service="$ctrl.stateService">
+    </zem-campaign-launcher-targeting>
+
+    <zem-campaign-launcher-creatives ng-if="$ctrl.isCurrentStep($ctrl.state.steps.creatives)"
+                                     class="zem-campaign-launcher-creatives"
+                                     state-service="$ctrl.stateService">
+    </zem-campaign-launcher-creatives>
+
     <zem-campaign-launcher-review ng-if="$ctrl.isCurrentStep($ctrl.state.steps.review)"
                                   class="zem-campaign-launcher-review"
                                   state-service="$ctrl.stateService">

@@ -43,13 +43,14 @@ class InsertCandidatesTestCase(TestCase):
     def test_insert_candidates(self):
         data = [valid_candidate]
 
+        account = models.Account.objects.get(id=1)
         ad_group = models.AdGroup.objects.get(id=1)
         batch_name = 'batch1'
         filename = 'test_upload.csv'
         self.assertEqual(0, models.UploadBatch.objects.filter(ad_group=ad_group).count())
         self.assertEqual(0, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
 
-        contentupload.upload.insert_candidates(None, data, ad_group, batch_name, filename)
+        contentupload.upload.insert_candidates(None, account, data, ad_group, batch_name, filename)
         self.assertEqual(1, models.UploadBatch.objects.filter(ad_group=ad_group).count())
         self.assertEqual(1, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
 
@@ -75,13 +76,14 @@ class InsertCandidatesTestCase(TestCase):
     def test_empty_candidate(self):
         data = [{}]
 
+        account = models.Account.objects.get(id=1)
         ad_group = models.AdGroup.objects.get(id=1)
         batch_name = 'batch1'
         filename = 'test_upload.csv'
         self.assertEqual(0, models.UploadBatch.objects.filter(ad_group=ad_group).count())
         self.assertEqual(0, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
 
-        contentupload.upload.insert_candidates(None, data, ad_group, batch_name, filename)
+        contentupload.upload.insert_candidates(None, account, data, ad_group, batch_name, filename)
         self.assertEqual(1, models.UploadBatch.objects.filter(ad_group=ad_group).count())
         self.assertEqual(1, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
 
@@ -112,13 +114,14 @@ class InsertCandidatesTestCase(TestCase):
             'description': 'zemanta content ad',
         }
 
+        account = models.Account.objects.get(id=1)
         ad_group = models.AdGroup.objects.get(id=1)
         batch_name = 'batch1'
         filename = 'test_upload.csv'
         self.assertEqual(0, models.UploadBatch.objects.filter(ad_group=ad_group).count())
         self.assertEqual(0, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
 
-        contentupload.upload.insert_candidates(None, [test_candidate], ad_group, batch_name, filename)
+        contentupload.upload.insert_candidates(None, account, [test_candidate], ad_group, batch_name, filename)
         self.assertEqual(1, models.UploadBatch.objects.filter(ad_group=ad_group).count())
         self.assertEqual(1, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
 
@@ -298,6 +301,22 @@ class PersistBatchTestCase(TestCase):
         self.assertEqual(0, batch.contentad_set.count())
         self.assertFalse(mock_s3helper_put.called)
 
+    def test_ad_group_not_set(self):
+        batch = models.UploadBatch.objects.get(id=2)
+        self.assertEqual(1, batch.contentadcandidate_set.count())
+        self.assertEqual(0, batch.contentad_set.count())
+
+        batch.ad_group = None
+        batch.save()
+
+        with self.assertRaises(contentupload.exc.ChangeForbidden):
+            contentupload.upload.persist_batch(batch)
+
+        # check that nothing changed
+        batch.refresh_from_db()
+        self.assertEqual(1, batch.contentadcandidate_set.count())
+        self.assertEqual(0, batch.contentad_set.count())
+
 
 class PersistEditBatchTestCase(TestCase):
 
@@ -404,8 +423,9 @@ class AddCandidateTestCase(TestCase):
     fixtures = ['test_upload.yaml']
 
     def test_add_candidate(self):
+        account = models.Account.objects.get(id=1)
         ad_group = models.AdGroup.objects.get(id=1)
-        new_batch = models.UploadBatch.objects.create(None, 'test', ad_group)
+        new_batch = models.UploadBatch.objects.create(None, account, 'test', ad_group)
 
         candidate = contentupload.upload.add_candidate(new_batch)
         self.assertEqual(ad_group.id, candidate.ad_group_id)
@@ -434,8 +454,9 @@ class AddCandidateTestCase(TestCase):
         }, candidate.to_dict())
 
     def test_with_defaults(self):
+        account = models.Account.objects.get(id=1)
         ad_group = models.AdGroup.objects.get(id=1)
-        new_batch = models.UploadBatch.objects.create(None, 'test', ad_group)
+        new_batch = models.UploadBatch.objects.create(None, account, 'test', ad_group)
         new_batch.default_image_crop = 'abc'
         new_batch.default_display_url = 'example.com'
         new_batch.default_brand_name = 'Example'
@@ -477,8 +498,9 @@ class GetCandidatesWithErrorsTestCase(TestCase):
         data = [valid_candidate]
 
         # prepare candidate
+        account = models.Account.objects.get(id=1)
         ad_group = models.AdGroup.objects.get(id=1)
-        batch, candidates = contentupload.upload.insert_candidates(None, data, ad_group, 'batch1', 'test_upload.csv')
+        batch, candidates = contentupload.upload.insert_candidates(None, account, data, ad_group, 'batch1', 'test_upload.csv')
 
         result = contentupload.upload.get_candidates_with_errors(candidates)
         self.assertEqual([{
@@ -513,8 +535,9 @@ class GetCandidatesWithErrorsTestCase(TestCase):
         data = [invalid_candidate]
 
         # prepare candidate
+        account = models.Account.objects.get(id=1)
         ad_group = models.AdGroup.objects.get(id=1)
-        batch, candidates = contentupload.upload.insert_candidates(None, data, ad_group, 'batch1', 'test_upload.csv')
+        batch, candidates = contentupload.upload.insert_candidates(None, account, data, ad_group, 'batch1', 'test_upload.csv')
 
         result = contentupload.upload.get_candidates_with_errors(candidates)
         self.assertEqual([{
@@ -814,9 +837,11 @@ class UploadTest(TestCase):
             }
         ]
 
+        account = models.Account.objects.get(id=1)
         ad_group = models.AdGroup.objects.get(pk=1)
         batch, candidates = contentupload.upload.insert_candidates(
             None,
+            account,
             content_ads_data,
             ad_group,
             'Test batch',
@@ -845,9 +870,11 @@ class UploadTest(TestCase):
         self.assertTrue(lambda_data2['candidateID'])
 
     def test_process_callback(self, *mocks):
+        account = models.Account.objects.get(id=1)
         ad_group = models.AdGroup.objects.get(pk=1)
         _, candidates = contentupload.upload.insert_candidates(
             None,
+            account,
             [{
                 "url": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
                 "image_url": "http://static1.squarespace.com/image.jpg",
@@ -883,9 +910,11 @@ class UploadTest(TestCase):
         self.assertEqual(candidate.image_status, constants.AsyncUploadJobStatus.OK)
 
     def test_process_callback_url_pending_start(self, *mocks):
+        account = models.Account.objects.get(id=1)
         ad_group = models.AdGroup.objects.get(pk=1)
         _, candidates = contentupload.upload.insert_candidates(
             None,
+            account,
             [{
                 "url": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
                 "image_url": "http://static1.squarespace.com/image.jpg",
@@ -919,9 +948,11 @@ class UploadTest(TestCase):
         self.assertEqual(candidate.image_status, constants.AsyncUploadJobStatus.OK)
 
     def test_process_callback_image_url_pending_start(self, *mocks):
+        account = models.Account.objects.get(id=1)
         ad_group = models.AdGroup.objects.get(pk=1)
         _, candidates = contentupload.upload.insert_candidates(
             None,
+            account,
             [{
                 "url": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
                 "image_url": "http://static1.squarespace.com/image.jpg",

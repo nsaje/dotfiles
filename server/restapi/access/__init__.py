@@ -78,3 +78,15 @@ def get_campaign(user, campaign_id, sources=None):
         return campaign.get()
     except core.entity.Campaign.DoesNotExist:
         raise utils.exc.MissingDataError('Campaign does not exist')
+
+
+def get_upload_batch(user, batch_id):
+    batch = core.entity.UploadBatch.objects.get(pk=batch_id)
+    try:
+        if batch.account_id:
+            get_account(user, batch.account_id)
+        else:
+            get_ad_group(user, batch.ad_group_id)
+        return batch
+    except utils.exc.MissingDataError:
+        raise utils.exc.MissingDataError('Upload batch does not exist')

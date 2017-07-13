@@ -25,10 +25,10 @@ VALID_UPDATE_FIELDS = set(['url', 'brand_name', 'display_url', 'description', 'i
                            'primary_tracker_url', 'secondary_tracker_url', 'call_to_action'])
 
 
-def insert_candidates(user, candidates_data, ad_group, batch_name, filename, auto_save=False, is_edit=False):
+def insert_candidates(user, account, candidates_data, ad_group, batch_name, filename, auto_save=False, is_edit=False):
     with transaction.atomic():
         batch = models.UploadBatch.objects.create_for_file(
-            user, batch_name, ad_group, filename, auto_save, is_edit)
+            user, account, batch_name, ad_group, filename, auto_save, is_edit)
         candidates = _create_candidates(candidates_data, ad_group, batch)
 
     for candidate in candidates:
@@ -44,7 +44,7 @@ def insert_edit_candidates(user, content_ads, ad_group):
         content_ad_dict['original_content_ad'] = content_ad
         content_ads_data.append(content_ad_dict)
 
-    return insert_candidates(user, content_ads_data, ad_group, '', '', is_edit=True)
+    return insert_candidates(user, ad_group.campaign.account, content_ads_data, ad_group, '', '', is_edit=True)
 
 
 def _reset_candidate_async_status(candidate):
@@ -75,7 +75,7 @@ def _invoke_external_validation(candidate, batch):
         'namespace': settings.LAMBDA_CONTENT_UPLOAD_NAMESPACE,
         'candidateID': candidate.pk,
         'pageUrl': cleaned_urls['url'],
-        'adGroupID': candidate.ad_group.pk,
+        'adGroupID': candidate.ad_group_id,
         'batchID': candidate.batch.pk,
         'imageUrl': cleaned_urls['image_url'],
         'callbackUrl': settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL,
@@ -115,25 +115,13 @@ def has_skip_validation_magic_word(filename):
 
 
 def persist_batch(batch):
-    if batch.status != constants.UploadBatchStatus.IN_PROGRESS:
-        raise exc.InvalidBatchStatus('Invalid batch status')
-
-    if batch.type == constants.UploadBatchType.EDIT:
-        raise exc.ChangeForbidden('Batch in edit mode')
-
-    candidates = models.ContentAdCandidate.objects.filter(batch=batch).order_by('pk')
-    if any(candidate.original_content_ad_id for candidate in candidates):
-        raise exc.ChangeForbidden('Some candidates are linked to content ads')
-
-    cleaned_candidates, errors = _clean_candidates(candidates)
-    if errors:
-        raise exc.CandidateErrorsRemaining('Save not permitted - candidate errors exist')
+    cleaned_candidates = clean_candidates(batch)
 
     with transaction.atomic():
         content_ads = models.ContentAd.objects.bulk_create_from_candidates(cleaned_candidates, batch)
 
         batch.mark_save_done()
-        candidates.delete()
+        batch.contentadcandidate_set.all().delete()
 
         _save_history(batch, content_ads)
 
@@ -142,6 +130,27 @@ def persist_batch(batch):
         msg='upload.process_async.insert'
     )
     return content_ads
+
+
+def clean_candidates(batch):
+    if batch.status != constants.UploadBatchStatus.IN_PROGRESS:
+        raise exc.InvalidBatchStatus('Invalid batch status')
+
+    if batch.type == constants.UploadBatchType.EDIT:
+        raise exc.ChangeForbidden('Batch in edit mode')
+
+    if not batch.ad_group_id:
+        raise exc.ChangeForbidden('Batch has no ad group specified')
+
+    candidates = batch.contentadcandidate_set.all().order_by('pk')
+    if any(candidate.original_content_ad_id for candidate in candidates):
+        raise exc.ChangeForbidden('Some candidates are linked to content ads')
+
+    cleaned_candidates, errors = _clean_candidates(candidates)
+    if errors:
+        raise exc.CandidateErrorsRemaining('Save not permitted - candidate errors exist')
+
+    return cleaned_candidates
 
 
 def persist_edit_batch(request, batch):

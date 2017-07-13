@@ -998,6 +998,7 @@ class ContentAdBatchViewList(RESTAPIBaseView):
 
         batch, candidates = contentupload.upload.insert_candidates(
             request.user,
+            ad_group.campaign.account,
             candidates_data,
             ad_group,
             batch_name,

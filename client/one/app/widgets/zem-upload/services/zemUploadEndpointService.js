@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 
 angular.module('one.widgets').factory('zemUploadEndpointService', function ($http, $q, zemUploadApiConverter, zemNavigationNewService) { // eslint-disable-line max-len
-    function UploadEndpoint (baseUrl) {
+    function UploadEndpoint (baseUrl, adGroupId) {
         var DIRECT_UPLOAD = 'DIRECT_UPLOAD';
 
         this.upload = upload;
@@ -63,6 +63,8 @@ angular.module('one.widgets').factory('zemUploadEndpointService', function ($htt
             var deferred = $q.defer();
             var url = baseUrl + 'batch/';
             var config = {
+                account_id: zemNavigationNewService.getActiveAccount().id,
+                ad_group_id: adGroupId,
                 params: {},
             };
 
@@ -288,13 +290,9 @@ angular.module('one.widgets').factory('zemUploadEndpointService', function ($htt
         }
     }
 
-    function getBaseUrl (adGroupId) {
-        return '/api/ad_groups/' + adGroupId + '/contentads/upload/';
-    }
-
     function createEndpoint (adGroupId) {
-        var url = getBaseUrl(adGroupId);
-        return new UploadEndpoint(url);
+        var url = '/api/contentads/upload/';
+        return new UploadEndpoint(url, adGroupId);
     }
 
     return {

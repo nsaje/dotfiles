@@ -3,13 +3,16 @@ from django.conf import settings
 from django.db import models
 
 from dash import constants
+import core.entity
 from utils import dates_helper
+import utils.exc
 
 
 class UploadBatchManager(models.Manager):
 
-    def create(self, user, name, ad_group):
+    def create(self, user, account, name, ad_group=None):
         batch = UploadBatch(
+            account=account,
             name=name,
             ad_group=ad_group,
         )
@@ -17,10 +20,12 @@ class UploadBatchManager(models.Manager):
         return batch
 
     def clone(self, user, source_ad_group, ad_group, new_batch_name=None):
-        return self.create(user, new_batch_name or UploadBatch.generate_cloned_name(source_ad_group), ad_group)
+        account = ad_group.campaign.account
+        return self.create(user, account, new_batch_name or UploadBatch.generate_cloned_name(source_ad_group), ad_group)
 
-    def create_for_file(self, user, name, ad_group, original_filename, auto_save, is_edit):
+    def create_for_file(self, user, account, name, ad_group, original_filename, auto_save, is_edit):
         batch = UploadBatch(
+            account=account,
             name=name,
             ad_group=ad_group,
             original_filename=original_filename,
@@ -59,7 +64,8 @@ class UploadBatch(models.Model):
         default=constants.UploadBatchType.INSERT,
         choices=constants.UploadBatchType.get_choices()
     )
-    ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT, null=True)  # TODO this should not be null
+    account = models.ForeignKey('Account', on_delete=models.PROTECT, null=True)
+    ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT, null=True, blank=True)
     original_filename = models.CharField(max_length=1024, null=True)
 
     default_image_crop = models.TextField(
@@ -91,4 +97,12 @@ class UploadBatch(models.Model):
 
     def mark_save_done(self):
         self.status = constants.UploadBatchStatus.DONE
+        self.save()
+
+    def set_ad_group(self, ad_group):
+        if self.status == constants.UploadBatchStatus.DONE:
+            raise utils.exc.ForbiddenError('Cannot set an ad group on an already persisted batch')
+        self.ad_group = ad_group
+        candidates = core.entity.ContentAdCandidate.objects.filter(batch=self)
+        candidates.update(ad_group=ad_group)
         self.save()
