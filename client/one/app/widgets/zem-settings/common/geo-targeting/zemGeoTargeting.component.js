@@ -51,11 +51,11 @@ angular.module('one.widgets').component('zemGeoTargeting', {
         };
 
         $ctrl.isInclusionError = function () {
-            return !!($ctrl.errors.targetRegions || []).length;
+            return $ctrl.errors && !!($ctrl.errors.targetRegions || []).length;
         };
 
         $ctrl.isExclusionError = function () {
-            return !!($ctrl.errors.exclusionTargetRegions || []).length;
+            return $ctrl.errors && !!($ctrl.errors.exclusionTargetRegions || []).length;
         };
 
         function initializeWatches () {
