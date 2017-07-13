@@ -26,6 +26,8 @@ angular.module('one.widgets').factory('zemUploadEndpointService', function ($htt
             var formData = new FormData();
             formData.append('candidates', data.file);
             formData.append('batch_name', data.batchName ? data.batchName : '');
+            formData.append('account_id', zemNavigationNewService.getActiveAccount().id);
+            formData.append('ad_group_id', adGroupId);
 
             $http.post(url, formData, {
                 transformRequest: angular.identity,
