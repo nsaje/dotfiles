@@ -19,11 +19,6 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, to='dash.Account'),
         ),
         migrations.AlterField(
-            model_name='adgroupsettings',
-            name='ad_group',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='dash.AdGroup'),
-        ),
-        migrations.AlterField(
             model_name='contentadcandidate',
             name='ad_group',
             field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='dash.AdGroup'),
