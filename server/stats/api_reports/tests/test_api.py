@@ -53,7 +53,7 @@ class CampaignGoalTest(TestCase):
             'filtered_sources': test_helper.QuerySetMatcher(sources),
             'allowed_accounts': dash.models.Account.objects.filter(pk=1),
             'allowed_campaigns': dash.models.Campaign.objects.filter(pk=1),
-        })
+        }, ['ad_group_id'])
 
         self.assertEqual(goals.campaign_goals,
                          test_helper.QuerySetMatcher(dash.models.CampaignGoal.objects.filter(pk__in=[1, 2])))
@@ -78,7 +78,7 @@ class CampaignGoalTest(TestCase):
             'filtered_sources': test_helper.QuerySetMatcher(sources),
             'allowed_accounts': dash.models.Account.objects.filter(pk__in=[1, 2]),
             'allowed_campaigns': dash.models.Campaign.objects.filter(pk__in=[1, 2]),
-        })
+        }, [])
         self.assertEqual(goals.campaign_goals, [])
         self.assertEqual(goals.conversion_goals, [])
         self.assertEqual(goals.campaign_goal_values, [])
@@ -97,7 +97,7 @@ class CampaignGoalTest(TestCase):
             'filtered_sources': test_helper.QuerySetMatcher(sources),
             'allowed_accounts': dash.models.Account.objects.filter(pk=1),
             'allowed_campaigns': dash.models.Campaign.objects.filter(pk__in=[1, 2]),
-        })
+        }, ['campaign_id'])
 
         self.assertEqual(goals.campaign_goals,
                          test_helper.QuerySetMatcher(dash.models.CampaignGoal.objects.filter(pk__in=[1, 2])))

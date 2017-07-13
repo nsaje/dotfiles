@@ -146,7 +146,7 @@ def postprocess_joint_query_rows(rows):
             row[column] = dash.campaign_goals.get_goal_performance_category(row[column])
 
 
-def merge_rows(breakdown, base_rows, yesterday_rows, touchpoint_rows, conversion_rows, goals, calculate_performance_column=True):
+def merge_rows(breakdown, base_rows, yesterday_rows, touchpoint_rows, conversion_rows, goals):
     """
     Applys conversions, pixels and goals columns to rows. Equivalent to what redshiftapi joint model
     does, the only difference is that joint model calculates this in SQL directly.
@@ -166,7 +166,7 @@ def merge_rows(breakdown, base_rows, yesterday_rows, touchpoint_rows, conversion
             apply_conversion_goal_columns(breakdown, rows, goals.conversion_goals, conversion_rows)
         if goals.pixels:
             apply_pixel_columns(breakdown, rows, goals.pixels, touchpoint_rows)
-        if goals.campaign_goals and calculate_performance_column:
+        if goals.campaign_goals:
             apply_performance_columns(breakdown, rows, goals.campaign_goals, goals.campaign_goal_values,
                                       goals.conversion_goals, goals.pixels)
     return rows
@@ -245,40 +245,49 @@ def apply_pixel_columns(breakdown, rows, pixels, touchpoint_rows):
 
 def apply_performance_columns(breakdown, rows, campaign_goals, campaign_goal_values,
                               conversion_goals, pixels):
+    if len(rows) < 1:
+        return
+
     map_camp_goal_vals = {x.campaign_goal_id: x for x in campaign_goal_values or []}
     map_conversion_goals = {x.id: x for x in conversion_goals or []}
     pixel_ids = [x.id for x in pixels] if pixels else []
 
+    campaign_goals_by_campaign_id = collections.defaultdict(list)
     for campaign_goal in campaign_goals:
-        if campaign_goal.type == dash.constants.CampaignGoalKPI.CPA:
-            if campaign_goal.conversion_goal_id not in map_conversion_goals:
-                # if conversion goal is not amongst campaign goals do not calculate performance
-                continue
+        campaign_goals_by_campaign_id[campaign_goal.campaign_id].append(campaign_goal)
 
-            conversion_goal = map_conversion_goals[campaign_goal.conversion_goal_id]
+    for row in rows:
+        if 'campaign_id' in row:
+            campaign_goals = campaign_goals_by_campaign_id[row['campaign_id']]
+        for campaign_goal in campaign_goals:
+            if campaign_goal.type == dash.constants.CampaignGoalKPI.CPA:
+                if campaign_goal.conversion_goal_id not in map_conversion_goals:
+                    # if conversion goal is not amongst campaign goals do not calculate performance
+                    continue
 
-            if conversion_goal.pixel_id not in pixel_ids:
-                # in case pixel is not part of this query (eg archived etc)
-                continue
+                conversion_goal = map_conversion_goals[campaign_goal.conversion_goal_id]
 
-            conversion_key = conversion_goal.get_view_key(conversion_goals)
+                if conversion_goal.pixel_id not in pixel_ids:
+                    # in case pixel is not part of this query (eg archived etc)
+                    continue
 
-            def metric_value_fn(row):
-                return (float(row['e_media_cost'] or 0) / row[conversion_key]) if row.get(conversion_key) else None
-        else:
-            def metric_value_fn(row):
-                return row.get(dash.campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type])
+                conversion_key = conversion_goal.get_view_key(conversion_goals)
 
-        campaign_goal_value = map_camp_goal_vals.get(campaign_goal.pk)
+                def metric_value_fn(row):
+                    return (float(row['e_media_cost'] or 0) / row[conversion_key]) if row.get(conversion_key) else None
+            else:
+                def metric_value_fn(row):
+                    return row.get(dash.campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type])
 
-        if campaign_goal_value and campaign_goal_value.value:
-            planned_value = campaign_goal_value.value
-        else:
-            planned_value = None
+            campaign_goal_value = map_camp_goal_vals.get(campaign_goal.pk)
 
-        goal_key = campaign_goal.get_view_key()
+            if campaign_goal_value and campaign_goal_value.value:
+                planned_value = campaign_goal_value.value
+            else:
+                planned_value = None
 
-        for row in rows:
+            goal_key = campaign_goal.get_view_key()
+
             cost = row['e_media_cost']
             metric_value = metric_value_fn(row)
             goal_category = dash.campaign_goals.get_goal_performance_status(

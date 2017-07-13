@@ -13,6 +13,13 @@ BREAKDOWN_FIELDS = set(
     stats.constants.TimeDimension._ALL +
     stats.constants.DeliveryDimension._ALL)
 
+HIERARCHY_BREAKDOWN_FIELDS = [
+    stats.constants.ACCOUNT,
+    stats.constants.CAMPAIGN,
+    stats.constants.AD_GROUP,
+    stats.constants.CONTENT_AD,
+]
+
 STRUCTURE_CONSTRAINTS_FIELDS = ['account_id', 'campaign_id', 'ad_group_id', 'content_ad_id']
 
 MAX_ROWS = 999999

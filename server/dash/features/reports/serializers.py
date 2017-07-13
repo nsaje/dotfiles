@@ -61,7 +61,7 @@ class ReportQuerySerializer(serializers.Serializer):
     def validate(self, data):
         filter_constraints = helpers.get_filter_constraints(data['filters'])
         level = helpers.get_level_from_constraints(filter_constraints)
-        breakdown = helpers.get_breakdown_from_fields(data['fields'])
+        breakdown = helpers.get_breakdown_from_fields(data['fields'], level)
         try:
             stats.api_reports.validate_breakdown_by_structure(level, breakdown)
             stats.api_reports.validate_breakdown_by_permissions(level, self.context['request'].user, breakdown)

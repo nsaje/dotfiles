@@ -110,7 +110,6 @@ class ReportJobExecutor(JobExecutor):
     def get_raw_new_report(cls, job):
         user = job.user
 
-        breakdown = list(helpers.get_breakdown_from_fields(job.query['fields']))
         filter_constraints = helpers.get_filter_constraints(job.query['filters'])
         start_date = filter_constraints['start_date']
         end_date = filter_constraints['end_date']
@@ -119,6 +118,7 @@ class ReportJobExecutor(JobExecutor):
         filtered_agencies = dash.views.helpers.get_filtered_agencies(filter_constraints.get('agencies', []))
 
         level = helpers.get_level_from_constraints(filter_constraints)
+        breakdown = list(helpers.get_breakdown_from_fields(job.query['fields'], level))
         structure_constraints = cls._extract_structure_constraints(filter_constraints)
 
         constraints = stats.api_reports.prepare_constraints(
@@ -130,7 +130,7 @@ class ReportJobExecutor(JobExecutor):
             only_used_sources=True,
             **structure_constraints
         )
-        goals = stats.api_reports.get_goals(constraints)
+        goals = stats.api_reports.get_goals(constraints, breakdown)
 
         field_name_mapping = utils.columns.get_field_names_mapping(
             goals.pixels, goals.conversion_goals,

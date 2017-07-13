@@ -312,7 +312,7 @@ class ReportViewsTest(TestCase):
 
         mock_prepare_constraints.assert_called_with(
             User.objects.get(pk=1),
-            ['campaign_id'],
+            ['campaign_id', 'account_id'],
             datetime.date(2016, 10, 10), datetime.date(2016, 10, 10),
             test_helper.QuerySetMatcher(dash.models.Source.objects.filter(pk__in=[1])),
             show_archived=False,
@@ -325,7 +325,7 @@ class ReportViewsTest(TestCase):
 
         mock_query.assert_called_with(
             User.objects.get(pk=1),
-            ['campaign_id'],
+            ['campaign_id', 'account_id'],
             mock.ANY,
             mock.ANY,
             '-e_media_cost',
@@ -398,7 +398,7 @@ class ReportViewsTest(TestCase):
 
         mock_prepare_constraints.assert_called_with(
             User.objects.get(pk=1),
-            ['ad_group_id'],
+            ['ad_group_id', 'campaign_id'],
             datetime.date(2016, 10, 10), datetime.date(2016, 10, 10),
             test_helper.QuerySetMatcher(dash.models.Source.objects.filter(pk__in=[1])),
             show_archived=False,
@@ -411,7 +411,7 @@ class ReportViewsTest(TestCase):
 
         mock_query.assert_called_with(
             User.objects.get(pk=1),
-            ['ad_group_id'],
+            ['ad_group_id', 'campaign_id'],
             mock.ANY,
             mock.ANY,
             '-e_media_cost',
@@ -484,7 +484,7 @@ class ReportViewsTest(TestCase):
 
         mock_prepare_constraints.assert_called_with(
             User.objects.get(pk=1),
-            ['content_ad_id'],
+            ['content_ad_id', 'ad_group_id'],
             datetime.date(2016, 10, 10), datetime.date(2016, 10, 10),
             test_helper.QuerySetMatcher(dash.models.Source.objects.filter(pk__in=[1])),
             show_archived=False,
@@ -497,7 +497,7 @@ class ReportViewsTest(TestCase):
 
         mock_query.assert_called_with(
             User.objects.get(pk=1),
-            ['content_ad_id'],
+            ['content_ad_id', 'ad_group_id'],
             mock.ANY,
             mock.ANY,
             '-e_media_cost',

@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 Goals = collections.namedtuple('Goals', 'campaign_goals, conversion_goals, campaign_goal_values, pixels, primary_goals')
 
 
-def get_goals(constraints):
+def get_goals(constraints, breakdown):
     campaign = constraints.get('campaign')
     account = constraints.get('account')
 
@@ -33,7 +33,7 @@ def get_goals(constraints):
         primary_goals = [campaign_goals.first()]
         campaign_goal_values = dash.campaign_goals.get_campaign_goal_values(campaign)
 
-    elif 'allowed_campaigns' in constraints and 'account' in constraints:
+    elif 'allowed_campaigns' in constraints and 'account' in constraints and constants.CAMPAIGN in breakdown:
         # only take for campaigns when constraints for 1 account, otherwise its too much
         allowed_campaigns = constraints['allowed_campaigns']
         conversion_goals = dash.models.ConversionGoal.objects.filter(campaign__in=allowed_campaigns)\

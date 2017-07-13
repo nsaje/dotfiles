@@ -9,7 +9,7 @@ import utils.columns
 import constants
 
 
-def get_breakdown_from_fields(fields):
+def get_breakdown_from_fields(fields, level):
     if not fields:
         raise serializers.ValidationError("Must define fields!")
 
@@ -22,6 +22,9 @@ def get_breakdown_from_fields(fields):
     for di in dimension_identifiers:
         if di in constants.BREAKDOWN_FIELDS and di not in breakdown:
             breakdown.append(di)
+            for additional in _get_required_hierarchical_dimensions(di, level):
+                if additional not in breakdown:
+                    breakdown.append(additional)
 
     if utils.columns.FieldNames.publisher_id in breakdown and utils.columns.FieldNames.source_id in breakdown:
         breakdown.remove(utils.columns.FieldNames.source_id)
@@ -29,10 +32,20 @@ def get_breakdown_from_fields(fields):
     return breakdown
 
 
+def _get_required_hierarchical_dimensions(dimension, level):
+    if dimension not in constants.HIERARCHY_BREAKDOWN_FIELDS:
+        return []
+
+    dimension_index = constants.HIERARCHY_BREAKDOWN_FIELDS.index(dimension)
+    parent_breakdowns = constants.HIERARCHY_BREAKDOWN_FIELDS[:dimension_index]
+    return limit_breakdown_to_level(parent_breakdowns, level)
+
+
 def get_breakdown_names(query):
+    level = get_level_from_constraints(get_filter_constraints(query['filters']))
     breakdowns = limit_breakdown_to_level(
-        get_breakdown_from_fields(query['fields']),
-        get_level_from_constraints(get_filter_constraints(query['filters'])),
+        get_breakdown_from_fields(query['fields'], level),
+        level,
     )
 
     breakdowns = [breakdown[:-3] if breakdown.endswith('_id') else breakdown for breakdown in breakdowns]

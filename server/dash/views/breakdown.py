@@ -139,7 +139,7 @@ class AllAccountsBreakdown(api_common.BaseApiView):
             request.user, breakdown, only_used_sources=target_dim == 'source_id',
             **get_constraints_kwargs(form.cleaned_data))
 
-        goals = stats.api_breakdowns.get_goals(constraints)
+        goals = stats.api_breakdowns.get_goals(constraints, breakdown)
 
         totals_thread = None
         if len(breakdown) == 1:
@@ -205,7 +205,7 @@ class AccountBreakdown(api_common.BaseApiView):
         constraints = stats.constraints_helper.prepare_account_constraints(
             request.user, account, breakdown, only_used_sources=target_dim == 'source_id',
             **get_constraints_kwargs(form.cleaned_data))
-        goals = stats.api_breakdowns.get_goals(constraints)
+        goals = stats.api_breakdowns.get_goals(constraints, breakdown)
 
         totals_thread = None
         if len(breakdown) == 1:
@@ -273,7 +273,7 @@ class CampaignBreakdown(api_common.BaseApiView):
         constraints = stats.constraints_helper.prepare_campaign_constraints(
             request.user, campaign, breakdown, only_used_sources=target_dim == 'source_id',
             **get_constraints_kwargs(form.cleaned_data))
-        goals = stats.api_breakdowns.get_goals(constraints)
+        goals = stats.api_breakdowns.get_goals(constraints, breakdown)
 
         totals_thread = None
         if len(breakdown) == 1:
@@ -346,7 +346,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
             request.user, ad_group, breakdown,
             only_used_sources=target_dim == 'source_id',
             **get_constraints_kwargs(form.cleaned_data))
-        goals = stats.api_breakdowns.get_goals(constraints)
+        goals = stats.api_breakdowns.get_goals(constraints, breakdown)
 
         totals_thread = None
         if len(breakdown) == 1:

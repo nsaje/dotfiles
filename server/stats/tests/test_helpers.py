@@ -293,7 +293,7 @@ class CampaignGoalTest(TestCase):
             'account': account,
             'campaign': campaign,
             'ad_group': models.AdGroup.objects.get(pk=1),
-        })
+        }, ['content_ad_id'])
         self.assertEqual(goals.campaign_goals,
                          test_helper.QuerySetMatcher(models.CampaignGoal.objects.filter(pk__in=[1, 2])))
         self.assertEqual(goals.conversion_goals,
@@ -316,7 +316,7 @@ class CampaignGoalTest(TestCase):
             'show_archived': False,
             'filtered_sources': test_helper.QuerySetMatcher(sources),
             'ad_group': models.AdGroup.objects.get(pk=1),
-        })
+        }, [])
         self.assertEqual(goals.campaign_goals, [])
         self.assertEqual(goals.conversion_goals, [])
         self.assertEqual(goals.campaign_goal_values, [])

@@ -146,7 +146,7 @@ class Goals(object):
         self.primary_goals = primary_goals or []
 
 
-def get_goals(constraints):
+def get_goals(constraints, breakdown):
     campaign_goals, conversion_goals, campaign_goal_values, pixels = [], [], [], []
     primary_goals = []
 
@@ -160,25 +160,26 @@ def get_goals(constraints):
         pixels = campaign.account.conversionpixel_set.filter(archived=False)
 
     elif constraints['allowed_accounts'].count() == 1:
-        account = constraints['allowed_accounts'][0]
         # only take for campaigns when constraints for 1 account, otherwise its too much
-        allowed_campaigns = constraints['allowed_campaigns']
-        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign__in=allowed_campaigns)\
-                                                             .select_related('pixel')
-
-        campaign_goals = dash.models.CampaignGoal.objects.filter(campaign__in=allowed_campaigns)\
-                                                         .order_by('-primary', 'created_dt')\
-                                                         .select_related('conversion_goal', 'conversion_goal__pixel')
-
-        primary_goals_by_campaign = {}
-        for cg in campaign_goals:
-            if cg.campaign_id not in primary_goals_by_campaign:
-                primary_goals_by_campaign[cg.campaign_id] = cg
-        primary_goals = primary_goals_by_campaign.values()
-
-        for campaign in allowed_campaigns:
-            campaign_goal_values.extend(dash.campaign_goals.get_campaign_goal_values(campaign))
-
+        account = constraints['allowed_accounts'][0]
         pixels = account.conversionpixel_set.filter(archived=False)
+
+        if stats.constants.CAMPAIGN in breakdown:
+            allowed_campaigns = constraints['allowed_campaigns']
+            conversion_goals = dash.models.ConversionGoal.objects.filter(campaign__in=allowed_campaigns)\
+                                                                 .select_related('pixel')
+
+            campaign_goals = dash.models.CampaignGoal.objects.filter(campaign__in=allowed_campaigns)\
+                                                             .order_by('-primary', 'created_dt')\
+                                                             .select_related('conversion_goal', 'conversion_goal__pixel')
+
+            primary_goals_by_campaign = {}
+            for cg in campaign_goals:
+                if cg.campaign_id not in primary_goals_by_campaign:
+                    primary_goals_by_campaign[cg.campaign_id] = cg
+            primary_goals = primary_goals_by_campaign.values()
+
+            for campaign in allowed_campaigns:
+                campaign_goal_values.extend(dash.campaign_goals.get_campaign_goal_values(campaign))
 
     return Goals(campaign_goals, conversion_goals, campaign_goal_values, pixels, primary_goals)

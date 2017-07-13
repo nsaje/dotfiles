@@ -96,9 +96,8 @@ def query_totals(breakdown, constraints, goals, use_publishers_view=False):
     return rows
 
 
-# calculate_performance_column is a hack for reports speed optimization
 def query_all(breakdown, constraints, parents, goals, use_publishers_view,
-              breakdown_for_name=[], extra_name='', metrics=None, calculate_performance_column=True):
+              breakdown_for_name=[], extra_name='', metrics=None):
 
     t_base = None
     t_yesterday = None
@@ -157,7 +156,6 @@ def query_all(breakdown, constraints, parents, goals, use_publishers_view,
         touchpoint_rows = t_touchpoints.join_and_get_result()
 
     rows = postprocess.merge_rows(
-        breakdown, base_rows, yesterday_rows, touchpoint_rows, conversions_rows, goals,
-        calculate_performance_column=calculate_performance_column)
+        breakdown, base_rows, yesterday_rows, touchpoint_rows, conversions_rows, goals)
 
     return rows

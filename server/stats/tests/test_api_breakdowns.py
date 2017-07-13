@@ -35,7 +35,7 @@ class ApiBreakdownQueryTest(TestCase):
             'date__gte': datetime.date(2016, 8, 1),
             'date__lte': datetime.date(2016, 8, 5),
         }
-        goals = api_breakdowns.get_goals(constraints)
+        goals = api_breakdowns.get_goals(constraints, breakdown)
         parents = []
         order = 'clicks'
         offset = 1
@@ -111,7 +111,7 @@ class ApiBreakdownQueryTest(TestCase):
             'date__gte': datetime.date(2016, 8, 1),
             'date__lte': datetime.date(2016, 8, 5),
         }
-        goals = api_breakdowns.get_goals(constraints)
+        goals = api_breakdowns.get_goals(constraints, breakdown)
         parents = []
         order = '-name'
         offset = 0

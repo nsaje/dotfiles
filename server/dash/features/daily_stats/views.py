@@ -55,7 +55,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
         breakdown = ['day']
 
         constraints = self.prepare_constraints(request, breakdown)
-        goals = stats.api_breakdowns.get_goals(constraints)
+        goals = stats.api_breakdowns.get_goals(constraints, breakdown)
 
         query_results = stats.api_dailystats.query(
             request.user,
@@ -90,7 +90,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
             breakdown.append(group_key)
 
         constraints = self.prepare_constraints(request, breakdown, selected_only=True)
-        goals = stats.api_breakdowns.get_goals(constraints)
+        goals = stats.api_breakdowns.get_goals(constraints, breakdown)
         query_results = stats.api_dailystats.query(
             request.user,
             breakdown,
