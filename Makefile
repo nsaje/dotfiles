@@ -46,7 +46,7 @@ login:	## login to ECR
 ifdef ${LOGGED_IN}
 	@echo "Already logged in"
 else
-	$$(aws ecr get-login --no-include-email)
+	$$(aws ecr get-login)
 	$(eval LOGGED_IN=yes)
 endif
 
