@@ -190,30 +190,27 @@ We use Grunt for building the app and Bower for management of third-party compon
 
 All the commands bellow assume that you are located in client subdirectory.
 
-Make sure that you have node.js, npm, bower, grunt and grunt-cli installed.
+Make sure that you have node.js ,npm and bower installed.
 
 Install local development node modules:
 ```bash
+npm prune
 npm install
 bower install --dev
 ```
 
-Now you have grunt and all the development dependencies installed so you can run grunt in order to build it:
+Now you have all the development dependencies installed so you can run `dev` target and start with development.
+This will run server on port 9999 and will rebuild bundles after each change to source file:
 ```bash
-grunt
+npm run dev
 ```
 
-Built client app will be placed in dist directory.
-
-You can also run grunt watch to build it automatically while working on it:
+To create product bundle run `prod` target along with `--build-number` parameter. This will rewrite all
+media urls to point to `one-static.zemanta.com/<build-number>`. It will also build all whitelabel styles (greenpark and adtechnacity).
 ```bash
-grunt watch
+npm run prod --build-number=123
 ```
 
-For development, you can run grunt dev which also runs server on port 9999 and is reloaded after each change to source file:
-```bash
-grunt dev
-```
 ### Debug toolbar
 
 The debug toolbar will help you profile your code and templates, find slow and duplicated queries, find if cache is hit or miss etc. If you're interested
@@ -260,16 +257,15 @@ When modifying or changing its theme, you can run a preview server with `./serve
 
 #### Unit testing
 
-We use Jasmine as testing framework and Karma as test runner. Before running tests, make sure you have karma installed. Karma is integrated with Grunt, so tests can be run with:
+We use Jasmine as testing framework and Karma as test runner with PhantomJS.
+Tests can be run with:
 ```bash
-grunt test
+npm run tests
 ```
-
-This will run tests in local Chrome browser.
 
 Karma can also auto-watch files and run test on every change:
 ```bash
-npm run watch-test
+npm run tests-watch
 ```
 
 ### Server
