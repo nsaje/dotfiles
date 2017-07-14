@@ -1302,7 +1302,7 @@ class ConversionPixelTestCase(TestCase):
         account.users.add(self.user)
 
         p = models.ConversionPixel.objects.get(pk=2)
-        p.additional_pixel=True
+        p.additional_pixel = True
         p.save()
 
         response = self.client.get(
