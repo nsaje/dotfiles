@@ -293,8 +293,12 @@ class AudiencesTest(TestCase):
     @mock.patch('utils.k1_helper.update_account')
     @mock.patch('utils.redirector_helper.upsert_audience')
     def test_put(self, redirector_upsert_audience_mock, k1_update_account_mock):
-        # ttl should be ignored
-        data = {'name': 'New name', 'ttl': 30}
+        # ttl work, but not rules
+        data = {'name': 'New name', 'ttl': 30, 'rules': [{
+            "id": "1",
+            "type": 1,
+            "value": "teeeeest"
+        }], }
         url = reverse('accounts_audience', kwargs={'account_id': 1, 'audience_id': 1})
 
         response = self.client.put(
@@ -312,7 +316,7 @@ class AudiencesTest(TestCase):
                     "type": 1,
                     "value": "test"
                 }],
-                "ttl": 90,
+                "ttl": 30,
                 "id": "1",
                 "name": "New name"
             }
@@ -323,7 +327,7 @@ class AudiencesTest(TestCase):
         self.assertEqual(audiences[0].name, 'New name')
         self.assertEqual(audiences[0].pixel_id, 1)
         self.assertEqual(audiences[0].archived, False)
-        self.assertEqual(audiences[0].ttl, 90)
+        self.assertEqual(audiences[0].ttl, 30)
         self.assertEqual(audiences[0].created_by_id, 1)
 
         rules = audiences[0].audiencerule_set.all()

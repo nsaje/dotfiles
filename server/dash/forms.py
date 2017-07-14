@@ -37,11 +37,13 @@ MAX_ADS_PER_UPLOAD = 100
 
 
 class BaseApiForm(forms.Form):
+
     def get_errors():
         pass
 
 
 class AdvancedDateTimeField(forms.fields.DateTimeField):
+
     def strptime(self, value, format):
         return dateutil.parser.parse(value)
 
@@ -983,6 +985,7 @@ CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict([
 
 
 class DisplayURLField(forms.URLField):
+
     def clean(self, value):
         display_url = super(forms.URLField, self).clean(value)
         display_url = display_url.strip()
@@ -1164,6 +1167,7 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm, ParseCSVExcelFile):
 
 
 class CreditLineItemForm(forms.ModelForm):
+
     def clean_start_date(self):
         start_date = self.cleaned_data['start_date']
         if not self.instance.pk or start_date != self.instance.start_date:
@@ -1236,6 +1240,7 @@ class BudgetLineItemForm(forms.ModelForm):
 
 
 class MultiEmailField(forms.Field):
+
     def to_python(self, value):
         if not value:
             return []
@@ -1297,6 +1302,7 @@ class ScheduleReportForm(forms.Form):
 
 
 class CreditLineItemAdminForm(forms.ModelForm):
+
     def __init__(self, *args, **kwargs):
         super(CreditLineItemAdminForm, self).__init__(*args, **kwargs)
         # archived state is stored in settings, we need to have a more stupid
@@ -1324,6 +1330,7 @@ class CreditLineItemAdminForm(forms.ModelForm):
 
 
 class BudgetLineItemAdminForm(forms.ModelForm):
+
     def __init__(self, *args, **kwargs):
         super(BudgetLineItemAdminForm, self).__init__(*args, **kwargs)
         # archived state is stored in settings, we need to have a more stupid
@@ -1351,6 +1358,7 @@ class BudgetLineItemAdminForm(forms.ModelForm):
 
 
 class BreakdownForm(forms.Form):
+
     def __init__(self, user, breakdown, request_body, *args, **kwargs):
         request_body['breakdown'] = breakdown
         self.user = user
@@ -1719,6 +1727,7 @@ class AudienceRuleForm(forms.Form):
 
 
 class AudienceRulesField(forms.Field):
+
     def clean(self, rules):
         if not rules:
             raise forms.ValidationError(self.error_messages['required'])
@@ -1781,6 +1790,13 @@ class AudienceUpdateForm(forms.Form):
         error_messages={
             'required': 'Please specify audience name.',
             'max_length': 'Name is too long (max %(limit_value)d characters)',
+        }
+    )
+    ttl = forms.IntegerField(
+        max_value=365,
+        error_messages={
+            'required': 'Please select days.',
+            'max_value': 'Maximum number of days is 365.'
         }
     )
 

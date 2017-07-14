@@ -153,7 +153,7 @@ angular.module('one.widgets').service('zemCustomAudiencesStateService', function
                 function (data) {
                     if (data.rows) {
                         state.audiencePixels = data.rows.filter(function (pixel) {
-                            return pixel.audienceEnabled;
+                            return pixel.audienceEnabled || pixel.additionalPixel;
                         });
 
                         return state.audiencePixels;

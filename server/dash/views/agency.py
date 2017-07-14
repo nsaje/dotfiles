@@ -605,7 +605,7 @@ class ConversionPixel(api_common.BaseApiView):
 
         pixels = models.ConversionPixel.objects.filter(account=account)
         if audience_enabled_only:
-            pixels = pixels.filter(audience_enabled=True)
+            pixels = pixels.filter(Q(audience_enabled=True) | Q(additional_pixel=True))
 
         rows = [self._format_pixel(pixel, request.user) for pixel in pixels]
 
@@ -811,6 +811,7 @@ class ConversionPixel(api_common.BaseApiView):
             'name': pixel.name,
             'url': pixel.get_url(),
             'audience_enabled': pixel.audience_enabled,
+            'additional_pixel': pixel.additional_pixel,
             'archived': pixel.archived
         }
         if user.has_perm('zemauth.can_see_pixel_traffic'):

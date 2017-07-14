@@ -1287,12 +1287,46 @@ class ConversionPixelTestCase(TestCase):
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
             'archived': False,
             'audience_enabled': True,
+            'additional_pixel': False,
         }, {
             'id': 2,
             'name': 'test2',
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test2/',
             'archived': False,
             'audience_enabled': False,
+            'additional_pixel': False,
+        }], decoded_response['data']['rows'])
+
+    def test_get_additional(self):
+        account = models.Account.objects.get(pk=1)
+        account.users.add(self.user)
+
+        p = models.ConversionPixel.objects.get(pk=2)
+        p.additional_pixel=True
+        p.save()
+
+        response = self.client.get(
+            reverse('account_conversion_pixels', kwargs={'account_id': account.id}),
+            follow=True
+        )
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(decoded_response['success'])
+        self.assertItemsEqual([{
+            'id': 1,
+            'name': 'test',
+            'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
+            'archived': False,
+            'audience_enabled': True,
+            'additional_pixel': False,
+        }, {
+            'id': 2,
+            'name': 'test2',
+            'url': settings.CONVERSION_PIXEL_PREFIX + '1/test2/',
+            'archived': False,
+            'audience_enabled': False,
+            'additional_pixel': True,
         }], decoded_response['data']['rows'])
 
     def test_get_non_existing_account(self):
@@ -1324,6 +1358,7 @@ class ConversionPixelTestCase(TestCase):
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
             'archived': False,
             'audience_enabled': True,
+            'additional_pixel': False,
             'redirect_url': None,
         }, {
             'id': 2,
@@ -1331,6 +1366,7 @@ class ConversionPixelTestCase(TestCase):
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test2/',
             'archived': False,
             'audience_enabled': False,
+            'additional_pixel': False,
             'redirect_url': None,
         }], decoded_response['data']['rows'])
 
@@ -1359,6 +1395,7 @@ class ConversionPixelTestCase(TestCase):
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
             'archived': False,
             'audience_enabled': True,
+            'additional_pixel': False,
             'notes': 'test note',
         }, {
             'id': 2,
@@ -1366,6 +1403,7 @@ class ConversionPixelTestCase(TestCase):
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test2/',
             'archived': False,
             'audience_enabled': False,
+            'additional_pixel': False,
             'notes': '',
         }], decoded_response['data']['rows'])
 
@@ -1388,6 +1426,7 @@ class ConversionPixelTestCase(TestCase):
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/3/',
             'archived': False,
             'audience_enabled': False,
+            'additional_pixel': False,
         }, decoded_response['data'])
 
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
@@ -1432,6 +1471,7 @@ class ConversionPixelTestCase(TestCase):
                 u'name': u'name',
                 u'archived': False,
                 u'audience_enabled': True,
+                u'additional_pixel': False,
                 u'url': u'https://p1.zemanta.com/p/1/{}/'.format(audience_enabled_pixels[0].slug)
             },
             u'success': True
@@ -1498,6 +1538,7 @@ class ConversionPixelTestCase(TestCase):
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/7/',
             'archived': False,
             'audience_enabled': False,
+            'additional_pixel': False,
             'redirect_url': 'http://test.com'
         }, decoded_response['data'])
 
@@ -1580,6 +1621,7 @@ class ConversionPixelTestCase(TestCase):
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/6/',
             'archived': False,
             'audience_enabled': False,
+            'additional_pixel': False,
             'notes': 'test notes'
         }, decoded_response['data'])
 
@@ -1626,6 +1668,7 @@ class ConversionPixelTestCase(TestCase):
                 u'name': u'name',
                 u'archived': False,
                 u'audience_enabled': True,
+                u'additional_pixel': False,
                 u'url': u'https://p1.zemanta.com/p/1/{}/'.format(audience_enabled_pixels[0].slug)
             },
             u'success': True
@@ -1691,6 +1734,7 @@ class ConversionPixelTestCase(TestCase):
             'name': 'test2',
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test2/',
             'audience_enabled': False,
+            'additional_pixel': False,
         }, decoded_response['data'])
 
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
@@ -1751,6 +1795,7 @@ class ConversionPixelTestCase(TestCase):
             'name': 'New name',
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
             'audience_enabled': True,
+            'additional_pixel': False,
         }, decoded_response['data'])
 
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
@@ -1782,6 +1827,7 @@ class ConversionPixelTestCase(TestCase):
             'name': conversion_pixel.name,
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
             'audience_enabled': False,
+            'additional_pixel': False,
         }, decoded_response['data'])
 
         self.assertFalse(redirector_mock.called)
@@ -1865,6 +1911,7 @@ class ConversionPixelTestCase(TestCase):
             'name': 'test',
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
             'audience_enabled': False,
+            'additional_pixel': False,
             'redirect_url': 'http://test.com',
         }, decoded_response['data'])
 
@@ -1902,6 +1949,7 @@ class ConversionPixelTestCase(TestCase):
             'name': 'test',
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
             'audience_enabled': False,
+            'additional_pixel': False,
             'redirect_url': '',
         }, decoded_response['data'])
 
@@ -1948,6 +1996,7 @@ class ConversionPixelTestCase(TestCase):
             'name': 'test',
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
             'audience_enabled': False,
+            'additional_pixel': False,
             'notes': 'test notes',
         }, decoded_response['data'])
 
@@ -3574,7 +3623,8 @@ class AccountUsersTest(TestCase):
         acc1.users.add(user)
         acc2.users.add(user)
         response = client.delete(
-            reverse('account_users_manage', kwargs={'account_id': 1, 'user_id': user.pk}) + '?remove_from_all_accounts=1',
+            reverse('account_users_manage', kwargs={'account_id': 1,
+                                                    'user_id': user.pk}) + '?remove_from_all_accounts=1',
         )
         self.assertEqual(response.status_code, 200)
         self.assertFalse(acc1.users.filter(pk=user.pk))

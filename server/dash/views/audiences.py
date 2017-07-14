@@ -100,8 +100,9 @@ class AudiencesView(api_common.BaseApiView):
         data = audience_form.cleaned_data
 
         old_name = audience.name
-        if audience.name != data['name']:
+        if audience.name != data['name'] or audience.ttl != data['ttl']:
             audience.name = data['name']
+            audience.ttl = data['ttl']
 
             with transaction.atomic():
                 audience.save(
