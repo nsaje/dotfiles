@@ -3,6 +3,7 @@ import logging
 logger = logging.getLogger('zem.request')
 
 log_format_started = "STARTED {method} {full_path} elb={elb} traefik={traefik}"
+log_format_completed = "COMPLETED {method} {full_path} elb={elb} traefik={traefik} {status_code}"
 
 
 def zem_logging_middleware(get_response):
@@ -19,6 +20,15 @@ def zem_logging_middleware(get_response):
             )
         )
         response = get_response(request)
+        logger.info(
+            log_format_completed.format(
+                method=request.method,
+                full_path=request.get_full_path(),
+                elb=elb,
+                traefik=traefik,
+                status_code=response.status_code,
+            )
+        )
         return response
 
     return middleware
