@@ -18,6 +18,7 @@ angular.module('one.widgets').controller('zemEditCampaignGoalModalCtrl', functio
             conversionGoal: {},
         };
     } else {
+        $scope.campaignGoal.conversionGoal = $scope.campaignGoal.conversionGoal || {};
         $scope.prevValue = $scope.campaignGoal.value;
     }
 
@@ -279,7 +280,7 @@ angular.module('one.widgets').service('zemCampaignGoalValidationEndpoint', funct
                         name: goal.conversion_goal.name,
                         type: goal.conversion_goal.type,
                         conversionWindow: goal.conversion_goal.conversion_window,
-                        goalId: goal.conversion_goal.goal_id,
+                        goalId: parseInt(goal.conversion_goal.goal_id),
                     }
                 };
             }
