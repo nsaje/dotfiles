@@ -33,6 +33,8 @@ services:
             max-file: "3"
             labels: "eins"
         mem_limit: 8g
+        sysctls:
+          net.core.somaxconn: 2048
         networks:
           - legacynet
 
