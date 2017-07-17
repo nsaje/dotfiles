@@ -408,6 +408,8 @@ def _process_url_update(candidate, url, callback_data):
 
 
 def _handle_auto_save(batch):
+    batch.refresh_from_db()
+
     if not batch.auto_save:
         return
 
