@@ -2,12 +2,12 @@ from django.test import TestCase
 from mock import patch
 from utils.magic_mixer import magic_mixer
 
-from dash.features.bulkactions import clonecontent
 import core.entity
 import core.source
+import service
 
 
-@patch.object(core.entity.ContentAd.objects, 'insert_redirects')
+@patch.object(core.entity.ContentAd.objects, 'insert_redirects', autospec=True)
 class Clone(TestCase):
 
     def test_clone(self, _):
@@ -16,7 +16,7 @@ class Clone(TestCase):
         ad_group = magic_mixer.blend(core.entity.AdGroup)
         request = magic_mixer.blend_request_user()
 
-        batch = clonecontent.service.clone(request, source_ad_group, source_content_ads, ad_group)
+        batch = service.clone(request, source_ad_group, source_content_ads, ad_group)
 
         self.assertItemsEqual(
             [x.to_cloned_candidate_dict() for x in source_content_ads],

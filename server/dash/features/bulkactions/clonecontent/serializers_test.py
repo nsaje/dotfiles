@@ -1,12 +1,10 @@
 from django.test import TestCase
-
 import rest_framework.serializers
 from utils.magic_mixer import magic_mixer
 from utils import test_helper
 
 import core.entity
-
-from .. import serializers
+import serializers
 
 
 class CloneContentAdsSerializer(TestCase):

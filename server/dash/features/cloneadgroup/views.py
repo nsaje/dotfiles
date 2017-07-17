@@ -31,5 +31,6 @@ class CloneAdGroup(RESTAPIBaseView):
 
         response = dash.views.navigation_helpers.get_ad_group_dict(
             request.user, ad_group, ad_group.get_current_settings(), ad_group.campaign.get_current_settings())
+
         response['campaign_id'] = ad_group.campaign_id
         return self.response_ok(serializers.AdGroupSerializer(response).data)

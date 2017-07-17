@@ -2,14 +2,14 @@ from django.test import TestCase
 from mock import patch
 from utils.magic_mixer import magic_mixer
 
-from .. import serializers
 import core.entity
 import core.source
+import serializers
 
 
-@patch.object(core.entity.ContentAd.objects, 'insert_redirects')
-@patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
-@patch('utils.redirector_helper.insert_adgroup')
+@patch.object(core.entity.ContentAd.objects, 'insert_redirects', autospec=True)
+@patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group', autospec=True)
+@patch('utils.redirector_helper.insert_adgroup', autospec=True)
 class CloneForm(TestCase):
 
     def test_clone_valid(self, mock_insert_adgroup, mock_redirects, mock_autopilot):

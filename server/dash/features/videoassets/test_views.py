@@ -12,7 +12,7 @@ import models
 class VideoAssetTest(restapi.test_views.RESTAPITest):
     def setUp(self):
         self.user = magic_mixer.blend_user(permissions=['fea_video_upload'])
-        self.account = magic_mixer.blend(core.entity.account.Account, users=[self.user])
+        self.account = magic_mixer.blend(core.entity.Account, users=[self.user])
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
 

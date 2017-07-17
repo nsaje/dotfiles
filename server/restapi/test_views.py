@@ -27,10 +27,6 @@ import restapi.serializers.targeting
 TODAY = datetime.datetime(2016, 1, 15).date()
 
 
-def normalize(d):
-    return json.loads(json.dumps(d, cls=json_helper.JSONEncoder))
-
-
 class SerializerTests(TestCase):
 
     def test_allow_not_provided(self):
@@ -68,6 +64,10 @@ class RESTAPITest(TestCase):
         self.assertEqual(resp_json['errorCode'], error_code)
         return resp_json
 
+    @staticmethod
+    def normalize(d):
+        return json.loads(json.dumps(d, cls=json_helper.JSONEncoder))
+
 
 class AccountsTest(RESTAPITest):
 
@@ -89,7 +89,7 @@ class AccountsTest(RESTAPITest):
                 }
             },
         }
-        return normalize(representation)
+        return cls.normalize(representation)
 
     def validate_against_db(self, account):
         account_db = dash.models.Account.objects.get(pk=account['id'])
@@ -142,7 +142,7 @@ class AccountCreditsTest(RESTAPITest):
         allocated='200.0',
         available='300.0',
     ):
-        return normalize({
+        return cls.normalize({
             'id': id,
             'createdOn': createdOn,
             'startDate': startDate,
@@ -220,7 +220,7 @@ class CampaignsTest(RESTAPITest):
                 }
             },
         }
-        return normalize(representation)
+        return cls.normalize(representation)
 
     def validate_campaign(self, campaign):
         campaign_db = dash.models.Campaign.objects.get(pk=campaign['id'])
@@ -336,7 +336,7 @@ class CampaignGoalsTest(RESTAPITest):
             'conversionGoal': conversionGoal,
             'value': value,
         }
-        return normalize(representation)
+        return cls.normalize(representation)
 
     def validate_campaigngoal(self, campaigngoal):
         campaigngoal_db = dash.models.CampaignGoal.objects.get(pk=campaigngoal['id'])
@@ -446,7 +446,7 @@ class BudgetsTest(RESTAPITest):
             'spend': spend,
             'available': available,
         }
-        return normalize(representation)
+        return cls.normalize(representation)
 
     def validate_budget(self, budget):
         budget_db = dash.models.BudgetLineItem.objects.get(pk=budget['id'])
@@ -603,7 +603,7 @@ class AdGroupsTest(RESTAPITest):
             'clickCappingDailyAdGroupMaxClicks': click_capping_daily_ad_group_max_clicks,
         }
 
-        return normalize(representation)
+        return cls.normalize(representation)
 
     @staticmethod
     def _partition_regions(target_regions):
@@ -748,7 +748,7 @@ class AdGroupSourcesTest(RESTAPITest):
             'dailyBudget': daily_budget,
             'state': constants.AdGroupSourceSettingsState.get_name(state),
         }
-        return normalize(representation)
+        return cls.normalize(representation)
 
     def validate_against_db(self, ad_group_id, adgroupsourcesettings):
         slug = adgroupsourcesettings['source']
@@ -795,7 +795,7 @@ class AdGroupSourcesRTBTest(RESTAPITest):
             'state': constants.AdGroupSourceSettingsState.get_name(state),
             'cpc': cpc
         }
-        return normalize(representation)
+        return cls.normalize(representation)
 
     def validate_against_db(self, ad_group_id, agsrtb):
         settings_db = dash.models.AdGroup.objects.get(pk=ad_group_id).get_current_settings()
@@ -873,7 +873,7 @@ class ContentAdsTest(RESTAPITest):
             'imageCrop': image_crop,
             'trackerUrls': tracker_urls,
         }
-        return normalize(representation)
+        return cls.normalize(representation)
 
     def validate_against_db(self, cad):
         cad_db = dash.models.ContentAd.objects.get(pk=cad['id'])
