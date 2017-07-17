@@ -48,7 +48,7 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
         function prepareName (option) {
             if (!$ctrl.isEdit) return option && option.name || null;
 
-            if ($ctrl.campaignGoal.type !== constants.campaignGoalKPI.CPA) {
+            if ($ctrl.campaignGoal.type !== constants.campaignGoalKPI.CPA || !$ctrl.campaignGoal.conversionGoal.name) {
                 return option.name;
             }
             return 'CPA - ' + $ctrl.campaignGoal.conversionGoal.name;
