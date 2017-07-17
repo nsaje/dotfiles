@@ -183,6 +183,13 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
         return false;
     };
 
+    vm.clearSelectedCandidateErrors = function (field) {
+        if (!vm.selectedCandidate || !vm.selectedCandidate.errors) return;
+        if (vm.hasPermission('zemauth.can_use_partial_updates_in_upload')) return;
+
+        delete vm.selectedCandidate.errors[field];
+    };
+
     vm.toggleImageUpload = function () {
         if (vm.isEdit) return;
         vm.fieldsSaved.image = false;
