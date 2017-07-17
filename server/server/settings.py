@@ -163,7 +163,7 @@ CACHES = {
 
 try:
     import qinspect
-    MIDDLEWARE_CLASSES.append('qinspect.middleware.QueryInspectMiddleware'),
+    MIDDLEWARE.append('qinspect.middleware.QueryInspectMiddleware'),
     # Query inspector settings, https://github.com/dobarkod/django-queryinspect
     # Whether the Query Inspector should do anything (default: False)
     QUERY_INSPECT_ENABLED = True
@@ -203,9 +203,9 @@ if ENABLE_DEBUG_TOOLBAR:
         'template_profiler_panel',
     ])
 
-    MIDDLEWARE_CLASSES = [
+    MIDDLEWARE = [
         'debug_panel.middleware.DebugPanelMiddleware',
-    ] + MIDDLEWARE_CLASSES
+    ] + MIDDLEWARE
 
     DEBUG_TOOLBAR_PANELS = [
         'debug_toolbar.panels.versions.VersionsPanel',

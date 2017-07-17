@@ -9,7 +9,7 @@ coverage==3.7.1
 django-extensions==1.6.1
 
 # for detecting slow queries
-django-queryinspect==0.1.0
+django-queryinspect==1.0.0
 
 django-debug-panel==0.8.3
 django-debug-toolbar==1.8
