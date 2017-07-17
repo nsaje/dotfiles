@@ -59,7 +59,8 @@ INSTALLED_APPS = [
     'integrations.bizwire',
 ]
 
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
+    'server.logging_middleware.zem_logging_middleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
