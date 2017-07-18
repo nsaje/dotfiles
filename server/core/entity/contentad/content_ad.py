@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import logging
 import urlparse
 
 from django.conf import settings
@@ -17,9 +16,6 @@ import core.common
 import core.entity
 import core.history
 import core.source
-
-
-logger = logging.getLogger(__name__)
 
 
 class ContentAdManager(models.Manager):
@@ -75,10 +71,8 @@ class ContentAdManager(models.Manager):
 
     @transaction.atomic
     def insert_redirects(self, content_ads, clickthrough_resolve):
-        logger.info('BIZWIRE DEBUG - start insert')
         redirector_batch = utils.redirector_helper.insert_redirects(
             content_ads, clickthrough_resolve=clickthrough_resolve)
-        logger.info('BIZWIRE DEBUG - end insert')
         for content_ad in content_ads:
             content_ad.url = redirector_batch[str(content_ad.id)]["redirect"]["url"]
             content_ad.redirect_id = redirector_batch[str(content_ad.id)]["redirectid"]
