@@ -453,7 +453,16 @@ def process_callback(callback_data):
         candidate.save()
 
     candidate.batch.refresh_from_db()
-    _handle_auto_save(candidate.batch)
+
+
+def handle_auto_save_batches(created_after):
+    batches = models.UploadBatch.objects.filter(
+        status=constants.UploadBatchStatus.IN_PROGRESS,
+        created_dt__gte=created_after,
+    )
+
+    for batch in batches:
+        _handle_auto_save(batch)
 
 
 def _create_candidates(content_ads_data, ad_group, batch):
