@@ -452,8 +452,6 @@ def process_callback(callback_data):
 
         candidate.save()
 
-    candidate.batch.refresh_from_db()
-
 
 def handle_auto_save_batches(created_after):
     batches = models.UploadBatch.objects.filter(
