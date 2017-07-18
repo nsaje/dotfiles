@@ -21,9 +21,6 @@ from utils import k1_helper, request_signer
 logger = logging.getLogger(__name__)
 
 
-RAND = random.Random()
-
-
 @csrf_exempt
 @influx.timer('integrations.bizwire.internal.views.click_capping')
 def click_capping(request):
@@ -110,7 +107,7 @@ def article_upload(request):
 
     for ad_group_id in candidates_per_ad_group.keys():
         try:
-            if RAND.random() > 0.9:
+            if random.random() > 0.9:
                 actions.recalculate_and_set_new_daily_budgets(ad_group_id)
         except Exception:
             logger.exception('Unable to set new bizwire daily budget for ad group %s', ad_group_id)

@@ -24,13 +24,13 @@ from zemauth.models import User
 @patch('integrations.bizwire.config.AUTOMATION_USER_EMAIL', 'user@test.com')
 @patch('integrations.bizwire.config.DAILY_BUDGET_RTB_INITIAL', 0)
 @patch('integrations.bizwire.config.DAILY_BUDGET_OB_INITIAL', 0)
-@patch('integrations.bizwire.internal.views.RAND', random.Random(1234))
 @override_settings(LAMBDA_CONTENT_UPLOAD_SIGN_KEY='test_api_key')
 class ArticleUploadTest(TestCase):
 
     fixtures = ['test_bizwire.yaml']
 
     def setUp(self):
+        random.seed(1234)
         self.verify_patcher = patch('utils.request_signer.verify_wsgi_request')
         self.mock_verify_wsgi_request = self.verify_patcher.start()
 
