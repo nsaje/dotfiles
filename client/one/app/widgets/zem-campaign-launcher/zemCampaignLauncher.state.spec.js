@@ -187,7 +187,7 @@ describe('zemCampaignLauncherStateService', function () {
             field2: [],
             field3: [],
         };
-        var mockedAsyncFunction = zemSpecsHelper.getMockedAsyncFunction($injector, errors, true);
+        var mockedAsyncFunction = zemSpecsHelper.getMockedAsyncFunction($injector, {details: errors}, true);
         var stateService = zemCampaignLauncherStateService.createInstance(account);
         var state = stateService.getState();
 

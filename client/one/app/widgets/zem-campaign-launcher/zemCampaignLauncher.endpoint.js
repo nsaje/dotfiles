@@ -31,7 +31,7 @@ angular.module('one.widgets').service('zemCampaignLauncherEndpoint', function ($
     function convertFieldsToApi (fields) {
         var convertedFields = angular.copy(fields);
         convertedFields = convertDateFieldsToApi(convertedFields);
-        convertedFields.campaignGoal = convertCampaignGoalFieldToApi(convertedFields.campaignGoal);
+        convertedFields = convertCampaignGoalFieldToApi(convertedFields);
         return convertedFields;
     }
 
@@ -45,31 +45,32 @@ angular.module('one.widgets').service('zemCampaignLauncherEndpoint', function ($
         return fields;
     }
 
-    function convertCampaignGoalFieldToApi (campaignGoal) {
-        if (!campaignGoal) return null;
+    function convertCampaignGoalFieldToApi (fields) {
+        if (!fields.campaignGoal) return fields;
 
         // Use "verbose" constant values instead of integers
-        var convertedCampaignGoal = angular.copy(campaignGoal);
+        var convertedCampaignGoal = angular.copy(fields.campaignGoal);
         angular.forEach(constants.campaignGoalKPI, function (value, key) {
-            if (campaignGoal.type === value) {
+            if (fields.campaignGoal.type === value) {
                 convertedCampaignGoal.type = key;
             }
         });
 
-        if (campaignGoal.conversionGoal) {
+        if (fields.campaignGoal.conversionGoal) {
             angular.forEach(constants.conversionGoalType, function (value, key) {
-                if (campaignGoal.conversionGoal.type === value) {
+                if (fields.campaignGoal.conversionGoal.type === value) {
                     convertedCampaignGoal.conversionGoal.type = key;
                 }
             });
 
             angular.forEach(constants.conversionWindow, function (value, key) {
-                if (campaignGoal.conversionGoal.conversionWindow === value) {
+                if (fields.campaignGoal.conversionGoal.conversionWindow === value) {
                     convertedCampaignGoal.conversionGoal.conversionWindow = key;
                 }
             });
         }
 
-        return convertedCampaignGoal;
+        fields.campaignGoal = convertedCampaignGoal;
+        return fields;
     }
 });
