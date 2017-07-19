@@ -1,4 +1,6 @@
 import sys
+import datetime
+import math
 
 from django.db import connection, transaction, DatabaseError
 from django.core.exceptions import ValidationError
@@ -7,6 +9,7 @@ from django.core.management.base import BaseCommand
 import utils.converters
 import utils.command_helpers
 import dash.models
+import dash.constants
 
 MODEL_CREDITS = 'credits'
 MODEL_BUDGETS = 'budgets'
@@ -20,16 +23,18 @@ ACTION_UPDATE = 'update'
 ACTION_RELEASE = 'release'
 ACTION_LIST = 'list'
 ACTION_TRANSFER = 'transfer'
+ACTION_SQUEEZE = 'squeeze'
 ACTIONS = (
     ACTION_DELETE,
     ACTION_UPDATE,
     ACTION_RELEASE,
     ACTION_LIST,
     ACTION_TRANSFER,
+    ACTION_SQUEEZE,
 )
 VALID_ACTIONS = {
-    MODEL_CREDITS: (ACTION_DELETE, ACTION_UPDATE, ACTION_LIST),
-    MODEL_BUDGETS: (ACTION_DELETE, ACTION_UPDATE, ACTION_RELEASE, ACTION_LIST, ACTION_TRANSFER),
+    MODEL_CREDITS: (ACTION_DELETE, ACTION_UPDATE, ACTION_LIST, ACTION_SQUEEZE),
+    MODEL_BUDGETS: (ACTION_DELETE, ACTION_UPDATE, ACTION_RELEASE, ACTION_LIST, ACTION_TRANSFER, ACTION_SQUEEZE),
 }
 
 CONSTRAINTS = {
@@ -41,13 +46,19 @@ CONSTRAINTS = {
 
 
 UPDATABLE_FIELDS = {
+    # GENERAL
     'amount': int,
     'start_date': str,
     'end_date': str,
+
+    # CREDIT ONLY
     'license_fee': str,
     'flat_fee_cc': int,
-    'freed_cc': int,
+
+    # BUDGET ONLY
+    'credit_id': int,
     'margin': str,
+    'freed_cc': int,
 }
 
 INVALIDATE_DAILY_STATEMENTS_FIELDS = ('license_fee', 'margin', )
@@ -232,8 +243,8 @@ class Command(BaseCommand):
         try:
             with transaction.atomic():
                 self._handle_action(action, model, object_list, options)
-        except ValidationError:
-            raise CommandError('Validation failed.')
+        except ValidationError as ex:
+            raise CommandError('Validation failed: ' + str(ex))
         except DatabaseError:
             raise CommandError('Wrong fields.')
 
@@ -294,8 +305,7 @@ class Command(BaseCommand):
             new_budgets = []
             obj = object_list[0]
             with transaction.atomic():
-                new_budgets.append(dash.models.BudgetLineItem.objects.create(
-                    request=None,
+                new_budgets.append(dash.models.BudgetLineItem.objects.create_unsafe(
                     amount=delta,
                     credit=credit,
                     start_date=obj.start_date,
@@ -306,6 +316,25 @@ class Command(BaseCommand):
             self._print('New budget: ')
             self._print_object_list(action, model, new_budgets, list_only=True)
             self._print('WARNING: Daily statements have to be reprocessed')
+
+        elif action == ACTION_SQUEEZE:
+            with transaction.atomic():
+                if model == MODEL_CREDITS:
+                    for obj in object_list:
+                        if obj.end_date >= datetime.date.today():
+                            raise ValidationError('Not all credits are depleted')
+                        update_credits([obj], {
+                            'amount': int(math.ceil(obj.get_allocated_amount()))
+                        })
+                elif model == MODEL_BUDGETS:
+                    for obj in object_list:
+                        if obj.state() not in (dash.constants.BudgetLineItemState.DEPLETED,
+                                               dash.constants.BudgetLineItemState.INACTIVE):
+                            raise ValidationError('Not all budgets are depleted/inactive.')
+                        update_budgets([obj], {
+                            'amount': int(math.ceil(obj.allocated_amount())),
+                            'freed_cc': 0,
+                        })
 
     def _get_objects(self, model, ids, options):
         constraints = {}
