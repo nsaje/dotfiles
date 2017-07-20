@@ -582,7 +582,7 @@ def inverted_campaign_goal_map(conversion_goals=None):
 
         ret['avg_cost_per_{}'.format(vk)] = {
             'id': 'avg_cost_per_{}'.format(vk),
-            'name': '{prefix} - {conversion_goal_name}'.format(
+            'name': u'{prefix} - {conversion_goal_name}'.format(
                 prefix=cpa_text,
                 conversion_goal_name=cg.name
             ),
