@@ -42,6 +42,15 @@
         </div>
     </script>
     <!-- Modal templates -->
+    <script id="zemGridCellActionsDropdown.html" type="text/ng-template">
+        <div class="zem-grid-modal">
+            <ul>
+                <li ng-repeat="button in ctrl.buttons">
+                    <button ng-click="ctrl.execute(button)">{{ button.name }}</button>
+                </li>
+            </ul>
+        </div>
+    </script>
     <script id="zemGridStateSelectorModal.html" type="text/ng-template">
         <div class='state-selector-modal zem-grid-modal'>
             <div ng-if="ctrl.isEditable && ctrl.isSaveRequestInProgress()" class="wait-message">

@@ -1,11 +1,11 @@
 describe('service: zemGridBulkPublishersActionsService', function () {
 
-    var service;
+    var zemGridBulkPublishersActionsService;
     var zemGridConstants;
     var zemDataFilterService;
     var zemGridBulkPublishersActionsEndpoint;
     var zemNavigationNewService;
-    var gridApi;
+    var selection;
 
     function getExpectedEndpointParams (override) {
         var params = {
@@ -30,37 +30,34 @@ describe('service: zemGridBulkPublishersActionsService', function () {
         zemGridBulkPublishersActionsEndpoint = _zemGridBulkPublishersActionsEndpoint_;
         zemGridConstants = _zemGridConstants_;
         zemNavigationNewService = _zemNavigationNewService_;
+        zemGridBulkPublishersActionsService = _zemGridBulkPublishersActionsService_;
 
         zemDataFilterService.getDateRange = function () {
             return {startDate: moment('2017-01-01'), endDate: moment('2017-01-01')};
         };
 
-        gridApi = _zemGridMocks_.createApi(constants.level.AD_GROUPS, constants.breakdown.PUBLISHER);
-        gridApi.getSelection = function () {
-            return {
-                type: zemGridConstants.gridSelectionFilterType.CUSTOM,
-                selected: [{
-                    data: {stats: {
-                        'source_id': {value: 1},
-                        'domain': {value: 'bla'},
-                    }},
-                    level: zemGridConstants.gridRowLevel.BASE,
-                }, {
-                    level: zemGridConstants.gridRowLevel.FOOTER,
-                }],
-                unselected: [{
-                    data: {stats: {
-                        'source_id': {value: 2},
-                        'domain': {value: 'bla2'},
-                    }},
-                    level: zemGridConstants.gridRowLevel.BASE,
-                }, {
-                    level: zemGridConstants.gridRowLevel.LEVEL_2,
-                }],
-            };
+        selection = {
+            type: zemGridConstants.gridSelectionFilterType.CUSTOM,
+            selected: [{
+                data: {stats: {
+                    'source_id': {value: 1},
+                    'domain': {value: 'bla'},
+                }},
+                level: zemGridConstants.gridRowLevel.BASE,
+            }, {
+                level: zemGridConstants.gridRowLevel.FOOTER,
+            }],
+            unselected: [{
+                data: {stats: {
+                    'source_id': {value: 2},
+                    'domain': {value: 'bla2'},
+                }},
+                level: zemGridConstants.gridRowLevel.BASE,
+            }, {
+                level: zemGridConstants.gridRowLevel.LEVEL_2,
+            }],
         };
 
-        service = _zemGridBulkPublishersActionsService_.createInstance(gridApi);
         spyOn(zemNavigationNewService, 'getActiveEntityByType').and.returnValue({
             'id': 1,
         });
@@ -70,9 +67,9 @@ describe('service: zemGridBulkPublishersActionsService', function () {
     }));
 
     it('should call the endpoint for adgroup', function () {
-        var action = service.getBlacklistActions()[0];
+        var action = zemGridBulkPublishersActionsService.getBlacklistActions(constants.level.AD_GROUPS)[0];
 
-        service.execute(action, true);
+        zemGridBulkPublishersActionsService.execute(action, true, selection);
 
         expect(zemGridBulkPublishersActionsEndpoint.bulkUpdate).toHaveBeenCalledWith(
             getExpectedEndpointParams({ad_group: 1})
@@ -81,9 +78,9 @@ describe('service: zemGridBulkPublishersActionsService', function () {
     });
 
     it('should call the endpoint for campaign', function () {
-        var action = service.getBlacklistActions()[1];
+        var action = zemGridBulkPublishersActionsService.getBlacklistActions(constants.level.AD_GROUPS)[1];
 
-        service.execute(action, true);
+        zemGridBulkPublishersActionsService.execute(action, true, selection);
 
         expect(zemGridBulkPublishersActionsEndpoint.bulkUpdate).toHaveBeenCalledWith(
             getExpectedEndpointParams({campaign: 1})
@@ -92,9 +89,9 @@ describe('service: zemGridBulkPublishersActionsService', function () {
     });
 
     it('should call the endpoint for account', function () {
-        var action = service.getBlacklistActions()[2];
+        var action = zemGridBulkPublishersActionsService.getBlacklistActions(constants.level.AD_GROUPS)[2];
 
-        service.execute(action, true);
+        zemGridBulkPublishersActionsService.execute(action, true, selection);
 
         expect(zemGridBulkPublishersActionsEndpoint.bulkUpdate).toHaveBeenCalledWith(
             getExpectedEndpointParams({account: 1})
@@ -103,9 +100,9 @@ describe('service: zemGridBulkPublishersActionsService', function () {
     });
 
     it('should call the endpoint for global blacklist', function () {
-        var action = service.getBlacklistActions()[3];
+        var action = zemGridBulkPublishersActionsService.getBlacklistActions(constants.level.AD_GROUPS)[3];
 
-        service.execute(action, true);
+        zemGridBulkPublishersActionsService.execute(action, true, selection);
 
         expect(zemGridBulkPublishersActionsEndpoint.bulkUpdate).toHaveBeenCalledWith(
             getExpectedEndpointParams()
@@ -114,16 +111,15 @@ describe('service: zemGridBulkPublishersActionsService', function () {
     });
 
     it('should call the endpoint with select all flag and without enforcing cpc constraints', function () {
-        var action = service.getBlacklistActions()[1];
-        gridApi.getSelection = function () {
-            return {
-                type: zemGridConstants.gridSelectionFilterType.ALL,
-                selected: [],
-                unselected: [],
-            };
+        var action = zemGridBulkPublishersActionsService.getBlacklistActions(constants.level.AD_GROUPS)[1];
+
+        selection = {
+            type: zemGridConstants.gridSelectionFilterType.ALL,
+            selected: [],
+            unselected: [],
         };
 
-        service.execute(action, false);
+        zemGridBulkPublishersActionsService.execute(action, false, selection);
 
         expect(zemGridBulkPublishersActionsEndpoint.bulkUpdate).toHaveBeenCalledWith({
             entries: [],

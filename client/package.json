@@ -34,7 +34,7 @@
     "webpack-merge": "~4.1.0"
   },
   "scripts": {
-    "dev": "webpack-dev-server --debug --history-api-fallback --inline --color --progress --port=9999",
+    "dev": "webpack-dev-server --debug --history-api-fallback --inline --color --progress --port=9999 --host=0.0.0.0",
     "prod": "webpack",
     "tests": "karma start karma.conf.js",
     "tests-watch": "karma start --auto-watch --no-single-run",

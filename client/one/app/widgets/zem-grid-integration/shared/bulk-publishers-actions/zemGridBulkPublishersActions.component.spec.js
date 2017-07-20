@@ -25,10 +25,8 @@ describe('component: zemGridBulkPublishersActions', function () {
     it('should configure selection options and listen to selection updates', function () {
         spyOn(api, 'onSelectionUpdated');
         spyOn(api, 'setSelectionOptions');
-        spyOn(zemGridBulkPublishersActionsService, 'createInstance').and.callThrough();
         $ctrl.$onInit();
 
-        expect(zemGridBulkPublishersActionsService.createInstance).toHaveBeenCalled();
         expect(api.onSelectionUpdated).toHaveBeenCalled();
         expect(api.setSelectionOptions).toHaveBeenCalled();
     });
@@ -80,11 +78,11 @@ describe('component: zemGridBulkPublishersActions', function () {
             spyOn(zemDataFilterService, 'getDateRange').and.returnValue(dateRange);
             spyOn(api, 'getSelection').and.callThrough();
             spyOn(api, 'clearSelection').and.callThrough();
-            spyOn($ctrl.service, 'execute').and.returnValue($q.defer().promise);
+            spyOn(zemGridBulkPublishersActionsService, 'execute').and.returnValue($q.defer().promise);
 
             $ctrl.execute(action.value);
 
-            expect($ctrl.service.execute).toHaveBeenCalledWith(action, false);
+            expect(zemGridBulkPublishersActionsService.execute).toHaveBeenCalledWith(action, false, selection);
         });
     });
 });

@@ -22,7 +22,6 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
         var actions;
 
         $ctrl.$onInit = function () {
-            $ctrl.service = zemGridBulkPublishersActionsService.createInstance($ctrl.api);
             initializeActions();
             initializeSelectionConfig();
             $ctrl.api.onSelectionUpdated($scope, updateActionStates);
@@ -49,8 +48,9 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
         }
 
         function initializeActions () {
-            $ctrl.blacklistActions = $ctrl.service.getBlacklistActions();
-            $ctrl.unlistActions = $ctrl.service.getUnlistActions();
+            var level = $ctrl.api.getMetaData().level;
+            $ctrl.blacklistActions = zemGridBulkPublishersActionsService.getBlacklistActions(level);
+            $ctrl.unlistActions = zemGridBulkPublishersActionsService.getUnlistActions(level);
 
             actions = $ctrl.blacklistActions.concat($ctrl.unlistActions).reduce(function (o, action) {
                 o[action.value] = action;
@@ -132,8 +132,8 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
             }
 
             $ctrl.showLoader = true;
-            $ctrl.service
-                .execute(action, false)
+            zemGridBulkPublishersActionsService
+                .execute(action, false, $ctrl.api.getSelection())
                 .then(function () {
                     refreshData();
                     $ctrl.api.clearSelection();
@@ -143,10 +143,13 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
                     if (!confirm('If you want to blacklist more than 30 Outbrain publishers, Outbrain bid CPC will be automatically set to at least $0.65 in all ad groups within this account. Are you sure you want to proceed with blaklisting?')) { // eslint-disable-line max-len, no-alert
                         return;
                     }
-                    $ctrl.service.execute(action, true).then(refreshData).catch(function (err) {
-                        if (!err.data.errors || !err.data.errors.cpc_constraints) { return; }
-                        zemAlertsService.notify(constants.notificationType.warning, err.data.errors.cpc_constraints[0], true); // eslint-disable-line max-len
-                    });
+                    zemGridBulkPublishersActionsService
+                        .execute(action, true, $ctrl.api.getSelection())
+                        .then(refreshData)
+                        .catch(function (err) {
+                            if (!err.data.errors || !err.data.errors.cpc_constraints) { return; }
+                            zemAlertsService.notify(constants.notificationType.warning, err.data.errors.cpc_constraints[0], true); // eslint-disable-line max-len
+                        });
                 })
                 .finally(function () {
                     $ctrl.showLoader = false;

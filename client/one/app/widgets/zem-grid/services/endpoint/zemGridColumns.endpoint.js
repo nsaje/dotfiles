@@ -82,6 +82,11 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             orderField: 'name',
             initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
+        actions: {
+            name: 'Actions',
+            type: zemGridConstants.gridColumnTypes.ACTIONS,
+            shown: 'zemauth.can_see_grid_actions',
+        },
         state: {
             name: '', // Branded based on breakdown
             help: '', // Branded based on breakdown
@@ -90,7 +95,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.ASC,
             internal: false,
-            shown: true,
+            shown: '!zemauth.can_see_grid_actions',
             totalRow: false,
             archivedField: 'archived',
         },
@@ -101,7 +106,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             type: zemGridConstants.gridColumnTypes.CLONE_BUTTON,
             order: false,
             internal: 'zemauth.can_clone_adgroups',
-            shown: 'zemauth.can_clone_adgroups',
+            shown: ['zemauth.can_clone_adgroups', '!zemauth.can_see_grid_actions'],
             totalRow: false,
         },
         editButton: {
@@ -111,7 +116,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             type: zemGridConstants.gridColumnTypes.EDIT_BUTTON,
             order: false,
             internal: 'zemauth.can_edit_content_ads',
-            shown: 'zemauth.can_edit_content_ads',
+            shown: ['zemauth.can_edit_content_ads', '!zemauth.can_see_grid_actions'],
             totalRow: false,
         },
         status: {
@@ -1116,6 +1121,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
 
     // Permanent columns - always present and can't be hidden
     var PERMANENT_COLUMNS_GROUP = [
+        COLUMNS.actions,
         COLUMNS.state,
         COLUMNS.editButton,
         COLUMNS.cloneButton,
@@ -1315,6 +1321,19 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
     // State selector is only shown on MEDIA_SOURCE breakdown on AD_GROUPS level
     COLUMNS.state.exceptions.custom.push({level: constants.level.AD_GROUPS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: true}); // eslint-disable-line max-len
 
+    // Exceptions (actions - on media source breakdown only on ad group level)
+    COLUMNS.actions.exceptions.breakdowns = [
+        constants.breakdown.ACCOUNT,
+        constants.breakdown.CAMPAIGN,
+        constants.breakdown.AD_GROUP,
+        constants.breakdown.CONTENT_AD,
+        constants.breakdown.PUBLISHER,
+    ];
+    COLUMNS.actions.exceptions.custom.push({
+        level: constants.level.AD_GROUPS,
+        breakdown: constants.breakdown.MEDIA_SOURCE,
+        shown: true,
+    });
 
     // Exceptions (edit button - only available on base content ad level)
     COLUMNS.editButton.exceptions.breakdowns = [constants.breakdown.CONTENT_AD];

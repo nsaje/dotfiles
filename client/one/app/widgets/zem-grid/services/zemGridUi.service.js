@@ -1,4 +1,4 @@
-angular.module('one.widgets').factory('zemGridUIService', function ($timeout, $state, zemGridConstants, zemGridDataFormatter) { // eslint-disable-line max-len
+angular.module('one.widgets').factory('zemGridUIService', function ($timeout, $state, zemGridConstants, zemGridDataFormatter, zemGridActionsService) { // eslint-disable-line max-len
     var requestAnimationFrame = (function () {
         return window.requestAnimationFrame ||
             window.webkitRequestAnimationFrame ||
@@ -95,6 +95,8 @@ angular.module('one.widgets').factory('zemGridUIService', function ($timeout, $s
                 if (grid.meta.dataService.getBreakdownLevel() > 1 && row.level > 0) {
                     valueWidth += zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
                 }
+            } else if (column.type === zemGridConstants.gridColumnTypes.ACTIONS) {
+                valueWidth += zemGridActionsService.getWidth(grid.meta.data.level, grid.meta.data.breakdown, row);
             }
             width = Math.max(width, valueWidth);
         });

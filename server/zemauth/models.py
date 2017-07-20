@@ -298,6 +298,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('fea_video_upload', 'User can upload videos'),
             ('can_set_delivery_type', 'User can set delivery type.'),
             ('can_set_click_capping', 'User can set click capping on ad group level.'),
+            ('can_see_grid_actions', 'User can see grid actions'),
         )
 
     def get_full_name(self):
