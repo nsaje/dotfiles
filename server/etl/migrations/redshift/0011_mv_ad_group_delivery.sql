@@ -4,8 +4,8 @@ CREATE TABLE mv_ad_group_delivery_geo (
 
        agency_id int2 encode lzo,
        account_id int2 encode lzo,
-       campaign_id int2 encode lzo,
-       ad_group_id int2 encode lzo,
+       campaign_id integer encode lzo,
+       ad_group_id integer encode lzo,
 
        country varchar(2) encode bytedict,
        state varchar(5) encode bytedict,
@@ -45,8 +45,8 @@ CREATE TABLE mv_ad_group_delivery_demo (
 
        agency_id int2 encode lzo,
        account_id int2 encode lzo,
-       campaign_id int2 encode lzo,
-       ad_group_id int2 encode lzo,
+       campaign_id integer encode lzo,
+       ad_group_id integer encode lzo,
 
        device_type integer encode bytedict,
        age int2 encode bytedict,

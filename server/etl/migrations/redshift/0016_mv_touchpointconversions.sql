@@ -4,8 +4,8 @@ CREATE TABLE mv_touchpointconversions (
 
     agency_id int2 encode lzo,
     account_id int2 encode lzo,
-    campaign_id int2 encode lzo,
-    ad_group_id int2 encode lzo,
+    campaign_id integer encode lzo,
+    ad_group_id integer encode lzo,
     content_ad_id integer encode lzo,
     publisher varchar(255) encode lzo,
 

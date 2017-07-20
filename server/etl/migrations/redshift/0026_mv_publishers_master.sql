@@ -4,8 +4,8 @@ CREATE TABLE mv_pubs_master (
 
        agency_id int2 encode lzo,
        account_id int2 encode lzo,
-       campaign_id int2 encode lzo,
-       ad_group_id int2 encode lzo,
+       campaign_id integer encode lzo,
+       ad_group_id integer encode lzo,
        publisher varchar(255) encode lzo,
        external_id varchar(255) encode lzo,
 

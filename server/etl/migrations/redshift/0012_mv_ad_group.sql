@@ -4,8 +4,8 @@ CREATE TABLE mv_ad_group (
 
        agency_id int2 encode lzo,
        account_id int2 encode lzo,
-       campaign_id int2 encode lzo,
-       ad_group_id int2 encode lzo,
+       campaign_id integer encode lzo,
+       ad_group_id integer encode lzo,
 
        impressions integer encode lzo,
        clicks integer encode lzo,

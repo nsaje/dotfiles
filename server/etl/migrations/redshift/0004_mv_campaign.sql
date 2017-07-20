@@ -4,7 +4,7 @@ CREATE TABLE mv_campaign (
 
        agency_id int2 encode lzo,
        account_id int2 encode lzo,
-       campaign_id int2 encode lzo,
+       campaign_id integer encode lzo,
 
        impressions integer encode lzo,
        clicks integer encode lzo,

@@ -4,7 +4,7 @@ CREATE TABLE mv_conversions_campaign (
 
     agency_id int2 encode lzo,
     account_id int2 encode lzo,
-    campaign_id int2 encode lzo,
+    campaign_id integer encode lzo,
 
     slug varchar(256) encode lzo,
 
