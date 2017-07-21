@@ -77,8 +77,8 @@ class Command(ExceptionCommand):
                 ad_group.campaign.account, account_settings_map[ad_group.campaign.account_id],
                 include_global=True)
 
-            blacklisted_publisher_ids = set(list_helper.flatten(publishers_map[x] for x in blacklist))
-            whitelisted_publisher_ids = set(list_helper.flatten(publishers_map[x] for x in whitelist))
+            blacklisted_publishers = set(list_helper.flatten(publishers_map[x] for x in blacklist))
+            whitelisted_publishers = set(list_helper.flatten(publishers_map[x] for x in whitelist))
 
             overall_blacklisted_entry_ids |= set(models.PublisherGroupEntry.objects
                                                  .filter(publisher_group_id__in=blacklist)
@@ -96,12 +96,12 @@ class Command(ExceptionCommand):
             traffic_publisher_ids_outbrain = set(
                 x for x in traffic_publisher_ids if publisher_helpers.dissect_publisher_id(x)[1] == outbrain.id)
 
-            if whitelisted_publisher_ids:
+            if whitelisted_publishers:
                 # all publishers with traffic should be within whitelisted publisher ids
                 # whitelisted publishers are those that are on whitelist but not on blacklist
 
                 violator_publisher_ids = self.get_whitelist_violators(
-                    traffic_publisher_ids_wo_outbrain, whitelisted_publisher_ids, blacklisted_publisher_ids)
+                    traffic_publisher_ids_wo_outbrain, whitelisted_publishers, blacklisted_publishers)
                 if violator_publisher_ids:
                     logger.warning(
                         'publisher_group_monitor: Found publisher statistics for non-whitelisted publishers in ad group %s',
@@ -111,11 +111,11 @@ class Command(ExceptionCommand):
 
                 # outbrain doesn't support whitelisting so just don't check
 
-            if blacklisted_publisher_ids:
+            if blacklisted_publishers:
                 # there should be no traffic from blacklisted publishers
 
                 violator_publisher_ids = self.get_blacklist_violators(
-                    traffic_publisher_ids_wo_outbrain, blacklisted_publisher_ids)
+                    traffic_publisher_ids_wo_outbrain, blacklisted_publishers)
                 if violator_publisher_ids:
                     logger.warning(
                         'publisher_group_monitor: Found publisher statistics for blacklisted publishers in ad group %s',
@@ -123,12 +123,13 @@ class Command(ExceptionCommand):
 
                     ad_group_violators |= violator_publisher_ids
 
-                if len(set(x for x in blacklisted_publisher_ids if publisher_helpers.dissect_publisher_id(x)[1] == outbrain.id)) < 30:
+                if len(set(x for x in blacklisted_publishers if x.source_id == outbrain.id)) < 30:
                     # outbrain - skip check when more than 30 blacklisted outbrain publishers as we are probably waiting for
                     # a manual action
 
+                    outbrain_blacklist = [x for x in blacklisted_publishers if x.source_id == outbrain.id]
                     violator_publisher_ids = self.get_blacklist_violators(
-                        traffic_publisher_ids_outbrain, blacklisted_publisher_ids)
+                        traffic_publisher_ids_outbrain, outbrain_blacklist)
                     if violator_publisher_ids:
                         logger.warning(
                             'publisher_group_monitor: Found Outbrain publisher statistics for blacklisted publishers in ad group %s',
@@ -136,8 +137,8 @@ class Command(ExceptionCommand):
 
                         ad_group_violators |= violator_publisher_ids
 
-            overall_vialotors_stats['clicks'] += sum(ad_group_stats[x]['clicks'] for x in violator_publisher_ids)
-            overall_vialotors_stats['impressions'] += sum(ad_group_stats[x]['impressions'] for x in violator_publisher_ids)
+            overall_vialotors_stats['clicks'] += sum(ad_group_stats[x]['clicks'] for x in ad_group_violators)
+            overall_vialotors_stats['impressions'] += sum(ad_group_stats[x]['impressions'] for x in ad_group_violators)
 
         logger.info('Blacklisted publisher group entries count %s', len(overall_blacklisted_entry_ids))
         logger.info('Whitelisted publisher group entries count %s', len(overall_whitelisted_entry_ids))
@@ -149,11 +150,14 @@ class Command(ExceptionCommand):
         influx.gauge('dash.blacklisted_publisher.stats', overall_vialotors_stats['clicks'], type='clicks')
         influx.gauge('dash.blacklisted_publisher.stats', overall_vialotors_stats['impressions'], type='impressions')
 
-    def get_whitelist_violators(self, publisher_ids, whitelisted_publisher_ids, blacklisted_publisher_ids):
-        return publisher_ids - (whitelisted_publisher_ids - blacklisted_publisher_ids)
+    def get_whitelist_violators(self, publisher_ids, whitelisted_publishers, blacklisted_publishers):
+        whitelist = (whitelisted_publishers - blacklisted_publishers)
+        lookup = publisher_helpers.PublisherIdLookupMap(whitelist)
+        return set([publisher_id for publisher_id in publisher_ids if publisher_id not in lookup])
 
-    def get_blacklist_violators(self, publisher_ids, blacklisted_publisher_ids):
-        return publisher_ids.intersection(blacklisted_publisher_ids)
+    def get_blacklist_violators(self, publisher_ids, blacklisted_publishers):
+        lookup = publisher_helpers.PublisherIdLookupMap(blacklisted_publishers)
+        return set([publisher_id for publisher_id in publisher_ids if publisher_id in lookup])
 
     def get_stats(self, date_from, date_to, ad_groups):
         params = {
@@ -186,21 +190,9 @@ class Command(ExceptionCommand):
         Get publisher ids for each publisher group
         """
 
-        source_ids = models.Source.objects.all().values_list('pk', flat=True)
-
         publishers_map = {}
+
         for publisher_group in models.PublisherGroup.objects.all():
-            publisher_ids = publisher_group.entries.all()\
-                                                   .filter(created_dt__lte=listed_before)\
-                                                   .annotate_publisher_id()\
-                                                   .values_list('publisher_id', flat=True)
-
-            # when source is not defined create publisher id for each source so that its easier to compare
-            # with recorded data that always has a source id.
-            publisher_ids = list_helper.flatten(
-                publisher_helpers.inflate_publisher_id_source(x, source_ids) for x in publisher_ids)
-            publisher_ids = set(publisher_ids)
-
-            publishers_map[publisher_group.id] = publisher_ids
+            publishers_map[publisher_group.id] = publisher_group.entries.all().filter(created_dt__lte=listed_before)
 
         return publishers_map

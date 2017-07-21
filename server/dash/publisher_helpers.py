@@ -30,6 +30,8 @@ def create_publisher_id(publisher, source_id):
 
 def dissect_publisher_id(publisher_id):
     publisher, source_id = publisher_id.rsplit(u'__', 1)
+    if source_id == 'all':
+        return publisher, source_id
     return publisher, int(source_id) if source_id else None
 
 
@@ -67,3 +69,47 @@ def is_subdomain_match(listed_publisher, publisher):
 def all_subdomains(publisher):
     parts = publisher.split('.')
     return ['.'.join(parts[i:]) for i in range(1, len(parts))]
+
+
+class PublisherIdLookupMap(object):
+    def __init__(self, publisher_group_entries):
+        self._map = {}
+        for entry in publisher_group_entries:
+            publisher_name = entry.publisher.strip().lower()
+            if entry.source_id:
+                self._map[create_publisher_id(publisher_name, entry.source_id)] = entry
+            else:
+                self._map[create_publisher_id(publisher_name, 'all')] = entry
+
+    def _find_publisher_group_entry_subdomains(self, publisher_id):
+        # check for exact match
+        entry = self._map.get(publisher_id)
+        if entry is not None:
+            return entry
+
+        # find subdomain match
+        for subdomain in all_subdomains(publisher_id):
+            entry = self._map.get(subdomain)
+            if entry is not None and entry.include_subdomains:
+                return entry
+
+        return None
+
+    def __getitem__(self, publisher_id):
+        publisher, source_id = dissect_publisher_id(publisher_id)
+        publisher = publisher.strip().lower()
+
+        publisher_source = create_publisher_id(publisher, source_id)
+        entry = self._find_publisher_group_entry_subdomains(publisher_source)
+        if entry is not None:
+            return entry
+
+        publisher_all = create_publisher_id(publisher, 'all')
+        entry = self._find_publisher_group_entry_subdomains(publisher_all)
+        if entry is not None:
+            return entry
+
+        return None
+
+    def __contains__(self, publisher_id):
+        return self[publisher_id] is not None

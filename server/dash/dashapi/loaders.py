@@ -445,40 +445,7 @@ class PublisherBlacklistLoader(Loader):
 
     @cached_property
     def publisher_group_entry_map(self):
-        d = {}
-        for entry in self.objs_qs:
-            if entry.source_id:
-                d[publisher_helpers.create_publisher_id(entry.publisher, entry.source_id)] = entry
-            else:
-                d[publisher_helpers.create_publisher_id(entry.publisher, 'all')] = entry
-        return d
-
-    def find_publisher_group_entry_subdomains(self, publisher_id):
-        # check for exact match
-        entry = self.publisher_group_entry_map.get(publisher_id)
-        if entry is not None:
-            return entry
-
-        # find subdomain match
-        for subdomain in publisher_helpers.all_subdomains(publisher_id):
-            entry = self.publisher_group_entry_map.get(subdomain)
-            if entry is not None and entry.include_subdomains:
-                return entry
-
-        return None
-
-    def find_publisher_group_entry_all_sources(self, publisher_id):
-        entry = self.find_publisher_group_entry_subdomains(publisher_id)
-        if entry is not None:
-            return entry
-
-        publisher, source_id = publisher_helpers.dissect_publisher_id(publisher_id)
-        publisher_all = publisher_helpers.create_publisher_id(publisher, 'all')
-        entry = self.find_publisher_group_entry_subdomains(publisher_all)
-        if entry is not None:
-            return entry
-
-        return None
+        return publisher_helpers.PublisherIdLookupMap(self.objs_qs)
 
     def find_blacklisted_status_for_level(self, row, level, publisher_group_entry):
         targeting = self.publisher_group_targeting[level].get(
@@ -523,7 +490,7 @@ class PublisherBlacklistLoader(Loader):
         return self.default
 
     def find_blacklisted_status_by_subdomain(self, row):
-        publisher_group_entry = self.find_publisher_group_entry_all_sources(row['publisher_id'])
+        publisher_group_entry = self.publisher_group_entry_map[row['publisher_id']]
         if publisher_group_entry is not None:
             return self.find_blacklisted_status(row, publisher_group_entry)
 
