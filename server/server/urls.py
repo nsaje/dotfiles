@@ -18,6 +18,7 @@ import zemauth.views
 import dash.features.contentupload.views
 import dash.features.daily_stats.views
 import dash.features.scheduled_reports.views
+import dash.views.bcm
 import dash.views.breakdown
 import dash.views.agency
 import dash.views.views
@@ -432,9 +433,29 @@ urlpatterns += [
         name='accounts_create',
     ),
     url(
+        r'^api/accounts/(?P<account_id>\d+)/credit/(?P<credit_id>\d+)/',
+        login_required(dash.views.bcm.AccountCreditItemView.as_view()),
+        name='accounts_credit_item',
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/credit/',
+        login_required(dash.views.bcm.AccountCreditView.as_view()),
+        name='accounts_credit'
+    ),
+    url(
         r'^api/accounts/(?P<account_id>\d+)/overview/',
         login_required(dash.views.views.AccountOverview.as_view()),
         name='account_overview'
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/budget/(?P<budget_id>\d+)/',
+        login_required(dash.views.bcm.CampaignBudgetItemView.as_view()),
+        name='campaigns_budget_item'
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/budget/',
+        login_required(dash.views.bcm.CampaignBudgetView.as_view()),
+        name='campaigns_budget'
     ),
     url(
         r'^api/(?P<level_>(ad_groups|campaigns|accounts))/(?P<id_>\d+)/nav/',
