@@ -17,10 +17,8 @@
     "angular-daterangepicker": "0.x",
     "angular-ui-router": "0.x",
     "angular-ui-select": "0.x",
-    "angular-vs-repeat": "1.1.x",
     "angular-hotkeys": "chieffancypants/angular-hotkeys#^1.7.0",
-    "ng-tags-input": "~3.1.1",
-    "raven-js": "^3.14.2"
+    "ng-tags-input": "~3.1.1"
   },
   "devDependencies": {
     "angular-mocks": "1.5.8"

@@ -12,11 +12,20 @@ module.exports = function karmaConfig (config) {
         reporters: [
             // Reference: https://github.com/mlex/karma-spec-reporter
             // Set reporter to print detailed results to console
-            'progress',
+            'spec',
 
             // Output test results in JUnit XML format
             'junit'
         ],
+
+        specReporter: {
+            suppressErrorSummary: true, // Do not print error summary
+            suppressFailed: false,      // Print information about failed tests
+            suppressPassed: true,       // Do not print information about passed tests
+            suppressSkipped: true,      // Do not print information about skipped tests
+            showSpecTiming: false,      // Do not print the time elapsed for each spec
+            failFast: false             // Test won't finish with error when a first fail occurs
+        },
 
         junitReporter: {
             useBrowserName: false,
@@ -24,15 +33,17 @@ module.exports = function karmaConfig (config) {
         },
 
         files: [
-            // Grab all files in the app folder that contain .spec.
-            'one/tests.webpack.js'
+            'one/polyfills.ts',
+            'one/vendor.ts',
+            'one/main.ts',
+            'one/app/ajs-app/tests.ajs.js'
         ],
 
         preprocessors: {
-            // Reference: http://webpack.github.io/docs/testing.html
-            // Reference: https://github.com/webpack/karma-webpack
-            // Convert files with webpack and load sourcemaps
-            'one/tests.webpack.js': ['webpack', 'sourcemap']
+            'one/polyfills.ts': ['webpack'],
+            'one/vendor.ts': ['webpack'],
+            'one/main.ts': ['webpack', 'sourcemap'],
+            'one/app/ajs-app/tests.ajs.js': ['webpack', 'sourcemap']
         },
 
         browsers: [

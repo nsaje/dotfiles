@@ -5,7 +5,6 @@ globals:
   angular: false
   $: false
   moment: false
-  Raven: false
   # Zemanta
   zemSpecsHelper: false
   constants: false
@@ -111,6 +110,12 @@ rules:
   jasmine/no-spec-dupes:
     - 2
     - branch
+  jasmine/new-line-before-expect:
+    - 0
+  jasmine/prefer-toHaveBeenCalledWith:
+    - 0
+  jasmine/prefer-jasmine-matcher:
+    - 0
 
 env:
   browser: true
