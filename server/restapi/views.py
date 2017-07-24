@@ -19,7 +19,7 @@ from djangorestframework_camel_case.parser import CamelCaseJSONParser
 
 from utils import json_helper, exc, dates_helper
 
-from dash.views import agency, bulk_actions, views, bcm, helpers, publishers
+from dash.views import agency, bulk_actions, views, helpers, publishers
 from dash import campaign_goals
 from dash import constants
 from dash import publisher_group_helpers
@@ -32,6 +32,7 @@ import redshiftapi.quickstats
 
 import utils.rest_common.authentication
 import fields
+import bcm.views
 
 import dash.features.geolocation
 
@@ -214,7 +215,7 @@ class AccountCreditSerializer(serializers.Serializer):
 class AccountCreditViewList(RESTAPIBaseView):
 
     def get(self, request, account_id):
-        internal_view = bcm.AccountCreditView(rest_proxy=True)
+        internal_view = bcm.views.AccountCreditView(rest_proxy=True)
         data_internal, _ = internal_view.get(self.request, account_id)
         serializer = AccountCreditSerializer(data_internal['data']['active'], many=True)
         return self.response_ok(serializer.data)
@@ -708,7 +709,7 @@ class CampaignBudgetSerializer(serializers.Serializer):
 class CampaignBudgetViewList(RESTAPIBaseView):
 
     def get(self, request, campaign_id):
-        internal_view = bcm.CampaignBudgetView(rest_proxy=True)
+        internal_view = bcm.views.CampaignBudgetView(rest_proxy=True)
         data_internal, _ = internal_view.get(self.request, campaign_id)
 
         # different field name for post and get
@@ -723,7 +724,7 @@ class CampaignBudgetViewList(RESTAPIBaseView):
         serializer = CampaignBudgetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        internal_view = bcm.CampaignBudgetView(rest_proxy=True)
+        internal_view = bcm.views.CampaignBudgetView(rest_proxy=True)
         post_data = serializer.validated_data
 
         self.request.body = RESTAPIJSONRenderer().render(post_data)
@@ -738,14 +739,14 @@ class CampaignBudgetViewList(RESTAPIBaseView):
 class CampaignBudgetViewDetails(RESTAPIBaseView):
 
     def get(self, request, campaign_id, budget_id):
-        internal_view = bcm.CampaignBudgetItemView(rest_proxy=True)
+        internal_view = bcm.views.CampaignBudgetItemView(rest_proxy=True)
         data_internal, _ = internal_view.get(request, campaign_id, budget_id)
         data_internal['data']['credit'] = data_internal['data']['credit']['id']
         serializer = CampaignBudgetSerializer(data_internal['data'])
         return self.response_ok(serializer.data)
 
     def put(self, request, campaign_id, budget_id):
-        internal_view = bcm.CampaignBudgetItemView(rest_proxy=True)
+        internal_view = bcm.views.CampaignBudgetItemView(rest_proxy=True)
 
         data_internal_get, _ = internal_view.get(request, campaign_id, budget_id)
         serializer = CampaignBudgetSerializer(instance=data_internal_get['data'], data=request.data, partial=True)
