@@ -30,6 +30,8 @@ import dash.views.bulk_actions
 import dash.views.publishers
 import dash.views.custom_report
 
+import restapi.bcm.urls
+
 
 admin.site.login = login_required(admin.site.login)
 
@@ -577,6 +579,9 @@ urlpatterns += [
         name='scheduled_reports_delete'
     ),
 ]
+
+# FIXME: change bcm urls to rest/ and sync on frontend
+urlpatterns += restapi.bcm.urls.urlpatterns
 
 # Lambdas
 urlpatterns += [

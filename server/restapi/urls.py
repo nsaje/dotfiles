@@ -9,7 +9,6 @@ from dash.features.bulkactions import clonecontent
 from dash.features import cloneadgroup
 from dash.features import realtimestats
 import campaignlauncher.urls
-import bcm.urls
 
 urlpatterns = [
     url(
@@ -152,4 +151,3 @@ urlpatterns += dash.features.videoassets.urls.urlpatterns
 urlpatterns += dash.features.bluekai.urls.urlpatterns
 urlpatterns += realtimestats.urls.urlpatterns
 urlpatterns += campaignlauncher.urls.urlpatterns
-urlpatterns += bcm.urls.urlpatterns
