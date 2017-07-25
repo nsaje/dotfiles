@@ -66,6 +66,7 @@ node('master') {
                         zemanta/z1-static \
                         bash -c "npm prune && npm install && bower install && npm run tests && npm run prod --build-number=${BUILD_NUMBER}"
                         """
+                    sh """[ "\$(wc -c <client/dist/one/zemanta-one.js)" -ge 800000 ]"""
                 } finally {
                     junit 'client/test-results.xml'
                 }
