@@ -187,7 +187,7 @@ def get_pixel_field_names_mapping(pixels):
 
         for window, window_title in dash.constants.ConversionWindows.get_choices():
             field_name = '{}_{}'.format(prefix, window)
-            column_name = '{} {}'.format(pixel.name, window_title)
+            column_name = u'{} {}'.format(pixel.name, window_title)
             field_names[column_name] = field_name
 
             cpa_field_name, cpa_column_name = _get_cpa_column(field_name, column_name)
@@ -209,7 +209,7 @@ def get_conversion_goals_field_names_mapping(conversion_goals):
 
 def _get_cpa_column(field_name, column_name):
     field_name = 'avg_cost_per_{}'.format(field_name)
-    column_name = 'CPA ({})'.format(column_name)
+    column_name = u'CPA ({})'.format(column_name)
     return field_name, column_name
 
 
@@ -224,4 +224,4 @@ def get_conversion_goals_column_names_mapping(conversion_goals):
 
 def add_date_to_name(name):
     local_date = dates_helper.local_today()
-    return '{} ({})'.format(name, local_date.strftime('%Y-%m-%d'))
+    return u'{} ({})'.format(name, local_date.strftime('%Y-%m-%d'))

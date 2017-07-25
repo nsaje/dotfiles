@@ -239,6 +239,8 @@ if ENABLE_DEBUG_TOOLBAR:
 
 STATIC_URL = SERVER_STATIC_URL + '/'
 
+CELERYD_HIJACK_ROOT_LOGGER = False
+CELERY_REDIRECT_STDOUTS = False
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
