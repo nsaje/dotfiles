@@ -88,3 +88,5 @@ pycurl==7.43.0
 ua-parser==0.7.3
 
 
+# pin kombu
+kombu==4.0.2
