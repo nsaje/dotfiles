@@ -12,7 +12,7 @@ body, html {
 
 a {
     text-decoration: none;
-    color: #e35325;
+    color: #ef8421;
 }
 
 a:hover {
@@ -71,7 +71,7 @@ input[type="text"]:focus, input[type="password"]:focus {
     padding: 0 20px;
     margin-bottom: 10px;
     border: none;
-    color: #e35325;
+    color: #ef8421;
     font-size: 16px;
     font-weight: 400;
     -webkit-border-radius: 4px;
@@ -104,7 +104,7 @@ input[type="text"]:focus, input[type="password"]:focus {
 }
 
 .container__left {
-    background: #e35325 url("../img/zemanta-logo-squares-white.svg") no-repeat left top;
+    background: #ef8421 url("../img/zemanta-logo-squares-white.svg") no-repeat left top;
     background-size: 40px;
     width: 280px;
     margin: 0 auto;
@@ -200,7 +200,7 @@ input[type="text"]:focus, input[type="password"]:focus {
 
 .container__right .button {
     color: #FFFFFF;
-    background-color: #e35325;
+    background-color: #ef8421;
     display: inline-block;
 }
 

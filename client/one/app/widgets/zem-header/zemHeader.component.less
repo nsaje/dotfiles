@@ -5,7 +5,16 @@
 .zem-header {
     display: block;
     height: @header-height;
-    background-color: @primary-color;
+
+    background: @header-left-color;
+    background: -moz-linear-gradient(-45deg, @header-left-color 0%, @header-right-color 100%);
+    background: -webkit-gradient(left top, right bottom, color-stop(0%, @header-left-color), color-stop(100%, @header-right-color));
+    background: -webkit-linear-gradient(-45deg, @header-left-color 0%, @header-right-color 100%);
+    background: -o-linear-gradient(-45deg, @header-left-color 0%, @header-right-color 100%);
+    background: -ms-linear-gradient(-45deg, @header-left-color 0%, @header-right-color 100%);
+    background: linear-gradient(135deg, @header-left-color 0%, @header-right-color 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='@header-left-color', endColorstr='@header-right-color', GradientType=1 );
+
     position: fixed;
     z-index: 999;
     top: 0;
@@ -107,8 +116,8 @@
 .zem-header__logo-container {
     float: left;
     height: 60px;
-    width: 160px;
-    padding: 19px 20px 19px @default-spacing;
+    width: 200px;
+    padding: 12px 20px 8px @default-spacing;
     background: url(images/zemanta-logo-squares-white.svg) no-repeat top left;
     background-size: 20px;
     transition: all @default-animation;
@@ -116,7 +125,7 @@
 
 .zem-header__logo {
     display: block;
-    height: 22px;
+    height: 40px;
     background: @logo;
     transition: all @default-animation;
     margin: 0 auto;
@@ -188,7 +197,7 @@
     height: auto;
     min-width: 100px;
     max-width: 300px;
-    background-color: @primary-color;
+    background-color: white;
     right: 0;
     left: auto;
 }
@@ -274,7 +283,7 @@
 
 .zem-header-menu__logged-in-user {
     background-color: fade(black, 10%);
-    color: fade(white, 50%);
+    color: fade(@text-color, 50%);
     margin: 0;
     padding: @default-spacing;
     border-bottom: none;
@@ -293,7 +302,7 @@
 }
 
 .zem-header-menu__link {
-    color: white;
+    color: @text-color;
     padding: 8px @default-spacing;
     transition: background-color @default-animation;
     display: block;
@@ -305,8 +314,8 @@
 }
 
 .zem-header-menu__link:hover {
-    color: white;
-    background-color: fade(white, 10%);
+    color: @primary-color;
+    background-color: fade(@primary-color, 10%);
     text-decoration: none;
 
     .internal-feature {
@@ -318,9 +327,9 @@
 .zem-header-menu__group-title {
     font-size: 10px;
     text-transform: uppercase;
-    color: fade(white,50%);
+    color: fade(black,50%);
     padding: 10px @default-spacing 2px @default-spacing;
-    border-bottom: 1px solid fade(white, 10%);
+    border-bottom: 1px solid fade(black, 10%);
 }
 
 
@@ -467,12 +476,12 @@
 
         .zem-header__logo-container {
             height: 30px;
-            padding: 8px 20px 8px @default-spacing;
+            padding: 3px 20px 3px @default-spacing;
             background-size: 12px;
         }
 
         .zem-header__logo {
-            height: 14px;
+            height: 24px;
         }
 
         .zem-header__dropdown-button {
