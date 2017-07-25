@@ -1,4 +1,5 @@
 /* globals require, process, __dirname */
+'use strict';
 
 var path = require('path');
 var webpack = require('webpack');
@@ -9,8 +10,7 @@ var CopyWebpackPlugin = require('copy-webpack-plugin');
 var ENVIRONMENTS = {
     DEVELOPMENT: 'dev',
     PRODUCTION: 'prod',
-    TEST: 'tests',
-    TEST_WATCH: 'tests-watch'
+    TEST: 'test'
 };
 
 var ENV = process.env.npm_lifecycle_event;
@@ -19,13 +19,9 @@ var STATIC_URL = ENV === ENVIRONMENTS.PRODUCTION ?
     'https://one-static.zemanta.com/build-' + BUILD_NUMBER + '/client' : 'http://localhost:9999';
 
 var APP_CONFIG = {
-    staticUrl: STATIC_URL,
-    env: {
-        dev: ENV === ENVIRONMENTS.DEVELOPMENT,
-        test: ENV === ENVIRONMENTS.TEST || ENV === ENVIRONMENTS.TEST_WATCH,
-        prod: ENV === ENVIRONMENTS.PRODUCTION,
-    },
-    buildNumber: BUILD_NUMBER,
+    static_url: STATIC_URL,
+    debug: ENV === ENVIRONMENTS.DEVELOPMENT,
+    buildNumber: BUILD_NUMBER
 };
 
 //
@@ -34,9 +30,8 @@ var APP_CONFIG = {
 var config = {};
 
 config.entry = {
-    'zemanta-one.polyfills': './one/polyfills.ts',
-    'zemanta-one.lib': './one/vendor.ts',
-    'zemanta-one': './one/main.ts',
+    'zemanta-one': './one/app.webpack.js',
+    'zemanta-one.lib': './one/vendor.webpack.js',
 };
 
 config.output = {
@@ -47,14 +42,6 @@ config.output = {
 };
 
 config.plugins = [
-    // Workaround for angular/angular#11580
-    new webpack.ContextReplacementPlugin(
-        // The (\\|\/) piece accounts for path separators in *nix and Windows
-        /angular(\\|\/)core(\\|\/)@angular/,
-        './one/', // location of your src
-        {} // a map of your routes
-    ),
-
     // Join all CSS output into one file; based on the entry name
     new ExtractTextPlugin('[name].css'),
 
@@ -69,7 +56,7 @@ config.plugins = [
         jQuery: 'jquery',
         'window.jQuery': 'jquery',
         moment: 'moment',
-    }),
+    })
 ];
 
 config.module = {};
@@ -77,14 +64,7 @@ config.module.rules = [
     {
         // Webpack loader to annotate angular applications. Generates a sourcemaps as well.
         test: /\.js$/,
-        include: [path.resolve(__dirname, 'one/app')],
         use: [{loader: 'ng-annotate-loader'}],
-    }, {
-        test: /\.tsx?$/,
-        loader: 'ts-loader',
-        options: {
-            logLevel: 'warn',
-        }
     }, {
         // Allow loading html through js
         test: /\.html$/,
@@ -118,7 +98,6 @@ config.module.rules.push(
 );
 
 config.resolve = {
-    extensions: ['.ts', '.js'],
     modules: [path.resolve('./one'), 'node_modules'],
     alias: {
         'angular': path.resolve(__dirname, 'lib/components/angular/angular.js'),
@@ -186,32 +165,26 @@ function styleConfig (style) {
 //
 if (ENV === ENVIRONMENTS.DEVELOPMENT) {
     config = merge.smart(config, styleConfig('one'));
-    config.entry['zemanta-one'] = ['./one/main.ts', './one/app/styles/one.styles.webpack.js'];
+    config.entry['zemanta-one'] = ['./one/app.webpack.js', './one/app/styles/one.styles.webpack.js'];
 
     config.devtool = 'cheap-module-eval-source-map';
     config.devServer = {
         contentBase: './',
         stats: 'minimal',
         disableHostCheck: true,
-        watchOptions: {
-            ignored: /node_modules|.*spec\.js|.*mock\.js|.*spec\.ts|.*mock\.ts/,
-            aggregateTimeout: 300,
-            poll: 1000
-        },
+        watchOptions: {aggregateTimeout: 300, poll: 1000},
     };
 }
 
-if (ENV === ENVIRONMENTS.TEST || ENV === ENVIRONMENTS.TEST_WATCH) {
-    config.devtool = 'inline-source-map';
+if (ENV === ENVIRONMENTS.TEST) {
+    config.entry = undefined;
+    config.output = {};
+    config.devtool = 'cheap-module-eval-source-map';
 }
 
 if (ENV === ENVIRONMENTS.PRODUCTION) {
     config.devtool = 'source-map';
     config.plugins.push(
-        new webpack.optimize.CommonsChunkPlugin({
-            name: ['zemanta-one', 'zemanta-one.lib', 'zemanta-one.polyfills']
-        }),
-        new webpack.optimize.ModuleConcatenationPlugin(),
         new webpack.optimize.UglifyJsPlugin({
             comments: false,
             sourceMap: true

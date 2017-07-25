@@ -1,0 +1,115 @@
+<div class="zem-grid" zem-grid-copy>
+    <div class="loader loader--takeover" ng-show="$ctrl.grid.meta.loading"></div>
+    <div ng-if="$ctrl.grid.meta.initialized">
+        <zem-grid-header grid="$ctrl.grid"></zem-grid-header>
+        <zem-grid-body grid="$ctrl.grid"></zem-grid-body>
+        <zem-grid-footer grid="$ctrl.grid"></zem-grid-footer>
+    </div>
+
+    <!-- FIXME: Move inline templates to files in templates directory -->
+    <!-- Popover templates -->
+    <script id="zemGridPerformanceIndicatorPopover.html" type="text/ng-template">
+        <ul class="icon-list">
+            <li ng-repeat="status in ctrl.statusList">
+                <img class="zem-icon {{status.class}}" ng-src="{{ctrl.config.static_url}}/one/images/{{status.file}}" /> {{status.text}}
+            </li>
+        </ul>
+    </script>
+    <script id="zemGridThumbnailPreviewPopover.html" type="text/ng-template">
+        <div class="zem-grid-thumbnail-preview-popover">
+            <!-- width and height are hardcoded in html to correctly resize popover immediately on html load -->
+            <img width="128" height="80" ng-src="{{ctrl.data.landscape}}"/>
+            <img width="80" height="80" ng-src="{{ctrl.data.square}}"/>
+        </div>
+    </script>
+    <script id="zemGridSubmissionStatusPopover.html" type="text/ng-template">
+        <div class="submission-status-popover-table">
+            <div class="submission-status-popover-row" ng-class="{'submission-status-emphasis': submission.source_state !== ''}" ng-repeat="submission in ctrl.nonApproved">
+                <span class="submission-status-popover-cell left-cell">{{submission.name}}<span ng-if="submission.source_state === ''">:&nbsp;</span><span ng-if="submission.source_state != ''">&nbsp;{{submission.source_state}}:&nbsp;</span></span>
+                <span class="submission-status-popover-cell bold">{{submission.text}}</span>
+            </div>
+            <div ng-if="ctrl.approved.length && ctrl.nonApproved.length" class="submission-status-popover-row">
+                <span class="submission-status-popover-cell divider"><hr></span>
+                <span class="submission-status-popover-cell divider"><hr></span>
+            </div>
+            <div class="submission-status-popover-row" ng-class="{'submission-status-emphasis': submission.source_state !== ''}" ng-repeat="submission in ctrl.approved">
+                <span class="submission-status-popover-cell left-cell submission-status-label">{{submission.name}}<span ng-if="submission.source_state === ''">:&nbsp;</span>&nbsp;{{submission.source_state}}<span ng-if="submission.source_state != ''">:&nbsp;</span></span>
+                <span class="submission-status-popover-cell" >{{submission.text}}</span>
+            </div>
+            <div ng-if="ctrl.noSubmissions" class="submission-status-popover-row no-submission-message">
+                No Media Sources added yet.
+            </div>
+        </div>
+    </script>
+    <!-- Modal templates -->
+    <script id="zemGridCellActionsDropdown.html" type="text/ng-template">
+        <div class="zem-grid-modal">
+            <ul>
+                <li ng-repeat="button in ctrl.buttons">
+                    <button ng-click="ctrl.execute(button)">{{ button.name }}</button>
+                </li>
+            </ul>
+        </div>
+    </script>
+    <script id="zemGridStateSelectorModal.html" type="text/ng-template">
+        <div class='state-selector-modal zem-grid-modal'>
+            <div ng-if="ctrl.isEditable && ctrl.isSaveRequestInProgress()" class="wait-message">
+                Save in progress. Please wait ...
+            </div>
+            <ul ng-if="ctrl.isEditable && !ctrl.isSaveRequestInProgress()" class="state-list editable">
+                <li zem-lazy-popover-text="{{ ctrl.active || ctrl.enablingAutopilotSourcesAllowed ? '' : 'To enable this Media Source please increase Autopilot\'s Daily Spend Cap.' }}"
+                    zem-lazy-popover-placement="right"
+                    zem-lazy-popover-animation-class="fade"
+                    zem-lazy-popover-append-to-body="true">
+                    <span ng-if="!ctrl.active && !ctrl.enablingAutopilotSourcesAllowed" class="state-item">
+                        <span class="state-icon active"></span><span class="state-text">Enabled</span>
+                    </span>
+                    <a ng-if="ctrl.active || ctrl.enablingAutopilotSourcesAllowed" class="state-item" ng-click="ctrl.setState(ctrl.stateValues.enabled)">
+                        <span class="state-icon active"></span><span class="state-text">Enabled</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="state-item" ng-click="ctrl.setState(ctrl.stateValues.paused)">
+                        <span class="state-icon paused"></span><span class="state-text">Paused</span>
+                    </a>
+                </li>
+            </ul>
+            <ul ng-if="!ctrl.isEditable" class="state-list uneditable">
+                <li ng-if="ctrl.active">
+                    <span class="state-item">
+                        <span class="state-icon active"></span>
+                        <span class="state-text">Enabled</span>
+                    </span>
+                </li>
+                <li ng-if="!ctrl.active">
+                    <span class="state-item">
+                        <span class="state-icon paused"></span>
+                        <span class="state-text">Paused</span>
+                    </span>
+                </li>
+                <li>
+                    <span class="state-item disabled-message">
+                        {{ctrl.disabledMessage}}
+                    </span>
+                </li>
+            </ul>
+        </div>
+    </script>
+    <script id="zemGridEditableCurrencyFieldModal.html" type="text/ng-template">
+        <div class='editable-currency-field-modal zem-grid-modal'>
+            <div ng-if="ctrl.isSaveRequestInProgress() && !ctrl.showLoader" class="message">
+                Save in progress. Please wait ...
+            </div>
+            <div ng-if="!ctrl.isSaveRequestInProgress() || ctrl.showLoader" class="edit-form">
+                <div class="prefixed-field">
+                    <span class="prefixed-field__prefix">$</span>
+                    <input class="input-text" type="text" ng-model="ctrl.editFormInputValue" ng-trim="false" ng-change="ctrl.filterInput()" focus ng-keydown="ctrl.onKeyDown($event)">
+                </div>
+                <button ng-show="ctrl.showLoader" class="button button--highlight button--disabled"><span class="loader loader--white"></span></button>
+                <button ng-show="!ctrl.showLoader" class="button button--highlight button--with-icon check-icon" ng-click="ctrl.save()">Save</button>
+                <button class="button button--outline" ng-click="ctrl.closeModal()">Cancel</button>
+                <span class="message message--error" ng-repeat="error in ctrl.errors">{{error}}</span>
+            </div>
+        </div>
+    </script>
+</div>
