@@ -20,6 +20,8 @@ class PublisherGroupEntry(models.Model):
     include_subdomains = models.BooleanField(default=True)
 
     outbrain_publisher_id = models.CharField(max_length=127, blank=True, verbose_name='Special Outbrain publisher ID')
+    outbrain_section_id = models.CharField(max_length=127, blank=True, verbose_name='Special Outbrain section ID')
+    outbrain_amplify_publisher_id = models.CharField(max_length=127, blank=True, verbose_name='Special Outbrain Amplify publisher ID')
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')

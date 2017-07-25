@@ -547,9 +547,11 @@ class K1ApiTest(K1ApiBaseTest):
         data = data['response']
 
         self.assertEqual(data, [
-            {'outbrain_publisher_id': '', 'publisher': 'pub1', 'include_subdomains': True,
+            {'outbrain_section_id': '', 'outbrain_amplify_publisher_id': '',
+             'outbrain_publisher_id': '', 'publisher': 'pub1', 'include_subdomains': True,
              'publisher_group_id': 1, 'source_slug': 'adblade', 'account_id': 1},
-            {'outbrain_publisher_id': 'asd123', 'publisher': 'pub2', 'include_subdomains': True,
+            {'outbrain_section_id': 'asd1234', 'outbrain_amplify_publisher_id': 'asd12345',
+             'outbrain_publisher_id': 'asd123', 'publisher': 'pub2', 'include_subdomains': True,
              'publisher_group_id': 1, 'source_slug': None, 'account_id': 1},
         ])
 
@@ -567,7 +569,8 @@ class K1ApiTest(K1ApiBaseTest):
         data = data['response']
 
         self.assertEqual(data, [
-            {'outbrain_publisher_id': '', 'publisher': 'pub1', 'include_subdomains': True,
+            {'outbrain_section_id': '', 'outbrain_amplify_publisher_id': '',
+             'outbrain_publisher_id': '', 'publisher': 'pub1', 'include_subdomains': True,
              'publisher_group_id': 1, 'source_slug': 'adblade', 'account_id': 1},
         ])
 
@@ -584,7 +587,8 @@ class K1ApiTest(K1ApiBaseTest):
         data = data['response']
 
         self.assertEqual(data, [
-            {'outbrain_publisher_id': 'asd123', 'publisher': 'pub2', 'include_subdomains': True,
+            {'outbrain_section_id': 'asd1234', 'outbrain_amplify_publisher_id': 'asd12345',
+             'outbrain_publisher_id': 'asd123', 'publisher': 'pub2', 'include_subdomains': True,
              'publisher_group_id': 1, 'source_slug': None, 'account_id': 1},
         ])
 

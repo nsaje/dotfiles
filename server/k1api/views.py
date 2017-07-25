@@ -383,7 +383,8 @@ class PublisherGroupsEntriesView(K1APIView):
         return self.response_ok(list(entries[offset:offset + limit].annotate(
             source_slug=F('source__bidder_slug'),
             account_id=F('publisher_group__account_id'),
-        ).values('source_slug', 'publisher_group_id', 'include_subdomains', 'outbrain_publisher_id', 'publisher', 'account_id')))
+        ).values('source_slug', 'publisher_group_id', 'include_subdomains', 'outbrain_publisher_id',
+                 'outbrain_section_id', 'outbrain_amplify_publisher_id', 'publisher', 'account_id')))
 
 
 class AdGroupsView(K1APIView):

@@ -486,9 +486,9 @@ class PublisherGroupCSVHelpersTest(TestCase):
         self.assertEquals(
             publisher_group_csv_helpers.get_csv_content(publisher_group.account, publisher_group.entries.all()),
             textwrap.dedent('''\
-            "Publisher","Source","Outbrain Publisher Id"\r
-            "pub1","adsnative",""\r
-            "pub2","","asd123"\r
+            "Publisher","Source","Outbrain Publisher Id","Outbrain Section Id","Outbrain Amplify Publisher Id"\r
+            "pub1","adsnative","","",""\r
+            "pub2","","asd123","asd1234","asd12345"\r
             '''))
 
     def test_get_example_csv_content(self):
@@ -618,6 +618,8 @@ class PublisherGroupCSVHelpersTest(TestCase):
             'source': models.Source.objects.get(pk=1),
             'include_subdomains': True,
             'outbrain_publisher_id': '12345',
+            'outbrain_section_id': '123456',
+            'outbrain_amplify_publisher_id': '1234567',
         }, {
             'publisher': 'pub2',
             'source': None,
@@ -628,7 +630,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
         self.assertEquals(
             publisher_group_csv_helpers.get_entries_errors_csv_content(account, entries),
             textwrap.dedent('''\
-            "Publisher","Source","Outbrain Publisher Id","Error"\r
-            "pub1","AdsNative","12345",""\r
-            "pub2","","",""\r
+            "Publisher","Source","Outbrain Publisher Id","Outbrain Section Id","Outbrain Amplify Publisher Id","Error"\r
+            "pub1","AdsNative","12345","123456","1234567",""\r
+            "pub2","","","","",""\r
             '''))

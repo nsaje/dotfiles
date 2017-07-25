@@ -1098,7 +1098,8 @@ class OutbrainPublisherGroupEntrySerializer(PublisherGroupEntrySerializer):
 
     class Meta:
         model = dash.models.PublisherGroupEntry
-        fields = ('id', 'publisher', 'publisher_group_id', 'source', 'include_subdomains', 'outbrain_publisher_id')
+        fields = ('id', 'publisher', 'publisher_group_id', 'source', 'include_subdomains',
+                  'outbrain_publisher_id', 'outbrain_section_id', 'outbrain_amplify_publisher_id')
         list_serializer_class = DataNodeListSerializer
 
 
