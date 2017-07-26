@@ -19,6 +19,8 @@ angular.module('one.widgets').service('zemReportFieldsService', function (zemPer
         'content_ad': ['URL', 'Thumbnail', 'Description', 'Label', 'Call to action', 'Impression trackers'],
     };
 
+    var COLUMNS_TO_REMOVE = ['Actions'];
+
     // Public API
     this.getFields = getFields;
 
@@ -37,6 +39,7 @@ angular.module('one.widgets').service('zemReportFieldsService', function (zemPer
 
         fields = fields.concat(getGridFields(gridApi));
 
+        fields = filterOutClientOnlyFields(fields);
         fields = remapFields(fields);
 
         fields = addIdFields(fields, includeIds);
@@ -70,6 +73,17 @@ angular.module('one.widgets').service('zemReportFieldsService', function (zemPer
 
     function addBreakdownRequiredFields (fields, breakdown) {
         return fields.concat(BREAKDOWN_REQUIRED_FIELDS[breakdown] || []);
+    }
+
+    function filterOutClientOnlyFields (fields) {
+        var newFields = [];
+        for (var i = 0; i < fields.length; i++) {
+            if (COLUMNS_TO_REMOVE.indexOf(fields[i]) !== -1) {
+                continue;
+            }
+            newFields.push(fields[i]);
+        }
+        return newFields;
     }
 
     function deduplicateFields (fields) {
