@@ -60,7 +60,7 @@ angular.module('one.widgets').component('zemNavigation', {
             scrollToItem($ctrl.selectedEntity);
         }
 
-        function downSelection () {
+        function downSelection (event) {
             event.preventDefault();
             var idx = $ctrl.filteredList.indexOf($ctrl.selectedEntity);
             $ctrl.selectedEntity = $ctrl.filteredList[idx + 1];
