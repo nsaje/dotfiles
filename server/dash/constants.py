@@ -1655,6 +1655,7 @@ class EmailTemplateType(ConstantBase):
     WEEKLY_INVENTORY_REPORT = 25
     NEW_DEVICE_LOGIN = 26
     ASYNC_SCHEDULED_REPORT_RESULTS = 27
+    OEN_POSTCLICKKPI_CPA_FACTORS = 28
 
     _VALUES = {
         ADGROUP_CHANGE: 'Ad group settings change',
@@ -1683,6 +1684,7 @@ class EmailTemplateType(ConstantBase):
         WEEKLY_INVENTORY_REPORT: 'Weekly inventory report',
         NEW_DEVICE_LOGIN: 'New device login',
         ASYNC_SCHEDULED_REPORT_RESULTS: 'Scheduled report results',
+        OEN_POSTCLICKKPI_CPA_FACTORS: 'Zemanta OEN CPA Optimization Factors',
     }
 
 

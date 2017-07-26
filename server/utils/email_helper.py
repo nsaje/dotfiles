@@ -669,3 +669,21 @@ def _format_changes_text(changes_text):
         lines[i] += '.' if (i + 1) == len(lines) else ','
 
     return '\n'.join(lines)
+
+
+def send_oen_postclickkpi_cpa_factors_email(recipient, factors):
+    subject, body, _ = format_email(dash.constants.EmailTemplateType.OEN_POSTCLICKKPI_CPA_FACTORS)
+    try:
+        email = EmailMultiAlternatives(
+              subject,
+              body,
+              'Zemanta <{}>'.format(settings.FROM_EMAIL),
+              [recipient]
+        )
+        email.attach('cpa_optimization_factors.csv', factors, 'text/csv')
+        email.send(fail_silently=False)
+    except Exception as e:
+        logger.error(
+            'OEN CPA Optimization factors e-mail to %s was not sent because an exception was raised: %s',
+            recipient,
+            traceback.format_exc(e))
