@@ -580,11 +580,15 @@ class AdGroupViewList(SettingsViewList):
 
     def _get_settings_list(self, request):
         campaign_id = request.query_params.get('campaignId', None)
-        ad_groups = dash.models.AdGroup.objects.all().filter_by_user(request.user)
+
+        if campaign_id:
+            campaign = helpers.get_campaign(request.user, campaign_id)
+            ad_groups = dash.models.AdGroup.objects.filter(campaign=campaign)
+        else:
+            ad_groups = dash.models.AdGroup.objects.all().filter_by_user(request.user)
+
         ag_settings = dash.models.AdGroupSettings.objects.filter(
             ad_group__in=ad_groups).group_current_settings().select_related('ad_group')
-        if campaign_id:
-            ag_settings = ag_settings.filter(ad_group__campaign_id=int(campaign_id))
         return ag_settings
 
 

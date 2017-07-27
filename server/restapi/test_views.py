@@ -669,6 +669,24 @@ class AdGroupsTest(RESTAPITest):
         for item in resp_json['data']:
             self.validate_against_db(item)
 
+    def test_adgroups_list_campaign_filter(self):
+        # TODO(nsaje): create a prettier test, this one is urgent and hackish
+        account1 = magic_mixer.blend(dash.models.Account, users=[self.user])
+        adgroup1_account1 = magic_mixer.blend(dash.models.AdGroup, campaign__account=account1)
+        adgroup1_account1.get_current_settings().copy_settings().save(None)
+        adgroup2_account1 = magic_mixer.blend(dash.models.AdGroup, campaign__account=account1)
+        adgroup2_account1.get_current_settings().copy_settings().save(None)
+        account2 = magic_mixer.blend(dash.models.Account)
+        adgroup1_account2 = magic_mixer.blend(dash.models.AdGroup, campaign__account=account2)
+        adgroup1_account2.get_current_settings().copy_settings().save(None)
+
+        r = self.client.get(reverse('adgroups_list'), {'campaignId': adgroup1_account1.campaign_id})
+        resp_json = self.assertResponseValid(r, data_type=list)
+        for item in resp_json['data']:
+            self.validate_against_db(item)
+        self.assertEqual(len(resp_json['data']), 1)
+        self.assertEqual(resp_json['data'][0]['id'], str(adgroup1_account1.id))
+
     def test_adgroups_post(self):
         r = self.client.post(
             reverse('adgroups_list'),
