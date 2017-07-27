@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 S3_BUCKET_B1_ML = 'b1-ml'
 EXPECTED_COLS = ['adgroup', 'action', 'source', 'publisher', 'factor']
 OEN_ACCOUNT = 305
-OEN_CPA_EMAIL = 'davorin.kopic@zemanta.com' # TODO
+OEN_CPA_EMAIL = 'davorin.kopic@zemanta.com'  # TODO
 
 
 class Command(ExceptionCommand):
