@@ -155,7 +155,19 @@ services:
     #     entrypoint: ""
     #     command: "celery worker -A server -c 3 -Q prod-convapi_v2 -l INFO -f /app/logs/eins_celery_convapi_v2.log"
 
+
+    # ONE Whitelabel
+    eins-newscorp:
+        extends: eins
+        environment:
+          VIRTUAL_HOST: "newscorp.zemanta.com"
+          NEW_RELIC_APP_NAME: "Zemanta One Whitelabel (Newscorp)"
+        labels:
+          traefik.backend: "newscorp.zemanta.com"
+          traefik.frontend.rule: "Host:newscorp.zemanta.com"
+
 # created with CLI: docker network create -d bridge legacynet
 networks:
     legacynet:
         external: true
+
