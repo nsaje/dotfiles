@@ -56,6 +56,8 @@ angular.module('one.widgets').service('zemSettingsService', function ($rootScope
     }
 
     function open (entity, scrollToComponent) {
+        if (!$state.includes('v2.analytics')) return;
+
         entity = entity || zemNavigationNewService.getActiveEntity();
 
         if (entity !== null && currentEntity !== entity) {

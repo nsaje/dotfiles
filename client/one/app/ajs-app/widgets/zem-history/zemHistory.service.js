@@ -30,6 +30,8 @@ angular.module('one.widgets').service('zemHistoryService', function ($rootScope,
     }
 
     function open () {
+        if (!$state.includes('v2.analytics')) return;
+
         $location.search(QUERY_PARAM, true).replace();
         pubsub.notify(EVENTS.ON_OPEN);
     }
