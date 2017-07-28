@@ -72,7 +72,7 @@ describe('ZemUploadEditFormCtrl', function () {
             ctrl.api.open(candidate);
             expect(ctrl.selectedCandidate).toBe(candidate);
             expect(ctrl.selectedCandidate.defaults).toEqual({});
-            expect(ctrl.selectedCandidate.useTrackers).toBe(false);
+            expect(ctrl.selectedCandidate.usePrimaryTracker).toBe(false);
             expect(ctrl.selectedCandidate.useSecondaryTracker).toBe(false);
             expect(ctrl.api.selectedId).toBe(ctrl.selectedCandidate.id);
         });
@@ -82,7 +82,7 @@ describe('ZemUploadEditFormCtrl', function () {
             candidate.secondaryTrackerUrl = 'https://zemanta.com/px2';
 
             ctrl.api.open(candidate);
-            expect(ctrl.selectedCandidate.useTrackers).toBe(true);
+            expect(ctrl.selectedCandidate.usePrimaryTracker).toBe(true);
             expect(ctrl.selectedCandidate.useSecondaryTracker).toBe(true);
         });
     });
@@ -109,7 +109,7 @@ describe('ZemUploadEditFormCtrl', function () {
                     description: true,
                     displayUrl: true,
                 },
-                useTrackers: true,
+                usePrimaryTracker: true,
                 useSecondaryTracker: false,
             };
 

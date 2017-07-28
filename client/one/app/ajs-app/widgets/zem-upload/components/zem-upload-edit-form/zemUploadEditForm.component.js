@@ -62,8 +62,7 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
         vm.requestFailed = false;
         vm.selectedCandidate = candidate;
         vm.selectedCandidate.defaults = {};
-        vm.selectedCandidate.useTrackers = !!vm.selectedCandidate.primaryTrackerUrl ||
-            !!vm.selectedCandidate.secondaryTrackerUrl;
+        vm.selectedCandidate.usePrimaryTracker = !!vm.selectedCandidate.primaryTrackerUrl;
         vm.selectedCandidate.useSecondaryTracker = !!vm.selectedCandidate.secondaryTrackerUrl;
         vm.scrollTop();
         vm.api.selectedId = candidate.id;
