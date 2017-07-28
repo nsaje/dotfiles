@@ -15,6 +15,8 @@ var ENVIRONMENTS = {
 
 var ENV = process.env.npm_lifecycle_event;
 var BUILD_NUMBER = process.env['npm_config_build_number'];
+var IS_WHITELABEL = process.env['npm_config_whitelabel'];
+
 var STATIC_URL = ENV === ENVIRONMENTS.PRODUCTION ?
     'https://one-static.zemanta.com/build-' + BUILD_NUMBER + '/client' : 'http://localhost:9999';
 
@@ -188,6 +190,10 @@ if (ENV === ENVIRONMENTS.DEVELOPMENT) {
     config = merge.smart(config, styleConfig('one'));
     config.entry['zemanta-one'] = ['./one/main.ts', './one/app/styles/one.styles.webpack.js'];
 
+    if (IS_WHITELABEL) {
+        // TODO
+    }
+
     config.devtool = 'cheap-module-eval-source-map';
     config.devServer = {
         contentBase: './',
@@ -233,6 +239,7 @@ if (ENV === ENVIRONMENTS.PRODUCTION) {
         merge.smart(config, styleConfig('one')),
         merge.smart(config, styleConfig('greenpark')),
         merge.smart(config, styleConfig('adtechnacity')),
+        merge.smart(config, styleConfig('newscorp')),
     ];
 }
 
