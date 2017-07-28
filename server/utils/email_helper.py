@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 WHITELABEL_PRODUCTS = {
     dash.constants.Whitelabel.GREENPARK: 'Telescope',
     dash.constants.Whitelabel.ADTECHNACITY: 'adtechnacity',
+    dash.constants.Whitelabel.NEWSCORP: 'News Corp',
 }
 
 URLS_RE = re.compile(
