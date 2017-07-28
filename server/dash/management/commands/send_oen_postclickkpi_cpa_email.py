@@ -5,14 +5,13 @@ import unicodecsv
 
 from dash import models
 from utils.command_helpers import ExceptionCommand
-from utils import s3helpers, email_helpers
+from utils import s3helpers, email_helper
 
 logger = logging.getLogger(__name__)
 
 S3_BUCKET_B1_ML = 'b1-ml'
 EXPECTED_COLS = ['adgroup', 'action', 'source', 'publisher', 'factor']
 OEN_ACCOUNT = 305
-OEN_CPA_EMAIL = 'davorin.kopic@zemanta.com'  # TODO
 
 
 class Command(ExceptionCommand):
@@ -58,5 +57,5 @@ class Command(ExceptionCommand):
 
         factors = output.getvalue()
 
-        email_helpers.send_oen_postclickkpi_cpa_factors_email(OEN_CPA_EMAIL, factors)
+        email_helper.send_oen_postclickkpi_cpa_factors_email(factors)
         influx.gauge('dash.commands.send_oen_postclickkpi_cpa_email_job.num_factors', len(factors.splitlines()))
