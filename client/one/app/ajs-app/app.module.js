@@ -87,32 +87,10 @@ angular.module('one').run(function ($state, $rootScope, $location, config, zemIn
     $rootScope.$on('$locationChangeSuccess', function () {
         zemIntercomService.update();
     });
-
-    $rootScope.tabClick = function (event) {
-        // Function to fix opening tabs in new tab when clicking with the middle button
-        // This is effectively a workaround for a bug in bootstrap-ui
-        if (event.which === 2 || (event.which === 1 && (event.metaKey || event.ctrlKey))) {
-            // MIDDLE CLICK or CMD+LEFTCLICK
-            // the regular link will open in new tab if we stop the event propagation
-            event.stopPropagation();
-        }
-    };
 });
 
 angular.module('one').run(function (zemInitializationService) {
     zemInitializationService.initApp();
-});
-
-angular.module('one').config(function ($provide) {
-    // Fix sourcemaps
-    // @url https://github.com/angular/angular.js/issues/5217#issuecomment-50993513
-    $provide.decorator('$exceptionHandler', function () {
-        return function (exception) {
-            setTimeout(function () {
-                throw exception;
-            });
-        };
-    });
 });
 
 (function () {
