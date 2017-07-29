@@ -22,3 +22,12 @@ using [this
 mapping](https://github.com/blackmad/geoplanet-concordance/tree/master/current).
 Countries, regions & zips can be matched by name using Maxmind's location
 names and some Python :)
+
+## Re-importing locations
+
+If any of the CSVs is updated/changed, the locations need to be re-imported using
+something like (adjust for correct paths)
+
+```
+./manage.py import_geolocations dash/features/geolocation/supported_locations/GeoIP2-City-Locations-en.csv dash/features/geolocation/supported_locations/yahoo-mapping.csv dash/features/geolocation/supported_locations/outbrain-mapping.csv dash/features/geolocation/supported_locations/facebook-mapping.csv
+```

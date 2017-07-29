@@ -30,8 +30,10 @@ class Command(ExceptionCommand):
         facebook_mapping = self.get_mapping(options['facebook_mapping_csv'], 'facebook_key')
 
         objs = []
+        updated_keys = set()
         for loc_type, location in locations_by_type.iteritems():
             for key, name in location.iteritems():
+                updated_keys.add(key)
                 objs.append(dash.features.geolocation.Geolocation(
                     type=loc_type,
                     key=key,
@@ -43,6 +45,7 @@ class Command(ExceptionCommand):
 
         # add ZIP code mappings
         for key in set(self.get_zips(yahoo_mapping)).union(set(self.get_zips(outbrain_mapping))):
+            updated_keys.add(key)
             objs.append(dash.features.geolocation.Geolocation(
                 type=constants.LocationType.ZIP,
                 key=key,
@@ -52,7 +55,7 @@ class Command(ExceptionCommand):
             ))
 
         with transaction.atomic():
-            dash.features.geolocation.Geolocation.objects.all().delete()
+            dash.features.geolocation.Geolocation.objects.filter(key__in=updated_keys).delete()
             dash.features.geolocation.Geolocation.objects.bulk_create(objs)
 
     @staticmethod
