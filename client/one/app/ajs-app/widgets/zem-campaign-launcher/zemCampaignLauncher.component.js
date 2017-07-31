@@ -35,28 +35,32 @@ angular.module('one').component('zemCampaignLauncher', {
         }
 
         function isPreviousStepButtonVisible () {
-            return $ctrl.state.currentStep.controls
+            return $ctrl.state.currentStep
+                   && $ctrl.state.currentStep.controls
                    && $ctrl.state.currentStep.controls.previous
                    && !$ctrl.state.requests.launchCampaign.inProgress
                    && $ctrl.state.orderedSteps.indexOf($ctrl.state.currentStep) > 0;
         }
 
         function isNextStepButtonVisible () {
-            return $ctrl.state.currentStep.controls
+            return $ctrl.state.currentStep
+                   && $ctrl.state.currentStep.controls
                    && $ctrl.state.currentStep.controls.next
                    && !$ctrl.state.requests.launchCampaign.inProgress
                    && $ctrl.state.orderedSteps.indexOf($ctrl.state.currentStep) < $ctrl.state.orderedSteps.length - 1;
         }
 
         function isReviewButtonVisible () {
-            return $ctrl.state.currentStep.controls
+            return $ctrl.state.currentStep
+                   && $ctrl.state.currentStep.controls
                    && $ctrl.state.currentStep.controls.review
                    && !$ctrl.state.requests.launchCampaign.inProgress
                    && $ctrl.stateService.areAllStepsValid();
         }
 
         function isLaunchButtonVisible () {
-            return $ctrl.state.currentStep.controls
+            return $ctrl.state.currentStep
+                   && $ctrl.state.currentStep.controls
                    && $ctrl.state.currentStep.controls.launch
                    && !$ctrl.state.requests.launchCampaign.inProgress;
         }

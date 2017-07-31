@@ -26,7 +26,7 @@
                    on-select="$ctrl.onFieldChange()"
                    search-enabled="true">
             <ui-select-match>{{ $select.selected.name }}</ui-select-match>
-            <ui-select-choices repeat="category.value as category in $ctrl.availableIabCategories | filter: $select.search">
+            <ui-select-choices repeat="category.value as category in $ctrl.availableIabCategories | filter: $select.search" class="ui-select-choices">
                 {{ category.name }}
             </ui-select-choices>
         </ui-select>

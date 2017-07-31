@@ -74,6 +74,23 @@ class CampaignLauncherLaunchTest(restapi.test_views.RESTAPITest):
                     'conversionWindow': 'LEQ_1_DAY'
                 },
             },
+            "targetRegions": {
+                "countries": ["CA"],
+                "regions": ["US-NY"],
+                "dma": ["693"],
+                "cities": ["123456"],
+                "postalCodes": ["US:10001"]
+            },
+            "exclusionTargetRegions": {
+                "countries": ["CA"],
+                "regions": ["US-NY"],
+                "dma": ["693"],
+                "cities": ["123456"],
+                "postalCodes": ["US:10001"]
+            },
+            "targetDevices": ["DESKTOP"],
+            "targetPlacements": ["APP"],
+            "targetOs": [{'name': "ANDROID"}],
         }
         r = self.client.post(
             reverse('campaignlauncher_launch',
@@ -96,6 +113,11 @@ class CampaignLauncherLaunchTest(restapi.test_views.RESTAPITest):
             upload_batch=upload_batch,
             goal_type=dash.constants.CampaignGoalKPI.CPA,
             goal_value=Decimal(30.0),
+            target_regions=['CA', 'US-NY', '693', '123456', 'US:10001'],
+            exclusion_target_regions=['CA', 'US-NY', '693', '123456', 'US:10001'],
+            target_devices=['desktop'],
+            target_placements=['app'],
+            target_os=[{'name': 'android'}],
             conversion_goal_type=dash.constants.ConversionGoalType.PIXEL,
             conversion_goal_goal_id=str(pixel.id),
             conversion_goal_window=dash.constants.ConversionWindows.LEQ_1_DAY,

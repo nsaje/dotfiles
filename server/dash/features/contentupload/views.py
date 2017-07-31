@@ -35,11 +35,13 @@ class UploadBatch(api_common.BaseApiView):
         batch = models.UploadBatch.objects.create(
             request.user, account, form.cleaned_data['batch_name'], ad_group=ad_group)
 
-        candidate = upload.add_candidate(batch)
+        candidates = []
+        if not request.GET.get('withoutCandidates'):
+            candidates = [upload.add_candidate(batch)]
         return self.create_api_response({
             'batch_id': batch.id,
             'batch_name': batch.name,
-            'candidates': [candidate.to_dict()],
+            'candidates': [candidate.to_dict() for candidate in candidates],
         })
 
 

@@ -30,6 +30,10 @@ from utils.test_helper import add_permissions, fake_request
 class AdGroupSettingsTest(TestCase):
     fixtures = ['test_api', 'test_views', 'test_non_superuser', 'test_geolocations']
 
+    @classmethod
+    def _target_regions_repr(cls, countries=[], regions=[], cities=[], dma=[], postal_codes=[]):
+        return dict(countries=countries, regions=regions, cities=cities, dma=dma, postal_codes=postal_codes)
+
     def setUp(self):
         self.maxDiff = None
         self.settings_dict = {
@@ -41,8 +45,8 @@ class AdGroupSettingsTest(TestCase):
                 'max_cpm': '1.6000',
                 'daily_budget_cc': '200.0000',
                 'target_devices': ['DESKTOP'],
-                'target_regions': ['693', 'GB'],
-                'exclusion_target_regions': [],
+                'target_regions': self._target_regions_repr(dma=['693'], countries=['GB']),
+                'exclusion_target_regions': self._target_regions_repr(),
                 'name': 'Test ad group name',
                 'id': 1,
                 'campaign_id': '1',
@@ -112,8 +116,8 @@ class AdGroupSettingsTest(TestCase):
                     'target_devices': ['MOBILE'],
                     'target_os': [],
                     'target_placements': [],
-                    'target_regions': ['NC', '501'],
-                    'exclusion_target_regions': [],
+                    'target_regions': self._target_regions_repr(dma=['501'], countries=['NC']),
+                    'exclusion_target_regions': self._target_regions_repr(),
                 },
                 'retargetable_adgroups': [
                     {
@@ -178,8 +182,8 @@ class AdGroupSettingsTest(TestCase):
                     'target_devices': ['DESKTOP', 'MOBILE'],
                     'target_os': [],
                     'target_placements': [],
-                    'target_regions': ['GB', 'US', 'CA'],
-                    'exclusion_target_regions': [],
+                    'target_regions': self._target_regions_repr(countries=['GB', 'US', 'CA']),
+                    'exclusion_target_regions': self._target_regions_repr(),
                     'autopilot_state': constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
                     'autopilot_daily_budget': '50.00',
                     'retargeting_ad_groups': [3],
@@ -327,8 +331,8 @@ class AdGroupSettingsTest(TestCase):
                         'target_devices': ['MOBILE'],
                         'target_os': [],
                         'target_placements': [],
-                        'target_regions': ['NC', '501'],
-                        'exclusion_target_regions': [],
+                        'target_regions': self._target_regions_repr(dma=['501'], countries=['NC']),
+                        'exclusion_target_regions': self._target_regions_repr(),
                     },
                     'settings': {
                         'cpc_cc': '0.300',
@@ -343,8 +347,8 @@ class AdGroupSettingsTest(TestCase):
                         'target_devices': ['DESKTOP'],
                         'target_os': [],
                         'target_placements': [],
-                        'target_regions': ['693', 'GB'],
-                        'exclusion_target_regions': [],
+                        'target_regions': self._target_regions_repr(dma=['693'], countries=['GB']),
+                        'exclusion_target_regions': self._target_regions_repr(),
                         'autopilot_daily_budget': '50.00',
                         'retargeting_ad_groups': [2],
                         'exclusion_retargeting_ad_groups': [9],
@@ -435,8 +439,8 @@ class AdGroupSettingsTest(TestCase):
                         'target_devices': ['MOBILE'],
                         'target_os': [],
                         'target_placements': [],
-                        'target_regions': ['NC', '501'],
-                        'exclusion_target_regions': [],
+                        'target_regions': self._target_regions_repr(dma=['501'], countries=['NC']),
+                        'exclusion_target_regions': self._target_regions_repr(),
                     },
                     'settings': {
                         'cpc_cc': '0.050',
@@ -451,8 +455,8 @@ class AdGroupSettingsTest(TestCase):
                         'target_devices': ['DESKTOP'],
                         'target_os': [],
                         'target_placements': [],
-                        'target_regions': ['693', 'GB'],
-                        'exclusion_target_regions': [],
+                        'target_regions': self._target_regions_repr(dma=['693'], countries=['GB']),
+                        'exclusion_target_regions': self._target_regions_repr(),
                         'autopilot_daily_budget': '50.00',
                         'retargeting_ad_groups': [2],
                         'exclusion_retargeting_ad_groups': [9],
@@ -624,8 +628,8 @@ class AdGroupSettingsTest(TestCase):
                         'target_devices': ['MOBILE'],
                         'target_os': [],
                         'target_placements': [],
-                        'target_regions': ['NC', '501'],
-                        'exclusion_target_regions': [],
+                        'target_regions': self._target_regions_repr(dma=['501'], countries=['NC']),
+                        'exclusion_target_regions': self._target_regions_repr(),
                     },
                     'settings': {
                         'cpc_cc': '0.300',
@@ -640,8 +644,8 @@ class AdGroupSettingsTest(TestCase):
                         'target_devices': ['DESKTOP'],
                         'target_os': [],
                         'target_placements': [],
-                        'target_regions': ['693', 'GB'],
-                        'exclusion_target_regions': [],
+                        'target_regions': self._target_regions_repr(dma=['693'], countries=['GB']),
+                        'exclusion_target_regions': self._target_regions_repr(),
                         'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
                         'autopilot_daily_budget': '100.00',
                         'retargeting_ad_groups': [2],
@@ -728,8 +732,8 @@ class AdGroupSettingsTest(TestCase):
                         'target_devices': ['MOBILE'],
                         'target_os': [],
                         'target_placements': [],
-                        'target_regions': ['NC', '501'],
-                        'exclusion_target_regions': [],
+                        'target_regions': self._target_regions_repr(dma=['501'], countries=['NC']),
+                        'exclusion_target_regions': self._target_regions_repr(),
                     },
                     'settings': {
                         'cpc_cc': '0.300',
@@ -744,8 +748,8 @@ class AdGroupSettingsTest(TestCase):
                         'target_devices': ['DESKTOP'],
                         'target_os': [],
                         'target_placements': [],
-                        'target_regions': ['693', 'GB'],
-                        'exclusion_target_regions': [],
+                        'target_regions': self._target_regions_repr(dma=['693'], countries=['GB']),
+                        'exclusion_target_regions': self._target_regions_repr(),
                         'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
                         'autopilot_daily_budget': '50.00',
                         'retargeting_ad_groups': [2],
@@ -863,8 +867,8 @@ class AdGroupSettingsTest(TestCase):
                         'target_devices': ['MOBILE'],
                         'target_os': [],
                         'target_placements': [],
-                        'target_regions': ['NC', '501'],
-                        'exclusion_target_regions': [],
+                        'target_regions': self._target_regions_repr(dma=['501'], countries=['NC']),
+                        'exclusion_target_regions': self._target_regions_repr(),
                     },
                     'settings': {
                         'cpc_cc': '0.300',
@@ -879,8 +883,8 @@ class AdGroupSettingsTest(TestCase):
                         'target_devices': ['DESKTOP'],
                         'target_os': [],
                         'target_placements': [],
-                        'target_regions': ['693', 'GB'],
-                        'exclusion_target_regions': [],
+                        'target_regions': self._target_regions_repr(dma=['693'], countries=['GB']),
+                        'exclusion_target_regions': self._target_regions_repr(),
                         'autopilot_state': constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
                         'autopilot_daily_budget': '50.00',
                         'retargeting_ad_groups': [2],
@@ -2068,6 +2072,10 @@ class UserActivationTest(TestCase):
 class CampaignSettingsTest(TestCase):
     fixtures = ['test_views.yaml', 'test_non_superuser.yaml', 'test_agency.yaml', 'test_geolocations']
 
+    @classmethod
+    def _target_regions_repr(cls, countries=[], regions=[], cities=[], dma=[], postal_codes=[]):
+        return dict(countries=countries, regions=regions, cities=cities, dma=dma, postal_codes=postal_codes)
+
     def setUp(self):
         self.user = User.objects.get(pk=1)
 
@@ -2089,8 +2097,8 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(content['data']['settings']['campaign_goal'], 3)
         self.assertEqual(content['data']['settings']['goal_quantity'], '0.00')
         self.assertEqual(content['data']['settings']['target_devices'], ['MOBILE'])
-        self.assertEqual(content['data']['settings']['target_regions'], ['NC', '501'])
-        self.assertEqual(content['data']['settings']['exclusion_target_regions'], [])
+        self.assertEqual(content['data']['settings']['target_regions'], self._target_regions_repr(dma=['501'], countries=['NC']))
+        self.assertEqual(content['data']['settings']['exclusion_target_regions'], self._target_regions_repr())
         self.assertEqual(content['data']['settings']['enable_ga_tracking'], True)
         self.assertEqual(content['data']['settings']['enable_adobe_tracking'], False)
         self.assertEqual(content['data']['settings']['ga_tracking_type'], 1)
@@ -2123,8 +2131,8 @@ class CampaignSettingsTest(TestCase):
         self.assertNotEqual(settings.goal_quantity, 10)
         self.assertNotEqual(settings.campaign_goal, 2)
         self.assertNotEqual(settings.target_devices, ['desktop'])
-        self.assertNotEqual(settings.target_regions, ['CA', '502'])
-        self.assertNotEqual(settings.exclusion_target_regions, ['CA', '502'])
+        self.assertNotEqual(settings.target_regions, self._target_regions_repr(dma=['502'], countries=['CA']))
+        self.assertNotEqual(settings.exclusion_target_regions, self._target_regions_repr(dma=['502'], countries=['CA']))
         self.assertNotEqual(settings.ga_tracking_type, 2)
         self.assertNotEqual(settings.ga_property_id, 'UA-123456789-3')
         self.assertNotEqual(settings.enable_adobe_tracking, True)
@@ -2142,8 +2150,8 @@ class CampaignSettingsTest(TestCase):
                     'campaign_goal': 2,
                     'goal_quantity': 10,
                     'target_devices': ['DESKTOP'],
-                    'target_regions': ['CA', '502'],
-                    'exclusion_target_regions': [],
+                    'target_regions': self._target_regions_repr(dma=['502'], countries=['CA']),
+                    'exclusion_target_regions': self._target_regions_repr(),
                     'campaign_manager': 1,
                     'iab_category': 'IAB17',
                     'enable_ga_tracking': True,
@@ -2207,8 +2215,8 @@ class CampaignSettingsTest(TestCase):
                     'campaign_goal': 2,
                     'goal_quantity': 10,
                     'target_devices': ['DESKTOP'],
-                    'target_regions': ['CA', '502'],
-                    'exclusion_target_regions': [],
+                    'target_regions': self._target_regions_repr(dma=['502'], countries=['CA']),
+                    'exclusion_target_regions': self._target_regions_repr(),
                     'enable_ga_tracking': False,
                     'enable_adobe_tracking': False,
                     'ga_tracking_type': 2,
@@ -2246,8 +2254,8 @@ class CampaignSettingsTest(TestCase):
                     'campaign_goal': 2,
                     'goal_quantity': 10,
                     'target_devices': ['DESKTOP'],
-                    'target_regions': ['CA', '502'],
-                    'exclusion_target_regions': [],
+                    'target_regions': self._target_regions_repr(dma=['502'], countries=['CA']),
+                    'exclusion_target_regions': self._target_regions_repr(),
                     'enable_ga_tracking': False,
                     'enable_adobe_tracking': False,
                     'ga_tracking_type': 2,
@@ -2299,8 +2307,8 @@ class CampaignSettingsTest(TestCase):
                     'campaign_goal': 2,
                     'goal_quantity': 10,
                     'target_devices': ['DESKTOP'],
-                    'target_regions': ['CA', '502'],
-                    'exclusion_target_regions': [],
+                    'target_regions': self._target_regions_repr(dma=['502'], countries=['CA']),
+                    'exclusion_target_regions': self._target_regions_repr(),
                     'enable_ga_tracking': False,
                     'enable_adobe_tracking': False,
                     'ga_tracking_type': 2,
@@ -2354,8 +2362,8 @@ class CampaignSettingsTest(TestCase):
                     'campaign_goal': 2,
                     'goal_quantity': 10,
                     'target_devices': ['DESKTOP'],
-                    'target_regions': ['CA', '502'],
-                    'exclusion_target_regions': [],
+                    'target_regions': self._target_regions_repr(dma=['502'], countries=['CA']),
+                    'exclusion_target_regions': self._target_regions_repr(),
                     'enable_ga_tracking': False,
                     'enable_adobe_tracking': False,
                     'ga_tracking_type': 2,
@@ -2385,8 +2393,8 @@ class CampaignSettingsTest(TestCase):
                     'name': 'test campaign 2',
                     'campaign_goal': 2,
                     'target_devices': ['nonexistent'],
-                    'target_regions': ['NC', '501'],
-                    'exclusion_target_regions': []
+                    'target_regions': self._target_regions_repr(dma=['501'], countries=['NC']),
+                    'exclusion_target_regions': self._target_regions_repr()
                 }
             }),
             content_type='application/json',

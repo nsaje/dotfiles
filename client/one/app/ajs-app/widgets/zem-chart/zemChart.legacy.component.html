@@ -3,7 +3,7 @@
     <div class="chart-selector">
         <ui-select theme="select2" search-enabled="false" class="button button--dropdown-toggle-icon metric1" ng-model="metrics.metric1" ng-change="chartMetricUpdate()">
             <ui-select-match>{{getSelectedName($select.selected)}}</ui-select-match>
-            <ui-select-choices repeat="metric.value as metric in metricOptions | filter:{shown: '!false'}">
+            <ui-select-choices repeat="metric.value as metric in metricOptions | filter:{shown: '!false'}" class="ui-select-choices">
                 <span>
                     <zem-internal-feature ng-if="metric.internal"></zem-internal-feature>
                     {{metric.name}}
@@ -15,7 +15,7 @@
 
         <ui-select theme="select2" search-enabled="false" class="button button--dropdown-toggle-icon metric2" ng-model="metrics.metric2" ng-change="chartMetricUpdate()">
             <ui-select-match>{{getSelectedName($select.selected)}}</ui-select-match>
-            <ui-select-choices repeat="metric.value as metric in metric2Options | filter:{shown: '!false'}">
+            <ui-select-choices repeat="metric.value as metric in metric2Options | filter:{shown: '!false'}" class="ui-select-choices">
                 <span>
                     <zem-internal-feature ng-if="metric.internal"></zem-internal-feature>
                     {{metric.name}}

@@ -4,6 +4,7 @@ from django.utils import six
 import rest_framework.serializers
 
 import dash.constants
+import dash.regions
 import restapi.fields
 
 
@@ -145,3 +146,87 @@ class AudienceSerializer(rest_framework.serializers.BaseSerializer):
             return []
 
         return self._to_internal_recur(data)
+
+
+class TargetRegionsSerializer(rest_framework.serializers.Serializer):
+    countries = rest_framework.serializers.ListField(child=rest_framework.serializers.CharField(), required=False)
+    regions = rest_framework.serializers.ListField(child=rest_framework.serializers.CharField(), required=False)
+    dma = rest_framework.serializers.ListField(child=rest_framework.serializers.CharField(), required=False)
+    cities = rest_framework.serializers.ListField(child=rest_framework.serializers.CharField(), required=False)
+    postal_codes = rest_framework.serializers.ListField(child=rest_framework.serializers.CharField(), required=False)
+
+    default_error_messages = {
+        'invalid_choice': '"{input}" is not a valid location.'
+    }
+
+    def validate_countries(self, values):
+        return self._validate_geolocations(dash.constants.LocationType.COUNTRY, values)
+
+    def validate_regions(self, values):
+        regions = []
+        countries = []
+        for location in values:
+            if location in dash.regions.SUBDIVISION_TO_COUNTRY:  # we used to treat Puerto Rico, Guam etc. as subdivisions
+                countries.append(dash.regions.SUBDIVISION_TO_COUNTRY[location])
+            else:
+                regions.append(location)
+        self._validate_geolocations(dash.constants.LocationType.REGION, regions)
+        self._validate_geolocations(dash.constants.LocationType.COUNTRY, countries)
+        return regions + countries
+
+    def validate_dma(self, values):
+        return self._validate_geolocations(dash.constants.LocationType.DMA, values)
+
+    def validate_cities(self, values):
+        return self._validate_geolocations(dash.constants.LocationType.CITY, values)
+
+    def validate_postal_codes(self, values):
+        zip_countries = []
+        for location in values:
+            zip_tokenized = location.rsplit(':', 1)
+            if len(zip_tokenized) > 1:  # a ZIP code, need to check country
+                zip_countries.append(zip_tokenized[0])
+            else:
+                self.fail('invalid_choice', input=location)
+        self._validate_geolocations(dash.constants.LocationType.COUNTRY, zip_countries)
+        return values
+
+    def _validate_geolocations(self, geo_type, values):
+        qs = dash.models.Geolocation.objects.filter(
+            type=geo_type,
+            pk__in=values
+        )
+        valid_keys = set(location.key for location in qs)
+        for key in values:
+            if key not in valid_keys:
+                self.fail('invalid_choice', input=key)
+        return values
+
+    def to_internal_value(self, data):
+        data = super(TargetRegionsSerializer, self).to_internal_value(data)
+        return [location for location_list in data.values() for location in location_list if location_list]
+
+    def to_representation(self, target_regions):
+        geo = {
+            'countries': [],
+            'regions': [],
+            'dma': [],
+            'cities': [],
+            'postal_codes': [],
+        }
+        non_zips = {loc.key: loc for loc in dash.features.geolocation.Geolocation.objects.filter(
+            key__in=target_regions)}
+        zips = set(target_regions) - set(non_zips.keys())
+        for location in target_regions:
+            if location in non_zips:
+                if non_zips[location].type == dash.constants.LocationType.COUNTRY:
+                    geo['countries'].append(location)
+                if non_zips[location].type == dash.constants.LocationType.REGION:
+                    geo['regions'].append(location)
+                if non_zips[location].type == dash.constants.LocationType.DMA:
+                    geo['dma'].append(location)
+                if non_zips[location].type == dash.constants.LocationType.CITY:
+                    geo['cities'].append(location)
+            if location in zips:
+                geo['postal_codes'].append(location)
+        return super(TargetRegionsSerializer, self).to_representation(geo)

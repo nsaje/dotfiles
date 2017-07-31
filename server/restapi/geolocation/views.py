@@ -1,5 +1,4 @@
 from rest_framework import permissions
-from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 
 import restapi.views
 import dash.features.geolocation
@@ -7,7 +6,6 @@ import serializers
 
 
 class GeolocationListView(restapi.views.RESTAPIBaseView):
-    renderer_classes = (CamelCaseJSONRenderer,)
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):

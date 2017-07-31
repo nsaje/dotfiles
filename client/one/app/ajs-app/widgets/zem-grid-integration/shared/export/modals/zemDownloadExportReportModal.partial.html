@@ -19,8 +19,8 @@
                 ng-model="export.type"
                 class="button button--plain button--full-width button--dropdown-toggle-icon"
                 ng-change="checkDownloadAllowed()">
-                <ui-select-match placeholder="Choose granularity">{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="option in options | filter:{hidden: '!true'}">
+                <ui-select-match class="ui-select-match" placeholder="Choose granularity">{{$select.selected.name}}</ui-select-match>
+                <ui-select-choices repeat="option in options | filter:{hidden: '!true'}" class="ui-select-choices">
                     {{option.name}}
                 </ui-select-choices>
             </ui-select>

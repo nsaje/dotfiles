@@ -30,8 +30,8 @@
                 search-enabled="false"
                 ng-model="export.type"
                 class="button button--plain button--full-width button--dropdown-toggle-icon">
-                <ui-select-match placeholder="Choose granularity">{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="option in options | filter:{hidden: '!true'}">
+                <ui-select-match class="ui-select-match" placeholder="Choose granularity">{{$select.selected.name}}</ui-select-match>
+                <ui-select-choices repeat="option in options | filter:{hidden: '!true'}" class="ui-select-choices">
                     {{option.name}}
                 </ui-select-choices>
             </ui-select>
@@ -52,8 +52,8 @@
                 class="button button--plain button--full-width button--dropdown-toggle-icon"
                 ng-model="export.frequency"
                 ng-change="frequencyChanged()">
-                <ui-select-match placeholder="Choose frequency">{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="freq in exportSchedulingFrequencies">
+                <ui-select-match class="ui-select-match" placeholder="Choose frequency">{{$select.selected.name}}</ui-select-match>
+                <ui-select-choices repeat="freq in exportSchedulingFrequencies" class="ui-select-choices">
                     <div>{{freq.name}}</div>
                 </ui-select-choices>
             </ui-select>
@@ -73,8 +73,8 @@
                 id="day-of-week-select"
                 class="button button--plain button--full-width button--dropdown-toggle-icon"
                 ng-model="export.dayOfWeek">
-                <ui-select-match placeholder="Choose day of week">{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="dow in exportSchedulingDayOfWeek">
+                <ui-select-match class="ui-select-match" placeholder="Choose day of week">{{$select.selected.name}}</ui-select-match>
+                <ui-select-choices repeat="dow in exportSchedulingDayOfWeek" class="ui-select-choices">
                     <div>{{dow.name}}</div>
                 </ui-select-choices>
             </ui-select>
@@ -95,8 +95,8 @@
                 class="button button--plain button--full-width button--dropdown-toggle-icon"
                 ng-model="export.timePeriod"
                 ng-change="timePeriodChanged()">
-                <ui-select-match placeholder="Choose Time period">{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="tp in exportSchedulingTimePeriods">
+                <ui-select-match class="ui-select-match" placeholder="Choose Time period">{{$select.selected.name}}</ui-select-match>
+                <ui-select-choices repeat="tp in exportSchedulingTimePeriods" class="ui-select-choices">
                     <div>{{tp.name}}</div>
                 </ui-select-choices>
             </ui-select>

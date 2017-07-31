@@ -21,7 +21,7 @@ angular.module('one.widgets').component('zemCampaignLauncherGoal', {
                 $ctrl.newCampaignGoal = angular.copy($ctrl.state.fields.campaignGoal);
                 campaignEditFormVisible = false;
             } else {
-                $ctrl.newCampaignGoal = {primary: true, conversionGoal: {}};
+                $ctrl.newCampaignGoal = {primary: true};
             }
 
             $ctrl.pixels.loading = true;

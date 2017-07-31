@@ -10,6 +10,7 @@
                 ng-model="$ctrl.state.zipTargetingType" search-enabled="false" ng-change="$ctrl.stateService.updateState()">
             <ui-select-match>{{$select.selected.name}}</ui-select-match>
             <ui-select-choices repeat="type.value as type in $ctrl.options.zipTargetingTypes"
+                            class="ui-select-choices"
                             position="down">
                 <div>{{ type.name }}</div>
             </ui-select-choices>
@@ -17,8 +18,9 @@
 
         <ui-select theme="select2" class="button button--dropdown-toggle-icon zem-zip-targeting__country"
                 ng-model="$ctrl.state.selectedCountry" ng-change="$ctrl.stateService.updateState()" >
-            <ui-select-match placeholder="Select country">{{$select.selected.name}}</ui-select-match>
+            <ui-select-match class="ui-select-match" placeholder="Select country">{{$select.selected.name}}</ui-select-match>
             <ui-select-choices repeat="country in $ctrl.state.countrySearchResults"
+                            class="ui-select-choices"
                             position="down"
                             refresh="$ctrl.stateService.searchCountries($select.search)"
                             refresh-delay="250"

@@ -15,10 +15,8 @@ angular.module('one.widgets').controller('zemEditCampaignGoalModalCtrl', functio
         $scope.newCampaignGoal = true;
         $scope.campaignGoal = {
             primary: false,
-            conversionGoal: {},
         };
     } else {
-        $scope.campaignGoal.conversionGoal = $scope.campaignGoal.conversionGoal || {};
         $scope.prevValue = $scope.campaignGoal.value;
     }
 
@@ -27,7 +25,7 @@ angular.module('one.widgets').controller('zemEditCampaignGoalModalCtrl', functio
     };
 
     function getTypeId (goal) {
-        if (goal.conversionGoal.type !== constants.conversionGoalType.PIXEL) {
+        if (goal.conversionGoal && goal.conversionGoal.type !== constants.conversionGoalType.PIXEL) {
             return goal.conversionGoal.type + '::' + goal.conversionGoal.goalId;
         }
         return [

@@ -24,7 +24,7 @@
                     <ui-select-match>
                         <div ng-bind="$ctrl.getGaTrackingTypeByValue($ctrl.entity.settings.gaTrackingType).name"></div>
                     </ui-select-match>
-                    <ui-select-choices repeat="type.value as type in $ctrl.options.gaTrackingType">
+                    <ui-select-choices repeat="type.value as type in $ctrl.options.gaTrackingType" class="ui-select-choices">
                         <div>{{type.name}}</div>
                     </ui-select-choices>
                 </ui-select>

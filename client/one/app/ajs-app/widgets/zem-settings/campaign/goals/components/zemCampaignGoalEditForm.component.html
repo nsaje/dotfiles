@@ -20,8 +20,8 @@
                ng-model="$ctrl.campaignGoal.type"
                on-select="$ctrl.updateTypeChange($select.selected.unit)"
                ng-disabled="!!$ctrl.campaignGoal.id">
-        <ui-select-match placeholder="Choose type">{{ $ctrl.prepareName($select.selected) }}</ui-select-match>
-        <ui-select-choices repeat="goal.value as goal in $ctrl.availableGoals">
+        <ui-select-match class="ui-select-match" placeholder="Choose type">{{ $ctrl.prepareName($select.selected) }}</ui-select-match>
+        <ui-select-choices repeat="goal.value as goal in $ctrl.availableGoals" class="ui-select-choices">
             {{ goal.name }}
         </ui-select-choices>
     </ui-select>
@@ -42,8 +42,8 @@
                    ng-model="$ctrl.campaignGoal.conversionGoal.type"
                    on-select="$ctrl.updateTypeChange()"
                    ng-disabled="!!$ctrl.campaignGoal.id">
-            <ui-select-match placeholder="Choose type">{{$select.selected.name}}</ui-select-match>
-            <ui-select-choices repeat="goal.value as goal in $ctrl.conversionGoalTypes">
+            <ui-select-match class="ui-select-match" placeholder="Choose type">{{$select.selected.name}}</ui-select-match>
+            <ui-select-choices repeat="goal.value as goal in $ctrl.conversionGoalTypes" class="ui-select-choices">
                 {{goal.name}}
             </ui-select-choices>
         </ui-select>
@@ -66,8 +66,8 @@
                    on-select="$ctrl.setAvailableConversionWindowsForPixel($select.selected)"
                    ng-disabled="!!$ctrl.campaignGoal.id"
                    ng-if="$ctrl.pixels.list.length && !$ctrl.pixels.loading">
-            <ui-select-match placeholder="Choose pixel">{{$select.selected.name}}</ui-select-match>
-            <ui-select-choices repeat="pixel.id as pixel in $ctrl.pixels.list">
+            <ui-select-match class="ui-select-match" placeholder="Choose pixel">{{$select.selected.name}}</ui-select-match>
+            <ui-select-choices repeat="pixel.id as pixel in $ctrl.pixels.list" class="ui-select-choices">
                 {{pixel.name}}
             </ui-select-choices>
         </ui-select>
@@ -95,8 +95,8 @@
                    ng-disabled="!!$ctrl.campaignGoal.id"
                    on-select="$ctrl.clearErrors('conversionGoal')"
                    ng-show="$ctrl.conversionWindows.length">
-            <ui-select-match placeholder="Choose conversion window">{{$select.selected.name}}</ui-select-match>
-            <ui-select-choices repeat="window.value as window in $ctrl.conversionWindows">
+            <ui-select-match class="ui-select-match" placeholder="Choose conversion window">{{$select.selected.name}}</ui-select-match>
+            <ui-select-choices repeat="window.value as window in $ctrl.conversionWindows" class="ui-select-choices">
                 {{window.name}}
             </ui-select-choices>
         </ui-select>

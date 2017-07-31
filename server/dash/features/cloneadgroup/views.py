@@ -1,6 +1,4 @@
 from rest_framework import permissions
-from djangorestframework_camel_case.render import CamelCaseJSONRenderer
-from djangorestframework_camel_case.parser import CamelCaseJSONParser
 
 from restapi.views import RESTAPIBaseView
 import restapi.access
@@ -13,9 +11,6 @@ import service
 class CloneAdGroup(RESTAPIBaseView):
     permission_classes = (permissions.IsAuthenticated,
                           restapi.access.gen_permission_class('zemauth.can_clone_adgroups'))
-
-    renderer_classes = (CamelCaseJSONRenderer,)
-    parser_classes = (CamelCaseJSONParser,)
 
     def post(self, request):
         user = request.user

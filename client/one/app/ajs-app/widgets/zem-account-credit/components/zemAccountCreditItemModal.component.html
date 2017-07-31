@@ -31,7 +31,7 @@
                        id="license-fee-select" ng-model="$ctrl.state.creditItem.licenseFee" ng-disabled="$ctrl.state.creditItem.isSigned"
                        search-enabled="true">
                 <ui-select-match>{{$select.selected | number:2}}%</ui-select-match>
-                <ui-select-choices repeat="fee in $ctrl.getLicenseFees($select.search, $ctrl.state.creditItem.licenseFee) | filter: $select.search">
+                <ui-select-choices repeat="fee in $ctrl.getLicenseFees($select.search, $ctrl.state.creditItem.licenseFee) | filter: $select.search" class="ui-select-choices">
                     <span ng-bind-html="fee"></span>%
                 </ui-select-choices>
             </ui-select>

@@ -48,8 +48,8 @@ describe('zemZipTargetingStateService', function () {
         stateService.init();
         expect(stateService.getState().selectedCountry.key).toEqual('US');
 
-        mockedEntity.settings.targetRegions = ['SI:1', 'US:2'];
-        mockedEntity.settings.exclusionTargetRegions = [];
+        mockedEntity.settings.targetRegions = {'postalCodes': ['SI:1', 'US:2']};
+        mockedEntity.settings.exclusionTargetRegions = {'postalCodes': []};
         stateService.init();
         expect(stateService.getState().selectedCountry.key).toEqual('SI');
     });
@@ -61,29 +61,29 @@ describe('zemZipTargetingStateService', function () {
         stateService.init();
         expect(stateService.getState().textareaContent).toEqual('');
 
-        mockedEntity.settings.targetRegions = ['US:1', 'US:2'];
-        mockedEntity.settings.exclusionTargetRegions = [];
+        mockedEntity.settings.targetRegions = {'postalCodes': ['US:1', 'US:2']};
+        mockedEntity.settings.exclusionTargetRegions = {'postalCodes': []};
         stateService.init();
         expect(stateService.getState().textareaContent).toEqual('1, 2');
     });
 
     it('should init api only correctly', function () {
         var stateService = zemZipTargetingStateService.createInstance(mockedEntity);
-        mockedEntity.settings.targetRegions = ['US:1', 'SI:1'];
-        mockedEntity.settings.exclusionTargetRegions = [];
+        mockedEntity.settings.targetRegions = {'postalCodes': ['US:1', 'SI:1']};
+        mockedEntity.settings.exclusionTargetRegions = {'postalCodes': []};
         stateService.init();
         expect(stateService.getState().blockers.apiOnlySettings).toEqual(true);
 
-        mockedEntity.settings.targetRegions = ['US:1'];
-        mockedEntity.settings.exclusionTargetRegions = ['US:2'];
+        mockedEntity.settings.targetRegions = {'postalCodes': ['US:1']};
+        mockedEntity.settings.exclusionTargetRegions = {'postalCodes': ['US:2']};
         stateService.init();
         expect(stateService.getState().blockers.apiOnlySettings).toEqual(true);
     });
 
     it('should detect country is included in general targeting', function () {
         var stateService = zemZipTargetingStateService.createInstance(mockedEntity);
-        mockedEntity.settings.targetRegions = ['US', 'US:1'];
-        mockedEntity.settings.exclusionTargetRegions = [];
+        mockedEntity.settings.targetRegions = {'countries': ['US'], 'postalCodes': ['US:1']};
+        mockedEntity.settings.exclusionTargetRegions = {'postalCodes': []};
         stateService.init();
         expect(stateService.getState().blockers.countryIncluded).toEqual(true);
     });

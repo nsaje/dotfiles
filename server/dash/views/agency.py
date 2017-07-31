@@ -154,8 +154,6 @@ class AdGroupSettings(api_common.BaseApiView):
             'daily_budget_cc':
                 '{:.2f}'.format(settings.daily_budget_cc)
                 if settings.daily_budget_cc is not None else '',
-            'target_regions': settings.target_regions,
-            'exclusion_target_regions': settings.exclusion_target_regions or [],
             'tracking_code': settings.tracking_code,
             'autopilot_daily_budget':
                 '{:.2f}'.format(settings.autopilot_daily_budget)
@@ -189,7 +187,10 @@ class AdGroupSettings(api_common.BaseApiView):
         # TODO (refactor-workaround) Re-use restapi serializers
         from restapi.serializers.targeting import\
             DevicesSerializer, OSsSerializer,\
-            PlacementsSerializer, AudienceSerializer
+            PlacementsSerializer, AudienceSerializer,\
+            TargetRegionsSerializer
+        result['target_regions'] = TargetRegionsSerializer(settings.target_regions).data
+        result['exclusion_target_regions'] = TargetRegionsSerializer(settings.exclusion_target_regions).data
         result['target_devices'] = DevicesSerializer(settings.target_devices).data
         result['target_os'] = OSsSerializer(settings.target_os).data
         result['target_placements'] = PlacementsSerializer(settings.target_placements).data
@@ -201,13 +202,15 @@ class AdGroupSettings(api_common.BaseApiView):
 
     def get_default_settings_dict(self, ad_group):
         settings = ad_group.campaign.get_current_settings()
-        result = {
-            'target_regions': settings.target_regions,
-            'exclusion_target_regions': settings.exclusion_target_regions or []
-        }
+        result = dict()
 
         # TODO (refactor-workaround) Re-use restapi serializers
-        from restapi.serializers.targeting import DevicesSerializer, OSsSerializer, PlacementsSerializer
+        from restapi.serializers.targeting import (
+            DevicesSerializer, OSsSerializer, PlacementsSerializer,
+            TargetRegionsSerializer
+        )
+        result['target_regions'] = TargetRegionsSerializer(settings.target_regions).data
+        result['exclusion_target_regions'] = TargetRegionsSerializer(settings.exclusion_target_regions).data
         result['target_devices'] = DevicesSerializer(settings.target_devices).data
         result['target_os'] = OSsSerializer(settings.target_os).data
         result['target_placements'] = PlacementsSerializer(settings.target_placements).data
@@ -534,9 +537,6 @@ class CampaignSettings(api_common.BaseApiView):
             'blacklist_publisher_groups': settings.blacklist_publisher_groups,
         }
 
-        result['target_regions'] = settings.target_regions
-        result['exclusion_target_regions'] = settings.exclusion_target_regions or []
-
         if request.user.has_perm('zemauth.can_modify_campaign_manager'):
             result['campaign_manager'] = str(settings.campaign_manager.id)\
                 if settings.campaign_manager is not None else None
@@ -551,7 +551,9 @@ class CampaignSettings(api_common.BaseApiView):
                 logger.exception("Google Analytics validation failed")
 
         # TODO (refactor-workaround) Re-use restapi serializers
-        from restapi.serializers.targeting import DevicesSerializer, OSsSerializer, PlacementsSerializer
+        from restapi.serializers.targeting import DevicesSerializer, OSsSerializer, PlacementsSerializer, TargetRegionsSerializer
+        result['target_regions'] = TargetRegionsSerializer(settings.target_regions).data
+        result['exclusion_target_regions'] = TargetRegionsSerializer(settings.exclusion_target_regions).data
         result['target_devices'] = DevicesSerializer(settings.target_devices).data
         result['target_os'] = OSsSerializer(settings.target_os).data
         result['target_placements'] = PlacementsSerializer(settings.target_placements).data

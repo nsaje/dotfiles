@@ -3,6 +3,7 @@ describe('zemCampaignLauncherStateService', function () {
     var $rootScope;
     var zemCampaignLauncherStateService;
     var zemCampaignLauncherEndpoint;
+    var account;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
@@ -11,16 +12,21 @@ describe('zemCampaignLauncherStateService', function () {
         $rootScope = $injector.get('$rootScope');
         zemCampaignLauncherStateService = $injector.get('zemCampaignLauncherStateService');
         zemCampaignLauncherEndpoint = $injector.get('zemCampaignLauncherEndpoint');
+        account = {'id': 1};
     }));
 
     it('should create new state instance', function () {
-        var stateService = zemCampaignLauncherStateService.createInstance();
+        var stateService = zemCampaignLauncherStateService.createInstance(account);
         expect(stateService.getState).toBeDefined();
     });
 
     it('should initialize correctly', function () {
-        var stateService = zemCampaignLauncherStateService.createInstance();
+        var mockedAsyncFunction = zemSpecsHelper.getMockedAsyncFunction($injector);
+        var stateService = zemCampaignLauncherStateService.createInstance(account);
+
+        spyOn(zemCampaignLauncherEndpoint, 'getDefaults').and.callFake(mockedAsyncFunction);
         stateService.initialize();
+        $rootScope.$digest();
         expect(stateService.getState().orderedSteps.length).toEqual(1);
         expect(stateService.getState().currentStep).toEqual(stateService.getState().orderedSteps[0]);
     });
@@ -31,7 +37,7 @@ describe('zemCampaignLauncherStateService', function () {
             {title: 'Test step 2'},
             {title: 'Test step 3'},
         ];
-        var stateService = zemCampaignLauncherStateService.createInstance();
+        var stateService = zemCampaignLauncherStateService.createInstance(account);
         var state = stateService.getState();
 
         state.orderedSteps = orderedSteps;
@@ -45,7 +51,7 @@ describe('zemCampaignLauncherStateService', function () {
             {title: 'Test step 2'},
             {title: 'Test step 3'},
         ];
-        var stateService = zemCampaignLauncherStateService.createInstance();
+        var stateService = zemCampaignLauncherStateService.createInstance(account);
         var state = stateService.getState();
 
         state.orderedSteps = orderedSteps;
@@ -54,8 +60,18 @@ describe('zemCampaignLauncherStateService', function () {
     });
 
     it('should initialize launcher correctly', function () {
-        var stateService = zemCampaignLauncherStateService.createInstance();
+        var mockedAsyncFunction = zemSpecsHelper.getMockedAsyncFunction(
+            $injector,
+            {
+                campaignName: 'default campaign name',
+                targetDevices: ['DEVICE 1', 'DEVICE 2'],
+            }
+        );
+        var stateService = zemCampaignLauncherStateService.createInstance(account);
+
+        spyOn(zemCampaignLauncherEndpoint, 'getDefaults').and.callFake(mockedAsyncFunction);
         stateService.initialize();
+        $rootScope.$digest();
         expect(stateService.getState().orderedSteps.length).toEqual(1);
         expect(stateService.getState().currentStep).toEqual(stateService.getState().orderedSteps[0]);
         expect(stateService.getState().campaignObjective).toEqual(null);
@@ -65,7 +81,7 @@ describe('zemCampaignLauncherStateService', function () {
         expect(stateService.getState().currentStep).toEqual(stateService.getState().orderedSteps[1]);
         expect(stateService.getState().campaignObjective).toEqual(constants.campaignObjective.CONTENT_DISTRIBUTION);
         expect(stateService.getState().fields).toEqual({
-            campaignName: null,
+            campaignName: 'default campaign name',
             iabCategory: null,
             startDate: null,
             endDate: null,
@@ -76,7 +92,7 @@ describe('zemCampaignLauncherStateService', function () {
             uploadBatchId: null,
             targetRegions: null,
             exclusionTargetRegions: null,
-            targetDevices: null,
+            targetDevices: ['DEVICE 1', 'DEVICE 2'],
             targetOs: null,
             targetPlacements: null,
         });
@@ -90,7 +106,7 @@ describe('zemCampaignLauncherStateService', function () {
         var emptyRequiredField = {name: 'emptyRequiredField', required: true};
         var nullRequiredField = {name: 'nullRequiredField', required: true};
 
-        var stateService = zemCampaignLauncherStateService.createInstance();
+        var stateService = zemCampaignLauncherStateService.createInstance(account);
         var state = stateService.getState();
 
         step = {fields: [validField]};
@@ -136,7 +152,7 @@ describe('zemCampaignLauncherStateService', function () {
             {fields: [{name: 'requiredField', required: true}, {name: 'unrequiredField'}]},
             {fields: [{name: 'requiredFieldWithError', required: true}, {name: 'unrequiredFieldWithError'}]},
         ];
-        var stateService = zemCampaignLauncherStateService.createInstance();
+        var stateService = zemCampaignLauncherStateService.createInstance(account);
         var state = stateService.getState();
 
         state.orderedSteps = orderedSteps;
@@ -201,7 +217,7 @@ describe('zemCampaignLauncherStateService', function () {
 
         spyOn(zemCampaignLauncherEndpoint, 'validate').and.callFake(mockedAsyncFunction);
         stateService.validateFields();
-        $rootScope.$apply();
+        $rootScope.$digest();
         expect(zemCampaignLauncherEndpoint.validate).toHaveBeenCalledWith(account, {
             field1: 'invalid value',
             field2: 'invalid value',
@@ -226,7 +242,7 @@ describe('zemCampaignLauncherStateService', function () {
 
         spyOn(zemCampaignLauncherEndpoint, 'launchCampaign').and.callFake(mockedAsyncFunction);
         stateService.launchCampaign();
-        $rootScope.$apply();
+        $rootScope.$digest();
         expect(zemCampaignLauncherEndpoint.launchCampaign).toHaveBeenCalledWith(account, fields);
         expect(state.requests.launchCampaign.success).toBe(true);
     });
@@ -249,7 +265,7 @@ describe('zemCampaignLauncherStateService', function () {
 
         spyOn(zemCampaignLauncherEndpoint, 'launchCampaign').and.callFake(mockedAsyncFunction);
         stateService.launchCampaign();
-        $rootScope.$apply();
+        $rootScope.$digest();
         expect(zemCampaignLauncherEndpoint.launchCampaign).toHaveBeenCalledWith(account, fields);
         expect(state.requests.launchCampaign.error).toBe(true);
         expect(state.fieldsErrors).toEqual(errors);

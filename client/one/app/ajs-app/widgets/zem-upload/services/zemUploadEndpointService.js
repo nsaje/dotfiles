@@ -61,20 +61,24 @@ angular.module('one.widgets').factory('zemUploadEndpointService', function ($htt
             return deferred.promise;
         }
 
-        function createBatch (batchName) {
+        function createBatch (batchName, withoutCandidates) {
             var deferred = $q.defer();
             var url = baseUrl + 'batch/';
-            var config = {
+            var config = {};
+            if (withoutCandidates) {
+                config.params = {};
+                config.params.withoutCandidates = true;
+            }
+            var data = {
                 account_id: zemNavigationNewService.getActiveAccount().id,
                 ad_group_id: adGroupId,
-                params: {},
             };
 
             if (batchName) {
-                config.batch_name = batchName;
+                data.batch_name = batchName;
             }
 
-            $http.post(url, config).success(function (data) {
+            $http.post(url, data, config).success(function (data) {
                 deferred.resolve({
                     batchId: data.data.batch_id,
                     batchName: data.data.batch_name,

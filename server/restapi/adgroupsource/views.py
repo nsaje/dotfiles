@@ -1,7 +1,5 @@
 from django.db import transaction
 from restapi.views import RESTAPIBaseView
-from djangorestframework_camel_case.render import CamelCaseJSONRenderer
-from djangorestframework_camel_case.parser import CamelCaseJSONParser
 
 import core
 
@@ -12,8 +10,6 @@ import serializers
 
 
 class AdGroupSourcesViewList(RESTAPIBaseView):
-    renderer_classes = (CamelCaseJSONRenderer,)
-    parser_classes = (CamelCaseJSONParser,)
 
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)

@@ -30,8 +30,20 @@ describe('zemGeoTargetingStateService', function () {
 
         mockedEntity = {
             settings: {
-                targetRegions: ['a', 'b'],
-                exclusionTargetRegions: ['c', 'd'],
+                targetRegions: {
+                    'countries': ['a', 'b'],
+                    'regions': [],
+                    'dma': [],
+                    'cities': [],
+                    'postalCodes': [],
+                },
+                exclusionTargetRegions: {
+                    'countries': ['c', 'd'],
+                    'regions': [],
+                    'dma': [],
+                    'cities': [],
+                    'postalCodes': [],
+                }
             }
         };
 
@@ -82,8 +94,8 @@ describe('zemGeoTargetingStateService', function () {
         $rootScope.$digest();
         stateService.addIncluded({id: 'inc', geolocation: {type: 'COUNTRY'}});
         stateService.addExcluded({id: 'exc', geolocation: {type: 'COUNTRY'}});
-        expect(mockedEntity.settings.targetRegions).toEqual(['a', 'b', 'inc']);
-        expect(mockedEntity.settings.exclusionTargetRegions).toEqual(['c', 'd', 'exc']);
+        expect(mockedEntity.settings.targetRegions.countries).toEqual(['a', 'b', 'inc']);
+        expect(mockedEntity.settings.exclusionTargetRegions.countries).toEqual(['c', 'd', 'exc']);
     });
 
     it('should correcty remove targetings', function () {
@@ -92,7 +104,7 @@ describe('zemGeoTargetingStateService', function () {
         $rootScope.$digest();
         stateService.removeTargeting({id: 'b', geolocation: {type: 'COUNTRY'}});
         stateService.removeTargeting({id: 'd', geolocation: {type: 'COUNTRY'}});
-        expect(mockedEntity.settings.targetRegions).toEqual(['a']);
-        expect(mockedEntity.settings.exclusionTargetRegions).toEqual(['c']);
+        expect(mockedEntity.settings.targetRegions.countries).toEqual(['a']);
+        expect(mockedEntity.settings.exclusionTargetRegions.countries).toEqual(['c']);
     });
 });

@@ -15,6 +15,7 @@ describe('component: zemCampaignLauncher', function () {
             launchCampaign: function () {},
         };
         $ctrl.state = {};
+        $ctrl.account = {'id': 1};
     }));
 
     it('should initialize without errors', function () {

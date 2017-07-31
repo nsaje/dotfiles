@@ -76,11 +76,13 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
             fields: {},
             fieldsErrors: {},
             requests: {
+                getDefaults: {},
                 validate: {},
                 createCreativesBatch: {},
                 launchCampaign: {},
             },
         };
+        var defaults = {};
 
         this.getState = getState;
         this.initialize = initialize;
@@ -93,8 +95,22 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
         this.launchCampaign = launchCampaign;
 
         function initialize () {
-            initLauncherWithObjective();
-            state.currentStep = state.orderedSteps[0];
+            state.requests.getDefaults.inProgress = {
+                inProgress: true,
+            };
+            zemCampaignLauncherEndpoint.getDefaults(account)
+                .then(function (response) {
+                    defaults = response;
+                    initLauncherWithObjective();
+                    state.currentStep = state.orderedSteps[0];
+                    state.requests.getDefaults.success = true;
+                })
+                .catch(function () {
+                    state.requests.getDefaults.error = true;
+                })
+                .finally(function () {
+                    state.requests.getDefaults.inProgress = false;
+                });
         }
 
         function getState () {
@@ -117,7 +133,7 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
                 state.campaignObjective = objective || null;
                 state.steps = angular.copy(LAUNCHER_STEPS),
                 state.orderedSteps = getOrderedSteps(state.steps, objective);
-                state.fields = getEmptyFields(state.orderedSteps);
+                state.fields = getDefaultFields(state.orderedSteps);
                 state.fieldsErrors = angular.copy(state.fields);
             }
 
@@ -158,7 +174,7 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
         }
 
         function areStepFieldsValid (step) {
-            if (!step.fields) return true;
+            if (!step || !step.fields) return true;
 
             for (var i = 0; i < step.fields.length; i++) {
                 var field = step.fields[i];
@@ -225,13 +241,13 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
             ];
         }
 
-        function getEmptyFields (steps) {
+        function getDefaultFields (steps) {
             var fields = {};
             angular.forEach(steps, function (step) {
                 if (!step.fields) return;
 
                 step.fields.forEach(function (field) {
-                    fields[field.name] = null;
+                    fields[field.name] = defaults[field.name] || null;
                 });
             });
             return fields;

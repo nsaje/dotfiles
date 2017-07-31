@@ -4,12 +4,14 @@ from rest_framework import fields
 
 import dash.constants
 import restapi.fields
+from restapi.serializers import targeting
 
 
 class ConversionGoalSerializer(serializers.Serializer):
     type = restapi.fields.DashConstantField(dash.constants.ConversionGoalType)
     conversion_window = restapi.fields.DashConstantField(dash.constants.ConversionWindows, required=False)
     goal_id = serializers.CharField(
+        required=True,
         max_length=100,
         error_messages={
             'max_length': 'Conversion goal id is too long (%(show_value)d/%(limit_value)d).',
@@ -20,7 +22,7 @@ class ConversionGoalSerializer(serializers.Serializer):
 class CampaignGoalSerializer(serializers.Serializer):
     type = restapi.fields.DashConstantField(dash.constants.CampaignGoalKPI)
     value = fields.DecimalField(max_digits=15, decimal_places=5)
-    conversion_goal = ConversionGoalSerializer()
+    conversion_goal = ConversionGoalSerializer(required=False, allow_null=True)
 
 
 class CampaignLauncherSerializer(serializers.Serializer):
@@ -36,6 +38,8 @@ class CampaignLauncherSerializer(serializers.Serializer):
     end_date = fields.DateField()
     budget_amount = fields.IntegerField(min_value=0)
     max_cpc = fields.DecimalField(
+        required=False,
+        allow_null=True,
         max_digits=None,
         decimal_places=4,
         min_value=decimal.Decimal('0.05'),
@@ -48,3 +52,8 @@ class CampaignLauncherSerializer(serializers.Serializer):
     daily_budget = fields.DecimalField(max_digits=10, decimal_places=4)
     upload_batch_id = restapi.fields.IdField()
     campaign_goal = CampaignGoalSerializer()
+    target_regions = targeting.TargetRegionsSerializer()
+    exclusion_target_regions = targeting.TargetRegionsSerializer()
+    target_devices = targeting.DevicesSerializer()
+    target_placements = targeting.PlacementsSerializer()
+    target_os = targeting.OSsSerializer()

@@ -30,8 +30,8 @@
                 class="button button--plain button--full-width button--dropdown-toggle-icon"
                 ng-model="$ctrl.frequency"
                 ng-change="frequencyChanged()">
-                <ui-select-match placeholder="Choose frequency">{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="freq in $ctrl.optionsFrequencies">
+                <ui-select-match class="ui-select-match" placeholder="Choose frequency">{{$select.selected.name}}</ui-select-match>
+                <ui-select-choices repeat="freq in $ctrl.optionsFrequencies" class="ui-select-choices">
                     <div>{{freq.name}}</div>
                 </ui-select-choices>
             </ui-select>
@@ -51,8 +51,8 @@
                 id="day-of-week-select"
                 class="button button--plain button--full-width button--dropdown-toggle-icon"
                 ng-model="$ctrl.dayOfWeek">
-                <ui-select-match placeholder="Choose day of week">{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="dow in $ctrl.optionsDaysOfWeek">
+                <ui-select-match class="ui-select-match" placeholder="Choose day of week">{{$select.selected.name}}</ui-select-match>
+                <ui-select-choices repeat="dow in $ctrl.optionsDaysOfWeek" class="ui-select-choices">
                     <div>{{dow.name}}</div>
                 </ui-select-choices>
             </ui-select>
@@ -71,8 +71,8 @@
                 id="time-period-select"
                 class="button button--plain button--full-width button--dropdown-toggle-icon"
                 ng-model="$ctrl.timePeriod">
-                <ui-select-match placeholder="Choose Time period">{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="tp in $ctrl.optionsTimePeriods">
+                <ui-select-match class="ui-select-match" placeholder="Choose Time period">{{$select.selected.name}}</ui-select-match>
+                <ui-select-choices repeat="tp in $ctrl.optionsTimePeriods" class="ui-select-choices">
                     <div>{{tp.name}}</div>
                 </ui-select-choices>
             </ui-select>

@@ -1,7 +1,5 @@
 import rest_framework.serializers
 import rest_framework.permissions
-from djangorestframework_camel_case.render import CamelCaseJSONRenderer
-from djangorestframework_camel_case.parser import CamelCaseJSONParser
 
 import restapi.views
 import serializers
@@ -10,8 +8,6 @@ import service
 
 
 class VideoAssetBaseView(restapi.views.RESTAPIBaseView):
-    renderer_classes = (CamelCaseJSONRenderer,)
-    parser_classes = (CamelCaseJSONParser,)
 
     permission_classes = (rest_framework.permissions.IsAuthenticated,
                           restapi.access.HasAccountAccess,

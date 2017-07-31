@@ -362,7 +362,7 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixin):
             return credit_items
 
         def get_any_for_budget_creation(self, account):
-            credit_items = self.filter_by_account(account)
+            credit_items = self.filter_by_account(account).filter_active()
             return credit_items.prefetch_related('budgets').order_by('-start_date', '-end_date', '-created_dt').first()
 
     objects = CreditLineItemManager.from_queryset(QuerySet)()

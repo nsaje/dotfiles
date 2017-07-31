@@ -13,11 +13,12 @@ import service
 
 class TestService(TestCase):
 
+    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2017, 1, 1))
     @mock.patch('dash.features.contentupload.upload.persist_batch', autospec=True)
     @mock.patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group', autospec=True)
     @mock.patch('utils.redirector_helper.insert_adgroup', autospec=True)
     @mock.patch('utils.k1_helper.update_ad_group', autospec=True)
-    def test_launch(self, mock_k1_update, mock_redirector_insert, mock_autopilot, mock_persist_batch):
+    def test_launch(self, mock_k1_update, mock_redirector_insert, mock_autopilot, mock_persist_batch, mock_local_today):
         request = magic_mixer.blend_request_user()
         account = magic_mixer.blend(dash.models.Account)
         credit = magic_mixer.blend(
@@ -43,6 +44,11 @@ class TestService(TestCase):
             goal_value=Decimal(30.0),
             max_cpc=Decimal('0.5'),
             daily_budget=Decimal('15.2'),
+            target_regions=['US'],
+            exclusion_target_regions=['US-NY'],
+            target_devices=[dash.constants.AdTargetDevice.DESKTOP],
+            target_placements=[dash.constants.Placement.APP],
+            target_os=[{'name': dash.constants.OperatingSystem.ANDROID}],
             conversion_goal_type=dash.constants.ConversionGoalType.PIXEL,
             conversion_goal_goal_id=str(pixel.id),
             conversion_goal_window=dash.constants.ConversionWindows.LEQ_1_DAY
@@ -66,6 +72,11 @@ class TestService(TestCase):
         self.assertEqual(ad_group.settings.end_date, datetime.date(2017, 1, 2))
         self.assertEqual(ad_group.settings.cpc_cc, Decimal('0.5'))
         self.assertEqual(ad_group.settings.daily_budget_cc, Decimal('15.2'))
+        self.assertEqual(ad_group.settings.target_regions, ['US'])
+        self.assertEqual(ad_group.settings.exclusion_target_regions, ['US-NY'])
+        self.assertEqual(ad_group.settings.target_devices, [dash.constants.AdTargetDevice.DESKTOP])
+        self.assertEqual(ad_group.settings.target_placements, [dash.constants.Placement.APP])
+        self.assertEqual(ad_group.settings.target_os, [{'name': dash.constants.OperatingSystem.ANDROID}])
 
         self.assertEqual(upload_batch.ad_group, ad_group)
         mock_persist_batch.assert_called_with(upload_batch)

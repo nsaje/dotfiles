@@ -16,8 +16,6 @@ angular.module('one').component('zemCampaignLauncherCreatives', {
         function initUploadWidget () {
             if ($ctrl.state.fields.uploadBatchId || $ctrl.state.requests.createCreativesBatch.inProgress) return;
             $ctrl.state.creatives.endpoint = zemUploadEndpointService.createEndpoint();
-            // FIXME (jurebajt): Don't create a sample candidate on backend when creating new batch
-            $ctrl.state.creatives.candidates = [];
             $ctrl.state.creatives.editFormApi = {};
             $ctrl.state.requests.createCreativesBatch = {
                 inProgress: true,
@@ -27,11 +25,12 @@ angular.module('one').component('zemCampaignLauncherCreatives', {
                 .utc()
                 .add(zemUserService.current() ? zemUserService.current().timezoneOffset : 0, 'seconds')
                 .format('M/D/YYYY h:mm A');
-
-            $ctrl.state.creatives.endpoint.createBatch(batchName)
+            var withoutCandidates = true;
+            $ctrl.state.creatives.endpoint.createBatch(batchName, withoutCandidates)
                 .then(function (response) {
                     $ctrl.state.fields.uploadBatchId = response.batchId;
                     $ctrl.state.creatives.batchName = response.batchName;
+                    $ctrl.state.creatives.candidates = response.candidates;
                     $ctrl.state.requests.createCreativesBatch.success = true;
                 })
                 .catch(function () {

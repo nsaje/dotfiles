@@ -27,8 +27,8 @@
             <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-rule-select"
                        class="button button--plain button--full-width button--dropdown-toggle-icon"
                        ng-model="$ctrl.selectedTopRuleId" ng-disabled="!$ctrl.isCreationMode" ng-change="$ctrl.clearValidationError('rules')">
-                <ui-select-match placeholder="Select Criteria">{{ $select.selected.name }}</ui-select-match>
-                <ui-select-choices repeat="rule.id as rule in $ctrl.rules">
+                <ui-select-match class="ui-select-match" placeholder="Select Criteria">{{ $select.selected.name }}</ui-select-match>
+                <ui-select-choices repeat="rule.id as rule in $ctrl.rules" class="ui-select-choices">
                     {{ rule.name }}
                 </ui-select-choices>
             </ui-select>
@@ -37,8 +37,8 @@
         <div class="form__indented-group" ng-if="$ctrl.showRefererRules()">
             <label class="form__label">Include traffic that meets the following conditions:</label>
             <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-referer-rule-select" class="button button--plain button--full-width button--dropdown-toggle-icon" ng-model="$ctrl.selectedRefererRuleId" ng-disabled="!$ctrl.isCreationMode" ng-change="$ctrl.clearValidationError('rules')">
-                <ui-select-match placeholder="Select Criteria">{{ $select.selected.name }}</ui-select-match>
-                <ui-select-choices repeat="rule.id as rule in $ctrl.refererRules">
+                <ui-select-match class="ui-select-match" placeholder="Select Criteria">{{ $select.selected.name }}</ui-select-match>
+                <ui-select-choices repeat="rule.id as rule in $ctrl.refererRules" class="ui-select-choices">
                     {{ rule.name }}
                 </ui-select-choices>
             </ui-select>

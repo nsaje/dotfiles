@@ -1,86 +1,96 @@
 <h1 class="content-container__title">Campaign launcher</h1>
 
-<ul class="zem-campaign-launcher__step-indicator-container" ng-show="!$ctrl.isCurrentStep($ctrl.state.steps.objectives)">
-    <li ng-repeat="step in $ctrl.state.orderedSteps"
-        class="zem-campaign-launcher__step-indicator"
-        ng-class="{
-            'zem-campaign-launcher__step-indicator--current': $ctrl.isCurrentStep(step),
-            'zem-campaign-launcher__step-indicator--done': $ctrl.isStepDone(step),
-        }">
-        {{step.stepIndicatorTitle}}
-    </li>
-</ul>
 
-<div class="custom-panel">
-    <h2 class="custom-panel__title">{{$ctrl.state.currentStep.title}}</h2>
-    <div class="custom-panel__description">{{$ctrl.state.currentStep.description}}</div>
-
-    <zem-campaign-launcher-objectives ng-if="$ctrl.isCurrentStep($ctrl.state.steps.objectives)"
-                                      class="zem-campaign-launcher-objectives"
-                                      select-objective="$ctrl.stateService.initLauncherWithObjective(objective)">
-    </zem-campaign-launcher-objectives>
-
-    <zem-campaign-launcher-general-settings ng-if="$ctrl.isCurrentStep($ctrl.state.steps.generalSettings)"
-                                            class="zem-campaign-launcher-general-settings"
-                                            state-service="$ctrl.stateService"
-                                            account="$ctrl.account">
-    </zem-campaign-launcher-general-settings>
-
-    <zem-campaign-launcher-targeting ng-if="$ctrl.isCurrentStep($ctrl.state.steps.targeting)"
-                                     class="zem-campaign-launcher-targeting"
-                                     state-service="$ctrl.stateService">
-    </zem-campaign-launcher-targeting>
-
-    <zem-campaign-launcher-creatives ng-if="$ctrl.isCurrentStep($ctrl.state.steps.creatives)"
-                                     class="zem-campaign-launcher-creatives"
-                                     state-service="$ctrl.stateService">
-    </zem-campaign-launcher-creatives>
-
-    <zem-campaign-launcher-review ng-if="$ctrl.isCurrentStep($ctrl.state.steps.review)"
-                                  class="zem-campaign-launcher-review"
-                                  state-service="$ctrl.stateService">
-    </zem-campaign-launcher-review>
+<div class="custom-panel" ng-if="$ctrl.state.requests.getDefaults.inProgress || $ctrl.state.requests.getDefaults.error">
+    <span class="loader" ng-show="$ctrl.state.requests.getDefaults.inProgress"></span>
+    <span class="message message--error" ng-show="$ctrl.state.requests.getDefaults.error">
+        An error occurred. <a href ng-click="$ctrl.stateService.initialize()">Try again.</a>
+    </span>
 </div>
 
-<div class="buttons-panel">
-    <div class="buttons-panel--right">
-        <div class="loader" ng-show="false"></div>
+<div ng-if="$ctrl.state.requests.getDefaults.success">
+    <ul class="zem-campaign-launcher__step-indicator-container" ng-show="!$ctrl.isCurrentStep($ctrl.state.steps.objectives)">
+        <li ng-repeat="step in $ctrl.state.orderedSteps"
+            class="zem-campaign-launcher__step-indicator"
+            ng-class="{
+                'zem-campaign-launcher__step-indicator--current': $ctrl.isCurrentStep(step),
+                'zem-campaign-launcher__step-indicator--done': $ctrl.isStepDone(step),
+            }">
+            {{step.stepIndicatorTitle}}
+        </li>
+    </ul>
 
-        <button class="button button--outline"
-                ng-show="$ctrl.isReviewButtonVisible()"
-                ng-click="$ctrl.goToReviewStep()"
-                type="button">
-            Review & Launch
-        </button>
+    <div class="custom-panel">
+        <h2 class="custom-panel__title">{{$ctrl.state.currentStep.title}}</h2>
+        <div class="custom-panel__description">{{$ctrl.state.currentStep.description}}</div>
 
-        <button class="button button--highlight button--next-step"
-                ng-show="$ctrl.isNextStepButtonVisible()"
-                ng-disabled="!$ctrl.areCurrentStepFieldsValid()"
-                ng-click="$ctrl.goToNextStep()"
-                type="button">
-            Next step
-        </button>
+        <zem-campaign-launcher-objectives ng-if="$ctrl.isCurrentStep($ctrl.state.steps.objectives)"
+                                          class="zem-campaign-launcher-objectives"
+                                          select-objective="$ctrl.stateService.initLauncherWithObjective(objective)">
+        </zem-campaign-launcher-objectives>
 
-        <button class="button button--highlight"
-                ng-show="$ctrl.isLaunchButtonVisible()"
-                ng-click="$ctrl.launchCampaign()"
-                type="button">
-            Launch campaign
-        </button>
+        <zem-campaign-launcher-general-settings ng-if="$ctrl.isCurrentStep($ctrl.state.steps.generalSettings)"
+                                                class="zem-campaign-launcher-general-settings"
+                                                state-service="$ctrl.stateService"
+                                                account="$ctrl.account">
+        </zem-campaign-launcher-general-settings>
+
+        <zem-campaign-launcher-targeting ng-if="$ctrl.isCurrentStep($ctrl.state.steps.targeting)"
+                                         class="zem-campaign-launcher-targeting"
+                                         state-service="$ctrl.stateService">
+        </zem-campaign-launcher-targeting>
+
+        <zem-campaign-launcher-creatives ng-if="$ctrl.isCurrentStep($ctrl.state.steps.creatives)"
+                                         class="zem-campaign-launcher-creatives"
+                                         state-service="$ctrl.stateService">
+        </zem-campaign-launcher-creatives>
+
+        <zem-campaign-launcher-review ng-if="$ctrl.isCurrentStep($ctrl.state.steps.review)"
+                                      class="zem-campaign-launcher-review"
+                                      state-service="$ctrl.stateService">
+        </zem-campaign-launcher-review>
     </div>
 
-    <button class="button button--outline button--previous-step"
-            ng-show="$ctrl.isPreviousStepButtonVisible()"
-            ng-click="$ctrl.goToPreviousStep()"
-            type="button">
-        Previous step
-    </button>
+    <div class="buttons-panel">
+        <div class="buttons-panel--right">
+            <div class="loader" ng-show="false"></div>
 
-    <span class="loader" ng-show="$ctrl.state.requests.launchCampaign.inProgress"></span>
-    <span class="message message--success" ng-show="$ctrl.state.requests.launchCampaign.success">
-        Campaign "{{$ctrl.state.fields.campaignName}}" was successfully launched. Redirecting ...
-    </span>
-    <span class="message message--error" ng-show="$ctrl.state.requests.launchCampaign.error">
-        An error occurred during campaign launch. Please correct the errors and try again.
-    </span>
+            <button class="button button--outline"
+                    ng-show="$ctrl.isReviewButtonVisible()"
+                    ng-click="$ctrl.goToReviewStep()"
+                    type="button">
+                Review & Launch
+            </button>
+
+            <button class="button button--highlight button--next-step"
+                    ng-show="$ctrl.isNextStepButtonVisible()"
+                    ng-disabled="!$ctrl.areCurrentStepFieldsValid()"
+                    ng-click="$ctrl.goToNextStep()"
+                    type="button">
+                Next step
+            </button>
+
+            <button class="button button--highlight"
+                    ng-show="$ctrl.isLaunchButtonVisible()"
+                    ng-click="$ctrl.launchCampaign()"
+                    type="button">
+                Launch campaign
+            </button>
+        </div>
+
+        <button class="button button--outline button--previous-step"
+                ng-show="$ctrl.isPreviousStepButtonVisible()"
+                ng-click="$ctrl.goToPreviousStep()"
+                type="button">
+            Previous step
+        </button>
+
+        <span class="loader" ng-show="$ctrl.state.requests.launchCampaign.inProgress"></span>
+        <span class="message message--success" ng-show="$ctrl.state.requests.launchCampaign.success">
+            Campaign "{{$ctrl.state.fields.campaignName}}" was successfully launched. Redirecting ...
+        </span>
+        <span class="message message--error" ng-show="$ctrl.state.requests.launchCampaign.error">
+            An error occurred during campaign launch. Please correct the errors and try again.
+        </span>
+    </div>
 </div>

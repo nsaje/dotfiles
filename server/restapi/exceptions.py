@@ -3,6 +3,7 @@ import traceback
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ValidationError
 import rest_framework.views
 from rest_framework.response import Response
 from rest_framework import serializers
@@ -28,6 +29,13 @@ def custom_exception_handler(exception, context):
     if isinstance(exception, ObjectDoesNotExist):
         error_data['errorCode'] = "DoesNotExist"
         error_data['details'] = exception.message
+        status_code = 400
+        return Response(error_data, status=status_code)
+
+    # Django ValidationError
+    if isinstance(exception, ValidationError):
+        error_data['errorCode'] = "ValidationError"
+        error_data['details'] = exception.message_dict
         status_code = 400
         return Response(error_data, status=status_code)
 

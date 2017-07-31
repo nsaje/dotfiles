@@ -9,8 +9,9 @@
 <ui-select theme="select2" ng-if="availableAdgroups().length" ng-model="selected.adgroup"
            on-select="addAdgroup($item)"
            class="button button--with-icon add-icon button--dropdown-toggle-icon">
-    <ui-select-match placeholder="Add New Ad Group">{{$item.name}}</ui-select-match>
+    <ui-select-match class="ui-select-match" placeholder="Add New Ad Group">{{$item.name}}</ui-select-match>
     <ui-select-choices
+            class="ui-select-choices"
             group-by="groupByCampaign"
             repeat="adgroup in availableAdgroups() | filter: {name: $select.search} track by adgroup.id"
             position="down">

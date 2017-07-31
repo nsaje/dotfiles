@@ -12,11 +12,32 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
     var INFO_FACEBOOK_EXCLUDED = 'Facebook media source will be paused because it doesn\'t support excluded locations.';
     var INFO_FACEBOOK_INCLUDED = 'Facebook media source will be paused because it doesn\'t support any of the included locations.'; // eslint-disable-line max-len
 
+    var FIELD_COUNTRY = 'countries';
+    var FIELD_CITY = 'cities';
+    var FIELD_REGION = 'regions';
+    var FIELD_DMA = 'dma';
+    var FIELD_ZIP = 'postalCodes';
+    var GEO_TYPE_FIELDS = [FIELD_COUNTRY, FIELD_CITY, FIELD_REGION, FIELD_DMA];
+
+    var TARGETING_REGIONS_TEMPLATE = {};
+    TARGETING_REGIONS_TEMPLATE[FIELD_COUNTRY] = [];
+    TARGETING_REGIONS_TEMPLATE[FIELD_REGION] = [];
+    TARGETING_REGIONS_TEMPLATE[FIELD_DMA] = [];
+    TARGETING_REGIONS_TEMPLATE[FIELD_CITY] = [];
+    TARGETING_REGIONS_TEMPLATE[FIELD_ZIP] = [];
+
     var TARGETING_SECTIONS_TEMPLATE = {};
     TARGETING_SECTIONS_TEMPLATE[constants.geolocationType.COUNTRY] = [];
     TARGETING_SECTIONS_TEMPLATE[constants.geolocationType.REGION] = [];
     TARGETING_SECTIONS_TEMPLATE[constants.geolocationType.DMA] = [];
     TARGETING_SECTIONS_TEMPLATE[constants.geolocationType.CITY] = [];
+
+    var GEO_TYPE_TO_FIELD = {};
+    GEO_TYPE_TO_FIELD[constants.geolocationType.COUNTRY] = FIELD_COUNTRY;
+    GEO_TYPE_TO_FIELD[constants.geolocationType.REGION] = FIELD_REGION;
+    GEO_TYPE_TO_FIELD[constants.geolocationType.DMA] = FIELD_DMA;
+    GEO_TYPE_TO_FIELD[constants.geolocationType.CITY] = FIELD_CITY;
+    GEO_TYPE_TO_FIELD[constants.geolocationType.ZIP] = FIELD_ZIP;
 
 
     function createInstance (entity) {
@@ -51,6 +72,13 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
         }
 
         function init () {
+            if (!entity.settings.targetRegions) {
+                entity.settings.targetRegions = angular.copy(TARGETING_REGIONS_TEMPLATE);
+            }
+            if (!entity.settings.exclusionTargetRegions) {
+                entity.settings.exclusionTargetRegions = angular.copy(TARGETING_REGIONS_TEMPLATE);
+            }
+
             fetchMappings().then(function (mappings) {
                 geolocationMappings = mappings;
                 state.targetings = getTargetings();
@@ -65,19 +93,21 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
             var excluded = angular.copy(TARGETING_SECTIONS_TEMPLATE);
             var notSelected = angular.copy(TARGETING_SECTIONS_TEMPLATE);
 
-            entity.settings.targetRegions.forEach(function (key) {
-                geolocation = geolocationMappings[key];
-                if (geolocation) {
-                    included[geolocation.type].push(generateGeolocationObject(geolocation));
-                    alreadySelectedIds.push(key);
-                }
-            });
-            entity.settings.exclusionTargetRegions.forEach(function (key) {
-                geolocation = geolocationMappings[key];
-                if (geolocation) {
-                    excluded[geolocation.type].push(generateGeolocationObject(geolocation));
-                    alreadySelectedIds.push(key);
-                }
+            GEO_TYPE_FIELDS.forEach(function (geoTypeField) {
+                entity.settings.targetRegions[geoTypeField].forEach(function (key) {
+                    geolocation = geolocationMappings[key];
+                    if (geolocation) {
+                        included[geolocation.type].push(generateGeolocationObject(geolocation));
+                        alreadySelectedIds.push(key);
+                    }
+                });
+                entity.settings.exclusionTargetRegions[geoTypeField].forEach(function (key) {
+                    geolocation = geolocationMappings[key];
+                    if (geolocation) {
+                        excluded[geolocation.type].push(generateGeolocationObject(geolocation));
+                        alreadySelectedIds.push(key);
+                    }
+                });
             });
 
             var SECTION_RESULTS_SIZE = 10;
@@ -129,9 +159,12 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
 
         function addIncluded (targeting) {
             if (!entity.settings.targetRegions) {
-                entity.settings.targetRegions = [];
+                entity.settings.targetRegions = angular.copy(TARGETING_REGIONS_TEMPLATE);
             }
-            entity.settings.targetRegions = entity.settings.targetRegions.concat(targeting.id);
+            var fieldName = GEO_TYPE_TO_FIELD[targeting.geolocation.type];
+            var newRegions = angular.copy(entity.settings.targetRegions);
+            newRegions[fieldName].push(targeting.id);
+            entity.settings.targetRegions = newRegions;
 
             geolocationMappings[targeting.id] = targeting.geolocation;
             state.targetings = getTargetings();
@@ -140,9 +173,12 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
 
         function addExcluded (targeting) {
             if (!entity.settings.exclusionTargetRegions) {
-                entity.settings.exclusionTargetRegions = [];
+                entity.settings.exclusionTargetRegions = angular.copy(TARGETING_REGIONS_TEMPLATE);
             }
-            entity.settings.exclusionTargetRegions = entity.settings.exclusionTargetRegions.concat(targeting.id);
+            var fieldName = GEO_TYPE_TO_FIELD[targeting.geolocation.type];
+            var newRegions = angular.copy(entity.settings.exclusionTargetRegions);
+            newRegions[fieldName].push(targeting.id);
+            entity.settings.exclusionTargetRegions = newRegions;
 
             geolocationMappings[targeting.id] = targeting.geolocation;
             state.targetings = getTargetings();
@@ -150,16 +186,20 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
         }
 
         function removeTargeting (targeting) {
-            var index = entity.settings.targetRegions.indexOf(targeting.id);
+            var fieldName = GEO_TYPE_TO_FIELD[targeting.geolocation.type];
+            var index = entity.settings.targetRegions[fieldName].indexOf(targeting.id);
+            var newRegions;
             if (index !== -1) {
-                entity.settings.targetRegions = entity.settings.targetRegions.slice(0, index)
-                    .concat(entity.settings.targetRegions.slice(index + 1));
+                newRegions = angular.copy(entity.settings.targetRegions);
+                newRegions[fieldName].splice(index, 1);
+                entity.settings.targetRegions = newRegions;
             }
 
-            index = entity.settings.exclusionTargetRegions.indexOf(targeting.id);
+            index = entity.settings.exclusionTargetRegions[fieldName].indexOf(targeting.id);
             if (index !== -1) {
-                entity.settings.exclusionTargetRegions = entity.settings.exclusionTargetRegions.slice(0, index)
-                    .concat(entity.settings.exclusionTargetRegions.slice(index + 1));
+                newRegions = angular.copy(entity.settings.exclusionTargetRegions);
+                newRegions[fieldName].splice(index, 1);
+                entity.settings.exclusionTargetRegions = newRegions;
             }
             state.targetings = getTargetings();
             updateMessages();
@@ -197,9 +237,8 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
 
         function fetchMappings () {
             var deferred = $q.defer();
-            var unmappedKeys = entity.settings.targetRegions
-                .concat(entity.settings.exclusionTargetRegions)
-                .filter(isNotZip)
+            var unmappedKeys = extractGeotargetingKeysWithoutZips(entity.settings.targetRegions)
+                .concat(extractGeotargetingKeysWithoutZips(entity.settings.exclusionTargetRegions))
                 .filter(function (id) {
                     return !geolocationMappings[id];
                 });
@@ -222,8 +261,9 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
         function updateMessages () {
             var warnings = [];
             var infos = [];
-            var regionsWithoutZips = entity.settings.targetRegions.filter(isNotZip);
-            var exclusionRegionsWithoutZips = entity.settings.exclusionTargetRegions.filter(isNotZip);
+            var regionsWithoutZips = extractGeotargetingKeysWithoutZips(entity.settings.targetRegions);
+            var exclusionRegionsWithoutZips = extractGeotargetingKeysWithoutZips(
+                entity.settings.exclusionTargetRegions);
 
             var i, geolocation, hasCountry = false, hasOther = false;
             for (i = 0; i < regionsWithoutZips.length; i++) {
@@ -270,8 +310,14 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
             state.messages.infos = infos;
         }
 
-        function isNotZip (id) {
-            return id.indexOf(':') === -1;
+        function extractGeotargetingKeysWithoutZips (targeting) {
+            var keys = [];
+            [FIELD_COUNTRY, FIELD_REGION, FIELD_CITY, FIELD_DMA].forEach(function (geoTypeField) {
+                targeting[geoTypeField].forEach(function (key) {
+                    keys.push(key);
+                });
+            });
+            return keys;
         }
     }
 });

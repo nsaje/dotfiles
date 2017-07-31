@@ -1,5 +1,4 @@
 from rest_framework import permissions
-from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 
 import restapi.views
 from restapi.serializers.targeting import AudienceSerializer
@@ -9,7 +8,6 @@ import serializers
 
 
 class TaxonomyTreeInternalView(restapi.views.RESTAPIBaseView):
-    renderer_classes = (CamelCaseJSONRenderer,)
     permission_classes = (
         permissions.IsAuthenticated,
         restapi.access.gen_permission_class('zemauth.can_use_bluekai_targeting')
@@ -21,7 +19,6 @@ class TaxonomyTreeInternalView(restapi.views.RESTAPIBaseView):
 
 
 class TaxonomyTreeView(restapi.views.RESTAPIBaseView):
-    renderer_classes = (CamelCaseJSONRenderer,)
     permission_classes = (
         permissions.IsAuthenticated,
         restapi.access.gen_permission_class('zemauth.can_use_bluekai_targeting')
@@ -33,7 +30,6 @@ class TaxonomyTreeView(restapi.views.RESTAPIBaseView):
 
 
 class SegmentReachView(restapi.views.RESTAPIBaseView):
-    renderer_classes = (CamelCaseJSONRenderer,)
     permission_classes = (
         permissions.IsAuthenticated,
         restapi.access.gen_permission_class('zemauth.can_use_bluekai_targeting')

@@ -38,10 +38,11 @@
            theme="bootstrap"
            sortable="false"
            close-on-select="false">
-    <ui-select-match placeholder="{{$ctrl.selectTargetingButtonText}}">
+    <ui-select-match class="ui-select-match" class="ui-select-match" placeholder="{{$ctrl.selectTargetingButtonText}}">
         {{ $ctrl.selectTargetingButtonText }}
     </ui-select-match>
     <ui-select-choices repeat="targeting in $ctrl.unselectedItems | filter: {name: $select.search} track by targeting.id"
+                       class="ui-select-choices"
                        group-by="$ctrl.groupBy"
                        refresh="$ctrl.onRefresh($select.search)"
                        refresh-delay="250"

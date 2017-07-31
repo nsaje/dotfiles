@@ -3,19 +3,21 @@ import logging
 import influx
 import ipware.ip
 import time
+import json
 
 from django.db import transaction
 from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSetMixin
-from rest_framework.renderers import JSONRenderer
+import rest_framework.renderers
+import rest_framework.parsers
 from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework import permissions
 from rest_framework import viewsets
 from rest_framework import pagination
 from rest_framework import exceptions
-from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
+import djangorestframework_camel_case.util
 
 from utils import json_helper, exc, dates_helper
 
@@ -39,8 +41,13 @@ import dash.features.geolocation
 logger = logging.getLogger(__name__)
 
 
-class RESTAPIJSONRenderer(JSONRenderer):
+class RESTAPIJSONRenderer(rest_framework.renderers.JSONRenderer):
     encoder_class = json_helper.JSONEncoder
+
+    def render(self, data, *args, **kwargs):
+        return super(RESTAPIJSONRenderer, self).render(
+            djangorestframework_camel_case.util.camelize(data), *args, **kwargs
+        )
 
 
 class CanUseRESTAPIPermission(permissions.BasePermission):
@@ -56,6 +63,7 @@ class RESTAPIBaseView(APIView):
     ]
 
     renderer_classes = [RESTAPIJSONRenderer]
+    parser_classes = [CamelCaseJSONParser]
     permission_classes = (permissions.IsAuthenticated, CanUseRESTAPIPermission,)
 
     def get_serializer_context(self):
@@ -101,8 +109,7 @@ class RESTAPIBaseView(APIView):
 
 
 class RESTAPIBaseViewSet(ViewSetMixin, RESTAPIBaseView):
-    renderer_classes = (CamelCaseJSONRenderer,)
-    parser_classes = (CamelCaseJSONParser,)
+    pass
 
 
 class DataNodeSerializerMixin(object):
@@ -147,7 +154,7 @@ class SettingsSerializer(serializers.BaseSerializer):
         settings = data_internal['data']['settings']
         entity_id = int(settings['id'])
         settings.update(validated_data['settings'])
-        self.request.body = RESTAPIJSONRenderer().render(({'settings': settings}))
+        self.request.body = json.dumps(({'settings': settings}), cls=json_helper.JSONEncoder)
         data_internal_new, _ = self.view_internal.put(self.request, entity_id)
         return data_internal_new
 
@@ -321,7 +328,7 @@ class AdGroupSerializer(SettingsSerializer):
 
             if new_state and new_state != old_state:
                 entity_id = int(id_)
-                self.request.body = RESTAPIJSONRenderer().render(({'state': new_state}))
+                self.request.body = json.dumps({'state': new_state}, cls=json_helper.JSONEncoder)
                 internal_view = agency.AdGroupSettingsState(rest_proxy=True)
                 data_internal_state, _ = internal_view.post(self.request, entity_id)
                 data_internal_new['data'].update(data_internal_state['data'])
@@ -352,8 +359,8 @@ class AdGroupSerializer(SettingsSerializer):
             'trackingCode': settings['tracking_code'],
             'targeting': {
                 'geo': {
-                    'included': self._partition_regions(settings['target_regions']),
-                    'excluded': self._partition_regions(settings['exclusion_target_regions']),
+                    'included': settings['target_regions'],
+                    'excluded': settings['exclusion_target_regions'],
                 },
                 'devices': settings['target_devices'],
                 'os': settings['target_os'],
@@ -402,8 +409,6 @@ class AdGroupSerializer(SettingsSerializer):
             'max_cpm': data['maxCpm'],
             'daily_budget_cc': data['dailyBudget'],
             'tracking_code': data['trackingCode'],
-            'target_regions': self._unpartition_regions(data['targeting']['geo']['included']),
-            'exclusion_target_regions': self._unpartition_regions(data['targeting']['geo']['excluded']),
             'interest_targeting': fields.DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['included']),
             'exclusion_interest_targeting': fields.DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['excluded']),
             'bluekai_targeting': self._handle_audience_targeting(data),
@@ -418,6 +423,8 @@ class AdGroupSerializer(SettingsSerializer):
             'exclusion_retargeting_ad_groups': data['targeting']['retargetingAdGroups']['excluded'],
 
             # TODO (refactor-workaround) Deserialization done in Django Views
+            'target_regions': data['targeting']['geo']['included'],
+            'exclusion_target_regions': data['targeting']['geo']['excluded'],
             'target_devices': data['targeting']['devices'],
             'target_placements': data['targeting']['placements'],
             'target_os': data['targeting']['os'],
@@ -473,6 +480,8 @@ class AdGroupSerializer(SettingsSerializer):
 
 class SettingsViewDetails(RESTAPIBaseView):
 
+    parser_classes = (rest_framework.parsers.JSONParser,)
+
     def get(self, request, entity_id):
         view_internal = self.internal_view_cls(rest_proxy=True)
         data_internal, status_code = view_internal.get(request, entity_id)
@@ -489,6 +498,8 @@ class SettingsViewDetails(RESTAPIBaseView):
 
 
 class SettingsViewList(RESTAPIBaseView):
+
+    parser_classes = (rest_framework.parsers.JSONParser,)
 
     def _get_settings_list(self, request):
         raise NotImplementedError()
@@ -636,6 +647,7 @@ class CampaignGoalsSerializer(serializers.BaseSerializer):
 
 
 class CampaignGoalsViewList(RESTAPIBaseView):
+    parser_classes = (rest_framework.parsers.JSONParser,)
 
     def get(self, request, campaign_id):
         view_internal = agency.CampaignSettings(rest_proxy=True)
@@ -657,7 +669,7 @@ class CampaignGoalsViewList(RESTAPIBaseView):
                 'modified': {}
             }
         }
-        self.request.body = RESTAPIJSONRenderer().render(put_data)
+        self.request.body = json.dumps(put_data, cls=json_helper.JSONEncoder)
         data_internal, status_code = view_internal.put(request, int(campaign_id))
         return self.response_ok(CampaignGoalsSerializer(data_internal['data']['goals'][-1]).data, status=201)
 
@@ -668,6 +680,7 @@ class CampaignGoalPutSerializer(serializers.Serializer):
 
 
 class CampaignGoalsViewDetails(RESTAPIBaseView):
+    parser_classes = (rest_framework.parsers.JSONParser,)
 
     def get(self, request, campaign_id, goal_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -701,10 +714,10 @@ class CampaignGoalsViewDetails(RESTAPIBaseView):
 
 class CampaignBudgetSerializer(serializers.Serializer):
     id = fields.IdField(read_only=True)
-    creditId = fields.IdField(source='credit')
+    credit_id = fields.IdField(source='credit')
     amount = serializers.DecimalField(max_digits=20, decimal_places=0)
-    startDate = serializers.DateField(source='start_date')
-    endDate = serializers.DateField(source='end_date')
+    start_date = serializers.DateField()
+    end_date = serializers.DateField()
     state = fields.DashConstantField(constants.BudgetLineItemState, read_only=True)
     spend = serializers.DecimalField(max_digits=20, decimal_places=4, read_only=True)
     available = serializers.DecimalField(max_digits=20, decimal_places=4, read_only=True)
@@ -731,7 +744,7 @@ class CampaignBudgetViewList(RESTAPIBaseView):
         internal_view = bcm.views.CampaignBudgetView(rest_proxy=True)
         post_data = serializer.validated_data
 
-        self.request.body = RESTAPIJSONRenderer().render(post_data)
+        self.request.body = json.dumps(post_data, cls=json_helper.JSONEncoder)
         data_internal, _ = internal_view.put(self.request, campaign_id)
         budget_id = int(data_internal['data'])
         response = CampaignBudgetViewDetails().get(self.request, campaign_id, budget_id)
@@ -759,7 +772,7 @@ class CampaignBudgetViewDetails(RESTAPIBaseView):
         put_data = {k: data_internal_get['data'][k] for k in ['credit', 'amount', 'start_date', 'end_date', 'comment']}
         put_data['credit'] = put_data['credit']['id']
         put_data.update(serializer.validated_data)
-        self.request.body = RESTAPIJSONRenderer().render(put_data)
+        self.request.body = json.dumps(put_data, cls=json_helper.JSONEncoder)
         internal_view.post(self.request, campaign_id, budget_id)
         return CampaignBudgetViewDetails().get(self.request, campaign_id, budget_id)
 
@@ -772,7 +785,6 @@ class StatsSerializer(serializers.Serializer):
 
 
 class CampaignStatsView(RESTAPIBaseView):
-    renderer_classes = (CamelCaseJSONRenderer,)
 
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -816,7 +828,7 @@ class PublisherSerializer(serializers.Serializer):
         }
 
         view_internal = publishers.PublisherTargeting(rest_proxy=True)
-        request.body = RESTAPIJSONRenderer().render(post_data)
+        request.body = json.dumps(post_data, cls=json_helper.JSONEncoder)
         data_internal, status_code = view_internal.post(request)
 
 
@@ -860,8 +872,8 @@ class PublishersViewList(RESTAPIBaseView):
 
 
 class AdGroupSourcesRTBSerializer(serializers.Serializer):
-    groupEnabled = serializers.BooleanField(source='b1_sources_group_enabled')
-    dailyBudget = serializers.DecimalField(max_digits=10, decimal_places=2, source='b1_sources_group_daily_budget')
+    group_enabled = serializers.BooleanField(source='b1_sources_group_enabled')
+    daily_budget = serializers.DecimalField(max_digits=10, decimal_places=2, source='b1_sources_group_daily_budget')
     state = fields.DashConstantField(constants.AdGroupSourceSettingsState, source='b1_sources_group_state')
     cpc = serializers.DecimalField(max_digits=10, decimal_places=4, source='b1_sources_group_cpc_cc')
 
@@ -871,7 +883,7 @@ class AdGroupSourcesRTBSerializer(serializers.Serializer):
         settings = data_internal
         entity_id = int(settings['id'])
         settings.update(validated_data)
-        request.body = RESTAPIJSONRenderer().render(({'settings': settings}))
+        request.body = json.dumps({'settings': settings}, cls=json_helper.JSONEncoder)
         data_internal_new, _ = agency.AdGroupSettings(rest_proxy=True).put(request, entity_id)
         return data_internal_new['data']['settings']
 
@@ -914,7 +926,7 @@ class ContentAdSerializer(serializers.ModelSerializer):
             'state': validated_data['state'],
             'selected_ids': [int(content_ad_id)]
         }
-        request.body = RESTAPIJSONRenderer().render(post_data)
+        request.body = json.dumps(post_data, cls=json_helper.JSONEncoder)
         view_internal = bulk_actions.AdGroupContentAdState(rest_proxy=True)
         data_internal, status_code = view_internal.post(request, content_ad.ad_group_id)
         content_ad.refresh_from_db()
@@ -922,7 +934,6 @@ class ContentAdSerializer(serializers.ModelSerializer):
 
 
 class ContentAdViewList(RESTAPIBaseView):
-    renderer_classes = (CamelCaseJSONRenderer,)
 
     def get(self, request):
         ad_group_id = request.query_params.get('adGroupId')
@@ -935,7 +946,6 @@ class ContentAdViewList(RESTAPIBaseView):
 
 
 class ContentAdViewDetails(RESTAPIBaseView):
-    renderer_classes = (CamelCaseJSONRenderer,)
 
     def get(self, request, content_ad_id):
         content_ad = helpers.get_content_ad(request.user, content_ad_id)
@@ -985,8 +995,6 @@ class UploadBatchSerializer(serializers.Serializer):
 
 
 class ContentAdBatchViewList(RESTAPIBaseView):
-    renderer_classes = (CamelCaseJSONRenderer,)
-    parser_classes = (CamelCaseJSONParser,)
 
     def post(self, request):
         ad_group_id = request.query_params.get('adGroupId')
@@ -1020,7 +1028,6 @@ class ContentAdBatchViewList(RESTAPIBaseView):
 
 
 class ContentAdBatchViewDetails(RESTAPIBaseView):
-    renderer_classes = (CamelCaseJSONRenderer,)
 
     def get(self, request, batch_id):
         try:
@@ -1034,8 +1041,6 @@ class ContentAdBatchViewDetails(RESTAPIBaseView):
 
 
 class ReportsViewList(RESTAPIBaseView):
-    renderer_classes = (CamelCaseJSONRenderer,)
-    parser_classes = (CamelCaseJSONParser,)
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
@@ -1052,8 +1057,6 @@ class ReportsViewList(RESTAPIBaseView):
 
 
 class ReportsViewDetails(RESTAPIBaseView):
-    renderer_classes = (CamelCaseJSONRenderer,)
-    parser_classes = (CamelCaseJSONParser,)
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, job_id):
@@ -1114,9 +1117,6 @@ class CanEditPublisherGroupsPermission(permissions.BasePermission):
 
 
 class PublisherGroupViewSet(RESTAPIBaseView, viewsets.ModelViewSet):
-    renderer_classes = (CamelCaseJSONRenderer,)
-    parser_classes = (CamelCaseJSONParser,)
-
     serializer_class = PublisherGroupSerializer
     lookup_url_kwarg = 'publisher_group_id'
     permission_classes = RESTAPIBaseView.permission_classes + (CanEditPublisherGroupsPermission,)
@@ -1141,8 +1141,6 @@ class PublisherGroupViewSet(RESTAPIBaseView, viewsets.ModelViewSet):
 
 
 class PublisherGroupEntryViewSet(RESTAPIBaseView, viewsets.ModelViewSet):
-    renderer_classes = (CamelCaseJSONRenderer,)
-    parser_classes = (CamelCaseJSONParser,)
     pagination_class = StandardPagination
     permission_classes = RESTAPIBaseView.permission_classes + (CanEditPublisherGroupsPermission,)
 

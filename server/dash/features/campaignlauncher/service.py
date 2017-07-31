@@ -6,6 +6,7 @@ from dash.features import contentupload
 
 def launch(request, account, name, iab_category, start_date, end_date, budget_amount,
            goal_type, goal_value, max_cpc, daily_budget, upload_batch,
+           target_regions=None, exclusion_target_regions=None, target_devices=None, target_os=None, target_placements=None,
            conversion_goal_type=None, conversion_goal_goal_id=None, conversion_goal_window=None):
     campaign = models.Campaign.objects.create(
         request=request,
@@ -41,7 +42,12 @@ def launch(request, account, name, iab_category, start_date, end_date, budget_am
         start_date=start_date,
         end_date=end_date,
         cpc_cc=max_cpc,
-        daily_budget_cc=daily_budget
+        daily_budget_cc=daily_budget,
+        target_regions=target_regions,
+        exclusion_target_regions=exclusion_target_regions,
+        target_devices=target_devices,
+        target_os=target_os,
+        target_placements=target_placements,
     )
 
     upload_batch.set_ad_group(ad_group)

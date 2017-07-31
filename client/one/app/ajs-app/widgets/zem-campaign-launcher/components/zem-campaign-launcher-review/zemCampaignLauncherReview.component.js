@@ -24,13 +24,20 @@ angular.module('one').component('zemCampaignLauncherReview', {
         }
 
         function isGeoTargetingEnabled () {
-            if ($ctrl.state.fields.targetRegions && $ctrl.state.fields.targetRegions.length) {
-                return true;
-            }
-            if ($ctrl.state.fields.exclusionTargetRegions && $ctrl.state.fields.exclusionTargetRegions.length) {
-                return true;
-            }
-            return false;
+            var enabled = false;
+            Object.keys($ctrl.state.fields.targetRegions).forEach(function (key) {
+                var section = $ctrl.state.fields.targetRegions[key] || [];
+                if (section.length > 0) {
+                    enabled = true;
+                }
+            });
+            Object.keys($ctrl.state.fields.exclusionTargetRegions).forEach(function (key) {
+                var section = $ctrl.state.fields.exclusionTargetRegions[key] || [];
+                if (section.length > 0) {
+                    enabled = true;
+                }
+            });
+            return enabled;
         }
 
         function isDeviceTargetingEnabled () {

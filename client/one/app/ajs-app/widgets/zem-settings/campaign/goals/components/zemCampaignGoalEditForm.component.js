@@ -28,8 +28,13 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
         };
 
         function updateTypeChange (goalUnit) {
-            delete $ctrl.campaignGoal.conversionGoal.goalId;
-            delete $ctrl.campaignGoal.conversionGoal.conversionWindow;
+            if ($ctrl.campaignGoal.type === constants.campaignGoalKPI.CPA) {
+                $ctrl.campaignGoal.conversionGoal = $ctrl.campaignGoal.conversionGoal || {};
+                delete $ctrl.campaignGoal.conversionGoal.goalId;
+                delete $ctrl.campaignGoal.conversionGoal.conversionWindow;
+            } else {
+                delete $ctrl.campaignGoal.conversionGoal;
+            }
 
             $ctrl.clearErrors('type');
             $ctrl.clearErrors('conversionGoal');
@@ -59,15 +64,18 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
         }
 
         function isConversionPixelFormVisible () {
-            return $ctrl.campaignGoal.conversionGoal.type === constants.conversionGoalType.PIXEL;
+            return $ctrl.campaignGoal.conversionGoal &&
+                $ctrl.campaignGoal.conversionGoal.type === constants.conversionGoalType.PIXEL;
         }
 
         function isGAFormVisible () {
-            return $ctrl.campaignGoal.conversionGoal.type === constants.conversionGoalType.GA;
+            return $ctrl.campaignGoal.conversionGoal &&
+                $ctrl.campaignGoal.conversionGoal.type === constants.conversionGoalType.GA;
         }
 
         function isOmnitureFormVisible () {
-            return $ctrl.campaignGoal.conversionGoal.type === constants.conversionGoalType.OMNITURE;
+            return $ctrl.campaignGoal.conversionGoal &&
+                $ctrl.campaignGoal.conversionGoal.type === constants.conversionGoalType.OMNITURE;
         }
 
         function setAvailableConversionWindowsForPixel (pixel) {

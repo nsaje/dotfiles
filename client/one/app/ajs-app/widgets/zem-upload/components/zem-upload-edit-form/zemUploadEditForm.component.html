@@ -80,8 +80,8 @@
                 <ui-select theme="select2" search-enabled="false" id="image-crop-input"
                            class="button button--plain button--full-width button--dropdown-toggle-icon"
                            ng-model="ctrl.selectedCandidate.imageCrop" ng-change="ctrl.updateField('imageCrop')">
-                    <ui-select-match placeholder="Choose image crop">{{$select.selected.name}}</ui-select-match>
-                    <ui-select-choices repeat="crop.value as crop in ctrl.imageCrops">
+                    <ui-select-match class="ui-select-match" placeholder="Choose image crop">{{$select.selected.name}}</ui-select-match>
+                    <ui-select-choices repeat="crop.value as crop in ctrl.imageCrops" class="ui-select-choices">
                         {{crop.name}}
                     </ui-select-choices>
                 </ui-select>

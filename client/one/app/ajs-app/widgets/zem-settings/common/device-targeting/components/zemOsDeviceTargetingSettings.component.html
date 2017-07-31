@@ -21,7 +21,7 @@
                    class="button button--plain button--full-width button--dropdown-toggle-icon"
                    ng-model="operatingSystem.version.min" ng-change="$ctrl.stateService.update()" search-enabled="false">
             <ui-select-match>{{operatingSystem.version.min.name}}</ui-select-match>
-            <ui-select-choices repeat="version in operatingSystem.versions">
+            <ui-select-choices repeat="version in operatingSystem.versions" class="ui-select-choices">
                 <div ng-bind-html="version.name"></div>
             </ui-select-choices>
         </ui-select>
@@ -34,7 +34,7 @@
                    class="button button--plain button--full-width button--dropdown-toggle-icon"
                    ng-model="operatingSystem.version.max" ng-change="$ctrl.stateService.update()" search-enabled="false">
             <ui-select-match>{{operatingSystem.version.max.name}}</ui-select-match>
-            <ui-select-choices repeat="version in operatingSystem.versions">
+            <ui-select-choices repeat="version in operatingSystem.versions" class="ui-select-choices">
                 <div ng-bind-html="version.name"></div>
             </ui-select-choices>
         </ui-select>
@@ -47,8 +47,8 @@
 <ui-select theme="select2" ng-model="_model_" search-enabled="false"
            on-select="$ctrl.stateService.addOperatingSystem($item)"
            class="button button--with-icon add-icon button--dropdown-toggle-icon m-t-s">
-    <ui-select-match placeholder="Add Operating System">Add Operating System</ui-select-match>
-    <ui-select-choices repeat="operatingSystem in $ctrl.availableOptions">
+    <ui-select-match class="ui-select-match" placeholder="Add Operating System">Add Operating System</ui-select-match>
+    <ui-select-choices repeat="operatingSystem in $ctrl.availableOptions" class="ui-select-choices">
             <span>{{ operatingSystem.name }}</span>
     </ui-select-choices>
     <ui-select-no-choice>All options added</ui-select-no-choice>

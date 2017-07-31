@@ -38,9 +38,6 @@ angular.module('one.widgets').component('zemGeoTargeting', {
 
         $ctrl.$onChanges = function (changes) {
             if (changes.entity && $ctrl.entity) {
-                $ctrl.entity.settings.targetRegions = $ctrl.entity.settings.targetRegions || [];
-                $ctrl.entity.settings.exclusionTargetRegions = $ctrl.entity.settings.exclusionTargetRegions || [];
-
                 $ctrl.stateService = zemGeoTargetingStateService.createInstance($ctrl.entity);
                 $ctrl.state = $ctrl.stateService.getState();
 
@@ -79,9 +76,7 @@ angular.module('one.widgets').component('zemGeoTargeting', {
         }
 
         function hasZips (regions) {
-            return regions.some(function (key) {
-                return key[2] === ':';
-            });
+            return regions[constants.geolocationType.ZIP];
         }
 
         function isEqualToDefaultSettings () {
