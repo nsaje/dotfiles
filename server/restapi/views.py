@@ -577,7 +577,7 @@ class CampaignViewList(SettingsViewList):
             campaigns = dash.models.Campaign.objects.all().filter_by_user(request.user)
 
         campaign_settings = dash.models.CampaignSettingsReadOnly.objects.filter(
-            campaign__in=campaigns).group_current_settings().select_related('campaign')
+            campaign__in=campaigns).group_current_settings().select_related('campaign', 'campaign_manager')
 
         return campaign_settings
 
