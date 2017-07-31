@@ -56,8 +56,15 @@
     background-repeat: repeat-x;
     border-color: $abdtp-active-border-top-color $abdtp-active-border-top-color $abdtp-active-border-bottom-color;
     color: $abdtp-active-color;
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#{$abdtp-background-color-start}', endColorstr='#{$abdtp-background-color-end}', GradientType=0);
+    filter: progid:dximagetransform.microsoft.gradient(startColorstr='#{$abdtp-background-color-start}', endColorstr='#{$abdtp-background-color-end}', GradientType=0);
     text-shadow: 0 -1px 0 rgba(0, 0, 0, .25);
+  }
+
+  .current,
+  .current:hover,
+  .current.disabled,
+  .current.disabled:hover {
+    background-color: $abdtp-current-background-color;
   }
 
   // scss-lint:disable QualifyingElement

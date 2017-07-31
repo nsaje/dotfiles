@@ -36,6 +36,6 @@
     "commit": "6367ced04daafc054aeff51b2a903669eb0da214"
   },
   "_source": "https://github.com/davidstutz/bootstrap-multiselect.git",
-  "_target": "0.x",
+  "_target": "0.9.13",
   "_originalSource": "bootstrap-multiselect"
 }

@@ -28,14 +28,14 @@
     "angular-sanitize": ">=1.2.18",
     "angular-mocks": ">=1.2.18"
   },
-  "version": "0.19.4",
-  "_release": "0.19.4",
+  "version": "0.19.8",
+  "_release": "0.19.8",
   "_resolution": {
     "type": "version",
-    "tag": "v0.19.4",
-    "commit": "4bd4b5033528c8bf6840d661dbbf8ca439113ed0"
+    "tag": "v0.19.8",
+    "commit": "fc6502179847b41f864be042d432eec32e8530c4"
   },
   "_source": "https://github.com/angular-ui/ui-select.git",
-  "_target": "0.x",
+  "_target": "0.19.8",
   "_originalSource": "angular-ui-select"
 }
