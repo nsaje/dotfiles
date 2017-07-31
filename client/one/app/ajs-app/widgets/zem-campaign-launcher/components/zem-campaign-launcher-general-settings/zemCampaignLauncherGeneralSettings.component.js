@@ -12,7 +12,6 @@ angular.module('one').component('zemCampaignLauncherGeneralSettings', {
         $ctrl.$onInit = function () {
             $ctrl.state = $ctrl.stateService.getState();
             $ctrl.availableIabCategories = getAvailableIabCategories();
-            $ctrl.datePickers = getConfiguredDatePickers();
         };
 
         function onFieldChange () {
@@ -31,20 +30,6 @@ angular.module('one').component('zemCampaignLauncherGeneralSettings', {
             }
 
             return options.iabCategories.slice().sort(iabSort);
-        }
-
-        function getConfiguredDatePickers () {
-            var currentMoment = moment();
-            return {
-                startDatePicker: {
-                    isOpen: false,
-                    options: {minDate: currentMoment.toDate()},
-                },
-                endDatePicker: {
-                    isOpen: false,
-                    options: {minDate: currentMoment.toDate()},
-                },
-            };
         }
     },
 });

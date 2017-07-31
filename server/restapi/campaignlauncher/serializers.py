@@ -34,8 +34,6 @@ class CampaignLauncherSerializer(serializers.Serializer):
         dash.constants.IABCategory,
         error_messages={'required': 'Please specify the IAB category.'}
     )
-    start_date = fields.DateField()
-    end_date = fields.DateField()
     budget_amount = fields.IntegerField(min_value=0)
     max_cpc = fields.DecimalField(
         required=False,

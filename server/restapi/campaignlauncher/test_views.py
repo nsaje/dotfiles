@@ -1,6 +1,5 @@
 from decimal import Decimal
 import mock
-import datetime
 
 from django.core.urlresolvers import reverse
 
@@ -59,8 +58,6 @@ class CampaignLauncherLaunchTest(restapi.test_views.RESTAPITest):
         data = {
             'campaign_name': 'xyz',
             'iabCategory': 'IAB1_1',
-            'startDate': '2017-01-01',
-            'endDate': '2017-01-01',
             'budgetAmount': 123,
             'maxCpc': '0.6',
             'dailyBudget': '15.0',
@@ -105,8 +102,6 @@ class CampaignLauncherLaunchTest(restapi.test_views.RESTAPITest):
             account=account,
             name='xyz',
             iab_category='IAB1-1',
-            start_date=datetime.date(2017, 1, 1),
-            end_date=datetime.date(2017, 1, 1),
             budget_amount=123,
             max_cpc=Decimal('0.6'),
             daily_budget=Decimal('15.0'),

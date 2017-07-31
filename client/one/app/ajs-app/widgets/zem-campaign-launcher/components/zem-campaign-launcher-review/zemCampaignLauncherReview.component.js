@@ -25,18 +25,22 @@ angular.module('one').component('zemCampaignLauncherReview', {
 
         function isGeoTargetingEnabled () {
             var enabled = false;
-            Object.keys($ctrl.state.fields.targetRegions).forEach(function (key) {
-                var section = $ctrl.state.fields.targetRegions[key] || [];
-                if (section.length > 0) {
-                    enabled = true;
-                }
-            });
-            Object.keys($ctrl.state.fields.exclusionTargetRegions).forEach(function (key) {
-                var section = $ctrl.state.fields.exclusionTargetRegions[key] || [];
-                if (section.length > 0) {
-                    enabled = true;
-                }
-            });
+            if ($ctrl.state.fields.targetRegions) {
+                Object.keys($ctrl.state.fields.targetRegions).forEach(function (key) {
+                    var section = $ctrl.state.fields.targetRegions[key] || [];
+                    if (section.length > 0) {
+                        enabled = true;
+                    }
+                });
+            }
+            if ($ctrl.state.fields.exclusionTargetRegions) {
+                Object.keys($ctrl.state.fields.exclusionTargetRegions).forEach(function (key) {
+                    var section = $ctrl.state.fields.exclusionTargetRegions[key] || [];
+                    if (section.length > 0) {
+                        enabled = true;
+                    }
+                });
+            }
             return enabled;
         }
 

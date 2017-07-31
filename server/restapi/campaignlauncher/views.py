@@ -45,8 +45,6 @@ class CampaignLauncherViewSet(RESTAPIBaseViewSet):
             account=account,
             name=serializer.validated_data['campaign_name'],
             iab_category=serializer.validated_data['iab_category'],
-            start_date=serializer.validated_data['start_date'],
-            end_date=serializer.validated_data['end_date'],
             budget_amount=serializer.validated_data['budget_amount'],
             max_cpc=serializer.validated_data['max_cpc'],
             daily_budget=serializer.validated_data['daily_budget'],

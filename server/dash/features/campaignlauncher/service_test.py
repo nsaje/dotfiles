@@ -36,8 +36,6 @@ class TestService(TestCase):
             account=account,
             name='xyz',
             iab_category=dash.constants.IABCategory.IAB1_1,
-            start_date=datetime.date(2017, 1, 1),
-            end_date=datetime.date(2017, 1, 2),
             budget_amount=123,
             upload_batch=upload_batch,
             goal_type=dash.constants.CampaignGoalKPI.CPA,
@@ -61,7 +59,7 @@ class TestService(TestCase):
         budget = campaign.budgets.first()
         self.assertEqual(budget, credit.budgets.first())
         self.assertEqual(budget.start_date, datetime.date(2017, 1, 1))
-        self.assertEqual(budget.end_date, datetime.date(2017, 1, 2))
+        self.assertEqual(budget.end_date, datetime.date(2017, 3, 3))
 
         goal = campaign.campaigngoal_set.first()
         self.assertEqual(goal.type, dash.constants.CampaignGoalKPI.CPA)
@@ -69,7 +67,7 @@ class TestService(TestCase):
 
         ad_group = campaign.adgroup_set.first()
         self.assertEqual(ad_group.settings.start_date, datetime.date(2017, 1, 1))
-        self.assertEqual(ad_group.settings.end_date, datetime.date(2017, 1, 2))
+        self.assertEqual(ad_group.settings.end_date, None)
         self.assertEqual(ad_group.settings.cpc_cc, Decimal('0.5'))
         self.assertEqual(ad_group.settings.daily_budget_cc, Decimal('15.2'))
         self.assertEqual(ad_group.settings.target_regions, ['US'])

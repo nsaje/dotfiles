@@ -35,48 +35,6 @@
         </div>
     </div>
 
-    <div class="form__group" ng-class="{'form--error': !!$ctrl.state.fieldsErrors.startDate}">
-        <label class="form__label" for="start-date-input">
-            Start date:
-            <zem-help-popover content="The date when content promotion commenced." placement="top"></zem-help-popover>
-        </label>
-        <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon">
-            <input class="input-text"
-                   id="start-date-input"
-                   type="text"
-                   uib-datepicker-popup="MM/dd/yyyy"
-                   datepicker-options="$ctrl.datePickers.startDatePicker.options"
-                   ng-model="$ctrl.state.fields.startDate"
-                   is-open="$ctrl.datePickers.startDatePicker.isOpen"
-                   ng-click="$ctrl.datePickers.startDatePicker.isOpen = true"
-                   ng-change="$ctrl.onFieldChange()">
-        </div>
-        <div class="message message--error" ng-repeat="error in $ctrl.state.fieldsErrors.startDate" for="start-date-input">
-            {{ error }}
-        </div>
-    </div>
-
-    <div class="form__group" ng-class="{'form--error': !!$ctrl.state.fieldsErrors.endDate}">
-        <label class="form__label" for="end-date-input">
-            End date:
-            <zem-help-popover content="The date when content promotion paused." placement="top"></zem-help-popover>
-        </label>
-        <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon">
-            <input class="input-text"
-                   id="end-date-input"
-                   type="text"
-                   datepicker-options="$ctrl.datePickers.endDatePicker.options"
-                   uib-datepicker-popup="MM/dd/yyyy"
-                   ng-model="$ctrl.state.fields.endDate"
-                   is-open="$ctrl.datePickers.endDatePicker.isOpen"
-                   ng-click="$ctrl.datePickers.endDatePicker.isOpen = true"
-                   ng-change="$ctrl.onFieldChange()">
-        </div>
-        <div class="message message--error" ng-repeat="error in $ctrl.state.fieldsErrors.endDate" for="end-date-input">
-            {{ error }}
-        </div>
-    </div>
-
     <div class="form__group" ng-class="{'form--error': !!$ctrl.state.fieldsErrors.budgetAmount}">
         <label class="form__label" for="budget-amount-input">Total budget:</label>
         <div class="prefixed-field postfixed-field prefixed-field--narrow postfixed-field--narrow">
