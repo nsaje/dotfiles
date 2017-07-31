@@ -137,6 +137,12 @@ services:
         extends: einsworker_upload_lambda
     einsworker_upload_lambda07:
         extends: einsworker_upload_lambda
+    einsworker_upload_lambda08:
+        extends: einsworker_upload_lambda
+    einsworker_upload_lambda09:
+        extends: einsworker_upload_lambda
+    einsworker_upload_lambda10:
+        extends: einsworker_upload_lambda
 
     einsworker_convapi:
         extends: eins
