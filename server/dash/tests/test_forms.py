@@ -143,26 +143,6 @@ class AccountSettingsFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error('allowed_sources'))
 
-    def test_duplicated_account_name(self):
-        form = forms.AccountSettingsForm(self.account, {
-            'id': 1,
-            'name': 'test account 1',
-            'default_account_manager': 3,
-            'default_sales_representative': 2,
-            'allowed_sources': {'1': {'name': 'Source name', 'allowed': False}}
-        })
-        self.assertTrue(form.is_valid(), "Form should be valid as the account id is the same")
-
-        form = forms.AccountSettingsForm(self.account, {
-            'id': 2,
-            'name': 'test account 1',
-            'default_account_manager': 3,
-            'default_sales_representative': 2,
-            'allowed_sources': {'1': {'name': 'Source name', 'allowed': False}}
-        })
-        self.assertFalse(form.is_valid())
-        self.assertTrue(form.has_error('name'))
-
 
 class AdGroupAdminFormTest(TestCase):
     fixtures = ['test_models.yaml']

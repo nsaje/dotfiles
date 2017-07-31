@@ -575,11 +575,6 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
         if not name:
             return None
 
-        account_id = self.cleaned_data.get('id')
-
-        if models.Account.objects.filter(name=name).exclude(id=account_id).exists():
-            raise forms.ValidationError("Invalid account name.")
-
         return name
 
     def clean_default_account_manager(self):

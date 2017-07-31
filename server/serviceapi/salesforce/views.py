@@ -1,3 +1,6 @@
+import django.core.exceptions
+from rest_framework.serializers import ValidationError
+
 from .. import base, authentication
 from . import serializers, service
 
@@ -13,7 +16,14 @@ class CreateClientView(base.ServiceAPIBaseView):
         serializer = serializers.ClientSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        client = service.create_client(request, serializer.validated_data)
+        try:
+            client = service.create_client(request, serializer.validated_data)
+        except django.core.exceptions.ValidationError as err:
+            raise ValidationError(err)
+        except:
+            raise ValidationError(
+                {'name': 'Name is not unique for this account type.'}
+            )
 
         return self.response_ok({
             'z1_account_id': client.get_salesforce_id(),
@@ -30,7 +40,10 @@ class CreateCreditLineView(base.ServiceAPIBaseView):
         serializer = serializers.CreditLineSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        cli = service.create_credit_line_item(request, serializer.validated_data)
+        try:
+            cli = service.create_credit_line_item(request, serializer.validated_data)
+        except django.core.exceptions.ValidationError as err:
+            raise ValidationError(err)
 
         return self.response_ok({
             'z1_cli_id': cli.pk,

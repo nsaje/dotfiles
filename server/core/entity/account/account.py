@@ -198,7 +198,7 @@ class Account(models.Model):
         )
 
     def save(self, request, *args, **kwargs):
-        if not request.user.is_anonymous:
+        if not request.user.is_anonymous():
             self.modified_by = request.user
         super(Account, self).save(*args, **kwargs)
 

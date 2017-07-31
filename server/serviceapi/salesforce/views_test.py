@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 
 from zemauth.models import User
 import core.entity
+import dash.constants
 
 from utils.magic_mixer import magic_mixer
 
@@ -31,6 +32,7 @@ class CreateClientTestCase(TestCase):
             },
         })
         self.assertEqual(r.status_code, 200)
+        self.assertEqual(client.default_account_type, dash.constants.AccountType.TEST)
 
     def test_put_valid_account(self):
         data = {
@@ -48,6 +50,7 @@ class CreateClientTestCase(TestCase):
             },
         })
         self.assertEqual(r.status_code, 200)
+        self.assertEqual(client.get_current_settings().account_type, dash.constants.AccountType.TEST)
 
     def test_put_invalid(self):
         url = reverse('service.salesforce.client')
@@ -95,6 +98,19 @@ class CreateClientTestCase(TestCase):
         self.assertEqual(r.status_code, 400)
         self.assertEqual(r.json(), {
             'details': {u'type': [u'"invalid-type" is not a valid choice.']},
+            u'errorCode': u'ValidationError',
+        })
+
+        magic_mixer.blend(core.entity.agency.Agency, name='Name exists')
+        data = {
+            'salesforceAccountId': 1,
+            'type': 'agency',
+            'name': 'Name exists',
+        }
+        r = self.client.put(url, data=data, format='json')
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(r.json(), {
+            u'details': {u'name': u'Name is not unique for this account type.'},
             u'errorCode': u'ValidationError',
         })
 

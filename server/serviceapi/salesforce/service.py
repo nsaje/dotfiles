@@ -10,6 +10,8 @@ CLIENT_TYPE_OBJECT_MAP = {
     constants.CLIENT_TYPE_CLIENT_DIRECT: core.entity.account.Account
 }
 
+DEFAULT_ACCOUNT_TYPE = dash.constants.AccountType.TEST
+
 
 def _get_client_lookup(z1_account_id):
     client_type, client_id = z1_account_id[0], int(z1_account_id[1:])
@@ -50,7 +52,15 @@ def create_credit_line_item(request, data):
 
 
 def create_client(request, data):
-    return CLIENT_TYPE_OBJECT_MAP[data['type']].objects.create(request, data['name'])
+    client = CLIENT_TYPE_OBJECT_MAP[data['type']].objects.create(request, data['name'])
+    if data['type'] == constants.CLIENT_TYPE_AGENCY:
+        client.default_account_type = DEFAULT_ACCOUNT_TYPE
+        client.save(request)
+    elif data['type'] == constants.CLIENT_TYPE_CLIENT_DIRECT:
+        new_settings = client.get_current_settings().copy_settings()
+        new_settings.account_type = DEFAULT_ACCOUNT_TYPE
+        new_settings.save(request)
+    return client
 
 
 def get_agency_accounts(z1_account_id):
