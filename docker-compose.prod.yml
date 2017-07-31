@@ -116,7 +116,7 @@ services:
     einsworker_upload_lambda:
         extends: eins
 #        mem_limit: 2g
-        mem_limit: 256m
+        mem_limit: 512m
         labels:
           traefik.enable: "false"
         cpu_quota: 50000
