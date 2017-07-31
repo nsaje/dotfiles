@@ -64,7 +64,7 @@ class Command(utils.command_helpers.ExceptionCommand):
 
         all_issues = []
         for date in dates:
-            issues = analytics.monitor.audit_spend_integrity(date, account_id=account_id, err=10**9)
+            issues = analytics.monitor.audit_spend_integrity(date, account_id=account_id, max_err=10**9)
             all_issues.extend(issues)
 
         if not all_issues:
