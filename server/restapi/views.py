@@ -569,11 +569,16 @@ class CampaignViewList(SettingsViewList):
 
     def _get_settings_list(self, request):
         account_id = request.query_params.get('accountId', None)
-        campaigns = dash.models.Campaign.objects.all().filter_by_user(request.user)
+
+        if account_id:
+            account = helpers.get_account(request.user, account_id)
+            campaigns = dash.models.Campaign.objects.filter(account=account)
+        else:
+            campaigns = dash.models.Campaign.objects.all().filter_by_user(request.user)
+
         campaign_settings = dash.models.CampaignSettings.objects.filter(
             campaign__in=campaigns).group_current_settings().select_related('campaign')
-        if account_id:
-            campaign_settings = campaign_settings.filter(campaign__account_id=int(account_id))
+
         return campaign_settings
 
 
