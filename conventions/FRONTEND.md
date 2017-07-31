@@ -272,6 +272,40 @@ Services used globally throughout the app providing core business logic. They ar
 
 ![zemGrid overview scheme](images/zem-grid-overview-scheme.png)
 
+**Functionalities**
+ - Extendable cells - links, numbers, titles, images, etc.
+ - Grouping --> n-levels of breakdowns
+ - Infinite scrolling (load more...) with virtual scroll    
+ - Pivot columns & Fixed/Sticky header and footer
+ - User interactions - copy, edit, collapse, select, goto, etc.
+ 
+**Main components**
+
+**zemGrid** component is one of the most advanced components in the zOne applciation.  
+In short, it is a complex table used for displaying various formats (numbers, images,
+user controlls, etc.) and providing advanace user interactions (grouping, scrolling, modifying).
+zemGrid itself is completly isolated (almost) from zOne core and is configurabile through 
+metadata provided by the Endpoint service. For advance manipulation it provides API, which can be used for
+modifying content. retrieving current state (pull & push) or extending functionality.
+
+**DataSource** provides incremental access to data; through continous retrieval. Internally 
+data is stored in a data/breakdown tree, where nodes on the same level corresponds to 
+the data breakdown level (Campaigns -> By Source -> By Country -> By day). DataSource 
+besides fetching also provides patching; modify request returns a patch, that can be applied to a tree (e.g. modifying one number (cell - row id/column) can affect also other cells (rows and columns); e.g. modifying daily budget can change daily budgets and bids on different sources. 
+
+Data is fetched using Endpoint, which provides access to server based on the configured meta data (entity id, level, breakdown; adgroup 11 - Sources - Country -> By Day). It provides GET and POST/PATCH functions.
+Endpoint Metadata provides definitions and rules for columns and breakdowns (names&description, formatting information, availability,  ...)
+
+**DataService** provides data acess to internal Grid components through DataSource. It is responsible to notify
+listners regarding data changes, formating data tree into 2-dimensional data stucture along with formating
+data based on the meta information etc. It is separated from DtaSource to provide cleaner separation between
+presentation and data layer; datasource or endpoint can be replaced with another one without any effect on the
+representational components.
+
+Extensions; zemGrid is designed in a way to allow clean and isolated integrations of new UX functionalties. Using API it is possible to access, modify and observe (pubsub) entire zemGrid state. Current extensions: Selection, Columns, Collapse & Order. On the other hand API can also be used externally, to provide 
+business specific actions: bulk actions based on selection, columns & breakdown chooser, etc.
+ 
+ 
 #### Settings
 
 ```
@@ -280,6 +314,8 @@ Services used globally throughout the app providing core business logic. They ar
         <zem-settings-container> (1..n)
             <specific-settigns-widgtets> (1..n)
 ```
+
+
 
 ### Next steps
 
