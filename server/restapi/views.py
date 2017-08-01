@@ -35,6 +35,7 @@ import redshiftapi.quickstats
 import utils.rest_common.authentication
 import fields
 import bcm.views
+import core.bcm
 
 import dash.features.geolocation
 
@@ -731,16 +732,35 @@ class CampaignBudgetSerializer(serializers.Serializer):
 class CampaignBudgetViewList(RESTAPIBaseView):
 
     def get(self, request, campaign_id):
-        internal_view = bcm.views.CampaignBudgetView(rest_proxy=True)
-        data_internal, _ = internal_view.get(self.request, campaign_id)
-
-        # different field name for post and get
-        for d in data_internal['data']['active']:
-            d['amount'] = d['total']
-            del d['total']
-
-        serializer = CampaignBudgetSerializer(data_internal['data']['active'], many=True)
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        active_budget = self._get_active_budget(request.user, campaign)
+        serializer = CampaignBudgetSerializer(active_budget, many=True)
         return self.response_ok(serializer.data)
+
+    def _get_active_budget(self, user, campaign):
+        budget_items = core.bcm.BudgetLineItem.objects.filter(
+            campaign_id=campaign.id,
+        ).select_related('credit').order_by('-created_dt')
+
+        return [self._prepare_budget_get_item(user, b) for b in budget_items if b.state() in (
+            constants.BudgetLineItemState.ACTIVE,
+            constants.BudgetLineItemState.PENDING,
+        )]
+
+    def _prepare_budget_get_item(self, user, item):
+        spend = item.get_spend_data(use_decimal=True)['total']
+        allocated = item.allocated_amount()
+        result = {
+            'id': item.pk,
+            'start_date': item.start_date,
+            'credit': item.credit_id,
+            'end_date': item.end_date,
+            'state': item.state(),
+            'amount': allocated,
+            'spend': spend,
+            'available': allocated - spend,
+        }
+        return result
 
     def post(self, request, campaign_id):
         serializer = CampaignBudgetSerializer(data=request.data)
