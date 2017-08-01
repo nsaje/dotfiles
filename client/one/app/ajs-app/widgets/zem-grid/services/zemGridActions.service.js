@@ -43,8 +43,9 @@ angular.module('one.widgets').service('zemGridActionsService', function ($q, zem
             }
         }
         function addPublisherActions (actions) {
-            actions.forEach(function (action) {
+            angular.copy(actions).forEach(function (action) {
                 action.action = executePublisherAction;
+                action.type = action.value;
                 buttons.push(action);
             });
         }

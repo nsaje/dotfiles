@@ -1,4 +1,4 @@
-angular.module('one.widgets').directive('zemGridCellActions', function () {
+angular.module('one.widgets').directive('zemGridCellActions', function ($timeout) {
 
     return {
         restrict: 'E',
@@ -76,13 +76,18 @@ angular.module('one.widgets').directive('zemGridCellActions', function () {
                     return;
                 }
 
-                var state = vm.active ? vm.stateValues.paused : vm.stateValues.enabled;
+                // Enable CSS transitions to animate the switch-button
+                vm.switchButtonTransitionEnabled = true;
 
-                vm.showLoader = true;
+                var state = vm.active ? vm.stateValues.paused : vm.stateValues.enabled;
+                vm.active = !vm.active;
+
+                // Disable CSS transitions after toggle animation completes
+                $timeout(function () {
+                    vm.switchButtonTransitionEnabled = false;
+                }, 250);
+
                 vm.grid.meta.dataService.saveData(state, vm.row, {data: {field: 'state'}})
-                    .then(function () {
-                        update();
-                    })
                     .catch(function (data) {
                         if (data.state) {
                             zemToastsService.error(data.state);
@@ -91,7 +96,7 @@ angular.module('one.widgets').directive('zemGridCellActions', function () {
                         }
                     })
                     .finally(function () {
-                        vm.showLoader = false;
+                        update();
                     });
             }
 

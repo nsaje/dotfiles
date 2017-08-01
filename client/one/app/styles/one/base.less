@@ -833,6 +833,31 @@ h4 {
     }
 }
 
+.restore-icon {
+    &::before {
+        background-image: url('@{images-folder}/restore-sec.svg');
+    }
+
+    &.button--highlight::before {
+        background-image: url('images/restore-white.svg');
+    }
+
+    &.button--outline::before {
+        background-image: url('@{images-folder}/restore-sec.svg');
+    }
+
+    &.button--dark-backgrounds::before {
+        background-image: url('images/restore-white.svg');
+    }
+
+    &.button--small::before {
+        background-size: 16px;
+        width: 16px;
+        height: 16px;
+        left: 8px;
+    }
+}
+
 .folder-icon {
     &::before {
         background-image: url('@{images-folder}/folder-sec.svg');
@@ -884,6 +909,75 @@ h4 {
 
     &.button--dark-backgrounds::before {
         background-image: url('images/upload-white.svg');
+    }
+}
+
+.blacklist-add-icon {
+    &::before {
+        background-image: url('@{images-folder}/blacklist-add-sec.svg');
+        background-size: 18px;
+        width: 18px;
+        height: 18px;
+        left: 10px;
+    }
+
+    &.button--highlight::before {
+        background-image: url('images/blacklist-add-white.svg');
+    }
+
+    &.button--outline::before {
+        background-image: url('@{images-folder}/blacklist-add-sec.svg');
+    }
+
+    &.button--dark-backgrounds::before {
+        background-image: url('images/blacklist-add-white.svg');
+    }
+}
+
+.blacklist-remove-icon {
+    &::before {
+        background-image: url('@{images-folder}/blacklist-remove-sec.svg');
+        background-size: 18px;
+        width: 18px;
+        height: 18px;
+        left: 10px;
+    }
+
+    &.button--highlight::before {
+        background-image: url('images/blacklist-remove-white.svg');
+    }
+
+    &.button--outline::before {
+        background-image: url('@{images-folder}/blacklist-remove-sec.svg');
+    }
+
+    &.button--dark-backgrounds::before {
+        background-image: url('images/blacklist-remove-white.svg');
+    }
+
+    &.button--small::before {
+        background-size: 16px;
+        width: 16px;
+        height: 16px;
+        left: 8px;
+    }
+}
+
+.dots-icon {
+    &::before {
+        background-image: url('@{images-folder}/dots-sec.svg');
+    }
+
+    &.button--highlight::before {
+        background-image: url('images/dots-white.svg');
+    }
+
+    &.button--outline::before {
+        background-image: url('@{images-folder}/dots-sec.svg');
+    }
+
+    &.button--dark-backgrounds::before {
+        background-image: url('images/dots-white.svg');
     }
 }
 
@@ -2183,6 +2277,31 @@ h4 {
     background-color: fade(@secondary-color,10%);
 }
 
+.dropdown-menu--only-buttons {
+    padding: 0;
+    min-width: auto;
+
+    .button {
+        background-color: transparent;
+        border-bottom: 1px solid tint(@secondary-color,90%);
+        border-radius: 0;
+        text-align: left;
+        display: block;
+        width: 100%;
+
+        &:last-child {
+            border-bottom: none;
+            border-bottom-right-radius: @border-radius;
+            border-bottom-left-radius: @border-radius;
+        }
+
+        &:first-child {
+            border-top-right-radius: @border-radius;
+            border-top-left-radius: @border-radius;
+        }
+    }
+}
+
 ////////////////////////////
 // Modal window //
 ////////////////////////////
@@ -2611,6 +2730,14 @@ h4 {
 
     &::before {
         left: 22px;
+    }
+}
+
+.switch-button--transition-disabled {
+    transition: none;
+
+    &::before {
+        transition: none;
     }
 }
 

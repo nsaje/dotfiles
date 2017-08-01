@@ -1,1 +1,11 @@
-<svg id="Checkbox" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28.35 28.35"><defs><style>.cls-1{fill:#e35325;}</style></defs><title>checkbox-orange</title><path class="cls-1" d="M27.45,4.73h0a3.06,3.06,0,0,0-4.32,0l-12.4,12.4L5.22,11.62A3.06,3.06,0,0,0,.89,15.95l7.67,7.67a3.06,3.06,0,0,0,4.33,0L27.45,9.05a3.06,3.06,0,0,0,0-4.33Z"/></svg>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 21.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Checkbox" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 28.4 28.4" style="enable-background:new 0 0 28.4 28.4;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#EF8520;}
+</style>
+<title>checkbox-orange</title>
+<path class="st0" d="M27.5,4.7L27.5,4.7c-1.2-1.2-3.1-1.2-4.3,0L10.7,17.1l-5.5-5.5c-1.2-1.2-3.1-1.2-4.3,0s-1.2,3.1,0,4.3l7.7,7.7
+	c1.2,1.2,3.1,1.2,4.3,0c0,0,0,0,0,0L27.5,9C28.6,7.9,28.6,5.9,27.5,4.7C27.5,4.7,27.5,4.7,27.5,4.7L27.5,4.7z"/>
+</svg>

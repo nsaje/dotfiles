@@ -197,7 +197,7 @@
     height: auto;
     min-width: 100px;
     max-width: 300px;
-    background-color: white;
+    background-color: @header-right-color;
     right: 0;
     left: auto;
 }
@@ -283,7 +283,7 @@
 
 .zem-header-menu__logged-in-user {
     background-color: fade(black, 10%);
-    color: fade(@text-color, 50%);
+    color: fade(white, 50%);
     margin: 0;
     padding: @default-spacing;
     border-bottom: none;
@@ -302,7 +302,7 @@
 }
 
 .zem-header-menu__link {
-    color: @text-color;
+    color: white;
     padding: 8px @default-spacing;
     transition: background-color @default-animation;
     display: block;
@@ -314,8 +314,8 @@
 }
 
 .zem-header-menu__link:hover {
-    color: @primary-color;
-    background-color: fade(@primary-color, 10%);
+    color: white;
+    background-color: fade(white, 10%);
     text-decoration: none;
 
     .internal-feature {
@@ -327,7 +327,7 @@
 .zem-header-menu__group-title {
     font-size: 10px;
     text-transform: uppercase;
-    color: fade(black,50%);
+    color: fade(white,50%);
     padding: 10px @default-spacing 2px @default-spacing;
     border-bottom: 1px solid fade(black, 10%);
 }
@@ -347,7 +347,7 @@
     transition: all @default-animation;
 }
 
-@media only screen and (max-width: 1190px) {
+@media only screen and (max-width: 1210px) {
     .zem-header-filter-selector-toggle {
         .button {
             font-size: 0;
@@ -555,14 +555,14 @@
     }
 }
 
-@media only screen and (min-width: @min-app-width) and (max-width: 1190px) {
+@media only screen and (min-width: @min-app-width) and (max-width: 1210px) {
     .fixed-header .zem-header .zem-header-filter-selector-toggle .button--with-icon {
         padding-left: 26px;
     }
 }
 
-@media only screen and (max-width: 1155px) {
-    .zem-header-date-range-picker .button--with-input input {
+@media only screen and (max-width: 1180px) {
+    .zem-header-date-range-picker .button--with-input .button__input-field {
         font-size: 0;
         width: auto;
         padding-right: 25px;
