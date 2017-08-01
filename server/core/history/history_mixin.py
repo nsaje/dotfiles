@@ -22,9 +22,18 @@ class HistoryMixin(object):
         self._snapshot_on_setattr = True
 
     def __setattr__(self, name, value):
-        if self._snapshot_on_setattr and not self.snapshotted_state:
+        if self._should_take_snapshot(name, value):
             self.snapshot()
         super(HistoryMixin, self).__setattr__(name, value)
+
+    def _should_take_snapshot(self, name, value):
+        if not self._snapshot_on_setattr:
+            return False
+        if self.snapshotted_state:
+            return False
+        if name.startswith('_'):
+            return False
+        return True
 
     def snapshot(self, previous=None):
         if not self.SNAPSHOT_HISTORY:
