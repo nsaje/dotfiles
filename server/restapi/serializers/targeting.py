@@ -148,6 +148,9 @@ class AudienceSerializer(rest_framework.serializers.BaseSerializer):
         return self._to_internal_recur(data)
 
 
+_geo_type_cache = {}
+
+
 class TargetRegionsSerializer(rest_framework.serializers.Serializer):
     countries = rest_framework.serializers.ListField(child=rest_framework.serializers.CharField(), required=False)
     regions = rest_framework.serializers.ListField(child=rest_framework.serializers.CharField(), required=False)
@@ -206,6 +209,35 @@ class TargetRegionsSerializer(rest_framework.serializers.Serializer):
         data = super(TargetRegionsSerializer, self).to_internal_value(data)
         return [location for location_list in data.values() for location in location_list if location_list]
 
+    def _get_geo_types(self, target_regions):
+        results = []
+
+        locations_to_fetch = []
+        for loc in target_regions:
+            geo_type = _geo_type_cache.get(loc)
+            if geo_type is None:
+                locations_to_fetch.append(loc)
+                continue
+            results.append((loc, geo_type))
+
+        if len(locations_to_fetch) == 0:
+            return results
+
+        non_zips = {loc.key: loc for loc in dash.features.geolocation.Geolocation.objects.filter(
+            key__in=locations_to_fetch)}
+        zips = set(target_regions) - set(non_zips.keys())
+        for loc in locations_to_fetch:
+            geo_type = None
+            if loc in non_zips:
+                geo_type = non_zips[loc].type
+            if loc in zips:
+                geo_type = dash.constants.LocationType.ZIP
+
+            results.append((loc, geo_type))
+            _geo_type_cache[loc] = geo_type
+
+        return results
+
     def to_representation(self, target_regions):
         geo = {
             'countries': [],
@@ -214,19 +246,19 @@ class TargetRegionsSerializer(rest_framework.serializers.Serializer):
             'cities': [],
             'postal_codes': [],
         }
-        non_zips = {loc.key: loc for loc in dash.features.geolocation.Geolocation.objects.filter(
-            key__in=target_regions)}
-        zips = set(target_regions) - set(non_zips.keys())
-        for location in target_regions:
-            if location in non_zips:
-                if non_zips[location].type == dash.constants.LocationType.COUNTRY:
-                    geo['countries'].append(location)
-                if non_zips[location].type == dash.constants.LocationType.REGION:
-                    geo['regions'].append(location)
-                if non_zips[location].type == dash.constants.LocationType.DMA:
-                    geo['dma'].append(location)
-                if non_zips[location].type == dash.constants.LocationType.CITY:
-                    geo['cities'].append(location)
-            if location in zips:
+
+        for location, geo_type in self._get_geo_types(target_regions):
+            if geo_type == dash.constants.LocationType.COUNTRY:
+                geo['countries'].append(location)
+            elif geo_type == dash.constants.LocationType.REGION:
+                geo['regions'].append(location)
+            elif geo_type == dash.constants.LocationType.DMA:
+                geo['dma'].append(location)
+            elif geo_type == dash.constants.LocationType.CITY:
+                geo['cities'].append(location)
+            elif geo_type == dash.constants.LocationType.ZIP:
                 geo['postal_codes'].append(location)
+            else:
+                raise AttributeError("Invalid geo type: {}".format(geo_type))
+
         return super(TargetRegionsSerializer, self).to_representation(geo)
