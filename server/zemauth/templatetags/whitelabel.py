@@ -7,14 +7,18 @@ import core.entity
 register = template.Library()
 
 
-def _get_whitelabel_from_host(context):
+def _get_whitelabel_from_host(context=None):
+    if not context or 'request' not in context:
+        return None
     host = context['request'].META.get('HTTP_HOST', '')
     if host == 'newscorp.zemanta.com':
         return dash.constants.Whitelabel.NEWSCORP
     return None
 
 
-def _get_user_agency(context):
+def _get_user_agency(context=None):
+    if not context or 'request' not in context:
+        return None
     user = context['request'].user
     if user.is_anonymous():
         return None
