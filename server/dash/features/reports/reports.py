@@ -81,7 +81,17 @@ class ReportJobExecutor(JobExecutor):
     @influx.timer('dash.reports.execute')
     def execute(self):
         if self.job.status != constants.ReportJobStatus.IN_PROGRESS:
-            logger.warning('Running a job executor on a job in incorrect state: %s' % self.job.status)
+            logger.info('Running report job in incorrect state: %s' % self.job.status)
+            influx.incr('dash.reports', 1, status='incorrect_state')
+            return
+
+        job_age = utils.dates_helper.utc_now() - self.job.created_dt
+        if job_age > datetime.timedelta(hours=1):
+            logger.info('Running too old report job: %s' % job_age)
+            influx.incr('dash.reports', 1, status='too_old')
+            self.job.status = constants.ReportJobStatus.FAILED
+            self.job.result = 'Too old'
+            self.job.save()
             return
 
         try:
