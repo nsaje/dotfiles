@@ -92,6 +92,8 @@ input[type="text"]:focus, input[type="password"]:focus {
 }
 
 .container {
+    position: relative;
+    z-index: 2;
     width: 1000px;
     margin: 0 auto;
     background-color: #3f547f;
@@ -101,6 +103,16 @@ input[type="text"]:focus, input[type="password"]:focus {
     content: "";
     display: block;
     clear: both;
+}
+
+.color-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(63, 84, 127, 0.8);
+    z-index: 1;
 }
 
 .container__left {
@@ -272,4 +284,33 @@ input[type="text"]:focus, input[type="password"]:focus {
 
 .container__right--content ol.alphabet {
     list-style-type: lower-alpha;
+}
+
+/* WHITELABEL - NEWSCORP */
+
+.newscorp .button {
+    color: #2cb9ca;
+}
+
+.newscorp .container__right .button {
+    color: white;
+    background-color: #2cb9ca;
+}
+
+.newscorp .container__right .button:hover {
+    background-color: #1E9CAB;
+    text-decoration: none;
+    box-shadow: 0px 0px 15px 0px rgba(44, 185, 202, 0.6);
+}
+
+.newscorp .container__left {
+    background-color: #040707;
+}
+
+.newscorp .container {
+    background-color: rgba(4, 7, 7, 0.4);
+}
+
+.newscorp .color-overlay {
+    background-color: rgba(4, 7, 7, 0.8);
 }

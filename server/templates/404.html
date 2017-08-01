@@ -1,12 +1,18 @@
 {% extends "header_base.html" %}
 
 {% load staticfiles %}
+{% load whitelabel %}
 
 {% block content %}
-<div class="page">
+{% get_whitelabel_info as wl %}
+<div class="page {{ wl.base }}">
     <div class="container" id="error-box">
         <div class="container__left container__left--smaller">
+            {% if wl.base == "newscorp" %}
+            <img class="logo" src="{% static "img/newscorp-logo.svg" %}" alt="Newscorp Logo"/>
+            {% else %}
             <img class="logo" src="{% static "img/zemanta-logo-white.svg" %}" alt="Zemanta Logo"/>
+            {% endif %}
         </div>
         <div class="container__right container__right--error">
             <h2>Oops.</h2>

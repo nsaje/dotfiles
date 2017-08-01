@@ -1,16 +1,23 @@
 {% extends "header_base.html" %}
 
 {% load staticfiles %}
+{% load whitelabel %}
 
 {% block head_extra %}
 {{ block.super }}
-<title>Zemanta &mdash; Terms of Service</title>
-<link type="text/css" rel="stylesheet" href="{% static "css/tos.css" %}">
+    {% get_whitelabel_info as wl %}
+    {% if wl.base == "newscorp" %}
+    <title>Newscorp Dashboard - Terms of Service</title>
+    {% else %}
+    <title>Zemanta - Terms of Service</title>
+    {% endif %}
+    <link type="text/css" rel="stylesheet" href="{% static "css/tos.css" %}">
 {% endblock %}
 
 
 {% block content %}
-<div class="page">
+{% get_whitelabel_info as wl %}
+<div class="page {{ wl.base }}">
     <div class="container">
         <div class="container__left container__left--smaller container__left--logo-on-top">
             <img class="logo" src="{% static "img/zemanta-logo-white.svg" %}" alt="Zemanta Logo"/>
