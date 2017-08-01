@@ -915,9 +915,8 @@ var constants = {
     campaignObjective: {
         CONTENT_DISTRIBUTION: 1,
         VIDEO_ADVERTISING: 2,
-        ECOMMERCE_ADVERTISING: 3,
-        PERFORMANCE_MARKETING: 4,
-        MOBILE_APP_ADVERTISING: 5,
+        CONVERSION_MARKETING: 3,
+        MOBILE_APP_ADVERTISING: 4,
     },
     promotionGoal: {
         BRAND_BUILDING: 1,

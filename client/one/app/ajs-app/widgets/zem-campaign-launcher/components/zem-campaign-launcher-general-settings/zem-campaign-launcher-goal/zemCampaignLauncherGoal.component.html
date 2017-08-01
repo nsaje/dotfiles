@@ -1,18 +1,8 @@
 <div class="form__group--meet-or-beat-goal zem-campaign-goal-edit-form__goal-value-and-type" ng-class="{'form--error': !!$ctrl.state.fieldsErrors.campaignGoal}">
-    <div  ng-if="$ctrl.isCampaignGoalEditFormVisible()">
-        <zem-campaign-goal-edit-form campaign-goal="$ctrl.newCampaignGoal"
-                                     available-goals="$ctrl.availableGoals"
-                                     pixels="$ctrl.pixels"
-                                     errors="$ctrl.state.fieldsErrors.campaignGoal">
-        </zem-campaign-goal-edit-form>
-
-        <button class="button" ng-click="$ctrl.submitCampaignGoal()">
-            Add campaign goal
-        </button>
-    </div>
-
-    <div ng-if="!$ctrl.isCampaignGoalEditFormVisible()" class="zem-campaign-launcher-goal__preview">
-        <span class="zem-campaign-launcher-goal__preview-text">Meet or beat the goal of <strong>{{ $ctrl.state.fields.campaignGoal | campaignGoalText }}</strong>.</span>
-        <button class="button button--small button--with-icon edit-icon zem-campaign-launcher-goal__preview-edit-button" ng-click="$ctrl.showCampaignGoalEditForm()">Edit</button>
-    </div>
+    <zem-campaign-goal-edit-form campaign-goal="$ctrl.newCampaignGoal"
+                                 available-goals="$ctrl.availableGoals"
+                                 pixels="$ctrl.pixels"
+                                 errors="$ctrl.state.fieldsErrors.campaignGoal"
+                                 on-change="$ctrl.updateCampaignGoal(goal)">
+    </zem-campaign-goal-edit-form>
 </div>

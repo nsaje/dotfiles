@@ -6,11 +6,8 @@ angular.module('one.widgets').component('zemCampaignLauncherGoal', {
     template: require('./zemCampaignLauncherGoal.component.html'),
     controller: function ($filter, zemConversionPixelsEndpoint) {
         var $ctrl = this;
-        var campaignEditFormVisible = true;
 
-        $ctrl.isCampaignGoalEditFormVisible = isCampaignGoalEditFormVisible;
-        $ctrl.showCampaignGoalEditForm = showCampaignGoalEditForm;
-        $ctrl.submitCampaignGoal = submitCampaignGoal;
+        $ctrl.updateCampaignGoal = updateCampaignGoal;
 
         $ctrl.$onInit = function () {
             $ctrl.state = $ctrl.stateService.getState();
@@ -19,7 +16,6 @@ angular.module('one.widgets').component('zemCampaignLauncherGoal', {
 
             if ($ctrl.state.fields.campaignGoal) {
                 $ctrl.newCampaignGoal = angular.copy($ctrl.state.fields.campaignGoal);
-                campaignEditFormVisible = false;
             } else {
                 $ctrl.newCampaignGoal = {primary: true};
             }
@@ -35,20 +31,9 @@ angular.module('one.widgets').component('zemCampaignLauncherGoal', {
                 });
         };
 
-        function isCampaignGoalEditFormVisible () {
-            return campaignEditFormVisible || $ctrl.state.fieldsErrors.campaignGoal;
-        }
-
-        function showCampaignGoalEditForm () {
-            $ctrl.newCampaignGoal = $ctrl.state.fields.campaignGoal;
-            campaignEditFormVisible = true;
-        }
-
-        function submitCampaignGoal () {
-            $ctrl.state.fields.campaignGoal = $ctrl.newCampaignGoal;
-            $ctrl.stateService.validateFields().finally(function () {
-                campaignEditFormVisible = false;
-            });
+        function updateCampaignGoal (goal) {
+            $ctrl.state.fields.campaignGoal = goal;
+            $ctrl.stateService.validateFields();
         }
 
         function getPixelsWithConversionWindows (pixels) {

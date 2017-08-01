@@ -5,9 +5,9 @@
         <input class="input-text"
                id="goal-value"
                type="text"
-               zem-focus-select
                zem-numeric-validator
                ng-model="$ctrl.campaignGoal.value"
+               ng-blur="$ctrl.propagateChange()"
                placeholder="0.00"
                maxlength="5">
         <span class="postfixed-field__postfix" ng-show="!!$ctrl.goalUnit">{{ $ctrl.goalUnit }}</span>
@@ -18,7 +18,7 @@
                id="goal-type-select"
                search-enabled="false"
                ng-model="$ctrl.campaignGoal.type"
-               on-select="$ctrl.updateTypeChange($select.selected.unit)"
+               on-select="$ctrl.updateTypeChange($select.selected.unit); $ctrl.propagateChange()"
                ng-disabled="!!$ctrl.campaignGoal.id">
         <ui-select-match class="ui-select-match" placeholder="Choose type">{{ $ctrl.prepareName($select.selected) }}</ui-select-match>
         <ui-select-choices repeat="goal.value as goal in $ctrl.availableGoals" class="ui-select-choices">
@@ -40,7 +40,7 @@
                    id="conversion-type-select"
                    search-enabled="false"
                    ng-model="$ctrl.campaignGoal.conversionGoal.type"
-                   on-select="$ctrl.updateTypeChange()"
+                   on-select="$ctrl.updateTypeChange(); $ctrl.propagateChange()"
                    ng-disabled="!!$ctrl.campaignGoal.id">
             <ui-select-match class="ui-select-match" placeholder="Choose type">{{$select.selected.name}}</ui-select-match>
             <ui-select-choices repeat="goal.value as goal in $ctrl.conversionGoalTypes" class="ui-select-choices">
@@ -63,7 +63,7 @@
                    class="button button--plain button--full-width button--dropdown-toggle-icon zem-campaign-goal-edit-form__pixel"
                    search-enabled="false"
                    ng-model="$ctrl.campaignGoal.conversionGoal.goalId"
-                   on-select="$ctrl.setAvailableConversionWindowsForPixel($select.selected)"
+                   on-select="$ctrl.setAvailableConversionWindowsForPixel($select.selected); $ctrl.propagateChange()"
                    ng-disabled="!!$ctrl.campaignGoal.id"
                    ng-if="$ctrl.pixels.list.length && !$ctrl.pixels.loading">
             <ui-select-match class="ui-select-match" placeholder="Choose pixel">{{$select.selected.name}}</ui-select-match>
@@ -75,7 +75,12 @@
 
     <div class="form__group zem-campaign-goal-edit-form__new-pixel" ng-if="$ctrl.campaignGoal.conversionGoal.goalId === '___new___'" ng-class="{'form--error': !!$ctrl.errors.conversionGoal.pixel}">
         <label class="form__label">Pixel name</label>
-        <input class="input-text" type="text" id="goal-new-pixel-input" ng-model="$ctrl.newPixel.name" placeholder="Pixel name" />
+        <input class="input-text"
+               id="goal-new-pixel-input"
+               type="text"
+               ng-model="$ctrl.newPixel.name"
+               ng-blur="$ctrl.propagateChange()"
+               placeholder="Pixel name">
         <div class="message message--error" ng-repeat="error in $ctrl.errors.conversionGoal.pixel" for="pixel-name-select">
             {{ error }}
         </div>
@@ -93,7 +98,7 @@
                    search-enabled="false"
                    ng-model="$ctrl.campaignGoal.conversionGoal.conversionWindow"
                    ng-disabled="!!$ctrl.campaignGoal.id"
-                   on-select="$ctrl.clearErrors('conversionGoal')"
+                   on-select="$ctrl.clearErrors('conversionGoal'); $ctrl.propagateChange()"
                    ng-show="$ctrl.conversionWindows.length">
             <ui-select-match class="ui-select-match" placeholder="Choose conversion window">{{$select.selected.name}}</ui-select-match>
             <ui-select-choices repeat="window.value as window in $ctrl.conversionWindows" class="ui-select-choices">
@@ -117,6 +122,7 @@
                placeholder="Goal name"
                ng-model="$ctrl.campaignGoal.conversionGoal.goalId"
                ng-focus="$ctrl.clearErrors('conversionGoal')"
+               ng-blur="$ctrl.propagateChange()"
                ng-disabled="!!$ctrl.campaignGoal.id">
         <div class="message message--error" ng-repeat="error in $ctrl.errors.conversionGoal.goalId" for="ga-goal-input">
             {{ error }}
@@ -133,6 +139,7 @@
                type="text" placeholder="Event name"
                ng-model="$ctrl.campaignGoal.conversionGoal.goalId"
                ng-focus="$ctrl.clearErrors('conversionGoal')"
+               ng-blur="$ctrl.propagateChange()"
                ng-disabled="!!$ctrl.campaignGoal.id">
         <div class="message message--error" ng-repeat="error in $ctrl.errors.conversionGoal.goalId" for="omniture-event-input">
             {{ error }}

@@ -6,12 +6,14 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
         newPixel: '=',
         errors: '=',
         isEdit: '=',
+        onChange: '&?',
     },
     template: require('./zemCampaignGoalEditForm.component.html'),
     controller: function () {
         var $ctrl = this;
 
         $ctrl.updateTypeChange = updateTypeChange;
+        $ctrl.propagateChange = propagateChange;
         $ctrl.clearErrors = clearErrors;
         $ctrl.prepareName = prepareName;
         $ctrl.isConversionGoalFormVisible = isConversionGoalFormVisible;
@@ -43,6 +45,16 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
                 setDefaultValue();
             }
             $ctrl.goalUnit = goalUnit || '';
+        }
+
+        function propagateChange () {
+            if ($ctrl.onChange) {
+                var goal = null;
+                if (!areRequiredFieldsEmpty()) {
+                    goal = $ctrl.campaignGoal;
+                }
+                $ctrl.onChange({goal: goal});
+            }
         }
 
         function clearErrors (name) {
@@ -101,6 +113,30 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
                     $ctrl.campaignGoal.value = kpiDefault.value;
                 }
             });
+        }
+
+        function areRequiredFieldsEmpty () {
+            if (!$ctrl.campaignGoal.value || !$ctrl.campaignGoal.type) {
+                return true;
+            }
+
+            return areRequiredConversionGoalFieldsEmpty();
+        }
+
+        function areRequiredConversionGoalFieldsEmpty () {
+            if (!isConversionGoalFormVisible()) {
+                return false;
+            }
+
+            if (!$ctrl.campaignGoal.conversionGoal.type || !$ctrl.campaignGoal.conversionGoal.goalId) {
+                return true;
+            }
+
+            if (isConversionPixelFormVisible() && !$ctrl.campaignGoal.conversionGoal.conversionWindow) {
+                return true;
+            }
+
+            return false;
         }
     },
 });
