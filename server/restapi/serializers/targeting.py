@@ -261,4 +261,7 @@ class TargetRegionsSerializer(rest_framework.serializers.Serializer):
             else:
                 raise AttributeError("Invalid geo type: {}".format(geo_type))
 
-        return super(TargetRegionsSerializer, self).to_representation(geo)
+        # TODO hamax: field serializer is extremely slow when Serializer objects is initialized for each instance separately.
+        # For now we'll trust this function to return correct data.
+        # return super(TargetRegionsSerializer, self).to_representation(geo)
+        return geo
