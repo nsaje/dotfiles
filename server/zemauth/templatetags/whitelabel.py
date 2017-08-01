@@ -44,7 +44,7 @@ def get_whitelabel_info(context):
         'favicon': None,
         'dashboard_title': None,
     }
-    agency = _get_user_agency(context) or _get_agency_from_host(context)
+    agency = _get_agency_from_host(context) or _get_user_agency(context)
     if agency and agency.whitelabel:
         info['base'] = agency.whitelabel
         info['favicon'] = agency.custom_favicon_url
