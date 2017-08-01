@@ -945,7 +945,7 @@ class ContentAdViewList(RESTAPIBaseView):
         if not ad_group_id:
             raise serializers.ValidationError('Must pass adGroupId parameter')
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        content_ads = dash.models.ContentAd.objects.filter(ad_group=ad_group).exclude_archived()
+        content_ads = dash.models.ContentAd.objects.filter(ad_group=ad_group).exclude_archived().select_related('ad_group')
         serializer = ContentAdSerializer(content_ads, many=True)
         return self.response_ok(serializer.data)
 
