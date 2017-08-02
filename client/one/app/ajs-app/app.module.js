@@ -93,6 +93,18 @@ angular.module('one').run(function (zemInitializationService) {
     zemInitializationService.initApp();
 });
 
+angular.module('one').config(function ($provide) {
+    // Fix sourcemaps
+    // @url https://github.com/angular/angular.js/issues/5217#issuecomment-50993513
+    $provide.decorator('$exceptionHandler', function () {
+        return function (exception) {
+            setTimeout(function () {
+                throw exception;
+            });
+        };
+    });
+});
+
 (function () {
     var downgradeInjectable = require('@angular/upgrade/static').downgradeInjectable;
 
