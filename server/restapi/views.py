@@ -916,10 +916,14 @@ class AdGroupSourcesRTBSerializer(serializers.Serializer):
 class AdGroupSourcesRTBViewDetails(RESTAPIBaseView):
 
     def get(self, request, ad_group_id):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        settings = ad_group.get_current_settings()
+
         view_internal = agency.AdGroupSettings(rest_proxy=True)
-        data_internal, status_code = view_internal.get(request, ad_group_id)
-        serializer = AdGroupSourcesRTBSerializer(data_internal['data']['settings'])
-        return self.response_ok(serializer.data, status=status_code)
+        settings_dict = view_internal.get_dict(request, settings, ad_group)
+
+        serializer = AdGroupSourcesRTBSerializer(settings_dict)
+        return self.response_ok(serializer.data)
 
     def put(self, request, ad_group_id):
         view_internal = agency.AdGroupSettings(rest_proxy=True)
