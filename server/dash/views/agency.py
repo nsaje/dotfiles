@@ -137,7 +137,6 @@ class AdGroupSettings(api_common.BaseApiView):
         if not settings:
             return {}
 
-        primary_campaign_goal = campaign_goals.get_primary_campaign_goal(ad_group.campaign)
         result = {
             'id': str(ad_group.pk),
             'campaign_id': str(ad_group.campaign_id),
@@ -155,6 +154,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 '{:.2f}'.format(settings.daily_budget_cc)
                 if settings.daily_budget_cc is not None else '',
             'tracking_code': settings.tracking_code,
+            'autopilot_state': settings.autopilot_state,
             'autopilot_daily_budget':
                 '{:.2f}'.format(settings.autopilot_daily_budget)
                 if settings.autopilot_daily_budget is not None else '',
@@ -167,9 +167,6 @@ class AdGroupSettings(api_common.BaseApiView):
             'exclusion_audience_targeting': settings.exclusion_audience_targeting,
             'redirect_pixel_urls': settings.redirect_pixel_urls,
             'redirect_javascript': settings.redirect_javascript,
-            'autopilot_state': settings.autopilot_state,
-            'autopilot_min_budget': autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group, settings),
-            'autopilot_optimization_goal': primary_campaign_goal.type if primary_campaign_goal else None,
             'dayparting': settings.dayparting,
             'b1_sources_group_enabled': settings.b1_sources_group_enabled,
             'b1_sources_group_daily_budget': settings.b1_sources_group_daily_budget,
@@ -180,6 +177,12 @@ class AdGroupSettings(api_common.BaseApiView):
             'landing_mode': settings.landing_mode,
             'delivery_type': settings.delivery_type,
         }
+
+        # This two properties are very expensive to calculate and are never used by the REST api.
+        if not self.rest_proxy:
+            primary_campaign_goal = campaign_goals.get_primary_campaign_goal(ad_group.campaign)
+            result['autopilot_min_budget'] = autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group, settings)
+            result['autopilot_optimization_goal'] = primary_campaign_goal.type if primary_campaign_goal else None
 
         if request.user.has_perm('zemauth.can_set_click_capping'):
             result['click_capping_daily_ad_group_max_clicks'] = settings.click_capping_daily_ad_group_max_clicks
