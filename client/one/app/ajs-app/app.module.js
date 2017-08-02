@@ -99,7 +99,4 @@ angular.module('one').run(function (zemInitializationService) {
     // Downgrade NgZone service to support `NgZone.runOutsideAngular()` calls in AngularJS app
     var NgZone = require('@angular/core').NgZone;
     angular.module('one').factory('NgZone', downgradeInjectable(NgZone));
-
-    // Provide Raven service to AngularJS app
-    angular.module('one').factory('Raven', function () { return require('raven-js'); });
 })();

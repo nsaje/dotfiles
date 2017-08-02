@@ -1,13 +1,7 @@
-import * as Raven from 'raven-js';
 import {ErrorHandler} from '@angular/core';
 
-export class RavenErrorHandler extends ErrorHandler {
-    constructor () {
-        super();
-    }
-
+export class RavenErrorHandler implements ErrorHandler {
     handleError (error: Error): void {
-        super.handleError(error);
-        Raven.captureException(error);
+        (<any>window).Raven.captureException(error); // tslint:disable-line
     }
 }

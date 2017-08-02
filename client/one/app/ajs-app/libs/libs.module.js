@@ -4,6 +4,7 @@
 angular.module(
     'one.libs',
     [
+        'ngRaven',
         'config',
         'ngSanitize',
         'ui.router',

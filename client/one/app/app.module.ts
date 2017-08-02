@@ -1,4 +1,3 @@
-import * as Raven from 'raven-js';
 import {ErrorHandler, NgModule} from '@angular/core';
 import {APP_CONFIG} from './core/config/app.config';
 import {BrowserModule} from '@angular/platform-browser';
@@ -8,12 +7,14 @@ import {SharedModule} from './shared/shared.module';
 import {UpgradeModule} from '@angular/upgrade/static';
 
 // Raven (Sentry) configuration
-Raven.config(
+(<any>window).Raven.config( // tslint:disable-line
     'https://5443376e0b054647b8c8759811ad4d5b@sentry.io/147373',
     {
         shouldSendCallback: () => APP_CONFIG.env.prod,
     }
-).install();
+)
+.addPlugin((<any>window).Raven.Plugins.Angular) // tslint:disable-line
+.install();
 
 
 @NgModule({

@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemUserService', function (zemPubSubService, zemUserEndpoint, Raven) {
+angular.module('one.services').service('zemUserService', function (zemPubSubService, zemUserEndpoint) {
 
     var currentUser = null;
     var pubsub = zemPubSubService.createInstance();
@@ -30,7 +30,7 @@ angular.module('one.services').service('zemUserService', function (zemPubSubServ
             currentUser = user;
             pubsub.notify(EVENTS.ON_CURRENT_USER_UPDATED, user);
             // Configure Raven/Sentry user context
-            Raven.setUserContext({
+            window.Raven.setUserContext({
                 username: user.name,
                 email: user.email,
             });

@@ -29,3 +29,7 @@ require('../lib/components/ng-tags-input/ng-tags-input.css');
 window.daterangepicker = require('../lib/components/bootstrap-daterangepicker/daterangepicker.js');
 window.Highcharts = require('../lib/components/highcharts-release/highcharts.js');
 
+window.Raven = require('raven-js');
+var ravenAngular = require('raven-js/plugins/angular');
+ravenAngular(window.Raven, angular);
+window.Raven.Plugins = {Angular: ravenAngular};
