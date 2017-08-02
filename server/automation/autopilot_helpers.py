@@ -50,7 +50,7 @@ def get_autopilot_active_sources_settings(ad_groups_and_settings,
                                           ad_group_setting_state=dash.constants.AdGroupSettingsState.ACTIVE):
     ag_sources = dash.views.helpers.get_active_ad_group_sources(dash.models.AdGroup, ad_groups_and_settings.keys())
     ag_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source_id__in=ag_sources).\
-        group_current_settings().select_related('ad_group_source__source__source_type')
+        group_current_settings().select_related('ad_group_source__source__source_type', 'ad_group_source__ad_group')
 
     if not ad_group_setting_state:
         return ag_sources_settings
