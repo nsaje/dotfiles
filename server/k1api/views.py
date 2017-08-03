@@ -1,6 +1,8 @@
+import influx
 import json
 import logging
 import re
+import time
 from collections import defaultdict
 import datetime
 import uuid
@@ -36,7 +38,17 @@ class K1APIView(View):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         self._validate_signature(request)
-        return super(K1APIView, self).dispatch(request, *args, **kwargs)
+        start_time = time.time()
+        response = super(K1APIView, self).dispatch(request, *args, **kwargs)
+        influx.timing(
+            'k1api.request',
+            (time.time() - start_time),
+            endpoint=self.__class__.__name__,
+            path=re.sub('/[0-9]+/', '/_ID_/', request.path),
+            method=request.method,
+            status=str(response.status_code),
+        )
+        return response
 
     @staticmethod
     def _validate_signature(request):
