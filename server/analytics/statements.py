@@ -13,7 +13,7 @@ import utils.csv_utils
 DOWNLOAD_URL = 'https://one.zemanta.com/api/custom_report_download/'
 INVENTORY_REPORT_QUERY = """SELECT {breakdown}, SUM(bid_reqs)
 FROM supply_stats
-WHERE date >= '{from_date}' AND date < current_date
+WHERE date >= '{from_date}' AND date < current_date AND blacklisted = 0
 GROUP BY {breakdown};"""
 
 SOURCE_PERFORMANCE_REPORT_QUERY = """SELECT source_id, {metrics}
