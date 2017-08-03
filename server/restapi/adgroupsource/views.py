@@ -13,7 +13,9 @@ class AdGroupSourcesViewList(RESTAPIBaseView):
 
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group=ad_group).group_current_settings()
+        settings = dash.models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__ad_group=ad_group
+        ).group_current_settings().select_related('ad_group_source__source')
         serializer = serializers.AdGroupSourceSerializer(settings, many=True)
         return self.response_ok(serializer.data)
 
