@@ -881,9 +881,9 @@ class PublishersViewList(RESTAPIBaseView):
         add_entries(dash.models.PublisherGroupEntry.objects.filter(
             publisher_group_id__in=targeting['ad_group']['excluded']).select_related('source'), constants.PublisherBlacklistLevel.ADGROUP)
         add_entries(dash.models.PublisherGroupEntry.objects.filter(
-            publisher_group_id__in=targeting['campaign']['excluded'].select_related('source')), constants.PublisherBlacklistLevel.CAMPAIGN)
+            publisher_group_id__in=targeting['campaign']['excluded']).select_related('source'), constants.PublisherBlacklistLevel.CAMPAIGN)
         add_entries(dash.models.PublisherGroupEntry.objects.filter(
-            publisher_group_id__in=targeting['account']['excluded'].select_related('source')), constants.PublisherBlacklistLevel.ACCOUNT)
+            publisher_group_id__in=targeting['account']['excluded']).select_related('source'), constants.PublisherBlacklistLevel.ACCOUNT)
 
         serializer = PublisherSerializer(publishers, many=True)
         return self.response_ok(serializer.data)
