@@ -678,7 +678,7 @@ def send_oen_postclickkpi_cpa_factors_email(factors):
         email = EmailMultiAlternatives(
               subject,
               body,
-              'Zemanta <{}>'.format(settings.FROM_EMAIL),
+              'Zemanta <{}>'.format(NO_REPLY_EMAIL),
               recipients
         )
         email.attach('cpa_optimization_factors.csv', factors, 'text/csv')
