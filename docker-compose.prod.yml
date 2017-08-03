@@ -107,6 +107,9 @@ services:
 
     einsworker_reports:
         extends: eins
+        environment:
+          VIRTUAL_HOST: "onereports.zemanta.com"
+          NEW_RELIC_APP_NAME: "Zemanta One (Reports)"
         mem_limit: 2g
         labels:
           traefik.enable: "false"
@@ -162,6 +165,9 @@ services:
         mem_limit: 512m
         labels:
           traefik.enable: "false"
+        environment:
+          VIRTUAL_HOST: "oneconvapi.zemanta.com"
+          NEW_RELIC_APP_NAME: "Zemanta One (ConvAPI)"
         entrypoint: ""
         cpu_quota: 50000
         command: "celery worker -A server -c 3 -Q prod-convapi -l INFO -f /app/logs/eins_celery_convapi.log"
