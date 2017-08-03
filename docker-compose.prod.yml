@@ -114,6 +114,9 @@ services:
         command: "celery worker -A server -c 1 -Q z1-reports -l INFO -f /app/logs/eins_celery_reports.log --prefetch-multiplier 0 -P solo"
 
     einsworker_upload_lambda:
+        environment:
+          VIRTUAL_HOST: "onelambda.zemanta.com"
+          NEW_RELIC_APP_NAME: "Zemanta One (Lambda)"
         extends: eins
 #        mem_limit: 2g
         mem_limit: 512m
