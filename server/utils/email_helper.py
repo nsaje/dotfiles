@@ -511,11 +511,13 @@ def send_weekly_inventory_report_email():
         dash.constants.EmailTemplateType.WEEKLY_INVENTORY_REPORT,
         report_url=analytics.statements.generate_csv(
             'inventory-report/valid-{}.csv'.format(str(dates_helper.local_today())),
-            analytics.statements.inventory_report_csv
+            analytics.statements.inventory_report_csv,
+            blacklisted=False
         ),
         bl_report_url=analytics.statements.generate_csv(
             'inventory-report/blacklisted-{}.csv'.format(str(dates_helper.local_today())),
-            analytics.statements.inventory_report_csv
+            analytics.statements.inventory_report_csv,
+            blacklisted=True
         )
     )
     email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
