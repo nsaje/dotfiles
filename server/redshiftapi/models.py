@@ -195,7 +195,7 @@ class MVMaster(BreakdownsBase):
     video_progress_3s = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'video_progress_3s'}, AGGREGATE)
 
     # Video  derivates
-    video_cpv = backtosql.TemplateColumn('part_sumdiv_nano.sql', {'expr': 'cost_nano', 'divisor': 'video_progress_3s'},
+    video_cpv = backtosql.TemplateColumn('part_sumdiv_nano.sql', {'expr': 'cost_nano', 'divisor': 'video_first_quartile'},
                                          AGGREGATE)
     video_cpcv = backtosql.TemplateColumn('part_sumdiv_nano.sql', {'expr': 'cost_nano', 'divisor': 'video_complete'},
                                           AGGREGATE)
