@@ -106,6 +106,10 @@ angular.element(document).ready(function () {
 
     window.daterangepicker.prototype.updateMonthsInView = function () {
         this.leftCalendar.month = this.startDate.clone().date(1);
-        this.rightCalendar.month = this.endDate.clone().date(1);
+        if (this.endDate) {
+            this.rightCalendar.month = this.endDate.clone().date(1);
+        } else {
+            this.rightCalendar.month = this.startDate.clone().date(1);
+        }
     };
 });
