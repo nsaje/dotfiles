@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemGridActionsService', function ($q, zemUploadService, zemUploadApiConverter, zemEntityService, zemToastsService, zemCloneAdGroupService, zemCloneContentService, $window, zemGridBulkPublishersActionsService) {  // eslint-disable-line max-len
+angular.module('one.widgets').service('zemGridActionsService', function ($q, zemUploadService, zemUploadApiConverter, zemEntityService, zemToastsService, zemCloneAdGroupService, zemCloneContentService, $window, zemGridBulkPublishersActionsService, zemModalsService) {  // eslint-disable-line max-len
 
     var BUTTONS = {
         edit: {
@@ -42,8 +42,12 @@ angular.module('one.widgets').service('zemGridActionsService', function ($q, zem
                 buttons.push(BUTTONS.archive);
             }
         }
-        function addPublisherActions (actions) {
+        function addPublisherActions (row, actions) {
             angular.copy(actions).forEach(function (action) {
+                if (row.data.stats.exchange.value === constants.sourceTypeName.OUTBRAIN
+                        && action.level !== constants.publisherBlacklistLevel.ACCOUNT) {
+                    return;
+                }
                 action.action = executePublisherAction;
                 action.type = action.value;
                 buttons.push(action);
@@ -55,21 +59,21 @@ angular.module('one.widgets').service('zemGridActionsService', function ($q, zem
         } else if (level === constants.level.ACCOUNTS && breakdown === constants.breakdown.CAMPAIGN) {
             addArchiveUnarchive();
         } else if (level === constants.level.CAMPAIGNS && breakdown === constants.breakdown.AD_GROUP) {
-            addArchiveUnarchive();
             buttons.push(BUTTONS.clone);
+            addArchiveUnarchive();
         } else if (level === constants.level.AD_GROUPS && breakdown === constants.breakdown.CONTENT_AD) {
             if (!row.data.archived) {
                 buttons.push(BUTTONS.edit);
             }
-            addArchiveUnarchive();
             buttons.push(BUTTONS.clone);
             buttons.push(BUTTONS.download);
+            addArchiveUnarchive();
         } else if (breakdown === constants.breakdown.PUBLISHER) {
             if (row.data.stats.status &&
                     row.data.stats.status.value === constants.publisherTargetingStatus.BLACKLISTED) {
-                addPublisherActions(zemGridBulkPublishersActionsService.getUnlistActions(level));
+                addPublisherActions(row, zemGridBulkPublishersActionsService.getUnlistActions(level));
             }
-            addPublisherActions(zemGridBulkPublishersActionsService.getBlacklistActions(level));
+            addPublisherActions(row, zemGridBulkPublishersActionsService.getBlacklistActions(level));
         }
         return buttons;
     }
@@ -146,26 +150,44 @@ angular.module('one.widgets').service('zemGridActionsService', function ($q, zem
     }
 
     function archiveRow (row, grid) {
-        if (row.entity.type === constants.entityType.CONTENT_AD) {
-            return zemEntityService.executeBulkAction(
+        var confirmText = 'This will archive {entity} {name}.<br>While archived, the {entity} will be hidden. You won\'t be able to review {entity} statistics or manage it. You will be able to restore an archived {entity}, which will bring back all it\'s settings and statistics.<br>Are you sure you want to continue?'; // eslint-disable-line max-len
+        confirmText = confirmText.replace(/{entity}/g, getEntityTypeText(row.entity.type));
+        confirmText = confirmText.replace(/{name}/g, row.data.stats.breakdown_name.value);
+
+        return zemModalsService.openConfirmModal(confirmText).then(function () {
+            if (row.entity.type === constants.entityType.CONTENT_AD) {
+                return zemEntityService.executeBulkAction(
+                    constants.entityAction.ARCHIVE,
+                    grid.meta.data.level,
+                    grid.meta.data.breakdown,
+                    grid.meta.data.id,
+                    {
+                        selectedIds: [row.entity.id],
+                    }
+                ).then(function () {
+                    grid.meta.api.loadData();
+                }, handleError);
+            }
+            return zemEntityService.executeAction(
                 constants.entityAction.ARCHIVE,
-                grid.meta.data.level,
-                grid.meta.data.breakdown,
-                grid.meta.data.id,
-                {
-                    selectedIds: [row.entity.id],
-                }
+                row.entity.type,
+                row.entity.id
             ).then(function () {
                 grid.meta.api.loadData();
             }, handleError);
+        });
+    }
+
+    function getEntityTypeText (entityType) {
+        if (entityType === constants.entityType.ACCOUNT) {
+            return 'account';
+        } else if (entityType === constants.entityType.CAMPAIGN) {
+            return 'campaign';
+        } else if (entityType === constants.entityType.AD_GROUP) {
+            return 'ad group';
+        } else if (entityType === constants.entityType.CONTENT_AD) {
+            return 'content ad';
         }
-        return zemEntityService.executeAction(
-            constants.entityAction.ARCHIVE,
-            row.entity.type,
-            row.entity.id
-        ).then(function () {
-            grid.meta.api.loadData();
-        }, handleError);
     }
 
     function restoreRow (row, grid) {

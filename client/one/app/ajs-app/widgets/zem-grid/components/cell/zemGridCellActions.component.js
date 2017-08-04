@@ -12,6 +12,8 @@ angular.module('one.widgets').directive('zemGridCellActions', function ($timeout
         template: require('./zemGridCellActions.component.html'),
         controller: function ($scope, zemGridConstants, zemGridStateAndStatusHelpers, zemGridActionsService, zemToastsService) { // eslint-disable-line max-len
             var vm = this;
+            var pubsub = vm.grid.meta.pubsub;
+
             vm.isSaveRequestInProgress = vm.grid.meta.dataService.isSaveRequestInProgress;
             vm.stateValues = zemGridStateAndStatusHelpers
                 .getStateValues(vm.grid.meta.data.level, vm.grid.meta.data.breakdown);
@@ -19,7 +21,7 @@ angular.module('one.widgets').directive('zemGridCellActions', function ($timeout
             vm.execute = execute;
 
             $scope.$watch('ctrl.row', update);
-            $scope.$watch('ctrl.row.data.archived', update);
+            pubsub.register(pubsub.EVENTS.DATA_UPDATED, $scope, update);
 
             function update () {
                 vm.showLoader = false;
@@ -45,10 +47,13 @@ angular.module('one.widgets').directive('zemGridCellActions', function ($timeout
                         vm.grid.meta.data.breakdown,
                         vm.row
                     );
-                    if (buttons.length > 0 && vm.grid.meta.data.breakdown !== constants.breakdown.PUBLISHER) {
+                    if (buttons.length > 0
+                            && buttons[0].type !== 'archive'
+                            && vm.grid.meta.data.breakdown !== constants.breakdown.PUBLISHER) {
                         vm.mainButton = buttons[0];
                         vm.buttons = buttons.slice(1);
                     } else {
+                        vm.mainButton = null;
                         vm.buttons = buttons;
                     }
 
@@ -63,7 +68,7 @@ angular.module('one.widgets').directive('zemGridCellActions', function ($timeout
 
             function execute (button) {
                 vm.showLoader = true;
-                button.action(vm.row, vm.grid, button).then(function () {
+                button.action(vm.row, vm.grid, button).finally(function () {
                     vm.showLoader = false;
                 });
                 if (button !== vm.mainButton) {
