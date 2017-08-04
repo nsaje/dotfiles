@@ -84,7 +84,7 @@ class CampaignGoal(models.Model):
 
     def to_dict(self, with_values=False):
         campaign_goal = {
-            'campaign_id': self.campaign.id,
+            'campaign_id': self.campaign_id,
             'type': self.type,
             'primary': self.primary,
             'id': self.pk,
@@ -100,9 +100,9 @@ class CampaignGoal(models.Model):
                 'goal_id': self.conversion_goal.goal_id,
                 'pixel_url': None,
             }
-            if self.conversion_goal.pixel:
+            if self.conversion_goal.pixel_id is not None:
                 campaign_goal['conversion_goal'][
-                    'goal_id'] = self.conversion_goal.pixel.id
+                    'goal_id'] = self.conversion_goal.pixel_id
 
         if with_values:
             default_rounding_format = '1.00'

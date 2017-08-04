@@ -519,7 +519,7 @@ class AdGroupsView(K1APIView):
         the first element in the list is the type of the primary goal
         '''
         campaign_goals = {cid: [] for cid in campaign_ids}
-        for goal in dash.models.CampaignGoal.objects.filter(campaign__in=campaign_ids):
+        for goal in dash.models.CampaignGoal.objects.filter(campaign__in=campaign_ids).select_related('conversion_goal').prefetch_related('values'):
             campaign_goals[goal.campaign_id].append(goal)
 
         campaign_goals_dicts = {}
