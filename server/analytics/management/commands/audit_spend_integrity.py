@@ -85,4 +85,4 @@ class Command(utils.command_helpers.ExceptionCommand):
                     err=converters.nano_to_decimal(err),
                     tbl=table,
                     col=key
-                ), utils.slack.MESSAGE_TYPE_CRITICAL, username='Spend patterns')
+                ), msg_type=utils.slack.MESSAGE_TYPE_CRITICAL, username='Spend patterns')

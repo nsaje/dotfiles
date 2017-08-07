@@ -48,7 +48,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         if self.slack:
             utils.slack.publish(
                 ALERT_MSG_AD_GROUPS.format(details),
-                utils.slack.MESSAGE_TYPE_CRITICAL,
+                msg_type=utils.slack.MESSAGE_TYPE_CRITICAL,
                 username='Autopilot'
             )
 
@@ -67,7 +67,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         if self.slack:
             utils.slack.publish(
                 ALERT_MSG_BUDGET_TOTALS.format(details),
-                utils.slack.MESSAGE_TYPE_CRITICAL,
+                msg_type=utils.slack.MESSAGE_TYPE_CRITICAL,
                 username='Autopilot'
             )
 
@@ -86,7 +86,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         if self.slack:
             utils.slack.publish(
                 ALERT_MSG_BUDGET_CHANGES.format(details),
-                utils.slack.MESSAGE_TYPE_CRITICAL,
+                msg_type=utils.slack.MESSAGE_TYPE_CRITICAL,
                 username='Autopilot'
             )
 
@@ -107,6 +107,6 @@ class Command(utils.command_helpers.ExceptionCommand):
         if self.slack:
             utils.slack.publish(
                 ALERT_MSG_CPC_CHANGES.format(details),
-                utils.slack.MESSAGE_TYPE_WARNING,
+                msg_type=utils.slack.MESSAGE_TYPE_WARNING,
                 username='Autopilot'
             )
