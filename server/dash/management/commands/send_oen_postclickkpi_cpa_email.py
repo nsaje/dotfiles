@@ -10,7 +10,7 @@ from utils import s3helpers, email_helper
 logger = logging.getLogger(__name__)
 
 S3_BUCKET_B1_ML = 'b1-ml'
-EXPECTED_COLS = ['adgroup', 'action', 'source', 'publisher', 'campaign', 'ob_campaign' 'factor']
+EXPECTED_COLS = ['adgroup', 'action', 'source', 'publisher', 'campaign', 'ob_campaign', 'factor']
 OEN_ACCOUNT = 305
 
 
