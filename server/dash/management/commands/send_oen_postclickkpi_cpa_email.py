@@ -10,7 +10,7 @@ from utils import s3helpers, email_helper
 logger = logging.getLogger(__name__)
 
 S3_BUCKET_B1_ML = 'b1-ml'
-EXPECTED_COLS = ['adgroup', 'action', 'source', 'publisher', 'factor']
+EXPECTED_COLS = ['adgroup', 'action', 'source', 'publisher', 'campaign', 'ob_campaign' 'factor']
 OEN_ACCOUNT = 305
 
 
@@ -22,7 +22,7 @@ class Command(ExceptionCommand):
     def handle(self, *args, **options):
         logger.info('Sending OEN post click kpi optimization CPA factors email')
 
-        oen_ad_groups = [adg.id for adg in models.AdGroup.objects.filter(campaign__account=OEN_ACCOUNT)]
+        oen_ags = models.AdGroup.objects.filter(campaign__account=OEN_ACCOUNT).select_related('campaign')
 
         output = cStringIO.StringIO()
         writer = unicodecsv.writer(output, encoding='utf-8', delimiter=';')
@@ -44,9 +44,13 @@ class Command(ExceptionCommand):
                     raise Exception('Expected 2 parts in factor key in row: %s' % factor_row)
                 out[s[0]] = s[1]
 
-            if int(out['adgroup']) not in oen_ad_groups:
+            try:
+                adg = oen_ags.get(id=out['adgroup'])
+            except models.AdGroup.DoesNotExist:
                 continue
 
+            out['campaign'] = adg.campaign.id
+            out['ob_campaign'] = adg.campaign.name
             out['factor'] = row[2]
 
             for col in EXPECTED_COLS:
