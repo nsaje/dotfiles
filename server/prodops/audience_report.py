@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 import os
 
 import xlsxwriter
 
 import redshiftapi.db
+import dash.constants
 
 TIME_OF_DAY_UTC = """SELECT date_part('hour', bid_timestamp) as h, count(*) as clicks
 FROM audience_report
@@ -45,7 +47,7 @@ BLUEKAI_IDS = """WITH exploded_bluekai AS (
         {key} = {id} AND
         bid_timestamp >= '{gte}' AND bid_timestamp < '{lt}' AND
         blacklisted = '' AND
-        seq.i > 0 AND seq.i <= (CHAR_LENGTH(verticals) - CHAR_LENGTH(REPLACE(verticals, ',', ''))) + 1
+        seq.i > 0 AND seq.i <= (CHAR_LENGTH(bluekai_categories) - CHAR_LENGTH(REPLACE(bluekai_categories, ',', ''))) + 1
 )
 SELECT category, count(*) as clicks
 FROM exploded_bluekai
@@ -59,7 +61,7 @@ BLUEKAI_NAMES = """WITH exploded_bluekai AS (
         {key} = {id} AND
         bid_timestamp >= '{gte}' AND bid_timestamp < '{lt}' AND
         blacklisted = '' AND
-        seq.i > 0 AND seq.i <= (CHAR_LENGTH(verticals) - CHAR_LENGTH(REPLACE(verticals, ',', ''))) + 1
+        seq.i > 0 AND seq.i <= (CHAR_LENGTH(bluekai_categories) - CHAR_LENGTH(REPLACE(bluekai_categories, ',', ''))) + 1
 )
 SELECT
     CASE category
@@ -143,12 +145,14 @@ def create_report(breakdown, breakdown_id, gte, lt, path='.'):
         c.execute(GEOLOCATION.format(**params))
         data['geolocation'] = c.fetchall()
         c.execute(VERTICALS.format(**params))
-        data['verticals'] = c.fetchall()
+        data['verticals'] = [
+            (dash.constants.InterestCategory.get_text(k) or k, v) for k, v in c.fetchall()
+        ]
         c.execute(BLUEKAI_IDS.format(**params))
         data['bluekai-ids'] = c.fetchall()
         c.execute(BLUEKAI_NAMES.format(**params))
         data['bluekai-names'] = c.fetchall()
-
+    print data['verticals']
     filepath = os.path.join(path, 'audience-report_{}-{}_{}_{}.xlsx'.format(
         breakdown,
         breakdown_id,
