@@ -159,7 +159,7 @@ describe('ZemUploadEditFormCtrl', function () {
             spyOn(ctrl.endpoint, 'updateCandidate').and.callFake(function () {
                 return deferred.promise;
             });
-            ctrl.updateField('title');
+            ctrl.updateField(ctrl.selectedCandidate, 'title');
             expect(ctrl.fieldsLoading.title).toBe(true);
             expect(ctrl.fieldsSaved.title).toBe(false);
 
@@ -193,7 +193,7 @@ describe('ZemUploadEditFormCtrl', function () {
             spyOn(ctrl.endpoint, 'updateCandidate').and.callFake(function () {
                 return deferred.promise;
             });
-            ctrl.updateField('description', true);
+            ctrl.updateField(ctrl.selectedCandidate, 'description', true);
             expect(ctrl.fieldsLoading.description).toBe(true);
             expect(ctrl.fieldsSaved.description).toBe(false);
 
@@ -226,7 +226,7 @@ describe('ZemUploadEditFormCtrl', function () {
             var firstDeferred = $q.defer(),
                 secondDeferred = $q.defer();
             spyOn(ctrl.endpoint, 'updateCandidate').and.returnValues(firstDeferred.promise, secondDeferred.promise);
-            ctrl.updateField('title');
+            ctrl.updateField(ctrl.selectedCandidate, 'title');
 
             firstDeferred.reject({});
             secondDeferred.resolve({
@@ -267,7 +267,7 @@ describe('ZemUploadEditFormCtrl', function () {
                 return statusDeferred.promise;
             });
 
-            ctrl.updateField('title');
+            ctrl.updateField(ctrl.selectedCandidate, 'title');
             expect(ctrl.fieldsLoading.title).toBe(true);
             expect(ctrl.fieldsSaved.title).toBe(false);
 

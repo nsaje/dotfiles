@@ -102,19 +102,19 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
 
     vm.imageUploadCallback = function (file) {
         vm.selectedCandidate.image = file;
-        vm.updateField('image');
+        vm.updateField(vm.selectedCandidate, 'image');
         $scope.$digest();
     };
 
-    vm.updateField = function (field, useAsDefault) {
-        var selectedId = vm.selectedCandidate.id;
+    vm.updateField = function (candidate, field, useAsDefault) {
+        var selectedId = candidate.id;
         var defaults = [];
         if (useAsDefault && !vm.isEdit) defaults.push(field);
 
         var data = {
-            id: vm.selectedCandidate.id,
+            id: candidate.id,
         };
-        data[field] = vm.selectedCandidate[field];
+        data[field] = candidate[field];
 
         vm.fieldsSaved[field] = false;
         vm.fieldsLoading[field] = true;
@@ -156,7 +156,7 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
     vm.removePrimaryTracker = function (candidate) {
         candidate.usePrimaryTracker = false;
         candidate.primaryTrackerUrl = null;
-        vm.updateField('primaryTrackerUrl');
+        vm.updateField(candidate, 'primaryTrackerUrl');
         vm.clearSelectedCandidateErrors('primaryTrackerUrl');
     };
 
@@ -168,7 +168,7 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
     vm.removeSecondaryTracker = function (candidate) {
         candidate.useSecondaryTracker = false;
         candidate.secondaryTrackerUrl = null;
-        vm.updateField('secondaryTrackerUrl');
+        vm.updateField(candidate, 'secondaryTrackerUrl');
         vm.clearSelectedCandidateErrors('secondaryTrackerUrl');
     };
 
@@ -229,7 +229,7 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
             .then(function (videoAsset) {
                 candidate.videoAsset = videoAsset;
                 candidate.videoAssetId = videoAsset.id;
-                vm.updateField('videoAssetId');
+                vm.updateField(candidate, 'videoAssetId');
                 vm.startPollingVideoAssetStatus(candidate);
             })
             .catch(function () {

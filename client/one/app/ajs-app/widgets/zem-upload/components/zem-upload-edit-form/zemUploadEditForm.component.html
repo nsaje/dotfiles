@@ -10,14 +10,14 @@
                 <label class="form__label" for="url-input">URL</label>
                 <input type="text" class="input-text" id="url-input" ng-model="ctrl.selectedCandidate.url"
                        ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }"
-                       ng-change="ctrl.updateField('url')"
+                       ng-change="ctrl.updateField(ctrl.selectedCandidate, 'url')"
                        ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.url || ctrl.fieldsSaved.url && !ctrl.fieldsHaveErrors('url')}"/>
                 <div class="content-upload__field-additional-info content-upload__change-status" ng-class="{
                      'content-upload__change-status--loading': ctrl.fieldsLoading.url,
                      'content-upload__change-status--successful': ctrl.fieldsSaved.url && !ctrl.fieldsHaveErrors('url')}">
                     {{ ctrl.selectedCandidate.url.length }}/{{ ctrl.MAX_URL_LENGTH }}
                 </div>
-                <div class="message message--error" for="url-input" ng-if="ctrl.fieldsApiErrors['url']">Something went wrong. <a href ng-click="ctrl.updateField('url')">Try again</a></div>
+                <div class="message message--error" for="url-input" ng-if="ctrl.fieldsApiErrors['url']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'url')">Try again</a></div>
                 <div class="message message--error" for="url-input" ng-repeat="error in ctrl.selectedCandidate.errors.url">{{ error }}</div>
             </div>
 
@@ -25,14 +25,14 @@
                 <label class="form__label" for="title-input">Ad Title</label>
                 <input type="text" class="input-text" id="title-input" ng-model="ctrl.selectedCandidate.title"
                     ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }"
-                    ng-change="ctrl.updateField('title')" ng-disabled="ctrl.isEdit"
+                    ng-change="ctrl.updateField(ctrl.selectedCandidate, 'title')" ng-disabled="ctrl.isEdit"
                     ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.title || ctrl.fieldsSaved.title && !ctrl.fieldsHaveErrors('title')}"/>
                 <div class="content-upload__field-additional-info content-upload__change-status" ng-class="{
                      'content-upload__change-status--loading': ctrl.fieldsLoading.title,
                      'content-upload__change-status--successful': ctrl.fieldsSaved.title && !ctrl.fieldsHaveErrors('title')}">
                     {{ ctrl.selectedCandidate.title.length }}/{{ ctrl.MAX_TITLE_LENGTH }}
                 </div>
-                <div class="message message--error" for="title-input" ng-if="ctrl.fieldsApiErrors['title']">Something went wrong. <a href ng-click="ctrl.updateField('title')" tabindex="-1">Try again</a></div>
+                <div class="message message--error" for="title-input" ng-if="ctrl.fieldsApiErrors['title']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'title')" tabindex="-1">Try again</a></div>
                 <div class="message message--error" for="title-input" ng-repeat="error in ctrl.selectedCandidate.errors.title">{{ error }}</div>
             </div>
 
@@ -40,13 +40,13 @@
                 <label class="form__label" for="image-url-input">Image URL</label>
                 <input class="input-text" type="text" id="image-url-input" ng-model="ctrl.selectedCandidate.imageUrl"
                        ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }"
-                       ng-change="ctrl.updateField('imageUrl')"
+                       ng-change="ctrl.updateField(ctrl.selectedCandidate, 'imageUrl')"
                        ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.imageUrl || ctrl.fieldsSaved.imageUrl && !ctrl.fieldsHaveErrors('imageUrl')}"/>
                 <div class="content-upload__field-additional-info content-upload__change-status" ng-class="{
                      'content-upload__change-status--loading': ctrl.fieldsLoading.imageUrl,
                      'content-upload__change-status--successful': ctrl.fieldsSaved.imageUrl && !ctrl.fieldsHaveErrors('imageUrl')}">
                 </div>
-                <div class="message message--error" for="image-url-input" ng-if="ctrl.fieldsApiErrors['imageUrl']">Something went wrong. <a href ng-click="ctrl.updateField('imageUrl')" tabindex="-1">Try again</a></div>
+                <div class="message message--error" for="image-url-input" ng-if="ctrl.fieldsApiErrors['imageUrl']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'imageUrl')" tabindex="-1">Try again</a></div>
                 <div class="message message--error" for="image-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.imageUrl" ng-if="!ctrl.showImageUpload">{{ error }}</div>
                 <div class="form__text--small">We recommend using HQ images, at least 1200x628 pixels or above. The minimum required image for a native ad is 300x300 pixels.</div>
                 <div class="form__text--small">
@@ -65,7 +65,7 @@
                      'content-upload__change-status--loading': ctrl.fieldsLoading.image,
                      'content-upload__change-status--successful': ctrl.fieldsSaved.image && !ctrl.fieldsHaveErrors('image')}">
                 </div>
-                <div class="message message--error" for="image-input" ng-if="ctrl.fieldsApiErrors['image']">Something went wrong. <a href ng-click="ctrl.updateField('image')" tabindex="-1">Try again</a></div>
+                <div class="message message--error" for="image-input" ng-if="ctrl.fieldsApiErrors['image']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'image')" tabindex="-1">Try again</a></div>
                 <div class="message message--error" for="image-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.image" ng-if="ctrl.showImageUpload">{{ error }}</div>
                 <div class="form__text--small">We recommend using HQ images, at least 1200x628 pixels or above. The minimum required image for a native ad is 300x300 pixels.</div>
                 <div class="form__text--small">
@@ -79,18 +79,18 @@
                 <label class="form__label" for="image-crop-input">Image crop</label>
                 <ui-select theme="select2" search-enabled="false" id="image-crop-input"
                            class="button button--plain button--full-width button--dropdown-toggle-icon"
-                           ng-model="ctrl.selectedCandidate.imageCrop" ng-change="ctrl.updateField('imageCrop')">
+                           ng-model="ctrl.selectedCandidate.imageCrop" ng-change="ctrl.updateField(ctrl.selectedCandidate, 'imageCrop')">
                     <ui-select-match class="ui-select-match" placeholder="Choose image crop">{{$select.selected.name}}</ui-select-match>
                     <ui-select-choices repeat="crop.value as crop in ctrl.imageCrops" class="ui-select-choices">
                         {{crop.name}}
                     </ui-select-choices>
                 </ui-select>
-                <div class="message message--error" for="image-crop-input" ng-if="ctrl.fieldsApiErrors['imageCrop']">Something went wrong. <a href ng-click="ctrl.updateField('imageCrop')" tabindex="-1">Try again</a></div>
+                <div class="message message--error" for="image-crop-input" ng-if="ctrl.fieldsApiErrors['imageCrop']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'imageCrop')" tabindex="-1">Try again</a></div>
                 <div class="message message--error" for="image-crop-input" ng-repeat="error in ctrl.selectedCandidate.errors.imageCrop">{{ error }}</div>
                 <div class="content-upload__field-additional-info content-upload__change-status content-upload__change-status--dropdown-on-the-left" ng-class="{
                      'content-upload__change-status--loading': ctrl.fieldsLoading.imageCrop,
                      'content-upload__change-status--successful': ctrl.fieldsSaved.imageCrop && !ctrl.fieldsHaveErrors('imageCrop')}">
-                    <a href class="alternative-link" ng-click="ctrl.updateField('imageCrop', true)" tabindex="-1" ng-if="!ctrl.isEdit">
+                    <a href class="alternative-link" ng-click="ctrl.updateField(ctrl.selectedCandidate, 'imageCrop', true)" tabindex="-1" ng-if="!ctrl.isEdit">
                         Use as default
                     </a>
                 </div>
@@ -126,18 +126,18 @@
                 <textarea class="textarea" type="text" rows="3" id="description-input"
                           ng-model="ctrl.selectedCandidate.description"
                           ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }"
-                          ng-change="ctrl.updateField('description')"
+                          ng-change="ctrl.updateField(ctrl.selectedCandidate, 'description')"
                           ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.description || ctrl.fieldsSaved.description && !ctrl.fieldsHaveErrors('description')}">
                 </textarea>
                 <div class="content-upload__field-additional-info content-upload__field-additional-info--with-link content-upload__change-status" ng-class="{
                      'content-upload__change-status--loading': ctrl.fieldsLoading.description,
                      'content-upload__change-status--successful': ctrl.fieldsSaved.description && !ctrl.fieldsHaveErrors('description')}">
                     {{ ctrl.selectedCandidate.description.length }}/{{ ctrl.MAX_DESCRIPTION_LENGTH }}<br>
-                    <a href class="alternative-link" ng-click="ctrl.updateField('description', true)" tabindex="-1" ng-if="!ctrl.isEdit">
+                    <a href class="alternative-link" ng-click="ctrl.updateField(ctrl.selectedCandidate, 'description', true)" tabindex="-1" ng-if="!ctrl.isEdit">
                         Use as default
                     </a>
                 </div>
-                <div class="message message--error" for="description-input" ng-if="ctrl.fieldsApiErrors['description']">Something went wrong. <a href ng-click="ctrl.updateField('description')" tabindex="-1">Try again</a></div>
+                <div class="message message--error" for="description-input" ng-if="ctrl.fieldsApiErrors['description']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'description')" tabindex="-1">Try again</a></div>
                 <div class="message message--error" for="description-input" ng-repeat="error in ctrl.selectedCandidate.errors.description">{{ error }}</div>
             </div>
 
@@ -146,17 +146,17 @@
                 <input class="input-text" type="text" id="display-url-input"
                        ng-model="ctrl.selectedCandidate.displayUrl"
                        ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }"
-                       ng-change="ctrl.updateField('displayUrl')"
+                       ng-change="ctrl.updateField(ctrl.selectedCandidate, 'displayUrl')"
                        ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.displayUrl || ctrl.fieldsSaved.displayUrl && !ctrl.fieldsHaveErrors('displayUrl')}"/>
                 <div class="content-upload__field-additional-info content-upload__field-additional-info--with-link content-upload__change-status" ng-class="{
                      'content-upload__change-status--loading': ctrl.fieldsLoading.displayUrl,
                      'content-upload__change-status--successful': ctrl.fieldsSaved.displayUrl && !ctrl.fieldsHaveErrors('displayUrl')}">
                     {{ ctrl.selectedCandidate.displayUrl.length }}/{{ ctrl.MAX_DISPLAY_URL_LENGTH }}<br>
-                    <a href class="alternative-link" ng-click="ctrl.updateField('displayUrl', true)" tabindex="-1" ng-if="!ctrl.isEdit">
+                    <a href class="alternative-link" ng-click="ctrl.updateField(ctrl.selectedCandidate, 'displayUrl', true)" tabindex="-1" ng-if="!ctrl.isEdit">
                         Use as default
                     </a>
                 </div>
-                <div class="message message--error" for="display-url-input" ng-if="ctrl.fieldsApiErrors['displayUrl']">Something went wrong. <a href ng-click="ctrl.updateField('displayUrl')" tabindex="-1">Try again</a></div>
+                <div class="message message--error" for="display-url-input" ng-if="ctrl.fieldsApiErrors['displayUrl']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'displayUrl')" tabindex="-1">Try again</a></div>
                 <div class="message message--error" for="display-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.displayUrl">{{ error }}</div>
             </div>
 
@@ -165,17 +165,17 @@
                 <input class="input-text" type="text" id="brand-name-input"
                        ng-model="ctrl.selectedCandidate.brandName"
                        ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }"
-                       ng-change="ctrl.updateField('brandName')"
+                       ng-change="ctrl.updateField(ctrl.selectedCandidate, 'brandName')"
                        ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.brandName || ctrl.fieldsSaved.brandName && !ctrl.fieldsHaveErrors('brandName')}"/>
                 <div class="content-upload__field-additional-info content-upload__field-additional-info--with-link content-upload__change-status" ng-class="{
                      'content-upload__change-status--loading': ctrl.fieldsLoading.brandName,
                      'content-upload__change-status--successful': ctrl.fieldsSaved.brandName && !ctrl.fieldsHaveErrors('brandName')}">
                     {{ ctrl.selectedCandidate.brandName.length }}/{{ ctrl.MAX_BRAND_NAME_LENGTH }}<br>
-                    <a href class="alternative-link" ng-click="ctrl.updateField('brandName', true)" tabindex="-1" ng-if="!ctrl.isEdit">
+                    <a href class="alternative-link" ng-click="ctrl.updateField(ctrl.selectedCandidate, 'brandName', true)" tabindex="-1" ng-if="!ctrl.isEdit">
                         Use as default
                     </a>
                 </div>
-                <div class="message message--error" for="brand-name-input" ng-if="ctrl.fieldsApiErrors['brandName']">Something went wrong. <a href ng-click="ctrl.updateField('brandName')" tabindex="-1">Try again</a></div>
+                <div class="message message--error" for="brand-name-input" ng-if="ctrl.fieldsApiErrors['brandName']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'brandName')" tabindex="-1">Try again</a></div>
                 <div class="message message--error" for="brand-name-input" ng-repeat="error in ctrl.selectedCandidate.errors.brandName">{{ error }}</div>
             </div>
 
@@ -184,18 +184,18 @@
                 <div ui-select2="ctrl.callToActionSelect2Config" id="call-to-action-input"
                      class="button button--plain button--full-width button--dropdown-toggle-icon"
                      ng-model="ctrl.selectedCandidate.callToAction" zem-select2-model-transform="text"
-                     ng-change="ctrl.updateField('callToAction')"
+                     ng-change="ctrl.updateField(ctrl.selectedCandidate, 'callToAction')"
                      ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.callToAction || ctrl.fieldsSaved.callToAction && !ctrl.fieldsHaveErrors('callToAction')}">
                 </div>
                 <div class="content-upload__field-additional-info content-upload__field-additional-info--with-link content-upload__change-status content-upload__change-status--dropdown-on-the-left" ng-class="{
                      'content-upload__change-status--loading': ctrl.fieldsLoading.callToAction,
                      'content-upload__change-status--successful': ctrl.fieldsSaved.callToAction && !ctrl.fieldsHaveErrors('callToAction')}">
                     {{ ctrl.selectedCandidate.callToAction.length }}/{{ ctrl.MAX_CALL_TO_ACTION_LENGTH }}<br>
-                    <a href class="alternative-link" ng-click="ctrl.updateField('callToAction', true)" tabindex="-1" ng-if="!ctrl.isEdit">
+                    <a href class="alternative-link" ng-click="ctrl.updateField(ctrl.selectedCandidate, 'callToAction', true)" tabindex="-1" ng-if="!ctrl.isEdit">
                         Use as default
                     </a>
                 </div>
-                <div class="message message--error" for="call-to-action-input" ng-if="ctrl.fieldsApiErrors['callToAction']">Something went wrong. <a href ng-click="ctrl.updateField('callToAction')" tabindex="-1">Try again</a></div>
+                <div class="message message--error" for="call-to-action-input" ng-if="ctrl.fieldsApiErrors['callToAction']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'callToAction')" tabindex="-1">Try again</a></div>
                 <div class="message message--error" for="call-to-action-input" ng-repeat="error in ctrl.selectedCandidate.errors.callToAction">{{ error }}</div>
             </div>
 
@@ -205,7 +205,7 @@
                 <label class="form__label form__label--optional" for="url-input">Label</label>
                 <input class="input-text" type="text" id="label-input" ng-model="ctrl.selectedCandidate.label"
                        ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }"
-                       ng-change="ctrl.updateField('label')"
+                       ng-change="ctrl.updateField(ctrl.selectedCandidate, 'label')"
                        ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.label || ctrl.fieldsSaved.label && !ctrl.fieldsHaveErrors('label')}"/>
                 <div class="content-upload__field-additional-info content-upload__change-status" ng-class="{
                      'content-upload__change-status--loading': ctrl.fieldsLoading.label,
@@ -213,7 +213,7 @@
                     {{ ctrl.selectedCandidate.label.length }}/{{ ctrl.MAX_LABEL_LENGTH }}
                 </div>
                 <div class="form__text--small">Label is an internal field and is not part of the ad placement.</div>
-                <div class="message message--error" for="label-input" ng-if="ctrl.fieldsApiErrors['label']">Something went wrong. <a href ng-click="ctrl.updateField('label')" tabindex="-1">Try again</a></div>
+                <div class="message message--error" for="label-input" ng-if="ctrl.fieldsApiErrors['label']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'label')" tabindex="-1">Try again</a></div>
                 <div class="message message--error" for="label-input" ng-repeat="error in ctrl.selectedCandidate.errors.label">{{ error }}</div>
             </div>
 
@@ -231,7 +231,7 @@
                 <input type="text" class="input-text" id="primary-tracker-input"
                        ng-model="ctrl.selectedCandidate.primaryTrackerUrl"
                        ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }"
-                       ng-change="ctrl.updateField('primaryTrackerUrl')"
+                       ng-change="ctrl.updateField(ctrl.selectedCandidate, 'primaryTrackerUrl')"
                        ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.primaryTrackerUrl || ctrl.fieldsSaved.primaryTrackerUrl && !ctrl.fieldsHaveErrors('primaryTrackerUrl')}"/>
                 <div class="content-upload__field-additional-info content-upload__change-status" ng-class="{
                      'content-upload__change-status--loading': ctrl.fieldsLoading.primaryTrackerUrl,
@@ -241,7 +241,7 @@
                     </a>
                 </div>
                 <div class="form__text--small">Paste your impression tracker link to track impressions.</div>
-                <div class="message message--error" for="primary-tracker-input" ng-if="ctrl.fieldsApiErrors['primaryTrackerUrl']">Something went wrong. <a href ng-click="ctrl.updateField('primaryTrackerUrl')" tabindex="-1">Try again</a></div>
+                <div class="message message--error" for="primary-tracker-input" ng-if="ctrl.fieldsApiErrors['primaryTrackerUrl']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'primaryTrackerUrl')" tabindex="-1">Try again</a></div>
                 <div class="message message--error" for="primary-tracker-input" ng-repeat="error in ctrl.selectedCandidate.errors.primaryTrackerUrl">{{ error }}</div>
             </div>
 
@@ -250,7 +250,7 @@
                 <input type="text" class="input-text" id="secondary-tracker-input"
                        ng-model="ctrl.selectedCandidate.secondaryTrackerUrl"
                        ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }"
-                       ng-change="ctrl.updateField('secondaryTrackerUrl')"
+                       ng-change="ctrl.updateField(ctrl.selectedCandidate, 'secondaryTrackerUrl')"
                        ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.secondaryTrackerUrl || ctrl.fieldsSaved.secondaryTrackerUrl && !ctrl.fieldsHaveErrors('secondaryTrackerUrl')}"/>
                 <div class="content-upload__field-additional-info content-upload__change-status" ng-class="{
                      'content-upload__change-status--loading': ctrl.fieldsLoading.secondaryTrackerUrl,
@@ -260,7 +260,7 @@
                     </a>
                 </div>
                 <div class="form__text--small">Paste your impression tracker link to track impressions.</div>
-                <div class="message message--error" for="secondary-tracker-input" ng-if="ctrl.fieldsApiErrors['secondaryTrackerUrl']">Something went wrong. <a href ng-click="ctrl.updateField('secondaryTrackerUrl')" tabindex="-1">Try again</a></div>
+                <div class="message message--error" for="secondary-tracker-input" ng-if="ctrl.fieldsApiErrors['secondaryTrackerUrl']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'secondaryTrackerUrl')" tabindex="-1">Try again</a></div>
                 <div class="message message--error" for="secondary-tracker-input" ng-repeat="error in ctrl.selectedCandidate.errors.secondaryTrackerUrl">{{ error }}</div>
             </div>
 
