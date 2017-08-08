@@ -101,6 +101,7 @@ class ReportJobExecutor(JobExecutor):
             self.job.result = report_path
             self.job.status = constants.ReportJobStatus.DONE
             influx.incr('dash.reports', 1, status='success')
+            self.job.save()
         except SoftTimeLimitExceeded:
             self._fail('timeout', 'Timeout')
         except Exception as e:
