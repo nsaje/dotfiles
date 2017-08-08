@@ -128,3 +128,19 @@ class ReportsExecuteTest(TestCase):
         executor._send_fail()
 
         mock_send.assert_not_called()
+
+    @mock.patch('dash.features.reports.reports.ReportJobExecutor.send_by_email')
+    @mock.patch('dash.features.reports.reports.ReportJobExecutor.save_to_s3')
+    @mock.patch('dash.features.reports.reports.ReportJobExecutor.convert_to_csv')
+    @mock.patch('dash.features.reports.reports.ReportJobExecutor.get_raw_new_report')
+    def test_success(self, mock_get_raw, mock_convert, mock_save, mock_send):
+        mock_get_raw.return_value = (1, 2, 3)
+        mock_save.return_value = 'test-report-path'
+
+        reports.execute(self.reportJob.id)
+
+        self.mock_influx_incr.assert_called_once_with('dash.reports', 1, status='success')
+
+        self.reportJob.refresh_from_db()
+        self.assertEqual(constants.ReportJobStatus.DONE, self.reportJob.status)
+        self.assertEqual('test-report-path', self.reportJob.result)
