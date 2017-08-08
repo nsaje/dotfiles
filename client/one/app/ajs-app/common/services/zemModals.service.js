@@ -2,13 +2,16 @@ angular.module('one.services').service('zemModalsService', function ($uibModal) 
 
     this.openConfirmModal = openConfirmModal;
 
-    function openConfirmModal (text) {
+    function openConfirmModal (text, title) {
         var modal = $uibModal.open({
             component: 'zemConfirmModal',
             backdrop: 'static',
             keyboard: false,
             resolve: {
-                text: {value: text},
+                params: {
+                    text: text,
+                    title: title,
+                },
             }
         });
 

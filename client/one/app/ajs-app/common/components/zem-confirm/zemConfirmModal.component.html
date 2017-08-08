@@ -1,7 +1,10 @@
+<div class="modal__header" ng-if="$ctrl.resolve.params.title">
+    <div class="modal__title">{{ $ctrl.resolve.params.title }}</div>
+</div>
 <div class="modal__body">
-    <span ng-bind-html="$ctrl.resolve.text.value"></span>
+    <div class="m-b">{{ $ctrl.resolve.params.text }}</div>
 </div>
 <div class="modal__footer buttons-panel">
-    <button class="button button--highlight" ng-click="$ctrl.modalInstance.close()">Ok</button>
-    <button type="button" class="button button--outline" ng-click="$ctrl.modalInstance.dismiss()">Cancel</button>
+    <button class="button button--highlight" ng-click="$ctrl.modalInstance.close()">Yes</button>
+    <button type="button" class="button button--outline" ng-click="$ctrl.modalInstance.dismiss()">No</button>
 </div>

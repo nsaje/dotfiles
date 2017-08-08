@@ -44,7 +44,8 @@ angular.module('one.widgets').service('zemGridActionsService', function ($q, zem
         }
         function addPublisherActions (row, actions) {
             angular.copy(actions).forEach(function (action) {
-                if (row.data.stats.exchange.value === constants.sourceTypeName.OUTBRAIN
+                if (row.data.stats.exchange
+                        && row.data.stats.exchange.value === constants.sourceTypeName.OUTBRAIN
                         && action.level !== constants.publisherBlacklistLevel.ACCOUNT) {
                     return;
                 }
@@ -150,11 +151,13 @@ angular.module('one.widgets').service('zemGridActionsService', function ($q, zem
     }
 
     function archiveRow (row, grid) {
-        var confirmText = 'This will archive {entity} {name}.<br>While archived, the {entity} will be hidden. You won\'t be able to review {entity} statistics or manage it. You will be able to restore an archived {entity}, which will bring back all it\'s settings and statistics.<br>Are you sure you want to continue?'; // eslint-disable-line max-len
+        var confirmTitle = 'Do you want to archive {entity} {name}?';
+        var confirmText = 'While archived, the {entity} will be hidden. You won\'t be able to review {entity} statistics or manage it. You will be able to restore an archived {entity}, which will bring back all it\'s settings and statistics.'; // eslint-disable-line max-len
         confirmText = confirmText.replace(/{entity}/g, getEntityTypeText(row.entity.type));
-        confirmText = confirmText.replace(/{name}/g, row.data.stats.breakdown_name.value);
+        confirmTitle = confirmTitle.replace(/{entity}/g, getEntityTypeText(row.entity.type));
+        confirmTitle = confirmTitle.replace(/{name}/g, row.data.stats.breakdown_name.value);
 
-        return zemModalsService.openConfirmModal(confirmText).then(function () {
+        return zemModalsService.openConfirmModal(confirmText, confirmTitle).then(function () {
             if (row.entity.type === constants.entityType.CONTENT_AD) {
                 return zemEntityService.executeBulkAction(
                     constants.entityAction.ARCHIVE,
