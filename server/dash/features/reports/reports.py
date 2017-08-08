@@ -88,10 +88,7 @@ class ReportJobExecutor(JobExecutor):
         job_age = utils.dates_helper.utc_now() - self.job.created_dt
         if job_age > datetime.timedelta(hours=1):
             logger.info('Running too old report job: %s' % job_age)
-            influx.incr('dash.reports', 1, status='too_old')
-            self.job.status = constants.ReportJobStatus.FAILED
-            self.job.result = 'Too old'
-            self.job.save()
+            self._fail('too_old', 'Too old')
             return
 
         try:
@@ -105,16 +102,50 @@ class ReportJobExecutor(JobExecutor):
             self.job.status = constants.ReportJobStatus.DONE
             influx.incr('dash.reports', 1, status='success')
         except SoftTimeLimitExceeded:
-            self.job.status = constants.ReportJobStatus.FAILED
-            self.job.result = 'Timeout'
-            influx.incr('dash.reports', 1, status='timeout')
+            self._fail('timeout', 'Timeout')
         except Exception as e:
-            self.job.status = constants.ReportJobStatus.FAILED
-            self.job.result = str(e)
-            influx.incr('dash.reports', 1, status='failed')
+            self._fail('failed', str(e))
             logger.exception('Exception when processing API report job %s' % self.job.id)
-        finally:
-            self.job.save()
+
+    def _fail(self, status, result):
+        self.job.status = constants.ReportJobStatus.FAILED
+        self.job.result = result
+        influx.incr('dash.reports', 1, status=status)
+        self.job.save()
+        self._send_fail()
+
+    def _send_fail(self):
+        if len(self.job.query['options']['recipients']) <= 0:
+            return
+
+        if self.job.scheduled_report:
+            return
+
+        filter_constraints = helpers.get_filter_constraints(self.job.query['filters'])
+
+        filtered_sources = []
+        if filter_constraints.get('sources'):
+            filtered_sources = dash.views.helpers.get_filtered_sources(self.job.user, ','.join(filter_constraints.get('sources', [])))
+
+        view, breakdowns = self._extract_view_breakdown(self.job)
+        ad_group_name, campaign_name, account_name = self._extract_entity_names(self.job.user, filter_constraints)
+
+        utils.email_helper.send_async_report_fail(
+            user=self.job.user,
+            recipients=self.job.query['options']['recipients'],
+            start_date=filter_constraints['start_date'],
+            end_date=filter_constraints['end_date'],
+            filtered_sources=filtered_sources,
+            show_archived=self.job.query['options']['show_archived'],
+            show_blacklisted_publishers=self.job.query['options']['show_blacklisted_publishers'],
+            view=view,
+            breakdowns=breakdowns,
+            columns=self._extract_column_names(self.job.query['fields']),
+            include_totals=self.job.query['options']['include_totals'],
+            ad_group_name=ad_group_name,
+            campaign_name=campaign_name,
+            account_name=account_name,
+        )
 
     @classmethod
     def get_raw_new_report(cls, job):

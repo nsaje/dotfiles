@@ -35,6 +35,11 @@ URLS_RE = re.compile(
     re.MULTILINE | re.UNICODE
 )
 
+EMAIL_RE = re.compile(
+    r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]*[a-zA-Z0-9])",
+    re.MULTILINE | re.UNICODE
+)
+
 NO_REPLY_EMAIL = 'noreply@zemanta.com'
 
 
@@ -57,6 +62,10 @@ def _adjust_product_name(whitelabel, text):
 
 def _url_to_link(text):
     return URLS_RE.sub(r'<a href="\1" target="_blank">\1</a>', text)
+
+
+def _email_to_link(text):
+    return EMAIL_RE.sub(r'<a href="mailto:\1">\1</a>', text)
 
 
 def _bold(text, bold):
@@ -450,31 +459,6 @@ def should_send_notification_mail(campaign, user, request):
     return True
 
 
-def send_scheduled_export_report(report_name, frequency, granularity,
-                                 entity_level, entity_name, scheduled_by,
-                                 email_adresses, report_contents, report_filename,
-                                 user=None, agency=None):
-    args = {
-        'frequency': frequency.lower(),
-        'report_name': report_name,
-        'entity_level': entity_level,
-        'entity_name': ' ' + entity_name if entity_name != entity_level else '',
-        'granularity': ' by ' + granularity if granularity != entity_level else '',
-        'scheduled_by': scheduled_by,
-    }
-
-    subject, body, _ = format_email(dash.constants.EmailTemplateType.SCHEDULED_EXPORT_REPORT, **args)
-
-    if not email_adresses:
-        raise Exception('No recipient emails: ' + report_name)
-    email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
-        NO_REPLY_EMAIL
-    ), email_adresses)
-    email.attach(report_filename + '.csv', report_contents, 'text/csv')
-    email.attach_alternative(format_template(subject, body, user=user, agency=agency), "text/html")
-    email.send(fail_silently=False)
-
-
 def send_livestream_email(user, session_url):
     subject, body, recipients = format_email(
         dash.constants.EmailTemplateType.LIVESTREAM_SESSION,
@@ -605,6 +589,38 @@ def send_async_report(
         settings.FROM_EMAIL
     ), (recipients or []))
     email.attach_alternative(format_template(subject, _url_to_link(plain_body), user=user), "text/html")
+    email.send(fail_silently=False)
+
+
+def send_async_report_fail(
+        user, recipients, start_date, end_date, filtered_sources,
+        show_archived, show_blacklisted_publishers,
+        view, breakdowns, columns, include_totals,
+        ad_group_name, campaign_name, account_name):
+
+    filters = _format_report_filters(show_archived, show_blacklisted_publishers, filtered_sources)
+
+    subject, plain_body, _ = format_email(
+        dash.constants.EmailTemplateType.ASYNC_REPORT_FAIL,
+        account_name=account_name or '/',
+        campaign_name=campaign_name or '/',
+        ad_group_name=ad_group_name or '/',
+        start_date=dates_helper.format_date_mmddyyyy(start_date),
+        end_date=dates_helper.format_date_mmddyyyy(end_date),
+        tab_name=view,
+        breakdown=', '.join(breakdowns) or '/',
+        columns=', '.join(columns),
+        filters=', '.join(filters) if filters else '/',
+        include_totals='Yes' if include_totals else 'No',
+    )
+
+    html_body = _bold(plain_body, 'Report settings')
+    html_body = _email_to_link(html_body)
+
+    email = EmailMultiAlternatives(subject, plain_body, 'Zemanta <{}>'.format(
+        settings.FROM_EMAIL
+    ), (recipients or []))
+    email.attach_alternative(format_template(subject, html_body, user=user), "text/html")
     email.send(fail_silently=False)
 
 

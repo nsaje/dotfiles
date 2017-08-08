@@ -1656,6 +1656,7 @@ class EmailTemplateType(ConstantBase):
     NEW_DEVICE_LOGIN = 26
     ASYNC_SCHEDULED_REPORT_RESULTS = 27
     OEN_POSTCLICKKPI_CPA_FACTORS = 28
+    ASYNC_REPORT_FAIL = 29
 
     _VALUES = {
         ADGROUP_CHANGE: 'Ad group settings change',
@@ -1685,6 +1686,7 @@ class EmailTemplateType(ConstantBase):
         NEW_DEVICE_LOGIN: 'New device login',
         ASYNC_SCHEDULED_REPORT_RESULTS: 'Scheduled report results',
         OEN_POSTCLICKKPI_CPA_FACTORS: 'Zemanta OEN CPA Optimization Factors',
+        ASYNC_REPORT_FAIL: 'Report fail',
     }
 
 
