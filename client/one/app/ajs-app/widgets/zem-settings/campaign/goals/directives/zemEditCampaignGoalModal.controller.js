@@ -278,7 +278,7 @@ angular.module('one.widgets').service('zemCampaignGoalValidationEndpoint', funct
                         name: goal.conversion_goal.name,
                         type: goal.conversion_goal.type,
                         conversionWindow: goal.conversion_goal.conversion_window,
-                        goalId: parseInt(goal.conversion_goal.goal_id),
+                        goalId: goal.conversion_goal.goal_id,
                     }
                 };
             }
