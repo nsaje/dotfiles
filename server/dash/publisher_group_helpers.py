@@ -435,6 +435,7 @@ def _prepare_entries(entry_dicts, publisher_group):
             outbrain_publisher_id=entry.get('outbrain_publisher_id', ''),
             outbrain_section_id=entry.get('outbrain_section_id', ''),
             outbrain_amplify_publisher_id=entry.get('outbrain_amplify_publisher_id', ''),
+            outbrain_engage_publisher_id=entry.get('outbrain_engage_publisher_id', ''),
             publisher_group=publisher_group,
         ))
     return entries

@@ -1195,6 +1195,7 @@ class PublisherGroupEntryTest(RESTAPITest):
             d['outbrainPublisherId'] = pg.outbrain_publisher_id
             d['outbrainSectionId'] = pg.outbrain_section_id
             d['outbrainAmplifyPublisherId'] = pg.outbrain_amplify_publisher_id
+            d['outbrainEngagePublisherId'] = pg.outbrain_engage_publisher_id
 
         return d
 

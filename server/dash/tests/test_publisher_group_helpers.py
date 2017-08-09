@@ -486,9 +486,9 @@ class PublisherGroupCSVHelpersTest(TestCase):
         self.assertEquals(
             publisher_group_csv_helpers.get_csv_content(publisher_group.account, publisher_group.entries.all()),
             textwrap.dedent('''\
-            "Publisher","Source","Outbrain Publisher Id","Outbrain Section Id","Outbrain Amplify Publisher Id"\r
-            "pub1","adsnative","","",""\r
-            "pub2","","asd123","asd1234","asd12345"\r
+            "Publisher","Source","Outbrain Publisher Id","Outbrain Section Id","Outbrain Amplify Publisher Id","Outbrain Engage Publisher Id"\r
+            "pub1","adsnative","","","",""\r
+            "pub2","","asd123","asd1234","asd12345","df164"\r
             '''))
 
     def test_get_example_csv_content(self):
@@ -620,6 +620,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
             'outbrain_publisher_id': '12345',
             'outbrain_section_id': '123456',
             'outbrain_amplify_publisher_id': '1234567',
+            'outbrain_engage_publisher_id': '12345678',
         }, {
             'publisher': 'pub2',
             'source': None,
@@ -630,7 +631,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
         self.assertEquals(
             publisher_group_csv_helpers.get_entries_errors_csv_content(account, entries),
             textwrap.dedent('''\
-            "Publisher","Source","Outbrain Publisher Id","Outbrain Section Id","Outbrain Amplify Publisher Id","Error"\r
-            "pub1","AdsNative","12345","123456","1234567",""\r
-            "pub2","","","","",""\r
+            "Publisher","Source","Outbrain Publisher Id","Outbrain Section Id","Outbrain Amplify Publisher Id","Outbrain Engage Publisher Id","Error"\r
+            "pub1","AdsNative","12345","123456","1234567","12345678",""\r
+            "pub2","","","","","",""\r
             '''))

@@ -31,13 +31,15 @@ def get_csv_content(account, publisher_group_entries):
     is_outbrain = account.agency is not None and account.agency.id == OUTBRAIN_AGENCY
     add_outbrain_publisher_id = is_outbrain and any((entry.outbrain_publisher_id or
                                                      entry.outbrain_section_id or
-                                                     entry.outbrain_amplify_publisher_id) for entry in publisher_group_entries)
+                                                     entry.outbrain_amplify_publisher_id or
+                                                     entry.outbrain_engage_publisher_id) for entry in publisher_group_entries)
 
     headers = ['Publisher', 'Source']
     if add_outbrain_publisher_id:
         headers.append('Outbrain Publisher Id')
         headers.append('Outbrain Section Id')
         headers.append('Outbrain Amplify Publisher Id')
+        headers.append('Outbrain Engage Publisher Id')
     writer.writerow(headers)
 
     for entry in publisher_group_entries.order_by('publisher'):
@@ -46,6 +48,7 @@ def get_csv_content(account, publisher_group_entries):
             row.append(entry.outbrain_publisher_id)
             row.append(entry.outbrain_section_id)
             row.append(entry.outbrain_amplify_publisher_id)
+            row.append(entry.outbrain_engage_publisher_id)
         writer.writerow(row)
 
     return output.getvalue()
@@ -112,13 +115,15 @@ def get_entries_errors_csv_content(account, entry_dicts):
     is_outbrain = account.agency is not None and account.agency.id == OUTBRAIN_AGENCY
     add_outbrain_publisher_id = is_outbrain and any(('outbrain_publisher_id' in entry_dict or
                                                      'outbrain_section_id' in entry_dict or
-                                                     'outbrain_amplify_publisher_id' in entry_dict) for entry_dict in entry_dicts)
+                                                     'outbrain_amplify_publisher_id' in entry_dict or
+                                                     'outbrain_engage_publisher_id' in entry_dict) for entry_dict in entry_dicts)
 
     headers = ['Publisher', 'Source', 'Error']
     if add_outbrain_publisher_id:
         headers.insert(-1, 'Outbrain Publisher Id')
         headers.insert(-1, 'Outbrain Section Id')
         headers.insert(-1, 'Outbrain Amplify Publisher Id')
+        headers.insert(-1, 'Outbrain Engage Publisher Id')
 
     writer.writerow(headers)
     for entry in entry_dicts:
@@ -131,6 +136,7 @@ def get_entries_errors_csv_content(account, entry_dicts):
             row.insert(-1, entry.get('outbrain_publisher_id'))
             row.insert(-1, entry.get('outbrain_section_id'))
             row.insert(-1, entry.get('outbrain_amplify_publisher_id'))
+            row.insert(-1, entry.get('outbrain_engage_publisher_id'))
         writer.writerow(row)
     return output.getvalue()
 
