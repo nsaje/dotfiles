@@ -149,37 +149,6 @@ class AdGroupSourceClone(TestCase):
 
         self.assertTrue(mock_k1.called)
 
-    def test_bulk_clone_on_allowed_sources(self, mock_k1):
-        default_source_settings = magic_mixer.cycle(5).blend(
-            core.source.DefaultSourceSettings, source__maintenance=False, credentials=magic_mixer.RANDOM)
-        source_ad_group = magic_mixer.blend(core.entity.AdGroup)
-        # sources: 0, 1, 2
-        source_ad_group_sources = [
-            magic_mixer.blend(core.entity.AdGroupSource, source=x.source, ad_group=source_ad_group)
-            for x in default_source_settings[:3]]
-
-        for x in source_ad_group_sources:
-            magic_mixer.blend_latest_settings(x, daily_budget_cc=decimal.Decimal('5'), cpc_cc=decimal.Decimal('0.1'))
-
-        # sources: 0, 1, 4
-        allowed_sources = [x.source for x in default_source_settings[:2]] + [default_source_settings[4].source]
-        account = magic_mixer.blend(core.entity.Account, allowed_sources=allowed_sources)
-        ad_group = magic_mixer.blend(core.entity.AdGroup, campaign__account=account)
-
-        ad_group_sources = core.entity.AdGroupSource.objects.bulk_clone_on_allowed_sources(
-            self.request, ad_group, source_ad_group, write_history=False)
-
-        self.assertItemsEqual([x.source for x in ad_group_sources], allowed_sources)
-
-        # get sources that should be copied (0 and 1)
-        cloned_sources = [x.source for x in default_source_settings[:2]]
-        daily_budgets = [x.get_current_settings().daily_budget_cc for x in ad_group_sources
-                         if x.source in cloned_sources]
-        source_daily_budgets = [x.get_current_settings().daily_budget_cc for x in source_ad_group_sources
-                                if x.source in cloned_sources]
-        self.assertItemsEqual(daily_budgets, source_daily_budgets)
-        self.assertTrue(mock_k1.called)
-
 
 class AdGroupSourceUpdate(TestCase):
     def setUp(self):

@@ -122,7 +122,7 @@ class AdGroupSourceManager(core.common.QuerySetManager):
                         request, ad_group, map_source_ad_group_sources[source.id],
                         write_history=False, k1_sync=False)
                 else:
-                    ad_group_source = self.create(request, ad_group, source, write_history=False, k1_sync=False)
+                    continue
 
                 added_ad_group_sources.append(ad_group_source)
             except utils.exc.MissingDataError:
