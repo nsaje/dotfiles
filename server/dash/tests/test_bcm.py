@@ -1186,18 +1186,12 @@ class BudgetSpendTestCase(TestCase):
 
     def test_missing_daily_statements(self):
         self.assertEqual(self.b.get_spend_data(), {
-            'media_cc': 0,
-            'data_cc': 0,
-            'license_fee_cc': 0,
-            'total_cc': 0,
-            'margin_cc': 0,
-        })
-        self.assertEqual(self.b.get_spend_data(date=self.end_date), {
-            'media_cc': 0,
-            'data_cc': 0,
-            'license_fee_cc': 0,
-            'total_cc': 0,
-            'margin_cc': 0,
+            'media': 0,
+            'data': 0,
+            'license_fee': 0,
+            'margin': 0,
+            'etf_total': 0,
+            'etfm_total': 0,
         })
 
     def test_get_spend_margin(self):
@@ -1211,19 +1205,12 @@ class BudgetSpendTestCase(TestCase):
         )
 
         self.assertEqual(self.b.get_spend_data(date=self.end_date), {
-            'media_cc': 100 * converters.DOLAR_TO_CC,
-            'data_cc': 100 * converters.DOLAR_TO_CC,
-            'license_fee_cc': 20 * converters.DOLAR_TO_CC,
-            'total_cc': 220 * converters.DOLAR_TO_CC,
-            'margin_cc': 33 * converters.DOLAR_TO_CC,
-        })
-
-        self.assertEqual(self.b.get_spend_data(date=self.end_date, use_decimal=True), {
             'media': Decimal('100.0000'),
             'data': Decimal('100.0000'),
             'license_fee': Decimal('20.0000'),
-            'total': Decimal('220.0000'),
             'margin': Decimal('33.0000'),
+            'etf_total': Decimal('220.0000'),
+            'etfm_total': Decimal('253.0000'),
         })
 
     def test_depleted(self):
@@ -1248,7 +1235,7 @@ class BudgetSpendTestCase(TestCase):
 
     def test_fixed_date(self):
         self.assertEqual(self.b.get_spend_data(date=self.end_date), {
-            (key + '_cc'): 0 for key in ('media', 'data', 'license_fee', 'total', 'margin')
+            key: 0 for key in ('media', 'data', 'license_fee', 'margin', 'etf_total', 'etfm_total')
         })
 
         create_statement(
@@ -1259,20 +1246,13 @@ class BudgetSpendTestCase(TestCase):
             license_fee_nano=20100000000,
             margin_nano=0,
         )
-
         self.assertEqual(self.b.get_spend_data(date=self.end_date), {
-            'media_cc': 100 * converters.DOLAR_TO_CC,
-            'data_cc': 101 * converters.DOLAR_TO_CC,
-            'license_fee_cc': 201000,
-            'total_cc': 2211000,
-            'margin_cc': 0,
-        })
-        self.assertEqual(self.b.get_spend_data(date=self.end_date, use_decimal=True), {
             'media': Decimal('100.0000'),
             'data': Decimal('101.0000'),
             'license_fee': Decimal('20.1000'),
-            'total': Decimal('221.1000'),
             'margin': Decimal('0'),
+            'etf_total': Decimal('221.1000'),
+            'etfm_total': Decimal('221.1000'),
         })
 
     def test_last_statement(self):
@@ -1293,18 +1273,12 @@ class BudgetSpendTestCase(TestCase):
             margin_nano=0,
         )
         self.assertEqual(self.b.get_spend_data(), {
-            'media_cc': 190 * converters.DOLAR_TO_CC,
-            'data_cc': 191 * converters.DOLAR_TO_CC,
-            'license_fee_cc': 291000,
-            'total_cc': 4101000,
-            'margin_cc': 0,
-        })
-        self.assertEqual(self.b.get_spend_data(use_decimal=True), {
             'media': Decimal('190.0000'),
             'data': Decimal('191.0000'),
             'license_fee': Decimal('29.1000'),
-            'total': Decimal('410.1000'),
             'margin': Decimal('0'),
+            'etf_total': Decimal('410.1000'),
+            'etfm_total': Decimal('410.1000'),
         })
 
     def test_get_daily_spend(self):
@@ -1327,31 +1301,34 @@ class BudgetSpendTestCase(TestCase):
         self.assertEqual(
             self.b.get_daily_spend(self.end_date - datetime.timedelta(2)),
             {
-                'media_cc': 0,
-                'data_cc': 0,
-                'license_fee_cc': 0,
-                'total_cc': 0,
-                'margin_cc': 0,
+                'media': 0,
+                'data': 0,
+                'license_fee': 0,
+                'margin': 0,
+                'etf_total': 0,
+                'etfm_total': 0,
             }
         )
         self.assertEqual(
             self.b.get_daily_spend(self.end_date - datetime.timedelta(1)),
             {
-                'media_cc': 90 * converters.DOLAR_TO_CC,
-                'data_cc': 90 * converters.DOLAR_TO_CC,
-                'license_fee_cc': 9 * converters.DOLAR_TO_CC,
-                'total_cc': 189 * converters.DOLAR_TO_CC,
-                'margin_cc': 0,
+                'media': 90,
+                'data': 90,
+                'license_fee': 9,
+                'margin': 0,
+                'etf_total': 189,
+                'etfm_total': 189,
             }
         )
         self.assertEqual(
             self.b.get_daily_spend(self.end_date),
             {
-                'media_cc': 100 * converters.DOLAR_TO_CC,
-                'data_cc': 101 * converters.DOLAR_TO_CC,
-                'license_fee_cc': 201000,
-                'total_cc': 2211000,
-                'margin_cc': 0,
+                'media': 100,
+                'data': 101,
+                'license_fee': Decimal('20.1'),
+                'margin': 0,
+                'etf_total': Decimal('221.1'),
+                'etfm_total': Decimal('221.1'),
             }
         )
 
@@ -1375,31 +1352,34 @@ class BudgetSpendTestCase(TestCase):
         self.assertEqual(
             self.b.get_daily_spend(self.end_date - datetime.timedelta(2)),
             {
-                'media_cc': 0,
-                'data_cc': 0,
-                'license_fee_cc': 0,
-                'total_cc': 0,
-                'margin_cc': 0,
+                'media': 0,
+                'data': 0,
+                'license_fee': 0,
+                'margin': 0,
+                'etf_total': 0,
+                'etfm_total': 0,
             }
         )
         self.assertEqual(
             self.b.get_daily_spend(self.end_date - datetime.timedelta(1)),
             {
-                'media_cc': 90 * converters.DOLAR_TO_CC,
-                'data_cc': 90 * converters.DOLAR_TO_CC,
-                'license_fee_cc': 9 * converters.DOLAR_TO_CC,
-                'total_cc': 189 * converters.DOLAR_TO_CC,
-                'margin_cc': Decimal('28.35') * converters.DOLAR_TO_CC,
+                'media': 90,
+                'data': 90,
+                'license_fee': 9,
+                'margin': Decimal('28.35'),
+                'etf_total': 189,
+                'etfm_total': Decimal('217.35'),
             }
         )
         self.assertEqual(
             self.b.get_daily_spend(self.end_date),
             {
-                'media_cc': 100 * converters.DOLAR_TO_CC,
-                'data_cc': 101 * converters.DOLAR_TO_CC,
-                'license_fee_cc': 201000,
-                'total_cc': 2211000,
-                'margin_cc': Decimal('33.165') * converters.DOLAR_TO_CC,
+                'media': 100,
+                'data': 101,
+                'license_fee': Decimal('20.1'),
+                'margin': Decimal('33.165'),
+                'etf_total': Decimal('221.1000'),
+                'etfm_total': Decimal('254.2650'),
             }
         )
 
@@ -1468,11 +1448,12 @@ class BudgetReserveTestCase(TestCase):
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = self.start_date
             self.assertEqual(self.b.get_spend_data(), {
-                'license_fee_cc': 20 * converters.DOLAR_TO_CC,
-                'media_cc': 100 * converters.DOLAR_TO_CC,
-                'data_cc': 0 * converters.DOLAR_TO_CC,
-                'total_cc': 120 * converters.DOLAR_TO_CC,
-                'margin_cc': 0,
+                'license_fee': 20,
+                'media': 100,
+                'data': 0,
+                'etf_total': 120,
+                'etfm_total': 120,
+                'margin': 0,
             })
             self.assertEqual(self.b.get_reserve_amount_cc(), 6 * converters.DOLAR_TO_CC)
 
@@ -1487,10 +1468,14 @@ class BudgetReserveTestCase(TestCase):
 
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = self.start_date + datetime.timedelta(1)
-            self.assertEqual(self.b.get_spend_data(),
-                             {'license_fee_cc': 40 * converters.DOLAR_TO_CC, 'media_cc': 180 * converters.DOLAR_TO_CC,
-                              'data_cc': 10 * converters.DOLAR_TO_CC, 'total_cc': 230 * converters.DOLAR_TO_CC,
-                              'margin_cc': 0})
+            self.assertEqual(self.b.get_spend_data(), {
+                'license_fee': 40,
+                'media': 180,
+                'data': 10,
+                'margin': 0,
+                'etf_total': 230,
+                'etfm_total': 230,
+            })
             # Same reserve because we didn't have yesterday's values for the previous statement
             self.assertEqual(self.b.get_reserve_amount_cc(), 6 * converters.DOLAR_TO_CC)
 
@@ -1505,10 +1490,14 @@ class BudgetReserveTestCase(TestCase):
 
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = self.start_date + datetime.timedelta(2)
-            self.assertEqual(self.b.get_spend_data(),
-                             {'license_fee_cc': 60 * converters.DOLAR_TO_CC, 'media_cc': 280 * converters.DOLAR_TO_CC,
-                              'data_cc': 10 * converters.DOLAR_TO_CC, 'total_cc': 350 * converters.DOLAR_TO_CC,
-                              'margin_cc': 0})
+            self.assertEqual(self.b.get_spend_data(), {
+                'license_fee': 60,
+                'media': 280,
+                'data': 10,
+                'margin': 0,
+                'etf_total': 350,
+                'etfm_total': 350,
+            })
             self.assertEqual(self.b.get_reserve_amount_cc(), 55000)
 
     def test_asset_return(self):

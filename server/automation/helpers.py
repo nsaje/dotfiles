@@ -41,7 +41,7 @@ def _get_total_available_budget(campaign, date=None):
 def _get_total_campaign_spend(campaign, date=None):
     date = date or utils.dates_helper.local_today()
     return sum(
-        decimal.Decimal(budget.get_daily_spend(date, use_decimal=True)['total'])
+        decimal.Decimal(budget.get_daily_spend(date)['etf_total'])
         for budget in campaign.budgets.all()
         if budget.state() == dash.constants.BudgetLineItemState.ACTIVE
     )

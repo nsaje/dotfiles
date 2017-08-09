@@ -192,7 +192,7 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
     def get_available_amount(self, date=None):
         if date is None:
             date = utils.dates_helper.local_today()
-        total_spend = self.get_spend_data(date=date, use_decimal=True)['total']
+        total_spend = self.get_spend_data(date=date)['etf_total']
         return self.allocated_amount() - total_spend
 
     def state(self, date=None):
@@ -225,7 +225,7 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
         if self.state() != constants.BudgetLineItemState.INACTIVE:
             raise AssertionError('Budget has to be inactive to be freed.')
         amount_cc = self.amount * converters.DOLAR_TO_CC
-        spend_data = self.get_spend_data()
+        total_spend = int(self.get_spend_data()['etf_total'] * converters.DOLAR_TO_CC)
 
         reserve = self.get_reserve_amount_cc()
         free_date = self.end_date + \
@@ -235,10 +235,10 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
         if is_over_sync_time:
             # After we completed all syncs, free all the assets including
             # reserve
-            self.freed_cc = max(0, amount_cc - spend_data['total_cc'])
+            self.freed_cc = max(0, amount_cc - total_spend)
         elif self.freed_cc == 0 and reserve is not None:
             self.freed_cc = max(
-                0, amount_cc - spend_data['total_cc'] - reserve
+                0, amount_cc - total_spend - reserve
             )
 
         self.save()
@@ -263,23 +263,19 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
             return core.bcm.BudgetDailyStatement.objects.none()
         return self.statements.filter(id=latest_statement.id)
 
-    def get_spend_data(self, date=None, use_decimal=False):
-        import dash.budget_helpers
-        return dash.budget_helpers.calculate_spend_data(
-            self.statements,
-            date=date,
-            use_decimal=use_decimal
-        )
+    def get_spend_data(self, date=None):
+        statements = self.statements
+        if date:
+            statements = statements.filter(
+                date__lte=date,
+            )
+        return statements.calculate_spend_data()
 
-    def get_daily_spend(self, date, use_decimal=False):
-        statement = date and self.statements.filter(date=date)\
-            or self.get_latest_statement_qs()
-        import dash.budget_helpers
-        return dash.budget_helpers.calculate_spend_data(
-            statement,
-            date=date,
-            use_decimal=use_decimal
-        )
+    def get_daily_spend(self, date):
+        if not date:
+            date = utils.dates_helper.local_today()
+        statement = self.statements.filter(date=date)
+        return statement.calculate_spend_data()
 
     def get_ideal_budget_spend(self, date):
         '''

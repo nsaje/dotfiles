@@ -450,7 +450,7 @@ class BudgetsTest(RESTAPITest):
 
     def validate_budget(self, budget):
         budget_db = dash.models.BudgetLineItem.objects.get(pk=budget['id'])
-        spend = budget_db.get_spend_data(use_decimal=True)['total']
+        spend = budget_db.get_spend_data()['etf_total']
         allocated = budget_db.allocated_amount()
         expected = self.budget_repr(
             id=budget_db.id,

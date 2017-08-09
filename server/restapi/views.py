@@ -748,7 +748,7 @@ class CampaignBudgetViewList(RESTAPIBaseView):
         )]
 
     def _prepare_budget_get_item(self, user, item):
-        spend = item.get_spend_data(use_decimal=True)['total']
+        spend = item.get_spend_data()['etf_total']
         allocated = item.allocated_amount()
         result = {
             'id': item.pk,

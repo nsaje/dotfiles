@@ -14,7 +14,6 @@ from automation import autopilot_settings, models
 
 import dash.constants
 import dash.models
-import dash.budget_helpers
 
 import redshiftapi.api_breakdowns
 
@@ -141,7 +140,7 @@ def get_minimum_budget_amount(budget_item):
 
     covered_amount = _combined_active_budget_from_other_items(budget_item)
 
-    spend = budget_item.get_spend_data(use_decimal=True)['total']
+    spend = budget_item.get_spend_data()['etf_total']
 
     max_daily_budget = _get_max_daily_budget(today, budget_item.campaign)
 
@@ -1310,8 +1309,7 @@ def _get_yesterday_budget_spend(campaign):
         budget__campaign=campaign,
         date=yesterday,
     )
-    spend_data = dash.budget_helpers.calculate_spend_data(statements, use_decimal=True)
-
+    spend_data = statements.calculate_spend_data()
     return spend_data['media'] + spend_data['data']
 
 

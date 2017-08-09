@@ -226,7 +226,7 @@ class AccountCreditItemView(api_common.BaseApiView):
                     'campaign': str(b.campaign),
                     'id': b.pk,
                     'total': b.allocated_amount(),
-                    'spend': b.get_spend_data(use_decimal=True)['total'],
+                    'spend': b.get_spend_data()['etf_total'],
                     'start_date': b.start_date,
                     'end_date': b.end_date,
                     'comment': b.comment
@@ -274,7 +274,7 @@ class CampaignBudgetView(api_common.BaseApiView):
         return self.create_api_response(item.pk)
 
     def _prepare_item(self, user, item):
-        spend = item.get_spend_data(use_decimal=True)['total']
+        spend = item.get_spend_data()['etf_total']
         allocated = item.allocated_amount()
         result = {
             'id': item.pk,
@@ -366,8 +366,8 @@ class CampaignBudgetView(api_common.BaseApiView):
             if item.state() == constants.BudgetLineItemState.PENDING:
                 continue
 
-            spend_data = item.get_spend_data(use_decimal=True)
-            data['lifetime']['campaign_spend'] += spend_data['total']
+            spend_data = item.get_spend_data()
+            data['lifetime']['campaign_spend'] += spend_data['etf_total']
             data['lifetime']['media_spend'] += spend_data['media']
             data['lifetime']['data_spend'] += spend_data['data']
             data['lifetime']['license_fee'] += spend_data['license_fee']
@@ -484,7 +484,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             )
 
     def _get_response(self, user, item):
-        spend = item.get_spend_data(use_decimal=True)['total']
+        spend = item.get_spend_data()['etf_total']
         allocated = item.allocated_amount()
         response = {
             'id': item.id,

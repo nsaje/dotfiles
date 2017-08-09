@@ -7,7 +7,6 @@ from django.db import models
 from django.db.models import Sum, F, ExpressionWrapper
 from django.core.cache import caches
 
-import dash.budget_helpers
 import dash.constants
 import dash.models
 import dash.campaign_goals
@@ -127,13 +126,10 @@ def get_total_and_media_campaign_spend(user, campaign, until_date=None):
 
     daily_statements = dash.models.BudgetDailyStatement.objects.filter(
         budget__in=budgets,
+        date__lte=at_date,
     )
-    spend_data = dash.budget_helpers.calculate_spend_data(
-        daily_statements,
-        date=at_date,
-        use_decimal=True
-    )
-    return spend_data.get('total', Decimal(0)), spend_data.get('media', Decimal(0))
+    spend_data = daily_statements.calculate_spend_data()
+    return spend_data.get('etf_total', Decimal(0)), spend_data.get('media', Decimal(0))
 
 
 def get_total_media_campaign_budget(user, campaign, until_date=None):
@@ -154,12 +150,9 @@ def get_media_campaign_spend(user, campaign, until_date=None):
     budgets = _retrieve_active_budgetlineitems([campaign], at_date)
     daily_statements = dash.models.BudgetDailyStatement.objects.filter(
         budget__in=budgets,
+        date__lte=at_date,
     )
-    return dash.budget_helpers.calculate_spend_data(
-        daily_statements,
-        date=at_date,
-        use_decimal=True
-    ).get('media', Decimal(0))
+    return daily_statements.calculate_spend_data().get('media', Decimal(0))
 
 
 def get_yesterday_adgroup_spend(user, ad_group):
@@ -223,10 +216,7 @@ def get_yesterday_all_accounts_spend(filtered_agencies, filtered_account_types):
         filtered_agencies,
         filtered_account_types
     )
-    return dash.budget_helpers.calculate_spend_data(
-        daily_statements,
-        use_decimal=True
-    ).get('media', Decimal(0))
+    return daily_statements.calculate_spend_data().get('media', Decimal(0))
 
 
 def get_yesterday_agency_spend(user):
@@ -235,10 +225,7 @@ def get_yesterday_agency_spend(user):
         date=yesterday,
         budget__campaign__account__in=_get_user_accounts(user)
     )
-    return dash.budget_helpers.calculate_spend_data(
-        daily_statements,
-        use_decimal=True
-    ).get('media', Decimal(0))
+    return daily_statements.calculate_spend_data().get('media', Decimal(0))
 
 
 def get_mtd_all_accounts_spend(filtered_agencies, filtered_account_types):
@@ -248,22 +235,14 @@ def get_mtd_all_accounts_spend(filtered_agencies, filtered_account_types):
         filtered_agencies,
         filtered_account_types
     )
-    return dash.budget_helpers.calculate_mtd_spend_data(
-        daily_statements,
-        date=_until_today(),
-        use_decimal=True
-    ).get('media', Decimal(0))
+    return daily_statements.filter_mtd().calculate_spend_data().get('media', Decimal(0))
 
 
 def get_mtd_agency_spend(user):
     daily_statements = dash.models.BudgetDailyStatement.objects.filter(
         budget__campaign__account__in=_get_user_accounts(user)
     )
-    return dash.budget_helpers.calculate_mtd_spend_data(
-        daily_statements,
-        date=_until_today(),
-        use_decimal=True
-    ).get('media', Decimal(0))
+    return daily_statements.filter_mtd().calculate_spend_data().get('media', Decimal(0))
 
 
 def calculate_daily_ad_group_cap(ad_group):
@@ -338,13 +317,10 @@ def calculate_spend_and_available_budget(account):
 
     statements = dash.models.BudgetDailyStatement.objects.filter(
         budget__credit__in=credits,
-        budget__in=account_budgets
+        budget__in=account_budgets,
+        date__lte=today,
     )
-    spend_data = dash.budget_helpers.calculate_spend_data(
-        statements,
-        date=today,
-        use_decimal=True
-    )
+    spend_data = statements.calculate_spend_data()
 
     remaining_media = account_budgets.aggregate(
         amount_sum=ExpressionWrapper(
@@ -364,10 +340,7 @@ def calculate_yesterday_account_spend(account):
         budget__campaign__account=account,
         date=yesterday,
     )
-    return dash.budget_helpers.calculate_spend_data(
-        daily_statements,
-        use_decimal=True
-    ).get('media', Decimal(0))
+    return daily_statements.calculate_spend_data().get('media', Decimal(0))
 
 
 def create_yesterday_spend_setting(yesterday_cost, daily_budget):

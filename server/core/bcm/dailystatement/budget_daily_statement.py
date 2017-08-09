@@ -1,5 +1,7 @@
 from django.db import models
 
+import queryset
+
 
 class BudgetDailyStatement(models.Model):
     budget = models.ForeignKey('BudgetLineItem', related_name='statements')
@@ -8,6 +10,8 @@ class BudgetDailyStatement(models.Model):
     data_spend_nano = models.BigIntegerField()
     license_fee_nano = models.BigIntegerField()
     margin_nano = models.BigIntegerField()
+
+    objects = queryset.BudgetDailyStatementQuerySet.as_manager()
 
     @property
     def total_spend_nano(self):
