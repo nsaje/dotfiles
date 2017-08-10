@@ -53,6 +53,7 @@ angular.module('one.widgets').service('zemChartDataService', function ($q, zemDa
                 filteredAgencies: zemDataFilterService.getFilteredAgencies(),
                 filteredAccountTypes: zemDataFilterService.getFilteredAccountTypes(),
                 filteredPublisherStatus: zemDataFilterService.getFilteredPublisherStatus(),
+                showArchived: zemDataFilterService.getShowArchived(),
                 selection: selection,
                 totals: selection.totals,
             };

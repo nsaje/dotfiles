@@ -24,6 +24,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
             'start_date': dash.views.helpers.get_stats_start_date(request.GET.get('start_date')),
             'end_date': dash.views.helpers.get_stats_end_date(request.GET.get('end_date')),
             'filtered_sources': dash.views.helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources')),
+            'show_archived': request.GET.get('filtered_sources') == 'true',
         }
 
     def get_stats(self, request, group_key, should_use_publishers_view=False):

@@ -79,6 +79,7 @@ angular.module('one.widgets').service('zemChartEndpoint', function ($q, $http, z
             converted.filtered_agencies = config.filteredAgencies;
             converted.filtered_account_types = config.filteredAccountTypes;
             converted.show_blacklisted_publishers = config.filteredPublisherStatus;
+            converted.show_archived = config.showArchived;
 
             return converted;
         }
