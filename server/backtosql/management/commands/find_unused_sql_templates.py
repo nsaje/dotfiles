@@ -1,4 +1,3 @@
-import collections
 import fileinput
 import operator
 import os
@@ -15,7 +14,7 @@ class Command(BaseCommand):
 
         templates = get_templates()
         files = get_py_files()
-        usage = collections.defaultdict(int)
+        usage = {t: 0 for t in templates}
 
         for line in fileinput.input(files):
             for template in templates:

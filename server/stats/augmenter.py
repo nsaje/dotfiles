@@ -92,7 +92,7 @@ def _has_traffic_data(row):
 
 def _has_postclick_data(row):
     return any(row.get(field) is not None for field in
-               fields.POSTCLICK_ACQUISITION_FIELDS + fields.POSTCLICK_ENGAGEMENT_FIELDS)
+               fields.POSTCLICK_ACQUISITION_FIELDS | fields.POSTCLICK_ENGAGEMENT_FIELDS)
 
 
 def _has_conversion_goal_data(row):

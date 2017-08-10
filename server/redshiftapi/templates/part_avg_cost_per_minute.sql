@@ -1,1 +1,0 @@
-SUM(effective_cost_nano)::float * 60.0 / (NULLIF(SUM({{ p }}total_time_on_site), 0) * 1000000000.0) {{ alias }}

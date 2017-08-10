@@ -193,16 +193,21 @@ def apply_conversion_goal_columns(breakdown, rows, conversion_goals, conversion_
 
             if conversion_row:
                 count = conversion_row['count'] if conversion_row else None
-                cost = row['e_media_cost'] or 0
+                avg_cost = (float(row['e_media_cost'] or 0) / count) if count else None
 
-                avg_cost = (float(cost) / count) if count else None
+                avg_et_cost = (float(row['et_cost'] or 0) / count) if count else None
+                avg_etfm_cost = (float(row['etfm_cost'] or 0) / count) if count else None
             else:
                 count = None
                 avg_cost = None
+                avg_et_cost = None
+                avg_etfm_cost = None
 
             row.update({
                 conversion_key: count,
                 'avg_cost_per_' + conversion_key: avg_cost,
+                'avg_et_cost_per_' + conversion_key: avg_et_cost,
+                'avg_etfm_cost_per_' + conversion_key: avg_etfm_cost,
             })
 
 
@@ -217,6 +222,9 @@ def apply_pixel_columns(breakdown, rows, pixels, touchpoint_rows):
 
     for row in rows:
         cost = row['e_media_cost'] or 0
+        et_cost = row['et_cost'] or 0
+        etfm_cost = row['etfm_cost'] or 0
+
         breakdown_key = sort_helper.get_breakdown_key(row, breakdown)
 
         for pixel in pixels:
@@ -226,20 +234,31 @@ def apply_pixel_columns(breakdown, rows, pixels, touchpoint_rows):
             for conversion_window in conversion_windows:
                 if pixel_rows:
                     count = sum(x['count'] for x in pixel_rows if x['window'] <= conversion_window)
+
                     avg_cost = float(cost) / count if count else None
+                    avg_et_cost = float(et_cost) / count if count else None
+                    avg_etfm_cost = float(etfm_cost) / count if count else None
+
                     value = sum(x['conversion_value'] for x in pixel_rows if x['window'] <= conversion_window if x['conversion_value'])
                     roas = value - cost
+                    etfm_roas = value - etfm_cost
                 else:
                     count = None
                     avg_cost = None
+                    avg_et_cost = None
+                    avg_etfm_cost = None
                     roas = None
+                    etfm_roas = None
 
                 pixel_key = pixel.get_view_key(conversion_window)
 
                 row.update({
                     pixel_key: count,
                     'avg_cost_per_' + pixel_key: avg_cost,
+                    'avg_et_cost_per_' + pixel_key: avg_et_cost,
+                    'avg_etfm_cost_per_' + pixel_key: avg_etfm_cost,
                     'roas_' + pixel_key: roas,
+                    'etfm_roas_' + pixel_key: etfm_roas,
                 })
 
 
@@ -273,10 +292,11 @@ def apply_performance_columns(breakdown, rows, campaign_goals, campaign_goal_val
 
                 conversion_key = conversion_goal.get_view_key(conversion_goals)
 
-                def metric_value_fn(row):
-                    return (float(row['e_media_cost'] or 0) / row[conversion_key]) if row.get(conversion_key) else None
+                def metric_value_fn(row, cost_column):
+                    return (float(row[cost_column] or 0) / row[conversion_key]) if row.get(conversion_key) else None
             else:
-                def metric_value_fn(row):
+                def metric_value_fn(row, cost_column):
+                    # cost_column not used, but this fn should be compatible with the above metric_value_fn
                     return row.get(dash.campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type])
 
             campaign_goal_value = map_camp_goal_vals.get(campaign_goal.pk)
@@ -288,8 +308,13 @@ def apply_performance_columns(breakdown, rows, campaign_goals, campaign_goal_val
 
             goal_key = campaign_goal.get_view_key()
 
-            cost = row['e_media_cost']
-            metric_value = metric_value_fn(row)
-            goal_category = dash.campaign_goals.get_goal_performance_status(
-                campaign_goal.type, metric_value, planned_value, cost)
-            row['performance_' + goal_key] = goal_category
+            row['performance_' + goal_key] = dash.campaign_goals.get_goal_performance_status(
+                campaign_goal.type,
+                metric_value_fn(row, 'e_media_cost'),
+                planned_value,
+                row['e_media_cost'])
+            row['etfm_performance_' + goal_key] = dash.campaign_goals.get_goal_performance_status(
+                campaign_goal.type,
+                metric_value_fn(row, 'etfm_cost'),
+                planned_value,
+                row['etfm_cost'])

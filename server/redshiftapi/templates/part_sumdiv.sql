@@ -1,1 +1,3 @@
-(CASE WHEN SUM({{ p }}{{ divisor }}) <> 0 THEN SUM(CAST({{ p }}{{ expr }} AS FLOAT)) / SUM({{ p }}{{ divisor }}) ELSE NULL END) {{ alias }}
+SUM({{ p }}{{ column_name }})::FLOAT / (
+NULLIF(SUM({{ p }}{{ divisor }}), 0) * {% firstof divisor_modifier 1 %})
+{{ alias }}

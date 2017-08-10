@@ -72,7 +72,7 @@ _FIELD_MAPPING = {
     'placement_type': ('Placement Type',),
     'video_playback_method': ('Video Playback Method',),
 
-    'agency_total': ('Total Spend + Margin',),
+    'agency_cost': ('Total Spend + Margin',),
     'avg_cost_for_new_visitor': ('Avg. Cost for New Visitor',),
     'avg_cost_per_minute': ('Avg. Cost per Minute',),
     'avg_cost_per_non_bounced_visit': ('Avg. Cost per Non-Bounced Visit',),

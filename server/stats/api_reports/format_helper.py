@@ -8,7 +8,7 @@ FORMAT_2_DECIMALS = []
 FORMAT_3_DECIMALS = []
 FORMAT_4_DECIMALS = ['pv_per_visit', 'data_cost', 'media_cost',
                      'e_media_cost', 'e_data_cost',
-                     'billing_cost', 'margin', 'agency_total',
+                     'billing_cost', 'margin', 'agency_cost',
                      'license_fee', 'total_fee', 'flat_fee',
                      'allocated_budgets', 'spend_projection',
                      'license_fee_projection', 'total_fee_projection',
@@ -20,7 +20,7 @@ FORMAT_EMPTY_TO_0 = [
     'data_cost', 'cpc',
     'clicks', 'impressions', 'ctr', 'e_media_cost', 'media_cost', 'e_data_cost',
     'billing_cost', 'license_fee', 'total_fee', 'flat_fee',
-    'margin', 'agency_total',
+    'margin', 'agency_cost',
 ]
 FORMAT_HASH = ['image_hash']
 

@@ -13,6 +13,10 @@ def generate_sql(template_name, context, clean=False):
     template = loader.get_template(template_name)
     sql = template.render(context)
 
+    # django templates add some newlines at the end that visually corrupt the sql
+    # remove them
+    sql = sql.strip()
+
     # clean affects performance so you might not want to use it if not needed
     if clean:
         return clean_sql(sql)
@@ -40,7 +44,11 @@ def get_order(alias, nulls=None):
 
 def clean_sql(dirty_sql):
     # removes comments and whitespaces
-    return sqlparse.format(dirty_sql, reindent=True, keyword_case='upper', strip_comments=True).strip()
+    return sqlparse.format(dirty_sql,
+                           reindent=True,
+                           keyword_case='upper',
+                           identifier_case='lower',
+                           strip_comments=True).strip()
 
 
 def clean_prefix(prefix=None):

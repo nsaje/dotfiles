@@ -533,9 +533,9 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             internal: 'zemauth.can_view_agency_margin',
             shown: 'zemauth.can_view_agency_margin',
         },
-        agencyTotal: {
+        agencyCost: {
             name: 'Total Spend + Margin',
-            field: 'agency_total',
+            field: 'agency_cost',
             type: zemGridConstants.gridColumnTypes.CURRENCY,
             totalRow: true,
             help: 'Total billing cost including Media Spend, License Fee and Agency Margin',
@@ -1205,7 +1205,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         COLUMNS.totalFee,
         COLUMNS.billingCost,
         COLUMNS.margin,
-        COLUMNS.agencyTotal,
+        COLUMNS.agencyCost,
     ];
 
     var PROJECTIONS_GROUP = [

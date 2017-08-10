@@ -1,3 +1,4 @@
+import difflib
 from django.test import TestCase
 from django.template import Context, Template
 
@@ -6,12 +7,27 @@ from backtosql import helpers
 
 
 def assert_sql_equals(first, second):
-    first_norm = backtosql.clean_sql(first).upper().replace(' ', '').replace('\n', '')
-    second_norm = backtosql.clean_sql(second).upper().replace(' ', '').replace('\n', '')
+    # first cleaning - remove comments, new lines etc.
+    first_clean = backtosql.clean_sql(first).replace('\n', ' ').replace('  ', ' ')
+    second_clean = backtosql.clean_sql(second).replace('\n', ' ').replace('  ', ' ')
 
-    if first_norm != second_norm:
-        raise AssertionError('"{} \n\n != \n\n "{}"'.format(
-            backtosql.clean_sql(first), backtosql.clean_sql(second)))
+    # compare uppercase and without spaces
+    if first_clean.upper().replace(' ', '') != second_clean.upper().replace(' ', ''):
+
+        # clean again so it introduces new lines at the same spots
+        first_clean = backtosql.clean_sql(first_clean)
+        second_clean = backtosql.clean_sql(second_clean)
+
+        # FIXME: It can happen that diff will point out some differences because of which
+        # string comparison would not have differ. Eg. spaces around operators are overlooked
+        # by the comparison, but difflib will point them out. The cause to this is that
+        # sqlparse does not know how to normalize spacing around operators and the same
+        # sql with different spacing around operators would not be formatted in the same way.
+
+        d = difflib.Differ()
+        diff = d.compare(first_clean.splitlines(), second_clean.splitlines())
+
+        raise AssertionError("\n".join(diff))
 
 
 class SQLMatcher():
@@ -21,7 +37,10 @@ class SQLMatcher():
 
     def __eq__(self, other):
         try:
-            assert_sql_equals(self.obj, other)
+            if not isinstance(other, unicode) and 'obj' in other.__dict__:
+                assert_sql_equals(self.obj, other.obj)
+            else:
+                assert_sql_equals(self.obj, other)
         except AssertionError:
             return False
         return True

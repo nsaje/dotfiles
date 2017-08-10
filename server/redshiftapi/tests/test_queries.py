@@ -109,8 +109,11 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.account_id AS account_id,
             base_table.source_id AS source_id,
             base_table.dma AS dma,
-            (NVL(SUM(base_table.cost_nano), 0) + NVL(SUM(base_table.data_cost_nano), 0))/1000000000.0 yesterday_cost,
-            (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0))/1000000000.0 e_yesterday_cost
+            (NVL(SUM(base_table.cost_nano), 0) + NVL(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
+            (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
+            (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0) + NVL(SUM(base_table.license_fee_nano), 0) + NVL(SUM(base_table.margin_nano), 0))::float/1000000000 yesterday_etfm_cost,
+            (NVL(SUM(base_table.cost_nano), 0) + NVL(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_cost,
+            (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost
         FROM mv_account_delivery_geo base_table
         WHERE (( base_table.date = %s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
@@ -137,8 +140,11 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.publisher AS publisher,
             base_table.source_id AS source_id,
             base_table.date AS day,
-            (NVL(SUM(base_table.cost_nano), 0) + NVL(SUM(base_table.data_cost_nano), 0))/1000000000.0 yesterday_cost,
-            (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0))/1000000000.0 e_yesterday_cost,
+            (NVL(SUM(base_table.cost_nano), 0) + NVL(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
+            (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
+            (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0) + NVL(SUM(base_table.license_fee_nano), 0) + NVL(SUM(base_table.margin_nano), 0))::float/1000000000 yesterday_etfm_cost,
+            (NVL(SUM(base_table.cost_nano), 0) + NVL(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_cost,
+            (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
             MAX(base_table.publisher || '__' || base_table.source_id) publisher_id
         FROM mv_pubs_ad_group base_table
         WHERE (( base_table.date = %s)
@@ -303,8 +309,11 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
             temp_yesterday AS (
                 SELECT
                     a.account_id AS account_id,
-                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))/1000000000.0 e_yesterday_cost,
-                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))/1000000000.0 yesterday_cost
+                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
+                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
+                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
+                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
+                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0) + NVL(SUM(a.license_fee_nano), 0) + NVL(SUM(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
                 FROM mv_account a
                 WHERE (a.date=%s)
                 GROUP BY 1
@@ -323,7 +332,10 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
             temp_base.clicks,
             temp_base.total_seconds,
             temp_yesterday.e_yesterday_cost,
-            temp_yesterday.yesterday_cost
+            temp_yesterday.yesterday_at_cost,
+            temp_yesterday.yesterday_cost,
+            temp_yesterday.yesterday_et_cost,
+            temp_yesterday.yesterday_etfm_cost
         FROM temp_base NATURAL LEFT JOIN temp_yesterday
         ORDER BY total_seconds ASC NULLS LAST
         LIMIT 10
@@ -356,8 +368,11 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                 SELECT
                     a.publisher AS publisher,
                     a.source_id AS source_id,
-                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))/1000000000.0 e_yesterday_cost,
-                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))/1000000000.0 yesterday_cost
+                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
+                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
+                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
+                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
+                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0) + NVL(SUM(a.license_fee_nano), 0) + NVL(SUM(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
                 FROM mv_pubs_ad_group a
                 WHERE (a.date=%s)
                 GROUP BY 1, 2
@@ -378,7 +393,10 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
             temp_base.clicks,
             temp_base.total_seconds,
             temp_yesterday.e_yesterday_cost,
-            temp_yesterday.yesterday_cost
+            temp_yesterday.yesterday_at_cost,
+            temp_yesterday.yesterday_cost,
+            temp_yesterday.yesterday_et_cost,
+            temp_yesterday.yesterday_etfm_cost
         FROM temp_base NATURAL LEFT JOIN temp_yesterday
         ORDER BY total_seconds ASC NULLS LAST
         LIMIT 10
@@ -411,8 +429,11 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                 SELECT
                     a.account_id AS account_id,
                     a.campaign_id AS campaign_id,
-                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))/1000000000.0 e_yesterday_cost,
-                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))/1000000000.0 yesterday_cost
+                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
+                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
+                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
+                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
+                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0) + NVL(SUM(a.license_fee_nano), 0) + NVL(SUM(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
                 FROM mv_campaign a
                 WHERE (a.date=%s)
                 GROUP BY 1, 2
@@ -433,14 +454,20 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
             b.clicks,
             b.total_seconds,
             b.e_yesterday_cost,
-            b.yesterday_cost
+            b.yesterday_at_cost,
+            b.yesterday_cost,
+            b.yesterday_et_cost,
+            b.yesterday_etfm_cost
         FROM
             (SELECT a.account_id,
                     a.campaign_id,
                     a.clicks,
                     a.total_seconds,
                     a.e_yesterday_cost,
+                    a.yesterday_at_cost,
                     a.yesterday_cost,
+                    a.yesterday_et_cost,
+                    a.yesterday_etfm_cost,
                     ROW_NUMBER() OVER (PARTITION BY a.account_id
                                         ORDER BY a.total_seconds ASC NULLS LAST,
                                                  a.account_id ASC NULLS LAST,
@@ -451,7 +478,10 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                         temp_base.clicks,
                         temp_base.total_seconds,
                         temp_yesterday.e_yesterday_cost,
-                        temp_yesterday.yesterday_cost
+                        temp_yesterday.yesterday_at_cost,
+                        temp_yesterday.yesterday_cost,
+                        temp_yesterday.yesterday_et_cost,
+                        temp_yesterday.yesterday_etfm_cost
                 FROM temp_base NATURAL
                 LEFT OUTER JOIN temp_yesterday
                 ) a
@@ -486,8 +516,11 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                     a.publisher AS publisher,
                     a.source_id AS source_id,
                     a.dma AS dma,
-                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))/1000000000.0 e_yesterday_cost,
-                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))/1000000000.0 yesterday_cost
+                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
+                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
+                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
+                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
+                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0) + NVL(SUM(a.license_fee_nano), 0) + NVL(SUM(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
                 FROM mv_pubs_master a
                 WHERE (a.date=%s)
                 GROUP BY 1, 2, 3
@@ -510,7 +543,10 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
             b.clicks,
             b.total_seconds,
             b.e_yesterday_cost,
-            b.yesterday_cost
+            b.yesterday_at_cost,
+            b.yesterday_cost,
+            b.yesterday_et_cost,
+            b.yesterday_etfm_cost
         FROM
             (SELECT a.publisher,
                     a.source_id,
@@ -518,7 +554,10 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                     a.clicks,
                     a.total_seconds,
                     a.e_yesterday_cost,
-                    a.yesterday_cost ,
+                    a.yesterday_at_cost,
+                    a.yesterday_cost,
+                    a.yesterday_et_cost,
+                    a.yesterday_etfm_cost,
                     ROW_NUMBER() OVER (PARTITION BY a.publisher, a.source_id
                                         ORDER BY a.total_seconds ASC NULLS LAST ) AS r
             FROM
@@ -528,7 +567,10 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                         temp_base.clicks,
                         temp_base.total_seconds,
                         temp_yesterday.e_yesterday_cost,
-                        temp_yesterday.yesterday_cost
+                        temp_yesterday.yesterday_at_cost,
+                        temp_yesterday.yesterday_cost,
+                        temp_yesterday.yesterday_et_cost,
+                        temp_yesterday.yesterday_etfm_cost
                 FROM temp_base NATURAL LEFT OUTER JOIN temp_yesterday
                 ) a
             ) b
@@ -563,102 +605,8 @@ class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
 
         goals = Goals(campaign_goals, conversion_goals, campaign_goal_values, pixels, None)
 
-        sql, params = queries.prepare_query_joint_base(['account_id'], constraints, None, [
+        _, params = queries.prepare_query_joint_base(['account_id'], constraints, None, [
                                                        'total_seconds'], 5, 10, goals, False)
-
-        self.assertSQLEquals(sql, """
-        WITH temp_conversions AS (
-         SELECT   a.account_id AS account_id ,
-                  SUM (CASE WHEN a.slug='ga__2' THEN conversion_count ELSE 0 END) conversion_goal_2,
-                  SUM (CASE WHEN a.slug='ga__3' THEN conversion_count ELSE 0 END) conversion_goal_3,
-                  SUM (CASE WHEN a.slug='omniture__4' THEN conversion_count ELSE 0 END) conversion_goal_4,
-                  SUM (CASE WHEN a.slug='omniture__5' THEN conversion_count ELSE 0 END) conversion_goal_5
-         FROM     mv_conversions_account a
-         WHERE    (a.DATE >=%s AND a.DATE <=%s)
-         GROUP BY 1 ),
-        temp_touchpoints AS (
-         SELECT   a.account_id AS account_id ,
-                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=24 THEN conversion_count ELSE 0 END) pixel_1_24,
-                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=24 THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_24,
-                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168 THEN conversion_count ELSE 0 END) pixel_1_168,
-                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168 THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_168,
-                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720 THEN conversion_count ELSE 0 END) pixel_1_720,
-                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720 THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_720,
-                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=2160 THEN conversion_count ELSE 0 END) pixel_1_2160,
-                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=2160 THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_2160
-         FROM     mv_touch_account a
-         WHERE    (a.DATE >=%s AND a.DATE <=%s)
-         GROUP BY 1 ),
-        temp_yesterday AS (
-         SELECT   a.account_id AS account_id ,
-                  (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))/1000000000.0 e_yesterday_cost,
-                  (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))/1000000000.0 yesterday_cost
-         FROM     mv_account a
-         WHERE    (a.DATE =%s)
-         GROUP BY 1 ),
-        temp_base AS (
-         SELECT   a.account_id AS account_id ,
-                  SUM(a.clicks) clicks,
-                  SUM(a.total_time_on_site) total_seconds
-         FROM     mv_account a
-         WHERE    (a.DATE >=%s AND a.DATE <=%s)
-         GROUP BY 1 )
-        SELECT  temp_base.account_id,
-                temp_base.clicks,
-                temp_base.total_seconds,
-                temp_yesterday.e_yesterday_cost,
-                temp_yesterday.yesterday_cost ,
-                temp_conversions.conversion_goal_2,
-                temp_conversions.conversion_goal_3,
-                temp_conversions.conversion_goal_4,
-                temp_conversions.conversion_goal_5 ,
-                temp_touchpoints.pixel_1_24,
-                temp_touchpoints.total_conversion_value_pixel_1_24,
-                temp_touchpoints.pixel_1_168,
-                temp_touchpoints.total_conversion_value_pixel_1_168,
-                temp_touchpoints.pixel_1_720,
-                temp_touchpoints.total_conversion_value_pixel_1_720,
-                temp_touchpoints.pixel_1_2160 ,
-                temp_touchpoints.total_conversion_value_pixel_1_2160 ,
-                e_media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2 ,
-                e_media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3 ,
-                e_media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4 ,
-                e_media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5 ,
-                e_media_cost / NULLIF(pixel_1_24, 0)        avg_cost_per_pixel_1_24 ,
-                total_conversion_value_pixel_1_24 - e_media_cost roas_pixel_1_24 ,
-                e_media_cost / NULLIF(pixel_1_168, 0)       avg_cost_per_pixel_1_168 ,
-                total_conversion_value_pixel_1_168 - e_media_cost roas_pixel_1_168 ,
-                e_media_cost / NULLIF(pixel_1_720, 0)       avg_cost_per_pixel_1_720 ,
-                total_conversion_value_pixel_1_720 - e_media_cost roas_pixel_1_720 ,
-                e_media_cost / NULLIF(pixel_1_2160, 0)      avg_cost_per_pixel_1_2160 ,
-                total_conversion_value_pixel_1_2160 - e_media_cost roas_pixel_1_2160 ,
-                CASE
-                    WHEN TRUE AND TRUNC(NVL(e_media_cost, 0), 2) > 0
-                            AND NVL(TRUNC(CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END, 2), 0) = 0
-                         THEN 0
-                    WHEN (CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END) IS NULL
-                            OR 0.50000 IS NULL
-                         THEN NULL
-                    WHEN TRUE THEN
-                         (2 * 0.50000 - TRUNC((CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END), 2)) / NULLIF(0.50000, 0)
-                    ELSE TRUNC(CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END, 2) / NULLIF(0.50000, 0)
-                    END performance_campaign_goal_1,
-                CASE
-                        WHEN TRUE AND TRUNC(NVL(e_media_cost, 0), 2) > 0
-                                AND NVL(TRUNC(CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END, 2), 0) = 0
-                             THEN 0
-                        WHEN (CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END) IS NULL
-                                OR 3.80000 IS NULL
-                             THEN NULL
-                        WHEN TRUE THEN
-                             (2 * 3.80000 - TRUNC((CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END), 2)) / NULLIF(3.80000, 0)
-                        ELSE TRUNC(CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END, 2) / NULLIF(3.80000, 0)
-                        END performance_campaign_goal_2
-        FROM temp_base NATURAL LEFT JOIN temp_yesterday NATURAL LEFT OUTER JOIN temp_conversions NATURAL LEFT OUTER JOIN temp_touchpoints
-        ORDER BY total_seconds ASC NULLS LAST
-        LIMIT 10
-        OFFSET 5
-        """)
 
         self.assertEquals(params, [
             datetime.date(2016, 4, 1),
@@ -687,178 +635,8 @@ class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
 
         goals = Goals(campaign_goals, conversion_goals, campaign_goal_values, pixels, None)
 
-        sql, params = queries.prepare_query_joint_levels(['account_id', 'campaign_id'],
-                                                         constraints, None, ['total_seconds'], 5, 10, goals, False)
-
-        self.assertSQLEquals(sql, """
-        WITH temp_conversions AS (
-         SELECT   a.account_id AS account_id ,
-                  a.campaign_id AS campaign_id,
-                  SUM (CASE WHEN a.slug='ga__2' THEN conversion_count ELSE 0 END) conversion_goal_2,
-                  SUM (CASE WHEN a.slug='ga__3' THEN conversion_count ELSE 0 END) conversion_goal_3,
-                  SUM (CASE WHEN a.slug='omniture__4' THEN conversion_count ELSE 0 END) conversion_goal_4,
-                  SUM (CASE WHEN a.slug='omniture__5' THEN conversion_count ELSE 0 END) conversion_goal_5
-         FROM     mv_conversions_campaign a
-         WHERE    (a.DATE >=%s AND a.DATE <=%s)
-         GROUP BY 1, 2 ),
-        temp_touchpoints AS (
-         SELECT   a.account_id AS account_id ,
-                  a.campaign_id AS campaign_id,
-                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=24 THEN conversion_count ELSE 0 END) pixel_1_24,
-                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=24 THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_24,
-                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168 THEN conversion_count ELSE 0 END) pixel_1_168,
-                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168 THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_168,
-                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720 THEN conversion_count ELSE 0 END) pixel_1_720,
-                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720 THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_720,
-                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=2160 THEN conversion_count ELSE 0 END) pixel_1_2160,
-                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=2160 THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_2160
-         FROM     mv_touch_campaign a
-         WHERE    (a.DATE >=%s AND a.DATE <=%s)
-         GROUP BY 1, 2 ),
-        temp_yesterday AS (
-         SELECT   a.account_id AS account_id ,
-                  a.campaign_id AS campaign_id,
-                  (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))/1000000000.0 e_yesterday_cost,
-                  (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))/1000000000.0 yesterday_cost
-         FROM     mv_campaign a
-         WHERE    (a.DATE =%s)
-         GROUP BY 1, 2 ),
-        temp_base AS (
-         SELECT   a.account_id AS account_id ,
-                  a.campaign_id AS campaign_id,
-                  SUM(a.clicks) clicks,
-                  SUM(a.total_time_on_site) total_seconds
-         FROM     mv_campaign a
-         WHERE    (a.DATE >=%s AND a.DATE <=%s)
-         GROUP BY 1, 2 )
-        SELECT
-             b.account_id,
-             b.campaign_id,
-             b.clicks,
-             b.total_seconds,
-             b.e_yesterday_cost,
-             b.yesterday_cost ,
-             b.conversion_goal_2,
-             b.conversion_goal_3,
-             b.conversion_goal_4,
-             b.conversion_goal_5 ,
-             b.pixel_1_24,
-             b.total_conversion_value_pixel_1_24,
-             b.pixel_1_168,
-             b.total_conversion_value_pixel_1_168,
-             b.pixel_1_720,
-             b.total_conversion_value_pixel_1_720,
-             b.pixel_1_2160 ,
-             b.total_conversion_value_pixel_1_2160 ,
-             b.avg_cost_per_conversion_goal_2,
-             b.avg_cost_per_conversion_goal_3,
-             b.avg_cost_per_conversion_goal_4,
-             b.avg_cost_per_conversion_goal_5,
-             b.avg_cost_per_pixel_1_24,
-             b.roas_pixel_1_24,
-             b.avg_cost_per_pixel_1_168,
-             b.roas_pixel_1_168,
-             b.avg_cost_per_pixel_1_720,
-             b.roas_pixel_1_720,
-             b.avg_cost_per_pixel_1_2160,
-             b.roas_pixel_1_2160,
-             b.performance_campaign_goal_1,
-             b.performance_campaign_goal_2
-        FROM
-             (SELECT
-                    a.account_id,
-                    a.campaign_id,
-                    a.clicks,
-                    a.total_seconds,
-                    a.e_yesterday_cost,
-                    a.yesterday_cost ,
-                    a.conversion_goal_2,
-                    a.conversion_goal_3,
-                    a.conversion_goal_4,
-                    a.conversion_goal_5 ,
-                    a.pixel_1_24,
-                    a.total_conversion_value_pixel_1_24,
-                    a.pixel_1_168,
-                    a.total_conversion_value_pixel_1_168,
-                    a.pixel_1_720,
-                    a.total_conversion_value_pixel_1_720,
-                    a.pixel_1_2160 ,
-                    a.total_conversion_value_pixel_1_2160 ,
-                    a.avg_cost_per_conversion_goal_2,
-                    a.avg_cost_per_conversion_goal_3,
-                    a.avg_cost_per_conversion_goal_4,
-                    a.avg_cost_per_conversion_goal_5,
-                    a.avg_cost_per_pixel_1_24,
-                    a.roas_pixel_1_24,
-                    a.avg_cost_per_pixel_1_168,
-                    a.roas_pixel_1_168,
-                    a.avg_cost_per_pixel_1_720,
-                    a.roas_pixel_1_720,
-                    a.avg_cost_per_pixel_1_2160,
-                    a.roas_pixel_1_2160,
-                    a.performance_campaign_goal_1,
-                    a.performance_campaign_goal_2,
-                    ROW_NUMBER() OVER (PARTITION BY a.account_id ORDER BY a.total_seconds ASC NULLS LAST) AS r
-              FROM
-                    (SELECT
-                        temp_base.account_id,
-                        temp_base.campaign_id,
-                        temp_base.clicks,
-                        temp_base.total_seconds,
-                        temp_yesterday.e_yesterday_cost,
-                        temp_yesterday.yesterday_cost ,
-                        temp_conversions.conversion_goal_2,
-                        temp_conversions.conversion_goal_3,
-                        temp_conversions.conversion_goal_4,
-                        temp_conversions.conversion_goal_5 ,
-                        temp_touchpoints.pixel_1_24,
-                        temp_touchpoints.total_conversion_value_pixel_1_24,
-                        temp_touchpoints.pixel_1_168,
-                        temp_touchpoints.total_conversion_value_pixel_1_168,
-                        temp_touchpoints.pixel_1_720,
-                        temp_touchpoints.total_conversion_value_pixel_1_720,
-                        temp_touchpoints.pixel_1_2160 ,
-                        temp_touchpoints.total_conversion_value_pixel_1_2160 ,
-                        e_media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2 ,
-                        e_media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3 ,
-                        e_media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4 ,
-                        e_media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5 ,
-                        e_media_cost / NULLIF(pixel_1_24, 0)        avg_cost_per_pixel_1_24 ,
-                        total_conversion_value_pixel_1_24 - e_media_cost roas_pixel_1_24 ,
-                        e_media_cost / NULLIF(pixel_1_168, 0)       avg_cost_per_pixel_1_168 ,
-                        total_conversion_value_pixel_1_168 - e_media_cost roas_pixel_1_168 ,
-                        e_media_cost / NULLIF(pixel_1_720, 0)       avg_cost_per_pixel_1_720 ,
-                        total_conversion_value_pixel_1_720 - e_media_cost roas_pixel_1_720 ,
-                        e_media_cost / NULLIF(pixel_1_2160, 0)      avg_cost_per_pixel_1_2160 ,
-                        total_conversion_value_pixel_1_2160 - e_media_cost roas_pixel_1_2160 ,
-                        CASE
-                            WHEN TRUE AND TRUNC(NVL(e_media_cost, 0), 2) > 0
-                                    AND NVL(TRUNC(CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END, 2), 0) = 0
-                                THEN 0
-                            WHEN (CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END) IS NULL
-                                    OR 0.50000 IS NULL
-                                THEN NULL
-                            WHEN TRUE THEN
-                                (2 * 0.50000 - TRUNC((CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END), 2)) / NULLIF(0.50000, 0)
-                            ELSE TRUNC(CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END, 2) / NULLIF(0.50000, 0)
-                            END performance_campaign_goal_1,
-                        CASE
-                                WHEN TRUE AND TRUNC(NVL(e_media_cost, 0), 2) > 0
-                                        AND NVL(TRUNC(CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END, 2), 0) = 0
-                                    THEN 0
-                                WHEN (CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END) IS NULL
-                                        OR 3.80000 IS NULL
-                                    THEN NULL
-                                WHEN TRUE THEN
-                                    (2 * 3.80000 - TRUNC((CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END), 2)) / NULLIF(3.80000, 0)
-                                ELSE TRUNC(CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END, 2) / NULLIF(3.80000, 0)
-                            END performance_campaign_goal_2
-                    FROM temp_base NATURAL LEFT OUTER JOIN temp_yesterday NATURAL LEFT OUTER JOIN temp_conversions NATURAL LEFT OUTER JOIN temp_touchpoints
-                    ) a
-            ) b
-        WHERE r >= 5 + 1
-  AND r <= 10
-        """)
+        _, params = queries.prepare_query_joint_levels(['account_id', 'campaign_id'],
+                                                       constraints, None, ['total_seconds'], 5, 10, goals, False)
 
         self.assertEquals(params, [
             datetime.date(2016, 4, 1),

@@ -293,7 +293,7 @@ def _prepare_table_rows(context):
         [TableCell('Test', align='right')] + _populate_agency(context, dash.constants.AccountType.TEST),
         [TableCell('Unknown', align='right')] + _populate_agency(context, dash.constants.AccountType.UNKNOWN),
     ])
-    agency_totals = [TableRow([
+    agency_costs = [TableRow([
         TableCell('{} agencies'.format(
             _get_counts(context.agencies, total_only=True).value_html()
         )),
@@ -317,10 +317,10 @@ def _prepare_table_rows(context):
     ], row_type=TableRow.TYPE_TOTALS)]
 
     grand_totals = [TableRow([TableCell('Grand Total')] + [
-        _get_totals(agency_totals + clientdirect_totals, i) for i in range(1, 7)
+        _get_totals(agency_costs + clientdirect_totals, i) for i in range(1, 7)
     ], row_type=TableRow.TYPE_TOTALS)]
 
-    return header + agency_totals + agency_rows + clientdirect_totals \
+    return header + agency_costs + agency_rows + clientdirect_totals \
         + clientdirect_rows + grand_totals
 
 

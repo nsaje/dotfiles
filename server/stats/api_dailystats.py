@@ -9,6 +9,6 @@ def query(user, breakdown, metrics, constraints, goals, order, should_use_publis
         breakdown, metrics, constraints,
         goals, order, should_use_publishers_view)
 
-    permission_filter.filter_columns_by_permission(user, rows, goals)
+    permission_filter.filter_columns_by_permission(user, rows, goals, constraints)
 
     return rows
