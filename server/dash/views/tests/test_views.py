@@ -901,65 +901,18 @@ class AdGroupOverviewTest(TestCase):
         flight_setting = self._get_setting(settings, 'flight')
         self.assertEqual('03/02 - 04/02', flight_setting['value'])
 
-        flight_setting = self._get_setting(settings, 'daily')
-        self.assertEqual('$500.00', flight_setting['value'])
-
-        device_setting = self._get_setting(settings, 'targeting')
-        self.assertEqual('Device: Desktop, Mobile', device_setting['value'])
-
-        region_setting = [s for s in settings if 'location' in s['value'].lower()][0]
-        self.assertEqual('Location:', region_setting['value'])
-        self.assertEqual('GB, US, CA', region_setting['details_content'])
-
-        tracking_setting = self._get_setting(settings, 'tracking')
-        self.assertEqual(tracking_setting['value'], 'Yes')
-        self.assertEqual(tracking_setting['details_content'], 'param1=foo&param2=bar')
-
-        yesterday_spend = self._get_setting(settings, 'yesterday')
-        self.assertIsNone(yesterday_spend, 'no permission')
-
-        budget_setting = self._get_setting(settings, 'daily spend cap')
-        self.assertEqual('$500.00', budget_setting['value'])
-
         budget_setting = self._get_setting(settings, 'campaign budget')
         self.assertIsNone(budget_setting, 'no permission')
 
         pacing_setting = self._get_setting(settings, 'pacing')
         self.assertIsNone(pacing_setting, 'no permission')
 
-        retargeting_setting = self._get_setting(settings, 'retargeting')
-        self.assertIsNone(retargeting_setting, 'no permission')
-
         goal_setting = [s for s in settings if 'goal' in s['name'].lower()]
         self.assertEqual([], goal_setting)
 
-        # try aqgain with retargeting permission
-        permission = Permission.objects.get(codename='can_view_retargeting_settings')
-        self.user.user_permissions.add(permission)
-        self.user.save()
-
         response = self._get_ad_group_overview(1)
         settings = response['data']['basic_settings'] +\
             response['data']['performance_settings']
-        retargeting_setting = self._get_setting(settings, 'retargeting')
-        self.assertEqual('test adgroup 3', retargeting_setting['details_content'])
-
-        # try again with platform breakdown permission
-        permission = Permission.objects.get(codename='can_view_platform_cost_breakdown')
-        self.user.user_permissions.add(permission)
-        self.user.save()
-
-        response = self._get_ad_group_overview(1)
-        settings = response['data']['basic_settings'] +\
-            response['data']['performance_settings']
-
-        budget_setting = self._get_setting(settings, 'campaign budget')
-        self.assertEqual('$80.00', budget_setting['value'])
-        self.assertEqual('$80.00 remaining', budget_setting['description'])
-
-        pacing_setting = self._get_setting(settings, 'pacing')
-        self.assertEqual('$0.00', pacing_setting['value'])
-        self.assertEqual('0.00% on plan', pacing_setting['description'])
 
         yesterday_spend = self._get_setting(settings, 'yesterday')
         self.assertEqual('$0.00', yesterday_spend['value'])
@@ -1033,22 +986,13 @@ class AdGroupOverviewTest(TestCase):
             ed="{:02d}".format(end_date.day),
         ), flight_setting['value'])
 
-        flight_setting = self._get_setting(settings, 'daily')
-        self.assertEqual('$500.00', flight_setting['value'])
-        yesterday_setting = self._get_setting(settings, 'yesterday')
-        self.assertIsNone(yesterday_setting, 'no permission')
-
-        permission = Permission.objects.get(codename='can_view_platform_cost_breakdown')
-        self.user.user_permissions.add(permission)
-        self.user.save()
-
         response = self._get_ad_group_overview(1)
         settings = response['data']['basic_settings'] +\
             response['data']['performance_settings']
 
         yesterday_setting = self._get_setting(settings, 'yesterday')
         self.assertEqual('$60.00', yesterday_setting['value'])
-        self.assertEqual('12.00 % of Daily Spend Cap', yesterday_setting['description'])
+        self.assertEqual('12.00% of $500.00 Daily Spend Cap', yesterday_setting['description'])
 
 
 class CampaignOverviewTest(TestCase):
@@ -1140,33 +1084,8 @@ class CampaignOverviewTest(TestCase):
         settings = response['data']['basic_settings'] +\
             response['data']['performance_settings']
 
-        active_adgroup_settings = self._get_setting(settings, 'active ad groups')
-        self.assertEqual('1', active_adgroup_settings['value'])
-
-        flight_setting = self._get_setting(settings, 'flight')
-        self.assertEqual('{sm:02d}/{sd:02d} - {em:02d}/{ed:02d}'.format(
-            sm=adg_start_date.month,
-            sd=adg_start_date.day,
-            em=adg_end_date.month,
-            ed=adg_end_date.day,
-
-        ), flight_setting['value'])
-
-        budget_setting = self._get_setting(settings, 'daily spend cap')
-        self.assertEqual('$550.00', budget_setting['value'])
-
-        budget_setting = self._get_setting(settings, 'campaign budget')
-        self.assertIsNone(budget_setting)
-
-        pacing_setting = self._get_setting(settings, 'pacing')
-        self.assertIsNone(pacing_setting)
-
         goal_setting = [s for s in settings if 'goal' in s['name'].lower()]
         self.assertEqual([], goal_setting)
-
-        permission = Permission.objects.get(codename='can_view_platform_cost_breakdown')
-        self.user.user_permissions.add(permission)
-        self.user.save()
 
         response = self._get_campaign_overview(1)
         settings = response['data']['basic_settings'] +\
@@ -1234,10 +1153,6 @@ class AccountOverviewTest(TestCase):
         response = self._get_account_overview(1)
         settings = response['data']['basic_settings']
 
-        count_setting = self._get_setting(settings, 'active campaigns')
-        self.assertEqual('2', count_setting['value'])
-        self.assertTrue(response['success'])
-
     @patch('dash.models.Account.get_current_settings')
     def test_run_empty_non_archived(self, mock_current_settings):
         req = RequestFactory().get('/')
@@ -1276,10 +1191,6 @@ class AccountOverviewTest(TestCase):
         # do some extra setup to the account
         response = self._get_account_overview(1)
         settings = response['data']['basic_settings']
-
-        count_setting = self._get_setting(settings, 'active campaigns')
-        self.assertEqual('2', count_setting['value'])
-        self.assertTrue(response['success'])
 
 
 class AllAccountsOverviewTest(TestCase):
@@ -1326,16 +1237,11 @@ class AllAccountsOverviewTest(TestCase):
             set(s['name'] for s in response['data']['basic_settings'])
         )
 
-        platform_breakdown_permission = Permission.objects.get(codename='can_view_platform_cost_breakdown')
-        user = zemauth.models.User.objects.get(pk=2)
-        user.user_permissions.add(platform_breakdown_permission)
-        user.save()
-
         response = self._get_all_accounts_overview(1)
         self.assertTrue(response['success'])
 
         self.assertEqual(
-            set(['Active accounts:', 'Yesterday spend:', 'MTD spend:']),
+            set(['Active accounts:']),
             set(s['name'] for s in response['data']['basic_settings'])
         )
 
