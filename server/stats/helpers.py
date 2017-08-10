@@ -242,6 +242,10 @@ def extract_order_field(order, target_dimension, primary_goals=None):
         if order_field == 'exchange':
             order_field = "source_id"
 
+    # field was renamed
+    if order_field == 'agency_total':
+        order_field = 'agency_cost'
+
     return prefix + order_field
 
 
