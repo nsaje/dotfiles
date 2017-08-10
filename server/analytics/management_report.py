@@ -44,6 +44,9 @@ LIST_REPORT_DISPLAY = {
     ).as_html(), _get_bcm_changes('budget', obj)),
 }
 
+OEN_ACCOUNTS = (305, )
+OEN_AGENCIES = (55, )
+
 
 def _format_change(key, change):
     if '_nano' in key:
@@ -91,11 +94,13 @@ class ReportContext(object):
 
         self.account_types = {
             sett.account_id: sett.account_type
-            for sett in dash.models.AccountSettings.objects.all().group_current_settings()
+            for sett in dash.models.AccountSettings.objects.exclude(
+                account_id__in=OEN_ACCOUNTS
+            ).group_current_settings()
         }
         self.campaign_types = {
             c.pk: self.account_types.get(c.account_id, dash.constants.AccountType.UNKNOWN)
-            for c in dash.models.Campaign.objects.all()
+            for c in dash.models.Campaign.objects.exclude(account_id__in=OEN_ACCOUNTS)
         }
 
         yesterday_range = {
@@ -103,10 +108,12 @@ class ReportContext(object):
             'created_dt__gte': self.date,
         }
         self.yesterday_created = {
-            'accounts': dash.models.Account.objects.filter(**yesterday_range),
-            'campaigns': dash.models.Campaign.objects.filter(**yesterday_range),
-            'budgets': dash.models.BudgetLineItem.objects.filter(**yesterday_range),
-            'credits': dash.models.CreditLineItem.objects.filter(**yesterday_range),
+            'accounts': dash.models.Account.objects.filter(**yesterday_range).exclude(pk__in=OEN_ACCOUNTS),
+            'campaigns': dash.models.Campaign.objects.filter(**yesterday_range).exclude(account_id__in=OEN_ACCOUNTS),
+            'budgets': dash.models.BudgetLineItem.objects.filter(**yesterday_range).exclude(campaign__account_id__in=OEN_ACCOUNTS),
+            'credits': dash.models.CreditLineItem.objects.filter(**yesterday_range).exclude(
+                account_id__in=OEN_ACCOUNTS
+            ).exclude(agency_id__in=OEN_AGENCIES),
         }
 
         yesterday_range = {
@@ -114,8 +121,10 @@ class ReportContext(object):
             'modified_dt__gte': self.date,
         }
         self.yesterday_modified = {
-            'budgets': dash.models.BudgetLineItem.objects.filter(**yesterday_range),
-            'credits': dash.models.CreditLineItem.objects.filter(**yesterday_range),
+            'budgets': dash.models.BudgetLineItem.objects.filter(**yesterday_range).exclude(campaign__account_id__in=OEN_ACCOUNTS),
+            'credits': dash.models.CreditLineItem.objects.filter(**yesterday_range).exclude(
+                account_id__in=OEN_ACCOUNTS
+            ).exclude(agency_id__in=OEN_AGENCIES),
         }
 
     def _get_data_model(self):
