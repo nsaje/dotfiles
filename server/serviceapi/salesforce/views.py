@@ -1,4 +1,6 @@
 import django.core.exceptions
+import django.db.utils
+import influx
 from rest_framework.serializers import ValidationError
 
 from .. import base, authentication
@@ -19,12 +21,17 @@ class CreateClientView(base.ServiceAPIBaseView):
         try:
             client = service.create_client(request, serializer.validated_data)
         except django.core.exceptions.ValidationError as err:
+            influx.incr('create_client', 1, status='validation-error')
             raise ValidationError(err)
-        except:
+        except django.db.utils.IntegrityError:
+            influx.incr('create_client', 1, status='name-error')
             raise ValidationError(
                 {'name': 'Name is not unique for this account type.'}
             )
-
+        except Exception as err:
+            influx.incr('create_client', 1, status='server-error')
+            raise err
+        influx.incr('create_client', 1, status='ok', client_type=request.data['type'])
         return self.response_ok({
             'z1_account_id': client.get_salesforce_id(),
             'z1_data': client.get_long_name(),
@@ -43,8 +50,12 @@ class CreateCreditLineView(base.ServiceAPIBaseView):
         try:
             cli = service.create_credit_line_item(request, serializer.validated_data)
         except django.core.exceptions.ValidationError as err:
+            influx.incr('create_credit', 1, status='validation-error')
             raise ValidationError(err)
-
+        except Exception as err:
+            influx.incr('create_credit', 1, status='server-error')
+            raise err
+        influx.incr('create_credit', 1, status='ok')
         return self.response_ok({
             'z1_cli_id': cli.pk,
             'z1_data': cli.get_settings_dict()
