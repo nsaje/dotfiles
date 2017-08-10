@@ -5,6 +5,7 @@ from django.test import TestCase
 from mixer.backend.django import mixer
 
 from dash import constants
+from dash.features import reports
 from dash.features.scheduled_reports import models
 
 
@@ -23,39 +24,66 @@ class ScheduledReportTestCase(TestCase):
         self.assertEqual(recipients, report.get_recipients())
 
     @patch('utils.dates_helper.utc_now')
-    def test_filter_due(self, now_mock):
-        mixer.cycle(3).blend(
+    def test_filter_due_status(self, now_mock):
+        scheduled_reports = mixer.cycle(4).blend(
             models.ScheduledReport,
-            state=(v for v in constants.ScheduledReportState._VALUES),
+            sending_frequency=constants.ScheduledReportSendingFrequency.DAILY,
             query={},
         )
-        mixer.cycle(3).blend(
-            models.ScheduledReport,
-            sending_frequency=(v for v in constants.ScheduledReportSendingFrequency._VALUES),
-            last_sent_dt=datetime.datetime(2017, 3, 31, 15),
-            query={}
+        mixer.cycle(4).blend(
+            reports.models.ReportJob,
+            scheduled_report=(v for v in scheduled_reports),
+            status=(v for v in reports.constants.ReportJobStatus._VALUES),
+            query={},
         )
-        self.assertEqual(6, models.ScheduledReport.objects.all().count())
+        reports.models.ReportJob.objects.all().update(
+            created_dt=datetime.datetime(2017, 3, 31, 15),
+        )
+        self.assertEqual(4, models.ScheduledReport.objects.all().count())
 
-        # already sent
+        # already sent, retry only FAILED
         now_mock.return_value = datetime.datetime(2017, 3, 31, 15, 1)
         self.assertEqual(1, models.ScheduledReport.objects.all().filter_due().count())
 
-        # already sent
+        # already sent, retry only FAILED
         now_mock.return_value = datetime.datetime(2017, 3, 31, 23, 59)
         self.assertEqual(1, models.ScheduledReport.objects.all().filter_due().count())
 
-        # monthly and not already sent
+        # not sent yet
         now_mock.return_value = datetime.datetime(2017, 4, 1, 6)
-        self.assertEqual(3, models.ScheduledReport.objects.all().filter_due().count())
+        self.assertEqual(4, models.ScheduledReport.objects.all().filter_due().count())
 
-        # daily only
-        now_mock.return_value = datetime.datetime(2017, 4, 2)
+    def test_filter_due_state(self):
+        mixer.cycle(2).blend(
+            models.ScheduledReport,
+            sending_frequency=constants.ScheduledReportSendingFrequency.DAILY,
+            state=(v for v in constants.ScheduledReportState._VALUES),
+            query={},
+        )
+        self.assertEqual(2, models.ScheduledReport.objects.all().count())
+
+        self.assertEqual(1, models.ScheduledReport.objects.all().filter_due().count())
+
+    @patch('utils.dates_helper.utc_now')
+    def test_filter_due_frequency(self, now_mock):
+        mixer.cycle(3).blend(
+            models.ScheduledReport,
+            sending_frequency=(v for v in constants.ScheduledReportSendingFrequency._VALUES),
+            query={},
+        )
+        self.assertEqual(3, models.ScheduledReport.objects.all().count())
+
+        # daily and monthly
+        now_mock.return_value = datetime.datetime(2017, 4, 1, 6)
         self.assertEqual(2, models.ScheduledReport.objects.all().filter_due().count())
 
-        # weekly
+        # daily
+        now_mock.return_value = datetime.datetime(2017, 4, 2)
+        self.assertEqual(1, models.ScheduledReport.objects.all().filter_due().count())
+
+        # daily and weekly
         now_mock.return_value = datetime.datetime(2017, 4, 3)
-        self.assertEqual(3, models.ScheduledReport.objects.all().filter_due().count())
+        self.assertEqual(2, models.ScheduledReport.objects.all().filter_due().count())
 
     def test_set_date_filter(self):
         query = {

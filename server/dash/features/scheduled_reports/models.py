@@ -1,5 +1,3 @@
-import pytz
-
 from django.conf import settings
 from django.db import models
 import jsonfield
@@ -7,6 +5,7 @@ import jsonfield
 import core.entity
 from dash import constants
 from dash import history_helpers
+from dash.features import reports
 import dash.features.reports.helpers as reports_helpers
 from utils import dates_helper
 
@@ -59,13 +58,18 @@ class ScheduledReportManager(models.Manager):
 
 class ScheduledReportQuerySet(models.QuerySet):
     def filter_due(self):
-        today = pytz.UTC.localize(dates_helper.utc_now()).date()
+        today = dates_helper.utc_today()
 
         due_reports = self.filter(state=constants.ScheduledReportState.ACTIVE)
 
-        due_reports = due_reports.exclude(
-            last_sent_dt__gt=today
-        )
+        done_today_reports = (
+            reports.models.ReportJob.objects
+            .filter(scheduled_report__isnull=False)
+            .filter(created_dt__gte=today)
+            .exclude(status=reports.constants.ReportJobStatus.FAILED)
+            .values_list('scheduled_report_id', flat=True))
+
+        due_reports = due_reports.exclude(id__in=done_today_reports)
 
         due_reports = due_reports.exclude(
             ~models.Q(day_of_week=today.isoweekday()),
@@ -116,8 +120,6 @@ class ScheduledReport(models.Model):
     )
 
     query = jsonfield.JSONField()
-
-    last_sent_dt = models.DateTimeField(null=True)
 
     objects = ScheduledReportManager.from_queryset(ScheduledReportQuerySet)()
 

@@ -1,4 +1,3 @@
-import datetime
 import logging
 
 import influx
@@ -21,5 +20,3 @@ class Command(ExceptionCommand):
             start_date, end_date = scheduled_reports.get_scheduled_report_date_range(sr.time_period)
             sr.set_date_filter(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
             reports.create_job(sr.user, sr.query, scheduled_report=sr)
-
-        due_scheduled_reports.update(last_sent_dt=datetime.datetime.now())
