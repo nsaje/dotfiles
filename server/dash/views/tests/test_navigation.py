@@ -96,7 +96,8 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test account 1',
-                'agency': 'Test Agency'
+                'agency': 'Test Agency',
+                'usesBCMv2': False,
             }
         })
 
@@ -108,7 +109,8 @@ class NavigationDataViewTest(TestCase):
                 'archived': True,
                 'id': 3,
                 'name': 'test account 3',
-                'agency': None
+                'agency': None,
+                'usesBCMv2': False,
             }
         })
 
@@ -135,7 +137,8 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test account 1',
-                'agency': 'Test Agency'
+                'agency': 'Test Agency',
+                'usesBCMv2': False,
             },
             'campaign': {
                 'archived': False,
@@ -153,7 +156,8 @@ class NavigationDataViewTest(TestCase):
                 'archived': True,
                 'id': 3,
                 'name': 'test account 3',
-                'agency': None
+                'agency': None,
+                'usesBCMv2': False,
             },
             'campaign': {
                 'archived': True,
@@ -187,7 +191,8 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test account 1',
-                'agency': 'Test Agency'
+                'agency': 'Test Agency',
+                'usesBCMv2': False,
             },
             'campaign': {
                 'archived': False,
@@ -214,7 +219,8 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 2,
                 'name': 'test account 2',
-                'agency': None
+                'agency': None,
+                'usesBCMv2': False,
             },
             'campaign': {
                 'archived': False,
@@ -256,7 +262,8 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test account 1',
-                'agency': 'Test Agency'
+                'agency': 'Test Agency',
+                'usesBCMv2': False,
             }
         })
 
@@ -268,7 +275,8 @@ class NavigationDataViewTest(TestCase):
                 'archived': True,
                 'id': 3,
                 'name': 'test account 3',
-                'agency': None
+                'agency': None,
+                'usesBCMv2': False,
             }
         })
 
@@ -316,6 +324,7 @@ class NavigationTreeViewTest(TestCase):
             "id": 1,
             "agency": "Test Agency",
             "name": "test account 1",
+            "usesBCMv2": False,
         }]
 
     def _get(self, user_id, filtered_sources=None,
@@ -387,6 +396,7 @@ class NavigationTreeViewTest(TestCase):
             "id": 1,
             "agency": "Test Agency",
             "name": "test account 1",
+            "usesBCMv2": False,
         }]
         self.assertItemsEqual(response['data'], expected_response)
 
@@ -416,7 +426,8 @@ class NavigationTreeViewTest(TestCase):
             "id": 2,
             "name": "test account 2",
             "archived": False,
-            "agency": None
+            "agency": None,
+            "usesBCMv2": False,
         }]
 
         self.assertItemsEqual(response['data'], expected_response)

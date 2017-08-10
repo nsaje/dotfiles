@@ -38,6 +38,7 @@ def get_account_dict(account, account_settings=None):
         'id': account.id,
         'name': account.name,
         'archived': account_settings.archived if account_settings else False,
-        'agency': account.agency and account.agency.name
+        'agency': account.agency and account.agency.name,
+        'usesBCMv2': account.uses_bcm_v2,
     }
     return account_dict
