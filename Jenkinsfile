@@ -15,6 +15,11 @@ node('master') {
 
         // linter
         sh 'docker build -t py-tools -f docker/Dockerfile.py-tools  docker/'
+
+        // client-linter
+        //sh 'docker build -t client-lint -f docker/Dockerfile.client-lint -v $PWD/client/package.json:/package.json docker/'
+        // You can't mount volume during build time because of docker version mismatch. This is workaround:
+        sh 'cp client/package.json docker/ && docker build -t client-lint -f docker/Dockerfile.client-lint docker/'
     }
 
     stage ('Install dependencies') {

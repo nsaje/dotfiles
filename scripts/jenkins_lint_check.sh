@@ -1,8 +1,5 @@
 #!/bin/bash -x
 
-# Fail hard and fast
-set -eo pipefail
-
 function red {
   echo -e "\e[31m$1\e[0m"
 }
@@ -15,40 +12,41 @@ function green {
   echo -e "\e[32m$1\e[0m"
 }
 
-# Flake8 ------------------------------------------------------------------------
+function banner {
+  EXITCODE=$1
+  PROGRAM=$2
+  if [[ $EXITCODE != 0 ]]; then
+      red "+-------------------------+"
+      red "|   ${PROGRAM} CHECK FAILED   |"
+      red "+-------------------------+"
+      exit 1
+  fi
+  green "${PROGRAM} check successful"
+}
 
+
+# Flake8 ------------------------------------------------------------------------
 blue "Flake8 lint in progress ..."
 docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=flake8 py-tools ./server/
 
 EXITCODE=$?
-if [[ $EXITCODE != 0 ]]; then
-    red "+-------------------------+"
-    red "|    Flake8 CHECK FAILED    |"
-    red "+-------------------------+"
-    exit 1
-fi
-green "Flake8 check successful"
+banner $EXITCODE "Flake8"
 
-# ES Lint ----------------------------------------------------------------------
 
-blue "ESLint in progress ..."
+# Client Lint ----------------------------------------------------------------------
+blue "ClientLint in progress ..."
 
 docker run --rm \
            -v $PWD/.eslintrc.yml:/root/.eslintrc.yml \
            -v $PWD/client:/src:ro \
-           markocelan/eslint one test
+           --entrypoint=sh \
+           client-lint -c "rm -f /package.json ; npm run lint"
 
 EXITCODE=$?
-if [[ $EXITCODE != 0 ]]; then
-    red "+---------------------------+"
-    red "|    ESLINT CHECK FAILED    |"
-    red "+---------------------------+"
-    exit 1
-fi
-green "ESLint check successful"
+banner $EXITCODE "ClientLint"
+
 
 # Xenon ------------------------------------------------------------------------
-
 blue "Xenon (cyclomatic complexity) check in progress ..."
 docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=xenon py-tools  \
   --max-absolute D \
@@ -56,10 +54,4 @@ docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=xenon py-tools  \
   ./server/
 
 EXITCODE=$?
-if [[ $EXITCODE != 0 ]]; then
-    red "+---------------------------+"
-    red "|    XENON CHECK FAILED     |"
-    red "+---------------------------+"
-    exit 1
-fi
-green "Xenon check successful"
+banner $EXITCODE "Xenon"
