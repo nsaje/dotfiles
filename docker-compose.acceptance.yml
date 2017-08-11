@@ -34,7 +34,7 @@ einsacceptance:
 dredd:
     image: nsaje/dredd-python:2.2.5
     links:
-      - "eins"
+      - "einsacceptance"
     entrypoint: bash
     volumes:
       - "./server/:/app/z1/"
