@@ -13,7 +13,7 @@ memcached:
 
 einsacceptance:
     restart: always
-    hostname: eins
+    hostname: einsacceptance
     image: $ACCEPTANCE_IMAGE
     expose:
       - "8123"
