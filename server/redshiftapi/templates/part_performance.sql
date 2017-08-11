@@ -11,6 +11,6 @@ CASE
       OR {{ planned_value }} IS NULL
     THEN NULL  -- not determined
   WHEN {{ is_inverse_performance }}
-    THEN (2 * {{ planned_value }} - TRUNC((CASE WHEN {{ has_conversion_key }} THEN {{ cost_column }} / NULLIF({{ conversion_key }}, 0) ELSE {{ metric_column }} END), 2)) / NULLIF({{ planned_value }}, 0)
-  ELSE TRUNC(CASE WHEN {{ has_conversion_key }} THEN {{ cost_column }} / NULLIF({{ conversion_key }}, 0) ELSE {{ metric_column }} END, 2) / NULLIF({{ planned_value }}, 0)
+    THEN (2 * {{ planned_value }} - TRUNC((CASE WHEN {{ has_conversion_key }} THEN {{ cost_column }} / NULLIF({{ conversion_key }}, 0) ELSE {{ metric_column }} END), 2)) / NULLIF({{ planned_value }}, 0)::float
+  ELSE TRUNC(CASE WHEN {{ has_conversion_key }} THEN {{ cost_column }} / NULLIF({{ conversion_key }}, 0) ELSE {{ metric_column }} END, 2) / NULLIF({{ planned_value }}, 0)::float
 END {{ alias }}
