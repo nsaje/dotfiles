@@ -11,7 +11,7 @@ memcached:
     expose:
       - "11211"
 
-eins:
+einsacceptance:
     restart: always
     hostname: eins
     image: $ACCEPTANCE_IMAGE
