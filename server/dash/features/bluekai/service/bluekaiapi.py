@@ -17,7 +17,12 @@ TAXONOMY_URL = 'https://taxonomy.bluekai.com/taxonomy/categories'
 SEGMENT_INVENTORY_URL = ('https://services.bluekai.com/'
                          'Services/WS/SegmentInventory')
 AUDIENCES_URL = 'https://services.bluekai.com/Services/WS/audiences/'
+CAMPAIGNS_REST_URL = 'https://services.bluekai.com/rest/campaigns/'
+
+
 PARENT_CATEGORY_ID = '671901'  # Oracle subtree, 344 can be used for root
+
+
 HEADERS = {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
@@ -54,6 +59,12 @@ def get_segment_reach(expression):
 
 def get_audience(audience_id):
     url = AUDIENCES_URL + str(audience_id)
+    response = _perform_request('GET', url, params={})
+    return json.loads(response.content)
+
+
+def get_campaign(campaign_id):
+    url = CAMPAIGNS_REST_URL + str(campaign_id)
     response = _perform_request('GET', url, params={})
     return json.loads(response.content)
 

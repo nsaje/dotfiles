@@ -12,6 +12,15 @@ CAMPAIGN_ID = 151750
 STATUS_ACTIVE = 'active'
 
 
+def check_campaign_status():
+    campaign = bluekaiapi.get_campaign(CAMPAIGN_ID)
+    if campaign['status'] != 'active':
+        return 'Campaign "{}" (id: {}) status is set to "{}", not "active". '\
+            'The campaign data may not be syncing. Check https://partner.bluekai.com/rails/campaigns/{}.'.format(
+                campaign['name'], campaign['id'], campaign['status'], campaign['id'])
+    return ''
+
+
 def refresh_bluekai_categories():
     taxonomy = bluekaiapi.get_taxonomy()
     existing_categories = _get_existing_categories()
