@@ -69,6 +69,7 @@
     .content-upload__ads-container,
     .content-upload__batch-name-container {
         width: @modal-content-width - @modal-content-width*0.6;
+        transition: all @default-animation;
     }
 
     .content-upload__batch-name-container {
@@ -87,6 +88,10 @@
         display: none;
     }
 
+    .content-upload__ad-error-container {
+        width: 30px;
+    }
+
     .content-upload__ad-error {
         font-size: 0;
         padding-left: 0;
@@ -96,12 +101,12 @@
 
     .content-upload__ad-action-buttons {
         white-space: nowrap;
+        width: 100px;
 
         .button {
             font-size: 0;
             padding-left: 22px;
             margin-right: 0;
-            transition: none;
         }
     }
 
@@ -115,7 +120,7 @@
 
 .content-upload__ads-container {
     width: @modal-content-width;
-    transition: all @default-animation;
+    transition: none;
     position: absolute;
     top: 0;
     bottom: 0;
@@ -172,9 +177,9 @@
 
     tr {
         cursor: pointer;
+        height: 56px;
 
         td {
-            padding: 6px 10px;
             vertical-align: middle;
             height: 56px;
         }
@@ -257,8 +262,29 @@
     position: relative;
 }
 
+.content-upload__ad-title--two-lines {
+    height: 36px;
+    overflow: hidden;
+
+    &:after {
+        content: "";
+        height: 100%;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    div {
+        display: inline-block;
+        display: -webkit-inline-box;
+        max-height: 100%;
+        vertical-align: middle;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+}
+
 .content-upload__ad-link {
-    max-width: 560px;
+    max-width: 400px;
     word-wrap: break-word;
 }
 
@@ -291,9 +317,14 @@
     }
 }
 
+.content-upload__ad-error-container {
+    width: 140px;
+}
+
 .content-upload__ad-action-buttons {
     text-align: right;
     white-space: nowrap;
+    width: 200px;
 
     .message--error {
         padding-top: 6px;
@@ -303,6 +334,10 @@
     .loader {
         width: 25px;
         height: 10px;
+    }
+
+    .button {
+        transition: none;
     }
 }
 

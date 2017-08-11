@@ -1,57 +1,64 @@
-<h1 class="content-container__title">Campaign launcher</h1>
-
-
-<div class="custom-panel" ng-if="$ctrl.state.requests.getDefaults.inProgress || $ctrl.state.requests.getDefaults.error">
-    <span class="loader" ng-show="$ctrl.state.requests.getDefaults.inProgress"></span>
-    <span class="message message--error" ng-show="$ctrl.state.requests.getDefaults.error">
-        An error occurred. <a href ng-click="$ctrl.stateService.initialize()">Try again.</a>
-    </span>
-</div>
-
 <div ng-if="$ctrl.state.requests.getDefaults.success">
-    <ul class="zem-campaign-launcher__step-indicator-container" ng-show="!$ctrl.isCurrentStep($ctrl.state.steps.objectives)">
+    <ul class="zem-campaign-launcher__step-indicator-container">
         <li ng-repeat="step in $ctrl.state.orderedSteps"
             class="zem-campaign-launcher__step-indicator"
             ng-class="{
                 'zem-campaign-launcher__step-indicator--current': $ctrl.isCurrentStep(step),
                 'zem-campaign-launcher__step-indicator--done': $ctrl.isStepDone(step),
             }">
-            {{step.stepIndicatorTitle}}
+            <div class="zem-campaign-launcher__step-title">{{step.stepIndicatorTitle}}</div>
         </li>
     </ul>
 
-    <div class="custom-panel">
-        <h2 class="custom-panel__title">{{$ctrl.state.currentStep.title}}</h2>
-        <div class="custom-panel__description">{{$ctrl.state.currentStep.description}}</div>
-
-        <zem-campaign-launcher-objectives ng-if="$ctrl.isCurrentStep($ctrl.state.steps.objectives)"
-                                          class="zem-campaign-launcher-objectives"
-                                          select-objective="$ctrl.stateService.initLauncherWithObjective(objective)">
+    <h1 class="content-container__title zem-campaign-launcher__title">{{$ctrl.state.currentStep.title}}</h1>
+    <div ng-if="$ctrl.isCurrentStep($ctrl.state.steps.objectives)">
+        <div class="zem-campaign-launcher__description">
+            <p>Hey there, let’s get started! Setting up the campaign is a breeze. Pick your main marketing objective so that we can:</p>
+            <ul class="list-with-bullets">
+                <li>Make the engine optimize the best for your objective.</li>
+                <li>Guide you through the necessary steps for your particular case.</li>
+            </ul>
+        </div>
+        <zem-campaign-launcher-objectives class="zem-campaign-launcher-objectives"
+                                          state-service="$ctrl.stateService">
         </zem-campaign-launcher-objectives>
-
-        <zem-campaign-launcher-general-settings ng-if="$ctrl.isCurrentStep($ctrl.state.steps.generalSettings)"
-                                                class="zem-campaign-launcher-general-settings"
+    </div>
+    <div ng-if="$ctrl.isCurrentStep($ctrl.state.steps.generalSettings)">
+        <div class="zem-campaign-launcher__description">
+            <p>Configure the cornerstone campaign settings. We’ll take care of ads and targeting later.</p>
+            <p>Don’t worry, you’ll always be able to change the settings later.</p>
+        </div>
+        <zem-campaign-launcher-general-settings class="zem-campaign-launcher-general-settings"
                                                 state-service="$ctrl.stateService"
                                                 account="$ctrl.account">
         </zem-campaign-launcher-general-settings>
-
-        <zem-campaign-launcher-targeting ng-if="$ctrl.isCurrentStep($ctrl.state.steps.targeting)"
-                                         class="zem-campaign-launcher-targeting"
-                                         state-service="$ctrl.stateService">
-        </zem-campaign-launcher-targeting>
-
-        <zem-campaign-launcher-creatives ng-if="$ctrl.isCurrentStep($ctrl.state.steps.creatives)"
-                                         class="zem-campaign-launcher-creatives"
+    </div>
+    <div ng-if="$ctrl.isCurrentStep($ctrl.state.steps.creatives)">
+        <div class="zem-campaign-launcher__description">
+            <p>Setup campaign creatives. Take your time here, this is where you make the most difference. Try configuring a few combinations to understand what works best.</p>
+        </div>
+        <zem-campaign-launcher-creatives class="zem-campaign-launcher-creatives"
                                          state-service="$ctrl.stateService">
         </zem-campaign-launcher-creatives>
-
-        <zem-campaign-launcher-review ng-if="$ctrl.isCurrentStep($ctrl.state.steps.review)"
-                                      class="zem-campaign-launcher-review"
+    </div>
+    <div ng-if="$ctrl.isCurrentStep($ctrl.state.steps.targeting)">
+        <div class="zem-campaign-launcher__description">
+            <p>Setup most basic targeting settings here. You can always revisit them once you launch the campaign.</p>
+        </div>
+        <zem-campaign-launcher-targeting class="zem-campaign-launcher-targeting"
+                                         state-service="$ctrl.stateService">
+        </zem-campaign-launcher-targeting>
+    </div>
+    <div ng-if="$ctrl.isCurrentStep($ctrl.state.steps.review)">
+        <div class="zem-campaign-launcher__description">
+            <p>Review and launch your campaign.</p>
+        </div>
+        <zem-campaign-launcher-review class="zem-campaign-launcher-review"
                                       state-service="$ctrl.stateService">
         </zem-campaign-launcher-review>
     </div>
 
-    <div class="buttons-panel">
+    <div class="buttons-panel clearfix">
         <div class="buttons-panel--right">
             <div class="loader" ng-show="false"></div>
 
@@ -93,4 +100,11 @@
             An error occurred during campaign launch. Please correct the errors and try again.
         </span>
     </div>
+</div>
+
+<div class="custom-panel" ng-if="$ctrl.state.requests.getDefaults.inProgress || $ctrl.state.requests.getDefaults.error">
+    <span class="loader" ng-show="$ctrl.state.requests.getDefaults.inProgress"></span>
+    <span class="message message--error" ng-show="$ctrl.state.requests.getDefaults.error">
+        An error occurred. <a href ng-click="$ctrl.stateService.initialize()">Try again.</a>
+    </span>
 </div>

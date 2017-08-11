@@ -11,13 +11,16 @@
                 <img class="content-upload__ad-image" ng-if="candidate.hostedImageUrl || candidate.imageUrl" ng-src="{{candidate.hostedImageUrl}}" />
             </td>
             <td class="content-upload__ad-title">
-                {{ candidate.title }}
-                <span ng-if="!candidate.title">Content ad title</span>
+                <div class="content-upload__ad-title--two-lines">
+                    <div>{{ candidate.title }}
+                        <span ng-if="!candidate.title">Content ad title</span>
+                    </div>
+                </div>
             </td>
             <td class="content-upload__ad-link">
                 {{ candidate.url }}
             </td>
-            <td>
+            <td class="content-upload__ad-error-container">
                 <div ng-if="$ctrl.getContentErrorsMsg(candidate)" class="content-upload__ad-error content-upload__ad-error--content">
                     {{ $ctrl.getContentErrorsMsg(candidate) }}
                 </div>

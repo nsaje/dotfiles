@@ -1,14 +1,12 @@
 angular.module('one.widgets').service('zemCampaignLauncherStateService', function ($timeout, zemCampaignLauncherEndpoint, zemNavigationNewService) { // eslint-disable-line max-len
     var LAUNCHER_STEPS = {
         objectives: {
-            title: 'What is your objective?',
+            title: 'Campaign launcher',
             stepIndicatorTitle: 'Objective',
-            description: 'Select your campaign\'s objective.',
         },
         generalSettings: {
             title: 'Campaign settings',
             stepIndicatorTitle: 'Settings',
-            description: 'Enter your campaign\'s general settings.',
             fields: [
                 {name: 'campaignName', required: true},
                 {name: 'iabCategory', required: true},
@@ -24,9 +22,8 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
             }
         },
         creatives: {
-            title: 'Creatives',
+            title: 'Campaign creatives',
             stepIndicatorTitle: 'Creatives',
-            description: 'Submit your creatives.',
             fields: [
                 {name: 'uploadBatchId', required: true},
             ],
@@ -37,9 +34,8 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
             }
         },
         targeting: {
-            title: 'Targeting',
+            title: 'Campaign targeting',
             stepIndicatorTitle: 'Targeting',
-            description: 'Setup your targeting.',
             fields: [
                 {name: 'targetRegions', required: false},
                 {name: 'exclusionTargetRegions', required: false},
@@ -54,9 +50,8 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
             }
         },
         review: {
-            title: 'Review & Launch',
+            title: 'Congratulations, you are all set!',
             stepIndicatorTitle: 'Review & Launch',
-            description: 'Review and launch campaign.',
             controls: {
                 previous: true,
                 launch: true,
@@ -93,14 +88,13 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
         this.launchCampaign = launchCampaign;
 
         function initialize () {
-            state.requests.getDefaults.inProgress = {
+            state.requests.getDefaults = {
                 inProgress: true,
             };
             zemCampaignLauncherEndpoint.getDefaults(account)
                 .then(function (response) {
                     defaults = response;
                     initLauncherWithObjective();
-                    state.currentStep = state.orderedSteps[0];
                     state.requests.getDefaults.success = true;
                 })
                 .catch(function () {
@@ -127,17 +121,19 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
 
         function initLauncherWithObjective (objective) {
             // TODO (jurebajt): Should we preserve fields' values after user changes objective?
-            if (state.campaignObjective !== objective) {
+            if (!state.campaignObjective || state.campaignObjective !== objective) {
                 state.campaignObjective = objective || null;
-                state.steps = angular.copy(LAUNCHER_STEPS),
-                state.orderedSteps = getOrderedSteps(state.steps, objective);
+                state.steps = angular.copy(LAUNCHER_STEPS);
+                state.orderedSteps = getOrderedSteps(state.steps);
                 state.fields = getDefaultFields(state.orderedSteps);
                 state.fieldsErrors = angular.copy(state.fields);
             }
 
+            var stepIndex = 0;
             if (state.campaignObjective && state.orderedSteps.length > 1) {
-                state.currentStep = state.orderedSteps[1];
+                stepIndex = 1;
             }
+            goToStepWithIndex(stepIndex);
         }
 
         function validateFields () {
@@ -220,18 +216,9 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
                 });
         }
 
-        function getOrderedSteps (steps, objective) {
-            var orderedSteps = [steps.objectives];
-
-            if (objective) {
-                orderedSteps = orderedSteps.concat(getDefaultOrderedSteps(steps));
-            }
-
-            return orderedSteps;
-        }
-
-        function getDefaultOrderedSteps (steps) {
+        function getOrderedSteps (steps) {
             return [
+                steps.objectives,
                 steps.generalSettings,
                 steps.creatives,
                 steps.targeting,

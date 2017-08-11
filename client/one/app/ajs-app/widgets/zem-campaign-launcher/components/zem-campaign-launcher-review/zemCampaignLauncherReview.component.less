@@ -1,5 +1,54 @@
+@creative-image-width: 180px;
+
 .zem-campaign-launcher-review__section:not(:last-child) {
-    margin-bottom: 15px;
-    padding-bottom: 12px;
+    margin-bottom: @default-spacing;
+    padding-bottom: @default-spacing;
     border-bottom: 1px solid @light-gray;
+}
+
+.zem-campaign-launcher-review__creatives-list {
+}
+
+.zem-campaign-launcher-review__creatives-list-item {
+    margin-bottom: @default-spacing;
+    border: 1px solid @light-gray;
+    padding: @default-spacing;
+    box-shadow: 0px 0px 3px 0px rgba(0,0,0,0.1);
+}
+
+.creative__title {
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.creative__brand-name {
+    color: @gray;
+    margin-bottom: 4px;
+}
+
+.creative__description {
+    margin-bottom: 4px;
+}
+
+.creative__display-url {
+    text-decoration: underline;
+    margin-bottom: @default-spacing;
+
+    a {
+        color: @blue;
+    }
+}
+
+.creative__button {
+
+}
+
+.creative__content-container {
+    width: 730px;
+    float: right;
+}
+
+.creative__image {
+    width: @creative-image-width;
+    float: left;
 }

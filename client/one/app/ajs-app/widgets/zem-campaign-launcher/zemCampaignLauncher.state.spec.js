@@ -21,13 +21,13 @@ describe('zemCampaignLauncherStateService', function () {
     });
 
     it('should initialize correctly', function () {
-        var mockedAsyncFunction = zemSpecsHelper.getMockedAsyncFunction($injector);
+        var mockedAsyncFunction = zemSpecsHelper.getMockedAsyncFunction($injector, {});
         var stateService = zemCampaignLauncherStateService.createInstance(account);
 
         spyOn(zemCampaignLauncherEndpoint, 'getDefaults').and.callFake(mockedAsyncFunction);
         stateService.initialize();
         $rootScope.$digest();
-        expect(stateService.getState().orderedSteps.length).toEqual(1);
+        expect(stateService.getState().orderedSteps.length).toEqual(5);
         expect(stateService.getState().currentStep).toEqual(stateService.getState().orderedSteps[0]);
     });
 
@@ -72,7 +72,7 @@ describe('zemCampaignLauncherStateService', function () {
         spyOn(zemCampaignLauncherEndpoint, 'getDefaults').and.callFake(mockedAsyncFunction);
         stateService.initialize();
         $rootScope.$digest();
-        expect(stateService.getState().orderedSteps.length).toEqual(1);
+        expect(stateService.getState().orderedSteps.length).toEqual(5);
         expect(stateService.getState().currentStep).toEqual(stateService.getState().orderedSteps[0]);
         expect(stateService.getState().campaignObjective).toEqual(null);
 
