@@ -32,7 +32,7 @@ DATABASES = {
     },
 }
 
-ALLOWED_HOSTS = ['eins']
+ALLOWED_HOSTS = ['eins', 'einsacceptance']
 
 BASE_URL = 'https://one.zemanta.com'
 
