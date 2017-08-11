@@ -304,11 +304,13 @@ class MVHelpersNormalizedStats(Materialize):
                 logger.info('Done insert into table "%s", job %s', self.TABLE_NAME, self.job_id)
 
     def prepare_insert_query(self):
+        yahoo = get_yahoo()
         params = helpers.get_local_multiday_date_context(self.date_from, self.date_to)
 
         sql = backtosql.generate_sql('etl_insert_mvh_clean_stats.sql', {
             'date_ranges': params.pop('date_ranges'),
             'account_id': self.account_id,
+            'yahoo_slug': yahoo.bidder_slug,
         })
 
         return sql, self._add_ad_group_id_param(params)
@@ -426,7 +428,7 @@ class MasterView(Materialize):
 
                 publisher = row.publisher
                 if source.id == self.yahoo.id:
-                    publisher = None
+                    publisher = 'all publishers'
                 elif publisher and source.id != self.outbrain.id:
                     publisher = publisher.lower()
 

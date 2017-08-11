@@ -44,10 +44,14 @@ angular.module('one.widgets').service('zemGridActionsService', function ($q, zem
         }
         function addPublisherActions (row, actions) {
             angular.copy(actions).forEach(function (action) {
-                if (row.data.stats.exchange
-                        && row.data.stats.exchange.value === constants.sourceTypeName.OUTBRAIN
-                        && action.level !== constants.publisherBlacklistLevel.ACCOUNT) {
-                    return;
+                if (row.data.stats.exchange) {
+                    if (row.data.stats.exchange.value === constants.sourceTypeName.YAHOO) {
+                        return;
+                    }
+                    if (row.data.stats.exchange.value === constants.sourceTypeName.OUTBRAIN
+                            && action.level !== constants.publisherBlacklistLevel.ACCOUNT) {
+                        return;
+                    }
                 }
                 action.action = executePublisherAction;
                 action.type = action.value;

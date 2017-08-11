@@ -32,9 +32,7 @@ class K1PostclickStats(backtosql.Model, RSBreakdownMixin):
     ad_group_id = backtosql.Column('ad_group_id', BREAKDOWN)
     content_ad_id = backtosql.Column('content_ad_id', BREAKDOWN)
     source_slug = backtosql.Column('source', BREAKDOWN)
-    publisher = backtosql.TemplateColumn('part_clean_publisher.sql', {
-        'column_name': 'publisher', 'source_column': 'source', 'yahoo_value': 'yahoo'
-    }, BREAKDOWN)
+    publisher = backtosql.Column('publisher', BREAKDOWN)
 
     visits = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'visits'}, AGGREGATES)
     new_visits = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'new_visits'}, AGGREGATES)

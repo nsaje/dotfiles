@@ -11,7 +11,7 @@ INSERT INTO mv_touchpointconversions (
         a.ad_group_id as ad_group_id,
         a.content_ad_id as content_ad_id,
         CASE WHEN a.source_id = {{ outbrain_id }} THEN a.publisher
-             WHEN a.source_id = {{ yahoo_id }} THEN NULL
+             WHEN a.source_id = {{ yahoo_id }} THEN 'all publishers'
              ELSE LOWER(a.publisher)
         END as publisher,
 

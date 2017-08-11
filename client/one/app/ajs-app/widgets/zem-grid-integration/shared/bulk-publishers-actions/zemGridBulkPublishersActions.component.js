@@ -66,6 +66,9 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
         }
 
         function getSupportedLevels () {
+            if (isYahooPublisherSelected()) {
+                return [];
+            }
             if (isOutbrainPublisherSelected()) {
                 return [constants.publisherBlacklistLevel.ACCOUNT];
             }
@@ -82,6 +85,14 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
             }
 
             return getSelectedPublishers(constants.sourceTypeName.OUTBRAIN) > 0;
+        }
+
+        function isYahooPublisherSelected () {
+            if ($ctrl.api.getSelection().type === zemGridConstants.gridSelectionFilterType.ALL) {
+                return true;
+            }
+
+            return getSelectedPublishers(constants.sourceTypeName.YAHOO) > 0;
         }
 
         function getSelectedPublishers (exchange) {

@@ -15,7 +15,9 @@ INSERT INTO mvh_clean_stats (
       content_ad_id,
 
       -- no outbrain publishers here
-      LOWER(publisher),
+      CASE
+          WHEN media_source = '{{ yahoo_slug }}' THEN 'all publishers' ELSE LOWER(publisher)
+      END as publisher,
 
       -- check dash/constants.py DeviceType for correct setting.
       -- OpenRTB values:

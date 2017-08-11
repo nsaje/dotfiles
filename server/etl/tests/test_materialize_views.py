@@ -333,7 +333,9 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                     stats.media_source as source_slug,
                     ad_group_id,
                     content_ad_id,
-                    LOWER(publisher),
+                    CASE
+                        WHEN media_source = 'yahoo' THEN 'all publishers' ELSE LOWER(publisher)
+                    END as publisher,
                     CASE
                         WHEN device_type = 4 THEN 3
                         WHEN device_type = 2 THEN 1
@@ -481,7 +483,9 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                     stats.media_source as source_slug,
                     ad_group_id,
                     content_ad_id,
-                    LOWER(publisher),
+                    CASE
+                        WHEN media_source = 'yahoo' THEN 'all publishers' ELSE LOWER(publisher)
+                    END as publisher,
                     CASE
                         WHEN device_type = 4 THEN 3
                         WHEN device_type = 2 THEN 1
@@ -662,7 +666,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                     type AS postclick_source,
                     content_ad_id AS content_ad_id,
                     source AS source_slug,
-                    CASE WHEN source = 'yahoo' THEN NULL ELSE publisher END AS publisher,
+                    publisher AS publisher,
                     SUM(bounced_visits) bounced_visits,
                     json_dict_sum(LISTAGG(conversions, ';'), ';') AS conversions,
                     SUM(new_visits) new_visits,
@@ -797,7 +801,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
             type AS postclick_source,
             content_ad_id AS content_ad_id,
             source AS source_slug,
-            CASE WHEN source = 'yahoo' THEN NULL ELSE publisher END AS publisher,
+            publisher AS publisher,
             SUM(bounced_visits) bounced_visits,
             json_dict_sum(LISTAGG(conversions, ';'), ';') AS conversions,
             SUM(new_visits) new_visits,
@@ -909,7 +913,7 @@ class MasterViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
                     type AS postclick_source,
                     content_ad_id AS content_ad_id,
                     source AS source_slug,
-                    CASE WHEN source = 'yahoo' THEN NULL ELSE publisher END AS publisher,
+                    publisher AS publisher,
                     SUM(bounced_visits) bounced_visits,
                     json_dict_sum(LISTAGG(conversions, ';'), ';') AS conversions,
                     SUM(new_visits) new_visits,
@@ -971,7 +975,7 @@ class MasterViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
             type AS postclick_source,
             content_ad_id AS content_ad_id,
             source AS source_slug,
-            CASE WHEN source = 'yahoo' THEN NULL ELSE publisher END AS publisher,
+            publisher AS publisher,
             SUM(bounced_visits) bounced_visits,
             json_dict_sum(LISTAGG(conversions, ';'), ';') AS conversions,
             SUM(new_visits) new_visits,
@@ -1018,7 +1022,7 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
                     type AS postclick_source,
                     content_ad_id AS content_ad_id,
                     source AS source_slug,
-                    CASE WHEN source = 'yahoo' THEN NULL ELSE publisher END AS publisher,
+                    publisher AS publisher,
                     SUM(bounced_visits) bounced_visits,
                     json_dict_sum(LISTAGG(conversions, ';'), ';') AS conversions,
                     SUM(new_visits) new_visits,
@@ -1131,7 +1135,7 @@ class MVConversionsTestAccountId(TestCase, backtosql.TestSQLMixin):
                     type AS postclick_source,
                     content_ad_id AS content_ad_id,
                     source AS source_slug,
-                    CASE WHEN source = 'yahoo' THEN NULL ELSE publisher END AS publisher,
+                    publisher AS publisher,
                     SUM(bounced_visits) bounced_visits,
                     json_dict_sum(LISTAGG(conversions, ';'), ';') AS conversions,
                     SUM(new_visits) new_visits,
@@ -1209,7 +1213,7 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
                     a.ad_group_id as ad_group_id,
                     a.content_ad_id as content_ad_id,
                     CASE WHEN a.source_id = 3 THEN a.publisher
-                         WHEN a.source_id = 4 THEN NULL
+                         WHEN a.source_id = 4 THEN 'all publishers'
                          ELSE LOWER(a.publisher)
                     END as publisher,
                     a.slug as slug,
@@ -1281,7 +1285,7 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
                     a.ad_group_id as ad_group_id,
                     a.content_ad_id as content_ad_id,
                     CASE WHEN a.source_id = 3 THEN a.publisher
-                         WHEN a.source_id = 4 THEN NULL
+                         WHEN a.source_id = 4 THEN 'all publishers'
                          ELSE LOWER(a.publisher)
                     END as publisher,
                     a.slug as slug,
