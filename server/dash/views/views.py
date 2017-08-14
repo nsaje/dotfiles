@@ -635,7 +635,7 @@ class AdGroupSources(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.ad_group_sources_add_source'):
             raise exc.MissingDataError()
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
 
         source_id = json.loads(request.body)['source_id']
         source = models.Source.objects.get(id=source_id)

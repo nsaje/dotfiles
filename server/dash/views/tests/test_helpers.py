@@ -958,6 +958,7 @@ class SetAdGroupSourceTest(TestCase):
     def prepare_ad_group_source(self):
         ad_group_settings = models.AdGroupSettings.objects.get(pk=6)
         source_settings = models.DefaultSourceSettings.objects.get(pk=1)
+        ad_group_settings.ad_group.campaign.account.allowed_sources.add(source_settings.source)
         ad_group_source = models.AdGroupSource.objects.create(None, ad_group_settings.ad_group, source_settings.source, write_history=False, k1_sync=False)
         return ad_group_source, source_settings
 

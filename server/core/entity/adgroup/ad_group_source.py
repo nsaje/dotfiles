@@ -37,6 +37,11 @@ class AdGroupSourceManager(core.common.QuerySetManager):
     def create(self, request, ad_group, source, write_history=True, k1_sync=True, **updates):
         ad_group_settings = ad_group.get_current_settings()
 
+        if not ad_group.campaign.account.allowed_sources.filter(pk=source.id).exists():
+            raise utils.exc.ValidationError(
+                '{} media source can not be added to this account.'.format(source.name)
+            )
+
         if AdGroupSource.objects.filter(source=source, ad_group=ad_group).exists():
             raise utils.exc.ValidationError(
                 '{} media source for ad group {} already exists.'.format(source.name, ad_group.id))

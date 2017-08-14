@@ -16,16 +16,21 @@ import utils.exc
 class AdGroupSourceCreate(TestCase):
     def setUp(self):
         self.request = magic_mixer.blend_request_user()
+        self.default_source_settings = magic_mixer.blend(
+            core.source.DefaultSourceSettings,
+            source__maintenance=False,
+            credentials=magic_mixer.RANDOM,
+        )
+        self.ad_group = magic_mixer.blend(
+            core.entity.AdGroup,
+            campaign__account__allowed_sources=[self.default_source_settings.source],
+        )
 
     def test_create(self, mock_k1):
-        default_source_settings = magic_mixer.blend(
-            core.source.DefaultSourceSettings, source__maintenance=False, credentials=magic_mixer.RANDOM)
-        ad_group = magic_mixer.blend(core.entity.AdGroup)
-
         ad_group_source = core.entity.AdGroupSource.objects.create(
-            self.request, ad_group, default_source_settings.source)
+            self.request, self.ad_group, self.default_source_settings.source)
 
-        self.assertEqual(ad_group_source.source, default_source_settings.source)
+        self.assertEqual(ad_group_source.source, self.default_source_settings.source)
         self.assertTrue(mock_k1.called)
 
         ad_group_source_settings = core.entity.settings.AdGroupSourceSettings.objects.filter(
@@ -33,20 +38,16 @@ class AdGroupSourceCreate(TestCase):
         self.assertEqual([x.state for x in ad_group_source_settings], [constants.AdGroupSourceSettingsState.ACTIVE])
 
     def test_create_with_update(self, mock_k1):
-        default_source_settings = magic_mixer.blend(
-            core.source.DefaultSourceSettings, source__maintenance=False, credentials=magic_mixer.RANDOM)
-        ad_group = magic_mixer.blend(core.entity.AdGroup)
-
         ad_group_source = core.entity.AdGroupSource.objects.create(
             self.request,
-            ad_group,
-            default_source_settings.source,
+            self.ad_group,
+            self.default_source_settings.source,
             state=constants.AdGroupSourceSettingsState.INACTIVE,
             cpc_cc=decimal.Decimal('0.13'),
             daily_budget_cc=decimal.Decimal('5.2'),
         )
 
-        self.assertEqual(ad_group_source.source, default_source_settings.source)
+        self.assertEqual(ad_group_source.source, self.default_source_settings.source)
         self.assertTrue(mock_k1.called)
 
         new_settings = ad_group_source.get_current_settings()
@@ -55,67 +56,53 @@ class AdGroupSourceCreate(TestCase):
         self.assertEqual(decimal.Decimal('5.2'), new_settings.daily_budget_cc)
 
     def test_create_already_exists(self, mock_k1):
-        default_source_settings = magic_mixer.blend(
-            core.source.DefaultSourceSettings,
-            source__maintenance=False,
-            credentials=magic_mixer.RANDOM,
-        )
-        ad_group = magic_mixer.blend(core.entity.AdGroup)
         magic_mixer.blend(
             core.entity.AdGroupSource,
-            ad_group=ad_group,
-            source=default_source_settings.source,
+            ad_group=self.ad_group,
+            source=self.default_source_settings.source,
         )
 
         with self.assertRaises(utils.exc.ValidationError):
             core.entity.AdGroupSource.objects.create(
-                self.request, ad_group, default_source_settings.source)
+                self.request, self.ad_group, self.default_source_settings.source)
+
+    def test_create_not_on_account(self, mock_k1):
+        self.ad_group.campaign.account.allowed_sources.remove(self.default_source_settings.source)
+
+        with self.assertRaises(utils.exc.ValidationError):
+            core.entity.AdGroupSource.objects.create(
+                self.request, self.ad_group, self.default_source_settings.source)
 
     @patch('dash.retargeting_helper.can_add_source_with_retargeting')
     def test_create_retargeting(self, mock_retargeting, mock_k1):
         mock_retargeting.return_value = False
-        default_source_settings = magic_mixer.blend(
-            core.source.DefaultSourceSettings,
-            source__maintenance=False,
-            credentials=magic_mixer.RANDOM,
-        )
-        ad_group = magic_mixer.blend(core.entity.AdGroup)
-        ad_group_settings = ad_group.get_current_settings()
+        ad_group_settings = self.ad_group.get_current_settings()
         ad_group_settings.save(None)
 
         with self.assertRaises(utils.exc.ValidationError):
             core.entity.AdGroupSource.objects.create(
-                self.request, ad_group, default_source_settings.source)
+                self.request, self.ad_group, self.default_source_settings.source)
 
-        mock_retargeting.assert_called_once_with(default_source_settings.source, ad_group.get_current_settings())
+        mock_retargeting.assert_called_once_with(self.default_source_settings.source, self.ad_group.get_current_settings())
 
     def test_bulk_create_on_allowed_sources(self, mock_k1):
-        default_source_settings = magic_mixer.blend(
-            core.source.DefaultSourceSettings, source__maintenance=False, credentials=magic_mixer.RANDOM)
-        account = magic_mixer.blend(core.entity.Account, allowed_sources=[default_source_settings.source])
-        ad_group = magic_mixer.blend(core.entity.AdGroup, campaign__account=account)
-
         ad_group_sources = core.entity.AdGroupSource.objects.bulk_create_on_allowed_sources(
-            self.request, ad_group, write_history=False)
+            self.request, self.ad_group, write_history=False)
 
-        self.assertEqual([x.source for x in ad_group_sources], [default_source_settings.source])
+        self.assertEqual([x.source for x in ad_group_sources], [self.default_source_settings.source])
         self.assertTrue(mock_k1.called)
 
         ad_group_source_settings = core.entity.settings.AdGroupSourceSettings.objects.filter(
-            ad_group_source__ad_group=ad_group).group_current_settings()
+            ad_group_source__ad_group=self.ad_group).group_current_settings()
         self.assertEqual([x.state for x in ad_group_source_settings], [constants.AdGroupSourceSettingsState.ACTIVE])
 
     def test_bulk_create_on_allowed_sources_maintenance(self, mock_k1):
-        default_source_settings = magic_mixer.blend(
-            core.source.DefaultSourceSettings,
-            source__maintenance=True,
-            credentials=magic_mixer.RANDOM)
+        self.default_source_settings.source.maintenance = True
+        self.default_source_settings.source.save()
         request = magic_mixer.blend_request_user()
-        account = magic_mixer.blend(core.entity.Account, allowed_sources=[default_source_settings.source])
-        ad_group = magic_mixer.blend(core.entity.AdGroup, campaign__account=account)
 
         ad_group_sources = core.entity.AdGroupSource.objects.bulk_create_on_allowed_sources(
-            request, ad_group, write_history=False)
+            request, self.ad_group, write_history=False)
 
         self.assertItemsEqual(ad_group_sources, [])
         self.assertFalse(mock_k1.called)
