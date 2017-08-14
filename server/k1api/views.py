@@ -753,9 +753,11 @@ class AdGroupSourcesView(K1APIView):
         settings_changed = False
         for key, val in data.items():
             if key == 'cpc_cc':
+                logger.error('K1API - unexpected update of ad group source cpc_cc')
                 new_settings.cpc_cc = converters.cc_to_decimal(val)
                 settings_changed = True
             elif key == 'daily_budget_cc':
+                logger.error('K1API - unexpected update of ad group source daily_budget_cc')
                 new_settings.daily_budget_cc = converters.cc_to_decimal(val)
                 settings_changed = True
             elif key == 'state':
