@@ -42,7 +42,7 @@ class Command(ExceptionCommand):
     def _generate_output_csv(self, ad_groups, sources, conversions_data, oen_pub_group):
 
         output = cStringIO.StringIO()
-        writer = unicodecsv.writer(output, encoding='utf-8', delimiter=';')
+        writer = unicodecsv.writer(output, encoding='utf-8', delimiter='\t')
         writer.writerow(EXPECTED_COLS)
 
         s3_helper = s3helpers.S3Helper(S3_BUCKET_B1_ML)
@@ -72,7 +72,7 @@ class Command(ExceptionCommand):
 
             oen_pubs = oen_pub_group.entries.filter(publisher__in=[out['publisher'], 'www.' + out['publisher']],
                                                     source=sources[out['source']])
-            out['ob_pub_id'] = ','.join(set([p.outbrain_publisher_id for p in oen_pubs]))
+            out['ob_pub_id'] = '-'.join(set([p.outbrain_publisher_id for p in oen_pubs]))
 
             key = ','.join([str(out['adgroup']), str(sources[out['source']].id), out['publisher']])
             current_data = conversions_data.get(key, {})
