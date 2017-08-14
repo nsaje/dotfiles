@@ -28,11 +28,13 @@ NEW_MATERIALIZED_VIEWS = [
     materialize_views.MVHelpersCampaignFactors,
     materialize_views.MVHelpersNormalizedStats,
 
+    # Must be done before master, it is used there to generate empty rows for conversions
+    materialize_views.MVTouchpointConversions,
+
     materialize_views.MasterView,
     materialize_views.MasterPublishersView,
 
     materialize_views.MVConversions,
-    materialize_views.MVTouchpointConversions,
 
     # Derived views from master - from broder to narrower breakdown
     materialize_views.MVContentAdDeliveryGeo,

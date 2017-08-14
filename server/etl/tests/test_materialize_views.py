@@ -594,64 +594,75 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         insert_into_master_sql = backtosql.SQLMatcher("""
             INSERT INTO mv_master
                 (SELECT
-                    a.date as date,
-                    b.source_id as source_id,
+                    d.date as date,
+                    d.source_id as source_id,
                     c.agency_id as agency_id,
                     c.account_id as account_id,
                     c.campaign_id as campaign_id,
-                    a.ad_group_id as ad_group_id,
-                    a.content_ad_id as content_ad_id,
-                    a.publisher as publisher,
-                    a.device_type as device_type,
-                    a.country as country,
-                    a.state as state,
-                    a.dma as dma,
-                    a.age as age,
-                    a.gender as gender,
-                    a.age_gender as age_gender,
-                    a.impressions as impressions,
-                    a.clicks as clicks,
-                    a.spend::bigint * 1000 as cost_nano,
-                    a.data_spend::bigint * 1000 as data_cost_nano,
+                    d.ad_group_id as ad_group_id,
+                    d.content_ad_id as content_ad_id,
+                    d.publisher as publisher,
+                    d.device_type as device_type,
+                    d.country as country,
+                    d.state as state,
+                    d.dma as dma,
+                    d.age as age,
+                    d.gender as gender,
+                    d.age_gender as age_gender,
+                    d.impressions as impressions,
+                    d.clicks as clicks,
+                    d.spend::bigint * 1000 as cost_nano,
+                    d.data_spend::bigint * 1000 as data_cost_nano,
                     null as visits,
                     null as new_visits,
                     null as bounced_visits,
                     null as pageviews,
                     null as total_time_on_site,
-                    round(a.spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as effective_cost_nano,
-                    round(a.data_spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as effective_data_cost_nano,
+                    round(d.spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as effective_cost_nano,
+                    round(d.data_spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as effective_data_cost_nano,
                     round( (
-                        (nvl(a.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                        (nvl(a.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+                        (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                        (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
                     ) * cf.pct_license_fee::decimal(10, 8) * 1000
                     ) as license_fee_nano,
                     round(
                         (
-                            (nvl(a.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                            (nvl(a.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                            (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                            (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
                             (
-                                (nvl(a.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                                (nvl(a.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+                                (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                                (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
                             ) * cf.pct_license_fee::decimal(10, 8)
                         ) * cf.pct_margin::decimal(10, 8) * 1000
                     ) as margin_nano,
                     null as users,
                     null as returning_users,
 
-                    a.city_id as city_id,
+                    d.city_id as city_id,
 
-                    a.placement_type as placement_type,
-                    a.video_playback_method as video_playback_method,
-                    a.video_start as video_start,
-                    a.video_first_quartile as video_first_quartile,
-                    a.video_midpoint as video_midpoint,
-                    a.video_third_quartile as video_third_quartile,
-                    a.video_complete as video_complete,
-                    a.video_progress_3s as video_progress_3s
-                FROM ( (mvh_clean_stats a left outer join mvh_source b on a.source_slug=b.bidder_slug)
-                    join mvh_adgroup_structure c on a.ad_group_id=c.ad_group_id )
-                        join mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and a.date=cf.date
-                WHERE a.date=%(date)s);
+                    d.placement_type as placement_type,
+                    d.video_playback_method as video_playback_method,
+                    d.video_start as video_start,
+                    d.video_first_quartile as video_first_quartile,
+                    d.video_midpoint as video_midpoint,
+                    d.video_third_quartile as video_third_quartile,
+                    d.video_complete as video_complete,
+                    d.video_progress_3s as video_progress_3s
+                FROM
+                    (
+                      (mvh_clean_stats a left outer join mvh_source b on a.source_slug=b.bidder_slug)
+                      natural full outer join (
+                        SELECT
+                          date, source_id, ad_group_id, content_ad_id,
+                          CASE WHEN source_id = 3 THEN NULL ELSE publisher END AS publisher
+                        FROM mv_touchpointconversions
+                        WHERE date=%(date)s
+                        GROUP BY 1, 2, 3, 4, 5
+                      ) tpc
+                    ) d
+                    join mvh_adgroup_structure c on d.ad_group_id=c.ad_group_id
+                    join mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and d.date=cf.date
+                WHERE d.date=%(date)s);
             """)
 
         mock_cursor().__enter__().execute.assert_has_calls([
@@ -841,64 +852,76 @@ class MasterViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
         insert_into_master_sql = backtosql.SQLMatcher("""
             INSERT INTO mv_master
                 (SELECT
-                    a.date as date,
-                    b.source_id as source_id,
+                    d.date as date,
+                    d.source_id as source_id,
                     c.agency_id as agency_id,
                     c.account_id as account_id,
                     c.campaign_id as campaign_id,
-                    a.ad_group_id as ad_group_id,
-                    a.content_ad_id as content_ad_id,
-                    a.publisher as publisher,
-                    a.device_type as device_type,
-                    a.country as country,
-                    a.state as state,
-                    a.dma as dma,
-                    a.age as age,
-                    a.gender as gender,
-                    a.age_gender as age_gender,
-                    a.impressions as impressions,
-                    a.clicks as clicks,
-                    a.spend::bigint * 1000 as cost_nano,
-                    a.data_spend::bigint * 1000 as data_cost_nano,
+                    d.ad_group_id as ad_group_id,
+                    d.content_ad_id as content_ad_id,
+                    d.publisher as publisher,
+                    d.device_type as device_type,
+                    d.country as country,
+                    d.state as state,
+                    d.dma as dma,
+                    d.age as age,
+                    d.gender as gender,
+                    d.age_gender as age_gender,
+                    d.impressions as impressions,
+                    d.clicks as clicks,
+                    d.spend::bigint * 1000 as cost_nano,
+                    d.data_spend::bigint * 1000 as data_cost_nano,
                     null as visits,
                     null as new_visits,
                     null as bounced_visits,
                     null as pageviews,
                     null as total_time_on_site,
-                    round(a.spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as effective_cost_nano,
-                    round(a.data_spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as effective_data_cost_nano,
+                    round(d.spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as effective_cost_nano,
+                    round(d.data_spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as effective_data_cost_nano,
                     round( (
-                        (nvl(a.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                        (nvl(a.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+                        (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                        (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
                     ) * cf.pct_license_fee::decimal(10, 8) * 1000
                     ) as license_fee_nano,
                     round(
                         (
-                            (nvl(a.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                            (nvl(a.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                            (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                            (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
                             (
-                                (nvl(a.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                                (nvl(a.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+                                (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                                (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
                             ) * cf.pct_license_fee::decimal(10, 8)
                         ) * cf.pct_margin::decimal(10, 8) * 1000
                     ) as margin_nano,
                     null as users,
                     null as returning_users,
 
-                    a.city_id as city_id,
+                    d.city_id as city_id,
 
-                    a.placement_type as placement_type,
-                    a.video_playback_method as video_playback_method,
-                    a.video_start as video_start,
-                    a.video_first_quartile as video_first_quartile,
-                    a.video_midpoint as video_midpoint,
-                    a.video_third_quartile as video_third_quartile,
-                    a.video_complete as video_complete,
-                    a.video_progress_3s as video_progress_3s
-                FROM ( (mvh_clean_stats a left outer join mvh_source b on a.source_slug=b.bidder_slug)
-                    join mvh_adgroup_structure c on a.ad_group_id=c.ad_group_id )
-                        join mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and a.date=cf.date
-                WHERE a.date=%(date)s AND c.account_id=%(account_id)s);
+                    d.placement_type as placement_type,
+                    d.video_playback_method as video_playback_method,
+                    d.video_start as video_start,
+                    d.video_first_quartile as video_first_quartile,
+                    d.video_midpoint as video_midpoint,
+                    d.video_third_quartile as video_third_quartile,
+                    d.video_complete as video_complete,
+                    d.video_progress_3s as video_progress_3s
+                FROM
+                (
+                  (mvh_clean_stats a left outer join mvh_source b on a.source_slug=b.bidder_slug)
+                  natural full outer join (
+                    SELECT
+                      date, source_id, ad_group_id, content_ad_id,
+                      CASE WHEN source_id = 3 THEN NULL ELSE publisher END AS publisher
+                    FROM mv_touchpointconversions
+                    WHERE date=%(date)s
+                      AND account_id=%(account_id)s
+                    GROUP BY 1, 2, 3, 4, 5
+                  ) tpc
+                ) d
+                join mvh_adgroup_structure c on d.ad_group_id=c.ad_group_id
+                join mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and d.date=cf.date
+                WHERE d.date=%(date)s AND c.account_id=%(account_id)s);
             """)
 
         mock_cursor().__enter__().execute.assert_has_calls([
