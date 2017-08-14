@@ -3,7 +3,7 @@
 Fabric==1.9.0
 
 # tests in circle ci
-coverage==3.7.1
+coverage==4.4.1
 
 # for visualizing project models, shell_plus, ipython with app context etc.
 django-extensions==1.6.1
