@@ -340,9 +340,9 @@ def _populate_prefetch_adgroup_source_data(ag_source, ag_source_setting, yesterd
     data = {}
     budget = ag_source_setting.daily_budget_cc if ag_source_setting.daily_budget_cc else\
         ag_source.source.source_type.min_daily_budget
-    data['yesterdays_spend_cc'] = yesterdays_spend_cc
-    data['yesterdays_clicks'] = yesterdays_clicks
-    data['old_budget'] = budget
+    data['yesterdays_spend_cc'] = yesterdays_spend_cc or 0
+    data['yesterdays_clicks'] = yesterdays_clicks or 0
+    data['old_budget'] = budget or 0
     data['old_cpc_cc'] = ag_source_setting.cpc_cc if ag_source_setting.cpc_cc else\
         ag_source.source.default_cpc_cc
     data['spend_perc'] = yesterdays_spend_cc / budget
