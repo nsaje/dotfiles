@@ -102,11 +102,11 @@ class Command(ExceptionCommand):
             key = ','.join([str(d['ad_group_id']), str(d['source_id']), pub])
             if key in conversions_data:
                 conversions_data[key]['conversions'] += d.get('pixel_844_2160', 0) or 0
-                conversions_data[key]['media_spend'] += float(d.get('media_cost', 0.0)) or 0.0
+                conversions_data[key]['media_spend'] += float(d.get('media_cost', 0.0) or 0.0)
             else:
                 conversions_data[key] = {
                     'conversions': d.get('pixel_844_2160', 0) or 0,
-                    'media_spend': float(d.get('media_cost', 0.0)) or 0.0,
+                    'media_spend': float(d.get('media_cost', 0.0) or 0.0),
                 }
 
         return conversions_data
