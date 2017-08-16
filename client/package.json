@@ -60,6 +60,6 @@
     "prod": "NODE_ENV=production webpack",
     "tests": "NODE_ENV=test karma start karma.conf.js",
     "tests-watch": "NODE_ENV=test karma start karma.conf.js --auto-watch --no-single-run",
-    "lint": "eslint one --format codeframe; tslint --project tsconfig.json --format codeFrame"
+    "lint": "eslint one --format codeframe && tslint --project tsconfig.json --format codeFrame"
   }
 }
