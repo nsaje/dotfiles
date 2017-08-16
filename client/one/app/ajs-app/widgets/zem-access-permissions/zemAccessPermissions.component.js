@@ -1,3 +1,5 @@
+require('./zemAccessPermissions.component.less');
+
 angular.module('one').component('zemAccessPermissions', {
     bindings: {
         entity: '<',

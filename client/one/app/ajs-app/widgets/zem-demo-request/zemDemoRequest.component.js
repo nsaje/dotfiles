@@ -1,3 +1,5 @@
+require('./zemDemoRequest.component.less');
+
 angular.module('one.widgets').component('zemDemoRequest', {
     bindings: {
         modalInstance: '<',

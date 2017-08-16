@@ -1,3 +1,5 @@
+require('./zemContentInsights.component.less');
+
 angular.module('one.widgets').component('zemContentInsights', {
     bindings: {
         entity: '<'

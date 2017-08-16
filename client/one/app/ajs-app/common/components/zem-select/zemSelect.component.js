@@ -1,3 +1,5 @@
+require('./zemSelect.component.less');
+
 angular.module('one.common').component('zemSelect', {
     bindings: {
         selectedId: '<',

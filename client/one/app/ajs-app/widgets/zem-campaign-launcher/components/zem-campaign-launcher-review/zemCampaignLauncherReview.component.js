@@ -1,3 +1,5 @@
+require('./zemCampaignLauncherReview.component.less');
+
 angular.module('one').component('zemCampaignLauncherReview', {
     bindings: {
         stateService: '=',

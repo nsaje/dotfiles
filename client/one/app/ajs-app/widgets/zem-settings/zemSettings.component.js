@@ -1,3 +1,5 @@
+require('./zemSettings.component.less');
+
 angular.module('one.widgets').component('zemSettings', {
     template: require('./zemSettings.component.html'),
     controller: function ($timeout, $state, hotkeys, zemSettingsService, zemEntityService) {

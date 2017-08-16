@@ -1,3 +1,5 @@
+require('./zemSidePanel.component.less');
+
 angular.module('one.common').component('zemSidePanel', {
     transclude: true,
     bindings: {

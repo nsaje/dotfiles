@@ -1,3 +1,5 @@
+require('./zemTreeSelect.component.less');
+
 angular.module('one.common').component('zemTreeSelect', {
     bindings: {
         rootNode: '<',

@@ -1,3 +1,5 @@
+require('./zemCampaignLauncherGeneralSettings.component.less');
+
 angular.module('one').component('zemCampaignLauncherGeneralSettings', {
     bindings: {
         stateService: '<',

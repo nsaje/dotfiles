@@ -1,3 +1,5 @@
+require('./zemReportQueryConfig.component.less');
+
 angular.module('one.widgets').component('zemReportQueryConfig', {
     bindings: {
         gridApi: '<',

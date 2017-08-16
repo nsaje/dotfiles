@@ -1,3 +1,5 @@
+require('./zemCampaignLauncher.component.less');
+
 angular.module('one').component('zemCampaignLauncher', {
     bindings: {
         account: '<',

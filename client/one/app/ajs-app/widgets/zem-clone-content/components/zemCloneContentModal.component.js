@@ -1,3 +1,5 @@
+require('./zemCloneContentModal.component.less');
+
 angular.module('one.widgets').component('zemCloneContentModal', {
     bindings: {
         resolve: '<',

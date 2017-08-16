@@ -1,3 +1,5 @@
+require('./zemChart.component.less');
+
 angular.module('one.widgets').component('zemChart', {
     bindings: {
         level: '<',

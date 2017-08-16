@@ -1,3 +1,5 @@
+require('./zemScheduledReports.component.less');
+
 angular.module('one.widgets').component('zemScheduledReports', {
     bindings: {
         account: '<',

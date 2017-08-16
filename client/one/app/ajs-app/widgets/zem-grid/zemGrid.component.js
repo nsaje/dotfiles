@@ -1,3 +1,5 @@
+require('./zemGrid.component.less');
+
 angular.module('one.widgets').component('zemGrid', {
     bindings: {
         dataSource: '<',

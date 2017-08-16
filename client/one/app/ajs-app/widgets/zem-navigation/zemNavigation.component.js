@@ -1,3 +1,5 @@
+require('./zemNavigation.component.less');
+
 angular.module('one.widgets').component('zemNavigation', {
     template: require('./zemNavigation.component.html'),
     controller: function ($scope, $element, $timeout, hotkeys, zemPermissions, zemNavigationUtils, zemNavigationNewService, zemDataFilterService) { // eslint-disable-line max-len

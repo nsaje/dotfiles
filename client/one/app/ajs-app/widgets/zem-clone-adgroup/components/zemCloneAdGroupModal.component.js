@@ -1,3 +1,5 @@
+require('./zemCloneAdGroupModal.component.less');
+
 angular.module('one.widgets').component('zemCloneAdGroupModal', {
     bindings: {
         resolve: '<',

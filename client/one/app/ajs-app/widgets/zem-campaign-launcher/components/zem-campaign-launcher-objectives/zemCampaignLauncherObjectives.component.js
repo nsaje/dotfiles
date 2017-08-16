@@ -1,3 +1,5 @@
+require('./zemCampaignLauncherObjectives.component.less');
+
 angular.module('one').component('zemCampaignLauncherObjectives', {
     bindings: {
         stateService: '=',

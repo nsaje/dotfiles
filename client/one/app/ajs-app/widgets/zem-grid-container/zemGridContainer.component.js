@@ -1,3 +1,5 @@
+require('./zemGridContainer.component.less');
+
 angular.module('one.widgets').component('zemGridContainer', {
     template: require('./zemGridContainer.component.html'),
     bindings: {

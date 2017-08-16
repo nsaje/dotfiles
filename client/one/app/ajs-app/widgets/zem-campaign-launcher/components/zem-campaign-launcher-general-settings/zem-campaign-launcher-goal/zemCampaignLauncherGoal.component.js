@@ -1,3 +1,5 @@
+require('./zemCampaignLauncherGoal.component.less');
+
 angular.module('one.widgets').component('zemCampaignLauncherGoal', {
     bindings: {
         stateService: '<',

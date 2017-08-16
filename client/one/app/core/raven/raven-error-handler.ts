@@ -1,7 +1,16 @@
+import {APP_CONFIG} from '../config/app.config';
 import {ErrorHandler} from '@angular/core';
 
-export class RavenErrorHandler implements ErrorHandler {
+export class RavenErrorHandler extends ErrorHandler {
+    constructor () {
+        super();
+    }
+
     handleError (error: Error): void {
-        (<any>window).Raven.captureException(error); // tslint:disable-line
+        if (APP_CONFIG.env.prod) {
+            (<any>window).Raven.captureException(error); // tslint:disable-line
+        } else {
+            super.handleError(error);
+        }
     }
 }

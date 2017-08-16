@@ -1,3 +1,5 @@
+require('./zemAccountCredit.component.less');
+
 angular.module('one').component('zemAccountCredit', {
     bindings: {
         account: '<',

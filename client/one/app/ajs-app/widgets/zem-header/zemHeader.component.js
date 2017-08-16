@@ -1,3 +1,5 @@
+require('./zemHeader.component.less');
+
 angular.module('one.widgets').component('zemHeader', {
     template: require('./zemHeader.component.html'),
     controller: function ($window, config, NgZone) {

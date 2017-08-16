@@ -23,7 +23,9 @@ globals:
   afterEach: false
   expect: false
   spyOn: false
+  # Webpack and CommonJS
   require: false
+  process: false
 
 rules:
   indent:

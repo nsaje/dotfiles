@@ -1,3 +1,5 @@
+require('./zemInfobox.component.less');
+
 angular.module('one.widgets').component('zemInfobox', {
     bindings: {
         entity: '<',

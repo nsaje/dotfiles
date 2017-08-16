@@ -1,3 +1,5 @@
+require('./zemToasts.component.less');
+
 angular.module('one.widgets').component('zemToasts', {
     template: require('./zemToasts.component.html'),
     controller: function ($timeout, zemToastsService) {

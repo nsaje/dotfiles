@@ -1,3 +1,5 @@
+require('./zemAlerts.component.less');
+
 angular.module('one.widgets').component('zemAlerts', {
     bindings: {
         entity: '<',

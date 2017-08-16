@@ -1,3 +1,5 @@
+require('./zemGridIntegration.component.less');
+
 angular.module('one.widgets').component('zemGridIntegration', {
     bindings: {
         api: '=api',

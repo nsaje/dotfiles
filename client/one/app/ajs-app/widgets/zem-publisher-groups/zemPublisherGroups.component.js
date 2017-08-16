@@ -1,3 +1,5 @@
+require('./zemPublisherGroups.component.less');
+
 angular.module('one.widgets').component('zemPublisherGroups', {
     template: require('./zemPublisherGroups.component.html'),
     bindings: {

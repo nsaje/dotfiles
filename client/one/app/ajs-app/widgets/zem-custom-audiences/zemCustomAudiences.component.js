@@ -1,3 +1,5 @@
+require('./zemCustomAudiences.component.less');
+
 angular.module('one.widgets').component('zemCustomAudiences', {
     template: require('./zemCustomAudiences.component.html'),
     bindings: {

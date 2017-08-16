@@ -1,3 +1,5 @@
+require('./zemConversionPixels.component.less');
+
 angular.module('one.widgets').component('zemConversionPixels', {
     bindings: {
         account: '<',
