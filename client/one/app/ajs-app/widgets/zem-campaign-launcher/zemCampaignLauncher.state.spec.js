@@ -87,7 +87,7 @@ describe('zemCampaignLauncherStateService', function () {
             maxCpc: null,
             dailyBudget: null,
             campaignGoal: null,
-            uploadBatchId: null,
+            uploadBatch: null,
             targetRegions: null,
             exclusionTargetRegions: null,
             targetDevices: ['DEVICE 1', 'DEVICE 2'],

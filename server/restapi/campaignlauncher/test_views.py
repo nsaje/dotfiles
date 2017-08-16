@@ -61,7 +61,7 @@ class CampaignLauncherLaunchTest(restapi.test_views.RESTAPITest):
             'budgetAmount': 123,
             'maxCpc': '0.6',
             'dailyBudget': '15.0',
-            'uploadBatchId': str(upload_batch.id),
+            'uploadBatch': str(upload_batch.id),
             'campaignGoal': {
                 'type': 'CPA',
                 'value': '30.0',

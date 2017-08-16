@@ -115,6 +115,9 @@ def has_skip_validation_magic_word(filename):
 
 
 def persist_batch(batch):
+    if not batch.ad_group_id:
+        raise exc.ChangeForbidden('Batch has no ad group specified')
+
     cleaned_candidates = clean_candidates(batch)
 
     with transaction.atomic():
@@ -138,9 +141,6 @@ def clean_candidates(batch):
 
     if batch.type == constants.UploadBatchType.EDIT:
         raise exc.ChangeForbidden('Batch in edit mode')
-
-    if not batch.ad_group_id:
-        raise exc.ChangeForbidden('Batch has no ad group specified')
 
     candidates = batch.contentadcandidate_set.all().order_by('pk')
     if any(candidate.original_content_ad_id for candidate in candidates):

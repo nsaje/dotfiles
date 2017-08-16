@@ -6,7 +6,8 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
         candidates: '=',
         isEdit: '=?',
         adPickerApi: '=?',
-        editFormApi: '=?'
+        editFormApi: '=?',
+        statusUpdatedCallback: '=?'
     },
     template: require('./zemUploadContentAdPicker.component.html'),
     controller: function ($window, $interval) {
@@ -211,6 +212,9 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
                     }
                 }
             });
+            if ($ctrl.statusUpdatedCallback) {
+                $ctrl.statusUpdatedCallback();
+            }
         }
 
 
@@ -255,6 +259,9 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
                 function (data) {
                     $ctrl.candidates.push(data.candidate);
                     $ctrl.editFormApi.open(data.candidate);
+                    if ($ctrl.statusUpdatedCallback) {
+                        $ctrl.statusUpdatedCallback();
+                    }
                 },
                 function () {
                     $ctrl.addCandidateRequestFailed = true;
@@ -284,6 +291,9 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
                     $ctrl.candidates = $ctrl.candidates.filter(function (el) {
                         return candidate.id !== el.id;
                     });
+                    if ($ctrl.statusUpdatedCallback) {
+                        $ctrl.statusUpdatedCallback();
+                    }
                 },
                 function () {
                     candidate.removeRequestFailed = true;

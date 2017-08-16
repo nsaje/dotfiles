@@ -25,7 +25,7 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
             title: 'Campaign creatives',
             stepIndicatorTitle: 'Creatives',
             fields: [
-                {name: 'uploadBatchId', required: true},
+                {name: 'uploadBatch', required: true},
             ],
             controls: {
                 previous: true,

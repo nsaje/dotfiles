@@ -16,7 +16,7 @@ angular.module('one').component('zemCampaignLauncherCreatives', {
         };
 
         function initUploadWidget () {
-            if ($ctrl.state.fields.uploadBatchId || $ctrl.state.requests.createCreativesBatch.inProgress) return;
+            if ($ctrl.state.fields.uploadBatch || $ctrl.state.requests.createCreativesBatch.inProgress) return;
             $ctrl.state.creatives.endpoint = zemUploadEndpointService.createEndpoint();
             $ctrl.state.creatives.editFormApi = {};
             $ctrl.state.requests.createCreativesBatch = {
@@ -30,7 +30,7 @@ angular.module('one').component('zemCampaignLauncherCreatives', {
             var withoutCandidates = true;
             $ctrl.state.creatives.endpoint.createBatch(batchName, withoutCandidates)
                 .then(function (response) {
-                    $ctrl.state.fields.uploadBatchId = response.batchId;
+                    $ctrl.state.fields.uploadBatch = response.batchId;
                     $ctrl.state.creatives.batchName = response.batchName;
                     $ctrl.state.creatives.candidates = response.candidates;
                     $ctrl.state.requests.createCreativesBatch.success = true;

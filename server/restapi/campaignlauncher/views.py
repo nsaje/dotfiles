@@ -23,12 +23,12 @@ class CampaignLauncherViewSet(RESTAPIBaseViewSet):
     def validate(self, request, account_id):
         serializer = serializers.CampaignLauncherSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        if 'upload_batch_id' in serializer.validated_data:
-            upload_batch = restapi.access.get_upload_batch(request.user, serializer.validated_data['upload_batch_id'])
+        if 'upload_batch' in serializer.validated_data:
+            upload_batch = restapi.access.get_upload_batch(request.user, serializer.validated_data['upload_batch'])
             try:
                 dash.features.contentupload.upload.clean_candidates(upload_batch)
             except Exception as e:
-                raise rest_framework.serializers.ValidationError(e)
+                raise rest_framework.serializers.ValidationError({'upload_batch': e})
         return self.response_ok(None)
 
     @transaction.atomic
@@ -38,7 +38,7 @@ class CampaignLauncherViewSet(RESTAPIBaseViewSet):
         serializer = serializers.CampaignLauncherSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        upload_batch = restapi.access.get_upload_batch(request.user, serializer.validated_data['upload_batch_id'])
+        upload_batch = restapi.access.get_upload_batch(request.user, serializer.validated_data['upload_batch'])
 
         campaign = dash.features.campaignlauncher.launch(
             request=request,

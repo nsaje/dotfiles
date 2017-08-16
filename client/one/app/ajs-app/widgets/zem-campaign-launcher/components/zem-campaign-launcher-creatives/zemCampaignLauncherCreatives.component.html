@@ -6,10 +6,11 @@
          ng-class="{'content-upload__content-ad-picker-container--editing': !!$ctrl.state.creatives.editFormApi.selectedId}">
         <zem-upload-content-ad-picker class="zem-upload-content-ad-picker"
                                       endpoint="$ctrl.state.creatives.endpoint"
-                                      batch-id="$ctrl.state.fields.uploadBatchId"
+                                      batch-id="$ctrl.state.fields.uploadBatch"
                                       batch-name="$ctrl.state.creatives.batchName"
                                       candidates="$ctrl.state.creatives.candidates"
-                                      edit-form-api="$ctrl.state.creatives.editFormApi">
+                                      edit-form-api="$ctrl.state.creatives.editFormApi"
+                                      status-updated-callback="$ctrl.stateService.validateFields">
         </zem-upload-content-ad-picker>
     </div>
 
