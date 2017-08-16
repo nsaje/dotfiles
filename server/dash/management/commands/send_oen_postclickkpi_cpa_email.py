@@ -123,12 +123,12 @@ class Command(ExceptionCommand):
         out = {}
 
         if len(row) != 3:
-            raise Exception('Expected 3 parts in factor row: %s' % factor_row)
+            raise Exception('Expected 3 parts in factor row: %s' % row)
 
         for part in row[1].split(';'):
             s = part.split('=')
             if len(s) != 2:
-                raise Exception('Expected 2 parts in factor key in row: %s' % factor_row)
+                raise Exception('Expected 2 parts in factor key in row: %s' % row)
             out[s[0]] = s[1]
 
         try:
