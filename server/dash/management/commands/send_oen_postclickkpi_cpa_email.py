@@ -32,39 +32,30 @@ class Command(ExceptionCommand):
         sources = {s.get_clean_slug(): s for s in models.Source.objects.all()}
         oen_ags = models.AdGroup.objects.filter(campaign__account=OEN_ACCOUNT).select_related('campaign')
         oen_pub_group = models.PublisherGroup.objects.get(pk=OEN_PUBLISHER_GROUP_ID)
-        conversions_data = self._get_conversions_data([adg.id for adg in oen_ags])
 
-        factors = self._generate_output_csv(oen_ags, sources, conversions_data, oen_pub_group)
+        s3_helper = s3helpers.S3Helper(S3_BUCKET_B1_ML)
+        factors_file = s3_helper.get(S3_CPA_FACTORS_PATH)
+
+        factors_ad_groups = self._get_factor_ad_groups(factors_file, oen_ags)
+        conversions_data = self._get_conversions_data(factors_ad_groups)
+        factors = self._generate_output_csv(factors_file, oen_ags, sources, conversions_data, oen_pub_group)
 
         email_helper.send_oen_postclickkpi_cpa_factors_email(factors)
         influx.gauge('dash.commands.send_oen_postclickkpi_cpa_email_job.num_factors', len(factors.splitlines()))
 
-    def _generate_output_csv(self, ad_groups, sources, conversions_data, oen_pub_group):
+    def _generate_output_csv(self, factors_file, ad_groups, sources, conversions_data, oen_pub_group):
 
         output = cStringIO.StringIO()
         writer = unicodecsv.writer(output, encoding='utf-8', delimiter='\t')
         writer.writerow(EXPECTED_COLS)
 
-        s3_helper = s3helpers.S3Helper(S3_BUCKET_B1_ML)
-        f = s3_helper.get(S3_CPA_FACTORS_PATH)
-
-        for factor_row in f.splitlines():
+        for factor_row in factors_file.splitlines():
             row = factor_row.split('\t')
-            out = {}
 
-            if len(row) != 3:
-                raise Exception('Expected 3 parts in factor row: %s' % factor_row)
-
-            for part in row[1].split(';'):
-                s = part.split('=')
-                if len(s) != 2:
-                    raise Exception('Expected 2 parts in factor key in row: %s' % factor_row)
-                out[s[0]] = s[1]
-
-            try:
-                adg = ad_groups.get(id=out['adgroup'])
-            except models.AdGroup.DoesNotExist:
+            out, adg = self._parse_row(row, ad_groups)
+            if not adg:
                 continue
+
             out['campaign'] = adg.campaign.id
             out['ob_campaign'] = adg.campaign.name
 
@@ -111,11 +102,38 @@ class Command(ExceptionCommand):
             key = ','.join([str(d['ad_group_id']), str(d['source_id']), pub])
             if key in conversions_data:
                 conversions_data[key]['conversions'] += d.get('pixel_844_2160', 0) or 0
-                conversions_data[key]['media_spend'] += float(d.get('media_cost', 0.0)) or 0.0
+                conversions_data[key]['media_spend'] += float(d.get('media_cost', 0.0) or 0.0)
             else:
                 conversions_data[key] = {
                     'conversions': d.get('pixel_844_2160', 0) or 0,
-                    'media_spend': float(d.get('media_cost', 0.0)) or 0.0,
+                    'media_spend': float(d.get('media_cost', 0.0) or 0.0),
                 }
 
         return conversions_data
+
+    def _get_factor_ad_groups(self, factors_file, oen_ad_groups):
+        adg_ids = []
+        for factor_row in factors_file.splitlines():
+            out, adg = self._parse_row(factor_row.split('\t'), oen_ad_groups)
+            if adg:
+                adg_ids.append(adg.id)
+        return adg_ids
+
+    def _parse_row(self, row, ad_groups):
+        out = {}
+
+        if len(row) != 3:
+            raise Exception('Expected 3 parts in factor row: %s' % row)
+
+        for part in row[1].split(';'):
+            s = part.split('=')
+            if len(s) != 2:
+                raise Exception('Expected 2 parts in factor key in row: %s' % row)
+            out[s[0]] = s[1]
+
+        try:
+            adg = ad_groups.get(id=out['adgroup'])
+        except models.AdGroup.DoesNotExist:
+            adg = None
+
+        return out, adg
