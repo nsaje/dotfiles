@@ -22,7 +22,7 @@ class TestBudgetLineItemManager(TestCase):
         self.credit = magic_mixer.blend(
             dash.models.CreditLineItem,
             account=self.account,
-            end_date=datetime.date(2017, 1, 1),
+            start_date=datetime.date(2016, 12, 1),
             end_date=datetime.date(2017, 3, 3),
             status=dash.constants.CreditLineItemStatus.SIGNED,
             amount=500
