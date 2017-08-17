@@ -82,7 +82,7 @@ class Command(ExceptionCommand):
 
     def get_publisher_stats(self, recipient, date):
         query = """
-            select to_char(date, 'YYYY-MM-DD') as date, publisher, sum(impressions), sum(clicks), sum(cost_nano)
+            select to_char(date, 'YYYY-MM-DD') as date, publisher, sum(coalesce(impressions, 0)), sum(coalesce(clicks, 0)), sum(coalesce(cost_nano, 0))
             from mv_master
             where source_id=%s and date=%s
             group by date, publisher
