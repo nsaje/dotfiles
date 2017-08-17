@@ -198,7 +198,7 @@ class Account(models.Model):
         )
 
     def set_uses_bcm_v2(self, request, enabled):
-        self.uses_bcm_v2 = bool(True)
+        self.uses_bcm_v2 = bool(enabled)
         self.save(request)
 
     def save(self, request, *args, **kwargs):

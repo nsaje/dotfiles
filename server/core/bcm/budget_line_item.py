@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.forms.models import model_to_dict
 
 import utils.demo_anonymizer
@@ -296,7 +296,7 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
             db_state = self.db_state()
             if self.has_changed('margin'):
                 raise ValidationError({
-                    'margin': 'Margin can only be set on newly created budgets.',
+                    'margin': 'Margin can only be set on newly created budget items.',
                 })
             if self.has_changed('start_date') and not db_state == constants.BudgetLineItemState.PENDING:
                 raise ValidationError(
@@ -322,6 +322,7 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
             self.validate_amount,
             self.validate_credit,
             self.validate_campaign,
+            self.validate_margin,
         )
 
     def license_fee(self):
@@ -362,6 +363,12 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
             return
         if not (0 <= self.margin < 1):
             raise ValidationError('Margin must be between 0 and 100%.')
+        if self.campaign.account.uses_bcm_v2:
+            overlapping_budget_line_items = BudgetLineItem.objects.exclude(
+                margin=self.margin
+            ).filter_overlapping(self.start_date, self.end_date)
+            if overlapping_budget_line_items.exists():
+                raise ValidationError('Margin must be the same on overlapping budget line items.')
 
     def validate_amount(self):
         if self.has_changed('amount') and \
@@ -411,4 +418,11 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
                     core.bcm.helpers.Coalesce('license_fee_spend_sum') * 1e-9 +
                     core.bcm.helpers.Coalesce('data_spend_sum') * 1e-9
                 )
+            )
+
+        def filter_overlapping(self, start_date, end_date):
+            return self.filter(
+                (Q(start_date__gte=start_date) & Q(start_date__lte=end_date)) |
+                (Q(end_date__gte=start_date) & Q(end_date__lte=end_date)) |
+                (Q(start_date__lte=start_date) & Q(end_date__gte=end_date))
             )

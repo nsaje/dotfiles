@@ -89,6 +89,7 @@ angular.module('one.widgets').component('zemCampaignBudgetsModal', {
         };
 
         $ctrl.$onInit = function () {
+            $ctrl.activeAccount = zemNavigationNewService.getActiveAccount();
             $ctrl.saveRequestInProgress = false;
             $ctrl.isNew = $ctrl.selectedBudgetId === null;
             $ctrl.discarded = false;
@@ -153,5 +154,9 @@ angular.module('one.widgets').component('zemCampaignBudgetsModal', {
                 return include && obj.id === include || !include && obj.isAvailable;
             });
         }
+
+        $ctrl.canAccessPlatformCosts = function () {
+            zemPermissions.canAccessPlatformCosts($ctrl.activeAccount);
+        };
     }
 });

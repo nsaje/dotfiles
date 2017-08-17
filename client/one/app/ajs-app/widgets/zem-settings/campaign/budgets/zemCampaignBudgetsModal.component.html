@@ -15,7 +15,7 @@
                     <th ng-if="$ctrl.isNew"></th>
                     <th>Available credit</th>
                     <th>Total Credit</th>
-                    <th>License Fee</th>
+                    <th ng-if="$ctrl.canAccessPlatformCosts()">License Fee</th>
                     <th>Valid From</th>
                     <th>Valid To</th>
                     <th>Notes</th>
@@ -33,7 +33,7 @@
                     </td>
                     <td>{{ credit.available | decimalCurrency:"$":2  }}</td>
                     <td>{{ credit.total | decimalCurrency:"$":2  }}</td>
-                    <td>{{ credit.licenseFee }}%</td>
+                    <td ng-if="$ctrl.canAccessPlatformCosts()">{{ credit.licenseFee }}%</td>
                     <td>{{ credit.startDate }}</td>
                     <td>{{ credit.endDate }}</td>
                     <td>
@@ -69,12 +69,13 @@
             </div>
             <div class="message message--error" ng-repeat="error in $ctrl.errors.amount" for="amount">{{ error }}</div>
         </div>
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.margin}" ng-if="false && $ctrl.hasPermission('zemauth.can_manage_agency_margin')">
-            <label class="form__label" for="margin-input" is-internal="zemauth.can_manage_agency_margin">Margin</label>
+        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.margin}" ng-if="$ctrl.activeAccount.data.usesBCMv2 && $ctrl.hasPermission('zemauth.can_manage_agency_margin')">
+            <label class="form__label" for="margin-input">Margin</label>
             <div class="postfixed-field postfixed-field--narrow">
                 <input id="margin-select" class="input-text" ng-model="$ctrl.budgetItem.margin" ng-disabled="!$ctrl.isNew"/>
                 <span class="postfixed-field__postfix">%</span>
             </div>
+            <zem-help-popover ng-if="!$ctrl.isNew" content="To change the margin, first update this budget’s end date to today and then create a new budget with a start date from tomorrow on. You’ll be able to change the margin in this newly setup budget." placement="top"></zem-help-popover>
             <div class="message message--error" ng-repeat="error in $ctrl.errors.margin" for="margin-input">{{ error }}</div>
         </div>
         <div class="message message--info message--with-icon" ng-if="$ctrl.isInLandingMode">
