@@ -1,4 +1,4 @@
-<div class="custom-panel zem-settings-component__container zem-campaign-budgets-settings" is-internal="zemauth.can_see_new_budgets">
+<div class="custom-panel zem-settings-component__container zem-campaign-budgets-settings">
     <h2 class="custom-panel__title">Budget</h2>
     <div class="custom-panel__description">Once Zemanta's Customer Success team assigns a credit line to your account you have the ability to create budget items and associate them with campaigns you're planning. Budget represents the amount of money you're willing to pay to have ads from your campaign shown over the period you set it to run. You set a budget for each campaign you create.</div>
     <div class="zem-campaign-budgets-settings__budget-overview">
@@ -6,20 +6,19 @@
             <span class="zem-campaign-budgets-settings__budget-overview-name">Campaign Spend</span>
             <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.lifetimeCampaignSpend | decimalCurrency:"$":2 }}</span>
         </div>
-        <div class="zem-campaign-budgets-settings__budget-overview-box">
+        <div class="zem-campaign-budgets-settings__budget-overview-box" ng-if="$ctrl.canAccessPlatformCosts()">
             <span class="zem-campaign-budgets-settings__budget-overview-name">Media Spend</span>
             <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.lifetimeMediaSpend | decimalCurrency:"$":2 }}</span>
         </div>
-        <div class="zem-campaign-budgets-settings__budget-overview-box">
+        <div class="zem-campaign-budgets-settings__budget-overview-box" ng-if="$ctrl.canAccessPlatformCosts()">
             <span class="zem-campaign-budgets-settings__budget-overview-name">Data Spend</span>
             <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.lifetimeDataSpend | decimalCurrency:"$":2 }}</span>
         </div>
-        <div class="zem-campaign-budgets-settings__budget-overview-box">
+        <div class="zem-campaign-budgets-settings__budget-overview-box" ng-if="$ctrl.canAccessPlatformCosts()">
             <span class="zem-campaign-budgets-settings__budget-overview-name">License Fee</span>
             <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.lifetimeLicenseFee | decimalCurrency:"$":2 }}</span>
         </div>
-        <!-- TODO: is-internal doesn't work -->
-        <div class="zem-campaign-budgets-settings__budget-overview-box" ng-if="$ctrl.hasPermission('zemauth.can_manage_agency_margin')" is-internal="zemauth.can_manage_agency_margin">
+        <div class="zem-campaign-budgets-settings__budget-overview-box" ng-if="$ctrl.canAccessAgencyCosts()">
             <span class="zem-campaign-budgets-settings__budget-overview-name">Margin</span>
             <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.lifetimeMargin | decimalCurrency:"$":2 }}</span>
         </div>
@@ -43,8 +42,8 @@
                 <th>Start Date</th>
                 <th>End Date</th>
                 <th>Budget</th>
-                <th>License Fee</th>
-                <th ng-if="$ctrl.hasPermission('zemauth.can_manage_agency_margin')" is-internal="zemauth.can_manage_agency_margin">
+                <th ng-if="$ctrl.canAccessPlatformCosts()">License Fee</th>
+                <th ng-if="$ctrl.canAccessAgencyCosts()">
                     Margin
                 </th>
                 <th>Total Spend</th>
@@ -59,8 +58,8 @@
                 <td>{{ item.startDate }}</td>
                 <td>{{ item.endDate }}</td>
                 <td>{{ item.total | decimalCurrency:"$":2 }}</td>
-                <td>{{ item.licenseFee }}</td>
-                <td ng-if="$ctrl.hasPermission('zemauth.can_manage_agency_margin')">
+                <td ng-if="$ctrl.canAccessPlatformCosts()">{{ item.licenseFee }}</td>
+                <td ng-if="$ctrl.canAccessAgencyCosts()">
                     {{ item.margin }}
                 </td>
                 <td>{{ item.spend | decimalCurrency:"$":2 }}</td>
@@ -99,10 +98,8 @@
                 <th>Start Date</th>
                 <th>End Date</th>
                 <th>Total Budget</th>
-                <th>License Fee</th>
-                <th ng-if="$ctrl.hasPermission('zemauth.can_manage_agency_margin')">
-                    <zem-internal-feature
-                            ng-if="$ctrl.isPermissionInternal('zemauth.can_manage_agency_margin')"></zem-internal-feature>
+                <th ng-if="$ctrl.canAccessPlatformCosts()">License Fee</th>
+                <th ng-if="$ctrl.canAccessAgencyCosts()">
                     Margin
                 </th>
                 <th>Total Spend</th>
@@ -118,8 +115,8 @@
                 <td>{{ item.endDate }}</td>
 
                 <td>{{ item.total | decimalCurrency:"$":2 }}</td>
-                <td>{{ item.licenseFee }}</td>
-                <td ng-if="$ctrl.hasPermission('zemauth.can_manage_agency_margin')">
+                <td ng-if="$ctrl.canAccessPlatformCosts()">{{ item.licenseFee }}</td>
+                <td ng-if="$ctrl.canAccessAgencyCosts()">
                     {{ item.margin }}
                 </td>
                 <td>{{ item.spend | decimalCurrency:"$":2 }}</td>

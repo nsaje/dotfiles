@@ -1,6 +1,8 @@
 angular.module('one.services').service('zemPermissions', function (zemUserService) {
     this.hasPermission = hasPermission;
     this.isPermissionInternal = isPermissionInternal;
+    this.canAccessPlatformCosts = canAccessPlatformCosts;
+    this.canAccessAgencyCosts = canAccessAgencyCosts;
 
     function hasPermission (permission) {
         // Can take string or array (legacy option), returns true if user has any of the permissions
@@ -26,5 +28,18 @@ angular.module('one.services').service('zemPermissions', function (zemUserServic
         }
 
         return !user.permissions[permission];
+    }
+
+    function canAccessPlatformCosts (activeAccount) {
+        return activeAccount &&
+            (!activeAccount.data.usesBCMv2 || hasPermission('zemauth.can_view_platform_cost_breakdown'));
+    }
+
+    function canAccessAgencyCosts (activeAccount) {
+        return activeAccount && (
+            (activeAccount.data.usesBCMv2 &&
+             hasPermission('zemauth.can_view_agency_cost_breakdown')) ||
+                (!activeAccount.data.usesBCMv2 &&
+                 hasPermission('zemauth.can_manage_agency_margin')));
     }
 });

@@ -197,8 +197,12 @@ class Account(models.Model):
             action_type=action_type
         )
 
+    def set_uses_bcm_v2(self, request, enabled):
+        self.uses_bcm_v2 = bool(True)
+        self.save(request)
+
     def save(self, request, *args, **kwargs):
-        if not request.user.is_anonymous():
+        if request and not request.user.is_anonymous():
             self.modified_by = request.user
         super(Account, self).save(*args, **kwargs)
 

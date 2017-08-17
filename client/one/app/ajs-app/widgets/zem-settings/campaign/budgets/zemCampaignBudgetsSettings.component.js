@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemCampaignBudgetsSettings', {
         api: '<',
     },
     template: require('./zemCampaignBudgetsSettings.component.html'),
-    controller: function ($scope, $q, $uibModal, zemPermissions, zemCampaignBudgetsEndpoint) { // eslint-disable-line max-len
+    controller: function ($scope, $q, $uibModal, zemPermissions, zemCampaignBudgetsEndpoint, zemNavigationNewService) { // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.options = options;
         $ctrl.hasPermission = zemPermissions.hasPermission;
@@ -13,6 +13,7 @@ angular.module('one.widgets').component('zemCampaignBudgetsSettings', {
         $ctrl.stateReloadNeeded = false;
 
         $ctrl.$onInit = function () {
+            $ctrl.activeAccount = zemNavigationNewService.getActiveAccount();
             $ctrl.api.register({
                 isStateReloadNeeded: function () {
                     return $ctrl.stateReloadNeeded;
@@ -83,6 +84,14 @@ angular.module('one.widgets').component('zemCampaignBudgetsSettings', {
         $ctrl.editBudgetItem = function (id) {
             $ctrl.selectedBudgetId = id;
             return openModal();
+        };
+
+        $ctrl.canAccessPlatformCosts = function () {
+            zemPermissions.canAccessPlatformCosts($ctrl.activeAccount);
+        };
+
+        $ctrl.canAccessAgencyCosts = function () {
+            zemPermissions.canAccessAgencyCosts($ctrl.activeAccount);
         };
     },
 });

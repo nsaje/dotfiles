@@ -67,13 +67,16 @@ def get_content_ad(user, content_ad_id, select_related=False):
         raise utils.exc.MissingDataError('Content Ad does not exist')
 
 
-def get_campaign(user, campaign_id, sources=None):
+def get_campaign(user, campaign_id, sources=None, select_related=False):
     try:
         campaign = core.entity.Campaign.objects.all()\
                                                .filter_by_user(user)\
                                                .filter(id=int(campaign_id))
         if sources:
             campaign = campaign.filter_by_sources(sources)
+
+        if select_related:
+            campaign = campaign.select_related('account')
 
         return campaign.get()
     except core.entity.Campaign.DoesNotExist:

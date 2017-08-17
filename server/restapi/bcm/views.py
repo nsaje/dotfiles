@@ -19,6 +19,16 @@ EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK = (
 )
 
 
+def _should_add_platform_costs(user, campaign):
+    return not campaign.account.uses_bcm_v2 or\
+        user.has_perm('zemauth.can_view_platform_cost_breakdown')
+
+
+def _should_add_agency_costs(user, campaign):
+    return (campaign.account.uses_bcm_v2 and user.has_perm('zemauth.can_view_agency_cost_breakdown')) or\
+        (not campaign.account.uses_bcm_v2 and user.has_perm('zemauth.can_view_agency_margin'))
+
+
 class AccountCreditView(api_common.BaseApiView):
 
     def get(self, request, account_id):
@@ -239,11 +249,11 @@ class AccountCreditItemView(api_common.BaseApiView):
 class CampaignBudgetView(api_common.BaseApiView):
 
     def get(self, request, campaign_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
+        campaign = helpers.get_campaign(request.user, campaign_id, select_related=True)
         return self._get_response(request.user, campaign)
 
     def put(self, request, campaign_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
+        campaign = helpers.get_campaign(request.user, campaign_id, select_related=True)
 
         request_data = json.loads(request.body)
         data = {}
@@ -273,8 +283,12 @@ class CampaignBudgetView(api_common.BaseApiView):
 
         return self.create_api_response(item.pk)
 
-    def _prepare_item(self, user, item):
-        spend = item.get_spend_data()['etf_total']
+    def _prepare_item(self, user, campaign, item):
+        if campaign.account.uses_bcm_v2:
+            spend = item.get_spend_data()['etfm_total']
+        else:
+            spend = item.get_spend_data()['etf_total']
+
         allocated = item.allocated_amount()
         result = {
             'id': item.pk,
@@ -282,7 +296,6 @@ class CampaignBudgetView(api_common.BaseApiView):
             'credit': item.credit.id,  # FIXME(nsaje) hack to return credit id in REST API
             'end_date': item.end_date,
             'state': item.state(),
-            'license_fee': helpers.format_decimal_to_percent(item.credit.license_fee) + '%',
             'total': allocated,
             'spend': spend,
             'available': allocated - spend,
@@ -290,19 +303,24 @@ class CampaignBudgetView(api_common.BaseApiView):
             'is_updatable': item.is_updatable(),
             'comment': item.comment,
         }
-        if user.has_perm('zemauth.can_view_agency_margin'):
+
+        if _should_add_platform_costs(user, campaign):
+            result['license_fee'] = helpers.format_decimal_to_percent(item.credit.license_fee) + '%'
+
+        if _should_add_agency_costs(user, campaign):
             result['margin'] = helpers.format_decimal_to_percent(item.margin) + '%'
+
         return result
 
     def _get_response(self, user, campaign):
         budget_items = models.BudgetLineItem.objects.filter(
             campaign_id=campaign.id,
         ).select_related('credit').order_by('-created_dt')
-        active_budget = self._get_active_budget(user, budget_items)
+        active_budget = self._get_active_budget(user, campaign, budget_items)
         automatic_campaign_stop = campaign.get_current_settings().automatic_campaign_stop
         return self.create_api_response({
             'active': active_budget,
-            'past': self._get_past_budget(user, budget_items),
+            'past': self._get_past_budget(user, campaign, budget_items),
             'totals': self._get_budget_totals(user, campaign, active_budget),
             'credits': self._get_available_credit_items(user, campaign),
             'min_amount': (automatic_campaign_stop and
@@ -311,29 +329,33 @@ class CampaignBudgetView(api_common.BaseApiView):
 
     def _get_available_credit_items(self, user, campaign):
         available_credits = models.CreditLineItem.objects.filter_by_account(campaign.account)
-        return [
-            {
+        credits = []
+        for credit in available_credits:
+            credit_dict = {
                 'id': credit.pk,
                 'total': credit.effective_amount(),
                 'available': credit.effective_amount() - credit.get_allocated_amount(),
-                'license_fee': helpers.format_decimal_to_percent(credit.license_fee),
                 'start_date': credit.start_date,
                 'end_date': credit.end_date,
                 'comment': credit.comment,
                 'is_available': credit.is_available(),
                 'is_agency': credit.is_agency(),
             }
-            for credit in available_credits
-        ]
 
-    def _get_active_budget(self, user, items):
-        return [self._prepare_item(user, b) for b in items if b.state() in (
+            if _should_add_platform_costs(user, campaign):
+                credit_dict['license_fee'] = helpers.format_decimal_to_percent(credit.license_fee)
+            credits.append(credit_dict)
+
+        return credits
+
+    def _get_active_budget(self, user, campaign, items):
+        return [self._prepare_item(user, campaign, b) for b in items if b.state() in (
             constants.BudgetLineItemState.ACTIVE,
             constants.BudgetLineItemState.PENDING,
         )]
 
-    def _get_past_budget(self, user, items):
-        return [self._prepare_item(user, b) for b in items if b.state() in (
+    def _get_past_budget(self, user, campaign, items):
+        return [self._prepare_item(user, campaign, b) for b in items if b.state() in (
             constants.BudgetLineItemState.DEPLETED,
             constants.BudgetLineItemState.INACTIVE,
         )]
@@ -347,13 +369,15 @@ class CampaignBudgetView(api_common.BaseApiView):
             },
             'lifetime': {
                 'campaign_spend': Decimal('0.0000'),
-                'media_spend': Decimal('0.0000'),
-                'data_spend': Decimal('0.0000'),
-                'license_fee': Decimal('0.0000'),
             }
         }
 
-        if user.has_perm('zemauth.can_view_agency_margin'):
+        if _should_add_platform_costs(user, campaign):
+            data['lifetime']['media_spend'] = Decimal('0.0000')
+            data['lifetime']['data_spend'] = Decimal('0.0000')
+            data['lifetime']['license_fee'] = Decimal('0.0000')
+
+        if _should_add_agency_costs(user, campaign):
             data['lifetime']['margin'] = Decimal('0.0000')
 
         credits = models.CreditLineItem.objects.filter_by_account(campaign.account)
@@ -367,19 +391,28 @@ class CampaignBudgetView(api_common.BaseApiView):
                 continue
 
             spend_data = item.get_spend_data()
-            data['lifetime']['campaign_spend'] += spend_data['etf_total']
-            data['lifetime']['media_spend'] += spend_data['media']
-            data['lifetime']['data_spend'] += spend_data['data']
-            data['lifetime']['license_fee'] += spend_data['license_fee']
-            if user.has_perm('zemauth.can_view_agency_margin'):
+
+            if campaign.account.uses_bcm_v2:
+                data['lifetime']['campaign_spend'] += spend_data['etfm_total']
+            else:
+                # FIXME: can be removed once all accounts are migrated
+                data['lifetime']['campaign_spend'] += spend_data['etf_total']
+
+            if _should_add_platform_costs(user, campaign):
+                data['lifetime']['media_spend'] += spend_data['media']
+                data['lifetime']['data_spend'] += spend_data['data']
+                data['lifetime']['license_fee'] += spend_data['license_fee']
+
+            if _should_add_agency_costs(user, campaign):
                 data['lifetime']['margin'] += spend_data['margin']
+
         return data
 
 
 class CampaignBudgetItemView(api_common.BaseApiView):
 
     def get(self, request, campaign_id, budget_id):
-        helpers.get_campaign(request.user, campaign_id)
+        helpers.get_campaign(request.user, campaign_id, select_related=True)
         try:
             item = models.BudgetLineItem.objects.get(
                 campaign_id=campaign_id,
@@ -390,7 +423,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         return self._get_response(request.user, item)
 
     def post(self, request, campaign_id, budget_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
+        campaign = helpers.get_campaign(request.user, campaign_id, select_related=True)
 
         request_data = json.loads(request.body)
         data = {}

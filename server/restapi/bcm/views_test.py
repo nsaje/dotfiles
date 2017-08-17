@@ -7,7 +7,6 @@ from decimal import Decimal
 from dash import history_helpers
 
 from django.core.urlresolvers import reverse
-from django.contrib.auth.models import Permission
 from django.test import TestCase
 
 from zemauth.models import User
@@ -16,6 +15,7 @@ from utils.test_helper import fake_request
 from django.test.client import RequestFactory
 
 from utils import converters
+from utils import test_helper
 
 
 class BCMViewTestCase(TestCase):
@@ -36,10 +36,6 @@ class BCMViewTestCase(TestCase):
         new_campaign_settings = campaign.get_current_settings().copy_settings()
         new_campaign_settings.automatic_campaign_stop = True
         new_campaign_settings.save(None)
-
-    def add_permission(self, name):
-        permission = Permission.objects.get(codename=name)
-        self.user.user_permissions.add(permission)
 
 
 class AccountCreditViewTest(BCMViewTestCase):
@@ -63,7 +59,7 @@ class AccountCreditViewTest(BCMViewTestCase):
         c.status = constants.CreditLineItemStatus.SIGNED
         c.save()
 
-        self.add_permission('account_credit_view')
+        test_helper.add_permissions(self.user, ['account_credit_view'])
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 11)
             response = self.client.get(url)
@@ -141,7 +137,7 @@ class AccountCreditViewTest(BCMViewTestCase):
 
     def test_get_as_agency(self):
         url = reverse('accounts_credit', kwargs={'account_id': 1000})
-        self.add_permission('account_credit_view')
+        test_helper.add_permissions(self.user, ['account_credit_view'])
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 11)
             response = self.client.get(url)
@@ -193,7 +189,7 @@ class AccountCreditViewTest(BCMViewTestCase):
         ).count(), 0)
         request_data = {'cancel': [credit.pk]}
 
-        self.add_permission('account_credit_view')
+        test_helper.add_permissions(self.user, ['account_credit_view'])
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 11)
             response = self.client.post(url, json.dumps(request_data),
@@ -211,7 +207,7 @@ class AccountCreditViewTest(BCMViewTestCase):
 
         request_data = {}
 
-        self.add_permission('account_credit_view')
+        test_helper.add_permissions(self.user, ['account_credit_view'])
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 11)
             response = self.client.put(url, json.dumps(request_data))
@@ -271,7 +267,7 @@ class AccountCreditViewTest(BCMViewTestCase):
 
         request_data = {}
 
-        self.add_permission('account_credit_view')
+        test_helper.add_permissions(self.user, ['account_credit_view'])
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 11)
             response = self.client.put(url, json.dumps(request_data))
@@ -352,7 +348,7 @@ class AccountCreditItemViewTest(BCMViewTestCase):
             'credit_id': 1,
         })
 
-        self.add_permission('account_credit_view')
+        test_helper.add_permissions(self.user, ['account_credit_view'])
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 11)
             response = self.client.get(url)
@@ -392,7 +388,7 @@ class AccountCreditItemViewTest(BCMViewTestCase):
 
         self.assertEqual(1, len(models.CreditLineItem.objects.filter(pk=2)))
 
-        self.add_permission('account_credit_view')
+        test_helper.add_permissions(self.user, ['account_credit_view'])
 
         url = reverse('accounts_credit_item', kwargs={
             'account_id': 3,
@@ -415,7 +411,7 @@ class AccountCreditItemViewTest(BCMViewTestCase):
 
         self.assertEqual(response.status_code, 401)
 
-        self.add_permission('account_credit_view')
+        test_helper.add_permissions(self.user, ['account_credit_view'])
 
         item = models.CreditLineItem.objects.get(pk=2)
         self.assertEqual(item.amount, 100000)
@@ -462,7 +458,7 @@ class AccountCreditItemViewTest(BCMViewTestCase):
             'credit_id': 1,
         })
 
-        self.add_permission('account_credit_view')
+        test_helper.add_permissions(self.user, ['account_credit_view'])
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 11)
             response = self.client.get(url)
@@ -512,7 +508,7 @@ class AccountCreditItemViewTest(BCMViewTestCase):
 
         self.assertEqual(1, len(models.CreditLineItem.objects.filter(pk=2)))
 
-        self.add_permission('account_credit_view')
+        test_helper.add_permissions(self.user, ['account_credit_view'])
 
         url = reverse('accounts_credit_item', kwargs={
             'account_id': 3,
@@ -535,7 +531,7 @@ class AccountCreditItemViewTest(BCMViewTestCase):
 
         self.assertEqual(response.status_code, 401)
 
-        self.add_permission('account_credit_view')
+        test_helper.add_permissions(self.user, ['account_credit_view'])
 
         item = models.CreditLineItem.objects.get(pk=1000)
         self.assertEqual(item.amount, 100000)
@@ -685,10 +681,123 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             }
         })
 
+    def test_get_bcm_v2(self):
+        account = models.Account.objects.get(id=1)
+        account.set_uses_bcm_v2(None, True)
+
+        url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
+
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 11)
+            response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = json.loads(response.content)['data']
+
+        self.assertEqual(data, {
+            "active": [
+                {
+                    u"credit": 1,
+                    "available": "100000.0000",
+                    "is_editable": False,
+                    "is_updatable": True,
+                    "state": 1,
+                    "end_date": "2015-11-30",
+                    "total": "100000.0000",
+                    "spend": "0.0000",
+                    "id": 1,
+                    "comment": "Test case",
+                    "start_date": "2015-10-01",
+                }
+            ],
+            "past": [],
+            "credits": [
+                {
+                    "available": "0.0000",
+                    "end_date": "2015-11-30",
+                    "id": 1,
+                    "is_available": False,
+                    "comment": "Test case",
+                    "total": "100000.0000",
+                    "start_date": "2015-10-01",
+                    "is_agency": False,
+                }
+            ],
+            "min_amount": "0",
+            "totals": {
+                "current": {
+                    "available": "100000.0000",
+                    "past": "0.0000",
+                    "unallocated": "0.0000"
+                },
+                "lifetime": {
+                    "campaign_spend": "0.0000",
+                }
+            }
+        })
+
+        test_helper.add_permissions(self.user, ['can_view_platform_cost_breakdown'])
+        test_helper.add_permissions(self.user, ['can_view_agency_cost_breakdown'])
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 11)
+            response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = json.loads(response.content)['data']
+
+        self.assertEqual(data, {
+            "active": [
+                {
+                    u"credit": 1,
+                    "available": "100000.0000",
+                    "is_editable": False,
+                    "is_updatable": True,
+                    "state": 1,
+                    "end_date": "2015-11-30",
+                    "license_fee": "20%",
+                    "margin": "15%",
+                    "total": "100000.0000",
+                    "spend": "0.0000",
+                    "id": 1,
+                    "comment": "Test case",
+                    "start_date": "2015-10-01",
+                }
+            ],
+            "past": [],
+            "credits": [
+                {
+                    "available": "0.0000",
+                    "end_date": "2015-11-30",
+                    "id": 1,
+                    "is_available": False,
+                    "comment": "Test case",
+                    "license_fee": "20",
+                    "total": "100000.0000",
+                    "start_date": "2015-10-01",
+                    "is_agency": False,
+                }
+            ],
+            "min_amount": "0",
+            "totals": {
+                "current": {
+                    "available": "100000.0000",
+                    "past": "0.0000",
+                    "unallocated": "0.0000"
+                },
+                "lifetime": {
+                    "data_spend": "0.0000",
+                    "campaign_spend": "0.0000",
+                    "media_spend": "0.0000",
+                    "license_fee": "0.0000",
+                    "margin": "0.0000",
+                }
+            }
+        })
+
     def test_get_with_margin(self):
         url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
 
-        self.add_permission('can_view_agency_margin')
+        test_helper.add_permissions(self.user, ['can_view_agency_margin'])
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 9, 11)
             response = self.client.get(url)
@@ -914,7 +1023,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         }
         models.CreditLineItem.objects.filter(pk=c.pk).update(status=constants.CreditLineItemStatus.SIGNED)
 
-        self.add_permission('can_manage_agency_margin')
+        test_helper.add_permissions(self.user, ['can_manage_agency_margin'])
         url = reverse('campaigns_budget', kwargs={'campaign_id': 10})
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 9, 30)
@@ -977,7 +1086,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             'budget_id': 1,
         })
 
-        self.add_permission('can_view_agency_margin')
+        test_helper.add_permissions(self.user, ['can_view_agency_margin'])
 
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 10, 11)
@@ -1335,7 +1444,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
 
         url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
 
-        self.add_permission('can_view_agency_margin')
+        test_helper.add_permissions(self.user, ['can_view_agency_margin'])
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = today
             response = self.client.get(url)
@@ -1413,7 +1522,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
         url = reverse('accounts_credit', kwargs={'account_id': 1})
         today = datetime.date(2015, 11, 11)
 
-        self.add_permission('account_credit_view')
+        test_helper.add_permissions(self.user, ['account_credit_view'])
 
         credit = models.CreditLineItem.objects.create_unsafe(
             account_id=1,
