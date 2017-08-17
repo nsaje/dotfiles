@@ -364,8 +364,8 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
         if not (0 <= self.margin < 1):
             raise ValidationError('Margin must be between 0 and 100%.')
         if self.campaign.account.uses_bcm_v2:
-            overlapping_budget_line_items = BudgetLineItem.objects.exclude(
-                margin=self.margin
+            overlapping_budget_line_items = BudgetLineItem.objects.filter(campaign=self.campaign).exclude(
+                margin=self.margin,
             ).filter_overlapping(self.start_date, self.end_date)
             if overlapping_budget_line_items.exists():
                 raise ValidationError('Margin must be the same on overlapping budget line items.')
