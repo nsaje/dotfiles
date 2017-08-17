@@ -24,6 +24,7 @@ class TestService(TestCase):
         credit = magic_mixer.blend(
             dash.models.CreditLineItem,
             account=account,
+            start_date=datetime.date(2017, 1, 1),
             end_date=datetime.date(2017, 3, 3),
             status=dash.constants.CreditLineItemStatus.SIGNED,
             amount=500
