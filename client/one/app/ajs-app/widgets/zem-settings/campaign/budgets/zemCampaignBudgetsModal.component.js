@@ -156,7 +156,7 @@ angular.module('one.widgets').component('zemCampaignBudgetsModal', {
         }
 
         $ctrl.canAccessPlatformCosts = function () {
-            zemPermissions.canAccessPlatformCosts($ctrl.activeAccount);
+            return zemPermissions.canAccessPlatformCosts($ctrl.activeAccount);
         };
     }
 });

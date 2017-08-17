@@ -87,11 +87,11 @@ angular.module('one.widgets').component('zemCampaignBudgetsSettings', {
         };
 
         $ctrl.canAccessPlatformCosts = function () {
-            zemPermissions.canAccessPlatformCosts($ctrl.activeAccount);
+            return zemPermissions.canAccessPlatformCosts($ctrl.activeAccount);
         };
 
         $ctrl.canAccessAgencyCosts = function () {
-            zemPermissions.canAccessAgencyCosts($ctrl.activeAccount);
+            return zemPermissions.canAccessAgencyCosts($ctrl.activeAccount);
         };
     },
 });
