@@ -47,6 +47,8 @@ class ReportJobAdmin(admin.ModelAdmin):
         'link_to_scheduled_report',
     )
 
+    search_fields = ('user__email', )
+
     ordering = ('-created_dt', )
 
     def link_to_scheduled_report(self, obj):
