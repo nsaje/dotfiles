@@ -158,7 +158,7 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
                         if (validationPromise !== state.requests.validate.promise) {
                             return; // There's a more recent request
                         }
-                        state.fieldsErrors = errors ? errors.details : {};
+                        state.fieldsErrors = errors && errors.details ? errors.details : {};
                     })
                     .finally(function () {
                         state.requests.validate.inProgress = false;
