@@ -67,9 +67,9 @@ class Command(ExceptionCommand):
             agency = account.agency
             data_by_agency[agency.id]['name'] = agency.name
             data_by_agency[agency.id]['agency_id'] = agency.id
-            data_by_agency[agency.id]['clicks'] += float(entry['clicks'])
-            data_by_agency[agency.id]['impressions'] += float(entry['impressions'])
-            data_by_agency[agency.id]['billing_cost'] += float(entry['billing_cost'])
+            data_by_agency[agency.id]['clicks'] += float(entry['clicks'] if entry['clicks'] else 0)
+            data_by_agency[agency.id]['impressions'] += float(entry['impressions'] if entry['impressions'] else 0)
+            data_by_agency[agency.id]['billing_cost'] += float(entry['billing_cost'] if entry['billing_cost'] else 0)
 
         tags = set(['agency_id', 'name'])
         fields = set(['clicks', 'billing_cost', 'impressions'])

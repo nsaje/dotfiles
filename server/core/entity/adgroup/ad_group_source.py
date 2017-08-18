@@ -198,6 +198,10 @@ class AdGroupSource(models.Model):
 
     @transaction.atomic
     def update(self, request=None, k1_sync=True, system_user=None, skip_automation=False, skip_validation=False, **updates):
+        result = {
+            'autopilot_changed_sources_text': '',
+        }
+
         ad_group_source_settings = self.get_current_settings()
         ad_group_settings = self.ad_group.get_current_settings()
         campaign_settings = self.ad_group.campaign.get_current_settings()
@@ -225,7 +229,7 @@ class AdGroupSource(models.Model):
 
         changes = latest_settings.get_setting_changes(new_settings)
         if not changes:
-            return
+            return result
 
         if not request:
             new_settings.system_user = system_user
@@ -235,22 +239,20 @@ class AdGroupSource(models.Model):
         new_settings.save(request, action_type=constants.HistoryActionType.MEDIA_SOURCE_SETTINGS_CHANGE)
 
         from automation import autopilot_plus
-        autopilot_changed_sources_text = ''
         if not skip_automation and\
                 ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
                 'state' in updates:
             changed_sources = autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False)
-            autopilot_changed_sources_text = ', '.join([s.source.name if s != constants.SourceAllRTB else
-                                                        constants.SourceAllRTB.NAME for s in changed_sources])
+            result['autopilot_changed_sources_text'] = ', '.join(
+                [s.source.name if s != constants.SourceAllRTB else constants.SourceAllRTB.NAME
+                    for s in changed_sources])
 
         self._notify_ad_group_source_settings_changed(request, changes, latest_settings)
 
         if k1_sync:
             utils.k1_helper.update_ad_group(self.ad_group.pk, 'AdGroupSource.update')
 
-        return {
-            'autopilot_changed_sources_text': autopilot_changed_sources_text,
-        }
+        return result
 
     def set_initial_settings(self, request, ad_group_settings, **updates):
         from dash.views import helpers

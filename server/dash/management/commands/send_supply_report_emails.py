@@ -95,7 +95,7 @@ class Command(ExceptionCommand):
         with connections[settings.STATS_DB_NAME].cursor() as c:
             c.execute(query, params)
             for date, domain, impressions, clicks, cost_nano in c:
-                cost_formatted = Decimal(cost_nano) / converters.DOLAR_TO_NANO
+                cost_formatted = Decimal(cost_nano if cost_nano else 0) / converters.DOLAR_TO_NANO
                 result.append([date, domain, impressions, clicks, cost_formatted])
 
         return result

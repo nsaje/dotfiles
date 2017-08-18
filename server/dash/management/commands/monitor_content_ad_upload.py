@@ -42,5 +42,3 @@ class Command(ExceptionCommand):
         else:
             influx.gauge('upload.candidates_num', num_pending, status='pending')
             influx.gauge('upload.candidates_num', num_waiting, status='waiting')
-            if num_waiting > 0:
-                logger.warning('%s content ad candidates in waiting state.', num_waiting)

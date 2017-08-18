@@ -184,6 +184,15 @@ class AdGroupSourceUpdate(TestCase):
         self.k1_update_mock.assert_called_once_with(self.ad_group.id, 'AdGroupSource.update')
         self.assertTrue(self.email_send_notification_mock.called)
 
+    def test_update_no_changes(self):
+        response = self.ad_group_source.update()
+
+        self.assertIn('autopilot_changed_sources_text', response)
+
+        self.assertFalse(self.autopilot_mock.initialize_budget_autopilot_on_ad_group.called)
+        self.k1_update_mock.assert_not_called()
+        self.assertFalse(self.email_send_notification_mock.called)
+
     def test_update_skip_automation(self):
         self.ad_group_source.update(
             skip_automation=True,

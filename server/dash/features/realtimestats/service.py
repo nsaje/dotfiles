@@ -1,5 +1,8 @@
 import logging
 from operator import itemgetter
+import urllib2
+
+import influx
 
 from dash import constants, models
 from utils import k1_helper
@@ -52,7 +55,11 @@ def _get_k1_adgroup_stats(ad_group):
                 params['facebook_campaign_id'] = ad_group_source.source_campaign_key
 
         stats = k1_helper.get_adgroup_realtimestats(ad_group.id, params)
+    except urllib2.HTTPError as e:
+        influx.incr('dash.realtimestats.error', 1, type='http', status=str(e.code))
+        stats = []
     except Exception as e:
+        influx.incr('dash.realtimestats.error', 1, type='exception')
         logger.exception(e)
         stats = []
     return stats
