@@ -110,7 +110,7 @@ services:
         environment:
           VIRTUAL_HOST: "onereports.zemanta.com"
           NEW_RELIC_APP_NAME: "Zemanta One (Reports)"
-        mem_limit: 2g
+        mem_limit: 3g
         labels:
           traefik.enable: "false"
         entrypoint: ""
