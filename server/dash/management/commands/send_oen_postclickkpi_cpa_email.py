@@ -31,19 +31,19 @@ class Command(ExceptionCommand):
 
         sources = {s.get_clean_slug(): s for s in models.Source.objects.all()}
         oen_ags = models.AdGroup.objects.filter(campaign__account=OEN_ACCOUNT).select_related('campaign')
-        oen_pub_group = models.PublisherGroup.objects.get(pk=OEN_PUBLISHER_GROUP_ID)
+        oen_pub_ids = self._prefetch_oen_pub_ids()
 
         s3_helper = s3helpers.S3Helper(S3_BUCKET_B1_ML)
         factors_file = s3_helper.get(S3_CPA_FACTORS_PATH)
 
         factors_ad_groups = self._get_factor_ad_groups(factors_file, oen_ags)
         conversions_data = self._get_conversions_data(factors_ad_groups)
-        factors = self._generate_output_csv(factors_file, oen_ags, sources, conversions_data, oen_pub_group)
+        factors = self._generate_output_csv(factors_file, oen_ags, sources, conversions_data, oen_pub_ids)
 
         email_helper.send_oen_postclickkpi_cpa_factors_email(factors)
         influx.gauge('dash.commands.send_oen_postclickkpi_cpa_email_job.num_factors', len(factors.splitlines()))
 
-    def _generate_output_csv(self, factors_file, ad_groups, sources, conversions_data, oen_pub_group):
+    def _generate_output_csv(self, factors_file, ad_groups, sources, conversions_data, oen_pub_ids):
 
         output = cStringIO.StringIO()
         writer = unicodecsv.writer(output, encoding='utf-8', delimiter='\t')
@@ -61,9 +61,9 @@ class Command(ExceptionCommand):
 
             out['factor'] = row[2]
 
-            oen_pubs = oen_pub_group.entries.filter(publisher__in=[out['publisher'], 'www.' + out['publisher']],
-                                                    source=sources[out['source']])
-            out['ob_pub_id'] = '-'.join(set([p.outbrain_publisher_id for p in oen_pubs]))
+            pub_key = ','.join([out['publisher'], str(sources[out['source']].id)])
+            oen_ids = oen_pub_ids[pub_key] if pub_key in oen_pub_ids else []
+            out['ob_pub_id'] = '-'.join(oen_ids)
 
             key = ','.join([str(out['adgroup']), str(sources[out['source']].id), out['publisher']])
             current_data = conversions_data.get(key, {})
@@ -137,3 +137,16 @@ class Command(ExceptionCommand):
             adg = None
 
         return out, adg
+
+    def _prefetch_oen_pub_ids(self):
+        oen_pub_ids = {}
+        for pge in models.PublisherGroup.objects.get(pk=OEN_PUBLISHER_GROUP_ID).entries.all():
+            pub = (pge.publisher[4:] if pge.publisher.startswith('www.') else pge.publisher).strip()
+            if not pge.source:
+                continue
+            key = ','.join([pub, str(pge.source.id)])
+            if key in oen_pub_ids:
+                oen_pub_ids[key].append(pge.outbrain_publisher_id)
+            else:
+                oen_pub_ids[key] = [pge.outbrain_publisher_id]
+        return oen_pub_ids
