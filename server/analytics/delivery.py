@@ -8,6 +8,7 @@ import utils.csv_utils
 import analytics.statements
 import analytics.helpers
 import analytics.projections
+import analytics.constants
 
 CAMPAIGN_REPORT_HEADER = ('Campaign', 'Campaign ID', 'URL', 'CS Rep', 'Campaign stop', 'Landing mode', 'Delivery')
 AD_GROUP_REPORT_HEADER = ('Ad group', 'Ad group ID', 'URL', 'CS Rep', 'End date', 'Landing mode', 'Delivery')
@@ -33,7 +34,7 @@ HIGH_PACING_THRESHOLD = Decimal('200.0')
 LOW_PACING_THRESHOLD = Decimal('50.0')
 
 
-def generate_delivery_reports(account_types=[], skip_ok=True):
+def generate_delivery_reports(account_types=[], skip_ok=True, check_pacing=True):
     today = datetime.date.today()
     yesterday = today - datetime.timedelta(1)
 
@@ -76,10 +77,12 @@ def generate_delivery_reports(account_types=[], skip_ok=True):
     )
 
     campaign_data = _prepare_campaign_data(running_campaigns, campaign_settings_map, account_settings_map,
-                                           campaign_stats, prev_campaign_stats, campaign_projections, skip_ok=skip_ok)
+                                           campaign_stats, prev_campaign_stats, campaign_projections,
+                                           skip_ok=skip_ok, check_pacing=check_pacing)
 
     ad_group_data = _prepare_ad_group_data(running_ad_groups, ad_group_settings_map,
-                                           ad_group_stats, account_settings_map, skip_ok=skip_ok)
+                                           ad_group_stats, account_settings_map,
+                                           skip_ok=skip_ok)
 
     return {
         'campaign': analytics.statements.generate_csv('csr/{}-campaign.csv'.format(today), utils.csv_utils.tuplelist_to_csv(
@@ -91,33 +94,33 @@ def generate_delivery_reports(account_types=[], skip_ok=True):
     }
 
 
-def check_campaign_delivery(campaign, campaign_settings, campaign_stats, prev_campaign_stats, projections):
+def check_campaign_delivery(campaign, campaign_settings, campaign_stats, prev_campaign_stats, projections, check_pacing=True):
     visits = campaign_stats.get('visits') or prev_campaign_stats.get('visits') or 0
     budgets = dash.models.BudgetLineItem.objects.filter(campaign=campaign).filter_active()
     primary_goal = dash.campaign_goals.get_primary_campaign_goal(campaign)
     is_postclick_enabled = campaign_settings.enable_ga_tracking or campaign_settings.enable_adobe_tracking
     if not primary_goal:
-        return 'no-goal'
+        return analytics.constants.CampaignDeliveryStatus.NO_GOAL
     if campaign_settings.iab_category == dash.constants.IABCategory.IAB24:
-        return 'iab-undefined'
+        return analytics.constants.CampaignDeliveryStatus.IAB_UNDEFINED
     if sum(b.allocated_amount() for b in budgets) <= 0:
-        return 'no-budget'
+        return analytics.constants.CampaignDeliveryStatus.NO_BUDGET
     if primary_goal.type in ENGAGEMENT_GOALS:
-        if visits <= 0:
-            return 'missing-postclick-stats'
         if not is_postclick_enabled:
-            return 'missing-postclick-setup'
-    if projections['pacing'] is not None:
+            return analytics.constants.CampaignDeliveryStatus.MISSING_POSTCLICK_SETUP
+        if visits <= 0:
+            return analytics.constants.CampaignDeliveryStatus.MISSING_POSTCLICK_STATS
+    if check_pacing and projections['pacing'] is not None:
         if projections['pacing'] < LOW_PACING_THRESHOLD:
-            return 'low-pacing'
+            return analytics.constants.CampaignDeliveryStatus.LOW_PACING
         if projections['pacing'] > HIGH_PACING_THRESHOLD:
-            return 'high-pacing'
-    return 'ok'
+            return analytics.constants.CampaignDeliveryStatus.HIGH_PACING
+    return analytics.constants.CampaignDeliveryStatus.OK
 
 
 def check_ad_group_delivery(ad_group, ad_group_settings, ad_group_stats):
-    # media = ad_group_stats.get('media')
-    # data = ad_group_stats.get('data')
+    media = ad_group_stats.get('media')
+    data = ad_group_stats.get('data')
     content_ads = dash.models.ContentAd.objects.filter(ad_group=ad_group)
     active_sources = dash.models.AdGroupSource.objects.filter(ad_group=ad_group).filter_active()
     b1_active_sources = active_sources.filter(
@@ -128,24 +131,24 @@ def check_ad_group_delivery(ad_group, ad_group_settings, ad_group_stats):
         submission_status=dash.constants.ContentAdSubmissionStatus.APPROVED,
     )
     if not content_ads.count():
-        return 'missing-ads'
+        return analytics.constants.AdGroupDeliveryStatus.MISSING_ADS
     if not approved_ad_sources.count():
-        return 'no-ads-approved'
+        return analytics.constants.AdGroupDeliveryStatus.NO_ADS_APPROVED
     if not active_sources.count():
-        return 'no-active-sources'
+        return analytics.constants.AdGroupDeliveryStatus.NO_ACTIVE_SOURCES
     if ad_group_settings.b1_sources_group_enabled and not b1_active_sources.count():
-        return 'rtb-as-1-no-sources'
+        return analytics.constants.AdGroupDeliveryStatus.RTB_AS_1_NO_SOURCES
     if ad_group_settings.whitelist_publisher_groups:
         if ad_group_settings.interest_targeting:
-            return 'whitelist-and-interest-targeting'
+            return analytics.constants.AdGroupDeliveryStatus.WHITELIST_AND_INTERESTS
         if ad_group_settings.bluekai_targeting:
-            return 'whitelist-and-data-targeting'
-    # if _extract_unbillable_data_segments(ad_group_settings.bluekai_targeting) and media and not data:
-    #     return 'missing-data-cost'
-    return 'ok'
+            return analytics.constants.AdGroupDeliveryStatus.WHITELIST_AND_DATA
+    if _extract_unbillable_data_segments(ad_group_settings.bluekai_targeting) and media and not data:
+        return analytics.constants.AdGroupDeliveryStatus.MISSING_DATA_COST
+    return analytics.constants.AdGroupDeliveryStatus.OK
 
 
-def _prepare_campaign_data(running_campaigns, campaign_settings_map, account_settings_map, campaign_stats, prev_campaign_stats, campaign_projections, skip_ok=True):
+def _prepare_campaign_data(running_campaigns, campaign_settings_map, account_settings_map, campaign_stats, prev_campaign_stats, campaign_projections, skip_ok=True, check_pacing=True):
     campaign_data = []
     for campaign in running_campaigns:
         campaign_settings = campaign_settings_map[campaign.pk]
@@ -153,6 +156,7 @@ def _prepare_campaign_data(running_campaigns, campaign_settings_map, account_set
             campaign, campaign_settings,
             campaign_stats.get(campaign.pk, {}), prev_campaign_stats.get(campaign.pk, {}),
             campaign_projections.row(campaign.pk),
+            check_pacing=check_pacing,
         )
         if skip_ok and delivery == 'ok':
             continue
