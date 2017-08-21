@@ -1,3 +1,4 @@
+import decimal
 import mock
 import urllib2
 
@@ -6,6 +7,7 @@ from django.test import TestCase
 import core.entity
 from dash.features.realtimestats import service
 from utils.magic_mixer import magic_mixer
+from utils import test_helper
 
 
 class RealtimestatsServiceTest(TestCase):
@@ -68,11 +70,13 @@ class RealtimestatsServiceTest(TestCase):
                 'source_slug': sources[1].bidder_slug,
                 'source': sources[1].name,
                 'spend': 3.0,
+                'etfm_spend': test_helper.AlmostMatcher(decimal.Decimal('3.000')),
             },
             {
                 'source_slug': sources[0].bidder_slug,
                 'source': sources[0].name,
                 'spend': 1.1,
+                'etfm_spend': test_helper.AlmostMatcher(decimal.Decimal('1.100')),
             },
         ])
 

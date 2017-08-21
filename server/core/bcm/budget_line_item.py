@@ -426,3 +426,7 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
                 (Q(end_date__gte=start_date) & Q(end_date__lte=end_date)) |
                 (Q(start_date__lte=start_date) & Q(end_date__gte=end_date))
             )
+
+        def filter_today(self):
+            current_date = utils.dates_helper.local_today()
+            return self.filter_overlapping(current_date, current_date)

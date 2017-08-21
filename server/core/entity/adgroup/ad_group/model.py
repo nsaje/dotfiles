@@ -15,10 +15,13 @@ from utils import json_helper
 from utils import k1_helper
 from utils import redirector_helper
 
+import core.bcm
 import core.common
 import core.history
 import core.source
 import core.entity
+
+import bcm_mixin
 
 
 class AdGroupManager(core.common.QuerySetManager):
@@ -76,7 +79,7 @@ class AdGroupManager(core.common.QuerySetManager):
         return ad_group
 
 
-class AdGroup(models.Model, core.common.SettingsProxyMixin):
+class AdGroup(models.Model, core.common.SettingsProxyMixin, bcm_mixin.AdGroupBCMMixin):
     _current_settings = None
 
     class Meta:
