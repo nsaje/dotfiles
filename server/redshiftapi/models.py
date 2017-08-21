@@ -440,6 +440,15 @@ class MVJointMaster(MVMaster):
                 'conversion_key': conversion_key or '0',
                 'planned_value': planned_value,
                 'metric_column': metric_column or '-1',
+                'cost_column': 'et_cost',
+            }, alias='et_performance_' + campaign_goal.get_view_key(), group=column_group))
+            self.add_column(backtosql.TemplateColumn('part_performance.sql', {
+                'is_cost_dependent': is_cost_dependent,
+                'is_inverse_performance': is_inverse_performance,
+                'has_conversion_key': conversion_key is not None,
+                'conversion_key': conversion_key or '0',
+                'planned_value': planned_value,
+                'metric_column': metric_column or '-1',
                 'cost_column': 'etfm_cost',
             }, alias='etfm_performance_' + campaign_goal.get_view_key(), group=column_group))
 

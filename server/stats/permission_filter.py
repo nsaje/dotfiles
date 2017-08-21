@@ -191,6 +191,9 @@ def _get_allowed_campaign_goals_fields(user, campaign_goals, campaign_goal_value
     if user.has_perm('zemauth.campaign_goal_performance'):
         allowed_fields |= set('performance_' + x.get_view_key() for x in campaign_goals)
 
+        if can_add_et_fields:
+            allowed_fields |= set('et_performance_' + x.get_view_key() for x in campaign_goals)
+
         if can_add_etfm_fields:
             allowed_fields |= set('etfm_performance_' + x.get_view_key() for x in campaign_goals)
 

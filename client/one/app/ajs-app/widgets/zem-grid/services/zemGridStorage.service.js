@@ -7,6 +7,7 @@ angular.module('one.widgets').factory('zemGridStorageService', function (zemLoca
     var DEFAULT_ORDER = '-clicks';
 
     function loadColumns (grid) {
+        // load columns that can be shown in the grid
         var accountKey = getAccountKey(grid.meta.data.level, zemNavigationNewService.getActiveAccount());
         var columns = zemLocalStorageService.get(KEY_COLUMNS, LOCAL_STORAGE_NAMESPACE) || {};
 

@@ -424,7 +424,9 @@ class MVJointMasterAfterJoinAggregatesTest(TestCase, backtosql.TestSQLMixin):
             False
         )
 
-        self.assertListEqual(context['after_join_aggregates'], [m.get_column(order_field), m.get_column('etfm_' + order_field)])
+        self.assertListEqual(context['after_join_aggregates'], [m.get_column(order_field),
+                                                                m.get_column('et_' + order_field),
+                                                                m.get_column('etfm_' + order_field)])
 
         self.assertEquals(context['orders'][0].alias, order_field)
 

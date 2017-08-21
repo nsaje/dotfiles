@@ -1179,6 +1179,12 @@ var constants = {
         INCLUDE: 'include',
         EXCLUDE: 'exclude',
     },
+    costMode: {
+        LEGACY: 'legacy',
+        PUBLIC: 'public',
+        PLATFORM: 'platform',
+        ANY: 'any',
+    }
 };
 
 constants.levelStateParamToLevelMap = {};
