@@ -5,9 +5,10 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
         batchName: '=',
         candidates: '=',
         isEdit: '=?',
+        showVideoUpload: '=?',
         adPickerApi: '=?',
         editFormApi: '=?',
-        statusUpdatedCallback: '=?'
+        statusUpdatedCallback: '=?',
     },
     template: require('./zemUploadContentAdPicker.component.html'),
     controller: function ($window, $interval) {

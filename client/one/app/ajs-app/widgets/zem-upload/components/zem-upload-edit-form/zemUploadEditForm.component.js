@@ -11,6 +11,7 @@ angular.module('one.widgets').directive('zemUploadEditForm', function () { // es
             startPollingVideoAssetStatus: '=',
             batchId: '=',
             isEdit: '=',
+            showVideoUpload: '=',
         },
         controllerAs: 'ctrl',
         template: require('./zemUploadEditForm.component.html'),

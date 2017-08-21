@@ -96,7 +96,7 @@
                 </div>
             </div>
 
-            <div class="form__group" ng-class="{'form--error': ctrl.fieldsHaveErrors(['videoAssetId'])}" ng-if="ctrl.hasPermission('zemauth.fea_video_upload')">
+            <div class="form__group" ng-class="{'form--error': ctrl.fieldsHaveErrors(['videoAssetId'])}" ng-if="ctrl.showVideoUpload && ctrl.hasPermission('zemauth.fea_video_upload')">
                 <label class="form__label">Video</label>
                 <div class="content-upload__video-uploader">
                     <zem-file-input class="content-upload__video-input" ng-if="!ctrl.selectedCandidate.videoAsset || ctrl.selectedCandidate.videoAsset.status === ctrl.videoAssetStatus.PROCESSING_ERROR" zem-file-input-change="ctrl.videoUploadCallback(file)" zem-file-input-accept="video/*">
