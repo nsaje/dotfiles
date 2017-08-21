@@ -3,8 +3,6 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
     var AVG_ET_COST_PREFIX = 'avg_et_cost_per_';
     var AVG_ETFM_COST_PREFIX = 'avg_etfm_cost_per_';
     var ROAS_PREFIX = 'roas_';
-    var ET_ROAS_PREFIX = 'et_roas_';
-    var ETFM_ROAS_PREFIX = 'etfm_roas_';
 
     var CONVERSION_GOALS_PLACEHOLDER = 'conversion_goals_placeholder';
     var PIXELS_PLACEHOLDER = 'pixels_placeholder';
@@ -1947,7 +1945,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             var shown = convertPermission(column.shown, zemPermissions.hasPermission);
             if (shown) {
                 if (usesBCMv2 && column.costMode === constants.costMode.LEGACY) {
-                    column.name += " (Legacy)";
+                    column.name += ' (Legacy)';
                 } else if (!usesBCMv2 && newCostModes.indexOf(column.costMode) >= 0) {
                     // don't show new columns in non-BCMv2 accounts
                     shown = false;
