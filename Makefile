@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 # this is private Docker registry URL hosted on AWS
 ECR_BASE = 569683728510.dkr.ecr.us-east-1.amazonaws.com/zemanta
 GIT_HASH := $(shell git rev-parse --verify HEAD)
