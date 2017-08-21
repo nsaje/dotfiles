@@ -12,11 +12,13 @@ else # CircleCI
 	BUILD_NUM  := $(shell test -n "${CIRCLE_BUILD_NUM}" && echo -n "${CIRCLE_BUILD_NUM}" || echo -n "00000" )
 endif
 
+CONF_ENV := $(shell test -n "${CONF_ENV}" && echo -n "${CONF_ENV}" || echo -n "docker")
+
 run:	## runs whole stack with docker-compose
-	CONF_ENV=docker	docker-compose up --force-recreate -d
+	CONF_ENV=$(CONF_ENV)	docker-compose up --force-recreate -d
 
 run_devenv:     ## run only development environment (i.e. services that are needed by z1).
-	CONF_ENV=docker	docker-compose -f docker-compose.yml -f docker-compose.devenv.yml up --force-recreate -d
+	CONF_ENV=$(CONF_ENV) docker-compose -f docker-compose.yml -f docker-compose.devenv.yml up --force-recreate -d
 
 stop:	## stops the whole stack
 	docker-compose stop
