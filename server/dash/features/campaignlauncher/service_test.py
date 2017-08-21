@@ -37,7 +37,7 @@ class TestService(TestCase):
             account=account,
             name='xyz',
             iab_category=dash.constants.IABCategory.IAB1_1,
-            budget_amount=123,
+            budget_amount=234,
             upload_batch=upload_batch,
             goal_type=dash.constants.CampaignGoalKPI.CPA,
             goal_value=Decimal(30.0),
@@ -61,6 +61,7 @@ class TestService(TestCase):
         self.assertEqual(budget, credit.budgets.first())
         self.assertEqual(budget.start_date, datetime.date(2017, 1, 1))
         self.assertEqual(budget.end_date, datetime.date(2017, 3, 3))
+        self.assertEqual(budget.amount, 234)
 
         goal = campaign.campaigngoal_set.first()
         self.assertEqual(goal.type, dash.constants.CampaignGoalKPI.CPA)
@@ -71,6 +72,7 @@ class TestService(TestCase):
         self.assertEqual(ad_group.settings.end_date, None)
         self.assertEqual(ad_group.settings.cpc_cc, Decimal('0.5'))
         self.assertEqual(ad_group.settings.daily_budget_cc, Decimal('15.2'))
+        self.assertEqual(ad_group.settings.autopilot_daily_budget, Decimal('15.2'))
         self.assertEqual(ad_group.settings.target_regions, ['US'])
         self.assertEqual(ad_group.settings.exclusion_target_regions, ['US-NY'])
         self.assertEqual(ad_group.settings.target_devices, [dash.constants.AdTargetDevice.DESKTOP])

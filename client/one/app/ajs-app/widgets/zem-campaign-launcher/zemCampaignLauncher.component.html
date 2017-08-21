@@ -97,7 +97,12 @@
             Campaign "{{$ctrl.state.fields.campaignName}}" was successfully launched. Redirecting ...
         </span>
         <span class="message message--error" ng-show="$ctrl.state.requests.launchCampaign.error">
-            An error occurred during campaign launch. Please correct the errors and try again.
+            <span ng-hide="$ctrl.state.requests.launchCampaign.errorMsgs">
+                An error occurred during campaign launch. Please correct the errors and try again.
+            </span>
+            <span ng-repeat="error in $ctrl.state.requests.launchCampaign.errorMsgs">
+                {{ error }}
+            </span>
         </span>
     </div>
 </div>

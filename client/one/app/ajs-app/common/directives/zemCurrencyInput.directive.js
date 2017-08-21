@@ -123,8 +123,16 @@ angular.module('one.common').directive('zemCurrencyInput', function ($filter) {
                     setCaretPos(element[0], caretPos);
                 });
 
-                element.bind('keydown click focus', function () {
+                element.bind('keydown click focus', function (event) {
                     setTimeout(function () {
+                        if (event.type === 'keydown') {
+                            // don't break tab-cycling focus
+                            var keyCode = event.keyCode || event.which;
+                            if (keyCode === 9) {
+                                return;
+                            }
+                        }
+
                         var el = element[0];
 
                         if (el.value === scope.emptyText) {

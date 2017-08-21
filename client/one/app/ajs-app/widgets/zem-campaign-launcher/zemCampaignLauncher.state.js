@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemCampaignLauncherStateService', function ($timeout, zemCampaignLauncherEndpoint, zemNavigationNewService) { // eslint-disable-line max-len
+angular.module('one.widgets').service('zemCampaignLauncherStateService', function ($timeout, $state, $window, zemCampaignLauncherEndpoint) { // eslint-disable-line max-len
     var LAUNCHER_STEPS = {
         objectives: {
             title: 'Campaign launcher',
@@ -197,16 +197,25 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
                 .then(function (campaignId) {
                     state.requests.launchCampaign.success = true;
                     $timeout(function () {
-                        // FIXME (jurebajt): New campaign isn't available in navigation hierarchy
-                        var launchedCampaign = zemNavigationNewService.getEntityById(
-                            constants.entityType.CAMPAIGN, campaignId
-                        );
-                        zemNavigationNewService.navigateTo(launchedCampaign);
+                        var params = {
+                            level: constants.levelStateParam.CAMPAIGN,
+                            id: campaignId,
+                        };
+                        var url = $state.href('v2.analytics', params);
+                        $window.location.assign(url);
                     }, 2000);
                 })
                 .catch(function (errors) {
+                    if (errors && errors.details) {
+                        if (angular.isArray(errors.details)) {
+                            state.requests.launchCampaign.errorMsgs = errors.details;
+                            state.fieldsErrors = {};
+                        } else {
+                            state.requests.launchCampaign.errorMsgs = null;
+                            state.fieldsErrors = errors.details;
+                        }
+                    }
                     state.requests.launchCampaign.error = true;
-                    state.fieldsErrors = errors;
                     $timeout(function () {
                         state.requests.launchCampaign.error = false;
                     }, 5000);

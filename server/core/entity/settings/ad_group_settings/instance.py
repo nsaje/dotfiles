@@ -155,7 +155,7 @@ class AdGroupSettingsMixin(object):
 
         if 'autopilot_state' in kwargs and not new_settings.landing_mode:
             new_settings.autopilot_state = kwargs['autopilot_state']
-        if kwargs.get('autopilot_state') == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+        if new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
             new_settings.autopilot_daily_budget = kwargs['autopilot_daily_budget']
 
         if 'b1_sources_group_cpc_cc' in kwargs and new_settings.b1_sources_group_enabled:

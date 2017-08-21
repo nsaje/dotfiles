@@ -17,6 +17,7 @@ class CampaignLauncherViewSet(RESTAPIBaseViewSet):
         default_settings = core.entity.settings.AdGroupSettings.get_defaults_dict()
         return self.response_ok({
             'target_regions': restapi.serializers.targeting.TargetRegionsSerializer(default_settings['target_regions']).data,
+            'exclusion_target_regions': restapi.serializers.targeting.TargetRegionsSerializer(default_settings['exclusion_target_regions']).data,
             'target_devices': restapi.serializers.targeting.DevicesSerializer(default_settings['target_devices']).data,
         })
 

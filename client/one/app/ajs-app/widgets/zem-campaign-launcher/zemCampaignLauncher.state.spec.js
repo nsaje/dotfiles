@@ -1,4 +1,4 @@
-describe('zemCampaignLauncherStateService', function () {
+('zemCampaignLauncherStateService', function () {
     var $injector;
     var $rootScope;
     var zemCampaignLauncherStateService;
@@ -255,7 +255,7 @@ describe('zemCampaignLauncherStateService', function () {
         var errors = {
             field1: [],
         };
-        var mockedAsyncFunction = zemSpecsHelper.getMockedAsyncFunction($injector, errors, true);
+        var mockedAsyncFunction = zemSpecsHelper.getMockedAsyncFunction($injector, {details: errors}, true);
         var stateService = zemCampaignLauncherStateService.createInstance(account);
         var state = stateService.getState();
 
@@ -266,6 +266,6 @@ describe('zemCampaignLauncherStateService', function () {
         $rootScope.$digest();
         expect(zemCampaignLauncherEndpoint.launchCampaign).toHaveBeenCalledWith(account, fields);
         expect(state.requests.launchCampaign.error).toBe(true);
-        expect(state.fieldsErrors).toEqual(errors);
+        expect(state.fieldsErrors).toEqual(errors.details);
     });
 });
