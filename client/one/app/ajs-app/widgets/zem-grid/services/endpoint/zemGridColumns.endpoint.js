@@ -1,8 +1,9 @@
-angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPermissions, zemGridConstants, zemNavigationNewService) {
+angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPermissions, zemGridConstants, zemNavigationNewService) { // eslint-disable-line max-len
     var AVG_COST_PREFIX = 'avg_cost_per_';
     var AVG_ET_COST_PREFIX = 'avg_et_cost_per_';
     var AVG_ETFM_COST_PREFIX = 'avg_etfm_cost_per_';
     var ROAS_PREFIX = 'roas_';
+    var ETFM_ROAS_PREFIX = 'etfm_roas';
 
     var CONVERSION_GOALS_PLACEHOLDER = 'conversion_goals_placeholder';
     var PIXELS_PLACEHOLDER = 'pixels_placeholder';
@@ -640,7 +641,6 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             name: 'Avg. Platform CPC',
             field: 'et_cpc',
             type: zemGridConstants.gridColumnTypes.CURRENCY,
-            shown: true,
             fractionSize: 3,
             help: '<p>The average platform cost per click on an ad.</p>' +
                   '<p>The metric is calculated as platform cost divided by total amount of clicks.</p>',
@@ -655,7 +655,6 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             name: 'Avg. CPC',
             field: 'etfm_cpc',
             type: zemGridConstants.gridColumnTypes.CURRENCY,
-            shown: true,
             fractionSize: 3,
             help: '<p>The average cost per click on an ad.</p>' +
                   '<p>The metric is calculated as the total cost divided by total amount of clicks.</p>',
