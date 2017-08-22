@@ -1,7 +1,8 @@
 import datetime
 from decimal import Decimal
 
-import dash.models
+import core.bcm
+import core.entity
 import dash.constants
 import dash.campaign_goals
 import utils.csv_utils
@@ -35,6 +36,7 @@ DEFAULT_ACCOUNT_TYPES = (
 UNBILLABLE_SEGMENT_PARTS = ('outbrain', 'lr-', 'lotame', )
 HIGH_PACING_THRESHOLD = Decimal('200.0')
 LOW_PACING_THRESHOLD = Decimal('50.0')
+MIN_B1_ACTIVE_SOURCES_FOR_INTEREST_TARGETING = 5
 
 
 def generate_delivery_reports(account_types=[], skip_ok=True, check_pacing=True, generate_csv=True):
@@ -42,31 +44,31 @@ def generate_delivery_reports(account_types=[], skip_ok=True, check_pacing=True,
     yesterday = today - datetime.timedelta(1)
 
     # Filter ad groups that are running today and were running tomorrow
-    valid_accounts = dash.models.Account.objects.all().filter_by_account_types(
+    valid_accounts = core.entity.account.Account.objects.all().filter_by_account_types(
         account_types or DEFAULT_ACCOUNT_TYPES
     ).values_list('pk', flat=True)
-    running_ad_groups = dash.models.AdGroup.objects.filter(
+    running_ad_groups = core.entity.adgroup.AdGroup.objects.filter(
         campaign__account__id__in=valid_accounts
     ).filter_running().filter_running(
         yesterday).select_related('campaign', 'campaign__account', 'campaign__account__agency')
-    running_campaigns = dash.models.Campaign.objects.filter(
+    running_campaigns = core.entity.campaign.Campaign.objects.filter(
         pk__in=set(running_ad_groups.values_list('campaign_id', flat=True))
     ).select_related('account', 'account__agency')
-    running_accounts = dash.models.Account.objects.filter(
+    running_accounts = core.entity.account.Account.objects.filter(
         pk__in=set(c.account_id for c in running_campaigns)
     )
 
     account_settings_map = {
         sett.account_id: sett
-        for sett in dash.models.AccountSettings.objects.all().group_current_settings()
+        for sett in core.entity.settings.AccountSettings.objects.all().group_current_settings()
     }
     campaign_settings_map = {
         sett.campaign_id: sett
-        for sett in dash.models.CampaignSettings.objects.all().group_current_settings()
+        for sett in core.entity.settings.CampaignSettings.objects.all().group_current_settings()
     }
     ad_group_settings_map = {
         sett.ad_group_id: sett
-        for sett in dash.models.AdGroupSettings.objects.all().group_current_settings()
+        for sett in core.entity.settings.AdGroupSettings.objects.all().group_current_settings()
     }
 
     campaign_stats = analytics.helpers.get_stats_multiple(yesterday, campaign=running_campaigns)
@@ -101,14 +103,15 @@ def generate_delivery_reports(account_types=[], skip_ok=True, check_pacing=True,
 
 def check_campaign_delivery(campaign, campaign_settings, campaign_stats, prev_campaign_stats, projections, check_pacing=True):
     visits = campaign_stats.get('visits') or prev_campaign_stats.get('visits') or 0
-    budgets = dash.models.BudgetLineItem.objects.filter(campaign=campaign).filter_active()
+    budgets = core.bcm.budget_line_item.BudgetLineItem.objects.filter(campaign=campaign).filter_active()
+    active_amount = sum(b.allocated_amount() for b in budgets)
     primary_goal = dash.campaign_goals.get_primary_campaign_goal(campaign)
     is_postclick_enabled = campaign_settings.enable_ga_tracking or campaign_settings.enable_adobe_tracking
     if not primary_goal:
         return analytics.constants.CampaignDeliveryStatus.NO_GOAL
     if campaign_settings.iab_category == dash.constants.IABCategory.IAB24:
         return analytics.constants.CampaignDeliveryStatus.IAB_UNDEFINED
-    if sum(b.allocated_amount() for b in budgets) <= 0:
+    if active_amount <= 0:
         return analytics.constants.CampaignDeliveryStatus.NO_BUDGET
     if primary_goal.type in ENGAGEMENT_GOALS:
         if not is_postclick_enabled:
@@ -120,34 +123,42 @@ def check_campaign_delivery(campaign, campaign_settings, campaign_stats, prev_ca
             return analytics.constants.CampaignDeliveryStatus.LOW_PACING
         if projections['pacing'] > HIGH_PACING_THRESHOLD:
             return analytics.constants.CampaignDeliveryStatus.HIGH_PACING
+    active_ad_groups = core.entity.adgroup.AdGroup.objects.filter(
+        campaign=campaign
+    ).filter_running()
+    if not active_ad_groups.count() and active_amount:
+        return analytics.constants.CampaignDeliveryStatus.NO_ACTIVE_AD_GROUPS
     return analytics.constants.CampaignDeliveryStatus.OK
 
 
 def check_ad_group_delivery(ad_group, ad_group_settings, ad_group_stats):
     media = ad_group_stats.get('media')
     data = ad_group_stats.get('data')
-    content_ads = dash.models.ContentAd.objects.filter(ad_group=ad_group)
-    active_sources = dash.models.AdGroupSource.objects.filter(ad_group=ad_group).filter_active()
+    content_ads = core.entity.contentad.ContentAd.objects.filter(ad_group=ad_group)
+    active_sources = core.entity.adgroup.AdGroupSource.objects.filter(ad_group=ad_group).filter_active()
     b1_active_sources = active_sources.filter(
         source__source_type__type=dash.constants.SourceType.B1
     )
-    approved_ad_sources = dash.models.ContentAdSource.objects.filter(
+    approved_ad_sources = core.entity.contentad.ContentAdSource.objects.filter(
         content_ad__ad_group_id=ad_group.pk,
         submission_status=dash.constants.ContentAdSubmissionStatus.APPROVED,
     )
+    b1_active_sources_count = b1_active_sources.count()
     if not content_ads.count():
         return analytics.constants.AdGroupDeliveryStatus.MISSING_ADS
     if not approved_ad_sources.count():
         return analytics.constants.AdGroupDeliveryStatus.NO_ADS_APPROVED
     if not active_sources.count():
         return analytics.constants.AdGroupDeliveryStatus.NO_ACTIVE_SOURCES
-    if ad_group_settings.b1_sources_group_enabled and not b1_active_sources.count():
+    if ad_group_settings.b1_sources_group_enabled and not b1_active_sources_count:
         return analytics.constants.AdGroupDeliveryStatus.RTB_AS_1_NO_SOURCES
     if ad_group_settings.whitelist_publisher_groups:
         if ad_group_settings.interest_targeting:
             return analytics.constants.AdGroupDeliveryStatus.WHITELIST_AND_INTERESTS
         if ad_group_settings.bluekai_targeting:
             return analytics.constants.AdGroupDeliveryStatus.WHITELIST_AND_DATA
+    if ad_group_settings.interest_targeting and b1_active_sources_count <= MIN_B1_ACTIVE_SOURCES_FOR_INTEREST_TARGETING:
+        return analytics.constants.AdGroupDeliveryStatus.TOO_LITTLE_B1_SOURCES_FOR_INTEREST_TARGETING
     if _extract_unbillable_data_segments(ad_group_settings.bluekai_targeting) and media and not data:
         return analytics.constants.AdGroupDeliveryStatus.MISSING_DATA_COST
     return analytics.constants.AdGroupDeliveryStatus.OK

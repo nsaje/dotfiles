@@ -47,6 +47,13 @@ class CampaignDeliveryTestCase(test.TestCase):
         self.stats_prev = {'visits': 5}
         self.projections = {'pacing': Decimal('90.9')}
 
+        self.ad_group = magic_mixer.blend(core.entity.adgroup.AdGroup, name='Ad Group 1', campaign=self.campaign)
+        self.ad_group_settings = self.ad_group.get_current_settings()
+        self.ad_group_settings.start_date = start_date
+        self.ad_group_settings.end_date = end_date
+        self.ad_group_settings.state = dash.constants.AdGroupSettingsState.ACTIVE
+        self.ad_group_settings.save(None)
+
     def test_primary_goal(self):
         self.goal.delete()
 
@@ -164,6 +171,39 @@ class CampaignDeliveryTestCase(test.TestCase):
             constants.CampaignDeliveryStatus.OK
         )
 
+    def test_active_ad_groups(self):
+        s = self.ad_group_settings.copy_settings()
+        s.state = dash.constants.AdGroupSettingsState.INACTIVE
+        s.save(None)
+
+        self.assertEqual(
+            delivery.check_campaign_delivery(self.campaign, self.campaign_settings,
+                                             self.stats_now, self.stats_prev, self.projections),
+            constants.CampaignDeliveryStatus.NO_ACTIVE_AD_GROUPS
+        )
+
+        s = self.ad_group_settings.copy_settings()
+        s.state = dash.constants.AdGroupSettingsState.ACTIVE
+        s.end_date = s.start_date
+        s.save(None)
+
+        self.assertEqual(
+            delivery.check_campaign_delivery(self.campaign, self.campaign_settings,
+                                             self.stats_now, self.stats_prev, self.projections),
+            constants.CampaignDeliveryStatus.NO_ACTIVE_AD_GROUPS
+        )
+
+        s = self.ad_group_settings.copy_settings()
+        s.state = dash.constants.AdGroupSettingsState.ACTIVE
+        s.end_date = None
+        s.save(None)
+
+        self.assertEqual(
+            delivery.check_campaign_delivery(self.campaign, self.campaign_settings,
+                                             self.stats_now, self.stats_prev, self.projections),
+            constants.CampaignDeliveryStatus.OK
+        )
+
 
 class AdGroupDeliveryTestCase(test.TestCase):
 
@@ -262,11 +302,38 @@ class AdGroupDeliveryTestCase(test.TestCase):
         )
         ad_group_source.set_initial_settings(
             None,
-            self.ad_group_settings,
+            s,
             state=1
         )
         self.assertEqual(
-            delivery.check_ad_group_delivery(self.ad_group, self.ad_group_settings, self.stats),
+            delivery.check_ad_group_delivery(self.ad_group, s, self.stats),
+            constants.AdGroupDeliveryStatus.OK
+        )
+
+    def test_interest_b1_sources(self):
+        s = self.ad_group_settings.copy_settings()
+        s.interest_targeting = ['finance']
+        s.save(None)
+
+        self.assertEqual(
+            delivery.check_ad_group_delivery(self.ad_group, s, self.stats),
+            constants.AdGroupDeliveryStatus.TOO_LITTLE_B1_SOURCES_FOR_INTEREST_TARGETING
+        )
+
+        source_type = magic_mixer.blend(core.source.SourceType, type='b1')
+        for i in range(6):
+            source = magic_mixer.blend(core.source.Source, name='Test B1 Source {}'.format(i), source_type=source_type)
+            ad_group_source = core.entity.adgroup.AdGroupSource.objects.create_unsafe(
+                ad_group=self.ad_group,
+                source=source
+            )
+            ad_group_source.set_initial_settings(
+                None,
+                s,
+                state=1
+            )
+        self.assertEqual(
+            delivery.check_ad_group_delivery(self.ad_group, s, self.stats),
             constants.AdGroupDeliveryStatus.OK
         )
 

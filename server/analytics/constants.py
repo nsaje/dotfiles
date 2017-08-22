@@ -10,6 +10,7 @@ class CampaignDeliveryStatus(ConstantBase):
     MISSING_POSTCLICK_SETUP = 'missing-postclick-setup'
     LOW_PACING = 'low-pacing'
     HIGH_PACING = 'high-pacing'
+    NO_ACTIVE_AD_GROUPS = 'no-active-ad-groups'
 
     _VALUES = {
         OK: 'OK',
@@ -20,6 +21,7 @@ class CampaignDeliveryStatus(ConstantBase):
         MISSING_POSTCLICK_SETUP: 'Google / Adobe analytics are not set up',
         LOW_PACING: 'Campaign pacing is low',
         HIGH_PACING: 'Campaign pacing is high',
+        NO_ACTIVE_AD_GROUPS: 'Campaign has budget but no active ad groups',
     }
 
 
@@ -32,6 +34,7 @@ class AdGroupDeliveryStatus(ConstantBase):
     WHITELIST_AND_INTERESTS = 'whitelist-and-interest-targeting'
     WHITELIST_AND_DATA = 'whitelist-and-data-targeting'
     MISSING_DATA_COST = 'missing-data-cost'
+    TOO_LITTLE_B1_SOURCES_FOR_INTEREST_TARGETING = 'too-little-b1-sources-for-interest-targeting'
 
     _VALUES = {
         OK: 'OK',
@@ -42,4 +45,5 @@ class AdGroupDeliveryStatus(ConstantBase):
         WHITELIST_AND_INTERESTS: 'Whitelist and interest targeting set',
         WHITELIST_AND_DATA: 'Whitelist and data targeting set',
         MISSING_DATA_COST: 'Missing data cost',
+        TOO_LITTLE_B1_SOURCES_FOR_INTEREST_TARGETING: 'Too little active b1 sources for successfull interest targeting',
     }

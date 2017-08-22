@@ -27,9 +27,9 @@ def convert_to_xls(csv_str, encoding='utf-8'):
     return buf.getvalue()
 
 
-def tuplelist_to_csv(data):
+def tuplelist_to_csv(data, delimiter=','):
     out = StringIO.StringIO()
-    csv_file = unicodecsv.writer(out, delimiter='\t')
+    csv_file = unicodecsv.writer(out, delimiter=delimiter)
     for row in data:
         csv_file.writerow(row)
     return out.getvalue()
