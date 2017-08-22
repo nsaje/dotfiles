@@ -8,7 +8,7 @@ import core.goals
 import core.bcm
 import dash.constants
 
-from analytics import delivery
+from analytics import delivery, constants
 
 from utils.magic_mixer import magic_mixer
 
@@ -53,7 +53,7 @@ class CampaignDeliveryTestCase(test.TestCase):
         self.assertEqual(
             delivery.check_campaign_delivery(self.campaign, self.campaign_settings,
                                              self.stats_now, self.stats_prev, self.projections),
-            'no-goal'
+            constants.CampaignDeliveryStatus.NO_GOAL
         )
 
         goal = core.goals.campaign_goal.CampaignGoal.objects.create_unsafe(
@@ -65,7 +65,7 @@ class CampaignDeliveryTestCase(test.TestCase):
         self.assertEqual(
             delivery.check_campaign_delivery(self.campaign, self.campaign_settings,
                                              self.stats_now, self.stats_prev, self.projections),
-            'no-goal'
+            constants.CampaignDeliveryStatus.NO_GOAL
         )
 
         goal.primary = True
@@ -74,7 +74,7 @@ class CampaignDeliveryTestCase(test.TestCase):
         self.assertEqual(
             delivery.check_campaign_delivery(self.campaign, self.campaign_settings,
                                              self.stats_now, self.stats_prev, self.projections),
-            'ok'
+            constants.CampaignDeliveryStatus.OK
         )
 
     def test_iab(self):
@@ -82,7 +82,7 @@ class CampaignDeliveryTestCase(test.TestCase):
         self.assertEqual(
             delivery.check_campaign_delivery(self.campaign, self.campaign_settings,
                                              self.stats_now, self.stats_prev, self.projections),
-            'iab-undefined'
+            constants.CampaignDeliveryStatus.IAB_UNDEFINED
         )
 
     def test_budget(self):
@@ -99,28 +99,28 @@ class CampaignDeliveryTestCase(test.TestCase):
         self.assertEqual(
             delivery.check_campaign_delivery(campaign, campaign_settings, self.stats_now,
                                              self.stats_prev, self.projections),
-            'no-budget'
+            constants.CampaignDeliveryStatus.NO_BUDGET
         )
 
     def test_missing_postclick_stats(self):
         self.assertEqual(
             delivery.check_campaign_delivery(self.campaign, self.campaign_settings, {}, {}, self.projections),
-            'missing-postclick-stats'
+            constants.CampaignDeliveryStatus.MISSING_POSTCLICK_STATS
         )
         self.assertEqual(
             delivery.check_campaign_delivery(self.campaign, self.campaign_settings, {
                                              'visits': 0}, {'visits': 0}, self.projections),
-            'missing-postclick-stats'
+            constants.CampaignDeliveryStatus.MISSING_POSTCLICK_STATS
         )
         self.assertEqual(
             delivery.check_campaign_delivery(self.campaign, self.campaign_settings,
                                              {'visits': 10}, {}, self.projections),
-            'ok'
+            constants.CampaignDeliveryStatus.OK
         )
         self.assertEqual(
             delivery.check_campaign_delivery(self.campaign, self.campaign_settings, {
                                              'visits': 0}, {'visits': 5}, self.projections),
-            'ok'
+            constants.CampaignDeliveryStatus.OK
         )
 
     def test_missing_postclick_setup(self):
@@ -131,7 +131,7 @@ class CampaignDeliveryTestCase(test.TestCase):
         self.assertEqual(
             delivery.check_campaign_delivery(self.campaign, campaign_settings,
                                              self.stats_now, self.stats_prev, self.projections),
-            'missing-postclick-setup'
+            constants.CampaignDeliveryStatus.MISSING_POSTCLICK_SETUP
         )
 
         campaign_settings = self.campaign.get_current_settings().copy_settings()
@@ -141,7 +141,7 @@ class CampaignDeliveryTestCase(test.TestCase):
         self.assertEqual(
             delivery.check_campaign_delivery(self.campaign, campaign_settings,
                                              self.stats_now, self.stats_prev, self.projections),
-            'ok'
+            constants.CampaignDeliveryStatus.OK
         )
 
     def test_pacing(self):
@@ -149,19 +149,19 @@ class CampaignDeliveryTestCase(test.TestCase):
             delivery.check_campaign_delivery(self.campaign, self.campaign_settings, self.stats_now, self.stats_prev, {
                 'pacing': Decimal('10.10')
             }),
-            'low-pacing'
+            constants.CampaignDeliveryStatus.LOW_PACING
         )
         self.assertEqual(
             delivery.check_campaign_delivery(self.campaign, self.campaign_settings, self.stats_now, self.stats_prev, {
                 'pacing': Decimal('220.99')
             }),
-            'high-pacing'
+            constants.CampaignDeliveryStatus.HIGH_PACING
         )
         self.assertEqual(
             delivery.check_campaign_delivery(self.campaign, self.campaign_settings, self.stats_now, self.stats_prev, {
                 'pacing': Decimal('220.99')
             }, check_pacing=False),
-            'ok'
+            constants.CampaignDeliveryStatus.OK
         )
 
 
@@ -210,7 +210,7 @@ class AdGroupDeliveryTestCase(test.TestCase):
         self.ad.delete()
         self.assertEqual(
             delivery.check_ad_group_delivery(self.ad_group, self.ad_group_settings, self.stats),
-            'missing-ads'
+            constants.AdGroupDeliveryStatus.MISSING_ADS
         )
 
     def test_approved_ads(self):
@@ -218,21 +218,21 @@ class AdGroupDeliveryTestCase(test.TestCase):
         self.ad_source.save()
         self.assertEqual(
             delivery.check_ad_group_delivery(self.ad_group, self.ad_group_settings, self.stats),
-            'no-ads-approved'
+            constants.AdGroupDeliveryStatus.NO_ADS_APPROVED
         )
 
         self.ad_source.submission_status = dash.constants.ContentAdSubmissionStatus.REJECTED
         self.ad_source.save()
         self.assertEqual(
             delivery.check_ad_group_delivery(self.ad_group, self.ad_group_settings, self.stats),
-            'no-ads-approved'
+            constants.AdGroupDeliveryStatus.NO_ADS_APPROVED
         )
 
         self.ad_source.submission_status = dash.constants.ContentAdSubmissionStatus.APPROVED
         self.ad_source.save()
         self.assertEqual(
             delivery.check_ad_group_delivery(self.ad_group, self.ad_group_settings, self.stats),
-            'ok'
+            constants.AdGroupDeliveryStatus.OK
         )
 
     def test_active_sources(self):
@@ -241,7 +241,7 @@ class AdGroupDeliveryTestCase(test.TestCase):
         s.save(None)
         self.assertEqual(
             delivery.check_ad_group_delivery(self.ad_group, self.ad_group_settings, self.stats),
-            'no-active-sources'
+            constants.AdGroupDeliveryStatus.NO_ACTIVE_SOURCES
         )
 
     def test_active_b1_sources(self):
@@ -250,7 +250,7 @@ class AdGroupDeliveryTestCase(test.TestCase):
         s.save(None)
         self.assertEqual(
             delivery.check_ad_group_delivery(self.ad_group, s, self.stats),
-            'rtb-as-1-no-sources'
+            constants.AdGroupDeliveryStatus.RTB_AS_1_NO_SOURCES
         )
 
         source_type = magic_mixer.blend(core.source.SourceType, type='b1')
@@ -267,7 +267,7 @@ class AdGroupDeliveryTestCase(test.TestCase):
         )
         self.assertEqual(
             delivery.check_ad_group_delivery(self.ad_group, self.ad_group_settings, self.stats),
-            'ok'
+            constants.AdGroupDeliveryStatus.OK
         )
 
     def test_whitelist_publisher_groups(self):
@@ -276,7 +276,7 @@ class AdGroupDeliveryTestCase(test.TestCase):
         s.save(None)
         self.assertEqual(
             delivery.check_ad_group_delivery(self.ad_group, s, self.stats),
-            'ok'
+            constants.AdGroupDeliveryStatus.OK
         )
 
         s = s.copy_settings()
@@ -285,7 +285,7 @@ class AdGroupDeliveryTestCase(test.TestCase):
         s.save(None)
         self.assertEqual(
             delivery.check_ad_group_delivery(self.ad_group, s, self.stats),
-            'whitelist-and-interest-targeting'
+            constants.AdGroupDeliveryStatus.WHITELIST_AND_INTERESTS
         )
 
         s = s.copy_settings()
@@ -294,7 +294,7 @@ class AdGroupDeliveryTestCase(test.TestCase):
         s.save(None)
         self.assertEqual(
             delivery.check_ad_group_delivery(self.ad_group, s, self.stats),
-            'whitelist-and-data-targeting'
+            constants.AdGroupDeliveryStatus.WHITELIST_AND_DATA
         )
 
     def test_missing_data_cost(self):
@@ -304,7 +304,7 @@ class AdGroupDeliveryTestCase(test.TestCase):
 
         self.assertEqual(
             delivery.check_ad_group_delivery(self.ad_group, s, {'media': 100, 'data': 0}),
-            'missing-data-cost'
+            constants.AdGroupDeliveryStatus.MISSING_DATA_COST
         )
 
         s = self.ad_group_settings.copy_settings()
@@ -313,7 +313,7 @@ class AdGroupDeliveryTestCase(test.TestCase):
 
         self.assertEqual(
             delivery.check_ad_group_delivery(self.ad_group, s, {'media': 100, 'data': 0}),
-            'missing-data-cost'
+            constants.AdGroupDeliveryStatus.MISSING_DATA_COST
         )
 
         s = self.ad_group_settings.copy_settings()
@@ -322,7 +322,7 @@ class AdGroupDeliveryTestCase(test.TestCase):
 
         self.assertEqual(
             delivery.check_ad_group_delivery(self.ad_group, s, {'media': 100, 'data': 0}),
-            'missing-data-cost'
+            constants.AdGroupDeliveryStatus.MISSING_DATA_COST
         )
 
     def test_missing_data_cost_unbillable(self):
@@ -332,7 +332,7 @@ class AdGroupDeliveryTestCase(test.TestCase):
 
         self.assertEqual(
             delivery.check_ad_group_delivery(self.ad_group, s, {'media': 100, 'data': 0}),
-            'ok'
+            constants.AdGroupDeliveryStatus.OK
         )
 
         s = self.ad_group_settings.copy_settings()
@@ -344,5 +344,5 @@ class AdGroupDeliveryTestCase(test.TestCase):
         s.save(None)
         self.assertEqual(
             delivery.check_ad_group_delivery(self.ad_group, s, {'media': 100, 'data': 0}),
-            'ok'
+            constants.AdGroupDeliveryStatus.OK
         )

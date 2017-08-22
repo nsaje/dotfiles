@@ -9,9 +9,12 @@ import analytics.statements
 import analytics.helpers
 import analytics.projections
 import analytics.constants
+import dash.infobox_helpers
 
-CAMPAIGN_REPORT_HEADER = ('Campaign', 'Campaign ID', 'URL', 'CS Rep', 'Campaign stop', 'Landing mode', 'Delivery')
-AD_GROUP_REPORT_HEADER = ('Ad group', 'Ad group ID', 'URL', 'CS Rep', 'End date', 'Landing mode', 'Delivery')
+CAMPAIGN_REPORT_HEADER = ('Campaign', 'Campaign ID', 'URL', 'CS Rep', 'Campaign stop', 'Landing mode',
+                          'Yesterday spend', 'Daily Spend Cap', 'Delivery')
+AD_GROUP_REPORT_HEADER = ('Ad group', 'Ad group ID', 'URL', 'CS Rep', 'End date', 'Landing mode', 'Yesterday spend',
+                          'Daily Spend Cap', 'Delivery')
 CAMPAIGN_URL = 'https://one.zemanta.com/v2/analytics/campaign/{}'
 AD_GROUP_URL = 'https://one.zemanta.com/v2/analytics/adgroup/{}'
 
@@ -34,7 +37,7 @@ HIGH_PACING_THRESHOLD = Decimal('200.0')
 LOW_PACING_THRESHOLD = Decimal('50.0')
 
 
-def generate_delivery_reports(account_types=[], skip_ok=True, check_pacing=True):
+def generate_delivery_reports(account_types=[], skip_ok=True, check_pacing=True, generate_csv=True):
     today = datetime.date.today()
     yesterday = today - datetime.timedelta(1)
 
@@ -67,9 +70,11 @@ def generate_delivery_reports(account_types=[], skip_ok=True, check_pacing=True)
     }
 
     campaign_stats = analytics.helpers.get_stats_multiple(yesterday, campaign=running_campaigns)
+
     prev_campaign_stats = analytics.helpers.get_stats_multiple(
         yesterday - datetime.timedelta(1), campaign=running_campaigns)
     ad_group_stats = analytics.helpers.get_stats_multiple(yesterday, ad_group=running_ad_groups)
+
     campaign_projections = analytics.projections.CurrentMonthBudgetProjections(
         'campaign',
         date=today,
@@ -87,10 +92,10 @@ def generate_delivery_reports(account_types=[], skip_ok=True, check_pacing=True)
     return {
         'campaign': analytics.statements.generate_csv('csr/{}-campaign.csv'.format(today), utils.csv_utils.tuplelist_to_csv(
             [CAMPAIGN_REPORT_HEADER] + campaign_data)
-        ),
+        ) if generate_csv else campaign_data,
         'ad_group': analytics.statements.generate_csv('csr/{}-ad-group.csv'.format(today), utils.csv_utils.tuplelist_to_csv(
             [AD_GROUP_REPORT_HEADER] + ad_group_data)
-        ),
+        ) if generate_csv else ad_group_data,
     }
 
 
@@ -160,6 +165,9 @@ def _prepare_campaign_data(running_campaigns, campaign_settings_map, account_set
         )
         if skip_ok and delivery == 'ok':
             continue
+        cap = Decimal(dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
+        spend = campaign_stats.get(campaign.pk, {}).get('media', Decimal(0)) + \
+            campaign_stats.get(campaign.pk, {}).get('data', Decimal(0))
         campaign_data.append((
             campaign.get_long_name(),
             campaign.pk,
@@ -167,6 +175,8 @@ def _prepare_campaign_data(running_campaigns, campaign_settings_map, account_set
             account_settings_map[campaign.account_id].default_cs_representative,
             campaign_settings.automatic_campaign_stop and 'on' or 'off',
             campaign_settings.landing_mode and 'on' or 'off',
+            spend,
+            cap,
             delivery,
         ))
     return campaign_data
@@ -179,6 +189,9 @@ def _prepare_ad_group_data(running_ad_groups, ad_group_settings_map, ad_group_st
         delivery = check_ad_group_delivery(ad_group, ad_group_settings, ad_group_stats.get(ad_group.pk, {}))
         if skip_ok and delivery == 'ok':
             continue
+        cap = Decimal(dash.infobox_helpers.calculate_daily_ad_group_cap(ad_group))
+        spend = ad_group_stats.get(ad_group.pk, {}).get('media', Decimal(0)) + \
+            ad_group_stats.get(ad_group.pk, {}).get('data', Decimal(0))
         ad_group_data.append((
             u'{}, {}'.format(ad_group.campaign.get_long_name(), ad_group.name),
             ad_group.pk,
@@ -186,6 +199,8 @@ def _prepare_ad_group_data(running_ad_groups, ad_group_settings_map, ad_group_st
             account_settings_map[ad_group.campaign.account_id].default_cs_representative,
             ad_group_settings.end_date or 'none',
             ad_group_settings.landing_mode and 'on' or 'off',
+            spend,
+            cap,
             delivery,
         ))
     return ad_group_data
