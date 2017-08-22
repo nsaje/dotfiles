@@ -78,7 +78,7 @@ def supply_dash_redirect(request):
         ad_group_source = models.AdGroupSource.objects.get(
             ad_group__id=int(ad_group_id), source__id=int(source_id))
     except models.AdGroupSource.DoesNotExist:
-        raise exc.MissingDataError()
+        raise Http404()
 
     credentials = ad_group_source.source_credentials and ad_group_source.source_credentials.decrypt()
     if ad_group_source.source.source_type.type == constants.SourceType.YAHOO:
@@ -87,6 +87,8 @@ def supply_dash_redirect(request):
             campaign_id=ad_group_source.source_campaign_key
         )
     elif ad_group_source.source.source_type.type == constants.SourceType.OUTBRAIN:
+        if 'campaign_id' not in ad_group_source.source_campaign_key:
+            raise Http404()
         url = OUTBRAIN_DASH_URL.format(
             campaign_id=ad_group_source.source_campaign_key['campaign_id'],
             marketer_id=str(ad_group_source.source_campaign_key['marketer_id'])
