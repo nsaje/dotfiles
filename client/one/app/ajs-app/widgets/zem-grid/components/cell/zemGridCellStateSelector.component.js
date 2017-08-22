@@ -41,7 +41,6 @@ angular.module('one.widgets').directive('zemGridCellStateSelector', function () 
                 if (vm.data) {
                     vm.active = isActive(vm.data.value, vm.stateValues.enabled);
                     vm.isEditable = vm.data.isEditable;
-                    vm.disabledMessage = vm.data.editMessage;
                 }
             }
 

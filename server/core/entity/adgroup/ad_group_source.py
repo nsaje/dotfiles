@@ -275,11 +275,17 @@ class AdGroupSource(models.Model):
         if 'daily_budget_cc' not in updates:
             updates['daily_budget_cc'] = self.source.default_daily_budget_cc
 
+        enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(
+            ad_group_settings,
+            [self],
+        )
+        if not enabling_autopilot_sources_allowed:
+            updates['state'] = constants.AdGroupSourceSettingsState.INACTIVE
+
         self.update(
             request,
             k1_sync=False,
             skip_automation=True,
-            skip_validation=True,
             **updates
         )
 

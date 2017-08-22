@@ -14,6 +14,8 @@ angular.module('one.widgets').directive('zemGridCellActions', function ($timeout
             var vm = this;
             var pubsub = vm.grid.meta.pubsub;
 
+            var AUTOPILOT_DISABLED_MSG = 'To enable this Media Source please increase Autopilot\'s Daily Spend Cap.';
+
             vm.isSaveRequestInProgress = vm.grid.meta.dataService.isSaveRequestInProgress;
             vm.stateValues = zemGridStateAndStatusHelpers
                 .getStateValues(vm.grid.meta.data.level, vm.grid.meta.data.breakdown);
@@ -21,6 +23,7 @@ angular.module('one.widgets').directive('zemGridCellActions', function ($timeout
             vm.execute = execute;
 
             $scope.$watch('ctrl.row', update);
+            $scope.$watch('vm.grid.meta.data.ext', update);
             pubsub.register(pubsub.EVENTS.DATA_UPDATED, $scope, update);
 
             function update () {
@@ -30,10 +33,12 @@ angular.module('one.widgets').directive('zemGridCellActions', function ($timeout
                 vm.enablingAutopilotSourcesAllowed = true;
                 vm.showStateSwitch = false;
                 vm.buttons = [];
+                vm.disabledMessage = '';
 
                 if (vm.row) {
                     vm.enablingAutopilotSourcesAllowed = vm.row.inGroup ||
                         vm.grid.meta.data.ext.enablingAutopilotSourcesAllowed;
+
                     vm.isFieldVisible = isFieldVisible(vm.row.level);
                     vm.isRowArchived = vm.row.data.archived;
                     vm.showStateSwitch = zemGridActionsService.isStateSwitchVisible(
@@ -61,7 +66,11 @@ angular.module('one.widgets').directive('zemGridCellActions', function ($timeout
                         var stateData = vm.row.data.stats.state;
                         vm.active = isActive(stateData.value);
                         vm.isEditable = stateData.isEditable;
-                        vm.disabledMessage = stateData.editMessage;
+                        if (stateData.editMessage) {
+                            vm.disabledMessage = stateData.editMessage;
+                        } else if (!vm.active && !vm.enablingAutopilotSourcesAllowed) {
+                            vm.disabledMessage = AUTOPILOT_DISABLED_MSG;
+                        }
                     }
                 }
             }
