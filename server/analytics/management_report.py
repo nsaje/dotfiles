@@ -213,6 +213,23 @@ def _get_counts(obj, subset=None, total_only=False):
     return cell
 
 
+def _get_oen(context):
+    oen_campaigns = set(dash.models.Campaign.objects.filter(account_id__in=OEN_ACCOUNTS).values_list('pk', flat=True))
+    projections = analytics.projections.CurrentMonthBudgetProjections(
+        'account',
+        accounts=dash.models.Account.objects.filter(pk__in=OEN_ACCOUNTS),
+        campaign_id__in=oen_campaigns
+    )
+    return [
+        TableCell(1),
+        _get_counts(context.campaigns, oen_campaigns),
+        TableCell(projections.total('attributed_media_spend')),
+        TableCell(projections.total('allocated_media_budget')),
+        TableCell(projections.total('media_spend_projection')),
+        TableCell(projections.total('total_fee_projection')),
+    ]
+
+
 def _populate_agency(context, type_filter):
     valid_accounts = set(
         account_id
@@ -316,9 +333,12 @@ def _prepare_table_rows(context):
         _get_totals(clientdirect_rows, i) for i in range(1, 7)
     ], row_type=TableRow.TYPE_TOTALS)]
 
-    grand_totals = [TableRow([TableCell('Grand Total')] + [
-        _get_totals(agency_costs + clientdirect_totals, i) for i in range(1, 7)
-    ], row_type=TableRow.TYPE_TOTALS)]
+    grand_totals = [
+        TableRow([TableCell('Z1 Total')] + [
+            _get_totals(agency_costs + clientdirect_totals, i) for i in range(1, 7)
+        ], row_type=TableRow.TYPE_TOTALS),
+        TableRow([TableCell('OEN Total')] + _get_oen(context), row_type=TableRow.TYPE_TOTALS)
+    ]
 
     return header + agency_costs + agency_rows + clientdirect_totals \
         + clientdirect_rows + grand_totals
