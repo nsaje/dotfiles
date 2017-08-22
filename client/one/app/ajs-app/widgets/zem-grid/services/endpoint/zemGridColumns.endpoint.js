@@ -2038,7 +2038,11 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         var columnPosition = findColumnPosition(columns, placeholder);
         if (!columnPosition) return;
 
-        Array.prototype.splice.apply(columns, [columnPosition, 0].concat(newColumns));
+        var allowedColumns = [];
+        for (var i = 0; i < newColumns.length; i++) {
+            if (newColumns[i].shown) allowedColumns.push(newColumns[i]);
+        }
+        Array.prototype.splice.apply(columns, [columnPosition, 0].concat(allowedColumns));
     }
 
     function insertIntoCategories (categories, newFields, placeholder) {
