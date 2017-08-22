@@ -286,6 +286,7 @@ class AdGroupSource(models.Model):
             request,
             k1_sync=False,
             skip_automation=True,
+            skip_validation=True,
             **updates
         )
 
