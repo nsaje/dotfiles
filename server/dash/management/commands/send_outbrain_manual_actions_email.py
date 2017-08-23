@@ -73,21 +73,18 @@ def get_ad_group_sources_with_content_submission_pending():
         submission_status=constants.ContentAdSubmissionStatus.PENDING
     ).values_list('content_ad__ad_group_id', flat=True).distinct()
 
+    ad_group_ids = models.AdGroup.objects.filter(pk__in=ad_group_ids)\
+                                         .exclude_archived()\
+                                         .filter_active()\
+                                         .values_list('pk', flat=True)
+
     ad_group_sources = models.AdGroupSource.objects\
         .filter(source__id=OUTBRAIN_SOURCE_ID)\
         .filter(ad_group__in=ad_group_ids)\
+        .filter_active()\
         .select_related('ad_group')
 
-    return [ad_group_source for ad_group_source in ad_group_sources if is_ad_group_source_active(ad_group_source)]
-
-
-def is_ad_group_source_active(ad_group_source):
-    ad_group_settings = ad_group_source.ad_group.get_current_settings()
-    ad_group_source_settings = ad_group_source.get_current_settings()
-    if models.AdGroup.get_running_status_by_sources_setting(ad_group_settings, [ad_group_source_settings]) \
-            == constants.AdGroupRunningStatus.ACTIVE:
-        return True
-    return False
+    return ad_group_sources
 
 
 def get_campaign_name(ad_group_source):
