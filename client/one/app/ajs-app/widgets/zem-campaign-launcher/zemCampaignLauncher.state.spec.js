@@ -1,4 +1,4 @@
-('zemCampaignLauncherStateService', function () {
+describe('zemCampaignLauncherStateService', function () {
     var $injector;
     var $rootScope;
     var zemCampaignLauncherStateService;
@@ -266,6 +266,6 @@
         $rootScope.$digest();
         expect(zemCampaignLauncherEndpoint.launchCampaign).toHaveBeenCalledWith(account, fields);
         expect(state.requests.launchCampaign.error).toBe(true);
-        expect(state.fieldsErrors).toEqual(errors.details);
+        expect(state.fieldsErrors).toEqual(errors);
     });
 });
