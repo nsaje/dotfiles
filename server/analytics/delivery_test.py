@@ -287,6 +287,7 @@ class AdGroupDeliveryTestCase(test.TestCase):
     def test_active_b1_sources(self):
         s = self.ad_group_settings.copy_settings()
         s.b1_sources_group_enabled = True
+        s.b1_sources_group_state = dash.constants.AdGroupSourceSettingsState.ACTIVE
         s.save(None)
         self.assertEqual(
             delivery.check_ad_group_delivery(self.ad_group, s, self.stats),

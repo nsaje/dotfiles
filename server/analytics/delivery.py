@@ -144,13 +144,14 @@ def check_ad_group_delivery(ad_group, ad_group_settings, ad_group_stats):
         submission_status=dash.constants.ContentAdSubmissionStatus.APPROVED,
     )
     b1_active_sources_count = b1_active_sources.count()
+    rtb_as_1_mvp_enabled = ad_group_settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.ACTIVE
     if not content_ads.count():
         return analytics.constants.AdGroupDeliveryStatus.MISSING_ADS
     if not approved_ad_sources.count():
         return analytics.constants.AdGroupDeliveryStatus.NO_ADS_APPROVED
     if not active_sources.count():
         return analytics.constants.AdGroupDeliveryStatus.NO_ACTIVE_SOURCES
-    if ad_group_settings.b1_sources_group_enabled and not b1_active_sources_count:
+    if ad_group_settings.b1_sources_group_enabled and rtb_as_1_mvp_enabled and not b1_active_sources_count:
         return analytics.constants.AdGroupDeliveryStatus.RTB_AS_1_NO_SOURCES
     if ad_group_settings.whitelist_publisher_groups:
         if ad_group_settings.interest_targeting:
