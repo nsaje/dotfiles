@@ -1944,7 +1944,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             var shown = convertPermission(column.shown, zemPermissions.hasPermission);
             if (shown) {
                 if (usesBCMv2 && column.costMode === constants.costMode.LEGACY) {
-                    column.name += ' (Legacy)';
+                    // don't show old columns in BCMv2 accounts
+                    shown = false;
                 } else if (!usesBCMv2 && newCostModes.indexOf(column.costMode) >= 0) {
                     // don't show new columns in non-BCMv2 accounts
                     shown = false;
