@@ -224,6 +224,8 @@ def _prepare_ad_group_data(running_ad_groups, ad_group_settings_map, ad_group_st
 
 def _extract_unbillable_data_segments(targeting_exp):
     segments = set()
+    if not targeting_exp:
+        return segments
     for part in targeting_exp:
         if type(part) == list:
             filtered_part = _extract_unbillable_data_segments(part)
