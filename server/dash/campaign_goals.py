@@ -23,6 +23,8 @@ CAMPAIGN_GOAL_NAME_FORMAT = {
     constants.CampaignGoalKPI.CPC: '{} CPC',
     constants.CampaignGoalKPI.CPV: '{} Cost Per Visit',
     constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: '{} Cost Per Non-Bounced Visit',
+    constants.CampaignGoalKPI.CP_NEW_VISITOR: '{} Cost Per New Visitor',
+    constants.CampaignGoalKPI.CP_PAGE_VIEW: '{} Cost Per Pageview',
 }
 
 CAMPAIGN_GOAL_VALUE_FORMAT = {
@@ -34,6 +36,8 @@ CAMPAIGN_GOAL_VALUE_FORMAT = {
     constants.CampaignGoalKPI.CPC: lambda x: utils.lc_helper.default_currency(x, places=3),
     constants.CampaignGoalKPI.CPV: utils.lc_helper.default_currency,
     constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: utils.lc_helper.default_currency,
+    constants.CampaignGoalKPI.CP_NEW_VISITOR: utils.lc_helper.default_currency,
+    constants.CampaignGoalKPI.CP_PAGE_VIEW: utils.lc_helper.default_currency,
 }
 
 CAMPAIGN_GOAL_MAP = {
@@ -59,6 +63,12 @@ CAMPAIGN_GOAL_MAP = {
         'avg_cost_per_non_bounced_visit',
         'non_bounced_visits',
     ],
+    constants.CampaignGoalKPI.CP_NEW_VISITOR: [
+            'avg_cost_for_new_visitor',
+        ],
+    constants.CampaignGoalKPI.CP_PAGE_VIEW: [
+            'avg_cost_per_pageview',
+        ],
 }
 
 CAMPAIGN_GOAL_PRIMARY_METRIC_MAP = {
@@ -69,6 +79,8 @@ CAMPAIGN_GOAL_PRIMARY_METRIC_MAP = {
     constants.CampaignGoalKPI.CPC: 'cpc',
     constants.CampaignGoalKPI.CPV: 'avg_cost_per_visit',
     constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: 'avg_cost_per_non_bounced_visit',
+    constants.CampaignGoalKPI.CP_NEW_VISITOR: 'avg_cost_for_new_visitor',
+    constants.CampaignGoalKPI.CP_PAGE_VIEW: 'avg_cost_per_pageview',
 }
 
 INVERSE_PERFORMANCE_CAMPAIGN_GOALS = (
@@ -77,6 +89,8 @@ INVERSE_PERFORMANCE_CAMPAIGN_GOALS = (
     constants.CampaignGoalKPI.CPC,
     constants.CampaignGoalKPI.CPV,
     constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT,
+    constants.CampaignGoalKPI.CP_NEW_VISITOR,
+    constants.CampaignGoalKPI.CP_PAGE_VIEW,
 )
 
 STATUS_TO_EMOTICON_MAP = {
@@ -94,6 +108,8 @@ COST_DEPENDANT_GOALS = (
     constants.CampaignGoalKPI.CPC,
     constants.CampaignGoalKPI.CPV,
     constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT,
+    constants.CampaignGoalKPI.CP_NEW_VISITOR,
+    constants.CampaignGoalKPI.CP_PAGE_VIEW,
 )
 
 ROUNDING = ROUND_DOWN

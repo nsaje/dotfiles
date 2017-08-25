@@ -26,6 +26,8 @@ ENGAGEMENT_GOALS = (
     dash.constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS,
     dash.constants.CampaignGoalKPI.CPV,
     dash.constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT,
+    dash.constants.CampaignGoalKPI.CP_NEW_VISITOR,
+    dash.constants.CampaignGoalKPI.CP_PAGE_VIEW,
 )
 DEFAULT_ACCOUNT_TYPES = (
     dash.constants.AccountType.PILOT,

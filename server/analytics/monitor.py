@@ -295,6 +295,8 @@ def audit_click_discrepancy(date=None, days=30, threshold=20):
                     dash.constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS,
                     dash.constants.CampaignGoalKPI.CPV,
                     dash.constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT,
+                    dash.constants.CampaignGoalKPI.CP_NEW_VISITOR,
+                    dash.constants.CampaignGoalKPI.CP_PAGE_VIEW,
                 )
             ).values_list('campaign_id', flat=True)
         )
