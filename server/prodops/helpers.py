@@ -14,6 +14,21 @@ def upload_report_from_fs(path, filepath):
     return analytics.statements.get_url(path)
 
 
+def generate_report_from_dicts(name, dicts):
+    """
+    Generates a report with keys as column headers
+    """
+
+    headers = dicts[0].keys()
+    headers.sort()
+
+    rows = [headers]
+    for row in dicts:
+        rows.append([row[h] for h in headers])
+
+    return generate_report(name, rows)
+
+
 def generate_report(name, data):
     s3 = s3helpers.S3Helper(settings.S3_BUCKET_CUSTOM_REPORTS)
     path = '/custom-csv/{}.csv'.format(name)

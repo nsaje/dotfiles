@@ -2092,7 +2092,7 @@ var options = {
         {name: 'pages per session', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
         {name: 'cost per visit', value: constants.campaignGoalKPI.CPV},
         {name: 'average CPC', value: constants.campaignGoalKPI.CPC},
-        {name: 'new visitors', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS},
+        {name: 'new users', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS},
         {name: 'CPA', value: constants.campaignGoalKPI.CPA},
         {name: 'cost per non-bounced visit', value: constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT},
         {name: 'cost per new visitor', value: constants.campaignGoalKPI.CP_NEW_VISITOR},

@@ -181,22 +181,27 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
             var value;
             switch (section.condition.type) {
             case zemDataFilterService.CONDITION_TYPES.value:
-                value = section.value;
+                value = section.value || null;
                 break;
             case zemDataFilterService.CONDITION_TYPES.list:
-                value = [];
-                section.options.forEach(function (option) {
-                    if (option.enabled) {
-                        value.push(option.value);
-                    }
-                });
+                value = null;
+                if (section.options) {
+                    value = [];
+                    section.options.forEach(function (option) {
+                        if (option.enabled) {
+                            value.push(option.value);
+                        }
+                    });
+                }
                 break;
             }
 
-            conditions.push({
-                condition: section.condition,
-                value: value,
-            });
+            if (value) {
+                conditions.push({
+                    condition: section.condition,
+                    value: value,
+                });
+            }
         });
 
         zemDataFilterService.applyConditions(conditions);

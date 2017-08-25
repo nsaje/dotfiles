@@ -454,6 +454,28 @@ class K1ApiTest(K1ApiBaseTest):
         self.assertEqual(data['ga_accounts'][2]['ga_account_id'], '123')
         self.assertEqual(data['ga_accounts'][2]['ga_web_property_id'], 'UA-123-3')
 
+    def test_get_ga_accounts_since_yesterday_with_additional_campaigns(self):
+        campaign_settings = dash.models.CampaignSettings.objects.all().group_current_settings().first().copy_settings()
+        campaign_settings.ga_property_id = 'UA-123-4'
+        campaign_settings.save(None)
+
+        response = self.client.get(
+            reverse('k1api.ga_accounts'),
+            QUERY_STRING=urllib.urlencode(
+                {
+                    'campaigns': '1'
+                }),
+        )
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(len(data['ga_accounts']), 1)
+        self.assertEqual(data['ga_accounts'][0]['account_id'], 1)
+        self.assertEqual(data['ga_accounts'][0]['ga_account_id'], '123')
+        self.assertEqual(data['ga_accounts'][0]['ga_web_property_id'], 'UA-123-4')
+
     def _test_get_content_ad_sources_for_ad_group(self, ad_group_id, content_ad_id):
         response = self.client.get(
             reverse('k1api.content_ads.sources'),

@@ -55,6 +55,7 @@ class CampaignGoalsTestCase(TestCase):
             value=Decimal(value),
             created_by=self.user
         )
+        return goal
 
     def test_get_primary_campaign_goal(self):
         models.CampaignGoal.objects.all().delete()
@@ -230,14 +231,17 @@ class CampaignGoalsTestCase(TestCase):
     def test_get_goal_performance(self, mock_totals):
         start_date, end_date = datetime.date.today() - datetime.timedelta(7), datetime.date.today()
 
-        self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 75)
-        self._add_value(constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
-        self._add_value(constants.CampaignGoalKPI.TIME_ON_SITE, 60)
-        self._add_value(constants.CampaignGoalKPI.CPA, 10)
-        self._add_value(constants.CampaignGoalKPI.CPV, 15)
-        self._add_value(constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT, 2)
+        goal_1 = self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 75)
+        goal_2 = self._add_value(constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
+        goal_3 = self._add_value(constants.CampaignGoalKPI.TIME_ON_SITE, 60)
+        goal_4 = self._add_value(constants.CampaignGoalKPI.CPA, 10)
+        goal_5 = self._add_value(constants.CampaignGoalKPI.CPV, 15)
+        goal_6 = self._add_value(constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT, 2)
+        goal_7 = self._goal(constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS)
+        goal_8 = self._add_value(constants.CampaignGoalKPI.CPC, 0.02)
 
         mock_totals.return_value = {
+            'cpc': 0.01,
             'conversion_goal_1': 10,
             'e_media_cost': 5,
             'bounce_rate': 10,
@@ -249,27 +253,37 @@ class CampaignGoalsTestCase(TestCase):
         }
         performance = campaign_goals.get_goals_performance_campaign(
             self.user, self.campaign, start_date, end_date)
-        self.assertEqual(
-            [(p[1], p[2]) for p in performance],
-            [(10, Decimal('60.00000')), (0.5, Decimal('10.00000')), (None, None),
-             (10, Decimal('5.00000')),  (8, Decimal('2.00000')), (10, Decimal('75.00000')),
-             (1.2, None), (35, Decimal('15.00000')), ],
-        )
-        self.assertEqual(
-            [p[0] for p in performance],
-            [cgp.UNDERPERFORMING, cgp.SUPERPERFORMING, cgp.UNDERPERFORMING,
-             cgp.SUPERPERFORMING, cgp.UNDERPERFORMING, cgp.SUPERPERFORMING,
-             cgp.AVERAGE, cgp.UNDERPERFORMING, ],
+        self.assertItemsEqual(
+            performance,
+            [
+                (cgp.SUPERPERFORMING, 10, Decimal('75.00000'), goal_1),
+                (cgp.SUPERPERFORMING, 10, Decimal('5.00000'), goal_2),
+                (cgp.UNDERPERFORMING, 10, Decimal('60.00000'), goal_3),
+                (cgp.SUPERPERFORMING, 0.5, Decimal('10.00000'), goal_4),
+                (cgp.UNDERPERFORMING, 35, Decimal('15.00000'), goal_5),
+                (cgp.UNDERPERFORMING, 8, Decimal('2.00000'), goal_6),
+                (cgp.AVERAGE, 1.2, None, goal_7),
+                (cgp.SUPERPERFORMING, 0.01, Decimal('0.0200'), goal_8),
+            ],
         )
 
         mock_totals.return_value['conversion_goal_1'] = None
+        mock_totals.return_value['cpc'] = Decimal('0.0001')  # check low numbers
         performance = campaign_goals.get_goals_performance_campaign(
             self.user, self.campaign, start_date, end_date)
-        self.assertEqual(
-            [p[0] for p in performance],
-            [cgp.UNDERPERFORMING, cgp.UNDERPERFORMING, cgp.UNDERPERFORMING,
-             cgp.SUPERPERFORMING, cgp.UNDERPERFORMING, cgp.SUPERPERFORMING,
-             cgp.AVERAGE, cgp.UNDERPERFORMING, ],
+
+        self.assertItemsEqual(
+            performance,
+            [
+                (cgp.SUPERPERFORMING, 10, Decimal('75.00000'), goal_1),
+                (cgp.SUPERPERFORMING, 10, Decimal('5.00000'), goal_2),
+                (cgp.UNDERPERFORMING, 10, Decimal('60.00000'), goal_3),
+                (cgp.UNDERPERFORMING, None, Decimal('10.00000'), goal_4),
+                (cgp.UNDERPERFORMING, 35, Decimal('15.00000'), goal_5),
+                (cgp.UNDERPERFORMING, 8, Decimal('2.00000'), goal_6),
+                (cgp.AVERAGE, 1.2, None, goal_7),
+                (cgp.SUPERPERFORMING, Decimal('0.0001'), Decimal('0.0200'), goal_8),
+            ]
         )
 
     @patch('stats.api_breakdowns.totals')
@@ -365,7 +379,7 @@ class CampaignGoalsTestCase(TestCase):
 
     def test_get_performance_value(self):
         self.assertEqual(
-            campaign_goals.get_performance_value(
+            campaign_goals._get_performance_value(
                 constants.CampaignGoalKPI.PAGES_PER_SESSION,
                 Decimal('1'),
                 Decimal('1'),
@@ -373,7 +387,7 @@ class CampaignGoalsTestCase(TestCase):
             Decimal('1'),
         )
         self.assertEqual(
-            campaign_goals.get_performance_value(
+            campaign_goals._get_performance_value(
                 constants.CampaignGoalKPI.PAGES_PER_SESSION,
                 Decimal('1'),
                 Decimal('1.1'),
@@ -381,7 +395,7 @@ class CampaignGoalsTestCase(TestCase):
             Decimal('0.9090909090909090909090909091'),
         )
         self.assertEqual(
-            campaign_goals.get_performance_value(
+            campaign_goals._get_performance_value(
                 constants.CampaignGoalKPI.PAGES_PER_SESSION,
                 Decimal('0.5'),
                 Decimal('1'),
@@ -390,7 +404,7 @@ class CampaignGoalsTestCase(TestCase):
         )
 
         self.assertEqual(
-            campaign_goals.get_performance_value(
+            campaign_goals._get_performance_value(
                 constants.CampaignGoalKPI.CPC,
                 Decimal('1'),
                 Decimal('1'),
@@ -398,7 +412,7 @@ class CampaignGoalsTestCase(TestCase):
             Decimal('1'),
         )
         self.assertEqual(
-            campaign_goals.get_performance_value(
+            campaign_goals._get_performance_value(
                 constants.CampaignGoalKPI.CPC,
                 Decimal('1.5'),
                 Decimal('1'),
@@ -406,7 +420,7 @@ class CampaignGoalsTestCase(TestCase):
             Decimal('0.5'),
         )
         self.assertEqual(
-            campaign_goals.get_performance_value(
+            campaign_goals._get_performance_value(
                 constants.CampaignGoalKPI.CPC,
                 Decimal('0.5'),
                 Decimal('1'),
@@ -416,24 +430,24 @@ class CampaignGoalsTestCase(TestCase):
 
     def get_performance_value_rounding(self):
         self.assertEqual(
-            campaign_goals.get_performance_value(
+            campaign_goals._get_performance_value(
                 constants.CampaignGoalKPI.CPC,
                 Decimal('0.55'),
                 Decimal('1'),
             ),
-            campaign_goals.get_performance_value(
+            campaign_goals._get_performance_value(
                 constants.CampaignGoalKPI.CPC,
                 Decimal('0.55555'),
                 Decimal('1'),
             ),
         )
         self.assertEqual(
-            campaign_goals.get_performance_value(
+            campaign_goals._get_performance_value(
                 constants.CampaignGoalKPI.CPC,
                 Decimal('0.56'),
                 Decimal('1'),
             ),
-            campaign_goals.get_performance_value(
+            campaign_goals._get_performance_value(
                 constants.CampaignGoalKPI.CPC,
                 Decimal('0.55655'),
                 Decimal('1'),
@@ -536,6 +550,15 @@ class CampaignGoalsTestCase(TestCase):
                 cost=Decimal('0.00001')  # should be rounded to 0
             ),
             constants.CampaignGoalPerformance.AVERAGE,
+        )
+        self.assertEqual(
+            campaign_goals.get_goal_performance_status(
+                constants.CampaignGoalKPI.CPC,
+                Decimal('0.009'),
+                Decimal('0.350'),
+                cost=Decimal('0.69')
+            ),
+            constants.CampaignGoalPerformance.SUPERPERFORMING,
         )
 
     def test_generate_series(self):

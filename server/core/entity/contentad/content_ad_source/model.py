@@ -9,6 +9,8 @@ import core.entity
 import core.history
 import core.source
 
+import prodops_mixin
+
 
 class ContentAdSourceManager(models.Manager):
 
@@ -31,7 +33,7 @@ class ContentAdSourceManager(models.Manager):
         return content_ad_sources
 
 
-class ContentAdSource(models.Model):
+class ContentAdSource(models.Model, prodops_mixin.ProdopsMixin):
     class Meta:
         app_label = 'dash'
 
