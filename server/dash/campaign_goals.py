@@ -17,7 +17,7 @@ import utils.lc_helper
 CAMPAIGN_GOAL_NAME_FORMAT = {
     constants.CampaignGoalKPI.TIME_ON_SITE: '{} Time on Site - Seconds',
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE: '{} Max Bounce Rate',
-    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: '{} New Unique Visitors',
+    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: '{} New Users',
     constants.CampaignGoalKPI.PAGES_PER_SESSION: '{} Pageviews per Visit',
     constants.CampaignGoalKPI.CPA: '{} CPA',
     constants.CampaignGoalKPI.CPC: '{} CPC',
