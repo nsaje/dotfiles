@@ -2251,7 +2251,7 @@ constants.automaticallyOptimizedKPIGoals = [
     constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT,
     constants.campaignGoalKPI.CP_NEW_VISITOR,
     constants.campaignGoalKPI.CP_PAGE_VIEW,
-    ];
+];
 
 
 constants.defaultAccountTypes = [
