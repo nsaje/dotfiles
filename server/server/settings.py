@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'analytics',
     'prodops',
     'integrations.bizwire',
+    'dev',
 ]
 
 MIDDLEWARE = [
