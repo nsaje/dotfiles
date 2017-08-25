@@ -256,17 +256,26 @@ class GAAccountsView(K1APIView):
 
     def get(self, request):
         date_since = request.GET.get('date_since')
-        all_current_settings = dash.models.CampaignSettings.objects.all().group_current_settings()
+
+        all_active_campaign_ids = set(dash.models.Campaign.objects.all(
+        ).exclude_archived().values_list('id', flat=True))
+        if 'campaigns' in request.GET:
+            all_active_campaign_ids = set(request.GET.get('campaigns', '').split(','))
+        all_current_settings = dash.models.CampaignSettings.objects.filter(
+            campaign_id__in=all_active_campaign_ids
+        ).group_current_settings()
         ga_accounts = set()
         for current_settings in all_current_settings:
             self._extract_ga_settings(ga_accounts, current_settings)
         if date_since:
             valid_previous_settings = dash.models.CampaignSettings.objects.filter(
+                campaign_id__in=all_active_campaign_ids,
                 created_dt__lte=datetime.datetime.strptime(date_since, '%Y-%m-%d').date()
             ).order_by('campaign_id', '-created_dt').distinct('campaign')
             for previous_settings in valid_previous_settings:
                 self._extract_ga_settings(ga_accounts, previous_settings)
             all_intermediate_settings = dash.models.CampaignSettings.objects.filter(
+                campaign_id__in=all_active_campaign_ids,
                 created_dt__gte=datetime.datetime.strptime(date_since, '%Y-%m-%d').date()
             ).exclude(
                 pk__in=set(s.pk for s in all_current_settings) | set(s.pk for s in valid_previous_settings)
@@ -607,8 +616,10 @@ class AdGroupConversionStatsView(K1APIView):
         if ad_group_ids:
             ad_group_ids = ad_group_ids.split(',')
 
-        conversion_generator = redshiftapi.internal_stats.conversions.query_conversions(from_date, to_date, ad_group_ids)
-        path = etl.materialize_views.upload_csv("conversions", from_date, uuid.uuid4().hex, lambda: conversion_generator)
+        conversion_generator = redshiftapi.internal_stats.conversions.query_conversions(
+            from_date, to_date, ad_group_ids)
+        path = etl.materialize_views.upload_csv(
+            "conversions", from_date, uuid.uuid4().hex, lambda: conversion_generator)
 
         return self.response_ok({
             'path': path,
@@ -632,8 +643,10 @@ class AdGroupContentAdPublisherStatsView(K1APIView):
         if ad_group_ids:
             ad_group_ids = ad_group_ids.split(',')
 
-        stats_generator = redshiftapi.internal_stats.content_ad_publishers.query_content_ad_publishers(from_date, to_date, ad_group_ids)
-        path = etl.materialize_views.upload_csv("content_ad_publishers", from_date, uuid.uuid4().hex, lambda: stats_generator)
+        stats_generator = redshiftapi.internal_stats.content_ad_publishers.query_content_ad_publishers(
+            from_date, to_date, ad_group_ids)
+        path = etl.materialize_views.upload_csv("content_ad_publishers", from_date,
+                                                uuid.uuid4().hex, lambda: stats_generator)
 
         return self.response_ok({
             'path': path,
