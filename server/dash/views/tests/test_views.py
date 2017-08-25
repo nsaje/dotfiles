@@ -857,6 +857,8 @@ class AdGroupOverviewTest(TestCase):
             'adgroup_id': 1,
             'source_id': 9,
             'e_yesterday_cost': decimal.Decimal('0.0'),
+            'yesterday_et_cost': decimal.Decimal('0.0'),
+            'yesterday_etfm_cost': decimal.Decimal('0.0'),
         }]
 
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -966,6 +968,8 @@ class AdGroupOverviewTest(TestCase):
 
         mock_query_all.return_value = [{
             'e_yesterday_cost': decimal.Decimal('60.0'),
+            'yesterday_et_cost': decimal.Decimal('60.0'),
+            'yesterday_etfm_cost': decimal.Decimal('60.0'),
         }]
 
         response = self._get_ad_group_overview(1)
@@ -1029,6 +1033,8 @@ class CampaignOverviewTest(TestCase):
             'campaign_id': 1,
             'source_id': 9,
             'e_yesterday_cost': decimal.Decimal('0.0'),
+            'yesterday_et_cost': decimal.Decimal('0.0'),
+            'yesterday_etfm_cost': decimal.Decimal('0.0'),
         }]
         req = RequestFactory().get('/')
         req.user = self.user

@@ -259,16 +259,19 @@ class InfoBoxHelpersTest(TestCase):
     def test_get_yesterday_total_spend(self, mock_query_all):
         mock_query_all.return_value = [{
             'campaign_id': u'1',
-            'e_yesterday_cost': Decimal(50),
+            'e_yesterday_cost': 50,
+            'yesterday_et_cost': 60,
+            'yesterday_etfm_cost': 70,
         }]
         # very simple test since target func just retrieves data from Redshift
         campaign = dash.models.Campaign.objects.get(pk=1)
         user = zemauth.models.User.objects.get(pk=1)
 
-        self.assertEqual(
-            50,
-            dash.infobox_helpers.get_yesterday_campaign_spend(user, campaign)
-        )
+        self.assertEqual({
+            'e_yesterday_cost': 50,
+            'yesterday_et_cost': 60,
+            'yesterday_etfm_cost': 70,
+        }, dash.infobox_helpers.get_yesterday_campaign_spend(user, campaign))
 
     def test_calculate_daily_cap(self):
         ags1 = dash.models.AdGroupSource.objects.get(id=2)
@@ -300,26 +303,54 @@ class InfoBoxHelpersTest(TestCase):
         ad_group = dash.models.AdGroup.objects.get(pk=1)
         mock_query_all.return_value = [{
             'ad_group_id': u'1',
-            'e_yesterday_cost': Decimal(50),
+            'e_yesterday_cost': 50,
+            'yesterday_et_cost': 60,
+            'yesterday_etfm_cost': 70,
         }]
 
-        self.assertEqual(
-            50,
-            dash.infobox_helpers.get_yesterday_adgroup_spend(user, ad_group)
-        )
+        self.assertEqual({
+            'e_yesterday_cost': 50,
+            'yesterday_et_cost': 60,
+            'yesterday_etfm_cost': 70,
+        }, dash.infobox_helpers.get_yesterday_adgroup_spend(user, ad_group))
 
     def test_create_yesterday_spend_setting(self):
-        setting = dash.infobox_helpers.create_yesterday_spend_setting(50, 100)
+        setting = dash.infobox_helpers.create_yesterday_spend_setting({'e_yesterday_cost': 50}, 100)
 
         self.assertEqual("$50.00", setting.value)
         self.assertEqual("50.00% of $100.00 Daily Spend Cap", setting.description)
 
-        setting_1 = dash.infobox_helpers.create_yesterday_spend_setting(110, 100)
+        setting_1 = dash.infobox_helpers.create_yesterday_spend_setting({'e_yesterday_cost': 110}, 100)
 
         self.assertEqual("$110.00", setting_1.value)
         self.assertEqual("110.00% of $100.00 Daily Spend Cap", setting_1.description)
 
-        setting_0 = dash.infobox_helpers.create_yesterday_spend_setting(50, 0)
+        setting_0 = dash.infobox_helpers.create_yesterday_spend_setting({'e_yesterday_cost': 50}, 0)
+
+        self.assertEqual("$50.00", setting_0.value)
+        self.assertEqual("N/A", setting_0.description)
+
+    def test_create_yesterday_spend_setting_bcm_v2(self):
+        setting = dash.infobox_helpers.create_yesterday_spend_setting({
+            'e_yesterday_cost': 10,
+            'yesterday_etfm_cost': 50,
+        }, 100, uses_bcm_v2=True)
+
+        self.assertEqual("$50.00", setting.value)
+        self.assertEqual("50.00% of $100.00 Daily Spend Cap", setting.description)
+
+        setting_1 = dash.infobox_helpers.create_yesterday_spend_setting({
+            'e_yesterday_cost': 10,
+            'yesterday_etfm_cost': 110,
+        }, 100, uses_bcm_v2=True)
+
+        self.assertEqual("$110.00", setting_1.value)
+        self.assertEqual("110.00% of $100.00 Daily Spend Cap", setting_1.description)
+
+        setting_0 = dash.infobox_helpers.create_yesterday_spend_setting({
+            'e_yesterday_cost': 10,
+            'yesterday_etfm_cost': 50,
+        }, 0, uses_bcm_v2=True)
 
         self.assertEqual("$50.00", setting_0.value)
         self.assertEqual("N/A", setting_0.description)
@@ -363,7 +394,11 @@ class InfoBoxAccountHelpersTest(TestCase):
         )
 
     def test_get_yesterday_all_accounts_spend(self):
-        self.assertEqual(0, dash.infobox_helpers.get_yesterday_all_accounts_spend(None, None))
+        self.assertEqual({
+            'e_yesterday_cost': 0,
+            'yesterday_et_cost': 0,
+            'yesterday_etfm_cost': 0,
+        }, dash.infobox_helpers.get_yesterday_all_accounts_spend(None, None))
         yesterday = datetime.datetime.utcnow() - datetime.timedelta(days=1)
         dash.models.BudgetDailyStatement.objects.create(
             budget=self.budget,
@@ -373,26 +408,47 @@ class InfoBoxAccountHelpersTest(TestCase):
             license_fee_nano=10e9,
             margin_nano=0,
         )
-        self.assertEqual(10, dash.infobox_helpers.get_yesterday_all_accounts_spend(None, None))
+        self.assertEqual({
+            'e_yesterday_cost': 10,
+            'yesterday_et_cost': 20,
+            'yesterday_etfm_cost': 30,
+        }, dash.infobox_helpers.get_yesterday_all_accounts_spend(None, None))
 
         account = dash.models.Account.objects.get(pk=1)
         account.agency = self.agency
         account.save(fake_request(self.user))
 
-        self.assertEqual(10, dash.infobox_helpers.get_yesterday_all_accounts_spend([self.agency], None))
+        self.assertEqual({
+            'e_yesterday_cost': 10,
+            'yesterday_et_cost': 20,
+            'yesterday_etfm_cost': 30,
+        }, dash.infobox_helpers.get_yesterday_all_accounts_spend([self.agency], None))
 
         res = dash.infobox_helpers.get_yesterday_all_accounts_spend([], [dash.constants.AccountType.UNKNOWN])
-        self.assertEqual(0, res)
+        self.assertEqual({
+            'e_yesterday_cost': 0,
+            'yesterday_et_cost': 0,
+            'yesterday_etfm_cost': 0,
+        }, res)
 
         new_acs = account.get_current_settings().copy_settings()
         new_acs.account_type = dash.constants.AccountType.UNKNOWN
         new_acs.save(fake_request(self.user))
 
         res = dash.infobox_helpers.get_yesterday_all_accounts_spend([], [dash.constants.AccountType.UNKNOWN])
-        self.assertEqual(10, res)
+        self.assertEqual({
+            'e_yesterday_cost': 10,
+            'yesterday_et_cost': 20,
+            'yesterday_etfm_cost': 30,
+        }, res)
 
     def test_get_mtd_agency_spend(self):
-        self.assertEqual(0, dash.infobox_helpers.get_mtd_agency_spend(self.user))
+        accounts = dash.models.Account.objects.all().filter_by_user(self.user)
+        self.assertEqual({
+            'e_media_cost': 0,
+            'et_cost': 0,
+            'etfm_cost': 0,
+        }, dash.infobox_helpers.get_mtd_agency_spend(accounts))
 
         today = datetime.datetime.utcnow()
         dash.models.BudgetDailyStatement.objects.create(
@@ -403,10 +459,19 @@ class InfoBoxAccountHelpersTest(TestCase):
             license_fee_nano=10e9,
             margin_nano=0,
         )
-        self.assertEqual(Decimal('10.0000'), dash.infobox_helpers.get_mtd_agency_spend(self.user))
+        self.assertEqual({
+            'e_media_cost': 10,
+            'et_cost': 20,
+            'etfm_cost': 30,
+        }, dash.infobox_helpers.get_mtd_agency_spend(accounts))
 
     def test_yesterday_agency_spend(self):
-        self.assertEqual(0, dash.infobox_helpers.get_yesterday_agency_spend(self.user))
+        accounts = dash.models.Account.objects.all().filter_by_user(self.user)
+        self.assertEqual({
+            'e_yesterday_cost': 0,
+            'yesterday_et_cost': 0,
+            'yesterday_etfm_cost': 0,
+        }, dash.infobox_helpers.get_yesterday_agency_spend(accounts))
 
         today = datetime.datetime.utcnow()
         dash.models.BudgetDailyStatement.objects.create(
@@ -417,12 +482,18 @@ class InfoBoxAccountHelpersTest(TestCase):
             license_fee_nano=10e9,
             margin_nano=0,
         )
-        self.assertEqual(Decimal('10.0000'), dash.infobox_helpers.get_yesterday_agency_spend(
-            self.user)
-        )
+        self.assertEqual({
+            'e_yesterday_cost': 10,
+            'yesterday_et_cost': 20,
+            'yesterday_etfm_cost': 30,
+        }, dash.infobox_helpers.get_yesterday_agency_spend(accounts))
 
     def test_get_mtd_all_accounts_spend(self):
-        self.assertEqual(0, dash.infobox_helpers.get_mtd_all_accounts_spend(None, None))
+        self.assertEqual({
+            'e_media_cost': 0,
+            'et_cost': 0,
+            'etfm_cost': 0,
+        }, dash.infobox_helpers.get_mtd_all_accounts_spend(None, None))
 
         today = datetime.datetime.utcnow()
         dash.models.BudgetDailyStatement.objects.create(
@@ -433,7 +504,11 @@ class InfoBoxAccountHelpersTest(TestCase):
             license_fee_nano=10e9,
             margin_nano=0,
         )
-        self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend(None, None))
+        self.assertEqual({
+            'e_media_cost': 10,
+            'et_cost': 20,
+            'etfm_cost': 30,
+        }, dash.infobox_helpers.get_mtd_all_accounts_spend(None, None))
 
         aproximately_one_month_ago = datetime.datetime.utcnow() - datetime.timedelta(days=31)
         dash.models.BudgetDailyStatement.objects.create(
@@ -445,26 +520,46 @@ class InfoBoxAccountHelpersTest(TestCase):
             margin_nano=0,
         )
         # shouldn't change because it's month to date
-        self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend(None, None))
+        self.assertEqual({
+            'e_media_cost': 10,
+            'et_cost': 20,
+            'etfm_cost': 30,
+        }, dash.infobox_helpers.get_mtd_all_accounts_spend(None, None))
 
-        self.assertEqual(0, dash.infobox_helpers.get_mtd_all_accounts_spend(
+        self.assertEqual({
+            'e_media_cost': 0,
+            'et_cost': 0,
+            'etfm_cost': 0,
+        }, dash.infobox_helpers.get_mtd_all_accounts_spend(
             [self.agency], None))
 
         account = dash.models.Account.objects.get(pk=1)
         account.agency = self.agency
         account.save(fake_request(self.user))
 
-        self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend(
+        self.assertEqual({
+            'e_media_cost': 10,
+            'et_cost': 20,
+            'etfm_cost': 30,
+        }, dash.infobox_helpers.get_mtd_all_accounts_spend(
             [self.agency], None))
 
-        self.assertEqual(0, dash.infobox_helpers.get_mtd_all_accounts_spend(
+        self.assertEqual({
+            'e_media_cost': 0,
+            'et_cost': 0,
+            'etfm_cost': 0,
+        }, dash.infobox_helpers.get_mtd_all_accounts_spend(
             [], [dash.constants.AccountType.PILOT]))
 
         new_acs = account.get_current_settings().copy_settings()
         new_acs.account_type = dash.constants.AccountType.PILOT
         new_acs.save(fake_request(self.user))
 
-        self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend(
+        self.assertEqual({
+            'e_media_cost': 10,
+            'et_cost': 20,
+            'etfm_cost': 30,
+        }, dash.infobox_helpers.get_mtd_all_accounts_spend(
             [], [dash.constants.AccountType.PILOT]))
 
     def test_count_active_accounts(self):
@@ -543,54 +638,14 @@ class InfoBoxAccountHelpersTest(TestCase):
         john.save()
         self.assertEqual(1, dash.infobox_helpers.count_weekly_logged_in_users(None, None))
 
-    # @mock.patch('django.utils.timezone.now')
-    # def test_count_weekly_active_users(self, mock_now):
-    #     # should be 0 by default
-    #     self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
-    #     self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
-
-    #     for u in zemauth.models.User.objects.all():
-    #         if 'zemanta' not in u.email:
-    #             continue
-
-    #         mock_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
-    #         dash.models.History.objects.create(
-    #             action_type=dash.constants.HistoryActionType.CONTENT_AD_CREATE,
-    #             level=dash.constants.HistoryLevel.AD_GROUP,
-    #             ad_group=dash.models.AdGroup.objects.get(pk=1),
-    #             created_by=u,
-    #         )
-
-    #     # zemanta mail should be skipped when counting mails
-    #     self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
-    #     self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
-
-    #     mock_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
-    #     john = self._make_a_john()
-    #     dash.models.History.objects.create(
-    #         action_type=dash.constants.HistoryActionType.CONTENT_AD_CREATE,
-    #         level=dash.constants.HistoryLevel.AD_GROUP,
-    #         ad_group=dash.models.AdGroup.objects.get(pk=1),
-    #         created_by=john,
-    #     )
-    #     self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
-    #     self.assertEqual(1, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
-
-    #     mock_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
-    #     dash.models.History.objects.create(
-    #         action_type=dash.constants.HistoryActionType.SETTINGS_CHANGE,
-    #         ad_group=dash.models.AdGroup.objects.get(pk=1),
-    #         level=dash.constants.HistoryLevel.AD_GROUP,
-    #         created_by=john
-    #     )
-
-    #     self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
-    #     self.assertEqual(2, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
-
-    def test_calculate_yesterday_account_spend(self):
+    def test_get_yesterday_account_spend(self):
         account = dash.models.Account.objects.get(pk=1)
-        available_credit = dash.infobox_helpers.calculate_yesterday_account_spend(account)
-        self.assertEqual(0, available_credit)
+        available_credit = dash.infobox_helpers.get_yesterday_account_spend(account)
+        self.assertEqual({
+            'e_yesterday_cost': 0,
+            'yesterday_et_cost': 0,
+            'yesterday_etfm_cost': 0,
+        }, available_credit)
 
         dash.models.BudgetDailyStatement.objects.create(
             budget=self.budget,
@@ -602,8 +657,12 @@ class InfoBoxAccountHelpersTest(TestCase):
         )
 
         account = dash.models.Account.objects.get(pk=1)
-        available_credit = dash.infobox_helpers.calculate_yesterday_account_spend(account)
-        self.assertEqual(10, available_credit)
+        available_credit = dash.infobox_helpers.get_yesterday_account_spend(account)
+        self.assertEqual({
+            'e_yesterday_cost': 10,
+            'yesterday_et_cost': 20,
+            'yesterday_etfm_cost': 30,
+        }, available_credit)
 
     def test_get_adgroup_running_status(self):
         # adgroup is inactive and no active sources

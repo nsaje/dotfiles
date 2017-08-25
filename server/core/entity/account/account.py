@@ -272,4 +272,7 @@ class Account(models.Model):
                 ))
             )
 
+        def all_use_bcm_v2(self):
+            return all(self.values_list('uses_bcm_v2', flat=True))
+
     objects = AccountManager.from_queryset(QuerySet)()
