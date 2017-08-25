@@ -331,6 +331,9 @@ def audit_click_discrepancy(date=None, days=30, threshold=20):
 def audit_custom_hacks(minimal_spend=Decimal('0.0001')):
     alarms = []
     for unconfirmed_hack in dash.models.CustomHack.objects.filter(confirmed_by__isnull=True).filter_active(True):
+        if unconfirmed_hack.is_global():
+            alarms.append((unconfirmed_hack, None))
+            continue
         spend = analytics.helpers.get_spend(
             unconfirmed_hack.created_dt.date(),
             ad_group=unconfirmed_hack.ad_group,
