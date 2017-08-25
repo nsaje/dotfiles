@@ -65,6 +65,9 @@ def _get_k1_adgroup_stats(ad_group):
     except urllib2.HTTPError as e:
         influx.incr('dash.realtimestats.error', 1, type='http', status=str(e.code))
         stats = []
+    except IOError:
+        influx.incr('dash.realtimestats.error', 1, type='ioerror')
+        stats = []
     except Exception as e:
         influx.incr('dash.realtimestats.error', 1, type='exception')
         logger.exception(e)
