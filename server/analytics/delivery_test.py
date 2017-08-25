@@ -312,6 +312,10 @@ class AdGroupDeliveryTestCase(test.TestCase):
         )
 
     def test_interest_b1_sources(self):
+        source_type = magic_mixer.blend(core.source.SourceType, type='b1')
+        self.source.source_type = source_type
+        self.source.save()
+
         s = self.ad_group_settings.copy_settings()
         s.interest_targeting = ['finance']
         s.save(None)
@@ -321,7 +325,6 @@ class AdGroupDeliveryTestCase(test.TestCase):
             constants.AdGroupDeliveryStatus.TOO_LITTLE_B1_SOURCES_FOR_INTEREST_TARGETING
         )
 
-        source_type = magic_mixer.blend(core.source.SourceType, type='b1')
         for i in range(6):
             source = magic_mixer.blend(core.source.Source, name='Test B1 Source {}'.format(i), source_type=source_type)
             ad_group_source = core.entity.adgroup.AdGroupSource.objects.create_unsafe(

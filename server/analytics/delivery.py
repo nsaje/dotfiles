@@ -139,6 +139,9 @@ def check_ad_group_delivery(ad_group, ad_group_settings, ad_group_stats):
     b1_active_sources = active_sources.filter(
         source__source_type__type=dash.constants.SourceType.B1
     )
+    api_active_sources = active_sources.exclude(
+        source__source_type__type=dash.constants.SourceType.B1
+    )
     approved_ad_sources = core.entity.contentad.ContentAdSource.objects.filter(
         content_ad__ad_group_id=ad_group.pk,
         submission_status=dash.constants.ContentAdSubmissionStatus.APPROVED,
@@ -158,7 +161,8 @@ def check_ad_group_delivery(ad_group, ad_group_settings, ad_group_stats):
             return analytics.constants.AdGroupDeliveryStatus.WHITELIST_AND_INTERESTS
         if ad_group_settings.bluekai_targeting:
             return analytics.constants.AdGroupDeliveryStatus.WHITELIST_AND_DATA
-    if ad_group_settings.interest_targeting and b1_active_sources_count <= MIN_B1_ACTIVE_SOURCES_FOR_INTEREST_TARGETING:
+    if not api_active_sources.count() and ad_group_settings.interest_targeting \
+       and b1_active_sources_count <= MIN_B1_ACTIVE_SOURCES_FOR_INTEREST_TARGETING:
         return analytics.constants.AdGroupDeliveryStatus.TOO_LITTLE_B1_SOURCES_FOR_INTEREST_TARGETING
     if _extract_unbillable_data_segments(ad_group_settings.bluekai_targeting) and media and not data:
         return analytics.constants.AdGroupDeliveryStatus.MISSING_DATA_COST
