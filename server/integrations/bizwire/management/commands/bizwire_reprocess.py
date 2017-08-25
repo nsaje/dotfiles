@@ -28,7 +28,7 @@ class Command(command_helpers.ExceptionCommand):
 
         keys = self._get_keys_to_reprocess(options)
         if self.purge_candidates:
-            num_removed = reprocess.purge_candidates()
+            num_removed = reprocess.purge_candidates(keys)
             logger.info('Removed %s candidates.', num_removed)
         reprocess.invoke_lambdas(keys)
 
@@ -38,7 +38,7 @@ class Command(command_helpers.ExceptionCommand):
 
         missing = options.get('missing')
         if missing:
-            return reprocess.get_missing_keys(options)
+            return reprocess.get_missing_keys()
 
         logger.info('Specify what to reprocess.')
         sys.exit(1)

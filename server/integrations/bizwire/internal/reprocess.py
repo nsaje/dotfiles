@@ -5,8 +5,8 @@ import logging
 import boto3
 from django.conf import settings
 
-import helpers
-import config
+from integrations.bizwire import config
+from integrations.bizwire.internal import helpers
 import dash.models
 from utils import dates_helper
 
