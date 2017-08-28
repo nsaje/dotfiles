@@ -1633,7 +1633,7 @@ class BudgetReserveTestCase(TestCase):
             start_date=TODAY - datetime.timedelta(1),
             end_date=TODAY - datetime.timedelta(1),
             amount=1000,
-            license_fee=Decimal('0.1'),
+            license_fee=Decimal('0.456'),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
         )
@@ -1667,7 +1667,7 @@ class BudgetReserveTestCase(TestCase):
             start_date=TODAY - datetime.timedelta(1),
             end_date=TODAY - datetime.timedelta(1),
             amount=1000,
-            license_fee=Decimal('0.1'),
+            license_fee=Decimal('0.456'),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
         )

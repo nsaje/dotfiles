@@ -22,6 +22,7 @@ from utils.test_helper import ListMatcher
 from utils import request_signer
 from utils import email_helper
 from utils.magic_mixer import magic_mixer
+from utils import dates_helper
 
 from redshiftapi import quickstats
 
@@ -846,6 +847,50 @@ class K1ApiTest(K1ApiBaseTest):
             u'daily_budget_cc': u'1.6000',
             u'source_campaign_key': [u'fake'],
             u'tracking_code': u'tracking1&tracking2',
+        })
+
+    def test_get_ad_groups_source_bcm_v2(self):
+        today = dates_helper.local_today()
+        request = magic_mixer.blend_request_user()
+        account = magic_mixer.blend(dash.models.Account, uses_bcm_v2=True)
+        credit_line_item = dash.models.CreditLineItem.objects.create(
+            request, today, today, 100,
+            account=account, license_fee='0.2', status=dash.constants.CreditLineItemStatus.SIGNED)
+        campaign = magic_mixer.blend(dash.models.Campaign, account=account)
+        dash.models.BudgetLineItem.objects.create(
+            request, campaign, credit_line_item,
+            today, today, 100,
+            margin='0.1')
+        ad_group = magic_mixer.blend(dash.models.AdGroup, campaign=campaign)
+        ad_group_settings = magic_mixer.blend(dash.models.AdGroupSettings, ad_group=ad_group)
+        source = dash.models.Source.objects.get(bidder_slug='b1_google')
+        ad_group_source = magic_mixer.blend(dash.models.AdGroupSource, ad_group=ad_group, source=source)
+        magic_mixer.blend(
+            dash.models.AdGroupSourceSettings,
+            cpc_cc='0.12',
+            daily_budget_cc='50.00',
+            ad_group_source=ad_group_source,
+        )
+
+        response = self.client.get(
+            reverse('k1api.ad_groups.sources'),
+            {'source_types': 'b1', 'ad_group_ids': [ad_group.id]}
+        )
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(len(data), 1)
+
+        self.assertDictEqual(data[0], {
+            u'ad_group_id': ad_group.id,
+            u'slug': u'b1_google',
+            u'state': 2,
+            u'cpc_cc': u'0.0864',
+            u'daily_budget_cc': u'36.0000',
+            u'source_campaign_key': {},
+            u'tracking_code': ad_group_settings.tracking_code,
         })
 
     def test_get_ad_groups_exchanges_with_id(self):

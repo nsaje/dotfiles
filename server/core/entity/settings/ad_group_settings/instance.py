@@ -120,6 +120,19 @@ class AdGroupSettingsMixin(object):
         # since we no longer have to manually replace the object on the parent entity
         return new_settings
 
+    def get_external_max_cpm(self, account, license_fee, margin):
+        if self.max_cpm is None:
+            return self.max_cpm
+
+        max_cpm = self.max_cpm
+        if account.uses_bcm_v2:
+            max_cpm = core.bcm.calculations.subtract_fee_and_margin(
+                max_cpm,
+                license_fee,
+                margin,
+            )
+        return max_cpm
+
     @staticmethod
     def _set_ad_group(ad_group, resource):
         if 'name' in resource:
