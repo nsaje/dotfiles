@@ -13,4 +13,11 @@ RUN test ! -x /opt/google/chrome/chrome \
     && chmod +x /run-chrome.sh \
     && rm -f google-chrome-stable_current_amd64.deb
 
+# Hack to upgrade NPM:
+#  - install local version
+#  - replace old global verson with new one
+RUN cd /var/tmp/ && npm install npm@5.4 && \
+    rm -fr /usr/local/lib/node_modules/npm && \
+    mv node_modules/npm  /usr/local/lib/node_modules
+
 RUN npm install -g bower

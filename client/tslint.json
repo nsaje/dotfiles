@@ -182,7 +182,8 @@
       "check-separator",
       "check-typecast",
       "check-preblock",
-      "check-type"
+      "check-type",
+      "check-rest-spread"
     ],
     "use-isnan": true,
     "directive-selector": [
