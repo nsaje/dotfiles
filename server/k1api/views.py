@@ -459,6 +459,12 @@ class AdGroupsView(K1APIView):
                 license_fee,
                 margin
             )
+            b1_sources_group_daily_budget = ad_group_settings.get_external_b1_sources_group_daily_budget(
+                ad_group.campaign.account,
+                license_fee,
+                margin
+            )
+
             ad_group = {
                 'id': ad_group.id,
                 'name': ad_group.get_external_name(),
@@ -487,7 +493,7 @@ class AdGroupsView(K1APIView):
                 'max_cpm': format(max_cpm, '.4f') if max_cpm else max_cpm,
                 'b1_sources_group': {
                     'enabled': ad_group_settings.b1_sources_group_enabled,
-                    'daily_budget': ad_group_settings.b1_sources_group_daily_budget,
+                    'daily_budget': b1_sources_group_daily_budget,
                     'state': ad_group_settings.b1_sources_group_state,
                 },
                 'whitelist_publisher_groups': whitelist,
