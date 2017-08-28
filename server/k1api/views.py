@@ -452,7 +452,7 @@ class AdGroupsView(K1APIView):
             )
 
             license_fee = accounts_license_fees_map.get(ad_group.campaign.account_id)
-            margin = campaigns_margins_map.get(ad_group.id)
+            margin = campaigns_margins_map.get(ad_group.campaign.id)
 
             max_cpm = ad_group_settings.get_external_max_cpm(
                 ad_group.campaign.account,
