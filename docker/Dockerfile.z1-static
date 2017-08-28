@@ -1,6 +1,4 @@
-FROM digitallyseamless/nodejs-bower-grunt:4
-
-RUN bash -c "useradd -m -u 1000 ubuntu || true"
+FROM library/node:8.4.0
 
 RUN apt-get update \
     && apt-get install  -y --no-install-recommends \
@@ -15,9 +13,4 @@ RUN test ! -x /opt/google/chrome/chrome \
     && chmod +x /run-chrome.sh \
     && rm -f google-chrome-stable_current_amd64.deb
 
-RUN npm install -g npm
-RUN npm install -g eslint
-RUN npm install -g grunt
-RUN npm update -g
-
-USER 1000
+RUN npm install -g bower
