@@ -24,6 +24,17 @@ class ReportFiltersSerializer(serializers.Serializer):
     frm = serializers.CharField(required=False)  # remapped to 'from' below
     to = serializers.CharField(required=False)
 
+    def validate(self, data):
+        if data['operator'] == constants.EQUALS and not data.get('value'):
+            raise serializers.ValidationError({'value': 'This field is required for operator =.'})
+        elif data['operator'] == constants.BETWEEN and not data.get('from'):
+            raise serializers.ValidationError({'from': 'This field is required for operator between.'})
+        elif data['operator'] == constants.BETWEEN and not data.get('to'):
+            raise serializers.ValidationError({'to': 'This field is required for operator between.'})
+        elif data['operator'] == constants.IN and not data.get('values'):
+            raise serializers.ValidationError({'values': 'This field is required for operator between.'})
+        return data
+
 
 # from is a reserved keyword, remap it directly
 ReportFiltersSerializer._declared_fields['from'] = ReportFiltersSerializer._declared_fields['frm']
