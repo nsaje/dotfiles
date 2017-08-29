@@ -164,7 +164,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.ASC,
             internal: 'zemauth.campaign_goal_performance',
-            shown: ['zemauth.campaign_goal_performance', 'zemauth.can_view_platform_cost_breakdown'],
+            shown: false,  // disable until the costMode switcher is implemented
             costMode: constants.costMode.PLATFORM,
             fieldGroup: 'performance'
         },

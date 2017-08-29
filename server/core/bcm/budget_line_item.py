@@ -195,6 +195,12 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
         total_spend = self.get_spend_data(date=date)['etf_total']
         return self.allocated_amount() - total_spend
 
+    def get_available_etfm_amount(self, date=None):
+        if date is None:
+            date = utils.dates_helper.local_today()
+        total_spend = self.get_spend_data(date=date)['etfm_total']
+        return self.allocated_amount() - total_spend
+
     def state(self, date=None):
         if date is None:
             date = utils.dates_helper.local_today()

@@ -132,11 +132,14 @@ def get_total_and_media_campaign_spend(user, campaign, until_date=None):
     return spend_data.get('etf_total', Decimal(0)), spend_data.get('media', Decimal(0))
 
 
-def get_total_media_campaign_budget(user, campaign, until_date=None):
+def get_total_spend_campaign_budget(user, campaign, until_date=None):
     # campaign budget based on non-depleted budget line items
-    at_date = until_date or datetime.datetime.utcnow().date()
-
+    at_date = until_date or utils.dates_helper.local_today()
     budgets = _retrieve_active_budgetlineitems([campaign], at_date)
+
+    if campaign.account.uses_bcm_v2:
+        return sum(x.amount for x in budgets)
+
     ret = Decimal(0)
     for bli in budgets:
         ret += bli.amount * (1 - bli.credit.license_fee)
@@ -329,16 +332,19 @@ def calculate_available_media_account_budget(account):
     return ret
 
 
-def calculate_available_media_campaign_budget(campaign):
+def calculate_available_campaign_budget(campaign):
     # campaign budget based on non-depleted budget line items
     today = datetime.datetime.utcnow().date()
     budgets = _retrieve_active_budgetlineitems([campaign], today)
 
+    if campaign.account.uses_bcm_v2:
+        return sum(x.get_available_etfm_amount(today) for x in budgets)
+
     ret = 0
     for bli in budgets:
         available_total_amount = bli.get_available_amount(today)
-        available_media_amount = available_total_amount * (1 - bli.credit.license_fee)
-        ret += available_media_amount
+        available_amount = available_total_amount * (1 - bli.credit.license_fee)
+        ret += available_amount
     return ret
 
 
@@ -407,14 +413,14 @@ def create_yesterday_spend_setting(yesterday_costs, daily_budget, uses_bcm_v2=Fa
 
 
 def create_total_campaign_budget_setting(user, campaign):
-    total_media_available = calculate_available_media_campaign_budget(campaign)
-    total_media = get_total_media_campaign_budget(user, campaign)
+    total_spend = get_total_spend_campaign_budget(user, campaign)
+    total_spend_available = calculate_available_campaign_budget(campaign)
 
     setting = OverviewSetting(
         'Campaign budget:',
-        utils.lc_helper.default_currency(total_media),
+        utils.lc_helper.default_currency(total_spend),
         '{} remaining'.format(
-            utils.lc_helper.default_currency(total_media_available)
+            utils.lc_helper.default_currency(total_spend_available)
         ),
         tooltip="Campaign media budget"
     )
