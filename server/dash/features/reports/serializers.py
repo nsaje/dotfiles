@@ -31,8 +31,8 @@ class ReportFiltersSerializer(serializers.Serializer):
             raise serializers.ValidationError({'from': 'This field is required for operator between.'})
         elif data['operator'] == constants.BETWEEN and not data.get('to'):
             raise serializers.ValidationError({'to': 'This field is required for operator between.'})
-        elif data['operator'] == constants.IN and not data.get('values'):
-            raise serializers.ValidationError({'values': 'This field is required for operator between.'})
+        elif data['operator'] == constants.IN and data.get('values') is None:
+            raise serializers.ValidationError({'values': 'This field is required for operator IN.'})
         return data
 
 
