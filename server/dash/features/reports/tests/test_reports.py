@@ -30,7 +30,7 @@ class ReportsExecuteTest(TestCase):
         self.assertEqual(result, self.reportJob.result)
 
     @mock.patch('dash.features.reports.reports.ReportJobExecutor._send_fail')
-    @mock.patch('dash.features.reports.reports.ReportJobExecutor.get_raw_new_report')
+    @mock.patch('dash.features.reports.reports.ReportJobExecutor.get_report')
     def test_handle_exception(self, mock_get_report, mock_send_fail):
         mock_get_report.side_effect = Exception('test-error')
 
@@ -41,7 +41,7 @@ class ReportsExecuteTest(TestCase):
         self.assertJobFailed('failed', 'test-error')
 
     @mock.patch('dash.features.reports.reports.ReportJobExecutor._send_fail')
-    @mock.patch('dash.features.reports.reports.ReportJobExecutor.get_raw_new_report')
+    @mock.patch('dash.features.reports.reports.ReportJobExecutor.get_report')
     def test_handle_soft_time_limit(self, mock_get_report, mock_send_fail):
         mock_get_report.side_effect = SoftTimeLimitExceeded()
 
@@ -53,7 +53,7 @@ class ReportsExecuteTest(TestCase):
 
     @mock.patch('utils.dates_helper.utc_now')
     @mock.patch('dash.features.reports.reports.ReportJobExecutor._send_fail')
-    @mock.patch('dash.features.reports.reports.ReportJobExecutor.get_raw_new_report')
+    @mock.patch('dash.features.reports.reports.ReportJobExecutor.get_report')
     def test_too_old(self, mock_get_report, mock_send_fail, mock_now):
         mock_get_report.side_effect = Exception('test-error')
         mock_now.return_value = datetime.datetime(2017, 8, 1, 11, 31)
@@ -67,7 +67,7 @@ class ReportsExecuteTest(TestCase):
         mock_send_fail.assert_called_once_with()
         self.assertJobFailed('too_old', 'Too old')
 
-    @mock.patch('dash.features.reports.reports.ReportJobExecutor.get_raw_new_report')
+    @mock.patch('dash.features.reports.reports.ReportJobExecutor.get_report')
     def test_incorrect_state(self, mock_get_report):
         mock_get_report.side_effect = Exception('test-error')
 
@@ -131,10 +131,9 @@ class ReportsExecuteTest(TestCase):
 
     @mock.patch('dash.features.reports.reports.ReportJobExecutor.send_by_email')
     @mock.patch('dash.features.reports.reports.ReportJobExecutor.save_to_s3')
-    @mock.patch('dash.features.reports.reports.ReportJobExecutor.convert_to_csv')
-    @mock.patch('dash.features.reports.reports.ReportJobExecutor.get_raw_new_report')
-    def test_success(self, mock_get_raw, mock_convert, mock_save, mock_send):
-        mock_get_raw.return_value = (1, 2, 3)
+    @mock.patch('dash.features.reports.reports.ReportJobExecutor.get_report')
+    def test_success(self, mock_get_report, mock_save, mock_send):
+        mock_get_report.return_value = (1, 2)
         mock_save.return_value = 'test-report-path'
 
         reports.execute(self.reportJob.id)
