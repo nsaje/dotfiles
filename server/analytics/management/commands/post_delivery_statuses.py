@@ -30,7 +30,7 @@ class Command(utils.command_helpers.ExceptionCommand):
                 int(spend * 100 / cap) if cap else 0,
                 campaign=str(camp_id),
                 issue=issue,
-                cs=cs.get_short_name(),
+                cs=cs.get_short_name() if cs else 'None',
                 cap=cap_to_category(cap),
                 retentionPolicy="1week"
             )
@@ -40,7 +40,7 @@ class Command(utils.command_helpers.ExceptionCommand):
                 int(spend * 100 / cap) if cap else 0,
                 adgroup=str(adgroup_id),
                 issue=issue,
-                cs=cs.get_short_name(),
+                cs=cs.get_short_name() if cs else 'None',
                 cap=cap_to_category(cap),
                 retentionPolicy="1week"
             )
