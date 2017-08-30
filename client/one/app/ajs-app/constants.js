@@ -2218,8 +2218,8 @@ var defaults = {
         {id: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, value: 85},
         {id: constants.campaignGoalKPI.CPV, value: 0.50},
         {id: constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT, value: 2.75},
-        {id: constants.campaignGoalKPI.CP_NEW_VISITOR, value: 2.75}, // TODO set correct value
-        {id: constants.campaignGoalKPI.CP_PAGE_VIEW, value: 2.75}, // TODO set correct value
+        {id: constants.campaignGoalKPI.CP_NEW_VISITOR, value: 2.75},
+        {id: constants.campaignGoalKPI.CP_PAGE_VIEW, value: 0.45},
     ],
 };
 
