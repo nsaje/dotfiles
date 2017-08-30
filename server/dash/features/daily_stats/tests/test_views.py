@@ -569,6 +569,14 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
                         'id': 'Cost per Non-Bounced Visit',
                         'name': 'Cost per Non-Bounced Visit'
                     },
+                    'avg_cost_for_new_visitor': {
+                        'id': 'Cost per New Visitor',
+                        'name': 'Cost per New Visitor'
+                    },
+                    'avg_cost_per_pageview': {
+                        'id': 'Cost per Pageview',
+                        'name': 'Cost per Pageview'
+                    },
                 },
                 'chart_data': [{
                     'id': 'totals',
@@ -691,6 +699,14 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                     'avg_cost_per_non_bounced_visit': {
                         'id': 'Cost per Non-Bounced Visit',
                         'name': 'Cost per Non-Bounced Visit'
+                    },
+                    'avg_cost_for_new_visitor': {
+                        'id': 'Cost per New Visitor',
+                        'name': 'Cost per New Visitor'
+                    },
+                    'avg_cost_per_pageview': {
+                        'id': 'Cost per Pageview',
+                        'name': 'Cost per Pageview'
                     },
                 },
                 'chart_data': [{
@@ -822,6 +838,14 @@ class CampaignPublishersDailyStatsTest(TestCase):
                     'avg_cost_per_non_bounced_visit': {
                         'id': 'Cost per Non-Bounced Visit',
                         'name': 'Cost per Non-Bounced Visit'
+                    },
+                    'avg_cost_for_new_visitor': {
+                        'id': 'Cost per New Visitor',
+                        'name': 'Cost per New Visitor'
+                    },
+                    'avg_cost_per_pageview': {
+                        'id': 'Cost per Pageview',
+                        'name': 'Cost per Pageview'
                     },
                 },
                 'chart_data': [{
