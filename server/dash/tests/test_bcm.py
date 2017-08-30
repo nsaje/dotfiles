@@ -1190,6 +1190,7 @@ class BudgetSpendTestCase(TestCase):
             'data': 0,
             'license_fee': 0,
             'margin': 0,
+            'et_total': 0,
             'etf_total': 0,
             'etfm_total': 0,
         })
@@ -1209,6 +1210,7 @@ class BudgetSpendTestCase(TestCase):
             'data': Decimal('100.0000'),
             'license_fee': Decimal('20.0000'),
             'margin': Decimal('33.0000'),
+            'et_total': Decimal('200.0000'),
             'etf_total': Decimal('220.0000'),
             'etfm_total': Decimal('253.0000'),
         })
@@ -1235,7 +1237,7 @@ class BudgetSpendTestCase(TestCase):
 
     def test_fixed_date(self):
         self.assertEqual(self.b.get_spend_data(date=self.end_date), {
-            key: 0 for key in ('media', 'data', 'license_fee', 'margin', 'etf_total', 'etfm_total')
+            key: 0 for key in ('media', 'data', 'license_fee', 'margin', 'et_total', 'etf_total', 'etfm_total')
         })
 
         create_statement(
@@ -1251,6 +1253,7 @@ class BudgetSpendTestCase(TestCase):
             'data': Decimal('101.0000'),
             'license_fee': Decimal('20.1000'),
             'margin': Decimal('0'),
+            'et_total': Decimal('201.0000'),
             'etf_total': Decimal('221.1000'),
             'etfm_total': Decimal('221.1000'),
         })
@@ -1277,6 +1280,7 @@ class BudgetSpendTestCase(TestCase):
             'data': Decimal('191.0000'),
             'license_fee': Decimal('29.1000'),
             'margin': Decimal('0'),
+            'et_total': Decimal('381.0000'),
             'etf_total': Decimal('410.1000'),
             'etfm_total': Decimal('410.1000'),
         })
@@ -1305,6 +1309,7 @@ class BudgetSpendTestCase(TestCase):
                 'data': 0,
                 'license_fee': 0,
                 'margin': 0,
+                'et_total': 0,
                 'etf_total': 0,
                 'etfm_total': 0,
             }
@@ -1316,6 +1321,7 @@ class BudgetSpendTestCase(TestCase):
                 'data': 90,
                 'license_fee': 9,
                 'margin': 0,
+                'et_total': 180,
                 'etf_total': 189,
                 'etfm_total': 189,
             }
@@ -1327,6 +1333,7 @@ class BudgetSpendTestCase(TestCase):
                 'data': 101,
                 'license_fee': Decimal('20.1'),
                 'margin': 0,
+                'et_total': Decimal('201.0'),
                 'etf_total': Decimal('221.1'),
                 'etfm_total': Decimal('221.1'),
             }
@@ -1356,6 +1363,7 @@ class BudgetSpendTestCase(TestCase):
                 'data': 0,
                 'license_fee': 0,
                 'margin': 0,
+                'et_total': 0,
                 'etf_total': 0,
                 'etfm_total': 0,
             }
@@ -1367,7 +1375,8 @@ class BudgetSpendTestCase(TestCase):
                 'data': 90,
                 'license_fee': 9,
                 'margin': Decimal('28.35'),
-                'etf_total': 189,
+                'et_total': Decimal('180.0000'),
+                'etf_total': Decimal('189.0000'),
                 'etfm_total': Decimal('217.35'),
             }
         )
@@ -1378,6 +1387,7 @@ class BudgetSpendTestCase(TestCase):
                 'data': 101,
                 'license_fee': Decimal('20.1'),
                 'margin': Decimal('33.165'),
+                'et_total': Decimal('201.0000'),
                 'etf_total': Decimal('221.1000'),
                 'etfm_total': Decimal('254.2650'),
             }
@@ -1451,6 +1461,7 @@ class BudgetReserveTestCase(TestCase):
                 'license_fee': 20,
                 'media': 100,
                 'data': 0,
+                'et_total': 100,
                 'etf_total': 120,
                 'etfm_total': 120,
                 'margin': 0,
@@ -1473,6 +1484,7 @@ class BudgetReserveTestCase(TestCase):
                 'media': 180,
                 'data': 10,
                 'margin': 0,
+                'et_total': 190,
                 'etf_total': 230,
                 'etfm_total': 230,
             })
@@ -1495,6 +1507,7 @@ class BudgetReserveTestCase(TestCase):
                 'media': 280,
                 'data': 10,
                 'margin': 0,
+                'et_total': 290,
                 'etf_total': 350,
                 'etfm_total': 350,
             })
@@ -1620,7 +1633,7 @@ class BudgetReserveTestCase(TestCase):
             start_date=TODAY - datetime.timedelta(1),
             end_date=TODAY - datetime.timedelta(1),
             amount=1000,
-            license_fee=Decimal('0.1'),
+            license_fee=Decimal('0.456'),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
         )
@@ -1654,7 +1667,7 @@ class BudgetReserveTestCase(TestCase):
             start_date=TODAY - datetime.timedelta(1),
             end_date=TODAY - datetime.timedelta(1),
             amount=1000,
-            license_fee=Decimal('0.1'),
+            license_fee=Decimal('0.456'),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
         )

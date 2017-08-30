@@ -458,14 +458,14 @@ class MVJointMaster(MVMaster):
                 'metric_val_decimal_places': dash.campaign_goals.NR_DECIMALS[campaign_goal.type]
             }, alias='etfm_performance_' + campaign_goal.get_view_key(), group=column_group))
 
-    def get_query_joint_context(self, breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view):
+    def get_query_joint_context(self, breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view, skip_performance_columns=False):
 
         needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
         supports_conversions = view_selector.supports_conversions(needed_dimensions, use_publishers_view)
 
         # FIXME: temp fix account level publishers view with lots of campaign goals
-        skip_performance_columns = 'publisher_id' in breakdown and\
-                                   not set(['campaign_id', 'ad_group_id']) & set(constraints.keys())
+        skip_performance_columns |= 'publisher_id' in breakdown and\
+                                    not set(['campaign_id', 'ad_group_id']) & set(constraints.keys())
 
         if supports_conversions:
             self.init_conversion_columns(goals.conversion_goals)

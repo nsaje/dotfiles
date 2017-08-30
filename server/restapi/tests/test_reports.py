@@ -79,15 +79,77 @@ class ReportViewsTest(TestCase):
         )
 
         mock_query.assert_called_with(
+            user=User.objects.get(pk=1),
+            breakdown=['publisher_id'],
+            constraints=mock.ANY,
+            goals=mock.ANY,
+            order='-e_media_cost',
+            offset=0,
+            limit=10000,
+            level='ad_groups',
+            columns=['publisher'],
+            include_items_with_no_spend=False,
+            dashapi_cache={},
+        )
+
+        self.assertFalse(mock_totals.called)
+
+    @mock.patch('utils.threads.AsyncFunction', threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.get_filename', return_value='')
+    @mock.patch('stats.api_reports.totals', return_value={})
+    @mock.patch('stats.api_reports.query', return_value=[])
+    @mock.patch('stats.api_reports.prepare_constraints')
+    def test_raw_new_report_batch(self, mock_prepare_constraints, mock_query, mock_totals, mock_filename):
+        mock_query.side_effect = [[{}]*10000, [{}]*100]
+        query = {
+            'fields': [{'field': 'Publisher'}],
+            'filters': [
+                {'field': 'Ad Group Id', 'operator': '=', 'value': '1'},
+                {'field': 'Date', 'operator': '=', 'value': '2016-10-10'},
+                {'field': 'Media Source', 'operator': 'IN', 'values': ['1']},
+            ],
+        }
+        r = self.client.post(reverse('reports_list'), query, format='json')
+        self.assertEqual(r.status_code, 201)
+
+        mock_prepare_constraints.assert_called_with(
             User.objects.get(pk=1),
             ['publisher_id'],
-            mock.ANY,
-            mock.ANY,
-            '-e_media_cost',
-            'ad_groups',
-            ['publisher'],
-            include_items_with_no_spend=False,
+            datetime.date(2016, 10, 10), datetime.date(2016, 10, 10),
+            test_helper.QuerySetMatcher(dash.models.Source.objects.filter(pk__in=[1])),
+            show_archived=False,
+            show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL,
+            only_used_sources=True,
+            filtered_agencies=None,
+            filtered_account_types=None,
+            ad_group_ids=[1]
         )
+
+        mock_query.assert_has_calls([mock.call(
+            user=User.objects.get(pk=1),
+            breakdown=['publisher_id'],
+            constraints=mock.ANY,
+            goals=mock.ANY,
+            order='-e_media_cost',
+            offset=0,
+            limit=10000,
+            level='ad_groups',
+            columns=['publisher'],
+            include_items_with_no_spend=False,
+            dashapi_cache={},
+        ), mock.call(
+            user=User.objects.get(pk=1),
+            breakdown=['publisher_id'],
+            constraints=mock.ANY,
+            goals=mock.ANY,
+            order='-e_media_cost',
+            offset=10000,
+            limit=10000,
+            level='ad_groups',
+            columns=['publisher'],
+            include_items_with_no_spend=False,
+            dashapi_cache={},
+        )])
 
         self.assertFalse(mock_totals.called)
 
@@ -129,14 +191,17 @@ class ReportViewsTest(TestCase):
         )
 
         mock_query.assert_called_with(
-            User.objects.get(pk=1),
-            ['publisher_id'],
-            mock.ANY,
-            mock.ANY,
-            'clicks',
-            'ad_groups',
-            ['publisher'],
+            user=User.objects.get(pk=1),
+            breakdown=['publisher_id'],
+            constraints=mock.ANY,
+            goals=mock.ANY,
+            order='clicks',
+            offset=0,
+            limit=10000,
+            level='ad_groups',
+            columns=['publisher'],
             include_items_with_no_spend=True,
+            dashapi_cache={},
         )
         self.assertTrue(mock_totals.called)
 
@@ -197,14 +262,17 @@ class ReportViewsTest(TestCase):
         )
 
         mock_query.assert_called_with(
-            User.objects.get(pk=1),
-            ['account_id', 'campaign_id', 'ad_group_id', 'content_ad_id', 'source_id', 'day'],
-            mock.ANY,
-            mock.ANY,
-            '-e_media_cost',
-            'all_accounts',
-            ['account', 'campaign_id', 'ad_group', 'content_ad_id', 'source', 'day'],
+            user=User.objects.get(pk=1),
+            breakdown=['account_id', 'campaign_id', 'ad_group_id', 'content_ad_id', 'source_id', 'day'],
+            constraints=mock.ANY,
+            goals=mock.ANY,
+            order='-e_media_cost',
+            offset=0,
+            limit=10000,
+            level='all_accounts',
+            columns=['account', 'campaign_id', 'ad_group', 'content_ad_id', 'source', 'day'],
             include_items_with_no_spend=False,
+            dashapi_cache={},
         )
 
         self.assertFalse(mock_totals.called)
@@ -238,14 +306,17 @@ class ReportViewsTest(TestCase):
         )
 
         mock_query.assert_called_with(
-            User.objects.get(pk=1),
-            ['account_id'],
-            mock.ANY,
-            mock.ANY,
-            '-e_media_cost',
-            'all_accounts',
-            ['account'],
+            user=User.objects.get(pk=1),
+            breakdown=['account_id'],
+            constraints=mock.ANY,
+            goals=mock.ANY,
+            order='-e_media_cost',
+            offset=0,
+            limit=10000,
+            level='all_accounts',
+            columns=['account'],
             include_items_with_no_spend=False,
+            dashapi_cache={},
         )
 
         self.assertFalse(mock_totals.called)
@@ -281,14 +352,17 @@ class ReportViewsTest(TestCase):
         )
 
         mock_query.assert_called_with(
-            User.objects.get(pk=1),
-            ['campaign_id'],
-            mock.ANY,
-            mock.ANY,
-            '-e_media_cost',
-            'accounts',
-            ['campaign'],
+            user=User.objects.get(pk=1),
+            breakdown=['campaign_id'],
+            constraints=mock.ANY,
+            goals=mock.ANY,
+            order='-e_media_cost',
+            offset=0,
+            limit=10000,
+            level='accounts',
+            columns=['campaign'],
             include_items_with_no_spend=False,
+            dashapi_cache={},
         )
 
         self.assertFalse(mock_totals.called)
@@ -324,14 +398,17 @@ class ReportViewsTest(TestCase):
         )
 
         mock_query.assert_called_with(
-            User.objects.get(pk=1),
-            ['campaign_id', 'account_id'],
-            mock.ANY,
-            mock.ANY,
-            '-e_media_cost',
-            'all_accounts',
-            ['campaign'],
+            user=User.objects.get(pk=1),
+            breakdown=['campaign_id', 'account_id'],
+            constraints=mock.ANY,
+            goals=mock.ANY,
+            order='-e_media_cost',
+            offset=0,
+            limit=10000,
+            level='all_accounts',
+            columns=['campaign'],
             include_items_with_no_spend=False,
+            dashapi_cache={},
         )
 
         self.assertFalse(mock_totals.called)
@@ -367,14 +444,17 @@ class ReportViewsTest(TestCase):
         )
 
         mock_query.assert_called_with(
-            User.objects.get(pk=1),
-            ['ad_group_id'],
-            mock.ANY,
-            mock.ANY,
-            '-e_media_cost',
-            'campaigns',
-            ['ad_group'],
+            user=User.objects.get(pk=1),
+            breakdown=['ad_group_id'],
+            constraints=mock.ANY,
+            goals=mock.ANY,
+            order='-e_media_cost',
+            offset=0,
+            limit=10000,
+            level='campaigns',
+            columns=['ad_group'],
             include_items_with_no_spend=False,
+            dashapi_cache={},
         )
 
         self.assertFalse(mock_totals.called)
@@ -410,14 +490,17 @@ class ReportViewsTest(TestCase):
         )
 
         mock_query.assert_called_with(
-            User.objects.get(pk=1),
-            ['ad_group_id', 'campaign_id'],
-            mock.ANY,
-            mock.ANY,
-            '-e_media_cost',
-            'accounts',
-            ['ad_group'],
+            user=User.objects.get(pk=1),
+            breakdown=['ad_group_id', 'campaign_id'],
+            constraints=mock.ANY,
+            goals=mock.ANY,
+            order='-e_media_cost',
+            offset=0,
+            limit=10000,
+            level='accounts',
+            columns=['ad_group'],
             include_items_with_no_spend=False,
+            dashapi_cache={},
         )
 
         self.assertFalse(mock_totals.called)
@@ -453,14 +536,17 @@ class ReportViewsTest(TestCase):
         )
 
         mock_query.assert_called_with(
-            User.objects.get(pk=1),
-            ['content_ad_id'],
-            mock.ANY,
-            mock.ANY,
-            '-e_media_cost',
-            'ad_groups',
-            ['content_ad'],
+            user=User.objects.get(pk=1),
+            breakdown=['content_ad_id'],
+            constraints=mock.ANY,
+            goals=mock.ANY,
+            order='-e_media_cost',
+            offset=0,
+            limit=10000,
+            level='ad_groups',
+            columns=['content_ad'],
             include_items_with_no_spend=False,
+            dashapi_cache={},
         )
 
         self.assertFalse(mock_totals.called)
@@ -496,14 +582,17 @@ class ReportViewsTest(TestCase):
         )
 
         mock_query.assert_called_with(
-            User.objects.get(pk=1),
-            ['content_ad_id', 'ad_group_id'],
-            mock.ANY,
-            mock.ANY,
-            '-e_media_cost',
-            'campaigns',
-            ['content_ad'],
+            user=User.objects.get(pk=1),
+            breakdown=['content_ad_id', 'ad_group_id'],
+            constraints=mock.ANY,
+            goals=mock.ANY,
+            order='-e_media_cost',
+            offset=0,
+            limit=10000,
+            level='campaigns',
+            columns=['content_ad'],
             include_items_with_no_spend=False,
+            dashapi_cache={},
         )
 
         self.assertFalse(mock_totals.called)
@@ -539,14 +628,17 @@ class ReportViewsTest(TestCase):
         )
 
         mock_query.assert_called_with(
-            User.objects.get(pk=1),
-            ['content_ad_id'],
-            mock.ANY,
-            mock.ANY,
-            '-e_media_cost',
-            'ad_groups',
-            ['content_ad'],
+            user=User.objects.get(pk=1),
+            breakdown=['content_ad_id'],
+            constraints=mock.ANY,
+            goals=mock.ANY,
+            order='-e_media_cost',
+            offset=0,
+            limit=10000,
+            level='ad_groups',
+            columns=['content_ad'],
             include_items_with_no_spend=False,
+            dashapi_cache={},
         )
 
         self.assertFalse(mock_totals.called)

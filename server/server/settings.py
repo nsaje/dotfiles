@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'analytics',
     'prodops',
     'integrations.bizwire',
+    'dev',
 ]
 
 MIDDLEWARE = [
@@ -189,6 +190,8 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'restapi.exceptions.custom_exception_handler',
 }
 
+ALL_ACCOUNTS_USE_BCM_V2 = False
+DISABLE_FACEBOOK = True
 
 from localsettings import *
 

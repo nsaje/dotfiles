@@ -107,3 +107,16 @@ class RealtimestatsServiceTest(TestCase):
 
         mock_logger.exception.assert_not_called()
         mock_influx.incr.assert_called_once_with('dash.realtimestats.error', 1, type='http', status='400')
+
+    @mock.patch('dash.features.realtimestats.service.influx')
+    @mock.patch('dash.features.realtimestats.service.logger')
+    @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
+    def test_k1_ioerror_exception(self, mock_k1_get, mock_logger, mock_influx):
+        e = IOError()
+        mock_k1_get.side_effect = e
+
+        result = service.get_ad_group_sources_stats(self.ad_group)
+        self.assertEqual([], result)
+
+        mock_logger.exception.assert_not_called()
+        mock_influx.incr.assert_called_once_with('dash.realtimestats.error', 1, type='ioerror')

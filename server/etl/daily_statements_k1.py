@@ -17,23 +17,14 @@ from utils import converters
 
 from redshiftapi import db
 
+import core.bcm.calculations
+
 from etl import helpers
 from etl import materialize_views
 
 logger = logging.getLogger(__name__)
 
 FIXED_MARGIN_START_DATE = datetime.date(2017, 6, 21)
-
-
-def _get_license_fee_pct_of_total(license_fee_pct):
-    return (1 / (1 - license_fee_pct)) - 1
-
-
-def _get_margin_pct_of_total(budget):
-    if budget.start_date >= FIXED_MARGIN_START_DATE:
-        return (1 / (1 - budget.margin)) - 1
-    else:
-        return budget.margin
 
 
 def _generate_statements(date, campaign, campaign_spend):
@@ -84,8 +75,10 @@ def _generate_statements(date, campaign, campaign_spend):
                 attributed_media_nano = total_media_nano
                 attributed_data_nano = total_data_nano
 
-            license_fee_pct_of_total = _get_license_fee_pct_of_total(budget.credit.license_fee)
-            license_fee_nano = (attributed_media_nano + attributed_data_nano) * license_fee_pct_of_total
+            license_fee_nano = core.bcm.calculations.calculate_fee(
+                attributed_media_nano + attributed_data_nano,
+                budget.credit.license_fee
+            )
 
         per_budget_spend_nano[budget.id]['media'] += attributed_media_nano
         per_budget_spend_nano[budget.id]['data'] += attributed_data_nano
@@ -94,8 +87,14 @@ def _generate_statements(date, campaign, campaign_spend):
         total_media_nano -= attributed_media_nano
         total_data_nano -= attributed_data_nano
 
-        margin_pct_of_total = _get_margin_pct_of_total(budget)
-        margin_nano = (attributed_media_nano + attributed_data_nano + license_fee_nano) * margin_pct_of_total
+        if budget.start_date >= FIXED_MARGIN_START_DATE:
+            margin_nano = core.bcm.calculations.calculate_margin(
+                attributed_media_nano + attributed_data_nano + license_fee_nano,
+                budget.margin,
+            )
+        else:
+            margin_nano = (attributed_media_nano + attributed_data_nano + license_fee_nano) * budget.margin
+
         dash.models.BudgetDailyStatement.objects.create(
             budget_id=budget.id,
             date=date,
@@ -150,9 +149,17 @@ def _handle_overspend(date, campaign, media_nano, data_nano):
             margin_nano=0,
         )
 
-    license_fee_pct_of_total = _get_license_fee_pct_of_total(budget.credit.license_fee)
-    license_fee_nano = (media_nano + data_nano) * license_fee_pct_of_total
-    margin_nano = (media_nano + data_nano + license_fee_nano) * budget.margin
+    license_fee_nano = core.bcm.calculations.calculate_fee(
+        media_nano + data_nano,
+        budget.credit.license_fee,
+    )
+    if budget.start_date >= FIXED_MARGIN_START_DATE:
+        margin_nano = core.bcm.calculations.calculate_margin(
+            media_nano + data_nano + license_fee_nano,
+            budget.margin,
+        )
+    else:
+        margin_nano = (media_nano + data_nano + license_fee_nano) * budget.margin
 
     daily_statement.media_spend_nano += media_nano
     daily_statement.data_spend_nano += data_nano

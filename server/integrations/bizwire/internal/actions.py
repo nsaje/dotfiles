@@ -11,7 +11,7 @@ import dash.models
 from django.db import transaction
 
 from integrations.bizwire import config, models
-from integrations.bizwire.internal import helpers
+from integrations.bizwire.internal import helpers, reprocess
 
 import restapi.views
 import restapi.adgroupsource.views
@@ -40,6 +40,12 @@ def _is_day_before_new_rotation():
 
 def _should_create_new_ad_groups():
     return _is_pacific_midnight() and _is_day_before_new_rotation()
+
+
+def reprocess_missing_articles():
+    missing_keys = reprocess.get_missing_keys()
+    reprocess.purge_candidates(missing_keys)
+    reprocess.invoke_lambdas(missing_keys)
 
 
 def check_pacific_midnight_and_stop_ads():

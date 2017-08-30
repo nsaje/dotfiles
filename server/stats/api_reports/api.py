@@ -14,19 +14,21 @@ from utils import columns
 from format_helper import format_values
 
 
-def query(user, breakdown, constraints, goals, order, level, columns, include_items_with_no_spend=False):
+def query(user, breakdown, constraints, goals, order, offset, limit, level, columns, include_items_with_no_spend=False, dashapi_cache=None):
     stats_rows = redshiftapi.api_reports.query(
-        breakdown, constraints, goals, order,
+        breakdown, constraints, goals, order, offset, limit,
         use_publishers_view=api_breakdowns.should_use_publishers_view(breakdown))
 
     if include_items_with_no_spend:
+        if len(stats_rows) == limit:
+            # if this happens offset and limit will have to be implemented for dashapi.query
+            raise Exception("Too many rows for option include items with no spend")
         dash_rows = dash.dashapi.api_reports.query(user, breakdown, constraints, level)
         rows = helpers.merge_rows(breakdown, dash_rows, stats_rows)
+        rows = sort_helper.sort_results(rows, [order])
     else:
         rows = stats_rows
-        dash.dashapi.api_reports.annotate(rows, user, breakdown, constraints, level)
-
-    rows = sort_helper.sort_results(rows, [order])
+        dash.dashapi.api_reports.annotate(rows, user, breakdown, constraints, level, dashapi_cache)
 
     format_values(rows, columns)
 

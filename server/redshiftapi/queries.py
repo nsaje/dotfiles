@@ -60,9 +60,9 @@ def _prepare_query_all_for_model(model, context, template_name='breakdown.sql'):
     return sql, context['constraints'].get_params()
 
 
-def prepare_query_joint_base(breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view):
+def prepare_query_joint_base(breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view, skip_performance_columns=False):
     model = get_joint_master_model_cls(use_publishers_view)
-    context = model.get_query_joint_context(breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view)
+    context = model.get_query_joint_context(breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view, skip_performance_columns)
     return _prepare_query_joint_for_model(context, 'breakdown_joint_base.sql')
 
 

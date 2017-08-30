@@ -6,6 +6,7 @@ import datetime
 from django.contrib import admin
 from django.contrib import messages
 from django.db import transaction
+from django.db.models import Count, Prefetch
 from django import forms
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
@@ -704,21 +705,22 @@ class IsArchivedFilter(admin.SimpleListFilter):
         )
 
     def queryset(self, request, queryset):
-        value_bool = self.value() == '1'
         if self.value() is None:
-            value_bool = False
-        for obj in queryset:
-            archived = False
-            try:
-                last_settings = obj.settings.latest('created_dt')
-                archived = bool(last_settings.archived)
-            except:
-                pass
-            if archived and not value_bool:
-                queryset = queryset.exclude(id=obj.id)
-            if not archived and value_bool:
-                queryset = queryset.exclude(id=obj.id)
-        return queryset
+            return queryset
+
+        value_bool = self.value() == '1'
+
+        related_settings = models.AdGroupSettings.objects.all().filter(
+            ad_group__in=queryset
+        ).group_current_settings()
+
+        ad_group_ids = models.AdGroupSettings.objects.filter(
+            pk__in=related_settings
+        ).filter(
+            archived=value_bool,
+        ).values_list('ad_group', flat=True)
+
+        return queryset.filter(pk__in=ad_group_ids)
 
 
 class AdGroupAdmin(admin.ModelAdmin):
@@ -753,12 +755,23 @@ class AdGroupAdmin(admin.ModelAdmin):
         }),
     )
 
+    def get_queryset(self, request):
+        qs = super(AdGroupAdmin, self).get_queryset(request)
+        qs = qs.select_related('campaign__account')
+        qs = qs.annotate(settings_count=Count('adgroupsettings'))
+        qs = qs.prefetch_related(Prefetch(
+            'adgroupsettings_set',
+            queryset=models.AdGroupSettings.objects.all().group_current_settings(),
+            to_attr='current_settings',
+        ))
+        return qs
+
     def view_on_site(self, obj):
         return '/v2/analytics/adgroup/{}'.format(obj.id)
 
     def is_archived_(self, obj):
         try:
-            last_settings = obj.settings.latest('created_dt')
+            last_settings = obj.current_settings[0]
             return bool(last_settings.archived)
         except:
             pass
@@ -801,7 +814,7 @@ class AdGroupAdmin(admin.ModelAdmin):
                 reverse('admin:dash_adgroupsettings_changelist'),
                 urllib.urlencode({'ad_group': obj.id})
             ),
-            num_settings=obj.settings.count()
+            num_settings=obj.settings_count,
         )
     settings_.allow_tags = True
 

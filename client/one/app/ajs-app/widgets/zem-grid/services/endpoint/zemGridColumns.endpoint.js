@@ -164,7 +164,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.ASC,
             internal: 'zemauth.campaign_goal_performance',
-            shown: ['zemauth.campaign_goal_performance', 'zemauth.can_view_platform_cost_breakdown'],
+            shown: false,  // disable until the costMode switcher is implemented
             costMode: constants.costMode.PLATFORM,
             fieldGroup: 'performance'
         },
@@ -1944,7 +1944,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             var shown = convertPermission(column.shown, zemPermissions.hasPermission);
             if (shown) {
                 if (usesBCMv2 && column.costMode === constants.costMode.LEGACY) {
-                    column.name += ' (Legacy)';
+                    // don't show old columns in BCMv2 accounts
+                    shown = false;
                 } else if (!usesBCMv2 && newCostModes.indexOf(column.costMode) >= 0) {
                     // don't show new columns in non-BCMv2 accounts
                     shown = false;

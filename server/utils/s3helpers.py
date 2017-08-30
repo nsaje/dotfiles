@@ -42,6 +42,29 @@ class S3Helper(object):
             with open(os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(key)), 'w+') as f:
                 f.write(contents)
 
+    def put_file(self, key, source, human_readable_filename=None):
+        if settings.USE_S3:
+            k = self.bucket.new_key(key)
+
+            if human_readable_filename:
+                k.set_metadata('Content-Disposition', 'attachment; filename={}'.format(human_readable_filename))
+
+            k.set_contents_from_file(source)
+
+        elif settings.FILE_STORAGE_DIR:
+            with open(os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(key)), 'w+') as f:
+                _copy_file(source, f)
+
+    def put_multipart(self, key, human_readable_filename=None):
+        if settings.USE_S3:
+            metadata = {}
+            if human_readable_filename:
+                metadata['Content-Disposition'] = 'attachment; filename={}'.format(human_readable_filename)
+
+            return self.bucket.initiate_multipart_upload(key, metadata=metadata)
+        else:
+            return FakeMultiPartUpload(key)
+
     def list(self, prefix):
         if settings.USE_S3:
             return self.bucket.list(prefix=prefix)
@@ -51,6 +74,40 @@ class S3Helper(object):
             except OSError:
                 return []
         return []
+
+
+class FakeMultiPartUpload(object):
+    def __init__(self, key):
+        self.key = key
+        self.last_num = 0
+        if settings.FILE_STORAGE_DIR:
+            open(self._get_file(), 'w').close()
+
+    def _get_file(self):
+        return os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(self.key))
+
+    def cancel_upload(self):
+        if settings.FILE_STORAGE_DIR:
+            os.remove(self._get_file())
+
+    def complete_upload(self):
+        pass
+
+    def upload_part_from_file(self, source, part_num):
+        if part_num != self.last_num + 1:
+            raise Exception("Only sequential uploads supported, expected part_num: %d" % self.last_num + 1)
+        self.last_num = part_num
+        if settings.FILE_STORAGE_DIR:
+            with open(self._get_file(), 'a+') as f:
+                _copy_file(source, f)
+
+
+def _copy_file(source, dest):
+    while 1:
+        copy_buffer = source.read(1024 * 1024)
+        if not copy_buffer:
+            break
+        dest.write(copy_buffer)
 
 
 def generate_safe_filename(filename, content):
