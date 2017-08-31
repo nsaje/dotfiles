@@ -63,7 +63,7 @@ class ScheduledReportQuerySet(models.QuerySet):
         due_reports = self.filter(state=constants.ScheduledReportState.ACTIVE)
 
         done_today_reports = (
-            reports.models.ReportJob.objects
+            reports.ReportJob.objects
             .filter(scheduled_report__isnull=False)
             .filter(created_dt__gte=today)
             .exclude(status=reports.constants.ReportJobStatus.FAILED)

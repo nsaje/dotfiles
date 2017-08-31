@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.core import urlresolvers
 
-import models
+from reportjob import ReportJob
 
 
 class IsScheduledListFilter(admin.SimpleListFilter):
@@ -22,7 +22,7 @@ class IsScheduledListFilter(admin.SimpleListFilter):
 
 
 class ReportJobAdmin(admin.ModelAdmin):
-    model = models.ReportJob
+    model = ReportJob
     list_display = (
         'id',
         'created_dt',
@@ -69,4 +69,4 @@ class ReportJobAdmin(admin.ModelAdmin):
     is_email.boolean = True
 
 
-admin.site.register(models.ReportJob, ReportJobAdmin)
+admin.site.register(ReportJob, ReportJobAdmin)

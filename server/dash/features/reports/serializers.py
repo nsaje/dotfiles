@@ -9,7 +9,7 @@ from utils import exc
 
 import constants
 import helpers
-import models
+from reportjob import ReportJob
 
 
 class ReportNamesSerializer(serializers.Serializer):
@@ -85,7 +85,7 @@ class ReportQuerySerializer(serializers.Serializer):
 
 class ReportJobSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.ReportJob
+        model = ReportJob
         fields = ('id', 'status', 'result')
     id = IdField()
     status = DashConstantField(constants.ReportJobStatus)

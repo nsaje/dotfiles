@@ -31,7 +31,8 @@ from utils import threads
 
 import constants
 import helpers
-import models
+from reportjob import ReportJob
+
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,7 @@ BATCH_ROWS = 10000
 
 
 def create_job(user, query, scheduled_report=None):
-    job = models.ReportJob(user=user, query=query, scheduled_report=scheduled_report)
+    job = ReportJob(user=user, query=query, scheduled_report=scheduled_report)
     job.save()
 
     if settings.USE_CELERY_FOR_REPORTS:
@@ -55,7 +56,7 @@ def create_job(user, query, scheduled_report=None):
 @celery.app.task(acks_late=True, name='reports_execute', soft_time_limit=30 * 60)
 def execute(job_id):
     logger.info('Start job executor for report id: %d', job_id)
-    job = models.ReportJob.objects.get(pk=job_id)
+    job = ReportJob.objects.get(pk=job_id)
     executor = ReportJobExecutor(job)
     executor.execute()
     logger.info('Done job executor for report id: %d', job_id)

@@ -5,16 +5,18 @@ from celery.exceptions import SoftTimeLimitExceeded
 from django.test import TestCase
 
 import core.entity
-from dash.features.reports import constants
-from dash.features.reports import models
-from dash.features.reports import reports
+
 from dash.features import scheduled_reports
 from utils.magic_mixer import magic_mixer
+
+import constants
+import reports
+from reportjob import ReportJob
 
 
 class ReportsExecuteTest(TestCase):
     def setUp(self):
-        self.reportJob = models.ReportJob(status=constants.ReportJobStatus.IN_PROGRESS)
+        self.reportJob = ReportJob(status=constants.ReportJobStatus.IN_PROGRESS)
         self.reportJob.user = magic_mixer.blend_user()
         self.reportJob.save()
 

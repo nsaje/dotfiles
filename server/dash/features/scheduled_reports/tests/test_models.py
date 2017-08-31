@@ -31,12 +31,12 @@ class ScheduledReportTestCase(TestCase):
             query={},
         )
         mixer.cycle(4).blend(
-            reports.models.ReportJob,
+            reports.ReportJob,
             scheduled_report=(v for v in scheduled_reports),
             status=(v for v in reports.constants.ReportJobStatus._VALUES),
             query={},
         )
-        reports.models.ReportJob.objects.all().update(
+        reports.ReportJob.objects.all().update(
             created_dt=datetime.datetime(2017, 3, 31, 15),
         )
         self.assertEqual(4, models.ScheduledReport.objects.all().count())

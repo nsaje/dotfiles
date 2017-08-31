@@ -25,7 +25,7 @@ from dash.views import agency, bulk_actions, views, helpers, publishers
 from dash import campaign_goals
 from dash import constants
 from dash import publisher_group_helpers
-from dash.features.reports import models as reports_models
+from dash.features.reports import reportjob
 from dash.features.reports import serializers as reports_serializers
 from dash.features.reports import reports
 import dash.models
@@ -1089,7 +1089,7 @@ class ReportsViewDetails(RESTAPIBaseView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, job_id):
-        job = reports_models.ReportJob.objects.get(pk=job_id)
+        job = reportjob.ReportJob.objects.get(pk=job_id)
         if job.user != request.user:
             raise exceptions.PermissionDenied
         return self.response_ok(reports_serializers.ReportJobSerializer(job).data)

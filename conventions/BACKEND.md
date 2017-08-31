@@ -166,15 +166,24 @@ The Z1 backend is composed of several apps.
 
 ```python
 core/
-  ad_group/       # ad group feature
-    __init__.py
-    models.py
-    managers.py
+  adgroup/            # ad group feature
+    ad_group/         # ad group model
+      __init__.py
+      model.py
+      manager.py
+      instance.py
+    ad_group_settings/ # ad group settings model
+      __init__.py
+      model.py
+      manager.py
+      instance.py
     service.py
+    constants.py
   history/        # history feature
     __init__.py
-    models.py
-    managers.py
+    history/
+      model.py
+      manager.py
     constants.py
     service.py
   emails/
