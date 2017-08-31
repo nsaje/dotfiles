@@ -371,12 +371,6 @@ class ReportJobExecutor(JobExecutor):
             return constants.DEFAULT_ORDER
 
         prefix, fieldname = utils.sort_helper.dissect_order(order_fieldname)
-
-        try:
-            field_key = field_name_mapping[fieldname]
-        except:
-            # the above will fail when we are sorting by name as we are remapping those columns
-            # to the dimension name
-            field_key = 'name'
+        field_key = field_name_mapping.get(fieldname, constants.DEFAULT_ORDER)
 
         return prefix + field_key
