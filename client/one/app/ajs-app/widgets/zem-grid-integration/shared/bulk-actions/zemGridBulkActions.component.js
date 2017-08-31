@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemGridBulkActions', {
         api: '=',
     },
     template: require('./zemGridBulkActions.component.html'),
-    controller: function (zemGridConstants, zemGridBulkActionsService) { // eslint-disable-line max-len
+    controller: function ($scope, zemGridConstants, zemGridBulkActionsService) { // eslint-disable-line max-len
         // TODO: alert, update daily stats
 
         var $ctrl = this;
@@ -17,7 +17,20 @@ angular.module('one.widgets').component('zemGridBulkActions', {
         $ctrl.$onInit = function () {
             service = zemGridBulkActionsService.createInstance($ctrl.api);
             initializeActions();
+            $ctrl.api.onSelectionUpdated($scope, updateActionStates);
         };
+
+        function updateActionStates () {
+            var allRTBSelected = false;
+            $ctrl.api.getSelection().selected.forEach(function (row) {
+                if (row.data && row.data.breakdownId === '0123456789') {
+                    allRTBSelected = true;
+                }
+            });
+            $ctrl.actions.forEach(function (action) {
+                action.disabled = allRTBSelected;
+            });
+        }
 
         function initializeActions () {
             service.setSelectionConfig();
