@@ -24,7 +24,7 @@ For the description of how the client code is organized and written, please view
 - make sure `awscli` is installed and AWS credentials configured (test with `aws s3 ls s3://z1-demo/`)
 - run `make build_baseimage && make build`
 - run `make run`
-- run `make reset_local_db` to set up your local postgres DB for development (can take a while - 5-10min, grab some coffee)
+- run `make reset_local_database` to set up your local postgres DB for development (can take a while - 5-10min, grab some coffee)
 
 Now you have a running local setup of Z1, accessible at [http://localhost:8000](http://localhost:8000).
 You can log in with u/p `test@test.com` / `test123`.
