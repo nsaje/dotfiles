@@ -337,17 +337,17 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixin):
         if not self.start_date or not self.end_date:
             return
 
-        overlapping_credit_line_items = CreditLineItem.objects.filter(
-            account=self.account, agency=self.agency
-        ).exclude(
-            license_fee=self.license_fee,
-        ).filter_overlapping(
-            self.start_date, self.end_date
-        )
-        if self.pk:
-            overlapping_credit_line_items = overlapping_credit_line_items.exclude(pk=self.pk)
-        if overlapping_credit_line_items.exists():
-            raise ValidationError('License fee must not differ on overlapping credit line items.')
+        # overlapping_credit_line_items = CreditLineItem.objects.filter(
+        #     account=self.account, agency=self.agency
+        # ).exclude(
+        #     license_fee=self.license_fee,
+        # ).filter_overlapping(
+        #     self.start_date, self.end_date
+        # )
+        # if self.pk:
+        #     overlapping_credit_line_items = overlapping_credit_line_items.exclude(pk=self.pk)
+        # if overlapping_credit_line_items.exists():
+        #     raise ValidationError('License fee must not differ on overlapping credit line items.')
 
     @classmethod
     def get_defaults_dict(cls):
