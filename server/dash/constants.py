@@ -1167,6 +1167,7 @@ class CampaignGoalKPI(ConstantBase):
     CP_NON_BOUNCED_VISIT = 9
     CP_NEW_VISITOR = 10
     CP_PAGE_VIEW = 11
+    CPCV = 12
 
     _VALUES = {
         TIME_ON_SITE: 'Time on Site - Seconds',
@@ -1180,6 +1181,7 @@ class CampaignGoalKPI(ConstantBase):
         CP_NON_BOUNCED_VISIT: 'Cost per Non-Bounced Visit',
         CP_NEW_VISITOR: 'Cost per New Visitor',
         CP_PAGE_VIEW: 'Cost per Pageview',
+        CPCV: 'Cost per Completed Video View',
     }
 
 

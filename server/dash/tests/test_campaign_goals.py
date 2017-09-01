@@ -241,6 +241,7 @@ class CampaignGoalsTestCase(TestCase):
         goal_8 = self._add_value(constants.CampaignGoalKPI.CPC, 0.02)
         goal_9 = self._add_value(constants.CampaignGoalKPI.CP_NEW_VISITOR, 3)
         goal_10 = self._add_value(constants.CampaignGoalKPI.CP_PAGE_VIEW, 4)
+        goal_11 = self._add_value(constants.CampaignGoalKPI.CPCV, 0.01)
 
         mock_totals.return_value = {
             'cpc': 0.01,
@@ -254,6 +255,7 @@ class CampaignGoalsTestCase(TestCase):
             'avg_cost_per_non_bounced_visit': 8,
             'avg_cost_for_new_visitor': 9,
             'avg_cost_per_pageview': 7,
+            'video_cpcv': 6,
         }
         performance = campaign_goals.get_goals_performance_campaign(
             self.user, self.campaign, start_date, end_date)
@@ -270,6 +272,7 @@ class CampaignGoalsTestCase(TestCase):
                 (cgp.SUPERPERFORMING, 0.01, Decimal('0.0200'), goal_8),
                 (cgp.UNDERPERFORMING, 9, Decimal('3.0000'), goal_9),
                 (cgp.UNDERPERFORMING, 7, Decimal('4.0000'), goal_10),
+                (cgp.UNDERPERFORMING, 6, Decimal('0.0100'), goal_11),
             ],
         )
 
@@ -291,6 +294,7 @@ class CampaignGoalsTestCase(TestCase):
                 (cgp.SUPERPERFORMING, Decimal('0.0001'), Decimal('0.0200'), goal_8),
                 (cgp.UNDERPERFORMING, 9, Decimal('3.0000'), goal_9),
                 (cgp.UNDERPERFORMING, 7, Decimal('4.0000'), goal_10),
+                (cgp.UNDERPERFORMING, 6, Decimal('0.0100'), goal_11),
             ]
         )
 

@@ -577,6 +577,10 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
                         'id': 'Cost per Pageview',
                         'name': 'Cost per Pageview'
                     },
+                    'video_cpcv': {
+                        'id': 'Cost per Completed Video View',
+                        'name': 'Cost per Completed Video View'
+                    },
                 },
                 'chart_data': [{
                     'id': 'totals',
@@ -707,6 +711,10 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                     'avg_cost_per_pageview': {
                         'id': 'Cost per Pageview',
                         'name': 'Cost per Pageview'
+                    },
+                    'video_cpcv': {
+                        'id': 'Cost per Completed Video View',
+                        'name': 'Cost per Completed Video View'
                     },
                 },
                 'chart_data': [{
@@ -846,6 +854,10 @@ class CampaignPublishersDailyStatsTest(TestCase):
                     'avg_cost_per_pageview': {
                         'id': 'Cost per Pageview',
                         'name': 'Cost per Pageview'
+                    },
+                    'video_cpcv': {
+                        'id': 'Cost per Completed Video View',
+                        'name': 'Cost per Completed Video View'
                     },
                 },
                 'chart_data': [{
