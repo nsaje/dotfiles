@@ -244,32 +244,6 @@ class AccountCreditViewTest(BCMViewTestCase):
         self.assertFalse('end_date' in response_data['data']['errors'])
         self.assertFalse('license_fee' in response_data['data']['errors'])
 
-    def test_put_invalid_license_fee(self):
-        self.assertEqual(0, len(models.CreditLineItem.objects.filter(comment='TESTCASE_PUT')))
-
-        url = reverse('accounts_credit', kwargs={'account_id': 1})
-
-        request_data = {
-            'start_date': '2015-11-11',
-            'end_date': '2015-11-20',
-            'amount': '5000',
-            'license_fee': '10%',
-            'comment': 'TESTCASE_PUT'
-        }
-
-        test_helper.add_permissions(self.user, ['account_credit_view'])
-        with patch('utils.dates_helper.local_today') as mock_now:
-            mock_now.return_value = datetime.date(2015, 11, 11)
-            response = self.client.put(url, json.dumps(request_data),
-                                       content_type='application/json')
-
-        self.assertEqual(response.status_code, 400)
-        response_data = json.loads(response.content)
-        self.assertFalse('amount' in response_data['data']['errors'])
-        self.assertFalse('start_date' in response_data['data']['errors'])
-        self.assertFalse('end_date' in response_data['data']['errors'])
-        self.assertTrue('license_fee' in response_data['data']['errors'])
-
     def test_put_valid(self):
         self.assertEqual(0, len(models.CreditLineItem.objects.filter(comment='TESTCASE_PUT')))
 
@@ -348,33 +322,6 @@ class AccountCreditViewTest(BCMViewTestCase):
         self.assertTrue('start_date' in response_data['data']['errors'])
         self.assertFalse('end_date' in response_data['data']['errors'])
         self.assertFalse('license_fee' in response_data['data']['errors'])
-
-    def test_put_agency_invalid_license_fee(self):
-        self.assertEqual(0, len(models.CreditLineItem.objects.filter(comment='TESTCASE_PUT')))
-
-        url = reverse('accounts_credit', kwargs={'account_id': 1000})
-
-        request_data = {
-            'start_date': '2015-11-11',
-            'end_date': '2015-11-20',
-            'amount': '5000',
-            'license_fee': '10%',
-            'comment': 'TESTCASE_PUT',
-            'is_agency': True,
-        }
-
-        test_helper.add_permissions(self.user, ['account_credit_view'])
-        with patch('utils.dates_helper.local_today') as mock_now:
-            mock_now.return_value = datetime.date(2015, 11, 11)
-            response = self.client.put(url, json.dumps(request_data),
-                                       content_type='application/json')
-
-        self.assertEqual(response.status_code, 400)
-        response_data = json.loads(response.content)
-        self.assertFalse('amount' in response_data['data']['errors'])
-        self.assertFalse('start_date' in response_data['data']['errors'])
-        self.assertFalse('end_date' in response_data['data']['errors'])
-        self.assertTrue('license_fee' in response_data['data']['errors'])
 
     def test_put_agency_valid(self):
         self.assertEqual(0, len(models.CreditLineItem.objects.filter(comment='TESTCASE_PUT')))
