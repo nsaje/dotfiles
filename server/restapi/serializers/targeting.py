@@ -22,7 +22,7 @@ class OSSerializer(rest_framework.serializers.Serializer):
     version = VersionSerializer(required=False)
 
     def validate(self, data):
-        versions = dash.constants.OSV_MAPPING[data['name']]
+        versions = dash.constants.OSV_MAPPING.get(data['name'], [])
         version = data['version'] if 'version' in data else {}
         try:
             min_idx = versions.index(version['min']) if 'min' in version else 0

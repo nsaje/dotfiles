@@ -30,7 +30,11 @@ def get_goals(constraints, breakdown):
         conversion_goals = campaign.conversiongoal_set.all().select_related('pixel')
         campaign_goals = campaign.campaigngoal_set.all().order_by('-primary', 'created_dt').select_related(
             'conversion_goal', 'conversion_goal__pixel')
-        primary_goals = [campaign_goals.first()]
+
+        primary_goal = campaign_goals.first()
+        if primary_goal:
+            primary_goals = [primary_goal]
+
         campaign_goal_values = dash.campaign_goals.get_campaign_goal_values(campaign)
 
     elif 'allowed_campaigns' in constraints and 'account' in constraints and constants.CAMPAIGN in breakdown:

@@ -440,12 +440,14 @@ class CampaignOverview(api_common.BaseApiView):
             uses_bcm_v2=campaign.account.uses_bcm_v2
         ).as_dict())
 
-        settings.append(infobox_helpers.OverviewSetting(
-            'Campaign pacing:',
-            lc_helper.default_currency(monthly_proj.total('attributed_media_spend')),
-            description='{:.2f}% on plan'.format(pacing),
-            tooltip='Campaign pacing for the current month'
-        ).as_dict())
+        attributed_media_spend = monthly_proj.total('attributed_media_spend')
+        if attributed_media_spend is not None:
+            settings.append(infobox_helpers.OverviewSetting(
+                'Campaign pacing:',
+                lc_helper.default_currency(attributed_media_spend),
+                description='{:.2f}% on plan'.format(pacing or 0),
+                tooltip='Campaign pacing for the current month'
+            ).as_dict())
 
         if user.has_perm('zemauth.campaign_goal_performance'):
             settings.extend(infobox_helpers.get_primary_campaign_goal(

@@ -191,7 +191,7 @@ class CampaignsTest(RESTAPITest):
         blacklist_publisher_groups=[154],
         target_devices=[constants.AdTargetDevice.DESKTOP],
         target_placements=[constants.Placement.APP],
-        target_os=[{'name': constants.OperatingSystem.ANDROID}],
+        target_os=[{'name': constants.OperatingSystem.ANDROID}, {'name': constants.OperatingSystem.LINUX}],
     ):
         representation = {
             'id': str(id),
