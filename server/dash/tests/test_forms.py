@@ -654,6 +654,12 @@ class ConversionGoalFormTestCase(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual({'goal_id': ['Conversion goal id is too long (101/100).']}, form.errors)
 
+        data['goal_id'] = '__new__'
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual({'goal_id': ['The new pixel not successfuly created yet, please try again in a little while.']}, form.errors)
+
         data['goal_id'] = '1'
 
         form = forms.ConversionGoalForm(data, campaign_id=1)
