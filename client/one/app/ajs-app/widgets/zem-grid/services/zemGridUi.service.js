@@ -18,7 +18,6 @@ angular.module('one.widgets').factory('zemGridUIService', function ($timeout, $s
 
         var gridWidth = 0;
         var columnWidths = [];
-        var maxColumnWidths = [];
         headerCells.each(function (i) {
             // Retrieve properties that affects column width
             var font = window.getComputedStyle(headerCells[i], null).getPropertyValue('font');
@@ -34,10 +33,11 @@ angular.module('one.widgets').factory('zemGridUIService', function ($timeout, $s
 
             // Apply constraints to column width (padding, max/min size)
             width += 2 * padding;
-            width = Math.min(maxWidth, width);
+            if (grid.header.visibleColumns[i].type !== zemGridConstants.gridColumnTypes.ACTIONS) {
+                width = Math.min(maxWidth, width);
+            }
             width = Math.max(minWidth, width);
 
-            maxColumnWidths[i] = maxWidth;
             columnWidths[i] = width;
             gridWidth += width;
         });
@@ -47,7 +47,8 @@ angular.module('one.widgets').factory('zemGridUIService', function ($timeout, $s
             // Check if scroller will be present and incorporate this into header width
             headerWidth -= zemGridConstants.gridStyle.DEFAULT_SCROLLER_WIDTH;
         }
-        keepAspectRatio(columnWidths, maxColumnWidths, headerWidth);
+        var expandableColumnIndex = getVisibleColumnIndex(grid.header.visibleColumns, 'breakdown_name');
+        resizeExpandableColumn(columnWidths, headerWidth, expandableColumnIndex);
         gridWidth = Math.max(headerWidth, gridWidth);
 
         grid.ui.columnsWidths = columnWidths;
@@ -96,7 +97,7 @@ angular.module('one.widgets').factory('zemGridUIService', function ($timeout, $s
                     valueWidth += zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
                 }
             } else if (column.type === zemGridConstants.gridColumnTypes.ACTIONS) {
-                valueWidth += zemGridActionsService.getWidth(grid.meta.data.level, grid.meta.data.breakdown, row);
+                valueWidth = zemGridActionsService.getWidth(grid.meta.data.level, grid.meta.data.breakdown, row);
             }
             width = Math.max(width, valueWidth);
         });
@@ -113,31 +114,23 @@ angular.module('one.widgets').factory('zemGridUIService', function ($timeout, $s
         return width;
     }
 
-    function keepAspectRatio (columnWidths, maxColumnWidths, headerWidth) {
-        // Stretch columns to fill available space, if there is any (keep ratio)
-        var computedColumnsWidth;
-        var maxedColumnsWidth;
-        while (true) { // eslint-disable-line no-constant-condition
-            computedColumnsWidth = 0;
-            maxedColumnsWidth = 0;
-            columnWidths.forEach(function (w, i) {
-                computedColumnsWidth += w;
-                if (w >= maxColumnWidths[i]) maxedColumnsWidth += w;
-            });
-
-            if (maxedColumnsWidth === computedColumnsWidth || headerWidth <= computedColumnsWidth) break;
-
-            var ratio = (headerWidth - maxedColumnsWidth) / (computedColumnsWidth - maxedColumnsWidth);
-            columnWidths.forEach(function (w, i) {
-                if (w < maxColumnWidths[i]) {
-                    columnWidths[i] = Math.min(maxColumnWidths[i], w * ratio);
-                }
-            });
+    function getVisibleColumnIndex (visibleColumns, columnField) {
+        for (var i = 0; i < visibleColumns.length; i++) {
+            if (visibleColumns[i].field === columnField) {
+                return i;
+            }
         }
+        return visibleColumns.length - 1;
+    }
 
+    function resizeExpandableColumn (columnWidths, headerWidth, expandableColumnIndex) {
+        // Resize expandable column to make grid at least as wide as the viewport
+        var computedColumnsWidth = 0;
+        columnWidths.forEach(function (w) {
+            computedColumnsWidth += w;
+        });
         if (headerWidth > computedColumnsWidth) {
-            // Resize last column to fill the gap between computed widths and header width
-            columnWidths[columnWidths.length - 1] += (headerWidth - computedColumnsWidth);
+            columnWidths[expandableColumnIndex] += (headerWidth - computedColumnsWidth);
         }
     }
 

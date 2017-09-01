@@ -108,13 +108,13 @@ angular.module('one.widgets').service('zemGridActionsService', function ($q, zem
     function getWidth (level, breakdown, row) {
         var width = 0;
         if (isStateSwitchVisible(level, breakdown, row)) {
-            width += 40;
+            width += 50;
         }
         var buttons = getButtons(level, breakdown, row);
         if (buttons.length > 0) {
-            width += 34;
+            width += 40;
             if (buttons.length > 1 && breakdown !== constants.breakdown.PUBLISHER) {
-                width += 34;
+                width += 40;
             }
         }
         return width;
