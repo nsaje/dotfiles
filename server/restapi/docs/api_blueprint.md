@@ -1475,8 +1475,6 @@ This endpoint supports creating multiple entries at once that are all appended t
 
 ## Blacklisting [/rest/v1/adgroups/{adGroupId}/publishers/]
 
-**NOTICE: These endpoints are going to be deprecated in the near future, please use the
-[Publisher Groups](#publisher-groups) functionality for blacklisting.**
 
 ### Get publisher status [GET /rest/v1/adgroups/{adGroupId}/publishers/]
 
