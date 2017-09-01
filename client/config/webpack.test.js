@@ -1,27 +1,37 @@
-var merge = require('webpack-merge');
+var webpack = require('webpack');
 var common = require('./webpack.common.js');
 
-var testConfig = {};
 var buildConfig = common.getBuildConfig();
-var theme = common.getTheme();
-var mainConfig = common.generateMainConfig(buildConfig);
-var styleConfig = common.generateStyleConfig(theme);
+var testConfig = common.generateMainConfig(buildConfig);
 
-testConfig = merge.smart(mainConfig, styleConfig);
+testConfig.module.rules = [
+    {
+        test: /\.tsx?$/,
+        loader: 'ts-loader',
+        options: {
+            logLevel: 'warn',
+        }
+    }, {
+        test: /\.html$/,
+        loader: 'html-loader',
+    }, {
+        test: /\.css$/,
+        use: 'null-loader',
+    }, {
+        test: /\.less$/,
+        use: 'null-loader',
+    }, {
+        // Workaround: Convert AngularJS to CommonJS module
+        test: /angular\.js$/, loader: 'exports-loader?angular',
+        include: [common.root('./lib/components/angular')]
+    },
+];
 
-testConfig.entry = {
-    'zemanta-one.polyfills': common.root('./one/polyfills.ts'),
-    'zemanta-one.lib': common.root('./one/vendor.ts'),
-    'zemanta-one': [common.root('./one/app/styles/main.less'), common.root('./one/main.ts')],
-};
-
-testConfig.output = {
-    path: common.root('./dist/one'),
-    publicPath: 'one/',
-    filename: '[name].js',
-    sourceMapFilename: '[file].map',
-};
-
-testConfig.devtool = 'cheap-module-eval-source-map';
+testConfig.plugins.push(
+    new webpack.SourceMapDevToolPlugin({
+        filename: null,
+        test: /\.(ts|js)($|\?)/i,
+    })
+);
 
 module.exports = testConfig;
