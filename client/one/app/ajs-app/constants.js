@@ -2223,7 +2223,7 @@ var defaults = {
         {id: constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT, value: 2.75},
         {id: constants.campaignGoalKPI.CP_NEW_VISITOR, value: 2.75},
         {id: constants.campaignGoalKPI.CP_PAGE_VIEW, value: 0.45},
-        {id: constants.campaignGoalKPI.CPCV, value: 1.0},
+        {id: constants.campaignGoalKPI.CPCV, value: 0.6},
     ],
 };
 
