@@ -61,6 +61,7 @@ GOALS_COLUMNS = {
     CampaignGoalKPI.CP_NON_BOUNCED_VISIT: {'col': ['avg_cost_per_non_bounced_visit', 0.7], 'spend_perc': Decimal(0.3)},
     CampaignGoalKPI.CP_NEW_VISITOR: {'col': ['avg_cost_for_new_visitor', 0.7], 'spend_perc': Decimal(0.3)},
     CampaignGoalKPI.CP_PAGE_VIEW: {'col': ['avg_cost_per_pageview', 0.7], 'spend_perc': Decimal(0.3)},
+    CampaignGoalKPI.CPCV: {'col': ['avg_cost_per_completed_video_view', 0.7], 'spend_perc': Decimal(0.3)},
 }
 GOALS_WORST_VALUE = {
     'bounce_rate': 100.00,
@@ -74,6 +75,7 @@ GOALS_WORST_VALUE = {
     'avg_cost_per_non_bounced_visit': None,
     'avg_cost_for_new_visitor': None,
     'avg_cost_per_pageview': None,
+    'avg_cost_per_completed_video_view': None,
 }
 GOALS_CALC_COLS = {
     CampaignGoalKPI.MAX_BOUNCE_RATE:      {'dividend': 'bounced_visits', 'divisor': 'visits', 'high_is_good': False},
@@ -87,6 +89,7 @@ GOALS_CALC_COLS = {
                                            'high_is_good': False},
     CampaignGoalKPI.CP_NEW_VISITOR: {'dividend': 'media_cost', 'divisor': 'new_users', 'high_is_good': False},
     CampaignGoalKPI.CP_PAGE_VIEW: {'dividend': 'media_cost', 'divisor': 'pageviews', 'high_is_good': False},
+    CampaignGoalKPI.CPCV: {'dividend': 'media_cost', 'divisor': 'video_complete', 'high_is_good': False},
 }
 SPEND_PERC_LOWERING_THRESHOLD = 1.0
 LOW_SPEND_PROB_LOWERING_FACTOR = 0.25

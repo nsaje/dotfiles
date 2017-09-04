@@ -24,6 +24,7 @@ CAMPAIGN_GOAL_NAME_FORMAT = {
     constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: '{} Cost Per Non-Bounced Visit',
     constants.CampaignGoalKPI.CP_NEW_VISITOR: '{} Cost Per New Visitor',
     constants.CampaignGoalKPI.CP_PAGE_VIEW: '{} Cost Per Pageview',
+    constants.CampaignGoalKPI.CPCV: '{} Cost Per Completed Video View',
 }
 
 
