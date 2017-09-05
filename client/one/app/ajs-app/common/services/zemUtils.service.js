@@ -6,6 +6,7 @@ angular.module('one.services').service('zemUtils', function ($q) { // eslint-dis
     this.createAbortableDefer = createAbortableDefer;
     this.traverseTree = traverseTree;
     this.shouldOpenInNewTab = shouldOpenInNewTab;
+    this.intersects = intersects;
 
     function convertToCamelCase (obj) {
         if (!(obj instanceof Object)) return obj;
@@ -83,4 +84,10 @@ angular.module('one.services').service('zemUtils', function ($q) { // eslint-dis
         return event.ctrlKey || event.metaKey || event.which === 2;
     }
 
+    function intersects (array1, array2) {
+        // Simple solution for finding if arrays are having common element
+        return array1.filter(function (n) {
+            return array2.indexOf(n) !== -1;
+        }).length > 0;
+    }
 });

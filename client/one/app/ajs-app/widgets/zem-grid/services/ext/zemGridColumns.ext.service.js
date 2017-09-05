@@ -1,4 +1,4 @@
-angular.module('one.widgets').factory('zemGridColumnsService', function (zemGridConstants, zemGridStorageService) { // eslint-disable-line max-len
+angular.module('one.widgets').factory('zemGridColumnsService', function (zemGridConstants, zemGridStorageService, zemUtils) { // eslint-disable-line max-len
 
     function ColumnsService (grid) {
         var pubsub = grid.meta.pubsub;
@@ -46,17 +46,10 @@ angular.module('one.widgets').factory('zemGridColumnsService', function (zemGrid
             }
 
             if (column.data.exceptions.breakdowns) {
-                return intersects(column.data.exceptions.breakdowns, breakdowns);
+                return zemUtils.intersects(column.data.exceptions.breakdowns, breakdowns);
             }
 
             return true;
-        }
-
-        function intersects (array1, array2) {
-            // Simple solution for finding if arrays are having common element
-            return array1.filter(function (n) {
-                return array2.indexOf(n) !== -1;
-            }).length > 0;
         }
 
         function getVisibleColumns () {

@@ -1,4 +1,4 @@
-angular.module('one.widgets').factory('zemGridStorageService', function (zemLocalStorageService, zemNavigationNewService) { // eslint-disable-line max-len
+angular.module('one.widgets').factory('zemGridStorageService', function (zemLocalStorageService, zemNavigationNewService, zemUtils) { // eslint-disable-line max-len
     var LOCAL_STORAGE_NAMESPACE = 'zemGrid';
     var ALL_ACCOUNTS_KEY = 'allAccounts';
     var KEY_COLUMNS = 'columns';
@@ -80,7 +80,7 @@ angular.module('one.widgets').factory('zemGridStorageService', function (zemLoca
             var breakdowns = grid.meta.dataService.getBreakdown().map(function (breakdown) {
                 return breakdown.query;
             });
-            if (!intersects(column.breakdowns, breakdowns)) {
+            if (!zemUtils.intersects(column.breakdowns, breakdowns)) {
                 order = DEFAULT_ORDER;
             }
         }
@@ -94,14 +94,6 @@ angular.module('one.widgets').factory('zemGridStorageService', function (zemLoca
         } else if (activeAccount) {
             return activeAccount.id.toString();
         }
-    }
-
-    function intersects (array1, array2) {
-        // TODO: move to util service
-        // Simple solution for finding if arrays are having common element
-        return array1.filter(function (n) {
-            return array2.indexOf(n) !== -1;
-        }).length > 0;
     }
 
     function saveOrder (grid) {

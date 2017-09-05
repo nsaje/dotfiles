@@ -1,4 +1,4 @@
-angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPermissions, zemGridConstants, zemNavigationNewService) { // eslint-disable-line max-len
+angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPermissions, zemGridConstants, zemNavigationNewService, zemUtils) { // eslint-disable-line max-len
     var AVG_COST_PREFIX = 'avg_cost_per_';
     var AVG_ET_COST_PREFIX = 'avg_et_cost_per_';
     var AVG_ETFM_COST_PREFIX = 'avg_etfm_cost_per_';
@@ -648,6 +648,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             shown: 'zemauth.can_view_platform_cost_breakdown',
+            internal: 'zemauth.can_view_platform_cost_breakdown',
             costMode: constants.costMode.PLATFORM,
             fieldGroup: 'cpc'
         },
@@ -662,6 +663,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             shown: 'zemauth.can_view_end_user_cost_breakdown',
+            internal: 'zemauth.can_view_end_user_cost_breakdown',
             costMode: constants.costMode.PUBLIC,
             fieldGroup: 'cpc'
         },
@@ -693,6 +695,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             shown: 'zemauth.can_view_platform_cost_breakdown',
+            internal: 'zemauth.can_view_platform_cost_breakdown',
             costMode: constants.costMode.PLATFORM,
             fieldGroup: 'cpm'
         },
@@ -709,6 +712,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             shown: 'zemauth.can_view_end_user_cost_breakdown',
+            internal: 'zemauth.can_view_end_user_cost_breakdown',
             costMode: constants.costMode.PUBLIC,
             fieldGroup: 'cpm'
         },
@@ -1989,19 +1993,22 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         }
     }
 
-    function intersects (array1, array2) {
-        // Simple solution for finding if arrays are having common element
-        return array1.filter(function (n) {
-            return array2.indexOf(n) !== -1;
-        }).length > 0;
-    }
-
     function getColumns (level, breakdowns) {
         return COLUMNS_ORDERED.filter(function (column) {
             var result = true;
-            if (column.exceptions.breakdowns) result = result && intersects(column.exceptions.breakdowns, breakdowns);
-            if (column.exceptions.breakdownBaseLevelOnly) result = result && column.exceptions.breakdowns.indexOf(breakdowns[0]) >= 0; // eslint-disable-line max-len
-            if (column.exceptions.levels) result = result && column.exceptions.levels.indexOf(level) >= 0;
+
+            if (column.exceptions.breakdowns) {
+                result = result && zemUtils.intersects(column.exceptions.breakdowns, breakdowns);
+            }
+
+            if (column.exceptions.breakdownBaseLevelOnly) {
+                result = result && column.exceptions.breakdowns.indexOf(breakdowns[0]) >= 0;
+            }
+
+            if (column.exceptions.levels) {
+                result = result && column.exceptions.levels.indexOf(level) >= 0;
+            }
+
             column.exceptions.custom.forEach(function (customException) {
                 if (level === customException.level && breakdowns[0] === customException.breakdown) {
                     result = customException.shown;
