@@ -8,17 +8,22 @@ class ColumnNamesTest(TestCase):
     fixtures = ['test_augmenter.yaml']
 
     def test_get_pixel_field_names_mapping(self):
+        self.maxDiff = None
         self.assertDictEqual(
             columns.get_pixel_field_names_mapping(dash.models.ConversionPixel.objects.all()),
             {
                 'Test 1 day': 'pixel_1_24',
                 'CPA (Test 1 day)': 'avg_cost_per_pixel_1_24',
+                'ROAS (Test 1 day)': 'roas_pixel_1_24',
                 'Test 7 days': 'pixel_1_168',
                 'CPA (Test 7 days)': 'avg_cost_per_pixel_1_168',
+                'ROAS (Test 7 days)': 'roas_pixel_1_168',
                 'Test 30 days': 'pixel_1_720',
                 'CPA (Test 30 days)': 'avg_cost_per_pixel_1_720',
+                'ROAS (Test 30 days)': 'roas_pixel_1_720',
                 'Test 90 days': 'pixel_1_2160',
                 'CPA (Test 90 days)': 'avg_cost_per_pixel_1_2160',
+                'ROAS (Test 90 days)': 'roas_pixel_1_2160',
             }
         )
 

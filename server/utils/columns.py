@@ -192,6 +192,9 @@ def get_pixel_field_names_mapping(pixels):
 
             cpa_field_name, cpa_column_name = _get_cpa_column(field_name, column_name)
             field_names[cpa_column_name] = cpa_field_name
+
+            roas_field_name, roas_column_name = _get_roas_column(field_name, column_name)
+            field_names[roas_column_name] = roas_field_name
     return field_names
 
 
@@ -210,6 +213,12 @@ def get_conversion_goals_field_names_mapping(conversion_goals):
 def _get_cpa_column(field_name, column_name):
     field_name = 'avg_cost_per_{}'.format(field_name)
     column_name = u'CPA ({})'.format(column_name)
+    return field_name, column_name
+
+
+def _get_roas_column(field_name, column_name):
+    field_name = 'roas_{}'.format(field_name)
+    column_name = u'ROAS ({})'.format(column_name)
     return field_name, column_name
 
 
