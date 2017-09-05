@@ -1,8 +1,12 @@
 import json
+import logging
 import urllib
 import urllib2
 
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
+
 
 DEFAULT_USERNAME = 'z1'
 AD_GROUP_URL = 'https://one.zemanta.com/v2/anlaytics/adgroup/{id}/{tab}'
@@ -14,12 +18,15 @@ MESSAGE_TYPE_CRITICAL = ':rage:'
 
 
 def _post_to_slack(data):
-    data = urllib.urlencode({
-        'payload': json.dumps(data)
-    })
-    req = urllib2.Request(settings.SLACK_INCOMING_HOOK_URL, data)
-    response = urllib2.urlopen(req)
-    return response.read() == 'ok'
+    if settings.SLACK_LOG_ENABLE:
+        data = urllib.urlencode({
+            'payload': json.dumps(data)
+        })
+        req = urllib2.Request(settings.SLACK_INCOMING_HOOK_URL, data)
+        response = urllib2.urlopen(req)
+        return response.read() == 'ok'
+    else:
+        logger.warning("Slack log disabled, message: %s", data)
 
 
 def link(url='', anchor=''):

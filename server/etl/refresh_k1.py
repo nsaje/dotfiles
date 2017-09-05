@@ -76,21 +76,16 @@ def _post_to_slack(status, update_since, account_id=None):
 
 
 @influx.timer('etl.refresh_k1.refresh_k1_timer', type='all')
-def refresh_k1_reports(update_since, account_id=None):
+def refresh_k1_reports(update_since, account_id=None, skip_vacuum=False):
     do_post_to_slack = (datetime.datetime.today() - update_since).days > SLACK_MIN_DAYS_TO_PROCESS
     if do_post_to_slack:
         _post_to_slack('started', update_since, account_id)
-    _refresh_k1_reports(update_since, ALL_MATERIALIZED_VIEWS, account_id)
+    _refresh_k1_reports(update_since, ALL_MATERIALIZED_VIEWS, account_id, skip_vacuum=skip_vacuum)
     if do_post_to_slack:
         _post_to_slack('finished', update_since, account_id)
 
 
-@influx.timer('etl.refresh_k1.refresh_k1_timer', type='only_new')
-def refresh_k1_new_reports(update_since, account_id=None):
-    _refresh_k1_reports(update_since, NEW_MATERIALIZED_VIEWS, account_id)
-
-
-def _refresh_k1_reports(update_since, views, account_id=None):
+def _refresh_k1_reports(update_since, views, account_id=None, skip_vacuum=False):
     influx.incr('etl.refresh_k1.refresh_k1_reports', 1)
 
     if account_id:
@@ -102,8 +97,8 @@ def _refresh_k1_reports(update_since, views, account_id=None):
     date_from, date_to = dates[0], dates[-1]
     job_id = generate_job_id(account_id)
 
-    logger.info('Starting refresh k1 reports job %s for date range %s - %s, requested update since %s',
-                job_id, date_from, date_to, update_since)
+    logger.info('Starting refresh k1 reports job %s for date range %s - %s, requested update since %s, %s',
+                job_id, date_from, date_to, update_since, 'skip vacuum' if skip_vacuum else 'vacuum each table')
 
     extra_dayspan = (update_since.date() - date_from).days
     influx.gauge('etl.refresh_k1.extra_dayspan', extra_dayspan)
@@ -119,11 +114,11 @@ def _refresh_k1_reports(update_since, views, account_id=None):
             mv.generate(campaign_factors=effective_spend_factors)
 
             try:
-                maintenance.analyze(mv_class.TABLE_NAME)
-                if not mv_class.IS_TEMPORARY_TABLE:
+                if not skip_vacuum and not mv_class.IS_TEMPORARY_TABLE:
                     maintenance.vacuum(mv_class.TABLE_NAME)
+                maintenance.analyze(mv_class.TABLE_NAME)
             except Exception:
-                logger.exception("Vacuum and analyze skipped")
+                logger.exception("Vacuum and analyze skipped due to error")
 
     influx.incr('etl.refresh_k1.refresh_k1_reports_finished', 1)
 

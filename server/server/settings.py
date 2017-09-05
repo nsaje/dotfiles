@@ -192,6 +192,7 @@ REST_FRAMEWORK = {
 
 ALL_ACCOUNTS_USE_BCM_V2 = False
 DISABLE_FACEBOOK = True
+SLACK_LOG_ENABLE = True
 
 from localsettings import *
 
