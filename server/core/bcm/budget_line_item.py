@@ -231,7 +231,12 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
         if self.state() != constants.BudgetLineItemState.INACTIVE:
             raise AssertionError('Budget has to be inactive to be freed.')
         amount_cc = self.amount * converters.DOLAR_TO_CC
-        total_spend = int(self.get_spend_data()['etf_total'] * converters.DOLAR_TO_CC)
+        spend_data = self.get_spend_data()
+        if self.campaign.account.uses_bcm_v2:
+            total_spend = spend_data['etfm_total']
+        else:
+            total_spend = spend_data['etf_total']
+        total_spend = int(total_spend * converters.DOLAR_TO_CC)
 
         reserve = self.get_reserve_amount_cc()
         free_date = self.end_date + \

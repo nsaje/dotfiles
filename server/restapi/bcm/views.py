@@ -236,7 +236,10 @@ class AccountCreditItemView(api_common.BaseApiView):
                     'campaign': str(b.campaign),
                     'id': b.pk,
                     'total': b.allocated_amount(),
-                    'spend': b.get_spend_data()['etf_total'],
+                    'spend': (
+                        b.get_spend_data()['etfm_total'] if account.uses_bcm_v2
+                        else b.get_spend_data()['etf_total']
+                    ),
                     'start_date': b.start_date,
                     'end_date': b.end_date,
                     'comment': b.comment
@@ -395,7 +398,6 @@ class CampaignBudgetView(api_common.BaseApiView):
             if campaign.account.uses_bcm_v2:
                 data['lifetime']['campaign_spend'] += spend_data['etfm_total']
             else:
-                # FIXME: can be removed once all accounts are migrated
                 data['lifetime']['campaign_spend'] += spend_data['etf_total']
 
             if _should_add_platform_costs(user, campaign):
@@ -517,7 +519,10 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             )
 
     def _get_response(self, user, item):
-        spend = item.get_spend_data()['etf_total']
+        if item.campaign.account.uses_bcm_v2:
+            spend = item.get_spend_data()['etfm_total']
+        else:
+            spend = item.get_spend_data()['etf_total']
         allocated = item.allocated_amount()
         response = {
             'id': item.id,
