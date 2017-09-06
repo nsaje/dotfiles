@@ -37,6 +37,16 @@ FROM mv_master
 WHERE date >= '{from_date}' AND date <= '{till_date}' AND campaign_id IN ({campaigns})
 GROUP BY campaign_id"""
 
+OVERSPEND_QUERY = """SELECT account_id,
+       (sum(cost_nano) - sum(effective_cost_nano)) +
+       (sum(data_cost_nano) - sum(effective_data_cost_nano)) as diff
+FROM mv_account
+WHERE date = '{date}'
+GROUP BY account_id
+HAVING sum(cost_nano) - sum(effective_cost_nano) > {threshold} or
+       sum(data_cost_nano) - sum(effective_data_cost_nano) > {threshold}
+"""
+
 API_ACCOUNTS = (
     293, 305,
 )
@@ -221,6 +231,25 @@ def audit_autopilot_budget_changes(date=None, error=Decimal('0.001')):
         budget_changes = sum(changes)
         if not budget_changes or abs(budget_changes) > error:
             alarms[ad_group] = budget_changes
+    return alarms
+
+
+def audit_overspend(date, min_overspend=Decimal('0.1')):
+    rows = redshiftapi.db.execute_query(
+        OVERSPEND_QUERY.format(
+            date=str(date),
+            threshold=str(int(min_overspend * converters.DOLAR_TO_NANO))
+        ),
+        [],
+        'audit_overspend',
+    )
+    accounts_map = {
+        account.id: account for account in dash.models.Account.objects.all()
+    }
+    alarms = {}
+    for row in rows:
+        account = accounts_map[row['account_id']]
+        alarms[account] = converters.nano_to_decimal(row['diff'])
     return alarms
 
 

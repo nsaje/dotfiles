@@ -42,10 +42,10 @@ def local_today():
 
 
 def local_yesterday():
-    return yesterday(local_today())
+    return day_before(local_today())
 
 
-def yesterday(today):
+def day_before(today):
     return today - datetime.timedelta(days=1)
 
 

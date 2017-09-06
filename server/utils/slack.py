@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_USERNAME = 'z1'
 AD_GROUP_URL = 'https://one.zemanta.com/v2/anlaytics/adgroup/{id}/{tab}'
+ACCOUNT_URL = 'https://one.zemanta.com/v2/analytics/account/{id}/{tab}'
 
 MESSAGE_TYPE_SUCCESS = ':sunglasses:'
 MESSAGE_TYPE_INFO = ':information_source:'
@@ -39,6 +40,14 @@ def ad_group_url(ad_group, tab='ads'):
         tab='sources'
     )
     return link(url, ad_group.name)
+
+
+def account_url(account, tab='campaigns'):
+    url = ACCOUNT_URL.format(
+        id=account.pk,
+        tab=tab,
+    )
+    return link(url, account.name)
 
 
 def publish(text, channel=None, msg_type=MESSAGE_TYPE_INFO, username=DEFAULT_USERNAME):
