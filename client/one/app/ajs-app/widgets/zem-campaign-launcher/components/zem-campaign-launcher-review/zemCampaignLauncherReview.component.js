@@ -5,7 +5,7 @@ angular.module('one').component('zemCampaignLauncherReview', {
         stateService: '=',
     },
     template: require('./zemCampaignLauncherReview.component.html'),
-    controller: function () {
+    controller: function (zemDeviceTargetingConstants) {
         var $ctrl = this;
 
         $ctrl.goToStep = $ctrl.stateService.goToStep;
@@ -15,6 +15,8 @@ angular.module('one').component('zemCampaignLauncherReview', {
         $ctrl.$onInit = function () {
             $ctrl.state = $ctrl.stateService.getState();
             $ctrl.iabCategoryName = getIabCategoryName($ctrl.state.fields.iabCategory);
+
+            updateDeviceTargetingReview();
         };
 
         function getIabCategoryName (iabCategory) {
@@ -57,6 +59,24 @@ angular.module('one').component('zemCampaignLauncherReview', {
                 return true;
             }
             return false;
+        }
+
+        function updateDeviceTargetingReview () {
+            $ctrl.targetedDevices = null;
+
+            if (!$ctrl.state || !$ctrl.state.fields) {
+                return;
+            }
+
+            if ($ctrl.state.fields.targetDevices && $ctrl.state.fields.targetDevices.length) {
+                var targetedDevices = [];
+                zemDeviceTargetingConstants.DEVICES.forEach(function (device) {
+                    if ($ctrl.state.fields.targetDevices.indexOf(device.value) !== -1) {
+                        targetedDevices.push(device.name);
+                    }
+                });
+                $ctrl.targetedDevices = targetedDevices.join(', ');
+            }
         }
     },
 });

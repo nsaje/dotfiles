@@ -51,8 +51,11 @@
         </div>
         <div class="form__group form__group--informative"  ng-class="{'form--error': !!$ctrl.state.fieldsErrors.targetDevices || !!$ctrl.state.fieldsErrors.targetOs || !!$ctrl.state.fieldsErrors.targetPlacements}">
             <label class="form__label">Device targeting:</label>
-            <div class="form__information" ng-if="$ctrl.isDeviceTargetingEnabled()">Enabled</div>
-            <div class="form__information" ng-if="!$ctrl.isDeviceTargetingEnabled()">Disabled</div>
+            <div class="form__information" ng-if="!$ctrl.isDeviceTargetingEnabled()">All devices</div>
+            <div class="form__information" ng-if="$ctrl.isDeviceTargetingEnabled()">
+                <span ng-if="$ctrl.targetedDevices">Subset of device types ({{$ctrl.targetedDevices}})</span>
+                <span ng-if="!$ctrl.targetedDevices">Subset of operating systems and placements</span>
+            </div>
         </div>
     </div>
 </div>
