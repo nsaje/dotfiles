@@ -3,18 +3,29 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
     bindings: {
         parentEntity: '<',
     },
-    controller: function (zemCreateEntityActionService, zemToastsService) {
+    controller: function ($state, $location, zemCreateEntityActionService, zemToastsService, zemNavigationNewService, zemPermissions) { // eslint-disable-line max-len
         var $ctrl = this;
         var MAP_PARENT_TYPE = {};
         MAP_PARENT_TYPE[constants.entityType.ACCOUNT] = constants.entityType.CAMPAIGN;
         MAP_PARENT_TYPE[constants.entityType.CAMPAIGN] = constants.entityType.AD_GROUP;
         MAP_PARENT_TYPE[constants.entityType.AD_GROUP] = constants.entityType.CONTENT_AD;
 
-        var MAP_ACTION_NAME = {};
-        MAP_ACTION_NAME[constants.entityType.ACCOUNT] = 'Account';
-        MAP_ACTION_NAME[constants.entityType.CAMPAIGN] = 'Campaign';
-        MAP_ACTION_NAME[constants.entityType.AD_GROUP] = 'Ad group';
-        MAP_ACTION_NAME[constants.entityType.CONTENT_AD] = 'Content Ads';
+        var MAIN_ACTIONS = {};
+        MAIN_ACTIONS[constants.entityType.ACCOUNT] = {name: 'Account', callback: createEntity};
+        if (zemPermissions.hasPermission('zemauth.can_create_campaign_via_campaign_launcher')) {
+            MAIN_ACTIONS[constants.entityType.CAMPAIGN] = {name: 'Launch campaign', callback: openCampaignLauncher};
+        } else {
+            MAIN_ACTIONS[constants.entityType.CAMPAIGN] = {name: 'Campaign', callback: createEntity};
+        }
+        MAIN_ACTIONS[constants.entityType.AD_GROUP] = {name: 'Ad group', callback: createEntity};
+        MAIN_ACTIONS[constants.entityType.CONTENT_AD] = {name: 'Content Ads', callback: createEntity};
+
+        var ADDITIONAL_ACTIONS = {};
+        if (zemPermissions.hasPermission('zemauth.can_create_campaign_via_campaign_launcher')) {
+            ADDITIONAL_ACTIONS[constants.entityType.CAMPAIGN] = [
+                {name: 'Add campaign', callback: createEntity},
+            ];
+        }
 
         $ctrl.createInProgress = false;
         $ctrl.createEntity = createEntity;
@@ -23,7 +34,8 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
             $ctrl.entityType = $ctrl.parentEntity && $ctrl.parentEntity.type ?
                 MAP_PARENT_TYPE[$ctrl.parentEntity.type] : constants.entityType.ACCOUNT;
 
-            $ctrl.actionName = MAP_ACTION_NAME[$ctrl.entityType];
+            $ctrl.mainAction = MAIN_ACTIONS[$ctrl.entityType];
+            $ctrl.additionalActions = ADDITIONAL_ACTIONS[$ctrl.entityType] || [];
         };
 
         function createEntity () {
@@ -35,6 +47,11 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
                 }).finally(function () {
                     $ctrl.createInProgress = false;
                 });
+        }
+
+        function openCampaignLauncher () {
+            var url = $state.href('v2.campaignLauncher', {id: zemNavigationNewService.getActiveAccount().id});
+            $location.url(url);
         }
     },
 });

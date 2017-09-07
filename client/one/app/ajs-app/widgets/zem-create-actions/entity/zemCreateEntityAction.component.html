@@ -1,8 +1,21 @@
-<!-- TODO -->
-<button
-        ng-click="$ctrl.createEntity()"
+<button ng-click="$ctrl.mainAction.callback()"
         type="button"
         class="button button--highlight button--with-icon add-icon"
->{{ $ctrl.actionName }}</button>
+        ng-class="{'button--split-with-postfix': $ctrl.additionalActions.length > 0}" >
+    {{ $ctrl.mainAction.name }}
+</button>
+
+<span class="dropdown dropdown--with-split-button" uib-dropdown ng-if="$ctrl.additionalActions.length > 0">
+    <button type="button"
+            class="button button--highlight button--with-icon button--only-icon dots-icon button--split-postfix"
+            uib-dropdown-toggle>
+    </button>
+    <div class="dropdown-menu dropdown-menu--only-buttons" uib-dropdown-menu>
+        <button class="button button--with-icon add-icon"
+                ng-repeat="additionalAction in $ctrl.additionalActions" ng-click="additionalAction.callback()" href>
+            {{ additionalAction.name }}
+        </button>
+    </div>
+</span>
 
 <div class="loader" ng-show="$ctrl.createInProgress"></div>
