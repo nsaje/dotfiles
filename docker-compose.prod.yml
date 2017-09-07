@@ -110,14 +110,11 @@ services:
         environment:
           VIRTUAL_HOST: "onereports.zemanta.com"
           NEW_RELIC_APP_NAME: "Zemanta One (Reports)"
-        mem_limit: 2g
+        mem_limit: 3g
         labels:
           traefik.enable: "false"
         entrypoint: ""
         command: "celery worker -A server -c 1 -Q z1-reports -l INFO -f /app/logs/eins_celery_reports.log --prefetch-multiplier 0 -P solo"
-
-    einsworker_reports01:
-        extends: einsworker_reports
 
     einsworker_upload_lambda:
         environment:
