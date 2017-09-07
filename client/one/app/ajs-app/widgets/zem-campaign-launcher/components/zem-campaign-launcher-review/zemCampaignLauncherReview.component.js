@@ -8,6 +8,8 @@ angular.module('one').component('zemCampaignLauncherReview', {
     controller: function (zemDeviceTargetingConstants) {
         var $ctrl = this;
 
+        var PREVIEW_CREATIVES_PER_ROW = 4;
+
         $ctrl.goToStep = $ctrl.stateService.goToStep;
         $ctrl.isGeoTargetingEnabled = isGeoTargetingEnabled;
         $ctrl.isDeviceTargetingEnabled = isDeviceTargetingEnabled;
@@ -15,6 +17,7 @@ angular.module('one').component('zemCampaignLauncherReview', {
         $ctrl.$onInit = function () {
             $ctrl.state = $ctrl.stateService.getState();
             $ctrl.iabCategoryName = getIabCategoryName($ctrl.state.fields.iabCategory);
+            $ctrl.dummyCreatives = getDummyCreatives($ctrl.state.creatives.candidates || []);
 
             updateDeviceTargetingReview();
         };
@@ -25,6 +28,16 @@ angular.module('one').component('zemCampaignLauncherReview', {
                     return options.iabCategories[i].name;
                 }
             }
+        }
+
+        function getDummyCreatives (candidates) {
+            // Return an array of length equal to number of dummy creatives needed (used by ng-repeat in template to
+            // fill in dummy creatives).
+            var m = candidates.length % PREVIEW_CREATIVES_PER_ROW;
+            if (m !== 0) {
+                return new Array(PREVIEW_CREATIVES_PER_ROW - m);
+            }
+            return [];
         }
 
         function isGeoTargetingEnabled () {
