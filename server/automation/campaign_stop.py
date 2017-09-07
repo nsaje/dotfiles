@@ -1211,9 +1211,9 @@ def _get_yesterday_source_spends(campaign, ad_groups):
     yesterday_spends = {}
     for row in rows:
         if campaign.account.uses_bcm_v2:
-            spend = row['etfm_cost'] or DECIMAL_ZERO
+            spend = decimal.Decimal(row['etfm_cost'] or 0)
         else:
-            spend = row['et_cost'] or DECIMAL_ZERO
+            spend = decimal.Decimal(row['et_cost'] or 0)
         yesterday_spends[(row['ad_group_id'], row['source_id'])] = spend
 
     return yesterday_spends
@@ -1328,9 +1328,9 @@ def _get_past_7_days_data(campaign):
     source_spend = defaultdict(int)
     for row in rows:
         if campaign.account.uses_bcm_v2:
-            spend = row['etfm_cost'] or DECIMAL_ZERO
+            spend = decimal.Decimal(row['etfm_cost'] or 0)
         else:
-            spend = row['et_cost'] or DECIMAL_ZERO
+            spend = decimal.Decimal(row['et_cost'] or 0)
         date_spend[(row['ad_group_id'], row['date'])] += spend
         source_spend[(row['ad_group_id'], row['source_id'])] += spend
 
