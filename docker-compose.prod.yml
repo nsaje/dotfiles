@@ -121,12 +121,44 @@ services:
           VIRTUAL_HOST: "onelambda.zemanta.com"
           NEW_RELIC_APP_NAME: "Zemanta One (Lambda)"
         extends: eins
-        mem_limit: 256m
+#        mem_limit: 2g
+        mem_limit: 512m
         labels:
           traefik.enable: "false"
         cpu_quota: 50000
         entrypoint: ""
-        command: "celery worker -A server -c 15 -Q z1-upload-lambda -l INFO -f /app/logs/eins_celery_upload_lambda.log --prefetch-multiplier 0 -P gevent"
+        command: "celery worker -A server -c 15 -Q z1-upload-lambda -l INFO -f /app/logs/eins_celery_upload_lambda.log --prefetch-multiplier 0 -P solo"
+
+    einsworker_upload_lambda01:
+        extends: einsworker_upload_lambda
+    einsworker_upload_lambda02:
+        extends: einsworker_upload_lambda
+    einsworker_upload_lambda03:
+        extends: einsworker_upload_lambda
+    einsworker_upload_lambda04:
+        extends: einsworker_upload_lambda
+    einsworker_upload_lambda05:
+        extends: einsworker_upload_lambda
+    einsworker_upload_lambda06:
+        extends: einsworker_upload_lambda
+    einsworker_upload_lambda07:
+        extends: einsworker_upload_lambda
+    einsworker_upload_lambda08:
+        extends: einsworker_upload_lambda
+    einsworker_upload_lambda09:
+        extends: einsworker_upload_lambda
+    einsworker_upload_lambda10:
+        extends: einsworker_upload_lambda
+    einsworker_upload_lambda11:
+        extends: einsworker_upload_lambda
+    einsworker_upload_lambda12:
+        extends: einsworker_upload_lambda
+    einsworker_upload_lambda13:
+        extends: einsworker_upload_lambda
+    einsworker_upload_lambda14:
+        extends: einsworker_upload_lambda
+    einsworker_upload_lambda15:
+        extends: einsworker_upload_lambda
 
     einsworker_convapi:
         extends: eins
