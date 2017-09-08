@@ -375,4 +375,4 @@ class ReportJobExecutor(JobExecutor):
         if fieldname not in field_name_mapping:
             return constants.DEFAULT_ORDER
 
-        return prefix + fieldname
+        return prefix + field_name_mapping[fieldname]
