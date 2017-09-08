@@ -3,7 +3,7 @@ import mock
 from django.contrib.auth.models import Permission
 from django.core.urlresolvers import reverse
 
-from restapi.test_views import RESTAPITest
+from restapi.views_test import RESTAPITest
 
 from dash import models
 from dash.features import realtimestats

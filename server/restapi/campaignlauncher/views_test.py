@@ -3,14 +3,14 @@ import mock
 
 from django.core.urlresolvers import reverse
 
-import restapi.test_views
+import restapi.views_test
 import dash.models
 import dash.constants
 import dash.features.campaignlauncher
 from utils.magic_mixer import magic_mixer
 
 
-class CampaignLauncherValidateTest(restapi.test_views.RESTAPITest):
+class CampaignLauncherValidateTest(restapi.views_test.RESTAPITest):
 
     def test_validate_empty(self):
         r = self.client.post(reverse('campaignlauncher_validate', kwargs=dict(account_id=1)))
@@ -45,7 +45,7 @@ class CampaignLauncherValidateTest(restapi.test_views.RESTAPITest):
         )
 
 
-class CampaignLauncherLaunchTest(restapi.test_views.RESTAPITest):
+class CampaignLauncherLaunchTest(restapi.views_test.RESTAPITest):
 
     @mock.patch.object(dash.features.campaignlauncher, 'launch', autospec=True)
     def test_launch(self, mock_launch):

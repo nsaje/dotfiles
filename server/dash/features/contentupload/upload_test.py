@@ -723,7 +723,7 @@ class UpdateCandidateTest(TestCase):
         files = {
             'image': SimpleUploadedFile(
                 name='test.jpg',
-                content=open('./dash/tests/test.jpg').read(),
+                content=open('./dash/test_files/test.jpg').read(),
                 content_type='image/jpg'
             )
         }
@@ -742,7 +742,7 @@ class UpdateCandidateTest(TestCase):
         files = {
             'image': SimpleUploadedFile(
                 name='test.csv',
-                content=open('./dash/tests/test.csv').read(),
+                content=open('./dash/test_files/test.csv').read(),
                 content_type='text/csv'
             )
         }

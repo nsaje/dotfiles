@@ -731,31 +731,31 @@ class AdGroupAdsUploadFormTest(TestCase):
     def test_parse_unknown_file(self):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
         form = self._init_form(csv_file, {})
-        with open('./dash/tests/test.gif') as f:
+        with open('./dash/test_files/test.gif') as f:
             with self.assertRaises(ValidationError):
                 form._parse_file(f)
-        with open('./dash/tests/test.jpg') as f:
+        with open('./dash/test_files/test.jpg') as f:
             with self.assertRaises(ValidationError):
                 form._parse_file(f)
 
     def test_parse_csv_file(self):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
         form = self._init_form(csv_file, {})
-        with open('./dash/tests/test.csv') as f:
+        with open('./dash/test_files/test.csv') as f:
             rows = form._parse_file(f)
             self.assertEqual(self.file_contents, rows)
 
     def test_parse_xls_file(self):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
         form = self._init_form(csv_file, {})
-        with open('./dash/tests/test.xls') as f:
+        with open('./dash/test_files/test.xls') as f:
             rows = form._parse_file(f)
             self.assertEqual(self.file_contents, rows)
 
     def test_parse_xlsx_file(self):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
         form = self._init_form(csv_file, {})
-        with open('./dash/tests/test.xlsx') as f:
+        with open('./dash/test_files/test.xlsx') as f:
             rows = form._parse_file(f)
             self.assertEqual(self.file_contents, rows)
 
@@ -1028,12 +1028,12 @@ class ContentAdCandidateFormTestCase(TestCase):
 
         self.valid_image = SimpleUploadedFile(
             name='test.jpg',
-            content=open('./dash/tests/test.jpg').read(),
+            content=open('./dash/test_files/test.jpg').read(),
             content_type='image/jpg'
         )
         self.invalid_image = SimpleUploadedFile(
             name='test.jpg',
-            content=open('./dash/tests/test.csv').read(),
+            content=open('./dash/test_files/test.csv').read(),
             content_type='text/csv'
         )
 

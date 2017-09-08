@@ -12,7 +12,7 @@ class LocalSettingsTestCase(test.TestCase):
         return attribute_name.upper() == attribute_name
 
     def _build_config_file_list(self):
-        PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        PATH = os.path.dirname(os.path.abspath(__file__))
         ls = glob.glob("{path}/localsettings.py.*".format(path=PATH))
         return ls
 

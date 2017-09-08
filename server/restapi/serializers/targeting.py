@@ -210,32 +210,25 @@ class TargetRegionsSerializer(rest_framework.serializers.Serializer):
         return [location for location_list in data.values() for location in location_list if location_list]
 
     def _get_geo_types(self, target_regions):
+        locations_to_fetch = [loc for loc in target_regions if loc not in _geo_type_cache]
+
+        if locations_to_fetch:
+            non_zips = {loc.key: loc for loc in dash.features.geolocation.Geolocation.objects.filter(
+                key__in=locations_to_fetch)}
+            zips = set(target_regions) - set(non_zips.keys())
+            for loc in locations_to_fetch:
+                geo_type = None
+                if loc in non_zips:
+                    geo_type = non_zips[loc].type
+                if loc in zips:
+                    geo_type = dash.constants.LocationType.ZIP
+
+                _geo_type_cache[loc] = geo_type
+
         results = []
-
-        locations_to_fetch = []
         for loc in target_regions:
-            geo_type = _geo_type_cache.get(loc)
-            if geo_type is None:
-                locations_to_fetch.append(loc)
-                continue
+            geo_type = _geo_type_cache[loc]
             results.append((loc, geo_type))
-
-        if len(locations_to_fetch) == 0:
-            return results
-
-        non_zips = {loc.key: loc for loc in dash.features.geolocation.Geolocation.objects.filter(
-            key__in=locations_to_fetch)}
-        zips = set(target_regions) - set(non_zips.keys())
-        for loc in locations_to_fetch:
-            geo_type = None
-            if loc in non_zips:
-                geo_type = non_zips[loc].type
-            if loc in zips:
-                geo_type = dash.constants.LocationType.ZIP
-
-            results.append((loc, geo_type))
-            _geo_type_cache[loc] = geo_type
-
         return results
 
     def to_representation(self, target_regions):
