@@ -14,7 +14,9 @@ ADD docker/bash_logout /root/.bash_logout
 ADD server/ .
 
 # update needed requirements.txt
+# FIXME(nsaje): cd to /opt so pip install -e installs packages there. Can remove once pip-freeze supports git requirements properly
 RUN bash -c 'if [[ "$(cat requirements.txt|md5sum)" != "$(cat /requirements.txt-installed|md5sum)" ]]; then \
+        cd /opt; \
         pip install -U -r requirements.txt; \
         cp -af requirements.txt /requirements.txt-installed; \
     else \

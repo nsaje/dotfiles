@@ -1,3 +1,3 @@
 FROM python:2.7-slim
 
-RUN pip install -U flake8 xenon
+RUN pip install -U flake8 xenon pip-tools

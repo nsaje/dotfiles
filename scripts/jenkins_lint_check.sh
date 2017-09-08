@@ -24,6 +24,13 @@ function banner {
   green "${PROGRAM} check successful"
 }
 
+DIFF=docker run --rm \
+    -v $PWD:/src \
+    --workdir=/src/ \
+    --entrypoint=sh py-tools "pip-compile server/requirements.in | diff server/requirements.txt -"
+if [ "$DIFF" != "" ]; then
+    banner 1 "requirements.in"
+fi
 
 # Flake8 ------------------------------------------------------------------------
 blue "Flake8 lint in progress ..."

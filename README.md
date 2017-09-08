@@ -299,3 +299,18 @@ To combat that, adding field with a default value should be done in multiple ste
 [2] http://pankrat.github.io/2015/django-migrations-without-downtimes/
 
 [3] https://docs.djangoproject.com/en/1.10/howto/writing-migrations/#non-atomic-migrations
+
+
+## Python dependencies
+
+In order to ensure reproducible builds we pin every dependency to exact version, including transitive dependencies. For this purpose we use `pip-tools` library [1]. App dependecies are specified in `server/requirements.in` and `pip-tools` is then used to generate `server/requirements.txt` file that contains all dependecies pinned to specific versions. To generate this file run the following command:
+
+```bash
+pip-compile --output-file requirements.txt requirements.in
+```
+
+In case of conflicts the `-v` flag is useful for easier debugging.
+
+NOTE: On mac OS an additional dependency (and possibly more) gets added for `ipython` package. Compiling in a docker container solves the issue.
+
+[1] https://github.com/jazzband/pip-tools
