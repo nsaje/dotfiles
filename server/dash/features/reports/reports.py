@@ -372,9 +372,7 @@ class ReportJobExecutor(JobExecutor):
             return constants.DEFAULT_ORDER
 
         prefix, fieldname = utils.sort_helper.dissect_order(order_fieldname)
-        if fieldname in ('name', 'status'):
-            fieldname = constants.DEFAULT_ORDER
-        else:
-            fieldname = field_name_mapping.get(fieldname, constants.DEFAULT_ORDER)
+        if fieldname not in field_name_mapping:
+            return constants.DEFAULT_ORDER
 
         return prefix + fieldname

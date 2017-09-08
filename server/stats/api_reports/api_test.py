@@ -37,6 +37,10 @@ class ApiReportsTest(TestCase):
             'allowed_ad_groups': dash.models.AdGroup.objects.none(),
         }), 'test-account-1_by_publisher_by_week_report_2016-10-10_2016-10-20')
 
+    def test_extract_order(self):
+        self.assertEqual(api_reports.extract_order('-clicks'), '-clicks')
+        self.assertEqual(api_reports.extract_order('pacing'), 'e_media_cost')
+
 
 class CampaignGoalTest(TestCase):
     fixtures = ['test_augmenter.yaml']

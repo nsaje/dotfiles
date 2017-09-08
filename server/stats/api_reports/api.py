@@ -15,6 +15,9 @@ from format_helper import format_values
 
 
 def query(user, breakdown, constraints, goals, order, offset, limit, level, columns, include_items_with_no_spend=False, dashapi_cache=None):
+
+    order = extract_order(order)
+
     stats_rows = redshiftapi.api_reports.query(
         breakdown, constraints, goals, order, offset, limit,
         use_publishers_view=api_breakdowns.should_use_publishers_view(breakdown))
@@ -78,3 +81,24 @@ def get_filename(breakdown, constraints):
         constraints['date__gte'].isoformat(),
         constraints['date__lte'].isoformat(),
     ]))
+
+
+# This API can only return rows sorted by columns in redshift and as sort by the following fields default
+# to some default order
+UNABLE_TO_SORT = (
+    'campaign', 'brand_name', 'bid_cpc', 'batch_name', 'source', 'blacklisted_level', 'content_ad', 'account_type',
+    'salesforce_url', 'content_ad_status', 'flat_fee', 'source_slug', 'account', 'ad_group_status', 'daily_budget',
+    'call_to_action', 'default_cs_representative', 'placement_type', 'image_url', 'tracker_urls',
+    'publisher_status', 'account_status', 'video_playback_method', 'upload_time', 'domain_link', 'agency', 'label',
+    'spend_projection', 'allocated_budgets', 'license_fee_projection', 'status', 'image_hash', 'description',
+    'image_urls', 'campaign_manager', 'supply_dash_url', 'total_fee_projection', 'display_url', 'url', 'external_id',
+    'source_status', 'pacing', 'default_sales_representative', 'ad_group', 'default_account_manager', 'total_fee',
+    'campaign_status',
+)
+
+
+def extract_order(order):
+    prefix, fieldname = sort_helper.dissect_order(order)
+    if fieldname in UNABLE_TO_SORT:
+        fieldname = 'e_media_cost'
+    return prefix + fieldname
