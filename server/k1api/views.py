@@ -715,8 +715,9 @@ class AdGroupSourcesView(K1APIView):
         ad_groups = dash.models.AdGroup.objects.all().exclude_archived()
         if ad_group_ids:
             ad_groups = ad_groups.filter(id__in=ad_group_ids)
+        ad_group_ids = list(ad_groups.values_list('id', flat=True))
 
-        ad_groups_settings_query = dash.models.AdGroupSettings.objects.filter(ad_group__in=ad_groups)
+        ad_groups_settings_query = dash.models.AdGroupSettings.objects.filter(ad_group__in=ad_group_ids)
         ad_groups_settings = ad_groups_settings_query.group_current_settings()
 
         ad_group_settings_map = {ags.ad_group_id: ags for ags in ad_groups_settings}
@@ -741,12 +742,12 @@ class AdGroupSourcesView(K1APIView):
         # build a map of today's campaign margins and account license fees
         account_license_fees = dict(
             dash.models.CreditLineItem.objects.filter(
-                account__campaign__adgroup__in=ad_groups,
+                account__campaign__adgroup__in=ad_group_ids,
             ).filter_active().distinct('account_id').values_list('account_id', 'license_fee')
         )
         campaign_margins = dict(
             dash.models.BudgetLineItem.objects.filter(
-                campaign__adgroup__in=ad_groups,
+                campaign__adgroup__in=ad_group_ids,
             ).filter_today().distinct('campaign_id').values_list('campaign_id', 'margin')
         )
 
