@@ -17,9 +17,8 @@ xlrd==1.0.0
 python-slugify==1.2.1
 newrelic==2.86.0.65
 raven==6.1.0
-boto==2.45.0
-celery==4.0.2
-kombu==4.0.2
+boto==2.48.0
+celery==4.1.0
 ipython==5.2.2
 requests==2.18.4
 django-timezone-field==2.0
@@ -47,7 +46,7 @@ google-api-python-client==1.6.2
 pyOpenSSL==16.2.0
 
 # for secrets encryption
-secretcrypt==0.4.2
+secretcrypt==0.9.1
 
 # Influx
 -e git+https://github.com/Zemanta/django-statsd-influx.git@v0.1.7#egg=django-statsd-influx
