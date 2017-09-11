@@ -207,11 +207,14 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
         var account = zemNavigationNewService.getActiveAccount();
         var usesBCMv2 = account ? account.data.usesBCMv2 : false,
             newCostModes = [constants.costMode.PLATFORM, constants.costMode.PUBLIC, constants.costMode.ANY];
+        var hasPermission = function (permission) {
+            return zemPermissions.hasPermissionBCMv2(permission, usesBCMv2);
+        };
 
         metrics.forEach(function (metric) {
             metric.internal = convertPermission(metric.internal, zemPermissions.isPermissionInternal);
 
-            var shown = convertPermission(metric.shown, zemPermissions.hasPermission);
+            var shown = convertPermission(metric.shown, hasPermission);
             if (shown) {
                 if (usesBCMv2 && metric.costMode === constants.costMode.LEGACY) {
                     // don't show old metrics in BCMv2 accounts

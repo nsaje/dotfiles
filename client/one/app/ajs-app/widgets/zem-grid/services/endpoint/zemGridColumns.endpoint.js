@@ -1941,11 +1941,14 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         var account = zemNavigationNewService.getActiveAccount();
         var usesBCMv2 = account ? account.data.usesBCMv2 : false,
             newCostModes = [constants.costMode.PLATFORM, constants.costMode.PUBLIC, constants.costMode.ANY];
+        var hasPermission = function (permission) {
+            return zemPermissions.hasPermissionBCMv2(permission, usesBCMv2);
+        };
 
         columns.forEach(function (column) {
             column.internal = convertPermission(column.internal, zemPermissions.isPermissionInternal);
 
-            var shown = convertPermission(column.shown, zemPermissions.hasPermission);
+            var shown = convertPermission(column.shown, hasPermission);
             if (shown) {
                 if (usesBCMv2 && column.costMode === constants.costMode.LEGACY) {
                     // don't show old columns in BCMv2 accounts

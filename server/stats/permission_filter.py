@@ -8,6 +8,22 @@ from stats import constants
 from stats import fields
 from stats.constants import StructureDimension
 
+
+def has_perm_bcm_v2(user, permission, uses_bcm_v2=False):
+    return has_perms_bcm_v2(user, [permission], uses_bcm_v2)
+
+
+def has_perms_bcm_v2(user, permissions, uses_bcm_v2=False):
+    if not uses_bcm_v2 and 'zemauth.can_view_platform_cost_breakdown' in permissions:
+        permissions = [x for x in permissions if x != 'zemauth.can_view_platform_cost_breakdown']
+
+        if not permissions:
+            # if after that no permissions are left it is allowed
+            return True
+
+    return user.has_perms(permissions)
+
+
 BCM2_DEPRECATED_FIELDS = {
     'agency_cost', 'billing_cost', 'total_cost',
     'ctr', 'cpc', 'cpm', 'video_cpv', 'video_cpcv',
@@ -117,9 +133,9 @@ def _get_fields_to_keep(user, goals, uses_bcm_v2):
         fields_to_keep |= fields.POSTCLICK_ENGAGEMENT_FIELDS
 
     for field, permissions in FIELD_PERMISSION_MAPPING.iteritems():
-        if not permissions or user.has_perms(permissions):
+        if not permissions or has_perms_bcm_v2(user, permissions, uses_bcm_v2=uses_bcm_v2):
             fields_to_keep.add(field)
-        if permissions and not user.has_perms(permissions) and field in fields_to_keep:
+        if permissions and not has_perms_bcm_v2(user, permissions, uses_bcm_v2=uses_bcm_v2) and field in fields_to_keep:
             fields_to_keep.remove(field)
 
     # add allowed dynamically generated goals fields
@@ -164,8 +180,8 @@ def _get_allowed_campaign_goals_fields(user, campaign_goals, campaign_goal_value
     allowed_fields = set()
     included_campaign_goals = []
 
-    can_add_et_fields = user.has_perm('zemauth.can_view_platform_cost_breakdown')
-    can_add_etfm_fields = user.has_perm('zemauth.can_view_end_user_cost_breakdown')
+    can_add_et_fields = has_perm_bcm_v2(user, 'zemauth.can_view_platform_cost_breakdown', uses_bcm_v2)
+    can_add_etfm_fields = has_perm_bcm_v2(user, 'zemauth.can_view_end_user_cost_breakdown', uses_bcm_v2)
 
     if user.has_perm('zemauth.campaign_goal_optimization'):
         included_campaign_goals = [x.campaign_goal.type for x in campaign_goal_values]
@@ -217,8 +233,8 @@ def _get_allowed_pixels_fields(user, pixels, uses_bcm_v2):
     Returns pixel column names and average costs column names that should be kept for all users.
     """
 
-    can_add_et_fields = user.has_perm('zemauth.can_view_platform_cost_breakdown')
-    can_add_etfm_fields = user.has_perm('zemauth.can_view_end_user_cost_breakdown')
+    can_add_et_fields = has_perm_bcm_v2(user, 'zemauth.can_view_platform_cost_breakdown', uses_bcm_v2)
+    can_add_etfm_fields = has_perm_bcm_v2(user, 'zemauth.can_view_end_user_cost_breakdown', uses_bcm_v2)
 
     allowed = set()
     for pixel in pixels:

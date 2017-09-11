@@ -26,6 +26,30 @@ def generate_rows(fields):
     return rows
 
 
+class HasPermBCMTest(TestCase):
+
+    def test_has_perm_bcm_v2(self):
+        user = magic_mixer.blend_user(['can_view_platform_cost_breakdown'])
+        self.assertTrue(permission_filter.has_perm_bcm_v2(user, 'zemauth.can_view_platform_cost_breakdown', True))
+        self.assertTrue(permission_filter.has_perm_bcm_v2(user, 'zemauth.can_view_platform_cost_breakdown', False))
+
+        user = magic_mixer.blend_user(['can_view_actual_costs'])
+        self.assertFalse(permission_filter.has_perm_bcm_v2(user, 'zemauth.can_view_platform_cost_breakdown', True))
+        # this permission doesnot acutally exist for non-bcm-v2
+        self.assertTrue(permission_filter.has_perm_bcm_v2(user, 'zemauth.can_view_platform_cost_breakdown', False))
+
+    def test_has_perms_bcm_v2(self):
+        user = magic_mixer.blend_user(['can_view_platform_cost_breakdown'])
+        self.assertTrue(permission_filter.has_perms_bcm_v2(user, ['zemauth.can_view_platform_cost_breakdown'], True))
+        self.assertTrue(permission_filter.has_perms_bcm_v2(user, ['zemauth.can_view_platform_cost_breakdown'], False))
+
+        user = magic_mixer.blend_user(['can_view_actual_costs'])
+        self.assertFalse(permission_filter.has_perms_bcm_v2(user, ['zemauth.can_view_platform_cost_breakdown'], True))
+        self.assertTrue(permission_filter.has_perms_bcm_v2(user, ['zemauth.can_view_platform_cost_breakdown'], False))
+        self.assertFalse(permission_filter.has_perms_bcm_v2(
+            user, ['zemauth.can_view_platform_cost_breakdown', 'zemauth.can_view_end_user_cost_breakdown'], False))
+
+
 class FilterTestCase(TestCase):
 
     fixtures = ['test_augmenter']
@@ -68,6 +92,19 @@ class FilterTestCase(TestCase):
         self.public_fields_uses_bcm_v2 = self.public_fields - permission_filter.BCM2_DEPRECATED_FIELDS - {
             'roas_pixel_1_168', 'roas_pixel_1_2160', 'roas_pixel_1_24', 'roas_pixel_1_720',
             'avg_cost_per_pixel_1_168', 'avg_cost_per_pixel_1_2160', 'avg_cost_per_pixel_1_24', 'avg_cost_per_pixel_1_720',
+        }
+
+        # add public fields in non-bcm-v2 mode
+        self.public_fields |= {
+            'e_data_cost', 'e_media_cost', 'e_yesterday_cost',
+            'et_cost',
+            'avg_et_cost_per_visit', 'avg_et_cost_for_new_visitor', 'avg_et_cost_per_minute', 'avg_et_cost_per_non_bounced_visit', 'avg_et_cost_per_pageview',
+            'avg_et_cost_per_pixel_1_168', 'avg_et_cost_per_pixel_1_2160', 'avg_et_cost_per_pixel_1_24', 'avg_et_cost_per_pixel_1_720',
+            'et_cpc', 'et_cpm',
+            'et_roas_pixel_1_168', 'et_roas_pixel_1_2160', 'et_roas_pixel_1_24', 'et_roas_pixel_1_720',
+            'license_fee', 'license_fee_projection', 'pacing', 'spend_projection',
+            'video_et_cpcv', 'video_et_cpv',
+            'yesterday_et_cost',
         }
 
     def _mock_constraints(self, uses_bcm_v2):
@@ -122,15 +159,7 @@ class FilterTestCase(TestCase):
 
         permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
 
-        self.assertItemsEqual(set(rows[0].keys()) - self.public_fields, [
-            'avg_et_cost_for_new_visitor', 'avg_et_cost_per_minute', 'avg_et_cost_per_non_bounced_visit',
-            'avg_et_cost_per_pageview', 'avg_et_cost_per_pixel_1_168', 'avg_et_cost_per_pixel_1_2160',
-            'avg_et_cost_per_pixel_1_24', 'avg_et_cost_per_pixel_1_720', 'avg_et_cost_per_visit',
-            'e_data_cost', 'e_media_cost', 'e_yesterday_cost', 'et_cost', 'et_cpc', 'et_cpm',
-            'et_roas_pixel_1_168', 'et_roas_pixel_1_2160', 'et_roas_pixel_1_24', 'et_roas_pixel_1_720',
-            'license_fee', 'license_fee_projection', 'pacing', 'spend_projection', 'video_et_cpcv',
-            'video_et_cpv', 'yesterday_et_cost'
-        ])
+        self.assertItemsEqual(set(rows[0].keys()), self.public_fields)
 
     def test_filter_columns_by_permission_platform_cost_bcm_v2(self):
         uses_bcm_v2 = True
@@ -139,7 +168,7 @@ class FilterTestCase(TestCase):
 
         permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
 
-        self.assertItemsEqual(set(rows[0].keys()) - self.public_fields, [
+        self.assertItemsEqual(set(rows[0].keys()) - self.public_fields_uses_bcm_v2, [
             'avg_et_cost_for_new_visitor', 'avg_et_cost_per_minute', 'avg_et_cost_per_non_bounced_visit',
             'avg_et_cost_per_pageview', 'avg_et_cost_per_pixel_1_168', 'avg_et_cost_per_pixel_1_2160',
             'avg_et_cost_per_pixel_1_24', 'avg_et_cost_per_pixel_1_720', 'avg_et_cost_per_visit',
@@ -181,6 +210,8 @@ class FilterTestCase(TestCase):
         self.assertItemsEqual(set(rows[0].keys()) - self.public_fields, [
             'avg_cost_per_conversion_goal_2', 'avg_cost_per_conversion_goal_3',
             'avg_cost_per_conversion_goal_4', 'avg_cost_per_conversion_goal_5',
+            'avg_et_cost_per_conversion_goal_2', 'avg_et_cost_per_conversion_goal_3',
+            'avg_et_cost_per_conversion_goal_4', 'avg_et_cost_per_conversion_goal_5',
         ])
 
     def test_filter_columns_by_permission_performance(self):
@@ -191,8 +222,8 @@ class FilterTestCase(TestCase):
         permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
 
         self.assertItemsEqual(set(rows[0].keys()) - self.public_fields, [
-            'performance_campaign_goal_1',
-            'performance_campaign_goal_2',
+            'performance_campaign_goal_1', 'performance_campaign_goal_2',
+            'et_performance_campaign_goal_1', 'et_performance_campaign_goal_2',
             'performance', 'styles',
         ])
 
