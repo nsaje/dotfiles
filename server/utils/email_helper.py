@@ -28,6 +28,7 @@ WHITELABEL_PRODUCTS = {
     dash.constants.Whitelabel.GREENPARK: 'Telescope',
     dash.constants.Whitelabel.ADTECHNACITY: 'adtechnacity',
     dash.constants.Whitelabel.NEWSCORP: 'News Corp',
+    dash.constants.Whitelabel.BURDA: 'Burda',
 }
 
 URLS_RE = re.compile(

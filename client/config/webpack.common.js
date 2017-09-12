@@ -9,6 +9,7 @@ var THEMES = {
     adtechnacity: {name: 'adtechnacity'},
     greenpark: {name: 'greenpark'},
     newscorp: {name: 'newscorp'},
+    burda: {name: 'burda'},
 };
 
 module.exports.getBuildConfig = getBuildConfig;
