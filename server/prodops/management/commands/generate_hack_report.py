@@ -186,11 +186,13 @@ class Command(utils.command_helpers.ExceptionCommand):
 
     def post_to_influx(self):
         for stats in self.stats_by_removed:
-            continue
+            if stats['summary'] in self.ignore:
+                continue
             influx.gauge('backendhack_status_count', stats['id__count'],
                          status='removed', summary=stats['summary'], retentionPolicy='1week')
         for stats in self.stats_by_implemented:
-            continue
+            if stats['summary'] in self.ignore:
+                continue
             if stats['created_dt__min'].date() < self.n_days_before:
                 influx.gauge('backendhack_status_count', stats['id__count'],
                              status='existing', summary=stats['summary'], retentionPolicy='1week')
@@ -203,7 +205,6 @@ class Command(utils.command_helpers.ExceptionCommand):
             media = self._calc_media_from_hacks(self.spend_data, hacks)
             influx.gauge('backendhack_service_spd', media,
                          summary=stats['summary'], service=stats['service'], retentionPolicy='1week')
-            continue
             influx.gauge('backendhack_service_count', stats['id__count'],
                          summary=stats['summary'], service=stats['service'], retentionPolicy='1week')
 
@@ -211,7 +212,6 @@ class Command(utils.command_helpers.ExceptionCommand):
             media = self.spend_data['account'].get(account.pk, Decimal(0))
             influx.gauge('backendhack_account_spd', media,
                          client=account.name, retentionPolicy='1week')
-            continue
             influx.gauge('backendhack_account_count', cnt,
                          client=account.name, retentionPolicy='1week')
 
@@ -219,12 +219,10 @@ class Command(utils.command_helpers.ExceptionCommand):
             media = self.spend_data['agency'].get(agency.pk, Decimal(0))
             influx.gauge('backendhack_agency_spd', media,
                          client=agency.name, retentionPolicy='1week')
-            continue
             influx.gauge('backendhack_agency_count', cnt,
                          client=agency.name, retentionPolicy='1week')
 
         for source, cnt in self.stats_by_source.iteritems():
-            continue
             influx.gauge('backendhack_source_count', cnt,
                          source=source, retentionPolicy='1week')
 
