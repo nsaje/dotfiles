@@ -256,17 +256,26 @@ class GAAccountsView(K1APIView):
 
     def get(self, request):
         date_since = request.GET.get('date_since')
-        all_current_settings = dash.models.CampaignSettings.objects.all().group_current_settings()
+
+        all_active_campaign_ids = set(dash.models.Campaign.objects.all(
+        ).exclude_archived().values_list('id', flat=True))
+        if 'campaigns' in request.GET:
+            all_active_campaign_ids = set(request.GET.get('campaigns', '').split(','))
+        all_current_settings = dash.models.CampaignSettings.objects.filter(
+            campaign_id__in=all_active_campaign_ids
+        ).group_current_settings()
         ga_accounts = set()
         for current_settings in all_current_settings:
             self._extract_ga_settings(ga_accounts, current_settings)
         if date_since:
             valid_previous_settings = dash.models.CampaignSettings.objects.filter(
+                campaign_id__in=all_active_campaign_ids,
                 created_dt__lte=datetime.datetime.strptime(date_since, '%Y-%m-%d').date()
             ).order_by('campaign_id', '-created_dt').distinct('campaign')
             for previous_settings in valid_previous_settings:
                 self._extract_ga_settings(ga_accounts, previous_settings)
             all_intermediate_settings = dash.models.CampaignSettings.objects.filter(
+                campaign_id__in=all_active_campaign_ids,
                 created_dt__gte=datetime.datetime.strptime(date_since, '%Y-%m-%d').date()
             ).exclude(
                 pk__in=set(s.pk for s in all_current_settings) | set(s.pk for s in valid_previous_settings)
@@ -417,8 +426,12 @@ class AdGroupsView(K1APIView):
         if slugs:
             slugs = slugs.split(',')
 
-        ad_groups_settings, campaigns_settings_map, accounts_settings_map = \
-            self._get_settings_maps(ad_group_ids, source_types, slugs)
+        ad_groups_settings,\
+            campaigns_settings_map,\
+            accounts_settings_map,\
+            accounts_license_fees_map,\
+            campaigns_margins_map = self._get_settings_maps(ad_group_ids, source_types, slugs)
+
         campaign_goal_types = self._get_campaign_goal_types(campaigns_settings_map.keys())
         campaign_goals = self._get_campaign_goals(campaigns_settings_map.keys())
 
@@ -436,6 +449,20 @@ class AdGroupsView(K1APIView):
                 ad_group.campaign, campaign_settings,
                 ad_group.campaign.account, account_settings,
                 include_global=False  # global blacklist is handled separately by the bidder, no need to duplicate work
+            )
+
+            license_fee = accounts_license_fees_map.get(ad_group.campaign.account_id)
+            margin = campaigns_margins_map.get(ad_group.campaign.id)
+
+            max_cpm = ad_group_settings.get_external_max_cpm(
+                ad_group.campaign.account,
+                license_fee,
+                margin
+            )
+            b1_sources_group_daily_budget = ad_group_settings.get_external_b1_sources_group_daily_budget(
+                ad_group.campaign.account,
+                license_fee,
+                margin
             )
 
             ad_group = {
@@ -463,10 +490,10 @@ class AdGroupsView(K1APIView):
                 'goal_types': campaign_goal_types[ad_group.campaign.id],
                 'goals': campaign_goals[ad_group.campaign.id],
                 'dayparting': ad_group_settings.dayparting,
-                'max_cpm': ad_group_settings.max_cpm,
+                'max_cpm': format(max_cpm, '.4f') if max_cpm else max_cpm,
                 'b1_sources_group': {
                     'enabled': ad_group_settings.b1_sources_group_enabled,
-                    'daily_budget': ad_group_settings.b1_sources_group_daily_budget,
+                    'daily_budget': b1_sources_group_daily_budget,
                     'state': ad_group_settings.b1_sources_group_state,
                 },
                 'whitelist_publisher_groups': whitelist,
@@ -564,7 +591,28 @@ class AdGroupsView(K1APIView):
                              .only('account_id', 'whitelist_publisher_groups', 'blacklist_publisher_groups'))
         accounts_settings_map = {accs.account_id: accs for accs in accounts_settings}
 
-        return ad_groups_settings, campaigns_settings_map, accounts_settings_map
+        # FIXME: remove the usage of list() inside this queryset
+        # At the time of writing this code one test failed when running this
+        # code (while another one passed) with an error that looks like
+        # some internal Django bug which we didn't research.
+        ad_groups = dash.models.AdGroup.objects.filter(pk__in=list(
+            ad_groups_settings.values_list('ad_group_id', flat=True)))
+        accounts_license_fees_map = dict(
+            dash.models.CreditLineItem.objects.filter(
+                account__campaign__adgroup__in=ad_groups,
+            ).filter_active().distinct('account_id').values_list('account_id', 'license_fee')
+        )
+        campaigns_margins_map = dict(
+            dash.models.BudgetLineItem.objects.filter(
+                campaign__adgroup__in=ad_groups,
+            ).filter_today().distinct('campaign_id').values_list('campaign_id', 'margin')
+        )
+
+        return ad_groups_settings,\
+            campaigns_settings_map,\
+            accounts_settings_map,\
+            accounts_license_fees_map,\
+            campaigns_margins_map
 
 
 class AdGroupStatsView(K1APIView):
@@ -607,8 +655,10 @@ class AdGroupConversionStatsView(K1APIView):
         if ad_group_ids:
             ad_group_ids = ad_group_ids.split(',')
 
-        conversion_generator = redshiftapi.internal_stats.conversions.query_conversions(from_date, to_date, ad_group_ids)
-        path = etl.materialize_views.upload_csv("conversions", from_date, uuid.uuid4().hex, lambda: conversion_generator)
+        conversion_generator = redshiftapi.internal_stats.conversions.query_conversions(
+            from_date, to_date, ad_group_ids)
+        path = etl.materialize_views.upload_csv(
+            "conversions", from_date, uuid.uuid4().hex, lambda: conversion_generator)
 
         return self.response_ok({
             'path': path,
@@ -632,8 +682,10 @@ class AdGroupContentAdPublisherStatsView(K1APIView):
         if ad_group_ids:
             ad_group_ids = ad_group_ids.split(',')
 
-        stats_generator = redshiftapi.internal_stats.content_ad_publishers.query_content_ad_publishers(from_date, to_date, ad_group_ids)
-        path = etl.materialize_views.upload_csv("content_ad_publishers", from_date, uuid.uuid4().hex, lambda: stats_generator)
+        stats_generator = redshiftapi.internal_stats.content_ad_publishers.query_content_ad_publishers(
+            from_date, to_date, ad_group_ids)
+        path = etl.materialize_views.upload_csv("content_ad_publishers", from_date,
+                                                uuid.uuid4().hex, lambda: stats_generator)
 
         return self.response_ok({
             'path': path,
@@ -663,8 +715,9 @@ class AdGroupSourcesView(K1APIView):
         ad_groups = dash.models.AdGroup.objects.all().exclude_archived()
         if ad_group_ids:
             ad_groups = ad_groups.filter(id__in=ad_group_ids)
+        ad_group_ids = list(ad_groups.values_list('id', flat=True))
 
-        ad_groups_settings_query = dash.models.AdGroupSettings.objects.filter(ad_group__in=ad_groups)
+        ad_groups_settings_query = dash.models.AdGroupSettings.objects.filter(ad_group__in=ad_group_ids)
         ad_groups_settings = ad_groups_settings_query.group_current_settings()
 
         ad_group_settings_map = {ags.ad_group_id: ags for ags in ad_groups_settings}
@@ -683,9 +736,20 @@ class AdGroupSourcesView(K1APIView):
 
         ad_group_source_settings = (ag_source_settings_query
                                     .group_current_settings()
-                                    .select_related('ad_group_source',
-                                                    'ad_group_source__source',
-                                                    'ad_group_source__source__source_type'))
+                                    .select_related('ad_group_source__source__source_type',
+                                                    'ad_group_source__ad_group__campaign__account'))
+
+        # build a map of today's campaign margins and account license fees
+        account_license_fees = dict(
+            dash.models.CreditLineItem.objects.filter(
+                account__campaign__adgroup__in=ad_group_ids,
+            ).filter_active().distinct('account_id').values_list('account_id', 'license_fee')
+        )
+        campaign_margins = dict(
+            dash.models.BudgetLineItem.objects.filter(
+                campaign__adgroup__in=ad_group_ids,
+            ).filter_today().distinct('campaign_id').values_list('campaign_id', 'margin')
+        )
 
         # build the list of objects
         ad_group_sources = []
@@ -702,14 +766,29 @@ class AdGroupSourcesView(K1APIView):
                 ad_group_settings.get_tracking_codes(), ''
             )
 
+            campaign = ad_group_source_settings.ad_group_source.ad_group.campaign
+            license_fee = account_license_fees.get(campaign.account.id)
+            margin = campaign_margins.get(campaign.id)
+
+            cpc_cc = ad_group_source_settings.get_external_cpc_cc(
+                campaign.account,
+                license_fee,
+                margin,
+            )
+            daily_budget_cc = ad_group_source_settings.get_external_daily_budget_cc(
+                campaign.account,
+                license_fee,
+                margin,
+            )
+
             source = {
                 'ad_group_id': ad_group_settings.ad_group_id,
                 'slug': ad_group_source_settings.ad_group_source.source.bidder_slug,
                 'source_campaign_key': ad_group_source_settings.ad_group_source.source_campaign_key,
                 'tracking_code': tracking_code,
                 'state': source_state,
-                'cpc_cc': ad_group_source_settings.cpc_cc,
-                'daily_budget_cc': ad_group_source_settings.daily_budget_cc,
+                'cpc_cc': format(cpc_cc, '.4f'),
+                'daily_budget_cc': format(daily_budget_cc, '.4f'),
             }
             ad_group_sources.append(source)
 

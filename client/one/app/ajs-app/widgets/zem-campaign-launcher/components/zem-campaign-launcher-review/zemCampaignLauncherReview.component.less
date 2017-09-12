@@ -9,30 +9,52 @@
 }
 
 .zem-campaign-launcher-review__creatives-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.zem-campaign-launcher-review__creatives-list-item,
+.zem-campaign-launcher-review__dummy-creatives-item {
+    width: 22%;
+    padding: @default-spacing;
+    box-shadow: 0px 0px 3px 0px rgba(0,0,0,0.1);
+    min-height: 275px;
+    margin: 2% 0;
 }
 
 .zem-campaign-launcher-review__creatives-list-item {
-    margin-bottom: @default-spacing;
-    border: 1px solid @light-gray;
-    padding: @default-spacing;
-    box-shadow: 0px 0px 3px 0px rgba(0,0,0,0.1);
+    z-index: 2;
+    background-color: white;
+}
+
+.zem-campaign-launcher-review__dummy-creatives-item {
+    background: url('images/dummy-content.svg') no-repeat @default-spacing @default-spacing;
+    background-size: 86%;
 }
 
 .creative__title {
-    font-size: 18px;
+    font-size: 14px;
+    line-height: 18px;
     font-weight: 500;
+    margin-bottom: 4px;
 }
 
 .creative__brand-name {
     color: @gray;
+    font-size: 12px;
     margin-bottom: 4px;
 }
 
 .creative__description {
+    color: @gray;
+    font-size: 12px;
     margin-bottom: 4px;
 }
 
 .creative__display-url {
+    font-size: 12px;
     text-decoration: underline;
     margin-bottom: @default-spacing;
 
@@ -51,6 +73,6 @@
 }
 
 .creative__image {
-    width: @creative-image-width;
-    float: left;
+    width: 100%;
+    margin-bottom: 10px;
 }

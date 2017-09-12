@@ -637,6 +637,23 @@ h4 {
     font-weight: 400;
 }
 
+.button--split-with-postfix {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    float: left;
+}
+
+.button--split-postfix {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    float: left;
+    border-left: 1px solid fade(white, 20%);
+
+    &:not(.button--disabled):not([disabled]):hover {
+        border-left: 1px solid fade(white, 20%);
+    }
+}
+
 ////////////////////////////
 // Icons //
 ////////////////////////////
@@ -2291,6 +2308,7 @@ h4 {
         text-align: left;
         display: block;
         width: 100%;
+        white-space: nowrap;
 
         &:last-child {
             border-bottom: none;
@@ -2302,6 +2320,14 @@ h4 {
             border-top-right-radius: @border-radius;
             border-top-left-radius: @border-radius;
         }
+    }
+}
+
+.dropdown--with-split-button {
+    float: left;
+
+    .dropdown-menu {
+        margin-top: -3px;
     }
 }
 

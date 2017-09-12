@@ -9,13 +9,21 @@ from redshiftapi.postprocess import _get_representative_dates
 HIERARCHICAL_DIMENSIONS = [constants.ACCOUNT, constants.CAMPAIGN, constants.AD_GROUP, constants.CONTENT_AD]
 
 
-def annotate(rows, user, breakdown, constraints, level):
-    for dimension in breakdown:
-        loader_cls = loaders.get_loader_for_dimension(dimension, level)
-        if loader_cls is None:
-            continue
+def annotate(rows, user, breakdown, constraints, level, loader_cache=None):
+    if loader_cache is None:
+        loader_cache = {}
 
-        loader = loader_cls.from_constraints(user, constraints)
+    for dimension in breakdown:
+        loader = loader_cache.get(dimension, {}).get(level)
+        if loader is None:
+            loader_cls = loaders.get_loader_for_dimension(dimension, level)
+            if loader_cls is None:
+                continue
+
+            loader = loader_cls.from_constraints(user, constraints)
+
+            loader_cache.setdefault(dimension, {})[level] = loader
+
         augmenter_fn = augmenter.get_report_augmenter_for_dimension(dimension, level)
         augmenter_fn(rows, loader)
 

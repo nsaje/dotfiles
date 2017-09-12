@@ -1,4 +1,3 @@
-from utils import sort_helper
 from utils import queryset_helper
 
 import dash.constants
@@ -10,14 +9,14 @@ from redshiftapi import postprocess
 __all__ = ['query', 'query_totals']
 
 
-def query(breakdown, constraints, goals, order='-media_cost', use_publishers_view=False):
+def query(breakdown, constraints, goals, order, offset, limit, use_publishers_view=False):
     constraints = extract_constraints(constraints)
 
-    rows = api_breakdowns.query_all(
-        breakdown, constraints, None, goals, use_publishers_view,
-        breakdown_for_name=breakdown, extra_name='reports_all')
-    rows = sort_helper.sort_results(rows, [order])
-    postprocess.set_default_values(breakdown, rows)
+    rows = api_breakdowns.query(
+        breakdown, constraints, None, goals, order, offset, limit, use_publishers_view,
+        is_reports=True,
+    )
+
     return rows
 
 

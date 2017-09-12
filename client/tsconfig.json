@@ -14,6 +14,11 @@
       "es2016",
       "dom"
     ],
+    "types": [
+        "webpack-env",
+        "angular",
+        "jasmine"
+    ],
     "typeRoots": [
       "node_modules/@types"
     ],

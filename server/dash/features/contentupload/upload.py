@@ -443,7 +443,7 @@ def process_callback(callback_data):
             candidate_id = callback_data.get('id')
             candidate = models.ContentAdCandidate.objects.filter(pk=candidate_id).select_related('batch').get()
         except models.ContentAdCandidate.DoesNotExist:
-            logger.exception('No candidate with id %s', callback_data['id'])
+            logger.info('No candidate with id %s', callback_data['id'])
             return
 
         cleaned_urls = _get_cleaned_urls(candidate)

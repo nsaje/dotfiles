@@ -1,5 +1,6 @@
 import datetime
 from decimal import Decimal, ROUND_DOWN
+from functools import partial
 
 from django.db import transaction
 from django.db.models import Prefetch
@@ -17,23 +18,65 @@ import utils.lc_helper
 CAMPAIGN_GOAL_NAME_FORMAT = {
     constants.CampaignGoalKPI.TIME_ON_SITE: '{} Time on Site - Seconds',
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE: '{} Max Bounce Rate',
-    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: '{} New Unique Visitors',
+    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: '{} New Users',
     constants.CampaignGoalKPI.PAGES_PER_SESSION: '{} Pageviews per Visit',
     constants.CampaignGoalKPI.CPA: '{} CPA',
     constants.CampaignGoalKPI.CPC: '{} CPC',
     constants.CampaignGoalKPI.CPV: '{} Cost Per Visit',
     constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: '{} Cost Per Non-Bounced Visit',
+    constants.CampaignGoalKPI.CP_NEW_VISITOR: '{} Cost Per New Visitor',
+    constants.CampaignGoalKPI.CP_PAGE_VIEW: '{} Cost Per Pageview',
+    constants.CampaignGoalKPI.CPCV: '{} Cost Per Completed Video View',
+}
+
+NR_DECIMALS = {
+    constants.CampaignGoalKPI.TIME_ON_SITE: 2,
+    constants.CampaignGoalKPI.MAX_BOUNCE_RATE: 2,
+    constants.CampaignGoalKPI.PAGES_PER_SESSION: 2,
+    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: 2,
+    constants.CampaignGoalKPI.CPA: 2,
+    constants.CampaignGoalKPI.CPC: 3,
+    constants.CampaignGoalKPI.CPV: 2,
+    constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: 2,
+    constants.CampaignGoalKPI.CP_NEW_VISITOR: 2,
+    constants.CampaignGoalKPI.CP_PAGE_VIEW: 2,
+    constants.CampaignGoalKPI.CPCV: 2,
 }
 
 CAMPAIGN_GOAL_VALUE_FORMAT = {
-    constants.CampaignGoalKPI.TIME_ON_SITE: lambda x: '{:.2f}'.format(x),
-    constants.CampaignGoalKPI.MAX_BOUNCE_RATE: lambda x: '{:.2f} %'.format(x),
-    constants.CampaignGoalKPI.PAGES_PER_SESSION: lambda x: '{:.2f}'.format(x),
-    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: lambda x: '{:.2f} %'.format(x),
-    constants.CampaignGoalKPI.CPA: utils.lc_helper.default_currency,
-    constants.CampaignGoalKPI.CPC: lambda x: utils.lc_helper.default_currency(x, places=3),
-    constants.CampaignGoalKPI.CPV: utils.lc_helper.default_currency,
-    constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: utils.lc_helper.default_currency,
+    constants.CampaignGoalKPI.TIME_ON_SITE:
+    lambda x: ('{:.' + str(NR_DECIMALS[constants.CampaignGoalKPI.TIME_ON_SITE]) + 'f}').format(x),
+
+    constants.CampaignGoalKPI.MAX_BOUNCE_RATE:
+    lambda x: ('{:.' + str(NR_DECIMALS[constants.CampaignGoalKPI.MAX_BOUNCE_RATE]) + 'f}').format(x),
+
+    constants.CampaignGoalKPI.PAGES_PER_SESSION:
+    lambda x: ('{:.' + str(NR_DECIMALS[constants.CampaignGoalKPI.PAGES_PER_SESSION]) + 'f}').format(x),
+
+    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS:
+    lambda x: ('{:.' + str(NR_DECIMALS[constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS]) + 'f}').format(x),
+
+    constants.CampaignGoalKPI.CPA:
+    partial(utils.lc_helper.default_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CPA]),
+
+    constants.CampaignGoalKPI.CPC:
+    partial(utils.lc_helper.default_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CPC]),
+
+    constants.CampaignGoalKPI.CPV:
+    partial(utils.lc_helper.default_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CPV]),
+
+    constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT:
+    partial(utils.lc_helper.default_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT]),
+
+    constants.CampaignGoalKPI.CP_NEW_VISITOR:
+    partial(utils.lc_helper.default_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CP_NEW_VISITOR]),
+
+    constants.CampaignGoalKPI.CP_PAGE_VIEW:
+    partial(utils.lc_helper.default_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CP_PAGE_VIEW]),
+
+    constants.CampaignGoalKPI.CPCV:
+    partial(utils.lc_helper.default_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CPCV]),
+
 }
 
 CAMPAIGN_GOAL_MAP = {
@@ -59,6 +102,15 @@ CAMPAIGN_GOAL_MAP = {
         'avg_cost_per_non_bounced_visit',
         'non_bounced_visits',
     ],
+    constants.CampaignGoalKPI.CP_NEW_VISITOR: [
+            'avg_cost_for_new_visitor',
+        ],
+    constants.CampaignGoalKPI.CP_PAGE_VIEW: [
+            'avg_cost_per_pageview',
+        ],
+    constants.CampaignGoalKPI.CPCV: [
+            'video_cpcv',
+        ],
 }
 
 CAMPAIGN_GOAL_PRIMARY_METRIC_MAP = {
@@ -69,6 +121,9 @@ CAMPAIGN_GOAL_PRIMARY_METRIC_MAP = {
     constants.CampaignGoalKPI.CPC: 'cpc',
     constants.CampaignGoalKPI.CPV: 'avg_cost_per_visit',
     constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: 'avg_cost_per_non_bounced_visit',
+    constants.CampaignGoalKPI.CP_NEW_VISITOR: 'avg_cost_for_new_visitor',
+    constants.CampaignGoalKPI.CP_PAGE_VIEW: 'avg_cost_per_pageview',
+    constants.CampaignGoalKPI.CPCV: 'video_cpcv',
 }
 
 INVERSE_PERFORMANCE_CAMPAIGN_GOALS = (
@@ -77,6 +132,9 @@ INVERSE_PERFORMANCE_CAMPAIGN_GOALS = (
     constants.CampaignGoalKPI.CPC,
     constants.CampaignGoalKPI.CPV,
     constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT,
+    constants.CampaignGoalKPI.CP_NEW_VISITOR,
+    constants.CampaignGoalKPI.CP_PAGE_VIEW,
+    constants.CampaignGoalKPI.CPCV,
 )
 
 STATUS_TO_EMOTICON_MAP = {
@@ -94,17 +152,19 @@ COST_DEPENDANT_GOALS = (
     constants.CampaignGoalKPI.CPC,
     constants.CampaignGoalKPI.CPV,
     constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT,
+    constants.CampaignGoalKPI.CP_NEW_VISITOR,
+    constants.CampaignGoalKPI.CP_PAGE_VIEW,
+    constants.CampaignGoalKPI.CPCV,
 )
 
 ROUNDING = ROUND_DOWN
 
 
-def get_performance_value(goal_type, metric_value, target_value):
-    rounded_metric_value = metric_value.quantize(Decimal('.01'), rounding=ROUNDING)
+def _get_performance_value(goal_type, metric_value, target_value):
     if goal_type in INVERSE_PERFORMANCE_CAMPAIGN_GOALS:
-        performance = (2 * target_value - rounded_metric_value) / target_value
+        performance = (2 * target_value - metric_value) / target_value
     else:
-        performance = rounded_metric_value / target_value
+        performance = metric_value / target_value
     return max(Decimal('0'), min(performance, Decimal('2')))
 
 
@@ -295,15 +355,24 @@ def get_goal_performance_category(performance):
     return constants.CampaignGoalPerformance.AVERAGE
 
 
+def _round_by_goal_type(goal_type, value):
+    zeros = '0' * (NR_DECIMALS[goal_type] - 1)
+    return Decimal(value).quantize(Decimal('.{}1'.format(zeros)), rounding=ROUNDING)
+
+
 def get_goal_performance_status(goal_type, metric_value, planned_value, cost=None):
     rounded_cost = (cost and Decimal(cost) or Decimal('0')).quantize(
         Decimal('.01'), rounding=ROUNDING
     )
+
     if goal_type in COST_DEPENDANT_GOALS and rounded_cost and not metric_value:
         return get_goal_performance_category(0)
     if planned_value is None or metric_value is None:
         return get_goal_performance_category(None)
-    performance = get_performance_value(goal_type, Decimal(metric_value), planned_value)
+
+    rounded_metric_value = _round_by_goal_type(goal_type, metric_value)
+    performance = _get_performance_value(goal_type, rounded_metric_value, planned_value)
+
     return get_goal_performance_category(performance)
 
 

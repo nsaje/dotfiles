@@ -14,7 +14,10 @@ angular.module('one.common').filter('campaignGoalText', function ($filter) {
             constants.campaignGoalKPI.CPC,
             constants.campaignGoalKPI.CPM,
             constants.campaignGoalKPI.CPV,
-            constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT
+            constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT,
+            constants.campaignGoalKPI.CP_NEW_VISITOR,
+            constants.campaignGoalKPI.CP_PAGE_VIEW,
+            constants.campaignGoalKPI.CPCV,
         ].indexOf(goal.type) > -1) {
             return '$' + value + ' ' + constants.campaignGoalValueText[goal.type];
         } else if ([

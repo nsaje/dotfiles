@@ -1,23 +1,27 @@
-<div class="zem-grid-header-cell-data zem-grid-cell {{ctrl.column.type}}-field">
-    <zem-internal-feature ng-if="ctrl.column.data.internal"></zem-internal-feature>
-    <a ng-if="ctrl.column.data.order" href ng-class="ctrl.column.data.nameCssClass"
-       ng-click="ctrl.setOrder(column)">
-        {{ ctrl.column.data.name }}
-        <span ng-if="ctrl.column.data.breakdownByStructureText">
-            {{ctrl.column.data.breakdownByStructureText}}
-        </span>
-    </a>
-    <span ng-if="!ctrl.column.data.order" ng-class="ctrl.column.data.nameCssClass">
-        {{ ctrl.column.data.name }}
-        <span ng-if="ctrl.column.data.breakdownByStructureText">
-            {{ctrl.column.data.breakdownByStructureText}}
-        </span>
-    </span>
+<div class="zem-grid-header-cell-data zem-grid-cell {{ctrl.column.type}}-field {{ctrl.column.field}}" is-internal="{{ctrl.column.data.internal}}">
+    <div class="zem-grid-header-cell__title">
+        <div>
+            <a ng-if="ctrl.column.data.order" href ng-class="ctrl.column.data.nameCssClass"
+               ng-click="ctrl.setOrder(column)" title="{{ ctrl.column.data.name }}">
+                {{ ctrl.column.data.name }}
+                <span ng-if="ctrl.column.data.breakdownByStructureText">
+                    {{ctrl.column.data.breakdownByStructureText}}
+                </span>
+            </a>
+            <span ng-if="!ctrl.column.data.order" ng-class="ctrl.column.data.nameCssClass" title="{{ ctrl.column.data.name }}">
+                {{ ctrl.column.data.name }}
+                <span ng-if="ctrl.column.data.breakdownByStructureText">
+                    {{ctrl.column.data.breakdownByStructureText}}
+                </span>
+            </span>
+        </div>
+    </div>
 
-    <span ng-class="ctrl.model.orderClass"></span>
+    <span class="zem-grid-header-cell__order" ng-class="ctrl.model.orderClass"></span>
 
     <zem-help-popover ng-if="ctrl.column.data.help"
                       content="{{ ctrl.column.data.help }}"
+                      class="zem-grid-header-cell__help"
                       placement="{{ $last ? 'left' : 'top' }}">
     </zem-help-popover>
 </div>

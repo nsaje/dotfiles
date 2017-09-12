@@ -26,6 +26,9 @@ ENGAGEMENT_GOALS = (
     dash.constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS,
     dash.constants.CampaignGoalKPI.CPV,
     dash.constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT,
+    dash.constants.CampaignGoalKPI.CP_NEW_VISITOR,
+    dash.constants.CampaignGoalKPI.CP_PAGE_VIEW,
+    dash.constants.CampaignGoalKPI.CPCV,
 )
 DEFAULT_ACCOUNT_TYPES = (
     dash.constants.AccountType.PILOT,
@@ -139,25 +142,30 @@ def check_ad_group_delivery(ad_group, ad_group_settings, ad_group_stats):
     b1_active_sources = active_sources.filter(
         source__source_type__type=dash.constants.SourceType.B1
     )
+    api_active_sources = active_sources.exclude(
+        source__source_type__type=dash.constants.SourceType.B1
+    )
     approved_ad_sources = core.entity.contentad.ContentAdSource.objects.filter(
         content_ad__ad_group_id=ad_group.pk,
         submission_status=dash.constants.ContentAdSubmissionStatus.APPROVED,
     )
     b1_active_sources_count = b1_active_sources.count()
+    rtb_as_1_mvp_enabled = ad_group_settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.ACTIVE
     if not content_ads.count():
         return analytics.constants.AdGroupDeliveryStatus.MISSING_ADS
     if not approved_ad_sources.count():
         return analytics.constants.AdGroupDeliveryStatus.NO_ADS_APPROVED
     if not active_sources.count():
         return analytics.constants.AdGroupDeliveryStatus.NO_ACTIVE_SOURCES
-    if ad_group_settings.b1_sources_group_enabled and not b1_active_sources_count:
+    if ad_group_settings.b1_sources_group_enabled and rtb_as_1_mvp_enabled and not b1_active_sources_count:
         return analytics.constants.AdGroupDeliveryStatus.RTB_AS_1_NO_SOURCES
     if ad_group_settings.whitelist_publisher_groups:
         if ad_group_settings.interest_targeting:
             return analytics.constants.AdGroupDeliveryStatus.WHITELIST_AND_INTERESTS
         if ad_group_settings.bluekai_targeting:
             return analytics.constants.AdGroupDeliveryStatus.WHITELIST_AND_DATA
-    if ad_group_settings.interest_targeting and b1_active_sources_count <= MIN_B1_ACTIVE_SOURCES_FOR_INTEREST_TARGETING:
+    if not api_active_sources.count() and ad_group_settings.interest_targeting \
+       and b1_active_sources_count <= MIN_B1_ACTIVE_SOURCES_FOR_INTEREST_TARGETING:
         return analytics.constants.AdGroupDeliveryStatus.TOO_LITTLE_B1_SOURCES_FOR_INTEREST_TARGETING
     if _extract_unbillable_data_segments(ad_group_settings.bluekai_targeting) and media and not data:
         return analytics.constants.AdGroupDeliveryStatus.MISSING_DATA_COST
@@ -219,6 +227,8 @@ def _prepare_ad_group_data(running_ad_groups, ad_group_settings_map, ad_group_st
 
 def _extract_unbillable_data_segments(targeting_exp):
     segments = set()
+    if not targeting_exp:
+        return segments
     for part in targeting_exp:
         if type(part) == list:
             filtered_part = _extract_unbillable_data_segments(part)

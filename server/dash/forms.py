@@ -689,11 +689,14 @@ class ConversionGoalForm(forms.Form):
             self.add_error('conversion_window', 'This field is required.')
 
         pixel = None
-        try:
-            pixel = models.ConversionPixel.objects.get(
-                pk=cleaned_data['goal_id'])
-        except models.ConversionPixel.DoesNotExist:
-            self.add_error('goal_id', 'Pixel does not exist.')
+        if cleaned_data['goal_id'] == '__new__':
+            self.add_error('goal_id', 'The new pixel not successfuly created yet, please try again in a little while.')
+        else:
+            try:
+                pixel = models.ConversionPixel.objects.get(
+                    pk=cleaned_data['goal_id'])
+            except models.ConversionPixel.DoesNotExist:
+                self.add_error('goal_id', 'Pixel does not exist.')
 
         if conversion_window and pixel:
             cleaned_data['name'] = '{} - {}'.format(

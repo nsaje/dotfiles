@@ -13,9 +13,7 @@ import {UpgradeModule} from '@angular/upgrade/static';
         shouldSendCallback: () => APP_CONFIG.env.prod,
     }
 )
-.addPlugin((<any>window).Raven.Plugins.Angular) // tslint:disable-line
-.install();
-
+.addPlugin((<any>window).Raven.Plugins.Angular); // tslint:disable-line
 
 @NgModule({
     imports: [

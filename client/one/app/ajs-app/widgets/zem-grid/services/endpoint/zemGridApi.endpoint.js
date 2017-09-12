@@ -37,9 +37,15 @@ angular.module('one.widgets').factory('zemGridEndpointApi', function ($q, $http,
                     config, response.data, metaData, true
                 );
                 deferred.resolve(breakdown);
-            }).error(function (data, status) {
-                if (status === 400 && data && data.data.error_code === 'ValidationError') {
+            }).error(function (data) {
+                if (data && data.data && data.data.errors) {
                     data = convertErrorsFromApi(data.data.errors);
+                } else if (!(data && data.data && data.data.message)) {
+                    data = {
+                        data: {
+                            message: 'An error occurred. Please try again.',
+                        },
+                    };
                 }
                 deferred.reject(data);
             });

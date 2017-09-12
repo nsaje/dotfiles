@@ -9,7 +9,7 @@ from utils import exc
 
 import constants
 import helpers
-import models
+from reportjob import ReportJob
 
 
 class ReportNamesSerializer(serializers.Serializer):
@@ -23,6 +23,17 @@ class ReportFiltersSerializer(serializers.Serializer):
     values = serializers.ListField(child=serializers.CharField(), required=False)
     frm = serializers.CharField(required=False)  # remapped to 'from' below
     to = serializers.CharField(required=False)
+
+    def validate(self, data):
+        if data['operator'] == constants.EQUALS and not data.get('value'):
+            raise serializers.ValidationError({'value': 'This field is required for operator =.'})
+        elif data['operator'] == constants.BETWEEN and not data.get('from'):
+            raise serializers.ValidationError({'from': 'This field is required for operator between.'})
+        elif data['operator'] == constants.BETWEEN and not data.get('to'):
+            raise serializers.ValidationError({'to': 'This field is required for operator between.'})
+        elif data['operator'] == constants.IN and data.get('values') is None:
+            raise serializers.ValidationError({'values': 'This field is required for operator IN.'})
+        return data
 
 
 # from is a reserved keyword, remap it directly
@@ -74,7 +85,7 @@ class ReportQuerySerializer(serializers.Serializer):
 
 class ReportJobSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.ReportJob
+        model = ReportJob
         fields = ('id', 'status', 'result')
     id = IdField()
     status = DashConstantField(constants.ReportJobStatus)

@@ -6,7 +6,7 @@ RUN mkdir /src
 # Hack to upgrade NPM:
 #  - install local version
 #  - replace old global verson with new one
-RUN cd /var/tmp/ && npm install npm@5.3 && \
+RUN cd /var/tmp/ && npm install npm@5.4 && \
     rm -fr /usr/local/lib/node_modules/npm && \
     mv node_modules/npm  /usr/local/lib/node_modules
 

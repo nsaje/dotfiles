@@ -188,7 +188,11 @@ class Candidate(api_common.BaseApiView):
     def get(self, request, batch_id, candidate_id=None):
         if candidate_id:
             raise utils.exc.ValidationError('Not supported')
-        batch = helpers.get_upload_batch(request.user, batch_id)
+
+        try:
+            batch = helpers.get_upload_batch(request.user, batch_id)
+        except models.UploadBatch.DoesNotExist:
+            raise exc.MissingDataError('Batch does not exist')
 
         return self.create_api_response({
             'candidates': upload.get_candidates_with_errors(batch.contentadcandidate_set.all()),

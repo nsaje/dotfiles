@@ -8,6 +8,7 @@ from django.db import models
 from dash import constants
 from utils import lc_helper
 
+import core.bcm.calculations
 import core.entity
 import core.entity.helpers
 import core.audiences
@@ -162,6 +163,26 @@ class AdGroupSourceSettings(SettingsBase):
             )
 
         return result
+
+    def get_external_daily_budget_cc(self, account, license_fee, margin):
+        daily_budget_cc = self.daily_budget_cc
+        if account.uses_bcm_v2:
+            daily_budget_cc = core.bcm.calculations.subtract_fee_and_margin(
+                daily_budget_cc,
+                license_fee,
+                margin,
+            )
+        return daily_budget_cc
+
+    def get_external_cpc_cc(self, account, license_fee, margin):
+        cpc_cc = self.cpc_cc
+        if account.uses_bcm_v2:
+            cpc_cc = core.bcm.calculations.subtract_fee_and_margin(
+                cpc_cc,
+                license_fee,
+                margin,
+            )
+        return cpc_cc
 
     class QuerySet(SettingsQuerySet):
 

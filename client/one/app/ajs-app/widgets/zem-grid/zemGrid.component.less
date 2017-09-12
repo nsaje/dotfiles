@@ -16,6 +16,12 @@ zem-grid {
         margin-right: 10px;
     }
 
+    .loader {
+        vertical-align: top;
+        margin-top: 5px;
+        margin-left: 10px;
+    }
+
     .pull-right {
         margin-left: 10px;
 
@@ -221,6 +227,46 @@ zem-grid {
 
         .zem-grid-header-cell {
             display: inline-block;
+            white-space: normal;
+            vertical-align: middle;
+
+            .zem-grid-header-cell-data {
+                line-height: 45px;
+                white-space: normal;
+
+                .zem-grid-header-cell__title {
+                    height: 40px;
+                    overflow: hidden;
+                    display: inline-block;
+
+                    &:after {
+                        content: "";
+                        height: 100%;
+                        display: inline-block;
+                        vertical-align: middle;
+                    }
+
+                    div {
+                        display: inline-block;
+                        display: -webkit-inline-box;
+                        max-height: 100%;
+                        -webkit-box-orient: vertical;
+                        -webkit-line-clamp: 2;
+                        line-height: 16px;
+                        padding-top: 7px;
+                    }
+                }
+
+                .zem-grid-header-cell__order {
+                    float: right;
+                    margin-top: 17px;
+                }
+
+                .zem-grid-header-cell__help .help-popover {
+                    float: right;
+                    margin-top: 15px;
+                }
+            }
         }
 
         .zem-grid-header-cell-checkbox {
@@ -263,9 +309,16 @@ zem-grid {
         }
 
         .zem-grid-header-cell-data {
+            position: relative;
+
             // NOTE: [type]-field classes are generated in templates by concatenating field's type and '-type' postfix
             &.number-field, &.percent-field, &.seconds-field, &.currency-field {
                 text-align: right;
+                max-width: 100px;
+            }
+
+            &.submissionStatus-field {
+                max-width: 100px;
             }
 
             &.performanceIndicator-field {
@@ -273,19 +326,33 @@ zem-grid {
                 min-width: 60px;
             }
 
+            &.thumbnail-field {
+                max-width: 100px;
+            }
+
+            &.agency_id,
+            &.account_id,
+            &.ad_group_id,
+            &.source_id {
+                max-width: 110px;
+            }
+
+            &.content_ad_id,
+            &.campaign_id {
+                max-width: 120px;
+            }
+
+            &.upload_time {
+                max-width: 150px;
+            }
+
             &.stateSelector-field {
                 max-width: 80px;
                 min-width: 80px;
             }
 
-            zem-internal-feature {
-                margin-right: 5px;
-                margin-top: 15px;
-                content: " ";
-                display: inline-block;
-                vertical-align: top;
-                border-top: 7px solid @internal-color;
-                border-right: 7px solid transparent;
+            &.status-field {
+                max-width: 80px;
             }
 
             .ordered {

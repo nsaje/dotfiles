@@ -940,6 +940,9 @@ var constants = {
         NEW_UNIQUE_VISITORS: 7,
         CPV: 8,
         CP_NON_BOUNCED_VISIT: 9,
+        CP_NEW_VISITOR: 10,
+        CP_PAGE_VIEW: 11,
+        CPCV: 12,
     },
     conversionGoalType: {
         PIXEL: 1,
@@ -2081,6 +2084,9 @@ var options = {
         {name: 'New Users', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, unit: '%'},
         {name: 'CPA - Setup Conversion Tracking', value: constants.campaignGoalKPI.CPA, unit: '$'},
         {name: 'Cost per Non-Bounced Visit', value: constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT, unit: '$'},
+        {name: 'Cost per New Visitor', value: constants.campaignGoalKPI.CP_NEW_VISITOR, unit: '$'},
+        {name: 'Cost per Pageview', value: constants.campaignGoalKPI.CP_PAGE_VIEW, unit: '$'},
+        {name: 'Cost per Completed Video View', value: constants.campaignGoalKPI.CPCV, unit: '$'},
     ],
     budgetAutomationGoals: [
         {name: 'time on site', value: constants.campaignGoalKPI.TIME_ON_SITE},
@@ -2088,9 +2094,12 @@ var options = {
         {name: 'pages per session', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
         {name: 'cost per visit', value: constants.campaignGoalKPI.CPV},
         {name: 'average CPC', value: constants.campaignGoalKPI.CPC},
-        {name: 'new visitors', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS},
+        {name: 'new users', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS},
         {name: 'CPA', value: constants.campaignGoalKPI.CPA},
         {name: 'cost per non-bounced visit', value: constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT},
+        {name: 'cost per new visitor', value: constants.campaignGoalKPI.CP_NEW_VISITOR},
+        {name: 'cost per pageview', value: constants.campaignGoalKPI.CP_PAGE_VIEW},
+        {name: 'cost per completed video view', value: constants.campaignGoalKPI.CPCV},
     ],
     conversionGoalTypes: [
         {name: 'Pixel', value: constants.conversionGoalType.PIXEL},
@@ -2212,6 +2221,9 @@ var defaults = {
         {id: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, value: 85},
         {id: constants.campaignGoalKPI.CPV, value: 0.50},
         {id: constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT, value: 2.75},
+        {id: constants.campaignGoalKPI.CP_NEW_VISITOR, value: 2.75},
+        {id: constants.campaignGoalKPI.CP_PAGE_VIEW, value: 0.45},
+        {id: constants.campaignGoalKPI.CPCV, value: 0.6},
     ],
 };
 
@@ -2225,6 +2237,9 @@ constants.campaignGoalValueText[constants.campaignGoalKPI.TIME_ON_SITE] = 'secon
 constants.campaignGoalValueText[constants.campaignGoalKPI.PAGES_PER_SESSION] = 'Pageviews per Visit';
 constants.campaignGoalValueText[constants.campaignGoalKPI.CPV] = 'Cost per Visit';
 constants.campaignGoalValueText[constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT] = 'Cost per Non-Bounced Visit';
+constants.campaignGoalValueText[constants.campaignGoalKPI.CP_NEW_VISITOR] = 'Cost per New Visitor';
+constants.campaignGoalValueText[constants.campaignGoalKPI.CP_PAGE_VIEW] = 'Cost per Pageview';
+constants.campaignGoalValueText[constants.campaignGoalKPI.CPCV] = 'Cost per Completed Video View';
 
 // legacy mapping used in the old ad_group_settings
 constants.interestCategoryText = {};
@@ -2238,7 +2253,11 @@ constants.automaticallyOptimizedKPIGoals = [
     constants.campaignGoalKPI.TIME_ON_SITE,
     constants.campaignGoalKPI.PAGES_PER_SESSION,
     constants.campaignGoalKPI.CPV,
-    constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT];
+    constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT,
+    constants.campaignGoalKPI.CP_NEW_VISITOR,
+    constants.campaignGoalKPI.CP_PAGE_VIEW,
+    constants.campaignGoalKPI.CPCV,
+];
 
 
 constants.defaultAccountTypes = [

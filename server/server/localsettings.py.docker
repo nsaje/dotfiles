@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import os
+import sys
+import os.path
 from secretcrypt import Secret
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -11,28 +13,50 @@ SECRET_KEY = '=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l'
 
 STATS_DB_NAME = 'stats'
 
-# Database
-# https://docs.djangoproject.com/en/1.7/ref/settings/#databases
+_REDSHIFT_PASSWORD = ''
+_PG01_PASSWORD = ''
+try:
+    _REDSHIFT_PASSWORD = Secret('kms:region=us-east-1:AQECAHi+LUun9zpdDynDViFKm08DnYVERdz5zNZO4BgKN2CjEAAAAG0wawYJKoZIhvcNAQcGoF4wXAIBADBXBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDDlDpTJN8Wk6owdToQIBEIAqTeV9zIxNgeNlrCP4EU1waJ6/VgR46uDjdSSW6OaQPqcKk3q95p3+nmFQ').get()
+except:
+    pass
+try:
+    _PG01_PASSWORD = Secret('kms:region=us-east-1:AQECAHi+LUun9zpdDynDViFKm08DnYVERdz5zNZO4BgKN2CjEAAAAHQwcgYJKoZIhvcNAQcGoGUwYwIBADBeBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDN+Qf0GjhUNyUYAMBwIBEIAxik4CbQ5ceWlyBNzT103YK0vZvq/KjSJKVTDp3DTbBuLO4ykRtSlOmOqESX5q7JRtmA==').get()
+except:
+    pass
+
+_DOCKER_POSTGRES = {
+    'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    'NAME': os.environ.get('DB_ENV_POSTGRES_DB', 'one-dev'),
+    'USER': os.environ.get('DB_ENV_POSTGRES_USER', 'eins'),
+    'PASSWORD': os.environ.get('DB_ENV_POSTGRES_PASSWORD', 'devpwd'),
+    'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'localhost'),
+    'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', 5432)),
+}
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('DB_ENV_POSTGRES_DB', 'one'),
-        'USER': os.environ.get('DB_ENV_POSTGRES_USER', 'eins'),
-        'PASSWORD': os.environ.get('DB_ENV_POSTGRES_PASSWORD', 'devpwd'),
-        'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'localhost'),
-        'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', 5432)),
-    },
+    'default': _DOCKER_POSTGRES,
+    'testing_default': _DOCKER_POSTGRES,
     STATS_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('DB_ENV_POSTGRES_DB', 'one'),
-        'USER': os.environ.get('DB_ENV_POSTGRES_USER', 'eins'),
-        'PASSWORD': os.environ.get('DB_ENV_POSTGRES_PASSWORD', 'devpwd'),
-        'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'localhost'),
-        'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', 5432)),
+        'NAME': 'dev',
+        'USER': 'developer',
+        'PASSWORD': _REDSHIFT_PASSWORD,
+        'HOST': 'development-cluster.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
+        'PORT': 5439,
     },
 }
 
-ALLOWED_HOSTS = ['eins', 'einsacceptance']
+if os.environ.get('DB') == 'pg01':
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'one',
+        'USER': 'admin',
+        'PASSWORD': _PG01_PASSWORD,
+        'HOST': '192.168.110.51',
+        'PORT': 5432,
+    }
+
+ALLOWED_HOSTS = ['eins', 'einsacceptance', 'localhost']
 
 BASE_URL = 'https://one.zemanta.com'
 
@@ -75,22 +99,13 @@ GOOGLE_OAUTH_CLIENT_SECRET = Secret('').get()
 # Static files
 BUILD_NUMBER = None
 
-if os.environ.get('BUILD'):
-    BUILD_NUMBER = os.environ.get('BUILD')
-elif os.path.isfile('build_number.txt'):
-    with open('build_number.txt', 'r') as build_number:
-        BUILD_NUMBER = build_number.read().strip()
-
 if BUILD_NUMBER:
     ROOT_STATIC_URL = 'https://s3.amazonaws.com/z1-static/build-{}'.format(BUILD_NUMBER)
     _SERVER_STATIC_URL = ROOT_STATIC_URL + '/server'
     _CLIENT_STATIC_URL = ROOT_STATIC_URL + '/client'
 else:
     _SERVER_STATIC_URL = '/static'
-    _CLIENT_STATIC_URL = 'http://{hostname}:{port}'.format(
-        hostname=os.environ.get('EINSSTATIC_PORT_9999_TCP_ADDR', 'einsstatic'),
-        port=os.environ.get('EINSSTATIC_PORT_9999_TCP_PORT', '9999'),
-    )
+    _CLIENT_STATIC_URL = 'http://localhost:9999'
 SERVER_STATIC_URL = _SERVER_STATIC_URL
 CLIENT_STATIC_URL = _CLIENT_STATIC_URL
 
@@ -274,3 +289,8 @@ REST_FRAMEWORK = {
 }
 
 DISABLE_FACEBOOK = False
+
+try:
+    from server.localsettings_docker_override import *  # noqa
+except ImportError:
+    pass

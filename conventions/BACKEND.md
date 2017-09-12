@@ -96,9 +96,9 @@ Non-trivial query that needs a special method: `ContentAd.objects.filter_by_user
 
 ### Business logic validation ###
 
-Business logic validation should happen whenever model state change needs to be persisted. It should raise the `utils.exc.ValidationError` or its subclass with proper description. 
+Business logic validation should happen whenever model state change needs to be persisted. It should raise a subclass of `utils.exc.ValidationError`. 
 
-When specific validation error needs to be handled somewhere upstream or in tests, a specific error class that derives from this one should be used.
+It is then the upstream's responsibility to properly handle the error and return the correct error description to the client.
 
 ## Views ##
 
@@ -164,25 +164,39 @@ The Z1 backend is composed of several apps.
 - `redshiftapi` - is a redshift querying engine.
 - `utils` - inter-app common code. For example string helpers, test helpers etc.
 
-```
+```python
 core/
-  entity/         # entity related features
-    adgroup/      # ad group feature
-  features/
+  adgroup/            # ad group feature
+    ad_group/         # ad group model
+      __init__.py
+      model.py
+      manager.py
+      instance.py
+    ad_group_settings/ # ad group settings model
+      __init__.py
+      model.py
+      manager.py
+      instance.py
+    service.py
+    constants.py
+  history/        # history feature
+    __init__.py
     history/
-    emails/
+      model.py
+      manager.py
+    constants.py
+    service.py
+  emails/
 dash/
-  features/
-    geolocations/
-    realtimestats/
+  geolocations/   # non-core feature (core does not depend on it)
+    models.py
+    managers.py
+    service.py
+  realtimestats/
+    service.py
 restapi/
-  urls.py
-  serializers/
-  views/
-k1api/
-  urls.py
-  serializers/
-  views/
+  ... # view the RESTAPI view chapter
+...
 ```
 
 ## Common code ##

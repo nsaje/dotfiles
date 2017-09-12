@@ -1,4 +1,4 @@
-angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPermissions, zemGridConstants, zemNavigationNewService) { // eslint-disable-line max-len
+angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPermissions, zemGridConstants, zemNavigationNewService, zemUtils) { // eslint-disable-line max-len
     var AVG_COST_PREFIX = 'avg_cost_per_';
     var AVG_ET_COST_PREFIX = 'avg_et_cost_per_';
     var AVG_ETFM_COST_PREFIX = 'avg_etfm_cost_per_';
@@ -164,7 +164,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.ASC,
             internal: 'zemauth.campaign_goal_performance',
-            shown: ['zemauth.campaign_goal_performance', 'zemauth.can_view_platform_cost_breakdown'],
+            shown: false,  // disable until the costMode switcher is implemented
             costMode: constants.costMode.PLATFORM,
             fieldGroup: 'performance'
         },
@@ -648,6 +648,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             shown: 'zemauth.can_view_platform_cost_breakdown',
+            internal: 'zemauth.can_view_platform_cost_breakdown',
             costMode: constants.costMode.PLATFORM,
             fieldGroup: 'cpc'
         },
@@ -662,6 +663,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             shown: 'zemauth.can_view_end_user_cost_breakdown',
+            internal: 'zemauth.can_view_end_user_cost_breakdown',
             costMode: constants.costMode.PUBLIC,
             fieldGroup: 'cpc'
         },
@@ -693,6 +695,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             shown: 'zemauth.can_view_platform_cost_breakdown',
+            internal: 'zemauth.can_view_platform_cost_breakdown',
             costMode: constants.costMode.PLATFORM,
             fieldGroup: 'cpm'
         },
@@ -709,6 +712,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             shown: 'zemauth.can_view_end_user_cost_breakdown',
+            internal: 'zemauth.can_view_end_user_cost_breakdown',
             costMode: constants.costMode.PUBLIC,
             fieldGroup: 'cpm'
         },
@@ -1937,14 +1941,18 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         var account = zemNavigationNewService.getActiveAccount();
         var usesBCMv2 = account ? account.data.usesBCMv2 : false,
             newCostModes = [constants.costMode.PLATFORM, constants.costMode.PUBLIC, constants.costMode.ANY];
+        var hasPermission = function (permission) {
+            return zemPermissions.hasPermissionBCMv2(permission, usesBCMv2);
+        };
 
         columns.forEach(function (column) {
             column.internal = convertPermission(column.internal, zemPermissions.isPermissionInternal);
 
-            var shown = convertPermission(column.shown, zemPermissions.hasPermission);
+            var shown = convertPermission(column.shown, hasPermission);
             if (shown) {
                 if (usesBCMv2 && column.costMode === constants.costMode.LEGACY) {
-                    column.name += ' (Legacy)';
+                    // don't show old columns in BCMv2 accounts
+                    shown = false;
                 } else if (!usesBCMv2 && newCostModes.indexOf(column.costMode) >= 0) {
                     // don't show new columns in non-BCMv2 accounts
                     shown = false;
@@ -1988,19 +1996,22 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         }
     }
 
-    function intersects (array1, array2) {
-        // Simple solution for finding if arrays are having common element
-        return array1.filter(function (n) {
-            return array2.indexOf(n) !== -1;
-        }).length > 0;
-    }
-
     function getColumns (level, breakdowns) {
         return COLUMNS_ORDERED.filter(function (column) {
             var result = true;
-            if (column.exceptions.breakdowns) result = result && intersects(column.exceptions.breakdowns, breakdowns);
-            if (column.exceptions.breakdownBaseLevelOnly) result = result && column.exceptions.breakdowns.indexOf(breakdowns[0]) >= 0; // eslint-disable-line max-len
-            if (column.exceptions.levels) result = result && column.exceptions.levels.indexOf(level) >= 0;
+
+            if (column.exceptions.breakdowns) {
+                result = result && zemUtils.intersects(column.exceptions.breakdowns, breakdowns);
+            }
+
+            if (column.exceptions.breakdownBaseLevelOnly) {
+                result = result && column.exceptions.breakdowns.indexOf(breakdowns[0]) >= 0;
+            }
+
+            if (column.exceptions.levels) {
+                result = result && column.exceptions.levels.indexOf(level) >= 0;
+            }
+
             column.exceptions.custom.forEach(function (customException) {
                 if (level === customException.level && breakdowns[0] === customException.breakdown) {
                     result = customException.shown;

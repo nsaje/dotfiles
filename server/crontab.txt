@@ -5,6 +5,7 @@
 15 9 * * *          /home/ubuntu/docker-manage-py.sh run_autopilot --daily-run
 15 10 * * *          /home/ubuntu/docker-manage-py.sh audit_autopilot --slack
 0 12 * * *          /home/ubuntu/docker-manage-py.sh run_campaign_stop
+0 12 * * *          /home/ubuntu/docker-manage-py.sh audit_overspend --slack --influx
 25 * * * *          /home/ubuntu/docker-manage-py.sh refresh_k1 3
 0 12 * * *          /home/ubuntu/docker-manage-py.sh send_outbrain_manual_actions_email
 40 * * * *          /home/ubuntu/docker-manage-py.sh monitor_adgroup_propagation
@@ -27,7 +28,7 @@
 20 10 * * *          /home/ubuntu/docker-manage-py.sh daily_audit --send-emails
 20 10 * * *          /home/ubuntu/docker-manage-py.sh post_delivery_statuses
 0 * * * *           /home/ubuntu/docker-manage-py.sh bizwire_hourly_job
-0 * * * *           /home/ubuntu/docker-manage-py.sh bizwire_monitor
+5 * * * *           /home/ubuntu/docker-manage-py.sh bizwire_monitor
 0 0 * * *           /home/ubuntu/docker-manage-py.sh cleartokens
 0 5 * * *          /home/ubuntu/docker-manage-py.sh get_pixel_traffic
 50 * * * *          /home/ubuntu/docker-manage-py.sh compare_blacklists

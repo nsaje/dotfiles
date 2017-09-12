@@ -31,13 +31,16 @@ from utils import threads
 
 import constants
 import helpers
-import models
+from reportjob import ReportJob
+
 
 logger = logging.getLogger(__name__)
 
+BATCH_ROWS = 10000
+
 
 def create_job(user, query, scheduled_report=None):
-    job = models.ReportJob(user=user, query=query, scheduled_report=scheduled_report)
+    job = ReportJob(user=user, query=query, scheduled_report=scheduled_report)
     job.save()
 
     if settings.USE_CELERY_FOR_REPORTS:
@@ -53,7 +56,7 @@ def create_job(user, query, scheduled_report=None):
 @celery.app.task(acks_late=True, name='reports_execute', soft_time_limit=30 * 60)
 def execute(job_id):
     logger.info('Start job executor for report id: %d', job_id)
-    job = models.ReportJob.objects.get(pk=job_id)
+    job = ReportJob.objects.get(pk=job_id)
     executor = ReportJobExecutor(job)
     executor.execute()
     logger.info('Done job executor for report id: %d', job_id)
@@ -92,9 +95,8 @@ class ReportJobExecutor(JobExecutor):
             return
 
         try:
-            raw_report, field_name_mapping, filename = self.get_raw_new_report(self.job)
+            csv_report, filename = self.get_report(self.job)
 
-            csv_report = self.convert_to_csv(self.job, raw_report, field_name_mapping)
             report_path = self.save_to_s3(csv_report, filename)
             self.send_by_email(self.job, report_path)
 
@@ -149,7 +151,7 @@ class ReportJobExecutor(JobExecutor):
         )
 
     @classmethod
-    def get_raw_new_report(cls, job):
+    def get_report(cls, job):
         user = job.user
 
         filter_constraints = helpers.get_filter_constraints(job.query['filters'])
@@ -183,9 +185,31 @@ class ReportJobExecutor(JobExecutor):
         column_names = cls._extract_column_names(job.query['fields'])
         columns = [field_name_mapping[column_name] for column_name in column_names]
 
-        rows = stats.api_reports.query(
-            user, breakdown, constraints, goals, order, level, columns,
-            include_items_with_no_spend=job.query['options']['include_items_with_no_spend'])
+        output = StringIO.StringIO()
+        dashapi_cache = {}
+
+        offset = 0
+        while 1:
+            rows = stats.api_reports.query(
+                user=user,
+                breakdown=breakdown,
+                constraints=constraints,
+                goals=goals,
+                order=order,
+                offset=offset,
+                limit=BATCH_ROWS,
+                level=level,
+                columns=columns,
+                include_items_with_no_spend=job.query['options']['include_items_with_no_spend'],
+                dashapi_cache=dashapi_cache,
+            )
+
+            cls.convert_to_csv(job, rows, field_name_mapping, output, header=offset == 0)
+
+            if len(rows) < BATCH_ROWS:
+                break
+
+            offset += BATCH_ROWS
 
         if job.query['options']['include_totals']:
             totals_constraints = stats.api_reports.prepare_constraints(
@@ -200,12 +224,15 @@ class ReportJobExecutor(JobExecutor):
             totals = stats.api_reports.totals(
                 user, helpers.limit_breakdown_to_level(breakdown, level),
                 totals_constraints, goals, level, columns)
-            rows.append(totals)
 
-        return rows, field_name_mapping, stats.api_reports.get_filename(breakdown, constraints)
+            cls.convert_to_csv(job, [totals], field_name_mapping, output, header=False)
+
+        output.seek(0)
+
+        return output, stats.api_reports.get_filename(breakdown, constraints)
 
     @classmethod
-    def convert_to_csv(cls, job, data, field_name_mapping):
+    def convert_to_csv(cls, job, data, field_name_mapping, output, header=True):
         requested_columns = cls._extract_column_names(job.query['fields'])
 
         csv_column_names = requested_columns
@@ -213,10 +240,10 @@ class ReportJobExecutor(JobExecutor):
         if job.query['options']['show_status_date']:
             csv_column_names, original_to_dated = cls._date_column_names(csv_column_names)
 
-        output = StringIO.StringIO()
         writer = unicodecsv.DictWriter(output, csv_column_names, encoding='utf-8', dialect='excel',
                                        quoting=unicodecsv.QUOTE_ALL)
-        writer.writeheader()
+        if header:
+            writer.writeheader()
         for row in data:
             csv_row = {}
             for column_name in requested_columns:
@@ -227,7 +254,6 @@ class ReportJobExecutor(JobExecutor):
                 else:
                     csv_row[csv_column] = ''
             writer.writerow(csv_row)
-        return output.getvalue()
 
     @staticmethod
     def _extract_column_names(fields_list):
@@ -245,7 +271,7 @@ class ReportJobExecutor(JobExecutor):
     def save_to_s3(cls, csv, human_readable_filename):
         filename = cls._generate_random_filename()
         human_readable_filename = human_readable_filename + '.csv' if human_readable_filename else None
-        utils.s3helpers.S3Helper(settings.RESTAPI_REPORTS_BUCKET).put(filename, csv, human_readable_filename)
+        utils.s3helpers.S3Helper(settings.RESTAPI_REPORTS_BUCKET).put_file(filename, csv, human_readable_filename)
         return os.path.join(settings.RESTAPI_REPORTS_URL, filename)
 
     @classmethod
@@ -346,12 +372,7 @@ class ReportJobExecutor(JobExecutor):
             return constants.DEFAULT_ORDER
 
         prefix, fieldname = utils.sort_helper.dissect_order(order_fieldname)
+        if fieldname not in field_name_mapping:
+            return constants.DEFAULT_ORDER
 
-        try:
-            field_key = field_name_mapping[fieldname]
-        except:
-            # the above will fail when we are sorting by name as we are remapping those columns
-            # to the dimension name
-            field_key = 'name'
-
-        return prefix + field_key
+        return prefix + field_name_mapping[fieldname]

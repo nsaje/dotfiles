@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'analytics',
     'prodops',
     'integrations.bizwire',
+    'dev',
 ]
 
 MIDDLEWARE = [
@@ -189,6 +190,9 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'restapi.exceptions.custom_exception_handler',
 }
 
+ALL_ACCOUNTS_USE_BCM_V2 = False
+DISABLE_FACEBOOK = True
+SLACK_LOG_ENABLE = True
 
 from localsettings import *
 
@@ -274,6 +278,11 @@ LOGGING = {
             'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
             'formatter': 'standard',
         },
+        'sentry-error': {
+            'level': 'ERROR',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+            'formatter': 'standard',
+        },
     },
     'loggers': {
         'django.db.backends': {
@@ -281,22 +290,33 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False
         },
-        'django.request': {
-            'handlers': ['file', 'console'],
-            'level': 'INFO',
-        },
         'newrelic.core.data_collector': {
             'level': 'ERROR',
         },
-        'celery.worker': {
-            'handlers': ['file', 'console', 'sentry'],
-            'level': 'WARNING',
-            'propagate': True
+        'django': {
+            'handlers': ['file', 'console', 'sentry-error'],
+            'level': 'INFO',
+            'propagate': False,
         },
-        'requests.packages.urllib3': {
-            'handlers': ['file', 'console'],
+        'celery': {
+            'handlers': ['file', 'console', 'sentry-error'],
             'level': 'WARNING',
-            'propagate': True
+            'propagate': False,
+        },
+        'kombu': {
+            'handlers': ['file', 'console', 'sentry-error'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'boto': {
+            'handlers': ['file', 'console', 'sentry-error'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'requests': {
+            'handlers': ['file', 'console', 'sentry-error'],
+            'level': 'WARNING',
+            'propagate': False,
         },
         'qinspect': {
             'handlers': ['console'],

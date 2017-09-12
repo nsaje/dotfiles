@@ -26,6 +26,8 @@ class AdGroupBcmMixin(TestCase):
                                    start_date=yesterday,
                                    end_date=today,
                                    status=constants.CreditLineItemStatus.SIGNED,
+                                   amount=decimal.Decimal('1000.0'),
+                                   flat_fee_cc=0,
                                    license_fee=decimal.Decimal('0.2121'))
 
         magic_mixer.blend(core.bcm.BudgetLineItem,
@@ -49,6 +51,8 @@ class AdGroupBcmMixin(TestCase):
                                    start_date=yesterday,
                                    end_date=yesterday,
                                    status=constants.CreditLineItemStatus.SIGNED,
+                                   amount=decimal.Decimal('1000.0'),
+                                   flat_fee_cc=0,
                                    license_fee=decimal.Decimal('0.2121'))
 
         magic_mixer.blend(core.bcm.BudgetLineItem,

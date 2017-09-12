@@ -29,7 +29,7 @@ JOB_HOUR_UTC = 12
 
 def run_job():
     not_landing = list(dash.models.Campaign.objects.all().exclude_landing().iterator())
-    in_landing = list(dash.models.Campaign.objects.all().filter_landing().iterator())
+    in_landing = list(dash.models.Campaign.objects.all().select_related('account').filter_landing().iterator())
 
     try:
         switch_low_budget_campaigns_to_landing_mode(not_landing, pagerduty_on_fail=True)
@@ -130,6 +130,9 @@ def _check_and_resume_campaign(campaign, campaign_settings):
 
 
 def get_minimum_budget_amount(budget_item):
+    if budget_item.campaign.account.uses_bcm_v2:
+        return _get_minimum_budget_amount_bcm_v2(budget_item)
+
     if budget_item.state() != dash.constants.BudgetLineItemState.ACTIVE:
         return None
 
@@ -137,15 +140,27 @@ def get_minimum_budget_amount(budget_item):
         return None
 
     today = dates_helper.local_today()
-
     covered_amount = _combined_active_budget_from_other_items(budget_item)
-
     spend = budget_item.get_spend_data()['etf_total']
 
     max_daily_budget = _get_max_daily_budget(today, budget_item.campaign)
-
     daily_budgets = max_daily_budget / (1 - budget_item.credit.license_fee)
     return spend + max(daily_budgets - covered_amount, DECIMAL_ZERO)
+
+
+def _get_minimum_budget_amount_bcm_v2(budget_item):
+    if budget_item.state() != dash.constants.BudgetLineItemState.ACTIVE:
+        return None
+
+    if not budget_item.campaign.get_current_settings().automatic_campaign_stop:
+        return None
+
+    today = dates_helper.local_today()
+    covered_amount = _combined_active_budget_from_other_items_bcm_v2(budget_item)
+    spend = budget_item.get_spend_data()['etfm_total']
+
+    max_daily_budget = _get_max_daily_budget(today, budget_item.campaign)
+    return spend + max(max_daily_budget - covered_amount, DECIMAL_ZERO)
 
 
 def is_current_time_valid_for_amount_editing(campaign):
@@ -678,7 +693,7 @@ def get_min_budget_increase(campaign):
     ).filter_active().aggregate(Max('credit__license_fee'))['credit__license_fee__max']
 
     budget_needed = min_needed_today + min_needed_tomorrow
-    if budget_needed and max_license_fee:
+    if not campaign.account.uses_bcm_v2 and budget_needed and max_license_fee:
         budget_needed = budget_needed / (1 - max_license_fee)
 
     return budget_needed
@@ -690,6 +705,15 @@ def _combined_active_budget_from_other_items(budget_item):
     ).filter_active().exclude(pk=budget_item.pk)
     return sum(
         b.get_available_amount() for b in other_active_budgets
+    )
+
+
+def _combined_active_budget_from_other_items_bcm_v2(budget_item):
+    other_active_budgets = dash.models.BudgetLineItem.objects.filter(
+        campaign=budget_item.campaign
+    ).filter_active().exclude(pk=budget_item.pk)
+    return sum(
+        b.get_available_etfm_amount() for b in other_active_budgets
     )
 
 
@@ -712,8 +736,12 @@ def _get_minimum_remaining_budget(campaign, max_daily_budget):
     per_budget_remaining_today = {}
     unattributed_budget = max_daily_budget
     for bli in budgets_active_today.order_by('created_dt'):
-        spend_without_fee_pct = 1 - bli.credit.license_fee
-        spend_available = bli.get_available_amount(date=today - datetime.timedelta(days=1)) * spend_without_fee_pct
+        if campaign.account.uses_bcm_v2:
+            spend_available = bli.get_available_etfm_amount(date=dates_helper.local_yesterday())
+        else:
+            spend_without_fee_pct = 1 - bli.credit.license_fee
+            spend_available = bli.get_available_amount(date=dates_helper.local_yesterday())
+            spend_available = spend_available * spend_without_fee_pct
         # this is a workaround for a bug when a budget line item can have negative amount available
         spend_available = max(0, spend_available)
         per_budget_remaining_today[bli.id] = max(0, spend_available - unattributed_budget)
@@ -722,8 +750,11 @@ def _get_minimum_remaining_budget(campaign, max_daily_budget):
     remaining_today = decimal.Decimal(sum(per_budget_remaining_today.itervalues()))
     available_tomorrow = DECIMAL_ZERO
     for bli in budgets_active_tomorrow.order_by('created_dt'):
-        spend_without_fee_pct = 1 - bli.credit.license_fee
-        available_tomorrow += per_budget_remaining_today.get(bli.id, bli.amount * spend_without_fee_pct)
+        if campaign.account.uses_bcm_v2:
+            available_tomorrow += per_budget_remaining_today.get(bli.id, bli.amount)
+        else:
+            spend_without_fee_pct = 1 - bli.credit.license_fee
+            available_tomorrow += per_budget_remaining_today.get(bli.id, bli.amount * spend_without_fee_pct)
 
     return remaining_today, available_tomorrow, unattributed_budget
 
@@ -1163,7 +1194,7 @@ def _update_b1_group_cap(ad_group, cap):
 
 
 def _get_yesterday_source_spends(campaign, ad_groups):
-    yesterday = dates_helper.local_today() - datetime.timedelta(days=1)
+    yesterday = dates_helper.local_yesterday()
     rows = redshiftapi.api_breakdowns.query_all(
         ['ad_group_id', 'source_id'],
         {
@@ -1179,9 +1210,11 @@ def _get_yesterday_source_spends(campaign, ad_groups):
 
     yesterday_spends = {}
     for row in rows:
-        media_cost = row['media_cost'] or DECIMAL_ZERO
-        data_cost = row['data_cost'] or DECIMAL_ZERO
-        yesterday_spends[(row['ad_group_id'], row['source_id'])] = media_cost + data_cost
+        if campaign.account.uses_bcm_v2:
+            spend = decimal.Decimal(row['etfm_cost'] or 0)
+        else:
+            spend = decimal.Decimal(row['et_cost'] or 0)
+        yesterday_spends[(row['ad_group_id'], row['source_id'])] = spend
 
     return yesterday_spends
 
@@ -1294,23 +1327,14 @@ def _get_past_7_days_data(campaign):
     date_spend = defaultdict(int)
     source_spend = defaultdict(int)
     for row in rows:
-        media_cost = row['media_cost'] or DECIMAL_ZERO
-        data_cost = row['data_cost'] or DECIMAL_ZERO
-        spend = media_cost + data_cost
+        if campaign.account.uses_bcm_v2:
+            spend = decimal.Decimal(row['etfm_cost'] or 0)
+        else:
+            spend = decimal.Decimal(row['et_cost'] or 0)
         date_spend[(row['ad_group_id'], row['date'])] += spend
         source_spend[(row['ad_group_id'], row['source_id'])] += spend
 
     return date_spend, source_spend
-
-
-def _get_yesterday_budget_spend(campaign):
-    yesterday = dates_helper.local_today() - datetime.timedelta(days=1)
-    statements = dash.models.BudgetDailyStatement.objects.filter(
-        budget__campaign=campaign,
-        date=yesterday,
-    )
-    spend_data = statements.calculate_spend_data()
-    return spend_data['media'] + spend_data['data']
 
 
 def _get_budgets_active_on_date(date, campaign):

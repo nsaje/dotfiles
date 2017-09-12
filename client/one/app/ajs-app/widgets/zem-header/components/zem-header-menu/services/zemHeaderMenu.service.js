@@ -49,7 +49,7 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
             text: 'User permissions',
             callback: navigateToUserPermissions,
             isAvailable: isUserPermissionsAvailable,
-            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_see_new_user_permissions'),
+            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.account_agency_access_permissions'),
         },
     ];
 
@@ -127,7 +127,7 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
     }
 
     function isUserPermissionsAvailable () {
-        if (!zemPermissions.hasPermission('zemauth.can_see_new_user_permissions')) return false;
+        if (!zemPermissions.hasPermission('zemauth.account_agency_access_permissions')) return false;
         return zemNavigationNewService.getActiveAccount() !== null;
     }
 

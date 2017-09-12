@@ -49,8 +49,15 @@ class CustomHack(models.Model):
             self.agency and 'Agency' or
             self.account and 'Account' or
             self.campaign and 'Campaign' or
-            self.ad_group and 'Ad group'
+            self.ad_group and 'Ad group' or
+            'Global'
         )
+
+    def get_entity(self):
+        return self.agency or self.account or self.campaign or self.ad_group
+
+    def is_global(self):
+        return not self.get_entity()
 
     def __str__(self):
         desc = '{level} level hack'
@@ -70,7 +77,7 @@ class CustomHack(models.Model):
         def filter_applied(self, source=None, **levels):
             ad_group = levels.get('ad_group')
             campaign, account, agency = core.entity.helpers._generate_parents(**levels)
-            rules = models.Q()
+            rules = models.Q(agency=None, account=None, campaign=None, ad_group=None)
             if agency:
                 rules |= models.Q(agency=agency)
             if account:

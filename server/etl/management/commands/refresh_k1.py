@@ -15,10 +15,13 @@ class Command(ExceptionCommand):
     def add_arguments(self, parser):
         parser.add_argument('from', type=str)
         parser.add_argument('--account_id', type=int)
+        parser.add_argument('--skip-vacuum', action='store_true')
 
     def handle(self, *args, **options):
         err = []
         since = None
+
+        skip_vacuum = options.get('skip_vacuum') or False
 
         try:
             since = datetime.datetime.strptime(options['from'], '%Y-%m-%d')
@@ -35,4 +38,4 @@ class Command(ExceptionCommand):
             logger.error(err)
             return
 
-        refresh_k1.refresh_k1_reports(since, options.get('account_id'))
+        refresh_k1.refresh_k1_reports(since, options.get('account_id'), skip_vacuum)

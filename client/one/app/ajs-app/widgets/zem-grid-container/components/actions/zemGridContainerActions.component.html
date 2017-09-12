@@ -12,7 +12,7 @@
     ></zem-create-ad-group-source-action>
 
     <zem-grid-bulk-actions
-            ng-show="$ctrl.isGridBulkActionsVisible()"
+            ng-if="$ctrl.isGridBulkActionsVisible()"
             api="$ctrl.gridApi"
             class="button-bar-item"
     ></zem-grid-bulk-actions>

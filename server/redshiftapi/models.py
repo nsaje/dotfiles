@@ -389,6 +389,9 @@ class MVJointMaster(MVMaster):
         map_conversion_goals = {x.id: x for x in conversion_goals or []}
         pixel_ids = [x.id for x in pixels] if pixels else []
 
+        # FIXME: circular import
+        import dash.campaign_goals
+
         for campaign_goal in campaign_goals:
             conversion_key = None
             metric_column = None
@@ -431,6 +434,7 @@ class MVJointMaster(MVMaster):
                 'planned_value': planned_value,
                 'metric_column': metric_column or '-1',
                 'cost_column': 'e_media_cost',
+                'metric_val_decimal_places': dash.campaign_goals.NR_DECIMALS[campaign_goal.type]
             }, alias='performance_' + campaign_goal.get_view_key(), group=column_group))
 
             self.add_column(backtosql.TemplateColumn('part_performance.sql', {
@@ -441,6 +445,7 @@ class MVJointMaster(MVMaster):
                 'planned_value': planned_value,
                 'metric_column': metric_column or '-1',
                 'cost_column': 'et_cost',
+                'metric_val_decimal_places': dash.campaign_goals.NR_DECIMALS[campaign_goal.type]
             }, alias='et_performance_' + campaign_goal.get_view_key(), group=column_group))
             self.add_column(backtosql.TemplateColumn('part_performance.sql', {
                 'is_cost_dependent': is_cost_dependent,
@@ -450,16 +455,17 @@ class MVJointMaster(MVMaster):
                 'planned_value': planned_value,
                 'metric_column': metric_column or '-1',
                 'cost_column': 'etfm_cost',
+                'metric_val_decimal_places': dash.campaign_goals.NR_DECIMALS[campaign_goal.type]
             }, alias='etfm_performance_' + campaign_goal.get_view_key(), group=column_group))
 
-    def get_query_joint_context(self, breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view):
+    def get_query_joint_context(self, breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view, skip_performance_columns=False):
 
         needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
         supports_conversions = view_selector.supports_conversions(needed_dimensions, use_publishers_view)
 
         # FIXME: temp fix account level publishers view with lots of campaign goals
-        skip_performance_columns = 'publisher_id' in breakdown and\
-                                   not set(['campaign_id', 'ad_group_id']) & set(constraints.keys())
+        skip_performance_columns |= 'publisher_id' in breakdown and\
+                                    not set(['campaign_id', 'ad_group_id']) & set(constraints.keys())
 
         if supports_conversions:
             self.init_conversion_columns(goals.conversion_goals)

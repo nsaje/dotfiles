@@ -25,7 +25,7 @@ from dash.views import agency, bulk_actions, views, helpers, publishers
 from dash import campaign_goals
 from dash import constants
 from dash import publisher_group_helpers
-from dash.features.reports import models as reports_models
+from dash.features.reports import reportjob
 from dash.features.reports import serializers as reports_serializers
 from dash.features.reports import reports
 import dash.models
@@ -740,7 +740,7 @@ class CampaignBudgetViewList(RESTAPIBaseView):
     def _get_active_budget(self, user, campaign):
         budget_items = core.bcm.BudgetLineItem.objects.filter(
             campaign_id=campaign.id,
-        ).select_related('credit').order_by('-created_dt')
+        ).select_related('credit', 'campaign__account').order_by('-created_dt')
 
         return [self._prepare_budget_get_item(user, b) for b in budget_items if b.state() in (
             constants.BudgetLineItemState.ACTIVE,
@@ -748,7 +748,11 @@ class CampaignBudgetViewList(RESTAPIBaseView):
         )]
 
     def _prepare_budget_get_item(self, user, item):
-        spend = item.get_spend_data()['etf_total']
+        if item.campaign.account.uses_bcm_v2:
+            spend = item.get_spend_data()['etfm_total']
+        else:
+            spend = item.get_spend_data()['etf_total']
+
         allocated = item.allocated_amount()
         result = {
             'id': item.pk,
@@ -1089,7 +1093,7 @@ class ReportsViewDetails(RESTAPIBaseView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, job_id):
-        job = reports_models.ReportJob.objects.get(pk=job_id)
+        job = reportjob.ReportJob.objects.get(pk=job_id)
         if job.user != request.user:
             raise exceptions.PermissionDenied
         return self.response_ok(reports_serializers.ReportJobSerializer(job).data)

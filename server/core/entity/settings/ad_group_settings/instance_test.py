@@ -1,4 +1,5 @@
 from decimal import Decimal
+from mock import patch
 
 from django.test import TestCase
 from utils.magic_mixer import magic_mixer
@@ -105,3 +106,42 @@ class InstanceTest(TestCase):
             'b1_sources_group_daily_budget': constants.SourceAllRTB.DEFAULT_DAILY_BUDGET,
             'cpc_cc': Decimal('0.05')
         })
+
+    @patch('utils.redirector_helper.insert_adgroup')
+    def test_get_external_max_cpm(self, mock_insert_adgroup):
+        account = magic_mixer.blend(core.entity.Account, uses_bcm_v2=False)
+        ad_group = magic_mixer.blend(core.entity.AdGroup)
+        request = magic_mixer.blend_request_user(permissions=['can_set_ad_group_max_cpm'])
+
+        ad_group.settings.update(
+            request, max_cpm=None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
+        self.assertEqual(None, ad_group.settings.get_external_max_cpm(account, Decimal('0.2'), Decimal('0.1')))
+
+        ad_group.settings.update(
+            request, max_cpm=Decimal('0.5'))
+        self.assertEqual(Decimal('0.5'), ad_group.settings.get_external_max_cpm(account, Decimal('0.2'), Decimal('0.1')))
+
+        account.uses_bcm_v2 = True
+        self.assertEqual(Decimal('0.36'), ad_group.settings.get_external_max_cpm(account, Decimal('0.2'), Decimal('0.1')))
+
+    @patch('utils.redirector_helper.insert_adgroup')
+    def test_get_external_b1_sources_group_daily_budget(self, mock_insert_adgroup):
+        account = magic_mixer.blend(core.entity.Account, uses_bcm_v2=False)
+        ad_group = magic_mixer.blend(core.entity.AdGroup)
+        request = magic_mixer.blend_request_user(permissions=['can_set_ad_group_max_cpm'])
+
+        ad_group.settings.update(
+            request,
+            b1_sources_group_daily_budget=Decimal('500'),
+            autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
+
+        self.assertEqual(
+            Decimal('500'),
+            ad_group.settings.get_external_b1_sources_group_daily_budget(account, Decimal('0.2'), Decimal('0.1'))
+        )
+
+        account.uses_bcm_v2 = True
+        self.assertEqual(
+            Decimal('360'),
+            ad_group.settings.get_external_b1_sources_group_daily_budget(account, Decimal('0.2'), Decimal('0.1'))
+        )

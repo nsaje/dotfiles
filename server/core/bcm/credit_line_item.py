@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.forms.models import model_to_dict
+from django.db.models import Q
 
 import utils.demo_anonymizer
 import utils.string_helper
@@ -330,10 +331,11 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixin):
                 'Start date cannot be greater than the end date.')
 
     def validate_license_fee(self):
-        if not self.license_fee:
-            return
-        if not (0 <= self.license_fee < 1):
+        if self.license_fee and not (0 <= self.license_fee < 1):
             raise ValidationError('License fee must be between 0 and 100%.')
+
+        if not self.start_date or not self.end_date:
+            return
 
     @classmethod
     def get_defaults_dict(cls):
@@ -349,6 +351,12 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixin):
                 end_date__gte=date,
                 status=constants.CreditLineItemStatus.SIGNED
             )
+
+        def filter_overlapping(self, start_date, end_date):
+            return self.filter(
+                (Q(start_date__gte=start_date) & Q(start_date__lte=end_date)) |
+                (Q(end_date__gte=start_date) & Q(end_date__lte=end_date)) |
+                (Q(start_date__lte=start_date) & Q(end_date__gte=end_date)))
 
         def delete(self):
             if self.exclude(status=constants.CreditLineItemStatus.PENDING).count() != 0:

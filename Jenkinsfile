@@ -67,6 +67,7 @@ node('master') {
                         -u 1000 \
                         -e DISPLAY=:99 \
                         -v ${WORKSPACE}/client:/data \
+                        -w /data \
                         -e CHROME_BIN=/run-chrome.sh \
                         zemanta/z1-static \
                         bash -c "npm prune && npm install && bower install && npm run tests && npm run prod --build-number=${BUILD_NUMBER}"

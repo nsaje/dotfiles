@@ -194,7 +194,8 @@ def _get_campaign_goal_value(campaign_goal_type, data_value, max_value_of_campai
         return data_value / 100
     if campaign_goal_type in (cg_kpi.TIME_ON_SITE, cg_kpi.PAGES_PER_SESSION, cg_kpi.CPA):
         return data_value / max_value_of_campaign_goal if max_value_of_campaign_goal > 0 else 0.0
-    if campaign_goal_type in (cg_kpi.CPC, cg_kpi.CPV, cg_kpi.CP_NON_BOUNCED_VISIT):
+    if campaign_goal_type in (cg_kpi.CPC, cg_kpi.CPV, cg_kpi.CP_NON_BOUNCED_VISIT,
+                              cg_kpi.CP_NEW_VISITOR, cg_kpi.CP_PAGE_VIEW, cg_kpi.CPCV):
         return float(min_value_of_campaign_goal / data_value) if (data_value > 0.0 and
                                                                   min_value_of_campaign_goal < float("inf")) else 0.0
     raise exceptions.NotImplementedError('Budget Autopilot campaign goal is not implemented: ', campaign_goal_type)

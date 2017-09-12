@@ -187,10 +187,10 @@ class AdGroupOverview(api_common.BaseApiView):
             super(AdGroupOverview.AsyncQuery, self).__init__()
             self.user = user
             self.ad_group = ad_group
-            self.yesterday_cost = None
+            self.yesterday_costs = None
 
         def run(self):
-            self.yesterday_cost = infobox_helpers.get_yesterday_adgroup_spend(
+            self.yesterday_costs = infobox_helpers.get_yesterday_adgroup_spend(
                 self.user,
                 self.ad_group
             ) or 0
@@ -266,11 +266,12 @@ class AdGroupOverview(api_common.BaseApiView):
         settings = []
 
         async_query.join()
-        yesterday_cost = async_query.yesterday_cost
+        yesterday_costs = async_query.yesterday_costs
 
         settings.append(infobox_helpers.create_yesterday_spend_setting(
-            yesterday_cost,
-            daily_cap
+            yesterday_costs,
+            daily_cap,
+            uses_bcm_v2=ad_group.campaign.account.uses_bcm_v2
         ).as_dict())
 
         if user.has_perm('zemauth.campaign_goal_performance'):
@@ -432,18 +433,21 @@ class CampaignOverview(api_common.BaseApiView):
 
         pacing = monthly_proj.total('pacing') or decimal.Decimal('0')
 
-        yesterday_cost = infobox_helpers.get_yesterday_campaign_spend(user, campaign) or 0
+        yesterday_costs = infobox_helpers.get_yesterday_campaign_spend(user, campaign) or 0
         settings.append(infobox_helpers.create_yesterday_spend_setting(
-            yesterday_cost,
-            daily_cap_cc
+            yesterday_costs,
+            daily_cap_cc,
+            uses_bcm_v2=campaign.account.uses_bcm_v2
         ).as_dict())
 
-        settings.append(infobox_helpers.OverviewSetting(
-            'Campaign pacing:',
-            lc_helper.default_currency(monthly_proj.total('attributed_media_spend')),
-            description='{:.2f}% on plan'.format(pacing),
-            tooltip='Campaign pacing for the current month'
-        ).as_dict())
+        attributed_media_spend = monthly_proj.total('attributed_media_spend')
+        if attributed_media_spend is not None:
+            settings.append(infobox_helpers.OverviewSetting(
+                'Campaign pacing:',
+                lc_helper.default_currency(attributed_media_spend),
+                description='{:.2f}% on plan'.format(pacing or 0),
+                tooltip='Campaign pacing for the current month'
+            ).as_dict())
 
         if user.has_perm('zemauth.campaign_goal_performance'):
             settings.extend(infobox_helpers.get_primary_campaign_goal(
@@ -564,11 +568,12 @@ class AccountOverview(api_common.BaseApiView):
         settings = []
 
         daily_budget = infobox_helpers.calculate_daily_account_cap(account)
-        yesterday_spent = infobox_helpers.calculate_yesterday_account_spend(account)
+        yesterday_costs = infobox_helpers.get_yesterday_account_spend(account)
         settings.append(
             infobox_helpers.create_yesterday_spend_setting(
-                yesterday_spent,
-                daily_budget
+                yesterday_costs,
+                daily_budget,
+                uses_bcm_v2=account.uses_bcm_v2
             ).as_dict(),
         )
 
@@ -867,49 +872,57 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         return [setting.as_dict() for setting in settings]
 
-    def _append_performance_agency_settings(self, settings, user):
-        yesterday_spend = infobox_helpers.get_yesterday_agency_spend(user)
-        settings.append(infobox_helpers.OverviewSetting(
+    def _append_performance_agency_settings(self, overview_settings, user):
+        accounts = models.Account.objects.all().filter_by_user(user)
+        uses_bcm_v2 = accounts.all_use_bcm_v2()
+
+        yesterday_costs = infobox_helpers.get_yesterday_agency_spend(accounts)
+        yesterday_cost = yesterday_costs['yesterday_etfm_cost'] if uses_bcm_v2 else yesterday_costs['e_yesterday_cost']
+
+        overview_settings.append(infobox_helpers.OverviewSetting(
             'Yesterday spend:',
-            lc_helper.default_currency(yesterday_spend),
-            tooltip='Yesterday media spend',
+            lc_helper.default_currency(yesterday_cost),
+            tooltip='Yesterday spend' if uses_bcm_v2 else 'Yesterday media spend',
             section_start=True
         ))
 
-        mtd_spend = infobox_helpers.get_mtd_agency_spend(user)
-        mtd_spend_label = 'Month-to-date spend:'
-        settings.append(infobox_helpers.OverviewSetting(
-            mtd_spend_label,
-            lc_helper.default_currency(mtd_spend),
-            tooltip='Month-to-date media spend',
-        ))
+        mtd_costs = infobox_helpers.get_mtd_agency_spend(accounts)
+        mtd_cost = mtd_costs['etfm_cost'] if uses_bcm_v2 else mtd_costs['e_media_cost']
+        overview_settings.append(infobox_helpers.OverviewSetting(
+            'Month-to-date spend:',
+            lc_helper.default_currency(mtd_cost),
+            tooltip='Month-to-date spend' if uses_bcm_v2 else 'Month-to-date media spend'))
 
-        return settings
+        return overview_settings
 
-    def _append_performance_all_accounts_settings(self, settings, user, view_filter):
-        yesterday_spend = infobox_helpers.get_yesterday_all_accounts_spend(
+    def _append_performance_all_accounts_settings(self, overview_settings, user, view_filter):
+        # This info is seen only by administrators
+        # it does not filter by account
+
+        yesterday_costs = infobox_helpers.get_yesterday_all_accounts_spend(
             view_filter.filtered_agencies,
-            view_filter.filtered_account_types
-        )
-        settings.append(infobox_helpers.OverviewSetting(
+            view_filter.filtered_account_types)
+
+        uses_bcm_v2 = settings.ALL_ACCOUNTS_USE_BCM_V2
+        yesterday_cost = yesterday_costs['yesterday_etfm_cost'] if uses_bcm_v2 else yesterday_costs['e_yesterday_cost']
+
+        overview_settings.append(infobox_helpers.OverviewSetting(
             'Yesterday spend:',
-            lc_helper.default_currency(yesterday_spend),
-            tooltip='Yesterday media spend',
+            lc_helper.default_currency(yesterday_cost),
+            tooltip='Yesterday spend' if uses_bcm_v2 else 'Yesterday media spend',
             section_start=True
         ))
 
-        mtd_spend = infobox_helpers.get_mtd_all_accounts_spend(
+        mtd_costs = infobox_helpers.get_mtd_all_accounts_spend(
             view_filter.filtered_agencies,
-            view_filter.filtered_account_types
-        )
-        mtd_spend_label = 'Month-to-date spend:'
-        settings.append(infobox_helpers.OverviewSetting(
-            mtd_spend_label,
-            lc_helper.default_currency(mtd_spend),
-            tooltip='Month-to-date media spend',
-        ))
+            view_filter.filtered_account_types)
+        mtd_cost = mtd_costs['etfm_cost'] if uses_bcm_v2 else mtd_costs['e_media_cost']
+        overview_settings.append(infobox_helpers.OverviewSetting(
+            'Month-to-date spend:',
+            lc_helper.default_currency(mtd_cost),
+            tooltip='Month-to-date spend' if uses_bcm_v2 else 'Month-to-date media spend'))
 
-        return settings
+        return overview_settings
 
 
 class Demo(api_common.BaseApiView):

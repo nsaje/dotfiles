@@ -38,7 +38,7 @@ class ScheduledReportAdmin(admin.ModelAdmin):
         qs = super(ScheduledReportAdmin, self).get_queryset(request)
         return qs.prefetch_related(
             Prefetch('jobs', to_attr='last_job', queryset=(
-                reports.models.ReportJob.objects
+                reports.ReportJob.objects
                 .order_by('scheduled_report_id', '-created_dt')
                 .filter(scheduled_report__isnull=False, created_dt__gt=today)
                 .distinct('scheduled_report_id'))

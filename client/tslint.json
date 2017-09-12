@@ -115,7 +115,6 @@
     "restrict-plus-operands": true,
     "no-misused-new": true,
     "no-non-null-assertion": true,
-    "no-any": true,
     "no-string-literal": true,
     "no-reference": true,
     "no-string-throw": true,
@@ -172,7 +171,8 @@
     "unified-signatures": true,
     "variable-name": [
       true,
-      "check-format"
+        "check-format",
+        "allow-leading-underscore"
     ],
     "whitespace": [
       true,
@@ -229,9 +229,6 @@
     "no-sparse-arrays": true,
     "no-unexpected-multiline": true,
     "valid-typeof": true,
-    "sort-imports": [
-      true
-    ],
     "array-bracket-spacing":  [
       true,
       "never"

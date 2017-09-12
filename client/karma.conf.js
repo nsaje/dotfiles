@@ -6,7 +6,7 @@ module.exports = function karmaConfig (config) {
         frameworks: [
             // Reference: https://github.com/karma-runner/karma-jasmine
             // Set framework to jasmine
-            'jasmine'
+            'jasmine',
         ],
 
         reporters: [
@@ -15,7 +15,7 @@ module.exports = function karmaConfig (config) {
             'spec',
 
             // Output test results in JUnit XML format
-            'junit'
+            'junit',
         ],
 
         specReporter: {
@@ -24,31 +24,31 @@ module.exports = function karmaConfig (config) {
             suppressPassed: true,       // Do not print information about passed tests
             suppressSkipped: true,      // Do not print information about skipped tests
             showSpecTiming: false,      // Do not print the time elapsed for each spec
-            failFast: false             // Test won't finish with error when a first fail occurs
+            failFast: false,            // Test won't finish with error when a first fail occurs
         },
 
         junitReporter: {
             useBrowserName: false,
-            outputFile: './test-results.xml'
+            outputFile: './test-results.xml',
         },
 
         files: [
-            'one/polyfills.ts',
-            'one/vendor.ts',
-            'one/main.ts',
-            'one/app/ajs-app/tests.ajs.js'
+            // Legacy AngularJS app tests
+            {pattern: './one/tests.ajs.js', watched: false},
+            // Angular app tests
+            {pattern: './one/tests.ts', watched: false},
         ],
 
+        exclude: [],
+
         preprocessors: {
-            'one/polyfills.ts': ['webpack'],
-            'one/vendor.ts': ['webpack'],
-            'one/main.ts': ['webpack', 'sourcemap'],
-            'one/app/ajs-app/tests.ajs.js': ['webpack', 'sourcemap']
+            './one/tests.ajs.js': ['webpack', 'sourcemap'],
+            './one/tests.ts': ['webpack', 'sourcemap'],
         },
 
         browsers: [
             // Run tests using PhantomJS
-            'PhantomJS'
+            'PhantomJS',
         ],
 
         singleRun: true,
@@ -57,7 +57,7 @@ module.exports = function karmaConfig (config) {
 
         // Hide webpack build information from output
         webpackMiddleware: {
-            noInfo: 'errors-only'
+            noInfo: 'errors-only',
         },
     });
 };

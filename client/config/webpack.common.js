@@ -47,7 +47,7 @@ function generateMainConfig (appConfig) {
             'jquery': root('./lib/components/jquery/dist/jquery.js'),
             'moment': root('./lib/components/moment/moment.js'),
         },
-    },
+    };
 
     config.module.rules = [
         {
@@ -187,4 +187,3 @@ function root (args) {
     args = Array.prototype.slice.call(arguments, 0);
     return path.join.apply(path, [_root].concat(args));
 }
-

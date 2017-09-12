@@ -74,8 +74,8 @@ SAUCELABS_ACCESS_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2q
 
 # Auth
 GOOGLE_OAUTH_ENABLED = True
-GOOGLE_OAUTH_CLIENT_ID = '922772446122-g263mofafc1jimq6faq62brmu5op5qfb.apps.googleusercontent.com'
-GOOGLE_OAUTH_CLIENT_SECRET = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKfAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB2MHQGCSqGSIb3DQEHBqBnMGUCAQAwYAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAz3Qc5+jr+fM1SLy3cCARCAM/xG/mvM9yS8nqePTlwd6jdhtD7Y4n5WGwTJPVB6qS3YbL6I1A6V8nu5HhLMbrQG/YJrGQ==').get()
+GOOGLE_OAUTH_CLIENT_ID = '219929289020-t435pmppje29sbalvtgcej5ou9559eju.apps.googleusercontent.com'
+GOOGLE_OAUTH_CLIENT_SECRET = Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAHYwdAYJKoZIhvcNAQcGoGcwZQIBADBgBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDIQ+Qs9JnuKXXJwQVgIBEIAzlsaUwpAfFzFqjy+JSsTtw0VlhBRSJm42BCt/Kzg7uDegnrqDm1cujiAPQfihZpH4aqH2').get()
 
 # Static files
 BUILD_NUMBER = None

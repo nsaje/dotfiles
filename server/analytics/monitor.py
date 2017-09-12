@@ -37,6 +37,16 @@ FROM mv_master
 WHERE date >= '{from_date}' AND date <= '{till_date}' AND campaign_id IN ({campaigns})
 GROUP BY campaign_id"""
 
+OVERSPEND_QUERY = """SELECT account_id,
+       (sum(cost_nano) - sum(effective_cost_nano)) +
+       (sum(data_cost_nano) - sum(effective_data_cost_nano)) as diff
+FROM mv_account
+WHERE date = '{date}'
+GROUP BY account_id
+HAVING sum(cost_nano) - sum(effective_cost_nano) > {threshold} or
+       sum(data_cost_nano) - sum(effective_data_cost_nano) > {threshold}
+"""
+
 API_ACCOUNTS = (
     293, 305,
 )
@@ -224,6 +234,25 @@ def audit_autopilot_budget_changes(date=None, error=Decimal('0.001')):
     return alarms
 
 
+def audit_overspend(date, min_overspend=Decimal('0.1')):
+    rows = redshiftapi.db.execute_query(
+        OVERSPEND_QUERY.format(
+            date=str(date),
+            threshold=str(int(min_overspend * converters.DOLAR_TO_NANO))
+        ),
+        [],
+        'audit_overspend',
+    )
+    accounts_map = {
+        account.id: account for account in dash.models.Account.objects.all()
+    }
+    alarms = {}
+    for row in rows:
+        account = accounts_map[row['account_id']]
+        alarms[account] = converters.nano_to_decimal(row['diff'])
+    return alarms
+
+
 def audit_running_ad_groups(min_spend=Decimal('50.0'), account_types=None):
     """
     Audit ad groups spend of non API active ad groups of types:
@@ -295,6 +324,9 @@ def audit_click_discrepancy(date=None, days=30, threshold=20):
                     dash.constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS,
                     dash.constants.CampaignGoalKPI.CPV,
                     dash.constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT,
+                    dash.constants.CampaignGoalKPI.CP_NEW_VISITOR,
+                    dash.constants.CampaignGoalKPI.CP_PAGE_VIEW,
+                    dash.constants.CampaignGoalKPI.CPCV,
                 )
             ).values_list('campaign_id', flat=True)
         )
@@ -331,6 +363,9 @@ def audit_click_discrepancy(date=None, days=30, threshold=20):
 def audit_custom_hacks(minimal_spend=Decimal('0.0001')):
     alarms = []
     for unconfirmed_hack in dash.models.CustomHack.objects.filter(confirmed_by__isnull=True).filter_active(True):
+        if unconfirmed_hack.is_global():
+            alarms.append((unconfirmed_hack, None))
+            continue
         spend = analytics.helpers.get_spend(
             unconfirmed_hack.created_dt.date(),
             ad_group=unconfirmed_hack.ad_group,

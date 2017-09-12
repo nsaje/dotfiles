@@ -200,9 +200,8 @@ class AccountCreditViewTest(BCMViewTestCase):
             status=constants.CreditLineItemStatus.CANCELED
         ).count(), 1)
 
-    def test_put(self):
+    def test_put_empty(self):
         self.assertEqual(0, len(models.CreditLineItem.objects.filter(comment='TESTCASE_PUT')))
-
         url = reverse('accounts_credit', kwargs={'account_id': 1})
 
         request_data = {}
@@ -219,14 +218,20 @@ class AccountCreditViewTest(BCMViewTestCase):
         self.assertTrue('end_date' in response_data['data']['errors'])
         self.assertTrue('license_fee' in response_data['data']['errors'])
 
+    def test_put_invalid_start_date(self):
+        self.assertEqual(0, len(models.CreditLineItem.objects.filter(comment='TESTCASE_PUT')))
+
+        url = reverse('accounts_credit', kwargs={'account_id': 1})
+
         request_data = {
             'start_date': '2015-11-10',
             'end_date': '2015-11-20',
             'amount': '5000',
-            'license_fee': '10%',
+            'license_fee': '20%',
             'comment': 'TESTCASE_PUT'
         }
 
+        test_helper.add_permissions(self.user, ['account_credit_view'])
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 11)
             response = self.client.put(url, json.dumps(request_data),
@@ -239,7 +244,19 @@ class AccountCreditViewTest(BCMViewTestCase):
         self.assertFalse('end_date' in response_data['data']['errors'])
         self.assertFalse('license_fee' in response_data['data']['errors'])
 
-        request_data['start_date'] = '2015-11-11'
+    def test_put_valid(self):
+        self.assertEqual(0, len(models.CreditLineItem.objects.filter(comment='TESTCASE_PUT')))
+
+        url = reverse('accounts_credit', kwargs={'account_id': 1})
+        request_data = {
+            'start_date': '2015-11-11',
+            'end_date': '2015-11-20',
+            'amount': '5000',
+            'license_fee': '20%',
+            'comment': 'TESTCASE_PUT'
+        }
+
+        test_helper.add_permissions(self.user, ['account_credit_view'])
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 11)
             response = self.client.put(url, json.dumps(request_data),
@@ -260,7 +277,7 @@ class AccountCreditViewTest(BCMViewTestCase):
             hist.action_type
         )
 
-    def test_put_agency(self):
+    def test_put_agency_empty(self):
         self.assertEqual(0, len(models.CreditLineItem.objects.filter(comment='TESTCASE_PUT')))
 
         url = reverse('accounts_credit', kwargs={'account_id': 1000})
@@ -279,15 +296,21 @@ class AccountCreditViewTest(BCMViewTestCase):
         self.assertTrue('end_date' in response_data['data']['errors'])
         self.assertTrue('license_fee' in response_data['data']['errors'])
 
+    def test_put_agency_invalid_start_date(self):
+        self.assertEqual(0, len(models.CreditLineItem.objects.filter(comment='TESTCASE_PUT')))
+
+        url = reverse('accounts_credit', kwargs={'account_id': 1000})
+
         request_data = {
             'start_date': '2015-11-10',
             'end_date': '2015-11-20',
             'amount': '5000',
-            'license_fee': '10%',
+            'license_fee': '20%',
             'comment': 'TESTCASE_PUT',
             'is_agency': True,
         }
 
+        test_helper.add_permissions(self.user, ['account_credit_view'])
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 11)
             response = self.client.put(url, json.dumps(request_data),
@@ -300,7 +323,21 @@ class AccountCreditViewTest(BCMViewTestCase):
         self.assertFalse('end_date' in response_data['data']['errors'])
         self.assertFalse('license_fee' in response_data['data']['errors'])
 
-        request_data['start_date'] = '2015-11-11'
+    def test_put_agency_valid(self):
+        self.assertEqual(0, len(models.CreditLineItem.objects.filter(comment='TESTCASE_PUT')))
+
+        url = reverse('accounts_credit', kwargs={'account_id': 1000})
+
+        request_data = {
+            'start_date': '2015-11-11',
+            'end_date': '2015-11-20',
+            'amount': '5000',
+            'license_fee': '20%',
+            'comment': 'TESTCASE_PUT',
+            'is_agency': True,
+        }
+
+        test_helper.add_permissions(self.user, ['account_credit_view'])
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 11)
             response = self.client.put(url, json.dumps(request_data),
