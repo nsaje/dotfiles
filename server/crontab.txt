@@ -26,7 +26,8 @@
 20 11 * * *       /home/ubuntu/docker-manage-py.sh audit_hacks --slack
 0 10 5,15,25 * *    /home/ubuntu/docker-manage-py.sh audit_pacing --send-emails
 20 10 * * *          /home/ubuntu/docker-manage-py.sh daily_audit --send-emails
-20 10 * * *          /home/ubuntu/docker-manage-py.sh post_delivery_statuses
+15 10 * * *          /home/ubuntu/docker-manage-py.sh post_delivery_statuses
+10 10 * * *          /home/ubuntu/docker-manage-py.sh generate_hack_report -n 14 -i
 0 * * * *           /home/ubuntu/docker-manage-py.sh bizwire_hourly_job
 5 * * * *           /home/ubuntu/docker-manage-py.sh bizwire_monitor
 0 0 * * *           /home/ubuntu/docker-manage-py.sh cleartokens
