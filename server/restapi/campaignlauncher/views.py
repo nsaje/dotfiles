@@ -1,4 +1,5 @@
 import rest_framework.serializers
+from rest_framework import permissions
 from django.db import transaction
 
 from ..views import RESTAPIBaseViewSet
@@ -12,6 +13,7 @@ import serializers
 
 
 class CampaignLauncherViewSet(RESTAPIBaseViewSet):
+    permission_classes = (permissions.IsAuthenticated,)
 
     def defaults(self, request, account_id):
         default_settings = core.entity.settings.AdGroupSettings.get_defaults_dict()
