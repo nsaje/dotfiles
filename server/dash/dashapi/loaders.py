@@ -445,7 +445,7 @@ class PublisherBlacklistLoader(Loader):
 
     @cached_property
     def publisher_group_entry_map(self):
-        return publisher_helpers.PublisherIdLookupMap(self.objs_qs)
+        return publisher_helpers.PublisherIdLookupMap(self.blacklist_qs, self.whitelist_qs)
 
     def find_blacklisted_status_for_level(self, row, level, publisher_group_entry):
         targeting = self.publisher_group_targeting[level].get(

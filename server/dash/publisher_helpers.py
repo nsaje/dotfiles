@@ -72,14 +72,25 @@ def all_subdomains(publisher):
 
 
 class PublisherIdLookupMap(object):
-    def __init__(self, publisher_group_entries):
-        self._map = {}
-        for entry in publisher_group_entries:
+    def _add_to_map(self, entries):
+        for entry in entries:
             publisher_name = entry.publisher.strip().lower()
             if entry.source_id:
                 self._map[create_publisher_id(publisher_name, entry.source_id)] = entry
             else:
                 self._map[create_publisher_id(publisher_name, 'all')] = entry
+
+    def __init__(self, dominant_entries_qs, secondary_entries_qs=None):
+        self._map = {}
+
+        # Blacklisted entry has priority before whitelisted entries. That is why when an entry is blacklisted and
+        # whitelisted at the same time, take into account only the blacklisted one. By first inserting whitelisted
+        # entries we ensure that entries that target the same publisher will get overwritten in the map by
+        # entries from the blacklist.
+        # From the case above blacklist consists of dominant entries, whitelist from secondary ones.
+        if secondary_entries_qs is not None:
+            self._add_to_map(secondary_entries_qs)
+        self._add_to_map(dominant_entries_qs)
 
     def _find_publisher_group_entry_subdomains(self, publisher_id):
         # check for exact match

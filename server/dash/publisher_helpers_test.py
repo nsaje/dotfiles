@@ -1,6 +1,10 @@
 from django.test import TestCase
 
+from utils.magic_mixer import magic_mixer
+
 from dash import publisher_helpers
+
+import core.entity
 
 
 class PublisherHelpersTest(TestCase):
@@ -47,3 +51,20 @@ class PublisherHelpersTest(TestCase):
         self.assertEqual(publisher_helpers.all_subdomains('msn.com'), ['com'])
         self.assertEqual(publisher_helpers.all_subdomains('http://www.msn.com'), ['msn.com', 'com'])
         self.assertEqual(publisher_helpers.all_subdomains('https://www.msn.com'), ['msn.com', 'com'])
+
+
+class PublisherIdLookupMapTest(TestCase):
+    def test_map_blacklist_over_whitelist(self):
+        publisher = "beer.com"
+        source_id = 1
+        publisher_id = publisher_helpers.create_publisher_id(publisher, source_id)
+
+        black_entry = magic_mixer.blend(
+            core.entity.settings.PublisherGroupEntry, publisher=publisher, source__id=source_id)
+        white_entry = magic_mixer.blend(
+            core.entity.settings.PublisherGroupEntry, publisher=publisher, source__id=source_id)
+        blacklist = core.entity.settings.PublisherGroupEntry.objects.filter(pk__in=[black_entry.id])
+        whitelist = core.entity.settings.PublisherGroupEntry.objects.filter(pk__in=[white_entry.id])
+
+        m = publisher_helpers.PublisherIdLookupMap(blacklist, whitelist)
+        self.assertEqual(m[publisher_id].id, black_entry.id)
