@@ -12,18 +12,14 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
 
         var MAIN_ACTIONS = {};
         MAIN_ACTIONS[constants.entityType.ACCOUNT] = {name: 'Account', callback: createEntity};
-        if (zemPermissions.hasPermission('zemauth.can_create_campaign_via_campaign_launcher')) {
-            MAIN_ACTIONS[constants.entityType.CAMPAIGN] = {name: 'Launch campaign', callback: openCampaignLauncher};
-        } else {
-            MAIN_ACTIONS[constants.entityType.CAMPAIGN] = {name: 'Campaign', callback: createEntity};
-        }
+        MAIN_ACTIONS[constants.entityType.CAMPAIGN] = {name: 'Campaign', callback: createEntity};
         MAIN_ACTIONS[constants.entityType.AD_GROUP] = {name: 'Ad group', callback: createEntity};
         MAIN_ACTIONS[constants.entityType.CONTENT_AD] = {name: 'Content Ads', callback: createEntity};
 
         var ADDITIONAL_ACTIONS = {};
         if (zemPermissions.hasPermission('zemauth.can_create_campaign_via_campaign_launcher')) {
             ADDITIONAL_ACTIONS[constants.entityType.CAMPAIGN] = [
-                {name: 'Add campaign', callback: createEntity},
+                {name: 'Launch campaign', callback: openCampaignLauncher},
             ];
         }
 
