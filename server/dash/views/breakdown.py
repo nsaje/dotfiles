@@ -7,17 +7,14 @@ import newrelic.agent
 from dash import constants
 from dash import forms
 from dash import campaign_goals
-from dash import publisher_group_helpers
+from core.publisher_groups import publisher_group_helpers
 from dash.views import helpers
 from dash.views import breakdown_helpers
-
 from utils import api_common, exc, threads
-
 import stats.api_breakdowns
 import stats.constraints_helper
 import stats.helpers
 import stats.constants
-
 
 DEFAULT_OFFSET = 0
 DEFAULT_LIMIT = 10

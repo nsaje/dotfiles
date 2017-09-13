@@ -1,12 +1,10 @@
 import copy
 
-from utils.queryset_helper import simplify_query
-
 import newrelic.agent
 
+from utils.queryset_helper import simplify_query
 from dash import models
-from dash import publisher_group_helpers
-
+from core.publisher_groups import publisher_group_helpers
 from stats import constants
 import dash.constants
 

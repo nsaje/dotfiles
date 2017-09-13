@@ -938,22 +938,6 @@ class ContentAdsTest(RESTAPITest):
         self.assertResponseError(r, 'ValidationError')
 
 
-class PublisherBlacklistTest(RESTAPITest):
-
-    def test_adgroups_publishers_list(self):
-        r = self.client.get(reverse('publishers_list', kwargs={'ad_group_id': 2040}))
-        self.assertEqual(r.status_code, 200)
-        resp_json = json.loads(r.content)
-        self.assertIsInstance(resp_json['data'], list)
-        self.assertGreater(len(resp_json['data']), 0)
-        expected_fields = ['status', 'source', 'name', 'level']
-        for item in resp_json['data']:
-            self.assertEqual(item.keys(), expected_fields)
-
-    def test_adgroups_publishers_put(self):
-        pass
-
-
 @override_settings(R1_DEMO_MODE=True)
 class TestBatchUpload(TestCase):
     fixtures = ['test_views.yaml']

@@ -11,6 +11,7 @@ from core.history import *
 from core.pixels import *
 from core.source import *
 from core.publisher_bid_modifiers.publisher_bid_modifier import PublisherBidModifier
+from core.publisher_groups import *
 
 # Core helpers
 from core.bcm.helpers import *

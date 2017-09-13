@@ -245,9 +245,7 @@ class CampaignSettings(SettingsBase):
             if not value:
                 value = ''
             else:
-                # FIXME: circular dependency
-                import core.entity.settings
-                names = core.entity.settings.PublisherGroup.objects.filter(pk__in=value).values_list('name', flat=True)
+                names = core.publisher_groups.PublisherGroup.objects.filter(pk__in=value).values_list('name', flat=True)
                 value = ', '.join(names)
 
         return value

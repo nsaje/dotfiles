@@ -3,7 +3,6 @@ import datetime
 import logging
 
 from influxdb import InfluxDBClient
-
 from django.conf import settings
 
 import stats.api_breakdowns
@@ -12,7 +11,7 @@ from stats.helpers import Goals
 from utils.command_helpers import ExceptionCommand, parse_date
 from dash import constants
 from dash import models
-from dash import publisher_group_helpers
+from core.publisher_groups import publisher_group_helpers
 import zemauth.models
 
 logger = logging.getLogger(__name__)

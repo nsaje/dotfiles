@@ -1,4 +1,3 @@
-import influx
 import json
 import logging
 import re
@@ -7,6 +6,7 @@ from collections import defaultdict
 import datetime
 import uuid
 
+import influx
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F
@@ -17,7 +17,8 @@ from django.views.decorators.csrf import csrf_exempt
 
 import dash.constants
 import dash.models
-from dash import constants, publisher_group_helpers
+from dash import constants
+from core.publisher_groups import publisher_group_helpers
 from utils import redirector_helper, email_helper
 from utils import url_helper, request_signer, converters
 import redshiftapi.quickstats
@@ -25,7 +26,6 @@ import redshiftapi.internal_stats.conversions
 import redshiftapi.internal_stats.content_ad_publishers
 import etl.materialize_views
 import dash.features.geolocation
-
 
 logger = logging.getLogger(__name__)
 

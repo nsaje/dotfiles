@@ -21,10 +21,9 @@ import djangorestframework_camel_case.util
 
 from utils import json_helper, exc, dates_helper
 
-from dash.views import agency, bulk_actions, views, helpers, publishers
+from dash.views import agency, bulk_actions, views, helpers
 from dash import campaign_goals
 from dash import constants
-from dash import publisher_group_helpers
 from dash.features.reports import reportjob
 from dash.features.reports import serializers as reports_serializers
 from dash.features.reports import reports
@@ -823,81 +822,6 @@ class CampaignStatsView(RESTAPIBaseView):
             raise serializers.ValidationError('Missing from or to parameter')
         stats = redshiftapi.quickstats.query_campaign(campaign.id, from_date, to_date)
         return self.response_ok(StatsSerializer(stats).data)
-
-
-class PublisherSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=127)
-    source = fields.SourceIdSlugField(required=False, allow_null=True)
-    externalId = serializers.CharField(max_length=127, required=False, allow_null=True)
-    status = fields.DashConstantField(constants.PublisherStatus)
-    level = fields.DashConstantField(constants.PublisherBlacklistLevel, label='level')
-
-    def create(self, validated_data):
-        request = validated_data['request']
-        ad_group_id = validated_data['ad_group_id']
-        del validated_data['request']
-        del validated_data['ad_group_id']
-
-        status = (constants.PublisherTargetingStatus.BLACKLISTED if
-                  validated_data['status'] == constants.PublisherStatus.BLACKLISTED else
-                  constants.PublisherTargetingStatus.UNLISTED)
-
-        post_data = {
-            'entries': [{
-                'source': validated_data['source'].id if validated_data.get('source') else None,
-                'publisher': validated_data['name'],
-                'include_subdomains': True,  # blacklisting is always True by default, it doesn't matter for unlisting
-            }],
-            'entries_not_selected': [],
-            'status': status,
-            'ad_group': ad_group_id,
-            'level': validated_data['level'],
-            'enforce_cpc': False,
-            'select_all': False,
-        }
-
-        view_internal = publishers.PublisherTargeting(rest_proxy=True)
-        request.body = json.dumps(post_data, cls=json_helper.JSONEncoder)
-        data_internal, status_code = view_internal.post(request)
-
-
-class PublishersViewList(RESTAPIBaseView):
-
-    def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        targeting = publisher_group_helpers.get_publisher_group_targeting_dict(
-            ad_group, ad_group.get_current_settings(),
-            ad_group.campaign, ad_group.campaign.get_current_settings(),
-            ad_group.campaign.account, ad_group.campaign.account.get_current_settings(),
-            include_global=False)
-
-        publishers = []
-
-        def add_entries(entries, level):
-            for entry in entries:
-                publishers.append({
-                    'name': entry.publisher,
-                    'source': entry.source,
-                    'status': constants.PublisherStatus.BLACKLISTED,
-                    'level': level,
-                })
-
-        add_entries(dash.models.PublisherGroupEntry.objects.filter(
-            publisher_group_id__in=targeting['ad_group']['excluded']).select_related('source'), constants.PublisherBlacklistLevel.ADGROUP)
-        add_entries(dash.models.PublisherGroupEntry.objects.filter(
-            publisher_group_id__in=targeting['campaign']['excluded']).select_related('source'), constants.PublisherBlacklistLevel.CAMPAIGN)
-        add_entries(dash.models.PublisherGroupEntry.objects.filter(
-            publisher_group_id__in=targeting['account']['excluded']).select_related('source'), constants.PublisherBlacklistLevel.ACCOUNT)
-
-        serializer = PublisherSerializer(publishers, many=True)
-        return self.response_ok(serializer.data)
-
-    def put(self, request, ad_group_id):
-        helpers.get_ad_group(request.user, ad_group_id)  # validate ad group is allowed
-        serializer = PublisherSerializer(data=request.data, many=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(request=request, ad_group_id=ad_group_id)
-        return self.response_ok(serializer.initial_data)
 
 
 class AdGroupSourcesRTBSerializer(serializers.Serializer):
