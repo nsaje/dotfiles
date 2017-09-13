@@ -515,7 +515,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             )
         if not campaign_stop.is_current_time_valid_for_amount_editing(item.instance.campaign):
             item.errors.setdefault('amount', []).append(
-                'You can lower the amount on an active budget line item after 12:00 UTC.'
+                'You can lower the amount on an active budget line item after 7 am EST.'
             )
 
     def _get_response(self, user, item):

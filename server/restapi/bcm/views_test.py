@@ -1425,7 +1425,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         response_data = json.loads(response.content)
         self.assertEqual(
             response_data['data']['errors']['amount'],
-            ['You can lower the amount on an active budget line item after 12:00 UTC.']
+            ['You can lower the amount on an active budget line item after 7 am EST.']
         )
 
     @patch('automation.campaign_stop.perform_landing_mode_check')
