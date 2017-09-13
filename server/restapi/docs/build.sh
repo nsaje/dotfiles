@@ -1,4 +1,11 @@
 #!/bin/bash
+
+cleanup() {
+    docker rm -f z1-rest-aglio
+}
+trap cleanup SIGINT
+
 DIR="$(dirname $(readlink -f $0))"
 
-NOCACHE=1 aglio -i "$DIR/api_blueprint.md" --no-theme-condense-nav --theme-style "$DIR/theme/style.less" --theme-variables "$DIR/theme/variables.less" --theme-template "$DIR/theme/template.jade" "$@"
+cleanup
+docker run --name z1-rest-aglio -p 3000:3000 -v $DIR:/tmp -t -e "NOCACHE=1" zemanta/z1-aglio -i "/tmp/api_blueprint.md" --theme-style "/tmp/theme/style.less" --theme-variables "/tmp/theme/variables.less" --theme-template "/tmp/theme/template.jade" -s -h 0.0.0.0 -p 3000

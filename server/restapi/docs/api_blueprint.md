@@ -792,10 +792,36 @@ timezone  | [TZ timezone](https://en.wikipedia.org/wiki/Tz_database) | Timezone 
 <a name="audience-targeting-expression"></a>
 #### Audience Targeting
 
-Property      | Type                                                                                           | Description
---------------|------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
-operator      | string                                                                                         | Valid operators are `AND`,  `OR` and `NOT`. `NOT` has to have exactly one nested subexpression in the child array.
-subexpression | array[audienceTargeting or [audienceTargetingCategory](#audience-targeting-category)] | Either a nested audience expression or a leaf category object.
+An Audience Targeting expression is an object containing a single property. The name of the property represents the operator, while its value is an array representing the subexpression(s).
+A subexpression can be either a nested Audience Targeting expression or a [Category](#audience-targeting-category) object.
+
+Valid operators are `AND`,  `OR` and `NOT`. `NOT` has to have exactly one nested subexpression in the child array.
+
+Example Audience Targeting expression:
+
+```json
+{
+    "AND": [
+        {
+            "OR": [
+                {
+                    "category": "bluekai:839868"
+                },
+                {
+                    "category": "bluekai:763921"
+                }
+            ]
+        },
+        {
+            "NOT": [
+                {
+                    "category": "bluekai:839918"
+                }
+            ]
+        }
+    ]
+}
+```
 
 <a name="audience-targeting-category"></a>
 ##### Audience Targeting Category
@@ -2613,6 +2639,7 @@ Examples:
 - `geo` (geo)
 - `interest` (interest)
 - `publisherGroups` (publisherGroups)
+- `audiences` (AudienceTargetingExpression)
 - `customAudiences` (customAudiences)
 - `retargetingAdGroups` (retargetingAdGroups)
 
@@ -2751,3 +2778,13 @@ Examples:
 ## BlueKaiTaxonomyResponse
 
 - `data` (BlueKaiCategory)
+
+<!-- AUDIENCES -->
+## AudienceTargetingCategory (object)
+
+- `category`: `bluekai:21230` (string)
+
+
+## AudienceTargetingExpression (object)
+
+- `AND`: (array[AudienceTargetingCategory])
