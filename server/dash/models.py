@@ -10,6 +10,7 @@ from core.goals import *
 from core.history import *
 from core.pixels import *
 from core.source import *
+from core.publisher_bid_modifiers.publisher_bid_modifier import PublisherBidModifier
 
 # Core helpers
 from core.bcm.helpers import *

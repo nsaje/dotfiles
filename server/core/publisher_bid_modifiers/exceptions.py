@@ -1,0 +1,2 @@
+class BidModifierInvalid(Exception):
+    pass
