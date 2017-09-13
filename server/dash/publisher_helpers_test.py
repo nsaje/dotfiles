@@ -4,7 +4,7 @@ from utils.magic_mixer import magic_mixer
 
 from dash import publisher_helpers
 
-import core.entity
+import core.publisher_groups
 
 
 class PublisherHelpersTest(TestCase):
@@ -60,11 +60,11 @@ class PublisherIdLookupMapTest(TestCase):
         publisher_id = publisher_helpers.create_publisher_id(publisher, source_id)
 
         black_entry = magic_mixer.blend(
-            core.entity.settings.PublisherGroupEntry, publisher=publisher, source__id=source_id)
+            core.publisher_groups.PublisherGroupEntry, publisher=publisher, source__id=source_id)
         white_entry = magic_mixer.blend(
-            core.entity.settings.PublisherGroupEntry, publisher=publisher, source__id=source_id)
-        blacklist = core.entity.settings.PublisherGroupEntry.objects.filter(pk__in=[black_entry.id])
-        whitelist = core.entity.settings.PublisherGroupEntry.objects.filter(pk__in=[white_entry.id])
+            core.publisher_groups.PublisherGroupEntry, publisher=publisher, source__id=source_id)
+        blacklist = core.publisher_groups.PublisherGroupEntry.objects.filter(pk__in=[black_entry.id])
+        whitelist = core.publisher_groups.PublisherGroupEntry.objects.filter(pk__in=[white_entry.id])
 
         m = publisher_helpers.PublisherIdLookupMap(blacklist, whitelist)
         self.assertEqual(m[publisher_id].id, black_entry.id)
