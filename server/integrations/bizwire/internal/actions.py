@@ -25,8 +25,12 @@ AD_GROUP_NAME_TEMPLATE = '{start_date} - DEFAULT TARGETING'
 
 
 def _is_pacific_midnight():
+    return _is_pacific_hour(0)
+
+
+def _is_pacific_hour(hour):
     pacific_now = helpers.get_pacific_now()
-    return pacific_now.hour == 0
+    return pacific_now.hour == hour
 
 
 def _is_local_midnight():
@@ -49,7 +53,7 @@ def reprocess_missing_articles():
 
 
 def check_pacific_midnight_and_stop_ads():
-    if not _is_pacific_midnight():
+    if not _is_pacific_hour(2):
         return
 
     utc_now = dates_helper.utc_now()
@@ -73,7 +77,7 @@ def check_time_and_create_new_ad_groups():
 
 
 def check_date_and_stop_old_ad_groups():
-    if not _is_pacific_midnight():
+    if not _is_pacific_hour(2):
         return
 
     pacific_today = helpers.get_pacific_now().date()
