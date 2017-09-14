@@ -79,41 +79,44 @@ CAMPAIGN_GOAL_VALUE_FORMAT = {
 
 }
 
-CAMPAIGN_GOAL_MAP = {
-    constants.CampaignGoalKPI.MAX_BOUNCE_RATE: [
-        'non_bounced_visits',
-        'avg_cost_per_non_bounced_visit',
-    ],
-    constants.CampaignGoalKPI.PAGES_PER_SESSION: [
-        'total_pageviews',
-        'avg_cost_per_pageview',
-    ],
-    constants.CampaignGoalKPI.TIME_ON_SITE: [
-        'total_seconds',
-        'avg_cost_per_minute',
-    ],
-    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: [
-        'avg_cost_for_new_visitor',
-    ],
+
+_RELEVANT_GOAL_FIELDS_MAP = {
+    constants.CampaignGoalKPI.MAX_BOUNCE_RATE: ['non_bounced_visits', 'avg_cost_per_non_bounced_visit'],
+    constants.CampaignGoalKPI.PAGES_PER_SESSION: ['total_pageviews', 'avg_cost_per_pageview'],
+    constants.CampaignGoalKPI.TIME_ON_SITE: ['total_seconds', 'avg_cost_per_minute'],
+    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: ['avg_cost_for_new_visitor'],
     constants.CampaignGoalKPI.CPA: [],
     constants.CampaignGoalKPI.CPC: ['cpc'],
     constants.CampaignGoalKPI.CPV: ['avg_cost_per_visit'],
-    constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: [
-        'avg_cost_per_non_bounced_visit',
-        'non_bounced_visits',
-    ],
-    constants.CampaignGoalKPI.CP_NEW_VISITOR: [
-            'avg_cost_for_new_visitor',
-        ],
-    constants.CampaignGoalKPI.CP_PAGE_VIEW: [
-            'avg_cost_per_pageview',
-        ],
-    constants.CampaignGoalKPI.CPCV: [
-            'video_cpcv',
-        ],
+    constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: ['avg_cost_per_non_bounced_visit', 'non_bounced_visits'],
+    constants.CampaignGoalKPI.CP_NEW_VISITOR: ['avg_cost_for_new_visitor'],
+    constants.CampaignGoalKPI.CP_PAGE_VIEW: ['avg_cost_per_pageview'],
+    constants.CampaignGoalKPI.CPCV: ['video_cpcv'],
 }
 
-CAMPAIGN_GOAL_PRIMARY_METRIC_MAP = {
+
+_RELEVANT_GOAL_ETFM_FIELDS_MAP = {
+    constants.CampaignGoalKPI.MAX_BOUNCE_RATE: ['non_bounced_visits', 'avg_etfm_cost_per_non_bounced_visit'],
+    constants.CampaignGoalKPI.PAGES_PER_SESSION: ['total_pageviews', 'avg_etfm_cost_per_pageview'],
+    constants.CampaignGoalKPI.TIME_ON_SITE: ['total_seconds', 'avg_etfm_cost_per_minute'],
+    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: ['avg_etfm_cost_for_new_visitor'],
+    constants.CampaignGoalKPI.CPA: [],
+    constants.CampaignGoalKPI.CPC: ['etfm_cpc'],
+    constants.CampaignGoalKPI.CPV: ['avg_etfm_cost_per_visit'],
+    constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: ['avg_etfm_cost_per_non_bounced_visit', 'non_bounced_visits'],
+    constants.CampaignGoalKPI.CP_NEW_VISITOR: ['avg_etfm_cost_for_new_visitor'],
+    constants.CampaignGoalKPI.CP_PAGE_VIEW: ['avg_etfm_cost_per_pageview'],
+    constants.CampaignGoalKPI.CPCV: ['video_etfm_cpcv'],
+}
+
+
+def get_relevant_goal_fields_map(uses_bcm_v2):
+    if uses_bcm_v2:
+        return _RELEVANT_GOAL_ETFM_FIELDS_MAP
+    return _RELEVANT_GOAL_FIELDS_MAP
+
+
+_CAMPAIGN_GOAL_PRIMARY_METRIC = {
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE: 'bounce_rate',
     constants.CampaignGoalKPI.PAGES_PER_SESSION: 'pv_per_visit',
     constants.CampaignGoalKPI.TIME_ON_SITE: 'avg_tos',
@@ -125,6 +128,27 @@ CAMPAIGN_GOAL_PRIMARY_METRIC_MAP = {
     constants.CampaignGoalKPI.CP_PAGE_VIEW: 'avg_cost_per_pageview',
     constants.CampaignGoalKPI.CPCV: 'video_cpcv',
 }
+
+
+_CAMPAIGN_GOAL_PRIMARY_ETFM_METRIC = {
+    constants.CampaignGoalKPI.MAX_BOUNCE_RATE: 'bounce_rate',
+    constants.CampaignGoalKPI.PAGES_PER_SESSION: 'pv_per_visit',
+    constants.CampaignGoalKPI.TIME_ON_SITE: 'avg_tos',
+    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: 'percent_new_users',
+    constants.CampaignGoalKPI.CPC: 'etfm_cpc',
+    constants.CampaignGoalKPI.CPV: 'avg_etfm_cost_per_visit',
+    constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: 'avg_etfm_cost_per_non_bounced_visit',
+    constants.CampaignGoalKPI.CP_NEW_VISITOR: 'avg_etfm_cost_for_new_visitor',
+    constants.CampaignGoalKPI.CP_PAGE_VIEW: 'avg_etfm_cost_per_pageview',
+    constants.CampaignGoalKPI.CPCV: 'video_etfm_cpcv',
+}
+
+
+def get_goal_to_primary_metric_map(uses_bcm_v2):
+    if uses_bcm_v2:
+        return _CAMPAIGN_GOAL_PRIMARY_ETFM_METRIC
+    return _CAMPAIGN_GOAL_PRIMARY_METRIC
+
 
 INVERSE_PERFORMANCE_CAMPAIGN_GOALS = (
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE,
@@ -144,8 +168,6 @@ STATUS_TO_EMOTICON_MAP = {
 }
 
 EXISTING_COLUMNS_FOR_GOALS = ('cpc', )
-
-E_MEDIA_COST_COLUMN = 'e_media_cost'
 
 COST_DEPENDANT_GOALS = (
     constants.CampaignGoalKPI.CPA,
@@ -245,35 +267,6 @@ def delete_conversion_goal(request, conversion_goal_id, campaign):
         )
 
 
-def extract_e_media_cost(data):
-    return data.get(E_MEDIA_COST_COLUMN, 0)
-
-
-def create_goals(campaign, data):
-    campaign_goal_values = get_campaign_goal_values(campaign)
-    ret = []
-    for row in data:
-        new_row = dict(row)
-        e_media_cost = extract_e_media_cost(row)
-        if e_media_cost:
-            for campaign_goal_value in campaign_goal_values:
-                goal_type = campaign_goal_value.campaign_goal.type
-                new_row.update(calculate_goal_values(row, goal_type, e_media_cost))
-        ret.append(new_row)
-    return ret
-
-
-def create_goal_totals(campaign, data):
-    ret = dict(data)
-    campaign_goal_values = get_campaign_goal_values(campaign)
-    e_media_cost = extract_e_media_cost(data)
-    if e_media_cost:
-        for campaign_goal_value in campaign_goal_values:
-            goal_type = campaign_goal_value.campaign_goal.type
-            ret.update(calculate_goal_values(data, goal_type, e_media_cost))
-    return ret
-
-
 def get_campaign_goal_values(campaign):
     return get_campaigns_goal_values([campaign])
 
@@ -290,29 +283,15 @@ def get_campaigns_goal_values(campaigns):
     )
 
 
-def calculate_goal_values(row, goal_type, e_media_cost):
-    ret = {}
-    if goal_type == constants.CampaignGoalKPI.CPA:
-        goal_index = 1
-        goal_name = ""
-        while goal_index == 1 or goal_name in row:
-            goal_name = 'conversion_goal_{}'.format(goal_index)
-            if goal_name in row and row[goal_name]:
-                ret['avg_cost_per_conversion_goal_{}'.format(goal_index)] = \
-                    float(e_media_cost) / row[goal_name]
-            goal_index += 1
-    return ret
-
-
 def get_campaign_goals(campaign, conversion_goals):
     cg_values = get_campaign_goal_values(campaign)
     ret = []
     for cg_value in cg_values:
         goal_type = cg_value.campaign_goal.type
-        goal_name = constants.CampaignGoalKPI.get_text(
-            goal_type
-        )
-        fields = {k: True for k in CAMPAIGN_GOAL_MAP.get(goal_type, [])}
+        goal_name = constants.CampaignGoalKPI.get_text(goal_type)
+
+        # This gets overwritten if KPI is CPA
+        fields = {k: True for k in get_relevant_goal_fields_map(campaign.account.uses_bcm_v2).get(goal_type, [])}
 
         conversion_goal_name = None
         if goal_type == constants.CampaignGoalKPI.CPA:
@@ -320,10 +299,15 @@ def get_campaign_goals(campaign, conversion_goals):
             conversion_goal_name = cg_value.campaign_goal.conversion_goal.name
             fields = dict(('{}'.format(k['id']), True)
                           for k in conversion_goals if k['name'] == conversion_goal_name)
-            fields.update(
-                dict(('avg_cost_per_{}'.format(k['id']), True)
-                     for k in conversion_goals if k['name'] == conversion_goal_name)
-            )
+
+            if campaign.account.uses_bcm_v2:
+                fields.update(
+                    dict(('avg_etfm_cost_per_{}'.format(k['id']), True)
+                         for k in conversion_goals if k['name'] == conversion_goal_name))
+            else:
+                fields.update(
+                    dict(('avg_cost_per_{}'.format(k['id']), True)
+                         for k in conversion_goals if k['name'] == conversion_goal_name))
 
         ret.append({
             'name': goal_name,
@@ -389,30 +373,38 @@ def fetch_goals(campaign_ids, end_date):
     ).select_related('conversion_goal').order_by('campaign_id', '-primary', 'created_dt')
 
 
-def _prepare_performance_output(campaign_goal, stats, conversion_goals):
+def _prepare_performance_output(campaign_goal, stats, conversion_goals, uses_bcm_v2):
     goal_values = campaign_goal.values.all().order_by('-created_dt')
     last_goal_value = goal_values and goal_values[0]
     planned_value = last_goal_value and last_goal_value.value or None
-    e_media_cost = extract_e_media_cost(stats)
+
+    cost = stats.get('etfm_cost') if uses_bcm_v2 else stats.get('e_media_cost')
+    primary_metric_map = get_goal_to_primary_metric_map(uses_bcm_v2)
+
     if campaign_goal.type == constants.CampaignGoalKPI.CPA:
         conversion_column = campaign_goal.conversion_goal.get_view_key(conversion_goals)
         metric = stats.get(conversion_column, 0)
-        metric_value = (float(e_media_cost) / metric) if (metric and e_media_cost is not None) else None
+        metric_value = (float(cost) / metric) if (metric and cost is not None) else None
     else:
-        metric_value = stats.get(CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type])
+        metric_value = stats.get(primary_metric_map[campaign_goal.type])
     return (
-        get_goal_performance_status(campaign_goal.type, metric_value, planned_value, cost=e_media_cost),
+        get_goal_performance_status(campaign_goal.type, metric_value, planned_value, cost=cost),
         metric_value,
         planned_value,
         campaign_goal,
     )
 
 
-def get_goal_performance_metric(campaign_goal, conversion_goals):
+def get_goal_performance_metric(campaign_goal, conversion_goals, uses_bcm_v2):
     if campaign_goal.type == constants.CampaignGoalKPI.CPA:
         conversion_column = campaign_goal.conversion_goal.get_view_key(conversion_goals)
-        return 'avg_cost_per_' + conversion_column
-    return CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type]
+        if uses_bcm_v2:
+            return 'avg_etfm_cost_per_' + conversion_column
+        else:
+            return 'avg_cost_per_' + conversion_column
+
+    primary_metric_map = get_goal_to_primary_metric_map(uses_bcm_v2)
+    return primary_metric_map[campaign_goal.type]
 
 
 def get_goals_performance_campaign(user, campaign, start_date, end_date):
@@ -423,7 +415,7 @@ def get_goals_performance_campaign(user, campaign, start_date, end_date):
     query_results = stats.api_breakdowns.totals(
         user, constants.Level.CAMPAIGNS, [], stats_constraints, stats_goals)
 
-    return _get_goals_performance_output(stats_goals, query_results)
+    return _get_goals_performance_output(stats_goals, query_results, campaign.account.uses_bcm_v2)
 
 
 def get_goals_performance_ad_group(user, ad_group, start_date, end_date):
@@ -434,16 +426,17 @@ def get_goals_performance_ad_group(user, ad_group, start_date, end_date):
     query_results = stats.api_breakdowns.totals(
         user, constants.Level.AD_GROUPS, [], stats_constraints, stats_goals)
 
-    return _get_goals_performance_output(stats_goals, query_results)
+    return _get_goals_performance_output(stats_goals, query_results, ad_group.campaign.account.uses_bcm_v2)
 
 
-def _get_goals_performance_output(stats_goals, query_results):
+def _get_goals_performance_output(stats_goals, query_results, uses_bcm_v2):
     performance = []
     for campaign_goal in stats_goals.campaign_goals:
         performance.append(_prepare_performance_output(
             campaign_goal,
             query_results,
-            stats_goals.conversion_goals
+            stats_goals.conversion_goals,
+            uses_bcm_v2=uses_bcm_v2
         ))
 
     return performance
@@ -471,8 +464,8 @@ def get_campaign_goal_metrics(campaign, start_date, end_date):
         pre_cg_vals,
         start_date,
         end_date,
-        conversion_goals=None
-    )
+        uses_bcm_v2=campaign.account.uses_bcm_v2,
+        conversion_goals=None)
 
 
 def get_campaign_conversion_goal_metrics(campaign, start_date, end_date, conversion_goals):
@@ -498,8 +491,8 @@ def get_campaign_conversion_goal_metrics(campaign, start_date, end_date, convers
         pre_cg_vals,
         start_date,
         end_date,
-        conversion_goals=conversion_goals
-    )
+        uses_bcm_v2=campaign.account.uses_bcm_v2,
+        conversion_goals=conversion_goals)
 
 
 def eliminate_duplicates(campaign_goal_values):
@@ -518,12 +511,12 @@ def eliminate_duplicates(campaign_goal_values):
     return sorted(ret, key=lambda x: x.created_dt)
 
 
-def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, conversion_goals=None):
+def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, uses_bcm_v2, conversion_goals=None):
     last_cg_vals = {}
     cg_series = {}
     for cg_value in campaign_goal_values:
         cg = cg_value.campaign_goal
-        name = goal_name(cg, conversion_goals)
+        name = goal_name(cg, conversion_goals, uses_bcm_v2=uses_bcm_v2)
         last_cg_vals[name] = cg_value
 
         if not cg_series.get(name):
@@ -535,7 +528,7 @@ def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, con
     # make sure to insert campaign goal value datapoints
     for pre_cg_id, pre_cg_val in pre_cg_vals.iteritems():
         pre_cg = pre_cg_val.campaign_goal
-        pre_name = goal_name(pre_cg, conversion_goals)
+        pre_name = goal_name(pre_cg, conversion_goals, uses_bcm_v2=uses_bcm_v2)
         dp_to_preinsert = campaign_goal_dp(pre_cg_val, override_date=start_date)
         if pre_name not in cg_series:
             # in the case that the goal was set in distant past and never
@@ -558,9 +551,12 @@ def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, con
     return generate_missing(create_line_series(cg_series))
 
 
-def goal_name(goal, conversion_goals=None):
+def goal_name(goal, conversion_goals=None, uses_bcm_v2=False):
     if goal.conversion_goal is None:
         return constants.CampaignGoalKPI.get_text(goal.type)
+    if uses_bcm_v2:
+        return 'avg_etfm_cost_per_{}'.format(goal.conversion_goal.get_view_key(conversion_goals))
+
     return 'avg_cost_per_{}'.format(goal.conversion_goal.get_view_key(conversion_goals))
 
 
@@ -636,24 +632,37 @@ def campaign_goal_dp(campaign_goal_value, override_date=None, override_value=Non
     return (date, value,)
 
 
-def inverted_campaign_goal_map(conversion_goals=None):
+def inverted_campaign_goal_map(conversion_goals, uses_bcm_v2):
     # map from particular fields to goals
     ret = {}
-    for goal, field in CAMPAIGN_GOAL_PRIMARY_METRIC_MAP.iteritems():
+
+    primary_metric_map = get_goal_to_primary_metric_map(uses_bcm_v2)
+
+    for goal_type in primary_metric_map.keys():
+        field = primary_metric_map[goal_type]
         ret[field] = {
-            'id': constants.CampaignGoalKPI.get_text(goal),
-            'name': constants.CampaignGoalKPI.get_text(goal),
+            'id': constants.CampaignGoalKPI.get_text(goal_type),
+            'name': constants.CampaignGoalKPI.get_text(goal_type),
         }
 
     cpa_text = constants.CampaignGoalKPI.get_text(constants.CampaignGoalKPI.CPA)
     for cg in conversion_goals:
         vk = cg.get_view_key(conversion_goals)
 
-        ret['avg_cost_per_{}'.format(vk)] = {
-            'id': 'avg_cost_per_{}'.format(vk),
-            'name': u'{prefix} - {conversion_goal_name}'.format(
-                prefix=cpa_text,
-                conversion_goal_name=cg.name
-            ),
-        }
+        if uses_bcm_v2:
+            field = 'avg_etfm_cost_per_{}'.format(vk)
+            ret[field] = {
+                'id': field,
+                'name': u'{prefix} - {conversion_goal_name}'.format(
+                    prefix=cpa_text,
+                    conversion_goal_name=cg.name),
+            }
+        else:
+            field = 'avg_cost_per_{}'.format(vk)
+            ret[field] = {
+                'id': field,
+                'name': u'{prefix} - {conversion_goal_name}'.format(
+                    prefix=cpa_text,
+                    conversion_goal_name=cg.name),
+            }
     return ret

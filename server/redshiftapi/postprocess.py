@@ -297,7 +297,10 @@ def apply_performance_columns(breakdown, rows, campaign_goals, campaign_goal_val
             else:
                 def metric_value_fn(row, cost_column):
                     # cost_column not used, but this fn should be compatible with the above metric_value_fn
-                    return row.get(dash.campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type])
+                    primary_metric_map = dash.campaign_goals.get_goal_to_primary_metric_map(
+                        campaign_goal.campaign.account.uses_bcm_v2)
+                    metric = primary_metric_map[campaign_goal.type]
+                    return row.get(metric)
 
             campaign_goal_value = map_camp_goal_vals.get(campaign_goal.pk)
 

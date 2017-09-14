@@ -6,6 +6,8 @@ import dash.campaign_goals
 from dash import constants
 from dash.views import helpers
 
+import core.entity
+
 """
 Helper functions that transform breakdown responses into what frontend expects.
 """
@@ -45,15 +47,27 @@ def format_report_rows_performance_fields(rows, goals):
         # then don't add performance info
         return
 
+    uses_bcm_v2_map = dict(core.entity.Campaign.objects.filter(
+        pk__in=campaign_goals_by_campaign_id.keys()).values_list('id', 'account__uses_bcm_v2'))
+
     for campaign_id, campaign_goals in campaign_goals_by_campaign_id.items():
+        uses_bcm_v2 = uses_bcm_v2_map[campaign_id]
+
         primary_goal = next((x for x in goals.primary_goals if x.campaign_id == campaign_id), None)
-        primary_goal_key = 'performance_' + primary_goal.get_view_key() if primary_goal else None
+        primary_goal_key = None
+        performance_prefix = None
+        if primary_goal:
+            if uses_bcm_v2:
+                performance_prefix = 'etfm_performance_'
+            else:
+                performance_prefix = 'performance_'
+            primary_goal_key = performance_prefix + primary_goal.get_view_key()
 
         for row in rows_by_campaign_id[campaign_id] if rows_by_campaign_id else rows:
 
             # user rights for performance were already checked in the stats module
             # here just add additional formatting if keys are present
-            if any(x for x in row.keys() if x.startswith('performance_')):
+            if any(x for x in row.keys() if x.startswith(performance_prefix)):
                 row.update({
                     'performance': {
                         'overall': None,
@@ -68,14 +82,16 @@ def format_report_rows_performance_fields(rows, goals):
                 goals_performances = []
                 for goal in campaign_goals:
                     metric = dash.campaign_goals.get_goal_performance_metric(
-                        goal, conversion_goals_by_campaign_id[campaign_id])
+                        goal, conversion_goals_by_campaign_id[campaign_id], uses_bcm_v2=uses_bcm_v2)
+
                     metric_value = row.get(metric)
 
                     goals_performances.append((
-                        row.get('performance_' + goal.get_view_key()),
+                        row.get(performance_prefix + goal.get_view_key()),
                         metric_value,
                         map_values.get(goal.id) and map_values[goal.id].value,
-                        goal
+                        goal,
+                        uses_bcm_v2
                     ))
 
                 set_row_goal_performance_meta(row, goals_performances, goals.conversion_goals)
@@ -126,7 +142,7 @@ def format_report_rows_content_ad_editable_fields(rows):
 
 
 def set_row_goal_performance_meta(row, goals_performances, conversion_goals):
-    for goal_status, goal_metric, goal_value, goal in goals_performances:
+    for goal_status, goal_metric, goal_value, goal, uses_bcm_v2 in goals_performances:
         performance_item = {
             'emoticon': dash.campaign_goals.STATUS_TO_EMOTICON_MAP.get(goal_status, constants.Emoticon.NEUTRAL),
             'text': dash.campaign_goals.format_campaign_goal(
@@ -143,9 +159,14 @@ def set_row_goal_performance_meta(row, goals_performances, conversion_goals):
 
         row['performance']['list'].append(performance_item)
 
-        colored_column = dash.campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP.get(goal.type)
+        primary_metric_map = dash.campaign_goals.get_goal_to_primary_metric_map(uses_bcm_v2)
+        colored_column = primary_metric_map.get(goal.type)
         if goal.type == constants.CampaignGoalKPI.CPA:
-            colored_column = 'avg_cost_per_' + goal.conversion_goal.get_view_key(conversion_goals)
+            if uses_bcm_v2:
+                colored_column = 'avg_etfm_cost_per_' + goal.conversion_goal.get_view_key(conversion_goals)
+            else:
+                colored_column = 'avg_cost_per_' + goal.conversion_goal.get_view_key(conversion_goals)
+
         if not colored_column:
             continue
 

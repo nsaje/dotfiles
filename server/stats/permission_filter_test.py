@@ -223,7 +223,6 @@ class FilterTestCase(TestCase):
 
         self.assertItemsEqual(set(rows[0].keys()) - self.public_fields, [
             'performance_campaign_goal_1', 'performance_campaign_goal_2',
-            'et_performance_campaign_goal_1', 'et_performance_campaign_goal_2',
             'performance', 'styles',
         ])
 

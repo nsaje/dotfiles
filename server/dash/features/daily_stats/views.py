@@ -146,8 +146,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
         can_see_campaign_goals = user.has_perm('zemauth.campaign_goal_performance')
         if campaign is not None and can_see_campaign_goals:
             result['goal_fields'] = campaign_goals.inverted_campaign_goal_map(
-                conversion_goals
-            )
+                conversion_goals, uses_bcm_v2=campaign.account.uses_bcm_v2)
 
             result['campaign_goals'] = dict(
                 campaign_goals.get_campaign_goal_metrics(

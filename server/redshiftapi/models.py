@@ -413,7 +413,9 @@ class MVJointMaster(MVMaster):
                 conversion_key = conversion_goal.get_view_key(conversion_goals)
                 column_group = AFTER_JOIN_AGGREGATES
             else:
-                metric_column = dash.campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type]
+                primary_metric_map = dash.campaign_goals.get_goal_to_primary_metric_map(
+                    campaign_goal.campaign.account.uses_bcm_v2)
+                metric_column = primary_metric_map[campaign_goal.type]
                 column_group = AFTER_JOIN_AGGREGATES
 
             is_cost_dependent = campaign_goal.type in dash.campaign_goals.COST_DEPENDANT_GOALS
@@ -437,16 +439,6 @@ class MVJointMaster(MVMaster):
                 'metric_val_decimal_places': dash.campaign_goals.NR_DECIMALS[campaign_goal.type]
             }, alias='performance_' + campaign_goal.get_view_key(), group=column_group))
 
-            self.add_column(backtosql.TemplateColumn('part_performance.sql', {
-                'is_cost_dependent': is_cost_dependent,
-                'is_inverse_performance': is_inverse_performance,
-                'has_conversion_key': conversion_key is not None,
-                'conversion_key': conversion_key or '0',
-                'planned_value': planned_value,
-                'metric_column': metric_column or '-1',
-                'cost_column': 'et_cost',
-                'metric_val_decimal_places': dash.campaign_goals.NR_DECIMALS[campaign_goal.type]
-            }, alias='et_performance_' + campaign_goal.get_view_key(), group=column_group))
             self.add_column(backtosql.TemplateColumn('part_performance.sql', {
                 'is_cost_dependent': is_cost_dependent,
                 'is_inverse_performance': is_inverse_performance,

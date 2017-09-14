@@ -154,7 +154,7 @@ def get_goals(constraints, breakdown):
         campaign = constraints['allowed_campaigns'][0]
         conversion_goals = campaign.conversiongoal_set.all().select_related('pixel')
         campaign_goals = campaign.campaigngoal_set.all().order_by('-primary', 'created_dt').select_related(
-            'conversion_goal', 'conversion_goal__pixel')
+            'conversion_goal', 'conversion_goal__pixel', 'campaign', 'campaign__account')
         primary_goals = [campaign_goals.first()]
         campaign_goal_values = dash.campaign_goals.get_campaign_goal_values(campaign)
         pixels = campaign.account.conversionpixel_set.filter(archived=False)
@@ -171,7 +171,9 @@ def get_goals(constraints, breakdown):
 
             campaign_goals = dash.models.CampaignGoal.objects.filter(campaign__in=allowed_campaigns)\
                                                              .order_by('-primary', 'created_dt')\
-                                                             .select_related('conversion_goal', 'conversion_goal__pixel')
+                                                             .select_related(
+                                                                 'conversion_goal', 'conversion_goal__pixel',
+                                                                 'campaign', 'campaign__account')
 
             primary_goals_by_campaign = {}
             for cg in campaign_goals:

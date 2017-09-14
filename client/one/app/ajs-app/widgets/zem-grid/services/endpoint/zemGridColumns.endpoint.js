@@ -155,19 +155,6 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             shown: 'zemauth.campaign_goal_performance',
             costMode: constants.costMode.LEGACY
         },
-        etPerformance: {
-            nameCssClass: 'performance-icon',
-            field: 'et_performance',
-            type: zemGridConstants.gridColumnTypes.PERFORMANCE_INDICATOR,
-            totalRow: false,
-            help: 'Goal performance indicator (based on platform cost)',
-            order: true,
-            initialOrder: zemGridConstants.gridColumnOrder.ASC,
-            internal: 'zemauth.campaign_goal_performance',
-            shown: false,  // disable until the costMode switcher is implemented
-            costMode: constants.costMode.PLATFORM,
-            fieldGroup: 'performance'
-        },
         etfmPerformance: {
             nameCssClass: 'performance-icon',
             field: 'etfm_performance',
@@ -178,7 +165,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             initialOrder: zemGridConstants.gridColumnOrder.ASC,
             internal: 'zemauth.campaign_goal_performance',
             shown: ['zemauth.campaign_goal_performance', 'zemauth.can_view_end_user_cost_breakdown'],
-            costMode: constants.costMode.PUBLIC,
+            costMode: constants.costMode.ANY,
             fieldGroup: 'performance'
         },
 
@@ -1548,7 +1535,6 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         COLUMNS.status,
         COLUMNS.submissionStatus,
         COLUMNS.performance,
-        COLUMNS.etPerformance,
         COLUMNS.etfmPerformance,
         COLUMNS.bidCpcSetting,
         COLUMNS.dailyBudgetSetting,
