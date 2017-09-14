@@ -52,7 +52,7 @@ def reprocess_missing_articles():
     reprocess.invoke_lambdas(missing_keys)
 
 
-def check_pacific_midnight_and_stop_ads():
+def check_pacific_2am_and_stop_ads():
     if not _is_pacific_hour(2):
         return
 

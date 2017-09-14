@@ -11,7 +11,7 @@ class Command(ExceptionCommand):
 
     def handle(self, *args, **options):
         try:
-            actions.check_pacific_midnight_and_stop_ads()
+            actions.check_pacific_2am_and_stop_ads()
             actions.check_time_and_create_new_ad_groups()
             actions.check_date_and_stop_old_ad_groups()
             actions.check_local_midnight_and_recalculate_daily_budgets()
