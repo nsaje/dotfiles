@@ -26,7 +26,7 @@
     </div>
     <div class="message message--error" ng-repeat="error in $ctrl.errors.targetDevices">{{ error }}</div>
     <!-- TODO: Message should only be display if selected device is Tablet -->
-    <div class="message message--info message--with-icon">Yahoo, Facebook and Instagram don't support Tablet option.</div>
+    <div class="message message--info message--with-icon">Yahoo doesn't support Tablet option.</div>
 
 
     <div ng-if="$ctrl.hasPermission('zemauth.can_set_advanced_device_targeting')" is-internal="zemauth.can_set_advanced_device_targeting">
@@ -46,7 +46,7 @@
                 ></zem-placement-device-targeting-settings>
             </div>
             <!-- TODO: Message should only be display if those Media sources are selected -->
-            <div class="message message--info message--with-icon">Outbrain, Yahoo, Facebook and Instagram don't support Advanced device targeting options.</div>
+            <div class="message message--info message--with-icon">Outbrain and Yahoo don't support Advanced device targeting options.</div>
         </div>
 
         <a href=""
