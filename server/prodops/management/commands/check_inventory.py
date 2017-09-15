@@ -40,7 +40,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         query = (
             "SELECT exchange{breakdown}, SUM(bid_reqs){monthly} AS impressions FROM supply_stats "
             "WHERE date >= '{sdate}' AND date <= '{edate}' AND blacklisted = {bl}{pubs}{where} "
-            "GROUP BY exchange{breakdown} ORDER BY impressions"
+            "GROUP BY exchange{breakdown} ORDER BY impressions DESC"
         ).format(
             monthly='/{}'.format(float(options['days'])) if options.get('monthly') else '',
             sdate=start_date,
