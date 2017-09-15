@@ -126,7 +126,7 @@ services:
           traefik.enable: "false"
         cpu_quota: 50000
         entrypoint: ""
-        command: "celery worker -A server -c 15 -Q z1-upload-lambda -l INFO -f /app/logs/eins_celery_upload_lambda.log --prefetch-multiplier 0 -P gevent"
+        command: "celery worker -A server -c 50 -Q z1-upload-lambda -l INFO -f /app/logs/eins_celery_upload_lambda.log --prefetch-multiplier 0 -P gevent"
 
     einsworker_convapi:
         extends: eins
