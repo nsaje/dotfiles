@@ -297,7 +297,8 @@ class AgencyAccountInline(admin.TabularInline):
         'groups',
         'created_dt',
         'modified_dt',
-        'modified_by'
+        'modified_by',
+        'uses_bcm_v2',
     )
 
     ordering = ('-created_dt',)
@@ -454,9 +455,17 @@ class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         'modified_dt',
         'salesforce_url',
     )
-    readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
+    readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'uses_bcm_v2')
     exclude = ('users', 'groups')
     inlines = (AccountUserInline, AccountGroupInline, CampaignInline)
+
+    @transaction.atomic
+    def migrate_to_bcm_v2(self, request, queryset):
+        for account in queryset:
+            account.migrate_to_bcm_v2(request)
+    migrate_to_bcm_v2.short_description = 'Migrate selected accounts to use new margins and fees'
+
+    actions = [migrate_to_bcm_v2]
 
     def save_formset(self, request, form, formset, change):
         if formset.model == models.Campaign:

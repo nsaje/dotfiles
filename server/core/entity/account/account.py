@@ -14,6 +14,7 @@ from utils import json_helper
 import core.bcm
 import core.common
 import core.history
+import core.entity
 import core.entity.helpers
 
 
@@ -200,6 +201,16 @@ class Account(models.Model):
     def set_uses_bcm_v2(self, request, enabled):
         self.uses_bcm_v2 = bool(enabled)
         self.save(request)
+
+    @transaction.atomic
+    def migrate_to_bcm_v2(self, request):
+        if self.uses_bcm_v2:
+            return
+
+        for ad_group in core.entity.AdGroup.objects.filter(campaign__account_id=self.id):
+            ad_group.migrate_to_bcm_v2(request)
+
+        self.set_uses_bcm_v2(request, True)
 
     def save(self, request, *args, **kwargs):
         if request and not request.user.is_anonymous():

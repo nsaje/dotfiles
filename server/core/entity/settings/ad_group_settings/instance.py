@@ -47,7 +47,7 @@ class AdGroupSettingsMixin(object):
         )
 
     @transaction.atomic
-    def update(self, request, **kwargs):
+    def update(self, request, skip_validation=False, **kwargs):
         import dash.views.helpers
         from automation import autopilot_plus
         ad_group = self.ad_group
@@ -71,7 +71,8 @@ class AdGroupSettingsMixin(object):
 
         campaign_settings = ad_group.campaign.get_current_settings()
 
-        self.clean(request, ad_group, current_settings, new_settings, campaign_settings)
+        if not skip_validation:
+            self.clean(request, ad_group, current_settings, new_settings, campaign_settings)
 
         changes = current_settings.get_setting_changes(new_settings)
         changes, current_settings, new_settings = self._b1_sources_group_adjustments(
@@ -178,7 +179,7 @@ class AdGroupSettingsMixin(object):
 
         if 'autopilot_state' in kwargs and not new_settings.landing_mode:
             new_settings.autopilot_state = kwargs['autopilot_state']
-        if new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+        if 'autopilot_daily_budget' in kwargs:
             new_settings.autopilot_daily_budget = kwargs['autopilot_daily_budget']
 
         if 'b1_sources_group_cpc_cc' in kwargs and new_settings.b1_sources_group_enabled:

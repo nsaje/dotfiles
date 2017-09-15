@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import jsonfield
 import logging
+
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
@@ -8,6 +9,7 @@ from django.db import models, transaction
 
 from dash import constants, retargeting_helper
 
+import core.bcm
 import core.common
 import core.entity
 import core.history
@@ -16,6 +18,7 @@ import core.source
 import utils.email_helper
 import utils.exc
 import utils.k1_helper
+import utils.numbers
 
 import validation
 
@@ -197,7 +200,9 @@ class AdGroupSource(models.Model):
                     'id', flat=True))
 
     @transaction.atomic
-    def update(self, request=None, k1_sync=True, system_user=None, skip_automation=False, skip_validation=False, **updates):
+    def update(self, request=None, k1_sync=True, system_user=None,
+               skip_automation=False, skip_validation=False, skip_notification=False,
+               **updates):
         result = {
             'autopilot_changed_sources_text': '',
         }
@@ -247,7 +252,8 @@ class AdGroupSource(models.Model):
                 [s.source.name if s != constants.SourceAllRTB else constants.SourceAllRTB.NAME
                     for s in changed_sources])
 
-        self._notify_ad_group_source_settings_changed(request, changes, latest_settings)
+        if not skip_notification:
+            self._notify_ad_group_source_settings_changed(request, changes, latest_settings)
 
         if k1_sync:
             utils.k1_helper.update_ad_group(self.ad_group.pk, 'AdGroupSource.update')
@@ -355,6 +361,38 @@ class AdGroupSource(models.Model):
                 .latest('created_dt')
         except ObjectDoesNotExist:
             return None
+
+    def migrate_to_bcm_v2(self, request, fee, margin):
+        current_settings = self.get_current_settings()
+        changes = {
+            'daily_budget_cc': self._transform_daily_budget_cc(current_settings.daily_budget_cc, fee, margin),
+            'cpc_cc': self._transform_cpc_cc(current_settings.cpc_cc, fee, margin),
+        }
+
+        self.update(
+            request=request,
+            k1_sync=False,
+            skip_automation=True,
+            skip_validation=True,
+            skip_notification=True,
+            **changes
+        )
+
+    def _transform_daily_budget_cc(self, daily_budget_cc, fee, margin):
+        if not daily_budget_cc:
+            return
+        new_daily_budget_cc = core.bcm.calculations.apply_fee_and_margin(
+            daily_budget_cc, fee, margin
+        )
+        return utils.numbers.round_decimal_floor(new_daily_budget_cc)
+
+    def _transform_cpc_cc(self, cpc_cc, fee, margin):
+        if not cpc_cc:
+            return
+        new_cpc_cc = core.bcm.calculations.apply_fee_and_margin(
+            cpc_cc, fee, margin
+        )
+        return utils.numbers.round_decimal_half_down(new_cpc_cc, places=4)
 
     def save(self, request=None, *args, **kwargs):
         super(AdGroupSource, self).save(*args, **kwargs)

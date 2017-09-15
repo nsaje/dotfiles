@@ -363,3 +363,31 @@ class AdGroupSourceUpdate(TestCase):
             self.ad_group_source.update(state=constants.AdGroupSourceSettingsState.ACTIVE)
 
         self.ad_group_source.update(state=constants.AdGroupSourceSettingsState.INACTIVE)
+
+
+class MigrateToBcmV2Test(TestCase):
+
+    def test_migrate_to_bcm_v2(self):
+        account = magic_mixer.blend(core.entity.Account, uses_bcm_v2=False)
+        campaign = magic_mixer.blend(core.entity.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=campaign)
+        ad_group_source = magic_mixer.blend(core.entity.AdGroupSource, ad_group=ad_group)
+
+        request = magic_mixer.blend_request_user()
+        ad_group_source.update(
+            request=request,
+            k1_sync=False,
+            system_user=None,
+            skip_automation=True,
+            skip_validation=True,
+            skip_notification=True,
+            daily_budget_cc=decimal.Decimal('10'),
+            cpc_cc=decimal.Decimal('0.32'),
+        )
+
+        request = magic_mixer.blend_request_user(permissions=['can_set_ad_group_max_cpm'])
+        ad_group_source.migrate_to_bcm_v2(request, decimal.Decimal('0.2'), decimal.Decimal('0.1'))
+
+        ad_group_source_settings = ad_group_source.get_current_settings()
+        self.assertEqual(13, ad_group_source_settings.daily_budget_cc)
+        self.assertEqual(decimal.Decimal('0.4444'), ad_group_source_settings.cpc_cc)
