@@ -24,10 +24,10 @@ function banner {
   green "${PROGRAM} check successful"
 }
 
-DIFF=$(docker run --rm \
+DIFF=docker run --rm \
     -v $PWD:/src \
     --workdir=/src/ \
-    --entrypoint=sh py-tools "pip-compile server/requirements.in | diff server/requirements.txt -")
+    --entrypoint=sh py-tools "pip-compile server/requirements.in | diff server/requirements.txt -"
 if [ "$DIFF" != "" ]; then
     banner 1 "requirements.in"
 fi
