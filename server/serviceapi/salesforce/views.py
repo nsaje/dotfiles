@@ -6,7 +6,7 @@ from rest_framework.serializers import ValidationError
 from .. import base, authentication
 from . import serializers, service
 
-SERVICE_NAME = 'salesforce-test'
+SERVICE_NAME = 'salesforce'
 
 
 class CreateClientView(base.ServiceAPIBaseView):
@@ -58,7 +58,7 @@ class CreateCreditLineView(base.ServiceAPIBaseView):
         influx.incr('create_credit', 1, status='ok')
         return self.response_ok({
             'z1_cli_id': cli.pk,
-            'z1_data': cli.get_settings_dict()
+            'z1_data': cli.get_settings_dict() # TODO: status to text
         })
 
 
