@@ -32,12 +32,16 @@ def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, cam
     else:
         bandit = BetaBandit(active_sources_with_spend, backup_sources=active_sources)
         min_value_of_optimization_goal, max_value_of_optimization_goal = _get_min_max_values_of_optimization_goal(
-            data.values(), campaign_goal)
+            data.values(), campaign_goal, ad_group.campaign.account.uses_bcm_v2)
         # Train bandit
         for s in active_sources_with_spend:
             for i in range(5):
-                bandit.add_result(s, predict_outcome_success(
-                    s, data[s], campaign_goal, min_value_of_optimization_goal, max_value_of_optimization_goal))
+                bandit.add_result(
+                    s, predict_outcome_success(
+                        s, data[s], campaign_goal,
+                        min_value_of_optimization_goal, max_value_of_optimization_goal,
+                        uses_bcm_v2=ad_group.campaign.account.uses_bcm_v2,
+                    ))
 
         # Redistribute budgets
         while budget_left >= 1:
@@ -53,8 +57,14 @@ def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, cam
             if not s:
                 break
             new_budgets[s] += Decimal(1)
-            bandit.add_result(s, predict_outcome_success(s, data[s], campaign_goal, min_value_of_optimization_goal,
-                                                         max_value_of_optimization_goal, new_budget=new_budgets[s]))
+            bandit.add_result(
+                s,
+                predict_outcome_success(
+                    s, data[s], campaign_goal, min_value_of_optimization_goal,
+                    max_value_of_optimization_goal, new_budget=new_budgets[s],
+                    uses_bcm_v2=ad_group.campaign.account.uses_bcm_v2,
+                )
+            )
             max_budget = s.source.source_type.max_daily_budget if s != dash.constants.SourceAllRTB else\
                 dash.constants.SourceAllRTB.MAX_DAILY_BUDGET
             if new_budgets[s] >= max_budget:
@@ -70,11 +80,12 @@ def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, cam
             for s in active_sources}
 
 
-def _get_min_max_values_of_optimization_goal(data, campaign_goal):
+def _get_min_max_values_of_optimization_goal(data, campaign_goal, uses_bcm_v2):
     max_value = 0.0
     min_value = float("inf")
     if campaign_goal:
-        col = autopilot_helpers.get_campaign_goal_column(campaign_goal)
+        col = autopilot_helpers.get_campaign_goal_column(
+            campaign_goal, uses_bcm_v2=uses_bcm_v2)
         for row in data:
             current = row[col]
             if current:
@@ -165,14 +176,19 @@ def _get_minimum_autopilot_budget_constraints(data):
 
 
 def predict_outcome_success(source, data, campaign_goal, min_value_of_campaign_goal,
-                            max_value_of_campaign_goal, new_budget=None):
+                            max_value_of_campaign_goal, new_budget=None, uses_bcm_v2=False):
     spend_perc = data.get('spend_perc') if not new_budget else\
         data.get('yesterdays_spend_cc') / max(new_budget, autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET)
 
     if not campaign_goal:
         return spend_perc > random()
 
-    data_value = data.get(autopilot_helpers.get_campaign_goal_column(campaign_goal))
+    data_value = data.get(
+        autopilot_helpers.get_campaign_goal_column(
+            campaign_goal,
+            uses_bcm_v2,
+        )
+    )
     goal_value = 0.0
     if data_value:
         goal_value = _get_campaign_goal_value(campaign_goal.type, data_value,

@@ -192,10 +192,10 @@ class AutopilotPlusTestCase(test.TestCase):
             {'ad_group_id': 2, 'source_id': 1, 'rand': 2}
         )
         yesterday_data = (
-            {'ad_group_id': 1, 'source_id': 1, 'media_cost': 1, 'clicks': 1, 'data_cost': 0},
-            {'ad_group_id': 1, 'source_id': 2, 'media_cost': 0, 'clicks': 0, 'data_cost': 0},
-            {'ad_group_id': 2, 'source_id': 2, 'media_cost': 0, 'clicks': 0, 'data_cost': 0},
-            {'ad_group_id': 2, 'source_id': 1, 'media_cost': 2, 'clicks': 2, 'data_cost': 0}
+            {'ad_group_id': 1, 'source_id': 1, 'et_cost': 1, 'clicks': 1, 'etfm_cost': 1},
+            {'ad_group_id': 1, 'source_id': 2, 'et_cost': 0, 'clicks': 0, 'etfm_cost': 0},
+            {'ad_group_id': 2, 'source_id': 2, 'et_cost': 0, 'clicks': 0, 'etfm_cost': 0},
+            {'ad_group_id': 2, 'source_id': 1, 'et_cost': 2, 'clicks': 2, 'etfm_cost': 2}
         )
         self.assertEqual(autopilot_plus._find_corresponding_source_data(source1, days_ago_data, yesterday_data),
                          (days_ago_data[0], 1, 1))
@@ -290,9 +290,9 @@ class AutopilotPlusTestCase(test.TestCase):
     @patch('influx.gauge')
     def test_report_adgroups_data_to_influx(self, mock_influx, mock_query):
         mock_query.return_value = [
-            {'ad_group_id': 1, 'media_cost': Decimal('15'), 'data_cost': 0},
-            {'ad_group_id': 3, 'media_cost': Decimal('10'), 'data_cost': 0},
-            {'ad_group_id': 4, 'media_cost': Decimal('20'), 'data_cost': 0}]
+            {'ad_group_id': 1, 'et_cost': Decimal('15'), 'etfm_cost': Decimal('15')},
+            {'ad_group_id': 3, 'et_cost': Decimal('10'), 'etfm_cost': Decimal('10')},
+            {'ad_group_id': 4, 'et_cost': Decimal('20'), 'etfm_cost': Decimal('20')}]
 
         adgroups = dash.models.AdGroup.objects.filter(id__in=[1, 2, 3, 4])
         autopilot_plus._report_adgroups_data_to_influx([adg.get_current_settings() for adg in adgroups])

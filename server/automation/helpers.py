@@ -32,10 +32,16 @@ def get_available_budgets(campaigns):
 
 def _get_total_available_budget(campaign, date=None):
     date = date or utils.dates_helper.local_today()
-    return sum(
-        budget.get_available_amount(date) for budget in campaign.budgets.all()
-        if budget.state() == dash.constants.BudgetLineItemState.ACTIVE
-    )
+    if campaign.account.uses_bcm_v2:
+        return sum(
+            budget.get_available_etfm_amount(date) for budget in campaign.budgets.all()
+            if budget.state() == dash.constants.BudgetLineItemState.ACTIVE
+        )
+    else:
+        return sum(
+            budget.get_available_amount(date) for budget in campaign.budgets.all()
+            if budget.state() == dash.constants.BudgetLineItemState.ACTIVE
+        )
 
 
 def _get_total_campaign_spend(campaign, date=None):

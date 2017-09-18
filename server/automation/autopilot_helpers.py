@@ -50,7 +50,8 @@ def get_autopilot_active_sources_settings(ad_groups_and_settings,
                                           ad_group_setting_state=dash.constants.AdGroupSettingsState.ACTIVE):
     ag_sources = dash.views.helpers.get_active_ad_group_sources(dash.models.AdGroup, ad_groups_and_settings.keys())
     ag_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source_id__in=ag_sources).\
-        group_current_settings().select_related('ad_group_source__source__source_type', 'ad_group_source__ad_group')
+        group_current_settings().select_related(
+            'ad_group_source__source__source_type', 'ad_group_source__ad_group__campaign__account')
 
     if not ad_group_setting_state:
         return ag_sources_settings
@@ -134,12 +135,17 @@ def get_ad_group_sources_minimum_daily_budget(ad_group_source,
     return max(autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET, source_min_daily_budget)
 
 
-def get_campaign_goal_column(campaign_goal):
-    return autopilot_settings.GOALS_COLUMNS.get(campaign_goal.type).get('col')[0] if campaign_goal else None
+def get_campaign_goal_column(campaign_goal, uses_bcm_v2=False):
+    if campaign_goal:
+        column_definition = autopilot_settings.GOALS_COLUMNS[campaign_goal.type]
+        if uses_bcm_v2 and 'col_bcm_v2' in column_definition:
+            return column_definition['col_bcm_v2']
+        return column_definition['col']
 
 
 def get_campaign_goal_column_importance(campaign_goal):
-    return autopilot_settings.GOALS_COLUMNS.get(campaign_goal.type).get('col')[1] if campaign_goal else None
+    if campaign_goal:
+        return autopilot_settings.GOALS_COLUMNS[campaign_goal.type]['importance']
 
 
 def send_autopilot_changes_emails(email_changes_data, data, initialization):
