@@ -241,7 +241,7 @@ def prefetch_autopilot_data(ad_groups_and_settings):
         campaign_goal_data = campaign_goals.get(adg.campaign)
         goal_col, goal_optimal = None, None
         if campaign_goal_data:
-            goal_col, goal_optimal = autopilot_helpers.get_campaign_goal_column(
+            goal_col = autopilot_helpers.get_campaign_goal_column(
                 campaign_goal_data['goal'],
                 adg.campaign.account.uses_bcm_v2,
             )
