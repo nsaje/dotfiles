@@ -97,7 +97,7 @@ class ContentAd(models.Model, prodops_mixin.ProdopsMixin):
     label = models.CharField(max_length=100, default='')
     url = models.CharField(max_length=2048, editable=False)
     title = models.CharField(max_length=256, editable=False)
-    display_url = models.CharField(max_length=25, blank=True, default='')
+    display_url = models.CharField(max_length=35, blank=True, default='')
     brand_name = models.CharField(max_length=25, blank=True, default='')
     description = models.CharField(max_length=140, blank=True, default='')
     call_to_action = models.CharField(max_length=25, blank=True, default='')

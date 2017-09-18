@@ -555,7 +555,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                 '__all__': [u'Content ad still processing'],
                 'title': [u'Missing title'],
                 'url': [u'Invalid URL'],
-                'display_url': [u'Display URL too long (max 25 characters)'],
+                'display_url': [u'Display URL too long (max 35 characters)'],
                 'label': [u'Label too long (max 100 characters)'],
                 'image_url': [u'Invalid image URL'],
                 'brand_name': [u'Missing brand name'],

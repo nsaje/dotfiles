@@ -1377,11 +1377,11 @@ class ContentAdFormTestCase(TestCase):
 
     def test_display_url_too_long(self):
         data = self._get_valid_data()
-        data['display_url'] = 'repeat' * 4 + '.com'
+        data['display_url'] = 'repeat' * 8 + '.com'
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'display_url': ['Display URL too long (max 25 characters)']
+            'display_url': ['Display URL too long (max 35 characters)']
         }, f.errors)
 
     def test_display_url_invalid(self):

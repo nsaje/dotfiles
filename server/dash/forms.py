@@ -896,7 +896,7 @@ class UserForm(forms.Form):
     )
 
 
-DISPLAY_URL_MAX_LENGTH = 25
+DISPLAY_URL_MAX_LENGTH = 35
 MANDATORY_CSV_FIELDS = ['url', 'title', 'image_url']
 OPTIONAL_CSV_FIELDS = ['display_url', 'brand_name', 'description', 'call_to_action', 'label', 'image_crop',
                        'primary_tracker_url', 'secondary_tracker_url']
