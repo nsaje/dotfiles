@@ -754,7 +754,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_view_platform_cost_breakdown',
             shown: 'zemauth.can_view_platform_cost_breakdown',
-            costMode: constants.costMode.ANY
+            costMode: constants.costMode.PLATFORM,
+            fieldGroup: 'yesterday_cost'
         },
         yesterdayEtfmCost: {
             name: 'Yesterday Spend',
@@ -766,7 +767,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_view_end_user_cost_breakdown',
             shown: 'zemauth.can_view_end_user_cost_breakdown',
-            costMode: constants.costMode.ANY
+            costMode: constants.costMode.PUBLIC,
+            fieldGroup: 'yesterday_cost'
         },
 
         // Traffic metrics
@@ -2085,73 +2087,61 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
                 conversionsCol.field = conversionsField;
                 conversionsCol.shown = true;
 
-                var cpaName = 'CPA (' + name + ')';
                 var cpaField = AVG_COST_PREFIX + conversionsField;
                 var cpaCol = angular.copy(COLUMNS.conversionCpa);
-                cpaCol.name = cpaName;
+                cpaCol.name = 'CPA (' + name + ')';
                 cpaCol.field = cpaField;
                 cpaCol.shown = true;
                 cpaCol.autoSelect = conversionsField;
                 cpaCol.goal = true;
                 cpaCol.costMode = constants.costMode.LEGACY;
 
-                var etCpaName = 'Platform CPA (' + name + ')';
-                var etCpaField = AVG_ET_COST_PREFIX + conversionsField;
                 var etCpaCol = angular.copy(COLUMNS.conversionCpa);
-                var cpaFieldGroup = AVG_COST_PREFIX + conversionsField;
-                etCpaCol.name = etCpaName;
-                etCpaCol.field = etCpaField;
+                etCpaCol.name = 'Platform CPA (' + name + ')';
+                etCpaCol.field = AVG_ET_COST_PREFIX + conversionsField;
                 etCpaCol.autoSelect = conversionsField;
                 etCpaCol.goal = true;
                 etCpaCol.costMode = constants.costMode.PLATFORM;
                 etCpaCol.internal = 'zemauth.can_view_platform_cost_breakdown';
                 etCpaCol.shown = 'zemauth.can_view_platform_cost_breakdown';
-                etCpaCol.fieldGroup = cpaFieldGroup;
+                etCpaCol.fieldGroup = cpaField;
 
-                var etfmCpaName = 'CPA (' + name + ')';
-                var etfmCpaField = AVG_ETFM_COST_PREFIX + conversionsField;
                 var etfmCpaCol = angular.copy(COLUMNS.conversionCpa);
-                etfmCpaCol.name = etfmCpaName;
-                etfmCpaCol.field = etfmCpaField;
+                etfmCpaCol.name = 'CPA (' + name + ')';
+                etfmCpaCol.field = AVG_ETFM_COST_PREFIX + conversionsField;
                 etfmCpaCol.autoSelect = conversionsField;
                 etfmCpaCol.goal = true;
                 etfmCpaCol.internal = 'zemauth.can_view_end_user_cost_breakdown';
                 etfmCpaCol.shown = 'zemauth.can_view_end_user_cost_breakdown';
                 etfmCpaCol.costMode = constants.costMode.PUBLIC;
-                etfmCpaCol.fieldGroup = cpaFieldGroup;
+                etfmCpaCol.fieldGroup = cpaField;
 
-                var roasName = 'ROAS (' + name + ')';
                 var roasField = ROAS_PREFIX + conversionsField;
                 var roasCol = angular.copy(COLUMNS.conversionRoas);
-                roasCol.name = roasName;
+                roasCol.name = 'ROAS (' + name + ')';
                 roasCol.field = roasField;
                 roasCol.autoSelect = conversionsField;
                 roasCol.internal = 'zemauth.fea_can_see_roas';
                 roasCol.shown = 'zemauth.fea_can_see_roas';
                 roasCol.costMode = constants.costMode.LEGACY;
 
-                var etRoasName = 'Platform ROAS (' + name + ')';
-                var etRoasField = ROAS_PREFIX + conversionsField;
                 var etRoasCol = angular.copy(COLUMNS.conversionRoas);
-                var roasFieldGroup = ROAS_PREFIX + conversionsField;
-                etRoasCol.name = etRoasName;
-                etRoasCol.field = etRoasField;
+                etRoasCol.name = 'Platform ROAS (' + name + ')';
+                etRoasCol.field = ROAS_PREFIX + conversionsField;
                 etRoasCol.autoSelect = conversionsField;
                 roasCol.internal = 'zemauth.fea_can_see_roas';
                 roasCol.shown = ['zemauth.fea_can_see_roas', 'zemauth.can_view_platform_cost_breakdown'];
                 etRoasCol.costMode = constants.costMode.PLATFORM;
-                etRoasCol.fieldGroup = roasFieldGroup;
+                etRoasCol.fieldGroup = roasField;
 
-                var etfmRoasName = 'ROAS (' + name + ')';
-                var etfmRoasField = ETFM_ROAS_PREFIX + conversionsField;
                 var etfmRoasCol = angular.copy(COLUMNS.conversionRoas);
-                etfmRoasCol.name = etfmRoasName;
-                etfmRoasCol.field = etfmRoasField;
+                etfmRoasCol.name = 'ROAS (' + name + ')';
+                etfmRoasCol.field = ETFM_ROAS_PREFIX + conversionsField;
                 etfmRoasCol.autoSelect = conversionsField;
                 roasCol.internal = 'zemauth.fea_can_see_roas';
                 roasCol.shown = ['zemauth.fea_can_see_roas', 'zemauth.can_view_end_user_cost_breakdown'];
                 etfmRoasCol.costMode = constants.costMode.PUBLIC;
-                etfmRoasCol.fieldGroup = roasFieldGroup;
+                etfmRoasCol.fieldGroup = roasField;
 
                 subcategory.fields.push(conversionsField);
                 orderedColumns.push(conversionsCol);

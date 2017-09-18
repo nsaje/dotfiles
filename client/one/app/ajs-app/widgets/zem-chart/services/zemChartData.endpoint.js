@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemChartEndpoint', function ($q, $http, zemUtils, zemPermissions, zemChartMetricsService) { // eslint-disable-line max-len
+angular.module('one.widgets').service('zemChartEndpoint', function ($q, $http, zemUtils, zemPermissions, zemChartMetricsService, zemChartMetaDataService) { // eslint-disable-line max-len
 
     function EndpointService (metaData) {
         this.getMetaData = getMetaData;
@@ -36,8 +36,7 @@ angular.module('one.widgets').service('zemChartEndpoint', function ($q, $http, z
                                 chartData.groups.shift();
                             }
                         }
-                        zemChartMetricsService.insertDynamicMetrics(
-                            metaData.metrics, data.pixels, data.conversion_goals);
+                        metaData.insertDynamicMetrics(metaData.metrics, data.pixels, data.conversion_goals);
                     }
                     deferred.resolve({
                         chartData: chartData,
@@ -103,13 +102,8 @@ angular.module('one.widgets').service('zemChartEndpoint', function ($q, $http, z
     }
 
     function createMetaData (level, id, breakdown) {
-        return {
-            id: id,
-            level: level,
-            breakdown: breakdown,
-            url: getUrl(level, id, breakdown),
-            metrics: zemChartMetricsService.getChartMetrics(level),
-        };
+        var url = getUrl(level, id, breakdown);
+        return zemChartMetaDataService.createInstance(level, id, breakdown, url);
     }
 
 

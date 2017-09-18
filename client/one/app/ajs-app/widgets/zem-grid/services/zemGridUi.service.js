@@ -19,6 +19,8 @@ angular.module('one.widgets').factory('zemGridUIService', function ($timeout, $s
         var gridWidth = 0;
         var columnWidths = [];
         headerCells.each(function (i) {
+            if (!grid.header.visibleColumns[i]) return;
+
             // Retrieve properties that affects column width
             var font = window.getComputedStyle(headerCells[i], null).getPropertyValue('font');
             var padding = window.getComputedStyle(headerCells[i], null).getPropertyValue('padding-left');

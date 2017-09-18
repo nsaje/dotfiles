@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemGridColumnSelector', {
         api: '=',
     },
     template: require('./zemGridColumnSelector.component.html'),
-    controller: function () {
+    controller: function ($element, zemCostModeService) {
         var MSG_DISABLED_COLUMN = 'Column is available when coresponding breakdown is visible.';
 
         var $ctrl = this;
@@ -11,19 +11,40 @@ angular.module('one.widgets').component('zemGridColumnSelector', {
         $ctrl.categories = [];
         $ctrl.getTooltip = getTooltip;
         $ctrl.columnChecked = columnChecked;
+        $ctrl.onDropdownToggle = onDropdownToggle;
+
+        $ctrl.isCostModeToggleAllowed = zemCostModeService.isToggleAllowed;
+        $ctrl.toggleCostMode = zemCostModeService.toggleCostMode;
 
         $ctrl.$onInit = function () {
             initializeCategories();
             $ctrl.api.onColumnsUpdated(null, initializeCategories);
         };
 
+        function onDropdownToggle () {
+            var scrollContainer = $($element.find('.dropdown-menu__container')[0]),
+                switcher = $element.find('#cost-mode-switcher');
+
+            if (switcher.length > 0 && scrollContainer.scrollTop() === 0) {
+                switcher = $(switcher[0]);
+                var bottom = switcher.outerHeight(true);
+                scrollContainer.scrollTop(bottom);
+            }
+        }
+
         function columnChecked (column) {
             $ctrl.api.setVisibleColumns(column, column.visible);
 
             var columns = $ctrl.api.getColumns();
+            var costMode = zemCostModeService.getCostMode();
+
             columns.forEach(function (col) {
                 if (col.data.hasOwnProperty('autoSelect') && col.data.autoSelect === column.field) {
-                    $ctrl.api.setVisibleColumns(col, column.visible);
+                    if (zemCostModeService.isTogglableCostMode(col.data.costMode)) {
+                        if (col.data.costMode === costMode) $ctrl.api.setVisibleColumns(col, column.visible);
+                    } else {
+                        $ctrl.api.setVisibleColumns(col, column.visible);
+                    }
                 }
             });
         }
@@ -36,9 +57,15 @@ angular.module('one.widgets').component('zemGridColumnSelector', {
         }
 
         function getCategoryColumns (category, columns) {
+            var costMode = zemCostModeService.getCostMode();
+
             return columns.filter(function (column) {
                 var inCategory = category.fields.indexOf(column.field) !== -1;
-                return inCategory && column.data.shown && !column.data.permanent;
+                if (!inCategory || !column.data.shown || column.data.permanent) return false;
+                if (zemCostModeService.isTogglableCostMode(column.data.costMode)) {
+                    return column.data.costMode === costMode;
+                }
+                return true;
             });
         }
 
@@ -72,6 +99,7 @@ angular.module('one.widgets').component('zemGridColumnSelector', {
                     $ctrl.categories.push(newCategory);
                 }
             });
+            $ctrl.costModePlatform = zemCostModeService.getCostMode() === constants.costMode.PLATFORM;
         }
     }
 });

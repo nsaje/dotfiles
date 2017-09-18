@@ -37,8 +37,9 @@ angular.module('one.widgets').factory('zemGridObject', function (zemGridConstant
             columnsWidths: [],  // columns widths used by grid cells
         };
 
-        this.ext = {            // extension objects (placeholder)
-            selection: null,    // selection extensions
+        this.ext = {                              // extension objects (placeholder)
+            selection: null,                      // selection extensions
+            costMode: constants.costMode.PUBLIC,  // cost mode extensions
         };
     }
 

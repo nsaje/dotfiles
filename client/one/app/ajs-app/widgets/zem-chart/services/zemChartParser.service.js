@@ -15,6 +15,7 @@ angular.module('one.widgets').service('zemChartParser', function ($window, zemCh
 
     function parseMetaData (chart, metaData) {
         chart.metrics.options = metaData.metrics;
+        chart.metrics.metaData = metaData;
     }
 
     function parseData (chart, chartData, metrics, dateRange) {

@@ -39,6 +39,8 @@ angular.module('one.widgets').service('zemGridMocks', function ($q, zemGridEndpo
             // Columns service API
             setVisibleColumns: angular.noop,
             getVisibleColumns: angular.noop,
+            getCostMode: angular.noop,
+            setCostMode: angular.noop,
 
             // Listeners - pubsub rewiring
             onMetaDataUpdated: angular.noop,

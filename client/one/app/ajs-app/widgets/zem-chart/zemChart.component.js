@@ -7,12 +7,13 @@ angular.module('one.widgets').component('zemChart', {
         entityId: '<',
     },
     template: require('./zemChart.component.html'),
-    controller: function ($scope, $window, config, zemDataFilterService, zemChartService, zemChartObject, zemChartStorageService, zemChartMetricsService, zemGridConstants, zemNavigationNewService, zemSelectionService) { //eslint-disable-line max-len
+    controller: function ($scope, $window, config, zemDataFilterService, zemChartService, zemChartObject, zemChartStorageService, zemChartMetricsService, zemGridConstants, zemNavigationNewService, zemSelectionService, zemCostModeService) { //eslint-disable-line max-len
         var $ctrl = this;
 
         $ctrl.initialized = false;
         $ctrl.onMetricsChanged = onMetricsChanged;
         $ctrl.removeLegendItem = removeLegendItem;
+        $ctrl.metricOptions = [];
 
         $ctrl.$onInit = function () {
             var entity = zemNavigationNewService.getActiveEntity();
@@ -65,6 +66,8 @@ angular.module('one.widgets').component('zemChart', {
                 dataFilterUpdateHandler();
                 selectionUpdateHandler();
             });
+
+            zemCostModeService.onCostModeUpdate(onCostModeChanged);
         }
 
         function updateDataSource () {
@@ -75,6 +78,7 @@ angular.module('one.widgets').component('zemChart', {
 
             var metrics = [$ctrl.metrics.metric1.value];
             if ($ctrl.metrics.metric2.value) metrics.push($ctrl.metrics.metric2.value);
+
             $ctrl.chartDataService.setMetrics(metrics);
             $ctrl.chartDataService.setSelection(getSelection());
         }
@@ -124,6 +128,37 @@ angular.module('one.widgets').component('zemChart', {
         // /////////////////////////////////////////////////////////////////
         // Metrics selection
         //
+        function onCostModeChanged () {
+            var costMode = zemCostModeService.getCostMode();
+
+            if (!zemCostModeService.isTogglableCostMode(costMode)) return;
+
+            var oppositeMetric;
+            var changed = false;
+            var oppositeCostMode = zemCostModeService.getOppositeCostMode(costMode);
+
+            if ($ctrl.metrics.metric1 && $ctrl.metrics.metric1.costMode === oppositeCostMode) {
+                oppositeMetric = zemChartMetricsService.findMetricByCostMode(
+                    $ctrl.chart.metrics.options, $ctrl.metrics.metric1.value, costMode);
+
+                $ctrl.metrics.metric1 = getMetric(oppositeMetric.value);
+                changed = true;
+            }
+
+            if ($ctrl.metrics.metric2 && $ctrl.metrics.metric2.costMode === oppositeCostMode) {
+                oppositeMetric = zemChartMetricsService.findMetricByCostMode(
+                    $ctrl.chart.metrics.options, $ctrl.metrics.metric2.value, costMode);
+
+                $ctrl.metrics.metric2 = getMetric(oppositeMetric.value);
+                changed = true;
+            }
+
+            if (changed) {
+                saveMetrics();
+                loadData();
+            }
+        }
+
         function onMetricsChanged (metric1, metric2) {
             $ctrl.metrics.metric1 = metric1 ? metric1 : zemChartMetricsService.createEmptyMetric();
             $ctrl.metrics.metric2 = metric2 ? metric2 : zemChartMetricsService.createEmptyMetric();

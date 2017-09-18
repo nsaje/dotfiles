@@ -1,4 +1,4 @@
-angular.module('one.widgets').factory('zemGridColumnsService', function (zemGridConstants, zemGridStorageService, zemUtils) { // eslint-disable-line max-len
+angular.module('one.widgets').factory('zemGridColumnsService', function (zemGridConstants, zemGridStorageService, zemUtils, zemCostModeService) { // eslint-disable-line max-len
 
     function ColumnsService (grid) {
         var pubsub = grid.meta.pubsub;
@@ -16,6 +16,10 @@ angular.module('one.widgets').factory('zemGridColumnsService', function (zemGrid
         function initialize () {
             pubsub.register(pubsub.EVENTS.METADATA_UPDATED, null, initializeColumns);
             pubsub.register(pubsub.EVENTS.DATA_UPDATED, null, initializeColumnsState);
+            zemCostModeService.onCostModeUpdate(function () {
+                pubsub.notify(grid.meta.pubsub.EVENTS.EXT_COLUMNS_UPDATED);
+                pubsub.notify(grid.meta.pubsub.EVENTS.METADATA_UPDATED);
+            });
         }
 
         function initializeColumns () {

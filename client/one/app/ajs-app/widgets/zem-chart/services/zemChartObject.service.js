@@ -4,6 +4,7 @@ angular.module('one.widgets').service('zemChartObject', function () {
         this.hasData = true;
         this.metrics = {
             options: [],
+            metaData: null,
         };
         this.legend = {
             usedColors: [],

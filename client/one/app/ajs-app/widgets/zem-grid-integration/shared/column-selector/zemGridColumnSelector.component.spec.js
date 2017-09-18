@@ -17,7 +17,8 @@ describe('component: zemGridColumnSelector', function () {
         var zemGridMocks = $injector.get('zemGridMocks');
         api = zemGridMocks.createApi(constants.level.ACCOUNTS, constants.breakdown.MEDIA_SOURCE);
 
-        var locals = {};
+        var element = angular.element('<div></div>');
+        var locals = {$element: element};
         var bindings = {api: api};
         $ctrl = $componentController('zemGridColumnSelector', locals, bindings);
     }));
@@ -50,5 +51,21 @@ describe('component: zemGridColumnSelector', function () {
         $ctrl.columnChecked(column);
         expect(api.setVisibleColumns).toHaveBeenCalled();
         expect(api.setVisibleColumns).toHaveBeenCalledWith(column, false);
+    });
+
+    it('should get appropriate costMode columns', function () {
+        var columns = [
+            {name: 'column1', field: 'c1', visible: true, data: {shown: true, costMode: constants.costMode.PLATFORM}},
+            {name: 'column2', field: 'c1', visible: true, data: {shown: true, costMode: constants.costMode.PUBLIC}},
+        ];
+        var category = {fields: ['c1'], columns: columns};
+
+        api.getCostMode = function () { return constants.costMode.PUBLIC; };
+        api.getColumns = function () { return columns; };
+        api.getMetaData = function () { return {categories: [category]}; };
+
+        $ctrl.$onInit();
+
+        expect($ctrl.categories[0].columns).toEqual([columns[1]]);
     });
 });
