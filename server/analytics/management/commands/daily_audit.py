@@ -23,6 +23,9 @@ VALID_PACING_ACCOUNT_TYPES = (
     dash.constants.AccountType.PILOT,
 )
 
+TRIPLELIFT_SOURCE_ID = 34
+OEN = 305
+
 
 class Command(utils.command_helpers.ExceptionCommand):
     help = "Daily audits"
@@ -57,6 +60,7 @@ class Command(utils.command_helpers.ExceptionCommand):
 
         self.delivery(options)
         self.wau(options)
+        self.triplelift_submission_status(options)
         self.audit_autopilot(options)
         self.audit_activated_running_ad_groups(options)
         self.audit_pilot_managed_running_ad_groups(options)
@@ -86,7 +90,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         for line in out:
             self._print(line)
             self.email_body += line + '\n'
-        self._print('\n')
+        self.email_body += '\n'
 
     def wau(self, options):
         url = analytics.statements.generate_csv(
@@ -97,7 +101,48 @@ class Command(utils.command_helpers.ExceptionCommand):
         for line in lines:
             self._print(line)
             self.email_body += line + '\n'
+        self.email_body += '\n'
 
+    def triplelift_submission_status(self, options):
+        ad_groups = dash.models.AdGroup.objects.all().exclude(
+            campaign__account_id=OEN
+        ).filter_active()
+
+        triplelift_ad_group_ids = dash.models.AdGroupSource.objects.filter(
+            ad_group__in=ad_groups,
+            source_id=TRIPLELIFT_SOURCE_ID
+        ).filter_active().values_list('ad_group_id', flat=True)
+
+        content_ad_sources = dash.models.ContentAdSource.objects.filter(
+            content_ad__ad_group_id__in=triplelift_ad_group_ids,
+            source_id=TRIPLELIFT_SOURCE_ID,
+            submission_status=dash.constants.ContentAdSubmissionStatus.PENDING,
+            state=dash.constants.ContentAdSourceState.ACTIVE
+        ).select_related('content_ad', 'content_ad__ad_group')
+
+        out = []
+        for cas in content_ad_sources:
+            out.append((
+                cas.content_ad.ad_group.pk,
+                cas.content_ad.ad_group.name,
+
+                cas.content_ad.pk,
+                cas.content_ad.title,
+                cas.content_ad.url,
+                cas.content_ad.get_redirector_url(),
+                cas.content_ad.get_image_url(),
+                cas.content_ad.created_dt,
+            ))
+        url = analytics.statements.generate_csv(
+            'triplelift-ads/pending-{}.csv'.format(str(datetime.date.today())),
+            utils.csv_utils.tuplelist_to_csv([(
+                'Ad Group ID', 'Ad Group Name', 'Content Ad ID', 'Title', 'Url', 'Redirector URL', 'Image URL', 'Created at',
+            )] + out)
+        )
+        lines = ['Content ad Submission', ' - Triplelift: ' + url]
+        for line in lines:
+            self._print(line)
+            self.email_body += line + '\n'
         self.email_body += '\n'
 
     def audit_click_discrepancy(self, options):
