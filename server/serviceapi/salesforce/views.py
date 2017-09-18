@@ -34,7 +34,7 @@ class CreateClientView(base.ServiceAPIBaseView):
         influx.incr('create_client', 1, status='ok', client_type=request.data['type'])
         return self.response_ok({
             'z1_account_id': client.get_salesforce_id(),
-            'z1_data': client.get_long_name(),
+            'z1_data': client.name,
         })
 
 

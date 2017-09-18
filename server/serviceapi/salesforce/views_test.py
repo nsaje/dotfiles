@@ -28,7 +28,7 @@ class CreateClientTestCase(TestCase):
         self.assertEqual(r.json(), {
             'data': {
                 'z1_accountId': client.get_salesforce_id(),
-                'z1_data': 'Agency Agency 1',
+                'z1_data': 'Agency 1',
             },
         })
         self.assertEqual(r.status_code, 200)
@@ -46,7 +46,7 @@ class CreateClientTestCase(TestCase):
         self.assertEqual(r.json(), {
             'data': {
                 'z1_accountId': client.get_salesforce_id(),
-                'z1_data': 'Account Brand 1'
+                'z1_data': 'Brand 1'
             },
         })
         self.assertEqual(r.status_code, 200)
