@@ -10,6 +10,7 @@ describe('zemPermissions', function () {
             id: 123,
             permissions: {
                 permission: true,
+                anotherPermission: true,
                 internalPermission: false,
             },
             email: 'test@zemanta.com',
@@ -28,8 +29,16 @@ describe('zemPermissions', function () {
             expect(zemPermissions.hasPermission('permission')).toBe(true);
         });
 
+        it('should return true if user has all the specified permissions', function () {
+            expect(zemPermissions.hasPermission(['permission', 'anotherPermission'])).toBe(true);
+        });
+
         it('should return false if user does not have the specified permission', function () {
             expect(zemPermissions.hasPermission('unavailablePermission')).toBe(false);
+        });
+
+        it('should return false if user does not have all the specified permissions', function () {
+            expect(zemPermissions.hasPermission(['permission', 'unavailablePermission'])).toBe(false);
         });
     });
 
@@ -42,8 +51,16 @@ describe('zemPermissions', function () {
             expect(zemPermissions.hasPermissionBCMv2('permission')).toBe(true);
         });
 
+        it('should return true if user has all the specified permissions', function () {
+            expect(zemPermissions.hasPermissionBCMv2(['permission', 'anotherPermission'])).toBe(true);
+        });
+
         it('should return false if user does not have the specified permission', function () {
             expect(zemPermissions.hasPermissionBCMv2('unavailablePermission')).toBe(false);
+        });
+
+        it('should return false if user does not have all the specified permissions', function () {
+            expect(zemPermissions.hasPermissionBCMv2(['permission', 'unavailablePermission'])).toBe(false);
         });
 
         it('should return true if user does not have platform_cost_breakdown permission but we are in non-bcm-v2 mode', function () { // eslint-disable-line max-len

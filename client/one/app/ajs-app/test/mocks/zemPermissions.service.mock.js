@@ -19,7 +19,7 @@ angular.module('one.mocks.zemPermissions', []).service('zemPermissions', functio
         if (typeof permission === 'string') permissions = [permission];
         if (permission instanceof Array) permissions = permission;
 
-        return permissions.some(function (p) {
+        return permissions.every(function (p) {
             return mockedPermissions.indexOf(p) >= 0;
         });
     }

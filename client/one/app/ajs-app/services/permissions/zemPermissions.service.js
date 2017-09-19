@@ -17,7 +17,7 @@ angular.module('one.services').service('zemPermissions', function (zemUserServic
             return false;
         }
 
-        return permissions.some(function (permission) {
+        return permissions.every(function (permission) {
             return Object.keys(user.permissions).indexOf(permission) >= 0;
         });
     }
@@ -32,7 +32,7 @@ angular.module('one.services').service('zemPermissions', function (zemUserServic
             return false;
         }
 
-        return permissions.some(function (permission) {
+        return permissions.every(function (permission) {
             // special exception for this permission
             if (!usesBCMv2 && permission === 'zemauth.can_view_platform_cost_breakdown') {
                 return true;
