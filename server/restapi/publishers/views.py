@@ -1,7 +1,11 @@
+from django.db import transaction
+
 import restapi.views
 import restapi.access
 import dash.views.helpers
 import core.publisher_groups.publisher_group_helpers
+import core.publisher_bid_modifiers
+import core.publisher_bid_modifiers.exceptions
 import dash.constants
 
 import serializers
@@ -11,9 +15,9 @@ class PublishersViewList(restapi.views.RESTAPIBaseView):
 
     def get(self, request, ad_group_id):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
-        publisher_group_items = self._get_publisher_group_items(ad_group)
-        bid_modifier_items = self._get_bid_modifier_items(ad_group)
-        serializer = serializers.PublisherSerializer(bid_modifier_items + publisher_group_items, many=True)
+        items = self._get_publisher_group_items(ad_group)
+        items = self._augment_with_bid_modifiers(items, ad_group)
+        serializer = serializers.PublisherSerializer(items, many=True)
         return self.response_ok(serializer.data)
 
     def _get_publisher_group_items(self, ad_group):
@@ -50,17 +54,40 @@ class PublishersViewList(restapi.views.RESTAPIBaseView):
 
         return publishers
 
-    def _get_bid_modifier_items(self, ad_group):
-        return []
+    def _augment_with_bid_modifiers(self, items, ad_group):
+        modifiers = core.publisher_bid_modifiers.get(ad_group)
+        modifiers_by_publisher_source = {(m['publisher'], m['source']): m for m in modifiers}
+        remaining_modifiers_keys = set(modifiers_by_publisher_source.keys())
+
+        for item in items:
+            publisher_source_key = (item['name'], item['source'])
+            modifier = modifiers_by_publisher_source.get(publisher_source_key)
+            if not modifier or item['level'] != dash.constants.PublisherBlacklistLevel.ADGROUP:
+                continue
+            item['modifier'] = modifier['modifier']
+            remaining_modifiers_keys -= publisher_source_key
+
+        for publisher_source_key in sorted(remaining_modifiers_keys):
+            modifier = modifiers_by_publisher_source[publisher_source_key]
+            items.append({
+                'name': modifier['publisher'],
+                'source': modifier['source'],
+                'status': dash.constants.PublisherStatus.ENABLED,
+                'level': dash.constants.PublisherBlacklistLevel.ADGROUP,
+                'modifier': modifier['modifier'],
+            })
+
+        return items
 
     def put(self, request, ad_group_id):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)  # validate ad group is allowed
         serializer = serializers.PublisherSerializer(data=request.data, many=True)
         serializer.is_valid(raise_exception=True)
-        self._blacklist(request, ad_group, serializer.validated_data)
+        self._put_handle_entries(request, ad_group, serializer.validated_data)
         return self.response_ok(serializer.initial_data)
 
-    def _blacklist(self, request, ad_group, entries):
+    @transaction.atomic()
+    def _put_handle_entries(self, request, ad_group, entries):
         for entry in entries:
             cleaned_entry = {
                 'publisher': entry['name'],
@@ -72,6 +99,13 @@ class PublishersViewList(restapi.views.RESTAPIBaseView):
                 core.publisher_groups.publisher_group_helpers.blacklist_publishers(request, [cleaned_entry], entity)
             elif entry['status'] == dash.constants.PublisherStatus.ENABLED:
                 core.publisher_groups.publisher_group_helpers.unlist_publishers(request, [cleaned_entry], entity)
+
+            if entry['level'] == dash.constants.PublisherBlacklistLevel.ADGROUP:
+                bid_modifier = entry.get('modifier')
+                try:
+                    core.publisher_bid_modifiers.set(ad_group, entry['name'], entry['source'], bid_modifier)
+                except core.publisher_bid_modifiers.exceptions.BidModifierInvalid:
+                    raise serializers.ValidationError({'modifier': 'Bid modifier invalid!'})
 
     @staticmethod
     def _get_level_entity(ad_group, entry):

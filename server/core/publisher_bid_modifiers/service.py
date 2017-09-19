@@ -9,8 +9,16 @@ MODIFIER_MAX = 7.0
 MODIFIER_MIN = 0.01
 
 
+def get(ad_group):
+    return [{
+        'publisher': item.publisher,
+        'source': item.source,
+        'modifier': item.modifier,
+    } for item in PublisherBidModifier.objects.filter(ad_group=ad_group).order_by('pk')]
+
+
 @transaction.atomic
-def set(ad_group, source, publisher, modifier):
+def set(ad_group, publisher, source, modifier):
     if not modifier or modifier == 1.0:
         _delete(ad_group, source, publisher)
         return
