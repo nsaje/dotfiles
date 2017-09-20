@@ -42,7 +42,7 @@ class Q(object):
         return self
 
     def was_generated(self):
-        return bool(self.params)
+        return self.params is not None
 
     def generate(self, prefix=None):
         if self.prefix is not None and self.prefix != prefix:
@@ -84,7 +84,7 @@ class Q(object):
             params.extend(child_params)
 
         if not parts and not params:
-            return '', []
+            return '1=1', []
 
         ret = '(' + self.join_operator.join(parts) + ')'
         if self.negate:

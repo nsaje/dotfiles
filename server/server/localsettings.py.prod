@@ -158,6 +158,14 @@ CACHES = {
             'MAX_ENTRIES': 2000,
         }
     },
+    'inventory_planning': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'inventory_planning_rs_cache',
+        'TIMEOUT': None,  # don't expire, cache invalidated when data manually updated
+        'OPTIONS': {
+            'MAX_ENTRIES': 2000,
+        }
+    },
     'dash_db_cache': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': 'dash_db_cache',

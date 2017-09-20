@@ -43,6 +43,15 @@ class QTestCase(TestCase, backtosql.TestSQLMixin):
         self.assertSQLEquals(constraints, "((v.foo=%s) AND (1=%s))")
         self.assertItemsEqual(c.get_params(), [1, 2])
 
+    def test_generate_constraints_empty(self):
+        constraints_dict = {}
+
+        m = self.ModelA()
+        c = backtosql.Q(m, **constraints_dict)
+        constraints = c.generate()
+        self.assertSQLEquals(constraints, "1=1")
+        self.assertItemsEqual(c.get_params(), [])
+
     def test_generate_nested_constraints(self):
         constraints_dict = {
             'py_foo__eq': [1, 2, 3],
