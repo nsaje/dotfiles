@@ -29,6 +29,12 @@ def analyze(table):
     logger.info('Finished ANALYZE table %s', table)
 
 
+def truncate(table):
+    logger.info('Starting TRUNCATE table %s', table)
+    _execute_query('TRUNCATE {}'.format(table))
+    logger.info('Finished TRUNCATE table %s', table)
+
+
 def cluster_disk_usage():
     sql = backtosql.generate_sql('maintenance_cluster_disk_usage.sql', None)
 
