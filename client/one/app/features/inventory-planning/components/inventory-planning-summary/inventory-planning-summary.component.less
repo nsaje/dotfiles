@@ -1,18 +1,54 @@
 @import 'variables';
 
 .zem-inventory-planning-summary {
-    display: block;
+    display: table;
+    table-layout: fixed;
+    height: 100%;
+    width: 100%;
 }
 
 .zem-inventory-planning-summary__info-container {
-    float: left;
-    width: 30%;
-    height: 300px;
+    display: table-cell;
+    width: 300px;
+    padding: @default-spacing;
+    text-align: center;
+    vertical-align: middle;
+    background-color: @secondary-color;
+    color: white;
+
+    .icon,
+    .icon::before {
+        width: 100px;
+        height: 100px;
+    }
+
+    .icon {
+        margin-bottom: 20px;
+        opacity: 0.2;
+    }
+}
+
+.zem-inventory-planning-summary__value-name {
+    font-size: 18px;
+}
+
+.zem-inventory-planning-summary__value {
+    font-size: 36px;
+    font-weight: 500;
+    color: white;
+}
+
+.zem-inventory-planning-summary__hr {
+    margin: 40px 0;
 }
 
 .zem-inventory-planning-summary__chart-container {
-    float: left;
-    width: 70%;
-    height: 300px;
-    padding-left: @default-spacing;
+    display: table-cell;
+    width: 100%;
+    padding: @default-spacing;
+}
+
+.zem-inventory-planning-summary__spacing {
+    display: table-cell;
+    width: @default-spacing*1.5;
 }

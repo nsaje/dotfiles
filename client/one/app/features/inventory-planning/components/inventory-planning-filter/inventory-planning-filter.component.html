@@ -1,41 +1,41 @@
-<div class="zem-inventory-planning-filter__label">Filters:</div>
+<div class="zem-inventory-planning-filter__title">Filters</div>
 
-<div *ngIf="!isFilterEnabled">
-    Filter disabled
+<div class="zem-inventory-planning-filter__no-filter" *ngIf="!isFilterEnabled">
+    Choose breakdowns below to filter results ...
 </div>
 
 <span class="zem-inventory-planning-filter__category-container" *ngIf="isCountryFilterEnabled">
-    <span class="zem-inventory-planning-filter__category-name">Countries:</span>
-    <span class="zem-inventory-planning-filter__option" *ngFor="let option of selected.countries; let last=last">
-        <span class="zem-inventory-planning-filter__option-name">{{option.name}}</span>
-        <button class="zem-inventory-planning-filter__option-remove"
+    <div class="zem-inventory-planning-filter__category-name">Countries:</div>
+    <ul class="tag-list zem-inventory-planning-filter__tag-list">
+        <li class="tag-list__item zem-inventory-planning-filter__tag-list-item" *ngFor="let option of selected.countries; let last=last">
+            {{option.name}}
+            <button class="tag-list__remove-item zem-inventory-planning-filter__tag-list-remove-item"
                 (click)="removeFilterOption(selected.countries, option.value)">
-            X
-        </button>
-        <ng-container *ngIf="!last">, </ng-container>
-    </span>
+            </button>
+        </li>
+    </ul>
 </span>
 
 <span class="zem-inventory-planning-filter__category-container" *ngIf="isPublisherFilterEnabled">
-    <span class="zem-inventory-planning-filter__category-name">Publishers:</span>
-    <span class="zem-inventory-planning-filter__option" *ngFor="let option of selected.publishers; let last=last">
-        <span class="zem-inventory-planning-filter__option-name">{{option.name}}</span>
-        <button class="zem-inventory-planning-filter__option-remove"
-                (click)="removeFilterOption(selected.publishers, option.value)">
-            X
-        </button>
-        <ng-container *ngIf="!last">, </ng-container>
-    </span>
+    <div class="zem-inventory-planning-filter__category-name">Publishers:</div>
+    <ul class="tag-list zem-inventory-planning-filter__option">
+        <li class="tag-list__item zem-inventory-planning-filter__tag-list-item" *ngFor="let option of selected.publishers; let last=last">
+            {{option.name}}
+            <button class="tag-list__remove-item zem-inventory-planning-filter__tag-list-remove-item"
+                    (click)="removeFilterOption(selected.publishers, option.value)">
+            </button>
+        </li>
+    </ul>
 </span>
 
 <span class="zem-inventory-planning-filter__category-container" *ngIf="isDeviceFilterEnabled">
-    <span class="zem-inventory-planning-filter__category-name">Devices:</span>
-    <span class="zem-inventory-planning-filter__option" *ngFor="let option of selected.devices; let last=last">
-        <span class="zem-inventory-planning-filter__option-name">{{option.name}}</span>
-        <button class="zem-inventory-planning-filter__option-remove"
-                (click)="removeFilterOption(selected.devices, option.value)">
-            X
-        </button>
-        <ng-container *ngIf="!last">, </ng-container>
-    </span>
+    <div class="zem-inventory-planning-filter__category-name">Devices:</div>
+    <ul class="tag-list zem-inventory-planning-filter__option">
+        <li class="tag-list__item zem-inventory-planning-filter__tag-list-item" *ngFor="let option of selected.devices; let last=last">
+            {{option.name}}
+            <button class="tag-list__remove-item zem-inventory-planning-filter__tag-list-remove-item"
+                    (click)="removeFilterOption(selected.devices, option.value)">
+            </button>
+        </li>
+    </ul>
 </span>

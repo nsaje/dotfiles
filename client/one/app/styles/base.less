@@ -1062,6 +1062,42 @@ h4 {
     }
 }
 
+.money-icon {
+    &::before {
+        background-image: url('images/money-white.svg');
+    }
+
+    &.button--highlight::before {
+        //TODO when we move all images to inline SVGS
+    }
+
+    &.button--outline::before {
+        //TODO when we move all images to inline SVGS
+    }
+
+    &.button--dark-backgrounds::before {
+        background-image: url('images/money-white.svg');
+    }
+}
+
+.hammer-icon {
+    &::before {
+        background-image: url('images/hammer-white.svg');
+    }
+
+    &.button--highlight::before {
+        //TODO when we move all images to inline SVGS
+    }
+
+    &.button--outline::before {
+        //TODO when we move all images to inline SVGS
+    }
+
+    &.button--dark-backgrounds::before {
+        background-image: url('images/hammer-white.svg');
+    }
+}
+
 ////////////////////////////
 // Buttons holder //
 ////////////////////////////
@@ -1936,6 +1972,43 @@ h4 {
 
 .form--disabled {
     filter: grayscale(100%);
+}
+
+////////////////////////////
+// Tags //
+////////////////////////////
+
+.tag-list {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+.tag-list__item {
+    display: inline-block;
+    position: relative;
+    line-height: 16px;
+    padding: 5px 25px 5px 10px;
+    color: @text-color;
+    background-color: @light-gray;
+    border-radius: @border-radius;
+    margin: 2px 4px 2px 0;
+}
+
+.tag-list__remove-item {
+    display: block;
+    width: 12px;
+    height: 12px;
+    border: none;
+    background: url('images/remove-gray.svg') no-repeat center center;
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    margin-top: -6px;
+
+    &:hover {
+        background-image: url('images/remove-red.svg');
+    }
 }
 
 ////////////////////////////

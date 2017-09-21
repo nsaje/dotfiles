@@ -1,10 +1,15 @@
-<div class="clearfix">
-    <div class="zem-inventory-planning-summary__info-container">
-        <div class="zem-inventory-planning-summary__auction-count">Auctions: {{auctionCount}}</div>
-        <div class="zem-inventory-planning-summary__avg-cpm">Avg. CPM: {{avgCpm}}</div>
-    </div>
-
-    <div class="zem-inventory-planning-summary__chart-container">
-        Chart placeholder
-    </div>
+<div class="custom-panel zem-inventory-planning-summary__info-container">
+    <div class="icon hammer-icon"></div>
+    <div class="zem-inventory-planning-summary__value-name">Number of auctions:</div>
+    <div class="zem-inventory-planning-summary__value">{{auctionCount}}</div>
+</div>
+<div class="zem-inventory-planning-summary__spacing"></div>
+<div class="custom-panel zem-inventory-planning-summary__info-container">
+    <div class="icon money-icon"></div>
+    <div class="zem-inventory-planning-summary__value-name">Average CPM:</div>
+    <div class="zem-inventory-planning-summary__value">${{avgCpm}}</div>
+</div>
+<div class="zem-inventory-planning-summary__spacing"></div>
+<div class="custom-panel zem-inventory-planning-summary__chart-container">
+    Chart placeholder
 </div>

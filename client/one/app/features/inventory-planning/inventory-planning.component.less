@@ -3,19 +3,31 @@
 .zem-inventory-planning {
     display: block;
 
+    .zem-inventory-planning-summary {
+        height: 350px;
+        margin-top: @default-spacing*1.5;
+    }
+
     .zem-inventory-planning-filter {
         margin-top: @default-spacing*2;
     }
 
     .zem-inventory-planning-breakdown {
         float: left;
-        width: 33.3333%;
-        height: 400px;
-        padding-left: @default-spacing;
+        width: 31.7%;
+        padding-left: 2.4%;
+        border-left: 1px solid @light-gray;
+        margin-left: 2.4%;
 
         &:first-child {
             padding-left: 0;
+            margin-left: 0;
+            border-left: none;
         }
+    }
+
+    .zem-inventory-planning-breakdown__container {
+        height: 400px;
     }
 }
 

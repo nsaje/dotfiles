@@ -1,4 +1,4 @@
-<h1>Inventory planning</h1>
+<h1 class="content-container__title">Inventory planning</h1>
 
 <zem-inventory-planning-summary class="zem-inventory-planning-summary"
                                 [auctionCount]="(store.state$ | async).inventory.auctionCount"
@@ -10,7 +10,7 @@
                                (onRemove)="store.removeOption($event)">
 </zem-inventory-planning-filter>
 
-<div class="zem-inventory-planning__breakdowns clearfix">
+<div class="custom-panel zem-inventory-planning__breakdowns clearfix">
     <zem-inventory-planning-breakdown class="zem-inventory-planning-breakdown"
                                     [options]="(store.state$ | async).availableFilters.countries"
                                     [selected]="(store.state$ | async).selectedFilters.countries"
