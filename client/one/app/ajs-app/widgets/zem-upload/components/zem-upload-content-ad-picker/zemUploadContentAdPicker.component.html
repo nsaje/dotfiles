@@ -1,6 +1,6 @@
 <div class="content-upload__ads-container custom-scroller">
     <table class="custom-table content-upload__ads-table">
-        <tr ng-repeat="candidate in $ctrl.candidates" ng-class="{'content-upload__selected-ad': candidate.id === $ctrl.editFormApi.selectedId}" ng-click="$ctrl.editFormApi.open(candidate)">
+        <tr ng-repeat="candidate in $ctrl.candidates track by $index" ng-class="{'content-upload__selected-ad': candidate.id === $ctrl.editFormApi.selectedId}" ng-click="$ctrl.editFormApi.open(candidate)">
             <td class="content-upload__ad-status" ng-class="{
                 'content-upload__ad-status--loading': $ctrl.isCandidateStatusLoading(candidate),
                 'content-upload__ad-status--ok': $ctrl.isCandidateStatusOk(candidate),
@@ -13,7 +13,7 @@
             <td class="content-upload__ad-title">
                 <div class="content-upload__ad-title--two-lines">
                     <div>{{ candidate.title }}
-                        <span ng-if="!candidate.title">Content ad title</span>
+                        <span ng-if="!candidate.title">Ad title #{{ $index + 1 }}</span>
                     </div>
                 </div>
             </td>
@@ -42,7 +42,7 @@
     <div class="buttons-panel">
         <button type="button" class="button button--highlight button--with-icon add-icon"
             ng-click="$ctrl.addCandidate()" ng-disabled="$ctrl.addCandidateRequestInProgress" ng-if="!$ctrl.isEdit">
-            Add new
+            Add new creative
         </button>
         <button type="button" class="button button--with-icon download-icon" ng-click="$ctrl.download()">
             Download Ads Snapshot
