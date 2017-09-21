@@ -24,7 +24,7 @@ def query(breakdown=None, constraints=None):
     sql = backtosql.generate_sql(
         'inventory_planning.sql',
         {
-            'breakdown': m.select_columns(subset=[breakdown] if breakdown else []),
+            'breakdown': [m.get_column(breakdown)] if breakdown else [],
             'aggregates': m.select_columns(AGGREGATE_COLUMNS),
             'constraints': q
         }

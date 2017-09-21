@@ -4,7 +4,7 @@
 SELECT
 
 {% if breakdown %}
-{{ breakdown|only_column }},
+{{ breakdown|column_as_alias }},
 {% endif %}
 
 {{ aggregates|column_as_alias }}
@@ -19,5 +19,7 @@ WHERE
 {% if breakdown %}
 GROUP BY {{ breakdown|indices }}
 {% endif %}
+
+LIMIT 20000
 
 {% endautoescape %}

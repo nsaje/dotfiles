@@ -155,13 +155,16 @@ CACHES = {
         'LOCATION': ['memcached:11211']
     },
     'breakdowns_rs': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+        'LOCATION': ['memcached:11211']
     },
     'audience_sample_size': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+        'LOCATION': ['memcached:11211']
     },
     'inventory_planning': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+        'LOCATION': ['memcached:11211']
     },
     'local_memory_cache': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',

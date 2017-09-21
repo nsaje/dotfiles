@@ -11,6 +11,7 @@ from dash.features import cloneadgroup
 from dash.features import realtimestats
 import campaignlauncher.urls
 import bcm.urls
+import inventory_planning.urls
 
 urlpatterns = [
     url(
@@ -154,3 +155,4 @@ urlpatterns += dash.features.bluekai.urls.urlpatterns
 urlpatterns += realtimestats.urls.urlpatterns
 urlpatterns += campaignlauncher.urls.urlpatterns
 urlpatterns += bcm.urls.urlpatterns
+urlpatterns += inventory_planning.urls.urlpatterns

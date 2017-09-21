@@ -24,6 +24,7 @@ SELECT
    sum(total_win_price) total_win_price
 FROM mv_inventory
 WHERE 1=1
+LIMIT 20000
         """
         expected_params = []
         mock_cursor.execute.assert_called_once_with(backtosql.SQLMatcher(expected_query), expected_params)
@@ -44,7 +45,7 @@ WHERE 1=1
         )
         expected_query = """
 SELECT
-   country,
+   country as country,
    sum(bid_reqs) bid_reqs,
    sum(bids) bids,
    sum(win_notices) win_notices,
@@ -55,6 +56,7 @@ WHERE (
    AND publisher=ANY(%s)
 )
 GROUP BY 1
+LIMIT 20000
         """
         expected_params = [[1, 2], ['cnn.com', 'bbc.co.uk']]
         mock_cursor.execute.assert_called_once_with(backtosql.SQLMatcher(expected_query), expected_params)
