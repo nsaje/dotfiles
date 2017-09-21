@@ -10,19 +10,23 @@ class AdGroupBCMMixin(object):
         todays_budget = core.bcm.BudgetLineItem.objects \
             .filter(campaign_id=self.campaign_id) \
             .filter_today() \
+            .select_related('credit') \
             .order_by('id') \
             .first()
 
-        margin = todays_budget.margin if todays_budget else None
-
-        todays_credit = core.bcm.CreditLineItem.objects \
-            .filter(
-                Q(account_id=self.campaign.account_id) |
-                Q(agency_id=self.campaign.account.agency_id)) \
-            .filter_active() \
-            .order_by('id') \
-            .first()
-        fee = todays_credit.license_fee if todays_credit else None
+        fee, margin = None, None
+        if todays_budget:
+            margin = todays_budget.margin
+            fee = todays_budget.credit.license_fee
+        else:
+            todays_credit = core.bcm.CreditLineItem.objects \
+                .filter(
+                    Q(account_id=self.campaign.account_id) |
+                    Q(agency_id=self.campaign.account.agency_id)) \
+                .filter_active() \
+                .order_by('id') \
+                .first()
+            fee = todays_credit.license_fee if todays_credit else None
 
         return fee, margin
 
