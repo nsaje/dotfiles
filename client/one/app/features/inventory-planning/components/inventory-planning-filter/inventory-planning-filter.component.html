@@ -1,0 +1,41 @@
+<div class="zem-inventory-planning-filter__label">Filters:</div>
+
+<div *ngIf="!isFilterEnabled">
+    Filter disabled
+</div>
+
+<span class="zem-inventory-planning-filter__category-container" *ngIf="isCountryFilterEnabled">
+    <span class="zem-inventory-planning-filter__category-name">Countries:</span>
+    <span class="zem-inventory-planning-filter__option" *ngFor="let option of selected.countries; let last=last">
+        <span class="zem-inventory-planning-filter__option-name">{{option.name}}</span>
+        <button class="zem-inventory-planning-filter__option-remove"
+                (click)="removeFilterOption(selected.countries, option.value)">
+            X
+        </button>
+        <ng-container *ngIf="!last">, </ng-container>
+    </span>
+</span>
+
+<span class="zem-inventory-planning-filter__category-container" *ngIf="isPublisherFilterEnabled">
+    <span class="zem-inventory-planning-filter__category-name">Publishers:</span>
+    <span class="zem-inventory-planning-filter__option" *ngFor="let option of selected.publishers; let last=last">
+        <span class="zem-inventory-planning-filter__option-name">{{option.name}}</span>
+        <button class="zem-inventory-planning-filter__option-remove"
+                (click)="removeFilterOption(selected.publishers, option.value)">
+            X
+        </button>
+        <ng-container *ngIf="!last">, </ng-container>
+    </span>
+</span>
+
+<span class="zem-inventory-planning-filter__category-container" *ngIf="isDeviceFilterEnabled">
+    <span class="zem-inventory-planning-filter__category-name">Devices:</span>
+    <span class="zem-inventory-planning-filter__option" *ngFor="let option of selected.devices; let last=last">
+        <span class="zem-inventory-planning-filter__option-name">{{option.name}}</span>
+        <button class="zem-inventory-planning-filter__option-remove"
+                (click)="removeFilterOption(selected.devices, option.value)">
+            X
+        </button>
+        <ng-container *ngIf="!last">, </ng-container>
+    </span>
+</span>

@@ -87,6 +87,11 @@ angular.module('one.views').config(function ($stateProvider) {
         },
     });
 
+    $stateProvider.state('v2.inventoryPlanning', {
+        url: '/inventory-planning/',
+        template: '<zem-inventory-planning-view></zem-inventory-planning-view>',
+    });
+
     $stateProvider.state('v2.archived', {
         url: '/archived/{level:account|campaign|adgroup}/{id:int}',
         template: require('./archived/zemArchivedView.partial.html'),

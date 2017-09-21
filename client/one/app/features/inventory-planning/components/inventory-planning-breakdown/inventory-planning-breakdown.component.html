@@ -1,0 +1,21 @@
+<div class="zem-inventory-planning-breakdown__container">
+    <div class="zem-inventory-planning-breakdown__search-container">
+        <input type="text" class="input-text" #searchQueryInput (keyup)="search$.next(searchQueryInput.value)" />
+    </div>
+
+    <div class="zem-inventory-planning-breakdown__options">
+        <div class="zem-inventory-planning-breakdown__option"
+            (click)="toggle(option.value)"
+            *ngFor="let option of searchResults; let index = index; trackBy: trackByOption">
+            <input class="zem-inventory-planning-breakdown__checkbox"
+                type="checkbox"
+                [checked]="selectedIndices.indexOf(index) !== -1" />
+            <span class="zem-inventory-planning-breakdown__name">
+                {{option.name}}
+            </span>
+            <span class="zem-inventory-planning-breakdown__auction-count">
+                {{option.auctionCount}}
+            </span>
+        </div>
+    </div>
+</div>

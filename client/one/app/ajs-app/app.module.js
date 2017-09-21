@@ -7,8 +7,11 @@ angular.module(
         'one.services',
         'one.views',
         'one.widgets',
+        'one.downgraded',
     ]
 );
+
+angular.module('one.downgraded', []);
 
 angular.module('one').config(function ($compileProvider, config) {
     $compileProvider.debugInfoEnabled(config.env.dev || config.env.test);

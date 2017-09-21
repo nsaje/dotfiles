@@ -1,10 +1,11 @@
-import {ErrorHandler, NgModule} from '@angular/core';
-import {APP_CONFIG} from './core/config/app.config';
 import {BrowserModule} from '@angular/platform-browser';
+import {UpgradeModule} from '@angular/upgrade/static';
+import {ErrorHandler, NgModule} from '@angular/core';
+
+import {APP_CONFIG} from './core/config/app.config';
 import {CoreModule} from './core/core.module';
 import {RavenErrorHandler} from './core/raven/raven-error-handler';
-import {SharedModule} from './shared/shared.module';
-import {UpgradeModule} from '@angular/upgrade/static';
+import {ViewsModule} from './views/views.module';
 
 // Raven (Sentry) configuration
 (<any>window).Raven.config( // tslint:disable-line
@@ -20,7 +21,7 @@ import {UpgradeModule} from '@angular/upgrade/static';
         BrowserModule,
         UpgradeModule,
         CoreModule,
-        SharedModule,
+        ViewsModule,
     ],
     providers: [
         {provide: ErrorHandler, useClass: RavenErrorHandler},
