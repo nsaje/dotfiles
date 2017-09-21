@@ -8,8 +8,12 @@ import restapi.access
 import dash.features.campaignlauncher
 import dash.features.contentupload
 import core.entity.settings
+import automation.autopilot_budgets
 
 import serializers
+
+
+BUDGET_DAILY_CAP_FACTOR = 3
 
 
 class CampaignLauncherViewSet(RESTAPIBaseViewSet):
@@ -24,14 +28,24 @@ class CampaignLauncherViewSet(RESTAPIBaseViewSet):
         })
 
     def validate(self, request, account_id):
+        account = restapi.access.get_account(request.user, account_id)
         serializer = serializers.CampaignLauncherSerializer(data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
+        serializer.is_valid()
+        errors = serializer.errors
         if 'upload_batch' in serializer.validated_data:
             upload_batch = restapi.access.get_upload_batch(request.user, serializer.validated_data['upload_batch'])
             try:
                 dash.features.contentupload.upload.clean_candidates(upload_batch)
             except Exception as e:
-                raise rest_framework.serializers.ValidationError({'upload_batch': e})
+                errors['upload_batch'] = e
+        if 'daily_budget' and 'budget_amount' in serializer.validated_data:
+            min_daily_budget = automation.autopilot_budgets.get_account_default_minimum_daily_budget(account)
+            if serializer.validated_data['daily_budget'] < min_daily_budget:
+                errors['daily_budget'] = ['Should be at least $%s' % min_daily_budget]
+            if serializer.validated_data['budget_amount'] < min_daily_budget * BUDGET_DAILY_CAP_FACTOR:
+                errors['budget_amount'] = ['Should be at least $%s' % (min_daily_budget * BUDGET_DAILY_CAP_FACTOR)]
+        if errors:
+            raise rest_framework.serializers.ValidationError(errors)
         return self.response_ok(None)
 
     @transaction.atomic

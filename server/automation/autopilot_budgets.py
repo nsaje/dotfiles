@@ -227,6 +227,14 @@ def get_adgroup_minimum_daily_budget(ad_group, ad_group_settings):
     return len(enabled_sources_settings) * autopilot_settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC
 
 
+def get_account_default_minimum_daily_budget(account):
+    """ Minimum daily budget when using all default settings (Autopilot, All RTB, etc.) """
+    allowed_sources = account.allowed_sources.all()
+    non_b1_sources = [source for source in allowed_sources if source.source_type.type != dash.constants.SourceType.B1]
+    all_rtb_source = [dash.constants.SourceAllRTB]
+    return (len(non_b1_sources) + len(all_rtb_source)) * autopilot_settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC
+
+
 class BetaBandit(object):
     # Bayesian Multi-Arm Bandit / Thompsons Sampling
     # Machine Learning method used for re-assigning budgets in Autopilot

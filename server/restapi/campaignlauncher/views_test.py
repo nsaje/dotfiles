@@ -12,8 +12,12 @@ from utils.magic_mixer import magic_mixer
 
 class CampaignLauncherValidateTest(restapi.views_test.RESTAPITest):
 
+    def setUp(self):
+        super(CampaignLauncherValidateTest, self).setUp()
+        self.account = magic_mixer.blend(dash.models.Account, users=[self.user])
+
     def test_validate_empty(self):
-        r = self.client.post(reverse('campaignlauncher_validate', kwargs=dict(account_id=1)))
+        r = self.client.post(reverse('campaignlauncher_validate', kwargs=dict(account_id=self.account.id)))
         r = self.assertResponseValid(r, data_type=type(None))
 
     def test_validate(self):
@@ -22,7 +26,7 @@ class CampaignLauncherValidateTest(restapi.views_test.RESTAPITest):
         }
         r = self.client.post(
             reverse('campaignlauncher_validate',
-                    kwargs=dict(account_id=1)),
+                    kwargs=dict(account_id=self.account.id)),
             data,
             format='json'
         )
@@ -34,7 +38,7 @@ class CampaignLauncherValidateTest(restapi.views_test.RESTAPITest):
         }
         r = self.client.post(
             reverse('campaignlauncher_validate',
-                    kwargs=dict(account_id=1)),
+                    kwargs=dict(account_id=self.account.id)),
             data,
             format='json'
         )

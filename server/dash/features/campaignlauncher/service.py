@@ -81,6 +81,12 @@ def launch(request, account, name, iab_category, budget_amount,
             target_devices=target_devices,
             target_os=target_os,
             target_placements=target_placements,
+        )
+        # Change state separately because of a chicken-and-egg problem during settings validation.
+        # Budget is validated against media sources' daily caps before the budget autopilot is run
+        # to distribute and set daily caps appropriately.
+        ad_group.settings.update(
+            request,
             state=dash.constants.AdGroupSettingsState.ACTIVE,
         )
     except utils.exc.ValidationError as e:
