@@ -1,6 +1,6 @@
 import './inventory-planning.component.less';
 
-import {Component} from '@angular/core';
+import {Component, Inject} from '@angular/core';
 
 import {InventoryPlanningStore} from './inventory-planning.store';
 import {InventoryPlanningEndpoint} from './inventory-planning.endpoint';
@@ -11,5 +11,6 @@ import {InventoryPlanningEndpoint} from './inventory-planning.endpoint';
     providers: [InventoryPlanningStore, InventoryPlanningEndpoint],
 })
 export class InventoryPlanningComponent {
-    constructor (private store: InventoryPlanningStore) {} // tslint:disable-line no-unused-variable
+    constructor (private store: InventoryPlanningStore, // tslint:disable-line no-unused-variable
+                 @Inject('zemPermissions') private zemPermissions: any) {} // tslint:disable-line no-unused-variable
 }

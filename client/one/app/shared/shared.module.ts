@@ -7,5 +7,16 @@ import {NgModule} from '@angular/core';
     exports: [
         CommonModule,
     ],
+    providers: [
+        ng1ServiceProvider('zemPermissions'),
+    ],
 })
 export class SharedModule {}
+
+
+function ng1ServiceProvider (serviceName: string): any {
+    return {
+        provide: serviceName,
+        useFactory: (i: any) => i.get(serviceName), deps: ['$injector'],
+    };
+}

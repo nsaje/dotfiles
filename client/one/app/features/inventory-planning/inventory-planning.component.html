@@ -1,5 +1,8 @@
 <h1 class="content-container__title">Inventory planning</h1>
 
+<!-- FIXME(nsaje): remove after release -->
+<div *ngIf="zemPermissions.hasPermission('zemauth.fea_can_see_inventory_planning')">
+
 <zem-inventory-planning-summary class="zem-inventory-planning-summary"
                                 [auctionCount]="(store.state$ | async).inventory.auctionCount"
                                 [avgCpm]="(store.state$ | async).inventory.avgCpm">
@@ -26,4 +29,7 @@
                                     [selected]="(store.state$ | async).selectedFilters.devices"
                                     (onToggle)="store.toggleDevice($event)">
     </zem-inventory-planning-breakdown>
+</div>
+
+<!-- FIXME(nsaje): remove after release -->
 </div>
