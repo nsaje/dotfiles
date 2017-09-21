@@ -39,7 +39,7 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
     vm.MAX_URL_LENGTH = 936;
     vm.MAX_TITLE_LENGTH = 90;
     vm.MAX_DESCRIPTION_LENGTH = 140;
-    vm.MAX_DISPLAY_URL_LENGTH = 25;
+    vm.MAX_DISPLAY_URL_LENGTH = 35;
     vm.MAX_BRAND_NAME_LENGTH = 25;
     vm.MAX_CALL_TO_ACTION_LENGTH = 25;
     vm.MAX_LABEL_LENGTH = 100;
