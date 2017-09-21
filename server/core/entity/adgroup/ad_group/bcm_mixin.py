@@ -56,6 +56,7 @@ class AdGroupBCMMixin(object):
 
         self.settings.update(
             request,
+            skip_validation=True,
             b1_sources_group_daily_budget=new_b1_sources_group_daily_budget,
             b1_sources_group_cpc_cc=new_b1_sources_group_cpc_cc,
             max_cpm=new_max_cpm,
