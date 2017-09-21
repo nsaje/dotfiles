@@ -2,6 +2,7 @@ from django.db import transaction
 from django.db.models import Q
 
 import core.bcm
+import dash.constants
 from utils import k1_helper, numbers
 
 
@@ -39,8 +40,16 @@ class AdGroupBCMMixin(object):
         k1_helper.update_ad_group(self.id, 'migrate_to_bcm_v2')
 
     def _migrate_ad_group_sources_to_bcm_v2(self, request, fee, margin):
-        for ad_group_source in self.adgroupsource_set.all():
+        ad_group_sources = self._get_ad_group_sources_to_migrate()
+        for ad_group_source in ad_group_sources:
             ad_group_source.migrate_to_bcm_v2(request, fee, margin)
+
+    def _get_ad_group_sources_to_migrate(self):
+        ad_group_sources = self.adgroupsource_set.all()
+        if self.settings.b1_sources_group_enabled:
+            ad_group_sources = ad_group_sources.exclude(
+                source__source_type__type=dash.constants.SourceType.B1)
+        return ad_group_sources
 
     def _migrate_settings_to_bcm_v2(self, request, fee, margin):
         new_b1_sources_group_daily_budget = self._transform_whole_value(

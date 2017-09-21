@@ -126,10 +126,7 @@ class AdGroupBcmMixin(TestCase):
 
 class MigrateToBcmV2Test(TestCase):
 
-    @patch('utils.redirector_helper.insert_adgroup', MagicMock())
-    @patch('utils.k1_helper.update_ad_group', MagicMock())
-    @patch.object(core.entity.AdGroupSource, 'migrate_to_bcm_v2')
-    def test_migrate_to_bcm_v2(self, mock_ad_group_source_migrate):
+    def setUp(self):
         today = datetime.date.today()
 
         account = magic_mixer.blend(core.entity.Account, uses_bcm_v2=False)
@@ -151,11 +148,31 @@ class MigrateToBcmV2Test(TestCase):
                           amount=decimal.Decimal('200'),
                           margin=decimal.Decimal('0.1'))
 
-        ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=campaign)
-        ad_group_source = magic_mixer.blend(core.entity.AdGroupSource, ad_group=ad_group)
+        self.ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=campaign)
 
+    @patch('utils.redirector_helper.insert_adgroup', MagicMock())
+    @patch('utils.k1_helper.update_ad_group', MagicMock())
+    @patch.object(core.entity.AdGroupSource, 'migrate_to_bcm_v2')
+    def test_migrate_to_bcm_v2(self, mock_ad_group_source_migrate):
+        ad_group_source = magic_mixer.blend(core.entity.AdGroupSource, ad_group=self.ad_group)
+
+        self._test_migrate_to_bcm_v2()
+        self.assertTrue(ad_group_source.migrate_to_bcm_v2.called)
+
+    @patch('utils.redirector_helper.insert_adgroup', MagicMock())
+    @patch('utils.k1_helper.update_ad_group', MagicMock())
+    @patch.object(core.entity.AdGroupSource, 'migrate_to_bcm_v2')
+    def test_migrate_to_bcm_v2_b1_sources_group_enabled(self, mock_ad_group_source_migrate):
+        source_type = magic_mixer.blend(core.source.SourceType, type=constants.SourceType.B1)
+        source = magic_mixer.blend(core.source.Source, source_type=source_type)
+        ad_group_source = magic_mixer.blend(core.entity.AdGroupSource, ad_group=self.ad_group, source=source)
+
+        self._test_migrate_to_bcm_v2()
+        self.assertFalse(ad_group_source.migrate_to_bcm_v2.called)
+
+    def _test_migrate_to_bcm_v2(self):
         request = magic_mixer.blend_request_user(permissions=['can_set_ad_group_max_cpm'])
-        ad_group.settings.update(
+        self.ad_group.settings.update(
             request,
             autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE,
             b1_sources_group_daily_budget=decimal.Decimal('50'),
@@ -164,9 +181,9 @@ class MigrateToBcmV2Test(TestCase):
             max_cpm=decimal.Decimal('1.22'),
         )
 
-        ad_group.migrate_to_bcm_v2(request)
-        self.assertTrue(ad_group_source.migrate_to_bcm_v2.called)
-        self.assertEqual(69, ad_group.settings.b1_sources_group_daily_budget)
-        self.assertEqual(138, ad_group.settings.autopilot_daily_budget)
-        self.assertEqual(decimal.Decimal('0.4167'), ad_group.settings.b1_sources_group_cpc_cc)
-        self.assertEqual(decimal.Decimal('1.6944'), ad_group.settings.max_cpm)
+        self.ad_group.migrate_to_bcm_v2(request)
+
+        self.assertEqual(69, self.ad_group.settings.b1_sources_group_daily_budget)
+        self.assertEqual(138, self.ad_group.settings.autopilot_daily_budget)
+        self.assertEqual(decimal.Decimal('0.4167'), self.ad_group.settings.b1_sources_group_cpc_cc)
+        self.assertEqual(decimal.Decimal('1.6944'), self.ad_group.settings.max_cpm)
