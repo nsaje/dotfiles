@@ -1,6 +1,7 @@
 from rest_framework.test import APIClient
 from django.test import TestCase, RequestFactory
 from django.core.urlresolvers import reverse
+import mock
 
 from zemauth.models import User
 import core.entity
@@ -188,7 +189,8 @@ class CreateCreditTestCase(TestCase):
             u'errorCode': u'ValidationError',
         })
 
-    def test_create_agency_credit(self):
+    @mock.patch('core.bcm.bcm_slack.log_to_slack')
+    def test_create_agency_credit(self, mock_slack):
         url = reverse('service.salesforce.credit')
 
         data = {
@@ -222,8 +224,16 @@ class CreateCreditTestCase(TestCase):
                 }
             }
         })
+        mock_slack.assert_called_with(
+            None,
+            'New agency credit #{} added to agency {} with amount $500 and end date 2017-06-20.'.format(
+                cli.pk,
+                self.agency.name
+            )
+        )
 
-    def test_create_account_credit(self):
+    @mock.patch('core.bcm.bcm_slack.log_to_slack')
+    def test_create_account_credit(self, mock_slack):
         url = reverse('service.salesforce.credit')
         data = {
             u'amountAtSigning': '500.0',
@@ -256,8 +266,16 @@ class CreateCreditTestCase(TestCase):
                 }
             }
         })
+        mock_slack.assert_called_with(
+            1,
+            'New credit #{} added on account <https://one.zemanta.com/v2/credit/account/1|{}> with amount $500 and end date 2017-06-20.'.format(
+                cli.pk,
+                self.account.get_long_name()
+            ),
+        )
 
-    def test_flat_fee_upfront(self):
+    @mock.patch('core.bcm.bcm_slack.log_to_slack')
+    def test_flat_fee_upfront(self, mock_slack):
         url = reverse('service.salesforce.credit')
         data = {
             u'amountAtSigning': '500.0',
@@ -290,8 +308,16 @@ class CreateCreditTestCase(TestCase):
                 }
             }
         })
+        mock_slack.assert_called_with(
+            1,
+            'New credit #{} added on account <https://one.zemanta.com/v2/credit/account/1|{}> with amount $500 and end date 2017-06-20.'.format(
+                cli.pk,
+                self.account.get_long_name()
+            ),
+        )
 
-    def test_flat_fee(self):
+    @mock.patch('core.bcm.bcm_slack.log_to_slack')
+    def test_flat_fee(self, mock_slack):
         url = reverse('service.salesforce.credit')
         data = {
             u'amountAtSigning': '500.0',
@@ -324,6 +350,13 @@ class CreateCreditTestCase(TestCase):
                 }
             }
         })
+        mock_slack.assert_called_with(
+            1,
+            'New credit #{} added on account <https://one.zemanta.com/v2/credit/account/1|{}> with amount $500 and end date 2017-06-20.'.format(
+                cli.pk,
+                self.account.get_long_name()
+            ),
+        )
 
 
 class AgencyAccountsTestCase(TestCase):
