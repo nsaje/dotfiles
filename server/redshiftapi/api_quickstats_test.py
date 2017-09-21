@@ -5,7 +5,7 @@ from django.test import TestCase
 
 from redshiftapi import queries
 from redshiftapi import db
-from redshiftapi import quickstats
+from redshiftapi import api_quickstats
 
 
 class QuickstatsTest(TestCase):
@@ -15,7 +15,7 @@ class QuickstatsTest(TestCase):
     def test_query_campaign(self, mock_prepare_query_all_base, _):
         date_from = datetime.date.today() - datetime.timedelta(days=7)
         date_to = datetime.date.today()
-        quickstats.query_campaign(608, date_from, date_to)
+        api_quickstats.query_campaign(608, date_from, date_to)
         expected_constraints = {
             'campaign_id': 608,
             'date__gte': date_from,
@@ -33,7 +33,7 @@ class QuickstatsTest(TestCase):
     def test_query_adgroup(self, mock_prepare_query_all_base, _):
         date_from = datetime.date.today() - datetime.timedelta(days=7)
         date_to = datetime.date.today()
-        quickstats.query_adgroup(2040, date_from, date_to, source_id=3)
+        api_quickstats.query_adgroup(2040, date_from, date_to, source_id=3)
         expected_constraints = {
             'ad_group_id': 2040,
             'date__gte': date_from,

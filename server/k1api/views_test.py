@@ -24,7 +24,7 @@ from utils import email_helper
 from utils.magic_mixer import magic_mixer
 from utils import dates_helper
 
-from redshiftapi import quickstats
+from redshiftapi import api_quickstats
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -783,7 +783,7 @@ class K1ApiTest(K1ApiBaseTest):
         for item in data:
             self.assertEqual(len(required_fields - set(item.keys())), 0)
 
-    @patch.object(quickstats, 'query_adgroup', autospec=True)
+    @patch.object(api_quickstats, 'query_adgroup', autospec=True)
     def test_get_ad_group_stats(self, mock_quickstats):
         ad_group = dash.models.AdGroup.objects.get(pk=1)
         mock_stats = {

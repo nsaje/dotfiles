@@ -29,7 +29,7 @@ from dash.features.reports import serializers as reports_serializers
 from dash.features.reports import reports
 import dash.models
 from dash.features import contentupload
-import redshiftapi.quickstats
+import redshiftapi.api_quickstats
 
 import utils.rest_common.authentication
 import fields
@@ -820,7 +820,7 @@ class CampaignStatsView(RESTAPIBaseView):
         to_date = self.request.query_params.get('to', None)
         if not from_date or not to_date:
             raise serializers.ValidationError('Missing from or to parameter')
-        stats = redshiftapi.quickstats.query_campaign(campaign.id, from_date, to_date)
+        stats = redshiftapi.api_quickstats.query_campaign(campaign.id, from_date, to_date)
         return self.response_ok(StatsSerializer(stats).data)
 
 

@@ -21,7 +21,7 @@ from dash import constants
 from core.publisher_groups import publisher_group_helpers
 from utils import redirector_helper, email_helper
 from utils import url_helper, request_signer, converters
-import redshiftapi.quickstats
+import redshiftapi.api_quickstats
 import redshiftapi.internal_stats.conversions
 import redshiftapi.internal_stats.content_ad_publishers
 import etl.materialize_views
@@ -630,7 +630,7 @@ class AdGroupStatsView(K1APIView):
             return self.response_error('Source \'{}\' does not exist'.format(source_slug), status=400)
         from_date = ad_group.created_dt.date()
         to_date = datetime.date.today() + datetime.timedelta(days=1)
-        stats = redshiftapi.quickstats.query_adgroup(ad_group.id, from_date, to_date, source.id)
+        stats = redshiftapi.api_quickstats.query_adgroup(ad_group.id, from_date, to_date, source.id)
         return self.response_ok({
             'total_cost': stats['total_cost'],
             'impressions': stats['impressions'],

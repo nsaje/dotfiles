@@ -13,7 +13,7 @@ import dash.models
 import fields
 import views as restapi_views
 from dash import constants
-import redshiftapi.quickstats
+import redshiftapi.api_quickstats
 from automation import autopilot_plus
 
 from dash.features import contentupload
@@ -296,7 +296,7 @@ class CampaignsTest(RESTAPITest):
 
 class CampaignStatsTest(RESTAPITest):
 
-    @mock.patch.object(redshiftapi.quickstats, 'query_campaign', autospec=True)
+    @mock.patch.object(redshiftapi.api_quickstats, 'query_campaign', autospec=True)
     def test_get(self, mock_query_campaign):
         mock_query_campaign.return_value = {
             'total_cost': 123.456,
