@@ -390,4 +390,4 @@ class MigrateToBcmV2Test(TestCase):
 
         ad_group_source_settings = ad_group_source.get_current_settings()
         self.assertEqual(13, ad_group_source_settings.daily_budget_cc)
-        self.assertEqual(decimal.Decimal('0.4444'), ad_group_source_settings.cpc_cc)
+        self.assertEqual(decimal.Decimal('0.444'), ad_group_source_settings.cpc_cc)
