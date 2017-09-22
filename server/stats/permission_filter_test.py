@@ -87,11 +87,13 @@ class FilterTestCase(TestCase):
             'pixel_1_168', 'pixel_1_2160', 'pixel_1_24', 'pixel_1_720',
             'roas_pixel_1_168', 'roas_pixel_1_2160', 'roas_pixel_1_24', 'roas_pixel_1_720',
             'video_complete', 'video_cpcv', 'video_cpv', 'video_first_quartile', 'video_midpoint', 'video_playback_method', 'video_progress_3s', 'video_start', 'video_third_quartile',
+            'total_fee_projection', 'agency_cost', 'total_fee', 'flat_fee', 'margin',
         }
 
         self.public_fields_uses_bcm_v2 = self.public_fields - permission_filter.BCM2_DEPRECATED_FIELDS - {
             'roas_pixel_1_168', 'roas_pixel_1_2160', 'roas_pixel_1_24', 'roas_pixel_1_720',
             'avg_cost_per_pixel_1_168', 'avg_cost_per_pixel_1_2160', 'avg_cost_per_pixel_1_24', 'avg_cost_per_pixel_1_720',
+            'total_fee_projection', 'agency_cost', 'total_fee', 'flat_fee', 'margin',
         }
 
         # add public fields in non-bcm-v2 mode
@@ -186,7 +188,7 @@ class FilterTestCase(TestCase):
         permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
 
         self.assertItemsEqual(set(rows[0].keys()) - self.public_fields, [
-            'etf_cost', 'margin', 'agency_cost',
+            'etf_cost',
         ])
 
     def test_filter_columns_by_permission_agency_cost_bcm_v2(self):
@@ -245,8 +247,7 @@ class FilterTestCase(TestCase):
         permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
 
         self.assertItemsEqual(set(rows[0].keys()) - self.public_fields, [
-            'allocated_budgets', 'flat_fee', 'total_fee', 'total_fee_projection',
-            # 'spend_projection', 'license_fee_projection', 'pacing',
+            'allocated_budgets',
         ])
 
     def test_filter_columns_by_permission_agency(self):

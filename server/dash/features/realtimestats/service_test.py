@@ -69,14 +69,12 @@ class RealtimestatsServiceTest(TestCase):
             {
                 'source_slug': sources[1].bidder_slug,
                 'source': sources[1].name,
-                'spend': 3.0,
-                'etfm_spend': test_helper.AlmostMatcher(decimal.Decimal('3.000')),
+                'spend': test_helper.AlmostMatcher(decimal.Decimal('3.000')),
             },
             {
                 'source_slug': sources[0].bidder_slug,
                 'source': sources[0].name,
-                'spend': 1.1,
-                'etfm_spend': test_helper.AlmostMatcher(decimal.Decimal('1.100')),
+                'spend': test_helper.AlmostMatcher(decimal.Decimal('1.100')),
             },
         ])
 

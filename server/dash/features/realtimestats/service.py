@@ -16,6 +16,9 @@ logger = logging.getLogger(__name__)
 
 def get_ad_group_stats(ad_group):
     spend = sum(stat['spend'] for stat in _get_k1_adgroup_stats(ad_group))
+    if ad_group.campaign.account.uses_bcm_v2:
+        fee, margin = ad_group.get_todays_fee_and_margin()
+        spend = core.bcm.calculations.apply_fee_and_margin(spend, fee, margin)
 
     stats = {
         'spend': spend,
@@ -32,8 +35,6 @@ def get_ad_group_sources_stats(ad_group):
     _augment_source(stats, sources_by_slug)
 
     stats = sorted(stats, key=itemgetter('spend'), reverse=True)
-
-    _add_spend_with_fee_and_margin(ad_group, stats)
 
     return stats
 
@@ -80,10 +81,3 @@ def _augment_source(stats, sources_by_slug):
         if stat['source_slug'] in sources_by_slug:
             source = sources_by_slug[stat['source_slug']]
             stat['source'] = source.name
-
-
-def _add_spend_with_fee_and_margin(ad_group, stats):
-    fee, margin = ad_group.get_todays_fee_and_margin()
-
-    for stat in stats:
-        stat['etfm_spend'] = core.bcm.calculations.apply_fee_and_margin(stat['spend'], fee, margin)

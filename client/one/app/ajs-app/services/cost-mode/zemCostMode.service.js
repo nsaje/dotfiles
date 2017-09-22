@@ -48,8 +48,7 @@ angular.module('one.services').service('zemCostModeService', function (zemPubSub
 
     function isToggleAllowed () {
         var activeAccount = zemNavigationNewService.getActiveAccount();
-        return zemPermissions.hasPermission('zemauth.can_view_platform_cost_breakdown') &&
-            zemPermissions.hasPermission('zemauth.can_view_end_user_cost_breakdown') &&
+        return zemPermissions.hasPermission('zemauth.can_switch_between_cost_breakdowns') &&
             (activeAccount && activeAccount.data.usesBCMv2);
     }
 

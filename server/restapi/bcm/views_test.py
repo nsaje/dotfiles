@@ -1026,7 +1026,11 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         }
         models.CreditLineItem.objects.filter(pk=c.pk).update(status=constants.CreditLineItemStatus.SIGNED)
 
-        url = reverse('campaigns_budget', kwargs={'campaign_id': 10})
+        campaign = models.Campaign.objects.get(pk=10)
+        campaign.account.uses_bcm_v2 = True  # in non-bcm-v2 this permission is public
+        campaign.account.save(None)
+
+        url = reverse('campaigns_budget', kwargs={'campaign_id': campaign.id})
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 9, 30)
             response = self.client.put(url, json.dumps(data), content_type='application/json')
@@ -1236,6 +1240,11 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             'amount': 1000,
             'comment': 'Test case test_post',
         }
+
+        campaign = models.Campaign.objects.get(pk=1)
+        campaign.account.uses_bcm_v2 = True
+        campaign.account.save(None)
+
         models.CreditLineItem.objects.filter(id=1).update(status=constants.CreditLineItemStatus.SIGNED)
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 9, 30)

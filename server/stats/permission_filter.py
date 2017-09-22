@@ -9,13 +9,20 @@ from stats import fields
 from stats.constants import StructureDimension
 
 
+NOT_PUBLIC_ANYMORE = [
+    'zemauth.can_view_platform_cost_breakdown',
+    'zemauth.can_view_agency_margin',
+    'zemauth.can_view_flat_fees',
+]
+
+
 def has_perm_bcm_v2(user, permission, uses_bcm_v2=False):
     return has_perms_bcm_v2(user, [permission], uses_bcm_v2)
 
 
 def has_perms_bcm_v2(user, permissions, uses_bcm_v2=False):
-    if not uses_bcm_v2 and 'zemauth.can_view_platform_cost_breakdown' in permissions:
-        permissions = [x for x in permissions if x != 'zemauth.can_view_platform_cost_breakdown']
+    if not uses_bcm_v2 and any(x in NOT_PUBLIC_ANYMORE for x in permissions):
+        permissions = [x for x in permissions if x not in NOT_PUBLIC_ANYMORE]
 
         if not permissions:
             # if after that no permissions are left it is allowed

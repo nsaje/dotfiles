@@ -1,4 +1,10 @@
 angular.module('one.services').service('zemPermissions', function (zemUserService) {
+    var NOT_PUBLIC_ANYMORE = [
+        'zemauth.can_view_platform_cost_breakdown',
+        'zemauth.can_view_agency_margin',
+        'zemauth.can_view_flat_fees',
+    ];
+
     this.hasPermission = hasPermission;
     this.hasPermissionBCMv2 = hasPermissionBCMv2;
     this.isPermissionInternal = isPermissionInternal;
@@ -34,7 +40,7 @@ angular.module('one.services').service('zemPermissions', function (zemUserServic
 
         return permissions.every(function (permission) {
             // special exception for this permission
-            if (!usesBCMv2 && permission === 'zemauth.can_view_platform_cost_breakdown') {
+            if (!usesBCMv2 && NOT_PUBLIC_ANYMORE.indexOf(permission) >= 0) {
                 return true;
             }
             return Object.keys(user.permissions).indexOf(permission) >= 0;

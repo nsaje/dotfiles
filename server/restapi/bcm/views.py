@@ -19,6 +19,12 @@ EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK = (
 )
 
 
+def _can_manage_agency_margin(user, campaign):
+    if not campaign.account.uses_bcm_v2:
+        return True
+    return user.has_perm('zemauth.can_manage_agency_margin')
+
+
 def _should_add_platform_costs(user, campaign):
     return not campaign.account.uses_bcm_v2 or\
         user.has_perm('zemauth.can_view_platform_cost_breakdown')
@@ -264,7 +270,7 @@ class CampaignBudgetView(api_common.BaseApiView):
 
         data['campaign'] = campaign.id
         if 'margin' in data:
-            if not request.user.has_perm('zemauth.can_manage_agency_margin'):
+            if not _can_manage_agency_margin(request.user, campaign):
                 del data['margin']
             else:
                 data['margin'] = helpers.format_percent_to_decimal(data['margin'] or '0')
@@ -431,7 +437,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         data = {}
         data.update(request_data)
         if 'margin' in data:
-            if not request.user.has_perm('zemauth.can_manage_agency_margin'):
+            if not _can_manage_agency_margin(request.user, campaign):
                 del data['margin']
             else:
                 data['margin'] = helpers.format_percent_to_decimal(data['margin'] or '0')
