@@ -18,16 +18,16 @@ class StopAdsTestCase(TestCase):
     @patch('utils.dates_helper.utc_now')
     @patch('dash.api.update_content_ads_state')
     def test_check_pacific_midnight_and_stop_ads_pst_time(self, mock_update_content_ads_state, mock_utc_now):
-        mock_utc_now.return_value = datetime.datetime(2016, 6, 1, 7)
-        actions.check_pacific_2am_and_stop_ads()
+        mock_utc_now.return_value = datetime.datetime(2016, 6, 1, 17)
+        actions.check_pacific_noon_and_stop_ads()
         self.assertFalse(mock_update_content_ads_state.called)
 
-        mock_utc_now.return_value = datetime.datetime(2016, 6, 1, 10)
-        actions.check_pacific_2am_and_stop_ads()
+        mock_utc_now.return_value = datetime.datetime(2016, 6, 1, 20)
+        actions.check_pacific_noon_and_stop_ads()
         self.assertFalse(mock_update_content_ads_state.called)
 
-        mock_utc_now.return_value = datetime.datetime(2016, 6, 1, 9)
-        actions.check_pacific_2am_and_stop_ads()
+        mock_utc_now.return_value = datetime.datetime(2016, 6, 1, 19)
+        actions.check_pacific_noon_and_stop_ads()
         self.assertEqual(
             call(ListMatcher([]), dash.constants.ContentAdSourceState.INACTIVE, None),
             mock_update_content_ads_state.call_args)
@@ -35,16 +35,16 @@ class StopAdsTestCase(TestCase):
     @patch('utils.dates_helper.utc_now')
     @patch('dash.api.update_content_ads_state')
     def test_check_pacific_midnight_and_stop_ads_pdt_time(self, mock_update_content_ads_state, mock_utc_now):
-        mock_utc_now.return_value = datetime.datetime(2016, 12, 1, 9)
-        actions.check_pacific_2am_and_stop_ads()
+        mock_utc_now.return_value = datetime.datetime(2016, 12, 1, 19)
+        actions.check_pacific_noon_and_stop_ads()
         self.assertFalse(mock_update_content_ads_state.called)
 
-        mock_utc_now.return_value = datetime.datetime(2016, 12, 1, 11)
-        actions.check_pacific_2am_and_stop_ads()
+        mock_utc_now.return_value = datetime.datetime(2016, 12, 1, 21)
+        actions.check_pacific_noon_and_stop_ads()
         self.assertFalse(mock_update_content_ads_state.called)
 
-        mock_utc_now.return_value = datetime.datetime(2016, 12, 1, 10)
-        actions.check_pacific_2am_and_stop_ads()
+        mock_utc_now.return_value = datetime.datetime(2016, 12, 1, 20)
+        actions.check_pacific_noon_and_stop_ads()
         self.assertEqual(
             call(ListMatcher([]), dash.constants.ContentAdSourceState.INACTIVE, None),
             mock_update_content_ads_state.call_args)
