@@ -5,6 +5,8 @@ from collections import namedtuple
 
 import dash.models
 
+columns = ['source_slug', 'ad_group_id', 'content_ad_id', 'publisher', 'clicks', 'media_cost', 'data_cost', 'video_complete']
+
 
 def query_content_ad_publishers(date_from, date_to, ad_group_ids=None):
     constraints = {
@@ -18,7 +20,7 @@ def query_content_ad_publishers(date_from, date_to, ad_group_ids=None):
     breakdown = ['ad_group_id', 'content_ad_id', 'publisher', 'source_id']
     context = {
         'breakdown': mvmaster.select_columns(breakdown),
-        'aggregates': [x for x in mvmaster.get_aggregates() if x.alias != 'external_id'],  # this is some special publishers view column
+        'aggregates': [x for x in mvmaster.get_aggregates() if x.alias in columns],  # this is some special publishers view column
         'constraints': mvmaster.get_constraints(constraints, None),
         'view': 'mv_master',
         'orders': [mvmaster.get_column('-clicks').as_order('-clicks', nulls='last')],
@@ -34,7 +36,7 @@ def query_content_ad_publishers(date_from, date_to, ad_group_ids=None):
 def _fetch_all_with_source_slug(cursor):
     desc = cursor.description
     stats = namedtuple('Stats', [col[0] for col in desc])
-    stats_out = namedtuple('StatsOutput', ['source_slug', 'ad_group_id', 'content_ad_id', 'publisher', 'clicks', 'media_cost', 'data_cost', 'video_complete'])
+    stats_out = namedtuple('StatsOutput', columns)
 
     source_id_map = {s.id: s.bidder_slug for s in dash.models.Source.objects.all()}
 
@@ -46,7 +48,7 @@ def _fetch_all_with_source_slug(cursor):
             content_ad_id=c.content_ad_id,
             publisher=c.publisher,
             clicks=c.clicks,
-            cost=c.media_cost,
+            media_cost=c.media_cost,
             data_cost=c.data_cost,
             video_complete=c.video_complete,
         )
