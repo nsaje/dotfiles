@@ -77,6 +77,7 @@ class AdGroupBCMMixin(object):
         # are saved and can exceed max ad group cpc
         self.settings.update(
             request,
+            skip_validation=True,
             b1_sources_group_cpc_cc=new_b1_sources_group_cpc_cc
         )
 
