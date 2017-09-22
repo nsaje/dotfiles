@@ -20,8 +20,6 @@ EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK = (
 
 
 def _can_manage_agency_margin(user, campaign):
-    if not campaign.account.uses_bcm_v2:
-        return True
     return user.has_perm('zemauth.can_manage_agency_margin')
 
 
