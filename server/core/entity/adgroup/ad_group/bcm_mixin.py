@@ -97,4 +97,4 @@ class AdGroupBCMMixin(object):
         if not number:
             return
         including_fee_and_margin = core.bcm.calculations.apply_fee_and_margin(number, fee, margin)
-        return numbers.round_decimal_half_down(including_fee_and_margin, places=4)
+        return numbers.round_decimal_half_down(including_fee_and_margin, places=3)

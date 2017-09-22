@@ -392,7 +392,7 @@ class AdGroupSource(models.Model):
         new_cpc_cc = core.bcm.calculations.apply_fee_and_margin(
             cpc_cc, fee, margin
         )
-        return utils.numbers.round_decimal_half_down(new_cpc_cc, places=4)
+        return utils.numbers.round_decimal_half_down(new_cpc_cc, places=3)
 
     def save(self, request=None, *args, **kwargs):
         super(AdGroupSource, self).save(*args, **kwargs)
