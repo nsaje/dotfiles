@@ -67,10 +67,17 @@ class AdGroupBCMMixin(object):
             request,
             skip_validation=True,
             b1_sources_group_daily_budget=new_b1_sources_group_daily_budget,
-            b1_sources_group_cpc_cc=new_b1_sources_group_cpc_cc,
             max_cpm=new_max_cpm,
             autopilot_daily_budget=new_autopilot_daily_budget,
             cpc_cc=new_cpc_cc,
+        )
+
+        # NOTE: this is done separately so that cpc_cc is already set,
+        # otherwise ad group sources cpcs are changed before settings
+        # are saved and can exceed max ad group cpc
+        self.settings.update(
+            request,
+            b1_sources_group_cpc_cc=new_b1_sources_group_cpc_cc
         )
 
     def _validate_correct_settings_migration(self, request):

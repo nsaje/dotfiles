@@ -454,6 +454,7 @@ class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         'created_dt',
         'modified_dt',
         'salesforce_url',
+        'uses_bcm_v2',
     )
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'uses_bcm_v2')
     exclude = ('users', 'groups')
