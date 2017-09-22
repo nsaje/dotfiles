@@ -186,4 +186,4 @@ class MigrateToBcmV2Test(TestCase):
         self.assertEqual(69, self.ad_group.settings.b1_sources_group_daily_budget)
         self.assertEqual(138, self.ad_group.settings.autopilot_daily_budget)
         self.assertEqual(decimal.Decimal('0.417'), self.ad_group.settings.b1_sources_group_cpc_cc)
-        self.assertEqual(decimal.Decimal('1.6944'), self.ad_group.settings.max_cpm)
+        self.assertEqual(decimal.Decimal('1.694'), self.ad_group.settings.max_cpm)
