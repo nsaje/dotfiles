@@ -77,7 +77,7 @@ def check_time_and_create_new_ad_groups():
 
 
 def check_date_and_stop_old_ad_groups():
-    if not _is_pacific_hour(2):
+    if not _is_pacific_hour(12):
         return
 
     pacific_today = helpers.get_pacific_now().date()
