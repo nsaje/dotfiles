@@ -58,7 +58,6 @@ def check_pacific_noon_and_stop_ads():
 
     todays_ad_groups = _get_todays_ad_groups()
 
-    utc_now = dates_helper.utc_now()
     content_ads = dash.models.ContentAd.objects.filter(
         ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
         state=dash.constants.ContentAdSourceState.ACTIVE,
