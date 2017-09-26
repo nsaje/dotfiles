@@ -9,6 +9,7 @@ FROM
 WHERE
     {{ constraints|generate:"base_table" }}
 {% if breakdown %} GROUP BY {{ breakdown|indices }} {% endif %}
+{% if having %} HAVING {{ having|generate:"base_table" }} {% endif %}
 ORDER BY {{ orders|only_alias }}
 
 {% endautoescape %}

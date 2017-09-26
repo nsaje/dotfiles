@@ -655,10 +655,13 @@ class AdGroupConversionStatsView(K1APIView):
         if ad_group_ids:
             ad_group_ids = ad_group_ids.split(',')
 
-        conversion_generator = redshiftapi.internal_stats.conversions.query_conversions(
-            from_date, to_date, ad_group_ids)
         path = etl.materialize_views.upload_csv(
-            "conversions", from_date, uuid.uuid4().hex, lambda: conversion_generator)
+            "conversions",
+            from_date,
+            uuid.uuid4().hex,
+            lambda: redshiftapi.internal_stats.conversions.query_conversions(
+                from_date, to_date, ad_group_ids),
+        )
 
         return self.response_ok({
             'path': path,
@@ -682,10 +685,17 @@ class AdGroupContentAdPublisherStatsView(K1APIView):
         if ad_group_ids:
             ad_group_ids = ad_group_ids.split(',')
 
-        stats_generator = redshiftapi.internal_stats.content_ad_publishers.query_content_ad_publishers(
-            from_date, to_date, ad_group_ids)
-        path = etl.materialize_views.upload_csv("content_ad_publishers", from_date,
-                                                uuid.uuid4().hex, lambda: stats_generator)
+        min_media_cost = request.GET.get('min_media_cost')
+        if min_media_cost:
+            min_media_cost = float(min_media_cost)
+
+        _, path = etl.materialize_views.upload_csv_async(
+            "content_ad_publishers",
+            from_date,
+            uuid.uuid4().hex,
+            lambda: redshiftapi.internal_stats.content_ad_publishers.query_content_ad_publishers(
+                from_date, to_date, ad_group_ids, min_media_cost),
+        )
 
         return self.response_ok({
             'path': path,

@@ -12,6 +12,7 @@ import unicodecsv as csv
 from django.conf import settings
 
 from utils import s3helpers
+from utils import threads
 
 import dash.models
 import dash.constants
@@ -36,15 +37,7 @@ available for the whole range.
 """
 
 
-def upload_csv(table_name, date, job_id, generator):
-    logger.info('Create CSV for table "%s", job %s', table_name, job_id)
-    s3_path = os.path.join(
-        MATERIALIZED_VIEWS_S3_PREFIX,
-        table_name,
-        date.strftime("%Y/%m/%d/"),
-        MATERIALIZED_VIEWS_FILENAME.format(table_name, job_id),
-    )
-
+def _do_upload_csv(s3_path, generator):
     bucket = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS)
 
     with io.BytesIO() as csvfile:
@@ -55,7 +48,34 @@ def upload_csv(table_name, date, job_id, generator):
 
         bucket.put(s3_path, csvfile.getvalue())
 
+
+def upload_csv_async(table_name, date, job_id, generator):
+    logger.info('Create async CSV for table "%s", job %s', table_name, job_id)
+    s3_path = os.path.join(
+        MATERIALIZED_VIEWS_S3_PREFIX,
+        table_name,
+        date.strftime("%Y/%m/%d/"),
+        MATERIALIZED_VIEWS_FILENAME.format(table_name, job_id),
+    )
+
+    t = threads.AsyncFunction(partial(_do_upload_csv, s3_path, generator))
+    t.start()
+
+    return t, s3_path
+
+
+def upload_csv(table_name, date, job_id, generator):
+    logger.info('Create CSV for table "%s", job %s', table_name, job_id)
+    s3_path = os.path.join(
+        MATERIALIZED_VIEWS_S3_PREFIX,
+        table_name,
+        date.strftime("%Y/%m/%d/"),
+        MATERIALIZED_VIEWS_FILENAME.format(table_name, job_id),
+    )
+
+    _do_upload_csv(s3_path, generator)
     logger.info('CSV for table "%s", job %s uploaded', table_name, job_id)
+
     return s3_path
 
 

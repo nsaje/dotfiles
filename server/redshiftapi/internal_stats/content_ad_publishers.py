@@ -8,13 +8,17 @@ import dash.models
 columns = ['source_slug', 'ad_group_id', 'content_ad_id', 'publisher', 'clicks', 'media_cost', 'data_cost', 'video_complete']
 
 
-def query_content_ad_publishers(date_from, date_to, ad_group_ids=None):
+def query_content_ad_publishers(date_from, date_to, ad_group_ids=None, min_media_cost=None):
     constraints = {
         'date__gte': date_from,
         'date__lte': date_to,
     }
-    if ad_group_ids:
+    having = {}
+
+    if ad_group_ids is not None:
         constraints['ad_group_id'] = ad_group_ids
+    if min_media_cost is not None:
+        having['media_cost__gte'] = min_media_cost
 
     mvmaster = rsmodels.MVMasterPublishers()
     breakdown = ['ad_group_id', 'content_ad_id', 'publisher', 'source_id']
@@ -25,9 +29,15 @@ def query_content_ad_publishers(date_from, date_to, ad_group_ids=None):
         'view': 'mv_master',
         'orders': [mvmaster.get_column('-clicks').as_order('-clicks', nulls='last')],
     }
+    if having:
+        context['having'] = mvmaster.get_constraints(having, None)
 
-    sql = backtosql.generate_sql('breakdown.sql', context)
+    sql = backtosql.generate_sql('breakdown_having.sql', context)
+
     params = context['constraints'].get_params()
+    if 'having' in context:
+        params += context['having'].get_params()
+
     cursor = db.get_stats_cursor()
     cursor.execute(sql, params)
     return _fetch_all_with_source_slug(cursor)
