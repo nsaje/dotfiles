@@ -56,16 +56,27 @@ def check_pacific_noon_and_stop_ads():
     if not _is_pacific_hour(12):
         return
 
+    todays_ad_groups = _get_todays_ad_groups()
+
     utc_now = dates_helper.utc_now()
     content_ads = dash.models.ContentAd.objects.filter(
         ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
         created_dt__lt=datetime.datetime(utc_now.year, utc_now.month, utc_now.day, utc_now.hour),
         state=dash.constants.ContentAdSourceState.ACTIVE,
-    )
+    ).exclude(ad_group__in=todays_ad_groups)
     dash.api.update_content_ads_state(content_ads, dash.constants.ContentAdSourceState.INACTIVE, None)
 
     ad_group_ids = set(ca.ad_group_id for ca in content_ads)
     k1_helper.update_ad_groups(ad_group_ids, msg="bizwire.rotate_adgroup")
+
+
+def _get_todays_ad_groups():
+    pacific_today = helpers.get_pacific_now().date()
+    todays_ad_groups = models.AdGroupRotation.objects.filter(
+        start_date=pacific_today,
+    )
+
+    return todays_ad_groups
 
 
 def check_time_and_create_new_ad_groups():
