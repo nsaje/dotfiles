@@ -70,8 +70,9 @@ def check_pacific_noon_and_stop_ads():
 
 def _get_todays_ad_groups():
     pacific_today = helpers.get_pacific_now().date()
-    todays_ad_groups = models.AdGroupRotation.objects.filter(
-        start_date=pacific_today,
+    todays_rotation = models.AdGroupRotation.objects.filter(start_date=pacific_today)
+    todays_ad_groups = dash.models.AdGroup.objects.filter(
+        ad_group_id__in=todays_rotation.values_list('ad_group_id', flat=True)
     )
 
     return todays_ad_groups
