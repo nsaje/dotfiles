@@ -209,9 +209,12 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
         var hasPermission = function (permission) {
             return zemPermissions.hasPermissionBCMv2(permission, usesBCMv2);
         };
+        var isPermissionInternal = function (permission) {
+            return zemPermissions.isPermissionInternalBCMv2(permission, usesBCMv2);
+        };
 
         metrics.forEach(function (metric) {
-            metric.internal = convertPermission(metric.internal, zemPermissions.isPermissionInternal);
+            metric.internal = convertPermission(metric.internal, isPermissionInternal);
 
             var shown = convertPermission(metric.shown, hasPermission);
             if (shown) {

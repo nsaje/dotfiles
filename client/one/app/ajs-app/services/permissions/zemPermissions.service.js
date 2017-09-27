@@ -8,6 +8,7 @@ angular.module('one.services').service('zemPermissions', function (zemUserServic
     this.hasPermission = hasPermission;
     this.hasPermissionBCMv2 = hasPermissionBCMv2;
     this.isPermissionInternal = isPermissionInternal;
+    this.isPermissionInternalBCMv2 = isPermissionInternalBCMv2;
     this.canAccessPlatformCosts = canAccessPlatformCosts;
     this.canAccessAgencyCosts = canAccessAgencyCosts;
 
@@ -50,6 +51,19 @@ angular.module('one.services').service('zemPermissions', function (zemUserServic
     function isPermissionInternal (permission) {
         var user = zemUserService.current();
         if (!user || Object.keys(user.permissions).indexOf(permission) < 0) {
+            return false;
+        }
+
+        return !user.permissions[permission];
+    }
+
+    function isPermissionInternalBCMv2 (permission, usesBCMv2) {
+        var user = zemUserService.current();
+        if (!user || Object.keys(user.permissions).indexOf(permission) < 0) {
+            return false;
+        }
+
+        if (!usesBCMv2 && NOT_PUBLIC_ANYMORE.indexOf(permission) >= 0) {
             return false;
         }
 

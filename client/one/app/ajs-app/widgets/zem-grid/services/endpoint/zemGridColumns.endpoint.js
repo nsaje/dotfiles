@@ -1932,9 +1932,12 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         var hasPermission = function (permission) {
             return zemPermissions.hasPermissionBCMv2(permission, usesBCMv2);
         };
+        var isPermissionInternal = function (permission) {
+            return zemPermissions.isPermissionInternalBCMv2(permission, usesBCMv2);
+        };
 
         columns.forEach(function (column) {
-            column.internal = convertPermission(column.internal, zemPermissions.isPermissionInternal);
+            column.internal = convertPermission(column.internal, isPermissionInternal);
 
             var shown = convertPermission(column.shown, hasPermission);
             if (shown) {
