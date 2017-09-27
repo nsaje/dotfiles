@@ -112,23 +112,23 @@ def check_local_midnight_and_recalculate_daily_budgets():
 
 
 def recalculate_and_set_new_daily_budgets(ad_group_id):
-    # local_now = dates_helper.local_now()  # assume budget rotation happens midnight eastern
-    # local_midnight_today = datetime.datetime(local_now.year, local_now.month, local_now.day)
-    # utc_start = dates_helper.local_to_utc_time(local_midnight_today)
+    local_now = dates_helper.local_now()  # assume budget rotation happens midnight eastern
+    local_midnight_today = datetime.datetime(local_now.year, local_now.month, local_now.day)
+    utc_start = dates_helper.local_to_utc_time(local_midnight_today)
 
-    # local_midnight_tomorrow = local_midnight_today + datetime.timedelta(days=1)
-    # utc_end = dates_helper.local_to_utc_time(local_midnight_tomorrow)
+    local_midnight_tomorrow = local_midnight_today + datetime.timedelta(days=1)
+    utc_end = dates_helper.local_to_utc_time(local_midnight_tomorrow)
 
     num_content_ads = dash.models.ContentAd.objects.filter(
         ad_group_id=ad_group_id,
-        # created_dt__gte=utc_start,
-        # created_dt__lt=utc_end,
+        created_dt__gte=utc_start,
+        created_dt__lt=utc_end,
     ).count()
 
     num_content_ads += dash.models.ContentAdCandidate.objects.filter(
         ad_group_id=ad_group_id,
-        # created_dt__gte=utc_start,
-        # created_dt__lt=utc_end,
+        created_dt__gte=utc_start,
+        created_dt__lt=utc_end,
     ).count()  # assume candidates are getting processed successfully
 
     rtb_cost_per_article = config.DAILY_BUDGET_PER_ARTICLE * (1 - config.OB_DAILY_BUDGET_PCT)
