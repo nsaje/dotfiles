@@ -17,6 +17,8 @@ from utils import slack
 
 logger = logging.getLogger(__name__)
 
+OEN = 305
+
 
 class Command(ExceptionCommand):
 
@@ -34,6 +36,7 @@ class Command(ExceptionCommand):
             help='Comma separated ad group ids')
         parser.add_argument('--no-influx', action='store_true', help='Do not log to influx')
         parser.add_argument('--no-slack', action='store_true', help='Do not log to slack')
+        parser.add_argument('--include-oen', action='store_true', help='Include OEN')
 
     def handle(self, *args, **options):
         logger.info('Monitor publisher whitelisting and blacklisting.')
@@ -47,6 +50,10 @@ class Command(ExceptionCommand):
             date_to = dateutil.parser.parse(options['date_to']).date()
 
         ad_groups = models.AdGroup.objects.all().exclude_archived().filter_running()
+        if not options['include_oen']:
+            ad_groups = ad_groups.exclude(
+                campaign__account__id=OEN,
+            )
         if options.get('ad_group_ids') is not None:
             ad_group_ids = [int(x.strip()) for x in options['ad_group_ids'].split(',')]
             ad_groups = models.AdGroup.objects.filter(pk__in=ad_group_ids)
@@ -68,9 +75,12 @@ class Command(ExceptionCommand):
         ad_groups = ad_groups.select_related('campaign', 'campaign__account')
         campaigns = models.Campaign.objects.filter(pk__in=ad_groups.values_list('campaign_id', flat=True))
         accounts = models.Account.objects.filter(pk__in=campaigns.values_list('account_id', flat=True))
-        ad_group_settings_map = {x.ad_group_id: x for x in models.AdGroupSettings.objects.filter(ad_group__in=ad_groups).group_current_settings()}
-        campaign_settings_map = {x.campaign_id: x for x in models.CampaignSettings.objects.filter(campaign__in=campaigns).group_current_settings()}
-        account_settings_map = {x.account_id: x for x in models.AccountSettings.objects.filter(account__in=accounts).group_current_settings()}
+        ad_group_settings_map = {x.ad_group_id: x for x in models.AdGroupSettings.objects.filter(
+            ad_group__in=ad_groups).group_current_settings()}
+        campaign_settings_map = {x.campaign_id: x for x in models.CampaignSettings.objects.filter(
+            campaign__in=campaigns).group_current_settings()}
+        account_settings_map = {x.account_id: x for x in models.AccountSettings.objects.filter(
+            account__in=accounts).group_current_settings()}
 
         outbrain = models.Source.objects.get(source_type__type=constants.SourceType.OUTBRAIN)
 
@@ -101,7 +111,8 @@ class Command(ExceptionCommand):
             ad_group_stats = stats_map.get(ad_group.id, {})
             ad_group_violators = set()
 
-            traffic_publisher_ids = set(ad_group_stats.keys()) - {'na__34'}  # remove triplelift NA as it gets in there sometimes
+            # remove triplelift NA as it gets in there sometimes
+            traffic_publisher_ids = set(ad_group_stats.keys()) - {'na__34'}
             traffic_publisher_ids_wo_outbrain = set(
                 x for x in traffic_publisher_ids if publisher_helpers.dissect_publisher_id(x)[1] != outbrain.id)
             traffic_publisher_ids_outbrain = set(
