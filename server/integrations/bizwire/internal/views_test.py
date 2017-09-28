@@ -46,7 +46,7 @@ class ArticleUploadTest(TestCase):
 
     def test_article_upload(self):
         self.assertEqual(0, dash.models.ContentAdCandidate.objects.filter(ad_group_id=1).count())
-        article_data = {
+        articles_data = [{
             'label': 'bizwire_article_2',
             'title': 'Title 2',
             'url': 'http://example.com',
@@ -56,10 +56,10 @@ class ArticleUploadTest(TestCase):
             'brand_name': 'Example brand',
             'display_url': 'example.com',
             'call_to_action': 'Read more',
-        }
+        }]
         response = self.client.post(
             reverse('businesswire_article_upload'),
-            data=json.dumps([article_data]),
+            data=json.dumps(articles_data),
             content_type='application/json',
         )
 
@@ -79,12 +79,15 @@ class ArticleUploadTest(TestCase):
 
         self.assertTrue(ad_group_settings.b1_sources_group_enabled)
 
+        num_existing_ads = 1
+        num_ads = num_existing_ads + len(articles_data)
+
         # NOTE: initial daily budget is patched
-        expected_group_daily_budget = math.ceil(config.DAILY_BUDGET_PER_ARTICLE * (1 - config.OB_DAILY_BUDGET_PCT))
+        expected_group_daily_budget = math.ceil(num_ads * config.DAILY_BUDGET_PER_ARTICLE * (1 - config.OB_DAILY_BUDGET_PCT))
         self.assertEqual(expected_group_daily_budget, ad_group_settings.b1_sources_group_daily_budget)
         self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group_settings.b1_sources_group_state)
 
-        expected_ob_daily_budget = math.ceil(config.DAILY_BUDGET_PER_ARTICLE * config.OB_DAILY_BUDGET_PCT)
+        expected_ob_daily_budget = math.ceil(num_ads * config.DAILY_BUDGET_PER_ARTICLE * config.OB_DAILY_BUDGET_PCT)
         self.assertEqual(
             expected_ob_daily_budget,
             ad_group.adgroupsource_set.get(source__name='Outbrain').get_current_settings().daily_budget_cc
@@ -200,12 +203,15 @@ class ArticleUploadTest(TestCase):
 
         self.assertTrue(ad_group_settings.b1_sources_group_enabled)
 
+        num_existing_ads = 1
+        num_ads = num_existing_ads + len(articles_data)
+
         # NOTE: initial daily budget is patched
-        expected_group_daily_budget = math.ceil(6 * config.DAILY_BUDGET_PER_ARTICLE * (1 - config.OB_DAILY_BUDGET_PCT))
+        expected_group_daily_budget = math.ceil(num_ads * config.DAILY_BUDGET_PER_ARTICLE * (1 - config.OB_DAILY_BUDGET_PCT))
         self.assertEqual(expected_group_daily_budget, ad_group_settings.b1_sources_group_daily_budget)
         self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group_settings.b1_sources_group_state)
 
-        expected_ob_daily_budget = math.ceil(6 * config.DAILY_BUDGET_PER_ARTICLE * config.OB_DAILY_BUDGET_PCT)
+        expected_ob_daily_budget = math.ceil(num_ads * config.DAILY_BUDGET_PER_ARTICLE * config.OB_DAILY_BUDGET_PCT)
         self.assertEqual(
             expected_ob_daily_budget,
             ad_group.adgroupsource_set.get(source__name='Outbrain').get_current_settings().daily_budget_cc
