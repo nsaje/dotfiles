@@ -8,7 +8,7 @@
     <div class="zem-inventory-planning-filter__category-name">Countries:</div>
     <ul class="tag-list zem-inventory-planning-filter__tag-list">
         <li class="tag-list__item zem-inventory-planning-filter__tag-list-item" *ngFor="let option of selected.countries; let last=last">
-            {{option.name}}
+            {{option.name || option.value}}
             <button class="tag-list__remove-item zem-inventory-planning-filter__tag-list-remove-item"
                 (click)="removeFilterOption(selected.countries, option.value)">
             </button>
@@ -20,7 +20,7 @@
     <div class="zem-inventory-planning-filter__category-name">Publishers:</div>
     <ul class="tag-list zem-inventory-planning-filter__option">
         <li class="tag-list__item zem-inventory-planning-filter__tag-list-item" *ngFor="let option of selected.publishers; let last=last">
-            {{option.name}}
+            {{option.name || option.value}}
             <button class="tag-list__remove-item zem-inventory-planning-filter__tag-list-remove-item"
                     (click)="removeFilterOption(selected.publishers, option.value)">
             </button>
@@ -32,7 +32,7 @@
     <div class="zem-inventory-planning-filter__category-name">Devices:</div>
     <ul class="tag-list zem-inventory-planning-filter__option">
         <li class="tag-list__item zem-inventory-planning-filter__tag-list-item" *ngFor="let option of selected.devices; let last=last">
-            {{option.name}}
+            {{option.name || option.value}}
             <button class="tag-list__remove-item zem-inventory-planning-filter__tag-list-remove-item"
                     (click)="removeFilterOption(selected.devices, option.value)">
             </button>

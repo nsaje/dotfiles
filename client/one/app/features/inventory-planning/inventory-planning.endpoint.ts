@@ -29,6 +29,12 @@ interface InventoryResponse {
     data: any;
 }
 
+const enum FilterField {
+    Country,
+    Device,
+    Publisher,
+}
+
 
 @Injectable()
 export class InventoryPlanningEndpoint {
@@ -44,7 +50,7 @@ export class InventoryPlanningEndpoint {
     }
 
     loadCountries (selectedFilters: SelectedFilters): Observable<AvailableFilterOption[]> {
-        const {method, params, body} = this.buildRequestProperties(selectedFilters);
+        const {method, params, body} = this.buildRequestProperties(selectedFilters, FilterField.Country);
         return this.http.request<InventoryResponse>(
             method,
             '/rest/internal/inventory-planning/countries',
@@ -53,7 +59,7 @@ export class InventoryPlanningEndpoint {
     }
 
     loadPublishers (selectedFilters: SelectedFilters): Observable<AvailableFilterOption[]> {
-        const {method, params, body} = this.buildRequestProperties(selectedFilters);
+        const {method, params, body} = this.buildRequestProperties(selectedFilters, FilterField.Publisher);
         return this.http.request<InventoryResponse>(
             method,
             '/rest/internal/inventory-planning/publishers',
@@ -62,7 +68,7 @@ export class InventoryPlanningEndpoint {
     }
 
     loadDevices (selectedFilters: SelectedFilters): Observable<AvailableFilterOption[]> {
-        const {method, params, body} = this.buildRequestProperties(selectedFilters);
+        const {method, params, body} = this.buildRequestProperties(selectedFilters, FilterField.Device);
         return this.http.request<InventoryResponse>(
             method,
             '/rest/internal/inventory-planning/device-types',
@@ -70,8 +76,9 @@ export class InventoryPlanningEndpoint {
             .map(res => res.data);
     }
 
-    private buildRequestProperties (selectedFilters: SelectedFilters): RequestProperties {
-        const filterPayload = this.buildFilterPayload(selectedFilters);
+    private buildRequestProperties (selectedFilters: SelectedFilters,
+                                    excludeFilterField?: FilterField): RequestProperties {
+        const filterPayload = this.buildFilterPayload(selectedFilters, excludeFilterField);
         let params = new HttpParams();
         for (const filter of Object.keys(filterPayload)) {
             if (filterPayload[filter].length) {
@@ -85,11 +92,18 @@ export class InventoryPlanningEndpoint {
         }
     }
 
-    private buildFilterPayload (selectedFilters: SelectedFilters): FilterPayload {
-        return {
-            c: selectedFilters.countries.map((x: SelectedFilterOption) => x.value),
-            p: selectedFilters.publishers.map((x: SelectedFilterOption) => x.value),
-            d: selectedFilters.devices.map((x: SelectedFilterOption) => x.value),
-        };
+    private buildFilterPayload (selectedFilters: SelectedFilters,
+                                excludeFilterField?: FilterField): FilterPayload {
+        const payload: FilterPayload = {c: [], p: [], d: []};
+        if (excludeFilterField !== FilterField.Country) {
+            payload.c = selectedFilters.countries.map((x: SelectedFilterOption) => x.value);
+        }
+        if (excludeFilterField !== FilterField.Publisher) {
+            payload.p = selectedFilters.publishers.map((x: SelectedFilterOption) => x.value);
+        }
+        if (excludeFilterField !== FilterField.Device) {
+            payload.d = selectedFilters.devices.map((x: SelectedFilterOption) => x.value);
+        }
+        return payload;
     }
 }

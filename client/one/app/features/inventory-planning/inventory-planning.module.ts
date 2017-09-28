@@ -11,6 +11,7 @@ import {
 import {
     InventoryPlanningFilterComponent
 } from './components/inventory-planning-filter/inventory-planning-filter.component';
+import {BigNumberPipe} from './big-number.pipe.ts';
 
 @NgModule({
     imports: [
@@ -21,6 +22,7 @@ import {
         InventoryPlanningSummaryComponent,
         InventoryPlanningBreakdownComponent,
         InventoryPlanningFilterComponent,
+        BigNumberPipe,
     ],
     exports: [
         InventoryPlanningComponent,

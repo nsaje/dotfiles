@@ -14,7 +14,7 @@
             <span class="checkbox-text zem-inventory-planning-breakdown__name">
                 {{option.name || option.value}}
                 <span class="zem-inventory-planning-breakdown__auction-count">
-                    {{option.auctionCount}}
+                    {{option.auctionCount | bigNumber}}
                 </span>
             </span>
         </div>

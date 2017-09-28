@@ -19,8 +19,10 @@ def _get_countries_map():
 
 
 def get_summary(filters):
-    data = redshiftapi.api_inventory.query(breakdown=None, constraints=filters)
-    return data[0]
+    data = redshiftapi.api_inventory.query(breakdown=None, constraints=filters)[0]
+    for field in data:
+        data[field] = data[field] or 0
+    return data
 
 
 def get_by_country(filters):
