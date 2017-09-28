@@ -34,28 +34,48 @@ class InventoryPlanningView(RESTAPIBaseView):
 
         if breakdown == SUMMARY:
             data = dash.features.inventory_planning.get_summary(filters)
-            return self._add_cache_headers(data)
+            data = self._remap_summary(data)
 
         elif breakdown == COUNTRIES:
             data = dash.features.inventory_planning.get_by_country(filters)
-            return self._add_cache_headers(data)
+            data = self._remap_breakdown(data, value_field='country')
 
         elif breakdown == DEVICE_TYPES:
             data = dash.features.inventory_planning.get_by_device_type(filters)
-            return self._add_cache_headers(data)
+            data = self._remap_breakdown(data, value_field='device_type')
 
         elif breakdown == PUBLISHERS:
             data = dash.features.inventory_planning.get_by_publisher(filters)
-            return self._add_cache_headers(data)
+            data = self._remap_breakdown(data, value_field='publisher')
 
         else:
             raise django.http.Http404
+
+        return self._response_with_cache_headers(data)
 
     @staticmethod
     def _extract_filters(filters_serializer):
         return {field: values for field, values in filters_serializer.validated_data.items() if values}
 
-    def _add_cache_headers(self, data):
+    @staticmethod
+    def _remap_summary(data):
+        if not data:
+            return {}
+        return {
+            'auction_count': data['bid_reqs'],
+            'avg_cpm': float(data['total_win_price']) / data['win_notices'] * 1000,
+            'win_ratio': float(data['win_notices']) / data['bids']
+        }
+
+    @staticmethod
+    def _remap_breakdown(data, value_field):
+        return [{
+            'name': item.get('name'),
+            'value': item[value_field],
+            'auction_count': item['bid_reqs'],
+        } for item in data]
+
+    def _response_with_cache_headers(self, data):
         response = self.response_ok(data)
         django.utils.cache.patch_cache_control(response, max_age=CLIENT_SIDE_CACHE_TIME)
         return response

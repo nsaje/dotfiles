@@ -20,6 +20,8 @@ WHERE
 GROUP BY {{ breakdown|indices }}
 {% endif %}
 
+ORDER BY {{ orders|only_alias }}
+
 LIMIT 20000
 
 {% endautoescape %}

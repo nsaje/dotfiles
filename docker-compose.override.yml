@@ -10,6 +10,7 @@ telegraf:
 memcached:
     expose:
       - "11211"
+    command: memcached -I 5m
 
 einsstatic:
     hostname: einsstatic

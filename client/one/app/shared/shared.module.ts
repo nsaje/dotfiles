@@ -1,7 +1,15 @@
 import {CommonModule} from '@angular/common';
+import {HttpClientModule, HttpClientXsrfModule} from '@angular/common/http';
 import {NgModule} from '@angular/core';
 
 @NgModule({
+    imports: [
+        HttpClientModule,
+        HttpClientXsrfModule.withOptions({
+            cookieName: 'csrftoken',
+            headerName: 'X-CSRFToken',
+        }),
+    ],
     declarations: [
     ],
     exports: [

@@ -38,17 +38,17 @@ class TestService(TestCase):
         ]
         self.assertEqual(service.get_by_country(None), [
             {
-                'value': 'a',
+                'country': 'a',
                 'name': 'Country A',
                 'bids': 1,
             },
             {
-                'value': 'b',
+                'country': 'b',
                 'name': 'Country B',
                 'bids': 2,
             },
             {
-                'value': 'c',
+                'country': 'c',
                 'name': None,
                 'bids': 3,
             },
@@ -67,12 +67,12 @@ class TestService(TestCase):
         ]
         self.assertEqual(service.get_by_device_type(None), [
             {
-                'value': 1,
+                'device_type': 1,
                 'name': 'Desktop',
                 'bids': 1,
             },
             {
-                'value': 2,
+                'device_type': 2,
                 'name': 'Tablet',
                 'bids': 2,
             }

@@ -19,6 +19,7 @@ const RENDERED_SEARCH_RESULTS_COUNT = 100;
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InventoryPlanningBreakdownComponent implements OnInit, OnChanges, OnDestroy {
+    @Input() breakdownName: string;
     @Input() options: AvailableFilterOption[];
     @Input() selected: SelectedFilterOption[];
     @Output() onToggle = new EventEmitter<string>();

@@ -15,16 +15,19 @@
 
 <div class="custom-panel zem-inventory-planning__breakdowns clearfix">
     <zem-inventory-planning-breakdown class="zem-inventory-planning-breakdown"
+                                    breakdownName="Country"
                                     [options]="(store.state$ | async).availableFilters.countries"
                                     [selected]="(store.state$ | async).selectedFilters.countries"
                                     (onToggle)="store.toggleCountry($event)">
     </zem-inventory-planning-breakdown>
     <zem-inventory-planning-breakdown class="zem-inventory-planning-breakdown"
+                                    breakdownName="Publisher"
                                     [options]="(store.state$ | async).availableFilters.publishers"
                                     [selected]="(store.state$ | async).selectedFilters.publishers"
                                     (onToggle)="store.togglePublisher($event)">
     </zem-inventory-planning-breakdown>
     <zem-inventory-planning-breakdown class="zem-inventory-planning-breakdown"
+                                    breakdownName="Device Type"
                                     [options]="(store.state$ | async).availableFilters.devices"
                                     [selected]="(store.state$ | async).selectedFilters.devices"
                                     (onToggle)="store.toggleDevice($event)">

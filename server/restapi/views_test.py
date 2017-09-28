@@ -54,8 +54,6 @@ class RESTAPITest(TestCase):
         self.assertNotIn('errorCode', resp_json)
         self.assertEqual(r.status_code, status_code)
         self.assertIsInstance(resp_json['data'], data_type)
-        if data_type == list:
-            self.assertGreater(len(resp_json['data']), 0)
         return resp_json
 
     def assertResponseError(self, r, error_code):

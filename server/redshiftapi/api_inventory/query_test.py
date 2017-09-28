@@ -20,10 +20,11 @@ class InventoryTestCase(TestCase):
 SELECT
    sum(bid_reqs) bid_reqs,
    sum(bids) bids,
-   sum(win_notices) win_notices,
-   sum(total_win_price) total_win_price
+   sum(total_win_price) total_win_price,
+   sum(win_notices) win_notices
 FROM mv_inventory
 WHERE 1=1
+ORDER BY bid_reqs DESC NULLS LAST
 LIMIT 20000
         """
         expected_params = []
@@ -48,14 +49,15 @@ SELECT
    country as country,
    sum(bid_reqs) bid_reqs,
    sum(bids) bids,
-   sum(win_notices) win_notices,
-   sum(total_win_price) total_win_price
+   sum(total_win_price) total_win_price,
+   sum(win_notices) win_notices
 FROM mv_inventory
 WHERE (
    device_type=ANY(%s)
    AND publisher=ANY(%s)
 )
 GROUP BY 1
+ORDER BY bid_reqs DESC NULLS LAST
 LIMIT 20000
         """
         expected_params = [[1, 2], ['cnn.com', 'bbc.co.uk']]

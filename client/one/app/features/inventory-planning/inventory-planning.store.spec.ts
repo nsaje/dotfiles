@@ -1,11 +1,12 @@
 import {Observable} from 'rxjs/Observable';
+import {TestBed, inject} from '@angular/core/testing';
+import {HttpClientModule} from '@angular/common/http';
 import 'rxjs/add/observable/of';
 
 import {InventoryPlanningStore} from './inventory-planning.store';
 import {InventoryPlanningEndpoint} from './inventory-planning.endpoint';
 
 describe('InventoryPlanningStore', () => {
-    let endpoint: InventoryPlanningEndpoint;
     let store: InventoryPlanningStore;
 
     const availableCountries = [
@@ -46,14 +47,21 @@ describe('InventoryPlanningStore', () => {
     ];
 
     beforeEach(() => {
-        endpoint = new InventoryPlanningEndpoint();
+        TestBed.configureTestingModule({
+            imports: [HttpClientModule],
+            providers: [
+                InventoryPlanningEndpoint,
+            ],
+        });
+    });
+    beforeEach(inject([InventoryPlanningEndpoint], (endpoint: InventoryPlanningEndpoint) => {
         spyOn(endpoint, 'loadSummary').and.returnValue(Observable.of({auctionCount: 100000, avgCpm: 2}));
         spyOn(endpoint, 'loadCountries').and.returnValue(Observable.of(availableCountries));
         spyOn(endpoint, 'loadPublishers').and.returnValue(Observable.of(availablePublishers));
         spyOn(endpoint, 'loadDevices').and.returnValue(Observable.of(availableDevices));
 
         store = new InventoryPlanningStore(endpoint);
-    });
+    }));
 
     it('should correctly refresh data on init', () => {
         expect(store.state).toEqual({

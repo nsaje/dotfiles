@@ -8,7 +8,6 @@ COUNTRY = 'country'
 PUBLISHER = 'publisher'
 DEVICE_TYPE = 'device_type'
 VALID_BREAKDOWNS = (None, COUNTRY, PUBLISHER, DEVICE_TYPE)
-AGGREGATE_COLUMNS = ('bid_reqs', 'bids', 'win_notices', 'total_win_price')
 
 
 def query(breakdown=None, constraints=None):
@@ -25,8 +24,9 @@ def query(breakdown=None, constraints=None):
         'inventory_planning.sql',
         {
             'breakdown': [m.get_column(breakdown)] if breakdown else [],
-            'aggregates': m.select_columns(AGGREGATE_COLUMNS),
-            'constraints': q
+            'aggregates': m.select_columns(group='aggregates'),
+            'constraints': q,
+            'orders': [m.bid_reqs.as_order('-', nulls='last')],
         }
     )
     params = q.get_params()
