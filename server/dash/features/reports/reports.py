@@ -176,14 +176,14 @@ class ReportJobExecutor(JobExecutor):
         )
         goals = stats.api_reports.get_goals(constraints, breakdown)
 
-        field_name_mapping = utils.columns.get_field_names_mapping(
+        column_to_field_name_map = utils.columns.custom_column_to_field_name_mapping(
             goals.pixels, goals.conversion_goals,
             show_publishers_fields=stats.constants.PUBLISHER in breakdown
         )
 
-        order = cls._get_order(job, field_name_mapping)
+        order = cls._get_order(job, column_to_field_name_map)
         column_names = cls._extract_column_names(job.query['fields'])
-        columns = [field_name_mapping[column_name] for column_name in column_names]
+        columns = [column_to_field_name_map[column_name] for column_name in column_names]
 
         output = StringIO.StringIO()
         dashapi_cache = {}
@@ -204,7 +204,7 @@ class ReportJobExecutor(JobExecutor):
                 dashapi_cache=dashapi_cache,
             )
 
-            cls.convert_to_csv(job, rows, field_name_mapping, output, header=offset == 0)
+            cls.convert_to_csv(job, rows, column_to_field_name_map, output, header=offset == 0)
 
             if len(rows) < BATCH_ROWS:
                 break
@@ -225,7 +225,7 @@ class ReportJobExecutor(JobExecutor):
                 user, helpers.limit_breakdown_to_level(breakdown, level),
                 totals_constraints, goals, level, columns)
 
-            cls.convert_to_csv(job, [totals], field_name_mapping, output, header=False)
+            cls.convert_to_csv(job, [totals], column_to_field_name_map, output, header=False)
 
         output.seek(0)
 
@@ -359,20 +359,20 @@ class ReportJobExecutor(JobExecutor):
         original_to_dated_columns = {}
         for name in names:
             dated_name = name
-            if utils.columns.FieldNames.from_column_name(name, raise_exception=False) in constants.DATED_COLUMNS:
+            if utils.columns.get_field_name(name, raise_exception=False) in constants.DATED_COLUMNS:
                 dated_name = utils.columns.add_date_to_name(name)
             dated_columns.append(dated_name)
             original_to_dated_columns[name] = dated_name
         return dated_columns, original_to_dated_columns
 
     @staticmethod
-    def _get_order(job, field_name_mapping):
-        order_fieldname = job.query['options'].get('order')
-        if not order_fieldname:
+    def _get_order(job, column_to_field_map):
+        order = job.query['options'].get('order')
+        if not order:
             return constants.DEFAULT_ORDER
 
-        prefix, fieldname = utils.sort_helper.dissect_order(order_fieldname)
-        if fieldname not in field_name_mapping:
+        prefix, column_name = utils.sort_helper.dissect_order(order)
+        if column_name not in column_to_field_map:
             return constants.DEFAULT_ORDER
 
-        return prefix + field_name_mapping[fieldname]
+        return prefix + column_to_field_map[column_name]

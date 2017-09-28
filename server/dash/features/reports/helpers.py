@@ -13,8 +13,9 @@ def get_breakdown_from_fields(fields, level):
     if not fields:
         raise serializers.ValidationError("Must define fields!")
 
-    def _dimension_identifier(field):
-        return stats.constants.get_dimension_identifier(utils.columns.FieldNames.from_column_name(field, raise_exception=False))
+    def _dimension_identifier(column_name):
+        return stats.constants.get_dimension_identifier(
+            utils.columns.get_field_name(column_name, raise_exception=False))
 
     dimension_identifiers = [_dimension_identifier(field['field']) for field in fields]
 
@@ -26,8 +27,8 @@ def get_breakdown_from_fields(fields, level):
                 if additional not in breakdown:
                     breakdown.append(additional)
 
-    if utils.columns.FieldNames.publisher_id in breakdown and utils.columns.FieldNames.source_id in breakdown:
-        breakdown.remove(utils.columns.FieldNames.source_id)
+    if stats.constants.PUBLISHER in breakdown and stats.constants.SOURCE in breakdown:
+        breakdown.remove(stats.constants.SOURCE)
 
     return breakdown
 
@@ -49,7 +50,7 @@ def get_breakdown_names(query):
     )
 
     breakdowns = [breakdown[:-3] if breakdown.endswith('_id') else breakdown for breakdown in breakdowns]
-    breakdowns = [utils.columns._FIELD_MAPPING[breakdown][0] for breakdown in breakdowns]
+    breakdowns = [utils.columns.get_column_name(field_name) for field_name in breakdowns]
 
     return breakdowns
 
@@ -64,7 +65,7 @@ def _parse_date(string):
 def get_filter_constraints(filters):
     filter_constraints = {}
     for f in filters:
-        field_name = utils.columns.FieldNames.from_column_name(f['field'])
+        field_name = utils.columns.get_field_name(f['field'])
 
         if field_name in constants.STRUCTURE_CONSTRAINTS_FIELDS:
             if f['operator'] == constants.EQUALS:

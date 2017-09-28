@@ -71,7 +71,7 @@ def get_filename(breakdown, constraints):
     if constraints['allowed_ad_groups'] is not None and constraints['allowed_ad_groups'].count() == 1:
         ad_group_name = slugify(constraints['allowed_ad_groups'][0].name)
 
-    breakdown = ['by_' + getattr(columns.ColumnNames, constants.get_dimension_name_key(x)).lower() for x in breakdown]
+    breakdown = ['by_' + columns.get_column_name(constants.get_dimension_name_key(x)).lower() for x in breakdown]
     return '_'.join(filter(None, [
         account_name,
         campaign_name,
