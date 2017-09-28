@@ -86,10 +86,10 @@ class ReportContext(object):
         self.campaigns = self._get_subset_model(lambda s: s.budget.campaign_id)
 
         self.agency_accounts = set(
-            acc.pk for acc in dash.models.Account.objects.filter(agency_id__isnull=False)
+            acc.pk for acc in dash.models.Account.objects.filter(agency_id__isnull=False).exclude(agency_id__in=OEN_AGENCIES)
         )
         self.agency_campaigns = set(
-            camp.pk for camp in dash.models.Campaign.objects.filter(account__agency_id__isnull=False)
+            camp.pk for camp in dash.models.Campaign.objects.filter(account__agency_id__isnull=False).exclude(account__agency_id__in=OEN_AGENCIES)
         )
 
         self.account_types = {
