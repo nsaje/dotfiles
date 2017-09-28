@@ -1,6 +1,7 @@
 import {SimpleChange} from '@angular/core';
 import {TestBed, ComponentFixture, async, fakeAsync, tick} from '@angular/core/testing';
 import {InventoryPlanningBreakdownComponent} from './inventory-planning-breakdown.component';
+import {BigNumberPipe} from '../../big-number.pipe';
 
 describe('InventoryPlanningBreakdownComponent', () => {
     const testOption1 = {
@@ -24,7 +25,7 @@ describe('InventoryPlanningBreakdownComponent', () => {
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [InventoryPlanningBreakdownComponent],
+            declarations: [InventoryPlanningBreakdownComponent, BigNumberPipe],
         })
         .compileComponents();
 

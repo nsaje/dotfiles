@@ -61,7 +61,6 @@ class InventoryPlanningView(RESTAPIBaseView):
     def _remap_summary(data):
         if not data:
             return {}
-        print data
         return {
             'auction_count': data['bid_reqs'],
             'avg_cpm': data['total_win_price'] / float(data['win_notices'] or float('nan')) * 1000,
