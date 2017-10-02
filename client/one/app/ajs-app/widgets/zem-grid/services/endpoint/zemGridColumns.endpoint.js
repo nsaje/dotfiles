@@ -21,6 +21,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
                 'zemauth.can_see_id_columns_in_table',
                 'zemauth.can_view_account_agency_information'
             ],
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
             name: 'Agency ID',
             field: 'agency_id',
             type: zemGridConstants.gridColumnTypes.TEXT,
@@ -29,6 +31,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         accountId: {
             internal: 'zemauth.can_see_id_columns_in_table',
             shown: 'zemauth.can_see_id_columns_in_table',
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
             name: 'Account ID',
             field: 'account_id',
             type: zemGridConstants.gridColumnTypes.TEXT,
@@ -37,6 +41,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         campaignId: {
             internal: 'zemauth.can_see_id_columns_in_table',
             shown: 'zemauth.can_see_id_columns_in_table',
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
             name: 'Campaign ID',
             field: 'campaign_id',
             type: zemGridConstants.gridColumnTypes.TEXT,
@@ -45,6 +51,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         adGroupId: {
             internal: 'zemauth.can_see_id_columns_in_table',
             shown: 'zemauth.can_see_id_columns_in_table',
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
             name: 'Ad Group ID',
             field: 'ad_group_id',
             type: zemGridConstants.gridColumnTypes.TEXT,
@@ -53,6 +61,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         contentAdId: {
             internal: 'zemauth.can_see_id_columns_in_table',
             shown: 'zemauth.can_see_id_columns_in_table',
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
             name: 'Content Ad ID',
             field: 'content_ad_id',
             type: zemGridConstants.gridColumnTypes.TEXT,
@@ -61,6 +71,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         sourceId: {
             internal: 'zemauth.can_see_id_columns_in_table',
             shown: 'zemauth.can_see_id_columns_in_table',
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
             name: 'Source ID',
             field: 'source_id',
             type: zemGridConstants.gridColumnTypes.TEXT,
