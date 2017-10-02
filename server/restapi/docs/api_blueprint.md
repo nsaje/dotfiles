@@ -1501,6 +1501,14 @@ This endpoint supports creating multiple entries at once that are all appended t
 
 ## Blacklisting [/rest/v1/adgroups/{adGroupId}/publishers/]
 
+This endpoint allows you to manage publisher status on different levels.
+
+Optionally, you can assign a bid modifier to a publisher to modify the
+bidding price for that publisher. Publisher bid modifiers are currently
+only supported on `ADGROUP` level.
+
+*NOTE: Publisher bid modifiers are currently only supported on RTB sources*
+
 
 ### Get publisher status [GET /rest/v1/adgroups/{adGroupId}/publishers/]
 
@@ -1551,6 +1559,13 @@ This endpoint supports creating multiple entries at once that are all appended t
                 "status": "BLACKLISTED",
                 "level": "ADGROUP",
                 "source": "gumgum"
+            },
+            {
+                "name": "example.com/publisher3",
+                "status": "ENABLED",
+                "level": "ADGROUP",
+                "source": "gumgum",
+                "modifier": 0.8
             }
         ]
 
@@ -1569,6 +1584,13 @@ This endpoint supports creating multiple entries at once that are all appended t
                     "status": "BLACKLISTED",
                     "level": "ADGROUP",
                     "source": "gumgum"
+                },
+                {
+                    "name": "example.com/publisher3",
+                    "status": "ENABLED",
+                    "level": "ADGROUP",
+                    "source": "gumgum",
+                    "modifier": 0.8
                 }
             ]
         }
