@@ -172,14 +172,13 @@ class AccountsLoader(Loader):
 
     @cached_property
     def projections_map(self):
-        projections_dict = {}
-        for account_id in self.objs_ids:
-            projections_dict[account_id] = self._projections.row(account_id)
-        return projections_dict
+        # FIXME(nsaje): experimentally disable projections
+        return collections.defaultdict(lambda: None)
 
     @cached_property
     def projections_totals(self):
-        return self._projections.total()
+        # FIXME(nsaje): experimentally disable projections
+        return None
 
 
 class CampaignsLoader(Loader):
@@ -252,14 +251,13 @@ class CampaignsLoader(Loader):
 
     @cached_property
     def projections_map(self):
-        projections_dict = {}
-        for campaign_id in self.objs_ids:
-            projections_dict[campaign_id] = self._projections.row(campaign_id)
-        return projections_dict
+        # FIXME(nsaje): experimentally disable projections
+        return collections.defaultdict(lambda: None)
 
     @cached_property
     def projections_totals(self):
-        return self._projections.total()
+        # FIXME(nsaje): experimentally disable projections
+        return None
 
 
 class AdGroupsLoader(Loader):
