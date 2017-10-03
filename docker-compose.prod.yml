@@ -56,7 +56,9 @@ services:
         environment:
           VIRTUAL_HOST: "one-cb.zemanta.com"
           NEW_RELIC_APP_NAME: "Zemanta One (callback API)"
-          GUNICORN_WORKERS: "4"
+          GUNICORN_WORKERS: "6"
+          GUNICORN_THREADS: "1"
+          GUNICORN_WORKER_CLASS: "sync"
         mem_limit: 2g
         #   default cpu.cfs_period_us is 100000. That is 100% of one CPU core
         cpu_quota: 200000
