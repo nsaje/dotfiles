@@ -26,8 +26,9 @@ class AccountsLoaderTest(TestCase):
     def setUp(self):
         accounts = models.Account.objects.all()
         sources = models.Source.objects.all()
+        self.user = User.objects.get(pk=1)
 
-        self.loader = loaders.AccountsLoader(accounts, sources)
+        self.loader = loaders.AccountsLoader(accounts, sources, self.user)
 
     def test_from_constraints(self):
         loader = loaders.AccountsLoader.from_constraints(User.objects.get(pk=1), {
@@ -60,7 +61,7 @@ class AccountsLoaderTest(TestCase):
         accounts = models.Account.objects.all()
         sources = models.Source.objects.filter(pk=2)
 
-        loader = loaders.AccountsLoader(accounts, sources)
+        loader = loaders.AccountsLoader(accounts, sources, self.user)
 
         self.assertDictEqual(loader.settings_map, {1: {
             'archived': False,
@@ -80,8 +81,9 @@ class CampaignsLoaderTest(TestCase):
     def setUp(self):
         campaigns = models.Campaign.objects.all()
         sources = models.Source.objects.all()
+        self.user = User.objects.get(pk=1)
 
-        self.loader = loaders.CampaignsLoader(campaigns, sources)
+        self.loader = loaders.CampaignsLoader(campaigns, sources, self.user)
 
     def test_from_constraints(self):
         loader = loaders.CampaignsLoader.from_constraints(User.objects.get(pk=1), {
@@ -119,7 +121,7 @@ class CampaignsLoaderTest(TestCase):
         campaigns = models.Campaign.objects.all()
         sources = models.Source.objects.filter(pk=2)
 
-        loader = loaders.CampaignsLoader(campaigns, sources)
+        loader = loaders.CampaignsLoader(campaigns, sources, self.user)
 
         self.assertDictEqual(loader.settings_map, {
             1: {

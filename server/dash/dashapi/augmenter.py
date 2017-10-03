@@ -76,7 +76,7 @@ def augment_account(row, loader, is_base_level=False):
              'account_type', 'salesforce_url'],
             settings, row)
 
-        projections = loader.projections_map[account_id]
+        projections = loader.projections_map.get(account_id)
     else:
         projections = loader.projections_totals
 
@@ -120,7 +120,7 @@ def augment_campaign(row, loader, is_base_level=False):
         settings = loader.settings_map[campaign_id]
         copy_fields_if_exists(['status', 'archived', 'campaign_manager'], settings, row)
 
-        projections = loader.projections_map[campaign_id]
+        projections = loader.projections_map.get(campaign_id)
     else:
         projections = loader.projections_totals
 

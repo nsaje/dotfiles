@@ -527,7 +527,11 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_view_flat_fees',
-            shown: false  // FIXME(nsaje) experimentally disable projections
+            shown: [
+                'zemauth.can_view_flat_fees',
+                'zemauth.can_view_platform_cost_breakdown',
+                'zemauth.can_see_projections'
+            ],
         },
         totalFee: {
             name: 'Total Fee',
@@ -538,7 +542,11 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_view_flat_fees',
-            shown: false  // FIXME(nsaje) experimentally disable projections
+            shown: [
+                'zemauth.can_view_flat_fees',
+                'zemauth.can_view_platform_cost_breakdown',
+                'zemauth.can_see_projections'
+            ],
         },
         margin: {
             name: 'Margin',
@@ -825,7 +833,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_projections',
-            shown: false  // FIXME(nsaje) experimentally disable projections
+            shown: ['zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'],
         },
         pacing: {
             name: 'Pacing',
@@ -835,7 +843,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             help: 'Media spend divided by ideal media budget for selected date range.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            shown: false  // FIXME(nsaje) experimentally disable projections
+            shown: ['zemauth.can_view_platform_cost_breakdown', 'zemauth.can_see_projections'],
         },
         spendProjection: {
             name: 'Spend Projection',
@@ -846,7 +854,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
                   'selected date range based on the spend in the previous days.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            shown: false  // FIXME(nsaje) experimentally disable projections
+            shown: ['zemauth.can_view_platform_cost_breakdown', 'zemauth.can_see_projections'],
         },
         licenseFeeProjection: {
             name: 'License Fee Projection',
@@ -857,7 +865,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
                   'license fee in the previous days.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            shown: false  // FIXME(nsaje) experimentally disable projections
+            shown: ['zemauth.can_view_platform_cost_breakdown', 'zemauth.can_see_projections'],
         },
         totalFeeProjection: {
             name: 'Total Fee Projection',
@@ -868,7 +876,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
                   'license fee in the previous days and recognized flat fee.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            shown: false  // FIXME(nsaje) experimentally disable projections
+            shown: ['zemauth.can_view_platform_cost_breakdown', 'zemauth.can_view_flat_fees', 'zemauth.can_see_projections'], // eslint-disable-line max-len
         },
 
         // Optimisation metrics

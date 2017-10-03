@@ -81,16 +81,18 @@ class Loader(object):
 
 class AccountsLoader(Loader):
 
-    def __init__(self, accounts_qs, filtered_sources_qs, **kwargs):
+    def __init__(self, accounts_qs, filtered_sources_qs, user, **kwargs):
         accounts_qs = accounts_qs.select_related('agency')
 
         super(AccountsLoader, self).__init__(accounts_qs, **kwargs)
         self.filtered_sources_qs = filtered_sources_qs
+        self.user = user
 
     @classmethod
     def from_constraints(cls, user, constraints):
         return cls(
             constraints['allowed_accounts'], constraints['filtered_sources'],
+            user,
             start_date=constraints.get('date__gte'),
             end_date=constraints.get('date__lte')
         )
@@ -172,27 +174,34 @@ class AccountsLoader(Loader):
 
     @cached_property
     def projections_map(self):
-        # FIXME(nsaje): experimentally disable projections
-        return collections.defaultdict(lambda: None)
+        if not self.user.has_perm('zemauth.can_see_projections'):
+            return {}
+        projections_dict = {}
+        for account_id in self.objs_ids:
+            projections_dict[account_id] = self._projections.row(account_id)
+        return projections_dict
 
     @cached_property
     def projections_totals(self):
-        # FIXME(nsaje): experimentally disable projections
-        return None
+        if not self.user.has_perm('zemauth.can_see_projections'):
+            return None
+        return self._projections.total()
 
 
 class CampaignsLoader(Loader):
 
-    def __init__(self, campaigns_qs, filtered_sources_qs, **kwargs):
+    def __init__(self, campaigns_qs, filtered_sources_qs, user, **kwargs):
         super(CampaignsLoader, self).__init__(
             campaigns_qs.select_related('account'), **kwargs)
 
         self.filtered_sources_qs = filtered_sources_qs
+        self.user = user
 
     @classmethod
     def from_constraints(cls, user, constraints):
         return cls(
             constraints['allowed_campaigns'], constraints['filtered_sources'],
+            user,
             start_date=constraints.get('date__gte'),
             end_date=constraints.get('date__lte')
         )
@@ -251,13 +260,18 @@ class CampaignsLoader(Loader):
 
     @cached_property
     def projections_map(self):
-        # FIXME(nsaje): experimentally disable projections
-        return collections.defaultdict(lambda: None)
+        if not self.user.has_perm('zemauth.can_see_projections'):
+            return {}
+        projections_dict = {}
+        for campaign_id in self.objs_ids:
+            projections_dict[campaign_id] = self._projections.row(campaign_id)
+        return projections_dict
 
     @cached_property
     def projections_totals(self):
-        # FIXME(nsaje): experimentally disable projections
-        return None
+        if not self.user.has_perm('zemauth.can_see_projections'):
+            return None
+        return self._projections.total()
 
 
 class AdGroupsLoader(Loader):
