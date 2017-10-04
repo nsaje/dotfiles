@@ -1,11 +1,10 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs/Observable';
-import 'rxjs/add/observable/of';
-import 'rxjs/add/operator/delay';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
 
+import {RestApiResponse} from '../../shared/types/rest-api-response';
 import {Inventory} from './types/inventory';
 import {AvailableFilterOption} from './types/available-filter-option';
 import {SelectedFilters} from './types/selected-filters';
@@ -25,10 +24,6 @@ interface RequestProperties {
     body: FilterPayload;
 }
 
-interface InventoryResponse {
-    data: any;
-}
-
 const enum FilterField {
     Country,
     Device,
@@ -42,7 +37,7 @@ export class InventoryPlanningEndpoint {
 
     loadSummary (selectedFilters: SelectedFilters): Observable<Inventory> {
         const {method, params, body} = this.buildRequestProperties(selectedFilters);
-        return this.http.request<InventoryResponse>(
+        return this.http.request<RestApiResponse>(
             method,
             '/rest/internal/inventory-planning/summary',
             {params: params, body: body})
@@ -51,7 +46,7 @@ export class InventoryPlanningEndpoint {
 
     loadCountries (selectedFilters: SelectedFilters): Observable<AvailableFilterOption[]> {
         const {method, params, body} = this.buildRequestProperties(selectedFilters, FilterField.Country);
-        return this.http.request<InventoryResponse>(
+        return this.http.request<RestApiResponse>(
             method,
             '/rest/internal/inventory-planning/countries',
             {params: params, body: body})
@@ -60,7 +55,7 @@ export class InventoryPlanningEndpoint {
 
     loadPublishers (selectedFilters: SelectedFilters): Observable<AvailableFilterOption[]> {
         const {method, params, body} = this.buildRequestProperties(selectedFilters, FilterField.Publisher);
-        return this.http.request<InventoryResponse>(
+        return this.http.request<RestApiResponse>(
             method,
             '/rest/internal/inventory-planning/publishers',
             {params: params, body: body})
@@ -69,7 +64,7 @@ export class InventoryPlanningEndpoint {
 
     loadDevices (selectedFilters: SelectedFilters): Observable<AvailableFilterOption[]> {
         const {method, params, body} = this.buildRequestProperties(selectedFilters, FilterField.Device);
-        return this.http.request<InventoryResponse>(
+        return this.http.request<RestApiResponse>(
             method,
             '/rest/internal/inventory-planning/device-types',
             {params: params, body: body})

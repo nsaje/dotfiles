@@ -1,7 +1,8 @@
 import {SimpleChange} from '@angular/core';
 import {TestBed, ComponentFixture, async, fakeAsync, tick} from '@angular/core/testing';
+
+import {SharedModule} from '../../../../shared/shared.module';
 import {InventoryPlanningBreakdownComponent} from './inventory-planning-breakdown.component';
-import {BigNumberPipe} from '../../big-number.pipe';
 
 describe('InventoryPlanningBreakdownComponent', () => {
     const testOption1 = {
@@ -25,7 +26,8 @@ describe('InventoryPlanningBreakdownComponent', () => {
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [InventoryPlanningBreakdownComponent, BigNumberPipe],
+            imports: [SharedModule],
+            declarations: [InventoryPlanningBreakdownComponent],
         })
         .compileComponents();
 

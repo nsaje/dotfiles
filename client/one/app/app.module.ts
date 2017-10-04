@@ -1,4 +1,5 @@
 import {BrowserModule} from '@angular/platform-browser';
+import {HttpClientXsrfModule} from '@angular/common/http';
 import {UpgradeModule} from '@angular/upgrade/static';
 import {ErrorHandler, NgModule} from '@angular/core';
 
@@ -19,12 +20,17 @@ import {ViewsModule} from './views/views.module';
 @NgModule({
     imports: [
         BrowserModule,
+        HttpClientXsrfModule.withOptions({
+            cookieName: 'csrftoken',
+            headerName: 'X-CSRFToken',
+        }),
         UpgradeModule,
         CoreModule,
         ViewsModule,
     ],
     providers: [
         {provide: ErrorHandler, useClass: RavenErrorHandler},
+        upgradeProvider('zemPermissions'),
     ],
 })
 export class AppModule {
@@ -37,4 +43,12 @@ export class AppModule {
 
         this.upgrade.bootstrap(document.body, ['one'], {strictDi: true});
     }
+}
+
+function upgradeProvider (ajsName: string, name?: string): any {
+    return {
+        provide: name || ajsName,
+        useFactory: (i: any) => i.get(ajsName),
+        deps: ['$injector'],
+    };
 }

@@ -10,6 +10,10 @@ import {Pipe, PipeTransform} from '@angular/core';
 @Pipe({name: 'bigNumber'})
 export class BigNumberPipe implements PipeTransform {
     transform (value: number): string {
+        if (!value) {
+            return '';
+        }
+
         const abs = Math.abs(value);
         if (abs >= Math.pow(10, 12)) {  // tslint:disable-line
             return (value / Math.pow(10, 12)).toFixed() + ' T'; // tslint:disable-line

@@ -76,7 +76,8 @@ export class InventoryPlanningBreakdownComponent implements OnInit, OnChanges, O
         } else {
             searchQuery = searchQuery.toLowerCase();
             allSearchResults = this.options.filter(option => {
-                return option.name.toLowerCase().indexOf(searchQuery) !== -1;
+                const optionName = option.name || option.value || '';
+                return optionName.toLowerCase().indexOf(searchQuery) !== -1;
             });
         }
 

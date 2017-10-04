@@ -1,30 +1,20 @@
 import {CommonModule} from '@angular/common';
-import {HttpClientModule, HttpClientXsrfModule} from '@angular/common/http';
+import {HttpClientModule} from '@angular/common/http';
 import {NgModule} from '@angular/core';
+
+import {BigNumberPipe} from './big-number/big-number.pipe';
 
 @NgModule({
     imports: [
+        CommonModule,
         HttpClientModule,
-        HttpClientXsrfModule.withOptions({
-            cookieName: 'csrftoken',
-            headerName: 'X-CSRFToken',
-        }),
     ],
     declarations: [
+        BigNumberPipe,
     ],
     exports: [
         CommonModule,
-    ],
-    providers: [
-        ng1ServiceProvider('zemPermissions'),
+        BigNumberPipe,
     ],
 })
 export class SharedModule {}
-
-
-function ng1ServiceProvider (serviceName: string): any {
-    return {
-        provide: serviceName,
-        useFactory: (i: any) => i.get(serviceName), deps: ['$injector'],
-    };
-}
