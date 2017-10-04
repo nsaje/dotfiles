@@ -459,6 +459,7 @@ class B1SourcesGroupSettingsForm(forms.Form):
 
     def __init__(self, ad_group_settings, *args, **kwargs):
         self.ad_group_settings = ad_group_settings
+        self.bcm_modifiers = self.ad_group_settings.ad_group.get_bcm_modifiers()
         super(B1SourcesGroupSettingsForm, self).__init__(*args, **kwargs)
 
     def clean_b1_sources_group_cpc_cc(self):
@@ -467,8 +468,17 @@ class B1SourcesGroupSettingsForm(forms.Form):
             return cpc_cc
 
         validation_helpers.validate_b1_sources_group_cpc_cc(
-            cpc_cc, self.ad_group_settings)
+            cpc_cc, self.ad_group_settings, self.bcm_modifiers)
         return cpc_cc
+
+    def clean_b1_sources_group_daily_budget(self):
+        daily_budget_cc = self.cleaned_data.get('b1_sources_group_daily_budget_cc')
+        if daily_budget_cc is None:
+            return daily_budget_cc
+
+        validation_helpers.validate_b1_sources_group_daily_budget_cc(
+            daily_budget_cc, self.ad_group_settings, self.bcm_modifiers)
+        return daily_budget_cc
 
 
 class AdGroupSourceSettingsForm(forms.Form):

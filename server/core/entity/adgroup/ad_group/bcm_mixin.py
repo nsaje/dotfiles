@@ -7,6 +7,17 @@ from utils import k1_helper, numbers
 
 
 class AdGroupBCMMixin(object):
+
+    def get_bcm_modifiers(self):
+        modifiers = None
+        if self.campaign.account.uses_bcm_v2:
+            fee, margin = self.get_todays_fee_and_margin()
+            modifiers = {
+                'fee': fee,
+                'margin': margin,
+            }
+        return modifiers
+
     def get_todays_fee_and_margin(self):
         todays_budget = core.bcm.BudgetLineItem.objects \
             .filter(campaign_id=self.campaign_id) \
@@ -91,7 +102,7 @@ class AdGroupBCMMixin(object):
         if not number:
             return
         including_fee_and_margin = core.bcm.calculations.apply_fee_and_margin(number, fee, margin)
-        return numbers.round_decimal_floor(including_fee_and_margin)
+        return numbers.round_decimal_floor(including_fee_and_margin, places=0)
 
     def _transform_fractional_value(self, number, fee, margin):
         if not number:

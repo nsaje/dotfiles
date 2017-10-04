@@ -9,18 +9,20 @@ LANDING_MODE_PREVENT_UPDATE = ['daily_budget_cc', 'state']
 
 
 def validate_ad_group_source_updates(ad_group_source, updates, ad_group_settings, ad_group_source_settings):
-    _validate_ad_group_source_cpc(ad_group_source, updates)
-    _validate_ad_group_source_daily_budget(ad_group_source, updates)
+    bcm_modifiers = ad_group_source.ad_group.get_bcm_modifiers()
+    _validate_ad_group_source_cpc(ad_group_source, updates, bcm_modifiers)
+    _validate_ad_group_source_daily_budget(ad_group_source, updates, bcm_modifiers)
     _validate_ad_group_source_state(ad_group_source, updates, ad_group_settings, ad_group_source_settings)
 
 
-def _validate_ad_group_source_cpc(ad_group_source, updates):
+def _validate_ad_group_source_cpc(ad_group_source, updates, bcm_modifiers):
     if 'cpc_cc' in updates:
         assert isinstance(updates['cpc_cc'], decimal.Decimal)
         try:
             validation_helpers.validate_ad_group_source_cpc_cc(
                 updates['cpc_cc'],
                 ad_group_source,
+                bcm_modifiers,
             )
             cpc_constraints.validate_cpc(
                 updates['cpc_cc'],
@@ -33,13 +35,14 @@ def _validate_ad_group_source_cpc(ad_group_source, updates):
             })
 
 
-def _validate_ad_group_source_daily_budget(ad_group_source, updates):
+def _validate_ad_group_source_daily_budget(ad_group_source, updates, bcm_modifiers):
     if 'daily_budget_cc' in updates:
         assert isinstance(updates['daily_budget_cc'], decimal.Decimal)
         try:
             validation_helpers.validate_daily_budget_cc(
                 updates['daily_budget_cc'],
                 ad_group_source.source.source_type,
+                bcm_modifiers,
             )
         except django.forms.ValidationError as e:
             raise utils.exc.ValidationError(errors={

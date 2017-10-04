@@ -8,8 +8,10 @@ from timezone_field import TimeZoneField
 
 from dash import constants
 
+import bcm_mixin
 
-class SourceType(models.Model):
+
+class SourceType(models.Model, bcm_mixin.SourceTypeBCMMixin):
     class Meta:
         app_label = 'dash'
         verbose_name = "Source Type"
@@ -71,10 +73,10 @@ class SourceType(models.Model):
 
     budgets_tz = TimeZoneField(default='America/New_York')
 
-    def get_min_cpc(self, ad_group_settings):
+    def get_min_cpc(self, ad_group_settings, bcm_modifiers=None):
         """ Some source types have different minimal CPCs depending on the settings.
             Encode these special cases here. """
-        min_cpc = self.min_cpc
+        min_cpc = self.get_etfm_min_cpc(bcm_modifiers)
         if self.type == constants.SourceType.YAHOO and ad_group_settings.target_devices == [constants.AdTargetDevice.DESKTOP]:
             min_cpc = max(min_cpc, Decimal(0.25))
         return min_cpc
