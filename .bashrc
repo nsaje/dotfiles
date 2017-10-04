@@ -59,6 +59,7 @@ export PS1="\[\033[36m\]\u\[\033[m\]@\[\033[32m\]\h:\[$txtcyn\]\$git_branch\[$tx
 # alias nvim
 #alias vi="nvim"
 alias gcom="git checkout master"
+alias dcp="docker-compose"
 
 
 export GOPATH=$HOME/.go

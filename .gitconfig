@@ -13,3 +13,4 @@
 [core]
 	pager = diff-so-fancy | less --tabs=4 -RFX
 	editor = vim
+	excludesfile = /home/nsaje/.gitignore_global

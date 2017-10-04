@@ -31,11 +31,14 @@ values."
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
    '(
+     csv
      javascript
+     typescript
      html
      yaml
      rust
      python
+     ;; elpy
      csharp
      sql
      go
@@ -54,8 +57,7 @@ values."
      git
      markdown
      imenu-list
-     (org :variables
-          org-projectile-file "~/Dropbox/org/TODOs.org")
+     org
      (shell :variables
             shell-default-height 20
             shell-default-position 'right)
@@ -74,13 +76,14 @@ values."
                                       flyspell-lazy
                                       github-theme
                                       solarized-theme
+                                      doom-themes
                                       js-comint
                                       sr-speedbar
                                       all-the-icons)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
-   dotspacemacs-excluded-packages '()
+   dotspacemacs-excluded-packages '(org-projectile)
    ;; Defines the behaviour of Spacemacs when installing packages.
    ;; Possible values are `used-only', `used-but-keep-unused' and `all'.
    ;; `used-only' installs only explicitly used packages and uninstall any
@@ -150,9 +153,9 @@ values."
    ;; Press <SPC> T n to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
    dotspacemacs-themes '(solarized-light
-                         leuven
+                         doom-one-light
+                         doom-one
                          github
-                         flatui
                          spacemacs-light
                          )
    ;; If non nil the cursor color matches the state color in GUI Emacs.
@@ -240,7 +243,7 @@ values."
    ;; `right-then-bottom'. right-then-bottom tries to display the frame to the
    ;; right; if there is insufficient space it displays it at the bottom.
    ;; (default 'bottom)
-   dotspacemacs-which-key-position 'right-then-bottom
+   dotspacemacs-which-key-position 'bottom
    ;; If non nil a progress bar is displayed when spacemacs is loading. This
    ;; may increase the boot time on some systems and emacs builds, set it to
    ;; nil to boost the loading time. (default t)
@@ -345,9 +348,6 @@ you should place your code here."
       (define-key imenu-list-major-mode-map (kbd "C-w C-w") 'evil-window-next)
       (define-key imenu-list-major-mode-map (kbd "C-w q") 'delete-window))
 
-    ;; (with-eval-after-load 'org-agenda
-    ;;   (require 'org-projectile)
-    ;;   (push "~/org/TODOs.org" org-agenda-files))
     (with-eval-after-load 'company
       (define-key company-active-map (kbd "C-w") 'evil-delete-backward-word)
       (define-key company-active-map (kbd "C-k") 'company-select-previous)
@@ -388,12 +388,13 @@ you should place your code here."
                   ("PHONE" :foreground "forest green" :weight bold))))
     (setq org-directory "~/Dropbox/org")
     (setq org-default-notes-file "~/Dropbox/org/TODOs.org")
+    (setq org-clock-idle-time 10)
 
     ;; Capture templates for: TODO tasks, Notes, appointments, phone calls, meetings, and org-protocol
     (setq org-capture-templates
           (quote (("i" "inbox" entry (file+headline "~/Dropbox/org/TODOs.org" "INBOX")
                   "* TODO %?\n:PROPERTIES:\n:CREATED: %U\n:END:")
-                  ("n" "note" entry (file+headline "~/Dropbox/org/TODOs.org" "INBOX")
+                  ("n" "note" entry (file+headline "~/Dropbox/org/TODOs.org" "Notes")
                   "* %? :NOTE:\n%U\n")
                   ("m" "Meeting" entry (file+headline "~/Dropbox/org/TODOs.org" "Meetings")
                   "* MEETING on %U with %? :MEETING:\n:PROPERTIES:\n:CREATED: %U\n:END:"))))
@@ -405,6 +406,7 @@ you should place your code here."
     (setq org-refile-use-outline-path t)                  ; Show full paths for refiling
     (global-set-key (kbd "<f12>") 'org-agenda)
     (setq org-mu4e-link-query-in-headers-mode nil)
+    ;; END ORG MODE
 
     ;; persp keybindings
     (define-key winum-keymap "\M-0" 'spacemacs/persp-switch-to-0)
@@ -431,8 +433,6 @@ you should place your code here."
       (push '("state.spec.js" "state.js") projectile-other-file-alist)
      )
 
-    ;; (push "dist" 'projectile-globally-ignored-directories)
-    ;; (push "node_modules" 'projectile-globally-ignored-directories)
     (setq projectile-use-git-grep 1)
 
     ;; lazy spellcheck
@@ -451,51 +451,9 @@ you should place your code here."
     ; neotree hidden
     (setq neo-hidden-regexp-list '("^\\." "\\.cs\\.meta$" "\\.pyc$" "~$" "^#.*#$" "\\.elc$" "__pycache__"))
     (setq projectile-switch-project-action 'neotree-projectile-action)
-    (setq neo-theme 'icons)
+    (setq neo-theme 'classic)
 
+    ; theme customization
+    (setq solarized-use-more-italic t)
+    (setq solarized-high-contrast-mode-line nil)
 )
-
-;; Do not write anything past this comment. This is where Emacs will
-;; auto-generate custom variable definitions.
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(company-idle-delay 0)
- '(flycheck-check-syntax-automatically (quote (save new-line mode-enabled)))
- '(org-capture-templates
-   (quote
-    (("p" "Project Todo" entry
-      (function
-       (lambda nil
-         (org-projectile:location-for-project
-          (org-projectile:project-heading-from-file
-           (org-capture-get :original-file)))))
-      "* TODO %?
-" :empty-lines 1)
-     ("t" "todo" entry
-      (file+headline "~/Dropbox/org/TODOs.org" "General")
-      "* TODO %?
-")
-     ("n" "note" entry
-      (file+headline "~/Dropbox/org/TODOs.org" "Notes")
-      "* %? :NOTE:
-")
-     ("m" "Meeting" entry
-      (file+headline "~/Dropbox/org/TODOs.org" "Meetings")
-      "* MEETING with %? :MEETING:
-%U
-
-"))))
- '(package-selected-packages
-   (quote
-    (all-the-icons memoize font-lock+ yapfify yaml-mode xterm-color ws-butler winum which-key web-mode web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package unfill toml-mode toc-org tagedit sr-speedbar sql-indent spaceline solarized-theme smeargle slim-mode simpleclip shell-pop scss-mode sass-mode restart-emacs rainbow-delimiters racer pyvenv pytest pyenv-mode py-isort pug-mode popwin pip-requirements persp-mode pcre2el paradox orgit org-projectile org-present org-pomodoro org-download org-bullets open-junk-file omnisharp neotree mwim multi-term move-text mmm-mode markdown-toc magit-gitflow macrostep lorem-ipsum livid-mode live-py-mode linum-relative link-hint less-css-mode json-mode js2-refactor js-doc js-comint info+ indent-guide imenu-list hy-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-pydoc helm-projectile helm-mode-manager helm-make helm-gtags helm-gitignore helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag google-translate golden-ratio go-guru go-eldoc gnuplot github-theme gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ gh-md ggtags fuzzy flyspell-lazy flyspell-correct-helm flycheck-rust flycheck-pos-tip flx-ido flatui-theme fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help emmet-mode elisp-slime-nav dumb-jump diff-hl define-word cython-mode company-web company-tern company-statistics company-quickhelp company-go company-anaconda column-enforce-mode coffee-mode clean-aindent-mode cargo auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell)))
- '(solarized-high-contrast-mode-line nil)
- '(solarized-use-more-italic t))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )

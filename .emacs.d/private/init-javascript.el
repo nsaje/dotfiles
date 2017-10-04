@@ -282,7 +282,6 @@ Merge RLT and EXTRA-RLT, items in RLT has *higher* priority."
 
 (cond
  (
-  (setq auto-mode-alist (cons '("\\.ts\\'" . js2-mode) auto-mode-alist))
   (setq auto-mode-alist (cons '("\\.js\\(\\.erb\\)?\\'" . js2-mode) auto-mode-alist))
   ;; facebook ReactJS, use Emacs25 to fix component indentation problem
   ;; @see https://github.com/mooz/js2-mode/issues/291
@@ -291,8 +290,7 @@ Merge RLT and EXTRA-RLT, items in RLT has *higher* priority."
   (add-to-list 'auto-mode-alist '("\\.mock.js\\'" . js-mode))
   (add-to-list 'interpreter-mode-alist (cons "node" 'js2-mode)))
  (t
-  (setq auto-mode-alist (cons '("\\.js\\(\\.erb\\)?\\'" . js-mode) auto-mode-alist))
-  (setq auto-mode-alist (cons '("\\.ts\\'" . js-mode) auto-mode-alist))))
+  (setq auto-mode-alist (cons '("\\.js\\(\\.erb\\)?\\'" . js-mode) auto-mode-alist))))
 (add-to-list 'auto-mode-alist '("\\.babelrc\\'" . js-mode))
 
 ;; @see https://github.com/felipeochoa/rjsx-mode/issues/33
