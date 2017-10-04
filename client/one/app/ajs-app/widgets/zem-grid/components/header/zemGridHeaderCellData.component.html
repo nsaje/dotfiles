@@ -3,13 +3,13 @@
         <div>
             <a ng-if="ctrl.column.data.order" href ng-class="ctrl.column.data.nameCssClass"
                ng-click="ctrl.setOrder(column)" title="{{ ctrl.column.data.name }}">
-                {{ ctrl.column.data.name }}
+                {{ ctrl.column.data.name | limitTo: ctrl.maxNameLength }}{{ctrl.column.data.name.length > ctrl.maxNameLength ? '...' : ''}}
                 <span ng-if="ctrl.column.data.breakdownByStructureText">
                     {{ctrl.column.data.breakdownByStructureText}}
                 </span>
             </a>
             <span ng-if="!ctrl.column.data.order" ng-class="ctrl.column.data.nameCssClass" title="{{ ctrl.column.data.name }}">
-                {{ ctrl.column.data.name }}
+                {{ ctrl.column.data.name | limitTo: ctrl.maxNameLength }}{{ctrl.column.data.name.length > ctrl.maxNameLength ? '...' : ''}}
                 <span ng-if="ctrl.column.data.breakdownByStructureText">
                     {{ctrl.column.data.breakdownByStructureText}}
                 </span>

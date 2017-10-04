@@ -17,6 +17,7 @@ angular.module('one.widgets').directive('zemGridHeaderCellData', function () {
 
             vm.model = {};
             vm.setOrder = setOrder;
+            vm.maxNameLength = 22;
 
             initialize();
 
