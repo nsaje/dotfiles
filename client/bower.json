@@ -6,8 +6,6 @@
     "jquery": "3.2.1",
     "moment": "2.18.1",
     "angular-ui-select2": "0.0.5",
-    "highcharts-release": "4.2.7",
-    "highcharts-ng": "0.0.13",
     "angular": "1.5.8",
     "angular-sanitize": "1.5.8",
     "bootstrap": "3.3.7",

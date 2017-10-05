@@ -50,12 +50,12 @@ angular.module('one.widgets').service('zemChartParser', function ($window, zemCh
         // x axis with value 0 on the bottom of the graph if there is
         // no data to be displayed (or is always 0).
         if (!chart.hasData) {
-            for (i = 0; i < chart.config.options.yAxis.length; i++) {
-                chart.config.options.yAxis[i].max = 10;
+            for (i = 0; i < chart.config.yAxis.length; i++) {
+                chart.config.yAxis[i].max = 10;
             }
         } else {
-            for (i = 0; i < chart.config.options.yAxis.length; i++) {
-                chart.config.options.yAxis[i].max = null;
+            for (i = 0; i < chart.config.yAxis.length; i++) {
+                chart.config.yAxis[i].max = null;
             }
         }
     }
@@ -65,15 +65,15 @@ angular.module('one.widgets').service('zemChartParser', function ($window, zemCh
         // they are the same, let charts figure it out because otherwise it
         // renders strangely.
         if (dateRange.startDate.valueOf() !== dateRange.endDate.valueOf()) {
-            chart.config.options.xAxis.min = moment(dateRange.startDate)
+            chart.config.xAxis.min = moment(dateRange.startDate)
                 .add(dateRange.startDate.utcOffset(), 'minutes')
                 .valueOf();
-            chart.config.options.xAxis.max = moment(dateRange.endDate)
+            chart.config.xAxis.max = moment(dateRange.endDate)
                 .add(dateRange.endDate.utcOffset(), 'minutes')
                 .valueOf();
         } else {
-            chart.config.options.xAxis.min = null;
-            chart.config.options.xAxis.max = null;
+            chart.config.xAxis.min = null;
+            chart.config.xAxis.max = null;
         }
     }
 
@@ -254,7 +254,7 @@ angular.module('one.widgets').service('zemChartParser', function ($window, zemCh
                 }
             }
 
-            chart.config.options.yAxis[index].labels = {
+            chart.config.yAxis[index].labels = {
                 format: axisFormat
             };
         });

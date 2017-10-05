@@ -22,4 +22,4 @@
     </li>
 </ul>
 <div class="zem-chart__no-data" ng-if="$ctrl.initialized && !$ctrl.chart.hasData && !$ctrl.chart.isLoading"><span>No data</span></div>
-<div ng-if="$ctrl.initialized" highchart config="$ctrl.chart.config" class="zem-chart__container"></div>
+<highchart ng-if="$ctrl.initialized" config="$ctrl.chart.config" class="zem-chart__container"></highchart>

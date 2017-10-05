@@ -10,9 +10,7 @@ angular.module('one.widgets').service('zemChartObject', function () {
             usedColors: [],
             items: [],
         };
-        this.config = {
-            options: createHighChartDefaults()
-        };
+        this.config = createHighChartDefaults();
 
         this.clearData = function () {
             this.hasData = false;
