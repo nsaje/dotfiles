@@ -429,8 +429,7 @@ class AdGroupsView(K1APIView):
         ad_groups_settings,\
             campaigns_settings_map,\
             accounts_settings_map,\
-            accounts_license_fees_map,\
-            campaigns_margins_map = self._get_settings_maps(ad_group_ids, source_types, slugs)
+            campaigns_budgets_map = self._get_settings_maps(ad_group_ids, source_types, slugs)
 
         campaign_goal_types = self._get_campaign_goal_types(campaigns_settings_map.keys())
         campaign_goals = self._get_campaign_goals(campaigns_settings_map.keys())
@@ -451,8 +450,11 @@ class AdGroupsView(K1APIView):
                 include_global=False  # global blacklist is handled separately by the bidder, no need to duplicate work
             )
 
-            license_fee = accounts_license_fees_map.get(ad_group.campaign.account_id)
-            margin = campaigns_margins_map.get(ad_group.campaign.id)
+            license_fee = None
+            margin = None
+            if ad_group.campaign_id in campaigns_budgets_map:
+                license_fee = campaigns_budgets_map[ad_group.campaign_id].credit.license_fee
+                margin = campaigns_budgets_map[ad_group.campaign_id].margin
 
             max_cpm = ad_group_settings.get_external_max_cpm(
                 ad_group.campaign.account,
@@ -591,28 +593,17 @@ class AdGroupsView(K1APIView):
                              .only('account_id', 'whitelist_publisher_groups', 'blacklist_publisher_groups'))
         accounts_settings_map = {accs.account_id: accs for accs in accounts_settings}
 
-        # FIXME: remove the usage of list() inside this queryset
-        # At the time of writing this code one test failed when running this
-        # code (while another one passed) with an error that looks like
-        # some internal Django bug which we didn't research.
-        ad_groups = dash.models.AdGroup.objects.filter(pk__in=list(
-            ad_groups_settings.values_list('ad_group_id', flat=True)))
-        accounts_license_fees_map = dict(
-            dash.models.CreditLineItem.objects.filter(
-                account__campaign__adgroup__in=ad_groups,
-            ).filter_active().distinct('account_id').values_list('account_id', 'license_fee')
-        )
-        campaigns_margins_map = dict(
-            dash.models.BudgetLineItem.objects.filter(
-                campaign__adgroup__in=ad_groups,
-            ).filter_today().distinct('campaign_id').values_list('campaign_id', 'margin')
-        )
+        budgets = dash.models.BudgetLineItem.objects.all().filter_today().distinct('campaign_id').select_related('credit')
+        if ad_group_ids:
+            budgets = budgets.filter(campaign__adgroup__in=ad_group_ids)
+        campaigns_budgets_map = {
+            budget.campaign_id: budget for budget in budgets
+        }
 
         return ad_groups_settings,\
             campaigns_settings_map,\
             accounts_settings_map,\
-            accounts_license_fees_map,\
-            campaigns_margins_map
+            campaigns_budgets_map
 
 
 class AdGroupStatsView(K1APIView):
@@ -750,17 +741,13 @@ class AdGroupSourcesView(K1APIView):
                                     .select_related('ad_group_source__source__source_type',
                                                     'ad_group_source__ad_group__campaign__account'))
 
-        # build a map of today's campaign margins and account license fees
-        account_license_fees = dict(
-            dash.models.CreditLineItem.objects.filter(
-                account__campaign__adgroup__in=ad_group_ids,
-            ).filter_active().distinct('account_id').values_list('account_id', 'license_fee')
-        )
-        campaign_margins = dict(
-            dash.models.BudgetLineItem.objects.filter(
-                campaign__adgroup__in=ad_group_ids,
-            ).filter_today().distinct('campaign_id').values_list('campaign_id', 'margin')
-        )
+        # build a map of today's campaign budgets
+        budgets = dash.models.BudgetLineItem.objects.all().filter_today().distinct('campaign_id').select_related('credit')
+        if ad_group_ids:
+            budgets = budgets.filter(campaign__adgroup__in=ad_group_ids)
+        campaigns_budgets_map = {
+            budget.campaign_id: budget for budget in budgets
+        }
 
         # build the list of objects
         ad_group_sources = []
@@ -778,8 +765,12 @@ class AdGroupSourcesView(K1APIView):
             )
 
             campaign = ad_group_source_settings.ad_group_source.ad_group.campaign
-            license_fee = account_license_fees.get(campaign.account.id)
-            margin = campaign_margins.get(campaign.id)
+
+            license_fee = None
+            margin = None
+            if campaign.id in campaigns_budgets_map:
+                license_fee = campaigns_budgets_map[campaign.id].credit.license_fee
+                margin = campaigns_budgets_map[campaign.id].margin
 
             cpc_cc = ad_group_source_settings.get_external_cpc_cc(
                 campaign.account,
