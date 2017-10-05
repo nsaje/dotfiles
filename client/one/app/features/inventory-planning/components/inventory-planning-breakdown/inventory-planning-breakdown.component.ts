@@ -22,6 +22,7 @@ export class InventoryPlanningBreakdownComponent implements OnInit, OnChanges, O
     @Input() breakdownName: string;
     @Input() options: AvailableFilterOption[];
     @Input() selected: SelectedFilterOption[];
+    @Input() isLoading: boolean;
     @Output() onToggle = new EventEmitter<string>();
 
     searchQuery: string = '';

@@ -1,16 +1,37 @@
 @import 'variables';
+@import '../../../../styles/mixins.less';
 
 .zem-inventory-planning-summary {
+    position: relative;
     display: table;
     table-layout: fixed;
     height: 100%;
     width: 100%;
 }
 
-.zem-inventory-planning-summary__info-container {
+.zem-inventory-planning-summary__loader {
+    position: absolute;
+    .position-properties(0);
+    z-index: 1;
+    width: 100%;
+    height: auto;
+}
+
+.zem-inventory-planning-summary__section {
+    position: relative;
     display: table-cell;
-    width: 300px;
     padding: @default-spacing;
+}
+
+.zem-inventory-planning-summary__section--loading:before {
+    content: '';
+    position: absolute;
+    .position-properties(0);
+    background-color: fade(white, 75%);
+}
+
+.zem-inventory-planning-summary__info-container {
+    width: 300px;
     text-align: center;
     vertical-align: middle;
     background-color: @secondary-color;
@@ -43,9 +64,7 @@
 }
 
 .zem-inventory-planning-summary__chart-container {
-    display: table-cell;
     width: 100%;
-    padding: @default-spacing;
 }
 
 .zem-inventory-planning-summary__spacing {

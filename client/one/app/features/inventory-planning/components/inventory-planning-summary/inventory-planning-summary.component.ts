@@ -11,4 +11,5 @@ import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
 export class InventoryPlanningSummaryComponent {
     @Input() auctionCount: number;
     @Input() avgCpm: number;
+    @Input() isLoading: boolean;
 }

@@ -16,10 +16,35 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
     }
 
     private refreshData (selectedFilters: SelectedFilters) {
+        this.setState({
+            ...this.state,
+            requests: {
+                summary: {
+                    inProgress: true,
+                },
+                countries: {
+                    inProgress: true,
+                },
+                publishers: {
+                    inProgress: true,
+                },
+                devices: {
+                    inProgress: true,
+                },
+            },
+        });
+
         this.endpoint.loadSummary(selectedFilters).subscribe(inventory => {
             this.setState({
                 ...this.state,
                 inventory: inventory,
+                requests: {
+                    ...this.state.requests,
+                    summary: {
+                        ...this.state.requests.summary,
+                        inProgress: false,
+                    },
+                },
             });
         });
         this.endpoint.loadCountries(selectedFilters).subscribe(countries => {
@@ -28,6 +53,13 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
                 availableFilters: {
                     ...this.state.availableFilters,
                     countries: countries,
+                },
+                requests: {
+                    ...this.state.requests,
+                    countries: {
+                        ...this.state.requests.countries,
+                        inProgress: false,
+                    },
                 },
             });
         });
@@ -38,6 +70,13 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
                     ...this.state.availableFilters,
                     publishers: publishers,
                 },
+                requests: {
+                    ...this.state.requests,
+                    publishers: {
+                        ...this.state.requests.publishers,
+                        inProgress: false,
+                    },
+                },
             });
         });
         this.endpoint.loadDevices(selectedFilters).subscribe(devices => {
@@ -46,6 +85,13 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
                 availableFilters: {
                     ...this.state.availableFilters,
                     devices: devices,
+                },
+                requests: {
+                    ...this.state.requests,
+                    devices: {
+                        ...this.state.requests.devices,
+                        inProgress: false,
+                    },
                 },
             });
         });

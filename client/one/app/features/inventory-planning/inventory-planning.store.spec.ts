@@ -65,6 +65,20 @@ describe('InventoryPlanningStore', () => {
 
     it('should correctly refresh data on init', () => {
         expect(store.state).toEqual({
+            requests: {
+                summary: {
+                    inProgress: false,
+                },
+                countries: {
+                    inProgress: false,
+                },
+                publishers: {
+                    inProgress: false,
+                },
+                devices: {
+                    inProgress: false,
+                },
+            },
             inventory: {auctionCount: 100000, avgCpm: 2},
             availableFilters: {
                 countries: availableCountries,

@@ -1,5 +1,8 @@
 <h2 class="zem-inventory-planning-breakdown__title">{{breakdownName}}</h2>
-<div class="zem-inventory-planning-breakdown__container">
+<div class="zem-inventory-planning-breakdown__container"
+     [ngClass]="{'zem-inventory-planning-breakdown__container--loading': isLoading}">
+    <div *ngIf="isLoading" class="loader zem-inventory-planning-breakdown__loader"></div>
+
     <div class="zem-inventory-planning-breakdown__search-container">
         <input type="text" placeholder="Search for {{breakdownName}} ..." class="input-text" #searchQueryInput (keyup)="search$.next(searchQueryInput.value)" />
     </div>

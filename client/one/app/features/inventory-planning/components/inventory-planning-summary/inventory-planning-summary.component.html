@@ -1,15 +1,23 @@
-<div class="custom-panel zem-inventory-planning-summary__info-container">
+<div *ngIf="isLoading" class="loader zem-inventory-planning-summary__loader"></div>
+
+<div class="custom-panel zem-inventory-planning-summary__section zem-inventory-planning-summary__info-container"
+     [ngClass]="{'zem-inventory-planning-summary__section--loading': isLoading}">
     <div class="icon hammer-icon"></div>
     <div class="zem-inventory-planning-summary__value-name">Number of auctions:</div>
     <div class="zem-inventory-planning-summary__value">{{auctionCount | bigNumber}}</div>
 </div>
 <div class="zem-inventory-planning-summary__spacing"></div>
-<div class="custom-panel zem-inventory-planning-summary__info-container">
+<div class="custom-panel zem-inventory-planning-summary__section zem-inventory-planning-summary__info-container"
+     [ngClass]="{'zem-inventory-planning-summary__section--loading': isLoading}">
     <div class="icon money-icon"></div>
     <div class="zem-inventory-planning-summary__value-name">Average CPM:</div>
-    <div class="zem-inventory-planning-summary__value">${{avgCpm | number}}</div>
+    <div class="zem-inventory-planning-summary__value">
+        <ng-container *ngIf="avgCpm">$</ng-container>
+        {{avgCpm | number}}
+    </div>
 </div>
 <div class="zem-inventory-planning-summary__spacing"></div>
-<div class="custom-panel zem-inventory-planning-summary__chart-container">
+<div class="custom-panel zem-inventory-planning-summary__section zem-inventory-planning-summary__chart-container"
+     [ngClass]="{'zem-inventory-planning-summary__section--loading': isLoading}">
     Chart placeholder
 </div>

@@ -1,4 +1,5 @@
 @import 'variables';
+@import '../../../../styles/mixins.less';
 
 .zem-inventory-planning-breakdown {
     display: block;
@@ -10,10 +11,27 @@
     height: 100%;
 }
 
+.zem-inventory-planning-breakdown__container--loading:before {
+    content: '';
+    position: absolute;
+    .position-properties(0);
+    z-index: 2;
+    background-color: fade(white, 75%);
+}
+
+.zem-inventory-planning-breakdown__loader {
+    position: absolute;
+    .position-properties(0);
+    z-index: 3;
+    width: 100%;
+    height: auto;
+}
+
 .zem-inventory-planning-breakdown__search-container {
     position: absolute;
     top: 0;
     left: 0;
+    z-index: 1;
     width: 100%;
     height: 30px;
 }
