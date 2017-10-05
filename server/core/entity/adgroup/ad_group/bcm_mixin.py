@@ -102,7 +102,7 @@ class AdGroupBCMMixin(object):
         if not number:
             return
         including_fee_and_margin = core.bcm.calculations.apply_fee_and_margin(number, fee, margin)
-        return numbers.round_decimal_floor(including_fee_and_margin, places=0)
+        return numbers.round_decimal_ceiling(including_fee_and_margin, places=0)
 
     def _transform_fractional_value(self, number, fee, margin):
         if not number:
