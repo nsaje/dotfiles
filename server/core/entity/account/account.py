@@ -23,6 +23,8 @@ class AccountManager(core.common.QuerySetManager):
     @transaction.atomic()
     def create(self, request, name, agency=None):
         account = Account(name=name, agency=agency)
+        if agency is not None:
+            account.uses_bcm_v2 = agency.new_accounts_use_bcm_v2
         account.save(request)
         account.write_history(
             'Created account',
@@ -85,7 +87,11 @@ class Account(models.Model, core.common.SettingsProxyMixin):
     salesforce_url = models.URLField(null=True, blank=True, max_length=255)
 
     # migration to the new system introduced by margings and fees project
-    uses_bcm_v2 = models.BooleanField(default=False)
+    uses_bcm_v2 = models.BooleanField(
+        default=False,
+        verbose_name='Margins v2',
+        help_text='This account will have license fee and margin included into all costs.'
+    )
 
     def __unicode__(self):
         return self.name

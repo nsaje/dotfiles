@@ -384,6 +384,7 @@ class AgencyAdmin(ExportMixin, admin.ModelAdmin):
         'default_account_type',
         'created_dt',
         'modified_dt',
+        'new_accounts_use_bcm_v2',
     )
     exclude = ('users',)
     readonly_fields = ('id', 'created_dt', 'modified_dt', 'modified_by')
