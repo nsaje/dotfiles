@@ -175,36 +175,6 @@ class SettingsSerializer(serializers.BaseSerializer):
         return new_dict
 
 
-class AccountSerializer(SettingsSerializer):
-
-    def update(self, data_internal, validated_data):
-        data_internal_new = super(AccountSerializer, self).update(data_internal, validated_data)
-        return data_internal_new
-
-    def to_representation(self, data_internal):
-        settings = data_internal['data']['settings']
-        return {
-            'id': settings['id'],
-            'name': settings['name'],
-            'targeting': {
-                'publisherGroups': {
-                    'included': settings['whitelist_publisher_groups'],
-                    'excluded': settings['blacklist_publisher_groups'],
-                }
-            }
-        }
-
-    def to_internal_value(self, external_data):
-        data = self._allow_not_provided(external_data)
-        settings = {
-            'id': data['id'],
-            'name': data['name'],
-            'whitelist_publisher_groups': data['targeting']['publisherGroups']['included'],
-            'blacklist_publisher_groups': data['targeting']['publisherGroups']['excluded'],
-        }
-        return {'settings': {k: v for k, v in settings.items() if v != fields.NOT_PROVIDED}}
-
-
 class AccountCreditSerializer(serializers.Serializer):
 
     def to_representation(self, internal_data):
@@ -536,23 +506,6 @@ class SettingsViewList(RESTAPIBaseView):
                 transaction.set_rollback(True)
             response.status_code = 201
             return response
-
-
-class AccountViewDetails(SettingsViewDetails):
-    internal_view_cls = agency.AccountSettings
-    serializer_cls = AccountSerializer
-
-
-class AccountViewList(SettingsViewList):
-    internal_view_cls = agency.AccountSettings
-    serializer_cls = AccountSerializer
-    details_view_cls = AccountViewDetails
-
-    def _get_settings_list(self, request):
-        accounts = dash.models.Account.objects.all().filter_by_user(request.user)
-        account_settings = dash.models.AccountSettings.objects.filter(
-            account__in=accounts).group_current_settings().select_related('account')
-        return account_settings
 
 
 class CampaignViewDetails(SettingsViewDetails):

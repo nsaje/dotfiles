@@ -3,6 +3,7 @@
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.db import transaction
 
 import utils.demo_anonymizer
 import utils.string_helper
@@ -38,7 +39,7 @@ class AccountSettings(SettingsBase):
     history_fields = list(_settings_fields)
 
     id = models.AutoField(primary_key=True)
-    account = models.ForeignKey('Account', related_name='settings', on_delete=models.PROTECT)
+    account = models.ForeignKey('Account', on_delete=models.PROTECT)
     name = models.CharField(
         max_length=127,
         editable=True,
@@ -117,6 +118,17 @@ class AccountSettings(SettingsBase):
         elif prop_name == 'account_type':
             value = constants.AccountType.get_text(value)
         return value
+
+    @transaction.atomic
+    def update(self, request, **kwargs):
+        new_settings = self.copy_settings()
+        valid_fields = set(self._settings_fields)
+
+        for field, value in kwargs.items():
+            if field in valid_fields:
+                setattr(new_settings, field, value)
+        new_settings.save(request)
+        return new_settings
 
     def save(self,
              request,

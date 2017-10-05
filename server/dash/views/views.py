@@ -659,30 +659,15 @@ class Account(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.all_accounts_accounts_add_account'):
             raise exc.MissingDataError()
 
-        account = models.Account(name=core.entity.helpers.create_default_name(models.Account.objects, 'New account'))
-
-        managed_agency = models.Agency.objects.all().filter(
+        agency = models.Agency.objects.all().filter(
             users=request.user
         ).first()
-        if managed_agency is not None:
-            account.agency = managed_agency
 
-        account.save(request)
-
-        account.write_history(
-            'Created account',
-            user=request.user,
-            action_type=constants.HistoryActionType.CREATE)
-
-        settings = account.get_current_settings()
-        settings.default_account_manager = request.user
-
-        if managed_agency is not None:
-            settings.default_sales_representative = managed_agency.sales_representative
-            settings.default_cs_representative = managed_agency.cs_representative
-            settings.account_type = constants.AccountType.ACTIVATED
-
-        settings.save(request)
+        account = models.Account.objects.create(
+            request,
+            name=core.entity.helpers.create_default_name(models.Account.objects, 'New account'),
+            agency=agency,
+        )
 
         response = {
             'name': account.name,

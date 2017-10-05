@@ -12,18 +12,9 @@ from dash.features import realtimestats
 import campaignlauncher.urls
 import bcm.urls
 import inventory_planning.urls
+import account.urls
 
 urlpatterns = [
-    url(
-        r'^v1/accounts/(?P<entity_id>\d+)$',
-        views.AccountViewDetails.as_view(),
-        name='accounts_details'
-    ),
-    url(
-        r'^v1/accounts/$',
-        views.AccountViewList.as_view(),
-        name='accounts_list'
-    ),
     url(
         r'^v1/accounts/(?P<account_id>\d+)/credits/$',
         views.AccountCreditViewList.as_view(),
@@ -148,6 +139,7 @@ urlpatterns = [
     ),
 ]
 
+urlpatterns += account.urls.urlpatterns
 urlpatterns += clonecontent.urls.urlpatterns
 urlpatterns += cloneadgroup.urls.urlpatterns
 urlpatterns += dash.features.videoassets.urls.urlpatterns

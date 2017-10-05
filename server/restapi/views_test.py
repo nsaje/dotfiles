@@ -67,66 +67,6 @@ class RESTAPITest(TestCase):
         return json.loads(json.dumps(d, cls=json_helper.JSONEncoder))
 
 
-class AccountsTest(RESTAPITest):
-
-    @classmethod
-    def account_repr(
-        cls,
-        id=1,
-        name='My test account',
-        whitelist_publisher_groups=[153],
-        blacklist_publisher_groups=[154],
-    ):
-        representation = {
-            'id': str(id),
-            'name': name,
-            'targeting': {
-                'publisherGroups': {
-                    'included': whitelist_publisher_groups,
-                    'excluded': blacklist_publisher_groups,
-                }
-            },
-        }
-        return cls.normalize(representation)
-
-    def validate_against_db(self, account):
-        account_db = dash.models.Account.objects.get(pk=account['id'])
-        settings_db = account_db.get_current_settings()
-        expected = self.account_repr(
-            id=account_db.id,
-            name=account_db.name,
-            whitelist_publisher_groups=settings_db.whitelist_publisher_groups,
-            blacklist_publisher_groups=settings_db.blacklist_publisher_groups,
-        )
-        self.assertEqual(expected, account)
-
-    def test_accounts_list(self):
-        r = self.client.get(reverse('accounts_list'))
-        resp_json = self.assertResponseValid(r, data_type=list)
-        for item in resp_json['data']:
-            self.validate_against_db(item)
-
-    def test_accounts_post(self):
-        r = self.client.post(
-            reverse('accounts_list'),
-            data={'id': 608, 'name': 'new account'}, format='json')
-        self.assertResponseError(r, 'MethodNotAllowed')
-
-    def test_accounts_get(self):
-        r = self.client.get(reverse('accounts_details', kwargs={'entity_id': 186}))
-        resp_json = self.assertResponseValid(r)
-        self.validate_against_db(resp_json['data'])
-
-    def test_accounts_put(self):
-        test_account = self.account_repr(id=186, whitelist_publisher_groups=[153, 154], blacklist_publisher_groups=[153, 154])
-        r = self.client.put(
-            reverse('accounts_details', kwargs={'entity_id': 186}),
-            data=test_account, format='json')
-        resp_json = self.assertResponseValid(r)
-        self.validate_against_db(resp_json['data'])
-        self.assertEqual(resp_json['data'], test_account)
-
-
 class AccountCreditsTest(RESTAPITest):
 
     @classmethod

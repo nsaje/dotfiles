@@ -26,6 +26,14 @@ class HasAdGroupAccess(permissions.BasePermission):
         return bool(request.user and get_ad_group(request.user, view.kwargs['ad_group_id']))
 
 
+def get_agency(user, agency_id):
+    try:
+        agencies = core.entity.Agency.objects.all().filter_by_user(user)
+        return agencies.get(id=int(agency_id))
+    except core.entity.Agency.DoesNotExist:
+        raise utils.exc.MissingDataError('Agency does not exist')
+
+
 def get_account(user, account_id, sources=None):
     try:
         account = core.entity.Account.objects.all().filter_by_user(user)

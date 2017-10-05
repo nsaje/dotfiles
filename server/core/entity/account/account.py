@@ -20,13 +20,27 @@ import core.entity.helpers
 
 class AccountManager(core.common.QuerySetManager):
 
-    def create(self, request, name, agency_id=None):
-        acc = Account(name=name, agency_id=agency_id)
-        acc.save(request)
-        return acc
+    @transaction.atomic()
+    def create(self, request, name, agency=None):
+        account = Account(name=name, agency=agency)
+        account.save(request)
+        account.write_history(
+            'Created account',
+            user=request.user,
+            action_type=constants.HistoryActionType.CREATE)
+
+        settings_updates = {}
+        settings_updates['default_account_manager'] = request.user
+        if agency is not None:
+            settings_updates['default_sales_representative'] = agency.sales_representative
+            settings_updates['default_cs_representative'] = agency.cs_representative
+            settings_updates['account_type'] = constants.AccountType.ACTIVATED
+        account.settings.update(request, **settings_updates)
+
+        return account
 
 
-class Account(models.Model):
+class Account(models.Model, core.common.SettingsProxyMixin):
 
     class Meta:
         ordering = ('-created_dt',)
