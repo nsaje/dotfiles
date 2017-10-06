@@ -155,7 +155,7 @@ def send_autopilot_changes_emails(email_changes_data, bcm_modifiers_map, initial
         if initialization:
             send_budget_autopilot_initialisation_email(camp, emails, changes_data)
         else:
-            send_autopilot_changes_email(camp, emails, changes_data, bcm_modifiers_map[camp])
+            send_autopilot_changes_email(camp, emails, changes_data, bcm_modifiers_map.get(camp))
 
 
 def send_autopilot_changes_email(campaign, emails, changes_data, bcm_modifiers):
