@@ -141,7 +141,7 @@ def set_default_values(breakdown, rows):
 
 def postprocess_joint_query_rows(rows):
     for row in rows:
-        for column in [x for x in row.keys() if x.startswith('performance_')]:
+        for column in [x for x in row.keys() if x.startswith('performance_') or x.startswith('etfm_performance_')]:
             # this is specific to joint queries - performance returned needs to be converted to category
             row[column] = dash.campaign_goals.get_goal_performance_category(row[column])
 
