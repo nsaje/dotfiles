@@ -53,7 +53,7 @@ def get_autopilot_cpc_recommendations(
                                                   old_cpc_cc, proposed_cpc, cpc_change_comments,
                                                   [s.source if s != SourceAllRTB else SourceAllRTB for s in ag_sources])
         proposed_cpc = _threshold_source_constraints(
-            proposed_cpc, source_type, adgroup_settings, cpc_change_comments)
+            proposed_cpc, source_type, adgroup_settings, cpc_change_comments, bcm_modifiers)
 
         new_cpc_cc = proposed_cpc
         cpc_change_not_allowed_comments = set(cpc_change_comments) -\
