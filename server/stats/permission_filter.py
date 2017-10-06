@@ -33,7 +33,7 @@ def has_perms_bcm_v2(user, permissions, uses_bcm_v2=False):
 
 BCM2_DEPRECATED_FIELDS = {
     'agency_cost', 'billing_cost', 'total_cost',
-    'ctr', 'cpc', 'cpm', 'video_cpv', 'video_cpcv',
+    'cpc', 'cpm', 'video_cpv', 'video_cpcv',
     'avg_cost_per_minute', 'avg_cost_per_non_bounced_visit', 'avg_cost_per_pageview',
     'avg_cost_for_new_visitor', 'avg_cost_per_visit',
     'yesterday_cost', 'e_yesterday_cost'
