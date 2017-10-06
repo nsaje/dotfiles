@@ -16,6 +16,8 @@ import core.entity.helpers
 import core.history
 import core.source
 
+import bcm_mixin
+
 # These agencies should have campaign stop turned off
 # (for example Outbrain)
 AGENCIES_WITHOUT_CAMPAIGN_STOP = {55}
@@ -45,7 +47,7 @@ class CampaignManager(core.common.QuerySetManager):
         return campaign
 
 
-class Campaign(models.Model, core.common.PermissionMixin):
+class Campaign(models.Model, core.common.PermissionMixin, bcm_mixin.CampaignBCMMixin):
     class Meta:
         app_label = 'dash'
 

@@ -806,6 +806,7 @@ def _check_ad_groups_end_date(campaign):
 
 
 def _adjust_source_caps(campaign, daily_caps):
+    bcm_modifiers = campaign.get_bcm_modifiers()
     active_sources = _get_active_ad_group_sources(campaign)
 
     flat_ag_group_sources = [ags for ags_list in active_sources.values() for ags in ags_list]
@@ -860,6 +861,7 @@ def _adjust_source_caps(campaign, daily_caps):
 
         sources_to_stop, sources_new_cap, b1_group_stop, b1_group_new_cap = _calculate_daily_source_caps(
             ag_settings,
+            bcm_modifiers,
             current_ad_group_sources_settings,
             user_daily_budget_per_ags,
             user_group_daily_budget_per_ag,
@@ -878,7 +880,7 @@ def _adjust_source_caps(campaign, daily_caps):
                 notes=u'Stopping ad group {} - lowering budget not possible.\n'
                       'Minimum budget: {}, Daily cap: {}.'.format(
                           ad_group.id,
-                          _get_min_ap_budget(ad_group_sources),
+                          _get_min_ap_budget(ad_group_sources, bcm_modifiers),
                           ag_daily_cap,
                       )
             )
@@ -893,7 +895,7 @@ def _adjust_source_caps(campaign, daily_caps):
                       'Minimum budget: {}, Daily cap: {}.'.format(
                           ad_group.id,
                           '\n'.join([ags.source.name for ags in sorted(sources_to_stop, key=lambda x: x.source.name)]),
-                          _get_min_ap_budget(ad_group_sources),
+                          _get_min_ap_budget(ad_group_sources, bcm_modifiers),
                           ag_daily_cap,
                       )
             )
@@ -935,6 +937,7 @@ def _adjust_source_caps(campaign, daily_caps):
 
 def _calculate_daily_source_caps(
         ad_group_settings,
+        bcm_modifiers,
         ad_group_sources_settings,
         user_daily_budget_per_ags,
         user_group_daily_budget_per_ag,
@@ -963,8 +966,9 @@ def _calculate_daily_source_caps(
             continue
 
         min_source_cap = autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET
-        if ags.source.source_type.min_daily_budget:
-            min_source_cap = max(min_source_cap, ags.source.source_type.min_daily_budget)
+        source_type_min_daily_budget = ags.source.source_type.get_etfm_min_daily_budget(bcm_modifiers)
+        if source_type_min_daily_budget:
+            min_source_cap = max(min_source_cap, source_type_min_daily_budget)
 
         source_yesterday_spend = decimal.Decimal(yesterday_spends.get((ags.ad_group_id, ags.source_id), 0))
         user_source_daily_budget = user_daily_budget_per_ags.get(ags.id)
@@ -984,7 +988,7 @@ def _calculate_daily_source_caps(
 
     b1_group_new_cap = None
     if _is_b1_group_enabled(ad_group_settings) and not b1_group_stop:
-        min_group_cap = autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET
+        min_group_cap = dash.constants.SourceAllRTB.get_etfm_min_daily_budget(bcm_modifiers)
 
         user_group_daily_budget = user_group_daily_budget_per_ag.get(ad_group_settings.ad_group_id, DECIMAL_ZERO)
         if total_yesterday_spend:
@@ -1231,12 +1235,13 @@ def _get_active_ad_group_sources(campaign):
     return active_sources_dict
 
 
-def _get_min_ap_budget(ad_group_sources):
+def _get_min_ap_budget(ad_group_sources, bcm_modifiers):
     min_daily_budgets = []
     for ags in ad_group_sources:
         min_source_budget = autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET
-        if ags.source.source_type.min_daily_budget:
-            min_source_budget = max(min_source_budget, ags.source.source_type.min_daily_budget)
+        source_type_min_daily_budget = ags.source.source_type.get_etfm_min_daily_budget(bcm_modifiers)
+        if source_type_min_daily_budget:
+            min_source_budget = max(min_source_budget, source_type_min_daily_budget)
         min_daily_budgets.append(min_source_budget)
     return sum(min_daily_budgets)
 
