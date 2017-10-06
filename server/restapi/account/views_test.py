@@ -48,11 +48,11 @@ class AccountsTest(RESTAPITest):
             self.validate_against_db(item)
 
     def test_accounts_post(self):
-        dash.models.Agency.objects.get(pk=1).users.add(self.user)
         new_account = self.account_repr(name='mytest',
                                         agency_id=1,
                                         whitelist_publisher_groups=[153, 154],
                                         blacklist_publisher_groups=[])
+        del new_account['id']
         self._test_accounts_post(new_account)
 
     def test_accounts_post_no_agency(self):
@@ -60,6 +60,7 @@ class AccountsTest(RESTAPITest):
                                         agency_id=None,
                                         whitelist_publisher_groups=[153, 154],
                                         blacklist_publisher_groups=[])
+        del new_account['id']
         self._test_accounts_post(new_account)
 
     def _test_accounts_post(self, new_account):

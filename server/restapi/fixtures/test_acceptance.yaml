@@ -46,6 +46,7 @@
         created_dt: '2015-09-23T09:57:22'
         modified_dt: '2015-09-23T09:57:22'
         modified_by: 1
+        users: [1]
     model: dash.agency
     pk: 1
 

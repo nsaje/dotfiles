@@ -226,11 +226,12 @@ Authorization: Basic base64(<client_id>:<client_secret>)
 
 ## Accounts [/rest/v1/accounts/]
 
-Property  | Type                  | Description                                | Update
-----------|-----------------------|--------------------------------------------|-----------|
-id        | string                | the account's id                           | read only
-name      | string                | the name of the account                    | optional
-targeting | [targeting](#account-targeting) | account targeting settings       | optional
+Property  | Type                  | Description                                | Create   | Update
+----------|-----------------------|--------------------------------------------|----------|-----------|
+id        | string                | the account's id                           | N/A      | read only
+agencyId  | string                | the agency's id                            | required | read only
+name      | string                | the name of the account                    | required | optional
+targeting | [targeting](#account-targeting) | account targeting settings       | optional | optional
 
 
 <a name="account-targeting"></a>
@@ -250,18 +251,7 @@ publisherGroups  |          |           |                                       
 
 + Response 200 (application/json)
 
-        {
-            "data": {
-                "id": "186",
-                "name": "My account",
-                "targeting": {
-                    "publisherGroups": {
-                    "included": [],
-                    "excluded": []
-                    }
-                }
-            }
-        }
+    + Attributes (AccountResponse)
 
 
 ### Update account details [PUT /rest/v1/accounts/{accountId}]
@@ -271,30 +261,30 @@ publisherGroups  |          |           |                                       
 
 + Request (application/json)
 
-        {
-            "name": "My renamed account",
-            "targeting": {
-                "publisherGroups": {
-                    "included": ["153"],
-                    "excluded": ["154"]
-                }
-            }
-        }
+    + Attributes (AccountWithoutIds)
 
 + Response 200 (application/json)
 
-        {
-            "data": {
-                "id": "186",
-                "name": "My renamed account",
-                "targeting": {
-                    "publisherGroups": {
-                        "included": ["153"],
-                        "excluded": ["154"]
-                    }
-                }
-            }
-        }
+    + Attributes (AccountResponse)
+
+### List accounts [GET /rest/v1/accounts/]
+
++ Response 200 (application/json)
+
+    + Attributes (AccountListResponse)
+
+
+### Create a new account [POST /rest/v1/accounts/]
+
+
++ Request (application/json)
+
+    + Attributes (AccountWithoutIds)
+        - `agencyId`: `1` (string)
+
++ Response 201 (application/json)
+
+    + Attributes (AccountResponse)
 
 
 ## Account Credit [/rest/v1/accounts/{accountId}/credits/]
@@ -2758,6 +2748,36 @@ Examples:
 ## CampaignListResponse
 
 - `data` (array[Campaign])
+
+
+<!-- ACCOUNT -->
+## `accountTargeting` (object)
+
+- `publisherGroups` (publisherGroups)
+
+## AccountWithoutIds (object)
+
+- `name`: `My Account 1` (string)
+- `targeting` (accountTargeting)
+
+## AccountIds (object)
+
+- `id`: `186` (string)
+- `agencyId`: `1` (string)
+
+## Account (object)
+
+- Include AccountIds
+- Include AccountWithoutIds
+
+## AccountResponse
+
+- `data` (Account)
+
+## AccountListResponse
+
+- `data` (array[Account])
+
 
 <!-- GEOLOCATION -->
 ## GeolocationCountry (object)

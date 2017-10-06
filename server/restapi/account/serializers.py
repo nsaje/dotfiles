@@ -13,7 +13,7 @@ class AccountTargetingSerializer(serializers.Serializer):
 
 
 class AccountSerializer(serializers.Serializer):
-    id = fields.IdField()
+    id = fields.IdField(read_only=True)
     agency_id = fields.IdField(required=False, allow_null=True)
     targeting = AccountTargetingSerializer(source='settings', required=False)
     name = serializers.CharField(
