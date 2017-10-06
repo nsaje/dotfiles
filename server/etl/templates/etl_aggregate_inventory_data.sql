@@ -1,6 +1,9 @@
 INSERT INTO mv_inventory (
     SELECT
-        country,
+        CASE
+          WHEN country IN (%(valid_country_codes)s) THEN country
+          ELSE NULL
+        END as country,
         publisher,
         device_type,
         SUM(bid_reqs),
@@ -12,7 +15,7 @@ INSERT INTO mv_inventory (
 
     WHERE date BETWEEN %(date_from)s AND %(date_to)s
 
-    GROUP BY country, publisher, device_type
+    GROUP BY 1, 2, 3
 
-    ORDER BY country, publisher, device_type
+    ORDER BY 1, 2, 3
 );

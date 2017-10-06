@@ -5,6 +5,8 @@ from django.core.cache import caches
 
 from redshiftapi import db
 from etl import maintenance
+import dash.features.geolocation
+import dash.constants
 
 
 logger = logging.getLogger(__name__)
@@ -20,10 +22,15 @@ def refresh_inventory_data(date_from, date_to, skip_vacuum=False):
     with db.get_stats_cursor() as c:
         maintenance.truncate(TABLE_NAME)
 
+        valid_country_codes = list(dash.features.geolocation.Geolocation.objects.filter(
+            type=dash.constants.LocationType.COUNTRY
+        ).values_list('key', flat=True))
+
         logger.info('Starting materialization of table %s', TABLE_NAME)
         c.execute(sql, {
             'date_from': date_from,
             'date_to': date_to,
+            'valid_country_codes': valid_country_codes,
         })
         logger.info('Finished materialization of table %s', TABLE_NAME)
 

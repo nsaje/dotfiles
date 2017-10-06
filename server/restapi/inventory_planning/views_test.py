@@ -21,7 +21,7 @@ class InventoryPlanningViewTest(restapi.views_test.RESTAPITest):
         mock_func.assert_called_with({})
         self.assertEqual(r['data'], {
             'auctionCount': 5,
-            'avgCpm': 5000.0,
+            'avgCpm': 5.0,
             'winRatio': 0.5,
         })
 

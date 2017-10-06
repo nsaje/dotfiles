@@ -1,5 +1,5 @@
 CREATE TABLE mv_inventory (
-    country varchar(16) encode zstd,
+    country varchar(2) encode zstd,
     publisher varchar(255) encode zstd,
     device_type int2 encode zstd,
 

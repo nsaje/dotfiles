@@ -63,7 +63,7 @@ class InventoryPlanningView(RESTAPIBaseView):
             return {}
         return {
             'auction_count': data['bid_reqs'],
-            'avg_cpm': data['total_win_price'] / float(data['win_notices'] or float('nan')) * 1000,
+            'avg_cpm': data['total_win_price'] / float(data['win_notices'] or float('nan')),
             'win_ratio': data['win_notices'] / float(data['bids'] or float('nan'))
         }
 

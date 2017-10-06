@@ -1,7 +1,8 @@
 import redshiftapi.api_inventory
 
 import dash.features.geolocation
-import dash.constants
+
+import constants
 
 
 _countries_map = None
@@ -29,7 +30,7 @@ def get_by_country(filters):
     data = redshiftapi.api_inventory.query(breakdown='country', constraints=filters)
     countries_map = _get_countries_map()
     for item in data:
-        item['name'] = countries_map.get(item['country'])
+        item['name'] = countries_map.get(item['country'], 'Not reported')
     return data
 
 
@@ -39,7 +40,7 @@ def get_by_publisher(filters):
 
 
 def get_by_device_type(filters):
-    device_types_map = dict(dash.constants.DeviceType.get_choices())
+    device_types_map = dict(constants.DeviceType.get_choices())
     data = redshiftapi.api_inventory.query(breakdown='device_type', constraints=filters)
     for item in data:
         item['name'] = device_types_map.get(item['device_type'])
