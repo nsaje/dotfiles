@@ -88,7 +88,8 @@ def _get_autopilot_predictions(
     if adjust_cpcs:
         adjust_rtb_sources = not rtb_as_one or (is_budget_ap_enabled and rtb_as_one)
         cpc_changes = autopilot_cpc.get_autopilot_cpc_recommendations(
-            adgroup, adgroup_settings, data, budget_changes=budget_changes, adjust_rtb_sources=adjust_rtb_sources)
+            adgroup, adgroup_settings, data, bcm_modifiers,
+            budget_changes=budget_changes, adjust_rtb_sources=adjust_rtb_sources)
     return cpc_changes, budget_changes
 
 
