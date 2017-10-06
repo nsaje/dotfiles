@@ -120,18 +120,18 @@ def update_ad_group_b1_sources_group_values(ad_group, changes, system_user=None)
     new_settings.save(None)
 
 
-def get_ad_group_sources_minimum_cpc(ad_group_source):
-    return max(autopilot_settings.AUTOPILOT_MIN_CPC, ad_group_source.source.source_type.min_cpc)
+def get_ad_group_sources_minimum_cpc(ad_group_source, bcm_modifiers):
+    return max(
+        autopilot_settings.AUTOPILOT_MIN_CPC,
+        ad_group_source.source.source_type.get_etfm_min_cpc(bcm_modifiers)
+    )
 
 
-def get_ad_group_sources_minimum_daily_budget(ad_group_source,
-                                              ap_type=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET):
+def get_ad_group_sources_minimum_daily_budget(ad_group_source, bcm_modifiers):
     if ad_group_source == dash.constants.SourceAllRTB:
-        source_min_daily_budget = dash.constants.SourceAllRTB.MIN_DAILY_BUDGET
+        source_min_daily_budget = dash.constants.SourceAllRTB.get_etfm_min_daily_budget(bcm_modifiers)
     else:
-        source_min_daily_budget = ad_group_source.source.source_type.min_daily_budget
-    if ap_type != dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-        return source_min_daily_budget
+        source_min_daily_budget = ad_group_source.source.source_type.get_etfm_min_daily_budget(bcm_modifiers)
     return max(autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET, source_min_daily_budget)
 
 
@@ -148,17 +148,17 @@ def get_campaign_goal_column_importance(campaign_goal):
         return autopilot_settings.GOALS_COLUMNS[campaign_goal.type]['importance']
 
 
-def send_autopilot_changes_emails(email_changes_data, data, initialization):
+def send_autopilot_changes_emails(email_changes_data, bcm_modifiers_map, initialization):
     for camp, changes_data in email_changes_data.iteritems():
         emails = email_manager_list(camp)
         emails.append(autopilot_settings.AUTOPILOT_EMAIL_FOR_COPIES)
         if initialization:
             send_budget_autopilot_initialisation_email(camp, emails, changes_data)
         else:
-            send_autopilot_changes_email(camp, emails, changes_data)
+            send_autopilot_changes_email(camp, emails, changes_data, bcm_modifiers_map[camp])
 
 
-def send_autopilot_changes_email(campaign, emails, changes_data):
+def send_autopilot_changes_email(campaign, emails, changes_data, bcm_modifiers):
     changes_text = []
     for adgroup, adgroup_changes in changes_data.iteritems():
         changes_text.append(_get_email_adgroup_text(adgroup))
@@ -168,7 +168,7 @@ def send_autopilot_changes_email(campaign, emails, changes_data):
             adgroup_changes.pop(dash.constants.SourceAllRTB, None)
         for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name.lower()):
             changes_text.append(_get_email_source_changes_text(ag_source.source.name, adgroup_changes[ag_source]))
-        changes_text.append(_get_email_adgroup_pausing_suggestions_text(adgroup_changes))
+        changes_text.append(_get_email_adgroup_pausing_suggestions_text(adgroup_changes, bcm_modifiers))
 
     args = {
         'campaign': campaign,
@@ -274,12 +274,12 @@ def _get_email_source_changes_text(source_name, changes):
     return text
 
 
-def _get_email_adgroup_pausing_suggestions_text(adgroup_changes):
+def _get_email_adgroup_pausing_suggestions_text(adgroup_changes, bcm_modifiers):
     suggested_sources = []
     for ag_source in adgroup_changes:
         changes = adgroup_changes[ag_source]
         if all(b in changes for b in ['new_budget', 'old_budget']) and\
-                changes['new_budget'] == get_ad_group_sources_minimum_daily_budget(ag_source):
+                changes['new_budget'] == get_ad_group_sources_minimum_daily_budget(ag_source, bcm_modifiers):
             suggested_sources.append(ag_source.source.name if
                                      ag_source != dash.constants.SourceAllRTB else dash.constants.SourceAllRTB.NAME)
     if suggested_sources:

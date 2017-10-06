@@ -13,12 +13,13 @@ import automation.constants
 logger = logging.getLogger(__name__)
 
 
-def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, campaign_goal=None, rtb_as_one=False):
+def get_autopilot_daily_budget_recommendations(
+        ad_group, daily_budget, data, bcm_modifiers, campaign_goal=None, rtb_as_one=False):
     if rtb_as_one:
         data = {ags: v for ags, v in data.iteritems() if
                 ags == dash.constants.SourceAllRTB or ags.source.source_type.type != dash.constants.SourceType.B1}
     active_sources = data.keys()
-    max_budgets, new_budgets, old_budgets = _get_autopilot_budget_constraints(data, daily_budget)
+    max_budgets, new_budgets, old_budgets = _get_autopilot_budget_constraints(data, daily_budget, bcm_modifiers)
     comments = []
     budget_left = daily_budget - sum(new_budgets.values())
 
@@ -28,7 +29,7 @@ def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, cam
         logger.info(str(ad_group) +
                     ' does not have any active sources with enough spend. Uniformly redistributed budget.')
         comments.append(automation.constants.DailyBudgetChangeComment.NO_ACTIVE_SOURCES_WITH_SPEND)
-        new_budgets = _uniformly_redistribute_remaining_budget(active_sources, budget_left, new_budgets)
+        new_budgets = _uniformly_redistribute_remaining_budget(active_sources, budget_left, new_budgets, bcm_modifiers)
     else:
         bandit = BetaBandit(active_sources_with_spend, backup_sources=active_sources)
         min_value_of_optimization_goal, max_value_of_optimization_goal = _get_min_max_values_of_optimization_goal(
@@ -46,7 +47,7 @@ def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, cam
         # Redistribute budgets
         while budget_left >= 1:
             if len(_get_active_sources_with_spend(active_sources, data, new_budgets)) < 1:
-                new_budgets = _uniformly_redistribute_remaining_budget(active_sources, budget_left, new_budgets)
+                new_budgets = _uniformly_redistribute_remaining_budget(active_sources, budget_left, new_budgets, bcm_modifiers)
                 logger.info(str(ad_group) +
                             ' used up all smart budget, now uniformly redistributed remaining $' + str(budget_left) + '.')
                 comments.append(
@@ -65,8 +66,10 @@ def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, cam
                     uses_bcm_v2=ad_group.campaign.account.uses_bcm_v2,
                 )
             )
-            max_budget = s.source.source_type.max_daily_budget if s != dash.constants.SourceAllRTB else\
-                dash.constants.SourceAllRTB.MAX_DAILY_BUDGET
+            if s == dash.constants.SourceAllRTB:
+                max_budget = s.get_etfm_max_daily_budget(bcm_modifiers)
+            else:
+                max_budget = s.source.source_type.get_etfm_max_daily_budget(bcm_modifiers)
             if new_budgets[s] >= max_budget:
                 bandit.remove_source(s)
 
@@ -94,12 +97,12 @@ def _get_min_max_values_of_optimization_goal(data, campaign_goal, uses_bcm_v2):
     return min_value, max_value
 
 
-def _uniformly_redistribute_remaining_budget(sources, budget_left, min_budgets):
+def _uniformly_redistribute_remaining_budget(sources, budget_left, min_budgets, bcm_modifiers):
     while budget_left >= 1:
         for s in sources:
             if any(b < min_budgets[s] for b in min_budgets.values()) and\
                s != dash.constants.SourceAllRTB and\
-               min_budgets[s] == s.source.source_type.min_daily_budget:
+               min_budgets[s] == s.source.source_type.get_etfm_min_daily_budget(bcm_modifiers):
                 continue
             budget_left -= Decimal(1.0)
             min_budgets[s] += Decimal(1)
@@ -116,14 +119,14 @@ def _get_active_sources_with_spend(active_sources, data, current_budgets):
     return active_sources_with_spend
 
 
-def _get_autopilot_budget_constraints(data, daily_budget):
-    max_budgets, min_budgets, old_budgets = _get_optimistic_autopilot_budget_constraints(data)
+def _get_autopilot_budget_constraints(data, daily_budget, bcm_modifiers):
+    max_budgets, min_budgets, old_budgets = _get_optimistic_autopilot_budget_constraints(data, bcm_modifiers)
     if sum(min_budgets.values()) > daily_budget:
-        max_budgets, min_budgets = _get_minimum_autopilot_budget_constraints(data)
+        max_budgets, min_budgets = _get_minimum_autopilot_budget_constraints(data, bcm_modifiers)
     return max_budgets, min_budgets, old_budgets
 
 
-def _get_optimistic_autopilot_budget_constraints(data):
+def _get_optimistic_autopilot_budget_constraints(data, bcm_modifiers):
     max_budgets = {}
     min_budgets = {}
     old_budgets = {}
@@ -131,7 +134,7 @@ def _get_optimistic_autopilot_budget_constraints(data):
     if dash.constants.SourceAllRTB in active_sources:
         max_budgets, min_budgets, old_budgets = _populate_optimistic_budget_constraints_row(
             data[dash.constants.SourceAllRTB]['old_budget'], max_budgets, min_budgets, old_budgets,
-            dash.constants.SourceAllRTB, dash.constants.SourceAllRTB.MIN_DAILY_BUDGET)
+            dash.constants.SourceAllRTB, dash.constants.SourceAllRTB.get_etfm_min_daily_budget(bcm_modifiers))
         active_sources.remove(dash.constants.SourceAllRTB)
     ags_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source__in=active_sources)\
                                                     .group_current_settings().select_related('ad_group_source')
@@ -139,7 +142,8 @@ def _get_optimistic_autopilot_budget_constraints(data):
         current_budget = source_settings.daily_budget_cc
         ags = source_settings.ad_group_source
         max_budgets, min_budgets, old_budgets = _populate_optimistic_budget_constraints_row(
-            current_budget, max_budgets, min_budgets, old_budgets, ags, ags.source.source_type.min_daily_budget)
+            current_budget, max_budgets, min_budgets, old_budgets, ags,
+            ags.source.source_type.get_etfm_min_daily_budget(bcm_modifiers))
     return max_budgets, min_budgets, old_budgets
 
 
@@ -158,18 +162,20 @@ def _populate_optimistic_budget_constraints_row(current_budget, max_budgets, min
     return max_budgets, min_budgets, old_budgets
 
 
-def _get_minimum_autopilot_budget_constraints(data):
+def _get_minimum_autopilot_budget_constraints(data, bcm_modifiers):
     max_budgets = {}
     min_budgets = {}
     active_sources = data.keys()
     all_rtb = dash.constants.SourceAllRTB
     if all_rtb in active_sources:
-        min_budgets[all_rtb] = autopilot_helpers.get_ad_group_sources_minimum_daily_budget(all_rtb)
+        min_budgets[all_rtb] = autopilot_helpers.get_ad_group_sources_minimum_daily_budget(
+            all_rtb, bcm_modifiers)
         max_budgets[all_rtb] = (min_budgets[all_rtb] * autopilot_settings.MAX_BUDGET_GAIN).\
             to_integral_exact(rounding=ROUND_CEILING)
         active_sources.remove(all_rtb)
     for source in active_sources:
-        min_budgets[source] = autopilot_helpers.get_ad_group_sources_minimum_daily_budget(source)
+        min_budgets[source] = autopilot_helpers.get_ad_group_sources_minimum_daily_budget(
+            source, bcm_modifiers)
         max_budgets[source] = (min_budgets[source] * autopilot_settings.MAX_BUDGET_GAIN).\
             to_integral_exact(rounding=ROUND_CEILING)
     return max_budgets, min_budgets

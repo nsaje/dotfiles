@@ -9,7 +9,9 @@ import dash.constants
 logger = logging.getLogger(__name__)
 
 
-def get_autopilot_cpc_recommendations(ad_group, adgroup_settings, data, budget_changes=None, adjust_rtb_sources=True):
+def get_autopilot_cpc_recommendations(
+        ad_group, adgroup_settings, data, bcm_modifiers,
+        budget_changes=None, adjust_rtb_sources=True):
     recommended_changes = {}
     ag_sources = data.keys()
     SourceAllRTB = dash.constants.SourceAllRTB
@@ -50,7 +52,8 @@ def get_autopilot_cpc_recommendations(ad_group, adgroup_settings, data, budget_c
                                                   ag_source.source if ag_source != SourceAllRTB else SourceAllRTB,
                                                   old_cpc_cc, proposed_cpc, cpc_change_comments,
                                                   [s.source if s != SourceAllRTB else SourceAllRTB for s in ag_sources])
-        proposed_cpc = _threshold_source_constraints(proposed_cpc, source_type, adgroup_settings, cpc_change_comments)
+        proposed_cpc = _threshold_source_constraints(
+            proposed_cpc, source_type, adgroup_settings, cpc_change_comments)
 
         new_cpc_cc = proposed_cpc
         cpc_change_not_allowed_comments = set(cpc_change_comments) -\
@@ -169,8 +172,8 @@ def _threshold_cpc_constraints(ad_group, source, old_cpc, proposed_cpc, cpc_chan
     return new_cpc
 
 
-def _threshold_source_constraints(proposed_cpc, source_type, adgroup_settings, cpc_change_comments):
-    min_cpc, max_cpc = _get_source_type_min_max_cpc(source_type, adgroup_settings)
+def _threshold_source_constraints(proposed_cpc, source_type, adgroup_settings, cpc_change_comments, bcm_modifiers):
+    min_cpc, max_cpc = _get_source_type_min_max_cpc(source_type, adgroup_settings, bcm_modifiers)
     if proposed_cpc > max_cpc:
         cpc_change_comments += [CpcChangeComment.OVER_SOURCE_MAX_CPC]
         return max_cpc
@@ -185,10 +188,12 @@ def _get_cpc_max_decimal_places(source_dec_places):
         autopilot_settings.AUTOPILOT_CPC_MAX_DEC_PLACES
 
 
-def _get_source_type_min_max_cpc(source_type, adgroup_settings):
+def _get_source_type_min_max_cpc(source_type, adgroup_settings, bcm_modifiers):
     if source_type == dash.constants.SourceAllRTB:
-        return dash.constants.SourceAllRTB.MIN_CPC, dash.constants.SourceAllRTB.MAX_CPC
-    return source_type.get_min_cpc(adgroup_settings), source_type.max_cpc
+        return dash.constants.SourceAllRTB.get_etfm_min_cpc(bcm_modifiers),\
+           dash.constants.SourceAllRTB.get_etfm_max_cpc(bcm_modifiers)
+    return source_type.get_min_cpc(adgroup_settings, bcm_modifiers),\
+        source_type.get_etfm_max_cpc(bcm_modifiers)
 
 
 def _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments, max_cpc_decimal_places):
