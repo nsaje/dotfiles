@@ -1,7 +1,17 @@
+{% autoescape off %}
+
 INSERT INTO mv_inventory (
     SELECT
         CASE
-          WHEN country IN (%(valid_country_codes)s) THEN country
+          WHEN country IN (
+            {% for country_code in valid_country_codes %}
+              {% if forloop.last %}
+                '{{ country_code }}'
+              {% else %}
+                '{{ country_code }}',
+              {% endif %}
+            {% endfor %}
+          ) THEN country
           ELSE NULL
         END as country,
         publisher,
@@ -19,3 +29,5 @@ INSERT INTO mv_inventory (
 
     ORDER BY 1, 2, 3
 );
+
+{% endautoescape %}

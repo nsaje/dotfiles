@@ -17,14 +17,17 @@ CACHE_NAME = 'inventory_planning'
 
 
 def refresh_inventory_data(date_from, date_to, skip_vacuum=False):
-    sql = backtosql.generate_sql('etl_aggregate_inventory_data.sql', None)
+    valid_country_codes = list(dash.features.geolocation.Geolocation.objects.filter(
+        type=dash.constants.LocationType.COUNTRY
+    ).values_list('key', flat=True))
+
+    sql = backtosql.generate_sql(
+        'etl_aggregate_inventory_data.sql',
+        {'valid_country_codes': valid_country_codes}
+    )
 
     with db.get_stats_cursor() as c:
         maintenance.truncate(TABLE_NAME)
-
-        valid_country_codes = list(dash.features.geolocation.Geolocation.objects.filter(
-            type=dash.constants.LocationType.COUNTRY
-        ).values_list('key', flat=True))
 
         logger.info('Starting materialization of table %s', TABLE_NAME)
         c.execute(sql, {
