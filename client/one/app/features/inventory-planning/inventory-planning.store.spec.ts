@@ -55,7 +55,7 @@ describe('InventoryPlanningStore', () => {
         });
     });
     beforeEach(inject([InventoryPlanningEndpoint], (endpoint: InventoryPlanningEndpoint) => {
-        spyOn(endpoint, 'loadSummary').and.returnValue(Observable.of({auctionCount: 100000, avgCpm: 2}));
+        spyOn(endpoint, 'loadSummary').and.returnValue(Observable.of({auctionCount: 100000, avgCpm: 2, winRatio: 0.5}));
         spyOn(endpoint, 'loadCountries').and.returnValue(Observable.of(availableCountries));
         spyOn(endpoint, 'loadPublishers').and.returnValue(Observable.of(availablePublishers));
         spyOn(endpoint, 'loadDevices').and.returnValue(Observable.of(availableDevices));
@@ -79,7 +79,7 @@ describe('InventoryPlanningStore', () => {
                     inProgress: false,
                 },
             },
-            inventory: {auctionCount: 100000, avgCpm: 2},
+            inventory: {auctionCount: 100000, avgCpm: 2, winRatio: 0.5},
             availableFilters: {
                 countries: availableCountries,
                 publishers: availablePublishers,

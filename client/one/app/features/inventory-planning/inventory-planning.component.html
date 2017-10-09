@@ -6,6 +6,7 @@
 <zem-inventory-planning-summary class="zem-inventory-planning-summary"
                                 [auctionCount]="(store.state$ | async).inventory.auctionCount"
                                 [avgCpm]="(store.state$ | async).inventory.avgCpm"
+                                [winRatio]="(store.state$ | async).inventory.winRatio"
                                 [isLoading]="(store.state$ | async).requests.summary.inProgress">
 </zem-inventory-planning-summary>
 
