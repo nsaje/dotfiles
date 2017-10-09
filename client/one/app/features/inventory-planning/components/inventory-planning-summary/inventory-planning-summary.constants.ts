@@ -22,6 +22,7 @@ export const CHART_CONFIG = {
     plotOptions: {
         series: {
             animation: false,
+            enableMouseTracking: false,
             states: {
                 hover: false,
             },
