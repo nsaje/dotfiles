@@ -1,5 +1,6 @@
 import unicodecsv as csv
 import datetime
+import re
 
 import utils.command_helpers
 import prodops.audience_report
@@ -7,7 +8,7 @@ import prodops.helpers
 
 
 class Command(utils.command_helpers.ExceptionCommand):
-    help = "Create audience report"
+    help = "Create inventory report"
 
     def add_arguments(self, parser):
         parser.add_argument('--where', dest='where', default=None,
@@ -25,11 +26,14 @@ class Command(utils.command_helpers.ExceptionCommand):
     def handle(self, *args, **options):
         publishers = set()
         with open(options['publishers_csv']) as fd:
+            reg = re.compile(r"https?://")
             for row in csv.reader(fd):
                 if row[0].lower() in ('domains', 'publishers', 'domain', 'publisher'):
                     continue
-                pub = row[0]
+                pub = reg.sub('', row[0]).strip('/')
                 publishers.add(pub)
+                if pub.startswith('www.'):
+                    publishers.add(pub[4:])
 
         end_date = datetime.date.today() - datetime.timedelta(1)
         start_date = datetime.date.today() - datetime.timedelta(options['days'])
