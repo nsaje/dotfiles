@@ -10,7 +10,8 @@ from dash import constants
 import core.common
 import utils.exc
 
-from campaign_goal_value import CampaignGoalValue
+from ..campaign_goal_value import CampaignGoalValue
+import bcm_mixin
 
 # FIXME: the same dict is in dash/campaign_goals
 CAMPAIGN_GOAL_NAME_FORMAT = {
@@ -64,7 +65,7 @@ class CampaignGoalManager(core.common.BaseManager):
             raise utils.exc.ValidationError('Multiple goals of the same type not allowed')
 
 
-class CampaignGoal(models.Model):
+class CampaignGoal(models.Model, bcm_mixin.CampaignGoalBCMMixin):
     class Meta:
         app_label = 'dash'
         unique_together = ('campaign', 'type', 'conversion_goal')
@@ -132,7 +133,7 @@ class CampaignGoal(models.Model):
             campaign_goal=self,
             value=value
         )
-        goal_value.save(request)
+        goal_value.save()
 
         if not skip_history:
             self.campaign.write_history(
@@ -142,6 +143,12 @@ class CampaignGoal(models.Model):
                 action_type=constants.HistoryActionType.GOAL_CHANGE,
                 user=request.user
             )
+
+    def get_current_value(self):
+        try:
+            return self.values.latest('created_dt')
+        except CampaignGoalValue.DoesNotExist:
+            return None
 
     @transaction.atomic
     def set_primary(self, request):

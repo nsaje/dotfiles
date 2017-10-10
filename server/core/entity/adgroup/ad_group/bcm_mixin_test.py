@@ -1,4 +1,3 @@
-import datetime
 import decimal
 from mock import patch, MagicMock
 
@@ -11,119 +10,6 @@ import core.entity
 import core.bcm
 
 
-class AdGroupBcmMixin(TestCase):
-
-    def setUp(self):
-        self.agency = magic_mixer.blend(core.entity.Agency)
-        self.account = magic_mixer.blend(core.entity.Account, agency=self.agency)
-        self.campaign = magic_mixer.blend(core.entity.Campaign, account=self.account)
-        self.ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=self.campaign)
-
-    def test_get_todays_fee_and_margin(self):
-        yesterday = datetime.date.today() - datetime.timedelta(days=1)
-        today = datetime.date.today()
-
-        magic_mixer.blend(core.bcm.CreditLineItem,
-                          account=self.account,
-                          start_date=yesterday,
-                          end_date=today,
-                          status=constants.CreditLineItemStatus.SIGNED,
-                          amount=decimal.Decimal('1000.0'),
-                          flat_fee_cc=0,
-                          license_fee=decimal.Decimal('0.2121'))
-
-        credit = magic_mixer.blend(core.bcm.CreditLineItem,
-                                   account=self.account,
-                                   start_date=yesterday,
-                                   end_date=today,
-                                   status=constants.CreditLineItemStatus.SIGNED,
-                                   amount=decimal.Decimal('1000.0'),
-                                   flat_fee_cc=0,
-                                   license_fee=decimal.Decimal('0.3333'))
-
-        magic_mixer.blend(core.bcm.BudgetLineItem,
-                          campaign=self.campaign,
-                          start_date=yesterday,
-                          end_date=today,
-                          credit=credit,
-                          amount=decimal.Decimal('200'),
-                          margin=decimal.Decimal('0.2200'))
-
-        fee, margin = self.ad_group.get_todays_fee_and_margin()
-
-        self.assertEqual(fee, decimal.Decimal('0.3333'))
-        self.assertEqual(margin, decimal.Decimal('0.2200'))
-
-    def test_get_todays_fee_and_margin_no_budget(self):
-        yesterday = datetime.date.today() - datetime.timedelta(days=1)
-        today = datetime.date.today()
-
-        magic_mixer.blend(core.bcm.CreditLineItem,
-                          account=self.account,
-                          start_date=yesterday,
-                          end_date=today,
-                          status=constants.CreditLineItemStatus.SIGNED,
-                          amount=decimal.Decimal('1000.0'),
-                          flat_fee_cc=0,
-                          license_fee=decimal.Decimal('0.2121'))
-
-        fee, margin = self.ad_group.get_todays_fee_and_margin()
-
-        self.assertEqual(fee, decimal.Decimal('0.2121'))
-        self.assertEqual(margin, None)
-
-    def test_get_todays_fee_and_margin_agency_credit(self):
-        yesterday = datetime.date.today() - datetime.timedelta(days=1)
-        today = datetime.date.today()
-
-        credit = magic_mixer.blend(core.bcm.CreditLineItem,
-                                   agency=self.agency,
-                                   start_date=yesterday,
-                                   end_date=today,
-                                   status=constants.CreditLineItemStatus.SIGNED,
-                                   amount=decimal.Decimal('1000.0'),
-                                   flat_fee_cc=0,
-                                   license_fee=decimal.Decimal('0.2121'))
-
-        magic_mixer.blend(core.bcm.BudgetLineItem,
-                          campaign=self.campaign,
-                          start_date=yesterday,
-                          end_date=today,
-                          credit=credit,
-                          amount=decimal.Decimal('200'),
-                          margin=decimal.Decimal('0.2200'))
-
-        fee, margin = self.ad_group.get_todays_fee_and_margin()
-
-        self.assertEqual(fee, decimal.Decimal('0.2121'))
-        self.assertEqual(margin, decimal.Decimal('0.2200'))
-
-    def test_get_todays_fee_and_margin_nothing(self):
-        yesterday = datetime.date.today() - datetime.timedelta(days=1)
-
-        credit = magic_mixer.blend(core.bcm.CreditLineItem,
-                                   account=self.account,
-                                   start_date=yesterday,
-                                   end_date=yesterday,
-                                   status=constants.CreditLineItemStatus.SIGNED,
-                                   amount=decimal.Decimal('1000.0'),
-                                   flat_fee_cc=0,
-                                   license_fee=decimal.Decimal('0.2121'))
-
-        magic_mixer.blend(core.bcm.BudgetLineItem,
-                          campaign=self.campaign,
-                          start_date=yesterday,
-                          end_date=yesterday,
-                          credit=credit,
-                          amount=decimal.Decimal('200'),
-                          margin=decimal.Decimal('0.2200'))
-
-        fee, margin = self.ad_group.get_todays_fee_and_margin()
-
-        self.assertEqual(fee, None)
-        self.assertEqual(margin, None)
-
-
 class MigrateToBcmV2Test(TestCase):
 
     def setUp(self):
@@ -131,24 +17,7 @@ class MigrateToBcmV2Test(TestCase):
         today = datetime.date.today()
 
         account = magic_mixer.blend(core.entity.Account, uses_bcm_v2=False)
-        credit = magic_mixer.blend(core.bcm.CreditLineItem,
-                                   account=account,
-                                   start_date=today,
-                                   end_date=today,
-                                   status=constants.CreditLineItemStatus.SIGNED,
-                                   amount=decimal.Decimal('1000.0'),
-                                   flat_fee_cc=0,
-                                   license_fee=decimal.Decimal('0.2'))
-
         campaign = magic_mixer.blend(core.entity.Campaign, account=account)
-        magic_mixer.blend(core.bcm.BudgetLineItem,
-                          campaign=campaign,
-                          start_date=today,
-                          end_date=today,
-                          credit=credit,
-                          amount=decimal.Decimal('200'),
-                          margin=decimal.Decimal('0.1'))
-
         self.ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=campaign)
         self.request = magic_mixer.blend_request_user(permissions=['can_set_ad_group_max_cpm'])
         self.ad_group.settings.update(
@@ -170,6 +39,10 @@ class MigrateToBcmV2Test(TestCase):
         redshiftapi_patcher = patch('redshiftapi.api_breakdowns.query_all', MagicMock())
         redshiftapi_patcher.start()
         self.addCleanup(redshiftapi_patcher.stop)
+=======
+        self.fee = decimal.Decimal('0.2')
+        self.margin = decimal.Decimal('0.1')
+>>>>>>> Fix existing tests
 
     @patch('utils.k1_helper.update_ad_group', MagicMock())
     @patch.object(core.entity.AdGroupSource, 'migrate_to_bcm_v2')

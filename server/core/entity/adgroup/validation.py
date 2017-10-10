@@ -9,7 +9,7 @@ LANDING_MODE_PREVENT_UPDATE = ['daily_budget_cc', 'state']
 
 
 def validate_ad_group_source_updates(ad_group_source, updates, ad_group_settings, ad_group_source_settings):
-    bcm_modifiers = ad_group_source.ad_group.get_bcm_modifiers()
+    bcm_modifiers = ad_group_source.ad_group.campaign.get_bcm_modifiers()
     _validate_ad_group_source_cpc(ad_group_source, updates, bcm_modifiers)
     _validate_ad_group_source_daily_budget(ad_group_source, updates, bcm_modifiers)
     _validate_ad_group_source_state(ad_group_source, updates, ad_group_settings, ad_group_source_settings)

@@ -1,5 +1,4 @@
 from django.db import transaction
-from django.db.models import Q
 
 import core.bcm
 import dash.constants
@@ -8,43 +7,8 @@ from utils import k1_helper, numbers
 
 class AdGroupBCMMixin(object):
 
-    def get_bcm_modifiers(self):
-        modifiers = None
-        if self.campaign.account.uses_bcm_v2:
-            fee, margin = self.get_todays_fee_and_margin()
-            modifiers = {
-                'fee': fee,
-                'margin': margin,
-            }
-        return modifiers
-
-    def get_todays_fee_and_margin(self):
-        todays_budget = core.bcm.BudgetLineItem.objects \
-            .filter(campaign_id=self.campaign_id) \
-            .filter_today() \
-            .select_related('credit') \
-            .order_by('id') \
-            .first()
-
-        fee, margin = None, None
-        if todays_budget:
-            margin = todays_budget.margin
-            fee = todays_budget.credit.license_fee
-        else:
-            todays_credit = core.bcm.CreditLineItem.objects \
-                .filter(
-                    Q(account_id=self.campaign.account_id) |
-                    Q(agency_id=self.campaign.account.agency_id)) \
-                .filter_active() \
-                .order_by('id') \
-                .first()
-            fee = todays_credit.license_fee if todays_credit else None
-
-        return fee, margin
-
     @transaction.atomic
-    def migrate_to_bcm_v2(self, request):
-        fee, margin = self.get_todays_fee_and_margin()
+    def migrate_to_bcm_v2(self, request, fee, margin):
         self._migrate_settings_to_bcm_v2(request, fee, margin)
         self._validate_correct_settings_migration(request)
         self._migrate_ad_group_sources_to_bcm_v2(request, fee, margin)

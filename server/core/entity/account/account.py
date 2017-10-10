@@ -227,8 +227,8 @@ class Account(models.Model, core.common.SettingsProxyMixin):
         if self.uses_bcm_v2:
             return
 
-        for ad_group in core.entity.AdGroup.objects.filter(campaign__account_id=self.id):
-            ad_group.migrate_to_bcm_v2(request)
+        for campaign in self.campaign_set.all():
+            campaign.migrate_to_bcm_v2(request)
 
         self.set_uses_bcm_v2(request, True)
 

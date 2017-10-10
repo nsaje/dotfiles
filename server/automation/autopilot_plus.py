@@ -95,7 +95,7 @@ def _get_autopilot_predictions(
 
 def initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False):
     ad_group = ad_group_settings.ad_group
-    bcm_modifiers = ad_group.get_bcm_modifiers()
+    bcm_modifiers = ad_group.campaign.get_bcm_modifiers()
     paused_sources_changes = _set_paused_ad_group_sources_to_minimum_values(ad_group_settings, bcm_modifiers)
     autopilot_changes_data = run_autopilot(ad_groups=[ad_group.id], adjust_cpcs=False,
                                            adjust_budgets=True, initialization=True, send_mail=send_mail)

@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 def get_ad_group_stats(ad_group):
     spend = sum(stat['spend'] for stat in _get_k1_adgroup_stats(ad_group))
     if ad_group.campaign.account.uses_bcm_v2:
-        fee, margin = ad_group.get_todays_fee_and_margin()
+        fee, margin = ad_group.campaign.get_todays_fee_and_margin()
         spend = core.bcm.calculations.apply_fee_and_margin(spend, fee, margin)
 
     stats = {

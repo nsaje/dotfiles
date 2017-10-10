@@ -459,7 +459,7 @@ class B1SourcesGroupSettingsForm(forms.Form):
 
     def __init__(self, ad_group_settings, *args, **kwargs):
         self.ad_group_settings = ad_group_settings
-        self.bcm_modifiers = self.ad_group_settings.ad_group.get_bcm_modifiers()
+        self.bcm_modifiers = self.ad_group_settings.ad_group.campaign.get_bcm_modifiers()
         super(B1SourcesGroupSettingsForm, self).__init__(*args, **kwargs)
 
     def clean_b1_sources_group_cpc_cc(self):

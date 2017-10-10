@@ -18,15 +18,14 @@ class AccountQuerySetTest(TestCase):
 
 class MigrateToBcmV2Test(TestCase):
 
-    @patch.object(core.entity.adgroup.AdGroup, 'migrate_to_bcm_v2')
-    def test_migrate_to_bcm_v2(self, mock_ad_group_migrate):
+    @patch.object(core.entity.campaign.Campaign, 'migrate_to_bcm_v2')
+    def test_migrate_to_bcm_v2(self, mock_campaign_migrate):
         account = magic_mixer.blend(core.entity.Account, uses_bcm_v2=False)
-        campaign = magic_mixer.blend(core.entity.Campaign, account=account)
-        ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=campaign)
+        magic_mixer.blend(core.entity.Campaign, account=account)
 
         request = magic_mixer.blend_request_user()
         account.migrate_to_bcm_v2(request)
         account.refresh_from_db()
 
         self.assertTrue(account.uses_bcm_v2)
-        self.assertTrue(ad_group.migrate_to_bcm_v2.called)
+        self.assertTrue(mock_campaign_migrate.called)
