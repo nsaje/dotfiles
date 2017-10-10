@@ -14,8 +14,6 @@ class MigrateToBcmV2Test(TestCase):
 
     def setUp(self):
         self._set_up_patchers()
-        today = datetime.date.today()
-
         account = magic_mixer.blend(core.entity.Account, uses_bcm_v2=False)
         campaign = magic_mixer.blend(core.entity.Campaign, account=account)
         self.ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=campaign)
@@ -74,7 +72,7 @@ class MigrateToBcmV2Test(TestCase):
         self.assertTrue(ad_group_source.migrate_to_bcm_v2.called)
 
     def _test_migrate_to_bcm_v2(self):
-        self.ad_group.migrate_to_bcm_v2(self.request)
+        self.ad_group.migrate_to_bcm_v2(self.request, decimal.Decimal('0.2'), decimal.Decimal('0.1'))
 
         self.assertEqual(70, self.ad_group.settings.b1_sources_group_daily_budget)
         self.assertEqual(139, self.ad_group.settings.autopilot_daily_budget)
