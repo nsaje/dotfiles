@@ -1,11 +1,8 @@
 import django.db.models
 
 from rest_framework import serializers
-from rest_framework import fields
 
 import dash.models
-
-import utils.list_helper
 
 
 class NotProvided(object):
@@ -59,22 +56,6 @@ class DashConstantField(serializers.CharField):
 
     def to_representation_many(self, data):
         return map(lambda x: self.to_representation(x), data)
-
-
-class CommaListField(fields.ListField):
-    """ Allows list query parameters in the form of both
-        ?param=1,2,3 and ?param=1&param=2&param=3
-    """
-
-    def __init__(self, *args, **kwargs):
-        self.child = kwargs.pop('child')
-        return super(CommaListField, self).__init__(*args, **kwargs)
-
-    def get_value(self, dictionary):
-        """Split by commas"""
-        unsplit_data = super(CommaListField, self).get_value(dictionary)
-        data = utils.list_helper.flatten(x.split(',') for x in unsplit_data)
-        return data
 
 
 class SourceIdSlugField(serializers.Field):

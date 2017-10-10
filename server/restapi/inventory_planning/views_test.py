@@ -71,8 +71,15 @@ class InventoryPlanningViewTest(restapi.views_test.RESTAPITest):
     @mock.patch.object(dash.features.inventory_planning, 'get_summary', return_value={}, autospec=True)
     def test_filters_get(self, mock_func):
         r = self.client.get(
-            reverse('inventory_planning', kwargs=dict(breakdown='summary')),
-            data={'c': ['1', '2'], 'p': ['3', '4'], 'd': [5, 6]}
+            reverse('inventory_planning', kwargs=dict(breakdown='summary')) + '?c=1&c=2&p=3&p=4&d=5&d=6'
+        )
+        r = self.assertResponseValid(r)
+        mock_func.assert_called_with({'country': ['1', '2'], 'publisher': ['3', '4'], 'device_type': [5, 6]})
+
+    @mock.patch.object(dash.features.inventory_planning, 'get_summary', return_value={}, autospec=True)
+    def test_filters_get_commas(self, mock_func):
+        r = self.client.get(
+            reverse('inventory_planning', kwargs=dict(breakdown='summary')) + '?c=1,2&p=3,4&d=5,6',
         )
         r = self.assertResponseValid(r)
         mock_func.assert_called_with({'country': ['1', '2'], 'publisher': ['3', '4'], 'device_type': [5, 6]})

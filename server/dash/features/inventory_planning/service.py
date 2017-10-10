@@ -36,6 +36,9 @@ def get_by_country(filters):
 
 def get_by_publisher(filters):
     data = redshiftapi.api_inventory.query(breakdown='publisher', constraints=filters)
+    for item in data:
+        if not item['value']:
+            item['name'] = 'Not reported'
     return data
 
 

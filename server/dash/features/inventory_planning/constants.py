@@ -14,7 +14,7 @@ class DeviceType(ConstantBase):
     7 | Set Top Box
     """
 
-    UNKNOWN = None
+    UNKNOWN = 0
     MOBILE = 1
     PC = 2
     TV = 3
@@ -28,7 +28,7 @@ class DeviceType(ConstantBase):
         MOBILE: 'Mobile',
         PC: 'Desktop',
         TV: 'TV',
-        PHONE: 'Mobile',
+        PHONE: 'Phone',
         TABLET: 'Tablet',
         CONNECTED: 'Connected',
         SET_TOP_BOX: 'SetTop Box',

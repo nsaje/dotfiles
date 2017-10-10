@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework import fields
 
 import restapi.common.serializers
+import restapi.fields
 
 
 COUNTRY = 'country'

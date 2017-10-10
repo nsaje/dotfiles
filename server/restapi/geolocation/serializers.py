@@ -9,12 +9,12 @@ import restapi.common.serializers
 
 
 class GeolocationQueryParamsExpectations(restapi.common.serializers.QueryParamsExpectations):
-    types = restapi.fields.CommaListField(
+    types = fields.ListField(
         child=restapi.fields.DashConstantField(dash.constants.LocationType),
         max_length=10,
     )
     limit = fields.IntegerField(max_value=50, default=10)
-    keys = restapi.fields.CommaListField(child=fields.CharField(), max_length=50)
+    keys = fields.ListField(child=fields.CharField(), max_length=50)
     name_contains = fields.CharField(min_length=2, max_length=50, required=False)
 
 
