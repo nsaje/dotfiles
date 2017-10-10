@@ -39,10 +39,6 @@ class MigrateToBcmV2Test(TestCase):
         redshiftapi_patcher = patch('redshiftapi.api_breakdowns.query_all', MagicMock())
         redshiftapi_patcher.start()
         self.addCleanup(redshiftapi_patcher.stop)
-=======
-        self.fee = decimal.Decimal('0.2')
-        self.margin = decimal.Decimal('0.1')
->>>>>>> Fix existing tests
 
     @patch('utils.k1_helper.update_ad_group', MagicMock())
     @patch.object(core.entity.AdGroupSource, 'migrate_to_bcm_v2')
