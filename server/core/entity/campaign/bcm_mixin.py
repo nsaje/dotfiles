@@ -22,7 +22,6 @@ class CampaignBCMMixin(object):
             return budget.credit.license_fee, budget.margin
         else:
             credit = self._get_todays_credit()
-            print credit
             if credit:
                 return credit.license_fee, None
         return None, None
