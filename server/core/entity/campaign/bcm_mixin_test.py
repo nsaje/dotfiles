@@ -54,6 +54,50 @@ class CampaignBcmMixin(TestCase):
         self.assertEqual(fee, decimal.Decimal('0.3333'))
         self.assertEqual(margin, decimal.Decimal('0.2200'))
 
+    def test_get_todays_fee_and_margin_no_budget(self):
+        yesterday = datetime.date.today() - datetime.timedelta(days=1)
+        today = datetime.date.today()
+
+        magic_mixer.blend(core.bcm.CreditLineItem,
+                          agency=self.agency,
+                          start_date=yesterday,
+                          end_date=today,
+                          status=constants.CreditLineItemStatus.SIGNED,
+                          amount=decimal.Decimal('1000.0'),
+                          flat_fee_cc=0,
+                          license_fee=decimal.Decimal('0.2121'))
+
+        fee, margin = self.campaign.get_todays_fee_and_margin()
+
+        self.assertEqual(fee, decimal.Decimal('0.2121'))
+        self.assertEqual(margin, None)
+
+    def test_get_todays_fee_and_margin_agency_credit(self):
+        yesterday = datetime.date.today() - datetime.timedelta(days=1)
+        today = datetime.date.today()
+
+        credit = magic_mixer.blend(core.bcm.CreditLineItem,
+                                   agency=self.agency,
+                                   start_date=yesterday,
+                                   end_date=today,
+                                   status=constants.CreditLineItemStatus.SIGNED,
+                                   amount=decimal.Decimal('1000.0'),
+                                   flat_fee_cc=0,
+                                   license_fee=decimal.Decimal('0.2121'))
+
+        magic_mixer.blend(core.bcm.BudgetLineItem,
+                          campaign=self.campaign,
+                          start_date=yesterday,
+                          end_date=today,
+                          credit=credit,
+                          amount=decimal.Decimal('200'),
+                          margin=decimal.Decimal('0.2200'))
+
+        fee, margin = self.campaign.get_todays_fee_and_margin()
+
+        self.assertEqual(fee, decimal.Decimal('0.2121'))
+        self.assertEqual(margin, decimal.Decimal('0.2200'))
+
     def test_get_todays_fee_and_margin_nothing(self):
         yesterday = datetime.date.today() - datetime.timedelta(days=1)
 
