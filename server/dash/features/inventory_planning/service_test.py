@@ -66,7 +66,7 @@ class TestService(TestCase):
     def test_get_by_device_type(self):
         self.mock_query.return_value = [
             {
-                'device_type': 1,
+                'device_type': 4,
                 'bids': 1,
             },
             {
@@ -76,7 +76,7 @@ class TestService(TestCase):
         ]
         self.assertEqual(service.get_by_device_type(None), [
             {
-                'device_type': 1,
+                'device_type': 4,
                 'name': 'Mobile',
                 'bids': 1,
             },

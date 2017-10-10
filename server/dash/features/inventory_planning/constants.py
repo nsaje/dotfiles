@@ -24,12 +24,12 @@ class DeviceType(ConstantBase):
     SET_TOP_BOX = 7
 
     _VALUES = {
-        UNKNOWN: 'Not reported',
-        MOBILE: 'Mobile',
+        UNKNOWN: 'Not reported',  # should not be present due to materialization
+        MOBILE: 'Mobile (legacy)',  # should not be present due to materialization
         PC: 'Desktop',
-        TV: 'TV',
-        PHONE: 'Phone',
+        TV: 'TV & SetTop Box',
+        PHONE: 'Mobile',
         TABLET: 'Tablet',
-        CONNECTED: 'Connected',
-        SET_TOP_BOX: 'SetTop Box',
+        CONNECTED: 'Connected',  # should not be present due to materialization
+        SET_TOP_BOX: 'SetTop Box',  # should not be present due to materialization
     }

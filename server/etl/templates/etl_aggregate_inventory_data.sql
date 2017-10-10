@@ -15,7 +15,12 @@ INSERT INTO mv_inventory (
           ELSE NULL
         END as country,
         publisher,
-        device_type,
+        CASE
+          WHEN device_type = 1 THEN 4  -- when mobile then phone
+          WHEN device_type = 6 THEN 3  -- when connected then tv
+          WHEN device_type = 7 THEN 3  -- when settopbox then tv
+          ELSE device_type
+        END as device_type,
         SUM(bid_reqs),
         SUM(bids),
         SUM(win_notices),
@@ -24,6 +29,9 @@ INSERT INTO mv_inventory (
     FROM supply_stats
 
     WHERE date BETWEEN %(date_from)s AND %(date_to)s
+          AND country <> ''
+          AND publisher <> ''
+          AND device_type > 0
 
     GROUP BY 1, 2, 3
 
