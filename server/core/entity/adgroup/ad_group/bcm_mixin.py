@@ -65,12 +65,12 @@ class AdGroupBCMMixin(object):
 
     def _transform_whole_value(self, number, fee, margin):
         if not number:
-            return
+            return number
         including_fee_and_margin = core.bcm.calculations.apply_fee_and_margin(number, fee, margin)
         return numbers.round_decimal_ceiling(including_fee_and_margin, places=0)
 
     def _transform_fractional_value(self, number, fee, margin):
         if not number:
-            return
+            return number
         including_fee_and_margin = core.bcm.calculations.apply_fee_and_margin(number, fee, margin)
         return numbers.round_decimal_half_down(including_fee_and_margin, places=3)

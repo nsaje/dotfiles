@@ -380,7 +380,7 @@ class AdGroupSource(models.Model):
 
     def _transform_daily_budget_cc(self, daily_budget_cc, fee, margin):
         if not daily_budget_cc:
-            return
+            return daily_budget_cc
         new_daily_budget_cc = core.bcm.calculations.apply_fee_and_margin(
             daily_budget_cc, fee, margin
         )
@@ -388,7 +388,7 @@ class AdGroupSource(models.Model):
 
     def _transform_cpc_cc(self, cpc_cc, fee, margin):
         if not cpc_cc:
-            return
+            return cpc_cc
         new_cpc_cc = core.bcm.calculations.apply_fee_and_margin(
             cpc_cc, fee, margin
         )
