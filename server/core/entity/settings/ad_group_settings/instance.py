@@ -102,7 +102,8 @@ class AdGroupSettingsMixin(object):
                     raise exc.ValidationError(errors={
                         'b1_sources_group_cpc_cc': list(set(err))
                     })
-            dash.views.helpers.set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, new_settings)
+            dash.views.helpers.set_ad_group_sources_cpcs(
+                ad_group_sources_cpcs, ad_group, new_settings, skip_validation=skip_validation)
 
             new_settings.save(
                 request,

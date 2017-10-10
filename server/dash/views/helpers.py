@@ -736,7 +736,7 @@ def validate_ad_group_sources_cpc_constraints(ad_group_sources_cpcs):
 
 
 @transaction.atomic
-def set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, ad_group_settings):
+def set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, ad_group_settings, skip_validation=False):
     for ad_group_source, proposed_cpc in ad_group_sources_cpcs.items():
         adjusted_cpc = _get_adjusted_ad_group_source_cpc(proposed_cpc, ad_group_source, ad_group_settings)
         if adjusted_cpc:
@@ -748,7 +748,7 @@ def set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, ad_group_settings
         ad_group_source.update(
             cpc_cc=adjusted_cpc,
             k1_sync=False,
-            skip_validation=False
+            skip_validation=skip_validation,
         )
 
 
