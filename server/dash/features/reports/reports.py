@@ -178,7 +178,8 @@ class ReportJobExecutor(JobExecutor):
 
         column_to_field_name_map = utils.columns.custom_column_to_field_name_mapping(
             goals.pixels, goals.conversion_goals,
-            show_publishers_fields=stats.constants.PUBLISHER in breakdown
+            show_publishers_fields=stats.constants.PUBLISHER in breakdown,
+            uses_bcm_v2=stats.api_reports.get_uses_bcm_v2(constraints)
         )
 
         order = cls._get_order(job, column_to_field_name_map)

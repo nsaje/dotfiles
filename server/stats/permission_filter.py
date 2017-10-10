@@ -6,6 +6,7 @@ from utils import exc
 
 from stats import constants
 from stats import fields
+from stats.constraints_helper import get_uses_bcm_v2
 from stats.constants import StructureDimension
 
 
@@ -112,17 +113,9 @@ FIELD_PERMISSION_MAPPING = {
 
 
 def filter_columns_by_permission(user, rows, goals, constraints):
-    fields_to_keep = _get_fields_to_keep(user, goals, _get_uses_bcm_v2(constraints))
+    fields_to_keep = _get_fields_to_keep(user, goals, get_uses_bcm_v2(constraints))
     _remove_fields(rows, fields_to_keep)
     _custom_cleanup(user, rows)
-
-
-def _get_uses_bcm_v2(constraints):
-    if constraints.get('account'):
-        return constraints['account'].uses_bcm_v2
-    elif 'allowed_accounts' in constraints and constraints['allowed_accounts'].count() == 1:
-        return constraints['allowed_accounts'].first().uses_bcm_v2
-    return False
 
 
 def _get_fields_to_keep(user, goals, uses_bcm_v2):

@@ -265,3 +265,11 @@ def reduce_to_parent(breakdown, constraints, parent=None):
         narrow_allowed_target_field(constraints, breakdown)
 
     return constraints
+
+
+def get_uses_bcm_v2(constraints):
+    if constraints.get('account'):
+        return constraints['account'].uses_bcm_v2
+    elif 'allowed_accounts' in constraints:
+        return all(constraints['allowed_accounts'].values_list('uses_bcm_v2', flat=True))
+    return False
