@@ -57,7 +57,8 @@ class AdGroupBCMMixin(object):
 
     def _get_ad_group_sources_to_migrate(self):
         ad_group_sources = self.adgroupsource_set.all()
-        if self.settings.b1_sources_group_enabled:
+        if self.settings.b1_sources_group_enabled and\
+           self.settings.autopilot_state != dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
             ad_group_sources = ad_group_sources.exclude(
                 source__source_type__type=dash.constants.SourceType.B1)
         return ad_group_sources
