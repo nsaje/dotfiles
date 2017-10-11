@@ -6,18 +6,31 @@ from stats import constants
 FORMAT_1_DECIMAL = []
 FORMAT_2_DECIMALS = []
 FORMAT_3_DECIMALS = []
-FORMAT_4_DECIMALS = ['pv_per_visit', 'data_cost', 'media_cost',
-                     'e_media_cost', 'e_data_cost',
-                     'billing_cost', 'margin', 'agency_cost',
-                     'license_fee', 'total_fee', 'flat_fee',
-                     'allocated_budgets', 'spend_projection',
-                     'license_fee_projection', 'total_fee_projection',
-                     'avg_cost_per_minute', 'avg_cost_per_pageview',
-                     'avg_cost_per_visit', 'avg_cost_per_non_bounced_visit',
-                     'avg_cost_for_new_visitor', 'avg_tos', 'cpc', 'ctr']
+FORMAT_4_DECIMALS = [
+    'pv_per_visit', 'data_cost', 'media_cost',
+    'e_media_cost', 'e_data_cost',
+    'billing_cost', 'margin', 'agency_cost',
+    'license_fee', 'total_fee', 'flat_fee',
+    'allocated_budgets', 'spend_projection',
+    'license_fee_projection', 'total_fee_projection',
+    'avg_cost_per_minute', 'avg_cost_per_pageview',
+    'avg_cost_per_visit', 'avg_cost_per_non_bounced_visit',
+    'avg_cost_for_new_visitor', 'avg_tos', 'cpc', 'ctr',
+    'at_cost', 'et_cost', 'etf_cost', 'etfm_cost',
+    'yesterday_at_cost', 'yesterday_et_cost', 'yesterday_etfm_cost',
+    'et_cpc', 'et_cpm', 'video_et_cpv', 'video_et_cpcv', 'etfm_cpc',
+    'etfm_cpm', 'video_etfm_cpv', 'video_etfm_cpcv',
+    'avg_et_cost_per_minute', 'avg_et_cost_per_non_bounced_visit',
+    'avg_et_cost_per_pageview', 'avg_et_cost_for_new_visitor', 'avg_et_cost_per_visit',
+    'avg_etfm_cost_per_minute', 'avg_etfm_cost_per_non_bounced_visit',
+    'avg_etfm_cost_per_pageview', 'avg_etfm_cost_for_new_visitor', 'avg_etfm_cost_per_visit'
+]
 FORMAT_DIVIDE_100 = ['percent_new_users', 'bounce_rate', 'ctr', 'click_discrepancy', 'pacing']
 FORMAT_EMPTY_TO_0 = [
     'data_cost', 'cpc',
+    'at_cost', 'et_cost', 'etf_cost', 'etfm_cost',
+    'yesterday_at_cost', 'yesterday_et_cost', 'yesterday_etfm_cost',
+    'et_cpc', 'etfm_cpm',
     'clicks', 'impressions', 'ctr', 'e_media_cost', 'media_cost', 'e_data_cost',
     'billing_cost', 'license_fee', 'total_fee', 'flat_fee',
     'margin', 'agency_cost',
@@ -32,7 +45,7 @@ def format_values(rows, columns):
     if len(rows) <= 0:
         return rows
     for column in columns:
-        if 'avg_cost_per' in column:
+        if any(x in column for x in ['avg_cost_per', 'avg_et_cost_per', 'avg_etfm_cost_per']):
             formatter = format_2_decimal
         else:
             formatter = formatters.get(column)
