@@ -18,6 +18,7 @@ class UsesBCMV2View(api_common.BaseApiView):
         accounts = models.Account.objects.all()\
             .filter_by_user(user)\
             .filter_by_agencies(view_filter.filtered_agencies)\
+            .exclude_archived()\
             .filter(uses_bcm_v2=False)
 
         return self.create_api_response({
