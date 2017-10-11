@@ -303,6 +303,7 @@ class AgencyAccountInline(admin.TabularInline):
 
     ordering = ('-created_dt',)
     readonly_fields = ('admin_link',)
+    raw_id_fields = ('default_whitelist', 'default_blacklist')
 
 
 class AgencyFormAdmin(forms.ModelForm):
