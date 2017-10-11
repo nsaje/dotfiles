@@ -38,20 +38,21 @@ def is_readable(ga_property_id):
 
 @transaction.atomic()
 def refresh_mappings():
-    mapping_objects = []
+    mapping_objects = {}
     for zem_ga_account_email in settings.GA_CREDENTIALS:
         management_service = _get_service(zem_ga_account_email)
         linked_ga_accounts = management_service.management().accounts().list().execute()['items']
         for ga_account in linked_ga_accounts:
-            mapping_objects.append(
-                models.GALinkedAccounts(
-                    customer_ga_account_id=ga_account['id'],
-                    zem_ga_account_email=zem_ga_account_email,
-                    has_read_and_analyze=READ_AND_ANALYZE in ga_account['permissions']['effective']
-                )
+            existing_mapping = mapping_objects.get(ga_account['id'])
+            if existing_mapping and existing_mapping.has_read_and_analyze:
+                continue
+            mapping_objects[ga_account['id']] = models.GALinkedAccounts(
+                customer_ga_account_id=ga_account['id'],
+                zem_ga_account_email=zem_ga_account_email,
+                has_read_and_analyze=READ_AND_ANALYZE in ga_account['permissions']['effective']
             )
     models.GALinkedAccounts.objects.all().delete()
-    models.GALinkedAccounts.objects.bulk_create(mapping_objects)
+    models.GALinkedAccounts.objects.bulk_create(mapping_objects.values())
 
 
 def extract_ga_account_id(ga_property_id):
