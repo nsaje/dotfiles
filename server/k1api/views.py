@@ -26,6 +26,7 @@ import redshiftapi.internal_stats.conversions
 import redshiftapi.internal_stats.content_ad_publishers
 import etl.materialize_views
 import dash.features.geolocation
+import dash.features.ga
 
 logger = logging.getLogger(__name__)
 
@@ -288,8 +289,12 @@ class GAAccountsView(K1APIView):
             {'account_id': account_id, 'ga_account_id': ga_account_id, 'ga_web_property_id': ga_web_property_id}
             for account_id, ga_account_id, ga_web_property_id in ga_accounts
         ]
+        ga_account_ids = set(ga_account_id for _, ga_account_id, _ in ga_accounts)
 
-        return self.response_ok({'ga_accounts': list(ga_accounts_dicts)})
+        return self.response_ok({
+            'ga_accounts': list(ga_accounts_dicts),
+            'service_email_mapping': self._get_service_email_mapping(ga_account_ids)
+        })
 
     def _extract_ga_settings(self, ga_accounts, campaign_settings):
         if not (campaign_settings.enable_ga_tracking and
@@ -298,14 +303,15 @@ class GAAccountsView(K1APIView):
         ga_property_id = campaign_settings.ga_property_id
         ga_accounts.add((
             campaign_settings.campaign.account_id,
-            self._extract_ga_account_id(ga_property_id),
+            dash.features.ga.extract_ga_account_id(ga_property_id),
             ga_property_id
         ))
 
-    @staticmethod
-    def _extract_ga_account_id(ga_property_id):
-        result = re.search(constants.GA_PROPERTY_ID_REGEX, ga_property_id)
-        return result.group(1)
+    def _get_service_email_mapping(self, ga_account_ids):
+        return {
+            m.customer_ga_account_id: m.zem_ga_account_email
+            for m in dash.features.ga.GALinkedAccounts.objects.filter(customer_ga_account_id__in=ga_account_ids)
+        }
 
 
 class R1MappingView(K1APIView):

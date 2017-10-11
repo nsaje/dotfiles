@@ -17,7 +17,7 @@ from dash import constants
 from dash import retargeting_helper
 from dash import campaign_goals
 from dash import facebook_helper
-from dash import ga_helper
+from dash.features import ga
 from dash import content_insights_helper
 
 from utils import api_common
@@ -415,7 +415,7 @@ class CampaignSettings(api_common.BaseApiView):
                     new_settings.enable_ga_tracking and
                     new_settings.ga_property_id):
                 try:
-                    is_readable = ga_helper.is_readable(new_settings.ga_property_id)
+                    is_readable = ga.is_readable(new_settings.ga_property_id)
                 except:
                     is_readable = False
                 if not is_readable:
@@ -549,7 +549,7 @@ class CampaignSettings(api_common.BaseApiView):
 
         if settings.enable_ga_tracking and settings.ga_property_id:
             try:
-                result['ga_property_readable'] = ga_helper.is_readable(settings.ga_property_id)
+                result['ga_property_readable'] = ga.is_readable(settings.ga_property_id)
             except:
                 logger.exception("Google Analytics validation failed")
 

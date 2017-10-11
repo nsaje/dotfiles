@@ -22,7 +22,10 @@ class LocalSettingsTestCase(test.TestCase):
         ast_object_tree = ast.parse(module_code)
         for ast_object in ast_object_tree.body:
             if type(ast_object) == ast.Assign:
-                attribute_name = ast_object.targets[0].id
+                target = ast_object.targets[0]
+                if type(target) == ast.Subscript:
+                    continue
+                attribute_name = target.id
                 if self._is_valid_attribute(attribute_name):
                     keys.add(attribute_name)
         return keys

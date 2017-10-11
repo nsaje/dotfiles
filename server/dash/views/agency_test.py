@@ -21,7 +21,7 @@ from dash import constants
 from dash.views import agency
 from dash import forms
 from dash import history_helpers
-from dash import ga_helper
+from dash.features import ga
 
 from utils import exc
 from utils.test_helper import add_permissions, fake_request
@@ -2107,7 +2107,7 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(content['data']['settings']['whitelist_publisher_groups'], [1])
         self.assertEqual(content['data']['settings']['blacklist_publisher_groups'], [1])
 
-    @patch('dash.views.agency.ga_helper.is_readable')
+    @patch('dash.views.agency.ga.is_readable')
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('dash.views.agency.email_helper.send_ga_setup_instructions')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
@@ -2528,7 +2528,7 @@ class CampaignSettingsTest(TestCase):
         self.assertTrue(content['success'])
         self.assertEqual(len(content['data'].get('campaign_managers')), 4)
 
-    @patch.object(ga_helper, 'is_readable')
+    @patch.object(ga, 'is_readable')
     def test_ga_property_validation(self, mock_is_readable):
         ga_property_id = 'UA-123-1'
         request = HttpRequest

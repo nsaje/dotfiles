@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os
-import sys
+import collections
 import os.path
 from secretcrypt import Secret
 
@@ -264,9 +264,10 @@ VIDEO_PREVIEW_URL = 'https://s3.amazonaws.com/zemvideos/transcoded/{filename}'
 # Slack hooks
 SLACK_INCOMING_HOOK_URL = Secret('').get()
 
-# GA credentials
-GA_PRIVATE_KEY = Secret('').get()
-GA_CLIENT_EMAIL = Secret('').get()
+# GA credentials - order newest to oldest
+GA_CREDENTIALS = collections.OrderedDict()
+GA_CREDENTIALS['account-2@example.com'] = Secret('').get()
+GA_CREDENTIALS['account-1@example.com'] = Secret('').get()
 
 # bizwire
 BIZWIRE_API_SIGN_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()
