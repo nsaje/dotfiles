@@ -454,6 +454,11 @@ urlpatterns += [
         name='navigation_tree'
     ),
     url(
+        r'^api/usesbcmv2/',
+        login_required(dash.views.navigation.UsesBCMV2View.as_view()),
+        name='navigation_tree_usesbcmv2'
+    ),
+    url(
         r'^api/users/(?P<user_id>(\d+|current))/$',
         login_required(dash.views.views.User.as_view()),
         name='user'

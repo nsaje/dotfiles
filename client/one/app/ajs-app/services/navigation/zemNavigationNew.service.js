@@ -8,22 +8,30 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
     this.getActiveEntity = getActiveEntity;
     this.getActiveEntityByType = getActiveEntityByType;
     this.getActiveAccount = getActiveAccount;
+    this.getUsesBCMV2 = getUsesBCMV2;
     this.getNavigationHierarchy = getNavigationHierarchy;
     this.getNavigationHierarchyPromise = getNavigationHierarchyPromise;
     this.onHierarchyUpdate = onHierarchyUpdate;
     this.onActiveEntityChange = onActiveEntityChange;
+    this.onUsesBCMv2Update = onUsesBCMv2Update;
 
     var EVENTS = {
         ON_HIERARCHY_UPDATE: 'zem-navigation-service-on-data-updated',
         ON_ACTIVE_ENTITY_CHANGE: 'zem-navigation-service-on-active-entity-change',
+        ON_USES_BCMV2_UPDATE: 'zem-navigation-service-on-uses-bcmv2-update'
     };
 
     var $scope = $rootScope.$new(); // Scope used for listener stuff (TODO: remove dependency)
     var hierarchyRoot; // Root of the navigation hierarchy tree (account -> campaign -> adgroup)
     var activeEntity; // Current navigation entity (e.g. ad group)
+    var allAccountsUsesBCMv2 = false;
 
     function init () {
         zemNavigationService.onUpdate($scope, handleDataUpdate);
+        zemNavigationService.getUsesBCMv2().then(function (data) {
+            allAccountsUsesBCMv2 = data.usesBCMv2;
+            notifyListeners(EVENTS.ON_USES_BCMV2_UPDATE);
+        });
         $rootScope.$on('$zemStateChangeStart', function () {
             activeEntity = undefined;
         });
@@ -230,6 +238,13 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
         return null;
     }
 
+    function getUsesBCMV2 () {
+        var account = getActiveAccount();
+        if (account) return account.data.usesBCMv2;
+
+        return allAccountsUsesBCMv2;
+    }
+
     function getNavigationHierarchy () {
         return hierarchyRoot;
     }
@@ -257,6 +272,10 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
 
     function onActiveEntityChange (callback) {
         return registerListener(EVENTS.ON_ACTIVE_ENTITY_CHANGE, callback);
+    }
+
+    function onUsesBCMv2Update (callback) {
+        return registerListener(EVENTS.ON_USES_BCMV2_UPDATE, callback);
     }
 
     function registerListener (event, callback) {

@@ -278,6 +278,8 @@ angular.module('one.services').factory('zemNavigationService', function ($rootSc
 
         getAccountsAccess: getAccountsAccess,
 
+        getUsesBCMv2: zemNavigationLegacyEndpoint.getUsesBCMv2,
+
         reload: reload,
         reloadAccount: reloadAccount,
         reloadCampaign: reloadCampaign,

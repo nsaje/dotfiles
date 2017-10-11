@@ -10,6 +10,21 @@ from dash.views import navigation_helpers
 logger = logging.getLogger(__name__)
 
 
+class UsesBCMV2View(api_common.BaseApiView):
+    def get(self, request):
+        view_filter = helpers.ViewFilter(request=request)
+        user = request.user
+
+        accounts = models.Account.objects.all()\
+            .filter_by_user(user)\
+            .filter_by_agencies(view_filter.filtered_agencies)\
+            .filter(uses_bcm_v2=False)
+
+        return self.create_api_response({
+            'usesBCMv2': not accounts.exists()
+        })
+
+
 class NavigationDataView(api_common.BaseApiView):
 
     def get(self, request, level_, id_):

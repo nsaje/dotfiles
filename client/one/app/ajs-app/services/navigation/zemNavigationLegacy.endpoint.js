@@ -5,6 +5,7 @@ angular.module('one.services').service('zemNavigationLegacyEndpoint', function (
     this.getCampaign = getCampaign;
     this.getAccount = getAccount;
     this.getAccountsAccess = getAccountsAccess;
+    this.getUsesBCMv2 = getUsesBCMv2;
 
     function getAdGroup (id) {
         return get('ad_groups/' + id);
@@ -40,6 +41,31 @@ angular.module('one.services').service('zemNavigationLegacyEndpoint', function (
                     resource = data.data;
                 }
                 deferred.resolve(convertFromApi(resource));
+            }).
+            error(function (data) {
+                deferred.reject(data);
+            });
+
+        return deferred.promise;
+    }
+
+    function getUsesBCMv2 () {
+        var deferred = $q.defer();
+        var url = '/api/usesbcmv2/';
+        var config = {
+            params: {},
+        };
+        addFilteredSources(config.params);
+        addAgencyFilter(config.params);
+        addAccountTypeFilter(config.params);
+
+        $http.get(url, config).
+            success(function (data) {
+                var resource;
+                if (data && data.data) {
+                    resource = data.data;
+                }
+                deferred.resolve(resource || []);
             }).
             error(function (data) {
                 deferred.reject(data);
