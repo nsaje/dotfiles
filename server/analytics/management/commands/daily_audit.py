@@ -116,7 +116,10 @@ class Command(utils.command_helpers.ExceptionCommand):
         content_ad_sources = dash.models.ContentAdSource.objects.filter(
             content_ad__ad_group_id__in=triplelift_ad_group_ids,
             source_id=TRIPLELIFT_SOURCE_ID,
-            submission_status=dash.constants.ContentAdSubmissionStatus.PENDING,
+            submission_status__in=(
+                dash.constants.ContentAdSubmissionStatus.PENDING,
+                dash.constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
+            ),
             state=dash.constants.ContentAdSourceState.ACTIVE
         ).select_related('content_ad', 'content_ad__ad_group')
 
@@ -132,11 +135,13 @@ class Command(utils.command_helpers.ExceptionCommand):
                 cas.content_ad.get_redirector_url(),
                 cas.content_ad.get_image_url(),
                 cas.content_ad.created_dt,
+                dash.constants.ContentAdSubmissionStatus.get_text(cas.submission_status),
             ))
         url = analytics.statements.generate_csv(
             'triplelift-ads/pending-{}.csv'.format(str(datetime.date.today())),
             utils.csv_utils.tuplelist_to_csv([(
                 'Ad Group ID', 'Ad Group Name', 'Content Ad ID', 'Title', 'Url', 'Redirector URL', 'Image URL', 'Created at',
+                'Submission Status',
             )] + out)
         )
         lines = ['Content ad Submission', ' - Triplelift: ' + url]
