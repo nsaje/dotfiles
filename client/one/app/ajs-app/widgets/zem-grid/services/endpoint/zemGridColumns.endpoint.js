@@ -1946,7 +1946,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
     function checkPermissions (columns) {
         // Go trough all columns and convert permissions to boolean, when needed
 
-        var usesBCMv2 = zemNavigationNewService.getUsesBCMV2();
+        var usesBCMv2 = zemNavigationNewService.getUsesBCMv2();
         var newCostModes = [constants.costMode.PLATFORM, constants.costMode.PUBLIC, constants.costMode.ANY];
         var hasPermission = function (permission) {
             return zemPermissions.hasPermissionBCMv2(permission, usesBCMv2);

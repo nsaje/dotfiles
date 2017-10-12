@@ -12,12 +12,15 @@ logger = logging.getLogger(__name__)
 
 class UsesBCMV2View(api_common.BaseApiView):
     def get(self, request):
-        view_filter = helpers.ViewFilter(request=request)
+        """
+        Returns true if user has all accounts to which he has access to migrated to the new
+        margins system.
+        """
+
         user = request.user
 
         accounts = models.Account.objects.all()\
             .filter_by_user(user)\
-            .filter_by_agencies(view_filter.filtered_agencies)\
             .exclude_archived()\
             .filter(uses_bcm_v2=False)
 

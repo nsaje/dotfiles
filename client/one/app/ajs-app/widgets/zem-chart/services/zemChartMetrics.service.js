@@ -203,7 +203,7 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
     function checkPermissions (metrics) {
         // Go trough all metrics and convert permissions to boolean, when needed
 
-        var usesBCMv2 = zemNavigationNewService.getUsesBCMV2();
+        var usesBCMv2 = zemNavigationNewService.getUsesBCMv2();
         var newCostModes = [constants.costMode.PLATFORM, constants.costMode.PUBLIC, constants.costMode.ANY];
         var hasPermission = function (permission) {
             return zemPermissions.hasPermissionBCMv2(permission, usesBCMv2);

@@ -8,7 +8,7 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
     this.getActiveEntity = getActiveEntity;
     this.getActiveEntityByType = getActiveEntityByType;
     this.getActiveAccount = getActiveAccount;
-    this.getUsesBCMV2 = getUsesBCMV2;
+    this.getUsesBCMv2 = getUsesBCMv2;
     this.getNavigationHierarchy = getNavigationHierarchy;
     this.getNavigationHierarchyPromise = getNavigationHierarchyPromise;
     this.onHierarchyUpdate = onHierarchyUpdate;
@@ -28,10 +28,9 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
 
     function init () {
         zemNavigationService.onUpdate($scope, handleDataUpdate);
-        zemNavigationService.getUsesBCMv2().then(function (data) {
-            allAccountsUsesBCMv2 = data.usesBCMv2;
-            notifyListeners(EVENTS.ON_USES_BCMV2_UPDATE);
-        });
+
+        initUsesBCMv2();
+
         $rootScope.$on('$zemStateChangeStart', function () {
             activeEntity = undefined;
         });
@@ -60,6 +59,13 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
             // If hierarchy data not yet available use old workaround to get entity data
             fetchAndConvertLegacyEntityData(type, id);
         }
+    }
+
+    function initUsesBCMv2 () {
+        zemNavigationService.getUsesBCMv2().then(function (data) {
+            allAccountsUsesBCMv2 = data.usesBCMv2;
+            notifyListeners(EVENTS.ON_USES_BCMV2_UPDATE);
+        });
     }
 
     function fetchAndConvertLegacyEntityData (type, id) {
@@ -238,7 +244,7 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
         return null;
     }
 
-    function getUsesBCMV2 () {
+    function getUsesBCMv2 () {
         var account = getActiveAccount();
         if (account) return account.data.usesBCMv2;
 

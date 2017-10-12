@@ -55,9 +55,6 @@ angular.module('one.services').service('zemNavigationLegacyEndpoint', function (
         var config = {
             params: {},
         };
-        addFilteredSources(config.params);
-        addAgencyFilter(config.params);
-        addAccountTypeFilter(config.params);
 
         $http.get(url, config).
             success(function (data) {
