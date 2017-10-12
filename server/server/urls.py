@@ -699,6 +699,11 @@ urlpatterns += [
         k1api.views.GeolocationsView.as_view(),
         name='k1api.geolocations',
     ),
+    url(
+        r'^k1api/publisherbidmodifiers$',
+        k1api.views.PublisherBidModifiersView.as_view(),
+        name='k1api.publisherbidmodifiers',
+    ),
 ]
 
 # Crossvalidation Api

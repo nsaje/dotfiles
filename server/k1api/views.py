@@ -27,6 +27,7 @@ import redshiftapi.internal_stats.content_ad_publishers
 import etl.materialize_views
 import dash.features.geolocation
 import dash.features.ga
+import core.publisher_bid_modifiers
 
 logger = logging.getLogger(__name__)
 
@@ -1182,3 +1183,35 @@ class GeolocationsView(K1APIView):
         geolocations = dash.features.geolocation.Geolocation.objects.filter(key__in=keys)
         response = geolocations.values('key', 'name', 'woeid', 'outbrain_id')
         return self.response_ok(list(response))
+
+
+class PublisherBidModifiersView(K1APIView):
+
+    def get(self, request):
+        limit = int(request.GET.get('limit', 500))
+        marker = request.GET.get('marker')
+        ad_group_ids = request.GET.get('ad_group_ids')
+        source_type = request.GET.get('source_type')
+
+        qs = (
+            core.publisher_bid_modifiers.PublisherBidModifier.objects.all()
+            .select_related('source', 'source__source_type')
+            .order_by('pk')
+        )
+        if ad_group_ids:
+            ad_group_ids = ad_group_ids.split(',')
+            qs = qs.filter(ad_group_id__in=ad_group_ids)
+        if source_type:
+            qs = qs.filter(source__source_type__type=source_type)
+        if marker:
+            qs = qs.filter(pk__gt=int(marker))
+        qs = qs[:limit]
+
+        return self.response_ok(
+            [{
+                'id': item.id,
+                'publisher': item.publisher,
+                'source': item.source.bidder_slug,
+                'modifier': item.modifier,
+            } for item in qs]
+        )

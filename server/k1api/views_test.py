@@ -16,6 +16,7 @@ import dash.features.geolocation
 import dash.features.ga
 import dash.constants
 import dash.models
+import core.publisher_bid_modifiers
 
 import logging
 
@@ -1447,3 +1448,74 @@ class GeolocationsTest(K1ApiBaseTest):
         locations = data['response']
 
         self.assertEqual([], locations)
+
+
+class PublisherBidModifiersTest(K1ApiBaseTest):
+
+    def setUp(self):
+        self.source = magic_mixer.blend(core.source.Source, bidder_slug='test_source')
+        super(PublisherBidModifiersTest, self).setUp()
+
+    def repr(self, obj):
+        return {
+            'id': obj.id,
+            'publisher': obj.publisher,
+            'source': obj.source.bidder_slug,
+            'modifier': obj.modifier
+        }
+
+    def test_get(self):
+        test_objs = magic_mixer.cycle(3).blend(core.publisher_bid_modifiers.PublisherBidModifier, source=self.source)
+        response = self.client.get(
+            reverse('k1api.publisherbidmodifiers'),
+        )
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        self.assertEqual(data['response'], [self.repr(obj) for obj in test_objs])
+
+    def test_get_with_filters(self):
+        source1 = magic_mixer.blend(core.source.Source, source_type__type='abc')
+        source2 = magic_mixer.blend(core.source.Source, source_type__type='cde')
+        ad_groups = magic_mixer.cycle(6).blend(core.entity.AdGroup)
+        expected = magic_mixer.cycle(3).blend(
+            core.publisher_bid_modifiers.PublisherBidModifier,
+            source=source1,
+            modifier=1,
+            ad_group=(ag for ag in ad_groups[:3]),
+        )
+        # different souce
+        magic_mixer.cycle(3).blend(
+            core.publisher_bid_modifiers.PublisherBidModifier,
+            source=source2,
+            modifier=2,
+            ad_group=(ag for ag in ad_groups[:3]),
+        )
+        # different_ags
+        magic_mixer.cycle(3).blend(
+            core.publisher_bid_modifiers.PublisherBidModifier,
+            source=source1,
+            modifier=3,
+            ad_group=(ag for ag in ad_groups[3:]),
+        )
+        response = self.client.get(
+            reverse('k1api.publisherbidmodifiers'),
+            {'ad_group_ids': ','.join(str(ag.id) for ag in ad_groups[:3]),
+             'source_type': 'abc'}
+        )
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        self.assertEqual(data['response'], [self.repr(obj) for obj in expected])
+
+    def test_pagination(self):
+        test_objs = magic_mixer.cycle(10).blend(
+            core.publisher_bid_modifiers.PublisherBidModifier,
+            source=self.source,
+            modifier=(id for id in range(1, 11))
+        )
+        response = self.client.get(
+            reverse('k1api.publisherbidmodifiers'),
+            {'marker': test_objs[2].id, 'limit': 5}
+        )
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        self.assertEqual(data['response'], [self.repr(obj) for obj in test_objs[3:8]])
