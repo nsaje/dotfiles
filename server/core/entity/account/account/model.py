@@ -17,29 +17,7 @@ import core.history
 import core.entity
 import core.entity.helpers
 
-
-class AccountManager(core.common.QuerySetManager):
-
-    @transaction.atomic()
-    def create(self, request, name, agency=None):
-        account = Account(name=name, agency=agency)
-        if agency is not None:
-            account.uses_bcm_v2 = agency.new_accounts_use_bcm_v2
-        account.save(request)
-        account.write_history(
-            'Created account',
-            user=request.user,
-            action_type=constants.HistoryActionType.CREATE)
-
-        settings_updates = {}
-        settings_updates['default_account_manager'] = request.user
-        if agency is not None:
-            settings_updates['default_sales_representative'] = agency.sales_representative
-            settings_updates['default_cs_representative'] = agency.cs_representative
-            settings_updates['account_type'] = constants.AccountType.ACTIVATED
-        account.settings.update(request, **settings_updates)
-
-        return account
+import manager
 
 
 class Account(models.Model, core.common.SettingsProxyMixin):
@@ -306,4 +284,4 @@ class Account(models.Model, core.common.SettingsProxyMixin):
         def all_use_bcm_v2(self):
             return all(self.values_list('uses_bcm_v2', flat=True))
 
-    objects = AccountManager.from_queryset(QuerySet)()
+    objects = manager.AccountManager.from_queryset(QuerySet)()
