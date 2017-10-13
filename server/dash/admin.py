@@ -298,11 +298,10 @@ class AgencyAccountInline(admin.TabularInline):
         'created_dt',
         'modified_dt',
         'modified_by',
-        'uses_bcm_v2',
     )
 
     ordering = ('-created_dt',)
-    readonly_fields = ('admin_link',)
+    readonly_fields = ('admin_link', 'uses_bcm_v2')
     raw_id_fields = ('default_whitelist', 'default_blacklist')
 
 
