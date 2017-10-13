@@ -16,7 +16,7 @@ class Command(ExceptionCommand):
     help = "Copies schema and data of the current database into a new database"
 
     def add_arguments(self, parser):
-        parser.add_argument('--name', metavar='NAME', nargs=1, default=slugify(socket.gethostname()).replace('-', '_'),
+        parser.add_argument('name', metavar='NAME', nargs=1,
                             type=str, help='New name of the database.')
 
     def handle(self, *args, **options):
@@ -24,7 +24,7 @@ class Command(ExceptionCommand):
 
         src_db_name = settings.DATABASES['default']['NAME']
         src_db_owner = settings.DATABASES['default']['USER']
-        new_db_name = options['name']
+        new_db_name = options['name'][0]
 
         with connections['default'].cursor() as cursor:
             self.kill_connections(cursor, src_db_name)
