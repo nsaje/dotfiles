@@ -1,9 +1,7 @@
 import logging
-import socket
 
 from django.conf import settings
 from django.db import connections
-from django.utils.text import slugify
 
 from utils.command_helpers import set_logger_verbosity, ExceptionCommand
 
