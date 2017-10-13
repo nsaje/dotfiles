@@ -29,3 +29,23 @@ class MigrateToBcmV2Test(TestCase):
 
         self.assertTrue(account.uses_bcm_v2)
         self.assertTrue(mock_campaign_migrate.called)
+
+    def test_migrate_agency(self):
+        agency = magic_mixer.blend(core.entity.Agency)
+        account_1 = magic_mixer.blend(core.entity.Account, uses_bcm_v2=False, agency=agency)
+        account_2 = magic_mixer.blend(core.entity.Account, uses_bcm_v2=False, agency=agency)
+
+        request = magic_mixer.blend_request_user()
+        account_1.migrate_to_bcm_v2(request)
+        account_1.refresh_from_db()
+        agency.refresh_from_db()
+
+        self.assertTrue(account_1.uses_bcm_v2)
+        self.assertFalse(agency.new_accounts_use_bcm_v2)
+
+        account_2.migrate_to_bcm_v2(request)
+        account_2.refresh_from_db()
+        agency.refresh_from_db()
+
+        self.assertTrue(account_1.uses_bcm_v2)
+        self.assertTrue(agency.new_accounts_use_bcm_v2)

@@ -107,6 +107,10 @@ class Agency(models.Model):
             action_type=action_type
         )
 
+    def set_new_accounts_use_bcm_v2(self, request, enabled):
+        self.new_accounts_use_bcm_v2 = bool(enabled)
+        self.save(request)
+
     def save(self, request, *args, **kwargs):
         self.modified_by = request.user
         super(Agency, self).save(*args, **kwargs)

@@ -209,6 +209,11 @@ class Account(models.Model, core.common.SettingsProxyMixin):
             campaign.migrate_to_bcm_v2(request)
 
         self.set_uses_bcm_v2(request, True)
+        self._migrate_agency(request)
+
+    def _migrate_agency(self, request):
+        if self.agency and self.agency.account_set.all_use_bcm_v2():
+            self.agency.set_new_accounts_use_bcm_v2(request, True)
 
     def save(self, request, *args, **kwargs):
         if request and not request.user.is_anonymous():
