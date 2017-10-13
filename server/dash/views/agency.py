@@ -186,6 +186,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         if request.user.has_perm('zemauth.can_set_click_capping'):
             result['click_capping_daily_ad_group_max_clicks'] = settings.click_capping_daily_ad_group_max_clicks
+            result['click_capping_daily_click_budget'] = settings.click_capping_daily_click_budget
 
         # TODO (refactor-workaround) Re-use restapi serializers
         from restapi.serializers.targeting import\

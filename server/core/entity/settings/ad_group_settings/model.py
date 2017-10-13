@@ -91,9 +91,11 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         'max_cpm',
         'delivery_type',
         'click_capping_daily_ad_group_max_clicks',
+        'click_capping_daily_click_budget',
     ]
     _permissioned_fields = {
         'click_capping_daily_ad_group_max_clicks': 'zemauth.can_set_click_capping',
+        'click_capping_daily_click_budget': 'zemauth.can_set_click_capping',
         'max_cpm': 'zemauth.can_set_ad_group_max_cpm',
     }
     history_fields = list(_settings_fields)
@@ -211,6 +213,13 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
 
     click_capping_daily_ad_group_max_clicks = models.PositiveIntegerField(blank=True, null=True)
 
+    click_capping_daily_click_budget = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+    )
+
     @classmethod
     def get_defaults_dict(cls):
         return OrderedDict([
@@ -273,6 +282,7 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
             'b1_sources_group_state': 'State of all RTB sources',
             'delivery_type': 'Delivery type',
             'click_capping_daily_ad_group_max_clicks': 'Daily maximum number of clicks for ad group',
+            'click_capping_daily_click_budget': 'Daily click budget for ad group',
         }
 
         return NAMES[prop_name]
@@ -322,6 +332,8 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
             value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'b1_sources_group_cpc_cc' and value is not None:
             value = lc_helper.default_currency(Decimal(value), places=3)
+        elif prop_name == 'click_capping_daily_click_budget' and value is not None:
+            value = lc_helper.default_currency(Decimal(value))
 
         return value
 

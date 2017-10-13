@@ -73,7 +73,8 @@ class AdGroupSettingsTest(TestCase):
                 'whitelist_publisher_groups': [1],
                 'blacklist_publisher_groups': [1],
                 'delivery_type': 2,
-                'click_capping_daily_ad_group_max_clicks': 10,
+                'click_capping_daily_ad_group_max_clicks': 15,
+                'click_capping_daily_click_budget': '7.5000',
             }
         }
 
@@ -86,6 +87,10 @@ class AdGroupSettingsTest(TestCase):
             account.users.add(self.user)
 
         self.client.login(username=self.user.email, password='secret')
+
+        k1_update_patcher = patch('utils.k1_helper.update_ad_group')
+        self.k1_update_mock = k1_update_patcher.start()
+        self.addCleanup(k1_update_patcher.stop)
 
     def test_permissions(self):
         url = reverse('ad_group_settings', kwargs={'ad_group_id': 0})
@@ -210,6 +215,7 @@ class AdGroupSettingsTest(TestCase):
                     'landing_mode': False,
                     'delivery_type': 1,
                     'click_capping_daily_ad_group_max_clicks': 10,
+                    'click_capping_daily_click_budget': '5.0000',
                 },
                 'warnings': {}
             },
@@ -315,6 +321,7 @@ class AdGroupSettingsTest(TestCase):
                 'can_set_rtb_sources_as_one_cpc',
                 'can_set_white_blacklist_publisher_groups',
                 'can_set_advanced_device_targeting',
+                'can_set_click_capping',
             ])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
@@ -377,7 +384,8 @@ class AdGroupSettingsTest(TestCase):
                         'blacklist_publisher_groups': [1],
                         'landing_mode': False,
                         'delivery_type': 2,
-                        'click_capping_daily_ad_group_max_clicks': 10,
+                        'click_capping_daily_ad_group_max_clicks': 15,
+                        'click_capping_daily_click_budget': '7.5000',
                     }
                 },
                 'success': True
@@ -410,15 +418,6 @@ class AdGroupSettingsTest(TestCase):
 
             add_permissions(self.user, [
                 'settings_view',
-                'can_set_ad_group_max_cpc',
-                'can_set_adgroup_to_auto_pilot',
-                'can_view_retargeting_settings',
-                'can_target_custom_audiences',
-                'can_set_white_blacklist_publisher_groups',
-                'can_set_delivery_type',
-                'can_set_rtb_sources_as_one_cpc',
-                'can_set_white_blacklist_publisher_groups',
-                'can_set_advanced_device_targeting',
             ])
             new_settings = {}
             new_settings.update(self.settings_dict)
@@ -431,72 +430,8 @@ class AdGroupSettingsTest(TestCase):
             )
             mock_k1_ping.assert_called_with(1, msg='AdGroupSettings.put')
 
-            self.assertEqual(json.loads(response.content), {
-                'data': {
-                    'action_is_waiting': False,
-                    'archived': False,
-                    'default_settings': {
-                        'target_devices': ['MOBILE'],
-                        'target_os': [],
-                        'target_placements': [],
-                        'target_regions': self._target_regions_repr(dma=['501'], countries=['NC']),
-                        'exclusion_target_regions': self._target_regions_repr(),
-                    },
-                    'settings': {
-                        'cpc_cc': '0.050',
-                        'max_cpm': '',
-                        'daily_budget_cc': '200.00',
-                        'end_date': str(datetime.date.today()),
-                        'id': '1',
-                        'campaign_id': '1',
-                        'name': 'Test ad group name',
-                        'start_date': '2015-05-01',
-                        'state': 2,
-                        'target_devices': ['DESKTOP'],
-                        'target_os': [],
-                        'target_placements': [],
-                        'target_regions': self._target_regions_repr(dma=['693'], countries=['GB']),
-                        'exclusion_target_regions': self._target_regions_repr(),
-                        'autopilot_daily_budget': '150.00',
-                        'retargeting_ad_groups': [2],
-                        'exclusion_retargeting_ad_groups': [9],
-                        'tracking_code': 'def=123',
-                        'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
-                        'autopilot_min_budget': '10',
-                        'autopilot_optimization_goal': None,
-                        'notes': 'Some note',
-                        'bluekai_targeting': {
-                            'AND': [{'category': 'bluekai:123'},
-                                    {'OR': [{'category': 'lotame:123'},
-                                            {'category': 'outbrain:321'}]}]},
-                        'bluekai_targeting_old': ['and', 'bluekai:123', ['or', 'lotame:123', 'outbrain:321']],
-                        'interest_targeting': ['fun', 'games'],
-                        'exclusion_interest_targeting': ['religion', 'weather'],
-                        'audience_targeting': [1],
-                        'exclusion_audience_targeting': [4],
-                        'redirect_pixel_urls': ["http://a.com/b.jpg", "http://a.com/c.jpg"],
-                        'redirect_javascript': "alert('a')",
-                        'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
-                        'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': '500.0000',
-                        'b1_sources_group_state': 1,
-                        'b1_sources_group_cpc_cc': '0.05',
-                        'whitelist_publisher_groups': [1],
-                        'blacklist_publisher_groups': [1],
-                        'landing_mode': False,
-                        'delivery_type': 2,
-                        'click_capping_daily_ad_group_max_clicks': 10,
-                    }
-                },
-                'success': True
-            })
-
-            new_settings = ad_group.get_current_settings()
-
-            self.assertEqual(new_settings.display_url, 'example.com')
-            self.assertEqual(new_settings.brand_name, 'Example')
-            self.assertEqual(new_settings.description, 'Example description')
-            self.assertEqual(new_settings.call_to_action, 'Call to action')
+            resp_json = json.loads(response.content)
+            self.assertEqual(resp_json['data']['settings']['cpc_cc'], '0.050')
 
             for ags in ad_group.adgroupsource_set.all():
                 cpc = ags.get_current_settings().cpc_cc
@@ -587,8 +522,9 @@ class AdGroupSettingsTest(TestCase):
 
             self.assertEqual(mock_init_autopilot.called, True)
 
+    @patch('utils.k1_helper.update_ad_group')
     @patch('utils.redirector_helper.insert_adgroup')
-    def test_put_firsttime_create_settings(self, mock_redirector_insert_adgroup):
+    def test_put_firsttime_create_settings(self, mock_redirector_insert_adgroup, mock_k1_ping):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
@@ -603,83 +539,13 @@ class AdGroupSettingsTest(TestCase):
 
             add_permissions(self.user, [
                 'settings_view',
-                'can_set_ad_group_max_cpc',
-                'can_set_adgroup_to_auto_pilot',
-                'can_view_retargeting_settings',
-                'can_target_custom_audiences',
-                'can_set_white_blacklist_publisher_groups',
-                'can_set_white_blacklist_publisher_groups',
-                'can_set_delivery_type',
-                'can_set_rtb_sources_as_one_cpc',
-                'can_set_white_blacklist_publisher_groups',
-                'can_set_advanced_device_targeting',
             ])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
                 json.dumps(self.settings_dict),
                 follow=True
             )
-
-            self.assertEqual(json.loads(response.content), {
-                'data': {
-                    'archived': False,
-                    'action_is_waiting': False,
-                    'default_settings': {
-                        'target_devices': ['MOBILE'],
-                        'target_os': [],
-                        'target_placements': [],
-                        'target_regions': self._target_regions_repr(dma=['501'], countries=['NC']),
-                        'exclusion_target_regions': self._target_regions_repr(),
-                    },
-                    'settings': {
-                        'cpc_cc': '0.300',
-                        'max_cpm': '',
-                        'daily_budget_cc': '200.00',
-                        'end_date': str(datetime.date.today()),
-                        'id': '10',
-                        'campaign_id': '1',
-                        'name': 'Test ad group name',
-                        'start_date': '2015-05-01',
-                        'state': 2,
-                        'target_devices': ['DESKTOP'],
-                        'target_os': [],
-                        'target_placements': [],
-                        'target_regions': self._target_regions_repr(dma=['693'], countries=['GB']),
-                        'exclusion_target_regions': self._target_regions_repr(),
-                        'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
-                        'autopilot_daily_budget': '150.00',
-                        'retargeting_ad_groups': [2],
-                        'exclusion_retargeting_ad_groups': [9],
-                        'tracking_code': 'def=123',
-                        'autopilot_min_budget': '10',
-                        'autopilot_optimization_goal': None,
-                        'notes': '',
-                        'bluekai_targeting': {
-                            'AND': [{'category': 'bluekai:123'},
-                                    {'OR': [{'category': 'lotame:123'},
-                                            {'category': 'outbrain:321'}]}]},
-                        'bluekai_targeting_old': ['and', 'bluekai:123', ['or', 'lotame:123', 'outbrain:321']],
-                        'interest_targeting': ['fun', 'games'],
-                        'exclusion_interest_targeting': ['religion', 'weather'],
-                        'audience_targeting': [1],
-                        'exclusion_audience_targeting': [4],
-                        'redirect_pixel_urls': [],
-                        'redirect_javascript': '',
-                        'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
-                        'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': '500.0000',
-                        'b1_sources_group_state': 1,
-                        'b1_sources_group_cpc_cc': '0.25',
-                        'whitelist_publisher_groups': [1],
-                        'blacklist_publisher_groups': [1],
-                        'landing_mode': False,
-                        'delivery_type': 2,
-                        'click_capping_daily_ad_group_max_clicks': 10,
-                    }
-                },
-                'success': True
-            })
-
+            self.assertTrue(json.loads(response.content).get('success'))
             new_settings = ad_group.get_current_settings()
             self.assertIsNotNone(new_settings.pk)
 
@@ -702,16 +568,7 @@ class AdGroupSettingsTest(TestCase):
 
             add_permissions(self.user, [
                 'settings_view',
-                'can_set_ad_group_max_cpc',
-                'can_set_adgroup_to_auto_pilot',
-                'can_view_retargeting_settings',
-                'can_target_custom_audiences',
                 'can_set_rtb_sources_as_one_cpc',
-                'can_set_white_blacklist_publisher_groups',
-                'can_set_delivery_type',
-                'can_set_rtb_sources_as_one_cpc',
-                'can_set_white_blacklist_publisher_groups',
-                'can_set_advanced_device_targeting',
             ])
             new_settings = {}
             new_settings.update(self.settings_dict)
@@ -724,65 +581,8 @@ class AdGroupSettingsTest(TestCase):
             )
             mock_k1_ping.assert_called_with(1, msg='AdGroupSettings.put')
 
-            self.assertEqual(json.loads(response.content), {
-                'data': {
-                    'action_is_waiting': False,
-                    'archived': False,
-                    'default_settings': {
-                        'target_devices': ['MOBILE'],
-                        'target_os': [],
-                        'target_placements': [],
-                        'target_regions': self._target_regions_repr(dma=['501'], countries=['NC']),
-                        'exclusion_target_regions': self._target_regions_repr(),
-                    },
-                    'settings': {
-                        'cpc_cc': '0.300',
-                        'max_cpm': '',
-                        'daily_budget_cc': '200.00',
-                        'end_date': str(datetime.date.today()),
-                        'id': '1',
-                        'campaign_id': '1',
-                        'name': 'Test ad group name',
-                        'start_date': '2015-05-01',
-                        'state': 2,
-                        'target_devices': ['DESKTOP'],
-                        'target_os': [],
-                        'target_placements': [],
-                        'target_regions': self._target_regions_repr(dma=['693'], countries=['GB']),
-                        'exclusion_target_regions': self._target_regions_repr(),
-                        'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
-                        'autopilot_daily_budget': '150.00',
-                        'retargeting_ad_groups': [2],
-                        'exclusion_retargeting_ad_groups': [9],
-                        'tracking_code': 'def=123',
-                        'autopilot_min_budget': '10',
-                        'autopilot_optimization_goal': None,
-                        'notes': 'Some note',
-                        'bluekai_targeting': {
-                            'AND': [{'category': 'bluekai:123'},
-                                    {'OR': [{'category': 'lotame:123'},
-                                            {'category': 'outbrain:321'}]}]},
-                        'bluekai_targeting_old': ['and', 'bluekai:123', ['or', 'lotame:123', 'outbrain:321']],
-                        'interest_targeting': ['fun', 'games'],
-                        'exclusion_interest_targeting': ['religion', 'weather'],
-                        'audience_targeting': [1],
-                        'exclusion_audience_targeting': [4],
-                        'redirect_pixel_urls': ["http://a.com/b.jpg", "http://a.com/c.jpg"],
-                        'redirect_javascript': "alert('a')",
-                        'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
-                        'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': '500.0000',
-                        'b1_sources_group_state': 1,
-                        'b1_sources_group_cpc_cc': '0.1',
-                        'whitelist_publisher_groups': [1],
-                        'blacklist_publisher_groups': [1],
-                        'landing_mode': False,
-                        'delivery_type': 2,
-                        'click_capping_daily_ad_group_max_clicks': 10,
-                    }
-                },
-                'success': True
-            })
+            resp_json = json.loads(response.content)
+            self.assertEqual(resp_json['data']['settings']['b1_sources_group_cpc_cc'], '0.1')
 
             for ags in ad_group.adgroupsource_set.all():
                 cpc = ags.get_current_settings().cpc_cc
@@ -835,16 +635,8 @@ class AdGroupSettingsTest(TestCase):
 
             add_permissions(self.user, [
                 'settings_view',
-                'can_set_ad_group_max_cpc',
                 'can_set_adgroup_to_auto_pilot',
-                'can_view_retargeting_settings',
-                'can_target_custom_audiences',
                 'can_set_rtb_sources_as_one_cpc',
-                'can_set_white_blacklist_publisher_groups',
-                'can_set_delivery_type',
-                'can_set_rtb_sources_as_one_cpc',
-                'can_set_white_blacklist_publisher_groups',
-                'can_set_advanced_device_targeting',
             ])
             new_settings = {}
             new_settings.update(self.settings_dict)
@@ -859,65 +651,9 @@ class AdGroupSettingsTest(TestCase):
             mock_k1_ping.assert_called_with(1, msg='AdGroupSettings.put')
             self.maxDiff = None
 
-            self.assertEqual(json.loads(response.content), {
-                'data': {
-                    'action_is_waiting': False,
-                    'archived': False,
-                    'default_settings': {
-                        'target_devices': ['MOBILE'],
-                        'target_os': [],
-                        'target_placements': [],
-                        'target_regions': self._target_regions_repr(dma=['501'], countries=['NC']),
-                        'exclusion_target_regions': self._target_regions_repr(),
-                    },
-                    'settings': {
-                        'cpc_cc': '0.300',
-                        'max_cpm': '',
-                        'daily_budget_cc': '200.00',
-                        'end_date': str(datetime.date.today()),
-                        'id': '1',
-                        'campaign_id': '1',
-                        'name': 'Test ad group name',
-                        'start_date': '2015-05-01',
-                        'state': 2,
-                        'target_devices': ['DESKTOP'],
-                        'target_os': [],
-                        'target_placements': [],
-                        'target_regions': self._target_regions_repr(dma=['693'], countries=['GB']),
-                        'exclusion_target_regions': self._target_regions_repr(),
-                        'autopilot_state': constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
-                        'autopilot_daily_budget': '150.00',
-                        'retargeting_ad_groups': [2],
-                        'exclusion_retargeting_ad_groups': [9],
-                        'tracking_code': 'def=123',
-                        'autopilot_min_budget': '10',
-                        'autopilot_optimization_goal': None,
-                        'notes': 'Some note',
-                        'bluekai_targeting': {
-                            'AND': [{'category': 'bluekai:123'},
-                                    {'OR': [{'category': 'lotame:123'},
-                                            {'category': 'outbrain:321'}]}]},
-                        'bluekai_targeting_old': ['and', 'bluekai:123', ['or', 'lotame:123', 'outbrain:321']],
-                        'interest_targeting': ['fun', 'games'],
-                        'exclusion_interest_targeting': ['religion', 'weather'],
-                        'audience_targeting': [1],
-                        'exclusion_audience_targeting': [4],
-                        'redirect_pixel_urls': ["http://a.com/b.jpg", "http://a.com/c.jpg"],
-                        'redirect_javascript': "alert('a')",
-                        'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
-                        'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': '500.0000',
-                        'b1_sources_group_state': 1,
-                        'b1_sources_group_cpc_cc': '0.2150',
-                        'whitelist_publisher_groups': [1],
-                        'blacklist_publisher_groups': [1],
-                        'landing_mode': False,
-                        'delivery_type': 2,
-                        'click_capping_daily_ad_group_max_clicks': 10,
-                    }
-                },
-                'success': True
-            })
+            resp_json = json.loads(response.content)
+            self.assertEqual(resp_json['data']['settings']['autopilot_state'], constants.AdGroupSettingsAutopilotState.ACTIVE_CPC)
+            self.assertEqual(resp_json['data']['settings']['b1_sources_group_cpc_cc'], '0.2150')
 
             for ags in ad_group.adgroupsource_set.all():
                 agss = ags.get_current_settings()

@@ -383,6 +383,7 @@ class AdGroupSettingsFormTest(TestCase):
             'blacklist_publisher_groups': [1],
             'delivery_type': '1',
             'click_capping_daily_ad_group_max_clicks': 10,
+            'click_capping_daily_click_budget': '5.0000',
         }
 
     @patch('utils.dates_helper.local_today')
@@ -425,6 +426,7 @@ class AdGroupSettingsFormTest(TestCase):
             'blacklist_publisher_groups': [1],
             'delivery_type': 1,
             'click_capping_daily_ad_group_max_clicks': 10,
+            'click_capping_daily_click_budget': Decimal('5.0000'),
         })
 
     @patch('utils.dates_helper.local_today')

@@ -338,6 +338,10 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
     click_capping_daily_ad_group_max_clicks = forms.IntegerField(
         required=False
     )
+    click_capping_daily_click_budget = forms.DecimalField(
+        decimal_places=4,
+        required=False,
+    )
 
     def __init__(self, ad_group, user, *args, **kwargs):
         self.ad_group = ad_group

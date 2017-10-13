@@ -363,6 +363,7 @@ class AdGroupSerializer(SettingsSerializer):
         }
         if 'click_capping_daily_ad_group_max_clicks' in settings:
             ret['clickCappingDailyAdGroupMaxClicks'] = settings['click_capping_daily_ad_group_max_clicks']
+            ret['clickCappingDailyClickBudget'] = settings['click_capping_daily_click_budget']
 
         return ret
 
@@ -400,6 +401,7 @@ class AdGroupSerializer(SettingsSerializer):
             'target_os': data['targeting']['os'],
             'delivery_type': fields.DashConstantField(constants.AdGroupDeliveryType).to_internal_value(data['deliveryType']),
             'click_capping_daily_ad_group_max_clicks': data['clickCappingDailyAdGroupMaxClicks'],
+            'click_capping_daily_click_budget': data['clickCappingDailyClickBudget'],
         }
         return {'settings': {k: v for k, v in settings.items() if v != fields.NOT_PROVIDED}}
 

@@ -88,6 +88,7 @@ class AdGroupSettingsTest(TestCase):
             'blacklist_publisher_groups': [2],
             'delivery_type': 1,
             'click_capping_daily_ad_group_max_clicks': 10,
+            'click_capping_daily_click_budget': Decimal('5.0000'),
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),
@@ -186,6 +187,7 @@ class AdGroupSettingsTest(TestCase):
             'Group all RTB sources set to "True"',
             'Data targeting set to "["or", 3, 4]"',
             'Daily maximum number of clicks for ad group set to "10"',
+            'Daily click budget for ad group set to "$5.00"',
         ]
         self.assertItemsEqual(expected, actual)
 

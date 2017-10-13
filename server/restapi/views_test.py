@@ -475,6 +475,7 @@ class AdGroupsTest(RESTAPITest):
         exclusion_retargeting_ad_groups=[2051],
         delivery_type=constants.AdGroupDeliveryType.STANDARD,
         click_capping_daily_ad_group_max_clicks=120,
+        click_capping_daily_click_budget='12.0000',
     ):
         final_target_regions = {
             'countries': [],
@@ -539,6 +540,7 @@ class AdGroupsTest(RESTAPITest):
             'dayparting': dayparting,
             'deliveryType': constants.AdGroupDeliveryType.get_name(delivery_type),
             'clickCappingDailyAdGroupMaxClicks': click_capping_daily_ad_group_max_clicks,
+            'clickCappingDailyClickBudget': click_capping_daily_click_budget,
         }
 
         return cls.normalize(representation)
@@ -598,6 +600,7 @@ class AdGroupsTest(RESTAPITest):
             target_placements=settings_db.target_placements,
             target_os=settings_db.target_os,
             click_capping_daily_ad_group_max_clicks=settings_db.click_capping_daily_ad_group_max_clicks,
+            click_capping_daily_click_budget=settings_db.click_capping_daily_click_budget,
         )
         self.assertEqual(expected, adgroup)
 
