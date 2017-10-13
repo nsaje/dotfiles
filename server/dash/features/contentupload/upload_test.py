@@ -26,7 +26,7 @@ valid_candidate = {
 }
 
 invalid_candidate = {
-    'label': 'repeat' * 21,
+    'label': 'repeat' * 61,
     'url': 'ftp://zemanta.com/test-content-ad',
     'image_url': 'file://zemanta.com/test-image.jpg',
     'image_crop': 'landscape',
@@ -556,7 +556,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                 'title': [u'Missing title'],
                 'url': [u'Invalid URL'],
                 'display_url': [u'Display URL too long (max 35 characters)'],
-                'label': [u'Label too long (max 100 characters)'],
+                'label': [u'Label too long (max 256 characters)'],
                 'image_url': [u'Invalid image URL'],
                 'brand_name': [u'Missing brand name'],
                 'primary_tracker_url': [u'Impression tracker URLs have to be HTTPS'],
@@ -566,7 +566,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                            'zemanta.comzemanta.comzemanta.comzemanta.comzemanta.com',
             'brand_name': '',
             'image_width': None,
-            'label': 'repeat' * 21,
+            'label': 'repeat' * 61,
             'image_id': None,
             'image_height': None,
             'image_url': 'file://zemanta.com/test-image.jpg',

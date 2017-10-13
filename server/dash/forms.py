@@ -1435,7 +1435,7 @@ class ContentAdCandidateForm(forms.ModelForm):
 
 class ContentAdForm(ContentAdCandidateForm):
     label = forms.CharField(
-        max_length=100,
+        max_length=256,
         required=False,
         error_messages={
             'max_length': 'Label too long (max %(limit_value)d characters)',

@@ -1275,11 +1275,11 @@ class ContentAdFormTestCase(TestCase):
 
     def test_label_too_long(self):
         data = self._get_valid_data()
-        data['label'] = 'a' * 101
+        data['label'] = 'a' * 1000
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'label': ['Label too long (max 100 characters)']
+            'label': ['Label too long (max 256 characters)']
         }, f.errors)
 
     def test_missing_url(self):

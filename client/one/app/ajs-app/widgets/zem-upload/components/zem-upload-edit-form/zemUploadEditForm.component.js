@@ -42,7 +42,7 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
     vm.MAX_DISPLAY_URL_LENGTH = 35;
     vm.MAX_BRAND_NAME_LENGTH = 25;
     vm.MAX_CALL_TO_ACTION_LENGTH = 25;
-    vm.MAX_LABEL_LENGTH = 100;
+    vm.MAX_LABEL_LENGTH = 256;
 
     vm.videoAssetStatus = constants.videoAssetStatus;
     vm.hasPermission = zemPermissions.hasPermission;
