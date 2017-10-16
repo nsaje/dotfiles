@@ -26,6 +26,6 @@ class AccountManager(core.common.QuerySetManager):
             settings_updates['default_cs_representative'] = agency.cs_representative
             settings_updates['account_type'] = constants.AccountType.ACTIVATED
         account.settings.update(request, **settings_updates)
-        account.allowed_sources.add(*core.source.Source.objects.filter(released=True))
+        account.allowed_sources.add(*core.source.Source.objects.filter(released=True, deprecated=False))
 
         return account
