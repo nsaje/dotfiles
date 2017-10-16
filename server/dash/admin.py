@@ -27,8 +27,6 @@ from dash import forms as dash_forms
 from dash import validation_helpers
 from dash import cpc_constraints
 
-import analytics.helpers
-
 import utils.k1_helper
 import utils.email_helper
 import utils.redirector_helper
