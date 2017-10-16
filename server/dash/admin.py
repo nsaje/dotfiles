@@ -1645,7 +1645,7 @@ class CustomHackAdmin(admin.ModelAdmin):
         'source__name',
     )
 
-    readonly_fields = ('_spend_after', 'created_dt', 'created_by', 'confirmed_by', 'confirmed_dt')
+    readonly_fields = ('created_dt', 'created_by', 'confirmed_by', 'confirmed_dt')
     raw_id_fields = ('agency', 'account', 'campaign', 'ad_group')
 
     ordering = ('-created_dt', )
@@ -1714,16 +1714,6 @@ class CustomHackAdmin(admin.ModelAdmin):
 
     def _ad_group(self, obj):
         return obj.ad_group and u'{} | {}'.format(obj.ad_group.pk, unicode(obj.ad_group.name)) or ''
-
-    def _spend_after(self, obj):
-        spend = analytics.helpers.get_spend(
-            obj.created_dt.date(),
-            ad_group=obj.ad_group, campaign=obj.campaign, account=obj.account, agency=obj.agency
-        )
-        if not spend or not any(spend[0].values()):
-            return 'NONE'
-        return 'media: ${media}, data: ${data}, fee: ${fee}, margin: ${margin}'.format(**spend[0])
-    _spend_after.short_description = 'Spend after hack implementation'
 
 
 admin.site.register(models.Agency, AgencyAdmin)
