@@ -7,10 +7,10 @@ var testConfig = common.generateMainConfig(buildConfig);
 testConfig.module.rules = [
     {
         test: /\.tsx?$/,
-        loader: 'ts-loader',
-        options: {
-            logLevel: 'warn',
-        }
+        loaders: [
+            'awesome-typescript-loader',
+            'angular2-template-loader',
+        ],
     }, {
         test: /\.html$/,
         loader: 'html-loader',

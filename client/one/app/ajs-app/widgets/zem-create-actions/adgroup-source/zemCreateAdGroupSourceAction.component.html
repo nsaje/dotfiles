@@ -1,10 +1,9 @@
 <!-- TODO -->
-<zem-dropdown
+<zem-dropdown-select
         zem-placeholder="Media Sources"
         zem-no-matches-placeholder="All sources added"
-        zem-dropdown-options="$ctrl.state.sources"
+        zem-dropdown-select-options="$ctrl.state.sources"
         zem-css-class="add-source button button--highlight button--with-icon add-icon button--dropdown-toggle-icon"
         zem-on-select="$ctrl.createAdGroupSource(selected)"
-        zem-dropdown-css-class="add-source-dropdown">
-</zem-dropdown>
-
+        zem-dropdown-select-css-class="add-source-dropdown">
+</zem-dropdown-select>

@@ -3,7 +3,7 @@ import {downgradeComponent} from '@angular/upgrade/static';
 
 @Component({
     selector: 'zem-inventory-planning-view',
-    template: require('./inventory-planning.view.html'),
+    templateUrl: './inventory-planning.view.html',
 })
 export class InventoryPlanningViewComponent {
 }

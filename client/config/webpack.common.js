@@ -57,11 +57,12 @@ function generateMainConfig (appConfig) {
             include: [root('./one/app/ajs-app')],
             use: [{loader: 'ng-annotate-loader'}],
         }, {
+            // Angular TypeScript and template loaders
             test: /\.tsx?$/,
-            loader: 'ts-loader',
-            options: {
-                logLevel: 'warn',
-            }
+            loaders: [
+                'awesome-typescript-loader',
+                'angular2-template-loader',
+            ],
         }, {
             // Allow loading html through js
             test: /\.html$/,
@@ -73,7 +74,7 @@ function generateMainConfig (appConfig) {
                 use: [
                     {loader: 'css-loader'}
                 ]
-            })
+            }),
         }, {
             test: /\.(png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$/,
             loader: 'url-loader',

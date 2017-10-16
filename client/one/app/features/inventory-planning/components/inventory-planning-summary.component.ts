@@ -6,7 +6,7 @@ import {CHART_X_AXIS_STEP, CHART_CONFIG} from './inventory-planning-summary.cons
 
 @Component({
     selector: 'zem-inventory-planning-summary',
-    template: require('./inventory-planning-summary.component.html'),
+    templateUrl: './inventory-planning-summary.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InventoryPlanningSummaryComponent implements OnChanges {

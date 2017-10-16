@@ -1,4 +1,4 @@
-angular.module('one.common').directive('zemDropdown', function () {
+angular.module('one.common').directive('zemDropdownSelect', function () {
     return {
         restrict: 'E',
         scope: {
@@ -6,12 +6,12 @@ angular.module('one.common').directive('zemDropdown', function () {
             disabledTitle: '@zemDisabledTitle',
             onSelect: '&zemOnSelect',
             checkDisabled: '&zemCheckDisabled',
-            dropdownOptions: '=zemDropdownOptions',
-            dropdownCssClass: '@zemDropdownCssClass',
+            dropdownOptions: '=zemDropdownSelectOptions',
+            dropdownCssClass: '@zemDropdownSelectCssClass',
             cssClass: '@zemCssClass',
             noMatchesPlaceholder: '@zemNoMatchesPlaceholder'
         },
-        template: require('./zemDropdown.directive.html'),
+        template: require('./zemDropdownSelect.directive.html'),
         controller: function ($scope, $compile) {
             var formatSelection = function (object) {
                 var option;

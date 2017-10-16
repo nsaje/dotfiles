@@ -3,17 +3,19 @@
 <!-- FIXME(nsaje): remove after release -->
 <div *ngIf="zemPermissions.hasPermission('zemauth.fea_can_see_inventory_planning')">
 
+<zem-inventory-planning-filter class="zem-inventory-planning-filter"
+                               [availableFilters]="(store.state$ | async).availableFilters"
+                               [selectedFilters]="(store.state$ | async).selectedFilters"
+                               (onRemove)="store.removeOption($event)"
+                               (onSelect)="console.log($event)">
+</zem-inventory-planning-filter>
+
 <zem-inventory-planning-summary class="zem-inventory-planning-summary"
                                 [auctionCount]="(store.state$ | async).inventory.auctionCount"
                                 [avgCpm]="(store.state$ | async).inventory.avgCpm"
                                 [winRatio]="(store.state$ | async).inventory.winRatio"
                                 [isLoading]="(store.state$ | async).requests.summary.inProgress">
 </zem-inventory-planning-summary>
-
-<zem-inventory-planning-filter class="zem-inventory-planning-filter"
-                               [selected]="(store.state$ | async).selectedFilters"
-                               (onRemove)="store.removeOption($event)">
-</zem-inventory-planning-filter>
 
 <div class="custom-panel zem-inventory-planning__breakdowns clearfix">
     <zem-inventory-planning-breakdown class="zem-inventory-planning-breakdown"

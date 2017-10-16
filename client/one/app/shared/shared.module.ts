@@ -4,6 +4,7 @@ import {NgModule} from '@angular/core';
 import {ChartModule} from 'angular2-highcharts';
 
 import {BigNumberPipe} from './big-number/big-number.pipe';
+import {CategorizedTagsListComponent} from './categorized-tags-list/categorized-tags-list.component';
 
 @NgModule({
     imports: [
@@ -13,11 +14,13 @@ import {BigNumberPipe} from './big-number/big-number.pipe';
     ],
     declarations: [
         BigNumberPipe,
+        CategorizedTagsListComponent,
     ],
     exports: [
         CommonModule,
         ChartModule,
         BigNumberPipe,
+        CategorizedTagsListComponent,
     ],
 })
 export class SharedModule {}

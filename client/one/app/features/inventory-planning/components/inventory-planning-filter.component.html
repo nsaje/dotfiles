@@ -1,0 +1,7 @@
+<div class="zem-inventory-planning-filter__title">Filter</div>
+
+<zem-categorized-tags-list class="zem-categorized-tags-list"
+                           emptyText="Choose breakdowns below to filter results ..."
+                           [categories]="categorizedSelectedOptions"
+                           (onRemove)="removeSelected($event)">
+</zem-categorized-tags-list>

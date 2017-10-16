@@ -1,10 +1,10 @@
-describe('zemDropdown', function () {
+describe('zemDropdownSelect', function () {
     var $scope, element, isolate;
 
-    var template = '<zem-dropdown zem-placeholder="Test" zem-disabled-title="Disabled title" ' +
+    var template = '<zem-dropdown-select zem-placeholder="Test" zem-disabled-title="Disabled title" ' +
                         'zem-on-select="onSelectTest(selected)" zem-check-disabled="checkDisabledTest()" ' +
-                        'zem-dropdown-options="options">' +
-                    '</zem-dropdown>';
+                        'zem-dropdown-select-options="options">' +
+                    '</zem-dropdown-select>';
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));

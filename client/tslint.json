@@ -215,7 +215,6 @@
       true,
       "Directive"
     ],
-    "no-access-missing-member": true,
     "templates-use-public": true,
     "invoke-injectable": true,
     "no-duplicate-case": true,

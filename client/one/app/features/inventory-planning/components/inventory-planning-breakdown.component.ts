@@ -7,15 +7,15 @@ import {Subject} from 'rxjs/Subject';
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/distinctUntilChanged';
 
-import {AvailableFilterOption} from '../../types/available-filter-option';
-import {SelectedFilterOption} from '../../types/selected-filter-option';
+import {AvailableFilterOption} from '../types/available-filter-option';
+import {SelectedFilterOption} from '../types/selected-filter-option';
 
 const SEARCH_DEBOUNCE_TIME = 500;
 const RENDERED_SEARCH_RESULTS_COUNT = 100;
 
 @Component({
     selector: 'zem-inventory-planning-breakdown',
-    template: require('./inventory-planning-breakdown.component.html'),
+    templateUrl: './inventory-planning-breakdown.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InventoryPlanningBreakdownComponent implements OnInit, OnChanges, OnDestroy {
