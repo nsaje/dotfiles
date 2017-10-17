@@ -80,7 +80,7 @@ class Agency(models.Model):
         choices=constants.AccountType.get_choices()
     )
     new_accounts_use_bcm_v2 = models.BooleanField(
-        default=False,
+        default=True,
         verbose_name='Margins v2',
         help_text=('New accounts created by this agency\'s users will have '
                    'license fee and margin included into all costs.')
