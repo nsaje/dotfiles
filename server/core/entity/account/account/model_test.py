@@ -31,7 +31,7 @@ class MigrateToBcmV2Test(TestCase):
         self.assertTrue(mock_campaign_migrate.called)
 
     def test_migrate_agency(self):
-        agency = magic_mixer.blend(core.entity.Agency)
+        agency = magic_mixer.blend(core.entity.Agency, new_accounts_use_bcm_v2=False)
         account_1 = magic_mixer.blend(core.entity.Account, uses_bcm_v2=False, agency=agency)
         account_2 = magic_mixer.blend(core.entity.Account, uses_bcm_v2=False, agency=agency)
 
