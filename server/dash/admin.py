@@ -457,6 +457,7 @@ class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     )
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'uses_bcm_v2')
     exclude = ('users', 'groups')
+    raw_id_fields = ('default_whitelist', 'default_blacklist')
     inlines = (AccountUserInline, AccountGroupInline, CampaignInline)
 
     @transaction.atomic
