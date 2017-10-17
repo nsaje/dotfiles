@@ -158,6 +158,10 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
         'LOCATION': ['memcached:11211']
     },
+    'dash_db_cache': {
+        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+        'LOCATION': ['memcached:11211']
+    },
     'audience_sample_size': {
         'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
         'LOCATION': ['memcached:11211']
