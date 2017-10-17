@@ -2,8 +2,8 @@
 # -- This is plain crontab formatted file. Please note you should be careful with syntax
 
 0 9,12,15 * * *     /home/ubuntu/docker-manage-py.sh monitor_blacklists
-#15 9 * * *          /home/ubuntu/docker-manage-py.sh run_autopilot --daily-run
-#15 10 * * *          /home/ubuntu/docker-manage-py.sh audit_autopilot --slack
+15 9 * * *          /home/ubuntu/docker-manage-py.sh run_autopilot --daily-run
+15 10 * * *          /home/ubuntu/docker-manage-py.sh audit_autopilot --slack
 0 12 * * *          /home/ubuntu/docker-manage-py.sh run_campaign_stop
 0 12 * * *          /home/ubuntu/docker-manage-py.sh audit_overspend --slack --influx
 25 * * * *          /home/ubuntu/docker-manage-py.sh refresh_k1 3
