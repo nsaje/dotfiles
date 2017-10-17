@@ -206,10 +206,10 @@ class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
         mock_cursor().__enter__().execute.assert_has_calls([
             mock.call(backtosql.SQLMatcher("""
             CREATE TEMP TABLE mvh_adgroup_structure (
-                agency_id int2 encode lzo,
-                account_id int2 encode lzo,
-                campaign_id int2 encode lzo,
-                ad_group_id int2 encode lzo
+                agency_id integer encode lzo,
+                account_id integer encode lzo,
+                campaign_id integer encode lzo,
+                ad_group_id integer encode lzo
             ) sortkey(ad_group_id, campaign_id, account_id, agency_id)""")),
             mock.call(backtosql.SQLMatcher("""
             COPY mvh_adgroup_structure
@@ -246,10 +246,10 @@ class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
         mock_cursor().__enter__().execute.assert_has_calls([
             mock.call(backtosql.SQLMatcher("""
             CREATE TEMP TABLE mvh_adgroup_structure (
-                agency_id int2 encode lzo,
-                account_id int2 encode lzo,
-                campaign_id int2 encode lzo,
-                ad_group_id int2 encode lzo
+                agency_id integer encode lzo,
+                account_id integer encode lzo,
+                campaign_id integer encode lzo,
+                ad_group_id integer encode lzo
             ) sortkey(ad_group_id, campaign_id, account_id, agency_id)""")),
             mock.call(backtosql.SQLMatcher("""
             COPY mvh_adgroup_structure
