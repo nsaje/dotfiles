@@ -2,7 +2,7 @@ CREATE TEMP TABLE mvh_clean_stats (
     date date not null encode delta,
     source_slug varchar(127) encode lzo,
 
-    ad_group_id int2 encode lzo,
+    ad_group_id integer encode lzo,
     content_ad_id integer encode lzo,
     publisher varchar(255) encode lzo,
 
