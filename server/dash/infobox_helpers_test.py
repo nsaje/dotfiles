@@ -409,7 +409,7 @@ class InfoBoxAccountHelpersTest(TestCase):
             margin_nano=0,
         )
         self.assertEqual({
-            'e_yesterday_cost': 10,
+            'e_yesterday_cost': 20,
             'yesterday_et_cost': 20,
             'yesterday_etfm_cost': 30,
         }, dash.infobox_helpers.get_yesterday_all_accounts_spend(None, None))
@@ -419,7 +419,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         account.save(fake_request(self.user))
 
         self.assertEqual({
-            'e_yesterday_cost': 10,
+            'e_yesterday_cost': 20,
             'yesterday_et_cost': 20,
             'yesterday_etfm_cost': 30,
         }, dash.infobox_helpers.get_yesterday_all_accounts_spend([self.agency], None))
@@ -437,7 +437,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         res = dash.infobox_helpers.get_yesterday_all_accounts_spend([], [dash.constants.AccountType.UNKNOWN])
         self.assertEqual({
-            'e_yesterday_cost': 10,
+            'e_yesterday_cost': 20,
             'yesterday_et_cost': 20,
             'yesterday_etfm_cost': 30,
         }, res)
@@ -483,7 +483,7 @@ class InfoBoxAccountHelpersTest(TestCase):
             margin_nano=0,
         )
         self.assertEqual({
-            'e_yesterday_cost': 10,
+            'e_yesterday_cost': 20,
             'yesterday_et_cost': 20,
             'yesterday_etfm_cost': 30,
         }, dash.infobox_helpers.get_yesterday_agency_spend(accounts))
@@ -659,7 +659,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         account = dash.models.Account.objects.get(pk=1)
         available_credit = dash.infobox_helpers.get_yesterday_account_spend(account)
         self.assertEqual({
-            'e_yesterday_cost': 10,
+            'e_yesterday_cost': 20,
             'yesterday_et_cost': 20,
             'yesterday_etfm_cost': 30,
         }, available_credit)

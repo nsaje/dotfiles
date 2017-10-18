@@ -209,11 +209,11 @@ def get_yesterday_account_spend(account):
         budget__campaign__account=account,
         date=yesterday,
     )
-
+    spend_data = daily_statements.calculate_spend_data()
     return dict(
-        e_yesterday_cost=daily_statements.calculate_spend_data().get('media', Decimal(0)),
-        yesterday_et_cost=daily_statements.calculate_spend_data().get('et_total', Decimal(0)),
-        yesterday_etfm_cost=daily_statements.calculate_spend_data().get('etfm_total', Decimal(0)),
+        e_yesterday_cost=spend_data.get('et_total', Decimal(0)),
+        yesterday_et_cost=spend_data.get('et_total', Decimal(0)),
+        yesterday_etfm_cost=spend_data.get('etfm_total', Decimal(0)),
     )
 
 
@@ -228,10 +228,11 @@ def get_yesterday_all_accounts_spend(filtered_agencies, filtered_account_types):
         filtered_agencies,
         filtered_account_types
     )
+    spend_data = daily_statements.calculate_spend_data()
     return dict(
-        e_yesterday_cost=daily_statements.calculate_spend_data().get('media', Decimal(0)),
-        yesterday_et_cost=daily_statements.calculate_spend_data().get('et_total', Decimal(0)),
-        yesterday_etfm_cost=daily_statements.calculate_spend_data().get('etfm_total', Decimal(0)),
+        e_yesterday_cost=spend_data.get('et_total', Decimal(0)),
+        yesterday_et_cost=spend_data.get('et_total', Decimal(0)),
+        yesterday_etfm_cost=spend_data.get('etfm_total', Decimal(0)),
     )
 
 
@@ -242,10 +243,12 @@ def get_yesterday_agency_spend(accounts):
         date=yesterday,
         budget__campaign__account__in=accounts
     )
+
+    spend_data = daily_statements.calculate_spend_data()
     return dict(
-        e_yesterday_cost=daily_statements.calculate_spend_data().get('media', Decimal(0)),
-        yesterday_et_cost=daily_statements.calculate_spend_data().get('et_total', Decimal(0)),
-        yesterday_etfm_cost=daily_statements.calculate_spend_data().get('etfm_total', Decimal(0)),
+        e_yesterday_cost=spend_data.get('et_total', Decimal(0)),
+        yesterday_et_cost=spend_data.get('et_total', Decimal(0)),
+        yesterday_etfm_cost=spend_data.get('etfm_total', Decimal(0)),
     )
 
 
