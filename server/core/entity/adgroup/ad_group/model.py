@@ -427,7 +427,7 @@ class AdGroup(models.Model, core.common.SettingsProxyMixin, bcm_mixin.AdGroupBCM
             if not core.entity.helpers.should_filter_by_sources(sources):
                 return self
 
-            return self.filter(adgroupsource__source__in=sources)
+            return self.filter(adgroupsource__source__in=sources).distinct()
 
         def exclude_archived(self, show_archived=False):
             # FIXME:circular dependency

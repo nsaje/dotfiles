@@ -236,7 +236,7 @@ class Campaign(models.Model, core.common.PermissionMixin, bcm_mixin.CampaignBCMM
             if not core.entity.helpers.should_filter_by_sources(sources):
                 return self
 
-            return self.filter(adgroup__adgroupsource__source__in=sources)
+            return self.filter(adgroup__adgroupsource__source__in=sources).distinct()
 
         def filter_by_agencies(self, agencies):
             if not agencies:

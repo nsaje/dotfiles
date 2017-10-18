@@ -232,7 +232,8 @@ class Account(models.Model, core.common.SettingsProxyMixin):
         def filter_by_sources(self, sources):
             if not core.entity.helpers.should_filter_by_sources(sources):
                 return self
-            return self.filter(campaign__adgroup__adgroupsource__source__id__in=sources)
+            return self.filter(
+                campaign__adgroup__adgroupsource__source__id__in=sources).distinct()
 
         def filter_by_agencies(self, agencies):
             if not agencies:

@@ -98,23 +98,22 @@ class NavigationTreeView(api_common.BaseApiView):
         view_filter = helpers.ViewFilter(request=request)
         user = request.user
 
+        accounts, map_accounts_settings = self._fetch_account_data_from_db(user, view_filter)
         campaigns, map_campaign_settings = self._fetch_campaign_data_from_db(
-            user, view_filter)
+            user, view_filter, accounts)
         ad_groups_data = self._load_ad_groups_data(
-            user, view_filter, map_campaign_settings)
+            user, view_filter, map_campaign_settings, campaigns)
         campaigns_data = self._load_campaigns_data(
             ad_groups_data, campaigns, map_campaign_settings)
         accounts_data = self._load_accounts_data(
-            campaigns_data, user, view_filter)
+            campaigns_data, accounts, map_accounts_settings)
         return self.create_api_response(accounts_data)
 
-    def _load_ad_groups_data(self, user, view_filter, map_campaign_settings):
+    def _load_ad_groups_data(self, user, view_filter, map_campaign_settings, campaigns):
         # load necessary objects
         ad_groups = models.AdGroup.objects.all()\
-            .filter_by_user(user)\
             .filter_by_sources(view_filter.filtered_sources)\
-            .filter_by_agencies(view_filter.filtered_agencies)\
-            .filter_by_account_types(view_filter.filtered_account_types)\
+            .filter(campaign__in=campaigns)\
             .order_by('name').only('id', 'campaign_id', 'name')
 
         ad_groups_settings = models.AdGroupSettings.objects.filter(
@@ -137,12 +136,10 @@ class NavigationTreeView(api_common.BaseApiView):
 
         return data_ad_groups
 
-    def _fetch_campaign_data_from_db(self, user, view_filter):
+    def _fetch_campaign_data_from_db(self, user, view_filter, accounts):
         campaigns = models.Campaign.objects.all()\
-            .filter_by_user(user)\
             .filter_by_sources(view_filter.filtered_sources)\
-            .filter_by_agencies(view_filter.filtered_agencies)\
-            .filter_by_account_types(view_filter.filtered_account_types)\
+            .filter(account__in=accounts)\
             .order_by('name')
 
         map_campaigns_settings = {}
@@ -168,7 +165,7 @@ class NavigationTreeView(api_common.BaseApiView):
 
         return data_campaigns
 
-    def _load_accounts_data(self, campaings_data, user, view_filter):
+    def _fetch_account_data_from_db(self, user, view_filter):
         accounts = models.Account.objects.all()\
             .filter_by_user(user)\
             .filter_by_sources(view_filter.filtered_sources)\
@@ -180,6 +177,9 @@ class NavigationTreeView(api_common.BaseApiView):
             account__in=accounts).group_current_settings()
         map_accounts_settings = {acs.account_id: acs for acs in accounts_settings}
 
+        return accounts, map_accounts_settings
+
+    def _load_accounts_data(self, campaings_data, accounts, map_accounts_settings):
         data_accounts = []
         for account in accounts:
             account_dict = navigation_helpers.get_account_dict(
