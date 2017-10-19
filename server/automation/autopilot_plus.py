@@ -463,7 +463,12 @@ def _get_autopilot_goals(ad_groups):
         camp = adg.campaign
         if camp not in campaign_goals:
             primary_goal = dash.campaign_goals.get_primary_campaign_goal(camp)
-            value = primary_goal.values.all().order_by('-created_dt').first().value
+            if not primary_goal:
+                continue
+            primary_goal_value = primary_goal.values.all().order_by('-created_dt').first()
+            if not primary_goal_value:
+                continue
+            value = primary_goal_value.value
             if primary_goal.type == dash.constants.CampaignGoalKPI.CPA and value:
                 value = Decimal('1.0') / value
             campaign_goals[camp] = {'goal': primary_goal, 'value': value}
