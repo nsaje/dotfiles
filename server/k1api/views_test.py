@@ -788,6 +788,27 @@ class K1ApiTest(K1ApiBaseTest):
         for item in data:
             self.assertEqual(len(required_fields - set(item.keys())), 0)
 
+    def test_get_ad_groups_pagination(self):
+        n = 10
+        source = magic_mixer.blend(dash.models.Source, source_type__type='abc')
+        ad_groups = magic_mixer.cycle(n).blend(dash.models.AdGroup, campaign_id=1)
+        magic_mixer.cycle(n).blend(dash.models.AdGroupSettings, ad_group=(ag for ag in ad_groups))
+        magic_mixer.cycle(n).blend(dash.models.AdGroupSource, ad_group=(ag for ag in ad_groups), source=source)
+        response = self.client.get(
+            reverse('k1api.ad_groups'),
+            {
+                'source_types': 'abc',
+                'marker': ad_groups[2].id,
+                'limit': 5
+            }
+        )
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual([obj['id'] for obj in data], [obj.id for obj in ad_groups[3:8]])
+
     @patch.object(api_quickstats, 'query_adgroup', autospec=True)
     def test_get_ad_group_stats(self, mock_quickstats):
         ad_group = dash.models.AdGroup.objects.get(pk=1)
