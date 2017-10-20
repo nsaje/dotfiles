@@ -1614,6 +1614,56 @@ class CustomHackStatusFilter(SimpleListFilter):
         return queryset.filter_active(self.value() != 'removed')
 
 
+class CustomHackClientFilter(SimpleListFilter):
+    title = 'Client level'
+    parameter_name = 'client_level'
+
+    def lookups(self, request, model_admin):
+        return [('global', 'Global'),
+                ('ad-group', 'Ad Group'),
+                ('campaign', 'Campaign'),
+                ('account', 'Account'),
+                ('agency', 'Agency')]
+
+    def queryset(self, request, queryset):
+        if self.value() == 'global':
+            queryset = queryset.filter(
+                agency_id__isnull=True,
+                account_id__isnull=True,
+                campaign_id__isnull=True,
+                ad_group_id__isnull=True,
+            )
+        elif self.value() == 'ad-group':
+            queryset = queryset.filter(
+                agency_id__isnull=True,
+                account_id__isnull=True,
+                campaign_id__isnull=True,
+                ad_group_id__isnull=False,
+            )
+        elif self.value() == 'campaign':
+            queryset = queryset.filter(
+                agency_id__isnull=True,
+                account_id__isnull=True,
+                campaign_id__isnull=False,
+                ad_group_id__isnull=True,
+            )
+        elif self.value() == 'account':
+            queryset = queryset.filter(
+                agency_id__isnull=True,
+                account_id__isnull=False,
+                campaign_id__isnull=True,
+                ad_group_id__isnull=True,
+            )
+        elif self.value() == 'agency':
+            queryset = queryset.filter(
+                agency_id__isnull=False,
+                account_id__isnull=True,
+                campaign_id__isnull=True,
+                ad_group_id__isnull=True,
+            )
+        return queryset
+
+
 class CustomHackAdmin(admin.ModelAdmin):
     model = models.CustomHack
     list_display = (
@@ -1629,7 +1679,8 @@ class CustomHackAdmin(admin.ModelAdmin):
     )
 
     list_filter = (
-        CustomHackStatusFilter, 'summary', 'service', 'source', 'rtb_only'
+        CustomHackStatusFilter, CustomHackClientFilter,
+        'summary', 'service', 'rtb_only', 'source',
     )
 
     search_fields = (
