@@ -25,7 +25,8 @@ class TestBudgetLineItemManager(TestCase):
             start_date=datetime.date(2016, 12, 1),
             end_date=datetime.date(2017, 3, 3),
             status=dash.constants.CreditLineItemStatus.SIGNED,
-            amount=500
+            amount=500,
+            license_fee=Decimal('0.10'),
         )
 
     @mock.patch.object(automation.campaign_stop, 'perform_landing_mode_check', autospec=True)
@@ -79,3 +80,27 @@ class TestBudgetLineItemManager(TestCase):
             request, self.campaign, self.credit,
             start_date-datetime.timedelta(days=2), start_date-datetime.timedelta(days=1),
             100, Decimal('0.20'), 'test')
+
+    @mock.patch.object(automation.campaign_stop, 'perform_landing_mode_check', autospec=True)
+    def test_create_overlapping_license_fee_bcm_v2(self, mock_landing_mode_check):
+        self.account.set_uses_bcm_v2(None, True)
+        new_credit = magic_mixer.blend(
+            dash.models.CreditLineItem,
+            account=self.account,
+            start_date=datetime.date(2016, 12, 1),
+            end_date=datetime.date(2017, 3, 3),
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            amount=500,
+            license_fee=Decimal('0.25'),
+        )
+
+        start_date = datetime.date(2017, 1, 1)
+        end_date = datetime.date(2017, 1, 5)
+        request = magic_mixer.blend_request_user()
+        BudgetLineItem.objects.create(
+            request, self.campaign, self.credit, start_date, end_date,
+            100, 0, 'test')
+        with self.assertRaises(ValidationError):
+            BudgetLineItem.objects.create(
+                request, self.campaign, new_credit, start_date-datetime.timedelta(days=1), start_date,
+                100, 0, 'test')

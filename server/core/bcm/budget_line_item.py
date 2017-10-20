@@ -352,6 +352,8 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
             raise ValidationError(
                 'Cannot allocate budget from an unsigned credit.')
 
+        self.validate_license_fee()
+
     def validate_start_date(self):
         if not self.start_date:
             return
@@ -370,8 +372,6 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
                 'Start date cannot be bigger than the end date.')
 
     def validate_margin(self):
-        if not self.margin:
-            return
         if not (0 <= self.margin < 1):
             raise ValidationError('Margin must be between 0 and 100%.')
         if self.campaign.account.uses_bcm_v2:
@@ -380,6 +380,14 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
             ).filter_overlapping(self.start_date, self.end_date)
             if overlapping_budget_line_items.exists():
                 raise ValidationError('Margin must be the same on overlapping budget line items.')
+
+    def validate_license_fee(self):
+        if self.campaign.account.uses_bcm_v2:
+            overlapping_budget_line_items = BudgetLineItem.objects.filter(campaign=self.campaign).exclude(
+                credit__license_fee=self.credit.license_fee,
+            ).filter_overlapping(self.start_date, self.end_date)
+            if overlapping_budget_line_items.exists():
+                raise ValidationError('Unable to add budget with chosen credit. Choose another credit.')
 
     def validate_amount(self):
         if self.has_changed('amount') and \

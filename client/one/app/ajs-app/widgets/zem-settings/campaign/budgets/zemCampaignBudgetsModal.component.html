@@ -43,6 +43,7 @@
                 </tr>
             </tbody>
         </table>
+        <div class="message message--error" ng-repeat="error in $ctrl.errors.credit">{{ error }}</div>
         <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.startDate}">
             <label class="form__label" for="start-date-input">Start Date</label>
             <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon">

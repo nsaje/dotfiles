@@ -1007,8 +1007,8 @@ class CampaignBudgetViewTest(BCMViewTestCase):
     def test_put_margin_no_permission(self, mock_lmode):
         c = models.CreditLineItem.objects.create_unsafe(
             account_id=10,
-            start_date=datetime.date(2015, 10, 1),
-            end_date=datetime.date(2015, 11, 30),
+            start_date=datetime.date(2017, 10, 1),
+            end_date=datetime.date(2017, 11, 30),
             amount=10000,
             license_fee=Decimal('0.2'),
             status=constants.CreditLineItemStatus.PENDING,
@@ -1019,8 +1019,8 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         data = {
             'credit': c.pk,
             'amount': '1000',
-            'start_date': '2015-10-01',
-            'end_date': '2015-10-31',
+            'start_date': '2017-10-01',
+            'end_date': '2017-10-31',
             'margin': '20%',
             'comment': 'Comment'
         }
