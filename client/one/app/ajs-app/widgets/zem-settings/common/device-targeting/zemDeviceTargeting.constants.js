@@ -18,6 +18,7 @@ angular.module('one.widgets').factory('zemDeviceTargetingConstants', function ()
         {value: 'ANDROID_6_0', name: '6.0 Marshmallow'},
         {value: 'ANDROID_7_0', name: '7.0 Nougat'},
         {value: 'ANDROID_7_1', name: '7.1 Nougat'},
+        {value: 'ANDROID_8_0', name: '8.0 Oreo'},
     ];
 
     var VERSIONS_IOS = [
@@ -45,6 +46,7 @@ angular.module('one.widgets').factory('zemDeviceTargetingConstants', function ()
         {value: 'IOS_10_1', name: '10.1'},
         {value: 'IOS_10_2', name: '10.2'},
         {value: 'IOS_10_3', name: '10.3'},
+        {value: 'IOS_11_0', name: '11.0'},
     ];
 
     var VERSIONS_OSX = [
@@ -57,6 +59,7 @@ angular.module('one.widgets').factory('zemDeviceTargetingConstants', function ()
         {value: 'MACOSX_10_10', name: '10.10 Yosemite'},
         {value: 'MACOSX_10_11', name: '10.11 El Capitan'},
         {value: 'MACOSX_10_12', name: '10.12 Sierra'},
+        {value: 'MACOSX_10_13', name: '10.13 High Sierra'},
     ];
 
     var VERSIONS_WINDOWS = [

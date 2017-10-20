@@ -2250,6 +2250,7 @@ A string representing a decimal number. Example: `"15.48"`
 - `WINDOWS_XP` - Windows XP
 - `WINDOWS_2000` - Windows 2000
 - `WINDOWS_98` - Windows 98
+- `MACOSX_10_13` - macOS 10.13 High Sierra
 - `MACOSX_10_12` - macOS 10.12 Sierra
 - `MACOSX_10_11` - Mac OS X 10.11 El Capitan
 - `MACOSX_10_10` - Mac OS X 10.10 Yosemite
@@ -2259,6 +2260,7 @@ A string representing a decimal number. Example: `"15.48"`
 - `MACOSX_10_6` - Mac OS X 10.6 Snow Leopard
 - `MACOSX_10_5` - Mac OS X 10.5 Leopard
 - `MACOSX_10_4` - Mac OS X 10.4 Tiger
+- `ANDROID_8_0` - Android 8.0 Oreo
 - `ANDROID_7_1` - Android 7.1 Nougat
 - `ANDROID_7_0` - Android 7.0 Nougat
 - `ANDROID_6_0` - Android 6.0 Marshmallow
@@ -2275,6 +2277,7 @@ A string representing a decimal number. Example: `"15.48"`
 - `ANDROID_2_3` - Android 2.3 Gingerbread
 - `ANDROID_2_2` - Android 2.2 Froyo
 - `ANDROID_2_1` - Android 2.1 Eclair
+- `IOS_11_0` - iOS 11.0
 - `IOS_10_3` - iOS 10.3
 - `IOS_10_2` - iOS 10.2
 - `IOS_10_1` - iOS 10.1

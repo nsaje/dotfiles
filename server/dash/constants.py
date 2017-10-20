@@ -2040,6 +2040,7 @@ class OperatingSystemVersion(ConstantBase):
     ANDROID_6_0 = 'android_6_0'
     ANDROID_7_0 = 'android_7_0'
     ANDROID_7_1 = 'android_7_1'
+    ANDROID_8_0 = 'android_8_0'
     IOS_3_2 = 'ios_3_2'
     IOS_4_0 = 'ios_4_0'
     IOS_4_1 = 'ios_4_1'
@@ -2064,6 +2065,7 @@ class OperatingSystemVersion(ConstantBase):
     IOS_10_1 = 'ios_10_1'
     IOS_10_2 = 'ios_10_2'
     IOS_10_3 = 'ios_10_3'
+    IOS_11_0 = 'ios_11_0'
     WINPHONE_7 = 'winphone_7'
     WINPHONE_8_0 = 'winphone_8_0'
     WINPHONE_8_1 = 'winphone_8_1'
@@ -2085,6 +2087,7 @@ class OperatingSystemVersion(ConstantBase):
     MACOSX_10_10 = 'macosx_10_10'
     MACOSX_10_11 = 'macosx_10_11'
     MACOSX_10_12 = 'macosx_10_12'
+    MACOSX_10_13 = 'macosx_10_13'
 
     _VALUES = {
         ANDROID_2_1: '2.1 Eclair',
@@ -2103,6 +2106,7 @@ class OperatingSystemVersion(ConstantBase):
         ANDROID_6_0: '6.0 Marshmallow',
         ANDROID_7_0: '7.0 Nougat',
         ANDROID_7_1: '7.1 Nougat',
+        ANDROID_8_0: '8.0 Oreo',
         IOS_3_2: '3.2',
         IOS_4_0: '4.0',
         IOS_4_1: '4.1',
@@ -2127,6 +2131,7 @@ class OperatingSystemVersion(ConstantBase):
         IOS_10_1: '10.1',
         IOS_10_2: '10.2',
         IOS_10_3: '10.3',
+        IOS_11_0: '11.0',
         WINPHONE_7: '7',
         WINPHONE_8_0: '8.0',
         WINPHONE_8_1: '8.1',
@@ -2148,6 +2153,7 @@ class OperatingSystemVersion(ConstantBase):
         MACOSX_10_10: '10.10 Yosemite',
         MACOSX_10_11: '10.11 El Capitan',
         MACOSX_10_12: '10.12 Sierra',
+        MACOSX_10_13: '10.13 High Sierra',
     }
 
 
