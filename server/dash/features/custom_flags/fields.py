@@ -10,6 +10,8 @@ class CustomFlagsField(JSONField):
         return dict((el, True) for el in value)
 
     def prepare_value(self, value):
+        if not value:
+            return []
         return value.keys()
 
     def validate(self, value):
