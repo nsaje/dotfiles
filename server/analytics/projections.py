@@ -291,9 +291,12 @@ class BudgetProjections(object):
                 s.media_spend_nano + s.data_spend_nano for s in statements_on_date.get(date, [])
             )
 
-        row['media_spend_projection'] = min(
-            converters.nano_to_decimal(float(media_nano) / self.past_days) * Decimal(self.forecast_days),
-            row['allocated_media_budget']
+        row['media_spend_projection'] = max(
+            row['attributed_media_spend'],
+            min(
+                converters.nano_to_decimal(float(media_nano) / self.past_days) * Decimal(self.forecast_days),
+                row['allocated_media_budget']
+            )
         )
 
     def _calculate_recognized_fees(self, row, budgets, account_id, credit_line_items_map, accounts_with_spend_map):
