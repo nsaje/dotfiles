@@ -6,7 +6,6 @@ import core.bcm
 import dash
 import dash.models
 import dash.constants
-from utils import lc_helper
 
 
 class CpcValidationError(ValidationError):
@@ -64,12 +63,12 @@ def enforce_rule(min_cpc=None, max_cpc=None, **levels):
     ag_sources_settings = _get_ad_group_sources_settings(**levels)
     bcm_modifiers_map = _get_bcm_modifiers_map(ag_sources_settings)
     for agss in ag_sources_settings:
-        ad_group_source = agss.ad_group_source
-        bcm_modifiers = bcm_modifiers_map.get(ad_group_source.ad_group.campaign_id)
-        bcm_min_cpc = core.bcm.calculations.calculate_min_cpc(min_cpc, bcm_modifiers)
-        bcm_max_cpc = core.bcm.calculations.calculate_max_cpc(max_cpc, bcm_modifiers)
-        current_cpc = agss.cpc_cc
-        _enforce_ags_cpc(ad_group_source, current_cpc, bcm_min_cpc, bcm_max_cpc)
+        bcm_min_cpc, bcm_max_cpc = _get_bcm_min_max_cpcs(
+            min_cpc,
+            max_cpc,
+            bcm_modifiers_map.get(agss.ad_group_source.ad_group.campaign_id)
+        )
+        _enforce_ags_cpc(agss.ad_group_source, agss.cpc_cc, bcm_min_cpc, bcm_max_cpc)
 
 
 def _enforce_ags_cpc(ad_group_source, current_cpc, min_cpc, max_cpc):
@@ -87,27 +86,32 @@ def validate_source_settings(min_cpc=None, max_cpc=None, **levels):
     When creating a CPC constraint, check all active ad group source settings
     if any existing bid CPCs violate the introduced limitations.
     """
-    ag_sources_settings = _get_invalid_ad_group_sources_settings(min_cpc, max_cpc, **levels)
-    if ag_sources_settings.exists():
-        source = levels.get('source') or levels.get('source_id') and dash.models.Source.objects.get(
-            pk=levels.get('source_id')
-        )
-        msg = source and 'Source {} '.format(source.name) or ''
-        msg += 'Bid CPC has to be '
-        if min_cpc and max_cpc:
-            msg += 'between {} and {} '.format(
-                lc_helper.default_currency(min_cpc),
-                lc_helper.default_currency(max_cpc),
-            )
-        elif min_cpc:
-            msg += 'above {} '.format(
-                lc_helper.default_currency(min_cpc),
-            )
-        elif max_cpc:
-            msg += 'under {} '.format(
-                lc_helper.default_currency(max_cpc),
-            )
-        raise CpcValidationError(msg + 'on all ad groups. Please contact Customer Success Team.')
+    if _any_source_settings_invalid(min_cpc, max_cpc, **levels):
+        raise CpcValidationError(
+            'Invalid source settings on some ad groups. '
+            'Please contact Customer Success Team.')
+
+
+def _any_source_settings_invalid(min_cpc, max_cpc, **levels):
+    ag_sources_settings = _get_ad_group_sources_settings(**levels)
+    bcm_modifiers_map = _get_bcm_modifiers_map(ag_sources_settings)
+
+    return any(
+        _is_invalid(agss, min_cpc, max_cpc, bcm_modifiers_map.get(agss.ad_group_source.ad_group.campaign_id))
+        for agss in ag_sources_settings
+    )
+
+
+def _is_invalid(ag_source_setting, min_cpc, max_cpc, bcm_modifiers):
+    bcm_min_cpc, bcm_max_cpc = _get_bcm_min_max_cpcs(min_cpc, max_cpc, bcm_modifiers)
+    return (bcm_min_cpc and ag_source_setting.cpc_cc < bcm_min_cpc) or\
+        (bcm_max_cpc and ag_source_setting.cpc_cc > bcm_max_cpc)
+
+
+def _get_bcm_min_max_cpcs(min_cpc, max_cpc, bcm_modifiers):
+    bcm_min_cpc = core.bcm.calculations.calculate_min_cpc(min_cpc, bcm_modifiers)
+    bcm_max_cpc = core.bcm.calculations.calculate_max_cpc(max_cpc, bcm_modifiers)
+    return bcm_min_cpc, bcm_max_cpc
 
 
 def _get_invalid_ad_group_sources_settings(min_cpc=None, max_cpc=None, **levels):

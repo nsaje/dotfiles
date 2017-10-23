@@ -52,15 +52,15 @@ class CpcConstraintsTestCase(test.TestCase):
         with self.assertRaises(forms.ValidationError) as err1:
             cpc_constraints.create(min_cpc=Decimal('0.65'), account_id=1, source_id=1)
         self.assertEqual(err1.exception.messages[0],
-                         'Source AdBlade Bid CPC has to be above $0.65 on all ad groups. Please contact Customer Success Team.')
+                         'Invalid source settings on some ad groups. Please contact Customer Success Team.')
         with self.assertRaises(forms.ValidationError) as err2:
             cpc_constraints.create(max_cpc=Decimal('0.05'), campaign_id=1, source_id=1)
         self.assertEqual(err2.exception.messages[0],
-                         'Source AdBlade Bid CPC has to be under $0.05 on all ad groups. Please contact Customer Success Team.')
+                         'Invalid source settings on some ad groups. Please contact Customer Success Team.')
         with self.assertRaises(forms.ValidationError) as err3:
             cpc_constraints.create(min_cpc=Decimal('0.65'), max_cpc=Decimal('1.65'), account_id=1)
         self.assertEqual(err3.exception.messages[0],
-                         'Bid CPC has to be between $0.65 and $1.65 on all ad groups. Please contact Customer Success Team.')
+                         'Invalid source settings on some ad groups. Please contact Customer Success Team.')
 
     def test_enforce_account_rule_on_settings(self):
         settings = models.AdGroupSource.objects.get(
