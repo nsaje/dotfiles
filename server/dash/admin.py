@@ -733,6 +733,7 @@ class AdGroupAdmin(admin.ModelAdmin):
     )
     list_filter = [IsArchivedFilter]
 
+    raw_id_fields = ('campaign',)
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'settings_')
     inlines = (
         AdGroupSourcesInline,
