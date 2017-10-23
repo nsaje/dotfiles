@@ -296,6 +296,7 @@ class AgencyAccountInline(admin.TabularInline):
         'created_dt',
         'modified_dt',
         'modified_by',
+        'custom_flags',
     )
 
     ordering = ('-created_dt',)
@@ -411,7 +412,7 @@ class CampaignInline(admin.TabularInline):
     model = models.Campaign
     extra = 0
     can_delete = False
-    exclude = ('users', 'groups', 'created_dt', 'modified_dt', 'modified_by')
+    exclude = ('users', 'groups', 'created_dt', 'modified_dt', 'modified_by', 'custom_flags')
     ordering = ('-created_dt',)
     readonly_fields = ('admin_link',)
     raw_id_fields = ('default_whitelist', 'default_blacklist')
@@ -429,7 +430,7 @@ class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     )
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'uses_bcm_v2')
     exclude = ('users', 'groups')
-    raw_id_fields = ('default_whitelist', 'default_blacklist')
+    raw_id_fields = ('default_whitelist', 'default_blacklist', 'agency')
     inlines = (AccountUserInline, AccountGroupInline, CampaignInline)
 
     @transaction.atomic
@@ -481,7 +482,7 @@ class AdGroupInline(admin.TabularInline):
     model = models.AdGroup
     extra = 0
     can_delete = False
-    exclude = ('users', 'created_dt', 'modified_dt', 'modified_by')
+    exclude = ('users', 'created_dt', 'modified_dt', 'modified_by', 'custom_flags')
     ordering = ('-created_dt',)
     readonly_fields = ('admin_link',)
     raw_id_fields = ('default_whitelist', 'default_blacklist')
@@ -496,7 +497,7 @@ class CampaignAdmin(admin.ModelAdmin):
         'settings_'
     )
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'settings_')
-    raw_id_fields = ('default_whitelist', 'default_blacklist')
+    raw_id_fields = ('default_whitelist', 'default_blacklist', 'account')
     exclude = ('users', 'groups')
     inlines = (CampaignUserInline, CampaignGroupInline, AdGroupInline)
     form = dash_forms.CampaignAdminForm
