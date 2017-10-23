@@ -24,6 +24,7 @@ from dash import models
 from dash import regions
 from dash import validation_helpers
 from dash.views import helpers
+from dash.features.custom_flags.forms import CustomFlagsFormMixin
 from utils import dates_helper
 
 from zemauth.models import User as ZemUser
@@ -101,7 +102,7 @@ class PublisherGroupsFormMixin(forms.Form):
         return [x.id for x in publisher_groups]
 
 
-class AdGroupAdminForm(forms.ModelForm):
+class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
     SETTINGS_FIELDS = [
         'notes',
         'bluekai_targeting',
@@ -776,7 +777,7 @@ class CampaignGoalForm(forms.Form):
         return goal_type
 
 
-class CampaignAdminForm(forms.ModelForm):
+class CampaignAdminForm(forms.ModelForm, CustomFlagsFormMixin):
     automatic_campaign_stop = forms.BooleanField(required=False,
                                                  label='Automatic campaign stop on low budget')
 
@@ -794,6 +795,47 @@ class CampaignAdminForm(forms.ModelForm):
         model = models.Campaign
         exclude = (
             'users', 'groups', 'created_dt', 'modified_dt', 'modified_by',
+        )
+
+
+class AccountAdminForm(forms.ModelForm, CustomFlagsFormMixin):
+
+    class Meta:
+        model = models.Account
+        fields = '__all__'
+
+
+class AgencyAdminForm(forms.ModelForm, CustomFlagsFormMixin):
+
+    class Meta:
+        model = models.Agency
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super(AgencyAdminForm, self).__init__(*args, **kwargs)
+        self.fields['sales_representative'].queryset =\
+            ZemUser.objects.all().exclude(
+                first_name=''
+        ).exclude(
+                last_name=''
+        ).order_by(
+                'first_name',
+                'last_name',
+        )
+        self.fields['sales_representative'].label_from_instance = lambda obj: u"{} <{}>".format(
+            obj.get_full_name(), obj.email or u''
+        )
+        self.fields['cs_representative'].queryset =\
+            ZemUser.objects.all().exclude(
+                first_name=''
+        ).exclude(
+                last_name=''
+        ).order_by(
+                'first_name',
+                'last_name',
+        )
+        self.fields['cs_representative'].label_from_instance = lambda obj: u"{} <{}>".format(
+            obj.get_full_name(), obj.email or u''
         )
 
 

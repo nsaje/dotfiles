@@ -2,6 +2,7 @@
 
 from django.conf import settings
 from django.db import models
+from django.contrib.postgres.fields import JSONField
 
 from dash import constants
 from utils import json_helper
@@ -85,6 +86,7 @@ class Agency(models.Model):
         help_text=('New accounts created by this agency\'s users will have '
                    'license fee and margin included into all costs.')
     )
+    custom_flags = JSONField(null=True, blank=True)
 
     def get_long_name(self):
         return u'Agency {}'.format(self.name)

@@ -303,40 +303,6 @@ class AgencyAccountInline(admin.TabularInline):
     raw_id_fields = ('default_whitelist', 'default_blacklist')
 
 
-class AgencyFormAdmin(forms.ModelForm):
-
-    class Meta:
-        model = models.Agency
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super(AgencyFormAdmin, self).__init__(*args, **kwargs)
-        self.fields['sales_representative'].queryset =\
-            ZemUser.objects.all().exclude(
-                first_name=''
-        ).exclude(
-                last_name=''
-        ).order_by(
-                'first_name',
-                'last_name',
-        )
-        self.fields['sales_representative'].label_from_instance = lambda obj: u"{} <{}>".format(
-            obj.get_full_name(), obj.email or u''
-        )
-        self.fields['cs_representative'].queryset =\
-            ZemUser.objects.all().exclude(
-                first_name=''
-        ).exclude(
-                last_name=''
-        ).order_by(
-                'first_name',
-                'last_name',
-        )
-        self.fields['cs_representative'].label_from_instance = lambda obj: u"{} <{}>".format(
-            obj.get_full_name(), obj.email or u''
-        )
-
-
 class AgencyResource(resources.ModelResource):
     agency_managers = fields.Field(column_name='agency_managers')
     accounts = fields.Field(column_name='accounts')
@@ -371,7 +337,7 @@ class AgencyResource(resources.ModelResource):
 
 class AgencyAdmin(ExportMixin, admin.ModelAdmin):
     search_fields = ['name']
-    form = AgencyFormAdmin
+    form = dash_forms.AgencyAdminForm
     list_display = (
         'name',
         'id',
@@ -416,6 +382,10 @@ class AgencyAdmin(ExportMixin, admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         obj.save(request)
+        utils.k1_helper.update_ad_groups(
+            models.AdGroup.objects.filter(campaign__account__agency_id=obj.id).values_list('id', flat=True),
+            'AgencyAdmin.save_model'
+        )
 
 
 # Account
@@ -447,6 +417,7 @@ class CampaignInline(admin.TabularInline):
 
 
 class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
+    form = dash_forms.AccountAdminForm
     search_fields = ['name']
     list_display = (
         'name',
@@ -478,6 +449,13 @@ class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
                 obj.delete()
         else:
             formset.save()
+
+    def save_model(self, request, obj, form, change):
+        obj.save(request)
+        utils.k1_helper.update_ad_groups(
+            models.AdGroup.objects.filter(campaign__account_id=obj.id).values_list('id', flat=True),
+            'AccountAdmin.save_model'
+        )
 
 
 # Campaign
@@ -530,6 +508,10 @@ class CampaignAdmin(admin.ModelAdmin):
             new_settings.save(request)
         obj.save(request)
         campaign_stop.perform_landing_mode_check(obj, new_settings)
+        utils.k1_helper.update_ad_groups(
+            models.AdGroup.objects.filter(campaign_id=obj.id).values_list('id', flat=True),
+            'CampaignAdmin.save_model'
+        )
 
     def save_formset(self, request, form, formset, change):
         if formset.model == models.AdGroup:
@@ -757,7 +739,9 @@ class AdGroupAdmin(admin.ModelAdmin):
     form = dash_forms.AdGroupAdminForm
     fieldsets = (
         (None, {
-            'fields': ('name', 'campaign', 'created_dt', 'modified_dt', 'modified_by', 'settings_'),
+            'fields': (
+                'name', 'campaign', 'created_dt', 'modified_dt',
+                'modified_by', 'settings_', 'custom_flags'),
         }),
         ('Additional targeting', {
             'classes': ('collapse',),
@@ -800,7 +784,6 @@ class AdGroupAdmin(admin.ModelAdmin):
         changes = current_settings.get_setting_changes(new_settings)
         if changes:
             new_settings.save(request)
-            utils.k1_helper.update_ad_group(ad_group.pk, msg='AdGroup admin')
             if (current_settings.redirect_pixel_urls != new_settings.redirect_pixel_urls or
                     current_settings.redirect_javascript != new_settings.redirect_javascript):
                 self._update_redirector_adgroup(ad_group, new_settings)
@@ -808,6 +791,7 @@ class AdGroupAdmin(admin.ModelAdmin):
                 current_settings, new_settings, request.user, separator='\n')
             utils.email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
         ad_group.save(request)
+        utils.k1_helper.update_ad_group(ad_group.pk, msg='AdGroupAdmin.save_model')
 
     @staticmethod
     def _update_redirector_adgroup(ad_group, new_settings):
@@ -1766,6 +1750,16 @@ class CustomHackAdmin(admin.ModelAdmin):
         return obj.ad_group and u'{} | {}'.format(obj.ad_group.pk, unicode(obj.ad_group.name)) or ''
 
 
+class CustomFlagAdmin(admin.ModelAdmin):
+    model = models.CustomFlag
+
+    list_display = (
+        'id',
+        'name',
+        'description'
+    )
+
+
 admin.site.register(models.Agency, AgencyAdmin)
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
@@ -1794,3 +1788,4 @@ admin.site.register(models.PublisherGroup, PublisherGroupAdmin)
 admin.site.register(models.PublisherGroupEntry, PublisherGroupEntryAdmin)
 admin.site.register(models.CpcConstraint, CpcConstraintAdmin)
 admin.site.register(models.CustomHack, CustomHackAdmin)
+admin.site.register(models.CustomFlag, CustomFlagAdmin)

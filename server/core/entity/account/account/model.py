@@ -2,6 +2,7 @@
 import newrelic.agent
 from django.conf import settings
 from django.contrib.auth import models as auth_models
+from django.contrib.postgres.fields import JSONField
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
 
@@ -70,6 +71,7 @@ class Account(models.Model, core.common.SettingsProxyMixin):
         verbose_name='Margins v2',
         help_text='This account will have license fee and margin included into all costs.'
     )
+    custom_flags = JSONField(null=True, blank=True)
 
     def __unicode__(self):
         return self.name

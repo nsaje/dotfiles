@@ -30,6 +30,7 @@ from dash.features.supply_reports.models import *
 from dash.features.bluekai.models import *
 from dash.features.videoassets.models import *
 from dash.features.ga.models import *
+from dash.features.custom_flags import *
 
 # FIXME: Legacy import - accessing constants through dash.modals
 from dash import constants

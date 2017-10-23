@@ -2,6 +2,7 @@
 
 from django.conf import settings
 from django.contrib.auth import models as auth_models
+from django.contrib.postgres.fields import JSONField
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
 
@@ -74,6 +75,7 @@ class Campaign(models.Model, core.common.PermissionMixin, bcm_mixin.CampaignBCMM
                                           on_delete=models.PROTECT, null=True, blank=True)
     default_blacklist = models.ForeignKey('PublisherGroup', related_name='blacklisted_campaigns',
                                           on_delete=models.PROTECT, null=True, blank=True)
+    custom_flags = JSONField(null=True, blank=True)
 
     USERS_FIELD = 'users'
 

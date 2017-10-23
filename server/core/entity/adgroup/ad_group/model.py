@@ -3,6 +3,7 @@ import datetime
 
 import newrelic.agent
 from django.conf import settings
+from django.contrib.postgres.fields import JSONField
 from django.db import models, transaction
 from django.template.defaultfilters import pluralize
 
@@ -108,6 +109,8 @@ class AdGroup(models.Model, core.common.SettingsProxyMixin, bcm_mixin.AdGroupBCM
                                           on_delete=models.PROTECT, null=True, blank=True)
     default_blacklist = models.ForeignKey('PublisherGroup', related_name='blacklisted_ad_groups',
                                           on_delete=models.PROTECT, null=True, blank=True)
+
+    custom_flags = JSONField(null=True, blank=True)
 
     objects = AdGroupManager()
 
