@@ -53,6 +53,7 @@
         name: 'test account 1'
         outbrain_marketer_id: 'abcde'
         agency: 20
+        custom_flags: {'flag_3': True, 'flag_2': True}
     model: dash.account
     pk: 1
 
@@ -99,6 +100,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         name: 'test agency 1'
+        custom_flags: {'flag_4': True}
     model: dash.agency
     pk: 20
 
@@ -111,6 +113,7 @@
         modified_by: 1
         account: 1 # test account 1
         name: 'test campaign 1'
+        custom_flags: {'flag_1': True, 'flag_2': True}
     model: dash.campaign
     pk: 1
 
@@ -445,6 +448,7 @@
         modified_by: 1
         campaign: 1
         name: 'test adgroup 1'
+        custom_flags: {'flag_1': True}
     model: dash.adgroup
     pk: 1
 

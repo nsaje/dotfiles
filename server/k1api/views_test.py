@@ -749,6 +749,7 @@ class K1ApiTest(K1ApiBaseTest):
             u'blacklist_publisher_groups': ListMatcher([3, 4, 7, 8, 11, 12]),
             u'delivery_type': 1,
             u'click_capping_daily_ad_group_max_clicks': 15,
+            u'custom_flags': {u'flag_1': True, u'flag_2': True, u'flag_3': True, u'flag_4': True},
         })
 
     @patch('utils.redirector_helper.insert_adgroup')

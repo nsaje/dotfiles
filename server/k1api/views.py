@@ -510,6 +510,7 @@ class AdGroupsView(K1APIView):
                 'blacklist_publisher_groups': blacklist,
                 'delivery_type': ad_group_settings.delivery_type,
                 'click_capping_daily_ad_group_max_clicks': ad_group_settings.click_capping_daily_ad_group_max_clicks,
+                'custom_flags': self._get_custom_flags(ad_group),
             }
 
             ad_groups.append(ad_group)
@@ -588,7 +589,7 @@ class AdGroupsView(K1APIView):
 
         ad_groups_settings = (dash.models.AdGroupSettings.objects
                               .filter(ad_group__in=ad_groups)
-                              .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account')
+                              .select_related('ad_group__campaign__account__agency')
                               .order_by('ad_group_id')
                               .group_current_settings())
 
@@ -618,6 +619,15 @@ class AdGroupsView(K1APIView):
             campaigns_settings_map,\
             accounts_settings_map,\
             campaigns_budgets_map
+
+    def _get_custom_flags(self, ad_group):
+        custom_flags = {}
+        if ad_group.campaign.account.agency:
+            custom_flags.update(ad_group.campaign.account.agency.custom_flags or {})
+        custom_flags.update(ad_group.campaign.account.custom_flags or {})
+        custom_flags.update(ad_group.campaign.custom_flags or {})
+        custom_flags.update(ad_group.custom_flags or {})
+        return custom_flags
 
 
 class AdGroupStatsView(K1APIView):
