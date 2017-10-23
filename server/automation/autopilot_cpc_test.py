@@ -258,7 +258,9 @@ class AutopilotCpcTestCase(test.TestCase):
                 Decimal(old_cpc),
                 Decimal(proposed_cpc),
                 comments,
-                sources)
+                sources,
+                bcm_modifiers=None
+            )
 
             self.assertEqual(adjusted_cpc, Decimal(expected_cpc))
             self.assertEqual(comments, expected_comment)

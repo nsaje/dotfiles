@@ -5,7 +5,7 @@ import core.source
 NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL = 3  # number of days an ad group is paused before it can be archived.
 
 
-def _generate_parents(ad_group=None, campaign=None, account=None, agency=None):
+def generate_parents(ad_group=None, campaign=None, account=None, agency=None):
     """
     For first given entity in order check if it has any parents and return them.
     E.g. given and ad group return also it's campaign, account and agency if any

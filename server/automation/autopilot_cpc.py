@@ -48,10 +48,11 @@ def get_autopilot_cpc_recommendations(
         proposed_cpc = _round_cpc(proposed_cpc, decimal_places=max_decimal_places)
         proposed_cpc = _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments,
                                                        max_decimal_places)
-        proposed_cpc = _threshold_cpc_constraints(ad_group,
-                                                  ag_source.source if ag_source != SourceAllRTB else SourceAllRTB,
-                                                  old_cpc_cc, proposed_cpc, cpc_change_comments,
-                                                  [s.source if s != SourceAllRTB else SourceAllRTB for s in ag_sources])
+        proposed_cpc = _threshold_cpc_constraints(
+            ad_group, ag_source.source if ag_source != SourceAllRTB else SourceAllRTB,
+            old_cpc_cc, proposed_cpc, cpc_change_comments,
+            [s.source if s != SourceAllRTB else SourceAllRTB for s in ag_sources],
+            bcm_modifiers)
         proposed_cpc = _threshold_source_constraints(
             proposed_cpc, source_type, adgroup_settings, cpc_change_comments, bcm_modifiers)
 
@@ -156,16 +157,28 @@ def _threshold_increasing_cpc(current_cpc, new_cpc):
     return new_cpc
 
 
-def _threshold_cpc_constraints(ad_group, source, old_cpc, proposed_cpc, cpc_change_comments, sources):
+def _threshold_cpc_constraints(
+        ad_group, source, old_cpc, proposed_cpc,
+        cpc_change_comments, sources, bcm_modifiers):
     new_cpc = proposed_cpc
     if source == dash.constants.SourceAllRTB:
         constrained_cpcs = set()
         for s in sources:
             if s != dash.constants.SourceAllRTB and s.source_type.type == dash.constants.SourceType.B1:
-                constrained_cpcs.add(cpc_constraints.adjust_cpc(proposed_cpc, ad_group=ad_group, source=s))
+                constrained_cpcs.add(
+                    cpc_constraints.adjust_cpc(
+                        proposed_cpc,
+                        bcm_modifiers,
+                        ad_group=ad_group,
+                        source=s))
         new_cpc = min(constrained_cpcs) if old_cpc < proposed_cpc else max(constrained_cpcs)
     else:
-        new_cpc = cpc_constraints.adjust_cpc(proposed_cpc, ad_group=ad_group, source=source)
+        new_cpc = cpc_constraints.adjust_cpc(
+            proposed_cpc,
+            bcm_modifiers,
+            ad_group=ad_group,
+            source=source
+        )
 
     if new_cpc != proposed_cpc:
         cpc_change_comments += [CpcChangeComment.CPC_CONSTRAINT_APPLIED]

@@ -367,7 +367,7 @@ class AdGroup(models.Model, core.common.SettingsProxyMixin, bcm_mixin.AdGroupBCM
         if not changes and not changes_text:
             return  # nothing to write
 
-        campaign, account, agency = core.entity.helpers._generate_parents(ad_group=self)
+        campaign, account, agency = core.entity.helpers.generate_parents(ad_group=self)
         history = core.history.History.objects.create(
             ad_group=self,
             campaign=campaign,

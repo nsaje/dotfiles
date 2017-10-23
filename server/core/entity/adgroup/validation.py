@@ -26,6 +26,7 @@ def _validate_ad_group_source_cpc(ad_group_source, updates, bcm_modifiers):
             )
             cpc_constraints.validate_cpc(
                 updates['cpc_cc'],
+                bcm_modifiers,
                 ad_group=ad_group_source.ad_group,
                 source=ad_group_source.source,
             )

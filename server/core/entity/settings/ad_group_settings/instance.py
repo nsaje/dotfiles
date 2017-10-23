@@ -96,8 +96,10 @@ class AdGroupSettingsMixin(object):
 
             ad_group_sources_cpcs = dash.views.helpers.get_adjusted_ad_group_sources_cpcs(ad_group, new_settings)
             if self._should_validate_cpc_constraints(changes, new_settings):
+                bcm_modifiers = self.ad_group.campaign.get_bcm_modifiers()
                 try:
-                    dash.views.helpers.validate_ad_group_sources_cpc_constraints(ad_group_sources_cpcs)
+                    dash.views.helpers.validate_ad_group_sources_cpc_constraints(
+                        bcm_modifiers, ad_group_sources_cpcs)
                 except dash.cpc_constraints.ValidationError as err:
                     raise exc.ValidationError(errors={
                         'b1_sources_group_cpc_cc': list(set(err))

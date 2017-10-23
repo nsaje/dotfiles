@@ -76,7 +76,7 @@ class CustomHack(models.Model):
 
         def filter_applied(self, source=None, **levels):
             ad_group = levels.get('ad_group')
-            campaign, account, agency = core.entity.helpers._generate_parents(**levels)
+            campaign, account, agency = core.entity.helpers.generate_parents(**levels)
             rules = models.Q(agency=None, account=None, campaign=None, ad_group=None)
             if agency:
                 rules |= models.Q(agency=agency)

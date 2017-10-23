@@ -729,10 +729,15 @@ def get_adjusted_ad_group_sources_cpcs(ad_group, ad_group_settings):
     return adjusted_cpcs
 
 
-def validate_ad_group_sources_cpc_constraints(ad_group_sources_cpcs):
+def validate_ad_group_sources_cpc_constraints(bcm_modifiers, ad_group_sources_cpcs):
     for ad_group_source, proposed_cpc in ad_group_sources_cpcs.items():
         if proposed_cpc:
-            cpc_constraints.validate_cpc(proposed_cpc, ad_group=ad_group_source.ad_group, source=ad_group_source.source)
+            cpc_constraints.validate_cpc(
+                proposed_cpc,
+                bcm_modifiers,
+                ad_group=ad_group_source.ad_group,
+                source=ad_group_source.source
+            )
 
 
 @transaction.atomic

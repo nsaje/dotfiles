@@ -81,7 +81,7 @@ class PublisherGroup(models.Model):
         level = constants.HistoryLevel.ACCOUNT if account else constants.HistoryLevel.AGENCY
 
         if not agency:
-            _, _, agency = core.entity.helpers._generate_parents(account=self)
+            _, _, agency = core.entity.helpers.generate_parents(account=self)
 
         return core.history.History.objects.create(
             account=account,

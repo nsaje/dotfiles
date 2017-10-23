@@ -142,6 +142,10 @@ class CpcConstraintsTestCase(test.TestCase):
             min_cpc=Decimal('0.05')
         ))
 
+
+class AdjustCpcTestCase(test.TestCase):
+    fixtures = ['test_models.yaml']
+
     def test_adjust_cpc_min_only(self):
         cpc_constraints.create(
             min_cpc=Decimal('0.05'),
@@ -208,6 +212,43 @@ class CpcConstraintsTestCase(test.TestCase):
         )
         self.assertEqual(cpc, Decimal('0.15'))
 
+    def test_adjust_cpc_min_and_max_with_bcm_modifiers(self):
+        cpc_constraints.create(
+            min_cpc=Decimal('0.05'),
+            max_cpc=Decimal('0.15'),
+            source_id=1,
+            ad_group_id=1,
+        )
+        bcm_modifiers = {
+            'fee': Decimal('0.15'),
+            'margin': Decimal('0.3'),
+        }
+        cpc = cpc_constraints.adjust_cpc(
+            Decimal('0.01'),
+            bcm_modifiers,
+            source=models.Source.objects.get(pk=1),
+            ad_group=models.AdGroup.objects.get(pk=1),
+        )
+        self.assertEqual(cpc, Decimal('0.09'))
+        cpc = cpc_constraints.adjust_cpc(
+            Decimal('0.10'),
+            bcm_modifiers,
+            source=models.Source.objects.get(pk=1),
+            ad_group=models.AdGroup.objects.get(pk=1),
+        )
+        self.assertEqual(cpc, Decimal('0.10'))
+        cpc = cpc_constraints.adjust_cpc(
+            Decimal('0.30'),
+            bcm_modifiers,
+            source=models.Source.objects.get(pk=1),
+            ad_group=models.AdGroup.objects.get(pk=1),
+        )
+        self.assertEqual(cpc, Decimal('0.25'))
+
+
+class ValidateCpcTestCase(test.TestCase):
+    fixtures = ['test_models.yaml']
+
     def test_validate_cpc(self):
         cpc_constraints.create(
             min_cpc=Decimal('0.05'),
@@ -227,6 +268,53 @@ class CpcConstraintsTestCase(test.TestCase):
         cpc_constraints.validate_cpc(
             Decimal('0.01'),
             source=models.Source.objects.get(pk=2),
+            ad_group=models.AdGroup.objects.get(pk=1),
+        )
+
+    def test_validate_min_max_cpc_with_bcm_modifiers(self):
+        cpc_constraints.create(
+            min_cpc=Decimal('0.05'),
+            max_cpc=Decimal('0.15'),
+            source_id=1,
+            ad_group_id=1,
+        )
+        bcm_modifiers = {
+            'fee': Decimal('0.15'),
+            'margin': Decimal('0.3'),
+        }
+        with self.assertRaises(forms.ValidationError) as err1:
+            cpc_constraints.validate_cpc(
+                Decimal('0.01'),
+                bcm_modifiers,
+                source=models.Source.objects.get(pk=1),
+                ad_group=models.AdGroup.objects.get(pk=1),
+            )
+        self.assertEqual(err1.exception.messages[0],
+                         'Bid CPC is violating some constraints: '
+                         'CPC constraint on source AdBlade with '
+                         'min. CPC $0.09 and max. CPC $0.25')
+
+        with self.assertRaises(forms.ValidationError) as err2:
+            cpc_constraints.validate_cpc(
+                Decimal('0.30'),
+                bcm_modifiers,
+                source=models.Source.objects.get(pk=1),
+                ad_group=models.AdGroup.objects.get(pk=1),
+            )
+        self.assertEqual(err2.exception.messages[0],
+                         'Bid CPC is violating some constraints: '
+                         'CPC constraint on source AdBlade with '
+                         'min. CPC $0.09 and max. CPC $0.25')
+        cpc_constraints.validate_cpc(
+            Decimal('0.09'),
+            bcm_modifiers,
+            source=models.Source.objects.get(pk=1),
+            ad_group=models.AdGroup.objects.get(pk=1),
+        )
+        cpc_constraints.validate_cpc(
+            Decimal('0.25'),
+            bcm_modifiers,
+            source=models.Source.objects.get(pk=1),
             ad_group=models.AdGroup.objects.get(pk=1),
         )
 

@@ -190,7 +190,7 @@ class Campaign(models.Model, core.common.PermissionMixin, bcm_mixin.CampaignBCMM
         if not changes and not changes_text:
             return None
 
-        _, account, agency = core.entity.helpers._generate_parents(campaign=self)
+        _, account, agency = core.entity.helpers.generate_parents(campaign=self)
         return core.history.History.objects.create(
             campaign=self,
             account=account,

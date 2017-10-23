@@ -11,8 +11,8 @@ class CpcValidationError(ValidationError):
     pass
 
 
-def validate_cpc(cpc, **levels):
-    rules = dash.models.CpcConstraint.objects.all().filter_applied(cpc, **levels)
+def validate_cpc(cpc, bcm_modifiers=None, **levels):
+    rules = dash.models.CpcConstraint.objects.all().filter_applied(cpc, bcm_modifiers, **levels)
     if not rules:
         return
     raise ValidationError(
@@ -20,11 +20,11 @@ def validate_cpc(cpc, **levels):
     )
 
 
-def adjust_cpc(cpc, **levels):
-    rules = dash.models.CpcConstraint.objects.all().filter_applied(cpc, **levels)
+def adjust_cpc(cpc, bcm_modifiers=None, **levels):
+    rules = dash.models.CpcConstraint.objects.all().filter_applied(cpc, bcm_modifiers, **levels)
     for rule in rules:
-        cpc = max(rule.min_cpc or cpc, cpc)
-        cpc = min(rule.max_cpc or cpc, cpc)
+        cpc = max(rule.bcm_min_cpc or cpc, cpc)
+        cpc = min(rule.bcm_max_cpc or cpc, cpc)
     return cpc
 
 

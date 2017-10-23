@@ -5,6 +5,7 @@ from django.db import models
 from dash import constants
 from utils import lc_helper
 
+import core.bcm
 import core.common
 import core.entity
 import core.source
@@ -45,19 +46,20 @@ class CpcConstraint(models.Model):
         else:
             desc += ' on all sources'
         desc += ' with'
-        if self.min_cpc:
-            desc += ' min. CPC {}'.format(lc_helper.default_currency(self.min_cpc))
-        if self.max_cpc:
-            if self.min_cpc:
+
+        if self.bcm_min_cpc:
+            desc += ' min. CPC {}'.format(lc_helper.default_currency(self.bcm_min_cpc))
+        if self.bcm_max_cpc:
+            if self.bcm_min_cpc:
                 desc += ' and'
-            desc += ' max. CPC {}'.format(lc_helper.default_currency(self.max_cpc))
+            desc += ' max. CPC {}'.format(lc_helper.default_currency(self.bcm_max_cpc))
         return desc
 
     class QuerySet(models.QuerySet):
 
-        def filter_applied(self, cpc, source=None, **levels):
+        def filter_applied(self, cpc, bcm_modifiers, source=None, **levels):
             ad_group = levels.get('ad_group')
-            campaign, account, agency = core.entity.helpers._generate_parents(**levels)
+            campaign, account, agency = core.entity.helpers.generate_parents(**levels)
             rules = models.Q()
             if agency:
                 rules |= models.Q(agency=agency)
@@ -67,10 +69,54 @@ class CpcConstraint(models.Model):
                 rules |= models.Q(campaign=campaign)
             if ad_group:
                 rules |= models.Q(ad_group=ad_group)
-            queryset = self.filter(rules).filter(
-                models.Q(min_cpc__isnull=False) & models.Q(min_cpc__gt=cpc) |
-                models.Q(max_cpc__isnull=False) & models.Q(max_cpc__lt=cpc)
+
+            queryset = self.filter(rules).annotate(
+                bcm_min_cpc=CpcConstraint.QuerySet._transform_min_cpc_to_bcm(bcm_modifiers),
+                bcm_max_cpc=CpcConstraint.QuerySet._transform_max_cpc_to_bcm(bcm_modifiers),
+            ).filter(
+                models.Q(bcm_min_cpc__isnull=False) & models.Q(bcm_min_cpc__gt=cpc) |
+                models.Q(bcm_max_cpc__isnull=False) & models.Q(bcm_max_cpc__lt=cpc)
             )
+
             if source:
                 queryset = queryset.filter(models.Q(source=source) | models.Q(source=None))
+
             return queryset
+
+        @staticmethod
+        def _transform_min_cpc_to_bcm(bcm_modifiers):
+            field = models.F('min_cpc')
+            if not bcm_modifiers:
+                return field
+            return CpcConstraint.QuerySet._round_ceil(
+                CpcConstraint.QuerySet._apply_bcm_modifiers(field, bcm_modifiers)
+            )
+
+        @staticmethod
+        def _transform_max_cpc_to_bcm(bcm_modifiers):
+            field = models.F('max_cpc')
+            if not bcm_modifiers:
+                return field
+            return CpcConstraint.QuerySet._round_floor(
+                CpcConstraint.QuerySet._apply_bcm_modifiers(field, bcm_modifiers)
+            )
+
+        @staticmethod
+        def _apply_bcm_modifiers(field, bcm_modifiers):
+            return core.bcm.calculations.apply_fee_and_margin(
+                field,
+                bcm_modifiers['fee'],
+                bcm_modifiers['margin'],
+            )
+
+        @staticmethod
+        def _round_ceil(field):
+            return CpcConstraint.QuerySet._round(models.Func(field * 100, function='CEIL') / 100)
+
+        @staticmethod
+        def _round_floor(field):
+            return CpcConstraint.QuerySet._round(models.Func(field * 100, function='FLOOR') / 100)
+
+        @staticmethod
+        def _round(field):
+            return models.Func(field, 2, function='ROUND')
