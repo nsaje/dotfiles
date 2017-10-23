@@ -751,42 +751,54 @@ class K1ApiTest(K1ApiBaseTest):
             u'click_capping_daily_ad_group_max_clicks': 15,
         })
 
-    def test_get_ad_groups(self):
+    @patch('utils.redirector_helper.insert_adgroup')
+    def test_get_ad_groups(self, mock_redirector):
+        n = 10
+        source = magic_mixer.blend(dash.models.Source, source_type__type='abc')
+        ad_groups = magic_mixer.cycle(n).blend(dash.models.AdGroup, campaign_id=1)
+        magic_mixer.cycle(n).blend(dash.models.AdGroupSource, ad_group=(ag for ag in ad_groups), source=source)
+        magic_mixer.cycle(n).blend(dash.models.AdGroupSettings, ad_group=(ag for ag in ad_groups), archived=False, brand_name='old')
+        magic_mixer.cycle(n).blend(dash.models.AdGroupSettings, ad_group=(ag for ag in ad_groups), archived=False, brand_name='new')
+
+        # make the first one archived
+        request = magic_mixer.blend_request_user()
+        ad_groups[0].settings.update(request, archived=True)
+
         response = self.client.get(
             reverse('k1api.ad_groups'),
+            {
+                'source_types': 'abc',
+            }
         )
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
         data = data['response']
 
-        self.assertEqual(len(data), 3)
+        self.assertEqual(
+            [{'id': obj['id'], 'brand_name': obj['brand_name']} for obj in data],
+            [{'id': obj.id, 'brand_name': obj.settings.brand_name} for obj in ad_groups[1:]])
 
-        required_fields = {
-            u'id',
-            u'name',
-            u'start_date',
-            u'end_date',
-            u'time_zone',
-            u'brand_name',
-            u'display_url',
-            u'tracking_codes',
-            u'target_devices',
-            u'iab_category',
-            u'target_regions',
-            u'exclusion_target_regions',
-            u'retargeting',
-            u'campaign_id',
-            u'account_id',
-            u'agency_id',
-            u'goal_types',
-            u'demographic_targeting',
-            u'interest_targeting',
-            u'exclusion_interest_targeting',
-        }
+    def test_get_ad_groups_pagination(self):
+        n = 10
+        source = magic_mixer.blend(dash.models.Source, source_type__type='abc')
+        ad_groups = magic_mixer.cycle(n).blend(dash.models.AdGroup, campaign_id=1)
+        magic_mixer.cycle(n).blend(dash.models.AdGroupSettings, ad_group=(ag for ag in ad_groups))
+        magic_mixer.cycle(n).blend(dash.models.AdGroupSource, ad_group=(ag for ag in ad_groups), source=source)
+        response = self.client.get(
+            reverse('k1api.ad_groups'),
+            {
+                'source_types': 'abc',
+                'marker': ad_groups[2].id,
+                'limit': 5
+            }
+        )
 
-        for item in data:
-            self.assertEqual(len(required_fields - set(item.keys())), 0)
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual([obj['id'] for obj in data], [obj.id for obj in ad_groups[3:8]])
 
     @patch.object(api_quickstats, 'query_adgroup', autospec=True)
     def test_get_ad_group_stats(self, mock_quickstats):

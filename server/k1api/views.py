@@ -422,6 +422,8 @@ class AdGroupsView(K1APIView):
     """
 
     def get(self, request):
+        limit = int(request.GET.get('limit', 1000000))
+        marker = request.GET.get('marker')
         ad_group_ids = request.GET.get('ad_group_ids')
         source_types = request.GET.get('source_types')
         slugs = request.GET.get('source_slugs')
@@ -435,7 +437,7 @@ class AdGroupsView(K1APIView):
         ad_groups_settings,\
             campaigns_settings_map,\
             accounts_settings_map,\
-            campaigns_budgets_map = self._get_settings_maps(ad_group_ids, source_types, slugs)
+            campaigns_budgets_map = self._get_settings_maps(ad_group_ids, source_types, slugs, marker, limit)
 
         campaign_goal_types = self._get_campaign_goal_types(campaigns_settings_map.keys())
         campaign_goals = self._get_campaign_goals(campaigns_settings_map.keys())
@@ -566,26 +568,32 @@ class AdGroupsView(K1APIView):
         return campaign_goals_dicts
 
     @staticmethod
-    def _get_settings_maps(ad_group_ids, source_types, slugs):
-        current_ad_groups_settings = dash.models.AdGroupSettings.objects.all().group_current_settings()
+    def _get_settings_maps(ad_group_ids, source_types, slugs, marker, limit):
+        ad_groups = dash.models.AdGroup.objects.all()
 
         if ad_group_ids:
-            current_ad_groups_settings = current_ad_groups_settings.filter(ad_group_id__in=ad_group_ids)
+            ad_groups = ad_groups.filter(pk__in=ad_group_ids)
+        if marker:
+            ad_groups = ad_groups.filter(pk__gt=int(marker))
 
         if source_types or slugs:
-            ad_group_sources = dash.models.AdGroupSource.objects.all()
+            ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group__in=ad_groups)
             if source_types:
                 ad_group_sources = ad_group_sources.filter(source__source_type__type__in=source_types)
             if slugs:
                 ad_group_sources = ad_group_sources.filter(source__bidder_slug__in=slugs)
-            current_ad_groups_settings = current_ad_groups_settings.filter(
-                ad_group_id__in=ad_group_sources.values('ad_group_id')
-            )
+            ad_groups = ad_groups.filter(pk__in=ad_group_sources.values('ad_group_id'))
+
+        ad_groups = ad_groups.exclude_archived()
 
         ad_groups_settings = (dash.models.AdGroupSettings.objects
-                              .filter(pk__in=current_ad_groups_settings)
-                              .filter(archived=False)
-                              .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account'))
+                              .filter(ad_group__in=ad_groups)
+                              .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account')
+                              .order_by('ad_group_id')
+                              .group_current_settings())
+
+        # apply pagination
+        ad_groups_settings = ad_groups_settings[:limit]
 
         campaigns_settings = (dash.models.CampaignSettings.objects
                               .filter(campaign_id__in=set([ag.ad_group.campaign_id for ag in ad_groups_settings]))
