@@ -414,6 +414,7 @@ class CampaignInline(admin.TabularInline):
     exclude = ('users', 'groups', 'created_dt', 'modified_dt', 'modified_by')
     ordering = ('-created_dt',)
     readonly_fields = ('admin_link',)
+    raw_id_fields = ('default_whitelist', 'default_blacklist')
 
 
 class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
