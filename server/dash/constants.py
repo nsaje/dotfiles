@@ -3,7 +3,6 @@ from decimal import Decimal
 
 from dash import regions
 from utils.constant_base import ConstantBase
-from utils import numbers
 
 # Outbrain supports only 10 blocked publisher per marketer id
 # which corresponds to 10 blacklisted publishers per Z1 account
@@ -1878,51 +1877,23 @@ class SourceAllRTB(object):
 
     @classmethod
     def get_etfm_min_cpc(cls, bcm_modifiers=None):
-        min_cpc = cls.MIN_CPC
-        if not bcm_modifiers:
-            return min_cpc
-
         import core.bcm
-        etfm_min_cpc = core.bcm.calculations.apply_fee_and_margin(
-            min_cpc, bcm_modifiers['fee'], bcm_modifiers['margin'])
-        rounded = numbers.round_decimal_ceiling(etfm_min_cpc, places=3)
-        return rounded
-
-    @classmethod
-    def get_etfm_min_daily_budget(cls, bcm_modifiers=None):
-        min_daily_budget = cls.MIN_DAILY_BUDGET
-        if not bcm_modifiers:
-            return min_daily_budget
-
-        import core.bcm
-        etfm_min_daily_budget = core.bcm.calculations.apply_fee_and_margin(
-            min_daily_budget, bcm_modifiers['fee'], bcm_modifiers['margin'])
-        rounded = numbers.round_decimal_ceiling(etfm_min_daily_budget, places=0)
-        return rounded
+        return core.bcm.calculations.calculate_min_cpc(cls.MIN_CPC, bcm_modifiers)
 
     @classmethod
     def get_etfm_max_cpc(cls, bcm_modifiers=None):
-        max_cpc = cls.MAX_CPC
-        if not bcm_modifiers:
-            return max_cpc
-
         import core.bcm
-        etfm_max_cpc = core.bcm.calculations.apply_fee_and_margin(
-            max_cpc, bcm_modifiers['fee'], bcm_modifiers['margin'])
-        rounded = numbers.round_decimal_floor(etfm_max_cpc, places=3)
-        return rounded
+        return core.bcm.calculations.calculate_max_cpc(cls.MAX_CPC, bcm_modifiers)
+
+    @classmethod
+    def get_etfm_min_daily_budget(cls, bcm_modifiers=None):
+        import core.bcm
+        return core.bcm.calculations.calculate_min_daily_budget(cls.MIN_DAILY_BUDGET, bcm_modifiers)
 
     @classmethod
     def get_etfm_max_daily_budget(cls, bcm_modifiers=None):
-        max_daily_budget = cls.MAX_DAILY_BUDGET
-        if not bcm_modifiers:
-            return max_daily_budget
-
         import core.bcm
-        etfm_max_daily_budget = core.bcm.calculations.apply_fee_and_margin(
-            max_daily_budget, bcm_modifiers['fee'], bcm_modifiers['margin'])
-        rounded = numbers.round_decimal_floor(etfm_max_daily_budget, places=0)
-        return rounded
+        return core.bcm.calculations.calculate_max_daily_budget(cls.MAX_DAILY_BUDGET, bcm_modifiers)
 
 
 class CpcConstraintType(ConstantBase):
