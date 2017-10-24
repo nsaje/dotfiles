@@ -9,7 +9,7 @@
 25 * * * *          /home/ubuntu/docker-manage-py.sh refresh_k1 3
 0 12 * * *          /home/ubuntu/docker-manage-py.sh send_outbrain_manual_actions_email
 40 * * * *          /home/ubuntu/docker-manage-py.sh monitor_adgroup_propagation
-# 10 9-20 * * *          /home/ubuntu/docker-manage-py.sh send_scheduled_reports
+10 9-20 * * *          /home/ubuntu/docker-manage-py.sh send_scheduled_reports
 30 16 * * *         /home/ubuntu/docker-manage-py.sh send_supply_report_emails
 * 12 * * *          /home/ubuntu/docker-manage-py.sh free_inactive_allocated_assets
 */20 * * * *        /home/ubuntu/docker-manage-py.sh notify_depleted_budget_campaigns
