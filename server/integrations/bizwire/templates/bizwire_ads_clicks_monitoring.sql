@@ -5,7 +5,7 @@ SELECT
     content_ad_id,
     sum(clicks) as clicks
 FROM
-    mv_content_ad
+    mv_contentad
 WHERE
     content_ad_id IN (
         {% for content_ad_id in content_ad_ids %}

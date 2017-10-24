@@ -27,9 +27,9 @@ logger = logging.getLogger(__name__)
 
 CACHE_KEY_FMT = 'bizwire_promotion_export_{}'
 VALID_US_STATES = [
-    'AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'IA', 'ID', 'IL', 'IN', 'KS', 'KY', 'LA', 'MA',
-    'MD', 'ME', 'MI', 'MN', 'MO', 'MS', 'MT', 'NC', 'ND', 'NE', 'NH', 'NJ', 'NM', 'NV', 'NY', 'OH', 'OK', 'OR', 'PA',
-    'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VA', 'VT', 'WA', 'WI', 'WV', 'WY',
+    'US-AK', 'US-AL', 'US-AR', 'US-AZ', 'US-CA', 'US-CO', 'US-CT', 'US-DE', 'US-FL', 'US-GA', 'US-HI', 'US-IA', 'US-ID', 'US-IL', 'US-IN', 'US-KS', 'US-KY', 'US-LA', 'US-MA',
+    'US-MD', 'US-ME', 'US-MI', 'US-MN', 'US-MO', 'US-MS', 'US-MT', 'US-NC', 'US-ND', 'US-NE', 'US-NH', 'US-NJ', 'US-NM', 'US-NV', 'US-NY', 'US-OH', 'US-OK', 'US-OR', 'US-PA',
+    'US-RI', 'US-SC', 'US-SD', 'US-TN', 'US-TX', 'US-UT', 'US-VA', 'US-VT', 'US-WA', 'US-WI', 'US-WV', 'US-WY',
 ]
 
 
@@ -110,11 +110,11 @@ class PromotionExport(RatelimitMixin, BizwireView):
     #         'bizwire_ag_stats'
     #     )[0]
 
-    def _get_state_key(self, country, state):
-        if not country or not state or state not in VALID_US_STATES:
+    def _get_state_key(self, state):
+        if not state or state not in VALID_US_STATES:
             return 'Unknown'
 
-        return country + '-' + state
+        return state
 
     def _get_statistics(self, content_ads):
         ad_stats_thread = threads.AsyncFunction(partial(self._get_ad_stats, content_ads))
@@ -136,7 +136,7 @@ class PromotionExport(RatelimitMixin, BizwireView):
 
         geo_impressions = OrderedDict()
         for row in geo_stats:
-            key = self._get_state_key(row['country'], row['state'])
+            key = self._get_state_key(row['state'])
             geo_impressions.setdefault(key, 0)
             geo_impressions[key] += row['impressions']
 

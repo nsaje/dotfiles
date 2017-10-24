@@ -6,7 +6,7 @@ SELECT
     SUM(clicks) AS clicks,
     SUM(impressions) AS impressions
 FROM
-    mv_pubs_ad_group
+    mv_adgroup_pubs
 WHERE
     ad_group_id=ANY(%(ad_group_id)s) AND
     date BETWEEN %(date_from)s AND %(date_to)s

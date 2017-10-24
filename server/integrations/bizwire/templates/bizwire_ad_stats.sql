@@ -6,7 +6,7 @@ SELECT
     sum(impressions) as impressions,
     {{ ctr|only_column }} as ctr
 FROM
-    mv_content_ad
+    mv_contentad
 WHERE
     content_ad_id IN (
         {% for content_ad_id in content_ad_ids %}

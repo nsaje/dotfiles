@@ -4,7 +4,7 @@
 SELECT
     {{ industry_ctr|only_column }} as industry_ctr
 FROM
-    mv_ad_group
+    mv_adgroup
 WHERE
     ad_group_id = %s
 

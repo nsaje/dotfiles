@@ -2,11 +2,10 @@
 {% autoescape off %}
 
 SELECT
-    country,
     state,
     sum(impressions) as impressions
 FROM
-    mv_content_ad_delivery_geo
+    mv_contentad_geo
 WHERE
     content_ad_id IN (
         {% for content_ad_id in content_ad_ids %}
@@ -18,7 +17,6 @@ WHERE
         {% endfor %}
     )
 GROUP BY
-    country,
     state
 ORDER BY
     sum(impressions) DESC
