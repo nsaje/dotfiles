@@ -1210,6 +1210,7 @@ class PublisherBidModifiersView(K1APIView):
         return self.response_ok(
             [{
                 'id': item.id,
+                'ad_group_id': item.ad_group_id,
                 'publisher': item.publisher,
                 'source': item.source.bidder_slug,
                 'modifier': item.modifier,

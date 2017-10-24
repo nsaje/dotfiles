@@ -1459,6 +1459,7 @@ class PublisherBidModifiersTest(K1ApiBaseTest):
     def repr(self, obj):
         return {
             'id': obj.id,
+            'ad_group_id': obj.ad_group_id,
             'publisher': obj.publisher,
             'source': obj.source.bidder_slug,
             'modifier': obj.modifier
