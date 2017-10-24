@@ -3,33 +3,41 @@
 
 import StringIO
 import unicodecsv
-import xlsxwriter
 
 
-def convert_to_xls(csv_str, encoding='utf-8'):
-    '''
-    Convert CSV file in a string to xlsx
-    '''
-
-    # unicodecsv file reads and decodes byte strings
-    lines = csv_str.encode('utf-8').strip().split('\n')
-    reader = unicodecsv.reader(lines, encoding=encoding)
-
-    # Create a workbook and add a worksheet.
-    buf = StringIO.StringIO()
-    workbook = xlsxwriter.Workbook(buf)
-    worksheet = workbook.add_worksheet()
-    # Iterate over the data and write it out row by row.
-    for row, line in enumerate(reader):
-        for col, el in enumerate(line):
-            worksheet.write(row, col, el)
-    workbook.close()
-    return buf.getvalue()
+FORMULA_SYMBOLS = ('@', '+', '-', '=')
 
 
 def tuplelist_to_csv(data, delimiter=','):
     out = StringIO.StringIO()
     csv_file = unicodecsv.writer(out, delimiter=delimiter)
     for row in data:
-        csv_file.writerow(row)
+        csv_file.writerow(_sanitize_row(row))
     return out.getvalue()
+
+
+def dictlist_to_csv(fields, rows):
+    out = StringIO.StringIO()
+    writer = unicodecsv.DictWriter(
+        out, fields, encoding='utf-8', dialect='excel', quoting=unicodecsv.QUOTE_ALL)
+
+    writer.writeheader()
+    for row in rows:
+        writer.writerow(_sanitize_row(row))
+
+    return out.getvalue()
+
+
+def _sanitize_row(row):
+    transformed = {}
+    for key, value in row.items():
+        transformed[key] = _prepend_if_formula(value)
+    return transformed
+
+
+def _prepend_if_formula(value):
+    # NOTE: aims to prevent malicious input performing formula injection in spredsheet applications
+    # See https://www.contextis.com/blog/comma-separated-vulnerabilities
+    if value and value.startswith(FORMULA_SYMBOLS):
+        value = "'" + value
+    return value

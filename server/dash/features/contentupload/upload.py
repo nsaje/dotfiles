@@ -1,7 +1,5 @@
-import StringIO
 import logging
 
-import unicodecsv
 from django.conf import settings
 from django.db import transaction
 from django.template.defaultfilters import pluralize
@@ -14,6 +12,7 @@ from server import celery
 from utils import k1_helper
 from utils import lambda_helper
 from utils import redirector_helper
+from utils import csv_utils
 
 import exc
 import upload_dev
@@ -222,21 +221,23 @@ def _update_content_ads(update_candidates):
     return updated_content_ads
 
 
-def _get_csv(fields, rows):
-    string = StringIO.StringIO()
-    writer = unicodecsv.DictWriter(string, [_transform_field(field) for field in fields])
-    writer.writeheader()
-    for row in rows:
-        writer.writerow({_transform_field(k): v for k, v in row.items() if k in fields})
-    return string.getvalue()
-
-
 def _get_candidates_csv(candidates):
-    fields = list(forms.ALL_CSV_FIELDS)
+    fields = [_transform_field(field) for field in forms.ALL_CSV_FIELDS]
+    rows = _get_candidates_csv_rows(candidates)
+    return csv_utils.dictlist_to_csv(
+        fields,
+        rows,
+    )
+
+
+def _get_candidates_csv_rows(candidates):
     rows = []
     for candidate in sorted(candidates, key=lambda x: x.id):
-        rows.append({k: v for k, v in candidate.to_dict().items() if k in fields})
-    return _get_csv(fields, rows)
+        rows.append({
+            _transform_field(k): v for k, v in candidate.to_dict().items()
+            if k in forms.ALL_CSV_FIELDS
+        })
+    return rows
 
 
 def _transform_field(field):

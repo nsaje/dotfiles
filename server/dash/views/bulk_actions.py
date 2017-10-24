@@ -1,8 +1,6 @@
 import datetime
 import json
 import slugify
-import StringIO
-import unicodecsv
 
 from django.db import transaction
 
@@ -25,6 +23,7 @@ from dash.views import breakdown_helpers
 from utils import api_common
 from utils import exc
 from utils import k1_helper
+from utils import csv_utils
 
 
 class BaseBulkActionView(api_common.BaseApiView):
@@ -367,22 +366,17 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
             slugify.slugify(ad_group.name),
             datetime.datetime.now().strftime('%Y-%m-%d')
         )
-        content = self._create_content_ad_csv(content_ad_dicts)
+        content = csv_utils.dictlist_to_csv(
+            forms.CSV_EXPORT_COLUMN_NAMES_DICT.values(),
+            self._map_to_csv_column_names(content_ad_dicts),
+        )
 
         return self.create_csv_response(filename, content=content)
 
-    def _create_content_ad_csv(self, content_ads):
-        string = StringIO.StringIO()
-
-        writer = unicodecsv.DictWriter(string, forms.CSV_EXPORT_COLUMN_NAMES_DICT.keys())
-
-        # write the header manually as it is different than keys in the dict
-        writer.writerow(forms.CSV_EXPORT_COLUMN_NAMES_DICT)
-
-        for row in content_ads:
-            writer.writerow(row)
-
-        return string.getvalue()
+    def _map_to_csv_column_names(self, content_ads):
+        return [{
+            forms.CSV_EXPORT_COLUMN_NAMES_DICT[key]: value for key, value in content_ad.items()
+        } for content_ad in content_ads]
 
 
 class CampaignAdGroupArchive(BaseBulkActionView):

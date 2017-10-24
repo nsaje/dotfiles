@@ -469,11 +469,11 @@ class CandidatesDownloadTestCase(TestCase):
         )
         self.assertEqual(200, response.status_code)
         self.assertEqual(
-            'URL,Title,Image URL,Display URL,Brand name,Description,Call to action,'
-            'Label,Image crop,Primary impression tracker URL,Secondary impression'
-            ' tracker URL\r\nhttp://zemanta.com/blog,Zemanta blog čšž,'
-            'http://zemanta.com/img.jpg,zemanta.com,Zemanta,Zemanta blog,Read more,'
-            'content ad 1,entropy,,\r\n', response.content)
+            '"URL","Title","Image URL","Display URL","Brand name","Description","Call to action",'
+            '"Label","Image crop","Primary impression tracker URL","Secondary impression'
+            ' tracker URL"\r\n"http://zemanta.com/blog","Zemanta blog čšž",'
+            '"http://zemanta.com/img.jpg","zemanta.com","Zemanta","Zemanta blog","Read more",'
+            '"content ad 1","entropy","",""\r\n', response.content)
         self.assertEqual('attachment; filename="batch 1.csv"', response.get('Content-Disposition'))
 
     def test_custom_batch_name(self):
