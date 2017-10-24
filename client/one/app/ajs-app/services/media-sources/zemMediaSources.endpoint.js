@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemMediaSourcesEndpoint', function ($http, $q, zemDataFilterService) {
+angular.module('one.services').service('zemMediaSourcesEndpoint', function ($http, $q) {
     this.getSources = getSources;
 
     var getSourcesDeferred;
@@ -7,9 +7,6 @@ angular.module('one.services').service('zemMediaSourcesEndpoint', function ($htt
         var newConfig = {
             params: {},
         };
-        if (zemDataFilterService.getShowArchived()) {
-            newConfig.params.show_archived = true;
-        }
 
         if (!getSourcesDeferred || !angular.equals(getSourcesConfig, newConfig)) {
             getSourcesDeferred = $q.defer();

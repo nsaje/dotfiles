@@ -584,13 +584,14 @@ class AvailableSources(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     def get(self, request):
-        show_archived = request.GET.get('show_archived') == 'true'
-        user_ad_groups = models.AdGroup.objects.all().filter_by_user(request.user)
-        if not show_archived:
-            user_ad_groups = user_ad_groups.exclude_archived()
+        user_accounts = models.Account.objects.all().filter_by_user(request.user)
+        user_sources = (models.Source.objects.filter(account__in=user_accounts)
+                        .filter(deprecated=False)
+                        .distinct()
+                        .only('id', 'name', 'deprecated'))
 
         sources = []
-        for source in models.Source.objects.filter(adgroupsource__ad_group__in=user_ad_groups).distinct():
+        for source in user_sources:
             sources.append({
                 'id': str(source.id),
                 'name': source.name,

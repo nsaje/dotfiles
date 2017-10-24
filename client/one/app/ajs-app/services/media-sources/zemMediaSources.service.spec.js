@@ -2,7 +2,6 @@ describe('zemMediaSourcesService', function () {
     var $rootScope;
     var zemMediaSourcesService;
     var zemMediaSourcesEndpoint;
-    var zemDataFilterService;
     var mockedSources = [
         {
             id: 1,
@@ -18,13 +17,10 @@ describe('zemMediaSourcesService', function () {
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
-    beforeEach(inject(function (_$rootScope_, $q, _zemMediaSourcesService_, _zemMediaSourcesEndpoint_, _zemDataFilterService_) { // eslint-disable-line max-len
+    beforeEach(inject(function (_$rootScope_, $q, _zemMediaSourcesService_, _zemMediaSourcesEndpoint_) { // eslint-disable-line max-len
         $rootScope = _$rootScope_;
         zemMediaSourcesService = _zemMediaSourcesService_;
         zemMediaSourcesEndpoint = _zemMediaSourcesEndpoint_;
-        zemDataFilterService = _zemDataFilterService_;
-
-        zemMediaSourcesService.init();
 
         spyOn(zemMediaSourcesEndpoint, 'getSources').and.callFake(function () {
             var deferred = $q.defer();
@@ -32,6 +28,9 @@ describe('zemMediaSourcesService', function () {
             deferred.resolve(response);
             return deferred.promise;
         });
+
+        zemMediaSourcesService.init();
+        $rootScope.$apply();
     }));
 
     it('should correctly return sources fetched from backend', function (done) {
@@ -94,20 +93,5 @@ describe('zemMediaSourcesService', function () {
             });
         });
         $rootScope.$apply();
-    });
-
-    it('should refetch sources from backend if filtered statuses update', function () {
-        var conditions = [
-            {
-                condition: zemDataFilterService.CONDITIONS.statuses,
-                value: [zemDataFilterService.STATUSES_CONDITION_VALUES.archived],
-            },
-        ];
-
-        zemDataFilterService.init();
-        zemDataFilterService.applyConditions(conditions);
-        zemDataFilterService.resetAllConditions();
-
-        expect(zemMediaSourcesEndpoint.getSources.calls.count()).toEqual(2);
     });
 });

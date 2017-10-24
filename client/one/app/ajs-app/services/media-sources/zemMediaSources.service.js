@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemMediaSourcesService', function ($http, $q, zemMediaSourcesEndpoint, zemDataFilterService, zemPubSubService) { // eslint-disable-line max-len
+angular.module('one.services').service('zemMediaSourcesService', function ($http, $q, zemMediaSourcesEndpoint, zemPubSubService) { // eslint-disable-line max-len
     this.init = init;
     this.getSources = getSources;
     this.getAvailableSources = getAvailableSources;
@@ -13,7 +13,7 @@ angular.module('one.services').service('zemMediaSourcesService', function ($http
     var sources;
 
     function init () {
-        zemDataFilterService.onFilteredStatusesUpdate(loadSources);
+        loadSources();
     }
 
     function getSources (reload) {
