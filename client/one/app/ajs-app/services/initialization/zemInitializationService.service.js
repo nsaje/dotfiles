@@ -7,7 +7,7 @@ angular.module('one.services').service('zemInitializationService', function ($q,
     function initApp () {
         zemNavigationNewService.init();
         zemMediaSourcesService.init();
-        zemNavigationService.reload();
+        zemNavigationService.init();
 
         zemGoogleAnalyticsService.init();
         zemDesignHelpersService.init();

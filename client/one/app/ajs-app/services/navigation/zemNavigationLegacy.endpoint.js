@@ -71,9 +71,12 @@ angular.module('one.services').service('zemNavigationLegacyEndpoint', function (
         return deferred.promise;
     }
 
-    function list () {
+    function list (omitStatuses) {
         var deferred = $q.defer();
         var url = '/api/nav/';
+        if (omitStatuses) {
+            url += '?loadStatuses=false';
+        }
         var config = {
             params: {},
         };

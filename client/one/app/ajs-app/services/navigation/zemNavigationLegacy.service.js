@@ -190,6 +190,29 @@ angular.module('one.services').factory('zemNavigationService', function ($rootSc
         notifyCacheUpdate();
     }
 
+    function init () {
+        $rootScope.$emit('navigation-loading', true);
+        return zemNavigationLegacyEndpoint.list(true).then(function (data) {
+            for (var i = 0; i < data.length; i++) {
+                for (var j = 0; j < data[i].campaigns.length; j++) {
+                    for (var k = 0; k < data[i].campaigns[j].adGroups.length; k++) {
+                        data[i].campaigns[j].adGroups[k].reloading = true;
+                    }
+                }
+            }
+            accounts = data;
+            updatePostponedData();
+            notifyCacheUpdate();
+            zemNavigationLegacyEndpoint.list().then(function (data) {
+                accounts = data;
+                notifyCacheUpdate();
+            });
+            return data;
+        }).finally(function () {
+            $rootScope.$emit('navigation-loading', false);
+        });
+    }
+
     function reload () {
         $rootScope.$emit('navigation-loading', true);
         return zemNavigationLegacyEndpoint.list().then(function (data) {
@@ -280,6 +303,7 @@ angular.module('one.services').factory('zemNavigationService', function ($rootSc
 
         getUsesBCMv2: zemNavigationLegacyEndpoint.getUsesBCMv2,
 
+        init: init,
         reload: reload,
         reloadAccount: reloadAccount,
         reloadCampaign: reloadCampaign,

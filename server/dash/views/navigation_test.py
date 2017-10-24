@@ -327,23 +327,13 @@ class NavigationTreeViewTest(TestCase):
             "usesBCMv2": False,
         }]
 
-    def _get(self, user_id, filtered_sources=None,
-             filtered_agencies=None,
-             filtered_account_types=None):
+    def _get(self, user_id, **kwargs):
         username = User.objects.get(pk=user_id).email
         self.client.login(username=username, password='secret')
 
-        data = {}
-        if filtered_sources:
-            data['filtered_sources'] = filtered_sources
-        if filtered_agencies:
-            data['filtered_agencies'] = filtered_agencies
-        if filtered_account_types:
-            data['filtered_account_types'] = filtered_account_types
-
         response = self.client.get(
             reverse('navigation_tree'),
-            data=data
+            data=kwargs,
         )
 
         response = json.loads(response.content)
@@ -353,6 +343,30 @@ class NavigationTreeViewTest(TestCase):
     def test_get(self):
         response = self._get(1)
         self.assertItemsEqual(response['data'], self.expected_response)
+
+    @patch('datetime.datetime', MockDatetime)
+    def test_get_no_statuses(self):
+        response = self._get(1, loadStatuses='false')
+        self.assertItemsEqual([{
+            "campaigns": [{
+                "adGroups": [{
+                    "id": 1,
+                    "name": "test adgroup 1",
+                }, {
+                    "id": 2,
+                    "name": "test adgroup 2",
+                }, {
+                    "id": 3,
+                    "name": "test adgroup 3",
+                }],
+                "id": 1,
+                "name": "test campaign 1",
+            }],
+            "id": 1,
+            "agency": "Test Agency",
+            "name": "test account 1",
+            "usesBCMv2": False,
+        }], response['data'])
 
     @patch('datetime.datetime', MockDatetime)
     def test_get_filtered_sources(self):
