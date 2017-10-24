@@ -15,10 +15,16 @@ angular.module('one.widgets').factory('zemGridEndpointBreakdowns', function (zem
         age: {name: 'Age', query: 'age', report_query: 'Age'},
         gender: {name: 'Gender', query: 'gender', report_query: 'Gender'},
         ageGender: {name: 'Age and Gender', query: 'age_gender', report_query: 'Age and Gender'},
+
         country: {name: 'Country', query: 'country', report_query: 'Country'},
         state: {name: 'State', query: 'state', report_query: 'State'},
         dma: {name: 'DMA', query: 'dma', report_query: 'DMA'},
+
         device: {name: 'Device', query: 'device_type', report_query: 'Device'},
+        placementMedium: {name: 'Placement', query: 'placement_medium', report_query: 'Placement'},
+        deviceOs: {name: 'Operating System', query: 'device_os', report_query: 'Operating System'},
+        deviceOsVersion: {name: 'Operating System Version', query: 'device_os_version', report_query: 'Operating System Version'}, // eslint-disable-line max-len
+
         placementType: {name: 'Placement Type', query: 'placement_type', report_query: 'Placement Type'},
         videoPlaybackMethod: {name: 'Video Playback Method', query: 'video_playback_method', report_query: 'Video Playback Method'}, // eslint-disable-line max-len
 
@@ -43,10 +49,16 @@ angular.module('one.widgets').factory('zemGridEndpointBreakdowns', function (zem
         BREAKDOWNS.age,
         BREAKDOWNS.gender,
         BREAKDOWNS.ageGender,
+
         BREAKDOWNS.country,
         BREAKDOWNS.state,
         BREAKDOWNS.dma,
+
         BREAKDOWNS.device,
+        BREAKDOWNS.placementMedium,
+        BREAKDOWNS.deviceOs,
+        BREAKDOWNS.deviceOsVersion,
+
         BREAKDOWNS.placementType,
         BREAKDOWNS.videoPlaybackMethod,
     ];

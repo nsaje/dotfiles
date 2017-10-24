@@ -234,18 +234,26 @@ class AuditSpendIntegrity(TestCase):
             'media': 900000000000, 'data': 0, 'fee': 1145000000000, 'margin': 0
         }
         alarms = monitor.audit_spend_integrity(self.date)
-        self.assertTrue(alarms)
         self.assertEqual(alarms, [
             (datetime.date(2015, 10, 29), 'mv_master', 'fee', -20000000000),
-            (datetime.date(2015, 10, 29), 'mv_content_ad_delivery_geo', 'fee', -20000000000),
-            (datetime.date(2015, 10, 29), 'mv_content_ad_delivery_demo', 'fee', -20000000000),
-            (datetime.date(2015, 10, 29), 'mv_ad_group_delivery_geo', 'fee', -20000000000),
-            (datetime.date(2015, 10, 29), 'mv_ad_group_delivery_demo', 'fee', -20000000000),
-            (datetime.date(2015, 10, 29), 'mv_campaign_delivery_geo', 'fee', -20000000000),
-            (datetime.date(2015, 10, 29), 'mv_campaign_delivery_demo', 'fee', -20000000000),
-            (datetime.date(2015, 10, 29), 'mv_account_delivery_geo', 'fee', -20000000000),
-            (datetime.date(2015, 10, 29), 'mv_account_delivery_demo', 'fee', -20000000000),
-            (datetime.date(2015, 10, 29), 'mv_content_ad', 'fee', -20000000000),
-            (datetime.date(2015, 10, 29), 'mv_ad_group', 'fee', -20000000000),
+            (datetime.date(2015, 10, 29), 'mv_contentad', 'fee', -20000000000),
+            (datetime.date(2015, 10, 29), 'mv_contentad_device', 'fee', -20000000000),
+            (datetime.date(2015, 10, 29), 'mv_contentad_placement', 'fee', -20000000000),
+            (datetime.date(2015, 10, 29), 'mv_contentad_geo', 'fee', -20000000000),
+            (datetime.date(2015, 10, 29), 'mv_contentad_conv', 'fee', -20000000000),
+            (datetime.date(2015, 10, 29), 'mv_adgroup', 'fee', -20000000000),
+            (datetime.date(2015, 10, 29), 'mv_adgroup_device', 'fee', -20000000000),
+            (datetime.date(2015, 10, 29), 'mv_adgroup_placement', 'fee', -20000000000),
+            (datetime.date(2015, 10, 29), 'mv_adgroup_geo', 'fee', -20000000000),
+            (datetime.date(2015, 10, 29), 'mv_adgroup_conv', 'fee', -20000000000),
             (datetime.date(2015, 10, 29), 'mv_campaign', 'fee', -20000000000),
-            (datetime.date(2015, 10, 29), 'mv_account', 'fee', -20000000000)])
+            (datetime.date(2015, 10, 29), 'mv_campaign_device', 'fee', -20000000000),
+            (datetime.date(2015, 10, 29), 'mv_campaign_placement', 'fee', -20000000000),
+            (datetime.date(2015, 10, 29), 'mv_campaign_geo', 'fee', -20000000000),
+            (datetime.date(2015, 10, 29), 'mv_campaign_conv', 'fee', -20000000000),
+            (datetime.date(2015, 10, 29), 'mv_account', 'fee', -20000000000),
+            (datetime.date(2015, 10, 29), 'mv_account_device', 'fee', -20000000000),
+            (datetime.date(2015, 10, 29), 'mv_account_placement', 'fee', -20000000000),
+            (datetime.date(2015, 10, 29), 'mv_account_geo', 'fee', -20000000000),
+            (datetime.date(2015, 10, 29), 'mv_account_conv', 'fee', -20000000000),
+        ])

@@ -9,9 +9,6 @@ import influx
 class Command(ExceptionCommand):
     @influx.timer('etl.vacuum_redshift_db')
     def handle(self, *args, **options):
-        views = refresh_k1.MATERIALIZED_VIEWS + refresh_k1.NEW_MATERIALIZED_VIEWS
-        tables = [x.TABLE_NAME for x in views if not x.IS_TEMPORARY_TABLE]
-
-        for table in tables:
+        for table in refresh_k1.get_all_views_table_names():
             maintenance.vacuum(table)
             maintenance.analyze(table)

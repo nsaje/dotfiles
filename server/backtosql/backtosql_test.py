@@ -37,13 +37,16 @@ class SQLMatcher():
 
     def __eq__(self, other):
         try:
-            if not isinstance(other, unicode) and 'obj' in other.__dict__:
+            if not isinstance(other, basestring) and 'obj' in other.__dict__:
                 assert_sql_equals(self.obj, other.obj)
             else:
                 assert_sql_equals(self.obj, other)
         except AssertionError:
             return False
         return True
+
+    def __repr__(self):
+        return '<SQLMatcher "{}">'.format(backtosql.clean_sql(self.obj))
 
 
 class TestSQLMixin(object):
@@ -361,3 +364,21 @@ class HelpersTestCase(TestCase):
     def test_clean_prefix(self):
         self.assertEquals(helpers.clean_prefix('t'), 't.')
         self.assertEquals(helpers.clean_prefix('t.'), 't.')
+
+    def test_clean_single_line(self):
+        sql = """
+        SELECT a.foo AS py_foo,
+               SUM(a.cat)*100 AS py_cat, SUM(a.dog)*10 AS py_dog
+        FROM cats_n_dogs a
+        WHERE a.date_from >= %(date_from)s AND
+              a.date_to <= %(date_to)s
+        GROUP BY
+        foo, bar,
+        ORDER BY py_cat DESC, py_bar ASC
+        OFFSET %(offset)s LIMIT %(limit)s
+        """
+
+        self.assertEquals(
+            helpers.clean_sql(sql, single_line=True).upper(),
+            "SELECT a.foo AS py_foo, SUM(a.cat)*100 AS py_cat, SUM(a.dog)*10 AS py_dog FROM cats_n_dogs a WHERE a.date_from >= %(date_from)s AND a.date_to <= %(date_to)s GROUP BY foo, bar, ORDER BY py_cat DESC, py_bar ASC OFFSET %(offset)s LIMIT %(limit)s".upper()  # noqa
+        )

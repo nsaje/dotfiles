@@ -1,28 +1,32 @@
 CREATE TEMP TABLE mvh_clean_stats (
     date date not null encode delta,
-    source_slug varchar(127) encode lzo,
+    source_slug varchar(127) encode zstd,
 
-    ad_group_id integer encode lzo,
-    content_ad_id integer encode lzo,
-    publisher varchar(255) encode lzo,
+    ad_group_id integer encode zstd,
+    content_ad_id integer encode zstd,
+    publisher varchar(255) encode zstd,
 
-    device_type int2 encode bytedict,
-    country varchar(2) encode bytedict,
-    state varchar(5) encode bytedict,
+    device_type integer encode bytedict,
+    device_os varchar(127) encode bytedict,
+    device_os_version varchar(127) encode zstd,
+    placement_medium varchar(10) encode bytedict,
+
+    placement_type int2 encode zstd,
+    video_playback_method int2 encode zstd,
+
+    country varchar(2) encode zstd,
+    state varchar(32) encode zstd,
     dma int2 encode bytedict,
     city_id integer encode lzo,
 
-    placement_type integer encode lzo,
-    video_playback_method integer encode lzo,
+    age varchar(10) encode zstd,
+    gender varchar(10) encode zstd,
+    age_gender varchar(21) encode zstd,
 
-    age int2 encode bytedict,
-    gender int2 encode bytedict,
-    age_gender int2 encode bytedict,
-
-    impressions integer encode lzo,
-    clicks integer encode lzo,
-    spend bigint encode lzo,
-    data_spend bigint encode lzo,
+    impressions integer encode zstd,
+    clicks integer encode zstd,
+    spend bigint encode zstd,
+    data_spend bigint encode zstd,
 
     video_start integer encode lzo,
     video_first_quartile integer encode lzo,

@@ -134,14 +134,20 @@ class BreakdownsBase(backtosql.Model):
 class MVMaster(BreakdownsBase):
     # Breakdowns
     device_type = backtosql.Column('device_type', BREAKDOWN)
+    device_os = backtosql.Column('device_os', BREAKDOWN)
+    device_os_version = backtosql.Column('device_os_version', BREAKDOWN)
+    placement_medium = backtosql.Column('placement_medium', BREAKDOWN)
+
+    placement_type = backtosql.Column('placement_type', BREAKDOWN)
+    video_playback_method = backtosql.Column('video_playback_method', BREAKDOWN)
+
     country = backtosql.Column('country', BREAKDOWN)
     state = backtosql.Column('state', BREAKDOWN)
     dma = backtosql.Column('dma', BREAKDOWN)
+
     age = backtosql.Column('age', BREAKDOWN)
     gender = backtosql.Column('gender', BREAKDOWN)
     age_gender = backtosql.Column('age_gender', BREAKDOWN)
-    placement_type = backtosql.Column('placement_type', BREAKDOWN)
-    video_playback_method = backtosql.Column('video_playback_method', BREAKDOWN)
 
     # The basics
     clicks = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'clicks'}, AGGREGATE)

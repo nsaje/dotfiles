@@ -4,20 +4,30 @@
 
 INSERT INTO mv_master (
   SELECT
-      d.date as date,
-      d.source_id as source_id,
+      d.date,
+      d.source_id,
 
-      c.agency_id as agency_id,
-      c.account_id as account_id,
-      c.campaign_id as campaign_id,
-      d.ad_group_id as ad_group_id,
-      d.content_ad_id as content_ad_id,
-      d.publisher as publisher,
+      c.account_id,
+      c.campaign_id,
+      d.ad_group_id,
+      d.content_ad_id,
 
-      d.device_type as device_type,
-      d.country as country,
-      d.state as state,
-      d.dma as dma,
+      d.publisher,
+      NVL(d.publisher, '') || '__' || d.source_id as publisher_source_id,
+
+      d.device_type,
+      d.device_os,
+      d.device_os_version,
+      d.placement_medium,
+
+      d.placement_type,
+      d.video_playback_method,
+
+      d.country,
+      d.state,
+      d.dma,
+      d.city_id,
+
       d.age as age,
       d.gender as gender,
       d.age_gender as age_gender,
@@ -56,10 +66,6 @@ INSERT INTO mv_master (
       null as users,
       null as returning_users,
 
-      d.city_id as city_id,
-
-      d.placement_type as placement_type,
-      d.video_playback_method as video_playback_method,
       d.video_start as video_start,
       d.video_first_quartile as video_first_quartile,
       d.video_midpoint as video_midpoint,

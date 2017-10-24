@@ -42,13 +42,19 @@ def get_order(alias, nulls=None):
     return 'ASC' + properties
 
 
-def clean_sql(dirty_sql):
+def clean_sql(dirty_sql, single_line=False):
     # removes comments and whitespaces
-    return sqlparse.format(dirty_sql,
-                           reindent=True,
-                           keyword_case='upper',
-                           identifier_case='lower',
-                           strip_comments=True).strip()
+    sql = sqlparse.format(dirty_sql,
+                          reindent=True,
+                          keyword_case='upper',
+                          identifier_case='lower',
+                          strip_comments=True).strip()
+
+    if single_line:
+        sql = u"".join([u" {}".format(x.strip()) for x in sql.splitlines()])
+        sql = sql.strip()
+
+    return sql
 
 
 def clean_prefix(prefix=None):

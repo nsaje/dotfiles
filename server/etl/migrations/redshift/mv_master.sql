@@ -1,52 +1,60 @@
 -- table definition for the master materialized view table
 -- it can be quite big - use even distribution (default)
 CREATE TABLE mv_master (
+       -- kw::dimensions
        date date not null encode delta,
-       source_id int2 encode bytedict,
+       source_id int2 encode zstd,
 
-       agency_id int2 encode lzo,
-       account_id int2 encode lzo,
-       campaign_id integer encode lzo,
-       ad_group_id integer encode lzo,
-       content_ad_id integer encode lzo,
-       publisher varchar(255) encode lzo,
+       account_id integer encode zstd,
+       campaign_id integer encode zstd,
+       ad_group_id integer encode zstd,
+       content_ad_id integer encode zstd,
 
-       device_type int2 encode bytedict,
-       country varchar(2) encode bytedict,
-       state varchar(5) encode bytedict,
+       publisher varchar(255) encode zstd,
+       publisher_source_id varchar(260) encode zstd,
+
+       device_type int2 encode zstd,
+       device_os varchar(127) encode lzo,
+       device_os_version varchar(127) encode lzo,
+       placement_medium varchar(10) encode zstd,
+
+       placement_type int2 encode lzo,
+       video_playback_method int2 encode lzo,
+
+       country varchar(2) encode zstd,
+       state varchar(32) encode bytedict,
        dma int2 encode bytedict,
-       age int2 encode bytedict,
-       gender int2 encode bytedict,
-       age_gender int2 encode bytedict,
+       city_id integer encode zstd,
 
-       impressions integer encode lzo,
-       clicks integer encode lzo,
-       cost_nano bigint encode lzo,
-       data_cost_nano bigint encode lzo,
+       age varchar(10) encode zstd,
+       gender varchar(10) encode zstd,
+       age_gender varchar(21) encode zstd,
 
-       visits integer encode lzo,
-       new_visits integer encode lzo,
-       bounced_visits integer encode lzo,
-       pageviews integer encode lzo,
-       total_time_on_site integer encode lzo,
+       -- kw::aggregates
+       impressions integer encode zstd,
+       clicks integer encode zstd,
+       cost_nano bigint encode zstd,
+       data_cost_nano bigint encode zstd,
 
-       effective_cost_nano bigint encode lzo,
-       effective_data_cost_nano bigint encode lzo,
-       license_fee_nano bigint encode lzo,
-       margin_nano bigint encode lzo,
+       visits integer encode zstd,
+       new_visits integer encode zstd,
+       bounced_visits integer encode zstd,
+       pageviews integer encode zstd,
+       total_time_on_site integer encode zstd,
+
+       effective_cost_nano bigint encode zstd,
+       effective_data_cost_nano bigint encode zstd,
+       license_fee_nano bigint encode zstd,
+       margin_nano bigint encode zstd,
 
        users integer encode lzo,
        returning_users integer encode lzo,
 
-       city_id integer encode lzo,
-
-       -- video
-       placement_type int2 encode lzo,
-       video_playback_method int2 encode lzo,
        video_start integer encode lzo,
        video_first_quartile integer encode lzo,
        video_midpoint integer encode lzo,
        video_third_quartile integer encode lzo,
        video_complete integer encode lzo,
        video_progress_3s integer encode lzo
-) sortkey(date, source_id, account_id, campaign_id, ad_group_id, content_ad_id);
+       -- kw::end
+) sortkey(date, source_id, account_id, campaign_id, ad_group_id, content_ad_id, publisher_source_id);

@@ -32,7 +32,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.source_id AS source_id,
             base_table.dma AS dma,
             SUM(base_table.clicks) clicks
-        FROM mv_account_delivery_geo base_table
+        FROM mv_account_geo base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
             AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3
@@ -84,7 +84,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             SUM(base_table.clicks) clicks,
             MAX(base_table.external_id) AS external_id,
             MAX(base_table.publisher || '__' || base_table.source_id) publisher_id
-        FROM mv_pubs_master base_table
+        FROM mv_master_pubs base_table
         WHERE ( base_table.date >=%s AND base_table.date <=%s)
         GROUP BY 1, 2, 3
         ORDER BY clicks DESC NULLS LAST, publisher_id ASC NULLS LAST, dma ASC NULLS LAST
@@ -114,7 +114,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0) + NVL(SUM(base_table.license_fee_nano), 0) + NVL(SUM(base_table.margin_nano), 0))::float/1000000000 yesterday_etfm_cost,
             (NVL(SUM(base_table.cost_nano), 0) + NVL(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_cost,
             (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost
-        FROM mv_account_delivery_geo base_table
+        FROM mv_account_geo base_table
         WHERE (( base_table.date = %s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3
@@ -146,7 +146,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             (NVL(SUM(base_table.cost_nano), 0) + NVL(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_cost,
             (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
             MAX(base_table.publisher || '__' || base_table.source_id) publisher_id
-        FROM mv_pubs_ad_group base_table
+        FROM mv_account_pubs base_table
         WHERE (( base_table.date = %s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3
@@ -172,7 +172,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.source_id AS source_id,
             base_table.slug AS slug,
             SUM(base_table.conversion_count) count
-        FROM mv_conversions_account base_table
+        FROM mv_account_conv base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3
@@ -227,7 +227,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.conversion_window AS window,
             SUM(base_table.conversion_value_nano)/1000000000.0 conversion_value,
             SUM(base_table.conversion_count) count
-        FROM mv_touch_account base_table
+        FROM mv_account_touch base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3, 4
@@ -280,7 +280,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.account_id AS account_id,
             base_table.source_id AS source_id,
             base_table.dma AS dma
-        FROM mv_account_delivery_geo base_table
+        FROM mv_account_geo base_table
         WHERE ( base_table.date >=%s AND base_table.date <=%s)
         GROUP BY 1, 2, 3;
         """)
@@ -373,7 +373,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                     (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
                     (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
                     (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0) + NVL(SUM(a.license_fee_nano), 0) + NVL(SUM(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
-                FROM mv_pubs_ad_group a
+                FROM mv_account_pubs a
                 WHERE (a.date=%s)
                 GROUP BY 1, 2
             ),
@@ -383,7 +383,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                     a.source_id AS source_id,
                     SUM(a.clicks) clicks,
                     SUM(a.total_time_on_site) total_seconds
-                FROM mv_pubs_ad_group a
+                FROM mv_account_pubs a
                 WHERE (a.date>=%s AND a.date<=%s)
                 GROUP BY 1, 2
             )
@@ -521,7 +521,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                     (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
                     (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
                     (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0) + NVL(SUM(a.license_fee_nano), 0) + NVL(SUM(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
-                FROM mv_pubs_master a
+                FROM mv_master_pubs a
                 WHERE (a.date=%s)
                 GROUP BY 1, 2, 3
             ),
@@ -532,7 +532,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                     a.dma AS dma,
                     SUM(a.clicks) clicks,
                     SUM(a.total_time_on_site) total_seconds
-                FROM mv_pubs_master a
+                FROM mv_master_pubs a
                 WHERE (a.date>=%s AND a.date<=%s)
                 GROUP BY 1, 2, 3
             )

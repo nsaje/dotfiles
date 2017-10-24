@@ -11,74 +11,74 @@ class AugmenterTestCase(TestCase):
 
     def test_augment_device_type(self):
         rows = [
-            {'device_type': 1, 'age': 1, 'age_gender': 1, 'gender': 1, 'clicks': 10},
-            {'device_type': 2, 'age': 2, 'age_gender': 2, 'gender': 2, 'clicks': 20},
-            {'device_type': 0, 'age': 3, 'age_gender': 5, 'gender': 0, 'clicks': 30},
+            {'device_type': 2, 'clicks': 10},
+            {'device_type': 5, 'clicks': 20},
+            {'device_type': None, 'clicks': 30},
         ]
 
         augmenter.augment(['device_type'], rows)
 
         self.assertEqual(rows, [
-            {'parent_breakdown_id': '', 'breakdown_id': '1', 'breakdown_name': 'Desktop', 'name': 'Desktop',
-             'device_type': 1, 'age': 1, 'age_gender': 1, 'gender': 1, 'clicks': 10},
-            {'parent_breakdown_id': '', 'breakdown_id': '2', 'breakdown_name': 'Tablet', 'name': 'Tablet',
-             'device_type': 2, 'age': 2, 'age_gender': 2, 'gender': 2, 'clicks': 20},
-            {'parent_breakdown_id': '', 'breakdown_id': '0', 'breakdown_name': 'Unknown', 'name': 'Unknown',
-             'device_type': 0, 'age': 3, 'age_gender': 5, 'gender': 0, 'clicks': 30},
+            {'parent_breakdown_id': '', 'breakdown_id': '2', 'breakdown_name': 'Desktop', 'name': 'Desktop',
+             'device_type': 2, 'clicks': 10},
+            {'parent_breakdown_id': '', 'breakdown_id': '5', 'breakdown_name': 'Tablet', 'name': 'Tablet',
+             'device_type': 5, 'clicks': 20},
+            {'parent_breakdown_id': '', 'breakdown_id': '-None-', 'breakdown_name': 'Not reported', 'name': 'Not reported',
+             'device_type': None, 'clicks': 30},
         ])
 
     def test_augment_age(self):
         rows = [
-            {'device_type': 1, 'age': 1, 'age_gender': 1, 'gender': 1, 'clicks': 10},
-            {'device_type': 2, 'age': 2, 'age_gender': 2, 'gender': 2, 'clicks': 20},
-            {'device_type': 0, 'age': 3, 'age_gender': 5, 'gender': 0, 'clicks': 30},
+            {'age': '18-20', 'clicks': 10},
+            {'age': '21-29', 'clicks': 20},
+            {'age': '30-39', 'clicks': 30},
         ]
 
         augmenter.augment(['age'], rows)
 
         self.assertEqual(rows, [
-            {'parent_breakdown_id': '', 'breakdown_id': '1', 'breakdown_name': '18-20', 'name': '18-20',
-             'device_type': 1, 'age': 1, 'age_gender': 1, 'gender': 1, 'clicks': 10},
-            {'parent_breakdown_id': '', 'breakdown_id': '2', 'breakdown_name': '21-29', 'name': '21-29',
-             'device_type': 2, 'age': 2, 'age_gender': 2, 'gender': 2, 'clicks': 20},
-            {'parent_breakdown_id': '', 'breakdown_id': '3', 'breakdown_name': '30-39', 'name': '30-39',
-             'device_type': 0, 'age': 3, 'age_gender': 5, 'gender': 0, 'clicks': 30},
+            {'parent_breakdown_id': '', 'breakdown_id': '18-20', 'breakdown_name': '18-20', 'name': '18-20',
+             'age': '18-20', 'clicks': 10},
+            {'parent_breakdown_id': '', 'breakdown_id': '21-29', 'breakdown_name': '21-29', 'name': '21-29',
+             'age': '21-29', 'clicks': 20},
+            {'parent_breakdown_id': '', 'breakdown_id': '30-39', 'breakdown_name': '30-39', 'name': '30-39',
+             'age': '30-39', 'clicks': 30},
         ])
 
     def test_augment_age_gender(self):
         rows = [
-            {'device_type': 1, 'age': 1, 'age_gender': 1, 'gender': 1, 'clicks': 10},
-            {'device_type': 2, 'age': 2, 'age_gender': 2, 'gender': 2, 'clicks': 20},
-            {'device_type': 0, 'age': 3, 'age_gender': 5, 'gender': 0, 'clicks': 30},
+            {'age_gender': '18-20 male', 'clicks': 10},
+            {'age_gender': '21-29 female', 'clicks': 20},
+            {'age_gender': '30-39 ', 'clicks': 30},
         ]
 
         augmenter.augment(['age_gender'], rows)
 
         self.assertEqual(rows, [
-            {'parent_breakdown_id': '', 'breakdown_id': '1', 'breakdown_name': '18-20 Men', 'name': '18-20 Men',
-             'device_type': 1, 'age': 1, 'age_gender': 1, 'gender': 1, 'clicks': 10},
-            {'parent_breakdown_id': '', 'breakdown_id': '2', 'breakdown_name': '18-20 Women', 'name': '18-20 Women',
-             'device_type': 2, 'age': 2, 'age_gender': 2, 'gender': 2, 'clicks': 20},
-            {'parent_breakdown_id': '', 'breakdown_id': '5', 'breakdown_name': '21-29 Women', 'name': '21-29 Women',
-             'device_type': 0, 'age': 3, 'age_gender': 5, 'gender': 0, 'clicks': 30},
+            {'parent_breakdown_id': '', 'breakdown_id': '18-20 male', 'breakdown_name': '18-20 Men', 'name': '18-20 Men',
+             'age_gender': '18-20 male', 'clicks': 10},
+            {'parent_breakdown_id': '', 'breakdown_id': '21-29 female', 'breakdown_name': '21-29 Women', 'name': '21-29 Women',
+             'age_gender': '21-29 female', 'clicks': 20},
+            {'parent_breakdown_id': '', 'breakdown_id': '30-39 ', 'breakdown_name': '30-39 Undefined', 'name': '30-39 Undefined',
+             'age_gender': '30-39 ', 'clicks': 30},
         ])
 
     def test_augment_gender(self):
         rows = [
-            {'device_type': 1, 'age': 1, 'age_gender': 1, 'gender': 1, 'clicks': 10},
-            {'device_type': 2, 'age': 2, 'age_gender': 2, 'gender': 2, 'clicks': 20},
-            {'device_type': 0, 'age': 3, 'age_gender': 5, 'gender': 0, 'clicks': 30},
+            {'gender': 'male', 'clicks': 10},
+            {'gender': 'female', 'clicks': 20},
+            {'gender': None, 'clicks': 30},
         ]
 
         augmenter.augment(['gender'], rows)
 
         self.assertEqual(rows, [
-            {'parent_breakdown_id': '', 'breakdown_id': '1', 'breakdown_name': 'Men', 'name': 'Men',
-             'device_type': 1, 'age': 1, 'age_gender': 1, 'gender': 1, 'clicks': 10},
-            {'parent_breakdown_id': '', 'breakdown_id': '2', 'breakdown_name': 'Women', 'name': 'Women',
-             'device_type': 2, 'age': 2, 'age_gender': 2, 'gender': 2, 'clicks': 20},
-            {'parent_breakdown_id': '', 'breakdown_id': '0', 'breakdown_name': 'Unknown', 'name': 'Unknown',
-             'device_type': 0, 'age': 3, 'age_gender': 5, 'gender': 0, 'clicks': 30},
+            {'parent_breakdown_id': '', 'breakdown_id': 'male', 'breakdown_name': 'Men', 'name': 'Men',
+             'gender': 'male', 'clicks': 10},
+            {'parent_breakdown_id': '', 'breakdown_id': 'female', 'breakdown_name': 'Women', 'name': 'Women',
+             'gender': 'female', 'clicks': 20},
+            {'parent_breakdown_id': '', 'breakdown_id': '-None-', 'breakdown_name': 'Not reported', 'name': 'Not reported',
+             'gender': None, 'clicks': 30},
         ])
 
     def test_augment_dma(self):
@@ -96,7 +96,7 @@ class AugmenterTestCase(TestCase):
             {'parent_breakdown_id': '', 'breakdown_id': '547',
              'breakdown_name': '547 Toledo, OH', 'name': '547 Toledo, OH', 'dma': 547, 'clicks': 20},
             {'parent_breakdown_id': '', 'breakdown_id': '-None-',
-             'breakdown_name': 'Unknown', 'name': 'Unknown', 'dma': None, 'clicks': 30},
+             'breakdown_name': 'Not reported', 'name': 'Not reported', 'dma': None, 'clicks': 30},
         ])
 
     def test_augment_day(self):

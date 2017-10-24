@@ -69,10 +69,6 @@ def _get_rs_spend(table_name, date, account_id=None):
 def audit_spend_integrity(date, account_id=None, max_err=MAX_ERR):
     if date is None:
         date = datetime.datetime.utcnow().date() - datetime.timedelta(1)
-    views = [
-        tbl for tbl in etl.refresh_k1.NEW_MATERIALIZED_VIEWS
-        if tbl.TABLE_NAME.startswith('mv_')
-    ]
     spend_queryset = dash.models.BudgetDailyStatement.objects.filter(
         date=date
     )
@@ -85,8 +81,7 @@ def audit_spend_integrity(date, account_id=None, max_err=MAX_ERR):
         fee=Sum(F('license_fee_nano')),
     )[0]
     integrity_issues = []
-    for table in views:
-        table_name = table.TABLE_NAME
+    for table_name in etl.refresh_k1.get_all_views_table_names():
 
         if 'pubs'in table_name or 'conversions' in table_name or 'touch' in table_name:
             # skip for the first version

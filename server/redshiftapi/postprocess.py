@@ -32,10 +32,6 @@ def fill_in_missing_rows(rows, breakdown, constraints, parents, orders, offset, 
         _fill_in_missing_rows_time_dimension(target_dimension, rows, breakdown, constraints, parents)
         rows = sort_helper.sort_results(rows, orders)
 
-    if target_dimension == 'device_type':
-        _fill_in_missing_rows_device_type_dimension(target_dimension, rows, breakdown, parents, offset, limit)
-        rows = sort_helper.sort_results(rows, orders)
-
     return rows
 
 
@@ -47,15 +43,6 @@ def _fill_in_missing_rows_time_dimension(target_dimension, rows, breakdown, cons
 
     all_dates = _get_representative_dates(target_dimension, constraints)
     _fill_in_missing_rows(target_dimension, rows, breakdown, parent, all_dates)
-
-
-def _fill_in_missing_rows_device_type_dimension(target_dimension, rows, breakdown, parent, offset, limit):
-    all_values = sorted(dash_constants.DeviceType._VALUES.keys())
-
-    _fill_in_missing_rows(
-        target_dimension, rows, breakdown, parent,
-        all_values[offset:offset + limit]
-    )
 
 
 def _fill_in_missing_rows(target_dimension, rows, breakdown, parent, all_values):

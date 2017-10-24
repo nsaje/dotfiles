@@ -108,60 +108,6 @@ class PostprocessTest(TestCase):
             {'ad_group_id': 1, 'day': datetime.date(2016, 7, 5)},
         ])
 
-    def test_postprocess_device_type(self):
-        rows = []
-        postprocess._fill_in_missing_rows_device_type_dimension(
-            'device_type',
-            rows,
-            ['ad_group_id', 'device_type'],
-            [{'ad_group_id': 1}],
-            0, 4
-        )
-
-        self.assertItemsEqual(rows, [
-            {'device_type': 0, 'ad_group_id': 1},
-            {'device_type': 1, 'ad_group_id': 1},
-            {'device_type': 2, 'ad_group_id': 1},
-            {'device_type': 3, 'ad_group_id': 1},
-        ])
-
-    def test_postprocess_device_type_remove_excess(self):
-        rows = [
-            {'device_type': 0, 'clicks': None, 'ad_group_id': 1},
-            {'device_type': 1, 'clicks': None, 'ad_group_id': 1},
-        ]
-
-        postprocess._fill_in_missing_rows_device_type_dimension(
-            'device_type',
-            rows,
-            ['ad_group_id', 'device_type'],
-            [{'ad_group_id': 1}],
-            0, 2
-        )
-
-        self.assertItemsEqual(rows, [
-            {'device_type': 0, 'clicks': None, 'ad_group_id': 1},
-            {'device_type': 1, 'clicks': None, 'ad_group_id': 1},
-        ])
-
-        rows = [
-            {'device_type': 1, 'clicks': None, 'ad_group_id': 1},
-            {'device_type': 2, 'clicks': 2, 'ad_group_id': 1},
-        ]
-
-        postprocess._fill_in_missing_rows_device_type_dimension(
-            'device_type',
-            rows,
-            ['ad_group_id', 'device_type'],
-            [{'ad_group_id': 1}],
-            2, 2
-        )
-
-        self.assertItemsEqual(rows, [
-            {'device_type': 2, 'clicks': 2, 'ad_group_id': 1},
-            {'device_type': 3, 'ad_group_id': 1},
-        ])
-
 
 class PostprocessGoalsTest(TestCase):
     fixtures = ['test_augmenter.yaml']

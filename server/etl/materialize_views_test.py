@@ -98,7 +98,7 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
             mock.call(backtosql.SQLMatcher("""
             CREATE TEMP TABLE mvh_campaign_factors (
                 date date not null encode delta,
-                campaign_id int2 not null encode lzo,
+                campaign_id integer not null encode lzo,
 
                 pct_actual_spend decimal(22, 18) encode lzo,
                 pct_license_fee decimal(22, 18) encode lzo,
@@ -161,7 +161,7 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
             mock.call(backtosql.SQLMatcher("""
             CREATE TEMP TABLE mvh_campaign_factors (
                 date date not null encode delta,
-                campaign_id int2 not null encode lzo,
+                campaign_id integer not null encode lzo,
 
                 pct_actual_spend decimal(22, 18) encode lzo,
                 pct_license_fee decimal(22, 18) encode lzo,
@@ -277,139 +277,8 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
         mv.generate()
 
         mock_cursor().__enter__().execute.assert_has_calls([
-            mock.call(backtosql.SQLMatcher("""
-            CREATE TEMP TABLE mvh_clean_stats (
-                date date not null encode delta,
-                source_slug varchar(127) encode lzo,
-
-                ad_group_id integer encode lzo,
-                content_ad_id integer encode lzo,
-                publisher varchar(255) encode lzo,
-
-                device_type int2 encode bytedict,
-                country varchar(2) encode bytedict,
-                state varchar(5) encode bytedict,
-                dma int2 encode bytedict,
-                city_id integer encode lzo,
-
-                placement_type integer encode lzo,
-                video_playback_method integer encode lzo,
-
-                age int2 encode bytedict,
-                gender int2 encode bytedict,
-                age_gender int2 encode bytedict,
-
-                impressions integer encode lzo,
-                clicks integer encode lzo,
-                spend bigint encode lzo,
-                data_spend bigint encode lzo,
-
-                video_start integer encode lzo,
-                video_first_quartile integer encode lzo,
-                video_midpoint integer encode lzo,
-                video_third_quartile integer encode lzo,
-                video_complete integer encode lzo,
-                video_progress_3s integer encode lzo
-            ) distkey(date) sortkey(date, source_slug, ad_group_id, content_ad_id, publisher)""")),
-            mock.call(backtosql.SQLMatcher("""
-            INSERT INTO mvh_clean_stats
-                (SELECT
-                    CASE WHEN hour is null THEN date
-                         WHEN hour is not null
-                             AND ((date='2016-07-01'::date AND hour >= 4)
-                                 OR (date='2016-07-02'::date
-                             AND hour < 4)) THEN '2016-07-01'::date
-                         WHEN hour is not null
-                           AND ((date='2016-07-02'::date
-                                   AND hour >= 4)
-                                   OR (date='2016-07-03'::date
-                                       AND hour < 4)) THEN '2016-07-02'::date
-                         WHEN hour is not null
-                           AND ((date='2016-07-03'::date
-                                   AND hour >= 4)
-                                   OR (date='2016-07-04'::date
-                                       AND hour < 4)) THEN '2016-07-03'::date
-                    END as date,
-                    stats.media_source as source_slug,
-                    ad_group_id,
-                    content_ad_id,
-                    CASE
-                        WHEN media_source = 'yahoo' THEN 'all publishers' ELSE LOWER(publisher)
-                    END as publisher,
-                    CASE
-                        WHEN device_type = 4 THEN 3
-                        WHEN device_type = 2 THEN 1
-                        WHEN device_type = 5 THEN 2
-                        ELSE 0
-                    END as device_type,
-                    CASE WHEN LEN(TRIM(country)) <= 2 THEN UPPER(TRIM(country))
-                        ELSE NULL
-                    END AS country,
-                    CASE WHEN LEN(TRIM(state)) <= 5 THEN UPPER(TRIM(state))
-                        ELSE NULL
-                    END AS state,
-                    CASE WHEN 499 < dma AND dma < 1000 THEN dma
-                        ELSE NULL
-                    END AS dma,
-                    city_id,
-                    placement_type,
-                    video_playback_method,
-                    CASE WHEN TRIM(age)='18-20' THEN 1
-                        WHEN TRIM(age)='21-29' THEN 2
-                        WHEN TRIM(age)='30-39' THEN 3
-                        WHEN TRIM(age)='40-49' THEN 4
-                        WHEN TRIM(age)='50-64' THEN 5
-                        WHEN TRIM(age)='65+'   THEN 6
-                        ELSE 0
-                    END AS age,
-                    CASE WHEN TRIM(LOWER(gender))='male'   THEN 1
-                        WHEN TRIM(LOWER(gender))='female' THEN 2
-                        ELSE 0
-                    END AS gender,
-                    CASE
-                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='18-20' THEN 1
-                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='18-20' THEN 2
-                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='18-20' THEN 3
-                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='21-29' THEN 4
-                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='21-29' THEN 5
-                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='21-29' THEN 6
-                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='30-39' THEN 7
-                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='30-39' THEN 8
-                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='30-39' THEN 9
-                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='40-49' THEN 10
-                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='40-49' THEN 11
-                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='40-49' THEN 12
-                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='50-64' THEN 13
-                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='50-64' THEN 14
-                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='50-64' THEN 15
-                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='65+'   THEN 16
-                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='65+'   THEN 17
-                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='65+'   THEN 18
-                    ELSE 0
-                    END AS age_gender,
-                    SUM(impressions) as impressions,
-                    SUM(clicks) as clicks,
-                    SUM(spend) as spend,
-                    SUM(data_spend) as data_spend,
-                    SUM(video_start) as video_start,
-                    SUM(video_first_quartile) as video_first_quartile,
-                    SUM(video_midpoint) as video_midpoint,
-                    SUM(video_third_quartile) as video_third_quartile,
-                    SUM(video_complete) as video_complete,
-                    SUM(video_progress_3s) as video_progress_3s
-                FROM stats
-                WHERE ((hour is null
-                        and date>=%(date_from)s
-                        AND date<=%(date_to)s)
-                    OR (hour is not null
-                        and date>%(tzdate_from)s
-                        AND date<%(tzdate_to)s)
-                    OR (hour IS NOT NULL
-                        AND ((date=%(tzdate_from)s
-                            AND hour >= %(tzhour_from)s)
-                            OR (date=%(tzdate_to)s
-                                AND hour < %(tzhour_to)s))))
-                GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);"""), {
+            mock.call(mock.ANY),
+            mock.call(mock.ANY, {
                 'tzhour_from': 4,
                 'tzhour_to': 4,
                 'tzdate_from': '2016-07-01',
@@ -426,152 +295,16 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
         mv.generate()
 
         mock_cursor().__enter__().execute.assert_has_calls([
-            mock.call(backtosql.SQLMatcher("""
-            CREATE TEMP TABLE mvh_clean_stats (
-                date date not null encode delta,
-                source_slug varchar(127) encode lzo,
-
-                ad_group_id integer encode lzo,
-                content_ad_id integer encode lzo,
-                publisher varchar(255) encode lzo,
-
-                device_type int2 encode bytedict,
-                country varchar(2) encode bytedict,
-                state varchar(5) encode bytedict,
-                dma int2 encode bytedict,
-                city_id integer encode lzo,
-
-                placement_type integer encode lzo,
-                video_playback_method integer encode lzo,
-
-                age int2 encode bytedict,
-                gender int2 encode bytedict,
-                age_gender int2 encode bytedict,
-
-                impressions integer encode lzo,
-                clicks integer encode lzo,
-                spend bigint encode lzo,
-                data_spend bigint encode lzo,
-
-                video_start integer encode lzo,
-                video_first_quartile integer encode lzo,
-                video_midpoint integer encode lzo,
-                video_third_quartile integer encode lzo,
-                video_complete integer encode lzo,
-                video_progress_3s integer encode lzo
-            ) distkey(date) sortkey(date, source_slug, ad_group_id, content_ad_id, publisher)""")),
-            mock.call(
-                backtosql.SQLMatcher("""
-                INSERT INTO mvh_clean_stats
-                (SELECT
-                    CASE WHEN hour is null THEN date
-                         WHEN hour is not null
-                             AND ((date='2016-07-01'::date AND hour >= 4)
-                                 OR (date='2016-07-02'::date
-                             AND hour < 4)) THEN '2016-07-01'::date
-                         WHEN hour is not null
-                           AND ((date='2016-07-02'::date
-                                   AND hour >= 4)
-                                   OR (date='2016-07-03'::date
-                                       AND hour < 4)) THEN '2016-07-02'::date
-                         WHEN hour is not null
-                           AND ((date='2016-07-03'::date
-                                   AND hour >= 4)
-                                   OR (date='2016-07-04'::date
-                                       AND hour < 4)) THEN '2016-07-03'::date
-                    END as date,
-                    stats.media_source as source_slug,
-                    ad_group_id,
-                    content_ad_id,
-                    CASE
-                        WHEN media_source = 'yahoo' THEN 'all publishers' ELSE LOWER(publisher)
-                    END as publisher,
-                    CASE
-                        WHEN device_type = 4 THEN 3
-                        WHEN device_type = 2 THEN 1
-                        WHEN device_type = 5 THEN 2
-                        ELSE 0
-                    END as device_type,
-
-                    CASE WHEN LEN(TRIM(country)) <= 2 THEN UPPER(TRIM(country))
-                        ELSE NULL
-                    END AS country,
-                    CASE WHEN LEN(TRIM(state)) <= 5 THEN UPPER(TRIM(state))
-                        ELSE NULL
-                    END AS state,
-                    CASE WHEN 499 < dma AND dma < 1000 THEN dma
-                        ELSE NULL
-                    END AS dma,
-                    city_id,
-                    placement_type,
-                    video_playback_method,
-                    CASE WHEN TRIM(age)='18-20' THEN 1
-                        WHEN TRIM(age)='21-29' THEN 2
-                        WHEN TRIM(age)='30-39' THEN 3
-                        WHEN TRIM(age)='40-49' THEN 4
-                        WHEN TRIM(age)='50-64' THEN 5
-                        WHEN TRIM(age)='65+'   THEN 6
-                        ELSE 0
-                    END AS age,
-                    CASE WHEN TRIM(LOWER(gender))='male'   THEN 1
-                        WHEN TRIM(LOWER(gender))='female' THEN 2
-                        ELSE 0
-                    END AS gender,
-                    CASE
-                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='18-20' THEN 1
-                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='18-20' THEN 2
-                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='18-20' THEN 3
-                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='21-29' THEN 4
-                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='21-29' THEN 5
-                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='21-29' THEN 6
-                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='30-39' THEN 7
-                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='30-39' THEN 8
-                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='30-39' THEN 9
-                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='40-49' THEN 10
-                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='40-49' THEN 11
-                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='40-49' THEN 12
-                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='50-64' THEN 13
-                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='50-64' THEN 14
-                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='50-64' THEN 15
-                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='65+'   THEN 16
-                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='65+'   THEN 17
-                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='65+'   THEN 18
-                    ELSE 0
-                    END AS age_gender,
-
-                    SUM(impressions) as impressions,
-                    SUM(clicks) as clicks,
-                    SUM(spend) as spend,
-                    SUM(data_spend) as data_spend,
-                    SUM(video_start) as video_start,
-                    SUM(video_first_quartile) as video_first_quartile,
-                    SUM(video_midpoint) as video_midpoint,
-                    SUM(video_third_quartile) as video_third_quartile,
-                    SUM(video_complete) as video_complete,
-                    SUM(video_progress_3s) as video_progress_3s
-                FROM stats
-                WHERE ((hour is null
-                        and date>=%(date_from)s
-                        AND date<=%(date_to)s)
-                    OR (hour is not null
-                        and date>%(tzdate_from)s
-                        AND date<%(tzdate_to)s)
-                    OR (hour IS NOT NULL
-                        AND ((date=%(tzdate_from)s
-                            AND hour >= %(tzhour_from)s)
-                            OR (date=%(tzdate_to)s
-                                AND hour < %(tzhour_to)s))))
-                    AND ad_group_id=ANY(%(ad_group_id)s)
-                GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);"""), {
-                    'tzhour_from': 4,
-                    'tzhour_to': 4,
-                    'tzdate_from': '2016-07-01',
-                    'tzdate_to': '2016-07-04',
-                    'date_from': '2016-07-01',
-                    'date_to': '2016-07-03',
-                    'ad_group_id': test_helper.ListMatcher([1, 3, 4]),
-                }
-            )
+            mock.call(mock.ANY),
+            mock.call(mock.ANY, {
+                'tzhour_from': 4,
+                'tzhour_to': 4,
+                'tzdate_from': '2016-07-01',
+                'tzdate_to': '2016-07-04',
+                'date_from': '2016-07-01',
+                'date_to': '2016-07-03',
+                'ad_group_id': test_helper.ListMatcher([1, 3, 4]),
+            })
         ])
 
 
@@ -591,79 +324,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
 
         mv.generate()
 
-        insert_into_master_sql = backtosql.SQLMatcher("""
-            INSERT INTO mv_master
-                (SELECT
-                    d.date as date,
-                    d.source_id as source_id,
-                    c.agency_id as agency_id,
-                    c.account_id as account_id,
-                    c.campaign_id as campaign_id,
-                    d.ad_group_id as ad_group_id,
-                    d.content_ad_id as content_ad_id,
-                    d.publisher as publisher,
-                    d.device_type as device_type,
-                    d.country as country,
-                    d.state as state,
-                    d.dma as dma,
-                    d.age as age,
-                    d.gender as gender,
-                    d.age_gender as age_gender,
-                    d.impressions as impressions,
-                    d.clicks as clicks,
-                    d.spend::bigint * 1000 as cost_nano,
-                    d.data_spend::bigint * 1000 as data_cost_nano,
-                    null as visits,
-                    null as new_visits,
-                    null as bounced_visits,
-                    null as pageviews,
-                    null as total_time_on_site,
-                    round(d.spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as effective_cost_nano,
-                    round(d.data_spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as effective_data_cost_nano,
-                    round( (
-                        (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                        (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
-                    ) * cf.pct_license_fee::decimal(10, 8) * 1000
-                    ) as license_fee_nano,
-                    round(
-                        (
-                            (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                            (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                            (
-                                (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                                (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
-                            ) * cf.pct_license_fee::decimal(10, 8)
-                        ) * cf.pct_margin::decimal(10, 8) * 1000
-                    ) as margin_nano,
-                    null as users,
-                    null as returning_users,
-
-                    d.city_id as city_id,
-
-                    d.placement_type as placement_type,
-                    d.video_playback_method as video_playback_method,
-                    d.video_start as video_start,
-                    d.video_first_quartile as video_first_quartile,
-                    d.video_midpoint as video_midpoint,
-                    d.video_third_quartile as video_third_quartile,
-                    d.video_complete as video_complete,
-                    d.video_progress_3s as video_progress_3s
-                FROM
-                    (
-                      (mvh_clean_stats a left outer join mvh_source b on a.source_slug=b.bidder_slug)
-                      natural full outer join (
-                        SELECT
-                          date, source_id, ad_group_id, content_ad_id,
-                          CASE WHEN source_id = 3 THEN NULL ELSE publisher END AS publisher
-                        FROM mv_touchpointconversions
-                        WHERE date=%(date)s
-                        GROUP BY 1, 2, 3, 4, 5
-                      ) tpc
-                    ) d
-                    join mvh_adgroup_structure c on d.ad_group_id=c.ad_group_id
-                    join mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and d.date=cf.date
-                WHERE d.date=%(date)s);
-            """)
+        insert_into_master_sql = mock.ANY
 
         mock_cursor().__enter__().execute.assert_has_calls([
             mock.call(
@@ -736,14 +397,23 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         mock_cursor = mock.MagicMock()
 
         postclickstats_return_value = [
-            ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNDEFINED, None, None, None,
-                      constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+            ((3, 1), (date, 3, 1, 1, 1, 1, 'bla.com', 'bla.com__3',
+                      constants.DeviceType.UNKNOWN, None, None, constants.PlacementMedium.UNKNOWN,
+                      constants.PlacementType.UNKNOWN, constants.VideoPlaybackMethod.UNKNOWN,
+                      None, None, None, None,
+                      constants.Age.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGender.UNDEFINED,
                       0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None), None),
-            ((1, 3), (date, 1, 1, 1, 3, 3, 3, 'nesto.com', constants.DeviceType.UNDEFINED, None, None, None,
-                      constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+            ((1, 3), (date, 1, 1, 3, 3, 3, 'nesto.com', 'nesto.com__1',
+                      constants.DeviceType.UNKNOWN, None, None, constants.PlacementMedium.UNKNOWN,
+                      constants.PlacementType.UNKNOWN, constants.VideoPlaybackMethod.UNKNOWN,
+                      None, None, None, None,
+                      constants.Age.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGender.UNDEFINED,
                       0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None), None),
-            ((3, 4), (date, 3, 1, 2, 2, 2, 4, 'trol', constants.DeviceType.UNDEFINED, None, None, None,
-                      constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+            ((3, 4), (date, 3, 2, 2, 2, 4, 'trol', 'trol__3',
+                      constants.DeviceType.UNKNOWN, None, None, constants.PlacementMedium.UNKNOWN,
+                      constants.PlacementType.UNKNOWN, constants.VideoPlaybackMethod.UNKNOWN,
+                      None, None, None, None,
+                      constants.Age.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGender.UNDEFINED,
                       0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None), None),
         ]
 
@@ -752,20 +422,30 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
             mv = materialize_views.MasterView('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
             rows = list(mv.generate_rows(mock_cursor, date))
 
+            self.maxDiff = None
             self.assertItemsEqual(rows, [
                 (
-                    date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNDEFINED, None, None, None,
-                    constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+                    date, 3, 1, 1, 1, 1, 'bla.com', 'bla.com__3',
+                    constants.DeviceType.UNKNOWN, None, None, constants.PlacementMedium.UNKNOWN,
+                    constants.PlacementType.UNKNOWN, constants.VideoPlaybackMethod.UNKNOWN,
+                    None, None, None, None,
+                    constants.Age.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGender.UNDEFINED,
                     0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None
                 ),
                 (
-                    date, 1, 1, 1, 3, 3, 3, 'nesto.com', constants.DeviceType.UNDEFINED, None, None, None,
-                    constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+                    date, 1, 1, 3, 3, 3, 'nesto.com', 'nesto.com__1',
+                    constants.DeviceType.UNKNOWN, None, None, constants.PlacementMedium.UNKNOWN,
+                    constants.PlacementType.UNKNOWN, constants.VideoPlaybackMethod.UNKNOWN,
+                    None, None, None, None,
+                    constants.Age.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGender.UNDEFINED,
                     0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None
                 ),
                 (
-                    date, 3, 1, 2, 2, 2, 4, 'trol', 0, None, None, None,
-                    constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+                    date, 3, 2, 2, 2, 4, 'trol', 'trol__3',
+                    constants.DeviceType.UNKNOWN, None, None, constants.PlacementMedium.UNKNOWN,
+                    constants.PlacementType.UNKNOWN, constants.VideoPlaybackMethod.UNKNOWN,
+                    None, None, None, None,
+                    constants.Age.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGender.UNDEFINED,
                     0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None
                 )
             ])
@@ -787,18 +467,27 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
 
         self.maxDiff = None
         self.assertItemsEqual(list(mv.get_postclickstats(None, date)), [
-            ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'Bla.com', constants.DeviceType.UNDEFINED, None, None, None,
-                      constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+            ((3, 1), (date, 3, 1, 1, 1, 1, 'Bla.com', 'Bla.com__3',
+                      constants.DeviceType.UNKNOWN, None, None, constants.PlacementMedium.UNKNOWN,
+                      constants.PlacementType.UNKNOWN, constants.VideoPlaybackMethod.UNKNOWN,
+                      None, None, None, None,
+                      constants.Age.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGender.UNDEFINED,
                       0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0, 24, 2,
-                      None, None, None, None, None, None, None, None, None), ('{einpix: 2}', 'gaapi')),
-            ((3, 4), (date, 3, 1, 2, 2, 2, 4, 'Trol', constants.DeviceType.UNDEFINED, None, None, None,
-                      constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+                      None, None, None, None, None, None), ('{einpix: 2}', 'gaapi')),
+            ((3, 4), (date, 3, 2, 2, 2, 4, 'Trol', 'Trol__3',
+                      constants.DeviceType.UNKNOWN, None, None, constants.PlacementMedium.UNKNOWN,
+                      constants.PlacementType.UNKNOWN, constants.VideoPlaybackMethod.UNKNOWN,
+                      None, None, None, None,
+                      constants.Age.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGender.UNDEFINED,
                       0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0, 24, 2,
-                      None, None, None, None, None, None, None, None, None), ('{einpix: 2}', 'omniture')),
-            ((1, 3), (date, 1, 1, 1, 3, 3, 3, 'nesto.com', constants.DeviceType.UNDEFINED, None, None, None,
-                      constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+                      None, None, None, None, None, None), ('{einpix: 2}', 'omniture')),
+            ((1, 3), (date, 1, 1, 3, 3, 3, 'nesto.com', 'nesto.com__1',
+                      constants.DeviceType.UNKNOWN, None, None, constants.PlacementMedium.UNKNOWN,
+                      constants.PlacementType.UNKNOWN, constants.VideoPlaybackMethod.UNKNOWN,
+                      None, None, None, None,
+                      constants.Age.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGender.UNDEFINED,
                       0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0, 24, 2,
-                      None, None, None, None, None, None, None, None, None), ('{einpix: 2}', 'gaapi')),
+                      None, None, None, None, None, None), ('{einpix: 2}', 'gaapi')),
         ])
 
     def test_prepare_postclickstats_query(self):
@@ -849,81 +538,7 @@ class MasterViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
 
         mv.generate()
 
-        insert_into_master_sql = backtosql.SQLMatcher("""
-            INSERT INTO mv_master
-                (SELECT
-                    d.date as date,
-                    d.source_id as source_id,
-                    c.agency_id as agency_id,
-                    c.account_id as account_id,
-                    c.campaign_id as campaign_id,
-                    d.ad_group_id as ad_group_id,
-                    d.content_ad_id as content_ad_id,
-                    d.publisher as publisher,
-                    d.device_type as device_type,
-                    d.country as country,
-                    d.state as state,
-                    d.dma as dma,
-                    d.age as age,
-                    d.gender as gender,
-                    d.age_gender as age_gender,
-                    d.impressions as impressions,
-                    d.clicks as clicks,
-                    d.spend::bigint * 1000 as cost_nano,
-                    d.data_spend::bigint * 1000 as data_cost_nano,
-                    null as visits,
-                    null as new_visits,
-                    null as bounced_visits,
-                    null as pageviews,
-                    null as total_time_on_site,
-                    round(d.spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as effective_cost_nano,
-                    round(d.data_spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as effective_data_cost_nano,
-                    round( (
-                        (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                        (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
-                    ) * cf.pct_license_fee::decimal(10, 8) * 1000
-                    ) as license_fee_nano,
-                    round(
-                        (
-                            (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                            (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                            (
-                                (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                                (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
-                            ) * cf.pct_license_fee::decimal(10, 8)
-                        ) * cf.pct_margin::decimal(10, 8) * 1000
-                    ) as margin_nano,
-                    null as users,
-                    null as returning_users,
-
-                    d.city_id as city_id,
-
-                    d.placement_type as placement_type,
-                    d.video_playback_method as video_playback_method,
-                    d.video_start as video_start,
-                    d.video_first_quartile as video_first_quartile,
-                    d.video_midpoint as video_midpoint,
-                    d.video_third_quartile as video_third_quartile,
-                    d.video_complete as video_complete,
-                    d.video_progress_3s as video_progress_3s
-                FROM
-                (
-                  (mvh_clean_stats a left outer join mvh_source b on a.source_slug=b.bidder_slug)
-                  natural full outer join (
-                    SELECT
-                      date, source_id, ad_group_id, content_ad_id,
-                      CASE WHEN source_id = 3 THEN NULL ELSE publisher END AS publisher
-                    FROM mv_touchpointconversions
-                    WHERE date=%(date)s
-                      AND account_id=%(account_id)s
-                    GROUP BY 1, 2, 3, 4, 5
-                  ) tpc
-                ) d
-                join mvh_adgroup_structure c on d.ad_group_id=c.ad_group_id
-                join mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and d.date=cf.date
-                WHERE d.date=%(date)s AND c.account_id=%(account_id)s);
-            """)
-
+        insert_into_master_sql = mock.ANY
         mock_cursor().__enter__().execute.assert_has_calls([
             mock.call(
                 backtosql.SQLMatcher('DELETE FROM mv_master WHERE date=%(date)s AND account_id=%(account_id)s'),
@@ -1097,23 +712,23 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
         mock_cursor = mock.MagicMock()
 
         postclickstats_return_value = [
-            ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNDEFINED, None, None, None,
-                      constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+            ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNKNOWN, None, None, None,
+                      constants.Age.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGender.UNDEFINED,
                       0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), ('{"einpix": 2, "preuba": 1}', 'gaapi')),
-            ((1, 3), (date, 1, 1, 1, 3, 3, 3, 'nesto.com', constants.DeviceType.UNDEFINED, None, None, None,
-                      constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+            ((1, 3), (date, 1, 1, 1, 3, 3, 3, 'nesto.com', constants.DeviceType.UNKNOWN, None, None, None,
+                      constants.Age.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGender.UNDEFINED,
                       0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0),  ('{"poop": 111}', 'omniture')),
-            ((1, 3), (date, 2, 1, 1, 3, 3, 3, 'nesto2.com', constants.DeviceType.UNDEFINED, None, None, None,
-                      constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+            ((1, 3), (date, 2, 1, 1, 3, 3, 3, 'nesto2.com', constants.DeviceType.UNKNOWN, None, None, None,
+                      constants.Age.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGender.UNDEFINED,
                       0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0),  ('{}', None)),
-            ((1, 3), (date, 3, 1, 1, 3, 3, 3, 'nesto3.com', constants.DeviceType.UNDEFINED, None, None, None,
-                      constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+            ((1, 3), (date, 3, 1, 1, 3, 3, 3, 'nesto3.com', constants.DeviceType.UNKNOWN, None, None, None,
+                      constants.Age.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGender.UNDEFINED,
                       0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0),  ('', None)),
-            ((1, 3), (date, 4, 1, 1, 3, 3, 3, 'nesto4.com', constants.DeviceType.UNDEFINED, None, None, None,
-                      constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+            ((1, 3), (date, 4, 1, 1, 3, 3, 3, 'nesto4.com', constants.DeviceType.UNKNOWN, None, None, None,
+                      constants.Age.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGender.UNDEFINED,
                       0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0),  (None, 'gaapi')),
-            ((3, 4), (date, 3, 1, 2, 2, 2, 4, 'trol', constants.DeviceType.UNDEFINED, None, None, None,
-                      constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+            ((3, 4), (date, 3, 1, 2, 2, 2, 4, 'trol', constants.DeviceType.UNKNOWN, None, None, None,
+                      constants.Age.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGender.UNDEFINED,
                       0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), ('{"poop": 23}', 'ga_mail')),
         ]
 
@@ -1225,55 +840,7 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
                     'date_to': datetime.date(2016, 7, 3),
                 }
             ),
-            mock.call(backtosql.SQLMatcher("""
-            INSERT INTO mv_touchpointconversions (
-                SELECT
-                    a.date as date,
-                    a.source_id as source_id,
-                    s.agency_id as agency_id,
-                    s.account_id as account_id,
-                    s.campaign_id as campaign_id,
-                    a.ad_group_id as ad_group_id,
-                    a.content_ad_id as content_ad_id,
-                    CASE WHEN a.source_id = 3 THEN a.publisher
-                         WHEN a.source_id = 4 THEN 'all publishers'
-                         ELSE LOWER(a.publisher)
-                    END as publisher,
-                    a.slug as slug,
-                    CASE
-                        WHEN a.conversion_lag <= 24 THEN 24
-                        WHEN a.conversion_lag <= 168 THEN 168
-                        WHEN a.conversion_lag <= 720 THEN 720
-                    ELSE 2160
-                    END AS conversion_window,
-                    COUNT(a.touchpoint_id) as touchpoint_count,
-                    SUM(CASE WHEN a.conversion_id_ranked = 1 THEN 1 ELSE 0 END) AS conversion_count,
-
-                    SUM(a.conversion_value_nano) as conversion_value_nano,
-                    a.conversion_label as conversion_label
-                FROM (
-                    SELECT
-                        c.date as date,
-                        c.source_id as source_id,
-
-                        c.ad_group_id as ad_group_id,
-                        c.content_ad_id as content_ad_id,
-                        c.publisher as publisher,
-
-                        c.slug as slug,
-
-                        c.conversion_lag as conversion_lag,
-
-                        c.touchpoint_id as touchpoint_id,
-                        RANK() OVER
-                            (PARTITION BY c.conversion_id, c.ad_group_id ORDER BY c.touchpoint_timestamp DESC) AS conversion_id_ranked,
-
-                        c.value_nano as conversion_value_nano,
-                        c.label as conversion_label
-                    FROM conversions c
-                    WHERE c.conversion_lag <= 2160 AND c.date BETWEEN %(date_from)s AND %(date_to)s
-                ) a join mvh_adgroup_structure s on a.ad_group_id=s.ad_group_id
-                GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, conversion_label);"""), {
+            mock.call(mock.ANY, {
                 'date_from': datetime.date(2016, 7, 1),
                 'date_to': datetime.date(2016, 7, 3),
             })
@@ -1297,55 +864,7 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
                     'account_id': 1,
                 }
             ),
-            mock.call(backtosql.SQLMatcher("""
-            INSERT INTO mv_touchpointconversions (
-                SELECT
-                    a.date as date,
-                    a.source_id as source_id,
-                    s.agency_id as agency_id,
-                    s.account_id as account_id,
-                    s.campaign_id as campaign_id,
-                    a.ad_group_id as ad_group_id,
-                    a.content_ad_id as content_ad_id,
-                    CASE WHEN a.source_id = 3 THEN a.publisher
-                         WHEN a.source_id = 4 THEN 'all publishers'
-                         ELSE LOWER(a.publisher)
-                    END as publisher,
-                    a.slug as slug,
-                    CASE
-                    WHEN a.conversion_lag <= 24 THEN 24
-                    WHEN a.conversion_lag <= 168 THEN 168
-                    WHEN a.conversion_lag <= 720 THEN 720
-                    ELSE 2160
-                    END AS conversion_window,
-                    COUNT(a.touchpoint_id) as touchpoint_count,
-                    SUM(CASE WHEN a.conversion_id_ranked = 1 THEN 1 ELSE 0 END) AS conversion_count,
-
-                    SUM(a.conversion_value_nano) as conversion_value_nano,
-                    a.conversion_label as conversion_label
-                FROM (
-                    SELECT
-                        c.date as date,
-                        c.source_id as source_id,
-
-                        c.ad_group_id as ad_group_id,
-                        c.content_ad_id as content_ad_id,
-                        c.publisher as publisher,
-
-                        c.slug as slug,
-
-                        c.conversion_lag as conversion_lag,
-
-                        c.touchpoint_id as touchpoint_id,
-                        RANK() OVER
-                            (PARTITION BY c.conversion_id, c.ad_group_id ORDER BY c.touchpoint_timestamp DESC) AS conversion_id_ranked,
-
-                        c.value_nano as conversion_value_nano,
-                        c.label as conversion_label
-                    FROM conversions c
-                    WHERE c.conversion_lag <= 2160 AND c.date BETWEEN %(date_from)s AND %(date_to)s AND c.account_id=%(account_id)s
-                ) a join mvh_adgroup_structure s on a.ad_group_id=s.ad_group_id
-                GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, conversion_label);"""), {
+            mock.call(mock.ANY, {
                 'date_from': datetime.date(2016, 7, 1),
                 'date_to': datetime.date(2016, 7, 3),
                 'account_id': 1,
@@ -1354,77 +873,169 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
         ])
 
 
+@mock.patch('redshiftapi.db.get_write_stats_cursor')
 @mock.patch('redshiftapi.db.get_write_stats_transaction')
 class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
 
-    DERIVED_VIEWS = [
-        (materialize_views.MVContentAdDeliveryGeo, 'mv_content_ad_delivery_geo'),
-        (materialize_views.MVContentAdDeliveryDemo, 'mv_content_ad_delivery_demo'),
-        (materialize_views.MVAdGroupDeliveryGeo, 'mv_ad_group_delivery_geo'),
-        (materialize_views.MVAdGroupDeliveryDemo, 'mv_ad_group_delivery_demo'),
-        (materialize_views.MVCampaignDeliveryGeo, 'mv_campaign_delivery_geo'),
-        (materialize_views.MVCampaignDeliveryDemo, 'mv_campaign_delivery_demo'),
-        (materialize_views.MVAccountDeliveryGeo, 'mv_account_delivery_geo'),
-        (materialize_views.MVAccountDeliveryDemo, 'mv_account_delivery_demo'),
-        (materialize_views.MVContentAd, 'mv_content_ad'),
-        (materialize_views.MVAdGroup, 'mv_ad_group'),
-        (materialize_views.MVCampaign, 'mv_campaign'),
-        (materialize_views.MVAccount, 'mv_account'),
-        (materialize_views.MVTouchpointAccount, 'mv_touch_account'),
-        (materialize_views.MVTouchpointCampaign, 'mv_touch_campaign'),
-        (materialize_views.MVTouchpointAdGroup, 'mv_touch_ad_group'),
-        (materialize_views.MVTouchpointContentAd, 'mv_touch_content_ad'),
-        (materialize_views.MVConversionsAccount, 'mv_conversions_account'),
-        (materialize_views.MVConversionsCampaign, 'mv_conversions_campaign'),
-        (materialize_views.MVConversionsAdGroup, 'mv_conversions_ad_group'),
-        (materialize_views.MVConversionsContentAd, 'mv_conversions_content_ad'),
-    ]
+    def test_generate(self, mock_transaction, mock_cursor):
+        mock_cursor().__enter__().fetchone.return_value = (5,)
 
-    def test_generate(self, mock_transaction):
-        for mv_class, table_name in self.DERIVED_VIEWS:
-            mv = mv_class('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
+        mv_cls = materialize_views.MasterDerivedView.create(
+            table_name='newtable',
+            breakdown=['date', 'source_id', 'account_id'],
+            sortkey=['date', 'source_id', 'account_id'],
+            distkey='source_id')
 
-            with mock.patch('redshiftapi.db.get_write_stats_cursor') as mock_cursor:
+        mv = mv_cls('jobid', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
 
-                mv.generate()
+        mv.generate()
 
-                mock_cursor().__enter__().execute.assert_has_calls([
-                    mock.call(
-                        backtosql.SQLMatcher(
-                            "DELETE FROM {} WHERE (date BETWEEN %(date_from)s AND %(date_to)s);".format(table_name)),
-                        {
-                            'date_from': datetime.date(2016, 7, 1),
-                            'date_to': datetime.date(2016, 7, 3),
-                        }
-                    ),
-                    mock.call(mock.ANY, {
-                        'date_from': datetime.date(2016, 7, 1),
-                        'date_to': datetime.date(2016, 7, 3),
-                    })
-                ])
+        mock_cursor().__enter__().execute.assert_has_calls([
+            mock.call(
+                backtosql.SQLMatcher("""
+                CREATE TABLE IF NOT EXISTS newtable (
+                    date date not null encode delta,
+                    source_id int2 encode zstd,
+                    account_id integer encode zstd,
 
-    def test_generate_account_id(self, mock_transaction):
-        for mv_class, table_name in self.DERIVED_VIEWS:
-            mv = mv_class('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=1)
+                    impressions integer encode zstd,
+                    clicks integer encode zstd,
+                    cost_nano bigint encode zstd,
+                    data_cost_nano bigint encode zstd,
+                    visits integer encode zstd,
+                    new_visits integer encode zstd,
+                    bounced_visits integer encode zstd,
+                    pageviews integer encode zstd,
+                    total_time_on_site integer encode zstd,
+                    effective_cost_nano bigint encode zstd,
+                    effective_data_cost_nano bigint encode zstd,
+                    license_fee_nano bigint encode zstd,
+                    margin_nano bigint encode zstd,
+                    users integer encode lzo,
+                    returning_users integer encode lzo,
+                    video_start integer encode lzo,
+                    video_first_quartile integer encode lzo,
+                    video_midpoint integer encode lzo,
+                    video_third_quartile integer encode lzo,
+                    video_complete integer encode lzo,
+                    video_progress_3s integer encode lzo
+                )
+                diststyle key distkey(source_id) sortkey(date, source_id, account_id)
+                """)
+            ),
+            mock.call(backtosql.SQLMatcher("SELECT count(1) FROM newtable")),
+            mock.call(
+                backtosql.SQLMatcher("DELETE FROM newtable WHERE (date BETWEEN %(date_from)s AND %(date_to)s);"),
+                {'date_from': datetime.date(2016, 7, 1), 'date_to': datetime.date(2016, 7, 3)}
+            ),
+            mock.call(
+                backtosql.SQLMatcher("""
+                INSERT INTO newtable (SELECT
+                    date AS date,
+                    source_id AS source_id,
+                    account_id AS account_id,
 
-            with mock.patch('redshiftapi.db.get_write_stats_cursor') as mock_cursor:
+                    SUM(impressions) impressions,
+                    SUM(clicks) clicks,
+                    SUM(cost_nano) cost_nano,
+                    SUM(data_cost_nano) data_cost_nano,
+                    SUM(visits) visits,
+                    SUM(new_visits) new_visits,
+                    SUM(bounced_visits) bounced_visits,
+                    SUM(pageviews) pageviews,
+                    SUM(total_time_on_site) total_time_on_site,
+                    SUM(effective_cost_nano) effective_cost_nano,
+                    SUM(effective_data_cost_nano) effective_data_cost_nano,
+                    SUM(license_fee_nano) license_fee_nano,
+                    SUM(margin_nano) margin_nano,
+                    SUM(users) users,
+                    SUM(returning_users) returning_users,
+                    SUM(video_start) video_start,
+                    SUM(video_first_quartile) video_first_quartile,
+                    SUM(video_midpoint) video_midpoint,
+                    SUM(video_third_quartile) video_third_quartile,
+                    SUM(video_complete) video_complete,
+                    SUM(video_progress_3s) video_progress_3s
+                FROM mv_master
+                WHERE (date>=%s AND date<=%s)
+                GROUP BY date, source_id, account_id
+                ORDER BY date, source_id, account_id
+                );
+                """),
+                [datetime.date(2016, 7, 1), datetime.date(2016, 7, 3)])
+        ])
 
-                mv.generate()
+    def test_generate_account_id(self, mock_transaction, mock_cursor):
+        mock_cursor().__enter__().fetchone.return_value = (1,)
 
-                mock_cursor().__enter__().execute.assert_has_calls([
-                    mock.call(
-                        backtosql.SQLMatcher(
-                            "DELETE FROM {} WHERE (date BETWEEN %(date_from)s AND %(date_to)s) AND account_id=%(account_id)s;".format(
-                                table_name)),
-                        {
-                            'date_from': datetime.date(2016, 7, 1),
-                            'date_to': datetime.date(2016, 7, 3),
-                            'account_id': 1,
-                        }
-                    ),
-                    mock.call(mock.ANY, {
-                        'date_from': datetime.date(2016, 7, 1),
-                        'date_to': datetime.date(2016, 7, 3),
-                        'account_id': 1,
-                    })
-                ])
+        mv_cls = materialize_views.MasterDerivedView.create(
+            table_name='newtable',
+            breakdown=['date', 'source_id', 'account_id'],
+            sortkey=['date', 'source_id', 'account_id'],
+            distkey='source_id')
+
+        mv = mv_cls('jobid', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=1)
+
+        mv.generate()
+
+        mock_cursor().__enter__().execute.assert_has_calls([
+            mock.call(mock.ANY),
+            mock.call(mock.ANY),
+            mock.call(
+                backtosql.SQLMatcher("DELETE FROM newtable WHERE (date BETWEEN %(date_from)s AND %(date_to)s) AND account_id=%(account_id)s;"),  # noqa
+                {'date_from': datetime.date(2016, 7, 1), 'date_to': datetime.date(2016, 7, 3), 'account_id': 1}
+            ),
+            mock.call(
+                backtosql.SQLMatcher("""
+                INSERT INTO newtable (SELECT
+                    date AS date,
+                    source_id AS source_id,
+                    account_id AS account_id,
+
+                    SUM(impressions) impressions,
+                    SUM(clicks) clicks,
+                    SUM(cost_nano) cost_nano,
+                    SUM(data_cost_nano) data_cost_nano,
+                    SUM(visits) visits,
+                    SUM(new_visits) new_visits,
+                    SUM(bounced_visits) bounced_visits,
+                    SUM(pageviews) pageviews,
+                    SUM(total_time_on_site) total_time_on_site,
+                    SUM(effective_cost_nano) effective_cost_nano,
+                    SUM(effective_data_cost_nano) effective_data_cost_nano,
+                    SUM(license_fee_nano) license_fee_nano,
+                    SUM(margin_nano) margin_nano,
+                    SUM(users) users,
+                    SUM(returning_users) returning_users,
+                    SUM(video_start) video_start,
+                    SUM(video_first_quartile) video_first_quartile,
+                    SUM(video_midpoint) video_midpoint,
+                    SUM(video_third_quartile) video_third_quartile,
+                    SUM(video_complete) video_complete,
+                    SUM(video_progress_3s) video_progress_3s
+                FROM mv_master
+                WHERE (account_id=%s AND date>=%s AND date<=%s)
+                GROUP BY date, source_id, account_id
+                ORDER BY date, source_id, account_id
+                );
+                """),
+                [1, datetime.date(2016, 7, 1), datetime.date(2016, 7, 3)])
+        ])
+
+    def test_generate_empty_table(self, mock_transaction, mock_cursor):
+        mock_cursor().__enter__().fetchone.return_value = (0,)
+
+        mv_cls = materialize_views.MasterDerivedView.create(
+            table_name='newtable',
+            breakdown=['date', 'source_id', 'account_id'],
+            sortkey=['date', 'source_id', 'account_id'],
+            distkey='source_id')
+        mv = mv_cls('jobid', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
+
+        mv.generate()
+
+        mock_cursor().__enter__().execute.assert_has_calls([
+            mock.call(mock.ANY),
+            mock.call(mock.ANY),
+            mock.call(mock.ANY, [])
+        ])

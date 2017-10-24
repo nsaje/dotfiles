@@ -76,7 +76,7 @@ class FilterTestCase(TestCase):
             'domain', 'domain_link', 'editable_fields', 'batch_id', 'batch_name', 'image_hash', 'image_url', 'image_urls', 'label', 'redirector_url', 'title', 'tracker_urls', 'upload_time', 'url',
             'publisher', 'publisher_id', 'publisher_status', 'blacklisted', 'blacklisted_level', 'blacklisted_level_description', 'can_blacklist_publisher', 'external_id',
             'source', 'source_id', 'source_name', 'source_slug', 'source_status', 'exchange', 'supply_dash_disabled_message', 'supply_dash_url',
-            'age', 'age_gender', 'country', 'day', 'device_type', 'dma', 'gender', 'month', 'placement_type', 'week',
+            'age', 'age_gender', 'country', 'day', 'device_type', 'dma', 'gender', 'month', 'placement_type', 'week', 'device_os', 'device_os_version', 'placement_medium',
             'archived', 'maintenance', 'notifications', 'state', 'status', 'status_per_source', 'status_setting',
             'daily_budget', 'bid_cpc', 'current_bid_cpc', 'current_daily_budget', 'max_bid_cpc', 'min_bid_cpc',
             'billing_cost',

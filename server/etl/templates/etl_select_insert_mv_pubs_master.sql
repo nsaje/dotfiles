@@ -1,19 +1,28 @@
-INSERT INTO mv_pubs_master(
+INSERT INTO mv_master_pubs(
     SELECT
         date,
         source_id,
 
-        agency_id,
         account_id,
         campaign_id,
         ad_group_id,
         publisher,
+        publisher_source_id,
         NULL,
 
         device_type,
+        device_os,
+        device_os_version,
+        placement_medium,
+
+        placement_type,
+        video_playback_method,
+
         country,
         state,
         dma,
+        city_id,
+
         age,
         gender,
         age_gender,
@@ -37,23 +46,17 @@ INSERT INTO mv_pubs_master(
         SUM(users) as users,
         SUM(returning_users) as returning_users,
 
-        city_id,
-
-        -- video
-        placement_type,
-        video_playback_method,
         SUM(video_start) as video_start,
         SUM(video_first_quartile) as video_first_quartile,
         SUM(video_midpoint) as video_midpoint,
         SUM(video_third_quartile) as video_third_quartile,
         SUM(video_complete) as video_complete,
         SUM(video_progress_3s) as video_progress_3s
-
     FROM mv_master
     WHERE date BETWEEN %(date_from)s AND %(date_to)s AND publisher IS NOT NULL AND publisher <> '' AND source_id <> 3
           {% if account_id %}
               AND account_id=%(account_id)s
           {% endif %}
-    GROUP BY 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, city_id, placement_type, video_playback_method
+    GROUP BY 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
 )
 

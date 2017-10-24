@@ -1525,30 +1525,51 @@ class AsyncUploadJobStatus(ConstantBase):
 
 
 class DeviceType(ConstantBase):
-    UNDEFINED = 0
-    DESKTOP = 1
-    TABLET = 2
-    MOBILE = 3
+    """
+    OpenRTB values:
+    --+-----------------
+    1 | Mobile/Tablet
+    2 | Personal Computer
+    3 | Connected TV
+    4 | Phone
+    5 | Tablet
+    6 | Connected Device
+    7 | Set Top Box
+
+    """
+
+    UNKNOWN = None
+    # MOBILE = 1  # legacy
+    PC = 2
+    TV = 3
+    PHONE = 4
+    TABLET = 5
+    # CONNECTED = 6  # joined with TV
+    # SET_TOP_BOX = 7  # joined with TV
 
     _VALUES = {
-        UNDEFINED: 'Undefined',
-        DESKTOP: 'Desktop',
+        UNKNOWN: 'Not reported',
+        # MOBILE: 'Mobile',
+        PC: 'Desktop',
+        TV: 'TV & SetTop Box',
+        PHONE: 'Mobile',
         TABLET: 'Tablet',
-        MOBILE: 'Mobile',
+        # CONNECTED: 'Connected',
+        # SET_TOP_BOX: 'SetTop Box',
     }
 
 
-class AgeGroup(ConstantBase):
-    UNDEFINED = 0
-    AGE_18_20 = 1
-    AGE_21_29 = 2
-    AGE_30_39 = 3
-    AGE_40_49 = 4
-    AGE_50_64 = 5
-    AGE_65_MORE = 6
+class Age(ConstantBase):
+    UNDEFINED = None
+    AGE_18_20 = '18-20'
+    AGE_21_29 = '21-29'
+    AGE_30_39 = '30-39'
+    AGE_40_49 = '40-49'
+    AGE_50_64 = '50-64'
+    AGE_65_MORE = '65+'
 
     _VALUES = {
-        UNDEFINED: 'Undefined',
+        UNDEFINED: 'Not reported',
         AGE_18_20: '18-20',
         AGE_21_29: '21-29',
         AGE_30_39: '30-39',
@@ -1559,40 +1580,40 @@ class AgeGroup(ConstantBase):
 
 
 class Gender(ConstantBase):
-    UNDEFINED = 0
-    MEN = 1
-    WOMEN = 2
+    UNDEFINED = None
+    MEN = 'male'
+    WOMEN = 'female'
 
     _VALUES = {
-        UNDEFINED: 'Undefined',
+        UNDEFINED: 'Not reported',
         MEN: 'Men',
         WOMEN: 'Women',
     }
 
 
-class AgeGenderGroup(ConstantBase):
-    UNDEFINED = 0
-    AGE_18_20_MEN = 1
-    AGE_18_20_WOMEN = 2
-    AGE_18_20_UNDEFINED = 3
-    AGE_21_29_MEN = 4
-    AGE_21_29_WOMEN = 5
-    AGE_21_29_UNDEFINED = 6
-    AGE_30_39_MEN = 7
-    AGE_30_39_WOMEN = 8
-    AGE_30_39_UNDEFINED = 9
-    AGE_40_49_MEN = 10
-    AGE_40_49_WOMEN = 11
-    AGE_40_49_UNDEFINED = 12
-    AGE_50_64_MEN = 13
-    AGE_50_64_WOMEN = 14
-    AGE_50_64_UNDEFINED = 15
-    AGE_65_MORE_MEN = 16
-    AGE_65_MORE_WOMEN = 17
-    AGE_65_MORE_UNDEFINED = 18
+class AgeGender(ConstantBase):
+    UNDEFINED = None
+    AGE_18_20_MEN = '18-20 male'
+    AGE_18_20_WOMEN = '18-20 female'
+    AGE_18_20_UNDEFINED = '18-20 '  # spaces are intentional
+    AGE_21_29_MEN = '21-29 male'
+    AGE_21_29_WOMEN = '21-29 female'
+    AGE_21_29_UNDEFINED = '21-29 '
+    AGE_30_39_MEN = '30-39 male'
+    AGE_30_39_WOMEN = '30-39 female'
+    AGE_30_39_UNDEFINED = '30-39 '
+    AGE_40_49_MEN = '40-49 male'
+    AGE_40_49_WOMEN = '40-49 female'
+    AGE_40_49_UNDEFINED = '40-49 '
+    AGE_50_64_MEN = '50-64 male'
+    AGE_50_64_WOMEN = '50-64 female'
+    AGE_50_64_UNDEFINED = '50-64 '
+    AGE_65_MORE_MEN = '65+ male'
+    AGE_65_MORE_WOMEN = '65+ female'
+    AGE_65_MORE_UNDEFINED = '65+ '
 
     _VALUES = {
-        UNDEFINED: 'Undefined',
+        UNDEFINED: 'Not reported',
         AGE_18_20_MEN: '18-20 Men',
         AGE_18_20_WOMEN: '18-20 Women',
         AGE_18_20_UNDEFINED: '18-20 Undefined',
@@ -1612,10 +1633,6 @@ class AgeGenderGroup(ConstantBase):
         AGE_65_MORE_WOMEN: '65+ Women',
         AGE_65_MORE_UNDEFINED: '65+ Undefined',
     }
-
-
-class DMA(ConstantBase):
-    _VALUES = {int(k): v for k, v in regions.DMA_BY_CODE.iteritems()}
 
 
 class ConversionWindows(ConstantBase):
@@ -2206,9 +2223,21 @@ OSV_MAPPING = {
 }
 
 
+class PlacementMedium(ConstantBase):
+    UNKNOWN = None
+    APP = 'app'
+    SITE = 'site'
+
+    _VALUES = {
+        UNKNOWN: "Unknown",
+        APP: Placement.get_text(Placement.APP),
+        SITE: Placement.get_text(Placement.SITE),
+    }
+
+
 # Video placement
 class PlacementType(ConstantBase):
-    UNKNOWN = 0
+    UNKNOWN = None
     IN_FEED = 1
     IN_CONTENT = 2
     OUTSIDE_CONTENT = 3
@@ -2224,7 +2253,7 @@ class PlacementType(ConstantBase):
 
 
 class VideoPlaybackMethod(ConstantBase):
-    UNKNOWN = 0
+    UNKNOWN = None
     PAGE_LOAD_SOUND_ON = 1
     PAGE_LOAD_SOUND_OFF = 2
     ON_CLICK_SOUND_ON = 3

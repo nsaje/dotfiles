@@ -11,16 +11,27 @@ class StructureDimension:
 
 class DeliveryDimension:
     DEVICE = 'device_type'
-    COUNTRY = 'country'
-    STATE = 'state'
-    DMA = 'dma'
-    AGE = 'age'
-    GENDER = 'gender'
-    AGE_GENDER = 'age_gender'
+    DEVICE_OS = 'device_os'
+    DEVICE_OS_VERSION = 'device_os_version'
+
+    PLACEMENT_MEDIUM = 'placement_medium'
     PLACEMENT_TYPE = 'placement_type'
     VIDEO_PLAYBACK_METHOD = 'video_playback_method'
 
-    _ALL = [DEVICE, COUNTRY, STATE, DMA, AGE, GENDER, AGE_GENDER, PLACEMENT_TYPE, VIDEO_PLAYBACK_METHOD]
+    COUNTRY = 'country'
+    STATE = 'state'
+    DMA = 'dma'
+
+    AGE = 'age'
+    GENDER = 'gender'
+    AGE_GENDER = 'age_gender'
+
+    _ALL = [
+        DEVICE, DEVICE_OS, DEVICE_OS_VERSION,
+        PLACEMENT_MEDIUM, PLACEMENT_TYPE, VIDEO_PLAYBACK_METHOD,
+        COUNTRY, STATE, DMA,
+        AGE, GENDER, AGE_GENDER,
+    ]
 
 
 class TimeDimension:
@@ -41,14 +52,20 @@ PUBLISHER = StructureDimension.PUBLISHER
 
 
 DEVICE = DeliveryDimension.DEVICE
+DEVICE_OS = DeliveryDimension.DEVICE_OS
+DEVICE_OS_VERSION = DeliveryDimension.DEVICE_OS_VERSION
+
+PLACEMENT_MEDIUM = DeliveryDimension.PLACEMENT_MEDIUM
+PLACEMENT_TYPE = DeliveryDimension.PLACEMENT_TYPE
+VIDEO_PLAYBACK_METHOD = DeliveryDimension.VIDEO_PLAYBACK_METHOD
+
 COUNTRY = DeliveryDimension.COUNTRY
 STATE = DeliveryDimension.STATE
 DMA = DeliveryDimension.DMA
+
 AGE = DeliveryDimension.AGE
 GENDER = DeliveryDimension.GENDER
 AGE_GENDER = DeliveryDimension.AGE_GENDER
-PLACEMENT_TYPE = DeliveryDimension.PLACEMENT_TYPE
-VIDEO_PLAYBACK_METHOD = DeliveryDimension.VIDEO_PLAYBACK_METHOD
 
 
 DAY = TimeDimension.DAY

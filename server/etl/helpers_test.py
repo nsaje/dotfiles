@@ -3,8 +3,6 @@ import datetime
 
 from django.test import TestCase
 
-import dash.constants
-
 from etl import helpers
 
 
@@ -95,29 +93,6 @@ class HelpersTest(TestCase, backtosql.TestSQLMixin):
     def test_extract_source_slug(self):
         self.assertEqual(helpers.extract_source_slug('b1_outbrain'), 'outbrain')
         self.assertEqual(helpers.extract_source_slug('outbrain'), 'outbrain')
-
-    def test_extract_age(self):
-        self.assertEqual(helpers.extract_age('18-20'), dash.constants.AgeGroup.AGE_18_20)
-        self.assertEqual(helpers.extract_age('21-29'), dash.constants.AgeGroup.AGE_21_29)
-        self.assertEqual(helpers.extract_age('30-39'), dash.constants.AgeGroup.AGE_30_39)
-        self.assertEqual(helpers.extract_age('40-49'), dash.constants.AgeGroup.AGE_40_49)
-        self.assertEqual(helpers.extract_age('50-64'), dash.constants.AgeGroup.AGE_50_64)
-        self.assertEqual(helpers.extract_age('65+'), dash.constants.AgeGroup.AGE_65_MORE)
-
-        self.assertEqual(helpers.extract_age('Lol'), dash.constants.AgeGroup.UNDEFINED)
-
-    def test_extract_gender(self):
-        self.assertEqual(helpers.extract_gender('male'), dash.constants.Gender.MEN)
-        self.assertEqual(helpers.extract_gender('female'), dash.constants.Gender.WOMEN)
-        self.assertEqual(helpers.extract_gender('nesto'), dash.constants.Gender.UNDEFINED)
-
-    def test_extract_age_gender(self):
-        self.assertEqual(helpers.extract_age_gender(dash.constants.AgeGroup.AGE_50_64, dash.constants.Gender.WOMEN),
-                         dash.constants.AgeGenderGroup.AGE_50_64_WOMEN)
-        self.assertEqual(helpers.extract_age_gender(dash.constants.AgeGroup.AGE_21_29, dash.constants.Gender.UNDEFINED),
-                         dash.constants.AgeGenderGroup.AGE_21_29_UNDEFINED)
-        self.assertEqual(helpers.extract_age_gender(dash.constants.AgeGroup.UNDEFINED, dash.constants.Gender.WOMEN),
-                         dash.constants.AgeGenderGroup.UNDEFINED)
 
     def test_extract_postclick_source(self):
         self.assertEqual(helpers.extract_postclick_source('gaapi'), 'gaapi')

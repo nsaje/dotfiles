@@ -8,7 +8,6 @@ from django.core.cache import caches
 import dash.models
 
 from etl import daily_statements_k1
-from etl import materialize_k1
 from etl import materialize_views
 from etl import maintenance
 
@@ -16,12 +15,14 @@ import utils.slack
 
 logger = logging.getLogger(__name__)
 
-MATERIALIZED_VIEWS = [
-    materialize_k1.ContentAdStats,
-    materialize_k1.TouchpointConversions,
-]
 
-NEW_MATERIALIZED_VIEWS = [
+AD_BREAKDOWN = ['date', 'source_id', 'account_id', 'campaign_id', 'ad_group_id', 'content_ad_id']
+AD_GROUP_BREAKDOWN = ['date', 'source_id', 'account_id', 'campaign_id', 'ad_group_id']
+CAMPAIGN_BREAKDOWN = ['date', 'source_id', 'account_id', 'campaign_id']
+ACCOUNT_BREAKDOWN = ['date', 'source_id', 'account_id']
+
+
+MATERIALIZED_VIEWS = [
     # Views that help construct master view
     materialize_views.MVHelpersSource,
     materialize_views.MVHelpersAdGroupStructure,
@@ -36,36 +37,160 @@ NEW_MATERIALIZED_VIEWS = [
 
     materialize_views.MVConversions,
 
-    # Derived views from master - from broder to narrower breakdown
-    materialize_views.MVContentAdDeliveryGeo,
-    materialize_views.MVContentAdDeliveryDemo,
-    materialize_views.MVAdGroupDeliveryGeo,
-    materialize_views.MVAdGroupDeliveryDemo,
-    materialize_views.MVCampaignDeliveryGeo,
-    materialize_views.MVCampaignDeliveryDemo,
-    materialize_views.MVAccountDeliveryGeo,
-    materialize_views.MVAccountDeliveryDemo,
-    materialize_views.MVContentAd,
-    materialize_views.MVAdGroup,
-    materialize_views.MVCampaign,
-    materialize_views.MVAccount,
+    # VIEW: Ad Group, TAB: Ads
+    materialize_views.MasterDerivedView.create(
+        table_name='mv_contentad',
+        breakdown=AD_BREAKDOWN,
+        sortkey=AD_BREAKDOWN,
+        distkey='content_ad_id'),
+    materialize_views.MasterDerivedView.create(
+        table_name='mv_contentad_device',
+        breakdown=AD_BREAKDOWN + ['device_type', 'device_os'],
+        sortkey=AD_BREAKDOWN + ['device_type', 'device_os'],
+        distkey='content_ad_id'),
+    materialize_views.MasterDerivedView.create(
+        table_name='mv_contentad_placement',
+        breakdown=AD_BREAKDOWN + ['placement_medium', 'placement_type', 'video_playback_method'],
+        sortkey=AD_BREAKDOWN + ['placement_medium', 'placement_type', 'video_playback_method'],
+        distkey='content_ad_id'),
+    materialize_views.MasterDerivedView.create(
+        table_name='mv_contentad_geo',
+        breakdown=AD_BREAKDOWN + ['country', 'state', 'dma'],
+        sortkey=AD_BREAKDOWN + ['country', 'state', 'dma'],
+        distkey='content_ad_id'),
+    materialize_views.ConversionsDerivedView.create(
+        table_name='mv_contentad_conv',
+        breakdown=AD_BREAKDOWN + ['slug'],
+        sortkey=AD_BREAKDOWN + ['slug'],
+        distkey='content_ad_id'),
+    materialize_views.TouchpointConversionsDerivedView.create(
+        table_name='mv_contentad_touch',
+        breakdown=AD_BREAKDOWN + ['slug', 'conversion_window', 'conversion_label'],
+        sortkey=AD_BREAKDOWN + ['slug', 'conversion_window', 'conversion_label'],
+        distkey='content_ad_id'),
 
-    # Derived views from publishers master
-    materialize_views.MVPublishersAdGroup,
+    # VIEW: Ad Group, TAB: Sources
+    # VIEW: Campaign, TAB: Ad Groups
+    materialize_views.MasterDerivedView.create(
+        table_name='mv_adgroup',
+        breakdown=AD_GROUP_BREAKDOWN,
+        sortkey=AD_GROUP_BREAKDOWN,
+        distkey='ad_group_id'),
+    materialize_views.MasterDerivedView.create(
+        table_name='mv_adgroup_device',
+        breakdown=AD_GROUP_BREAKDOWN + ['device_type', 'device_os'],
+        sortkey=AD_GROUP_BREAKDOWN + ['device_type', 'device_os'],
+        distkey='ad_group_id'),
+    materialize_views.MasterDerivedView.create(
+        table_name='mv_adgroup_placement',
+        breakdown=AD_GROUP_BREAKDOWN + ['placement_medium', 'placement_type', 'video_playback_method'],
+        sortkey=AD_GROUP_BREAKDOWN + ['placement_medium', 'placement_type', 'video_playback_method'],
+        distkey='ad_group_id'),
+    materialize_views.MasterDerivedView.create(
+        table_name='mv_adgroup_geo',
+        breakdown=AD_GROUP_BREAKDOWN + ['country', 'state', 'dma'],
+        sortkey=AD_GROUP_BREAKDOWN + ['country', 'state', 'dma'],
+        distkey='ad_group_id'),
+    materialize_views.ConversionsDerivedView.create(
+        table_name='mv_adgroup_conv',
+        breakdown=AD_GROUP_BREAKDOWN + ['slug'],
+        sortkey=AD_GROUP_BREAKDOWN + ['slug'],
+        distkey='ad_group_id'),
+    materialize_views.TouchpointConversionsDerivedView.create(
+        table_name='mv_adgroup_touch',
+        breakdown=AD_GROUP_BREAKDOWN + ['slug', 'conversion_window', 'conversion_label'],
+        sortkey=AD_GROUP_BREAKDOWN + ['slug', 'conversion_window', 'conversion_label'],
+        distkey='ad_group_id'),
 
-    materialize_views.MVTouchpointAccount,
-    materialize_views.MVTouchpointCampaign,
-    materialize_views.MVTouchpointAdGroup,
-    materialize_views.MVTouchpointContentAd,
+    # VIEW: Campaign, TAB: Sources
+    # VIEW: Account, TAB: Campaigns
+    materialize_views.MasterDerivedView.create(
+        table_name='mv_campaign',
+        breakdown=CAMPAIGN_BREAKDOWN,
+        sortkey=CAMPAIGN_BREAKDOWN,
+        distkey='campaign_id'),
+    materialize_views.MasterDerivedView.create(
+        table_name='mv_campaign_device',
+        breakdown=CAMPAIGN_BREAKDOWN + ['device_type', 'device_os'],
+        sortkey=CAMPAIGN_BREAKDOWN + ['device_type', 'device_os'],
+        distkey='campaign_id'),
+    materialize_views.MasterDerivedView.create(
+        table_name='mv_campaign_placement',
+        breakdown=CAMPAIGN_BREAKDOWN + ['placement_medium', 'placement_type', 'video_playback_method'],
+        sortkey=CAMPAIGN_BREAKDOWN + ['placement_medium', 'placement_type', 'video_playback_method'],
+        distkey='campaign_id'),
+    materialize_views.MasterDerivedView.create(
+        table_name='mv_campaign_geo',
+        breakdown=CAMPAIGN_BREAKDOWN + ['country', 'state', 'dma'],
+        sortkey=CAMPAIGN_BREAKDOWN + ['country', 'state', 'dma'],
+        distkey='campaign_id'),
+    materialize_views.ConversionsDerivedView.create(
+        table_name='mv_campaign_conv',
+        breakdown=CAMPAIGN_BREAKDOWN + ['slug'],
+        sortkey=CAMPAIGN_BREAKDOWN + ['slug'],
+        distkey='campaign_id'),
+    materialize_views.TouchpointConversionsDerivedView.create(
+        table_name='mv_campaign_touch',
+        breakdown=CAMPAIGN_BREAKDOWN + ['slug', 'conversion_window', 'conversion_label'],
+        sortkey=CAMPAIGN_BREAKDOWN + ['slug', 'conversion_window', 'conversion_label'],
+        distkey='campaign_id'),
 
-    materialize_views.MVConversionsAccount,
-    materialize_views.MVConversionsCampaign,
-    materialize_views.MVConversionsAdGroup,
-    materialize_views.MVConversionsContentAd,
+    # VIEW: Account, TAB: Sources
+    # VIEW: All Accounts, TAB: Accounts
+    # VIEW: All Accounts, TAB: Sources
+    materialize_views.MasterDerivedView.create(
+        table_name='mv_account',
+        breakdown=ACCOUNT_BREAKDOWN,
+        sortkey=ACCOUNT_BREAKDOWN,
+        distkey='account_id'),
+    materialize_views.MasterDerivedView.create(
+        table_name='mv_account_device',
+        breakdown=ACCOUNT_BREAKDOWN + ['device_type', 'device_os'],
+        sortkey=ACCOUNT_BREAKDOWN + ['device_type', 'device_os'],
+        distkey='account_id'),
+    materialize_views.MasterDerivedView.create(
+        table_name='mv_account_placement',
+        breakdown=ACCOUNT_BREAKDOWN + ['placement_medium', 'placement_type', 'video_playback_method'],
+        sortkey=ACCOUNT_BREAKDOWN + ['placement_medium', 'placement_type', 'video_playback_method'],
+        distkey='account_id'),
+    materialize_views.MasterDerivedView.create(
+        table_name='mv_account_geo',
+        breakdown=ACCOUNT_BREAKDOWN + ['country', 'state', 'dma'],
+        sortkey=ACCOUNT_BREAKDOWN + ['country', 'state', 'dma'],
+        distkey='account_id'),
+    materialize_views.ConversionsDerivedView.create(
+        table_name='mv_account_conv',
+        breakdown=ACCOUNT_BREAKDOWN + ['slug'],
+        sortkey=ACCOUNT_BREAKDOWN + ['slug'],
+        distkey='account_id'),
+    materialize_views.TouchpointConversionsDerivedView.create(
+        table_name='mv_account_touch',
+        breakdown=ACCOUNT_BREAKDOWN + ['slug', 'conversion_window', 'conversion_label'],
+        sortkey=ACCOUNT_BREAKDOWN + ['slug', 'conversion_window', 'conversion_label'],
+        distkey='account_id'),
+
+    # View: Ad Group, Tab: Publishers
+    materialize_views.MasterPublishersDerivedView.create(
+        table_name='mv_adgroup_pubs',
+        breakdown=AD_GROUP_BREAKDOWN + ['publisher', 'publisher_source_id', 'external_id'],
+        sortkey=AD_GROUP_BREAKDOWN + ['publisher_source_id'],
+        distkey='ad_group_id'),
+    # View: Campaign, Tab: Publishers
+    materialize_views.MasterPublishersDerivedView.create(
+        table_name='mv_campaign_pubs',
+        breakdown=CAMPAIGN_BREAKDOWN + ['publisher', 'publisher_source_id', 'external_id'],
+        sortkey=CAMPAIGN_BREAKDOWN + ['publisher_source_id'],
+        distkey='campaign_id'),
+    # View: Account: Tab: Publishers
+    # View: All Accounts: Tab: Publishers
+    materialize_views.MasterPublishersDerivedView.create(
+        table_name='mv_account_pubs',
+        breakdown=ACCOUNT_BREAKDOWN + ['publisher', 'publisher_source_id', 'external_id'],
+        sortkey=ACCOUNT_BREAKDOWN + ['publisher_source_id'],
+        distkey='account_id'),
 ]
 
 
-ALL_MATERIALIZED_VIEWS = MATERIALIZED_VIEWS + NEW_MATERIALIZED_VIEWS
 SLACK_MIN_DAYS_TO_PROCESS = 10
 
 
@@ -80,7 +205,7 @@ def refresh_k1_reports(update_since, account_id=None, skip_vacuum=False):
     do_post_to_slack = (datetime.datetime.today() - update_since).days > SLACK_MIN_DAYS_TO_PROCESS
     if do_post_to_slack:
         _post_to_slack('started', update_since, account_id)
-    _refresh_k1_reports(update_since, ALL_MATERIALIZED_VIEWS, account_id, skip_vacuum=skip_vacuum)
+    _refresh_k1_reports(update_since, MATERIALIZED_VIEWS, account_id, skip_vacuum=skip_vacuum)
     if do_post_to_slack:
         _post_to_slack('finished', update_since, account_id)
 
@@ -109,8 +234,8 @@ def _refresh_k1_reports(update_since, views, account_id=None, skip_vacuum=False)
             update_since, date_from, job_id)
 
     for mv_class in views:
+        mv = mv_class(job_id, date_from, date_to, account_id=account_id)
         with influx.block_timer('etl.refresh_k1.generate_table', table=mv_class.TABLE_NAME):
-            mv = mv_class(job_id, date_from, date_to, account_id=account_id)
             mv.generate(campaign_factors=effective_spend_factors)
 
             try:
@@ -126,8 +251,9 @@ def _refresh_k1_reports(update_since, views, account_id=None, skip_vacuum=False)
     # so might as well leave cache until refresh finishes
     invalidate_breakdowns_rs_cache()
 
-    # check how it went
-    maintenance.crossvalidate_traffic(date_from, date_to)
+
+def get_all_views_table_names(temporary=False):
+    return [x.TABLE_NAME for x in MATERIALIZED_VIEWS if x.IS_TEMPORARY_TABLE is temporary]
 
 
 def generate_job_id(account_id):

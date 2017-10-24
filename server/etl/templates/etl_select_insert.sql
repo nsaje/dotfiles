@@ -9,12 +9,11 @@ INSERT INTO {{ destination_table }}
     FROM
         {{ source_table }}
     WHERE
-        date BETWEEN %(date_from)s AND %(date_to)s
-        {% if account_id %}
-            AND account_id=%(account_id)s
-        {% endif %}
+        {{ constraints|generate }}
     GROUP BY
         {{ breakdown|only_alias }}
+    ORDER BY
+        {{ order|only_alias }}
 );
 
 {% endautoescape %}

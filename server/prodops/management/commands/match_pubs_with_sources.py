@@ -9,7 +9,7 @@ import prodops.helpers as hlp
 
 PUBS_PER_CHUNK = 1000
 QUERY = """SELECT DISTINCT publisher, source_id
-FROM mv_pubs_master
+FROM mv_master_pubs
 WHERE date >= '{date}' AND publisher IN ({publist})"""
 
 

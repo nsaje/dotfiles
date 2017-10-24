@@ -11,15 +11,9 @@ from redshiftapi import db
 
 logger = logging.getLogger(__name__)
 OB = Source.objects.get(source_type__type=SourceType.OUTBRAIN)
-QUERY_NEW = '''
+QUERY = '''
 SELECT account_id, SUM(impressions)
 FROM mv_master
-WHERE account_id in ({}) AND source_id = {}
-GROUP BY account_id;
-'''
-QUERY_OLD = '''
-SELECT account_id, SUM(impressions)
-FROM contentadstats
 WHERE account_id in ({}) AND source_id = {}
 GROUP BY account_id;
 '''
@@ -43,11 +37,8 @@ class Command(ExceptionCommand):
     def _validate_account_ids(self, account_ids, filter_only=False):
         account_ids = list(account_ids)
         with db.get_stats_cursor() as c:
-            c.execute(QUERY_OLD.format(','.join(map(str, account_ids)), OB.pk))
+            c.execute(QUERY.format(','.join(map(str, account_ids)), OB.pk))
             data = dict(c.fetchall())
-        with db.get_stats_cursor() as c:
-            c.execute(QUERY_NEW.format(','.join(map(str, account_ids)), OB.pk))
-            data.update(dict(c.fetchall()))
         adgroup_counts = {
             obj['campaign__account_id']: obj['total']
             for obj in AdGroup.objects.all().values('campaign__account_id').annotate(total=Count('id')).order_by('-total')

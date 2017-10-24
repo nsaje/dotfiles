@@ -11,74 +11,63 @@ INSERT INTO mvh_clean_stats (
           {% endfor %}
       END as date,
       stats.media_source as source_slug,
+
       ad_group_id,
       content_ad_id,
-
       -- no outbrain publishers here
       CASE
-          WHEN media_source = '{{ yahoo_slug }}' THEN 'all publishers' ELSE LOWER(publisher)
+          WHEN media_source = '{{ yahoo_slug }}' THEN 'all publishers'
+          ELSE LOWER(publisher)
       END as publisher,
 
-      -- check dash/constants.py DeviceType for correct setting.
-      -- OpenRTB values:
-      -- 1 | Mobile/Tablet
-      -- 2 | Personal Computer
-      -- 3 | Connected TV
-      -- 4 | Phone
-      -- 5 | Tablet
-      -- 6 | Connected Device
-      -- 7 | Set Top Box
-      CASE
-          WHEN device_type = 4 THEN 3 -- mobile
-          WHEN device_type = 2 THEN 1 -- desktop
-          WHEN device_type = 5 THEN 2 -- tablet
-          ELSE 0 -- undefined
-      END as device_type,
-      CASE WHEN LEN(TRIM(country)) <= 2 THEN UPPER(TRIM(country))
+      CASE WHEN device_type = 1 THEN 4  -- convert legacy OpenRTB `mobile` to `phone`
+           WHEN device_type = 6 THEN 3
+           WHEN device_type = 7 THEN 3
+           ELSE NULLIF(device_type, 0)
+      END AS device_type,
+      CASE WHEN date < '2017-05-01' THEN NULL  -- before that input was not sanitized
+           WHEN device_os ILIKE '%%unknown%%' THEN NULL
+           WHEN device_os ILIKE 'Android%%' THEN 'Android'
+           WHEN device_os ILIKE 'iOS%%' THEN 'iOS'
+           WHEN device_os ILIKE 'WinPhone%%' THEN 'WinPhone'
+           WHEN device_os ILIKE 'WinRT%%' THEN 'WinRT'
+           WHEN device_os ILIKE 'Windows%%' THEN 'Windows'
+           WHEN device_os ILIKE 'MacOSX%%' THEN 'macOS'
+           WHEN device_os ILIKE 'macOS%%' THEN 'macOS'
+           WHEN device_os IN ('Linux', 'Ubuntu', 'Debian', 'Fedora') THEN 'Linux'
+           WHEN device_os ILIKE 'ChromeOS' THEN 'ChromeOS'
+           WHEN NULLIF(TRIM(device_os), '') IS NOT NULL THEN 'Other'
            ELSE NULL
-      END AS country,
-      CASE WHEN LEN(TRIM(state)) <= 5 THEN UPPER(TRIM(state))
+      END AS device_os,
+      CASE WHEN date < '2017-05-01' THEN NULL  -- before that input was not sanitized
+           WHEN device_os_version ILIKE '%%unknown%%' THEN NULL
+           WHEN device_os_version ILIKE 'Android%%' THEN device_os_version
+           WHEN device_os_version ILIKE 'iOS%%' THEN REPLACE(device_os_version, ';', '')  -- some special case
+           WHEN device_os_version ILIKE 'WinPhone%%' THEN device_os_version
+           WHEN device_os_version ILIKE 'WinRT%%' THEN device_os_version
+           WHEN device_os_version ILIKE 'Windows%%' THEN device_os_version
+           WHEN device_os_version ILIKE 'MacOS%%' THEN device_os_version
+           WHEN device_os_version ILIKE 'ChromeOS%%' THEN device_os_version
+           WHEN NULLIF(TRIM(device_os_version), '') IS NOT NULL THEN 'Other'
            ELSE NULL
+      END AS device_os_version,
+      NULLIF(TRIM(placement_medium), '') as placement_medium,
+
+      NULLIF(placement_type, 0) as placement_type,
+      NULLIF(video_playback_method, 0) as video_playback_method,
+
+      NULLIF(TRIM(UPPER(country)), '') AS country,
+      CASE WHEN state ILIKE '%%-%%' THEN NULLIF(TRIM(UPPER(state)), '')
+           ELSE NULLIF(TRIM(UPPER(country)), '') || '-' || NULLIF(TRIM(UPPER(state)), '')
       END AS state,
-      CASE WHEN 499 < dma AND dma < 1000 THEN dma
+      CASE WHEN country ILIKE 'US' AND dma BETWEEN 500 AND 882 THEN dma
            ELSE NULL
       END AS dma,
-      city_id,
-      placement_type,
-      video_playback_method,
-      CASE WHEN TRIM(age)='18-20' THEN 1
-           WHEN TRIM(age)='21-29' THEN 2
-           WHEN TRIM(age)='30-39' THEN 3
-           WHEN TRIM(age)='40-49' THEN 4
-           WHEN TRIM(age)='50-64' THEN 5
-           WHEN TRIM(age)='65+'   THEN 6
-           ELSE 0
-      END AS age,
-      CASE WHEN TRIM(LOWER(gender))='male'   THEN 1
-           WHEN TRIM(LOWER(gender))='female' THEN 2
-           ELSE 0
-      END AS gender,
-      CASE
-          WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='18-20' THEN 1
-          WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='18-20' THEN 2
-          WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='18-20' THEN 3
-          WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='21-29' THEN 4
-          WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='21-29' THEN 5
-          WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='21-29' THEN 6
-          WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='30-39' THEN 7
-          WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='30-39' THEN 8
-          WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='30-39' THEN 9
-          WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='40-49' THEN 10
-          WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='40-49' THEN 11
-          WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='40-49' THEN 12
-          WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='50-64' THEN 13
-          WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='50-64' THEN 14
-          WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='50-64' THEN 15
-          WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='65+'   THEN 16
-          WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='65+'   THEN 17
-          WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='65+'   THEN 18
-      ELSE 0
-      END AS age_gender,
+      NULLIF(city_id, 0) AS city_id,
+
+      NULLIF(TRIM(LOWER(age)), '') as age,
+      NULLIF(TRIM(LOWER(gender)), '') as gender,
+      NULLIF(TRIM(LOWER(age)), '') || ' ' || NVL(TRIM(LOWER(gender)), '') AS age_gender,
 
       SUM(impressions) as impressions,
       SUM(clicks) as clicks,
@@ -104,5 +93,5 @@ INSERT INTO mvh_clean_stats (
       {% if account_id %}
           AND ad_group_id=ANY(%(ad_group_id)s)
       {% endif %}
-  GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+  GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18
 );

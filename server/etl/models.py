@@ -49,28 +49,34 @@ class K1PostclickStats(backtosql.Model, RSBreakdownMixin):
 
 class MVMaster(backtosql.Model, RSBreakdownMixin):
     date = backtosql.Column('date', BREAKDOWN)
+    source_id = backtosql.Column('source_id', BREAKDOWN)
 
-    agency_id = backtosql.Column('agency_id', BREAKDOWN)
     account_id = backtosql.Column('account_id', BREAKDOWN)
     campaign_id = backtosql.Column('campaign_id', BREAKDOWN)
     ad_group_id = backtosql.Column('ad_group_id', BREAKDOWN)
     content_ad_id = backtosql.Column('content_ad_id', BREAKDOWN)
-    source_id = backtosql.Column('source_id', BREAKDOWN)
     publisher = backtosql.Column('publisher', BREAKDOWN)
-    external_id = backtosql.Column('external_id', BREAKDOWN)
+    publisher_source_id = backtosql.Column('publisher_source_id', BREAKDOWN)
 
     device_type = backtosql.Column('device_type', BREAKDOWN)
-    country = backtosql.Column('country', BREAKDOWN)
-    state = backtosql.Column('state', BREAKDOWN)
-    dma = backtosql.Column('dma', BREAKDOWN)
-    age = backtosql.Column('age', BREAKDOWN)
-    gender = backtosql.Column('gender', BREAKDOWN)
-    age_gender = backtosql.Column('age_gender', BREAKDOWN)
+    device_os = backtosql.Column('device_os', BREAKDOWN)
+    device_os_version = backtosql.Column('device_os_version', BREAKDOWN)
+    placement_medium = backtosql.Column('placement_medium', BREAKDOWN)
+
     placement_type = backtosql.Column('placement_type', BREAKDOWN)
     video_playback_method = backtosql.Column('video_playback_method', BREAKDOWN)
 
-    clicks = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'clicks'}, AGGREGATES)
+    country = backtosql.Column('country', BREAKDOWN)
+    state = backtosql.Column('state', BREAKDOWN)
+    dma = backtosql.Column('dma', BREAKDOWN)
+    city_id = backtosql.Column('city_id', BREAKDOWN)
+
+    age = backtosql.Column('age', BREAKDOWN)
+    gender = backtosql.Column('gender', BREAKDOWN)
+    age_gender = backtosql.Column('age_gender', BREAKDOWN)
+
     impressions = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'impressions'}, AGGREGATES)
+    clicks = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'clicks'}, AGGREGATES)
     cost_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'cost_nano'}, AGGREGATES)
     data_cost_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'data_cost_nano'}, AGGREGATES)
 
@@ -81,15 +87,13 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
     total_time_on_site = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'total_time_on_site'}, AGGREGATES)
 
     effective_cost_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'effective_cost_nano'}, AGGREGATES)
-    effective_data_cost_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'effective_data_cost_nano'},
-                                                        AGGREGATES)
+    effective_data_cost_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'effective_data_cost_nano'}, AGGREGATES)  # noqa
     license_fee_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'license_fee_nano'}, AGGREGATES)
     margin_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'margin_nano'}, AGGREGATES)
 
     users = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'users'}, AGGREGATES)
     returning_users = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'returning_users'}, AGGREGATES)
 
-    # Video
     video_start = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'video_start'}, AGGREGATES)
     video_first_quartile = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'video_first_quartile'}, AGGREGATES)
     video_midpoint = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'video_midpoint'}, AGGREGATES)
@@ -109,3 +113,57 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
             'returning_users', 'video_start', 'video_first_quartile', 'video_midpoint',
             'video_third_quartile', 'video_complete', 'video_progress_3s',
         ])
+
+
+class MVPublishers(MVMaster):
+    external_id = backtosql.Column('external_id', BREAKDOWN)
+
+
+class MVConversions(backtosql.Model, RSBreakdownMixin):
+    date = backtosql.Column('date', BREAKDOWN)
+    source_id = backtosql.Column('source_id', BREAKDOWN)
+
+    account_id = backtosql.Column('account_id', BREAKDOWN)
+    campaign_id = backtosql.Column('campaign_id', BREAKDOWN)
+    ad_group_id = backtosql.Column('ad_group_id', BREAKDOWN)
+    content_ad_id = backtosql.Column('content_ad_id', BREAKDOWN)
+    publisher = backtosql.Column('publisher', BREAKDOWN)
+    publisher_source_id = backtosql.Column('publisher_source_id', BREAKDOWN)
+
+    slug = backtosql.Column('slug', BREAKDOWN)
+
+    conversion_count = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'conversion_count'}, AGGREGATES)
+
+    def get_ordered_aggregates(self):
+        """
+        Returns aggregates in order as it is used in materialized view table definitions.
+        """
+
+        return self.select_columns(group=AGGREGATES)
+
+
+class MVTouchpointConversions(backtosql.Model, RSBreakdownMixin):
+    date = backtosql.Column('date', BREAKDOWN)
+    source_id = backtosql.Column('source_id', BREAKDOWN)
+
+    account_id = backtosql.Column('account_id', BREAKDOWN)
+    campaign_id = backtosql.Column('campaign_id', BREAKDOWN)
+    ad_group_id = backtosql.Column('ad_group_id', BREAKDOWN)
+    content_ad_id = backtosql.Column('content_ad_id', BREAKDOWN)
+    publisher = backtosql.Column('publisher', BREAKDOWN)
+    publisher_source_id = backtosql.Column('publisher_source_id', BREAKDOWN)
+
+    slug = backtosql.Column('slug', BREAKDOWN)
+    conversion_window = backtosql.Column('conversion_window', BREAKDOWN)
+    conversion_label = backtosql.Column('conversion_label', BREAKDOWN)
+
+    touchpoint_count = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'touchpoint_count'}, AGGREGATES)
+    conversion_count = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'conversion_count'}, AGGREGATES)
+    conversion_value_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'conversion_value_nano'}, AGGREGATES)  # noqa
+
+    def get_ordered_aggregates(self):
+        """
+        Returns aggregates in order as it is used in materialized view table definitions.
+        """
+
+        return self.select_columns(subset=['touchpoint_count', 'conversion_count', 'conversion_value_nano'])

@@ -10,6 +10,7 @@ from functools import partial
 import unicodecsv as csv
 
 from django.conf import settings
+from django.utils.functional import cached_property
 
 from utils import s3helpers
 from utils import threads
@@ -19,8 +20,9 @@ import dash.constants
 
 from redshiftapi import db
 
-from etl import models
-from etl import helpers
+import models
+import helpers
+import derived_views
 
 
 logger = logging.getLogger(__name__)
@@ -320,6 +322,7 @@ class MVHelpersNormalizedStats(Materialize):
 
                 logger.info('Running insert into table "%s", job %s', self.TABLE_NAME, self.job_id)
                 sql, params = self.prepare_insert_query()
+
                 c.execute(sql, params)
                 logger.info('Done insert into table "%s", job %s', self.TABLE_NAME, self.job_id)
 
@@ -346,7 +349,6 @@ class MasterView(Materialize):
     """
 
     TABLE_NAME = 'mv_master'
-    POSTCLICK_STRUCTURE_BREAKDOWN_INDEX = 8
 
     def generate(self, **kwargs):
         self.prefetch()
@@ -458,25 +460,34 @@ class MasterView(Materialize):
                         date,
                         source.id,
 
-                        account.agency_id,
                         account.id,
                         campaign.id,
                         ad_group.id,
                         row.content_ad_id,
                         publisher,
+                        u'{}__{}'.format(publisher if publisher else u'', source.id),  # publisher_source_id
 
-                        dash.constants.DeviceType.UNDEFINED,
-                        None,
-                        None,
-                        None,
-                        dash.constants.AgeGroup.UNDEFINED,
+                        dash.constants.DeviceType.UNKNOWN,
+                        None,  # device_os
+                        None,  # device_os_version
+                        dash.constants.PlacementMedium.UNKNOWN,
+
+                        dash.constants.PlacementType.UNKNOWN,
+                        dash.constants.VideoPlaybackMethod.UNKNOWN,
+
+                        None,  # country
+                        None,  # state
+                        None,  # dma
+                        None,  # city_id
+
+                        dash.constants.Age.UNDEFINED,
                         dash.constants.Gender.UNDEFINED,
-                        dash.constants.AgeGenderGroup.UNDEFINED,
+                        dash.constants.AgeGender.UNDEFINED,
 
-                        0,
-                        0,
-                        0,
-                        0,
+                        0,  # impressions
+                        0,  # clicks
+                        0,  # cost_nano
+                        0,  # data_cost_nano
 
                         row.visits,
                         row.new_visits,
@@ -484,18 +495,14 @@ class MasterView(Materialize):
                         row.pageviews,
                         row.total_time_on_site,
 
-                        0,
-                        0,
-                        0,
-                        0,
+                        0,  # effective_cost_nano
+                        0,  # effective_data_cost_nano
+                        0,  # license_fee_nano
+                        0,  # margin_nano
 
                         row.users,
                         returning_users,
 
-                        None,  # city_id
-
-                        None,  # placement_type
-                        None,  # video_playback_method
                         None,  # video_start
                         None,  # video_first_quartile
                         None,  # video_midpoint
@@ -535,7 +542,7 @@ class MasterView(Materialize):
 
 class MasterPublishersView(Materialize):
 
-    TABLE_NAME = 'mv_pubs_master'
+    TABLE_NAME = 'mv_master_pubs'
 
     def __init__(self, *args, **kwargs):
         self.outbrain = get_outbrain()
@@ -553,15 +560,15 @@ class MasterPublishersView(Materialize):
 
                 logger.info('Inserting non-Outbrain data into table "%s" for date range %s - %s, job %s',
                             self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
-                sql, params = self.prepare_select_insert_mv_pubs_master()
+                sql, params = self.prepare_select_insert_mv_master_pubs()
                 c.execute(sql, params)
 
                 logger.info('Inserting Outbrain data into table "%s" for date range %s - %s, job %s',
                             self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
-                sql, params = self.prepare_select_insert_outbrain_to_mv_pubs_master()
+                sql, params = self.prepare_select_insert_outbrain_to_mv_master_pubs()
                 c.execute(sql, params)
 
-    def prepare_select_insert_mv_pubs_master(self):
+    def prepare_select_insert_mv_master_pubs(self):
         sql = backtosql.generate_sql('etl_select_insert_mv_pubs_master.sql', {
             'account_id': self.account_id,
         })
@@ -571,7 +578,7 @@ class MasterPublishersView(Materialize):
             'date_to': self.date_to,
         })
 
-    def prepare_select_insert_outbrain_to_mv_pubs_master(self):
+    def prepare_select_insert_outbrain_to_mv_master_pubs(self):
         sql = backtosql.generate_sql('etl_select_insert_outbrain_to_mv_pubs_master.sql', {
             'source_id': self.outbrain.id,
             'account_id': self.account_id,
@@ -624,9 +631,10 @@ class MVConversions(Materialize):
 
             if conversions:
                 conversions = json.loads(conversions)
+
                 for slug, hits in conversions.iteritems():
                     slug = helpers.get_conversion_prefix(postclick_source, slug)
-                    yield tuple(list(row)[:self.master_view.POSTCLICK_STRUCTURE_BREAKDOWN_INDEX] + [slug, hits])
+                    yield tuple(list(row)[:8] + [slug, hits])
 
 
 class MVTouchpointConversions(Materialize):
@@ -662,263 +670,107 @@ class MVTouchpointConversions(Materialize):
         })
 
 
-class DerivedMaterializedView(Materialize):
+class MasterDerivedView(Materialize):
+    SOURCE_VIEW = MasterView.TABLE_NAME
+    TEMPLATE = 'etl/migrations/redshift/mv_master.sql'
+    IS_TEMPORARY_TABLE = False
+
+    @classmethod
+    def create(cls, table_name, breakdown, sortkey, distkey=None, diststyle='key'):
+        class Derived(cls):
+            TABLE_NAME = table_name
+            BREAKDOWN = breakdown
+            SORTKEY = sortkey
+            DISTKEY = distkey
+            DISTSTYLE = diststyle
+
+        return Derived
+
+    @cached_property
+    def model(self):
+        return models.MVMaster()
 
     def generate(self, **kwargs):
         with db.get_write_stats_transaction():
             with db.get_write_stats_cursor() as c:
 
-                logger.info('Deleting data from table "%s" for date range %s - %s, job %s',
-                            self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
-                sql, params = prepare_date_range_delete_query(self.TABLE_NAME, self.date_from,
-                                                              self.date_to, self.account_id)
-                c.execute(sql, params)
+                logger.info('Create materialized view table if not exists "%s" for breakdown "%s", job %s', self.TABLE_NAME, self.BREAKDOWN, self.job_id)  # noqa
+                sql = self.prepare_create_table()
+                c.execute(sql)
 
-                logger.info('Inserting data into table "%s" for date range %s - %s, job %s',
-                            self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
-                sql, params = self.prepare_insert_query()
-                c.execute(sql, params)
+                c.execute("SELECT count(1) FROM {}".format(self.TABLE_NAME))
+                count = c.fetchone()[0]
 
-    def prepare_insert_query(self):
-        raise NotImplementedError()
+                if not count:
+                    logger.info('Fill empty materialized view "%s" for breakdown "%s" for full date range, job %s', self.TABLE_NAME, self.BREAKDOWN, self.job_id)  # noqa
+                    sql, params = self.prepare_insert_query(None, None)
+                    c.execute(sql, params)
+                else:
+                    logger.info('Deleting data from table "%s" for date range %s - %s, job %s',
+                                self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
+                    sql, params = prepare_date_range_delete_query(self.TABLE_NAME, self.date_from,
+                                                                  self.date_to, self.account_id)
+                    c.execute(sql, params)
 
+                    logger.info('Inserting data into table "%s" for date range %s - %s, job %s',
+                                self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
+                    sql, params = self.prepare_insert_query(self.date_from, self.date_to)
+                    c.execute(sql, params)
 
-class DerivedFromMaster(DerivedMaterializedView):
-    BREAKDOWN = None
-    PARENT_VIEW = MasterView
+    def prepare_create_table(self):
+        with open(self.TEMPLATE) as rs:
+            sql = derived_views.generate_table_definition(
+                self.TABLE_NAME, rs, self.BREAKDOWN, self.SORTKEY, distkey=self.DISTKEY, diststyle=self.DISTSTYLE)
+        return sql
 
-    def prepare_insert_query(self):
+    def prepare_insert_query(self, date_from, date_to):
+        constraints = {}
+        if date_from:
+            constraints['date__gte'] = date_from
 
-        if not self.BREAKDOWN:
-            raise Exception("Should define a breakdown for materialization")
+        if date_to:
+            constraints['date__lte'] = date_to
+
+        # if date range is not defined reprocess for all accounts as the table was just created
+        if date_from and date_to:
+            constraints = self._add_account_id_param(constraints)
+
+        constraints = backtosql.Q(self.model, **constraints)
 
         sql = backtosql.generate_sql('etl_select_insert.sql', {
-            'breakdown': models.MVMaster().get_breakdown(self.BREAKDOWN),
-            'aggregates': models.MVMaster().get_ordered_aggregates(),
+            'breakdown': self.model.get_breakdown(self.BREAKDOWN),
+            'aggregates': self.model.get_ordered_aggregates(),
             'destination_table': self.TABLE_NAME,
-            'source_table': self.PARENT_VIEW.TABLE_NAME,
-            'account_id': self.account_id,
+            'source_table': self.SOURCE_VIEW,
+            'constraints': constraints,
+            'order': self.model.select_columns(subset=self.SORTKEY),
         })
 
-        return sql, self._add_account_id_param({
-            'date_from': self.date_from,
-            'date_to': self.date_to,
-        })
+        return sql, constraints.get_params()
 
 
-class MVContentAd(DerivedFromMaster):
-    TABLE_NAME = 'mv_content_ad'
-    BREAKDOWN = [
-        'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id', 'content_ad_id'
-    ]
-    PARENT_VIEW = MasterView
+class MasterPublishersDerivedView(MasterDerivedView):
+    SOURCE_VIEW = MasterPublishersView.TABLE_NAME
+    TEMPLATE = 'etl/migrations/redshift/mv_publishers_master.sql'
+
+    @cached_property
+    def model(self):
+        return models.MVPublishers()
 
 
-class MVContentAdDeliveryGeo(DerivedFromMaster):
-    TABLE_NAME = 'mv_content_ad_delivery_geo'
-    BREAKDOWN = [
-        'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id', 'content_ad_id',
-        'country', 'state', 'dma',
-    ]
-    PARENT_VIEW = MasterView
+class ConversionsDerivedView(MasterDerivedView):
+    SOURCE_VIEW = MVConversions.TABLE_NAME
+    TEMPLATE = 'etl/migrations/redshift/mv_conversions.sql'
+
+    @cached_property
+    def model(self):
+        return models.MVConversions()
 
 
-class MVContentAdDeliveryDemo(DerivedFromMaster):
-    TABLE_NAME = 'mv_content_ad_delivery_demo'
-    BREAKDOWN = [
-        'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id', 'content_ad_id',
-        'device_type', 'age', 'gender', 'age_gender',
-    ]
-    PARENT_VIEW = MasterView
+class TouchpointConversionsDerivedView(MasterDerivedView):
+    SOURCE_VIEW = MVTouchpointConversions.TABLE_NAME
+    TEMPLATE = 'etl/migrations/redshift/mv_touchpointconversions.sql'
 
-
-class MVAdGroup(DerivedFromMaster):
-    TABLE_NAME = 'mv_ad_group'
-    BREAKDOWN = ['date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id']
-    PARENT_VIEW = MVContentAd
-
-
-class MVAdGroupDeliveryGeo(DerivedFromMaster):
-    TABLE_NAME = 'mv_ad_group_delivery_geo'
-    BREAKDOWN = [
-        'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id',
-        'country', 'state', 'dma',
-    ]
-    PARENT_VIEW = MVContentAdDeliveryGeo
-
-
-class MVAdGroupDeliveryDemo(DerivedFromMaster):
-    TABLE_NAME = 'mv_ad_group_delivery_demo'
-    BREAKDOWN = [
-        'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id',
-        'device_type', 'age', 'gender', 'age_gender',
-    ]
-    PARENT_VIEW = MVContentAdDeliveryDemo
-
-
-class MVCampaign(DerivedFromMaster):
-    TABLE_NAME = 'mv_campaign'
-    BREAKDOWN = [
-        'date', 'source_id', 'agency_id', 'account_id', 'campaign_id',
-    ]
-    PARENT_VIEW = MVAdGroup
-
-
-class MVCampaignDeliveryGeo(DerivedFromMaster):
-    TABLE_NAME = 'mv_campaign_delivery_geo'
-    BREAKDOWN = [
-        'date', 'source_id', 'agency_id', 'account_id', 'campaign_id',
-        'country', 'state', 'dma',
-    ]
-    PARENT_VIEW = MVAdGroupDeliveryGeo
-
-
-class MVCampaignDeliveryDemo(DerivedFromMaster):
-    TABLE_NAME = 'mv_campaign_delivery_demo'
-    BREAKDOWN = [
-        'date', 'source_id', 'agency_id', 'account_id', 'campaign_id',
-        'device_type', 'age', 'gender', 'age_gender',
-    ]
-    PARENT_VIEW = MVAdGroupDeliveryDemo
-
-
-class MVAccount(DerivedFromMaster):
-    TABLE_NAME = 'mv_account'
-    BREAKDOWN = ['date', 'source_id', 'agency_id', 'account_id']
-    PARENT_VIEW = MVCampaign
-
-
-class MVAccountDeliveryGeo(DerivedFromMaster):
-    TABLE_NAME = 'mv_account_delivery_geo'
-    BREAKDOWN = [
-        'date', 'source_id', 'agency_id', 'account_id',
-        'country', 'state', 'dma',
-    ]
-    PARENT_VIEW = MVCampaignDeliveryGeo
-
-
-class MVAccountDeliveryDemo(DerivedFromMaster):
-    TABLE_NAME = 'mv_account_delivery_demo'
-    BREAKDOWN = [
-        'date', 'source_id', 'agency_id', 'account_id',
-        'device_type', 'age', 'gender', 'age_gender',
-    ]
-    PARENT_VIEW = MVCampaignDeliveryDemo
-
-
-class DerivedFromTouchpoints(DerivedMaterializedView):
-    BREAKDOWN = None
-    PARENT_VIEW = MVTouchpointConversions
-
-    def prepare_insert_query(self):
-
-        if not self.BREAKDOWN:
-            raise Exception("Should define a breakdown for materialization")
-
-        sql = backtosql.generate_sql('etl_select_insert_touchpointconversions.sql', {
-            # use MVMaster model as it has same breakdown columns
-            'breakdown': models.MVMaster().get_breakdown(self.BREAKDOWN),
-            'destination_table': self.TABLE_NAME,
-            'source_table': self.PARENT_VIEW.TABLE_NAME,
-            'account_id': self.account_id,
-        })
-
-        return sql, self._add_account_id_param({
-            'date_from': self.date_from,
-            'date_to': self.date_to,
-        })
-
-
-class MVTouchpointAccount(DerivedFromTouchpoints):
-    TABLE_NAME = 'mv_touch_account'
-    BREAKDOWN = ['date', 'source_id', 'agency_id', 'account_id']
-    PARENT_VIEW = MVTouchpointConversions
-
-
-class MVTouchpointCampaign(DerivedFromTouchpoints):
-    TABLE_NAME = 'mv_touch_campaign'
-    BREAKDOWN = ['date', 'source_id', 'agency_id', 'account_id', 'campaign_id']
-    PARENT_VIEW = MVTouchpointConversions
-
-
-class MVTouchpointAdGroup(DerivedFromTouchpoints):
-    TABLE_NAME = 'mv_touch_ad_group'
-    BREAKDOWN = ['date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id']
-    PARENT_VIEW = MVTouchpointConversions
-
-
-class MVTouchpointContentAd(DerivedFromTouchpoints):
-    TABLE_NAME = 'mv_touch_content_ad'
-    BREAKDOWN = [
-        'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id', 'content_ad_id'
-    ]
-    PARENT_VIEW = MVTouchpointConversions
-
-
-class DerivedFromConversions(DerivedMaterializedView):
-    BREAKDOWN = None
-    PARENT_VIEW = MVConversions
-
-    def prepare_insert_query(self):
-
-        if not self.BREAKDOWN:
-            raise Exception("Should define a breakdown for materialization")
-
-        sql = backtosql.generate_sql('etl_select_insert_conversions.sql', {
-            # use MVMaster model as it has same breakdown columns
-            'breakdown': models.MVMaster().get_breakdown(self.BREAKDOWN),
-            'destination_table': self.TABLE_NAME,
-            'source_table': self.PARENT_VIEW.TABLE_NAME,
-            'account_id': self.account_id,
-        })
-
-        return sql, self._add_account_id_param({
-            'date_from': self.date_from,
-            'date_to': self.date_to,
-        })
-
-
-class MVConversionsAccount(DerivedFromConversions):
-    TABLE_NAME = 'mv_conversions_account'
-    BREAKDOWN = ['date', 'source_id', 'agency_id', 'account_id']
-    PARENT_VIEW = MVConversions
-
-
-class MVConversionsCampaign(DerivedFromConversions):
-    TABLE_NAME = 'mv_conversions_campaign'
-    BREAKDOWN = ['date', 'source_id', 'agency_id', 'account_id', 'campaign_id']
-    PARENT_VIEW = MVConversions
-
-
-class MVConversionsAdGroup(DerivedFromConversions):
-    TABLE_NAME = 'mv_conversions_ad_group'
-    BREAKDOWN = ['date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id']
-    PARENT_VIEW = MVConversions
-
-
-class MVConversionsContentAd(DerivedFromConversions):
-    TABLE_NAME = 'mv_conversions_content_ad'
-    BREAKDOWN = [
-        'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id', 'content_ad_id'
-    ]
-    PARENT_VIEW = MVConversions
-
-
-class MVPublishersAdGroup(DerivedMaterializedView):
-    TABLE_NAME = 'mv_pubs_ad_group'
-
-    def prepare_insert_query(self):
-        sql = backtosql.generate_sql('etl_select_insert.sql', {
-            'breakdown': models.MVMaster().get_breakdown([
-                'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id', 'publisher', 'external_id'
-            ]),
-            'aggregates': models.MVMaster().get_ordered_aggregates(),
-            'destination_table': self.TABLE_NAME,
-            'source_table': MasterPublishersView.TABLE_NAME,
-            'account_id': self.account_id,
-        })
-
-        return sql, self._add_account_id_param({
-            'date_from': self.date_from,
-            'date_to': self.date_to,
-        })
+    @cached_property
+    def model(self):
+        return models.MVTouchpointConversions()

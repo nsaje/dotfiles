@@ -188,7 +188,7 @@ class MVMasterPublishersTest(TestCase, backtosql.TestSQLMixin):
         self.assertEqual(q.get_params(), [123, 111, 223, date_from, date_to, ['asd'], 1, ['adsdd'], 2])
 
     def test_get_best_view(self):
-        self.assertEqual(self.model.get_best_view(['publisher_id'], True), 'mv_pubs_ad_group')
+        self.assertEqual(self.model.get_best_view(['publisher_id'], True), 'mv_account_pubs')
 
 
 class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
@@ -207,7 +207,7 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
                               ['count', 'conversion_value'])
 
     def test_get_best_view(self):
-        self.assertEqual(self.model.get_best_view(['account_id'], False), 'mv_touch_account')
+        self.assertEqual(self.model.get_best_view(['account_id'], False), 'mv_account_touch')
 
 
 class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
@@ -226,7 +226,7 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
                               ['count'])
 
     def test_get_best_view(self):
-        self.assertEqual(self.model.get_best_view(['account_id'], False), 'mv_conversions_account')
+        self.assertEqual(self.model.get_best_view(['account_id'], False), 'mv_account_conv')
 
 
 class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):

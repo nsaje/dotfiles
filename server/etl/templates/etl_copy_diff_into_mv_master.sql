@@ -4,23 +4,32 @@
 
 INSERT INTO mv_master (
   SELECT
-      a.date as date,
-      a.source_id as source_id,
+      a.date,
+      a.source_id,
 
-      c.agency_id as agency_id,
-      c.account_id as account_id,
-      c.campaign_id as campaign_id,
-      a.ad_group_id as ad_group_id,
-      a.content_ad_id as content_ad_id,
-      a.publisher as publisher,
+      c.account_id,
+      c.campaign_id,
+      a.ad_group_id,
+      a.content_ad_id,
+      a.publisher,
+      a.publisher || '__' || a.source_id as publisher_source_id,
 
-      a.device_type as device_type,
-      a.country as country,
-      a.state as state,
-      a.dma as dma,
-      a.age as age,
-      a.gender as gender,
-      a.age_gender as age_gender,
+      a.device_type,
+      NULL AS device_os,
+      NULL AS device_os_version,
+      NULL AS placement_medium,
+
+      NULL AS placement_type,
+      NULL AS video_playback_method,
+
+      a.country,
+      a.state,
+      a.dma,
+      NULL AS city_id,
+
+      a.age,
+      a.gender,
+      a.age_gender,
 
       a.impressions,
       a.clicks,
@@ -53,7 +62,14 @@ INSERT INTO mv_master (
       ) as margin_nano,
 
       a.users,
-      a.returning_users
+      a.returning_users,
+
+      NULL AS video_start,
+      NULL AS video_first_quartile,
+      NULL AS video_midpoint,
+      NULL AS video_third_quartile,
+      NULL AS video_complete,
+      NULL AS video_progress_3s
   FROM
     (
       mv_master_diff a

@@ -4,7 +4,6 @@ import boto.s3
 
 from dateutil import rrule
 
-from dash import constants
 import dash.features.performance_tracking.constants
 
 from utils import dates_helper
@@ -91,90 +90,6 @@ def extract_source_slug(source_slug):
     if source_slug.startswith('b1_'):
         return source_slug[3:]
     return source_slug
-
-
-def extract_country(country):
-    if country and len(country) == 2:
-        return country.upper()
-    return None
-
-
-def extract_state(state):
-    if state and len(state) <= 5:
-        return state.upper()
-    return None
-
-
-def extract_dma(dma):
-    if 499 < dma < 1000:
-        return dma
-    return None
-
-
-def extract_age(age):
-    if not age:
-        return constants.AgeGroup.UNDEFINED
-
-    age = age.strip()
-    if age == '18-20':
-        return constants.AgeGroup.AGE_18_20
-    elif age == '21-29':
-        return constants.AgeGroup.AGE_21_29
-    elif age == '30-39':
-        return constants.AgeGroup.AGE_30_39
-    elif age == '40-49':
-        return constants.AgeGroup.AGE_40_49
-    elif age == '50-64':
-        return constants.AgeGroup.AGE_50_64
-    elif age == '65+':
-        return constants.AgeGroup.AGE_65_MORE
-    return constants.AgeGroup.UNDEFINED
-
-
-def extract_gender(gender):
-    if not gender:
-        return constants.Gender.UNDEFINED
-
-    gender = gender.strip()
-    if gender == 'female':
-        return constants.Gender.WOMEN
-    elif gender == 'male':
-        return constants.Gender.MEN
-    return constants.Gender.UNDEFINED
-
-
-def extract_age_gender(age, gender):
-    mapping = {
-        constants.Gender.WOMEN: {
-            constants.AgeGroup.AGE_18_20: constants.AgeGenderGroup.AGE_18_20_WOMEN,
-            constants.AgeGroup.AGE_21_29: constants.AgeGenderGroup.AGE_21_29_WOMEN,
-            constants.AgeGroup.AGE_30_39: constants.AgeGenderGroup.AGE_30_39_WOMEN,
-            constants.AgeGroup.AGE_40_49: constants.AgeGenderGroup.AGE_40_49_WOMEN,
-            constants.AgeGroup.AGE_50_64: constants.AgeGenderGroup.AGE_50_64_WOMEN,
-            constants.AgeGroup.AGE_65_MORE: constants.AgeGenderGroup.AGE_65_MORE_WOMEN,
-        },
-        constants.Gender.MEN: {
-            constants.AgeGroup.AGE_18_20: constants.AgeGenderGroup.AGE_18_20_MEN,
-            constants.AgeGroup.AGE_21_29: constants.AgeGenderGroup.AGE_21_29_MEN,
-            constants.AgeGroup.AGE_30_39: constants.AgeGenderGroup.AGE_30_39_MEN,
-            constants.AgeGroup.AGE_40_49: constants.AgeGenderGroup.AGE_40_49_MEN,
-            constants.AgeGroup.AGE_50_64: constants.AgeGenderGroup.AGE_50_64_MEN,
-            constants.AgeGroup.AGE_65_MORE: constants.AgeGenderGroup.AGE_65_MORE_MEN,
-        },
-        constants.Gender.UNDEFINED: {
-            constants.AgeGroup.AGE_18_20: constants.AgeGenderGroup.AGE_18_20_UNDEFINED,
-            constants.AgeGroup.AGE_21_29: constants.AgeGenderGroup.AGE_21_29_UNDEFINED,
-            constants.AgeGroup.AGE_30_39: constants.AgeGenderGroup.AGE_30_39_UNDEFINED,
-            constants.AgeGroup.AGE_40_49: constants.AgeGenderGroup.AGE_40_49_UNDEFINED,
-            constants.AgeGroup.AGE_50_64: constants.AgeGenderGroup.AGE_50_64_UNDEFINED,
-            constants.AgeGroup.AGE_65_MORE: constants.AgeGenderGroup.AGE_65_MORE_UNDEFINED,
-        },
-    }
-
-    if gender in mapping:
-        return mapping[gender].get(age, constants.AgeGenderGroup.UNDEFINED)
-
-    return constants.AgeGenderGroup.UNDEFINED
 
 
 def get_highest_priority_postclick_source(rows_by_postclick_source):

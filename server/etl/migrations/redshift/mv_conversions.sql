@@ -1,15 +1,19 @@
 CREATE TABLE mv_conversions (
-       date date not null encode delta,
-       source_id int2 encode bytedict,
+      -- kw::dimensions
+      date date not null encode delta,
+      source_id int2 encode zstd,
 
-       agency_id int2 encode lzo,
-       account_id int2 encode lzo,
-       campaign_id integer encode lzo,
-       ad_group_id integer encode lzo,
-       content_ad_id integer encode lzo,
-       publisher varchar(255) encode lzo,
+      account_id integer encode zstd,
+      campaign_id integer encode zstd,
+      ad_group_id integer encode zstd,
+      content_ad_id integer encode zstd,
 
-       slug varchar(256) encode lzo,
+      publisher varchar(255) encode zstd,
+      publisher_source_id varchar(260) encode zstd,
 
-       conversion_count integer encode lzo
-) sortkey(date, source_id, account_id, campaign_id, ad_group_id, content_ad_id, publisher, slug);
+      slug varchar(256) encode zstd,
+
+      -- kw::aggregates
+      conversion_count integer encode zstd
+      -- kw::end
+) sortkey(date, source_id, account_id, campaign_id, ad_group_id, content_ad_id, publisher_source_id, slug);
