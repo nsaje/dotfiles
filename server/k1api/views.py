@@ -35,6 +35,7 @@ EVENT_RETARGET_ADGROUP = "redirect_adgroup"
 EVENT_CUSTOM_AUDIENCE = "aud"
 
 BLOCKED_AGENCIES = (151, )
+BLOCKED_ACCOUNTS = (523, )
 
 
 class K1APIView(View):
@@ -810,7 +811,8 @@ class AdGroupSourcesView(K1APIView):
                 margin,
             )
 
-            if ad_group_settings.ad_group.campaign.account.agency_id in BLOCKED_AGENCIES:
+            if (ad_group_settings.ad_group.campaign.account.agency_id in BLOCKED_AGENCIES
+                    or ad_group_settings.ad_group.campaign.account_id in BLOCKED_ACCOUNTS):
                 source_state = constants.AdGroupSettingsState.INACTIVE
             source = {
                 'ad_group_id': ad_group_settings.ad_group_id,
