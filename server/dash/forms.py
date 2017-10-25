@@ -624,7 +624,7 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
 
             try:
                 key = int(k)
-            except:
+            except Exception:
                 raise err
 
             allowed = v.get('allowed', False)

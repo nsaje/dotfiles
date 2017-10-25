@@ -24,5 +24,5 @@ def log_to_slack(account_id, msg):
             channel='bcm',
             username='z1'
         )
-    except:
+    except Exception:
         logger.exception('Failed to publish to slack')

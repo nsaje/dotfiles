@@ -83,7 +83,7 @@ def _try_parse_api_response(response):
 def _make_api_call(url, method='GET', data=None, params=None, headers={}):
     try:
         parsed = _make_api_request(method, url, data, params, headers)
-    except:
+    except Exception:
         _refresh_access_token()
         parsed = _make_api_request(method, url, data, params, headers)
 

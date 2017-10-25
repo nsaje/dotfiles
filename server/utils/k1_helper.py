@@ -64,7 +64,7 @@ def _send_task(queue_name, task_name, **kwargs):
 
     try:
         app.send_task(task_name, queue=queue_name, kwargs=kwargs)
-    except:
+    except Exception:
         logger.exception("Error sending ping to k1. Task: %s", task_name, extra={
             'data': kwargs,
         })

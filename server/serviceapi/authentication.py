@@ -12,7 +12,7 @@ def gen_service_authentication(service_name, keys):
                 request_signer.verify_wsgi_request(request, keys)
                 user = User.objects.get_or_create_service_user(service_name)
                 return (user, None)
-            except:
+            except Exception:
                 return None
     return RequestSignerAuthentication
 

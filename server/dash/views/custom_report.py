@@ -35,7 +35,7 @@ class CustomReportDownload(ExportApiView):
         s3 = s3helpers.S3Helper(settings.S3_BUCKET_CUSTOM_REPORTS)
         try:
             content = s3.get(path)
-        except:
+        except Exception:
             logger.exception('Failed to fetch {} from s3.'.format(path))
             raise exc.MissingDataError()
         mime, encoding = mimetypes.guess_type(filename)

@@ -107,7 +107,7 @@ def _generate_statements(date, campaign, campaign_spend):
     if total_media_nano > 0 or total_data_nano > 0:
         try:
             _handle_overspend(date, campaign, total_media_nano, total_data_nano)
-        except:
+        except Exception:
             logger.exception('Failed to handle overspend for campaign %s on date %s', campaign.id, date)
 
 

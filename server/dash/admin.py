@@ -770,7 +770,7 @@ class AdGroupAdmin(admin.ModelAdmin):
         try:
             last_settings = obj.current_settings[0]
             return bool(last_settings.archived)
-        except:
+        except Exception:
             pass
         return False
     is_archived_.allow_tags = True

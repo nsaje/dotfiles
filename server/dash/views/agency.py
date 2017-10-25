@@ -417,7 +417,7 @@ class CampaignSettings(api_common.BaseApiView):
                     new_settings.ga_property_id):
                 try:
                     is_readable = ga.is_readable(new_settings.ga_property_id)
-                except:
+                except Exception:
                     is_readable = False
                 if not is_readable:
                     email_helper.send_ga_setup_instructions(request.user)
@@ -551,7 +551,7 @@ class CampaignSettings(api_common.BaseApiView):
         if settings.enable_ga_tracking and settings.ga_property_id:
             try:
                 result['ga_property_readable'] = ga.is_readable(settings.ga_property_id)
-            except:
+            except Exception:
                 logger.exception("Google Analytics validation failed")
 
         # TODO (refactor-workaround) Re-use restapi serializers

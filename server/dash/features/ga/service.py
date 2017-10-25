@@ -30,7 +30,7 @@ def is_readable(ga_property_id):
         refresh_mappings()
         if models.GALinkedAccounts.objects.filter(customer_ga_account_id=account_id, has_read_and_analyze=True).exists():
             return True
-    except:
+    except Exception:
         # if it's not in our mapping table and the refresh fails, it won't hurt to report it as inaccessible
         pass
     return False

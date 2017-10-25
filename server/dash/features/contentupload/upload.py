@@ -431,7 +431,7 @@ def _handle_auto_save(batch):
 
     try:
         persist_batch(batch)
-    except:
+    except Exception:
         if all(candidate.image_status == constants.AsyncUploadJobStatus.OK and
                candidate.url_status == constants.AsyncUploadJobStatus.OK
                for candidate in batch.contentadcandidate_set.all()):

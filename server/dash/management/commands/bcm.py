@@ -355,7 +355,7 @@ class Command(BaseCommand):
             return None
         try:
             return objects.filter(**constraints).order_by('id')
-        except:
+        except Exception:
             raise CommandError('Invalid constraints')
             return None
 

@@ -25,7 +25,7 @@ class MockAsyncValidation(threading.Thread):
 
         try:
             self.candidate = models.ContentAdCandidate.objects.get(id=self.candidate.id)
-        except:
+        except Exception:
             return
 
         rand = random.random()
