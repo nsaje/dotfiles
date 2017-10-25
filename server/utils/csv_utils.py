@@ -12,7 +12,7 @@ def tuplelist_to_csv(data, delimiter=','):
     out = StringIO.StringIO()
     csv_file = unicodecsv.writer(out, delimiter=delimiter)
     for row in data:
-        csv_file.writerow(_sanitize_row(row))
+        csv_file.writerow(row)
     return out.getvalue()
 
 
