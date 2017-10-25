@@ -7,6 +7,7 @@ angular.module('one.services').factory('zemNavigationService', function ($rootSc
     };
 
     var accounts = [];
+    var accountsLoaded = false;
     var accountsAccess;
 
     function findAccountInNavTree (id) {
@@ -58,12 +59,12 @@ angular.module('one.services').factory('zemNavigationService', function ($rootSc
     function loadData (id, apiFunc, searchCacheFunc) {
         // Loads data from cache or calls api if data is not in cache
 
-        if (accounts.length === 0) {
+        if (!accountsLoaded) {
             return apiFunc(id).then(function (data) {
 
                 // if in the meantime data arrived use that one
                 // and discard fetched data
-                if (accounts.length !== 0) {
+                if (accountsLoaded) {
                     return searchCacheFunc(id);
                 }
 
@@ -201,10 +202,11 @@ angular.module('one.services').factory('zemNavigationService', function ($rootSc
                 }
             }
             accounts = data;
-            updatePostponedData();
             notifyCacheUpdate();
             zemNavigationLegacyEndpoint.list().then(function (data) {
                 accounts = data;
+                accountsLoaded = true;
+                updatePostponedData();
                 notifyCacheUpdate();
             });
             return data;
@@ -217,6 +219,7 @@ angular.module('one.services').factory('zemNavigationService', function ($rootSc
         $rootScope.$emit('navigation-loading', true);
         return zemNavigationLegacyEndpoint.list().then(function (data) {
             accounts = data;
+            accountsLoaded = true;
             updatePostponedData();
             notifyCacheUpdate();
             return data;
@@ -251,7 +254,7 @@ angular.module('one.services').factory('zemNavigationService', function ($rootSc
     function reloadAccount (id) {
         return zemNavigationLegacyEndpoint.getAccount(id).then(function (accountData) {
             var accountCached = findAccountInNavTree(id);
-            if (accounts.length === 0) {
+            if (!accountsLoaded) {
                 postponeDataUpdate(accountData);
                 return accountData;
             }
@@ -263,7 +266,7 @@ angular.module('one.services').factory('zemNavigationService', function ($rootSc
 
     function reloadCampaign (id) {
         return zemNavigationLegacyEndpoint.getCampaign(id).then(function (campaignData) {
-            if (accounts.length === 0) {
+            if (!accountsLoaded) {
                 postponeDataUpdate(campaignData);
                 return campaignData;
             }
@@ -279,7 +282,7 @@ angular.module('one.services').factory('zemNavigationService', function ($rootSc
         notifyAdGroupReloading(id, true);
 
         return zemNavigationLegacyEndpoint.getAdGroup(id).then(function (adGroupData) {
-            if (accounts.length === 0) {
+            if (!accountsLoaded) {
                 postponeDataUpdate(adGroupData);
                 return adGroupData;
             }
@@ -337,6 +340,10 @@ angular.module('one.services').factory('zemNavigationService', function ($rootSc
 
         getAccounts: function () {
             return accounts;
+        },
+
+        isFullyLoaded: function () {
+            return accountsLoaded;
         },
     };
 });

@@ -52,7 +52,7 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
         var level = constants.levelStateParamToLevelMap[$state.params.level];
         var type = constants.levelToEntityTypeMap[level];
 
-        if (hierarchyRoot) {
+        if (hierarchyRoot && zemNavigationService.isFullyLoaded()) {
             var entity = getEntityById(type, id);
             setActiveEntity(entity);
         } else {
