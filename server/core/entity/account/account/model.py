@@ -218,7 +218,7 @@ class Account(models.Model, core.common.SettingsProxyMixin):
             self.agency.set_new_accounts_use_bcm_v2(request, True)
 
     def get_all_custom_flags(self):
-        custom_flags = self.agency.custom_flags if self.agency else {}
+        custom_flags = self.agency and self.agency.custom_flags or {}
         custom_flags.update(self.custom_flags or {})
         return custom_flags
 
