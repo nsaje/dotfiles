@@ -145,11 +145,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('all_accounts_sources_view', 'Can view all accounts sources view.'),
             ('account_campaigns_add_campaign', 'Can add campaigns.'),
             ('all_accounts_accounts_add_account', 'Can add accounts.'),
-            ('campaign_budget_management_view', 'Can do campaign budget management.'),
-            ('account_budget_view', 'Can view account budget.'),
-            ('all_accounts_budget_view', 'Can view all accounts budget.'),
             ('archive_restore_entity', 'Can archive or restore an entity.'),
-            ('unspent_budget_view', 'Can view unspent budget.'),
             ('account_agency_access_permissions', 'Can view and set account access permissions.'),
             ('group_new_user_add', 'New users are added to this group.'),
             ('campaign_ad_groups_detailed_report', 'Can download detailed report on campaign level.'),
@@ -301,6 +297,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_grid_actions', 'User can see grid actions'),
             ('can_create_campaign_via_campaign_launcher', 'User can create new campaign via Campaign launcher'),
             ('fea_can_see_inventory_planning', 'User can use the inventory planning tool'),
+            ('disable_budget_management', 'User can NOT manage campaign budgets (negated permission)')
         )
 
     def get_full_name(self):

@@ -260,6 +260,9 @@ class CampaignBudgetView(api_common.BaseApiView):
         return self._get_response(request.user, campaign)
 
     def put(self, request, campaign_id):
+        if request.user.has_perm('zemauth.disable_budget_management'):
+            raise exc.AuthorizationError()
+
         campaign = helpers.get_campaign(request.user, campaign_id, select_related=True)
 
         request_data = json.loads(request.body)
@@ -429,6 +432,9 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         return self._get_response(request.user, item)
 
     def post(self, request, campaign_id, budget_id):
+        if request.user.has_perm('zemauth.disable_budget_management'):
+            raise exc.AuthorizationError()
+
         campaign = helpers.get_campaign(request.user, campaign_id, select_related=True)
 
         request_data = json.loads(request.body)
@@ -473,6 +479,9 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         })
 
     def delete(self, request, campaign_id, budget_id):
+        if request.user.has_perm('zemauth.disable_budget_management'):
+            raise exc.AuthorizationError()
+
         campaign = helpers.get_campaign(request.user, campaign_id)
         item = models.BudgetLineItem.objects.get(campaign_id=campaign.id, pk=budget_id)
         try:

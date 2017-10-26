@@ -70,7 +70,7 @@
                 </td>
                 <td class="custom-table__action-buttons">
                     <a class="button button--small button--with-icon button--only-icon edit-icon" ng-click="$ctrl.editBudgetItem(item.id)"
-                       ng-if="item.isEditable || item.isUpdatable"></a>
+                       ng-if="(item.isEditable || item.isUpdatable) && !$ctrl.hasPermission('zemauth.disable_budget_management')"></a>
                 </td>
             </tr>
             <tr ng-hide="$ctrl.budgets.active.length || $ctrl.loadingInProgress">
@@ -84,7 +84,7 @@
         </tbody>
     </table>
     <button type="button" class="button button--with-icon add-icon" ng-click="$ctrl.addBudgetItem()"
-            ng-disabled="!$ctrl.getAvailableCredit().length">Add Budget Item
+            ng-disabled="!$ctrl.getAvailableCredit().length" ng-show="!$ctrl.hasPermission('zemauth.disable_budget_management')">Add Budget Item
     </button>
 
     <a href="" class="collapsable__show-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="$ctrl.showCollapsed">Show depleted budget items</a>
