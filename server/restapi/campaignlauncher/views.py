@@ -38,7 +38,7 @@ class CampaignLauncherViewSet(RESTAPIBaseViewSet):
                 dash.features.contentupload.upload.clean_candidates(upload_batch)
             except Exception as e:
                 errors['upload_batch'] = e
-        if 'daily_budget' and 'budget_amount' in serializer.validated_data:
+        if 'daily_budget' in serializer.validated_data and 'budget_amount' in serializer.validated_data:
             min_daily_budget = automation.autopilot_budgets.get_account_default_minimum_daily_budget(account)
             if serializer.validated_data['daily_budget'] < min_daily_budget:
                 errors['daily_budget'] = ['Should be at least $%s' % min_daily_budget]
