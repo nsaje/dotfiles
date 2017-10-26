@@ -2,6 +2,10 @@ FROM python:2.7-slim
 
 RUN useradd -m -u 1000 ubuntu
 
+# Ugly hack to get around a bug in dpkg: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=877679
+# I'd never do this outside the container
+RUN rm -f /usr/sbin/update-alternatives && ln -s /bin/true /usr/sbin/update-alternatives
+
 # Install dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
