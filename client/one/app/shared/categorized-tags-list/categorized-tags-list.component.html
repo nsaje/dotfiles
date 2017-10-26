@@ -1,8 +1,8 @@
-<div class="zem-categorized-tags-list__empty-text-container" *ngIf="categories.length === 0">
+<div class="zem-categorized-tags-list__empty-text-container" *ngIf="categorizedItems.length === 0">
     {{emptyText}}
 </div>
 
-<ng-container *ngFor="let category of categories">
+<ng-container *ngFor="let category of categorizedItems">
     <span class="zem-categorized-tags-list__category-container">
         <div class="zem-categorized-tags-list__category-name">{{category.name}}</div>
         <ul class="zem-categorized-tags-list__items-list">

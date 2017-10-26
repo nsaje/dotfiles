@@ -1,34 +1,39 @@
 import './inventory-planning-filter.component.less';
 
-import {Component, Input, Output, EventEmitter, OnChanges, ChangeDetectionStrategy} from '@angular/core';
+import {Component, Input, Output, EventEmitter, OnChanges, ChangeDetectionStrategy, ViewChild} from '@angular/core';
 
-import {AvailableFilters} from '../types/available-filters';
-import {AvailableFilterOption} from '../types/available-filter-option';
-import {SelectedFilters} from '../types/selected-filters';
-import {SelectedFilterOption} from '../types/selected-filter-option';
+import {Filters} from '../types/filters';
+import {FilterOption} from '../types/filter-option';
+import {DropdownDirective} from '../../../shared/dropdown/dropdown.directive';
 import {Category as CategorizedTagsListCategory} from '../../../shared/categorized-tags-list/types/category';
 import {Item as CategorizedTagsListItem} from '../../../shared/categorized-tags-list/types/item';
+import {Category as CategorizedSelectCategory} from '../../../shared/categorized-select/types/category';
+import {Item as CategorizedSelectItem} from '../../../shared/categorized-select/types/item';
+import {SelectionItem as CategorizedSelectSelectionItem} from '../../../shared/categorized-select/types/selection-item';
+import {BigNumberPipe} from '../../../shared/big-number/big-number.pipe';
 
 @Component({
     selector: 'zem-inventory-planning-filter',
     templateUrl: './inventory-planning-filter.component.html',
+    providers: [BigNumberPipe],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InventoryPlanningFilterComponent implements OnChanges {
-    @Input() availableFilters: AvailableFilters;
-    @Input() selectedFilters: SelectedFilters;
+    @Input() availableFilters: Filters;
+    @Input() selectedFilters: Filters;
     @Output() onRemove = new EventEmitter<{key: string, value: string}>();
-    @Output() onSelect = new EventEmitter<[{category: CategorizedTagsListCategory, item: CategorizedTagsListItem}]>();
+    @Output() onApply = new EventEmitter<{key: string, value: string}[]>();
 
-    // FIXME (jurebajt): Substitute with CategorizedSelect Category type
-    categorizedOptions: CategorizedTagsListCategory[];
+    @ViewChild(DropdownDirective) filterDropdown: DropdownDirective;
+
+    categorizedOptions: CategorizedSelectCategory[];
     categorizedSelectedOptions: CategorizedTagsListCategory[];
 
+    constructor (private bigNumberPipe: BigNumberPipe) {}
+
     ngOnChanges (changes: any) {
-        if (changes.selectedFilters) {
-            this.categorizedOptions = this.getCategorizedOptions(this.availableFilters, this.selectedFilters);
-            this.categorizedSelectedOptions = this.getCategorizedSelectedOptions(this.categorizedOptions);
-        }
+        this.categorizedOptions = this.getCategorizedOptions(this.availableFilters, this.selectedFilters);
+        this.categorizedSelectedOptions = this.getCategorizedSelectedOptions(this.categorizedOptions);
     }
 
     removeSelected ($event: {category: CategorizedTagsListCategory, item: CategorizedTagsListItem}): void {
@@ -38,11 +43,19 @@ export class InventoryPlanningFilterComponent implements OnChanges {
         });
     }
 
+    applyFilterSelection ($event: CategorizedSelectSelectionItem[]): void {
+        const selectedFilters = $event.map(selectedFilter => {
+            return {key: selectedFilter.categoryKey, value: selectedFilter.itemValue};
+        });
+        this.onApply.emit(selectedFilters);
+        this.filterDropdown.close();
+    }
+
     private getCategorizedOptions (
-        availableFilters: AvailableFilters,
-        selectedFilters: SelectedFilters
-    ): CategorizedTagsListCategory[] {
-        const categories: CategorizedTagsListCategory[] = [];
+        availableFilters: Filters,
+        selectedFilters: Filters
+    ): CategorizedSelectCategory[] {
+        const categories: CategorizedSelectCategory[] = [];
         categories.push({
             name: 'Countries',
             key: 'countries',
@@ -62,16 +75,17 @@ export class InventoryPlanningFilterComponent implements OnChanges {
     }
 
     private getFilterCategoryItems (
-        availableItems: AvailableFilterOption[],
-        selectedItems: SelectedFilterOption[]
-    ): CategorizedTagsListItem[] {
-        const items: CategorizedTagsListItem[] = [];
+        availableItems: FilterOption[],
+        selectedItems: FilterOption[]
+    ): CategorizedSelectItem[] {
+        const items: CategorizedSelectItem[] = [];
 
         // Include selected items first
         selectedItems.forEach(selectedItem => {
             items.push({
                 name: selectedItem.name || selectedItem.value,
                 value: selectedItem.value,
+                description: this.bigNumberPipe.transform(selectedItem.auctionCount),
                 selected: true,
             });
         });
@@ -89,6 +103,7 @@ export class InventoryPlanningFilterComponent implements OnChanges {
             items.push({
                 name: unselectedItem.name || unselectedItem.value,
                 value: unselectedItem.value,
+                description: this.bigNumberPipe.transform(unselectedItem.auctionCount),
                 selected: false,
             });
         });

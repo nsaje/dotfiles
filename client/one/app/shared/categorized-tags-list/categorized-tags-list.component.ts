@@ -12,7 +12,7 @@ import {Item} from './types/item';
 })
 export class CategorizedTagsListComponent {
     @Input() emptyText: string;
-    @Input() categories: Category[];
+    @Input() categorizedItems: Category[];
     @Output() onRemove = new EventEmitter<{category: Category, item: Item}>();
 
     removeItem (category: Category, item: Item): void {

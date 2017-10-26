@@ -3,9 +3,10 @@ import {Injectable} from '@angular/core';
 import {Store} from '../../shared/types/store';
 import {InventoryPlanningState} from './inventory-planning-state';
 import {InventoryPlanningEndpoint} from './inventory-planning.endpoint';
-import {AvailableFilterOption} from './types/available-filter-option';
-import {SelectedFilters} from './types/selected-filters';
-import {SelectedFilterOption} from './types/selected-filter-option';
+import {Requests} from './types/requests';
+import {Inventory} from './types/inventory';
+import {Filters} from './types/filters';
+import {FilterOption} from './types/filter-option';
 
 @Injectable()
 export class InventoryPlanningStore extends Store<InventoryPlanningState> {
@@ -15,132 +16,139 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
         this.refreshData(this.state.selectedFilters);
     }
 
-    private refreshData (selectedFilters: SelectedFilters) {
+    private refreshData (selectedFilters: Filters) {
+        const requests: Requests = {
+            summary: {
+                inProgress: true,
+            },
+            countries: {
+                inProgress: true,
+            },
+            publishers: {
+                inProgress: true,
+            },
+            devices: {
+                inProgress: true,
+            },
+        };
+
+        if (this.state.requests.summary.subscription) {
+            this.state.requests.summary.subscription.unsubscribe();
+        }
+        requests.summary.subscription = this.endpoint
+            .loadSummary(selectedFilters)
+            .subscribe(this.handleLoadSummaryResponse.bind(this));
+
+        if (this.state.requests.countries.subscription) {
+            this.state.requests.countries.subscription.unsubscribe();
+        }
+        requests.countries.subscription = this.endpoint
+            .loadCountries(selectedFilters)
+            .subscribe(breakdown => { this.handleBreakdownResponse('countries', breakdown); });
+
+        if (this.state.requests.publishers.subscription) {
+            this.state.requests.publishers.subscription.unsubscribe();
+        }
+        requests.publishers.subscription = this.endpoint
+            .loadPublishers(selectedFilters)
+            .subscribe(breakdown => { this.handleBreakdownResponse('publishers', breakdown); });
+
+        if (this.state.requests.devices.subscription) {
+            this.state.requests.devices.subscription.unsubscribe();
+        }
+        requests.devices.subscription = this.endpoint
+            .loadDevices(selectedFilters)
+            .subscribe(breakdown => { this.handleBreakdownResponse('devices', breakdown); });
+
         this.setState({
             ...this.state,
-            requests: {
-                summary: {
-                    inProgress: true,
-                },
-                countries: {
-                    inProgress: true,
-                },
-                publishers: {
-                    inProgress: true,
-                },
-                devices: {
-                    inProgress: true,
-                },
-            },
+            requests: requests,
         });
-
-        this.endpoint.loadSummary(selectedFilters).subscribe(inventory => {
-            this.setState({
-                ...this.state,
-                inventory: inventory,
-                requests: {
-                    ...this.state.requests,
-                    summary: {
-                        ...this.state.requests.summary,
-                        inProgress: false,
-                    },
-                },
-            });
-        });
-        this.endpoint.loadCountries(selectedFilters).subscribe(countries => {
-            this.setState({
-                ...this.state,
-                availableFilters: {
-                    ...this.state.availableFilters,
-                    countries: countries,
-                },
-                requests: {
-                    ...this.state.requests,
-                    countries: {
-                        ...this.state.requests.countries,
-                        inProgress: false,
-                    },
-                },
-            });
-        });
-        this.endpoint.loadPublishers(selectedFilters).subscribe(publishers => {
-            this.setState({
-                ...this.state,
-                availableFilters: {
-                    ...this.state.availableFilters,
-                    publishers: publishers,
-                },
-                requests: {
-                    ...this.state.requests,
-                    publishers: {
-                        ...this.state.requests.publishers,
-                        inProgress: false,
-                    },
-                },
-            });
-        });
-        this.endpoint.loadDevices(selectedFilters).subscribe(devices => {
-            this.setState({
-                ...this.state,
-                availableFilters: {
-                    ...this.state.availableFilters,
-                    devices: devices,
-                },
-                requests: {
-                    ...this.state.requests,
-                    devices: {
-                        ...this.state.requests.devices,
-                        inProgress: false,
-                    },
-                },
-            });
-        });
-    }
-
-    toggleCountry (value: string): void {
-        this.toggleOption('countries', value);
-    }
-
-    togglePublisher (value: string): void {
-        this.toggleOption('publishers', value);
-    }
-
-    toggleDevice (value: string): void {
-        this.toggleOption('devices', value);
     }
 
     removeOption ($event: {key: string, value: string}): void {
-        this.toggleOption($event.key, $event.value);
-    }
-
-    private toggleOption (key: string, value: string) {
+        if (!this.state.selectedFilters.hasOwnProperty($event.key)) {
+            return;
+        }
+        const selectedWithRemovedOption = this.state.selectedFilters[$event.key].filter((option: FilterOption) => {
+            return option.value !== $event.value;
+        });
         this.setState({
             ...this.state,
             selectedFilters: {
                 ...this.state.selectedFilters,
-                [key]: this.getSelectedWithToggledOption(
-                    this.state.availableFilters[key],
-                    this.state.selectedFilters[key],
-                    value
-                ),
+                [$event.key]: selectedWithRemovedOption,
             },
         });
         this.refreshData(this.state.selectedFilters);
     }
 
-    private getSelectedWithToggledOption (
-        available: AvailableFilterOption[],
-        selected: SelectedFilterOption[],
-        value: string
-    ): SelectedFilterOption[] {
-        const selectedWithNoToggledOption = selected.filter(i => i.value !== value);
-        if (selectedWithNoToggledOption.length === selected.length) {
-            for (const filter of available) {
-                if (filter.value === value) {
-                    return [...selectedWithNoToggledOption, {value: filter.value, name: filter.name}];
-                }
+    applyFilters ($event: {key: string, value: string}[]): void {
+        const selectedFilters: Filters = {
+            countries: [],
+            publishers: [],
+            devices: [],
+        };
+
+        $event.forEach(appliedOption => {
+            if (!selectedFilters.hasOwnProperty(appliedOption.key)) {
+                return;
+            }
+            selectedFilters[appliedOption.key] = [
+                ...selectedFilters[appliedOption.key],
+                this.getFilterOption(appliedOption.key, appliedOption.value),
+            ];
+        });
+        this.setState({
+            ...this.state,
+            selectedFilters: selectedFilters,
+        });
+        this.refreshData(this.state.selectedFilters);
+    }
+
+    private handleLoadSummaryResponse (inventory: Inventory) {
+        this.setState({
+            ...this.state,
+            inventory: inventory,
+            requests: {
+                ...this.state.requests,
+                summary: {
+                    ...this.state.requests.summary,
+                    subscription: null,
+                    inProgress: false,
+                },
+            },
+        });
+    }
+
+    private handleBreakdownResponse (key: string, breakdown: FilterOption[]) {
+        this.setState({
+            ...this.state,
+            availableFilters: {
+                ...this.state.availableFilters,
+                [key]: breakdown,
+            },
+            requests: {
+                ...this.state.requests,
+                [key]: {
+                    ...this.state.requests[key],
+                    subscription: null,
+                    inProgress: false,
+                },
+            },
+        });
+    }
+
+    private getFilterOption (key: string, value: string): FilterOption {
+        if (!this.state.availableFilters.hasOwnProperty(key)) {
+            return null;
+        }
+        for (const option of this.state.availableFilters[key]) {
+            if (option.value === value) {
+                return option;
+
             }
         }
-        return selectedWithNoToggledOption;
+        return null;
     }
 }

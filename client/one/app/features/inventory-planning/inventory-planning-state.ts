@@ -1,28 +1,20 @@
-import {SelectedFilters} from './types/selected-filters';
-import {AvailableFilters} from './types/available-filters';
+import {Requests} from './types/requests';
+import {Filters} from './types/filters';
 import {Inventory} from './types/inventory';
 
 export class InventoryPlanningState {
-    requests = {
-        summary: {
-            inProgress: false,
-        },
-        countries: {
-            inProgress: false,
-        },
-        publishers: {
-            inProgress: false,
-        },
-        devices: {
-            inProgress: false,
-        },
+    requests: Requests = {
+        summary: {},
+        countries: {},
+        publishers: {},
+        devices: {},
     };
-    selectedFilters: SelectedFilters = {
+    selectedFilters: Filters = {
         countries: [],
         publishers: [],
         devices: [],
     };
-    availableFilters: AvailableFilters = {
+    availableFilters: Filters = {
         countries: [],
         publishers: [],
         devices: [],

@@ -7,7 +7,7 @@
                                [availableFilters]="(store.state$ | async).availableFilters"
                                [selectedFilters]="(store.state$ | async).selectedFilters"
                                (onRemove)="store.removeOption($event)"
-                               (onSelect)="console.log($event)">
+                               (onApply)="store.applyFilters($event)">
 </zem-inventory-planning-filter>
 
 <zem-inventory-planning-summary class="zem-inventory-planning-summary"
@@ -21,23 +21,17 @@
     <zem-inventory-planning-breakdown class="zem-inventory-planning-breakdown"
                                       breakdownName="Country"
                                       [options]="(store.state$ | async).availableFilters.countries"
-                                      [selected]="(store.state$ | async).selectedFilters.countries"
-                                      [isLoading]="(store.state$ | async).requests.countries.inProgress"
-                                      (onToggle)="store.toggleCountry($event)">
+                                      [isLoading]="(store.state$ | async).requests.countries.inProgress">
     </zem-inventory-planning-breakdown>
     <zem-inventory-planning-breakdown class="zem-inventory-planning-breakdown"
                                       breakdownName="Publisher"
                                       [options]="(store.state$ | async).availableFilters.publishers"
-                                      [selected]="(store.state$ | async).selectedFilters.publishers"
-                                      [isLoading]="(store.state$ | async).requests.publishers.inProgress"
-                                      (onToggle)="store.togglePublisher($event)">
+                                      [isLoading]="(store.state$ | async).requests.publishers.inProgress">
     </zem-inventory-planning-breakdown>
     <zem-inventory-planning-breakdown class="zem-inventory-planning-breakdown"
                                       breakdownName="Device Type"
                                       [options]="(store.state$ | async).availableFilters.devices"
-                                      [selected]="(store.state$ | async).selectedFilters.devices"
-                                      [isLoading]="(store.state$ | async).requests.devices.inProgress"
-                                      (onToggle)="store.toggleDevice($event)">
+                                      [isLoading]="(store.state$ | async).requests.devices.inProgress">
     </zem-inventory-planning-breakdown>
 </div>
 

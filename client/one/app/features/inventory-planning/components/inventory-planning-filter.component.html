@@ -2,6 +2,18 @@
 
 <zem-categorized-tags-list class="zem-categorized-tags-list"
                            emptyText="Choose breakdowns below to filter results ..."
-                           [categories]="categorizedSelectedOptions"
+                           [categorizedItems]="categorizedSelectedOptions"
                            (onRemove)="removeSelected($event)">
 </zem-categorized-tags-list>
+
+<div zemDropdown class="zem-dropdown" #filterDropdown="zemDropdown">
+    <button zemDropdownToggle class="button button--with-icon button--only-icon add-icon"></button>
+    <div class="zem-dropdown__content zem-inventory-planning-filter__dropdown-content">
+        <zem-categorized-select class="zem-categorized-select zem-inventory-planning-filter__categorized-select"
+                                *ngIf="filterDropdown.isOpen()"
+                                [categorizedItems]="categorizedOptions"
+                                [config]="{enableKeyBindings: true}"
+                                (onApply)="applyFilterSelection($event)">
+        </zem-categorized-select>
+    </div>
+</div>

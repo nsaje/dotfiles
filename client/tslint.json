@@ -201,7 +201,6 @@
     "use-output-property-decorator": true,
     "use-host-property-decorator": true,
     "no-attribute-parameter-decorator": true,
-    "no-input-rename": true,
     "no-invalid-template-strings": true,
     "no-output-rename": true,
     "no-for-in-array": true,

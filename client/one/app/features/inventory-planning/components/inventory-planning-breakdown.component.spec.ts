@@ -37,7 +37,6 @@ describe('InventoryPlanningBreakdownComponent', () => {
 
     it('should correctly search through available filter options', fakeAsync(() => {
         component.options = [testOption1, testOption2, testOption3];
-        component.selected = [];
         component.ngOnInit();
 
         component.search$.next('');
@@ -60,7 +59,6 @@ describe('InventoryPlanningBreakdownComponent', () => {
     it('should execute search with current search query when options update', () => {
         let changes: any;
         component.options = [];
-        component.selected = [];
         component.searchQuery = '2';
 
         component.ngOnInit();

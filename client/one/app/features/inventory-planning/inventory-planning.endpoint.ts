@@ -6,9 +6,8 @@ import 'rxjs/add/operator/catch';
 
 import {RestApiResponse} from '../../shared/types/rest-api-response';
 import {Inventory} from './types/inventory';
-import {AvailableFilterOption} from './types/available-filter-option';
-import {SelectedFilters} from './types/selected-filters';
-import {SelectedFilterOption} from './types/selected-filter-option';
+import {Filters} from './types/filters';
+import {FilterOption} from './types/filter-option';
 
 const MAX_QUERY_PARAMS_LENGTH = 1900;
 
@@ -30,12 +29,11 @@ const enum FilterField {
     Publisher,
 }
 
-
 @Injectable()
 export class InventoryPlanningEndpoint {
     constructor (private http: HttpClient) {}
 
-    loadSummary (selectedFilters: SelectedFilters): Observable<Inventory> {
+    loadSummary (selectedFilters: Filters): Observable<Inventory> {
         const {method, params, body} = this.buildRequestProperties(selectedFilters);
         return this.http.request<RestApiResponse>(
             method,
@@ -44,7 +42,7 @@ export class InventoryPlanningEndpoint {
             .map(res => res.data);
     }
 
-    loadCountries (selectedFilters: SelectedFilters): Observable<AvailableFilterOption[]> {
+    loadCountries (selectedFilters: Filters): Observable<FilterOption[]> {
         const {method, params, body} = this.buildRequestProperties(selectedFilters, FilterField.Country);
         return this.http.request<RestApiResponse>(
             method,
@@ -53,7 +51,7 @@ export class InventoryPlanningEndpoint {
             .map(res => res.data);
     }
 
-    loadPublishers (selectedFilters: SelectedFilters): Observable<AvailableFilterOption[]> {
+    loadPublishers (selectedFilters: Filters): Observable<FilterOption[]> {
         const {method, params, body} = this.buildRequestProperties(selectedFilters, FilterField.Publisher);
         return this.http.request<RestApiResponse>(
             method,
@@ -62,7 +60,7 @@ export class InventoryPlanningEndpoint {
             .map(res => res.data);
     }
 
-    loadDevices (selectedFilters: SelectedFilters): Observable<AvailableFilterOption[]> {
+    loadDevices (selectedFilters: Filters): Observable<FilterOption[]> {
         const {method, params, body} = this.buildRequestProperties(selectedFilters, FilterField.Device);
         return this.http.request<RestApiResponse>(
             method,
@@ -71,7 +69,7 @@ export class InventoryPlanningEndpoint {
             .map(res => res.data);
     }
 
-    private buildRequestProperties (selectedFilters: SelectedFilters,
+    private buildRequestProperties (selectedFilters: Filters,
                                     excludeFilterField?: FilterField): RequestProperties {
         const filterPayload = this.buildFilterPayload(selectedFilters, excludeFilterField);
         let params = new HttpParams();
@@ -87,17 +85,17 @@ export class InventoryPlanningEndpoint {
         }
     }
 
-    private buildFilterPayload (selectedFilters: SelectedFilters,
+    private buildFilterPayload (selectedFilters: Filters,
                                 excludeFilterField?: FilterField): FilterPayload {
         const payload: FilterPayload = {c: [], p: [], d: []};
         if (excludeFilterField !== FilterField.Country) {
-            payload.c = selectedFilters.countries.map((x: SelectedFilterOption) => x.value);
+            payload.c = selectedFilters.countries.map((x: FilterOption) => x.value);
         }
         if (excludeFilterField !== FilterField.Publisher) {
-            payload.p = selectedFilters.publishers.map((x: SelectedFilterOption) => x.value);
+            payload.p = selectedFilters.publishers.map((x: FilterOption) => x.value);
         }
         if (excludeFilterField !== FilterField.Device) {
-            payload.d = selectedFilters.devices.map((x: SelectedFilterOption) => x.value);
+            payload.d = selectedFilters.devices.map((x: FilterOption) => x.value);
         }
         return payload;
     }
