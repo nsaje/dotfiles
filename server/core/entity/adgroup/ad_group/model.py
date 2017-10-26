@@ -382,6 +382,11 @@ class AdGroup(models.Model, core.common.SettingsProxyMixin, bcm_mixin.AdGroupBCM
         )
         return history
 
+    def get_all_custom_flags(self):
+        custom_flags = self.campaign.get_all_custom_flags()
+        custom_flags.update(self.custom_flags or {})
+        return custom_flags
+
     def get_name_with_id(self):
         return u"{} ({})".format(self.name, self.id)
 

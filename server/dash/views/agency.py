@@ -17,7 +17,7 @@ from dash import constants
 from dash import retargeting_helper
 from dash import campaign_goals
 from dash import facebook_helper
-from dash.features import ga
+from dash.features import ga, custom_flags
 from dash import content_insights_helper
 
 from utils import api_common
@@ -66,7 +66,7 @@ class AdGroupSettings(api_common.BaseApiView):
         if request.user.has_perm('zemauth.can_see_backend_hacks'):
             response['hacks'] = models.CustomHack.objects.all().filter_applied(
                 ad_group=ad_group
-            ).filter_active(True).to_dict_list()
+            ).filter_active(True).to_dict_list() + custom_flags.helpers.get_all_custom_flags_on_ad_group(ad_group)
 
         return self.create_api_response(response)
 
@@ -362,7 +362,7 @@ class CampaignSettings(api_common.BaseApiView):
         if request.user.has_perm('zemauth.can_see_backend_hacks'):
             response['hacks'] = models.CustomHack.objects.all().filter_applied(
                 campaign=campaign
-            ).filter_active(True).to_dict_list()
+            ).filter_active(True).to_dict_list() + custom_flags.helpers.get_all_custom_flags_on_campaign(campaign)
 
         return self.create_api_response(response)
 
@@ -855,7 +855,7 @@ class AccountSettings(api_common.BaseApiView):
         if request.user.has_perm('zemauth.can_see_backend_hacks'):
             response['hacks'] = models.CustomHack.objects.all().filter_applied(
                 account=account
-            ).filter_active(True).to_dict_list()
+            ).filter_active(True).to_dict_list() + custom_flags.helpers.get_all_custom_flags_on_account(account)
 
         return self.create_api_response(response)
 

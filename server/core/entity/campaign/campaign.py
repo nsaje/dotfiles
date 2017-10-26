@@ -215,6 +215,11 @@ class Campaign(models.Model, core.common.PermissionMixin, bcm_mixin.CampaignBCMM
     def get_account(self):
         return self.account
 
+    def get_all_custom_flags(self):
+        custom_flags = self.account.get_all_custom_flags()
+        custom_flags.update(self.custom_flags or {})
+        return custom_flags
+
     def save(self, request=None, user=None, *args, **kwargs):
         self.modified_by = None
         if request is not None:

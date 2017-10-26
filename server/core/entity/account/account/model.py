@@ -217,6 +217,11 @@ class Account(models.Model, core.common.SettingsProxyMixin):
         if self.agency and self.agency.account_set.all_use_bcm_v2():
             self.agency.set_new_accounts_use_bcm_v2(request, True)
 
+    def get_all_custom_flags(self):
+        custom_flags = self.agency.custom_flags if self.agency else {}
+        custom_flags.update(self.custom_flags or {})
+        return custom_flags
+
     def save(self, request, *args, **kwargs):
         if request and not request.user.is_anonymous():
             self.modified_by = request.user
