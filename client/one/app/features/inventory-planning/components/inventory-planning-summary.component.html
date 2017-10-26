@@ -11,7 +11,7 @@
      [ngClass]="{'zem-inventory-planning-summary__section--loading': isLoading}">
     <div class="icon money-icon"></div>
     <div class="zem-inventory-planning-summary__value-name">Average CPM:</div>
-    <div *ngIf="avgCpm" class="zem-inventory-planning-summary__value">
+    <div *ngIf="avgCpm && !isLoading" class="zem-inventory-planning-summary__value">
         ${{avgCpm | number}}
     </div>
     <div *ngIf="!avgCpm && !isLoading" class="zem-inventory-planning-summary__value-missing">
