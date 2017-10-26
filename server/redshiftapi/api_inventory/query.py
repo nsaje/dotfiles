@@ -32,3 +32,11 @@ def query(breakdown=None, constraints=None):
     params = q.get_params()
 
     return redshiftapi.db.execute_query(sql, params, query_name='inventory_planning', cache_name='inventory_planning')
+
+
+def query_top_publishers(breakdown=None, constraints=None):
+    result = redshiftapi.db.execute_query(
+        'SELECT DISTINCT publisher FROM mv_inventory GROUP BY publisher ORDER BY SUM(bids) DESC LIMIT 20000',
+        params=None, query_name='inventory_planning_publisher_names', cache_name='inventory_planning'
+    )
+    return [row['publisher'] for row in result]

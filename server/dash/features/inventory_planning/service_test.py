@@ -26,18 +26,22 @@ class TestService(TestCase):
             {
                 'country': 'a',
                 'bids': 1,
+                'bid_reqs': 10000,
             },
             {
                 'country': 'b',
                 'bids': 2,
+                'bid_reqs': 10000,
             },
             {
                 'country': 'c',
                 'bids': 3,
+                'bid_reqs': 10000,
             },
             {
                 'country': None,
                 'bids': 4,
+                'bid_reqs': 10000,
             },
         ]
         self.assertEqual(service.get_by_country(None), [
@@ -45,21 +49,25 @@ class TestService(TestCase):
                 'country': 'a',
                 'name': 'Country A',
                 'bids': 1,
+                'bid_reqs': 10000,
             },
             {
                 'country': 'b',
                 'name': 'Country B',
                 'bids': 2,
+                'bid_reqs': 10000,
             },
             {
                 'country': 'c',
                 'name': 'Not reported',
                 'bids': 3,
+                'bid_reqs': 10000,
             },
             {
                 'country': None,
                 'name': 'Not reported',
                 'bids': 4,
+                'bid_reqs': 10000,
             },
         ])
 
@@ -68,10 +76,16 @@ class TestService(TestCase):
             {
                 'device_type': 2,
                 'bids': 1,
+                'bid_reqs': 10000,
+                'win_notices': 5,
+                'total_win_price': 10.0,
             },
             {
                 'device_type': 5,
                 'bids': 2,
+                'bid_reqs': 10000,
+                'win_notices': 5,
+                'total_win_price': 10.0,
             },
         ]
         self.assertEqual(service.get_by_device_type(None), [
@@ -79,10 +93,31 @@ class TestService(TestCase):
                 'device_type': 2,
                 'name': 'Desktop',
                 'bids': 1,
+                'bid_reqs': 10000,
+                'win_notices': 5,
+                'total_win_price': 10.0,
             },
             {
                 'device_type': 5,
                 'name': 'Tablet',
                 'bids': 2,
+                'bid_reqs': 10000,
+                'win_notices': 5,
+                'total_win_price': 10.0,
+            },
+            {
+                'bid_reqs': 0,
+                'bids': 0,
+                'device_type': 3,
+                'name': 'TV & SetTop Box',
+                'total_win_price': 0,
+                'win_notices': 0},
+            {
+                'bid_reqs': 0,
+                'bids': 0,
+                'device_type': 4,
+                'name': 'Mobile',
+                'total_win_price': 0,
+                'win_notices': 0
             }
         ])

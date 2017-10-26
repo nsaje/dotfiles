@@ -11,7 +11,7 @@ import {Pipe, PipeTransform} from '@angular/core';
 export class BigNumberPipe implements PipeTransform {
     transform (value: number): string {
         if (!value) {
-            return '';
+            return '0';
         }
 
         const abs = Math.abs(value);
