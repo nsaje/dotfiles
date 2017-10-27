@@ -591,8 +591,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             help: 'Sum of media spend and data cost.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            internal: 'zemauth.can_view_platform_cost_breakdown',
-            shown: 'zemauth.can_view_platform_cost_breakdown',
+            internal: 'zemauth.can_view_platform_cost_breakdown_derived',
+            shown: 'zemauth.can_view_platform_cost_breakdown_derived',
             costMode: constants.costMode.ANY
         },
         atCost: {
@@ -604,7 +604,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_view_actual_costs',
-            shown: ['zemauth.can_view_actual_costs', 'zemauth.can_view_platform_cost_breakdown'],
+            shown: ['zemauth.can_view_actual_costs', 'zemauth.can_view_platform_cost_breakdown_derived'],
             costMode: constants.costMode.ANY
         },
         billingCost: {
@@ -654,8 +654,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             totalRow: true,
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            shown: 'zemauth.can_view_platform_cost_breakdown',
-            internal: 'zemauth.can_view_platform_cost_breakdown',
+            shown: 'zemauth.can_view_platform_cost_breakdown_derived',
+            internal: 'zemauth.can_view_platform_cost_breakdown_derived',
             costMode: constants.costMode.PLATFORM,
             fieldGroup: 'cpc'
         },
@@ -701,8 +701,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             totalRow: true,
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            shown: 'zemauth.can_view_platform_cost_breakdown',
-            internal: 'zemauth.can_view_platform_cost_breakdown',
+            shown: 'zemauth.can_view_platform_cost_breakdown_derived',
+            internal: 'zemauth.can_view_platform_cost_breakdown_derived',
             costMode: constants.costMode.PLATFORM,
             fieldGroup: 'cpm'
         },
@@ -760,8 +760,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             totalRow: true,
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            internal: 'zemauth.can_view_platform_cost_breakdown',
-            shown: 'zemauth.can_view_platform_cost_breakdown',
+            internal: 'zemauth.can_view_platform_cost_breakdown_derived',
+            shown: 'zemauth.can_view_platform_cost_breakdown_derived',
             costMode: constants.costMode.LEGACY
         },
         yesterdayEtCost: {
@@ -772,8 +772,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             totalRow: true,
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            internal: 'zemauth.can_view_platform_cost_breakdown',
-            shown: 'zemauth.can_view_platform_cost_breakdown',
+            internal: 'zemauth.can_view_platform_cost_breakdown_derived',
+            shown: 'zemauth.can_view_platform_cost_breakdown_derived',
             costMode: constants.costMode.PLATFORM,
             fieldGroup: 'yesterday_cost'
         },
@@ -833,7 +833,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_projections',
-            shown: ['zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'],
+            shown: ['zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown_derived'],
         },
         pacing: {
             name: 'Pacing',
@@ -843,7 +843,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             help: 'Media spend divided by ideal media budget for selected date range.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            shown: ['zemauth.can_view_platform_cost_breakdown', 'zemauth.can_see_projections'],
+            shown: ['zemauth.can_view_platform_cost_breakdown_derived', 'zemauth.can_see_projections'],
         },
         spendProjection: {
             name: 'Spend Projection',
@@ -854,7 +854,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
                   'selected date range based on the spend in the previous days.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            shown: ['zemauth.can_view_platform_cost_breakdown', 'zemauth.can_see_projections'],
+            shown: ['zemauth.can_view_platform_cost_breakdown_derived', 'zemauth.can_see_projections'],
         },
         licenseFeeProjection: {
             name: 'License Fee Projection',
@@ -939,8 +939,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             goal: true,
-            shown: 'zemauth.can_view_platform_cost_breakdown',
-            internal: 'zemauth.can_view_platform_cost_breakdown',
+            shown: 'zemauth.can_view_platform_cost_breakdown_derived',
+            internal: 'zemauth.can_view_platform_cost_breakdown_derived',
             costMode: constants.costMode.PLATFORM,
             fieldGroup: 'avg_cost_per_minute'
         },
@@ -986,8 +986,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             goal: true,
-            shown: 'zemauth.can_view_platform_cost_breakdown',
-            internal: 'zemauth.can_view_platform_cost_breakdown',
+            shown: 'zemauth.can_view_platform_cost_breakdown_derived',
+            internal: 'zemauth.can_view_platform_cost_breakdown_derived',
             costMode: constants.costMode.PLATFORM,
             fieldGroup: 'avg_cost_per_pageview'
         },
@@ -1039,8 +1039,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             goal: true,
-            shown: 'zemauth.can_view_platform_cost_breakdown',
-            internal: 'zemauth.can_view_platform_cost_breakdown',
+            shown: 'zemauth.can_view_platform_cost_breakdown_derived',
+            internal: 'zemauth.can_view_platform_cost_breakdown_derived',
             costMode: constants.costMode.PLATFORM,
             fieldGroup: 'avg_cost_per_visit'
         },
@@ -1089,8 +1089,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             goal: true,
-            shown: 'zemauth.can_view_platform_cost_breakdown',
-            internal: 'zemauth.can_view_platform_cost_breakdown',
+            shown: 'zemauth.can_view_platform_cost_breakdown_derived',
+            internal: 'zemauth.can_view_platform_cost_breakdown_derived',
             costMode: constants.costMode.PLATFORM,
             fieldGroup: 'avg_cost_per_non_bounced_visit'
         },
@@ -1136,8 +1136,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             goal: true,
-            shown: 'zemauth.can_view_platform_cost_breakdown',
-            internal: 'zemauth.can_view_platform_cost_breakdown',
+            shown: 'zemauth.can_view_platform_cost_breakdown_derived',
+            internal: 'zemauth.can_view_platform_cost_breakdown_derived',
             costMode: constants.costMode.PLATFORM,
             fieldGroup: 'avg_cost_for_new_visitor'
         },
@@ -1405,7 +1405,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             totalRow: true,
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            shown: ['zemauth.can_view_platform_cost_breakdown', 'zemauth.fea_can_see_video_metrics'],
+            shown: ['zemauth.can_view_platform_cost_breakdown_derived', 'zemauth.fea_can_see_video_metrics'],
             internal: 'zemauth.fea_can_see_video_metrics',
             costMode: constants.costMode.PLATFORM,
             fieldGroup: 'video_cpv'
@@ -1449,7 +1449,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             totalRow: true,
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            shown: ['zemauth.can_view_platform_cost_breakdown', 'zemauth.fea_can_see_video_metrics'],
+            shown: ['zemauth.can_view_platform_cost_breakdown_derived', 'zemauth.fea_can_see_video_metrics'],
             internal: 'zemauth.fea_can_see_video_metrics',
             costMode: constants.costMode.PLATFORM,
             fieldGroup: 'video_cpcv'
@@ -2124,8 +2124,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
                 etCpaCol.autoSelect = conversionsField;
                 etCpaCol.goal = true;
                 etCpaCol.costMode = constants.costMode.PLATFORM;
-                etCpaCol.internal = 'zemauth.can_view_platform_cost_breakdown';
-                etCpaCol.shown = 'zemauth.can_view_platform_cost_breakdown';
+                etCpaCol.internal = 'zemauth.can_view_platform_cost_breakdown_derived';
+                etCpaCol.shown = 'zemauth.can_view_platform_cost_breakdown_derived';
                 etCpaCol.fieldGroup = cpaField;
 
                 var etfmCpaCol = angular.copy(COLUMNS.conversionCpa);
@@ -2152,7 +2152,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
                 etRoasCol.field = ROAS_PREFIX + conversionsField;
                 etRoasCol.autoSelect = conversionsField;
                 roasCol.internal = 'zemauth.fea_can_see_roas';
-                roasCol.shown = ['zemauth.fea_can_see_roas', 'zemauth.can_view_platform_cost_breakdown'];
+                roasCol.shown = ['zemauth.fea_can_see_roas', 'zemauth.can_view_platform_cost_breakdown_derived'];
                 etRoasCol.costMode = constants.costMode.PLATFORM;
                 etRoasCol.fieldGroup = roasField;
 
@@ -2202,7 +2202,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             var cpaFieldGroup = AVG_COST_PREFIX + goal.id;
             etCpaCol.name = 'Platform CPA (' + goal.name + ')';
             etCpaCol.field = AVG_ET_COST_PREFIX + goal.id;
-            etCpaCol.shown = 'zemauth.can_view_platform_cost_breakdown';
+            etCpaCol.shown = 'zemauth.can_view_platform_cost_breakdown_derived';
             etCpaCol.goal = true;
             etCpaCol.costMode = constants.costMode.PLATFORM;
             etCpaCol.fieldGroup = cpaFieldGroup;

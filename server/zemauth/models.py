@@ -222,6 +222,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_manage_agency_margin', 'User can define margin in budget line item.'),
             ('can_view_agency_margin', '[IGNORED if not BCMv2] User can view margin in budget tab and view margin columns in tables and reports.'),
             ('can_view_platform_cost_breakdown', '[IGNORED if not BCMv2] User can view platform costs broken down into media, data and fee.'),
+            ('can_view_platform_cost_breakdown_derived', '[IGNORED if not BCMv2] User can view columns derived from platform costs.'),
             ('can_view_agency_cost_breakdown', 'User can view agency costs broken down into margin.'),
             ('can_view_end_user_cost_breakdown', 'User can view only total costs without margin, data and fee.'),
             ('can_switch_between_cost_breakdowns', 'User can switch between stats that include fee and margin and stats that don\'t.'),

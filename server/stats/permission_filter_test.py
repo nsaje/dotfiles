@@ -174,10 +174,19 @@ class FilterTestCase(TestCase):
             'avg_et_cost_for_new_visitor', 'avg_et_cost_per_minute', 'avg_et_cost_per_non_bounced_visit',
             'avg_et_cost_per_pageview', 'avg_et_cost_per_pixel_1_168', 'avg_et_cost_per_pixel_1_2160',
             'avg_et_cost_per_pixel_1_24', 'avg_et_cost_per_pixel_1_720', 'avg_et_cost_per_visit',
-            'e_data_cost', 'e_media_cost', 'et_cost', 'et_cpc', 'et_cpm',
-            'et_roas_pixel_1_168', 'et_roas_pixel_1_2160', 'et_roas_pixel_1_24', 'et_roas_pixel_1_720',
-            'license_fee', 'license_fee_projection', 'pacing', 'spend_projection', 'video_et_cpcv',
-            'video_et_cpv', 'yesterday_et_cost'
+            'e_data_cost', 'e_media_cost', 'et_roas_pixel_1_168', 'et_roas_pixel_1_2160', 'et_roas_pixel_1_24', 'et_roas_pixel_1_720',
+            'license_fee', 'license_fee_projection', 'pacing', 'spend_projection'])
+
+    def test_filter_columns_by_permission_platform_cost_derived_bcm_v2(self):
+        uses_bcm_v2 = True
+        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
+        user = magic_mixer.blend_user(['can_view_platform_cost_breakdown_derived'])
+
+        permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
+
+        self.maxDiff = None
+        self.assertItemsEqual(set(rows[0].keys()) - self.public_fields_uses_bcm_v2, [
+            'et_cost', 'et_cpc', 'et_cpm', 'video_et_cpcv', 'video_et_cpv', 'yesterday_et_cost'
         ])
 
     def test_filter_columns_by_permission_agency_cost(self):

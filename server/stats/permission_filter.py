@@ -11,6 +11,7 @@ from stats.constants import StructureDimension
 
 
 NOT_PUBLIC_ANYMORE = [
+    'zemauth.can_view_platform_cost_breakdown_derived',
     'zemauth.can_view_platform_cost_breakdown',
     'zemauth.can_view_agency_margin',
     'zemauth.can_view_flat_fees',
@@ -48,7 +49,7 @@ FIELD_PERMISSION_MAPPING = {
     'e_data_cost':         ('zemauth.can_view_platform_cost_breakdown',),
 
     'at_cost':             ('zemauth.can_view_actual_costs',),
-    'et_cost':             ('zemauth.can_view_platform_cost_breakdown',),
+    'et_cost':             ('zemauth.can_view_platform_cost_breakdown_derived',),
     'etf_cost':            ('zemauth.can_view_agency_cost_breakdown',),
     'etfm_cost':           ('zemauth.can_view_end_user_cost_breakdown',),
 
@@ -56,13 +57,13 @@ FIELD_PERMISSION_MAPPING = {
     'margin':              ('zemauth.can_view_agency_margin',),
 
     'yesterday_at_cost':   ('zemauth.can_view_actual_costs',),
-    'yesterday_et_cost':   ('zemauth.can_view_platform_cost_breakdown',),
+    'yesterday_et_cost':   ('zemauth.can_view_platform_cost_breakdown_derived',),
     'yesterday_etfm_cost': ('zemauth.can_view_end_user_cost_breakdown',),
 
-    'et_cpc':              ('zemauth.can_view_platform_cost_breakdown',),
-    'et_cpm':              ('zemauth.can_view_platform_cost_breakdown',),
-    'video_et_cpv':        ('zemauth.can_view_platform_cost_breakdown',),
-    'video_et_cpcv':       ('zemauth.can_view_platform_cost_breakdown',),
+    'et_cpc':              ('zemauth.can_view_platform_cost_breakdown_derived',),
+    'et_cpm':              ('zemauth.can_view_platform_cost_breakdown_derived',),
+    'video_et_cpv':        ('zemauth.can_view_platform_cost_breakdown_derived',),
+    'video_et_cpcv':       ('zemauth.can_view_platform_cost_breakdown_derived',),
 
     'etfm_cpc':            ('zemauth.can_view_end_user_cost_breakdown',),
     'etfm_cpm':            ('zemauth.can_view_end_user_cost_breakdown',),
