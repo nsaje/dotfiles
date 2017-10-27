@@ -616,7 +616,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
     def test_get_entries_errors_csv_content(self):
         entries = [{
             'publisher': 'pub1',
-            'source': models.Source.objects.get(pk=1),
+            'source': models.Source.objects.get(pk=1).name,
             'include_subdomains': True,
             'outbrain_publisher_id': '12345',
             'outbrain_section_id': '123456',
