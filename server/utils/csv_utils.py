@@ -17,12 +17,14 @@ def tuplelist_to_csv(data):
     return out.getvalue()
 
 
-def dictlist_to_csv(fields, rows):
+def dictlist_to_csv(fields, rows, writeheader=True):
     out = StringIO.StringIO()
     writer = unicodecsv.DictWriter(
         out, fields, encoding='utf-8', dialect='excel', quoting=unicodecsv.QUOTE_ALL)
 
-    writer.writeheader()
+    if writeheader:
+        writer.writeheader()
+
     for row in rows:
         writer.writerow(_sanitize_dict_row(row))
 
@@ -43,6 +45,6 @@ def _sanitize_dict_row(row):
 def _prepend_if_formula(value):
     # NOTE: aims to prevent malicious input performing formula injection in spredsheet applications
     # See https://www.contextis.com/blog/comma-separated-vulnerabilities
-    if value and value.startswith(FORMULA_SYMBOLS):
-        value = "'" + value
+    if value and unicode(value).startswith(FORMULA_SYMBOLS):
+        value = "'" + unicode(value)
     return value

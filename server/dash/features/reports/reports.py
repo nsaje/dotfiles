@@ -3,7 +3,6 @@ import datetime
 import logging
 import random
 import string
-import unicodecsv
 import StringIO
 import os.path
 
@@ -28,6 +27,7 @@ import utils.columns
 import utils.sort_helper
 import utils.dates_helper
 from utils import threads
+from utils import csv_utils
 
 import constants
 import helpers
@@ -241,20 +241,8 @@ class ReportJobExecutor(JobExecutor):
         if job.query['options']['show_status_date']:
             csv_column_names, original_to_dated = cls._date_column_names(csv_column_names)
 
-        writer = unicodecsv.DictWriter(output, csv_column_names, encoding='utf-8', dialect='excel',
-                                       quoting=unicodecsv.QUOTE_ALL)
-        if header:
-            writer.writeheader()
-        for row in data:
-            csv_row = {}
-            for column_name in requested_columns:
-                field_name = field_name_mapping[column_name]
-                csv_column = original_to_dated[column_name]
-                if field_name in row:
-                    csv_row[csv_column] = row[field_name]
-                else:
-                    csv_row[csv_column] = ''
-            writer.writerow(csv_row)
+        rows = cls._get_csv_rows(data, field_name_mapping, requested_columns, original_to_dated)
+        output.write(csv_utils.dictlist_to_csv(csv_column_names, rows, writeheader=header))
 
     @staticmethod
     def _extract_column_names(fields_list):
@@ -267,6 +255,19 @@ class ReportJobExecutor(JobExecutor):
                 fieldnames.append(field)
 
         return fieldnames
+
+    @staticmethod
+    def _get_csv_rows(data, field_name_mapping, requested_columns, original_to_dated):
+        for row in data:
+            csv_row = {}
+            for column_name in requested_columns:
+                field_name = field_name_mapping[column_name]
+                csv_column = original_to_dated[column_name]
+                if field_name in row:
+                    csv_row[csv_column] = row[field_name]
+                else:
+                    csv_row[csv_column] = ''
+            yield csv_row
 
     @classmethod
     def save_to_s3(cls, csv, human_readable_filename):
