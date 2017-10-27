@@ -2,7 +2,7 @@ import './inventory-planning-summary.component.less';
 
 import {Component, Input, OnChanges, ChangeDetectionStrategy} from '@angular/core';
 
-import {CHART_X_AXIS_STEP, CHART_CONFIG} from './inventory-planning-summary.constants';
+import {CHART_X_AXIS_STEP, MAX_PLOTTED_CPM, CHART_CONFIG} from './inventory-planning-summary.constants';
 
 @Component({
     selector: 'zem-inventory-planning-summary',
@@ -32,17 +32,26 @@ function getChartSeries (avgCpm: number, winRatio: number): any {
     return [{data: data}];
 }
 
-// FIXME (jurebajt): Add a test when a proper plotting function is implemented
 function calculateDataPoints (avgCpm: number, winRatio: number): any {
-    const data = [];
-    const k = winRatio / avgCpm;
+    // tslint:disable no-magic-numbers
+    if (!avgCpm || !winRatio) {
+        return null;
+    }
+    const k = 50 * winRatio / Math.log(15 * avgCpm);
+
     let tmpCpm = 0;
     let tmpWinRatio = 0;
-    data.push([0, 0]);
-    while (tmpWinRatio < 1) {
+    const data = [];
+
+    while (tmpCpm <= MAX_PLOTTED_CPM && tmpWinRatio < 1) {
+        tmpWinRatio = k * (Math.log(15 * tmpCpm + 1) / 5);
+        if (tmpWinRatio > 1) {
+            tmpWinRatio = 1;
+        }
+        data.push([parseFloat(tmpCpm.toFixed(2)), parseFloat((tmpWinRatio * 100).toFixed(2))]);
         tmpCpm = tmpCpm + CHART_X_AXIS_STEP;
-        tmpWinRatio = tmpCpm * k;
-        data.push([tmpCpm.toFixed(3), tmpWinRatio * 100]); // tslint:disable-line no-magic-numbers
     }
+
     return data;
+    // tslint:enable no-magic-numbers
 }

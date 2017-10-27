@@ -1,14 +1,8 @@
-<div class="zem-header-breadcrumb__item">
-    <a class="zem-header-breadcrumb__link" ng-href="{{$ctrl.getHomeHref()}}">
-        <span class="zem-header-breadcrumb__type-name">Home:</span>
-        {{ $ctrl.userCanSeeAllAccounts ? "All accounts" : "My accounts" }}
-    </a>
-</div>
-
-<div class="zem-header-breadcrumb__item zem-header-breadcrumb__item--with-slash" ng-repeat="item in $ctrl.breadcrumb">
+<div ng-repeat="item in $ctrl.breadcrumb"
+     class="zem-header-breadcrumb__item"
+     ng-class="{'zem-header-breadcrumb__item--with-slash': $index > 0}">
     <a class="zem-header-breadcrumb__link" ng-href="{{ item.href }}" title="{{ item.name }}">
         <span class="zem-header-breadcrumb__type-name">{{ item.typeName }}:</span>
         {{ item.name }}
     </a>
 </div>
-

@@ -53,11 +53,22 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
         },
     ];
 
+    var UTILITY_ACTIONS = [
+        {
+            text: 'Inventory planning',
+            callback: navigateToInventoryPlanning,
+            isAvailable: zemPermissions.isPermissionInternal('zemauth.fea_can_see_inventory_planning'),
+            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.fea_can_see_inventory_planning'),
+        },
+    ];
+
     function getAvailableActions (navigationGroup) {
         if (navigationGroup === 'user') {
             return USER_ACTIONS.filter(filterActions);
         } else if (navigationGroup === 'account') {
             return ACCOUNT_ACTIONS.filter(filterActions);
+        } else if (navigationGroup === 'utility') {
+            return UTILITY_ACTIONS.filter(filterActions);
         }
         return false;
     }
@@ -144,5 +155,9 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
     function navigateToPixelsView () {
         var activeAccount = zemNavigationNewService.getActiveAccount();
         $state.go('v2.pixels', {id: activeAccount.id});
+    }
+
+    function navigateToInventoryPlanning () {
+        $state.go('v2.inventoryPlanning');
     }
 });

@@ -36,11 +36,11 @@ describe('component: zemHeaderBreadcrumb', function () {
 
         it('should update document title on entity update', function () {
             callback(null);
-            expect($document[0].title).toEqual('My accounts');
+            expect($document[0].title).toEqual('My accounts | Zemanta');
 
             zemPermissions.setMockedPermissions('dash.group_account_automatically_add');
             callback(null);
-            expect($document[0].title).toEqual('All accounts');
+            expect($document[0].title).toEqual('All accounts | Zemanta');
 
             var activeEntity = {
                 name: 'Account XY',
@@ -52,8 +52,14 @@ describe('component: zemHeaderBreadcrumb', function () {
         });
 
         it('should update breadcrumb on entity update', function () {
+            var myAccountsBreadcrumb = {
+                name: 'My accounts',
+                typeName: 'Home',
+                href: '/v2/analytics/accounts'
+            };
+
             callback(null);
-            expect(ctrl.breadcrumb).toEqual([]);
+            expect(ctrl.breadcrumb).toEqual([myAccountsBreadcrumb]);
 
             var account = {
                 id: 10,
@@ -70,23 +76,29 @@ describe('component: zemHeaderBreadcrumb', function () {
 
             zemNavigationNewService.getActiveEntity.and.returnValue(account);
             callback({}, account);
-            expect(ctrl.breadcrumb).toEqual([{
-                name: 'Account XY',
-                typeName: 'Account',
-                href: '/v2/analytics/account/10'
-            }]);
+            expect(ctrl.breadcrumb).toEqual([
+                myAccountsBreadcrumb,
+                {
+                    name: 'Account XY',
+                    typeName: 'Account',
+                    href: '/v2/analytics/account/10'
+                }
+            ]);
 
             zemNavigationNewService.getActiveEntity.and.returnValue(campaign);
             callback({}, campaign);
-            expect(ctrl.breadcrumb).toEqual([{
-                name: 'Account XY',
-                typeName: 'Account',
-                href: '/v2/analytics/account/10'
-            }, {
-                name: 'Campaign XY',
-                typeName: 'Campaign',
-                href: '/v2/analytics/campaign/20'
-            }]);
+            expect(ctrl.breadcrumb).toEqual([
+                myAccountsBreadcrumb,
+                {
+                    name: 'Account XY',
+                    typeName: 'Account',
+                    href: '/v2/analytics/account/10'
+                }, {
+                    name: 'Campaign XY',
+                    typeName: 'Campaign',
+                    href: '/v2/analytics/campaign/20'
+                }
+            ]);
         });
     });
 });

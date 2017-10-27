@@ -1,16 +1,12 @@
 angular.module('one.widgets').component('zemHeaderBreadcrumb', {
     template: require('./zemHeaderBreadcrumb.component.html'),
     controller: function ($rootScope, $state, $location, $document, $window, config, zemPermissions, zemNavigationNewService) { // eslint-disable-line max-len
-
         var $ctrl = this;
         $ctrl.config = config;
-        $ctrl.getHomeHref = getHomeHref;
 
         var zemStateChangeHandler, locationChangeUpdateHandler, activeEntityUpdateHandler, hierarchyUpdateHandler;
 
         $ctrl.$onInit = function () {
-            $ctrl.userCanSeeAllAccounts = zemPermissions.hasPermission('dash.group_account_automatically_add');
-
             update();
 
             zemStateChangeHandler = $rootScope.$on('$zemStateChangeSuccess', update);
@@ -29,39 +25,54 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
 
         function update () {
             var activeEntity = zemNavigationNewService.getActiveEntity();
-            updateTitle(activeEntity);
-            updateBreadcrumb(activeEntity);
+            $ctrl.breadcrumb = getBreadcrumb(activeEntity);
+            updateTitle($ctrl.breadcrumb, activeEntity);
         }
 
-        function updateTitle (entity) {
-            var title, dashboardTitle = $window.zOne.whitelabel && $window.zOne.whitelabel.dashboardTitle || 'Zemanta';
-            if (entity) {
-                title = entity.name + ' | ' + dashboardTitle;
+        function updateTitle (breadcrumb, activeEntity) {
+            var dashboardTitle = $window.zOne.whitelabel && $window.zOne.whitelabel.dashboardTitle || 'Zemanta';
+            var title = '';
+            if (activeEntity) {
+                title = activeEntity.name + ' | ' + dashboardTitle;
             } else {
-                title = 'My accounts';
-                if (zemPermissions.hasPermission('dash.group_account_automatically_add')) {
-                    title = 'All accounts';
-                }
+                title = breadcrumb[0] ? breadcrumb[0].name + ' | ' : '';
+                title += dashboardTitle;
             }
             $document.prop('title', title);
         }
 
-        function updateBreadcrumb (entity) {
-            $ctrl.breadcrumb = [];
+        function getBreadcrumb (entity) {
+            var breadcrumb = [];
 
             var administrationPage = getAdministrationPage();
-            if (administrationPage) $ctrl.breadcrumb.push(administrationPage);
+            if (administrationPage && administrationPage.root) {
+                breadcrumb.push(administrationPage);
+                return breadcrumb;
+            } else if (administrationPage) {
+                breadcrumb.push(administrationPage);
+            }
 
             var includeQueryParmas = true;
             var reuseNestedState = !administrationPage && !$state.includes('v2');
             while (entity) {
-                $ctrl.breadcrumb.unshift({
+                breadcrumb.unshift({
                     name: entity.name,
                     typeName: getTypeName(entity.type),
                     href: zemNavigationNewService.getEntityHref(entity, includeQueryParmas, reuseNestedState),
                 });
                 entity = entity.parent;
             }
+
+
+            var canUserSeeAllAccounts = zemPermissions.hasPermission('dash.group_account_automatically_add');
+            var name = canUserSeeAllAccounts ? 'All accounts' : 'My accounts';
+            breadcrumb.unshift({
+                name: name,
+                typeName: 'Home',
+                href: zemNavigationNewService.getHomeHref(),
+            });
+
+            return breadcrumb;
         }
 
         function getTypeName (type) {
@@ -72,29 +83,32 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
 
         function getAdministrationPage () { // eslint-disable-line complexity
             if ($state.includes('**.users') || $state.includes('v2.users')) {
-                return {typeName: 'Account Settings', name: 'User permissions', href: $location.absUrl()};
+                return {typeName: 'Account settings', name: 'User permissions', href: $location.absUrl()};
             }
             if ($state.includes('**.credit_v2') || $state.includes('v2.accountCredit')) {
-                return {typeName: 'Account Settings', name: 'Account credit', href: $location.absUrl()};
+                return {typeName: 'Account settings', name: 'Account credit', href: $location.absUrl()};
             }
             if ($state.includes('**.scheduled_reports_v2') || $state.includes('v2.reports')) {
-                return {typeName: 'Account Settings', name: 'Scheduled reports', href: $location.absUrl()};
+                return {typeName: 'Account settings', name: 'Scheduled reports', href: $location.absUrl()};
             }
             if ($state.includes('**.pixels') || $state.includes('v2.pixels')) {
-                return {typeName: 'Account Settings', name: 'Pixels & Audiences', href: $location.absUrl()};
+                return {typeName: 'Account settings', name: 'Pixels & Audiences', href: $location.absUrl()};
             }
             if ($state.includes('**.publisherGroups') || $state.includes('v2.publisherGroups')) {
-                return {typeName: 'Account Settings', name: 'Publisher groups', href: $location.absUrl()};
+                return {typeName: 'Account settings', name: 'Publisher groups', href: $location.absUrl()};
             }
             if ($state.includes('v2.campaignLauncher')) {
-                // TODO (jurebajt): Change typeName and name
                 return {typeName: 'Campaign management', name: 'Campaign launcher', href: $location.absUrl()};
             }
+            if ($state.includes('v2.inventoryPlanning')) {
+                return {
+                    typeName: 'Utilities',
+                    name: 'Inventory planning',
+                    href: $location.absUrl(),
+                    root: true,
+                };
+            }
             return null;
-        }
-
-        function getHomeHref () {
-            return zemNavigationNewService.getHomeHref();
         }
     }
 });
