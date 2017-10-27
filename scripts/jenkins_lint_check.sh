@@ -16,18 +16,19 @@ function banner {
   EXITCODE=$1
   PROGRAM=$2
   if [[ $EXITCODE != 0 ]]; then
-      red "+-------------------------+"
+      red "+------------------------------------+"
       red "|   ${PROGRAM} CHECK FAILED   |"
-      red "+-------------------------+"
+      red "+------------------------------------+"
       exit 1
   fi
   green "${PROGRAM} check successful"
 }
 
-DIFF=docker run --rm \
+DIFF=$(docker run --rm \
     -v $PWD:/src \
     --workdir=/src/ \
-    --entrypoint=sh py-tools "pip-compile server/requirements.in | diff server/requirements.txt -"
+    --entrypoint=sh \
+    py-tools -c "pip-compile server/requirements.in" | diff server/requirements.txt -)
 if [ "$DIFF" != "" ]; then
     banner 1 "requirements.in"
 fi
