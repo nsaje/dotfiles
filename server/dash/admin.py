@@ -795,6 +795,8 @@ class AdGroupAdmin(admin.ModelAdmin):
             utils.email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
         ad_group.save(request)
         utils.k1_helper.update_ad_group(ad_group.pk, msg='AdGroupAdmin.save_model')
+        ad_ids = models.ContentAd.objects.filter(ad_group=ad_group).values_list('id', flat=True)
+        utils.k1_helper.update_content_ads(ad_group.pk, ad_ids, msg='AdGroupAdmin.save_model')
 
     @staticmethod
     def _update_redirector_adgroup(ad_group, new_settings):
