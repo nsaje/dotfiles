@@ -27,7 +27,7 @@ def validate_breakdown_allowed(level, user, breakdown):
 
 
 def should_use_publishers_view(breakdown):
-    return 'publisher_id' in breakdown
+    return 'publisher_id' in breakdown and 'content_ad_id' not in breakdown
 
 
 def query(level, user, breakdown, constraints, goals, parents, order, offset, limit):

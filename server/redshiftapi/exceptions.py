@@ -1,0 +1,3 @@
+
+class ViewNotAvailable(Exception):
+    pass

@@ -44,10 +44,8 @@ class BreakdownsBase(backtosql.Model):
     source_id = backtosql.Column('source_id', BREAKDOWN)
     publisher = backtosql.Column('publisher', BREAKDOWN)
 
-    @classmethod
-    def get_best_view(cls, needed_dimensions, use_publishers_view):
-        """ Returns the SQL view that best fits the breakdown """
-        raise NotImplementedError()
+    publisher_id = backtosql.TemplateColumn('part_publisher_id.sql')
+    external_id = backtosql.TemplateColumn('part_max.sql', {'column_name': 'external_id'})
 
     def get_breakdown(self, breakdown):
         """ Selects breakdown subset of columns """
@@ -58,9 +56,18 @@ class BreakdownsBase(backtosql.Model):
 
         return self.select_columns(subset=breakdown)
 
-    def get_aggregates(self):
+    def get_aggregates(self, breakdown, view):
         """ Returns all the aggregate columns """
-        return self.select_columns(group=AGGREGATE)
+        columns = self.select_columns(group=AGGREGATE)
+
+        if 'publisher_id' in breakdown:
+            if view_selector.supports_publisher_id(view):
+                columns.append(self.publisher_id)
+
+            if view_selector.supports_external_id(view):
+                columns.append(self.external_id)
+
+        return columns
 
     def get_constraints(self, constraints, parents):
         constraints = copy.copy(constraints)
@@ -99,17 +106,16 @@ class BreakdownsBase(backtosql.Model):
 
         return parent_constraints
 
-    def get_query_all_context(self, breakdown, constraints, parents, orders, use_publishers_view):
+    def get_query_all_context(self, breakdown, constraints, parents, orders, view):
         return {
             'breakdown': self.get_breakdown(breakdown),
-            'aggregates': self.get_aggregates(),
+            'aggregates': self.get_aggregates(breakdown, view),
             'constraints': self.get_constraints(constraints, parents),
-            'view': self.get_best_view(helpers.get_all_dimensions(
-                breakdown, constraints, parents), use_publishers_view),
+            'view': view,
             'orders': [self.get_column(x).as_order(x, nulls='last') for x in orders],
         }
 
-    def get_query_all_yesterday_context(self, breakdown, constraints, parents, orders, use_publishers_view):
+    def get_query_all_yesterday_context(self, breakdown, constraints, parents, orders, view):
         constraints = helpers.get_yesterday_constraints(constraints)
 
         self.add_column(backtosql.TemplateColumn('part_2sum_nano.sql', AT_COST_COLUMNS, alias='yesterday_at_cost'))
@@ -125,8 +131,7 @@ class BreakdownsBase(backtosql.Model):
             'aggregates': self.select_columns(['yesterday_at_cost', 'yesterday_et_cost', 'yesterday_etfm_cost',
                                                'yesterday_cost', 'e_yesterday_cost']),
             'constraints': self.get_constraints(constraints, parents),
-            'view': self.get_best_view(helpers.get_all_dimensions(
-                breakdown, constraints, parents), use_publishers_view),
+            'view': view,
             'orders': [self.get_column(x).as_order(x, nulls='last') for x in orders],
         }
 
@@ -261,21 +266,6 @@ class MVMaster(BreakdownsBase):
     # FIXME: Remove the following column after new margins are completely migrated to
     video_cpcv = backtosql.TemplateColumn('part_sumdiv.sql', dict_join(_context, A_COST_COLUMNS), AGGREGATE)
 
-    @classmethod
-    def get_best_view(cls, needed_dimensions, use_publishers_view):
-        return view_selector.get_best_view_base(needed_dimensions, use_publishers_view)
-
-
-class MVMasterPublishers(MVMaster):
-    publisher_id = backtosql.TemplateColumn('part_publisher_id.sql', None, AGGREGATE)
-    external_id = backtosql.TemplateColumn('part_max.sql', {'column_name': 'external_id'}, AGGREGATE)
-
-    def get_query_all_yesterday_context(self, breakdown, constraints, parents, orders, use_publishers_view):
-        context = super(MVMasterPublishers, self).get_query_all_yesterday_context(
-            breakdown, constraints, parents, orders, use_publishers_view)
-        context['aggregates'] += [self.publisher_id]
-        return context
-
 
 class MVTouchpointConversions(BreakdownsBase):
     slug = backtosql.Column('slug', BREAKDOWN)
@@ -284,26 +274,10 @@ class MVTouchpointConversions(BreakdownsBase):
     count = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'conversion_count'}, AGGREGATE)
     conversion_value = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'conversion_value_nano'}, AGGREGATE)  # noqa
 
-    @classmethod
-    def get_best_view(cls, needed_dimensions, use_publishers_view):
-        return view_selector.get_best_view_touchpoints(needed_dimensions, use_publishers_view)
-
-
-class MVTouchpointConversionsPublishers(MVTouchpointConversions):
-    publisher_id = backtosql.TemplateColumn('part_publisher_id.sql', None, AGGREGATE)
-
 
 class MVConversions(BreakdownsBase):
     slug = backtosql.Column('slug', BREAKDOWN)
     count = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'conversion_count'}, AGGREGATE)
-
-    @classmethod
-    def get_best_view(cls, needed_dimensions, use_publishers_view):
-        return view_selector.get_best_view_conversions(needed_dimensions, use_publishers_view)
-
-
-class MVConversionsPublishers(MVConversions):
-    publisher_id = backtosql.TemplateColumn('part_publisher_id.sql', None, AGGREGATE)
 
 
 class MVJointMaster(MVMaster):
@@ -456,10 +430,8 @@ class MVJointMaster(MVMaster):
                 'metric_val_decimal_places': dash.campaign_goals.NR_DECIMALS[campaign_goal.type]
             }, alias='etfm_performance_' + campaign_goal.get_view_key(), group=column_group))
 
-    def get_query_joint_context(self, breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view, skip_performance_columns=False):
-
-        needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
-        supports_conversions = view_selector.supports_conversions(needed_dimensions, use_publishers_view)
+    def get_query_joint_context(self, breakdown, constraints, parents, orders, offset, limit, goals, views,
+                                skip_performance_columns=False, supports_conversions=False):
 
         # FIXME: temp fix account level publishers view with lots of campaign goals
         skip_performance_columns |= 'publisher_id' in breakdown and\
@@ -484,7 +456,7 @@ class MVJointMaster(MVMaster):
             'constraints': self.get_constraints(constraints, parents),
             'yesterday_constraints': self.get_constraints(helpers.get_yesterday_constraints(constraints), parents),
 
-            'aggregates': self.get_aggregates(),
+            'aggregates': self.get_aggregates(breakdown, views['base']),
             'yesterday_aggregates': self.select_columns(group=YESTERDAY_AGGREGATES),
             'after_join_aggregates': self.select_columns(group=AFTER_JOIN_AGGREGATES),
 
@@ -493,8 +465,8 @@ class MVJointMaster(MVMaster):
 
             'orders': orders,
 
-            'base_view': view_selector.get_best_view_base(needed_dimensions, use_publishers_view),
-            'yesterday_view': view_selector.get_best_view_base(needed_dimensions, use_publishers_view),
+            'base_view': views['base'],
+            'yesterday_view': views['yesterday'],
         }
 
         if supports_conversions:
@@ -505,14 +477,8 @@ class MVJointMaster(MVMaster):
                 'conversions_aggregates': self.select_columns(group=CONVERSION_AGGREGATES),
                 'touchpoints_aggregates': self.select_columns(group=TOUCHPOINTS_AGGREGATES),
 
-                'conversions_view': view_selector.get_best_view_conversions(needed_dimensions, use_publishers_view),
-                'touchpoints_view': view_selector.get_best_view_touchpoints(needed_dimensions, use_publishers_view),
+                'conversions_view': views['conversions'],
+                'touchpoints_view': views['touchpoints'],
             })
 
         return context
-
-
-class MVJointMasterPublishers(MVJointMaster):
-
-    publisher_id = backtosql.TemplateColumn('part_publisher_id.sql', None, AGGREGATE)
-    external_id = backtosql.TemplateColumn('part_max.sql', {'column_name': 'external_id'}, AGGREGATE)

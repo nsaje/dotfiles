@@ -54,10 +54,6 @@ CONVERSION_VIEWS = [
     ['mv_conversions', CONTENT_AD_N_ABOVE | {sc.PUBLISHER}],
 ]
 
-CONVERSIONS_PUBLISHERS_VIEWS = [
-    ['mv_conversions', CONTENT_AD_N_ABOVE | {sc.PUBLISHER}],
-]
-
 
 TOUCHPOINT_VIEWS = [
     ['mv_account_touch', ACCOUNT],
@@ -67,9 +63,18 @@ TOUCHPOINT_VIEWS = [
     ['mv_touchpointconversions', CONTENT_AD_N_ABOVE | {sc.PUBLISHER}],
 ]
 
-TOUCHPOINTS_PUBLISHERS_VIEWS = [
-    ['mv_touchpointconversions', CONTENT_AD_N_ABOVE | {sc.PUBLISHER}],
-]
+
+def supports_publisher_id(view):
+    views = set(x[0] for x in PUBLISHER_VIEWS) | {'mv_master', 'mv_conversions', 'mv_touchpointconversions'}
+    return view in views
+
+
+def supports_external_id(view):
+    return view in [x[0] for x in PUBLISHER_VIEWS]
+
+
+def supports_conversions(base_view, conversions_view):
+    return bool(base_view and conversions_view)
 
 
 def get_fitting_view_dict(needed_dimensions, views):
@@ -78,6 +83,7 @@ def get_fitting_view_dict(needed_dimensions, views):
     for view, available in views:
         if len(needed_dimensions - available) == 0:
             return view
+
     return None
 
 
@@ -86,17 +92,9 @@ def get_best_view_base(needed_dimensions, use_publishers_view):
         needed_dimensions, PUBLISHER_VIEWS if use_publishers_view else BASE_VIEWS)
 
 
-def get_best_view_conversions(needed_dimensions, use_publishers_view):
-    return get_fitting_view_dict(
-        needed_dimensions, CONVERSIONS_PUBLISHERS_VIEWS if use_publishers_view else CONVERSION_VIEWS)
+def get_best_view_conversions(needed_dimensions):
+    return get_fitting_view_dict(needed_dimensions, CONVERSION_VIEWS)
 
 
-def get_best_view_touchpoints(needed_dimensions, use_publishers_view):
-    return get_fitting_view_dict(
-        needed_dimensions, TOUCHPOINTS_PUBLISHERS_VIEWS if use_publishers_view else TOUCHPOINT_VIEWS)
-
-
-def supports_conversions(needed_dimensions, use_publishers_view):
-    return bool(
-        get_best_view_conversions(needed_dimensions, use_publishers_view) and get_best_view_touchpoints(
-            needed_dimensions, use_publishers_view))
+def get_best_view_touchpoints(needed_dimensions):
+    return get_fitting_view_dict(needed_dimensions, TOUCHPOINT_VIEWS)

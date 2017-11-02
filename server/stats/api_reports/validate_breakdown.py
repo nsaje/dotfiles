@@ -18,17 +18,19 @@ def validate_breakdown_by_permissions(level, user, breakdown):
         elif level == Level.ACCOUNTS and not user.has_perm('zemauth.account_campaigns_view'):
             raise exc.MissingDataError()
 
+    if (constants.StructureDimension.PUBLISHER in breakdown and
+       constants.StructureDimension.CONTENT_AD in breakdown and
+       not user.has_perm('zemauth.can_breakdown_reports_by_ads_and_publishers')):
+        raise exc.MissingDataError()
+
     delivery_dimension = constants.get_delivery_dimension(breakdown)
     if delivery_dimension is not None and not user.has_perm('zemauth.can_view_breakdown_by_delivery'):
         raise exc.MissingDataError()
 
 
 def validate_breakdown_by_structure(level, breakdown):
-    if constants.StructureDimension.PUBLISHER in breakdown:
-        if constants.StructureDimension.CONTENT_AD in breakdown:
-            raise exc.InvalidBreakdownError("Unsupported breakdown - can not breakdown by content ad and publisher")
-        if constants.StructureDimension.SOURCE in breakdown:
-            raise exc.InvalidBreakdownError("Unsupported breakdown - publishers are broken down by source by default")
+    if constants.StructureDimension.PUBLISHER in breakdown and constants.StructureDimension.SOURCE in breakdown:
+        raise exc.InvalidBreakdownError("Unsupported breakdown - publishers are broken down by source by default")
 
     clean_breakdown = [dimension for dimension in breakdown if dimension in constants.StructureDimension._ALL]
 

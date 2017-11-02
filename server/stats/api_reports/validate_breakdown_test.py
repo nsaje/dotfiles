@@ -32,6 +32,9 @@ class ValidateBreakdownTest(TestCase):
 
         self.add_permission_and_test(Level.AD_GROUPS, ['publisher_id'], ['can_see_publishers'])
 
+        self.add_permission_and_test(Level.AD_GROUPS, ['publisher_id', 'content_ad_id'],
+                                     ['can_see_publishers', 'can_breakdown_reports_by_ads_and_publishers'])
+
     def test_breakdown_validate_publisher(self):
         user = User.objects.get(pk=1)
         test_helper.add_permissions(user, ['can_see_publishers'])
@@ -44,11 +47,10 @@ class ValidateBreakdownTest(TestCase):
 
         validate_breakdown_by_structure(Level.AD_GROUPS, ['publisher_id'])
 
-        with self.assertRaises(exc.InvalidBreakdownError):
-            validate_breakdown_by_structure(Level.AD_GROUPS, ['publisher_id', 'source_id'])
+        validate_breakdown_by_structure(Level.AD_GROUPS, ['publisher_id', 'content_ad_id'])
 
         with self.assertRaises(exc.InvalidBreakdownError):
-            validate_breakdown_by_structure(Level.AD_GROUPS, ['publisher_id', 'content_ad_id'])
+            validate_breakdown_by_structure(Level.AD_GROUPS, ['publisher_id', 'source_id'])
 
     def test_breakdown_validate_delivery(self):
         User.objects.get(pk=1)

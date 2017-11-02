@@ -1,1 +1,1 @@
-MAX({{ p }}publisher || '__' || {{ p }}source_id) {{ alias }}
+MAX({{ p }}publisher_source_id) {{ alias }}

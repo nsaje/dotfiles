@@ -8,8 +8,8 @@ from stats.helpers import Goals
 
 import dash.models
 
-from redshiftapi import queries
-from redshiftapi import models
+import queries
+import models
 
 
 class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
@@ -64,7 +64,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
 
     @mock.patch.object(models.MVMaster, 'get_aggregates', return_value=[
-        models.MVMasterPublishers.clicks, models.MVMasterPublishers.external_id, models.MVMasterPublishers.publisher_id])
+        models.MVMaster.clicks, models.MVMaster.external_id, models.MVMaster.publisher_id])
     def test_query_all_base_publishers(self, _):
         sql, params = queries.prepare_query_all_base(
             ['publisher_id', 'dma'],
@@ -83,7 +83,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.dma AS dma,
             SUM(base_table.clicks) clicks,
             MAX(base_table.external_id) AS external_id,
-            MAX(base_table.publisher || '__' || base_table.source_id) publisher_id
+            MAX(base_table.publisher_source_id) publisher_id
         FROM mv_master_pubs base_table
         WHERE ( base_table.date >=%s AND base_table.date <=%s)
         GROUP BY 1, 2, 3
@@ -132,7 +132,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
                 'date__lte': datetime.date(2016, 1, 8),
             },
             [{'account_id': 1, 'source_id': 2}],
-            True
+            'mv_account_pubs'
         )
 
         self.assertSQLEquals(sql, """
@@ -144,8 +144,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
             (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0) + NVL(SUM(base_table.license_fee_nano), 0) + NVL(SUM(base_table.margin_nano), 0))::float/1000000000 yesterday_etfm_cost,
             (NVL(SUM(base_table.cost_nano), 0) + NVL(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-            (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
-            MAX(base_table.publisher || '__' || base_table.source_id) publisher_id
+            (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost
         FROM mv_account_pubs base_table
         WHERE (( base_table.date = %s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
@@ -198,7 +197,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.source_id AS source_id,
             base_table.date AS day,
             SUM(base_table.conversion_count) count,
-            MAX(base_table.publisher || '__' || base_table.source_id) publisher_id
+            MAX(base_table.publisher_source_id) publisher_id
         FROM mv_conversions base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
@@ -256,7 +255,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.conversion_window AS window,
             SUM(base_table.conversion_value_nano)/1000000000.0 conversion_value,
             SUM(base_table.conversion_count) count,
-            MAX(base_table.publisher || '__' || base_table.source_id) publisher_id
+            MAX(base_table.publisher_source_id) publisher_id
         FROM mv_touchpointconversions base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
@@ -272,7 +271,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
                 'date__gte': datetime.date(2016, 1, 5),
                 'date__lte': datetime.date(2016, 1, 8),
             },
-            False
+            use_publishers_view=False
         )
 
         self.assertSQLEquals(sql, """
@@ -349,8 +348,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         ])
 
     @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
-    @mock.patch.object(models.MVJointMasterPublishers, 'get_aggregates',
-                       return_value=[models.MVJointMasterPublishers.clicks, models.MVJointMasterPublishers.total_seconds])
+    @mock.patch.object(models.MVJointMaster, 'get_aggregates',
+                       return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds])
     def test_query_joint_base_publishers(self, _a, _b):
         constraints = {
             'date__gte': datetime.date(2016, 4, 1),
@@ -496,8 +495,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         ])
 
     @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
-    @mock.patch.object(models.MVJointMasterPublishers, 'get_aggregates',
-                       return_value=[models.MVJointMasterPublishers.clicks, models.MVJointMasterPublishers.total_seconds])
+    @mock.patch.object(models.MVJointMaster, 'get_aggregates',
+                       return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds])
     def test_query_joint_levels_publishers(self, _a, _b):
         constraints = {
             'date__gte': datetime.date(2016, 4, 1),

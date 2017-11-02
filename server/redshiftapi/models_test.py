@@ -48,7 +48,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             self.model.get_breakdown(['bla', 'campaign_id'])
 
     def test_get_aggregates(self):
-        self.assertItemsEqual([x.alias for x in self.model.get_aggregates()],
+        self.assertItemsEqual([x.alias for x in self.model.get_aggregates([], 'mv_master')],
                               ALL_AGGREGATES)
 
     def test_get_constraints(self):
@@ -87,11 +87,15 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
         self.assertEqual(q.get_params(), [123, 223, date_from, date_to, 32, 1, 33, [2, 3], 35, [2, 4, 22]])
 
     def test_get_query_all_context(self):
-        context = self.model.get_query_all_context(['account_id'], {'account_id': [1, 2, 3]}, None,
-                                                   ['clicks'] + ['account_id'], False)
+        breakdown = ['account_id']
+        view = 'mv_account'
+
+        context = self.model.get_query_all_context(breakdown, {'account_id': [1, 2, 3]}, None,
+                                                   ['clicks'] + ['account_id'], view)
+
         self.assertEqual(context['breakdown'], self.model.select_columns(['account_id']))
         self.assertSQLEquals(context['constraints'].generate('A'), '(A.account_id=ANY(%s))')
-        self.assertEqual(context['aggregates'], self.model.get_aggregates())
+        self.assertEqual(context['aggregates'], self.model.get_aggregates(breakdown, ''))
         self.assertEqual(context['view'], 'mv_account')
         self.assertEqual([x.alias for x in context['orders']], ['clicks', 'account_id'])
 
@@ -103,7 +107,8 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
                 'date__lte': datetime.date(2016, 10, 1),
                 'date__gte': datetime.date(2016, 9, 1)
             }, None,
-            ['-yesterday_cost'], False)
+            ['-yesterday_cost'], 'mv_account')
+
         self.assertEqual(context['breakdown'], self.model.select_columns(['account_id']))
         self.assertSQLEquals(context['constraints'].generate('A'), '(A.account_id=ANY(%s) AND A.date=%s)')
         self.assertEqual(context['constraints'].get_params(), [[1, 2, 3], datetime.date(2016, 10, 2)])
@@ -113,14 +118,10 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
         self.assertEqual(context['view'], 'mv_account')
         self.assertSQLEquals(context['orders'][0].only_alias(), 'yesterday_cost DESC NULLS LAST')
 
-    def test_get_best_view(self):
-
-        self.assertEqual(self.model.get_best_view(['account_id'], False), 'mv_account')
-
 
 class MVMasterPublishersTest(TestCase, backtosql.TestSQLMixin):
     def setUp(self):
-        self.model = models.MVMasterPublishers()
+        self.model = models.MVMaster()
 
     def test_get_breakdown(self):
         self.assertEquals(
@@ -134,8 +135,10 @@ class MVMasterPublishersTest(TestCase, backtosql.TestSQLMixin):
         )
 
     def test_get_aggregates(self):
-        self.assertItemsEqual([x.alias for x in self.model.get_aggregates()],
+        self.assertItemsEqual([x.alias for x in self.model.get_aggregates(['publisher_id'], 'mv_master_pubs')],
                               ALL_AGGREGATES + ['external_id', 'publisher_id'])
+        self.assertItemsEqual([x.alias for x in self.model.get_aggregates(['publisher_id'], 'mv_master')],
+                              ALL_AGGREGATES + ['publisher_id'])
 
     def test_get_constraints(self):
         date_from = datetime.date(2016, 7, 1)
@@ -187,9 +190,6 @@ class MVMasterPublishersTest(TestCase, backtosql.TestSQLMixin):
 
         self.assertEqual(q.get_params(), [123, 111, 223, date_from, date_to, ['asd'], 1, ['adsdd'], 2])
 
-    def test_get_best_view(self):
-        self.assertEqual(self.model.get_best_view(['publisher_id'], True), 'mv_account_pubs')
-
 
 class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
 
@@ -203,11 +203,13 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
         )
 
     def test_get_aggregates(self):
-        self.assertItemsEqual([x.alias for x in self.model.get_aggregates()],
-                              ['count', 'conversion_value'])
+        self.assertItemsEqual(
+            [x.alias for x in self.model.get_aggregates(['account_id'], 'mv_account_touch')],
+            ['count', 'conversion_value'])
 
-    def test_get_best_view(self):
-        self.assertEqual(self.model.get_best_view(['account_id'], False), 'mv_account_touch')
+        self.assertItemsEqual(
+            [x.alias for x in self.model.get_aggregates(['account_id', 'publisher_id'], 'mv_touchpointconversions')],
+            ['publisher_id', 'count', 'conversion_value'])
 
 
 class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
@@ -222,11 +224,13 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
         )
 
     def test_get_aggregates(self):
-        self.assertItemsEqual([x.alias for x in self.model.get_aggregates()],
-                              ['count'])
+        self.assertItemsEqual(
+            [x.alias for x in self.model.get_aggregates(['account_id'], 'mv_account_conv')],
+            ['count'])
 
-    def test_get_best_view(self):
-        self.assertEqual(self.model.get_best_view(['account_id'], False), 'mv_account_conv')
+        self.assertItemsEqual(
+            [x.alias for x in self.model.get_aggregates(['account_id', 'publisher_id'], 'mv_conversions')],
+            ['publisher_id', 'count'])
 
 
 class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
@@ -351,7 +355,14 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
             2,
             33,
             goals,
-            False
+            views={
+                'base': 'mv_master',
+                'yesterday': 'mv_master',
+                'conversions': 'mv_conversions',
+                'touchpoints': 'mv_touchpointconversions',
+            },
+            skip_performance_columns=False,
+            supports_conversions=True
         )
 
         self.assertListEqual(context['conversions_aggregates'], m.select_columns([
@@ -421,7 +432,12 @@ class MVJointMasterAfterJoinAggregatesTest(TestCase, backtosql.TestSQLMixin):
             2,
             33,
             goals,
-            False
+            views={
+                'base': 'mv_master',
+                'yesterday': 'mv_master',
+            },
+            skip_performance_columns=False,
+            supports_conversions=False
         )
 
         self.assertListEqual(context['after_join_aggregates'], [m.get_column(order_field),
@@ -433,11 +449,13 @@ class MVJointMasterAfterJoinAggregatesTest(TestCase, backtosql.TestSQLMixin):
 class MVJointMasterPublishersTest(TestCase, backtosql.TestSQLMixin):
 
     def setUp(self):
-        self.model = models.MVJointMasterPublishers()
+        self.model = models.MVJointMaster()
 
     def test_aggregates(self):
-        self.assertItemsEqual([x.alias for x in self.model.get_aggregates()],
+        self.assertItemsEqual([x.alias for x in self.model.get_aggregates(['publisher_id'], 'mv_master_pubs')],
                               ALL_AGGREGATES + ['external_id', 'publisher_id'])
+        self.assertItemsEqual([x.alias for x in self.model.get_aggregates(['publisher_id'], 'mv_master')],
+                              ALL_AGGREGATES + ['publisher_id'])
 
 
 class MVJointMasterTest(TestCase, backtosql.TestSQLMixin):
@@ -446,7 +464,7 @@ class MVJointMasterTest(TestCase, backtosql.TestSQLMixin):
         self.model = models.MVJointMaster()
 
     def test_get_aggregates(self):
-        self.assertItemsEqual([x.alias for x in self.model.get_aggregates()],
+        self.assertItemsEqual([x.alias for x in self.model.get_aggregates([], 'mv_master')],
                               ALL_AGGREGATES)
 
     @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
@@ -476,7 +494,14 @@ class MVJointMasterTest(TestCase, backtosql.TestSQLMixin):
             2,
             33,
             Goals(None, None, None, None, None),
-            False
+            views={
+                'base': 'mv_master',
+                'yesterday': 'mv_master',
+                'conversions': 'mv_conversions',
+                'touchpoints': 'mv_touchpoints',
+            },
+            skip_performance_columns=False,
+            supports_conversions=True
         )
 
         q = context['constraints']

@@ -3,11 +3,11 @@ import stats.constants
 
 from utils import sort_helper, threads
 
-from redshiftapi import db
-from redshiftapi import helpers
-from redshiftapi import postprocess
-from redshiftapi import queries
-from redshiftapi import view_selector
+import db
+import exceptions
+import helpers
+import postprocess
+import queries
 
 
 def should_query_all(breakdown):
@@ -120,27 +120,32 @@ def query_all(breakdown, constraints, parents, goals, use_publishers_view,
                 breakdown_for_name, '{}_yesterday'.format(extra_name))))
         t_yesterday.start()
 
-    needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
-    support_conversions = view_selector.supports_conversions(needed_dimensions, use_publishers_view)
+    if goals and goals.conversion_goals:
+        if not metrics or any(helpers.is_conversion_goal_metric(metric) for metric in metrics):
 
-    if goals and support_conversions:
-        if goals.conversion_goals:
-            if not metrics or any(helpers.is_conversion_goal_metric(metric) for metric in metrics):
+            try:
                 sql, params = queries.prepare_query_all_conversions(
                     breakdown + ['slug'], constraints, parents, use_publishers_view)
+
                 t_conversions = threads.AsyncFunction(
                     partial(db.execute_query, sql, params, helpers.get_query_name(
                         breakdown_for_name, '{}_conversions'.format(extra_name))))
                 t_conversions.start()
+            except exceptions.ViewNotAvailable:
+                pass
 
-        if goals.pixels:
-            if not metrics or any(helpers.is_pixel_metric(metric) for metric in metrics):
+    if goals and goals.pixels:
+        if not metrics or any(helpers.is_pixel_metric(metric) for metric in metrics):
+            try:
                 sql, params = queries.prepare_query_all_touchpoints(
                     breakdown + ['slug', 'window'], constraints, parents, use_publishers_view)
+
                 t_touchpoints = threads.AsyncFunction(
                     partial(db.execute_query, sql, params, helpers.get_query_name(
                         breakdown_for_name, '{}_touchpoints'.format(extra_name))))
                 t_touchpoints.start()
+            except exceptions.ViewNotAvailable:
+                pass
 
     base_rows = []
     if t_base is not None:
