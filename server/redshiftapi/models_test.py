@@ -41,6 +41,7 @@ class BreakdownBaseTest(TestCase):
         self.assertEquals(model.get_breakdown(['account_id', 'publisher_id', 'publisher']),
                           model.select_columns(['account_id', 'publisher', 'source_id']))
 
+
 class MVMasterTest(TestCase, backtosql.TestSQLMixin):
     def setUp(self):
         self.model = models.MVMaster()
