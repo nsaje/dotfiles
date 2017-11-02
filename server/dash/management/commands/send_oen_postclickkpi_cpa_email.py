@@ -1,6 +1,8 @@
 import logging
 import influx
 import datetime
+import gzip
+from StringIO import StringIO
 
 from dash import models
 from utils.command_helpers import ExceptionCommand
@@ -32,7 +34,7 @@ class Command(ExceptionCommand):
         oen_pub_ids = self._prefetch_oen_pub_ids()
 
         s3_helper = s3helpers.S3Helper(S3_BUCKET_B1_ML)
-        factors_file = s3_helper.get(S3_CPA_FACTORS_PATH)
+        factors_file = gzip.GzipFile(fileobj=StringIO(s3_helper.get(S3_CPA_FACTORS_PATH))).read()
 
         factors_ad_groups = self._get_factor_ad_groups(factors_file, oen_ags)
         conversions_data = self._get_conversions_data(factors_ad_groups)
