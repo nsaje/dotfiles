@@ -114,6 +114,7 @@ def select_relevant_stats_rows(breakdown, rows, stats_rows):
 
 
 def get_all_dimensions(breakdown, constraints, parents):
+    # TODO this should take dimensions from a model to be reliable, also base view_selecter on model fields
     constraints_dimensions = set(backtosql.dissect_constraint_key(x)[0] for x in constraints.keys())
     parents_dimensions = set(backtosql.dissect_constraint_key(x)[0] for parent in parents for x in parent.keys()) if parents else set([])
     breakdown_dimensions = set(breakdown)

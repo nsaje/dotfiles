@@ -33,6 +33,14 @@ ALL_AGGREGATES = [
 ]
 
 
+class BreakdownBaseTest(TestCase):
+    def test_get_breakdown(self):
+        model = models.BreakdownsBase()
+        self.assertEquals(model.get_breakdown(['publisher_id']),
+                          model.select_columns(['publisher', 'source_id']))
+        self.assertEquals(model.get_breakdown(['account_id', 'publisher_id', 'publisher']),
+                          model.select_columns(['account_id', 'publisher', 'source_id']))
+
 class MVMasterTest(TestCase, backtosql.TestSQLMixin):
     def setUp(self):
         self.model = models.MVMaster()

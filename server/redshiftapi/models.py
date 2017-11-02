@@ -1,4 +1,5 @@
 import backtosql
+import collections
 import copy
 
 from utils import converters
@@ -53,6 +54,9 @@ class BreakdownsBase(backtosql.Model):
         if 'publisher_id' in breakdown:
             publisher_id_idx = breakdown.index('publisher_id')
             breakdown = breakdown[:publisher_id_idx] + ['publisher', 'source_id'] + breakdown[publisher_id_idx + 1:]
+
+        # remove duplicated dimensions
+        breakdown = collections.OrderedDict(zip(breakdown, breakdown)).keys()
 
         return self.select_columns(subset=breakdown)
 
