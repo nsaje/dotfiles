@@ -11,7 +11,7 @@ import redshiftapi.api_breakdowns
 logger = logging.getLogger(__name__)
 
 S3_BUCKET_B1_ML = 'b1-ml'
-S3_CPA_FACTORS_PATH = 'postclick_kpi/siciliana/actionspercost/trim_ratios/agsrcpub/latest/trimratios.tsv'
+S3_CPA_FACTORS_PATH = 'postclick_kpi/siciliana/actionspercost/trim_ratios/agsrcpub/latest/trimratios.tsv.gz'
 OEN_ACCOUNT = 305
 OEN_PUBLISHER_GROUP_ID = 2
 DATA_LOOK_BACK_DAYS = 14
