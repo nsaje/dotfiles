@@ -32,7 +32,7 @@ def prepare_query_all_yesterday(breakdown, constraints, parents, use_publishers_
     return _prepare_query_all_for_model(model, context)
 
 
-def prepare_query_all_conversions(breakdown, constraints, parents, use_publishers_view):
+def prepare_query_all_conversions(breakdown, constraints, parents):
     needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
     view = view_selector.get_best_view_conversions(needed_dimensions)
 
@@ -49,7 +49,7 @@ def prepare_query_all_conversions(breakdown, constraints, parents, use_publisher
     return _prepare_query_all_for_model(model, context)
 
 
-def prepare_query_all_touchpoints(breakdown, constraints, parents, use_publishers_view):
+def prepare_query_all_touchpoints(breakdown, constraints, parents):
     needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
     view = view_selector.get_best_view_touchpoints(needed_dimensions)
 

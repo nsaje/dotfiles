@@ -161,8 +161,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
                 'date__gte': datetime.date(2016, 1, 5),
                 'date__lte': datetime.date(2016, 1, 8),
             },
-            [{'account_id': 1, 'source_id': 2}],
-            False
+            [{'account_id': 1, 'source_id': 2}]
         )
 
         self.assertSQLEquals(sql, """
@@ -187,8 +186,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
                 'date__gte': datetime.date(2016, 1, 5),
                 'date__lte': datetime.date(2016, 1, 8),
             },
-            [{'account_id': 1, 'source_id': 2}],
-            True
+            [{'account_id': 1, 'source_id': 2}]
         )
 
         self.assertSQLEquals(sql, """
@@ -214,8 +212,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
                 'date__gte': datetime.date(2016, 1, 5),
                 'date__lte': datetime.date(2016, 1, 8),
             },
-            [{'account_id': 1, 'source_id': 2}],
-            False
+            [{'account_id': 1, 'source_id': 2}]
         )
 
         self.assertSQLEquals(sql, """
@@ -242,8 +239,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
                 'date__gte': datetime.date(2016, 1, 5),
                 'date__lte': datetime.date(2016, 1, 8),
             },
-            [{'account_id': 1, 'source_id': 2}],
-            True
+            [{'account_id': 1, 'source_id': 2}]
         )
 
         self.assertSQLEquals(sql, """
