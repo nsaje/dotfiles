@@ -73,7 +73,7 @@ def augment_row_delivery(row, target_dimension):
 
     if target_dimension in mapping:
         value = row[target_dimension]
-        if target_dimension is 'dma':
+        if target_dimension == 'dma':
             value = unicode(value)
 
         row['name'] = mapping[target_dimension].get_text(value) or UNKNOWN

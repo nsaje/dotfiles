@@ -33,6 +33,12 @@ class DeliveryDimension:
         AGE, GENDER, AGE_GENDER,
     ]
 
+    _EXTENDED = [
+        DEVICE_OS_VERSION,
+        PLACEMENT_TYPE, VIDEO_PLAYBACK_METHOD,
+        AGE, GENDER, AGE_GENDER,
+    ]
+
 
 class TimeDimension:
     DAY = 'day'

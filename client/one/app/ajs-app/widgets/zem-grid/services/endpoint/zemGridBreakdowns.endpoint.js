@@ -1,36 +1,39 @@
-angular.module('one.widgets').factory('zemGridEndpointBreakdowns', function (zemPermissions) {
+angular.module('one.widgets').factory('zemGridEndpointBreakdowns', function (zemPermissions, zemUtils) {
     var BASE_LEVEL_GROUP_NAME = 'Base level';
     var STRUCTURE_GROUP_NAME = 'By structure';
     var DELIVERY_GROUP_NAME = 'By delivery';
     var TIME_GROUP_NAME = 'By time';
 
     var BREAKDOWNS = {
-        account: {name: 'By Account', query: constants.breakdown.ACCOUNT, report_query: 'Account'},
-        campaign: {name: 'By Campaign', query: constants.breakdown.CAMPAIGN, report_query: 'Campaign'},
-        adGroup: {name: 'By Ad Group', query: constants.breakdown.AD_GROUP, report_query: 'Ad Group'},
-        contentAd: {name: 'By Content Ad', query: constants.breakdown.CONTENT_AD, report_query: 'Content Ad'},
-        source: {name: 'By Source', query: constants.breakdown.MEDIA_SOURCE, report_query: 'Media Source'},
-        publisher: {name: 'By Publisher', query: constants.breakdown.PUBLISHER, report_query: 'Publisher'},
+        /* eslint-disable max-len */
+        account: {name: 'By Account', query: constants.breakdown.ACCOUNT, report_query: 'Account', shown: true},
+        campaign: {name: 'By Campaign', query: constants.breakdown.CAMPAIGN, report_query: 'Campaign', shown: true},
+        adGroup: {name: 'By Ad Group', query: constants.breakdown.AD_GROUP, report_query: 'Ad Group', shown: true},
+        contentAd: {name: 'By Content Ad', query: constants.breakdown.CONTENT_AD, report_query: 'Content Ad', shown: true},
+        source: {name: 'By Source', query: constants.breakdown.MEDIA_SOURCE, report_query: 'Media Source', shown: true},
+        publisher: {name: 'By Publisher', query: constants.breakdown.PUBLISHER, report_query: 'Publisher', shown: true},
 
-        age: {name: 'Age', query: 'age', report_query: 'Age'},
-        gender: {name: 'Gender', query: 'gender', report_query: 'Gender'},
-        ageGender: {name: 'Age and Gender', query: 'age_gender', report_query: 'Age and Gender'},
+        age: {name: 'Age', query: 'age', report_query: 'Age', shown: 'zemauth.can_view_breakdown_by_delivery_extended', internal: 'zemauth.can_view_breakdown_by_delivery_extended'},
+        gender: {name: 'Gender', query: 'gender', report_query: 'Gender', shown: 'zemauth.can_view_breakdown_by_delivery_extended', internal: 'zemauth.can_view_breakdown_by_delivery_extended'},
+        ageGender: {name: 'Age and Gender', query: 'age_gender', report_query: 'Age and Gender', shown: 'zemauth.can_view_breakdown_by_delivery_extended', internal: 'zemauth.can_view_breakdown_by_delivery_extended'},
 
-        country: {name: 'Country', query: 'country', report_query: 'Country'},
-        state: {name: 'State', query: 'state', report_query: 'State'},
-        dma: {name: 'DMA', query: 'dma', report_query: 'DMA'},
+        country: {name: 'Country', query: 'country', report_query: 'Country', shown: 'zemauth.can_view_breakdown_by_delivery', internal: 'zemauth.can_view_breakdown_by_delivery'},
+        state: {name: 'State', query: 'state', report_query: 'State', shown: 'zemauth.can_view_breakdown_by_delivery', internal: 'zemauth.can_view_breakdown_by_delivery'},
+        dma: {name: 'DMA', query: 'dma', report_query: 'DMA', shown: 'zemauth.can_view_breakdown_by_delivery', internal: 'zemauth.can_view_breakdown_by_delivery'},
 
-        device: {name: 'Device', query: 'device_type', report_query: 'Device'},
-        placementMedium: {name: 'Placement', query: 'placement_medium', report_query: 'Placement'},
-        deviceOs: {name: 'Operating System', query: 'device_os', report_query: 'Operating System'},
-        deviceOsVersion: {name: 'Operating System Version', query: 'device_os_version', report_query: 'Operating System Version'}, // eslint-disable-line max-len
+        device: {name: 'Device', query: 'device_type', report_query: 'Device', shown: 'zemauth.can_view_breakdown_by_delivery', internal: 'zemauth.can_view_breakdown_by_delivery'},
+        deviceOs: {name: 'Operating System', query: 'device_os', report_query: 'Operating System', shown: 'zemauth.can_view_breakdown_by_delivery', internal: 'zemauth.can_view_breakdown_by_delivery'},
+        deviceOsVersion: {name: 'Operating System Version', query: 'device_os_version', report_query: 'Operating System Version', shown: 'zemauth.can_view_breakdown_by_delivery_extended', internal: 'zemauth.can_view_breakdown_by_delivery_extended'},
 
-        placementType: {name: 'Placement Type', query: 'placement_type', report_query: 'Placement Type'},
-        videoPlaybackMethod: {name: 'Video Playback Method', query: 'video_playback_method', report_query: 'Video Playback Method'}, // eslint-disable-line max-len
+        placementMedium: {name: 'Placement', query: 'placement_medium', report_query: 'Placement', shown: 'zemauth.can_view_breakdown_by_delivery', internal: 'zemauth.can_view_breakdown_by_delivery'},
 
-        day: {name: 'By day', query: 'day', report_query: 'Day'},
-        week: {name: 'By week', query: 'week', report_query: 'Week'},
-        month: {name: 'By month', query: 'month', report_query: 'Month'},
+        placementType: {name: 'Placement Type', query: 'placement_type', report_query: 'Placement Type', shown: 'zemauth.can_view_breakdown_by_delivery_extended', internal: 'zemauth.can_view_breakdown_by_delivery_extended'},
+        videoPlaybackMethod: {name: 'Video Playback Method', query: 'video_playback_method', report_query: 'Video Playback Method', shown: 'zemauth.can_view_breakdown_by_delivery_extended', internal: 'zemauth.can_view_breakdown_by_delivery_extended'},
+
+        day: {name: 'By day', query: 'day', report_query: 'Day', shown: true},
+        week: {name: 'By week', query: 'week', report_query: 'Week', shown: true},
+        month: {name: 'By month', query: 'month', report_query: 'Month', shown: true},
+        /* eslint-enable max-len */
     };
 
     var ENTITY_BREAKDOWNS = [
@@ -127,7 +130,7 @@ angular.module('one.widgets').factory('zemGridEndpointBreakdowns', function (zem
             available: zemPermissions.hasPermission('zemauth.can_view_breakdown_by_delivery'),
             internal: zemPermissions.isPermissionInternal('zemauth.can_view_breakdown_by_delivery'),
             name: DELIVERY_GROUP_NAME,
-            breakdowns: DELIVERY_BREAKDOWNS,
+            breakdowns: checkPermissions(DELIVERY_BREAKDOWNS),
         };
 
         // Time breakdown group
@@ -137,6 +140,20 @@ angular.module('one.widgets').factory('zemGridEndpointBreakdowns', function (zem
         };
 
         return angular.copy(breakdownGroups);
+    }
+
+    function checkPermissions (breakdowns) {
+        var copy = [];
+
+        breakdowns.forEach(function (br) {
+            var brCopy = angular.copy(br);
+            brCopy.internal = zemUtils.convertPermission(br.internal, zemPermissions.isPermissionInternal);
+            brCopy.shown = zemUtils.convertPermission(br.shown, zemPermissions.hasPermission);
+
+            copy.push(brCopy);
+        });
+
+        return copy;
     }
 
     return {

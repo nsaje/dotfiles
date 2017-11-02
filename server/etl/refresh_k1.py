@@ -256,6 +256,15 @@ def get_all_views_table_names(temporary=False):
     return [x.TABLE_NAME for x in MATERIALIZED_VIEWS if x.IS_TEMPORARY_TABLE is temporary]
 
 
+def create_tables():
+    for mv_class in MATERIALIZED_VIEWS:
+        if not mv_class.IS_DERIVED_VIEW:
+            continue
+
+        mv = mv_class('temp', datetime.date.today(), datetime.date.today(), account_id=None)
+        mv.generate()
+
+
 def generate_job_id(account_id):
     epoch = datetime.datetime.utcfromtimestamp(0)
     timestamp = int((datetime.datetime.now() - epoch).total_seconds() * 1000)

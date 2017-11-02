@@ -1920,29 +1920,6 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
     // Service functions
     //
 
-    function convertPermission (permission, checkFn) {
-        // Convert Column definitions permissions to boolean value using passed function
-        // Possible types: boolean, string, array
-        var result = false;
-        if (typeof permission === 'boolean') {
-            result = permission;
-        } else if (typeof permission === 'string') {
-            var negate = false;
-            if (permission[0] === '!') {
-                negate = true;
-                permission = permission.substring(1);
-            }
-            result = checkFn(permission);
-            if (negate) result = !result;
-        } else if (permission instanceof Array) {
-            result = true;
-            permission.forEach(function (p) {
-                result = result && convertPermission(p, checkFn);
-            });
-        }
-        return result;
-    }
-
     function checkPermissions (columns) {
         // Go trough all columns and convert permissions to boolean, when needed
 
@@ -1956,9 +1933,9 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         };
 
         columns.forEach(function (column) {
-            column.internal = convertPermission(column.internal, isPermissionInternal);
+            column.internal = zemUtils.convertPermission(column.internal, isPermissionInternal);
 
-            var shown = convertPermission(column.shown, hasPermission);
+            var shown = zemUtils.convertPermission(column.shown, hasPermission);
             if (shown) {
                 if (usesBCMv2 && column.costMode === constants.costMode.LEGACY) {
                     // don't show old columns in BCMv2 accounts

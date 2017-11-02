@@ -7,7 +7,7 @@ from utils import exc
 from stats import constants
 from stats import fields
 from stats.constraints_helper import get_uses_bcm_v2
-from stats.constants import StructureDimension
+from stats.constants import StructureDimension, DeliveryDimension
 
 
 NOT_PUBLIC_ANYMORE = [
@@ -291,6 +291,9 @@ def validate_breakdown_by_permissions(level, user, breakdown):
 
     delivery_dimension = constants.get_delivery_dimension(breakdown)
     if delivery_dimension is not None and not user.has_perm('zemauth.can_view_breakdown_by_delivery'):
+        raise exc.MissingDataError()
+
+    if delivery_dimension in DeliveryDimension._EXTENDED and not user.has_perm('zemauth.can_view_breakdown_by_delivery_extended'):
         raise exc.MissingDataError()
 
 

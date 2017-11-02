@@ -1987,7 +1987,7 @@ class Placement(ConstantBase):
 
     _VALUES = {
         APP: 'In-app',
-        SITE: 'Web',
+        SITE: 'Website',
     }
 
 

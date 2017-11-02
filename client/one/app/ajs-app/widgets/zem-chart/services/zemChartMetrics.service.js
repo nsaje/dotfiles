@@ -1,4 +1,4 @@
-angular.module('one.widgets').factory('zemChartMetricsService', function (zemPermissions, zemNavigationNewService) {
+angular.module('one.widgets').factory('zemChartMetricsService', function (zemPermissions, zemNavigationNewService, zemUtils) { // eslint-disable-line max-len
     ////////////////////////////////////////////////////////////////////////////////////
     // Definitions - Metrics, Categories
     //
@@ -176,30 +176,6 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
         return categories;
     }
 
-    function convertPermission (permission, checkFn) {
-        // Convert Column definitions permissions to boolean value using passed function
-        // Possible types: boolean, string, array
-        var result = false;
-        if (typeof permission === 'boolean') {
-            result = permission;
-        } else if (typeof permission === 'string') {
-            var negate = false;
-            if (permission[0] === '!') {
-                negate = true;
-                permission = permission.substring(1);
-            }
-            result = checkFn(permission);
-            if (negate) result = !result;
-        } else if (permission instanceof Array) {
-            result = true;
-            permission.forEach(function (p) {
-                result = result && convertPermission(p, checkFn);
-            });
-        }
-
-        return result;
-    }
-
     function checkPermissions (metrics) {
         // Go trough all metrics and convert permissions to boolean, when needed
 
@@ -213,9 +189,9 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
         };
 
         metrics.forEach(function (metric) {
-            metric.internal = convertPermission(metric.internal, isPermissionInternal);
+            metric.internal = zemUtils.convertPermission(metric.internal, isPermissionInternal);
 
-            var shown = convertPermission(metric.shown, hasPermission);
+            var shown = zemUtils.convertPermission(metric.shown, hasPermission);
             if (shown) {
                 if (usesBCMv2 && metric.costMode === constants.costMode.LEGACY) {
                     // don't show old metrics in BCMv2 accounts

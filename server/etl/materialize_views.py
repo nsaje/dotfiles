@@ -157,6 +157,7 @@ class Materialize(object):
 
     TABLE_NAME = 'missing'
     IS_TEMPORARY_TABLE = False
+    IS_DERIVED_VIEW = False
 
     def __init__(self, job_id, date_from, date_to, account_id):
         self.job_id = job_id
@@ -674,6 +675,7 @@ class MasterDerivedView(Materialize):
     SOURCE_VIEW = MasterView.TABLE_NAME
     TEMPLATE = 'etl/migrations/redshift/mv_master.sql'
     IS_TEMPORARY_TABLE = False
+    IS_DERIVED_VIEW = True
 
     @classmethod
     def create(cls, table_name, breakdown, sortkey, distkey=None, diststyle='key'):
@@ -717,10 +719,10 @@ class MasterDerivedView(Materialize):
                     sql, params = self.prepare_insert_query(self.date_from, self.date_to)
                     c.execute(sql, params)
 
-    def prepare_create_table(self):
-        with open(self.TEMPLATE) as rs:
+    def prepare_create_table(cls):
+        with open(cls.TEMPLATE) as rs:
             sql = derived_views.generate_table_definition(
-                self.TABLE_NAME, rs, self.BREAKDOWN, self.SORTKEY, distkey=self.DISTKEY, diststyle=self.DISTSTYLE)
+                cls.TABLE_NAME, rs, cls.BREAKDOWN, cls.SORTKEY, distkey=cls.DISTKEY, diststyle=cls.DISTSTYLE)
         return sql
 
     def prepare_insert_query(self, date_from, date_to):

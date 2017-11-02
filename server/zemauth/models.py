@@ -299,6 +299,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_create_campaign_via_campaign_launcher', 'User can create new campaign via Campaign launcher'),
             ('fea_can_see_inventory_planning', 'User can use the inventory planning tool'),
             ('disable_budget_management', 'User can NOT manage campaign budgets (negated permission)'),
+            ('can_view_breakdown_by_delivery_extended', 'User can view extended breakdowns by delivery.'),
             ('can_breakdown_reports_by_ads_and_publishers', 'User can breakdown reports by ad and publishers'),
         )
 

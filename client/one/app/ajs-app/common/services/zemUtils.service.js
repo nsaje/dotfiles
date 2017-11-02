@@ -7,6 +7,7 @@ angular.module('one.services').service('zemUtils', function ($q) { // eslint-dis
     this.traverseTree = traverseTree;
     this.shouldOpenInNewTab = shouldOpenInNewTab;
     this.intersects = intersects;
+    this.convertPermission = convertPermission;
 
     function convertToCamelCase (obj) {
         if (!(obj instanceof Object)) return obj;
@@ -90,4 +91,28 @@ angular.module('one.services').service('zemUtils', function ($q) { // eslint-dis
             return array2.indexOf(n) !== -1;
         }).length > 0;
     }
+
+    function convertPermission (permission, checkFn) {
+        // Convert Column definitions permissions to boolean value using passed function
+        // Possible types: boolean, string, array
+        var result = false;
+        if (typeof permission === 'boolean') {
+            result = permission;
+        } else if (typeof permission === 'string') {
+            var negate = false;
+            if (permission[0] === '!') {
+                negate = true;
+                permission = permission.substring(1);
+            }
+            result = checkFn(permission);
+            if (negate) result = !result;
+        } else if (permission instanceof Array) {
+            result = true;
+            permission.forEach(function (p) {
+                result = result && convertPermission(p, checkFn);
+            });
+        }
+        return result;
+    }
+
 });

@@ -7,7 +7,7 @@
                     {{ group.name }}
                 </div>
                 <ul class="dropdown-menu__list">
-                    <li class="dropdown-menu__list-item" ng-repeat="breakdown in group.breakdowns"
+                    <li class="dropdown-menu__list-item" ng-repeat="breakdown in breakdowns = (group.breakdowns | filter: {shown: true})"
                         is-internal="{{breakdown.internal}}">
                         <label>
                             <input class="input-checkbox" type="checkbox" ng-model="breakdown.checked"
