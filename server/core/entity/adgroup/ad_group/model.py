@@ -45,6 +45,10 @@ class AdGroupManager(core.common.QuerySetManager):
         redirector_helper.insert_adgroup(ad_group, ad_group_settings, ad_group.campaign.get_current_settings())
 
     def create(self, request, campaign, is_restapi=False, **kwargs):
+        core.common.entity_limits.enforce(
+            AdGroup.objects.filter(campaign=campaign).exclude_archived(),
+            campaign.account_id,
+        )
         with transaction.atomic():
             name = self._create_default_name(campaign)
             ad_group = self._create(request, campaign, name=name)
@@ -63,6 +67,10 @@ class AdGroupManager(core.common.QuerySetManager):
         return ad_group
 
     def clone(self, request, source_ad_group, campaign, new_name):
+        core.common.entity_limits.enforce(
+            AdGroup.objects.filter(campaign=campaign).exclude_archived(),
+            campaign.account_id,
+        )
         if campaign.get_current_settings().landing_mode:
             raise exc.ValidationError('Please select a destination campaign that is not in landing mode')
 

@@ -5,6 +5,28 @@ from django.db.models.functions import Concat
 
 import core.entity
 import core.common
+from publisher_group import PublisherGroup
+
+
+class PublisherGroupEntryManager(core.common.QuerySetManager):
+    def bulk_create(self, objs, batch_size=None):
+        publisher_group = objs[0].publisher_group
+        core.common.entity_limits.enforce(
+            PublisherGroupEntry.objects.filter(publisher_group=publisher_group),
+            publisher_group.account_id,
+            create_count=len(objs),
+        )
+        return super(PublisherGroupEntryManager, self).bulk_create(objs, batch_size)
+
+    def create(self, **kwargs):
+        publisher_group = kwargs.get('publisher_group')
+        if publisher_group is None:
+            publisher_group = PublisherGroup.objects.get(pk=kwargs['publisher_group_id'])
+        core.common.entity_limits.enforce(
+            PublisherGroupEntry.objects.filter(publisher_group=publisher_group),
+            publisher_group.account_id,
+        )
+        return super(PublisherGroupEntryManager, self).create(**kwargs)
 
 
 class PublisherGroupEntry(models.Model):
@@ -27,7 +49,7 @@ class PublisherGroupEntry(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
 
-    objects = core.common.QuerySetManager()
+    objects = PublisherGroupEntryManager()
 
     class QuerySet(models.QuerySet):
 

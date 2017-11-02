@@ -29,6 +29,10 @@ class CampaignManager(core.common.QuerySetManager):
 
     @transaction.atomic
     def create(self, request, account, name, iab_category=constants.IABCategory.IAB24):
+        core.common.entity_limits.enforce(
+            Campaign.objects.filter(account=account).exclude_archived(),
+            account.id,
+        )
         campaign = Campaign(
             name=name,
             account=account

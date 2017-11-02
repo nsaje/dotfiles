@@ -29,6 +29,10 @@ class BudgetLineItemManager(core.common.QuerySetManager):
 
     @transaction.atomic
     def create(self, request, campaign, credit, start_date, end_date, amount, margin=None, comment=None):
+        core.common.entity_limits.enforce(
+            BudgetLineItem.objects.filter(campaign=campaign),
+            campaign.account_id,
+        )
         item = BudgetLineItem(
             campaign=campaign,
             credit=credit,

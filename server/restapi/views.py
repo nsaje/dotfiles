@@ -1000,11 +1000,11 @@ class PublisherGroupSerializer(DataNodeSerializerMixin, serializers.ModelSeriali
     account_id = fields.IdField(read_only=True)
 
     def create(self, validated_data):
-        pgroup = dash.models.PublisherGroup(
+        return dash.models.PublisherGroup.objects.create(
+            validated_data['request'],
             name=validated_data['name'],
-            account_id=validated_data['account_id'])
-        pgroup.save(validated_data['request'])
-        return pgroup
+            account=helpers.get_account(validated_data['request'].user, validated_data['account_id']),
+        )
 
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)

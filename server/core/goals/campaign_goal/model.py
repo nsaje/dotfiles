@@ -33,6 +33,10 @@ class CampaignGoalManager(core.common.BaseManager):
 
     @transaction.atomic
     def create(self, request, campaign, goal_type, value, conversion_goal=None, primary=False):
+        core.common.entity_limits.enforce(
+            CampaignGoal.objects.filter(campaign=campaign),
+            campaign.account_id,
+        )
         self._validate_goal_count(campaign, goal_type)
 
         if conversion_goal is not None:

@@ -2,12 +2,34 @@
 
 from django.conf import settings
 from django.db import models
+from django.db import transaction
 from dash import constants
 
 import core.common
 import core.entity
 import core.entity.settings
 import core.history
+
+
+class PublisherGroupManager(core.common.QuerySetManager):
+
+    @transaction.atomic
+    def create(self, request, name, account, default_include_subdomains=True, implicit=False):
+        if not implicit:
+            core.common.entity_limits.enforce(
+                PublisherGroup.objects.filter(account=account, implicit=False),
+                account.id,
+            )
+
+        publisher_group = PublisherGroup(
+            name=name,
+            account=account,
+            default_include_subdomains=default_include_subdomains,
+            implicit=implicit)
+
+        publisher_group.save(request)
+
+        return publisher_group
 
 
 class PublisherGroup(models.Model):
@@ -41,7 +63,7 @@ class PublisherGroup(models.Model):
             self.modified_by = request.user
         super(PublisherGroup, self).save(*args, **kwargs)
 
-    objects = core.common.QuerySetManager()
+    objects = PublisherGroupManager()
 
     class QuerySet(models.QuerySet):
 

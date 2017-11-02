@@ -36,12 +36,12 @@ def get_blacklist_publisher_group(obj, create_if_none=False, request=None):
     publisher_group = obj.default_blacklist
     if publisher_group is None and create_if_none:
         with transaction.atomic():
-            publisher_group = models.PublisherGroup(
+            publisher_group = models.PublisherGroup.objects.create(
+                request,
                 name=obj.get_default_blacklist_name(),
                 account=obj.get_account(),
                 default_include_subdomains=True,
                 implicit=True)
-            publisher_group.save(request)
             obj.default_blacklist = publisher_group
             obj.save(request)
 
@@ -59,12 +59,12 @@ def get_whitelist_publisher_group(obj, create_if_none=False, request=None):
     with transaction.atomic():
         publisher_group = obj.default_whitelist
         if publisher_group is None and create_if_none:
-            publisher_group = models.PublisherGroup(
+            publisher_group = models.PublisherGroup.objects.create(
+                request,
                 name=obj.get_default_whitelist_name(),
                 account=obj.get_account(),
                 default_include_subdomains=True,
                 implicit=True)
-            publisher_group.save(request)
             obj.default_whitelist = publisher_group
             obj.save(request)
 
@@ -315,27 +315,32 @@ def unlist_publishers(request, entry_dicts, obj, enforce_cpc=False, history=True
 def upsert_publisher_group(request, account_id, publisher_group_dict, entry_dicts):
     changes = {}
 
-    # get or create publisher group
+    include_subdomains = bool(publisher_group_dict.get('include_subdomains'))
+
+    # update or create publisher group
     if publisher_group_dict.get('id'):
         publisher_group = helpers.get_publisher_group(request.user, account_id, publisher_group_dict['id'])
         history_action_type = constants.HistoryActionType.PUBLISHER_GROUP_UPDATE
         changes_text = "Publisher group \"{} [{}]\" updated".format(publisher_group.name, publisher_group.id)
+
+        if include_subdomains != publisher_group.default_include_subdomains:
+            changes['include_subdomains'] = (publisher_group.default_include_subdomains, include_subdomains)
+            publisher_group.default_include_subdomains = include_subdomains
+
+        if publisher_group.name != publisher_group_dict['name']:
+            changes['name'] = (publisher_group.name, publisher_group_dict['name'])
+            publisher_group.name = publisher_group_dict['name']
+
+        publisher_group.save(request)
     else:
-        publisher_group = models.PublisherGroup(account_id=account_id, implicit=False)
+        publisher_group = models.PublisherGroup.objects.create(
+            request,
+            name=publisher_group_dict['name'],
+            account=helpers.get_account(request.user, account_id),
+            default_include_subdomains=include_subdomains,
+            implicit=False)
         history_action_type = constants.HistoryActionType.PUBLISHER_GROUP_CREATE
         changes_text = "Publisher group created"
-
-    # update
-    include_subdomains = bool(publisher_group_dict.get('include_subdomains'))
-    if include_subdomains != publisher_group.default_include_subdomains:
-        changes['include_subdomains'] = (publisher_group.default_include_subdomains, include_subdomains)
-        publisher_group.default_include_subdomains = include_subdomains
-
-    if publisher_group.name != publisher_group_dict['name']:
-        changes['name'] = (publisher_group.name, publisher_group_dict['name'])
-        publisher_group.name = publisher_group_dict['name']
-
-    publisher_group.save(request)
 
     # replace publishers
     if entry_dicts:

@@ -11,6 +11,11 @@ import utils.exc
 class UploadBatchManager(models.Manager):
 
     def create(self, user, account, name, ad_group=None):
+        if ad_group is not None:
+            core.common.entity_limits.enforce(
+                core.entity.ContentAd.objects.filter(ad_group=ad_group).exclude_archived(),
+                account.id,
+            )
         batch = UploadBatch(
             account=account,
             name=name,
@@ -24,6 +29,10 @@ class UploadBatchManager(models.Manager):
         return self.create(user, account, new_batch_name or UploadBatch.generate_cloned_name(source_ad_group), ad_group)
 
     def create_for_file(self, user, account, name, ad_group, original_filename, auto_save, is_edit):
+        core.common.entity_limits.enforce(
+            core.entity.ContentAd.objects.filter(ad_group=ad_group).exclude_archived(),
+            account.id,
+        )
         batch = UploadBatch(
             account=account,
             name=name,
