@@ -20,13 +20,15 @@ def query_content_ad_publishers(date_from, date_to, ad_group_ids=None, min_media
     if min_media_cost is not None:
         having['media_cost__gte'] = min_media_cost
 
-    mvmaster = rsmodels.MVMasterPublishers()
+    mvmaster = rsmodels.MVMaster()
+    view = 'mv_master'
     breakdown = ['ad_group_id', 'content_ad_id', 'publisher', 'source_id']
+
     context = {
         'breakdown': mvmaster.select_columns(breakdown),
-        'aggregates': [x for x in mvmaster.get_aggregates() if x.alias in columns],  # this is some special publishers view column
+        'aggregates': [x for x in mvmaster.get_aggregates(breakdown, view) if x.alias in columns],  # this is some special publishers view column
         'constraints': mvmaster.get_constraints(constraints, None),
-        'view': 'mv_master',
+        'view': view,
         'orders': [mvmaster.get_column('-clicks').as_order('-clicks', nulls='last')],
     }
     if having:
