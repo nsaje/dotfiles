@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 import dash.constants
 import dash.views.helpers
-from restapi.fields import IdField, DashConstantField
+import restapi.fields
 import stats.api_reports
 import stats.constants
 from utils import exc
@@ -13,16 +13,16 @@ from reportjob import ReportJob
 
 
 class ReportNamesSerializer(serializers.Serializer):
-    field = serializers.CharField(allow_blank=False, trim_whitespace=True)
+    field = restapi.fields.PlainCharField(allow_blank=False, trim_whitespace=True)
 
 
 class ReportFiltersSerializer(serializers.Serializer):
-    field = serializers.CharField(allow_blank=False, trim_whitespace=True)
+    field = restapi.fields.PlainCharField(allow_blank=False, trim_whitespace=True)
     operator = serializers.ChoiceField(constants.OPERATORS)
-    value = serializers.CharField(required=False)
-    values = serializers.ListField(child=serializers.CharField(), required=False)
-    frm = serializers.CharField(required=False)  # remapped to 'from' below
-    to = serializers.CharField(required=False)
+    value = restapi.fields.PlainCharField(required=False)
+    values = serializers.ListField(child=restapi.fields.PlainCharField(), required=False)
+    frm = restapi.fields.PlainCharField(required=False)  # remapped to 'from' below
+    to = restapi.fields.PlainCharField(required=False)
 
     def validate(self, data):
         if data['operator'] == constants.EQUALS and not data.get('value'):
@@ -49,7 +49,7 @@ class ReportOptionsSerializer(serializers.Serializer):
     include_items_with_no_spend = serializers.BooleanField(default=False)
     show_status_date = serializers.BooleanField(default=False)
     recipients = serializers.ListField(child=serializers.EmailField(), default=[])
-    order = serializers.CharField(required=False)
+    order = restapi.fields.PlainCharField(required=False)
 
 
 class ReportQuerySerializer(serializers.Serializer):
@@ -87,6 +87,6 @@ class ReportJobSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReportJob
         fields = ('id', 'status', 'result')
-    id = IdField()
-    status = DashConstantField(constants.ReportJobStatus)
+    id = restapi.fields.IdField()
+    status = restapi.fields.DashConstantField(constants.ReportJobStatus)
     result = serializers.JSONField()

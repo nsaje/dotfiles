@@ -10,7 +10,7 @@ class CloneAdGroupSerializer(serializers.Serializer):
         'required': 'Please select destination campaign',
         'null': 'Please select destination campaign',
     })
-    destination_ad_group_name = serializers.CharField(required=True, error_messages={
+    destination_ad_group_name = restapi.fields.PlainCharField(required=True, error_messages={
         'required': 'Please provide a name for destination ad group',
         'blank': 'Please provide a name for destination ad group',
     })

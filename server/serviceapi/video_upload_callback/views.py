@@ -15,8 +15,8 @@ class FormatSerializer(serializers.Serializer):
     width = serializers.IntegerField()
     height = serializers.IntegerField()
     bitrate = serializers.IntegerField()
-    mime = serializers.CharField()
-    filename = serializers.CharField()
+    mime = restapi.fields.PlainCharField()
+    filename = restapi.fields.PlainCharField()
 
 
 class PutSerializer(serializers.ModelSerializer):

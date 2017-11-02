@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+import restapi.fields
+
 
 class AdGroupRealtimeStatsSerializer(serializers.Serializer):
     spend = serializers.DecimalField(max_digits=20, decimal_places=2)
@@ -7,5 +9,5 @@ class AdGroupRealtimeStatsSerializer(serializers.Serializer):
 
 
 class AdGroupSourcesRealtimeStatsSerializer(serializers.Serializer):
-    source = serializers.CharField()
+    source = restapi.fields.PlainCharField()
     spend = serializers.FloatField()

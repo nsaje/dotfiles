@@ -880,6 +880,16 @@ class ContentAdCandidateSerializer(serializers.ModelSerializer):
                   'description', 'call_to_action', 'label', 'image_crop')
         extra_kwargs = {'primary_tracker_url': {'allow_empty': True}, 'secondary_tracker_url': {'allow_empty': True}}
 
+    url = fields.PlainCharField(required=True)
+    title = fields.PlainCharField(required=True)
+    image_url = fields.PlainCharField(required=True)
+    display_url = fields.PlainCharField(required=True)
+    brand_name = fields.PlainCharField(required=True)
+    description = fields.PlainCharField(required=True)
+    call_to_action = fields.PlainCharField(required=True)
+    image_crop = fields.PlainCharField(required=True)
+    label = fields.PlainCharField(allow_blank=True, allow_null=True, required=False)
+
     def to_internal_value(self, external_data):
         internal_data = super(ContentAdCandidateSerializer, self).to_internal_value(external_data)
         tracker_urls = external_data.get('tracker_urls')
@@ -986,6 +996,7 @@ class PublisherGroupSerializer(DataNodeSerializerMixin, serializers.ModelSeriali
         list_serializer_class = DataNodeListSerializer
 
     id = fields.IdField(read_only=True)
+    name = fields.PlainCharField(max_length=127)
     account_id = fields.IdField(read_only=True)
 
     def create(self, validated_data):
@@ -1009,6 +1020,7 @@ class PublisherGroupEntrySerializer(DataNodeSerializerMixin, serializers.ModelSe
         list_serializer_class = DataNodeListSerializer
 
     id = fields.IdField(read_only=True)
+    publisher = fields.PlainCharField(label='Publisher name or domain', max_length=127)
     publisher_group_id = fields.IdField(read_only=True)
     source = fields.SourceIdSlugField(required=False, allow_null=True)
 

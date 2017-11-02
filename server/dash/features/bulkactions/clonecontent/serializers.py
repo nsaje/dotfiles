@@ -20,7 +20,7 @@ class CloneContentAdsSerializer(serializers.Serializer):
         'required': 'Please select destination ad group',
         'null': 'Please select destination ad group',
     })
-    destination_batch_name = serializers.CharField(required=True, error_messages={
+    destination_batch_name = restapi.fields.PlainCharField(required=True, error_messages={
         'required': 'Please provide a name for destination upload batch',
         'blank': 'Please provide a name for destination upload batch'
     })
@@ -33,6 +33,7 @@ class AdGroupSerializer(serializers.ModelSerializer):
         fields = ('id', 'name')
 
     id = restapi.fields.IdField()
+    name = restapi.fields.PlainCharField(max_length=1024)
 
 
 class UploadBatchSerializer(serializers.ModelSerializer):
@@ -41,6 +42,7 @@ class UploadBatchSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'ad_group')
 
     id = restapi.fields.IdField()
+    name = restapi.fields.PlainCharField(max_length=1024)
     ad_group = AdGroupSerializer()
 
 

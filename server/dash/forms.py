@@ -26,6 +26,7 @@ from dash import validation_helpers
 from dash.views import helpers
 from dash.features.custom_flags.forms import CustomFlagsFormMixin
 from utils import dates_helper
+from utils import validation_helper
 
 from zemauth.models import User as ZemUser
 
@@ -56,6 +57,12 @@ class TypedMultipleAnyChoiceField(forms.TypedMultipleChoiceField):
 
     def valid_value(self, value):
         return True
+
+
+class PlainCharField(forms.CharField):
+    def clean(self, value):
+        validation_helper.validate_plain_text(value)
+        return super(PlainCharField, self).clean(value)
 
 
 REDIRECT_JS_HELP_TEXT = '''!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -114,8 +121,8 @@ class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
         'target_placements',
         'target_os',
     ]
-    notes = forms.CharField(required=False, widget=forms.Textarea,
-                            help_text='Describe what kind of additional targeting was setup on the backend.')
+    notes = PlainCharField(required=False, widget=forms.Textarea,
+                           help_text='Describe what kind of additional targeting was setup on the backend.')
     bluekai_targeting = postgres_forms.JSONField(
         required=False, help_text='Example: ["and", "bluekai:446103", ["not", ["or", "bluekai:510120", "bluekai:510122"]]]')
     interest_targeting = forms.MultipleChoiceField(
@@ -133,7 +140,7 @@ class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
         help_text='Select interests and demographics you want to exclude.'
     )
     redirect_pixel_urls = postgres_forms.SimpleArrayField(
-        forms.CharField(),
+        PlainCharField(),
         required=False,
         delimiter='\n',
         widget=forms.Textarea,
@@ -186,9 +193,9 @@ class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
 
 
 class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
-    name = forms.CharField(
+    name = PlainCharField(
         max_length=127,
-        error_messages={'required': 'Please specify ad group name.'}
+        error_messages={'required': 'Please specify ad group name.'},
     )
     state = forms.TypedChoiceField(
         choices=constants.AdGroupSettingsState.get_choices(),
@@ -257,7 +264,7 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
         required=False,
         choices=constants.InterestCategory.get_choices()
     )
-    tracking_code = forms.CharField(required=False)
+    tracking_code = PlainCharField(required=False)
 
     autopilot_state = forms.TypedChoiceField(
         required=False,
@@ -505,12 +512,12 @@ class AdGroupSourceSettingsForm(forms.Form):
 
 class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
     id = forms.IntegerField()
-    name = forms.CharField(
+    name = PlainCharField(
         max_length=127,
         required=False,
         error_messages={'required': 'Please specify account name.'}
     )
-    agency = forms.CharField(
+    agency = PlainCharField(
         max_length=127,
         required=False,
     )
@@ -528,8 +535,8 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
     )
     # this is a dict with custom validation
     allowed_sources = forms.Field(required=False)
-    facebook_page = forms.CharField(max_length=255, required=False)
-    salesforce_url = forms.CharField(max_length=255, required=False)
+    facebook_page = PlainCharField(max_length=255, required=False)
+    salesforce_url = PlainCharField(max_length=255, required=False)
 
     def __init__(self, account, *args, **kwargs):
         self.account = account
@@ -644,7 +651,7 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
 
 class ConversionPixelForm(forms.Form):
     archived = forms.BooleanField(required=False)
-    name = forms.CharField(
+    name = PlainCharField(
         max_length=50,
         required=True,
         error_messages={
@@ -657,7 +664,7 @@ class ConversionPixelForm(forms.Form):
         max_length=2048,
         required=False,
     )
-    notes = forms.CharField(
+    notes = PlainCharField(
         required=False,
     )
 
@@ -674,7 +681,7 @@ class ConversionGoalForm(forms.Form):
         coerce=int,
         empty_value=None,
     )
-    goal_id = forms.CharField(
+    goal_id = PlainCharField(
         required=True,
         max_length=100,
         error_messages={
@@ -841,7 +848,7 @@ class AgencyAdminForm(forms.ModelForm, CustomFlagsFormMixin):
 
 class CampaignSettingsForm(PublisherGroupsFormMixin, forms.Form):
     id = forms.IntegerField()
-    name = forms.CharField(
+    name = PlainCharField(
         max_length=127,
         error_messages={'required': 'Please specify campaign name.'}
     )
@@ -888,11 +895,11 @@ class CampaignSettingsForm(PublisherGroupsFormMixin, forms.Form):
         empty_value=None
     )
 
-    ga_property_id = forms.CharField(max_length=25, required=False)
+    ga_property_id = PlainCharField(max_length=25, required=False)
 
     enable_adobe_tracking = forms.NullBooleanField(required=False)
 
-    adobe_tracking_param = forms.CharField(max_length=10, required=False)
+    adobe_tracking_param = PlainCharField(max_length=10, required=False)
 
     def __init__(self, campaign, *args, **kwargs):
         self.account = campaign.account
@@ -942,11 +949,11 @@ class UserForm(forms.Form):
         max_length=127,
         error_messages={'required': 'Please specify user\'s email.'}
     )
-    first_name = forms.CharField(
+    first_name = PlainCharField(
         max_length=127,
         error_messages={'required': 'Please specify first name.'}
     )
-    last_name = forms.CharField(
+    last_name = PlainCharField(
         max_length=127,
         error_messages={'required': 'Please specify last name.'}
     )
@@ -1009,7 +1016,7 @@ class DisplayURLField(forms.URLField):
 class AdGroupAdsUploadBaseForm(forms.Form):
     account_id = forms.IntegerField(required=False)
     ad_group_id = forms.IntegerField(required=False)
-    batch_name = forms.CharField(
+    batch_name = PlainCharField(
         required=True,
         max_length=255,
         error_messages={
@@ -1278,7 +1285,7 @@ class ScheduleReportForm(forms.Form):
         choices=constants.ScheduledReportGranularity.get_choices(),
         coerce=int
     )
-    report_name = forms.CharField(
+    report_name = PlainCharField(
         required=True,
         max_length=100,
         error_messages={
@@ -1405,9 +1412,9 @@ class BreakdownForm(forms.Form):
     filtered_account_types = TypedMultipleAnyChoiceField(
         required=False, coerce=str)
 
-    order = forms.CharField(required=False)
+    order = PlainCharField(required=False)
 
-    breakdown = forms.CharField(required=True)
+    breakdown = PlainCharField(required=True)
 
     def clean_filtered_sources(self):
         return helpers.get_filtered_sources(self.user, ','.join(self.cleaned_data.get('filtered_sources')))
@@ -1480,28 +1487,28 @@ class ContentAdCandidateForm(forms.ModelForm):
 
 
 class ContentAdForm(ContentAdCandidateForm):
-    label = forms.CharField(
+    label = PlainCharField(
         max_length=256,
         required=False,
         error_messages={
             'max_length': 'Label too long (max %(limit_value)d characters)',
         }
     )
-    url = forms.CharField(
+    url = PlainCharField(
         max_length=936,
         error_messages={
             'required': 'Missing URL',
             'max_length': 'URL too long (max %(limit_value)d characters)',
         }
     )
-    title = forms.CharField(
+    title = PlainCharField(
         max_length=90,
         error_messages={
             'required': 'Missing title',
             'max_length': 'Title too long (max %(limit_value)d characters)',
         },
     )
-    image_url = forms.CharField(
+    image_url = PlainCharField(
         error_messages={
             'required': 'Missing image',
         }
@@ -1521,35 +1528,35 @@ class ContentAdForm(ContentAdCandidateForm):
             'max_length': 'Display URL too long (max %(limit_value)d characters)',
         },
     )
-    brand_name = forms.CharField(
+    brand_name = PlainCharField(
         max_length=25,
         error_messages={
             'required': 'Missing brand name',
             'max_length': 'Brand name too long (max %(limit_value)d characters)',
         },
     )
-    description = forms.CharField(
+    description = PlainCharField(
         max_length=140,
         error_messages={
             'required': 'Missing description',
             'max_length': 'Description too long (max %(limit_value)d characters)',
         },
     )
-    call_to_action = forms.CharField(
+    call_to_action = PlainCharField(
         max_length=25,
         error_messages={
             'required': 'Missing call to action',
             'max_length': 'Call to action too long (max %(limit_value)d characters)',
         },
     )
-    primary_tracker_url = forms.CharField(
+    primary_tracker_url = PlainCharField(
         max_length=936,
         required=False,
         error_messages={
             'max_length': 'URL too long (max %(limit_value)d characters)',
         }
     )
-    secondary_tracker_url = forms.CharField(
+    secondary_tracker_url = PlainCharField(
         max_length=936,
         required=False,
         error_messages={
@@ -1557,10 +1564,10 @@ class ContentAdForm(ContentAdCandidateForm):
         }
     )
 
-    image_id = forms.CharField(
+    image_id = PlainCharField(
         required=False,
     )
-    image_hash = forms.CharField(
+    image_hash = PlainCharField(
         required=False,
     )
     image_width = forms.IntegerField(
@@ -1712,7 +1719,7 @@ class AudienceRuleForm(forms.Form):
             'required': 'Please select a type of the rule.',
         }
     )
-    value = forms.CharField(required=False, max_length=255)
+    value = PlainCharField(required=False, max_length=255)
 
     def clean_value(self):
         value = self.cleaned_data.get('value')
@@ -1750,7 +1757,7 @@ class AudienceRulesField(forms.Field):
 
 
 class AudienceForm(forms.Form):
-    name = forms.CharField(
+    name = PlainCharField(
         max_length=127,
         error_messages={
             'required': 'Please specify audience name.',
@@ -1792,7 +1799,7 @@ class AudienceForm(forms.Form):
 
 
 class AudienceUpdateForm(forms.Form):
-    name = forms.CharField(
+    name = PlainCharField(
         max_length=127,
         error_messages={
             'required': 'Please specify audience name.',
@@ -1809,7 +1816,7 @@ class AudienceUpdateForm(forms.Form):
 
 
 class PublisherGroupEntryForm(forms.Form):
-    publisher = forms.CharField(required=True, max_length=127)
+    publisher = PlainCharField(required=True, max_length=127)
     source = forms.ModelChoiceField(queryset=models.Source.objects.all(), required=False)
     include_subdomains = forms.BooleanField(required=False)
 
@@ -1908,7 +1915,7 @@ class PublisherGroupUploadForm(forms.Form, ParseCSVExcelFile):
     id = forms.IntegerField(
         required=False
     )
-    name = forms.CharField(required=True, max_length=127, error_messages={
+    name = PlainCharField(required=True, max_length=127, error_messages={
         'required': 'Please enter a name for this publisher group',
         'max_length': 'Publisher group name is too long (%(show_value)d/%(limit_value)d).',
     })

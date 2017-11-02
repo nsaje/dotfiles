@@ -6,7 +6,7 @@ import dash.views.publishers
 
 
 class PublisherSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=127)
+    name = restapi.fields.PlainCharField(max_length=127)
     source = restapi.fields.SourceIdSlugField(required=False, allow_null=True)
     status = restapi.fields.DashConstantField(dash.constants.PublisherStatus)
     level = restapi.fields.DashConstantField(dash.constants.PublisherBlacklistLevel, label='level')

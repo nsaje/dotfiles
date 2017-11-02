@@ -3,6 +3,7 @@ import django.db.models
 from rest_framework import serializers
 
 import dash.models
+from utils import validation_helper
 
 
 class NotProvided(object):
@@ -71,3 +72,9 @@ class SourceIdSlugField(serializers.Field):
 
     def to_representation(self, source):
         return source.bidder_slug
+
+
+class PlainCharField(serializers.CharField):
+    def to_internal_value(self, data):
+        validation_helper.validate_plain_text(data)
+        return super(PlainCharField, self).to_internal_value(data)

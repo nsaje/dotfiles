@@ -15,7 +15,7 @@ UPLOAD_TYPES = [DIRECT_UPLOAD]
 
 class UploadInfoSerializer(serializers.Serializer):
     type = fields.ChoiceField(choices=UPLOAD_TYPES)
-    url = fields.CharField(required=False)
+    url = restapi.fields.PlainCharField(required=False)
 
 
 class VideoAssetSerializer(serializers.ModelSerializer):
@@ -31,10 +31,10 @@ class VideoAssetSerializer(serializers.ModelSerializer):
     status_message = fields.CharField(read_only=True, source='get_status_message')
     error_message = fields.CharField(read_only=True, source='get_error_message')
     preview_url = fields.CharField(read_only=True, source='get_preview_url')
-    name = fields.CharField()
+    name = restapi.fields.PlainCharField()
     upload = UploadInfoSerializer(required=False)
 
 
 class VideoAssetPostSerializer(serializers.Serializer):
-    name = fields.CharField()
+    name = restapi.fields.PlainCharField()
     upload = UploadInfoSerializer()

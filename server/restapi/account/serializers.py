@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from restapi import fields
+import restapi.fields
 
 
 class TargetingIncludeExcludeSerializer(serializers.Serializer):
@@ -13,10 +13,10 @@ class AccountTargetingSerializer(serializers.Serializer):
 
 
 class AccountSerializer(serializers.Serializer):
-    id = fields.IdField(read_only=True)
-    agency_id = fields.IdField(required=False, allow_null=True)
+    id = restapi.fields.IdField(read_only=True)
+    agency_id = restapi.fields.IdField(required=False, allow_null=True)
     targeting = AccountTargetingSerializer(source='settings', required=False)
-    name = serializers.CharField(
+    name = restapi.fields.PlainCharField(
         max_length=127,
         error_messages={'required': 'Please specify account name.'},
         source='settings.name',

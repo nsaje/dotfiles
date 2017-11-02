@@ -152,11 +152,11 @@ _geo_type_cache = {}
 
 
 class TargetRegionsSerializer(rest_framework.serializers.Serializer):
-    countries = rest_framework.serializers.ListField(child=rest_framework.serializers.CharField(), required=False)
-    regions = rest_framework.serializers.ListField(child=rest_framework.serializers.CharField(), required=False)
-    dma = rest_framework.serializers.ListField(child=rest_framework.serializers.CharField(), required=False)
-    cities = rest_framework.serializers.ListField(child=rest_framework.serializers.CharField(), required=False)
-    postal_codes = rest_framework.serializers.ListField(child=rest_framework.serializers.CharField(), required=False)
+    countries = rest_framework.serializers.ListField(child=restapi.fields.PlainCharField(), required=False)
+    regions = rest_framework.serializers.ListField(child=restapi.fields.PlainCharField(), required=False)
+    dma = rest_framework.serializers.ListField(child=restapi.fields.PlainCharField(), required=False)
+    cities = rest_framework.serializers.ListField(child=restapi.fields.PlainCharField(), required=False)
+    postal_codes = rest_framework.serializers.ListField(child=restapi.fields.PlainCharField(), required=False)
 
     default_error_messages = {
         'invalid_choice': '"{input}" is not a valid location.'

@@ -10,7 +10,7 @@ from restapi.serializers import targeting
 class ConversionGoalSerializer(serializers.Serializer):
     type = restapi.fields.DashConstantField(dash.constants.ConversionGoalType)
     conversion_window = restapi.fields.DashConstantField(dash.constants.ConversionWindows, required=False)
-    goal_id = serializers.CharField(
+    goal_id = restapi.fields.PlainCharField(
         required=True,
         max_length=100,
         error_messages={
@@ -26,7 +26,7 @@ class CampaignGoalSerializer(serializers.Serializer):
 
 
 class CampaignLauncherSerializer(serializers.Serializer):
-    campaign_name = fields.CharField(
+    campaign_name = restapi.fields.PlainCharField(
         max_length=127,
         error_messages={'required': 'Please specify campaign name.'}
     )

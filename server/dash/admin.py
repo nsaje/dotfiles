@@ -62,10 +62,10 @@ class AbstractUserForm(forms.ModelForm):
     WARNING: DOES NOT SAVE THE DATA
     '''
 
-    first_name = forms.CharField(widget=StrWidget, label="First name")
-    last_name = forms.CharField(widget=StrWidget, label="Last name")
-    email = forms.CharField(widget=StrWidget, label="E-mail")
-    link = forms.CharField(widget=StrWidget, label="Edit link")
+    first_name = dash_forms.PlainCharField(widget=StrWidget, label="First name")
+    last_name = dash_forms.PlainCharField(widget=StrWidget, label="Last name")
+    email = dash_forms.PlainCharField(widget=StrWidget, label="E-mail")
+    link = dash_forms.PlainCharField(widget=StrWidget, label="Edit link")
 
     def __init__(self, *args, **kwargs):
         super(AbstractUserForm, self).__init__(*args, **kwargs)

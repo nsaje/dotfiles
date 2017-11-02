@@ -14,8 +14,8 @@ class GeolocationQueryParamsExpectations(restapi.common.serializers.QueryParamsE
         max_length=10,
     )
     limit = fields.IntegerField(max_value=50, default=10)
-    keys = fields.ListField(child=fields.CharField(), max_length=50)
-    name_contains = fields.CharField(min_length=2, max_length=50, required=False)
+    keys = fields.ListField(child=restapi.fields.PlainCharField(), max_length=50)
+    name_contains = restapi.fields.PlainCharField(min_length=2, max_length=50, required=False)
 
 
 class GeolocationSerializer(serializers.ModelSerializer):
