@@ -1,10 +1,8 @@
 import datetime
 import logging
 from decimal import Decimal
-import cStringIO
 
 import pytz
-import unicodecsv
 
 from django.conf import settings
 from django.db import connections
@@ -15,6 +13,7 @@ from etl import helpers
 import utils.email_helper
 from utils.command_helpers import ExceptionCommand
 from utils import converters
+from utils import csv_utils
 
 logger = logging.getLogger(__name__)
 
@@ -101,10 +100,4 @@ class Command(ExceptionCommand):
         return result
 
     def create_csv(self, columns, data):
-        output = cStringIO.StringIO()
-        writer = unicodecsv.writer(output, encoding='utf-8', dialect='excel', quoting=unicodecsv.QUOTE_ALL)
-        writer.writerow(columns)
-        for row in data:
-            writer.writerow(row)
-
-        return output.getvalue()
+        return csv_utils.tuplelist_to_csv([columns] + data)

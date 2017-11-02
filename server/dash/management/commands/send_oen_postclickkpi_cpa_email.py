@@ -1,12 +1,10 @@
 import logging
-import cStringIO
 import influx
-import unicodecsv
 import datetime
 
 from dash import models
 from utils.command_helpers import ExceptionCommand
-from utils import s3helpers, email_helper, dates_helper
+from utils import s3helpers, email_helper, dates_helper, csv_utils
 from stats.api_breakdowns import Goals
 import redshiftapi.api_breakdowns
 
@@ -44,10 +42,11 @@ class Command(ExceptionCommand):
         influx.gauge('dash.commands.send_oen_postclickkpi_cpa_email_job.num_factors', len(factors.splitlines()))
 
     def _generate_output_csv(self, factors_file, ad_groups, sources, conversions_data, oen_pub_ids):
+        rows = self._generate_output_csv_rows(factors_file, ad_groups, sources, conversions_data, oen_pub_ids)
+        return csv_utils.tuplelist_to_csv(rows)
 
-        output = cStringIO.StringIO()
-        writer = unicodecsv.writer(output, encoding='utf-8', delimiter='\t')
-        writer.writerow(EXPECTED_COLS)
+    def _generate_output_csv_rows(self, factors_file, ad_groups, sources, conversions_data, oen_pub_ids):
+        yield EXPECTED_COLS
 
         for factor_row in factors_file.splitlines():
             row = factor_row.split('\t')
@@ -74,9 +73,7 @@ class Command(ExceptionCommand):
                 if col not in out:
                     raise Exception('Unexpected factor key in factor row: %s' % factor_row)
 
-            writer.writerow([out[c] for c in EXPECTED_COLS])
-
-        return output.getvalue()
+            yield [out[c] for c in EXPECTED_COLS]
 
     def _get_conversions_data(self, ad_group_ids):
         data = redshiftapi.api_breakdowns.query_all(
