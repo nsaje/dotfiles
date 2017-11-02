@@ -926,6 +926,7 @@ class ContentAdsView(K1APIView):
         if ad_group_ids:
             ad_group_ids = ad_group_ids.split(',')
             content_ads = content_ads.filter(ad_group_id__in=ad_group_ids)
+        content_ads = content_ads.select_related('ad_group', 'ad_group__campaign')
 
         response = []
         for item in content_ads:
@@ -940,6 +941,8 @@ class ContentAdsView(K1APIView):
             content_ad = {
                 'id': item.id,
                 'ad_group_id': item.ad_group_id,
+                'campaign_id': item.ad_group.campaign_id,
+                'account_id': item.ad_group.campaign.account_id,
                 'title': item.title,
                 'url': item.url,
                 'redirect_id': item.redirect_id,
