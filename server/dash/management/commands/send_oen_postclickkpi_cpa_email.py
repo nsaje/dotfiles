@@ -1,6 +1,8 @@
 import logging
 import influx
 import datetime
+import gzip
+from StringIO import StringIO
 
 from dash import models
 from utils.command_helpers import ExceptionCommand
@@ -11,7 +13,7 @@ import redshiftapi.api_breakdowns
 logger = logging.getLogger(__name__)
 
 S3_BUCKET_B1_ML = 'b1-ml'
-S3_CPA_FACTORS_PATH = 'postclick_kpi/siciliana/actionspercost/trim_ratios/agsrcpub/latest/trimratios.tsv'
+S3_CPA_FACTORS_PATH = 'postclick_kpi/siciliana/actionspercost/trim_ratios/agsrcpub/latest/trimratios.tsv.gz'
 OEN_ACCOUNT = 305
 OEN_PUBLISHER_GROUP_ID = 2
 DATA_LOOK_BACK_DAYS = 14
@@ -32,7 +34,7 @@ class Command(ExceptionCommand):
         oen_pub_ids = self._prefetch_oen_pub_ids()
 
         s3_helper = s3helpers.S3Helper(S3_BUCKET_B1_ML)
-        factors_file = s3_helper.get(S3_CPA_FACTORS_PATH)
+        factors_file = gzip.GzipFile(fileobj=StringIO(s3_helper.get(S3_CPA_FACTORS_PATH))).read()
 
         factors_ad_groups = self._get_factor_ad_groups(factors_file, oen_ags)
         conversions_data = self._get_conversions_data(factors_ad_groups)
