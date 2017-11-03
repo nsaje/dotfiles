@@ -1,2 +1,2 @@
 {% load backtosql_tags %}
-MAX({{ p }}{{ column_name }}) {{ alias|as_kw }}
+MAX({{ p }}{{ column_name }}){{ alias|as_kw }}

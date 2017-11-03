@@ -102,17 +102,6 @@ class ViewSelectorTest(TestCase):
         self.assertFalse(view_selector.supports_conversions('mv_master', None))
         self.assertTrue(view_selector.supports_conversions('mv_adgroup', 'mv_adgroup_conv'))
 
-    def test_supports_publisher_id(self):
-        self.assertTrue(view_selector.supports_publisher_id('mv_master'))
-        self.assertTrue(view_selector.supports_publisher_id('mv_master_pubs'))
-        self.assertTrue(view_selector.supports_publisher_id('mv_adgroup_pubs'))
-        self.assertTrue(view_selector.supports_publisher_id('mv_campaign_pubs'))
-        self.assertTrue(view_selector.supports_publisher_id('mv_account_pubs'))
-
-        self.assertFalse(view_selector.supports_publisher_id('mv_adgroup'))
-        self.assertFalse(view_selector.supports_publisher_id('mv_campaign'))
-        self.assertFalse(view_selector.supports_publisher_id('mv_account'))
-
     def test_supports_external_id(self):
         self.assertFalse(view_selector.supports_external_id('mv_master'))
 

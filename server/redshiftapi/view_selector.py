@@ -64,11 +64,6 @@ TOUCHPOINT_VIEWS = [
 ]
 
 
-def supports_publisher_id(view):
-    views = set(x[0] for x in PUBLISHER_VIEWS) | {'mv_master', 'mv_conversions', 'mv_touchpointconversions'}
-    return view in views
-
-
 def supports_external_id(view):
     return view in [x[0] for x in PUBLISHER_VIEWS]
 

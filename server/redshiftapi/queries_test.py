@@ -87,7 +87,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         FROM mv_master_pubs base_table
         WHERE ( base_table.date >=%s AND base_table.date <=%s)
         GROUP BY 1, 2, 3
-        ORDER BY clicks DESC NULLS LAST, publisher ASC NULLS LAST, source_id ASC NULLS LAST, dma ASC NULLS LAST
+        ORDER BY clicks DESC NULLS LAST, publisher_id ASC NULLS LAST, dma ASC NULLS LAST
         """)
 
         self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
@@ -144,12 +144,13 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
             (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0) + NVL(SUM(base_table.license_fee_nano), 0) + NVL(SUM(base_table.margin_nano), 0))::float/1000000000 yesterday_etfm_cost,
             (NVL(SUM(base_table.cost_nano), 0) + NVL(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-            (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost
+            (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
+            MAX(base_table.publisher_source_id) publisher_id
         FROM mv_account_pubs base_table
         WHERE (( base_table.date = %s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3
-        ORDER BY yesterday_cost DESC NULLS LAST, publisher ASC NULLS LAST, source_id ASC NULLS LAST, day ASC NULLS LAST
+        ORDER BY yesterday_cost DESC NULLS LAST, publisher_id ASC NULLS LAST, day ASC NULLS LAST
         """)
 
         self.assertEquals(params, [datetime.date(2016, 10, 2), 1, 2])
@@ -200,7 +201,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3
-        ORDER BY count DESC NULLS LAST, publisher ASC NULLS LAST, source_id ASC NULLS LAST, day ASC NULLS LAST
+        ORDER BY count DESC NULLS LAST, publisher_id ASC NULLS LAST, day ASC NULLS LAST
         """)
 
         self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
@@ -256,7 +257,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3, 4, 5
-        ORDER BY count DESC NULLS LAST, publisher ASC NULLS LAST, source_id ASC NULLS LAST, day ASC NULLS LAST, slug ASC NULLS LAST, window ASC NULLS LAST""")
+        ORDER BY count DESC NULLS LAST, publisher_id ASC NULLS LAST, day ASC NULLS LAST, slug ASC NULLS LAST, window ASC NULLS LAST""")
 
         self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
 

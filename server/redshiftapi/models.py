@@ -61,27 +61,14 @@ class BreakdownsBase(backtosql.Model):
         return self.select_columns(subset=breakdown)
 
     def get_order(self, order_list):
-        columns = []
-        for x in order_list:
-            column = self.get_column(x)
-            if column.alias == 'publisher_id':
-                columns.extend([
-                    self.get_column('publisher').as_order(x, nulls='last'),
-                    self.get_column('source_id').as_order(x, nulls='last'),
-                ])
-                continue
-
-            columns.append(self.get_column(x).as_order(x, nulls='last'))
-
-        return columns
+        return [self.get_column(x).as_order(x, nulls='last') for x in order_list]
 
     def get_aggregates(self, breakdown, view):
         """ Returns all the aggregate columns """
         columns = self.select_columns(group=AGGREGATE)
 
         if 'publisher_id' in breakdown:
-            if view_selector.supports_publisher_id(view):
-                columns.append(self.publisher_id)
+            columns.append(self.publisher_id)
 
             if view_selector.supports_external_id(view):
                 columns.append(self.external_id)
@@ -137,6 +124,8 @@ class BreakdownsBase(backtosql.Model):
     def get_query_all_yesterday_context(self, breakdown, constraints, parents, orders, view):
         constraints = helpers.get_yesterday_constraints(constraints)
 
+        aggregates = ['yesterday_at_cost', 'yesterday_et_cost', 'yesterday_etfm_cost',
+                      'yesterday_cost', 'e_yesterday_cost']
         self.add_column(backtosql.TemplateColumn('part_2sum_nano.sql', AT_COST_COLUMNS, alias='yesterday_at_cost'))
         self.add_column(backtosql.TemplateColumn('part_2sum_nano.sql', ET_COST_COLUMNS, alias='yesterday_et_cost'))
         self.add_column(backtosql.TemplateColumn('part_4sum_nano.sql', ETFM_COST_COLUMNS, alias='yesterday_etfm_cost'))
@@ -145,10 +134,12 @@ class BreakdownsBase(backtosql.Model):
         self.add_column(backtosql.TemplateColumn('part_2sum_nano.sql', AT_COST_COLUMNS, alias='yesterday_cost'))
         self.add_column(backtosql.TemplateColumn('part_2sum_nano.sql', ET_COST_COLUMNS, alias='e_yesterday_cost'))
 
+        if 'publisher_id' in breakdown:
+            aggregates.append('publisher_id')
+
         return {
             'breakdown': self.get_breakdown(breakdown),
-            'aggregates': self.select_columns(['yesterday_at_cost', 'yesterday_et_cost', 'yesterday_etfm_cost',
-                                               'yesterday_cost', 'e_yesterday_cost']),
+            'aggregates': self.select_columns(aggregates),
             'constraints': self.get_constraints(constraints, parents),
             'view': view,
             'orders': self.get_order(orders),
