@@ -60,6 +60,21 @@ class BreakdownsBase(backtosql.Model):
 
         return self.select_columns(subset=breakdown)
 
+    def get_order(self, order_list):
+        columns = []
+        for x in order_list:
+            column = self.get_column(x)
+            if column.alias == 'publisher_id':
+                columns.extend([
+                    self.get_column('publisher').as_order(x, nulls='last'),
+                    self.get_column('source_id').as_order(x, nulls='last'),
+                ])
+                continue
+
+            columns.append(self.get_column(x).as_order(x, nulls='last'))
+
+        return columns
+
     def get_aggregates(self, breakdown, view):
         """ Returns all the aggregate columns """
         columns = self.select_columns(group=AGGREGATE)
@@ -116,7 +131,7 @@ class BreakdownsBase(backtosql.Model):
             'aggregates': self.get_aggregates(breakdown, view),
             'constraints': self.get_constraints(constraints, parents),
             'view': view,
-            'orders': [self.get_column(x).as_order(x, nulls='last') for x in orders],
+            'orders': self.get_order(orders),
         }
 
     def get_query_all_yesterday_context(self, breakdown, constraints, parents, orders, view):
@@ -136,7 +151,7 @@ class BreakdownsBase(backtosql.Model):
                                                'yesterday_cost', 'e_yesterday_cost']),
             'constraints': self.get_constraints(constraints, parents),
             'view': view,
-            'orders': [self.get_column(x).as_order(x, nulls='last') for x in orders],
+            'orders': self.get_order(orders),
         }
 
 
@@ -450,9 +465,6 @@ class MVJointMaster(MVMaster):
                 goals.campaign_goals, goals.campaign_goal_values, goals.conversion_goals, goals.pixels,
                 supports_conversions=supports_conversions)
 
-        order_cols = self.select_columns(orders)
-        orders = [x.as_order(orders[i], nulls='last') for i, x in enumerate(order_cols)]
-
         context = {
             'breakdown': self.get_breakdown(breakdown),
             'partition': self.get_breakdown(stats.constants.get_parent_breakdown(breakdown)),
@@ -467,7 +479,7 @@ class MVJointMaster(MVMaster):
             'offset': offset,
             'limit': limit,
 
-            'orders': orders,
+            'orders': self.get_order(orders),
 
             'base_view': views['base'],
             'yesterday_view': views['yesterday'],
