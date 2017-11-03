@@ -79,7 +79,7 @@ class Command(ExceptionCommand):
 
     def _get_conversions_data(self, ad_group_ids):
         data = redshiftapi.api_breakdowns.query_all(
-            ['ad_group_id', 'source_id', 'publisher'],
+            ['ad_group_id', 'publisher_id'],
             {
                 'date__lte': dates_helper.local_today(),
                 'date__gte': dates_helper.local_today() - datetime.timedelta(days=DATA_LOOK_BACK_DAYS),
