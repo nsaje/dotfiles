@@ -1067,7 +1067,7 @@ class OutbrainMarketerIdView(K1APIView):
         try:
             unused_accounts = dash.models.OutbrainAccount.objects.\
                 filter(used=False).order_by('created_dt')
-            if len(unused_accounts) == 3:
+            if len(unused_accounts) == 10 or len(unused_accounts) == 3:
                 email_helper.send_outbrain_accounts_running_out_email(len(unused_accounts))
             outbrain_account = unused_accounts[0]
         except IndexError:
