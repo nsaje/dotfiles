@@ -11,7 +11,12 @@
 }
 
 .zem-categorized-select__container--search-enabled {
-    padding-top: 40px;
+    padding-top: 42px;
+
+    .zem-categorized-select__list-item {
+        padding-right: 7px;
+        padding-left: 7px;
+    }
 }
 
 .zem-categorized-select__search-container {
@@ -19,7 +24,9 @@
     top: 0;
     right: 0;
     left: 0;
-    height: 40px;
+    padding: 7px;
+    background-color: tint(@secondary-color,90%);
+    box-shadow: 0px 0px 3px 0px fade(@secondary-color,40%);
 }
 
 .zem-categorized-select__search-input {
@@ -31,7 +38,6 @@
 .zem-categorized-select__lists-container {
     overflow: auto;
     height: 100%;
-    padding: 10px @default-spacing;
 }
 
 .zem-categorized-select__list {
@@ -41,22 +47,59 @@
 }
 
 .zem-categorized-select__list-item {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    margin-top: 2px;
+    padding: 5px @default-spacing;
+    border-bottom: 1px solid @very-light-gray;
+    display: table;
+    width: 100%;
 
-    &:first-child {
-        margin-top: 0;
+    &:last-child {
+        border-bottom: none;
     }
 
     &:hover {
         cursor: pointer;
+        background-color: @very-light-gray;
     }
 }
 
+.zem-categorized-select__list-item-name {
+    display: table-cell;
+    width: 100%;
+    vertical-align: middle;
+}
+
+.input-checkbox + .zem-categorized-select__list-item-name {
+    &::before {
+        top: 2px;
+    }
+
+    &::after {
+        top: 9px;
+    }
+}
+
+.input-checkbox:checked + .zem-categorized-select__list-item-name::after {
+    top: 4px;
+}
+
+.zem-categorized-select__list-item-description {
+    text-align: right;
+    display: table-cell;
+    width: 1px;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.zem-categorized-select__list-item-description-number {
+    background-color: @secondary-color;
+    color: white;
+    font-size: 12px;
+    padding: 2px 4px;
+    border-radius: @border-radius;
+}
+
 .zem-categorized-select__list-item--highlighted {
-    background-color: @light-gray;
+    background-color: @very-light-gray;
 }
 
 .zem-categorized-select__actions-container {

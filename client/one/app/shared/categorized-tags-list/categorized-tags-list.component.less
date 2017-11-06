@@ -6,10 +6,17 @@
     align-content: flex-start;
 }
 
-.zem-categorized-tags-list__category-container:not(:last-child) {
-    margin-right: @default-spacing;
-    border-right: 1px solid darken(@light-gray, 10%);
-    padding-right: @default-spacing;
+.zem-categorized-tags-list__empty-text-container {
+    padding-top: 6px;
+    margin-left: @default-spacing;
+    border-left: 1px solid darken(@light-gray, 10%);
+    padding-left: @default-spacing;
+}
+
+.zem-categorized-tags-list__category-container {
+    margin-left: @default-spacing;
+    border-left: 1px solid darken(@light-gray, 10%);
+    padding-left: @default-spacing;
 }
 
 .zem-categorized-tags-list__category-name {

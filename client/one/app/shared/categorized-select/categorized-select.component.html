@@ -29,16 +29,18 @@
                        class="input-checkbox zem-categorized-select__list-item-checkbox"
                        [checked]="isItemInList(item, selectedItems)">
                 <span class="checkbox-text zem-categorized-select__list-item-name">{{item.name}}</span>
-                <span class="zem-categorized-select__list-item-description">{{item.description}}</span>
+                <span class="zem-categorized-select__list-item-description">
+                    <span class="zem-categorized-select__list-item-description-number">{{item.description}}</span>
+                </span>
             </li>
         </ul>
     </div>
 
     <div class="zem-categorized-select__actions-container">
-        <button class="button zem-categorized-select__action-button"
+        <button class="button button--outline zem-categorized-select__action-button"
                 *ngIf="selectedCategory"
                 (click)="resetSelectedCategory()">
-            < Select category
+            Back
         </button>
         <button class="button button--highlight button--with-icon check-icon zem-categorized-select__action-button zem-categorized-select__apply-button"
                 (click)="applySelection()">

@@ -42,5 +42,33 @@
 }
 
 .zem-inventory-planning-breakdown__option-item {
-    margin: 5px 0 5px 0;
+    display: table;
+    width: 100%;
+    padding: 5px 0;
+
+    &:hover {
+        background-color: @very-light-gray;
+    }
+}
+
+.zem-inventory-planning-breakdown__name {
+    display: table-cell;
+    width: 100%;
+    vertical-align: middle;
+}
+
+.zem-inventory-planning-breakdown__auction-count {
+    text-align: right;
+    display: table-cell;
+    width: 1px;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.zem-inventory-planning-breakdown__auction-count-number {
+    background-color: @secondary-color;
+    color: white;
+    font-size: 12px;
+    padding: 2px 4px;
+    border-radius: @border-radius;
 }

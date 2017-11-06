@@ -16,9 +16,9 @@
              *ngFor="let option of searchResults; trackBy: trackByOption">
             <span class="zem-inventory-planning-breakdown__name">
                 {{option.name || option.value}}
-                <span class="zem-inventory-planning-breakdown__auction-count">
-                    {{option.auctionCount | bigNumber}}
-                </span>
+            </span>
+            <span class="zem-inventory-planning-breakdown__auction-count">
+                <span class="zem-inventory-planning-breakdown__auction-count-number">{{option.auctionCount | bigNumber}}</span>
             </span>
         </div>
     </div>
