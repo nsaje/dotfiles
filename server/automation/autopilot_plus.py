@@ -383,6 +383,8 @@ def _fetch_data(ad_groups, sources):
     today = dates_helper.local_today()
     yesterday = today - datetime.timedelta(days=1)
     days_ago = yesterday - datetime.timedelta(days=autopilot_settings.AUTOPILOT_DATA_LOOKBACK_DAYS)
+    conversion_data_days_ago = yesterday - datetime.timedelta(
+        days=autopilot_settings.AUTOPILOT_CONVERSION_DATA_LOOKBACK_DAYS)
     campaign_goals, conversion_goals, pixels = _get_autopilot_goals(ad_groups)
 
     yesterday_data = redshiftapi.api_breakdowns.query_all(
@@ -422,7 +424,7 @@ def _fetch_data(ad_groups, sources):
     conversions_days_ago_data = redshiftapi.api_breakdowns.query_all(
         ['ad_group_id', 'source_id'],
         {
-            'date__gte': days_ago,
+            'date__gte': conversion_data_days_ago,
             'date__lte': yesterday,
             'ad_group_id': [ad_group.id for ad_group in ad_groups],
             'source_id': list(sources),
