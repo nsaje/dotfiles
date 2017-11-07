@@ -35,9 +35,6 @@ mixer==5.6.6
 # for filetype detection(input validation)
 python-magic==0.4.12
 
-# for visualizing project models
-django-extensions==1.7.6
-
 # for admin lists exports
 django-import-export==0.5.1
 
@@ -84,3 +81,11 @@ pycurl==7.43.0
 
 # user agent parser
 ua-parser==0.7.3
+
+
+# development
+django-extensions==1.9.7
+django-queryinspect==1.0.0
+django-debug-panel==0.8.3
+django-debug-toolbar==1.8
+django-debug-toolbar-template-profiler==1.0.2

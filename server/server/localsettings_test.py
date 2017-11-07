@@ -44,10 +44,11 @@ class LocalSettingsTestCase(test.TestCase):
             curr_settings_keys = self._build_key_list(curr_settings_file)
 
             (missing_config_keys, missing_from_1, missing_from_2) = self._settings_differece(referrence_settings_keys, curr_settings_keys)
+            msg = ''
             if missing_config_keys:
-                print("\n>>> Comparing {conf1} to {conf2} <<<".format(conf1=referrence_settings_filename, conf2=curr_settings_file))
+                msg = "\n>>> Comparing {conf1} to {conf2} <<<\n".format(conf1=referrence_settings_filename, conf2=curr_settings_file)
                 if len(missing_from_1) > 0:
-                    print("{filename} is missing: {missing}".format(filename=referrence_settings_filename, missing=missing_from_1))
+                    msg += "{filename} is missing: {missing}\n".format(filename=referrence_settings_filename, missing=missing_from_1)
                 if len(missing_from_2) > 0:
-                    print("{filename} is missing: {missing}".format(filename=curr_settings_file, missing=missing_from_2))
-            self.assertFalse(missing_config_keys)
+                    msg += "{filename} is missing: {missing}\n".format(filename=curr_settings_file, missing=missing_from_2)
+            self.assertFalse(missing_config_keys, msg)

@@ -168,8 +168,6 @@ try:
     import qinspect
     MIDDLEWARE.append('qinspect.middleware.QueryInspectMiddleware'),
     # Query inspector settings, https://github.com/dobarkod/django-queryinspect
-    # Whether the Query Inspector should do anything (default: False)
-    QUERY_INSPECT_ENABLED = True
     # Whether to log the stats via Django logging (default: True)
     QUERY_INSPECT_LOG_STATS = True
     # Whether to log duplicate queries (default: False)
@@ -230,6 +228,15 @@ if ENABLE_DEBUG_TOOLBAR:
         'template_profiler_panel.panels.template.TemplateProfilerPanel',
     ]
 
+    def show_debug_toolbar(request):
+        return ENABLE_DEBUG_TOOLBAR and not TESTING
+
+    DEBUG_TOOLBAR_CONFIG = {
+        'SHOW_TOOLBAR_CALLBACK': show_debug_toolbar,
+        'RESULTS_CACHE_SIZE': 10000000,
+        'SHOW_COLLAPSED': True,
+    }
+
     # django debug panel cache
     CACHES['debug-panel'] = {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
@@ -239,9 +246,6 @@ if ENABLE_DEBUG_TOOLBAR:
             'MAX_ENTRIES': 1000000
         }
     }
-
-    SHOW_TOOLBAR_CALLBACK = True
-    RESULTS_CACHE_SIZE = 10000000
 
 STATIC_URL = SERVER_STATIC_URL + '/'
 
@@ -260,13 +264,13 @@ LOGGING = {
     },
     'handlers': {
         'file': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.handlers.WatchedFileHandler',
             'filename': LOG_FILE,
             'formatter': 'standard'
         },
         'console': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'timestamp'
         },
@@ -324,7 +328,7 @@ LOGGING = {
         'qinspect': {
             'handlers': ['console'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
         '': {
             'handlers': ['file', 'console', 'sentry'],

@@ -87,29 +87,25 @@ media urls to point to `one-static.zemanta.com/<build-number>`. It will also bui
 npm run prod --build-number=123
 ```
 
-### Debug toolbar
+## Debugging 
 
-The debug toolbar will help you profile your code and templates, find slow and duplicated queries, find if cache is hit or miss etc. If you're interested
-in using it, you can do so by:
+### Django Queryinspect
 
-1. installing development requirements `pip install -r requirements_dev.txt` and then
-2. enabling the toolbar in `localsettings.py`:
+When running your app, django-queryinspect will print SQL statistics to stdout. It will notify you if you have duplicated queries (e.g. you probably need a `select_related` or `prefetch_related`).
 
-    ```
-    ENABLE_DEBUG_TOOLBAR = True
-    ```
+### Shell plus
 
-3. After that debug toolbar will be shown as a part of developemnt z1 client app. This toolbar is not meant for one page apps (it doesn't refresh for ajax requests)
+If you want to see the SQL queries being run in real-time from the shell, you can use `./manage.py shell_plus --print-sql`.
+
+### Django Debug Toolbar
+
+The debug toolbar will help you profile your code and templates, find slow and duplicated queries, find if cache is hit or miss etc.
+
+The debug toolbar is shown as a part of developemnt z1 client app. This toolbar is not meant for one page apps (it doesn't refresh for ajax requests)
 and thus we need to install a [debug toolbar panel chrome extension](https://chrome.google.com/webstore/detail/django-debug-panel/nbiajhhibgfgkjegbnflpdccejocmbbn) that will
 show the panel in a separate developemnt tools tab for every request we make. If the one behind the given link doesn't work for you
 try with [this fork](https://github.com/perython/chrome-django-panel/tree/master) - it solves display problems and at the time I was writting this it wasn't yet merged
 into the master panel.
-
-_NOTE_: In case you're not running your development django server on localhost, add `INTERNAL_IPS` to your settings, where you list your server IPs. For example:
-
-```
-INTERNAL_IPS = ['127.0.0.1', '192.168.10.1', '10.0.2.2']
-```
 
 ![Image](docs/debug_toolbar.png)
 
@@ -304,14 +300,17 @@ To combat that, adding field with a default value should be done in multiple ste
 
 ## Python dependencies
 
-In order to ensure reproducible builds we pin every dependency to exact version, including transitive dependencies. For this purpose we use `pip-tools` library [1]. App dependecies are specified in `server/requirements.in` and `pip-tools` is then used to generate `server/requirements.txt` file that contains all dependecies pinned to specific versions. To generate this file run the following command:
+In order to ensure reproducible builds we pin every dependency to exact version, including transitive dependencies. For this purpose we use `pip-tools` library [1]. App dependecies are specified in `server/requirements.in` and `pip-tools` is then used to generate `server/requirements.txt` file that contains all dependecies pinned to specific versions. To generate this file run the following command (it can take a little while):
 
 ```bash
-pip-compile --output-file requirements.txt requirements.in
+docker build -t py-tools -f docker/Dockerfile.py-tools  docker/
+docker run --rm \
+    -v $PWD:/src \
+    --workdir=/src/ \
+    --entrypoint=sh \
+    py-tools -c "pip-compile --output-file server/requirements.txt server/requirements.in"
 ```
 
-In case of conflicts the `-v` flag is useful for easier debugging.
-
-NOTE: On mac OS an additional dependency (and possibly more) gets added for `ipython` package. Compiling in a docker container solves the issue.
+In case of conflicts passing the `-v` flag to the `pip-compile` call is useful for easier debugging.
 
 [1] https://github.com/jazzband/pip-tools

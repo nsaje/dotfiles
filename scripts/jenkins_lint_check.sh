@@ -30,6 +30,7 @@ DIFF=$(docker run --rm \
     --entrypoint=sh \
     py-tools -c "pip-compile server/requirements.in" | diff server/requirements.txt -)
 if [ "$DIFF" != "" ]; then
+    echo "$DIFF"
     banner 1 "requirements.in"
 fi
 
