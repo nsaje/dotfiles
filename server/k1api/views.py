@@ -514,6 +514,7 @@ class AdGroupsView(K1APIView):
                 'blacklist_publisher_groups': blacklist,
                 'delivery_type': ad_group_settings.delivery_type,
                 'click_capping_daily_ad_group_max_clicks': ad_group_settings.click_capping_daily_ad_group_max_clicks,
+                'click_capping_daily_click_budget': ad_group_settings.click_capping_daily_click_budget,
                 'custom_flags': ad_group.get_all_custom_flags(),
             }
 
