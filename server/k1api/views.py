@@ -81,6 +81,7 @@ class K1APIView(View):
 
 class AccountsView(K1APIView):
 
+    @db_for_reads.use_read_replica()
     def get(self, request):
         account_ids = request.GET.get('account_ids')
         accounts = (dash.models.Account.objects
@@ -159,6 +160,7 @@ class AccountsView(K1APIView):
 
 class SourcesView(K1APIView):
 
+    @db_for_reads.use_read_replica()
     def get(self, request):
         source_slugs = request.GET.get("source_slugs")
         sources = dash.models.Source.objects.all().select_related('defaultsourcesettings',
@@ -260,6 +262,7 @@ class SourcePixelsView(K1APIView):
 
 class GAAccountsView(K1APIView):
 
+    @db_for_reads.use_read_replica()
     def get(self, request):
         date_since = request.GET.get('date_since')
 
@@ -321,6 +324,7 @@ class GAAccountsView(K1APIView):
 
 class R1MappingView(K1APIView):
 
+    @db_for_reads.use_read_replica()
     def get(self, request):
         accounts = [int(account) for account in request.GET.getlist('account')]
 
@@ -346,6 +350,7 @@ class R1MappingView(K1APIView):
 
 class OutbrainPublishersBlacklistView(K1APIView):
 
+    @db_for_reads.use_read_replica()
     def get(self, request):
         marketer_id = request.GET.get('marketer_id')
         account = {}
@@ -375,6 +380,7 @@ class OutbrainPublishersBlacklistView(K1APIView):
 
 class PublisherGroupsView(K1APIView):
 
+    @db_for_reads.use_read_replica()
     def get(self, request):
         account_id = request.GET.get('account_id')
 
@@ -391,6 +397,7 @@ class PublisherGroupsView(K1APIView):
 
 class PublisherGroupsEntriesView(K1APIView):
 
+    @db_for_reads.use_read_replica()
     def get(self, request):
         account_id = request.GET.get('account_id')
         source_slug = request.GET.get('source_slug')
@@ -426,6 +433,7 @@ class AdGroupsView(K1APIView):
     Filterable by ad_group_id, source_type and slug.
     """
 
+    @db_for_reads.use_read_replica()
     def get(self, request):
         limit = int(request.GET.get('limit', 1000000))
         marker = request.GET.get('marker')
@@ -632,6 +640,7 @@ class AdGroupStatsView(K1APIView):
     Returns quickstats for an adgroup (used for decision making based on whether the ad group has spent already)
     """
 
+    @db_for_reads.use_read_replica()
     def get(self, request):
         ad_group_id = request.GET.get('ad_group_id')
         source_slug = request.GET.get('source_slug')
@@ -717,6 +726,7 @@ class AdGroupContentAdPublisherStatsView(K1APIView):
 
 class AdGroupSourcesView(K1APIView):
 
+    @db_for_reads.use_read_replica()
     def get(self, request):
         """
         Returns a list of non-archived ad group sources together with their current source settings.
@@ -912,6 +922,7 @@ class AdGroupSourceBlockersView(K1APIView):
 
 class ContentAdsView(K1APIView):
 
+    @db_for_reads.use_read_replica()
     def get(self, request):
         content_ad_ids = request.GET.get('content_ad_ids')
         ad_group_ids = request.GET.get('ad_group_ids')
@@ -967,6 +978,7 @@ class ContentAdsView(K1APIView):
 
 class ContentAdSourcesView(K1APIView):
 
+    @db_for_reads.use_read_replica()
     def get(self, request):
         content_ad_ids = request.GET.get('content_ad_ids')
         ad_group_ids = request.GET.get('ad_group_ids')
