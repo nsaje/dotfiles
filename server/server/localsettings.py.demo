@@ -32,6 +32,7 @@ DATABASES = {
         'PORT': 5439
     }
 }
+DATABASE_READ_REPLICAS = []
 
 ALLOWED_HOSTS = [ '{INSTANCE_NAME}.demo.zemanta.com'.format(INSTANCE_NAME=os.environ.get('INSTANCE_NAME', 'demo123')), ]
 

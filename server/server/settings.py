@@ -164,6 +164,8 @@ CACHES = {
     },
 }
 
+DATABASE_ROUTERS = ['utils.db_for_reads.router.UseReadReplicaRouter']
+
 try:
     import qinspect
     MIDDLEWARE.append('qinspect.middleware.QueryInspectMiddleware'),

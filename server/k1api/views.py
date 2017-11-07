@@ -21,6 +21,7 @@ from dash import constants
 from core.publisher_groups import publisher_group_helpers
 from utils import redirector_helper, email_helper
 from utils import url_helper, request_signer, converters
+from utils import db_for_reads
 import redshiftapi.api_quickstats
 import redshiftapi.internal_stats.conversions
 import redshiftapi.internal_stats.content_ad_publishers
@@ -1178,6 +1179,7 @@ class FacebookAccountsView(K1APIView):
 
 class GeolocationsView(K1APIView):
 
+    @db_for_reads.use_read_replica()
     def get(self, request):
         keys = request.GET.get('keys')
         keys = keys.split(',') if keys else []
