@@ -2,6 +2,7 @@ Django==1.11
 pylibmc==1.5.1
 jsonfield==1.0.0
 psycopg2==2.6.2
+psycogreen==1.0
 python-dateutil==2.6.0
 pytz==2016.10
 PyYAML==3.12
