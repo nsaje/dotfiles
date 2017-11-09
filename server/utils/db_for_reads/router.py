@@ -30,4 +30,4 @@ class UseReadReplicaRouter(object):
         return True
 
     def allow_migrate(self, db, app_label, model_name=None, **hints):
-        return db == 'default'
+        return db == DEFAULT_DB_ALIAS
