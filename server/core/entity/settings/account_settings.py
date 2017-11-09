@@ -108,7 +108,7 @@ class AccountSettings(SettingsBase):
             # FIXME:circular dependency
             import dash.views.helpers
             value = dash.views.helpers.get_user_full_name_or_email(
-                value).decode('utf-8')
+                value)
         elif prop_name in ('whitelist_publisher_groups', 'blacklist_publisher_groups'):
             if not value:
                 value = ''

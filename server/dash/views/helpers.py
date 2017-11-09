@@ -459,7 +459,7 @@ def get_user_full_name_or_email(user, default_value='/'):
         return default_value
 
     result = user.get_full_name() or user.email
-    return result.encode('utf-8')
+    return result
 
 
 def get_target_regions_string(regions):
