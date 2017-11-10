@@ -13,7 +13,7 @@ class Command(ExceptionCommand):
         try:
             # actions.check_pacific_noon_and_stop_ads()
             actions.check_time_and_create_new_ad_groups()
-            # actions.check_date_and_stop_old_ad_groups()
+            actions.check_date_and_stop_old_ad_groups()
             actions.check_local_midnight_and_recalculate_daily_budgets()
             actions.reprocess_missing_articles()
         except Exception:

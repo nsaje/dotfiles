@@ -87,16 +87,17 @@ def check_time_and_create_new_ad_groups():
 
 
 def check_date_and_stop_old_ad_groups():
-    if not _is_pacific_hour(12):
+    if not _is_pacific_midnight():
         return
 
     pacific_today = helpers.get_pacific_now().date()
-    previous_start_date = models.AdGroupRotation.objects.filter(
-        start_date__lte=pacific_today,
-    ).values_list('start_date', flat=True).order_by('-start_date').distinct()[1]
-    ad_group_ids = models.AdGroupRotation.objects.filter(
-        start_date=previous_start_date
-    ).values_list('ad_group_id', flat=True)
+    five_days_ago = pacific_today - datetime.timedelta(days=5)
+
+    ad_group_ids = dash.models.AdGroup.objects.filter(
+        models.AdGroupRotation.objects.filter(
+            start_date__lte=five_days_ago
+        ).values_list('ad_group_id')
+    ).filter_active().values_list('id', flat=True)
     for ad_group_id in ad_group_ids:
         _set_ad_group(ad_group_id, 'INACTIVE')
 
