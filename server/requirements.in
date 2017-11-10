@@ -83,6 +83,8 @@ pycurl==7.43.0
 # user agent parser
 ua-parser==0.7.3
 
+# rss parser for product sync
+feedparser==5.2.1
 
 # development
 django-extensions==1.9.7

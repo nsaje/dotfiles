@@ -44,13 +44,14 @@ class AdGroupManager(core.common.QuerySetManager):
         k1_helper.update_ad_group(ad_group.pk, msg='CampaignAdGroups.put')
         redirector_helper.insert_adgroup(ad_group, ad_group_settings, ad_group.campaign.get_current_settings())
 
-    def create(self, request, campaign, is_restapi=False, **kwargs):
+    def create(self, request, campaign, is_restapi=False, name=None, **kwargs):
         core.common.entity_limits.enforce(
             AdGroup.objects.filter(campaign=campaign).exclude_archived(),
             campaign.account_id,
         )
         with transaction.atomic():
-            name = self._create_default_name(campaign)
+            if name is None:
+                name = self._create_default_name(campaign)
             ad_group = self._create(request, campaign, name=name)
 
             if is_restapi:

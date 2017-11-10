@@ -42,39 +42,20 @@ class AudiencesView(api_common.BaseApiView):
         if not audience_form.is_valid():
             raise exc.ValidationError(errors=dict(audience_form.errors))
 
-        data = audience_form.cleaned_data
+        pixel = models.ConversionPixel.objects.get(
+            pk=audience_form.cleaned_data['pixel_id'],
+            account=account,
+        )
+        audience = models.Audience.objects.create(
+            request,
+            audience_form.cleaned_data['name'],
+            pixel,
+            audience_form.cleaned_data['ttl'],
+            audience_form.cleaned_data['rules'],
+        )
 
-        audience = None
-        refererRules = (constants.AudienceRuleType.CONTAINS, constants.AudienceRuleType.STARTS_WITH)
-        with transaction.atomic():
-            audience = models.Audience(
-                name=data['name'],
-                pixel_id=data['pixel_id'],
-                ttl=data['ttl'],
-            )
-            audience.save(
-                request,
-                constants.HistoryActionType.AUDIENCE_CREATE,
-                u'Created audience "{}".'.format(audience.name)
-            )
-
-            for rule in audience_form.cleaned_data['rules']:
-                value = rule['value'] or ''
-                if rule['type'] in refererRules:
-                    value = ','.join([x.strip() for x in value.split(',') if x])
-
-                rule = models.AudienceRule(
-                    audience=audience,
-                    type=rule['type'],
-                    value=value,
-                )
-                rule.save()
-
-            redirector_helper.upsert_audience(audience)
-
-        k1_helper.update_account(account_id, msg="audience.create")
-
-        response = self._get_response_dict(audience, [rule])
+        rules = models.AudienceRule.objects.filter(audience=audience)
+        response = self._get_response_dict(audience, rules)
 
         return self.create_api_response(response)
 
