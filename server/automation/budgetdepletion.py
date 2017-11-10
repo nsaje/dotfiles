@@ -9,7 +9,6 @@ import influx
 from django.db.models import Q
 from django.conf import settings
 from django.core.mail import send_mail
-from django.contrib.auth import models as authmodels
 from dash.constants import EmailTemplateType
 
 import automation.models
@@ -31,11 +30,6 @@ def manager_has_been_notified(campaign):
         Q(campaign=campaign),
         Q(account_manager=campaign_manager),
         Q(created_dt__gte=yesterday)).count() > 0
-
-
-def _allowed_to_automatically_stop_campaign(campaign):
-    perm = authmodels.Permission.objects.get(codename='group_campaign_stop_on_budget_depleted')
-    return campaign.account.groups.filter(permissions=perm).exists()
 
 
 def notify_campaign_with_depleting_budget(campaign, available_budget, yesterdays_spend):
@@ -183,8 +177,6 @@ def stop_and_notify_depleted_budget_campaigns():
     yesterdays_spends = automation.helpers.get_yesterdays_spends(campaigns)
 
     for camp in campaigns:
-        if not _allowed_to_automatically_stop_campaign(camp):
-            continue
         if available_budgets.get(camp.id) <= 0:
             automation.helpers.stop_campaign(camp)
             _notify_depleted_budget_campaign_stopped(

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from django.conf import settings
-from django.contrib.auth import models as auth_models
 from django.contrib.postgres.fields import JSONField
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
@@ -66,8 +65,6 @@ class Campaign(models.Model, core.common.PermissionMixin, bcm_mixin.CampaignBCMM
         null=False
     )
     account = models.ForeignKey('Account', on_delete=models.PROTECT)
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL)
-    groups = models.ManyToManyField(auth_models.Group)
     created_dt = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(
@@ -235,11 +232,10 @@ class Campaign(models.Model, core.common.PermissionMixin, bcm_mixin.CampaignBCMM
     class QuerySet(models.QuerySet):
 
         def filter_by_user(self, user):
+            if user.has_perm('zemauth.can_see_all_accounts'):
+                return self
             return self.filter(
-                models.Q(users__id=user.id) |
-                models.Q(groups__user__id=user.id) |
                 models.Q(account__users__id=user.id) |
-                models.Q(account__groups__user__id=user.id) |
                 models.Q(account__agency__users__id=user.id)
             ).distinct()
 

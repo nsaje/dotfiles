@@ -746,7 +746,7 @@ class AdGroupTestCase(TestCase):
     fixtures = ['test_api.yaml', 'test_agency.yaml']
 
     def setUp(self):
-        self.user = User.objects.get(pk=3)
+        self.user = User.objects.get(pk=2)
 
     def test_filter_by_agency_manager(self):
         qs = models.AdGroup.objects.all().filter_by_user(self.user)
@@ -797,7 +797,7 @@ class CampaignTestCase(TestCase):
     fixtures = ['test_api.yaml', 'test_agency.yaml']
 
     def setUp(self):
-        self.user = User.objects.get(pk=3)
+        self.user = User.objects.get(pk=2)
 
     def test_filter_by_agency_manager(self):
         qs = models.Campaign.objects.all().filter_by_user(self.user)
@@ -870,7 +870,7 @@ class AccountTestCase(TestCase):
     fixtures = ['test_api.yaml', 'test_agency.yaml']
 
     def setUp(self):
-        self.user = User.objects.get(pk=3)
+        self.user = User.objects.get(pk=2)
 
     def test_filter_by_agency_manager(self):
         qs = models.Account.objects.all().filter_by_user(self.user)

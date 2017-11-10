@@ -42,10 +42,11 @@ class SerializerTests(TestCase):
 @override_settings(R1_DEMO_MODE=True)
 class RESTAPITest(TestCase):
     fixtures = ['test_acceptance.yaml', 'test_geolocations']
+    user_id = 1
 
     def setUp(self):
         self.client = APIClient()
-        self.user = User.objects.get(pk=1)
+        self.user = User.objects.get(pk=self.user_id)
         self.client.force_authenticate(user=self.user)
         self.maxDiff = None
 
@@ -993,9 +994,17 @@ class TestBatchUpload(TestCase):
 
 class PublisherGroupTest(RESTAPITest):
     fixtures = ['test_publishers.yaml']
+    user_id = 2
 
     def setUp(self):
         super(PublisherGroupTest, self).setUp()
+        permissions = [
+            'can_edit_publisher_groups',
+            'can_use_restapi',
+            'can_access_additional_outbrain_publisher_settings',
+        ]
+        test_helper.add_permissions(self.user, permissions)
+
         restapi_views.PublisherGroupViewSet.throttle_classes = tuple([])
 
     def publishergroup_repr(self, pg):
@@ -1091,8 +1100,8 @@ class PublisherGroupTest(RESTAPITest):
         self.assertEqual(r.status_code, 404)
 
     def test_check_permission(self):
-        self.client = APIClient()
-        self.client.force_authenticate(user=User.objects.get(pk=2))
+        test_helper.remove_permissions(
+            self.user, ['can_edit_publisher_groups'])
         r = self.client.put(reverse('publisher_group_details', kwargs={
             'account_id': 1,
             'publisher_group_id': 1,
@@ -1102,9 +1111,17 @@ class PublisherGroupTest(RESTAPITest):
 
 class PublisherGroupEntryTest(RESTAPITest):
     fixtures = ['test_publishers.yaml']
+    user_id = 2
 
     def setUp(self):
         super(PublisherGroupEntryTest, self).setUp()
+        permissions = [
+            'can_edit_publisher_groups',
+            'can_use_restapi',
+            'can_access_additional_outbrain_publisher_settings',
+        ]
+        test_helper.add_permissions(self.user, permissions)
+
         restapi_views.PublisherGroupEntryViewSet.throttle_classes = tuple([])
 
     def publishergroupentry_repr(self, pg, check_outbrain_pub_id):
@@ -1218,27 +1235,24 @@ class PublisherGroupEntryTest(RESTAPITest):
         self.assertEqual(r.status_code, 404)
 
     def test_check_permission(self):
-        self.client = APIClient()
-        self.client.force_authenticate(user=User.objects.get(pk=2))
-        r = self.client.get(reverse('publisher_group_entry_details', kwargs={'publisher_group_id': 2, 'entry_id': 3}))
+        test_helper.remove_permissions(
+            self.user, ['can_edit_publisher_groups'])
+        r = self.client.get(reverse('publisher_group_entry_details', kwargs={'publisher_group_id': 1, 'entry_id': 1}))
         self.assertEqual(r.status_code, 403)
 
     def test_no_outbrain_permission(self):
-        user = User.objects.get(pk=2)
-        test_helper.add_permissions(user, ['can_use_restapi', 'can_edit_publisher_groups'])
+        test_helper.remove_permissions(
+            self.user, ['can_access_additional_outbrain_publisher_settings'])
 
-        self.client = APIClient()
-        self.client.force_authenticate(user=user)
-
-        r = self.client.get(reverse('publisher_group_entry_details', kwargs={'publisher_group_id': 2, 'entry_id': 3}))
+        r = self.client.get(reverse('publisher_group_entry_details', kwargs={'publisher_group_id': 1, 'entry_id': 1}))
         response = self.assertResponseValid(r, data_type=dict, status_code=200)
         self.validate_against_db(response['data'], check_outbrain_pub_id=False)
 
-        r = self.client.put(reverse('publisher_group_entry_details', kwargs={'publisher_group_id': 2, 'entry_id': 3}),
+        r = self.client.put(reverse('publisher_group_entry_details', kwargs={'publisher_group_id': 1, 'entry_id': 1}),
                             data={'publisher': 'cnn', 'source': 'gravity', 'outbrainPublisherId': '123'},
                             format='json')
         response = self.assertResponseValid(r, data_type=dict, status_code=200)
         self.validate_against_db(response['data'], check_outbrain_pub_id=False)
 
         # validate outbrainPublisherId was not changed
-        self.assertEqual(dash.models.PublisherGroupEntry.objects.get(pk=3).outbrain_publisher_id, '')
+        self.assertEqual(dash.models.PublisherGroupEntry.objects.get(pk=1).outbrain_publisher_id, '')

@@ -119,7 +119,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
                 return self
             return self.filter(
                 models.Q(agency__id__in=agencies) |
-                models.Q(groups__account__agency__id__in=agencies)
+                models.Q(groups__permissions__codename='can_see_all_accounts') |
+                models.Q(user_permissions__codename='can_see_all_accounts')
             ).distinct()
 
         def filter_selfmanaged(self):
@@ -160,8 +161,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('has_intercom', 'Can see intercom widget'),
             ('can_see_publishers', 'Can see publishers'),
             ('can_see_redshift_postclick_statistics', 'Can see Redshift postclick statistics'),
-            ('group_campaign_stop_on_budget_depleted',
-             'Automatic campaign stop on depleted budget applies to campaigns in this group'),
             ('can_see_publisher_blacklist_status', 'Can see publishers blacklist status'),
             ('can_modify_publisher_blacklist_status', 'Can modify publishers blacklist status'),
             ('can_see_account_type', 'Can see account type'),
@@ -301,6 +300,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('disable_budget_management', 'User can NOT manage campaign budgets (negated permission)'),
             ('can_view_breakdown_by_delivery_extended', 'User can view extended breakdowns by delivery.'),
             ('can_breakdown_reports_by_ads_and_publishers', 'User can breakdown reports by ad and publishers'),
+            ('can_see_all_accounts', 'User can see all accounts.'),
         )
 
     def get_full_name(self):

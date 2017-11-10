@@ -14,7 +14,7 @@
     username: ''
   model: zemauth.user
   pk: 1
-  
+
 - fields:
     date_joined: '2014-06-16T12:21:29'
     email: mad.max@zemanta.com
@@ -57,7 +57,7 @@
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 2
-    users: [2]
+    users: []
     allowed_sources: [1,2]
     agency: 1
   model: dash.account

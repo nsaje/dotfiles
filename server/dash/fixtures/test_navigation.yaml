@@ -45,12 +45,12 @@
 
 -   fields:
         date_joined: '2014-06-16T12:21:29'
-        email: superuser@test.com
+        email: user@test.com
         first_name: ''
         groups: []
         is_active: true
         is_staff: true
-        is_superuser: true
+        is_superuser: false
         last_login: '2014-06-16T12:21:29'
         last_name: ''
         password: md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c  # secret
@@ -61,7 +61,7 @@
 
 -   fields:
         date_joined: '2014-06-16T12:21:29'
-        email: user@test.com
+        email: user1@test.com
         first_name: ''
         groups: []
         is_active: true
@@ -80,7 +80,7 @@
         email: user2@test.com
         is_active: true
         is_staff: false
-        is_superuser: true
+        is_superuser: false
         password: md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c  # secret
         user_permissions: []
         username: ''
@@ -92,7 +92,7 @@
         email: user3@test.com
         is_active: true
         is_staff: false
-        is_superuser: true
+        is_superuser: false
         password: md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c  # secret
         user_permissions: []
         username: ''
@@ -104,7 +104,7 @@
         email: user5@test.com
         is_active: true
         is_staff: false
-        is_superuser: true
+        is_superuser: false
         password: md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c  # secret
         user_permissions: []
         username: ''

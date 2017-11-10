@@ -829,7 +829,7 @@ class AdGroupOverviewTest(TestCase):
 
     def setUpPermissions(self):
         campaign = models.Campaign.objects.get(pk=1)
-        campaign.users.add(self.user)
+        campaign.account.users.add(self.user)
 
     def _get_ad_group_overview(self, ad_group_id, with_status=False):
         self.client.login(username=self.user.username, password='norris')
@@ -1008,7 +1008,7 @@ class CampaignOverviewTest(TestCase):
 
     def setUpPermissions(self):
         campaign = models.Campaign.objects.get(pk=1)
-        campaign.users.add(self.user)
+        campaign.account.users.add(self.user)
 
     def _get_campaign_overview(self, campaign_id, user_id=2, with_status=False):
         self.client.login(username=self.user.username, password='norris')

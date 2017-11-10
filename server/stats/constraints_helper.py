@@ -40,7 +40,6 @@ def prepare_all_accounts_constraints(user, breakdown, start_date, end_date, filt
         allowed_accounts = allowed_accounts.filter(id__in=filtered_accounts.values_list('id', flat=True))
 
     allowed_campaigns = models.Campaign.objects.filter(account__in=allowed_accounts)\
-                                               .filter_by_user(user)\
                                                .filter_by_sources(filtered_sources)
 
     # accounts tab

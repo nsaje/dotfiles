@@ -139,7 +139,6 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         account: 1 # test account 1
-        users: [1]
         name: 'test campaign 1'
     model: dash.campaign
     pk: 1
@@ -149,7 +148,6 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         account: 1 # test account 1
-        users: [2]
         name: 'test campaign 2'
     model: dash.campaign
     pk: 2

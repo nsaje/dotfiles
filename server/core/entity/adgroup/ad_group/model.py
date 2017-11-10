@@ -406,11 +406,10 @@ class AdGroup(models.Model, core.common.SettingsProxyMixin, bcm_mixin.AdGroupBCM
     class QuerySet(models.QuerySet):
 
         def filter_by_user(self, user):
+            if user.has_perm('zemauth.can_see_all_accounts'):
+                return self
             return self.filter(
-                models.Q(campaign__users__id=user.id) |
-                models.Q(campaign__groups__user__id=user.id) |
                 models.Q(campaign__account__users__id=user.id) |
-                models.Q(campaign__account__groups__user__id=user.id) |
                 models.Q(campaign__account__agency__users__id=user.id)
             ).distinct()
 

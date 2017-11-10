@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import newrelic.agent
 from django.conf import settings
-from django.contrib.auth import models as auth_models
 from django.contrib.postgres.fields import JSONField
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
@@ -26,10 +25,6 @@ class Account(models.Model, core.common.SettingsProxyMixin):
     class Meta:
         ordering = ('-created_dt',)
 
-        permissions = (
-            ('group_account_automatically_add',
-             'All new accounts are automatically added to group.'),
-        )
         app_label = 'dash'
 
     _demo_fields = {'name': utils.demo_anonymizer.account_name_from_pool}
@@ -45,7 +40,6 @@ class Account(models.Model, core.common.SettingsProxyMixin):
     agency = models.ForeignKey(
         'Agency', on_delete=models.PROTECT, null=True, blank=True)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
-    groups = models.ManyToManyField(auth_models.Group)
     created_dt = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(
@@ -230,9 +224,10 @@ class Account(models.Model, core.common.SettingsProxyMixin):
     class QuerySet(models.QuerySet):
 
         def filter_by_user(self, user):
+            if user.has_perm('zemauth.can_see_all_accounts'):
+                return self
             return self.filter(
                 models.Q(users__id=user.id) |
-                models.Q(groups__user__id=user.id) |
                 models.Q(agency__users__id=user.id)
             ).distinct()
 

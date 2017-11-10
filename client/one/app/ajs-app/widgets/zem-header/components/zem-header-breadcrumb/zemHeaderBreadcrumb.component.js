@@ -64,7 +64,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
             }
 
 
-            var canUserSeeAllAccounts = zemPermissions.hasPermission('dash.group_account_automatically_add');
+            var canUserSeeAllAccounts = zemPermissions.hasPermission('zemauth.can_see_all_accounts');
             var name = canUserSeeAllAccounts ? 'All accounts' : 'My accounts';
             breadcrumb.unshift({
                 name: name,

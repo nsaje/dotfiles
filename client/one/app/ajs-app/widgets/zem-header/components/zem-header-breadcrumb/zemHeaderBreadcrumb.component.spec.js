@@ -38,7 +38,7 @@ describe('component: zemHeaderBreadcrumb', function () {
             callback(null);
             expect($document[0].title).toEqual('My accounts | Zemanta');
 
-            zemPermissions.setMockedPermissions('dash.group_account_automatically_add');
+            zemPermissions.setMockedPermissions('zemauth.can_see_all_accounts');
             callback(null);
             expect($document[0].title).toEqual('All accounts | Zemanta');
 

@@ -12,7 +12,7 @@ from zemauth.models import User
 from utils.magic_mixer import magic_mixer
 
 
-def _get_client(superuser=True):
+def _get_client(superuser=False):
     password = 'secret'
 
     user_id = 1 if superuser else 2

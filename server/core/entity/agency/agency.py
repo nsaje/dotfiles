@@ -125,11 +125,12 @@ class Agency(models.Model):
 
     class QuerySet(models.QuerySet):
         def filter_by_user(self, user):
+            if user.has_perm('zemauth.can_see_all_accounts'):
+                return self
             return self.filter(
                 models.Q(users__id=user.id) |
                 models.Q(sales_representative__id=user.id) |
-                models.Q(cs_representative__id=user.id) |
-                models.Q(account__groups__user__id=user.id)
+                models.Q(cs_representative__id=user.id)
             ).distinct()
 
     objects = AgencyManager.from_queryset(QuerySet)()

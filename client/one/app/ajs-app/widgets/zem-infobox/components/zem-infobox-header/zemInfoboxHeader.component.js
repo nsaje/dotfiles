@@ -35,7 +35,7 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
 
         function getLevelFromEntity (entity) {
             if (!entity) {
-                if (zemPermissions.hasPermission('dash.group_account_automatically_add')) {
+                if (zemPermissions.hasPermission('zemauth.can_see_all_accounts')) {
                     return 'All accounts';
                 }
                 return 'My accounts';

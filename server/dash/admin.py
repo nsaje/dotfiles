@@ -401,11 +401,6 @@ class AccountUserInline(admin.TabularInline):
         return self.name
 
 
-class AccountGroupInline(admin.TabularInline):
-    model = models.Account.groups.through
-    extra = 0
-
-
 class CampaignInline(admin.TabularInline):
     verbose_name = "Campaign"
     verbose_name_plural = "Campaigns"
@@ -429,9 +424,9 @@ class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         'uses_bcm_v2',
     )
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'uses_bcm_v2')
-    exclude = ('users', 'groups')
+    exclude = ('users',)
     raw_id_fields = ('default_whitelist', 'default_blacklist', 'agency')
-    inlines = (AccountUserInline, AccountGroupInline, CampaignInline)
+    inlines = (AccountUserInline, CampaignInline)
 
     @transaction.atomic
     def migrate_to_bcm_v2(self, request, queryset):
@@ -462,20 +457,6 @@ class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
 
 # Campaign
 
-class CampaignUserInline(admin.TabularInline):
-    model = models.Campaign.users.through
-    extra = 0
-    raw_id_fields = ("user", )
-
-    def __unicode__(self):
-        return self.name
-
-
-class CampaignGroupInline(admin.TabularInline):
-    model = models.Campaign.groups.through
-    extra = 0
-
-
 class AdGroupInline(admin.TabularInline):
     verbose_name = "Ad Group"
     verbose_name_plural = "Ad Groups"
@@ -498,8 +479,7 @@ class CampaignAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'settings_')
     raw_id_fields = ('default_whitelist', 'default_blacklist', 'account')
-    exclude = ('users', 'groups')
-    inlines = (CampaignUserInline, CampaignGroupInline, AdGroupInline)
+    inlines = (AdGroupInline,)
     form = dash_forms.CampaignAdminForm
 
     def save_model(self, request, obj, form, change):

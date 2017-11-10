@@ -82,7 +82,7 @@ class ReportsExecuteTest(TestCase):
 
     @mock.patch('utils.email_helper.send_async_report_fail')
     def test_send_fail(self, mock_send):
-        ad_group = magic_mixer.blend(core.entity.AdGroup, campaign__users=[self.reportJob.user])
+        ad_group = magic_mixer.blend(core.entity.AdGroup, campaign__account__users=[self.reportJob.user])
         self.reportJob.query = {
             'options': {
                 'recipients': ['test@test.com'],

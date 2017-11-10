@@ -488,7 +488,6 @@ def _filter_user_by_account_type(users, filtered_account_types):
     latest_account_settings = dash.models.AccountSettings.objects.all()\
         .filter(
             models.Q(account__users__in=users) |
-            models.Q(account__groups__user__in=users) |
             models.Q(account__agency__users__in=users)
     )\
         .group_current_settings()
@@ -500,7 +499,8 @@ def _filter_user_by_account_type(users, filtered_account_types):
 
     return users.filter(
         models.Q(account__id__in=filtered_latest_account_settings) |
-        models.Q(groups__account__id__in=filtered_latest_account_settings)
+        models.Q(groups__permissions__codename='can_see_all_accounts') |
+        models.Q(user_permissions__codename='can_see_all_accounts')
     )
 
 
