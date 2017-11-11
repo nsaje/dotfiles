@@ -94,9 +94,10 @@ def check_date_and_stop_old_ad_groups():
     five_days_ago = pacific_today - datetime.timedelta(days=5)
 
     ad_group_ids = dash.models.AdGroup.objects.filter(
-        models.AdGroupRotation.objects.filter(
+        campaign_id=config.AUTOMATION_CAMPAIGN,
+        id__in=models.AdGroupRotation.objects.filter(
             start_date__lte=five_days_ago
-        ).values_list('ad_group_id')
+        ).values_list('ad_group_id'),
     ).filter_active().values_list('id', flat=True)
     for ad_group_id in ad_group_ids:
         _set_ad_group(ad_group_id, 'INACTIVE')
