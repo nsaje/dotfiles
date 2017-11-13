@@ -7,7 +7,7 @@
         <div class="zem-categorized-tags-list__category-name">{{category.name}}</div>
         <ul class="zem-categorized-tags-list__items-list">
             <ng-container *ngFor="let item of category.items">
-                <li class="zem-categorized-tags-list__item" *ngIf="item.selected">
+                <li class="zem-categorized-tags-list__item">
                     {{item.name}}
                     <button class="zem-categorized-tags-list__remove-item"
                             (click)="removeItem(category, item)">

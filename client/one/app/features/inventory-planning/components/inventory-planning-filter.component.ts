@@ -111,7 +111,7 @@ export class InventoryPlanningFilterComponent implements OnChanges {
         return items;
     }
 
-    private getCategorizedSelectedOptions (categories: CategorizedTagsListCategory[]): CategorizedTagsListCategory[] {
+    private getCategorizedSelectedOptions (categories: CategorizedSelectCategory[]): CategorizedTagsListCategory[] {
         const categoriesWithSelectedItems: CategorizedTagsListCategory[] = [];
 
         for (const category of categories) {
@@ -120,7 +120,9 @@ export class InventoryPlanningFilterComponent implements OnChanges {
                 items: [],
             };
 
-            const selectedItems = category.items.filter(item => item.selected);
+            const selectedItems = category.items.filter(item => item.selected).map(item => {
+                return {name: item.name, value: item.value};
+            });
             if (selectedItems.length > 0) {
                 categoriesWithSelectedItems.push({
                     ...emptyCategory,
