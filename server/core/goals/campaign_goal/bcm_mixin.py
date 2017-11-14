@@ -17,4 +17,4 @@ class CampaignGoalBCMMixin(object):
 
     def _transform_campaign_goal_value(self, value, fee, margin):
         including_fee_and_margin = core.bcm.calculations.apply_fee_and_margin(value, fee, margin)
-        return numbers.round_decimal_half_down(including_fee_and_margin, places=3)
+        return numbers.round_decimal_half_down(including_fee_and_margin, places=2)
