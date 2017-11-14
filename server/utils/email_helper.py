@@ -546,7 +546,7 @@ def send_ga_setup_instructions(user):
     email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
     ), [user.email])
-    email.attach_alternative(render_to_string('ga_setup_instructions.html'), "text/html")
+    email.attach_alternative(format_template(subject, _url_to_link(body)), "text/html")
     email.send(fail_silently=True)
 
 
