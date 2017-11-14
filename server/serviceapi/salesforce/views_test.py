@@ -6,6 +6,7 @@ import mock
 from zemauth.models import User
 import core.entity
 import dash.constants
+from . import service
 
 from utils.magic_mixer import magic_mixer
 
@@ -16,6 +17,9 @@ class CreateClientTestCase(TestCase):
         self.client = APIClient()
         self.user = magic_mixer.blend(User)
         self.client.force_authenticate(user=self.user)
+
+        magic_mixer.blend(User, email=service.DEFAULT_CS_REPRESENTATIVE)
+        magic_mixer.blend(User, email=service.DEFAULT_SALES_REPRESENTATIVE)
 
     def test_put_valid_agency(self):
         data = {
@@ -34,6 +38,8 @@ class CreateClientTestCase(TestCase):
         })
         self.assertEqual(r.status_code, 200)
         self.assertEqual(client.default_account_type, dash.constants.AccountType.TEST)
+        self.assertEqual(client.cs_representative.email, service.DEFAULT_CS_REPRESENTATIVE)
+        self.assertEqual(client.sales_representative.email, service.DEFAULT_SALES_REPRESENTATIVE)
 
     def test_put_valid_account(self):
         data = {
@@ -51,7 +57,10 @@ class CreateClientTestCase(TestCase):
             },
         })
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(client.get_current_settings().account_type, dash.constants.AccountType.TEST)
+        sett = client.get_current_settings()
+        self.assertEqual(sett.account_type, dash.constants.AccountType.TEST)
+        self.assertEqual(sett.default_cs_representative.email, service.DEFAULT_CS_REPRESENTATIVE)
+        self.assertEqual(sett.default_sales_representative.email, service.DEFAULT_SALES_REPRESENTATIVE)
 
     def test_put_invalid(self):
         url = reverse('service.salesforce.client')
@@ -186,6 +195,27 @@ class CreateCreditTestCase(TestCase):
         r = self.client.put(url, data=data, format='json')
         self.assertEqual(r.json(), {
             u'details': {u'nonFieldErrors': [u'Fee not provided']},
+            u'errorCode': u'ValidationError',
+        })
+
+    def test_invalid_account(self):
+        url = reverse('service.salesforce.credit')
+        data = {
+            u'amountAtSigning': '500.0',
+            u'billingContract': 'contract',
+            u'contractNumber': '00',
+            u'description': 'Some description',
+            u'startDate': '2017-05-10',
+            u'endDate': '2017-06-20',
+            u'pfSchedule': 'monthly as used',
+            u'salesforceAccountId': '123',
+            u'salesforceContractId': '111',
+            u'z1_accountId': '10',
+            u'pct_of_budget': '0.1',
+        }
+        r = self.client.put(url, data=data, format='json')
+        self.assertEqual(r.json(), {
+            u'details': {u'z1_accountId': 'Invalid format'},
             u'errorCode': u'ValidationError',
         })
 

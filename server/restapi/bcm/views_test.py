@@ -85,7 +85,8 @@ class AccountCreditViewTest(BCMViewTestCase):
                     "budgets": [
                         {"amount": 100000, "id": 1}
                     ],
-                    "start_date": "2015-10-01"
+                    "start_date": "2015-10-01",
+                    "salesforce_url": None,
                 }
             ],
             "past": [],
@@ -124,7 +125,8 @@ class AccountCreditViewTest(BCMViewTestCase):
                     "budgets": [
                         {"amount": 100000, "id": 1}
                     ],
-                    "start_date": "2015-10-01"
+                    "start_date": "2015-10-01",
+                    "salesforce_url": None,
                 }
             ],
             "totals": {
@@ -160,6 +162,7 @@ class AccountCreditViewTest(BCMViewTestCase):
                     "is_canceled": False,
                     "is_agency": True,
                     "budgets": [],
+                    "salesforce_url": None,
                     "start_date": "2015-10-01"
                 }
             ],
@@ -414,7 +417,8 @@ class AccountCreditItemViewTest(BCMViewTestCase):
                     "comment": "Test case",
                     "start_date": "2015-10-01"
                 }
-            ]
+            ],
+            "salesforce_url": None,
         })
 
     def test_delete(self):
@@ -524,7 +528,8 @@ class AccountCreditItemViewTest(BCMViewTestCase):
                     "comment": "Test case",
                     "start_date": "2015-10-01"
                 }
-            ]
+            ],
+            'salesforce_url': None,
         })
 
     def test_delete_agency(self):
@@ -1629,7 +1634,8 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "budgets": [
                         {"amount": 10000, "id": 11}
                     ],
-                    "start_date": "2015-11-01"
+                    "start_date": "2015-11-01",
+                    'salesforce_url': None,
                 },
                 {
                     "available": "0.0000",
@@ -1648,7 +1654,8 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "budgets": [
                         {"amount": 100000, "id": 1}
                     ],
-                    "start_date": "2015-10-01"
+                    "start_date": "2015-10-01",
+                    'salesforce_url': None,
                 },
             ],
             "past": [],
@@ -1679,7 +1686,8 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "budgets": [
                         {"amount": 10000, "id": 11}
                     ],
-                    "start_date": "2015-11-01"
+                    "start_date": "2015-11-01",
+                    'salesforce_url': None,
                 },
                 {
                     "available": "0.0000",
@@ -1698,7 +1706,8 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "budgets": [
                         {"amount": 100000, "id": 1}
                     ],
-                    "start_date": "2015-10-01"
+                    "start_date": "2015-10-01",
+                    'salesforce_url': None,
                 }
             ],
             "past": [],
@@ -1724,7 +1733,8 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "budgets": [
                         {"amount": 10000, "id": 11}
                     ],
-                    "start_date": "2015-11-01"
+                    "start_date": "2015-11-01",
+                    'salesforce_url': None,
                 },
                 {
                     "available": "0.0000",
@@ -1744,7 +1754,8 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "budgets": [
                         {"amount": 100000, "id": 1}
                     ],
-                    "start_date": "2015-10-01"
+                    "start_date": "2015-10-01",
+                    'salesforce_url': None,
                 }
             ],
             "past": [],

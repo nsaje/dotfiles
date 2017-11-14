@@ -48,7 +48,8 @@ class AccountCreditView(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         request_data = json.loads(request.body)
         response_data = {'canceled': []}
-        account_credits_to_cancel = models.CreditLineItem.objects.filter_by_account(account).filter(pk__in=request_data['cancel'])
+        account_credits_to_cancel = models.CreditLineItem.objects.filter_by_account(
+            account).filter(pk__in=request_data['cancel'])
 
         for credit in account_credits_to_cancel:
             credit.cancel()
@@ -110,6 +111,7 @@ class AccountCreditView(api_common.BaseApiView):
             'total': credit.effective_amount(),
             'allocated': allocated,
             'comment': credit.comment,
+            'salesforce_url': credit.get_salesforce_url(),
             'is_agency': credit.is_agency(),
             'budgets': [
                 {'id': b.pk, 'amount': b.amount} for b in credit.budgets.all()
@@ -235,6 +237,7 @@ class AccountCreditItemView(api_common.BaseApiView):
             'account_id': account.id,
             'comment': item.comment,
             'is_agency': item.is_agency(),
+            'salesforce_url': item.get_salesforce_url(),
             'budgets': [
                 {
                     'campaign': str(b.campaign),

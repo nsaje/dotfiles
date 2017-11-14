@@ -137,6 +137,11 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixin):
             raise AssertionError('Credit item is not pending')
         super(CreditLineItem, self).delete()
 
+    def get_salesforce_url(self):
+        if not self.contract_id:
+            return None
+        return 'https://eu6.salesforce.com/{}'.format(self.contract_id)
+
     @classmethod
     def get_human_prop_name(cls, prop_name):
         NAMES = {

@@ -1,10 +1,13 @@
 from decimal import Decimal
 
+from rest_framework.serializers import ValidationError
+
 import core.bcm.credit_line_item
 import core.entity.account
 import core.bcm.bcm_slack
 
 import dash.constants
+import zemauth.models
 import utils.converters
 from . import constants
 
@@ -15,6 +18,10 @@ CLIENT_TYPE_OBJECT_MAP = {
 
 DEFAULT_ACCOUNT_TYPE = dash.constants.AccountType.TEST
 
+# TODO: handle properly via SF
+DEFAULT_CS_REPRESENTATIVE = 'tadej.pavlic@zemanta.com'
+DEFAULT_SALES_REPRESENTATIVE = 'david.kaplan@zemanta.com'
+
 
 def _get_client_lookup(z1_account_id):
     client_type, client_id = z1_account_id[0], int(z1_account_id[1:])
@@ -22,6 +29,8 @@ def _get_client_lookup(z1_account_id):
         return {'agency_id': client_id}
     elif client_type == constants.ACCOUNT_ID_PREFIX_CLIENT_DIRECT:
         return {'account_id': client_id}
+    else:
+        raise ValidationError({'z1_account_id': 'Invalid format'})
     return None
 
 
@@ -74,13 +83,20 @@ def create_credit_line_item(request, data):
 
 
 def create_client(request, data):
+    cs = zemauth.models.User.objects.get(email=DEFAULT_CS_REPRESENTATIVE)
+    sales = zemauth.models.User.objects.get(email=DEFAULT_SALES_REPRESENTATIVE)
+
     client = CLIENT_TYPE_OBJECT_MAP[data['type']].objects.create(request, data['name'])
     if data['type'] == constants.CLIENT_TYPE_AGENCY:
         client.default_account_type = DEFAULT_ACCOUNT_TYPE
+        client.sales_representative = sales
+        client.cs_representative = cs
         client.save(request)
     elif data['type'] == constants.CLIENT_TYPE_CLIENT_DIRECT:
         new_settings = client.get_current_settings().copy_settings()
         new_settings.account_type = DEFAULT_ACCOUNT_TYPE
+        new_settings.default_sales_representative = sales
+        new_settings.default_cs_representative = cs
         new_settings.save(request)
     return client
 
