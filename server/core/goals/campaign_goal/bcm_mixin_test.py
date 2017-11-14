@@ -38,7 +38,7 @@ class CampaignGoalBCMMixinTest(TestCase):
         request = magic_mixer.blend_request_user()
         for campaign_goal in self.campaign_goals_migrated:
             campaign_goal.migrate_to_bcm_v2(request, decimal.Decimal('0.2'), decimal.Decimal('0.1'))
-            self.assertEqual(decimal.Decimal('2.778'), campaign_goal.get_current_value().value)
+            self.assertEqual(decimal.Decimal('2.78'), campaign_goal.get_current_value().value)
 
         for campaign_goal in self.campaign_goals_skipped:
             campaign_goal.migrate_to_bcm_v2(request, decimal.Decimal('0.2'), decimal.Decimal('0.1'))
