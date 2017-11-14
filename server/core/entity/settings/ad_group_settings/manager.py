@@ -14,6 +14,7 @@ class AdGroupSettingsManager(core.common.QuerySetManager):
         new_settings.target_os = campaign_settings.target_os
         new_settings.target_placements = campaign_settings.target_placements
         new_settings.target_regions = campaign_settings.target_regions
+        new_settings.exclusion_target_regions = campaign_settings.exclusion_target_regions
         new_settings.ad_group_name = ad_group.name
         return new_settings
 

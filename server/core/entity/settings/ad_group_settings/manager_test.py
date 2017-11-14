@@ -22,6 +22,7 @@ class AdGroupSettingsCreate(TestCase):
         self.assertEqual(ad_group_settings.ad_group_name, 'test')
         self.assertEqual(ad_group_settings.target_devices, campaign_settings.target_devices)
         self.assertEqual(ad_group_settings.target_regions, campaign_settings.target_regions)
+        self.assertEqual(ad_group_settings.exclusion_target_regions, campaign_settings.exclusion_target_regions)
         self.assertTrue(ad_group_settings.b1_sources_group_enabled)
 
     def test_create_restapi_default(self):
@@ -35,6 +36,7 @@ class AdGroupSettingsCreate(TestCase):
         self.assertEqual(ad_group_settings.ad_group_name, 'test')
         self.assertEqual(ad_group_settings.target_devices, campaign_settings.target_devices)
         self.assertEqual(ad_group_settings.target_regions, campaign_settings.target_regions)
+        self.assertEqual(ad_group_settings.exclusion_target_regions, campaign_settings.exclusion_target_regions)
         self.assertFalse(ad_group_settings.b1_sources_group_enabled)
 
     def test_clone(self):
