@@ -35,6 +35,6 @@ class Command(ExceptionCommand):
         self._log_error_message(options, message, type_=utils.slack.MESSAGE_TYPE_CRITICAL)
 
     def handle(self, *args, **options):
-        maintenance.refresh_bluekai_categories()
+        # maintenance.refresh_bluekai_categories()
         self._cross_check_audience_categories(options)
         self._check_campaign_status(options)
