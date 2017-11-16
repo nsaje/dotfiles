@@ -95,8 +95,10 @@ def _perform_request(method, url, params=None, data=''):
     if not params:
         params = {}
     params_signed = _get_signed_params(method, url, params, data)
-    return requests.request(method, url, params=params_signed,
-                            headers=HEADERS, data=data)
+    response = requests.request(method, url, params=params_signed,
+                                headers=HEADERS, data=data)
+    response.raise_for_status()
+    return response
 
 
 def _transform_expression(expression):
