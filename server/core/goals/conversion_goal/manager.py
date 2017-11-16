@@ -20,7 +20,7 @@ class ConversionGoalManager(core.common.BaseManager):
 
         if conversion_goal_type == constants.ConversionGoalType.PIXEL:
             pixel = validator.ConversionGoalValidator.get_pixel(campaign, goal_id)
-            name = '{} - {}'.format(
+            name = '{} {}'.format(
                 pixel.name,
                 constants.ConversionWindows.get_text(conversion_window)
             )

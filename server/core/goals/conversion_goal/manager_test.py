@@ -26,9 +26,9 @@ class TestConversionGoalManager(TestCase):
         self.assertEqual(goal.type, dash.constants.ConversionGoalType.PIXEL)
         self.assertEqual(goal.campaign, campaign)
         self.assertEqual(goal.pixel, pixel)
-        self.assertEqual(goal.name, 'mypixel - 1 day')
+        self.assertEqual(goal.name, 'mypixel 1 day')
 
         hist = dash.history_helpers.get_campaign_history(campaign).first()
         self.assertEqual(hist.created_by, request.user)
         self.assertEqual(hist.action_type, dash.constants.HistoryActionType.GOAL_CHANGE)
-        self.assertEqual(hist.changes_text, 'Added conversion goal with name "mypixel - 1 day" of type Conversion Pixel')
+        self.assertEqual(hist.changes_text, 'Added conversion goal with name "mypixel 1 day" of type Conversion Pixel')
