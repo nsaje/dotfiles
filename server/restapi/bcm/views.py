@@ -251,7 +251,7 @@ class AccountCreditItemView(api_common.BaseApiView):
                     'end_date': b.end_date,
                     'comment': b.comment
                 }
-                for b in item.budgets.all().order_by('-created_dt')
+                for b in item.budgets.all().order_by('-created_dt')[:100]
             ],
         })
 
