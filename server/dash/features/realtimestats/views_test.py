@@ -1,3 +1,4 @@
+import decimal
 import mock
 
 from django.contrib.auth.models import Permission
@@ -36,12 +37,20 @@ class RealtimestatsViewsTest(RESTAPITest):
         user = User.objects.get(pk=1)
         user.user_permissions.remove(permission)
 
-        data = [{'source': 's1', 'spend': 12.3}, {'source': 's2', 'spend': 0.1}]
+        data = [
+            {'source': 's1', 'spend': decimal.Decimal('12.34567')},
+            {'source': 's2', 'spend': decimal.Decimal('0.11111')},
+        ]
 
         mock_get.return_value = data
         r = self.client.get(reverse('adgroups_realtimestats_sources', kwargs={'ad_group_id': 2040}))
 
         resp_json = self.assertResponseValid(r, data_type=list)
-        self.assertEqual(resp_json['data'], data)
+
+        expected = [
+            {'source': 's1', 'spend': '12.35'},
+            {'source': 's2', 'spend': '0.11'},
+        ]
+        self.assertEqual(resp_json['data'], expected)
 
         mock_get.assert_called_with(models.AdGroup.objects.get(pk=2040))

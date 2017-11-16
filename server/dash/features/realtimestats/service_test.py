@@ -5,9 +5,10 @@ import urllib2
 from django.test import TestCase
 
 import core.entity
+import dash.constants
 from dash.features.realtimestats import service
 from utils.magic_mixer import magic_mixer
-from utils import test_helper
+from utils import dates_helper, test_helper
 
 
 class RealtimestatsServiceTest(TestCase):
@@ -22,7 +23,9 @@ class RealtimestatsServiceTest(TestCase):
             'type': 'facebook',
             'source_campaign_key': 'test_facebook_1',
         }]
-        self.ad_group = magic_mixer.blend(core.entity.AdGroup)
+        self.account = magic_mixer.blend(core.entity.Account, uses_bcm_v2=True)
+        self.campaign = magic_mixer.blend(core.entity.Campaign, account=self.account)
+        self.ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=self.campaign)
         magic_mixer.cycle(len(ad_group_sources)).blend(
             core.entity.AdGroupSource,
             ad_group=self.ad_group,
@@ -34,6 +37,30 @@ class RealtimestatsServiceTest(TestCase):
             'yahoo_campaign_id': 'test_yahoo_1',
             'facebook_campaign_id': 'test_facebook_1',
         }
+
+        self._set_up_budgets()
+
+    def _set_up_budgets(self):
+        today = dates_helper.local_today()
+
+        credit = magic_mixer.blend(
+            core.bcm.CreditLineItem,
+            account=self.account,
+            start_date=today,
+            end_date=today,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            amount=decimal.Decimal('1000.0'),
+            flat_fee_cc=0,
+            license_fee=decimal.Decimal('0.3333'))
+
+        magic_mixer.blend(
+            core.bcm.BudgetLineItem,
+            campaign=self.campaign,
+            start_date=today,
+            end_date=today,
+            credit=credit,
+            amount=decimal.Decimal('200'),
+            margin=decimal.Decimal('0.2200'))
 
     @mock.patch('utils.redirector_helper.get_adgroup_realtimestats')
     @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
@@ -48,7 +75,7 @@ class RealtimestatsServiceTest(TestCase):
         }
 
         result = service.get_ad_group_stats(self.ad_group)
-        self.assertEqual(result, {'clicks': 13, 'spend': 4.1})
+        self.assertEqual(result, {'clicks': 13, 'spend': test_helper.AlmostMatcher(decimal.Decimal('7.8842'))})
 
         mock_k1_get.assert_called_once_with(self.ad_group.id, self.expected_params)
         mock_redirector_get.assert_called_once_with(self.ad_group.id)
@@ -69,12 +96,12 @@ class RealtimestatsServiceTest(TestCase):
             {
                 'source_slug': sources[1].bidder_slug,
                 'source': sources[1].name,
-                'spend': test_helper.AlmostMatcher(decimal.Decimal('3.000')),
+                'spend': test_helper.AlmostMatcher(decimal.Decimal('5.7689')),
             },
             {
                 'source_slug': sources[0].bidder_slug,
                 'source': sources[0].name,
-                'spend': test_helper.AlmostMatcher(decimal.Decimal('1.100')),
+                'spend': test_helper.AlmostMatcher(decimal.Decimal('2.1153')),
             },
         ])
 
