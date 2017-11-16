@@ -112,7 +112,7 @@ class AdGroup(models.Model, core.common.SettingsProxyMixin, bcm_mixin.AdGroupBCM
     modified_dt = models.DateTimeField(
         auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+        settings.AUTH_USER_MODEL, null=True, related_name='+', on_delete=models.PROTECT)
 
     default_whitelist = models.ForeignKey('PublisherGroup', related_name='whitelisted_ad_groups',
                                           on_delete=models.PROTECT, null=True, blank=True)

@@ -412,13 +412,13 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
             return 'Created settings'
 
         excluded_keys = set()
-        if not user.has_perm('zemauth.can_view_retargeting_settings'):
+        if user is not None and not user.has_perm('zemauth.can_view_retargeting_settings'):
             excluded_keys.update(['retargeting_ad_groups', 'exclusion_retargeting_ad_groups'])
 
-        if not user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
+        if user is not None and not user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
             excluded_keys.update(['whitelist_publisher_groups', 'blacklist_publisher_groups'])
 
-        if not user.has_perm('zemauth.can_set_advanced_device_targeting'):
+        if user is not None and not user.has_perm('zemauth.can_set_advanced_device_targeting'):
             excluded_keys.update(['target_os', 'target_placements'])
 
         valid_changes = {

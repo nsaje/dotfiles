@@ -12,7 +12,6 @@ from dash import forms
 from dash.features import contentupload
 from utils.command_helpers import ExceptionCommand
 from utils import dates_helper
-from zemauth import models
 
 import feedparser
 
@@ -32,7 +31,7 @@ SHOPIFY_RE = re.compile(r'/products/[^?]+')
 class Command(ExceptionCommand):
 
     def handle(self, *args, **options):
-        self.user = models.User.objects.get(pk=423)
+        self.user = None
         self.request = Request(self.user)
         for config in configuration:
             self._sync_campaign(config)
