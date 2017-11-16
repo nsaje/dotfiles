@@ -21,6 +21,7 @@ GUNICORN_ARGS=(
     --worker-connections=$GUNICORN_WORKER_CONNECTIONS
     --log-level=$GUNICORN_LOG_LEVEL
     --backlog=$GUNICORN_BACKLOG
+    # --access-logfile=-
     --access-logformat="$GUNICORN_ACCESS_LOGFORMAT"
     --bind=0.0.0.0:8000
     server.wsgi:application
