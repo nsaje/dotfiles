@@ -21,7 +21,6 @@ from django.utils.html import strip_tags
 from dash import constants
 from dash import fields
 from dash import models
-from dash import regions
 from dash import validation_helpers
 from dash.views import helpers
 from dash.features.custom_flags.forms import CustomFlagsFormMixin
@@ -433,11 +432,6 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
 
     def clean_target_regions(self):
         target_regions = self.cleaned_data.get('target_regions')
-
-        if 'US' in target_regions and any([tr in regions.DMA_BY_CODE for tr in target_regions]):
-            raise forms.ValidationError(
-                'DMAs are a subset of United States demographic targeting.')
-
         return target_regions
 
     def clean_autopilot_state(self):
