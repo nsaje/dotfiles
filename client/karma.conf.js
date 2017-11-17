@@ -33,16 +33,12 @@ module.exports = function karmaConfig (config) {
         },
 
         files: [
-            // Legacy AngularJS app tests
-            {pattern: './one/tests.ajs.js', watched: false},
-            // Angular app tests
             {pattern: './one/tests.ts', watched: false},
         ],
 
         exclude: [],
 
         preprocessors: {
-            './one/tests.ajs.js': ['webpack', 'sourcemap'],
             './one/tests.ts': ['webpack', 'sourcemap'],
         },
 

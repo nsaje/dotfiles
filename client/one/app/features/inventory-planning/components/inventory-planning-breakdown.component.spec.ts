@@ -1,4 +1,4 @@
-import {SimpleChange} from '@angular/core';
+import {SimpleChanges, SimpleChange} from '@angular/core';
 import {TestBed, ComponentFixture, async, fakeAsync, tick} from '@angular/core/testing';
 
 import {SharedModule} from '../../../shared/shared.module';
@@ -20,6 +20,11 @@ describe('InventoryPlanningBreakdownComponent', () => {
         name: 'Option 3',
         auctionCount: 30000,
     };
+    const testOption4 = {
+        value: '4',
+        name: 'Option 4',
+        auctionCount: 0,
+    };
 
     let fixture: ComponentFixture<InventoryPlanningBreakdownComponent>;
     let component: InventoryPlanningBreakdownComponent;
@@ -35,17 +40,17 @@ describe('InventoryPlanningBreakdownComponent', () => {
         component = fixture.componentInstance;
     }));
 
-    it('should correctly search through available filter options', fakeAsync(() => {
-        component.options = [testOption1, testOption2, testOption3];
+    it('should correctly search through available filter options and exclude options with 0 auctions', fakeAsync(() => {
+        component.options = [testOption1, testOption2, testOption3, testOption4];
         component.ngOnInit();
 
         component.search$.next('');
         tick(500); // tslint:disable-line
-        expect(component.searchResults).toEqual(component.options);
+        expect(component.searchResults).toEqual([testOption1, testOption2, testOption3]);
 
         component.search$.next('option');
         tick(500); // tslint:disable-line
-        expect(component.searchResults).toEqual(component.options);
+        expect(component.searchResults).toEqual([testOption1, testOption2, testOption3]);
 
         component.search$.next('option 2');
         tick(500); // tslint:disable-line
@@ -57,7 +62,7 @@ describe('InventoryPlanningBreakdownComponent', () => {
     }));
 
     it('should execute search with current search query when options update', () => {
-        let changes: any;
+        let changes: SimpleChanges;
         component.options = [];
         component.searchQuery = '2';
 

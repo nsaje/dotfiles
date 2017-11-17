@@ -37,10 +37,6 @@ export class AppModule {
     constructor (private upgrade: UpgradeModule) {}
 
     ngDoBootstrap () {
-        if (APP_CONFIG.env.test) {
-            return; // Don't bootstrap the app while running tests
-        }
-
         this.upgrade.bootstrap(document.body, ['one'], {strictDi: true});
     }
 }

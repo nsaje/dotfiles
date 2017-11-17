@@ -1,3 +1,6 @@
+// Import legacy AngularJS tests
+import './tests.ajs.js';
+
 import './polyfills';
 
 import 'zone.js/dist/long-stack-trace-zone';

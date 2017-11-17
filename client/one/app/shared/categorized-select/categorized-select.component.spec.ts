@@ -1,4 +1,4 @@
-import {SimpleChange} from '@angular/core';
+import {SimpleChanges, SimpleChange} from '@angular/core';
 import {TestBed, ComponentFixture, async, fakeAsync, tick} from '@angular/core/testing';
 
 import {CategorizedSelectComponent} from './categorized-select.component';
@@ -135,7 +135,7 @@ describe('CategorizedSelectComponent', () => {
 
 
     it('should correctly set selected items when categorizedItems input changes', () => {
-        let changes: any;
+        let changes: SimpleChanges;
         component.ngOnInit();
 
         component.categorizedItems = [];
@@ -167,7 +167,7 @@ describe('CategorizedSelectComponent', () => {
     });
 
     it('should keep currently selected category selected when categorizedItems input changes', () => {
-        let changes: any;
+        let changes: SimpleChanges;
         component.ngOnInit();
 
         component.categorizedItems = [testCategory1];
@@ -189,7 +189,7 @@ describe('CategorizedSelectComponent', () => {
     });
 
     it('should correctly update rendered items when categorizedItems input changes', () => {
-        let changes: any;
+        let changes: SimpleChanges;
         component.ngOnInit();
         component.selectedCategory = testCategory1;
 
@@ -250,7 +250,7 @@ describe('CategorizedSelectComponent', () => {
     });
 
     it('should correctly update config when config input changes', () => {
-        let changes: any;
+        let changes: SimpleChanges;
         component.ngOnInit();
         expect(component.config).toEqual(DEFAULT_CONFIG);
 

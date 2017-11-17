@@ -22,4 +22,7 @@
 <div class="custom-panel zem-inventory-planning-summary__section zem-inventory-planning-summary__chart-container"
      [ngClass]="{'zem-inventory-planning-summary__section--loading': isLoading}">
     <chart [options]="chartOptions"></chart>
+    <div class="message message--info message--with-icon m-t">
+        This chart is based on a mathematical model. In practice the win rate might be different.
+    </div>
 </div>

@@ -57,7 +57,7 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
         {
             text: 'Inventory planning',
             callback: navigateToInventoryPlanning,
-            isAvailable: zemPermissions.isPermissionInternal('zemauth.fea_can_see_inventory_planning'),
+            isAvailable: zemPermissions.hasPermission('zemauth.fea_can_see_inventory_planning'),
             isInternalFeature: zemPermissions.isPermissionInternal('zemauth.fea_can_see_inventory_planning'),
         },
     ];

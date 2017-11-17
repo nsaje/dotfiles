@@ -8,6 +8,7 @@ import {CategorizedSelectComponent} from './categorized-select/categorized-selec
 import {CategorizedTagsListComponent} from './categorized-tags-list/categorized-tags-list.component';
 import {DropdownDirective} from './dropdown/dropdown.directive';
 import {DropdownToggleDirective} from './dropdown/dropdown-toggle.directive';
+import {HelpPopoverComponent} from './help-popover/help-popover.component';
 
 @NgModule({
     imports: [
@@ -21,6 +22,9 @@ import {DropdownToggleDirective} from './dropdown/dropdown-toggle.directive';
         CategorizedTagsListComponent,
         DropdownDirective,
         DropdownToggleDirective,
+
+        // Upgraded AngularJS components/ directives
+        HelpPopoverComponent,
     ],
     exports: [
         CommonModule,
@@ -30,6 +34,9 @@ import {DropdownToggleDirective} from './dropdown/dropdown-toggle.directive';
         CategorizedTagsListComponent,
         DropdownDirective,
         DropdownToggleDirective,
+
+        // Upgraded AngularJS components/ directives
+        HelpPopoverComponent,
     ],
 })
 export class SharedModule {}

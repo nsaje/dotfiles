@@ -2,7 +2,7 @@ import './categorized-select.component.less';
 
 import {
     Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, ChangeDetectionStrategy, ElementRef,
-    ChangeDetectorRef
+    ChangeDetectorRef, SimpleChanges
 } from '@angular/core';
 import {Subscription} from 'rxjs/Subscription';
 import {Subject} from 'rxjs/Subject';
@@ -66,7 +66,7 @@ export class CategorizedSelectComponent implements OnInit, OnChanges, OnDestroy 
         this.updateConfig(this.configOverride);
     }
 
-    ngOnChanges (changes: any) {
+    ngOnChanges (changes: SimpleChanges) {
         if (changes.categorizedItems) {
             this.selectedItems = this.getSelectedItems(this.categorizedItems, this.selectedItems, this.unselectedItems);
             this.unselectedItems = [];

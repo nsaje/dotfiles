@@ -1,7 +1,7 @@
 import './inventory-planning-breakdown.component.less';
 
 import {
-    Component, Input, OnInit, OnChanges, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef
+    Component, Input, OnInit, OnChanges, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, SimpleChanges
 } from '@angular/core';
 import {Subscription} from 'rxjs/Subscription';
 import {Subject} from 'rxjs/Subject';
@@ -41,7 +41,7 @@ export class InventoryPlanningBreakdownComponent implements OnInit, OnChanges, O
             });
     }
 
-    ngOnChanges (changes: any) {
+    ngOnChanges (changes: SimpleChanges) {
         if (changes.options) {
             this.searchResults = this.search(this.searchQuery);
         }
@@ -60,12 +60,12 @@ export class InventoryPlanningBreakdownComponent implements OnInit, OnChanges, O
         this.searchQuery = searchQuery;
 
         if (!searchQuery || searchQuery === '') {
-            allSearchResults = this.options;
+            allSearchResults = this.options.filter(option => option.auctionCount > 0);
         } else {
             searchQuery = searchQuery.toLowerCase();
             allSearchResults = this.options.filter(option => {
                 const optionName = option.name || option.value || '';
-                return optionName.toLowerCase().indexOf(searchQuery) !== -1;
+                return option.auctionCount > 0 && optionName.toLowerCase().indexOf(searchQuery) !== -1;
             });
         }
 

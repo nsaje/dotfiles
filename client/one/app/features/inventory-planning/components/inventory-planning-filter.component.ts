@@ -1,6 +1,8 @@
 import './inventory-planning-filter.component.less';
 
-import {Component, Input, Output, EventEmitter, OnChanges, ChangeDetectionStrategy, ViewChild} from '@angular/core';
+import {
+    Component, Input, Output, EventEmitter, OnChanges, ChangeDetectionStrategy, ViewChild, SimpleChanges
+} from '@angular/core';
 
 import {Filters} from '../types/filters';
 import {FilterOption} from '../types/filter-option';
@@ -31,7 +33,7 @@ export class InventoryPlanningFilterComponent implements OnChanges {
 
     constructor (private bigNumberPipe: BigNumberPipe) {}
 
-    ngOnChanges (changes: any) {
+    ngOnChanges (changes: SimpleChanges) {
         this.categorizedOptions = this.getCategorizedOptions(this.availableFilters, this.selectedFilters);
         this.categorizedSelectedOptions = this.getCategorizedSelectedOptions(this.categorizedOptions);
     }

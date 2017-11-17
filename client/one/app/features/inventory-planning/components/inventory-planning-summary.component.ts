@@ -1,6 +1,6 @@
 import './inventory-planning-summary.component.less';
 
-import {Component, Input, OnChanges, ChangeDetectionStrategy} from '@angular/core';
+import {Component, Input, OnChanges, ChangeDetectionStrategy, SimpleChanges} from '@angular/core';
 
 import {CHART_X_AXIS_STEP, MAX_PLOTTED_CPM, CHART_CONFIG} from './inventory-planning-summary.constants';
 
@@ -17,7 +17,7 @@ export class InventoryPlanningSummaryComponent implements OnChanges {
 
     chartOptions: any = {};
 
-    ngOnChanges (changes: any) {
+    ngOnChanges (changes: SimpleChanges) {
         if (changes.avgCpm || changes.winRatio) {
             this.chartOptions = {
                 ...CHART_CONFIG,

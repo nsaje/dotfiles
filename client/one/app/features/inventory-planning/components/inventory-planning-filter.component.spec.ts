@@ -1,4 +1,4 @@
-import {SimpleChange} from '@angular/core';
+import {SimpleChanges, SimpleChange} from '@angular/core';
 import {TestBed, ComponentFixture, async} from '@angular/core/testing';
 
 import {SharedModule} from '../../../shared/shared.module';
@@ -36,12 +36,12 @@ describe('InventoryPlanningFilterComponent', () => {
         })
         .compileComponents();
 
-        fixture =  TestBed.createComponent(InventoryPlanningFilterComponent);
+        fixture = TestBed.createComponent(InventoryPlanningFilterComponent);
         component = fixture.componentInstance;
     }));
 
     it('should correctly generate categorizedOptions and categorizedSelectedOptions on inputs changes', () => {
-        let changes: any;
+        let changes: SimpleChanges;
         component.availableFilters = {countries: [], publishers: [], devices: []};
         component.selectedFilters = {countries: [], publishers: [], devices: []};
         changes = {
