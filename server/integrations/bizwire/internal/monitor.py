@@ -162,6 +162,24 @@ def monitor_duplicate_articles():
     influx.gauge('integrations.bizwire.labels', num_distinct, type='distinct')
     influx.gauge('integrations.bizwire.labels', num_duplicate, type='duplicate')
 
+    _monitor_duplicate_articles_past_month()
+
+
+def _monitor_duplicate_articles_30d():
+    one_month_ago = dates_helper.local_today() - datetime.timedelta(days=30)
+    num_labels = dash.models.ContentAd.objects.filter(
+        ad_group__campaign=config.AUTOMATION_CAMPAIGN,
+        created_dt__gte=one_month_ago,
+    ).count()
+
+    num_distinct = dash.models.ContentAd.objects.filter(
+        ad_group__campaign=config.AUTOMATION_CAMPAIGN,
+        created_dt__gte=one_month_ago,
+    ).distinct('label').count()
+
+    num_duplicate = abs(num_labels - num_distinct)
+    influx.gauge('integrations.bizwire.labels', num_duplicate, type='duplicate_30d')
+
 
 def _send_unexpected_spend_email_alert(expected_spend, actual_spend):
     if dates_helper.utc_now().hour != 14:
