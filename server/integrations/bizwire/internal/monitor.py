@@ -162,7 +162,7 @@ def monitor_duplicate_articles():
     influx.gauge('integrations.bizwire.labels', num_distinct, type='distinct')
     influx.gauge('integrations.bizwire.labels', num_duplicate, type='duplicate')
 
-    _monitor_duplicate_articles_past_month()
+    _monitor_duplicate_articles_30d()
 
 
 def _monitor_duplicate_articles_30d():
