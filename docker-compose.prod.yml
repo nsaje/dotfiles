@@ -86,7 +86,7 @@ services:
           NEW_RELIC_APP_NAME: "Zemanta One (REST API)"
           GUNICORN_WORKERS: "6"
           GUNICORN_THREADS: "1"
-          GUNICORN_WORKER_CLASS: "gevent"
+          GUNICORN_WORKER_CLASS: "sync"
           GUNICORN_LOG_LEVEL: "warn"
         mem_limit: 6g
         #   default cpu.cfs_period_us is 100000. That is 100% of one CPU core
