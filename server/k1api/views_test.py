@@ -954,6 +954,7 @@ class K1ApiTest(K1ApiBaseTest):
             "ad_group_id": 1,
             "campaign_id": 1,
             "account_id": 1,
+            "agency_id": 20,
             "call_to_action": "",
             "url": "http://testurl.com",
             "title": "Test Article 1",
