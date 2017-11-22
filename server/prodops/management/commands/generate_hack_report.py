@@ -256,12 +256,15 @@ class Command(utils.command_helpers.ExceptionCommand):
     def _get_spend_data(self, start_date, end_date):
         spend_data = {}
         with redshiftapi.db.get_stats_cursor() as cur:
-            for entity in ['ad_group', 'campaign', 'account', 'agency']:
+            for entity in ['ad_group', 'campaign', 'account']:
                 cur.execute(RS_QUERY.format(entity=entity,
                                             start_date=str(start_date),
                                             end_date=str(end_date),
                                             n=(end_date - start_date).days + 1))
                 spend_data[entity] = {row[0]: row[1] for row in cur.fetchall()}
+        spend_data['agency'] = {a.pk: Decimal(0) for a in dash.models.Agency.objects.all()}
+        for acc in dash.models.Account.objects.filter(agency_id__isnull=False):
+            spend_data['agency'][acc.agency_id] += spend_data['account'].get(acc.pk, Decimal(0))
         return spend_data
 
     def _get_hacks_per_summary(self, today):
