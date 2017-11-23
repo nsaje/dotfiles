@@ -308,7 +308,7 @@ docker run --rm \
     -v $PWD:/src \
     --workdir=/src/ \
     --entrypoint=sh \
-    py-tools -c "pip-compile --output-file server/requirements.txt server/requirements.in"
+    py-tools -c "pip-compile --output-file server/requirements.txt server/requirements.in --no-annotate"
 ```
 
 In case of conflicts passing the `-v` flag to the `pip-compile` call is useful for easier debugging.

@@ -28,7 +28,7 @@ DIFF=$(docker run --rm \
     -v $PWD:/src \
     --workdir=/src/ \
     --entrypoint=sh \
-    py-tools -c "pip-compile server/requirements.in" | diff server/requirements.txt -)
+    py-tools -c "pip-compile server/requirements.in --no-annotate" | diff server/requirements.txt -)
 if [ "$DIFF" != "" ]; then
     echo "$DIFF"
     banner 1 "requirements.in"
