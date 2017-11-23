@@ -21,7 +21,7 @@ import bcm_mixin
 # These agencies should have campaign stop turned off
 # (for example Outbrain)
 AGENCIES_WITHOUT_CAMPAIGN_STOP = {55}
-ACCOUNTS_WITHOUT_CAMPAIGN_STOP = {490}
+ACCOUNTS_WITHOUT_CAMPAIGN_STOP = {490, 512, 513}  # inPowered
 
 
 class CampaignManager(core.common.QuerySetManager):
