@@ -209,9 +209,7 @@ if ENABLE_DEBUG_TOOLBAR:
         'template_profiler_panel',
     ])
 
-    MIDDLEWARE = [
-        'debug_panel.middleware.DebugPanelMiddleware',
-    ] + MIDDLEWARE
+    MIDDLEWARE.append('debug_panel.middleware.DebugPanelMiddleware')
 
     DEBUG_TOOLBAR_PANELS = [
         'debug_toolbar.panels.versions.VersionsPanel',
