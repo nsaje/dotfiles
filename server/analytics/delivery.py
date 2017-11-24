@@ -41,6 +41,12 @@ HIGH_PACING_THRESHOLD = Decimal('200.0')
 LOW_PACING_THRESHOLD = Decimal('50.0')
 MIN_B1_ACTIVE_SOURCES_FOR_INTEREST_TARGETING = 5
 
+IGNORED_VIDEO_COST_AD_GROUPS = (
+    9709, 26439, 18507, 21383, 26442, 18775,
+    18509, 21385, 33364, 33360, 26438, 26470,
+    18774, 13224,
+)
+
 
 def generate_delivery_reports(account_types=[], skip_ok=True, check_pacing=True, generate_csv=True):
     today = datetime.date.today()
@@ -169,6 +175,9 @@ def check_ad_group_delivery(ad_group, ad_group_settings, ad_group_stats):
         return analytics.constants.AdGroupDeliveryStatus.TOO_LITTLE_B1_SOURCES_FOR_INTEREST_TARGETING
     if _extract_unbillable_data_segments(ad_group_settings.bluekai_targeting) and media and not data:
         return analytics.constants.AdGroupDeliveryStatus.MISSING_DATA_COST
+    is_video_spending = _has_video_assets(content_ads) and media
+    if is_video_spending and not data and ad_group.pk not in IGNORED_VIDEO_COST_AD_GROUPS:
+        return analytics.constants.AdGroupDeliveryStatus.MISSING_VIDEO_COST
     return analytics.constants.AdGroupDeliveryStatus.OK
 
 
@@ -241,3 +250,10 @@ def _extract_unbillable_data_segments(targeting_exp):
             segments.add(part)
             continue
     return segments
+
+
+def _has_video_assets(content_ads):
+    for ad in content_ads:
+        if ad.video_asset:
+            return True
+    return False

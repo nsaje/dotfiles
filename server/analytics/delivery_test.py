@@ -4,6 +4,7 @@ from decimal import Decimal
 from django import test
 
 import core.entity
+import dash.features.videoassets.models
 import core.goals
 import core.bcm
 import dash.constants
@@ -415,5 +416,27 @@ class AdGroupDeliveryTestCase(test.TestCase):
         s.save(None)
         self.assertEqual(
             delivery.check_ad_group_delivery(self.ad_group, s, {'media': 100, 'data': 0}),
+            constants.AdGroupDeliveryStatus.OK
+        )
+
+    def test_missing_video_cost(self):
+        asset = dash.features.videoassets.models.VideoAsset(name='test', account=self.account)
+        asset.save()
+
+        self.ad.video_asset = asset
+        self.ad.save()
+
+        stats = {}
+        stats.update(self.stats)
+        stats['media'] = 100
+
+        self.assertEqual(
+            delivery.check_ad_group_delivery(self.ad_group, self.ad_group_settings, stats),
+            constants.AdGroupDeliveryStatus.MISSING_VIDEO_COST
+        )
+
+        stats['data'] = 100
+        self.assertEqual(
+            delivery.check_ad_group_delivery(self.ad_group, self.ad_group_settings, stats),
             constants.AdGroupDeliveryStatus.OK
         )
