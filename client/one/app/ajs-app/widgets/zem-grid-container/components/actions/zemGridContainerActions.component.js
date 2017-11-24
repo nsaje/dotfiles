@@ -16,10 +16,15 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         $ctrl.isCreateEntityActionVisible = isCreateEntityActionVisible;
         $ctrl.isCreateAdGroupSourceActionVisible = isCreateAdGroupSourceActionVisible;
         $ctrl.isReportDropdownVisible = isReportDropdownVisible;
+        $ctrl.canCreateNewAccount = canCreateNewAccount;
 
         function isEntityBreakdown () {
             return $ctrl.breakdown !== constants.breakdown.MEDIA_SOURCE
                 && $ctrl.breakdown !== constants.breakdown.PUBLISHER;
+        }
+
+        function canCreateNewAccount() {
+            return zemPermissions.hasPermission('zemauth.all_accounts_accounts_add_account')
         }
 
         function isGridBulkActionsVisible () {
