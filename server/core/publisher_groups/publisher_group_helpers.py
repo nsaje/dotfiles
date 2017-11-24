@@ -340,7 +340,7 @@ def upsert_publisher_group(request, account_id, publisher_group_dict, entry_dict
             default_include_subdomains=include_subdomains,
             implicit=False)
         history_action_type = constants.HistoryActionType.PUBLISHER_GROUP_CREATE
-        changes_text = "Publisher group created"
+        changes_text = "Publisher group \"{} [{}]\" created".format(publisher_group.name, publisher_group.id)
 
     # replace publishers
     if entry_dicts:
