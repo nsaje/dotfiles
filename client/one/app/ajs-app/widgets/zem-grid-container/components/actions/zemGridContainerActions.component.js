@@ -3,6 +3,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
     bindings: {
         entity: '<',
         breakdown: '<',
+        level: '<',
         gridApi: '<',
     },
     controller: function (zemPermissions) {
@@ -24,7 +25,8 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         }
 
         function canCreateNewAccount () {
-            return zemPermissions.hasPermission('zemauth.all_accounts_accounts_add_account');
+            return zemPermissions.hasPermission('zemauth.all_accounts_accounts_add_account')
+                || $ctrl.level !== constants.level.ALL_ACCOUNTS;
         }
 
         function isGridBulkActionsVisible () {
