@@ -23,8 +23,8 @@ angular.module('one.widgets').component('zemGridContainerActions', {
                 && $ctrl.breakdown !== constants.breakdown.PUBLISHER;
         }
 
-        function canCreateNewAccount() {
-            return zemPermissions.hasPermission('zemauth.all_accounts_accounts_add_account')
+        function canCreateNewAccount () {
+            return zemPermissions.hasPermission('zemauth.all_accounts_accounts_add_account');
         }
 
         function isGridBulkActionsVisible () {
