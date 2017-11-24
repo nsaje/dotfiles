@@ -9,6 +9,7 @@ import {InventoryPlanningEndpoint} from './inventory-planning.endpoint';
 
 describe('InventoryPlanningStore', () => {
     let store: InventoryPlanningStore;
+    let endpoint: InventoryPlanningEndpoint;
 
     const availableCountries = [
         {
@@ -69,6 +70,7 @@ describe('InventoryPlanningStore', () => {
         }));
 
         it('should correctly refresh data on init', done => {
+            store.init();
             setTimeout(() => {
                 expect(store.state).toEqual({
                     requests: {
@@ -107,17 +109,30 @@ describe('InventoryPlanningStore', () => {
     });
 
     describe('without delayed mocked http requests', () => {
-        beforeEach(inject([InventoryPlanningEndpoint], (endpoint: InventoryPlanningEndpoint) => {
-            spyOn(endpoint, 'loadSummary').and.returnValue(
+        beforeEach(inject([InventoryPlanningEndpoint], (_endpoint: InventoryPlanningEndpoint) => {
+            spyOn(_endpoint, 'loadSummary').and.returnValue(
                 Observable.of({auctionCount: 100000, avgCpm: 2, winRatio: 0.5})
             );
-            spyOn(endpoint, 'loadCountries').and.returnValue(Observable.of(availableCountries));
-            spyOn(endpoint, 'loadPublishers').and.returnValue(Observable.of(availablePublishers));
-            spyOn(endpoint, 'loadDevices').and.returnValue(Observable.of(availableDevices));
+            spyOn(_endpoint, 'loadCountries').and.returnValue(Observable.of(availableCountries));
+            spyOn(_endpoint, 'loadPublishers').and.returnValue(Observable.of(availablePublishers));
+            spyOn(_endpoint, 'loadDevices').and.returnValue(Observable.of(availableDevices));
 
-            store = new InventoryPlanningStore(endpoint);
+            endpoint = _endpoint;
+            store = new InventoryPlanningStore(_endpoint);
         }));
 
+        it('should make correct requests when initialized with preselected filters', () => {
+            store.initWithPreselectedFilters([
+                {key: 'countries', value: 'country 1'},
+                {key: 'publishers', value: 'publisher 1'},
+                {key: 'devices', value: 'device 1'},
+            ]);
+            expect(endpoint.loadCountries).toHaveBeenCalledWith({
+                countries: [{name: '', value: 'country 1', auctionCount: -1}],
+                publishers: [{name: '', value: 'publisher 1', auctionCount: -1}],
+                devices: [{name: '', value: 'device 1', auctionCount: -1}],
+            });
+        });
 
         it('should correctly remove selected options', () => {
             store.setState({
@@ -157,13 +172,14 @@ describe('InventoryPlanningStore', () => {
             ]);
         });
 
-        it('should skip option with invalid key', () => {
+        it('should skip option with invalid key on remove', () => {
             spyOn(store, 'setState');
             store.removeOption({key: 'invalid', value: 'test value'});
             expect(store.setState).not.toHaveBeenCalled();
         });
 
         it('should correctly apply filter', () => {
+            store.init();
             store.setState({
                 ...store.state,
                 selectedFilters: {
@@ -204,6 +220,20 @@ describe('InventoryPlanningStore', () => {
 
             expect(store.state.selectedFilters).toEqual({
                 countries: [],
+                publishers: [],
+                devices: [],
+            });
+        });
+
+        it('should not apply filter with invalid key', () => {
+            store.init();
+            store.applyFilters([
+                {key: 'countries', value: 'test country 1'},
+                {key: 'countries', value: 'invalid value'},
+            ]);
+
+            expect(store.state.selectedFilters).toEqual({
+                countries: [availableCountries[0]],
                 publishers: [],
                 devices: [],
             });

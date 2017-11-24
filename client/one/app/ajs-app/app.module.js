@@ -113,5 +113,5 @@ angular.module('one').config(function ($provide) {
 
     // Downgrade NgZone service to support `NgZone.runOutsideAngular()` calls in AngularJS app
     var NgZone = require('@angular/core').NgZone;
-    angular.module('one').factory('NgZone', downgradeInjectable(NgZone));
+    angular.module('one.downgraded').factory('NgZone', downgradeInjectable(NgZone));
 })();

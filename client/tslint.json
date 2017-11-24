@@ -16,8 +16,7 @@
     "class-name": true,
     "comment-format": [
       true,
-      "check-space",
-      "check-uppercase"
+      "check-space"
     ],
     "no-constant-condition": true,
     "curly": true,

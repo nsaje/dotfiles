@@ -61,7 +61,7 @@ describe('InventoryPlanningFilterComponent', () => {
             publishers: [testOption3],
             devices: [testOption4],
         };
-        component.selectedFilters = {countries: [testOption1], publishers: [testOption3], devices: []};
+        component.selectedFilters = {countries: [testOption2], publishers: [testOption3], devices: []};
         changes = {
             availableFilters: new SimpleChange(null, component.availableFilters, false),
             selectedFilters: new SimpleChange(null, component.selectedFilters, false),
@@ -72,8 +72,9 @@ describe('InventoryPlanningFilterComponent', () => {
                 name: 'Countries',
                 key: 'countries',
                 items: [
-                    {name: 'Option 1', value: '1', description: '10 K', selected: true},
-                    {name: 'Option 2', value: '2', description: '20 K', selected: false},
+                    // NOTE: Selected options must be included first
+                    {name: 'Option 2', value: '2', description: '20 K', selected: true},
+                    {name: 'Option 1', value: '1', description: '10 K', selected: false},
                 ],
             },
             {
@@ -88,7 +89,7 @@ describe('InventoryPlanningFilterComponent', () => {
             },
         ]);
         expect(component.categorizedSelectedOptions).toEqual([
-            {name: 'Countries', key: 'countries', items: [{name: 'Option 1', value: '1'}]},
+            {name: 'Countries', key: 'countries', items: [{name: 'Option 2', value: '2'}]},
             {name: 'Publishers', key: 'publishers', items: [{name: 'Option 3', value: '3'}]},
         ]);
     });

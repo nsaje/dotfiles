@@ -31,6 +31,7 @@ import {ViewsModule} from './views/views.module';
     providers: [
         {provide: ErrorHandler, useClass: RavenErrorHandler},
         upgradeProvider('zemPermissions'),
+        upgradeProvider('$location', 'ajs$location'),
     ],
 })
 export class AppModule {

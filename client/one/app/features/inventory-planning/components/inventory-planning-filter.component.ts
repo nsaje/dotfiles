@@ -38,15 +38,15 @@ export class InventoryPlanningFilterComponent implements OnChanges {
         this.categorizedSelectedOptions = this.getCategorizedSelectedOptions(this.categorizedOptions);
     }
 
-    removeSelected ($event: {category: CategorizedTagsListCategory, item: CategorizedTagsListItem}): void {
+    removeSelected (removedOption: {category: CategorizedTagsListCategory, item: CategorizedTagsListItem}): void {
         this.onRemove.emit({
-            key: $event.category.key,
-            value: $event.item.value,
+            key: removedOption.category.key,
+            value: removedOption.item.value,
         });
     }
 
-    applyFilterSelection ($event: CategorizedSelectSelectionItem[]): void {
-        const selectedFilters = $event.map(selectedFilter => {
+    applyFilterSelection (selection: CategorizedSelectSelectionItem[]): void {
+        const selectedFilters = selection.map(selectedFilter => {
             return {key: selectedFilter.categoryKey, value: selectedFilter.itemValue};
         });
         this.onApply.emit(selectedFilters);
@@ -81,9 +81,21 @@ export class InventoryPlanningFilterComponent implements OnChanges {
         selectedItems: FilterOption[]
     ): CategorizedSelectItem[] {
         const items: CategorizedSelectItem[] = [];
+        const selectedItemsList: FilterOption[] = [];
+        const unselectedItemsList: FilterOption[] = [];
+
+        availableItems.forEach(availableItem => {
+            for (const selectedItem of selectedItems) {
+                if (selectedItem.value === availableItem.value) {
+                    selectedItemsList.push(availableItem);
+                    return;
+                }
+            }
+            unselectedItemsList.push(availableItem);
+        });
 
         // Include selected items first
-        selectedItems.forEach(selectedItem => {
+        selectedItemsList.forEach(selectedItem => {
             items.push({
                 name: selectedItem.name || selectedItem.value,
                 value: selectedItem.value,
@@ -93,15 +105,7 @@ export class InventoryPlanningFilterComponent implements OnChanges {
         });
 
         // Append unselected items after selected items
-        const unselectedItems = availableItems.filter(availableItem => {
-            for (const selectedItem of selectedItems) {
-                if (selectedItem.value === availableItem.value) {
-                    return false;
-                }
-            }
-            return true;
-        });
-        unselectedItems.forEach(unselectedItem => {
+        unselectedItemsList.forEach(unselectedItem => {
             items.push({
                 name: unselectedItem.name || unselectedItem.value,
                 value: unselectedItem.value,

@@ -42,7 +42,8 @@ export class InventoryPlanningEndpoint {
             method,
             '/rest/internal/inventory-planning/countries',
             {params: params, body: body})
-            .map(res => res.data);
+            .map(res => res.data)
+            .map(this.convertOptionsValueToSting);
     }
 
     loadPublishers (selectedFilters: Filters): Observable<FilterOption[]> {
@@ -51,7 +52,8 @@ export class InventoryPlanningEndpoint {
             method,
             '/rest/internal/inventory-planning/publishers',
             {params: params, body: body})
-            .map(res => res.data);
+            .map(res => res.data)
+            .map(this.convertOptionsValueToSting);
     }
 
     loadDevices (selectedFilters: Filters): Observable<FilterOption[]> {
@@ -60,7 +62,8 @@ export class InventoryPlanningEndpoint {
             method,
             '/rest/internal/inventory-planning/device-types',
             {params: params, body: body})
-            .map(res => res.data);
+            .map(res => res.data)
+            .map(this.convertOptionsValueToSting);
     }
 
     private buildRequestProperties (selectedFilters: Filters): RequestProperties {
@@ -84,5 +87,14 @@ export class InventoryPlanningEndpoint {
             p: selectedFilters.publishers.map((x: FilterOption) => x.value),
             d: selectedFilters.devices.map((x: FilterOption) => x.value),
         };
+    }
+
+    private convertOptionsValueToSting (options: FilterOption[]): FilterOption[] {
+        return options.map(option => {
+            return {
+                ...option,
+                value: option.value ? option.value.toString() : '',
+            };
+        });
     }
 }
