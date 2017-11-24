@@ -465,7 +465,7 @@ class PublisherGroupHelpersTest(TestCase):
         })
 
         self.assertEqual(models.History.objects.last().changes_text,
-                         'Publisher group created')
+                         'Publisher group "Bla bla bla [1012]" created')
 
 
 class PublisherGroupCSVHelpersTest(TestCase):
