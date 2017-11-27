@@ -46,6 +46,13 @@ class AdGroupSettings(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(request, settings, ad_group),
+            'archived': settings.archived,
+        }
+
+        if self.rest_proxy:
+            return self.create_api_response(response)
+
+        response.update({
             'default_settings': self.get_default_settings_dict(ad_group),
             'action_is_waiting': False,
             'retargetable_adgroups': self.get_retargetable_adgroups(
@@ -61,8 +68,7 @@ class AdGroupSettings(api_common.BaseApiView):
             'warnings': self.get_warnings(request, settings),
             'can_archive': ad_group.can_archive(),
             'can_restore': ad_group.can_restore(),
-            'archived': settings.archived,
-        }
+        })
         if request.user.has_perm('zemauth.can_see_backend_hacks'):
             response['hacks'] = models.CustomHack.objects.all().filter_applied(
                 ad_group=ad_group
