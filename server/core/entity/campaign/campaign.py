@@ -77,6 +77,7 @@ class Campaign(models.Model, core.common.PermissionMixin, bcm_mixin.CampaignBCMM
     default_blacklist = models.ForeignKey('PublisherGroup', related_name='blacklisted_campaigns',
                                           on_delete=models.PROTECT, null=True, blank=True)
     custom_flags = JSONField(null=True, blank=True)
+    real_time_campaign_stop = models.BooleanField(default=False)
 
     USERS_FIELD = 'users'
 

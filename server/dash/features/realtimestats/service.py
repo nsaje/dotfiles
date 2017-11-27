@@ -93,4 +93,4 @@ def _augment_source(stats, sources_by_slug):
     for stat in stats:
         if stat['source_slug'] in sources_by_slug:
             source = sources_by_slug[stat['source_slug']]
-            stat['source'] = source.name
+            stat['source'] = source

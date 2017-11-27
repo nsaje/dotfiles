@@ -9,6 +9,7 @@ from restapi.views_test import RESTAPITest
 from dash import models
 from dash.features import realtimestats
 from zemauth.models import User
+from utils.magic_mixer import magic_mixer
 
 
 class RealtimestatsViewsTest(RESTAPITest):
@@ -37,9 +38,10 @@ class RealtimestatsViewsTest(RESTAPITest):
         user = User.objects.get(pk=1)
         user.user_permissions.remove(permission)
 
+        sources = magic_mixer.cycle(2).blend(models.Source, bidder_slug=magic_mixer.RANDOM)
         data = [
-            {'source': 's1', 'spend': decimal.Decimal('12.34567')},
-            {'source': 's2', 'spend': decimal.Decimal('0.11111')},
+            {'source': sources[0], 'spend': decimal.Decimal('12.34567')},
+            {'source': sources[1], 'spend': decimal.Decimal('0.11111')},
         ]
 
         mock_get.return_value = data
@@ -48,8 +50,8 @@ class RealtimestatsViewsTest(RESTAPITest):
         resp_json = self.assertResponseValid(r, data_type=list)
 
         expected = [
-            {'source': 's1', 'spend': '12.35'},
-            {'source': 's2', 'spend': '0.11'},
+            {'source': sources[0].name, 'spend': '12.35'},
+            {'source': sources[1].name, 'spend': '0.11'},
         ]
         self.assertEqual(resp_json['data'], expected)
 

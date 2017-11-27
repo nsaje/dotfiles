@@ -95,12 +95,12 @@ class RealtimestatsServiceTest(TestCase):
         self.assertEqual(result, [
             {
                 'source_slug': sources[1].bidder_slug,
-                'source': sources[1].name,
+                'source': sources[1],
                 'spend': test_helper.AlmostMatcher(decimal.Decimal('5.7689')),
             },
             {
                 'source_slug': sources[0].bidder_slug,
-                'source': sources[0].name,
+                'source': sources[0],
                 'spend': test_helper.AlmostMatcher(decimal.Decimal('2.1153')),
             },
         ])

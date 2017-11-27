@@ -9,5 +9,5 @@ class AdGroupRealtimeStatsSerializer(serializers.Serializer):
 
 
 class AdGroupSourcesRealtimeStatsSerializer(serializers.Serializer):
-    source = restapi.fields.PlainCharField()
+    source = restapi.fields.PlainCharField(source='source.name')
     spend = serializers.DecimalField(max_digits=20, decimal_places=2)
