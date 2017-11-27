@@ -5,6 +5,8 @@ import dash.constants
 import core.entity.campaign
 import core.entity.adgroup
 
+from campaignstop.real_time_data_history import *  # noqa
+
 
 class CampaignBudgetDepletionNotification(models.Model):
     account_manager = models.ForeignKey(
