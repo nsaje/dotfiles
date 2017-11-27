@@ -1,6 +1,6 @@
 <div class="button-bar" ng-if="$ctrl.gridApi">
     <zem-create-entity-action
-            ng-if="$ctrl.isCreateEntityActionVisible()"
+            ng-if="$ctrl.isCreateEntityActionVisible() && $ctrl.canCreateNewAccount()"
             parent-entity="$ctrl.entity"
             class="button-bar-item"
     ></zem-create-entity-action>

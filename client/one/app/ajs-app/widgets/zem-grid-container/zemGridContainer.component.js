@@ -5,6 +5,7 @@ angular.module('one.widgets').component('zemGridContainer', {
     bindings: {
         entity: '<',
         breakdown: '<',
+        level: '<',
     },
     controller: function ($scope, $timeout, zemGridIntegrationService, zemGridContainerTabsService) { // eslint-disable-line max-len
         var $ctrl = this;
