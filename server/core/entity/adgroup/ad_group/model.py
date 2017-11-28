@@ -121,6 +121,8 @@ class AdGroup(models.Model, core.common.SettingsProxyMixin, bcm_mixin.AdGroupBCM
 
     custom_flags = JSONField(null=True, blank=True)
 
+    new_settings = models.ForeignKey('AdGroupSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_ad_group', db_column='settings_id')
+
     objects = AdGroupManager()
 
     def __unicode__(self):

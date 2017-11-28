@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.db import models
+from django.db import transaction
 
 import core.common
 import core.history
@@ -16,11 +17,25 @@ class SettingsBase(models.Model, CopySettingsMixin, core.history.HistoryMixin):
 
     objects = core.common.QuerySetManager()
 
+    @transaction.atomic
     def save(self, *args, **kwargs):
         if self.pk is not None:
             raise AssertionError('Updating settings object not alowed.')
 
         super(SettingsBase, self).save(*args, **kwargs)
+
+        if self.__class__.__name__ == 'AccountSettings':
+            self.account.new_settings_id = self.pk
+            core.entity.Account.objects.filter(pk=self.account_id).update(new_settings_id=self.pk)
+        if self.__class__.__name__ == 'CampaignSettings':
+            self.campaign.new_settings_id = self.pk
+            core.entity.Campaign.objects.filter(pk=self.campaign_id).update(new_settings_id=self.pk)
+        if self.__class__.__name__ == 'AdGroupSettings':
+            self.ad_group.new_settings_id = self.pk
+            core.entity.AdGroup.objects.filter(pk=self.ad_group_id).update(new_settings_id=self.pk)
+        if self.__class__.__name__ == 'AdGroupSourceSettings':
+            self.ad_group_source.new_settings_id = self.pk
+            core.entity.AdGroupSource.objects.filter(pk=self.ad_group_source_id).update(new_settings_id=self.pk)
 
     def delete(self, *args, **kwargs):
         raise AssertionError('Deleting settings object not allowed.')
