@@ -170,6 +170,8 @@ class AdGroupSource(models.Model):
         max_length=100, null=True, blank=True)
     blockers = jsonfield.JSONField(blank=True, default={})
 
+    new_settings = models.ForeignKey('AdGroupSourceSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_ad_group_source', db_column='settings_id')
+
     objects = AdGroupSourceManager()
 
     class QuerySet(models.QuerySet):
