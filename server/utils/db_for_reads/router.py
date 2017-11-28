@@ -9,7 +9,8 @@ from decorator import get_thread_local
 DEFAULT_DB_ALIAS = 'default'
 
 
-if getattr(settings, 'DATABASE_READ_REPLICAS'):
+dbs = getattr(settings, 'DATABASE_READ_REPLICAS')
+if dbs:
     dbs = list(settings.DATABASE_READ_REPLICAS)
     random.shuffle(dbs)
     read_replicas = itertools.cycle(dbs)
