@@ -32,7 +32,6 @@ class AdGroupSettingsTest(TestCase):
             'created_by',
             'changes_text',
             'system_user',
-            'latest_for_ad_group',
         ]
 
         all_fields = set(models.AdGroupSettings._settings_fields + meta_fields)
@@ -321,7 +320,6 @@ class CampaignSettingsTest(TestCase):
             'created_by',
             'changes_text',
             'system_user',
-            'latest_for_campaign',
         ]
 
         all_fields = set(models.CampaignSettings._settings_fields + meta_fields)

@@ -79,8 +79,6 @@ class Campaign(models.Model, core.common.PermissionMixin, bcm_mixin.CampaignBCMM
     custom_flags = JSONField(null=True, blank=True)
     real_time_campaign_stop = models.BooleanField(default=False)
 
-    new_settings = models.ForeignKey('CampaignSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_campaign', db_column='settings_id')
-
     USERS_FIELD = 'users'
 
     objects = CampaignManager()

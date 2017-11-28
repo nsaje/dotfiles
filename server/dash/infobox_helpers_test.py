@@ -291,7 +291,7 @@ class InfoBoxHelpersTest(TestCase):
         self.assertEqual(550, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
 
         # use raw sql to bypass model restrictions
-        q = 'UPDATE dash_adgroupsettings SET state=2'
+        q = 'DELETE FROM dash_adgroupsourcesettings; DELETE FROM dash_adgroupsettings'
         cursor = connection.cursor()
         cursor.execute(q, [])
 

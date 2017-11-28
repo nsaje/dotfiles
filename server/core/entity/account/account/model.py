@@ -67,8 +67,6 @@ class Account(models.Model, core.common.SettingsProxyMixin):
     )
     custom_flags = JSONField(null=True, blank=True)
 
-    new_settings = models.ForeignKey('AccountSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_account', db_column='settings_id')
-
     def __unicode__(self):
         return self.name
 
