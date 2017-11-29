@@ -1,12 +1,10 @@
 import json
 import logging
-import urllib
 import datetime
 
 from django.contrib import admin
 from django.contrib import messages
 from django.db import transaction
-from django.db.models import Count, Prefetch
 from django import forms
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
@@ -637,6 +635,7 @@ class CampaignSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         return False
 
 # Ad Group
+
 
 class IsArchivedFilter(admin.SimpleListFilter):
     title = 'Is archived'
