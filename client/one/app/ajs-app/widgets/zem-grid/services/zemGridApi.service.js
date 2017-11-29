@@ -14,6 +14,8 @@ angular.module('one.widgets').factory('zemGridApi', function (zemGridUIService) 
         this.getMetaData = getMetaData;
         this.getRows = getRows;
         this.getColumns = getColumns;
+        this.getCategorizedColumns = getCategorizedColumns;
+        this.getBareBoneCategories = getBareBoneCategories;
 
         // Data service API
         this.DS_FILTER = grid.meta.dataService.DS_FILTER;
@@ -68,6 +70,63 @@ angular.module('one.widgets').factory('zemGridApi', function (zemGridUIService) 
 
         function getColumns () {
             return grid.header.columns;
+        }
+
+        function getCategoryColumns (zemCostModeService, category, columns) {
+            var costMode = zemCostModeService.getCostMode();
+
+            return columns.filter(function (column) {
+                var inCategory = category.fields.indexOf(column.field) !== -1;
+                if (!inCategory || !column.data.shown || column.data.permanent) return false;
+                if (zemCostModeService.isTogglableCostMode(column.data.costMode)) {
+                    return column.data.costMode === costMode;
+                }
+                return true;
+            });
+        }
+
+        function getCategory (zemCostModeService, category, columns) {
+            var categoryColumns = getCategoryColumns(zemCostModeService, category, columns),
+                subcategories = [];
+
+            if (category.hasOwnProperty('subcategories')) {
+                subcategories = category.subcategories.map(function (subcategory) {
+                    return getCategory(zemCostModeService, subcategory, columns);
+                });
+            }
+
+            return {
+                name: category.name,
+                description: category.description,
+                type: category.type,
+                subcategories: subcategories,
+                columns: categoryColumns,
+            };
+        }
+
+
+        function getCategorizedColumns (zemCostModeService) {
+            var columns = getColumns();
+            var categories = [];
+            getMetaData().categories.forEach(function (category) {
+                var newCategory = getCategory(zemCostModeService, category, columns);
+                if (newCategory.columns.length > 0 || newCategory.subcategories.length > 0) {
+                    categories.push(newCategory);
+                }
+            });
+            return categories;
+        }
+
+        function getBareBoneCategories (zemCostModeService) {
+            return getCategorizedColumns(zemCostModeService).map(function (category) {
+                var columns = [];
+
+                category.columns.forEach(function (column) {
+                    var c = column;
+                    columns.push({field: c.field, name: c.data.name, visible: c.visible, disabled: c.disabled});
+                });
+                return {name: category.name, columns: columns};
+            });
         }
 
         function refreshUI () {

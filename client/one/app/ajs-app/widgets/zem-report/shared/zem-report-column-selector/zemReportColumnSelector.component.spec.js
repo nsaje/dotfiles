@@ -1,6 +1,7 @@
-describe('component: zemGridColumnSelector', function () {
+describe('component: zemReportColumnSelector', function () {
     var $componentController;
-    var $ctrl, api, zemPermissions;
+    var $ctrl;
+    var api;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
@@ -8,11 +9,6 @@ describe('component: zemGridColumnSelector', function () {
 
     beforeEach(inject(function ($injector) {
         $componentController = $injector.get('$componentController');
-        zemPermissions = $injector.get('zemPermissions');
-        zemPermissions.setMockedPermissions([
-            'zemauth.can_view_breakdown_by_delivery',
-            'zemauth.can_see_managers_in_campaigns_table'
-        ]);
 
         var zemGridMocks = $injector.get('zemGridMocks');
         api = zemGridMocks.createApi(constants.level.ACCOUNTS, constants.breakdown.MEDIA_SOURCE);
@@ -20,14 +16,16 @@ describe('component: zemGridColumnSelector', function () {
         var element = angular.element('<div></div>');
         var locals = {$element: element};
         var bindings = {api: api};
-        $ctrl = $componentController('zemGridColumnSelector', locals, bindings);
+        $ctrl = $componentController('zemReportColumnSelector', locals, bindings);
     }));
+
 
     it('every column is set to true when toggleFunction(true) is called', function () {
         $ctrl.$onInit();
         $ctrl.bareBoneCategories = generatedCategories();
+        $ctrl.toggleColumns = angular.noop;
 
-        $ctrl.toggleColumns(true);
+        $ctrl.onToggleColumns(true);
 
         var isEveryFieldVisible = $ctrl.bareBoneCategories[0].columns.every(function (obj) {
             if (obj.disabled || obj.visible) {
@@ -41,8 +39,9 @@ describe('component: zemGridColumnSelector', function () {
     it('every column is set to false when toggleFunction(false) is called', function () {
         $ctrl.$onInit();
         $ctrl.bareBoneCategories = generatedCategories();
+        $ctrl.toggleColumns = angular.noop;
 
-        $ctrl.toggleColumns(false);
+        $ctrl.onToggleColumns(false);
 
         var isEveryFieldVisible = $ctrl.bareBoneCategories[0].columns.every(function (obj) {
             if (obj.disabled || !obj.visible) {

@@ -1,0 +1,15 @@
+<hr>
+
+<button class="button button--small button--with-icon add-icon button__add-more-columns" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="$ctrl.showCollapsed">Add more columns</button>
+
+<div class="collapsable zem-report-column-selector" ng-show="$ctrl.showCollapsed">
+    <zem-column-selector
+        on-toggle-columns="$ctrl.onToggleColumns(isChecked)"
+        on-select-column="$ctrl.onSelectColumn(column)"
+        bare-bone-categories="$ctrl.bareBoneCategories"
+        filtered-bare-categories="$ctrl.filteredBareCategories"
+        ></zem-column-selector>
+    <div class="zem-report-column-selector__action-buttons">
+        <button class="button button--outline" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="!$ctrl.showCollapsed">Close</button>
+    </div>
+</div>

@@ -24,6 +24,9 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         $ctrl.addBreakdown = addBreakdown;
         $ctrl.removeBreakdown = removeBreakdown;
         $ctrl.update = update;
+        $ctrl.selectedColumn = selectedColumn;
+        $ctrl.toggleColumns = toggleColumns;
+        $ctrl.showTruncatedColsList = true;
 
         // template variables
         $ctrl.config = {
@@ -38,6 +41,8 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         $ctrl.view = '';
         $ctrl.breakdown = [];
         $ctrl.availableBreakdowns = {};
+        $ctrl.selectedCols = [];
+        $ctrl.unSelectedCols = [];
 
         $ctrl.$onInit = function () {
             $ctrl.appliedFilterConditions = zemFilterSelectorService.getAppliedConditions();
@@ -67,17 +72,57 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
             update();
         }
 
+        function onlyUnique (value, index, self) {
+            return self.indexOf(value) === index;
+        }
+
+        function toggleColumns (data) {
+            var selectedColumns = data.selectedColumns.slice();
+            if (data.isChecked) {
+                $ctrl.selectedCols = selectedColumns;
+                $ctrl.unSelectedCols = [];
+            } else {
+                $ctrl.unSelectedCols = selectedColumns;
+                $ctrl.selectedCols = [];
+            }
+            $ctrl.update();
+        }
+
+        function selectedColumn (column) {
+            if (column.checked) {
+                $ctrl.selectedCols.push(column.name);
+                var indx = $ctrl.unSelectedCols.indexOf(column.name);
+                if (indx > -1) { $ctrl.unSelectedCols.splice(indx, 1); }
+            } else {
+                // removes columnName from selectedCols
+                var index = $ctrl.selectedCols.indexOf(column.name);
+                if (index > -1) { $ctrl.selectedCols.splice(index, 1); }
+                $ctrl.unSelectedCols.push(column.name);
+            }
+            $ctrl.update();
+        }
+
         function update () {
-            $ctrl.config.selectedFields = zemReportFieldsService.getFields(
+            var defaultFields = zemReportFieldsService.getFields(
                 $ctrl.gridApi,
                 $ctrl.breakdown,
                 $ctrl.config.includeIds
             );
-            if ($ctrl.shownSelectedFields.length <= NR_SHORTLIST_ITEMS &&
-                    $ctrl.config.selectedFields.length > SHORTLIST_LIMIT) {
-                $ctrl.shownSelectedFields = $ctrl.config.selectedFields.slice(0, NR_SHORTLIST_ITEMS);
-            } else {
-                $ctrl.showAllSelectedFields();
+            var selectedFields = $ctrl.selectedCols;
+            var unSelectedFields = $ctrl.unSelectedCols;
+
+            var mergedFields = defaultFields.filter(function (field) {
+                return unSelectedFields.indexOf(field) === -1;
+            }).concat(selectedFields).filter(onlyUnique);
+
+            $ctrl.config.selectedFields = mergedFields;
+            $ctrl.showAllSelectedFields();
+
+            if ($ctrl.shownSelectedFields.length > SHORTLIST_LIMIT && $ctrl.showTruncatedColsList) {
+                // user sees "..." only once. If the user interacts with column
+                // selection component we display all columns
+                $ctrl.showTruncatedColsList = false;
+                $ctrl.shownSelectedFields = $ctrl.config.selectedFields.slice(0, SHORTLIST_LIMIT);
             }
 
             $ctrl.shownBreakdown = $ctrl.breakdown.slice(1, $ctrl.breakdown.length);

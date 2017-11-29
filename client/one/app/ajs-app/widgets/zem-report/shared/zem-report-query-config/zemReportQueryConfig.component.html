@@ -15,7 +15,7 @@
               search-enabled="false"
               ng-model="$ctrl.addbreakdown"
               ng-disabled="$ctrl.disabled"
-              class="button button--dropdown-toggle-icon button--with-icon add-icon button--dropdown-toggle-icon zem-report-query-config__add-breakdown"
+              class="button button--small button--with-icon button--dropdown-toggle-icon add-icon zem-report-query-config__add-breakdown"
               ng-if="$ctrl.availableBreakdowns.length">
             <ui-select-match class="ui-select-match" placeholder="Add breakdown">Add breakdown</ui-select-match>
             <ui-select-choices repeat="breakdown in $ctrl.availableBreakdowns" class="ui-select-choices">
@@ -28,9 +28,16 @@
 <div class="form__group form__group--informative">
     <label class="form__label">Columns</label>
     <div class="form__information">
-        <span ng-repeat="field in $ctrl.shownSelectedFields" class="tag">{{ field }}</span>
-        <a class="tag tag--show-more" ng-click="$ctrl.showAllSelectedFields()"
-           ng-if="$ctrl.shownSelectedFields.length < $ctrl.config.selectedFields.length">...</a>
+        <div>
+            <span ng-repeat="field in $ctrl.shownSelectedFields" class="tag">{{ field }}</span>
+            <a class="tag tag--show-more" ng-click="$ctrl.showAllSelectedFields()"
+                ng-if="$ctrl.shownSelectedFields.length < $ctrl.config.selectedFields.length">...</a>
+        </div>
+        <zem-report-column-selector
+            ng-if="$ctrl.hasPermission('zemauth.fea_can_use_column_picker_in_reports')"
+            selected-column="$ctrl.selectedColumn(column)"
+            toggle-columns="$ctrl.toggleColumns(data)"
+            api="$ctrl.gridApi"></zem-report-column-selector>
     </div>
 </div>
 <hr ng-if="$ctrl.appliedFilterConditions.length">
@@ -53,7 +60,7 @@
         </label>
     </div>
 </div>
-<div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_include_model_ids_in_reports')">
+<div ng-if="!$ctrl.hasPermission('zemauth.fea_can_use_column_picker_in_reports')" class="form__group" >
     <label class="form__label" for="add-ids-checkbox" is-internal="zemauth.can_include_model_ids_in_reports">Add IDs to report</label>
     <div class="form__checkbox">
         <label>

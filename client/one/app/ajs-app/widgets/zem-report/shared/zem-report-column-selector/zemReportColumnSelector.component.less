@@ -1,0 +1,37 @@
+@import 'variables';
+@import '../../styles/utilities.less';
+
+.button__add-more-columns {
+    height: 22px;
+    line-height: 22px;
+}
+
+.zem-report-column-selector {
+    position: relative;
+    margin-top: -@default-spacing;
+    padding: 0;
+
+    .dropdown-menu__search {
+        position: relative;
+        background-color: @light-gray;
+
+        .input-text {
+            width: 100%;
+        }
+    }
+
+    .dropdown-menu__columns-container {
+        max-height: 310px;
+    }
+
+    .clearfix();
+}
+
+.zem-report-column-selector__action-buttons {
+    padding: @default-spacing;
+    border-top: 1px solid @light-gray;
+
+    .button {
+        float: none;
+    }
+}
