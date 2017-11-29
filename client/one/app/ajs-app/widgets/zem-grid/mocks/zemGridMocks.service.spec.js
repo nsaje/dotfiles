@@ -18,8 +18,6 @@ angular.module('one.widgets').service('zemGridMocks', function ($q, zemGridEndpo
             getMetaData: function () { return metaData; },
             getRows: function () { return []; },
             getColumns: function () { return []; },
-            getBareBoneCategories: function () { return []; },
-            getCategorizedColumns: function () { return []; },
 
             loadData: fnWithPromise,
             loadMetaData: fnWithPromise,
@@ -63,7 +61,7 @@ angular.module('one.widgets').service('zemGridMocks', function ($q, zemGridEndpo
                     type: col.type,    // Reuse data type - type of column (text, link, icon, etc.)
                     field: col.field,  // Reuse data field - some kind of id  (data retrieval, storage, etc.)
                     data: col,         // Column meta-data retrieved from endpoint
-                    visible: true,     // Visibility flag
+                    visible: true,      // Visibility flag
                 };
             });
         };

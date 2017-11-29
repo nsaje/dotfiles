@@ -655,32 +655,6 @@ h4 {
 }
 
 ////////////////////////////
-// Button as link //
-////////////////////////////
-
-.button-as-link {
-    background-color: transparent;
-    border: none;
-    height: auto;
-    padding: 0;
-    margin: 0;
-    color: @primary-color;
-    font-size: @default-font-size;
-
-    &:hover {
-        text-decoration: underline;
-    }
-
-    &:focus {
-        outline: none;
-    }
-}
-
-.button-as-link--secondary-color {
-    color: @secondary-color;
-}
-
-////////////////////////////
 // Icons //
 ////////////////////////////
 
@@ -2256,7 +2230,7 @@ h4 {
 ///////////////////////////
 
 .dropdown-menu__container {
-    padding: @default-spacing;
+    padding: 10px @default-spacing;
     max-height: 400px;
     overflow: auto;
 }
@@ -2455,11 +2429,6 @@ h4 {
     font-size: 20px;
 }
 
-.modal__description {
-    color: @gray;
-    margin-bottom: @default-spacing;
-}
-
 .modal__body {
     padding: @default-spacing;
 
@@ -2604,6 +2573,15 @@ h4 {
         width: 500px;
         display: inline-block;
     }
+}
+
+////////////////////////////
+// Description //
+////////////////////////////
+
+.description {
+    margin-bottom: @default-spacing;
+    color: @gray;
 }
 
 ////////////////////////////
@@ -2860,13 +2838,6 @@ h4 {
     &::before {
         transition: none;
     }
-}
-
-.switch-button__text {
-    display: inline-block;
-    line-height: 20px;
-    padding-left: 5px;
-    vertical-align: middle;
 }
 
 ////////////////////////////

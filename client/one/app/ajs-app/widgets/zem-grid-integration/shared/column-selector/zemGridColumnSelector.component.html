@@ -1,24 +1,46 @@
-<span
-    class="zem-grid-column-selector dropdown"
-    uib-dropdown
-    ng-click="$ctrl.focusInput($event)">
-    <a href class="button button--dropdown-toggle-icon" uib-dropdown-toggle title="Show/hide columns">Columns</a>
+<span class="zem-grid-column-selector dropdown" uib-dropdown>
+    <a href class="button button--dropdown-toggle-icon" uib-dropdown-toggle title="Show/hide columns" ng-click="$ctrl.onDropdownToggle()">Columns</a>
     <div class="dropdown-menu dropdown-menu-right" uib-dropdown-menu ng-click="$event.stopPropagation()">
-        <div class="dropdown-menu__container dropdown-menu__column-selector">
-            <div ng-if="$ctrl.isCostModeToggleAllowed()" is-internal="true" id="cost-mode-switcher" class="dropdown-menu__switch-button-container">
+        <div class="dropdown-menu__container custom-scroller">
+            <div ng-if="$ctrl.isCostModeToggleAllowed()" id="cost-mode-switcher" class="dropdown-menu__category">
                 <span class="switch-button"
                     ng-class="{'switch-button--checked': $ctrl.costModePlatform}"
                     ng-click="$ctrl.toggleCostMode()"
                 ></span>
-                <span class="switch-button__text">Show costs without fees and margin</span>
+                <span>Show costs without fees and margin</span>
             </div>
 
-            <zem-column-selector
-                on-toggle-columns="$ctrl.toggleColumns(isChecked)"
-                on-select-column="$ctrl.onSelectColumn(column)"
-                bare-bone-categories="$ctrl.bareBoneCategories"
-                filtered-bare-categories="$ctrl.filteredBareCategories"
-                ></zem-column-selector>
+            <div class="dropdown-menu__category" ng-repeat="category in $ctrl.categories">
+                <div class="dropdown-menu__category-name">{{ category.name }}</div>
+                <div class="dropdown-menu__category-description" ng-if="category.description">{{ category.description }}</div>
+                <ul class="dropdown-menu__list dropdown-menu__list--two-columns" ng-if="category.columns.length > 0">
+                    <li class="dropdown-menu__list-item" ng-repeat="column in category.columns"
+                        zem-lazy-popover-visible="{{ $ctrl.getTooltip(column) }}"
+                        zem-lazy-popover-text="{{ $ctrl.getTooltip(column) }}"
+                        zem-lazy-popover-placement="left"
+                        zem-lazy-popover-animation-class="fade"
+                        zem-lazy-popover-append-to-body="true"
+                        is-internal="{{column.data.internal}}">
+                        <label>
+                            <input class="input-checkbox" ng-disabled="column.disabled" type="checkbox"
+                                   ng-model="column.visible" ng-change="$ctrl.columnChecked(column)"/>
+                            <span class="checkbox-text" ng-class="{disabled: column.disabled}">{{ column.data.name }}</span>
+                        </label>
+                    </li>
+                </ul>
+                <div class="dropdown-menu__subcategory" ng-repeat="subcategory in category.subcategories">
+                    <div class="dropdown-menu__subcategory-name">{{ subcategory.name }}</div>
+                    <ul ng-if="subcategory.type === 'condensed'" class="dropdown-menu__list dropdown-menu__list--condensed">
+                        <li class="dropdown-menu__list-item" ng-repeat="column in subcategory.columns">
+                            <label>
+                                <input class="input-checkbox" type="checkbox" ng-model="column.visible"
+                                       ng-change="$ctrl.columnChecked(column)"/>
+                                <span class="checkbox-text">{{ column.data.shortName }}</span>
+                            </label>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 </span>

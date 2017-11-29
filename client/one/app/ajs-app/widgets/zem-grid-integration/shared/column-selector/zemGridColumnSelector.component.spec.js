@@ -23,47 +23,49 @@ describe('component: zemGridColumnSelector', function () {
         $ctrl = $componentController('zemGridColumnSelector', locals, bindings);
     }));
 
-    it('every column is set to true when toggleFunction(true) is called', function () {
+    it('should initialize categories using api', function () {
+        spyOn(api, 'getMetaData').and.callThrough();
+        spyOn(api, 'getColumns').and.callThrough();
+        spyOn(api, 'onColumnsUpdated').and.callThrough();
+
         $ctrl.$onInit();
-        $ctrl.bareBoneCategories = generatedCategories();
 
-        $ctrl.toggleColumns(true);
+        expect(api.getMetaData).toHaveBeenCalled();
+        expect(api.getColumns).toHaveBeenCalled();
+        expect(api.onColumnsUpdated).toHaveBeenCalled();
 
-        var isEveryFieldVisible = $ctrl.bareBoneCategories[0].columns.every(function (obj) {
-            if (obj.disabled || obj.visible) {
-                return true;
-            }
-            return false;
-        });
-        expect(isEveryFieldVisible).toBe(true);
+        expect($ctrl.categories).toBeDefined();
+        expect($ctrl.categories.length).toBe(4);
     });
 
-    it('every column is set to false when toggleFunction(false) is called', function () {
-        $ctrl.$onInit();
-        $ctrl.bareBoneCategories = generatedCategories();
+    it('should configure visible columns through api', function () {
+        var column = {name: 'column', visible: true};
 
-        $ctrl.toggleColumns(false);
+        spyOn(api, 'setVisibleColumns').and.callThrough();
+        $ctrl.columnChecked(column);
+        expect(api.setVisibleColumns).toHaveBeenCalled();
+        expect(api.setVisibleColumns).toHaveBeenCalledWith(column, true);
 
-        var isEveryFieldVisible = $ctrl.bareBoneCategories[0].columns.every(function (obj) {
-            if (obj.disabled || !obj.visible) {
-                return true;
-            }
-            return false;
-        });
-        expect(isEveryFieldVisible).toBe(true);
+        api.setVisibleColumns.calls.reset();
+        column.visible = false;
+        $ctrl.columnChecked(column);
+        expect(api.setVisibleColumns).toHaveBeenCalled();
+        expect(api.setVisibleColumns).toHaveBeenCalledWith(column, false);
     });
 
-    function generatedCategories () {
-        return [{name: 'Catagory name', columns: generateColumns()}];
-    }
-
-    function generateColumns () {
-        return [
-            {name: 'column1', field: 'c1', visible: true, disabled: true},
-            {name: 'column2', field: 'c2', visible: true, disabled: false},
-            {name: 'column3', field: 'c3', visible: true, disabled: false},
-            {name: 'column4', field: 'c4', visible: false, disabled: false},
-            {name: 'column5', field: 'c5', visible: false, disabled: true},
+    it('should get appropriate costMode columns', function () {
+        var columns = [
+            {name: 'column1', field: 'c1', visible: true, data: {shown: true, costMode: constants.costMode.PLATFORM}},
+            {name: 'column2', field: 'c1', visible: true, data: {shown: true, costMode: constants.costMode.PUBLIC}},
         ];
-    }
+        var category = {fields: ['c1'], columns: columns};
+
+        api.getCostMode = function () { return constants.costMode.PUBLIC; };
+        api.getColumns = function () { return columns; };
+        api.getMetaData = function () { return {categories: [category]}; };
+
+        $ctrl.$onInit();
+
+        expect($ctrl.categories[0].columns).toEqual([columns[1]]);
+    });
 });
