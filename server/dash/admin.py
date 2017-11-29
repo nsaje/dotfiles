@@ -297,6 +297,7 @@ class AgencyAccountInline(admin.TabularInline):
         'modified_dt',
         'modified_by',
         'custom_flags',
+        'new_settings',
     )
 
     ordering = ('-created_dt',)
@@ -407,10 +408,10 @@ class CampaignInline(admin.TabularInline):
     model = models.Campaign
     extra = 0
     can_delete = False
-    exclude = ('users', 'groups', 'created_dt', 'modified_dt', 'modified_by', 'custom_flags')
+    exclude = ('users', 'groups', 'created_dt', 'modified_dt', 'modified_by', 'custom_flags', 'new_settings')
     ordering = ('-created_dt',)
     readonly_fields = ('admin_link',)
-    raw_id_fields = ('default_whitelist', 'default_blacklist', 'account')
+    raw_id_fields = ('default_whitelist', 'default_blacklist', 'account', 'new_settings')
 
 
 class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
@@ -424,8 +425,8 @@ class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         'uses_bcm_v2',
     )
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'uses_bcm_v2')
-    exclude = ('users',)
-    raw_id_fields = ('default_whitelist', 'default_blacklist', 'agency')
+    exclude = ('users', 'new_settings')
+    raw_id_fields = ('default_whitelist', 'default_blacklist', 'agency', 'new_settings')
     inlines = (AccountUserInline, CampaignInline)
 
     @transaction.atomic
@@ -463,7 +464,7 @@ class AdGroupInline(admin.TabularInline):
     model = models.AdGroup
     extra = 0
     can_delete = False
-    exclude = ('users', 'created_dt', 'modified_dt', 'modified_by', 'custom_flags')
+    exclude = ('users', 'created_dt', 'modified_dt', 'modified_by', 'custom_flags', 'new_settings')
     ordering = ('-created_dt',)
     readonly_fields = ('admin_link',)
     raw_id_fields = ('default_whitelist', 'default_blacklist')
@@ -475,10 +476,10 @@ class CampaignAdmin(admin.ModelAdmin):
         'name',
         'created_dt',
         'modified_dt',
-        'settings_'
     )
-    readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'settings_')
+    readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
     raw_id_fields = ('default_whitelist', 'default_blacklist', 'account')
+    exclude = ('new_settings',)
     inlines = (AdGroupInline,)
     form = dash_forms.CampaignAdminForm
 
@@ -505,16 +506,6 @@ class CampaignAdmin(admin.ModelAdmin):
                 obj.delete()
         else:
             formset.save()
-
-    def settings_(self, obj):
-        return '<a href="{admin_url}">List ({num_settings})</a>'.format(
-            admin_url='{}?{}'.format(
-                reverse('admin:dash_campaignsettings_changelist'),
-                urllib.urlencode({'campaign': obj.id})
-            ),
-            num_settings=obj.settings.count()
-        )
-    settings_.allow_tags = True
 
     def view_on_site(self, obj):
         return '/v2/analytics/campaign/{}'.format(obj.id)
@@ -647,27 +638,6 @@ class CampaignSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
 
 # Ad Group
 
-
-class AdGroupSourcesInline(admin.TabularInline):
-    verbose_name = "Ad Group's Source"
-    verbose_name_plural = "Ad Group's Sources"
-    model = models.AdGroupSource
-    extra = 0
-    readonly_fields = ('settings_',)
-
-    def settings_(self, obj):
-        return '<a href="{admin_url}">List ({num_settings})</a>'.format(
-            admin_url='{}?{}'.format(
-                reverse('admin:dash_adgroupsourcesettings_changelist'),
-                urllib.urlencode({
-                    'ad_group_source': obj.id,
-                })
-            ),
-            num_settings=obj.settings.count()
-        )
-    settings_.allow_tags = True
-
-
 class IsArchivedFilter(admin.SimpleListFilter):
     title = 'Is archived'
     parameter_name = 'is_archived'
@@ -710,38 +680,33 @@ class AdGroupAdmin(admin.ModelAdmin):
         'is_archived_',
         'created_dt',
         'modified_dt',
-        'settings_',
     )
     list_filter = [IsArchivedFilter]
 
-    raw_id_fields = ('campaign',)
-    readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'settings_')
-    inlines = (
-        AdGroupSourcesInline,
+    raw_id_fields = (
+        'campaign',
+        'new_settings',
+        'default_blacklist',
+        'default_whitelist',
     )
+    readonly_fields = (
+        'created_dt',
+        'modified_dt',
+        'modified_by',
+    )
+    exclude = ('new_settings',)
     form = dash_forms.AdGroupAdminForm
     fieldsets = (
         (None, {
             'fields': (
                 'name', 'campaign', 'created_dt', 'modified_dt',
-                'modified_by', 'settings_', 'custom_flags'),
+                'modified_by', 'custom_flags'),
         }),
         ('Additional targeting', {
             'classes': ('collapse',),
             'fields': dash_forms.AdGroupAdminForm.SETTINGS_FIELDS,
         }),
     )
-
-    def get_queryset(self, request):
-        qs = super(AdGroupAdmin, self).get_queryset(request)
-        qs = qs.select_related('campaign__account')
-        qs = qs.annotate(settings_count=Count('adgroupsettings'))
-        qs = qs.prefetch_related(Prefetch(
-            'adgroupsettings_set',
-            queryset=models.AdGroupSettings.objects.all().group_current_settings(),
-            to_attr='current_settings',
-        ))
-        return qs
 
     def view_on_site(self, obj):
         return '/v2/analytics/adgroup/{}'.format(obj.id)
@@ -775,8 +740,6 @@ class AdGroupAdmin(admin.ModelAdmin):
             utils.email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
         ad_group.save(request)
         utils.k1_helper.update_ad_group(ad_group.pk, msg='AdGroupAdmin.save_model')
-        ad_ids = models.ContentAd.objects.filter(ad_group=ad_group).values_list('id', flat=True)
-        utils.k1_helper.update_content_ads(ad_group.pk, ad_ids, msg='AdGroupAdmin.save_model')
 
     @staticmethod
     def _update_redirector_adgroup(ad_group, new_settings):
@@ -786,16 +749,6 @@ class AdGroupAdmin(admin.ModelAdmin):
             new_settings,
             campaign_settings
         )
-
-    def settings_(self, obj):
-        return '<a href="{admin_url}">List ({num_settings})</a>'.format(
-            admin_url='{}?{}'.format(
-                reverse('admin:dash_adgroupsettings_changelist'),
-                urllib.urlencode({'ad_group': obj.id})
-            ),
-            num_settings=obj.settings_count,
-        )
-    settings_.allow_tags = True
 
     def account_(self, obj):
         return '<a href="{account_url}">{account}</a>'.format(
@@ -819,6 +772,7 @@ class AdGroupSourceAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         'ad_group_',
         'source_content_ad_id',
     )
+    exclude = ('new_settings',)
 
     list_filter = ('source',)
 
