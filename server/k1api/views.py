@@ -28,6 +28,7 @@ import redshiftapi.internal_stats.content_ad_publishers
 import etl.materialize_views
 import dash.features.geolocation
 import dash.features.ga
+import dash.features.custom_flags
 import core.publisher_bid_modifiers
 
 logger = logging.getLogger(__name__)
@@ -455,6 +456,13 @@ class AdGroupsView(K1APIView):
         campaign_goal_types = self._get_campaign_goal_types(campaigns_settings_map.keys())
         campaign_goals = self._get_campaign_goals(campaigns_settings_map.keys())
 
+        all_custom_flags = {
+            flag: False
+            for flag in dash.features.custom_flags.CustomFlag.objects.all().values_list(
+                    'id', flat=True
+            )
+        }
+
         ad_groups = []
         for ad_group_settings in ad_groups_settings:
             campaign_settings = campaigns_settings_map[ad_group_settings.ad_group.campaign_id]
@@ -487,6 +495,11 @@ class AdGroupsView(K1APIView):
                 license_fee,
                 margin
             )
+
+            # FIXME: k1 doesn't update missing keys, find a better solution
+            flags = {}
+            flags.update(all_custom_flags)
+            flags.update(ad_group.get_all_custom_flags())
 
             ad_group = {
                 'id': ad_group.id,
@@ -524,7 +537,7 @@ class AdGroupsView(K1APIView):
                 'delivery_type': ad_group_settings.delivery_type,
                 'click_capping_daily_ad_group_max_clicks': ad_group_settings.click_capping_daily_ad_group_max_clicks,
                 'click_capping_daily_click_budget': ad_group_settings.click_capping_daily_click_budget,
-                'custom_flags': ad_group.get_all_custom_flags(),
+                'custom_flags': flags,
             }
 
             ad_groups.append(ad_group)

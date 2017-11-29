@@ -754,6 +754,81 @@ class K1ApiTest(K1ApiBaseTest):
             u'custom_flags': {u'flag_1': True, u'flag_2': True, u'flag_3': True, u'flag_4': True},
         })
 
+    def test_get_ad_groups_with_id_with_some_flags(self):
+        a = dash.models.AdGroup.objects.get(pk=1)
+        a.custom_flags = {}
+        a.save(None)
+        a.campaign.custom_flags = {}
+        a.campaign.save()
+
+        response = self.client.get(
+            reverse('k1api.ad_groups'),
+            {'ad_group_ids': 1},
+        )
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(len(data), 1)
+
+        self.assertDictEqual(data[0], {
+            u'id': 1,
+            u'name': u'ONE: test account 1 / test campaign 1 / test adgroup 1 / 1',
+            u'start_date': u'2014-06-04',
+            u'end_date': None,
+            u'time_zone': u'America/New_York',
+            u'brand_name': u'brand1',
+            u'display_url': u'brand1.com',
+            u'tracking_codes': u'tracking1&tracking2',
+            u'target_devices': [],
+            u'target_os': None,
+            u'target_placements': None,
+            u'iab_category': u'IAB24',
+            u'target_regions': [],
+            u'exclusion_target_regions': [],
+            u'retargeting': [
+                             {u'event_id': u'100', u'event_type': u'redirect_adgroup', u'exclusion': False},
+                             {u'event_id': u'200', u'event_type': u'redirect_adgroup', u'exclusion': True},
+                             {u'event_id': u'1', u'event_type': u'aud', u'exclusion': False},
+                             {u'event_id': u'2', u'event_type': u'aud', u'exclusion': True}],
+            u'demographic_targeting': [u"or", u"bluekai:1", u"bluekai:2"],
+            u'interest_targeting': [u"tech", u"entertainment"],
+            u'exclusion_interest_targeting': [u"politics", u"war"],
+            u'campaign_id': 1,
+            u'account_id': 1,
+            u'agency_id': 20,
+            u'goal_types': [2, 5],
+            u'goals': [{
+                           u'campaign_id': 1,
+                           u'conversion_goal': None,
+                           u'id': 2,
+                           u'primary': True,
+                           u'type': 2,
+                           u'values': [],
+            }, {
+                u'campaign_id': 1,
+                u'conversion_goal': None,
+                u'id': 1,
+                u'primary': False,
+                u'type': 5,
+                u'values': [],
+            }],
+            u'b1_sources_group': {
+                u'daily_budget': u'10.0000',
+                u'enabled': True,
+                u'state': 2,
+            },
+            u'dayparting': {u'monday': [1, 2, 3], u'timezone': u'CET'},
+            u'max_cpm': u'1.6000',
+            u'whitelist_publisher_groups': ListMatcher([1, 2, 5, 6, 9, 10]),
+            u'blacklist_publisher_groups': ListMatcher([3, 4, 7, 8, 11, 12]),
+            u'delivery_type': 1,
+            u'click_capping_daily_ad_group_max_clicks': 15,
+            u'click_capping_daily_click_budget': '5.0000',
+            u'custom_flags': {u'flag_1': False, u'flag_2': True, u'flag_3': True, u'flag_4': True},
+        })
+
     @patch('utils.redirector_helper.insert_adgroup')
     def test_get_ad_groups(self, mock_redirector):
         n = 10

@@ -402,7 +402,7 @@ class AdGroup(models.Model, core.common.SettingsProxyMixin, bcm_mixin.AdGroupBCM
         return u"{} ({})".format(self.name, self.id)
 
     def save(self, request, *args, **kwargs):
-        self.modified_by = request.user
+        self.modified_by = request and request.user or None
         super(AdGroup, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
