@@ -278,6 +278,15 @@ class MVMaster(BreakdownsBase):
 
 
 class MVTouchpointConversions(BreakdownsBase):
+    device_type = backtosql.Column('device_type', BREAKDOWN)
+    device_os = backtosql.Column('device_os', BREAKDOWN)
+    device_os_version = backtosql.Column('device_os_version', BREAKDOWN)
+    placement_medium = backtosql.Column('placement_medium', BREAKDOWN)
+
+    country = backtosql.Column('country', BREAKDOWN)
+    state = backtosql.Column('state', BREAKDOWN)
+    dma = backtosql.Column('dma', BREAKDOWN)
+
     slug = backtosql.Column('slug', BREAKDOWN)
     window = backtosql.Column('conversion_window', BREAKDOWN)
 
