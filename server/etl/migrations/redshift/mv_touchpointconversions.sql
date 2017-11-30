@@ -11,6 +11,15 @@ CREATE TABLE mv_touchpointconversions (
       publisher varchar(255) encode zstd,
       publisher_source_id varchar(260) encode zstd,
 
+      device_type int2 encode zstd,
+      device_os varchar(127) encode lzo,
+      device_os_version varchar(127) encode lzo,
+      placement_medium varchar(10) encode zstd,
+
+      country varchar(2) encode zstd,
+      state varchar(32) encode bytedict,
+      dma int2 encode bytedict,
+
       slug varchar(256) encode zstd,
       conversion_window integer encode zstd,
       conversion_label varchar(256) encode zstd,

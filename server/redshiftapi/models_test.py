@@ -371,7 +371,8 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                 'touchpoints': 'mv_touchpointconversions',
             },
             skip_performance_columns=False,
-            supports_conversions=True
+            supports_conversions=True,
+            supports_touchpoints=True
         )
 
         self.assertListEqual(context['conversions_aggregates'], m.select_columns([
@@ -446,7 +447,8 @@ class MVJointMasterAfterJoinAggregatesTest(TestCase, backtosql.TestSQLMixin):
                 'yesterday': 'mv_master',
             },
             skip_performance_columns=False,
-            supports_conversions=False
+            supports_conversions=False,
+            supports_touchpoints=False
         )
 
         self.assertListEqual(context['after_join_aggregates'], [m.get_column(order_field),
@@ -510,7 +512,8 @@ class MVJointMasterTest(TestCase, backtosql.TestSQLMixin):
                 'touchpoints': 'mv_touchpoints',
             },
             skip_performance_columns=False,
-            supports_conversions=True
+            supports_conversions=True,
+            supports_touchpoints=True
         )
 
         q = context['constraints']

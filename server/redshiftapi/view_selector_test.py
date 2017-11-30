@@ -59,7 +59,7 @@ class ViewSelectorTest(TestCase):
 
         self.assertEqual(view_selector.get_best_view_conversions(['ad_group_id', 'publisher_id']), 'mv_conversions')  # noqa
         self.assertEqual(view_selector.get_best_view_conversions(['ad_group_id', 'publisher_id', 'dma']), None)
-        self.assertEqual(view_selector.get_best_view_conversions(['ad_group_id', 'content_ad_id', 'publisher_id']), 'mv_conversions')
+        self.assertEqual(view_selector.get_best_view_conversions(['ad_group_id', 'content_ad_id', 'publisher_id']), 'mv_conversions')  # noqa
 
         self.assertEqual(view_selector.get_best_view_conversions(['content_ad_id', 'month']), 'mv_contentad_conv')  # noqa
         self.assertEqual(view_selector.get_best_view_conversions(['content_ad_id', 'source_id']), 'mv_contentad_conv')  # noqa
@@ -71,31 +71,32 @@ class ViewSelectorTest(TestCase):
         self.assertEqual(view_selector.get_best_view_touchpoints(['account_id', 'month']), 'mv_account_touch')
         self.assertEqual(view_selector.get_best_view_touchpoints(['account_id', 'source_id']), 'mv_account_touch')  # noqa
         self.assertEqual(view_selector.get_best_view_touchpoints(['account_id', 'source_id', 'age']), None)
-        self.assertEqual(view_selector.get_best_view_touchpoints(['account_id', 'source_id', 'dma']), None)
+        self.assertEqual(view_selector.get_best_view_touchpoints(['account_id', 'source_id', 'dma']), 'mv_touchpointconversions')  # noqa
+        self.assertEqual(view_selector.get_best_view_touchpoints(['account_id', 'source_id', 'state']), 'mv_touchpointconversions')  # noqa
         self.assertEqual(view_selector.get_best_view_touchpoints(['account_id', 'campaign_id']), 'mv_campaign_touch')  # noqa
         self.assertEqual(view_selector.get_best_view_touchpoints(['account_id', 'ad_group_id']), 'mv_adgroup_touch')  # noqa
 
         self.assertEqual(view_selector.get_best_view_touchpoints(['campaign_id', 'month']), 'mv_campaign_touch')
         self.assertEqual(view_selector.get_best_view_touchpoints(['campaign_id', 'source_id']), 'mv_campaign_touch')  # noqa
         self.assertEqual(view_selector.get_best_view_touchpoints(['campaign_id', 'source_id', 'age']), None)
-        self.assertEqual(view_selector.get_best_view_touchpoints(['campaign_id', 'source_id', 'dma']), None)
+        self.assertEqual(view_selector.get_best_view_touchpoints(['campaign_id', 'source_id', 'dma']), 'mv_touchpointconversions')  # noqa
         self.assertEqual(view_selector.get_best_view_touchpoints(['campaign_id', 'ad_group_id']), 'mv_adgroup_touch')  # noqa
         self.assertEqual(view_selector.get_best_view_touchpoints(['campaign_id', 'content_ad_id']), 'mv_contentad_touch')  # noqa
 
         self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'month']), 'mv_adgroup_touch')
         self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'source_id']), 'mv_adgroup_touch')  # noqa
         self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'source_id', 'age']), None)
-        self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'source_id', 'dma']), None)
+        self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'source_id', 'dma']), 'mv_touchpointconversions')  # noqa
         self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'content_ad_id']), 'mv_contentad_touch')  # noqa
         self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'content_ad_id', 'publisher_id']), 'mv_touchpointconversions')  # noqa
 
         self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'publisher_id']), 'mv_touchpointconversions')  # noqa
-        self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'publisher_id', 'dma']), None)
+        self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'publisher_id', 'dma']), 'mv_touchpointconversions')  # noqa
 
         self.assertEqual(view_selector.get_best_view_touchpoints(['content_ad_id', 'month']), 'mv_contentad_touch')  # noqa
         self.assertEqual(view_selector.get_best_view_touchpoints(['content_ad_id', 'source_id']), 'mv_contentad_touch')  # noqa
         self.assertEqual(view_selector.get_best_view_touchpoints(['content_ad_id', 'source_id', 'age']), None)
-        self.assertEqual(view_selector.get_best_view_touchpoints(['content_ad_id', 'source_id', 'dma']), None)
+        self.assertEqual(view_selector.get_best_view_touchpoints(['content_ad_id', 'source_id', 'dma']), 'mv_touchpointconversions')  # noqa
         self.assertEqual(view_selector.get_best_view_touchpoints(['content_ad_id', 'publisher_id']), 'mv_touchpointconversions')  # noqa
 
     def test_supports_conversions(self):

@@ -19,6 +19,49 @@ INSERT INTO mv_touchpointconversions (
              ELSE LOWER(NVL(a.publisher, '')) || '__' || a.source_id
         END AS publisher_source_id,
 
+        -- IMPORTANT: the delivery dimensions cleanup should be kept in sync with how it is
+        -- cleaned in etl_insert_mvh_clean_stats
+        CASE WHEN a.device_type = 1 THEN 4  -- convert legacy OpenRTB `mobile` to `phone`
+             WHEN a.device_type = 6 THEN 3
+             WHEN a.device_type = 7 THEN 3
+             ELSE NULLIF(a.device_type, 0)
+        END AS device_type,
+        CASE WHEN date < '2017-05-01' THEN NULL  -- before that input was not sanitized
+            WHEN a.device_os ILIKE '%%unknown%%' THEN NULL
+            WHEN a.device_os ILIKE 'Android%%' THEN 'Android'
+            WHEN a.device_os ILIKE 'iOS%%' THEN 'iOS'
+            WHEN a.device_os ILIKE 'WinPhone%%' THEN 'WinPhone'
+            WHEN a.device_os ILIKE 'WinRT%%' THEN 'WinRT'
+            WHEN a.device_os ILIKE 'Windows%%' THEN 'Windows'
+            WHEN a.device_os ILIKE 'MacOSX%%' THEN 'macOS'
+            WHEN a.device_os ILIKE 'macOS%%' THEN 'macOS'
+            WHEN a.device_os IN ('Linux', 'Ubuntu', 'Debian', 'Fedora') THEN 'Linux'
+            WHEN a.device_os ILIKE 'ChromeOS' THEN 'ChromeOS'
+            WHEN NULLIF(TRIM(a.device_os), '') IS NOT NULL THEN 'Other'
+            ELSE NULL
+        END AS device_os,
+        CASE WHEN date < '2017-05-01' THEN NULL  -- before that input was not sanitized
+            WHEN a.device_os_version ILIKE '%%unknown%%' THEN NULL
+            WHEN a.device_os_version ILIKE 'Android%%' THEN a.device_os_version
+            WHEN a.device_os_version ILIKE 'iOS%%' THEN REPLACE(a.device_os_version, ';', '')  -- some special case
+            WHEN a.device_os_version ILIKE 'WinPhone%%' THEN a.device_os_version
+            WHEN a.device_os_version ILIKE 'WinRT%%' THEN a.device_os_version
+            WHEN a.device_os_version ILIKE 'Windows%%' THEN a.device_os_version
+            WHEN a.device_os_version ILIKE 'MacOS%%' THEN a.device_os_version
+            WHEN a.device_os_version ILIKE 'ChromeOS%%' THEN a.device_os_version
+            WHEN NULLIF(TRIM(a.device_os_version), '') IS NOT NULL THEN 'Other'
+            ELSE NULL
+        END AS device_os_version,
+        NULLIF(TRIM(a.placement_medium), '') as placement_medium,
+
+        NULLIF(TRIM(UPPER(a.country)), '') AS country,
+        CASE WHEN a.state ILIKE '%%-%%' THEN NULLIF(TRIM(UPPER(a.state)), '')
+             ELSE NULLIF(TRIM(UPPER(a.country)), '') || '-' || NULLIF(TRIM(UPPER(a.state)), '')
+        END AS state,
+        CASE WHEN a.country ILIKE 'US' AND a.dma BETWEEN 500 AND 882 THEN a.dma
+             ELSE NULL
+        END AS dma,
+
         a.slug as slug,
         -- shorter conversion lags are not counted towards longer ones
         -- eg. lag 24 is not counted in the 720
@@ -41,6 +84,15 @@ INSERT INTO mv_touchpointconversions (
               c.ad_group_id as ad_group_id,
               c.content_ad_id as content_ad_id,
               c.publisher as publisher,
+
+              c.device_type as device_type,
+              c.device_os as device_os,
+              c.device_os_version as device_os_version,
+              c.placement_medium as placement_medium,
+
+              c.country as country,
+              c.state as state,
+              c.dma as dma,
 
               c.slug as slug,
 

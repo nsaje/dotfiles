@@ -153,6 +153,15 @@ class MVTouchpointConversions(backtosql.Model, RSBreakdownMixin):
     publisher = backtosql.Column('publisher', BREAKDOWN)
     publisher_source_id = backtosql.Column('publisher_source_id', BREAKDOWN)
 
+    device_type = backtosql.Column('device_type', BREAKDOWN)
+    device_os = backtosql.Column('device_os', BREAKDOWN)
+    device_os_version = backtosql.Column('device_os_version', BREAKDOWN)
+    placement_medium = backtosql.Column('placement_medium', BREAKDOWN)
+
+    country = backtosql.Column('country', BREAKDOWN)
+    state = backtosql.Column('state', BREAKDOWN)
+    dma = backtosql.Column('dma', BREAKDOWN)
+
     slug = backtosql.Column('slug', BREAKDOWN)
     conversion_window = backtosql.Column('conversion_window', BREAKDOWN)
     conversion_label = backtosql.Column('conversion_label', BREAKDOWN)

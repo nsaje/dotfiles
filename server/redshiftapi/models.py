@@ -371,7 +371,7 @@ class MVJointMaster(MVMaster):
                     alias='etfm_roas_' + pixel_key, group=AFTER_JOIN_AGGREGATES))
 
     def init_performance_columns(self, campaign_goals, campaign_goal_values, conversion_goals, pixels,
-                                 supports_conversions=True):
+                                 supports_conversions=True, supports_touchpoints=True):
         if not campaign_goals:
             return
 
@@ -387,7 +387,7 @@ class MVJointMaster(MVMaster):
             metric_column = None
 
             if campaign_goal.type == dash.constants.CampaignGoalKPI.CPA:
-                if not supports_conversions:
+                if not supports_touchpoints:
                     continue
 
                 if campaign_goal.conversion_goal_id not in map_conversion_goals:
@@ -441,7 +441,7 @@ class MVJointMaster(MVMaster):
             }, alias='etfm_performance_' + campaign_goal.get_view_key(), group=column_group))
 
     def get_query_joint_context(self, breakdown, constraints, parents, orders, offset, limit, goals, views,
-                                skip_performance_columns=False, supports_conversions=False):
+                                skip_performance_columns=False, supports_conversions=False, supports_touchpoints=False):
 
         # FIXME: temp fix account level publishers view with lots of campaign goals
         skip_performance_columns |= 'publisher_id' in breakdown and\
@@ -449,12 +449,13 @@ class MVJointMaster(MVMaster):
 
         if supports_conversions:
             self.init_conversion_columns(goals.conversion_goals)
+        if supports_touchpoints:
             self.init_pixel_columns(goals.pixels)
 
         if not skip_performance_columns:
             self.init_performance_columns(
                 goals.campaign_goals, goals.campaign_goal_values, goals.conversion_goals, goals.pixels,
-                supports_conversions=supports_conversions)
+                supports_conversions=supports_conversions, supports_touchpoints=supports_touchpoints)
 
         context = {
             'breakdown': self.get_breakdown(breakdown),
@@ -479,12 +480,14 @@ class MVJointMaster(MVMaster):
         if supports_conversions:
             context.update({
                 'conversions_constraints': self.get_constraints(constraints, parents),
-                'touchpoints_constraints': self.get_constraints(constraints, parents),
-
                 'conversions_aggregates': self.select_columns(group=CONVERSION_AGGREGATES),
-                'touchpoints_aggregates': self.select_columns(group=TOUCHPOINTS_AGGREGATES),
-
                 'conversions_view': views['conversions'],
+            })
+
+        if supports_touchpoints:
+            context.update({
+                'touchpoints_constraints': self.get_constraints(constraints, parents),
+                'touchpoints_aggregates': self.select_columns(group=TOUCHPOINTS_AGGREGATES),
                 'touchpoints_view': views['touchpoints'],
             })
 

@@ -79,10 +79,13 @@ def prepare_query_joint_base(breakdown, constraints, parents, orders, offset, li
         'conversions': view_selector.get_best_view_conversions(needed_dimensions),
         'touchpoints': view_selector.get_best_view_touchpoints(needed_dimensions),
     }
-    supports_conversions = view_selector.supports_conversions(views['base'], views['conversions'])
 
-    context = models.MVJointMaster().get_query_joint_context(breakdown, constraints, parents, orders, offset, limit, goals, views,
-                                                             skip_performance_columns, supports_conversions=supports_conversions)
+    context = models.MVJointMaster().get_query_joint_context(
+        breakdown, constraints, parents, orders, offset, limit,
+        goals, views,
+        skip_performance_columns,
+        supports_conversions=view_selector.supports_conversions(views['base'], views['conversions']),
+        supports_touchpoints=view_selector.supports_conversions(views['base'], views['touchpoints']))
 
     return _prepare_query_joint_for_model(context, 'breakdown_joint_base.sql')
 
@@ -95,10 +98,11 @@ def prepare_query_joint_levels(breakdown, constraints, parents, orders, offset, 
         'conversions': view_selector.get_best_view_conversions(needed_dimensions),
         'touchpoints': view_selector.get_best_view_touchpoints(needed_dimensions),
     }
-    supports_conversions = view_selector.supports_conversions(views['base'], views['conversions'])
 
-    context = models.MVJointMaster().get_query_joint_context(breakdown, constraints, parents, orders, offset, limit, goals, views,
-                                                             supports_conversions=supports_conversions)
+    context = models.MVJointMaster().get_query_joint_context(
+        breakdown, constraints, parents, orders, offset, limit, goals, views,
+        supports_conversions=view_selector.supports_conversions(views['base'], views['conversions']),
+        supports_touchpoints=view_selector.supports_conversions(views['base'], views['touchpoints']))
 
     return _prepare_query_joint_for_model(context, 'breakdown_joint_levels.sql')
 

@@ -256,12 +256,18 @@ def get_all_views_table_names(temporary=False):
     return [x.TABLE_NAME for x in MATERIALIZED_VIEWS if x.IS_TEMPORARY_TABLE is temporary]
 
 
-def create_tables():
+def refresh_derived_views(refresh_days=3):
+    """
+    Refreshes derived views:
+    - creates new tables for derived views that were newly added to materialized views list,
+    - updates all of the derived views with data from master tables for the specified number of days.
+    """
+
     for mv_class in MATERIALIZED_VIEWS:
         if not mv_class.IS_DERIVED_VIEW:
             continue
 
-        mv = mv_class('temp', datetime.date.today(), datetime.date.today(), account_id=None)
+        mv = mv_class('temp', datetime.date.today() - datetime.timedelta(days=refresh_days), datetime.date.today(), account_id=None)
         mv.generate()
 
 

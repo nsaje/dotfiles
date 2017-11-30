@@ -60,7 +60,7 @@ TOUCHPOINT_VIEWS = [
     ['mv_campaign_touch', CAMPAIGN_N_ABOVE],
     ['mv_adgroup_touch', AD_GROUP_N_ABOVE],
     ['mv_contentad_touch', CONTENT_AD_N_ABOVE],
-    ['mv_touchpointconversions', CONTENT_AD_N_ABOVE | {sc.PUBLISHER}],
+    ['mv_touchpointconversions', CONTENT_AD_N_ABOVE | {sc.PUBLISHER} | DEVICE | {sc.PLACEMENT_MEDIUM} | GEO],
 ]
 
 
