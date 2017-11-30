@@ -387,6 +387,19 @@ class AgencyAdmin(ExportMixin, admin.ModelAdmin):
             'AgencyAdmin.save_model'
         )
 
+    def render_change_form(self, request, context, *args, **kwargs):
+        context['adminform'].form.fields['sales_representative'].queryset = (
+            ZemUser.objects.get_users_with_perm('campaign_settings_sales_rep').filter(
+                is_active=True
+            )
+        )
+        context['adminform'].form.fields['cs_representative'].queryset = (
+            ZemUser.objects.get_users_with_perm('campaign_settings_cs_rep').filter(
+                is_active=True
+            )
+        )
+        return super(AgencyAdmin, self).render_change_form(request, context, args, kwargs)
+
 
 # Account
 
