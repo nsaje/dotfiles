@@ -457,7 +457,7 @@ class AdGroupsTest(RESTAPITest):
         max_cpm='1.700',
         daily_budget='15.00',
         tracking_code='a=b',
-        target_regions={'countries': ['US']},
+        target_regions={'countries': ['US'], 'postalCodes': ['CA:12345']},
         exclusion_target_regions={},
         target_devices=[constants.AdTargetDevice.DESKTOP],
         target_placements=[constants.Placement.APP],
@@ -560,7 +560,7 @@ class AdGroupsTest(RESTAPITest):
             if len(tr) == 2 and all(char in string.ascii_uppercase for char in tr):
                 geo['countries'].append(tr)
             elif 5 <= len(tr) <= 6 and '-' in tr:
-                target_regions['regions'].append(tr)
+                geo['regions'].append(tr)
             elif ':' in tr:
                 geo['postalCodes'].append(tr)
             elif len(tr) == 3:

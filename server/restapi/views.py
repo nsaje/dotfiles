@@ -368,6 +368,10 @@ class AdGroupSerializer(SettingsSerializer):
         return ret
 
     def to_internal_value(self, external_data):
+        if external_data.get('targeting', {}).get('geo', {}).get('included', {}).get('postalCodes', None):
+            external_data['targeting']['geo']['included']['postal_codes'] = external_data['targeting']['geo']['included'].pop('postalCodes')
+        if external_data.get('targeting', {}).get('geo', {}).get('excluded', {}).get('postalCodes', None):
+            external_data['targeting']['geo']['excluded']['postal_codes'] = external_data['targeting']['geo']['excluded'].pop('postalCodes')
         data = self._allow_not_provided(external_data)
         settings = {
             'id': data['id'],
