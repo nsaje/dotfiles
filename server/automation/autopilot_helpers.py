@@ -49,11 +49,10 @@ def get_active_ad_groups_on_autopilot(autopilot_state=None):
 def get_autopilot_active_sources_settings(ad_groups_and_settings,
                                           ad_group_setting_state=dash.constants.AdGroupSettingsState.ACTIVE):
     adgroup_sources = (dash.models.AdGroupSource.objects
-        .filter(ad_group__in=ad_groups_and_settings.keys())
-        .filter(ad_group__settings__archived=False)
-        .select_related('settings__ad_group_source__source__source_type')
-        .select_related('settings__ad_group_source__ad_group__campaign__account')
-    )
+                       .filter(ad_group__in=ad_groups_and_settings.keys())
+                       .filter(ad_group__settings__archived=False)
+                       .select_related('settings__ad_group_source__source__source_type')
+                       .select_related('settings__ad_group_source__ad_group__campaign__account'))
 
     if not ad_group_setting_state:
         return [ags.settings for ags in ad_group_setting_state]
