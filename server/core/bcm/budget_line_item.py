@@ -60,7 +60,7 @@ class BudgetLineItemManager(core.common.QuerySetManager):
         return item
 
 
-class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixin):
+class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
     class Meta:
         app_label = 'dash'
 

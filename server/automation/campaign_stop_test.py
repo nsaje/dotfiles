@@ -696,9 +696,7 @@ class GetMaxSettableB1SourcesGroupDailyBudgetTest(TestCase):
         )
 
     def test_automatic_campaign_stop_disabled(self):
-        campaign_settings = self.ad_group.campaign.get_current_settings()
-        campaign_settings.automatic_campaign_stop = False
-        campaign_settings.save(None)
+        self.ad_group.campaign.settings.update(None, automatic_campaign_stop=False)
 
         self.assertEqual(
             None,
@@ -711,9 +709,7 @@ class GetMaxSettableB1SourcesGroupDailyBudgetTest(TestCase):
         )
 
     def test_campaign_in_landing(self):
-        campaign_settings = self.ad_group.campaign.get_current_settings()
-        campaign_settings.landing_mode = True
-        campaign_settings.save(None)
+        self.ad_group.campaign.settings.update(None, landing_mode=True)
 
         self.assertEqual(
             0,
@@ -804,9 +800,7 @@ class GetMaxSettableAutopilotDailyBudgetTest(TestCase):
 
     def test_automatic_campaign_stop_disabled(self):
         ad_group = dash.models.AdGroup.objects.get(id=201002)
-        campaign_settings = ad_group.campaign.get_current_settings()
-        campaign_settings.automatic_campaign_stop = False
-        campaign_settings.save(None)
+        ad_group.campaign.settings.update(None, automatic_campaign_stop=False)
 
         self.assertEqual(
             None,
@@ -820,9 +814,7 @@ class GetMaxSettableAutopilotDailyBudgetTest(TestCase):
 
     def test_campaign_in_landing(self):
         ad_group = dash.models.AdGroup.objects.get(id=201002)
-        campaign_settings = ad_group.campaign.get_current_settings()
-        campaign_settings.landing_mode = True
-        campaign_settings.save(None)
+        ad_group.campaign.settings.update(None, landing_mode=True)
 
         self.assertEqual(
             0,
@@ -1811,6 +1803,7 @@ class UpdateCampaignsInLandingTestCase(TestCase):
         campaign_stop.update_campaigns_in_landing(dash.models.Campaign.objects.all().filter_landing())
         self.assertTrue(mock_get_end_date.called)
 
+        campaign.settings.refresh_from_db()
         self.assertFalse(campaign.get_current_settings().landing_mode)
         for ad_group in campaign.adgroup_set.all():
             self.assertFalse(ad_group.get_current_settings().landing_mode)
@@ -2072,10 +2065,12 @@ class GetMatchingPairsTestCase(TestCase):
         ag = dash.models.AdGroup()
         ag.campaign = camapaign
         ag.save(request)
-        new_ag_settings = ag.get_current_settings()
+        new_ag_settings = dash.models.AdGroupSettings(ad_group=ag)
         new_ag_settings.b1_sources_group_enabled = False
         new_ag_settings.autopilot_state = dash.constants.AdGroupSettingsAutopilotState.INACTIVE
-        new_ag_settings.save(None)
+        new_ag_settings.update_unsafe(None)
+        ag.settings = new_ag_settings
+        ag.save(request)
 
         ags = magic_mixer.blend(dash.models.AdGroupSource, ad_group=ag, source=dash.models.Source.objects.get(id=1))
 

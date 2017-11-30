@@ -295,7 +295,7 @@ class AgencyAccountInline(admin.TabularInline):
         'modified_dt',
         'modified_by',
         'custom_flags',
-        'new_settings',
+        'settings',
     )
 
     ordering = ('-created_dt',)
@@ -419,10 +419,10 @@ class CampaignInline(admin.TabularInline):
     model = models.Campaign
     extra = 0
     can_delete = False
-    exclude = ('users', 'groups', 'created_dt', 'modified_dt', 'modified_by', 'custom_flags', 'new_settings')
+    exclude = ('users', 'groups', 'created_dt', 'modified_dt', 'modified_by', 'custom_flags', 'settings')
     ordering = ('-created_dt',)
     readonly_fields = ('admin_link',)
-    raw_id_fields = ('default_whitelist', 'default_blacklist', 'account', 'new_settings')
+    raw_id_fields = ('default_whitelist', 'default_blacklist', 'account', 'settings')
 
 
 class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
@@ -436,8 +436,8 @@ class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         'uses_bcm_v2',
     )
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'uses_bcm_v2')
-    exclude = ('users', 'new_settings')
-    raw_id_fields = ('default_whitelist', 'default_blacklist', 'agency', 'new_settings')
+    exclude = ('users', 'settings')
+    raw_id_fields = ('default_whitelist', 'default_blacklist', 'agency', 'settings')
     inlines = (AccountUserInline, CampaignInline)
 
     @transaction.atomic
@@ -475,7 +475,7 @@ class AdGroupInline(admin.TabularInline):
     model = models.AdGroup
     extra = 0
     can_delete = False
-    exclude = ('users', 'created_dt', 'modified_dt', 'modified_by', 'custom_flags', 'new_settings')
+    exclude = ('users', 'created_dt', 'modified_dt', 'modified_by', 'custom_flags', 'settings')
     ordering = ('-created_dt',)
     readonly_fields = ('admin_link',)
     raw_id_fields = ('default_whitelist', 'default_blacklist')
@@ -490,7 +490,7 @@ class CampaignAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
     raw_id_fields = ('default_whitelist', 'default_blacklist', 'account')
-    exclude = ('new_settings',)
+    exclude = ('settings',)
     inlines = (AdGroupInline,)
     form = dash_forms.CampaignAdminForm
 
@@ -697,7 +697,7 @@ class AdGroupAdmin(admin.ModelAdmin):
 
     raw_id_fields = (
         'campaign',
-        'new_settings',
+        'settings',
         'default_blacklist',
         'default_whitelist',
     )
@@ -706,7 +706,7 @@ class AdGroupAdmin(admin.ModelAdmin):
         'modified_dt',
         'modified_by',
     )
-    exclude = ('new_settings',)
+    exclude = ('settings',)
     form = dash_forms.AdGroupAdminForm
     fieldsets = (
         (None, {
@@ -744,8 +744,7 @@ class AdGroupAdmin(admin.ModelAdmin):
         changes = current_settings.get_setting_changes(new_settings)
         if changes:
             new_settings.save(request)
-            if (current_settings.redirect_pixel_urls != new_settings.redirect_pixel_urls or
-                    current_settings.redirect_javascript != new_settings.redirect_javascript):
+            if 'redirect_pixel_urls' in changes or 'redirect_javascript' in changes:
                 self._update_redirector_adgroup(ad_group, new_settings)
             changes_text = models.AdGroupSettings.get_changes_text(
                 current_settings, new_settings, request.user, separator='\n')
@@ -784,7 +783,7 @@ class AdGroupSourceAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         'ad_group_',
         'source_content_ad_id',
     )
-    exclude = ('new_settings',)
+    exclude = ('settings',)
 
     list_filter = ('source',)
 

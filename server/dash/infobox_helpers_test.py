@@ -29,10 +29,7 @@ class InfoBoxHelpersTest(TestCase):
 
     def test_filter_user_by_account_type(self):
         account = dash.models.Account.objects.get(pk=1)
-
-        acs = account.get_current_settings()
-        acs.account_type = dash.constants.AccountType.PILOT
-        acs.save(fake_request(zemauth.models.User.objects.get(pk=1)))
+        account.settings.update_unsafe(None, account_type=dash.constants.AccountType.PILOT)
 
         su = zemauth.models.User.objects.all().filter(is_superuser=True)
         fusers = dash.infobox_helpers._filter_user_by_account_type(
@@ -424,7 +421,7 @@ class InfoBoxAccountHelpersTest(TestCase):
             'yesterday_etfm_cost': 30,
         }, dash.infobox_helpers.get_yesterday_all_accounts_spend([self.agency], None))
 
-        res = dash.infobox_helpers.get_yesterday_all_accounts_spend([], [dash.constants.AccountType.UNKNOWN])
+        res = dash.infobox_helpers.get_yesterday_all_accounts_spend([], [dash.constants.AccountType.PILOT])
         self.assertEqual({
             'e_yesterday_cost': 0,
             'yesterday_et_cost': 0,
@@ -432,10 +429,10 @@ class InfoBoxAccountHelpersTest(TestCase):
         }, res)
 
         new_acs = account.get_current_settings().copy_settings()
-        new_acs.account_type = dash.constants.AccountType.UNKNOWN
+        new_acs.account_type = dash.constants.AccountType.PILOT
         new_acs.save(fake_request(self.user))
 
-        res = dash.infobox_helpers.get_yesterday_all_accounts_spend([], [dash.constants.AccountType.UNKNOWN])
+        res = dash.infobox_helpers.get_yesterday_all_accounts_spend([], [dash.constants.AccountType.PILOT])
         self.assertEqual({
             'e_yesterday_cost': 20,
             'yesterday_et_cost': 20,
@@ -669,14 +666,14 @@ class InfoBoxAccountHelpersTest(TestCase):
         ad_group = dash.models.AdGroup.objects.get(pk=1)
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=99)
-        adgs = dash.models.AdGroupSettings(
-            ad_group=ad_group,
+        ad_group.settings.update_unsafe(
+            None,
             start_date=start_date,
             end_date=end_date,
             state=dash.constants.AdGroupSettingsState.INACTIVE,
+            autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE,
             created_dt=datetime.datetime.utcnow()
         )
-        adgs.save(None)
 
         normal_user = zemauth.models.User.objects.get(id=2)
 
@@ -689,14 +686,13 @@ class InfoBoxAccountHelpersTest(TestCase):
         # adgroup is active and sources are active
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=99)
-        adgs = dash.models.AdGroupSettings(
-            ad_group=ad_group,
+        ad_group.settings.update_unsafe(
+            None,
             start_date=start_date,
             end_date=end_date,
             state=dash.constants.AdGroupSettingsState.ACTIVE,
             created_dt=datetime.datetime.utcnow()
         )
-        adgs.save(None)
 
         source_settings = dash.models.AdGroupSourceSettings.objects.filter(
             ad_group_source__ad_group=ad_group
@@ -729,15 +725,14 @@ class InfoBoxAccountHelpersTest(TestCase):
         # adgroup is active, sources are active and adgroup is on CPC autopilot
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=99)
-        adgs = dash.models.AdGroupSettings(
-            ad_group=ad_group,
+        ad_group.settings.update_unsafe(
+            None,
             start_date=start_date,
             end_date=end_date,
             state=dash.constants.AdGroupSettingsState.ACTIVE,
             created_dt=datetime.datetime.utcnow(),
             autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
         )
-        adgs.save(None)
 
         ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
@@ -748,15 +743,14 @@ class InfoBoxAccountHelpersTest(TestCase):
         # adgroup is active, sources are active and adgroup is on CPC+Budget autopilot
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=99)
-        adgs = dash.models.AdGroupSettings(
-            ad_group=ad_group,
+        ad_group.settings.update_unsafe(
+            None,
             start_date=start_date,
             end_date=end_date,
             state=dash.constants.AdGroupSettingsState.ACTIVE,
             created_dt=datetime.datetime.utcnow(),
             autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
         )
-        adgs.save(None)
 
         ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
@@ -769,9 +763,10 @@ class InfoBoxAccountHelpersTest(TestCase):
             ad_group_source__ad_group=ad_group
         ).all()
         for agss in source_settings:
-            agss.pk = None
-            agss.state = dash.constants.AdGroupSourceSettingsState.INACTIVE
-            agss.save(None)
+            agss.update_unsafe(
+                None,
+                state=dash.constants.AdGroupSourceSettingsState.INACTIVE,
+            )
 
         ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
@@ -780,9 +775,10 @@ class InfoBoxAccountHelpersTest(TestCase):
         )
 
         # adgroup is inactive but sources are active
-        new_adgs = adgs.copy_settings()
-        new_adgs.state = dash.constants.AdGroupSettingsState.INACTIVE
-        new_adgs.save(None)
+        ad_group.settings.update_unsafe(
+            None,
+            state=dash.constants.AdGroupSettingsState.INACTIVE,
+        )
 
         source_settings = dash.models.AdGroupSourceSettings.objects.filter(
             ad_group_source__ad_group=ad_group
@@ -808,13 +804,12 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=99)
-        adgs = dash.models.AdGroupSettings(
-            ad_group=ad_group,
+        ad_group.settings.update_unsafe(
+            None,
             start_date=start_date,
             end_date=end_date,
             state=dash.constants.AdGroupSettingsState.ACTIVE,
         )
-        adgs.save(None)
 
         source_settings = dash.models.AdGroupSourceSettings.objects.filter(
             ad_group_source__ad_group=ad_group
@@ -859,13 +854,12 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=99)
-        adgs = dash.models.AdGroupSettings(
-            ad_group=ad_group,
+        ad_group.settings.update_unsafe(
+            None,
             start_date=start_date,
             end_date=end_date,
             state=dash.constants.AdGroupSettingsState.ACTIVE,
         )
-        adgs.save(None)
 
         source_settings = dash.models.AdGroupSourceSettings.objects.filter(
             ad_group_source__ad_group=ad_group
@@ -897,7 +891,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
     def test_calculate_daily_account_cap(self):
         account = dash.models.Account.objects.get(pk=1)
         cap = dash.infobox_helpers.calculate_daily_account_cap(account)
-        self.assertEqual(100, cap)
+        self.assertEqual(600, cap)
 
     def test_calculate_allocated_and_available_credit(self):
         account = dash.models.Account.objects.get(pk=1)

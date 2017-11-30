@@ -3,7 +3,6 @@ import jsonfield
 import logging
 
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
 
@@ -34,6 +33,12 @@ class AdGroupSourceManager(core.common.QuerySetManager):
             source_credentials=default_settings.credentials,
             can_manage_content_ads=source.can_manage_content_ads())
         ad_group_source.save(None)
+
+        ad_group_source.settings = core.entity.settings.AdGroupSourceSettings(ad_group_source=ad_group_source)
+        ad_group_source.settings.update(None)
+        ad_group_source.settings_id = ad_group_source.settings.id
+        ad_group_source.save(None)
+
         return ad_group_source
 
     @transaction.atomic
@@ -170,7 +175,7 @@ class AdGroupSource(models.Model):
         max_length=100, null=True, blank=True)
     blockers = jsonfield.JSONField(blank=True, default={})
 
-    new_settings = models.ForeignKey('AdGroupSourceSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_ad_group_source', db_column='settings_id')
+    settings = models.ForeignKey('AdGroupSourceSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_ad_group_source')
 
     objects = AdGroupSourceManager()
 
@@ -186,14 +191,7 @@ class AdGroupSource(models.Model):
             """
             Returns only ad groups sources that have settings set to active.
             """
-            latest_ags_settings = core.entity.settings.AdGroupSourceSettings.objects.\
-                filter(ad_group_source__in=self).\
-                group_current_settings()
-            active_ags_ids = core.entity.settings.AdGroupSourceSettings.objects.\
-                filter(id__in=latest_ags_settings).\
-                filter(state=constants.AdGroupSourceSettingsState.ACTIVE).\
-                values_list('ad_group_source_id', flat=True)
-            return self.filter(id__in=active_ags_ids)
+            return self.filter(settings__state=constants.AdGroupSourceSettingsState.ACTIVE)
 
         def filter_can_manage_content_ads(self):
             return self.filter(
@@ -230,20 +228,15 @@ class AdGroupSource(models.Model):
                 ad_group_source_settings,
             )
 
-        latest_settings = self.get_current_settings()
-        new_settings = latest_settings.copy_settings()
-        new_settings.set_settings_dict(updates)
+        old_settings = self.settings.get_settings_dict()
 
-        changes = latest_settings.get_setting_changes(new_settings)
+        changes = self.settings.get_changes(updates)
         if not changes:
             return result
 
         if not request:
-            new_settings.system_user = system_user
-        else:
-            new_settings.created_by = request.user
-
-        new_settings.save(request, action_type=constants.HistoryActionType.MEDIA_SOURCE_SETTINGS_CHANGE)
+            updates['system_user'] = system_user
+        self.settings.update(request, **updates)
 
         from automation import autopilot_plus
         if not skip_automation and\
@@ -255,7 +248,7 @@ class AdGroupSource(models.Model):
                     for s in changed_sources])
 
         if not skip_notification:
-            self._notify_ad_group_source_settings_changed(request, changes, latest_settings)
+            self._notify_ad_group_source_settings_changed(request, changes, old_settings)
 
         if k1_sync:
             utils.k1_helper.update_ad_group(self.ad_group.pk, 'AdGroupSource.update')
@@ -347,22 +340,7 @@ class AdGroupSource(models.Model):
         )
 
     def get_current_settings(self):
-        current_settings = self.get_current_settings_or_none()
-        return current_settings if current_settings else \
-            core.entity.settings.AdGroupSourceSettings(ad_group_source=self)
-
-    def get_current_settings_or_none(self):
-        if not self.pk:
-            raise utils.exc.BaseError(
-                'Ad group source settings can\'t be fetched because ad group source hasn\'t been saved yet.'
-            )
-
-        try:
-            return core.entity.settings.AdGroupSourceSettings.objects\
-                .filter(ad_group_source_id=self.pk)\
-                .latest('created_dt')
-        except ObjectDoesNotExist:
-            return None
+        return self.settings
 
     def migrate_to_bcm_v2(self, request, fee, margin):
         current_settings = self.get_current_settings()
@@ -398,9 +376,6 @@ class AdGroupSource(models.Model):
 
     def save(self, request=None, *args, **kwargs):
         super(AdGroupSource, self).save(*args, **kwargs)
-        if not core.entity.settings.AdGroupSourceSettings.objects.filter(ad_group_source=self).exists():
-            settings = core.entity.settings.AdGroupSourceSettings(ad_group_source=self)
-            settings.save(request)
 
     def __unicode__(self):
         return u'{} - {}'.format(self.ad_group, self.source)
@@ -416,14 +391,14 @@ class AdGroupSource(models.Model):
         for key, val in changes.items():
             if val is None:
                 continue
-            field = old_settings.get_human_prop_name(key)
-            val = old_settings.get_human_value(key, val)
+            field = self.settings.get_human_prop_name(key)
+            val = self.settings.get_human_value(key, val)
             source_name = self.source.name
-            old_val = getattr(old_settings, key)
+            old_val = old_settings[key]
             if old_val is None:
                 text = '%s %s set to %s' % (source_name, field, val)
             else:
-                old_val = old_settings.get_human_value(key, old_val)
+                old_val = self.settings.get_human_value(key, old_val)
                 text = '%s %s set from %s to %s' % (source_name, field, old_val, val)
             changes_text_parts.append(text)
 

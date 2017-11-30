@@ -648,7 +648,7 @@ class AdGroupPublishersDailyStatsTest(TestCase):
         }
 
         response = self.client.get(
-            reverse('ad_group_publishers_daily_stats', kwargs={'ad_group_id': 1}),
+            reverse('ad_group_publishers_daily_stats', kwargs={'ad_group_id': 987}),
             params,
             follow=True
         )

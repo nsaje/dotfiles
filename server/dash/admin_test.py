@@ -45,7 +45,6 @@ class AdGroupAdmin(TestCase):
         interest_targeting = ['segment1', 'segment2']
 
         ad_group = models.AdGroup.objects.get(pk=1)
-        old_settings = ad_group.get_current_settings()
 
         adgroup_admin = admin.AdGroupAdmin(models.AdGroup, AdminSite())
 
@@ -55,30 +54,29 @@ class AdGroupAdmin(TestCase):
         form = adgroup_admin.get_form(request)()
         form.cleaned_data = {}
         for field in form.SETTINGS_FIELDS:
-            form.cleaned_data[field] = getattr(old_settings, field)
+            form.cleaned_data[field] = getattr(ad_group.settings, field)
 
         form.cleaned_data['notes'] = 'new notes'
         adgroup_admin.save_model(request, ad_group, form, None)
-        new_settings = ad_group.get_current_settings()
+        old_settings = models.AdGroupSettings.objects.filter(ad_group=ad_group)[1]
         self.assertNotEqual(old_settings.notes, 'new notes')
-        self.assertEqual(new_settings.notes, 'new notes')
+        self.assertEqual(ad_group.settings.notes, 'new notes')
         mock_r1_insert_adgroup.assert_not_called()
 
-        old_settings = ad_group.get_current_settings()
         campaign_settings = ad_group.campaign.get_current_settings()
         form.cleaned_data['redirect_pixel_urls'] = trackers
         form.cleaned_data['redirect_javascript'] = javascript
         form.cleaned_data['interest_targeting'] = interest_targeting
         form.cleaned_data['exclusion_interest_targeting'] = interest_targeting
         adgroup_admin.save_model(request, ad_group, form, None)
-        new_settings = ad_group.get_current_settings()
+        old_settings = models.AdGroupSettings.objects.filter(ad_group=ad_group)[1]
         self.assertNotEqual(old_settings.redirect_pixel_urls, trackers)
         self.assertNotEqual(old_settings.redirect_javascript, javascript)
-        self.assertEqual(new_settings.redirect_pixel_urls, trackers)
-        self.assertEqual(new_settings.redirect_javascript, javascript)
-        self.assertEqual(new_settings.interest_targeting, interest_targeting)
+        self.assertEqual(ad_group.settings.redirect_pixel_urls, trackers)
+        self.assertEqual(ad_group.settings.redirect_javascript, javascript)
+        self.assertEqual(ad_group.settings.interest_targeting, interest_targeting)
         mock_r1_insert_adgroup.assert_called_with(
             ad_group,
-            new_settings,
+            mock.ANY,
             campaign_settings,
         )

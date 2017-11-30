@@ -17,8 +17,6 @@ class CloneForm(TestCase):
         magic_mixer.cycle(5).blend(core.entity.ContentAd, ad_group=ad_group, archived=False)
         dest_campaign = magic_mixer.blend(core.entity.Campaign)
 
-        dest_campaign.get_current_settings().save()
-
         form = serializers.CloneAdGroupSerializer(data={
             'ad_group_id': ad_group.pk,
             'destination_campaign_id': dest_campaign.pk,

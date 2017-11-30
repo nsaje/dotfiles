@@ -29,7 +29,13 @@ class AccountManager(core.common.QuerySetManager):
             settings_updates['default_sales_representative'] = agency.sales_representative
             settings_updates['default_cs_representative'] = agency.cs_representative
             settings_updates['account_type'] = constants.AccountType.ACTIVATED
+
+        account.settings = core.entity.settings.AccountSettings(account=account)
         account.settings.update(request, **settings_updates)
+
+        account.settings_id = account.settings.id
+        account.save(request)
+
         account.allowed_sources.add(*core.source.Source.objects.filter(released=True, deprecated=False))
 
         return account

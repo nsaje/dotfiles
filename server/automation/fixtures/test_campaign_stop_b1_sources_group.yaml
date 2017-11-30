@@ -1,11 +1,34 @@
+# test accountsettings
+
+-   fields:
+        account: 200001
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.accountsettings
+    pk: 200001
+
 # Accounts
 - fields:
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
+    settings: 200001
     name: 'Test B1 Sources Group'
   model: dash.account
   pk: 200001
+
+# test campaignsettings
+
+-   fields:
+        campaign: 200001
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaignsettings
+    pk: 200001
+
+-   fields:
+        campaign: 200002
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaignsettings
+    pk: 200002
 
 # Campaigns
 - fields:
@@ -13,6 +36,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     account: 200001
+    settings: 200001
     name: 'Test B1 Sources Group Campaign'
   model: dash.campaign
   pk: 200001
@@ -22,6 +46,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     account: 200001
+    settings: 200002
     name: 'Test B1 Sources Group Campaign'
   model: dash.campaign
   pk: 200002
@@ -32,6 +57,7 @@
     modified_dt: '2017-01-01T09:00:00'
     modified_by: 1
     campaign: 200001
+    settings: 200002
     name: 'Test B1 Sources Group Ad Group'
   model: dash.adgroup
   pk: 200001
@@ -41,6 +67,7 @@
     modified_dt: '2017-01-01T09:00:00'
     modified_by: 1
     campaign: 200002
+    settings: 200003
     name: 'Test B1 Sources Group Ad Group 2'
   model: dash.adgroup
   pk: 200002
@@ -86,6 +113,7 @@
 - fields:
     source: 1  # b1 source type
     ad_group: 200001
+    settings: 200001
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 200001
@@ -93,6 +121,7 @@
 - fields:
     source: 2  # not b1
     ad_group: 200001
+    settings: 200002
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 200002
@@ -100,6 +129,7 @@
 - fields:
     source: 3  # b1 source type
     ad_group: 200001
+    settings: 200003
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 200003
@@ -107,6 +137,7 @@
 - fields:
     source: 1  # b1 source type
     ad_group: 200002
+    settings: 200004
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 200004
@@ -114,6 +145,7 @@
 - fields:
     source: 2  # not b1
     ad_group: 200002
+    settings: 200005
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 200005
@@ -121,6 +153,7 @@
 - fields:
     source: 3  # b1 source type
     ad_group: 200002
+    settings: 200006
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 200006

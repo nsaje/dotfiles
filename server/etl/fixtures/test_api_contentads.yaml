@@ -16,15 +16,44 @@
     model: zemauth.user
     pk: 1
 
+# test accountsettings
+
+-   fields:
+        account: 1
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.accountsettings
+    pk: 1
+
 # test account
 
 -   fields:
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
+        settings: 1
         name: 'test account 1'
     model: dash.account
     pk: 1
+
+# test campaignsettings
+
+-   fields:
+        campaign: 1
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaignsettings
+    pk: 1
+
+-   fields:
+        campaign: 2
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaignsettings
+    pk: 2
+
+-   fields:
+        campaign: 3
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaignsettings
+    pk: 3
 
 # test campaign
 
@@ -33,6 +62,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         account: 1 # test account 1
+        settings: 1
         name: 'test campaign 1'
     model: dash.campaign
     pk: 1
@@ -42,6 +72,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         account: 1 # test account 1
+        settings: 2
         name: 'test campaign 2'
     model: dash.campaign
     pk: 2
@@ -51,8 +82,29 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         account: 1 # test account 1
+        settings: 3
         name: 'test campaign 3'
     model: dash.campaign
+    pk: 3
+
+# test adgroupsettings
+
+-   fields:
+        ad_group: 1
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.adgroupsettings
+    pk: 1
+
+-   fields:
+        ad_group: 2
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.adgroupsettings
+    pk: 2
+
+-   fields:
+        ad_group: 3
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.adgroupsettings
     pk: 3
 
 # test adgroup
@@ -62,6 +114,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         campaign: 1
+        settings: 1
         name: 'test adgroup 1'
     model: dash.adgroup
     pk: 1
@@ -71,6 +124,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         campaign: 2
+        settings: 2
         name: 'test adgroup 2'
     model: dash.adgroup
     pk: 2
@@ -80,6 +134,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         campaign: 3
+        settings: 3
         name: 'test adgroup 3'
     model: dash.adgroup
     pk: 3
@@ -299,6 +354,20 @@
     model: dash.budgetlineitem
     pk: 2
 
+# test adgroupsettings
+
+-   fields:
+        ad_group: 5
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.adgroupsettings
+    pk: 5
+
+-   fields:
+        ad_group: 6
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.adgroupsettings
+    pk: 6
+
 # RefreshContentAdDemoTest
 
 -   fields:
@@ -306,6 +375,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         campaign: 1
+        settings: 5
         name: 'test demo adgroup 1'
     model: dash.adgroup
     pk: 5
@@ -315,6 +385,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         campaign: 1
+        settings: 6
         name: 'test demo adgroup 2'
     model: dash.adgroup
     pk: 6

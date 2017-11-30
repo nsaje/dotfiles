@@ -53,7 +53,7 @@ class RTBSourceSettingsTest(TestCase):
         parsed = json.loads(response.content)
         self.assertTrue(parsed['success'])
 
-        next_ad_group_settings = self.ad_group.get_current_settings()
+        next_ad_group_settings = models.AdGroup.objects.get(pk=2).get_current_settings()
         self.assertNotEqual(
             prev_ad_group_settings.b1_sources_group_cpc_cc,
             next_ad_group_settings.b1_sources_group_cpc_cc
@@ -62,7 +62,6 @@ class RTBSourceSettingsTest(TestCase):
             '0.15',
             next_ad_group_settings.b1_sources_group_cpc_cc
         )
-        self.assertTrue(mock_redirector_insert_adgroup.called)
 
     def test_validate_max_cpc(self):
         updated_ad_group_settings = self.ad_group.get_current_settings().copy_settings()

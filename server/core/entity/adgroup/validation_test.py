@@ -50,8 +50,8 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
     def test_validate_ad_group_source_cpc_cc(self):
         ad_group_source = magic_mixer.blend(
             core.entity.AdGroupSource, ad_group__campaign=self.campaign, source=self.source)
-        ad_group_source_settings = magic_mixer.blend_latest_settings(
-            ad_group_source,
+        ad_group_source.settings.update(
+            None,
             state=dash.constants.AdGroupSettingsState.ACTIVE,
             cpc_cc=decimal.Decimal('0.35'),
             daily_budget_cc=decimal.Decimal('50')
@@ -64,7 +64,7 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
                 ad_group_source,
                 updates,
                 ad_group_source.ad_group.get_current_settings(),
-                ad_group_source_settings,
+                ad_group_source.settings,
             )
 
         exception = cm.exception
@@ -77,7 +77,7 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
                 ad_group_source,
                 updates,
                 ad_group_source.ad_group.get_current_settings(),
-                ad_group_source_settings,
+                ad_group_source.settings,
             )
 
         exception = cm.exception
@@ -89,14 +89,14 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
             ad_group_source,
             updates,
             ad_group_source.ad_group.get_current_settings(),
-            ad_group_source_settings,
+            ad_group_source.settings,
         )
 
     def test_validate_ad_group_source_daily_budget(self):
         ad_group_source = magic_mixer.blend(
             core.entity.AdGroupSource, ad_group__campaign=self.campaign, source=self.source)
-        ad_group_source_settings = magic_mixer.blend_latest_settings(
-            ad_group_source,
+        ad_group_source.settings.update(
+            None,
             state=dash.constants.AdGroupSettingsState.ACTIVE,
             cpc_cc=decimal.Decimal('0.35'),
             daily_budget_cc=decimal.Decimal('50')
@@ -109,7 +109,7 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
                 ad_group_source,
                 updates,
                 ad_group_source.ad_group.get_current_settings(),
-                ad_group_source_settings,
+                ad_group_source.settings,
             )
 
         exception = cm.exception
@@ -122,7 +122,7 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
                 ad_group_source,
                 updates,
                 ad_group_source.ad_group.get_current_settings(),
-                ad_group_source_settings,
+                ad_group_source.settings,
             )
 
         exception = cm.exception
@@ -134,5 +134,5 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
             ad_group_source,
             updates,
             ad_group_source.ad_group.get_current_settings(),
-            ad_group_source_settings,
+            ad_group_source.settings,
         )

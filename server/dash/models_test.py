@@ -16,6 +16,7 @@ from dash import models, constants
 from zemauth import models as zemauthmodels
 from zemauth.models import User
 from utils import exc, test_helper
+from utils.magic_mixer import magic_mixer
 
 
 class AdGroupSettingsTest(TestCase):
@@ -390,53 +391,25 @@ class CampaignSettingsTest(TestCase):
 
 class AdGroupSourceTest(TestCase):
     def test_adgroup_source_save(self):
-        request = HttpRequest()
-        request.user = User.objects.create_user('test@example.com')
-
-        account = models.Account(name='test')
-        account.save(request)
-
-        campaign = models.Campaign(account=account)
-        campaign.save(request)
-
-        ad_group = models.AdGroup(campaign=campaign, modified_by_id=1)
-        ad_group.save(request)
-
-        source = models.Source.objects.create()
-
-        ad_group_source = models.AdGroupSource(ad_group=ad_group, source=source)
-        ad_group_source.save(request)
+        ad_group_source = magic_mixer.blend(models.AdGroupSource)
 
         self.assertTrue(models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source).exists())
 
     def test_get_tracking_ids(self):
-        request = HttpRequest()
-        request.user = User.objects.create_user('test@example.com')
-
-        account = models.Account(name='test')
-        account.save(request)
-
-        campaign = models.Campaign(account=account)
-        campaign.save(request)
-
-        ad_group = models.AdGroup(campaign=campaign, modified_by_id=1)
-        ad_group.save(request)
-
         source_type = models.SourceType.objects.create()
         source = models.Source.objects.create(source_type=source_type)
 
-        ad_group_source = models.AdGroupSource(ad_group=ad_group, source=source)
-        ad_group_source.save(request)
+        ad_group_source = magic_mixer.blend(models.AdGroupSource, source=source)
 
-        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s&_z1_msid=' % (ad_group.id))
+        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s&_z1_msid=' % (ad_group_source.ad_group.id))
 
         source_type.type = constants.SourceType.ZEMANTA
         source_type.save()
-        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s&_z1_msid={sourceDomain}' % ad_group.id)
+        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s&_z1_msid={sourceDomain}' % ad_group_source.ad_group.id)
 
         source_type.type = constants.SourceType.B1
         source_type.save()
-        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s&_z1_msid={sourceDomain}' % ad_group.id)
+        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s&_z1_msid={sourceDomain}' % ad_group_source.ad_group.id)
 
         source_type.type = 'not' + constants.SourceType.ZEMANTA + 'and not ' + constants.SourceType.B1
         source_type.save()
@@ -446,7 +419,7 @@ class AdGroupSourceTest(TestCase):
 
         self.assertEqual(
             ad_group_source.get_tracking_ids(),
-            '_z1_adgid=%s&_z1_msid=%s' % (ad_group.id, source.tracking_slug)
+            '_z1_adgid=%s&_z1_msid=%s' % (ad_group_source.ad_group.id, source.tracking_slug)
         )
 
 
@@ -778,8 +751,8 @@ class AdGroupTestCase(TestCase):
         all_adgroups = models.AdGroup.objects.all()
         qs = all_adgroups.filter_by_account_types([constants.AccountType.UNKNOWN])
         self.assertEqual(
-            models.AdGroup.objects.all().filter(
-                campaign__account__id=3
+            models.AdGroup.objects.all().exclude(
+                campaign__account__id=1
             ).count(),
             qs.count())
 
@@ -826,9 +799,10 @@ class CampaignTestCase(TestCase):
         self.assertEqual(settings.target_regions, ['US'])
 
     def test_get_current_settings_no_existing_settings(self):
-        campaign = models.Campaign.objects.get(pk=1)
+        campaign = models.Campaign.objects.create(
+            test_helper.fake_request(self.user), models.Account.objects.get(pk=1), '')
 
-        self.assertEqual(len(models.CampaignSettings.objects.filter(campaign_id=campaign.id)), 0)
+        self.assertEqual(len(models.CampaignSettings.objects.filter(campaign_id=campaign.id)), 1)
 
         settings = campaign.get_current_settings()
 
@@ -855,8 +829,8 @@ class CampaignTestCase(TestCase):
         all_campaigns = models.Campaign.objects.all()
         qs = all_campaigns.filter_by_account_types([constants.AccountType.UNKNOWN])
         self.assertEqual(
-            models.Campaign.objects.all().filter(
-                account__id=3
+            models.Campaign.objects.all().exclude(
+                account__id=1
             ).count(),
             qs.count())
 
@@ -906,7 +880,7 @@ class AccountTestCase(TestCase):
         all_accounts = models.Account.objects.all()
         qs = all_accounts.filter_by_account_types([constants.AccountType.UNKNOWN])
         self.assertEqual(
-            1,
+            4,
             qs.count())
 
         qs = all_accounts.filter_by_account_types([constants.AccountType.ACTIVATED])
@@ -918,7 +892,7 @@ class AccountTestCase(TestCase):
             constants.AccountType.UNKNOWN,
             constants.AccountType.ACTIVATED,
         ])
-        self.assertEqual(2, qs.count())
+        self.assertEqual(5, qs.count())
 
 
 class CreditLineItemTestCase(TestCase):
@@ -1100,11 +1074,8 @@ class HistoryTest(TestCase):
     def test_create_ad_group_history(self):
         ad_group = models.AdGroup.objects.get(pk=1)
 
-        adgss = models.AdGroupSettings(
-            ad_group=ad_group,
-            cpc_cc=4.999,
-        )
-        adgss.save(None)
+        ad_group.settings.update_unsafe(None, cpc_cc=4.999)
+        adgss = ad_group.settings
 
         hist = ad_group.write_history(
             '',
@@ -1141,15 +1112,8 @@ class HistoryTest(TestCase):
         ad_group = models.AdGroup.objects.get(pk=2)
         source = models.Source.objects.get(pk=1)
         adgs = models.AdGroupSource.objects.filter(ad_group=ad_group, source=source).first()
-        adgss = models.AdGroupSourceSettings(
-            ad_group_source=adgs,
-            daily_budget_cc=10000,
-        )
-        adgss.save(None)
-
-        adgss = adgss.copy_settings()
-        adgss.daily_budget_cc = 50000
-        adgss.save(None)
+        adgs.settings.update(None, daily_budget_cc=10000)
+        adgs.settings.update(None, daily_budget_cc=50000)
 
         adgs_hist = self._latest_ad_group_history(ad_group=ad_group)
         self.assertDictEqual(
@@ -1164,23 +1128,14 @@ class HistoryTest(TestCase):
 
     def test_create_campaign_history(self):
         campaign = models.Campaign.objects.get(pk=1)
-        adgss = models.CampaignSettings(
-            campaign=campaign,
-            name='Awesome',
-        )
-        adgss.save(None)
+        campaign.settings.update(None, name='Awesome')
 
-        hist = campaign.write_history(
-            '',
-            changes=model_to_dict(adgss),
-        )
+        hist = self._latest_campaign_history(campaign=campaign)
 
         self.assertEqual(campaign, hist.campaign)
         self.assertEqual('Awesome', hist.changes['name'])
 
-        adgss = adgss.copy_settings()
-        adgss.name = 'Awesomer'
-        adgss.save(None)
+        campaign.settings.update(None, name='Awesomer')
 
         camp_hist = self._latest_campaign_history(campaign=campaign)
         self.assertDictEqual(
@@ -1202,11 +1157,8 @@ class HistoryTest(TestCase):
         r = test_helper.fake_request(User.objects.get(pk=1))
 
         account = models.Account.objects.get(pk=1)
-        adgss = models.AccountSettings(
-            account=account,
-            archived=False,
-        )
-        adgss.save(r)
+        account.settings.update(None, name='')
+        adgss = account.settings
 
         hist = account.write_history(
             "",
@@ -1279,74 +1231,6 @@ class HistoryTest(TestCase):
         self.assertEqual(account, hist.account)
         self.assertDictEqual({'amount': 20000}, hist.changes)
 
-    def test_create_new_ad_group_history(self):
-        campaign = models.Campaign.objects.get(pk=1)
-
-        req = test_helper.fake_request(self.u)
-        ad_group = models.AdGroup(
-            name='Test group',
-            campaign=campaign,
-        )
-        ad_group.save(req)
-        new_settings = models.AdGroupSettings(
-            ad_group=ad_group,
-            cpc_cc=100
-        )
-        new_settings.save(req)
-
-        history = models.History.objects.all().first()
-        self.assertEqual(textwrap.dedent('''
-            Created settings
-            . State set to "Paused"
-            , Max CPC bid set to "$100.000"
-            , Device targeting set to ""
-            , Locations set to "worldwide"
-            , Excluded Locations set to "none"
-            , Autopilot set to "Disabled"
-            , Autopilot\'s Daily Spend Cap set to "$0.00"
-            , Landing Mode set to "False"
-            , Group all RTB sources set to "False"
-            , Daily budget for all RTB sources set to "$0.00"
-            , Bid CPC for all RTB sources set to "$0.010"
-            , State of all RTB sources set to "Paused"
-            ''').replace('\n', ''), history.changes_text)
-
-    def test_create_new_campaign_history(self):
-        account = models.Account.objects.get(pk=1)
-
-        req = test_helper.fake_request(self.u)
-        campaign = models.Campaign(
-            name='Test campaign',
-            account=account,
-        )
-        campaign.save(req)
-        new_settings = campaign.get_current_settings()
-        new_settings.name = 'Tested campaign'
-        new_settings.save(req)
-
-        history = models.History.objects.all().first()
-        self.assertEqual(textwrap.dedent('''
-            Created settings
-            . Name set to "Tested campaign"
-            , Device targeting set to "Tablet, Mobile, Desktop"
-            , Locations set to "United States"
-            ''').replace('\n', ''), history.changes_text)
-
-    def test_create_new_account_history(self):
-        req = test_helper.fake_request(self.u)
-        account = models.Account(
-            name='Test account',
-        )
-        account.save(req)
-        new_settings = models.AccountSettings(
-            name='Tested account',
-            account=account,
-        )
-        new_settings.save(req)
-
-        history = models.History.objects.all().first()
-        self.assertEqual('Created settings', history.changes_text)
-
     def test_create_new_bcm_history(self):
         ad_group = models.AdGroup.objects.get(pk=1)
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
@@ -1404,76 +1288,55 @@ class HistoryTest(TestCase):
 
     def test_create_account(self):
         req = test_helper.fake_request(self.u)
-        a = models.Account(
-            name='test',
-        )
-        a.save(req)
-
-        acs = a.get_current_settings()
-        acs.save(req)
+        models.Account.objects.create(req, '')
 
         hist = models.History.objects.all().order_by('-created_dt').first()
-        self.assertEqual('Created settings', hist.changes_text)
+        self.assertIn('Created settings', hist.changes_text)
 
     def test_create_campaign(self):
         req = test_helper.fake_request(self.u)
-        c = models.Campaign(
-            name='test',
-            account=models.Account.objects.all().get(pk=1),
-        )
-        c.save(req)
-
-        cs = c.get_current_settings()
-        cs.save(req)
+        account = models.Account.objects.all().get(pk=1)
+        models.Campaign.objects.create(req, account, 'test')
 
         hist = models.History.objects.all().order_by('-created_dt').first()
         self.assertEqual(textwrap.dedent('''
             Created settings
-            . Device targeting set to "Tablet, Mobile, Desktop"
+            . Name set to "test"
+            , Campaign Manager set to "luka.silovinac@zemanta.com"
+            , Device targeting set to "Tablet, Mobile, Desktop"
             , Locations set to "United States"
             ''').replace('\n', ''), hist.changes_text)
 
+    @patch('dash.models.AdGroup.objects._post_create', lambda ag, ags: None)
     def test_create_ad_group(self):
         req = test_helper.fake_request(self.u)
-        a = models.AdGroup(
-            name='test',
-            campaign=models.Campaign.objects.all().get(pk=1),
-        )
-        a.save(req)
+        campaign = models.Campaign.objects.all().get(pk=1)
 
-        adgs = a.get_current_settings()
-        adgs.save(req)
+        ag = models.AdGroup.objects.create(req, campaign, name='test')
 
-        hist = models.History.objects.all().order_by('-created_dt').first()
-        self.assertEqual(textwrap.dedent('''
-            Created settings. State set to "Paused"
-            , Start date set to "{}"
-            , Daily spend cap set to "$10.00"
-            , Device targeting set to "Tablet, Mobile, Desktop"
-            , Locations set to "United States"
-            , Excluded Locations set to "none"
-            , Autopilot set to "Optimize Bids and Daily Spend Caps"
-            , Autopilot\'s Daily Spend Cap set to "$100.00"
-            , Landing Mode set to "False"
-            , Group all RTB sources set to "True"
-            , Daily budget for all RTB sources set to "$50.00"
-            , Bid CPC for all RTB sources set to "$0.450"
-            , State of all RTB sources set to "Enabled"
-            ''').format(datetime.date.today().isoformat()).replace('\n', ''), hist.changes_text)
+        hist = models.History.objects.all().filter(ad_group=ag).order_by('-created_dt').first()
+        self.assertIn('Created settings', hist.changes_text)
 
     def test_create_ad_group_source(self):
-        s = models.Source.objects.create(
-            name='b1'
+        req = test_helper.fake_request(self.u)
+        s = magic_mixer.blend(
+            models.Source,
+            name='b1',
+            supports_retargeting=True,
+            maintenance=False,
         )
+        credentials = magic_mixer.blend(models.SourceCredentials)
+        magic_mixer.blend(models.DefaultSourceSettings, source=s, credentials=credentials)
         ad_group = models.AdGroup.objects.get(pk=1)
-        new_adgs = models.AdGroupSource(
+        ad_group.campaign.account.allowed_sources.add(s)
+        models.AdGroupSource.objects.create(
+            req,
             source=s,
             ad_group=ad_group
         )
-        new_adgs.save()
 
         hist = models.History.objects.all().order_by('-created_dt').first()
-        self.assertEqual('Created settings. Source: b1.', hist.changes_text)
+        self.assertIn('Created settings. Source: b1.', hist.changes_text)
 
 
 @override_settings(CONVERSION_PIXEL_PREFIX='test_prefix')
@@ -1525,42 +1388,3 @@ class PublisherGroupTest(TestCase):
         ags.blacklist_publisher_groups = []
         ags.save(None)
         self.assertTrue(pg.can_delete())
-
-
-class ReadOnlyTestCase(TestCase):
-    fixtures = ['test_api_breakdowns.yaml']
-
-    def try_everything_w_queryset(self, cls):
-        with self.assertRaises(AssertionError):
-            cls.objects.bulk_create()
-
-        with self.assertRaises(AssertionError):
-            cls.objects.all().delete()
-
-        with self.assertRaises(AssertionError):
-            cls.objects.all().update()
-
-        with self.assertRaises(AssertionError):
-            cls.objects.all().get_or_create()
-
-        with self.assertRaises(AssertionError):
-            cls.objects.all().create()
-
-    def try_everything_w_obj(self, obj):
-        with self.assertRaises(AssertionError):
-            obj.save()
-
-        with self.assertRaises(AssertionError):
-            obj.delete()
-
-    def test_account_settings(self):
-        obj = models.AccountSettingsReadOnly.objects.get(pk=1)
-
-        self.try_everything_w_queryset(obj.__class__)
-        self.try_everything_w_obj(obj)
-
-    def test_campaign_settings(self):
-        obj = models.CampaignSettingsReadOnly.objects.get(pk=1)
-
-        self.try_everything_w_queryset(obj.__class__)
-        self.try_everything_w_obj(obj)

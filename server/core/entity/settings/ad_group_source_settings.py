@@ -2,7 +2,6 @@
 
 from decimal import Decimal
 
-from django.conf import settings
 from django.db import models
 
 from dash import constants
@@ -40,19 +39,9 @@ class AdGroupSourceSettings(SettingsBase):
     ad_group_source = models.ForeignKey(
         'AdGroupSource',
         null=True,
-        related_name='settings',
         on_delete=models.PROTECT
     )
 
-    created_dt = models.DateTimeField(
-        auto_now_add=True, verbose_name='Created at')
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        related_name='+',
-        null=True,
-        blank=True,
-        on_delete=models.PROTECT
-    )
     system_user = models.PositiveSmallIntegerField(
         choices=constants.SystemUserType.get_choices(),
         null=True,
@@ -104,65 +93,19 @@ class AdGroupSourceSettings(SettingsBase):
             value = str(value)
         return value
 
-    def save(self, request, action_type=None, *args, **kwargs):
-        if self.pk is None and request is not None:
-            self.created_by = request.user
-
-        super(AdGroupSourceSettings, self).save(*args, **kwargs)
-        self.add_to_history(request and request.user, action_type)
-
-    def add_to_history(self, user, action_type):
-        current_settings = self.ad_group_source.ad_group.get_current_settings()
-
-        changes = self.get_model_state_changes(
-            self.get_settings_dict()
-        )
+    def add_to_history(self, user, action_type, changes):
         _, changes_text = self.construct_changes(
             'Created settings.',
             'Source: {}.'.format(self.ad_group_source.source.name),
             changes
         )
-        current_settings.ad_group.write_history(
+        self.ad_group_source.ad_group.write_history(
             changes_text,
             changes=changes,
             user=user,
             action_type=action_type,
             system_user=self.system_user,
         )
-
-    @classmethod
-    def get_current_settings(cls, ad_group, sources):
-        source_ids = [x.pk for x in sources]
-
-        source_settings = cls.objects.filter(
-            ad_group_source__ad_group=ad_group,
-        ).order_by('-created_dt')
-
-        result = {}
-        for s in source_settings:
-            source = s.ad_group_source.source
-
-            if source.id in result:
-                continue
-
-            result[source.id] = s
-
-            if len(result) == len(source_ids):
-                break
-
-        for sid in source_ids:
-            if sid in result:
-                continue
-
-            result[sid] = cls(
-                state=None,
-                ad_group_source=core.entity.AdGroupSource(
-                    ad_group=ad_group,
-                    source=core.source.Source.objects.get(pk=sid)
-                )
-            )
-
-        return result
 
     def get_external_daily_budget_cc(self, account, license_fee, margin):
         daily_budget_cc = self.daily_budget_cc
@@ -187,6 +130,9 @@ class AdGroupSourceSettings(SettingsBase):
     class QuerySet(SettingsQuerySet):
 
         def group_current_settings(self):
+            return self.filter(latest_for_ad_group_source__isnull=False)
+
+        def latest_per_entity(self):
             return self.order_by('ad_group_source_id', '-created_dt').distinct('ad_group_source')
 
         def filter_by_sources(self, sources):

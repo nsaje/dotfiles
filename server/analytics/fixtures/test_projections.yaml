@@ -16,6 +16,14 @@
     model: zemauth.user
     pk: 1
 
+# test accountsettings
+
+-   fields:
+        account: 1
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.accountsettings
+    pk: 1
+
 # test account
 
 -   fields:
@@ -24,8 +32,23 @@
         modified_by: 1
         name: 'test account 1'
         users: [1]
+        settings: 1
     model: dash.account
     pk: 1
+
+# test campaignsettings
+
+-   fields:
+        campaign: 1
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaignsettings
+    pk: 1
+
+-   fields:
+        campaign: 2
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaignsettings
+    pk: 2
 
 # test campaign
 
@@ -34,6 +57,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         account: 1 # test account 1
+        settings: 1
         name: 'test campaign 1'
     model: dash.campaign
     pk: 1
@@ -43,6 +67,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         account: 1 # test account 1
+        settings: 2
         name: 'test campaign 2'
     model: dash.campaign
     pk: 2

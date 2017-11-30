@@ -414,7 +414,6 @@ class CampaignSettings(api_common.BaseApiView):
         self.set_campaign(campaign, settings_form.cleaned_data)
 
         if current_settings.get_setting_changes(new_settings):
-            helpers.save_campaign_settings_and_propagate(campaign, current_settings, new_settings, request)
             helpers.log_and_notify_campaign_settings_change(
                 campaign, current_settings, new_settings, request
             )
@@ -427,6 +426,7 @@ class CampaignSettings(api_common.BaseApiView):
                     is_readable = False
                 if not is_readable:
                     email_helper.send_ga_setup_instructions(request.user)
+            helpers.save_campaign_settings_and_propagate(campaign, current_settings, new_settings, request)
 
         response = {
             'settings': self.get_dict(request, new_settings, campaign),
@@ -919,9 +919,6 @@ class AccountSettings(api_common.BaseApiView):
                     raise exc.AuthorizationError()
                 settings.salesforce_url = form.cleaned_data['salesforce_url']
 
-            # FIXME: changes_text should be part of account settings comparison in
-            # dash.models and not in views
-            changes_text = None
             if 'allowed_sources' in form.cleaned_data and\
                     form.cleaned_data['allowed_sources'] is not None:
                 changes_text = self.set_allowed_sources(
@@ -929,6 +926,11 @@ class AccountSettings(api_common.BaseApiView):
                     account,
                     request.user.has_perm('zemauth.can_see_all_available_sources'),
                     form
+                )
+                account.write_history(
+                    changes_text,
+                    action_type=constants.HistoryActionType.SETTINGS_CHANGE,
+                    user=request.user,
                 )
 
             if 'facebook_page' in form.data:
@@ -948,7 +950,7 @@ class AccountSettings(api_common.BaseApiView):
             settings.save(
                 request,
                 action_type=constants.HistoryActionType.SETTINGS_CHANGE,
-                changes_text=changes_text)
+            )
             return settings
 
     def _validate_essential_account_settings(self, user, form):

@@ -62,11 +62,7 @@ class CampaignSettings(SettingsBase):
         null=False
     )
     campaign = models.ForeignKey(
-        core.entity.Campaign, related_name='settings', on_delete=models.PROTECT)
-    created_dt = models.DateTimeField(
-        auto_now_add=True, verbose_name='Created at')
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT,
-                                   null=True, blank=True)
+        core.entity.Campaign, on_delete=models.PROTECT)
     system_user = models.PositiveSmallIntegerField(choices=constants.SystemUserType.get_choices(),
                                                    null=True, blank=True)
     campaign_manager = models.ForeignKey(
@@ -124,26 +120,8 @@ class CampaignSettings(SettingsBase):
 
     objects = core.common.QuerySetManager()
 
-    def save(self,
-             request=None,
-             user=None,
-             action_type=None,
-             *args, **kwargs):
-        if self.pk is None:
-            if request is not None:
-                self.created_by = request.user
-            elif user is not None:
-                self.created_by = user
-            else:
-                self.created_by = None
-        super(CampaignSettings, self).save(*args, **kwargs)
-        self.add_to_history(request and request.user, action_type)
-
-    def add_to_history(self, user, action_type):
-        changes = self.get_model_state_changes(
-            self.get_settings_dict()
-        )
-        changes_text = self.get_changes_text_from_dict(changes)
+    def add_to_history(self, user, action_type, changes, history_changes_text=None):
+        changes_text = history_changes_text or self.get_changes_text_from_dict(changes)
         self.campaign.write_history(
             self.changes_text or changes_text,
             changes=changes,
@@ -161,7 +139,7 @@ class CampaignSettings(SettingsBase):
     class QuerySet(SettingsQuerySet):
 
         def group_current_settings(self):
-            return self.order_by('campaign_id', '-created_dt').distinct('campaign')
+            return self.filter(latest_for_campaign__isnull=False)
 
     @classmethod
     def get_defaults_dict(cls):

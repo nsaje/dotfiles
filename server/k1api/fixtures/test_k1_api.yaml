@@ -44,38 +44,6 @@
     model: dash.outbrainaccount
     pk: 3
 
-# test account
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-        modified_by: 1
-        name: 'test account 1'
-        outbrain_marketer_id: 'abcde'
-        agency: 20
-        custom_flags: {'flag_3': True, 'flag_2': True}
-    model: dash.account
-    pk: 1
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-        modified_by: 1
-        name: 'test account 2'
-        agency: 20
-    model: dash.account
-    pk: 2
-
-    # no outbrain marketer id
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-        modified_by: 1
-        name: 'test account 3'
-        agency: 20
-    model: dash.account
-    pk: 3
-
 # test account settings
 -   fields:
         created_dt: '2014-06-04T09:58:21'
@@ -92,6 +60,47 @@
         account: 2
     model: dash.accountsettings
     pk: 2
+
+-   fields:
+        account: 3
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.accountsettings
+    pk: 3
+
+# test account
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test account 1'
+        outbrain_marketer_id: 'abcde'
+        agency: 20
+        custom_flags: {'flag_3': True, 'flag_2': True}
+        settings: 1
+    model: dash.account
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test account 2'
+        agency: 20
+        settings: 2
+    model: dash.account
+    pk: 2
+
+    # no outbrain marketer id
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test account 3'
+        agency: 20
+        settings: 3
+    model: dash.account
+    pk: 3
 
 # test agencies
 
@@ -112,6 +121,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         account: 1 # test account 1
+        settings: 1
         name: 'test campaign 1'
         custom_flags: {'flag_1': True, 'flag_2': True}
     model: dash.campaign
@@ -122,6 +132,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         account: 2 # test account 2
+        settings: 4
         name: 'test campaign 2'
     model: dash.campaign
     pk: 2
@@ -447,6 +458,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         campaign: 1
+        settings: 1
         name: 'test adgroup 1'
         custom_flags: {'flag_1': True}
     model: dash.adgroup
@@ -457,6 +469,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         campaign: 1
+        settings: 2
         name: 'test adgroup 2'
     model: dash.adgroup
     pk: 2
@@ -466,6 +479,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         campaign: 2
+        settings: 4
         name: 'test adgroup 3'
     model: dash.adgroup
     pk: 3
@@ -537,6 +551,7 @@
 -   fields:
         source: 1
         ad_group: 1
+        settings: 1
         source_campaign_key: '["fake"]'
         source_credentials: 1
         last_successful_sync_dt: '2014-07-03T06:00:00'
@@ -546,6 +561,7 @@
 -   fields:
         source: 2
         ad_group: 1
+        settings: 2
         source_campaign_key: '["fake"]'
         source_credentials: 2
     model: dash.adgroupsource
@@ -554,6 +570,7 @@
 -   fields:
         source: 3
         ad_group: 1
+        settings: 3
         source_campaign_key: '["fake"]'
         source_credentials: 3
     model: dash.adgroupsource
@@ -562,6 +579,7 @@
 -   fields:
         source: 4
         ad_group: 1
+        settings: 4
         source_campaign_key: '["fake"]'
         source_credentials: 4
     model: dash.adgroupsource
@@ -570,6 +588,7 @@
 -   fields:
         source: 5
         ad_group: 1
+        settings: 5
         source_campaign_key: '["fake"]'
         source_credentials: 5
     model: dash.adgroupsource
@@ -578,6 +597,7 @@
 -   fields:
         source: 6
         ad_group: 1
+        settings: 6
         source_campaign_key: '["fake"]'
         source_credentials: 6
     model: dash.adgroupsource
@@ -586,6 +606,7 @@
 -   fields:
         source: 5
         ad_group: 2
+        settings: 7
         source_campaign_key: '["fake"]'
         source_credentials: 6
     model: dash.adgroupsource
@@ -594,6 +615,7 @@
 -   fields:
         source: 4
         ad_group: 2
+        settings: 8
         source_campaign_key: '["fake"]'
         source_credentials: 6
     model: dash.adgroupsource
@@ -602,6 +624,7 @@
 -   fields:
         source: 7
         ad_group: 2
+        settings: 9
         source_campaign_key: '["fake"]'
         source_credentials: 6
     model: dash.adgroupsource
@@ -610,6 +633,7 @@
 -   fields:
         source: 8
         ad_group: 2
+        settings: 10
         source_campaign_key: '["fake"]'
         source_credentials: 6
     model: dash.adgroupsource
@@ -618,17 +642,17 @@
 # test adgroupsourcesettings
 
 -   fields:
-        created_dt: '2014-06-05T09:58:21'
-        ad_group_source: 5
-        cpc_cc: null
+        created_dt: '2014-06-05T09:58:22'
+        ad_group_source: 1
+        cpc_cc: '0.12'
         daily_budget_cc: null
-        state: 2
+        state: 1
     model: dash.adgroupsourcesettings
     pk: 1
 
 -   fields:
         created_dt: '2014-06-05T09:58:22'
-        ad_group_source: 3
+        ad_group_source: 2
         cpc_cc: '0.12'
         daily_budget_cc: null
         state: 2
@@ -637,12 +661,39 @@
 
 -   fields:
         created_dt: '2014-06-05T09:58:22'
-        ad_group_source: 1
+        ad_group_source: 3
         cpc_cc: '0.12'
         daily_budget_cc: null
-        state: 1
+        state: 2
     model: dash.adgroupsourcesettings
     pk: 3
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 4
+        cpc_cc: null
+        daily_budget_cc: null
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 4
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 5
+        cpc_cc: null
+        daily_budget_cc: null
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 5
+
+-   fields:
+        created_dt: '2014-06-05T09:58:22'
+        ad_group_source: 6
+        cpc_cc: '0.12'
+        daily_budget_cc: '1.5'
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 6
 
 -   fields:
         created_dt: '2014-06-05T09:58:22'
@@ -651,16 +702,16 @@
         daily_budget_cc: null
         state: 1
     model: dash.adgroupsourcesettings
-    pk: 4
+    pk: 7
 
 -   fields:
         created_dt: '2014-06-05T09:58:22'
-        ad_group_source: 6
+        ad_group_source: 8
         cpc_cc: '0.12'
-        daily_budget_cc: '1.5'
+        daily_budget_cc: null
         state: 1
     model: dash.adgroupsourcesettings
-    pk: 5
+    pk: 8
 
 -   fields:
         created_dt: '2014-06-05T09:58:22'
@@ -669,7 +720,7 @@
         daily_budget_cc: '1.6'
         state: 1
     model: dash.adgroupsourcesettings
-    pk: 6
+    pk: 9
 
 -   fields:
         created_dt: '2014-06-05T09:58:22'
@@ -678,7 +729,7 @@
         daily_budget_cc: '1.7'
         state: 1
     model: dash.adgroupsourcesettings
-    pk: 7
+    pk: 10
 
 
 # test uploadbatch

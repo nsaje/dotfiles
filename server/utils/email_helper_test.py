@@ -11,6 +11,7 @@ from zemauth.models import User
 from dash import models as dash_models
 import dash.constants
 from utils import email_helper
+from utils.magic_mixer import magic_mixer
 
 
 @override_settings(
@@ -72,23 +73,11 @@ class EmailHelperTestCase(TestCase):
         campaign_manager = User.objects.create_user('manager@user.com')
         account_manager = User.objects.create_user('accountmanager@user.com')
 
-        account = dash_models.Account()
-        account.save(self.request)
+        ad_group = magic_mixer.blend(
+            dash_models.AdGroup, id=8, name='', campaign__name='', campaign__account__name='')
 
-        campaign = dash_models.Campaign(account=account)
-        campaign.save(self.request)
-
-        campaign_settings = dash_models.CampaignSettings(campaign=campaign, campaign_manager=campaign_manager)
-        campaign_settings.save(self.request)
-
-        account_settings = dash_models.AccountSettings(
-            account=campaign.account,
-            default_account_manager=account_manager
-        )
-        account_settings.save(self.request)
-
-        ad_group = dash_models.AdGroup(id=8, campaign=campaign)
-        ad_group.save(self.request)
+        ad_group.campaign.settings.update(None, campaign_manager=campaign_manager)
+        ad_group.campaign.account.settings.update(None, default_account_manager=account_manager)
 
         email_helper.send_ad_group_notification_email(ad_group, self.request, 'Something changed, yo')
 
@@ -114,16 +103,7 @@ class EmailHelperTestCase(TestCase):
     )
     @patch('utils.email_helper.pagerduty_helper.trigger')
     def test_send_ad_group_notification_email_failed(self, mock_trigger_event):
-        account = dash_models.Account()
-        account.save(self.request)
-
-        campaign = dash_models.Campaign(account=account)
-        campaign.save(self.request)
-
-        ad_group = dash_models.AdGroup(campaign=campaign)
-        ad_group.save(self.request)
-
-        campaign.get_current_settings().save(self.request)
+        ad_group = magic_mixer.blend(dash_models.AdGroup)
 
         email_helper.send_ad_group_notification_email(ad_group, self.request, 'Test')
 
@@ -133,23 +113,11 @@ class EmailHelperTestCase(TestCase):
         campaign_manager = User.objects.create_user('manager@user.com')
         account_manager = User.objects.create_user('accountmanager@user.com')
 
-        account = dash_models.Account()
-        account.save(self.request)
+        campaign = magic_mixer.blend(
+            dash_models.Campaign, id=48, name='', account__name='')
 
-        campaign = dash_models.Campaign(account=account, id=48)
-        campaign.save(self.request)
-
-        campaign_settings = dash_models.CampaignSettings(
-            campaign=campaign,
-            campaign_manager=campaign_manager
-        )
-        campaign_settings.save(self.request)
-
-        account_settings = dash_models.AccountSettings(
-            account=campaign.account,
-            default_account_manager=account_manager
-        )
-        account_settings.save(self.request)
+        campaign.settings.update(None, campaign_manager=campaign_manager)
+        campaign.account.settings.update(None, default_account_manager=account_manager)
 
         email_helper.send_campaign_notification_email(campaign, self.request, 'Something changed, yo')
 
@@ -168,15 +136,10 @@ class EmailHelperTestCase(TestCase):
         self.assertEqual(len(mail.outbox), 1)
 
     def test_send_account_notification_email(self):
-        account = dash_models.Account()
-        account.save(self.request)
+        account = magic_mixer.blend(dash_models.Account, name='')
 
         account_manager = User.objects.create_user('accountmanager@user.com')
-        account_settings = dash_models.AccountSettings(
-            account=account,
-            default_account_manager=account_manager
-        )
-        account_settings.save(self.request)
+        account.settings.update(None, default_account_manager=account_manager)
 
         email_helper.send_account_notification_email(account, self.request, 'Something changed, yo')
 
@@ -245,16 +208,7 @@ Zemanta
     )
     @patch('utils.email_helper.pagerduty_helper.trigger')
     def test_send_campaign_notification_email_failed(self, mock_trigger_event):
-        account = dash_models.Account()
-        account.save(self.request)
-
-        campaign = dash_models.Campaign(account=account)
-        campaign.save(self.request)
-
-        ad_group = dash_models.AdGroup(campaign=campaign)
-        ad_group.save(self.request)
-
-        campaign.get_current_settings().save(self.request)
+        campaign = magic_mixer.blend(dash_models.Campaign)
 
         email_helper.send_campaign_notification_email(campaign, self.request, 'Test')
 
@@ -333,20 +287,10 @@ Zemanta''')
         campaign_manager = User.objects.create_user('manager@user.com')
         account_manager = User.objects.create_user('accountmanager@user.com')
 
-        account = dash_models.Account()
-        account.save(self.request)
+        campaign = magic_mixer.blend(dash_models.Campaign, id=48, name='', account__name='')
 
-        campaign = dash_models.Campaign(account=account, id=48)
-        campaign.save(self.request)
-
-        campaign_settings = dash_models.CampaignSettings(campaign=campaign, campaign_manager=campaign_manager)
-        campaign_settings.save(self.request)
-
-        account_settings = dash_models.AccountSettings(
-            account=campaign.account,
-            default_account_manager=account_manager
-        )
-        account_settings.save(self.request)
+        campaign.settings.update(None, campaign_manager=campaign_manager)
+        campaign.account.settings.update(None, default_account_manager=account_manager)
 
         email_helper.send_budget_notification_email(campaign, self.request, 'Something changed, yo')
 
@@ -372,16 +316,7 @@ Zemanta''')
     )
     @patch('utils.email_helper.pagerduty_helper.trigger')
     def test_send_budget_notification_email_failed(self, mock_trigger_event):
-        account = dash_models.Account()
-        account.save(self.request)
-
-        campaign = dash_models.Campaign(account=account)
-        campaign.save(self.request)
-
-        ad_group = dash_models.AdGroup(campaign=campaign)
-        ad_group.save(self.request)
-
-        campaign.get_current_settings().save(self.request)
+        campaign = magic_mixer.blend(dash_models.Campaign)
 
         email_helper.send_budget_notification_email(campaign, self.request, 'Test')
 

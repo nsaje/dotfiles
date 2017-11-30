@@ -728,7 +728,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 ad_group,
                 ad_group_source,
                 ad_group_settings,
-                ad_group_source.get_current_settings_or_none(),
+                ad_group_source.get_current_settings(),
                 campaign_settings,
                 allowed_sources,
                 campaign_stop.can_enable_media_source(

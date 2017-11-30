@@ -1,12 +1,35 @@
+# test accountsettings
+
+-   fields:
+        account: 201001
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.accountsettings
+    pk: 201001
+
 # Accounts
 
 - fields:
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
+    settings: 201001
     name: 'Test Autopilot Account'
   model: dash.account
   pk: 201001
+
+# test campaignsettings
+
+-   fields:
+        campaign: 201001
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaignsettings
+    pk: 201001
+
+-   fields:
+        campaign: 201002
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaignsettings
+    pk: 201002
 
 # Campaigns
 
@@ -15,6 +38,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     account: 201001
+    settings: 201001
     name: 'Test Autopilot Campaign'
   model: dash.campaign
   pk: 201001
@@ -24,6 +48,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     account: 201001
+    settings: 201002
     name: 'Test Autopilot Campaign'
   model: dash.campaign
   pk: 201002
@@ -35,6 +60,7 @@
     modified_dt: '2017-01-01T09:00:00'
     modified_by: 1
     campaign: 201001
+    settings: 201001
     name: 'Test Ad Group Without Autopilot'
   model: dash.adgroup
   pk: 201001
@@ -44,6 +70,7 @@
     modified_dt: '2017-01-01T09:00:00'
     modified_by: 1
     campaign: 201002
+    settings: 201002
     name: 'Test Ad Group with Autopilot and without B1 Sources Group'
   model: dash.adgroup
   pk: 201002
@@ -53,6 +80,7 @@
     modified_dt: '2017-01-01T09:00:00'
     modified_by: 1
     campaign: 201002
+    settings: 201003
     name: 'Test Ad Group With Autopilot and with B1 Sources Group'
   model: dash.adgroup
   pk: 201003
@@ -86,11 +114,18 @@
   model: dash.adgroupsettings
   pk: 201002
 
+- fields:
+    ad_group_id: 201003
+    created_dt: '2017-01-01T09:00:00'
+  model: dash.adgroupsettings
+  pk: 201003
+
 # Ad Group Sources
 
 - fields:
     source: 1  # b1 source type
     ad_group: 201002
+    settings: 201001
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 201001
@@ -98,6 +133,7 @@
 - fields:
     source: 2  # not b1 source type
     ad_group: 201002
+    settings: 201002
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 201002
@@ -105,6 +141,7 @@
 - fields:
     source: 3  # b1 source type
     ad_group: 201002
+    settings: 201003
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 201003

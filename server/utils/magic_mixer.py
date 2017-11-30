@@ -1,4 +1,3 @@
-import datetime
 from mock import Mock
 from mixer.backend.django import mixer as mixer_base
 from django.contrib.postgres.fields import ArrayField
@@ -36,13 +35,6 @@ class MagicMixer(mixer_base.__class__):
         # shortcut
         return get_request_mock(self.blend_user(permissions, is_superuser))
 
-    def blend_latest_settings(self, parent, **kwargs):
-        latest_settings = parent.get_current_settings()
-        kwargs[parent.settings.field.name] = parent
-        return self.blend(parent.settings.model,
-                          created_dt=latest_settings.created_dt + datetime.timedelta(days=1),
-                          **kwargs)
-
     def blend_source_w_defaults(self, **kwargs):
         kw = 'default_source_settings'
         dss_kwargs = {k[25:]: v for k, v in kwargs.items() if k.startswith(kw)}
@@ -54,10 +46,27 @@ class MagicMixer(mixer_base.__class__):
 
     def postprocess(self, target):
         if self.params.get('commit'):
-            try:
-                target.save()
-            except TypeError:
-                target.save(request=get_request_mock(self.blend_user()))
+            def _save():
+                try:
+                    target.save()
+                except TypeError:
+                    target.save(request=get_request_mock(self.blend_user()))
+            _save()
+
+            for field in target._meta.fields:
+                if field.name == 'settings':
+                    back_field_name = None
+                    for settings_field in field.remote_field.model._meta.get_fields():
+                        if (settings_field.remote_field is not None and
+                                hasattr(settings_field, 'attname') and
+                                settings_field.remote_field.model == target.__class__):
+                            back_field_name = settings_field.name
+                    params = {back_field_name: target}
+                    params.update(**field.remote_field.model.get_defaults_dict())
+                    settings = field.remote_field.model(**params)
+                    settings.update_unsafe(None)
+                    target.settings = settings
+                    _save()
 
         return target
 

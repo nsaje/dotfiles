@@ -48,28 +48,6 @@
     model: zemauth.user
     pk: 3
 
-# test account
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-        modified_by: 1
-        name: 'test account 1'
-        outbrain_marketer_id: 'omid_1'
-        users: [1, 2, 3]
-    model: dash.account
-    pk: 1
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-        modified_by: 1
-        name: 'test account 2'
-        outbrain_marketer_id: 'omid_10'
-        users: [1, 2, 3]
-    model: dash.account
-    pk: 2
-
 # test accountsettings
 
 -   fields:
@@ -84,6 +62,36 @@
         blacklist_publisher_groups: [1]
     model: dash.accountsettings
     pk: 1
+
+-   fields:
+        account: 2
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.accountsettings
+    pk: 2
+
+# test account
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test account 1'
+        outbrain_marketer_id: 'omid_1'
+        users: [1, 2, 3]
+        settings: 1
+    model: dash.account
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test account 2'
+        outbrain_marketer_id: 'omid_10'
+        users: [1, 2, 3]
+        settings: 2
+    model: dash.account
+    pk: 2
 
 # tet campaignsettings
 
@@ -109,9 +117,18 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         account: 1 # test account 1
+        settings: 1
         name: 'test campaign 1'
     model: dash.campaign
     pk: 1
+
+# test adgroupsettings
+
+-   fields:
+        ad_group: 987
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.adgroupsettings
+    pk: 987
 
 # test adgroup
 
@@ -120,9 +137,10 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         campaign: 1
+        settings: 987
         name: 'test adgroup 1'
     model: dash.adgroup
-    pk: 1
+    pk: 987
 
 # test source types
 

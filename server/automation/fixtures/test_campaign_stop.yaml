@@ -15,11 +15,20 @@
   model: zemauth.user
   pk: 1
 
+# test accountsettings
+
+-   fields:
+        account: 1
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.accountsettings
+    pk: 1
+
 # Accounts
 - fields:
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
+    settings: 1
     name: 'Test Account 1ž'
   model: dash.account
   pk: 1
@@ -30,6 +39,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     account: 1
+    settings: 1
     name: 'Test Campaign 1ž'
   model: dash.campaign
   pk: 1
@@ -39,6 +49,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     account: 1
+    settings: 2
     name: 'Test Campaign 2'
   model: dash.campaign
   pk: 2
@@ -48,6 +59,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     account: 1
+    settings: 3
     name: 'Test Campaign 3'
   model: dash.campaign
   pk: 3
@@ -57,6 +69,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     account: 1
+    settings: 4
     name: 'Test Campaign 4'
   model: dash.campaign
   pk: 4
@@ -66,6 +79,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     account: 1
+    settings: 5
     name: 'Test Campaign 5'
   model: dash.campaign
   pk: 5
@@ -75,6 +89,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     account: 1
+    settings: 7
     name: 'Test Campaign 6'
   model: dash.campaign
   pk: 6
@@ -159,6 +174,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 1
+    settings: 2
     name: 'Test AdGroup 1ž'
   model: dash.adgroup
   pk: 1
@@ -168,6 +184,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 1
+    settings: 3
     name: 'Test AdGroup 2'
   model: dash.adgroup
   pk: 2
@@ -177,6 +194,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 1
+    settings: 4
     name: 'Test AdGroup 3'
   model: dash.adgroup
   pk: 3
@@ -186,6 +204,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 2
+    settings: 6
     name: 'Test AdGroup 4'
   model: dash.adgroup
   pk: 4
@@ -195,6 +214,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 3
+    settings: 8
     name: 'Test AdGroup 5'
   model: dash.adgroup
   pk: 5
@@ -204,6 +224,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 4
+    settings: 19
     name: 'Test AdGroup 6'
   model: dash.adgroup
   pk: 6
@@ -213,6 +234,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 6
+    settings: 11
     name: 'Test AdGroup 7'
   model: dash.adgroup
   pk: 7
@@ -222,6 +244,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 6
+    settings: 14
     name: 'Test AdGroup 8'
   model: dash.adgroup
   pk: 8
@@ -231,6 +254,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 6
+    settings: 17
     name: 'Test AdGroup 9'
   model: dash.adgroup
   pk: 9
@@ -240,6 +264,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 6
+    settings: 18
     name: 'Test AdGroup 10'
   model: dash.adgroup
   pk: 10
@@ -416,6 +441,15 @@
   model: dash.adgroupsettings
   pk: 18
 
+- fields:
+    ad_group_id: 6
+    created_dt: '2016-04-01T12:00:00'
+    state: 2
+    end_date: '2016-04-30'
+    landing_mode: True
+  model: dash.adgroupsettings
+  pk: 19
+
 # Source Types
 -   fields:
         type: 'b1'
@@ -499,6 +533,7 @@
 - fields:
     source: 1
     ad_group: 1
+    settings: 2
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 1
@@ -506,6 +541,7 @@
 - fields:
     source: 2
     ad_group: 1
+    settings: 4
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 2
@@ -513,6 +549,7 @@
 - fields:
     source: 3
     ad_group: 1
+    settings: 6
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 3
@@ -520,6 +557,7 @@
 - fields:
     source: 4
     ad_group: 1
+    settings: 9
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 4
@@ -527,6 +565,7 @@
 - fields:
     source: 5
     ad_group: 1
+    settings: 12
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 5
@@ -534,6 +573,7 @@
 - fields:
     source: 1
     ad_group: 2
+    settings: 13
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 6
@@ -541,6 +581,7 @@
 - fields:
     source: 2
     ad_group: 3
+    settings: 14
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 7
@@ -548,6 +589,7 @@
 - fields:
     source: 1
     ad_group: 7
+    settings: 17
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 8
@@ -555,6 +597,7 @@
 - fields:
     source: 2
     ad_group: 7
+    settings: 18
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 9
@@ -562,6 +605,7 @@
 - fields:
     source: 1
     ad_group: 8
+    settings: 21
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 10
@@ -569,6 +613,7 @@
 - fields:
     source: 2
     ad_group: 8
+    settings: 24
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 11
@@ -576,6 +621,7 @@
 - fields:
     source: 1
     ad_group: 9
+    settings: 26
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 12
@@ -583,6 +629,7 @@
 - fields:
     source: 1
     ad_group: 10
+    settings: 27
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 13

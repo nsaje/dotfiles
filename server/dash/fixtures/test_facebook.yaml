@@ -17,6 +17,28 @@
     pk: 100
 
 
+# test accountsettings
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 100
+        archived: False
+        name: 'Test settings 1'
+        account: 100
+        account_type: 5
+    model: dash.accountsettings
+    pk: 100
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 100
+        archived: True
+        name: 'Test settings 3'
+        account: 200
+    model: dash.accountsettings
+    pk: 300
+
+
 # test account
 
 -   fields:
@@ -26,6 +48,7 @@
         allowed_sources: [100,200]
         name: 'test account 100'
         users: [2, 100]
+        settings: 100
     model: dash.account
     pk: 100
 
@@ -33,6 +56,7 @@
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 100
+        settings: 300
         name: 'test account 200'
     model: dash.account
     pk: 200
@@ -57,6 +81,20 @@
     model: dash.facebookaccount
     pk: 200
 
+# test campaignsettings
+
+-   fields:
+        campaign: 100
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaignsettings
+    pk: 100
+
+-   fields:
+        campaign: 200
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaignsettings
+    pk: 200
+
 # test campaign
 
 -   fields:
@@ -64,6 +102,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 100
         account: 100 # test account 100
+        settings: 100
         name: 'test campaign 1 Čžš'
     model: dash.campaign
     pk: 100
@@ -73,6 +112,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 100
         account: 200 # test account 200
+        settings: 200
         name: 'test campaign 2'
     model: dash.campaign
     pk: 200
@@ -155,6 +195,12 @@
     model: dash.adgroupsettings
     pk: 200
 
+-   fields:
+        ad_group: 300
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.adgroupsettings
+    pk: 300
+
 
 # test adgroup
 
@@ -163,6 +209,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 100
         campaign: 100
+        settings: 100
         name: 'test adgroup 1 Čžš'
     model: dash.adgroup
     pk: 100
@@ -172,6 +219,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 100
         campaign: 200
+        settings: 200
         name: 'test adgroup 2'
     model: dash.adgroup
     pk: 200
@@ -182,6 +230,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 100
         campaign: 100
+        settings: 300
         name: 'test adgroup 3'
     model: dash.adgroup
     pk: 300
@@ -192,6 +241,7 @@
 -   fields:
         source: 100
         ad_group: 100
+        settings: 200
         source_campaign_key: '["fake"]'
         source_credentials: 100
         last_successful_sync_dt: '2014-06-10T09:58:21'
@@ -202,6 +252,7 @@
 -   fields:
         source: 200
         ad_group: 100
+        settings: 400
         source_campaign_key: '["fake"]'
         source_credentials: 200
         last_successful_sync_dt: '2014-06-10T09:58:21'
@@ -211,6 +262,7 @@
 -   fields:
         source: 200
         ad_group: 200
+        settings: 600
         source_campaign_key: '["fake"]'
         source_credentials: 200
         last_successful_sync_dt: '2014-06-10T09:58:21'
@@ -220,6 +272,7 @@
 -   fields:
         source: 200
         ad_group: 300
+        settings: 500
         source_campaign_key: '["fake"]'
         source_credentials: 200
         last_successful_sync_dt: '2014-06-10T09:58:21'
@@ -246,28 +299,6 @@
         credentials: 'UaNLMoh787kXRvWAiiglNcp1wMG31FjaXQvfTOvLZvWvm16dl1hXGEZT8lQqCF7I/OvZTRtLe3zKd7p4RnqdJgfCj3wsylheXzLIN7pawAgUP58E+QMmmTDmrY/+KJVmLrvq4LNllMdzkFcyIOOS24QkB2aCig7/cATdsLHM4fUSgjS5sHnWPiC+dBMRa+eEo5AXxRJNTGX01cmabacfS7GtnMK9PYxnwl/5'
     model: dash.sourcecredentials
     pk: 200
-
-
-# test accountsettings
-
--   fields:
-        created_dt: '2014-06-04T00:00:00'
-        created_by: 100
-        archived: False
-        name: 'Test settings 1'
-        account: 100
-        account_type: 5
-    model: dash.accountsettings
-    pk: 100
-
--   fields:
-        created_dt: '2014-06-04T00:00:00'
-        created_by: 100
-        archived: True
-        name: 'Test settings 3'
-        account: 200
-    model: dash.accountsettings
-    pk: 300
 
 
 # test adgroupsourcesettings
@@ -316,3 +347,12 @@
         state: 2
     model: dash.adgroupsourcesettings
     pk: 500
+
+-   fields:
+        created_dt: '2014-06-06T09:58:21'
+        ad_group_source: 300
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 600

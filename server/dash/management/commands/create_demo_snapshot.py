@@ -35,6 +35,10 @@ TIMEOUT = 20 * 60
 
 IGNORE_FIELDS = {
     dash.models.PublisherGroup: {'account'},  # due to cyclical foreign key dependency, we want to ignore the account field
+    dash.models.AccountSettings: {'account'},
+    dash.models.CampaignSettings: {'campaign'},
+    dash.models.AdGroupSettings: {'ad_group'},
+    dash.models.AdGroupSourceSettings: {'ad_group_source'},
 }
 
 ACCOUNT_DUMP_SETTINGS = {
@@ -48,13 +52,11 @@ ACCOUNT_DUMP_SETTINGS = {
     # We only need to list one-to-many and many-to-many fields, foreign key
     # dependencies are fetched automatically.
     'dependents': [
-        'get_current_settings',
         'credits.all',
         'conversionpixel_set.all',
         {
             'primary': 'campaign_set.all',
             'dependents': [
-                'get_current_settings',
                 {
                     'primary': 'budgets.all',
                     'dependents': [
@@ -70,11 +72,9 @@ ACCOUNT_DUMP_SETTINGS = {
                 {
                     'primary': 'adgroup_set.all',
                     'dependents': [
-                        'get_current_settings',
                         {
                             'primary': 'adgroupsource_set.all',
                             'dependents': [
-                                'get_current_settings'
                             ]
                         },
                         {

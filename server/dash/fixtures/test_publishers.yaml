@@ -40,42 +40,6 @@
   model: dash.agency
   pk: 1
 
-# test account
-- fields:
-    name: 'test account 1'
-    created_dt: '2014-06-04T09:58:21'
-    modified_dt: '2014-06-04T09:58:21'
-    modified_by: 1
-    users: [1, 2]
-    allowed_sources: [1,2]
-    agency: 1
-  model: dash.account
-  pk: 1
-
-- fields:
-    name: 'test account 2'
-    created_dt: '2014-06-04T09:58:21'
-    modified_dt: '2014-06-04T09:58:21'
-    modified_by: 2
-    users: []
-    allowed_sources: [1,2]
-    agency: 1
-  model: dash.account
-  pk: 2
-
-- fields:
-    name: 'test outbrain account'
-    created_dt: '2014-06-04T09:58:21'
-    modified_dt: '2014-06-04T09:58:21'
-    modified_by: 2
-    users: [2]
-    allowed_sources: [1,2]
-    outbrain_marketer_id: 'cdefg'
-    default_blacklist: 1000
-    agency: 1
-  model: dash.account
-  pk: 1000
-
 # accountsettings
 -   fields:
         created_dt: '2014-06-04T00:00:00'
@@ -86,6 +50,12 @@
         account_type: 5
     model: dash.accountsettings
     pk: 1
+
+-   fields:
+        account: 2
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.accountsettings
+    pk: 2
 
 -   fields:
         created_dt: '2014-06-04T00:00:00'
@@ -99,12 +69,52 @@
     model: dash.accountsettings
     pk: 1000
 
+# test account
+- fields:
+    name: 'test account 1'
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    users: [1, 2]
+    allowed_sources: [1,2]
+    agency: 1
+    settings: 1
+  model: dash.account
+  pk: 1
+
+- fields:
+    name: 'test account 2'
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 2
+    users: []
+    allowed_sources: [1,2]
+    agency: 1
+    settings: 2
+  model: dash.account
+  pk: 2
+
+- fields:
+    name: 'test outbrain account'
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 2
+    users: [2]
+    allowed_sources: [1,2]
+    outbrain_marketer_id: 'cdefg'
+    default_blacklist: 1000
+    agency: 1
+    settings: 1000
+  model: dash.account
+  pk: 1000
+
 # campaign
 -   fields:
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         account: 1 # test account 1
+        settings: 1
         name: 'test campaign 1'
     model: dash.campaign
     pk: 1
@@ -127,6 +137,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         campaign: 1
+        settings: 1
         name: 'test adgroup 1'
         default_whitelist: 4
         default_blacklist: 5

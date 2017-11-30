@@ -284,7 +284,7 @@ class AccountBreakdownTestCase(TestCase):
                 'date__lte': datetime.date(2016, 2, 3),
                 'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
                 'allowed_campaigns': test_helper.QuerySetMatcher(models.Campaign.objects.filter(pk__in=[1, 2])),
-                'allowed_ad_groups': test_helper.QuerySetMatcher(models.AdGroup.objects.filter(pk__in=[1, 2, 9, 10])),
+                'allowed_ad_groups': test_helper.QuerySetMatcher(models.AdGroup.objects.filter(pk__in=[1, 2, 9, 10, 987])),
                 'show_archived': True,
                 'publisher_blacklist': test_helper.QuerySetMatcher(models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1])),
                 'publisher_whitelist': test_helper.QuerySetMatcher(models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1])),

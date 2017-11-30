@@ -13,7 +13,6 @@ from dash import models
 import automation.settings
 import automation.constants
 import automation.autopilot_budgets
-from utils.test_helper import fake_request
 
 from zemauth.models import User
 
@@ -48,8 +47,7 @@ class BudgetDepletionTestCase(test.TestCase):
     def test_notify_campaign_with_depleting_budget(self, mock):
         campaign = models.Campaign.objects.get(pk=1)
         user = User.objects.create_user('accountmanager@test.com')
-        account_settings = models.AccountSettings(account=campaign.account, default_account_manager=user)
-        account_settings.save(fake_request(user))
+        campaign.account.settings.update(None, default_account_manager=user)
         budgetdepletion.notify_campaign_with_depleting_budget(
             campaign,
             100,

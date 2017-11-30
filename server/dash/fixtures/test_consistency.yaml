@@ -1,6 +1,7 @@
 # AdGroup
 -   fields:
         name: 'test adgroup 1'
+        settings: 1
         campaign: 1
         modified_by_id: 1
         created_dt: '2016-01-01T00:00:00'
@@ -20,6 +21,7 @@
 -   fields:
         source: 1
         ad_group: 1
+        settings: 1
     model: dash.adgroupsource
     pk: 1
 

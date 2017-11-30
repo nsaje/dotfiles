@@ -42,7 +42,7 @@ class ViewHelpersTestCase(TestCase):
         campaign = models.Campaign.objects.get(pk=1)
         s1 = models.CampaignSettings(campaign=campaign)
         s1.name = ''
-        s2 = models.CampaignSettings(campaign=campaign)
+        s2 = s1.copy_settings()
         s2.name = 'cid'
 
         request = HttpRequest()
@@ -55,7 +55,7 @@ class ViewHelpersTestCase(TestCase):
         s1.enable_ga_tracking = False
         s1.enable_adobe_tracking = False
         s1.adobe_tracking_param = ''
-        s2 = models.CampaignSettings(campaign=campaign)
+        s2 = s1.copy_settings()
         s2.enable_ga_tracking = True
         s2.enable_adobe_tracking = True
         s2.adobe_tracking_param = 'cid'
@@ -1094,7 +1094,7 @@ class ValidateAdGroupsStateTest(TestCase):
     fixtures = ['test_views.yaml']
 
     def test_ad_group_state_invalid(self):
-        ad_groups = models.AdGroup.objects.filter(pk=1)
+        ad_groups = models.AdGroup.objects.filter(pk=987)
         campaign = ad_groups[0].campaign
         campaign_settings = campaign.get_current_settings()
 
@@ -1105,7 +1105,7 @@ class ValidateAdGroupsStateTest(TestCase):
     def test_ad_group_state_campaign_stop(self, campaign_stop_mock):
         campaign_stop_mock.return_value = False
 
-        ad_groups = models.AdGroup.objects.filter(pk=1)
+        ad_groups = models.AdGroup.objects.filter(pk=987)
         campaign = ad_groups[0].campaign
         campaign_settings = campaign.get_current_settings()
         state = constants.AdGroupSettingsState.INACTIVE
@@ -1119,7 +1119,7 @@ class ValidateAdGroupsStateTest(TestCase):
         campaign_stop_mock.return_value = {1: True}
         campaign_has_budget_mock.return_value = False
 
-        ad_groups = models.AdGroup.objects.filter(pk=1)
+        ad_groups = models.AdGroup.objects.filter(pk=987)
         campaign = ad_groups[0].campaign
         campaign_settings = campaign.get_current_settings()
         state = constants.AdGroupSettingsState.ACTIVE
@@ -1135,7 +1135,7 @@ class ValidateAdGroupsStateTest(TestCase):
         campaign_stop_mock.return_value = {1: True}
         campaign_has_budget_mock.return_value = True
 
-        ad_groups = models.AdGroup.objects.filter(pk=1)
+        ad_groups = models.AdGroup.objects.filter(pk=987)
         campaign = ad_groups[0].campaign
         campaign_settings = campaign.get_current_settings()
         state = constants.AdGroupSettingsState.ACTIVE

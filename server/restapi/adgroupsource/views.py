@@ -31,6 +31,7 @@ class AdGroupSourcesViewList(RESTAPIBaseView):
                     ad_group=ad_group,
                     source=item['ad_group_source']['source'],
                 )
+                item.pop('ad_group_source')
                 ad_group_source.update(request, k1_sync=True, **item)
 
         return self.get(request, ad_group.id)
@@ -42,10 +43,13 @@ class AdGroupSourcesViewList(RESTAPIBaseView):
         serializer.is_valid(raise_exception=True)
 
         with transaction.atomic():
+            data = serializer.validated_data
+            source = data['ad_group_source']['source']
+            data.pop('ad_group_source')
             ad_group_source = core.entity.AdGroupSource.objects.create(
-                request, ad_group, serializer.validated_data['ad_group_source']['source'],
+                request, ad_group, source,
                 write_history=True, k1_sync=False,
-                **serializer.validated_data
+                **data
             )
 
         serializer = serializers.AdGroupSourceSerializer(ad_group_source.get_current_settings())

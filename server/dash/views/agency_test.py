@@ -128,7 +128,7 @@ class AdGroupSettingsTest(TestCase):
                     {
                         "campaign_name": "test campaign 1",
                         "archived": False,
-                        "id": 1, "name": "test adgroup 1",
+                        "id": 1, "name": u"test adgroup 1 Čžš",
                     },
                     {
                         "campaign_name": "test campaign 2",
@@ -145,6 +145,11 @@ class AdGroupSettingsTest(TestCase):
                         "campaign_name": "test campaign 1",
                         "archived": False,
                         "id": 10, "name": "test adgroup 10",
+                    },
+                    {
+                        "campaign_name": "test campaign 1",
+                        "archived": False,
+                        "id": 987, "name": "test adgroup 1",
                     },
                 ],
                 'audiences': [
@@ -181,7 +186,7 @@ class AdGroupSettingsTest(TestCase):
                     'end_date': '2015-04-02',
                     'id': '1',
                     'campaign_id': '1',
-                    'name': 'test adgroup 1',
+                    'name': u'test adgroup 1 Čžš',
                     'start_date': '2015-03-02',
                     'state': 2,
                     'target_devices': ['DESKTOP', 'MOBILE'],
@@ -224,18 +229,15 @@ class AdGroupSettingsTest(TestCase):
 
     def test_get_not_retargetable(self):
         ad_group = models.AdGroup.objects.get(pk=1)
-
-        for source in models.Source.objects.all():
-            source.supports_retargeting = False
-            source.save()
+        source = models.Source.objects.get(pk=5)
+        source.supports_retargeting = False
+        source.save()
 
         req = RequestFactory().get('/')
         req.user = User(id=1)
 
-        for source_settings in models.AdGroupSourceSettings.objects.all():
-            new_source_settings = source_settings.copy_settings()
-            new_source_settings.state = constants.AdGroupSourceSettingsState.ACTIVE
-            new_source_settings.save(req)
+        ags = models.AdGroupSource.objects.get(ad_group=ad_group, source=source)
+        ags.settings.update_unsafe(None, state=constants.AdGroupSourceSettingsState.ACTIVE)
 
         add_permissions(self.user, ['settings_view'])
         response = self.client.get(
@@ -246,8 +248,6 @@ class AdGroupSettingsTest(TestCase):
         self.assertDictEqual(
             json.loads(response.content)['data']['warnings']['retargeting'], {
                 'sources': [
-                    'AdsNative',
-                    'Gravity',
                     'Yahoo',
                 ],
             }
@@ -255,14 +255,13 @@ class AdGroupSettingsTest(TestCase):
 
     def test_get_max_cpm_unsupported(self):
         ad_group = models.AdGroup.objects.get(pk=1)
+        source = models.Source.objects.get(pk=5)
 
         req = RequestFactory().get('/')
         req.user = User(id=1)
 
-        for source_settings in models.AdGroupSourceSettings.objects.all():
-            new_source_settings = source_settings.copy_settings()
-            new_source_settings.state = constants.AdGroupSourceSettingsState.ACTIVE
-            new_source_settings.save(req)
+        ags = models.AdGroupSource.objects.get(ad_group=ad_group, source=source)
+        ags.settings.update_unsafe(None, state=constants.AdGroupSourceSettingsState.ACTIVE)
 
         add_permissions(self.user, ['settings_view'])
         response = self.client.get(
@@ -391,6 +390,7 @@ class AdGroupSettingsTest(TestCase):
                 'success': True
             })
 
+            ad_group.settings.refresh_from_db()
             new_settings = ad_group.get_current_settings()
 
             self.assertEqual(new_settings.display_url, 'example.com')
@@ -447,7 +447,7 @@ class AdGroupSettingsTest(TestCase):
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
 
-            ad_group = models.AdGroup.objects.get(pk=1)
+            ad_group = models.AdGroup.objects.get(pk=987)
             old_settings = ad_group.get_current_settings()
 
             self.assertIsNotNone(old_settings.pk)
@@ -491,14 +491,17 @@ class AdGroupSettingsTest(TestCase):
             mock_now.return_value = datetime.date(2016, 1, 5)
             mock_get_max_budget.return_value = 1000
 
-            ad_group = models.AdGroup.objects.get(pk=1)
+            ad_group = models.AdGroup.objects.get(pk=987)
             old_settings = ad_group.get_current_settings()
             new_settings = old_settings.copy_settings()
             new_settings.autopilot_state = 2
             new_settings.save(None)
 
             self.assertIsNotNone(old_settings.pk)
-            self.settings_dict['settings']['b1_sources_group_cpc_cc'] = '0.01'  # in order to not change it
+            # in order to not change it
+            self.settings_dict['settings']['b1_sources_group_cpc_cc'] = str(new_settings.b1_sources_group_cpc_cc)
+            self.settings_dict['settings']['b1_sources_group_daily_budget'] = str(new_settings.b1_sources_group_daily_budget)
+
             self.settings_dict['settings']['autopilot_state'] = 1
             self.settings_dict['settings']['autopilot_daily_budget'] = '200.00'
 
@@ -509,6 +512,7 @@ class AdGroupSettingsTest(TestCase):
                 follow=True
             )
 
+            ad_group.settings.refresh_from_db()
             new_settings = ad_group.get_current_settings().copy_settings()
 
             request = HttpRequest()
@@ -530,10 +534,6 @@ class AdGroupSettingsTest(TestCase):
             mock_now.return_value = datetime.date(2016, 1, 5)
 
             ad_group = models.AdGroup.objects.get(pk=10)
-
-            # this ad group does not have settings
-            current_settings = ad_group.get_current_settings()
-            self.assertIsNone(current_settings.pk)
 
             self.settings_dict['settings']['id'] = 10
 
@@ -1859,9 +1859,6 @@ class CampaignSettingsTest(TestCase):
         ])
         campaign = models.Campaign.objects.get(pk=1)
 
-        for ag in campaign.adgroup_set.all():
-            ag.get_current_settings().save(None)  # create initial settings
-
         settings = campaign.get_current_settings()
         self.assertEqual(campaign.name, 'test campaign 1')
         self.assertNotEqual(settings.goal_quantity, 10)
@@ -1907,6 +1904,7 @@ class CampaignSettingsTest(TestCase):
         self.assertTrue(content['success'])
 
         settings = campaign.get_current_settings()
+        settings.refresh_from_db()
 
         # Check if all fields were updated
         self.assertEqual(campaign.name, 'test campaign 1')
@@ -1929,7 +1927,7 @@ class CampaignSettingsTest(TestCase):
         mock_send_ga_email.assert_called_with(self.user)
         mock_ga_readable.assert_called_with('UA-123456789-3')
         mock_r1_insert_adgroup.assert_has_calls(
-            [call(ag, ag.get_current_settings(), settings)
+            [call(ag, ag.get_current_settings(), ANY)
              for ag in campaign.adgroup_set.all()])
 
         hist = history_helpers.get_campaign_history(models.Campaign.objects.get(pk=1)).first()
@@ -2159,7 +2157,7 @@ class CampaignSettingsTest(TestCase):
 
     def test_get_with_conversion_goals(self):
 
-        ad_group = models.AdGroup.objects.get(pk=1)
+        ad_group = models.AdGroup.objects.get(pk=987)
 
         add_permissions(self.user, ['can_see_campaign_goals'])
 
@@ -3977,7 +3975,7 @@ class TestHistoryMixin(TestCase):
             self.virtual_fields = virtual_fields
             self.many_to_many = []
 
-    class HistoryTest(models.HistoryMixin):
+    class HistoryTest(models.HistoryMixinOld):
 
         history_fields = ['test_field']
 

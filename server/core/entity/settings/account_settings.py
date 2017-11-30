@@ -3,7 +3,6 @@
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.db import transaction
 
 import utils.demo_anonymizer
 import utils.string_helper
@@ -74,10 +73,6 @@ class AccountSettings(SettingsBase):
 
     salesforce_url = models.URLField(null=True, blank=True, max_length=255)
 
-    created_dt = models.DateTimeField(
-        auto_now_add=True, verbose_name='Created at')
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
 
@@ -119,32 +114,7 @@ class AccountSettings(SettingsBase):
             value = constants.AccountType.get_text(value)
         return value
 
-    @transaction.atomic
-    def update(self, request, **kwargs):
-        new_settings = self.copy_settings()
-        valid_fields = set(self._settings_fields)
-
-        for field, value in kwargs.items():
-            if field in valid_fields:
-                setattr(new_settings, field, value)
-        new_settings.save(request)
-        return new_settings
-
-    def save(self,
-             request,
-             action_type=None,
-             changes_text=None,
-             *args, **kwargs):
-        if self.pk is None:
-            self.created_by = request.user
-        super(AccountSettings, self).save(*args, **kwargs)
-        self.add_to_history(request and request.user,
-                            action_type, changes_text)
-
-    def add_to_history(self, user, action_type, history_changes_text):
-        changes = self.get_model_state_changes(
-            self.get_settings_dict()
-        )
+    def add_to_history(self, user, action_type, changes, history_changes_text=None):
         # this is a temporary state until cleaning up of settings changes text
         if not changes and not self.post_init_newly_created:
             return
@@ -163,4 +133,4 @@ class AccountSettings(SettingsBase):
     class QuerySet(SettingsQuerySet):
 
         def group_current_settings(self):
-            return self.order_by('account_id', '-created_dt').distinct('account')
+            return self.filter(latest_for_account__isnull=False)

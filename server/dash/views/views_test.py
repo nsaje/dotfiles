@@ -283,7 +283,7 @@ class AccountCampaignsTest(TestCase):
         self.assertEqual(settings.campaign_manager.id, 1)
 
         hist = history_helpers.get_campaign_history(campaign).first()
-        self.assertEqual(constants.HistoryActionType.CREATE, hist.action_type)
+        self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
 
 
 class AdGroupSourceSettingsTest(TestCase):
@@ -381,7 +381,7 @@ class AdGroupSourceSettingsTest(TestCase):
         mock_k1_ping.assert_called_with(1, 'AdGroupSource.update')
 
         hist = history_helpers.get_ad_group_history(models.AdGroup.objects.get(pk=1)).first()
-        self.assertEqual(constants.HistoryActionType.MEDIA_SOURCE_SETTINGS_CHANGE, hist.action_type)
+        self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
 
     @patch('automation.campaign_stop.get_max_settable_source_budget')
     def test_daily_budget_over_max_settable(self, mock_max_settable_budget):

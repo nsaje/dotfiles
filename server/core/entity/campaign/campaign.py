@@ -38,15 +38,22 @@ class CampaignManager(core.common.QuerySetManager):
         )
         campaign.save(request=request)
 
-        settings = campaign.get_current_settings()  # creates new settings with default values
-        settings.name = name
-        settings.campaign_manager = request.user if request else None
-        settings.iab_category = iab_category
+        settings_updates = core.entity.settings.CampaignSettings.get_defaults_dict()
+        settings_updates['name'] = name
+        settings_updates['iab_category'] = iab_category
+        if request:
+            settings_updates['campaign_manager'] = request.user
 
         if account.id in ACCOUNTS_WITHOUT_CAMPAIGN_STOP or account.agency_id in AGENCIES_WITHOUT_CAMPAIGN_STOP:
-            settings.automatic_campaign_stop = False
+            settings_updates['automatic_campaign_stop'] = False
 
-        settings.save(request=request, action_type=constants.HistoryActionType.CREATE)
+        campaign.settings = core.entity.settings.CampaignSettings(campaign=campaign)
+        campaign.settings.update(
+            request,
+            **settings_updates)
+
+        campaign.settings_id = campaign.settings.id
+        campaign.save(request)
 
         return campaign
 
@@ -79,7 +86,7 @@ class Campaign(models.Model, core.common.PermissionMixin, bcm_mixin.CampaignBCMM
     custom_flags = JSONField(null=True, blank=True)
     real_time_campaign_stop = models.BooleanField(default=False)
 
-    new_settings = models.ForeignKey('CampaignSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_campaign', db_column='settings_id')
+    settings = models.ForeignKey('CampaignSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_campaign')
 
     USERS_FIELD = 'users'
 
@@ -114,21 +121,7 @@ class Campaign(models.Model, core.common.PermissionMixin, bcm_mixin.CampaignBCMM
         return self.account.get_current_settings().default_cs_representative
 
     def get_current_settings(self):
-        # FIXME:circular dependency
-        import core.entity.settings
-        if not self.pk:
-            raise exc.BaseError(
-                'Campaign settings can\'t be fetched because campaign hasn\'t been saved yet.'
-            )
-
-        settings = core.entity.settings.CampaignSettings.objects.\
-            filter(campaign_id=self.pk).\
-            order_by('-created_dt').first()
-        if not settings:
-            settings = core.entity.settings.CampaignSettings(
-                campaign=self, **core.entity.settings.CampaignSettings.get_defaults_dict())
-
-        return settings
+        return self.settings
 
     def can_archive(self):
         for ad_group in self.adgroup_set.all():
@@ -255,76 +248,23 @@ class Campaign(models.Model, core.common.PermissionMixin, bcm_mixin.CampaignBCMM
                 account__agency__in=agencies)
 
         def filter_by_account_types(self, account_types):
-            # FIXME:circular dependency
-            import core.entity.settings
             if not account_types:
                 return self
-
-            latest_settings = core.entity.settings.AccountSettings.objects.all().filter(
-                account__campaign__in=self
-            ).group_current_settings()
-
-            filtered_accounts = core.entity.settings.AccountSettings.objects.all().filter(
-                id__in=latest_settings
-            ).filter(
-                account_type__in=account_types
-            ).values_list('account__id', flat=True)
-
-            return self.filter(
-                account__id__in=filtered_accounts
-            )
+            return self.filter(account__settings__account_type__in=account_types)
 
         def exclude_archived(self, show_archived=False):
-            # FIXME:circular dependency
-            import core.entity.settings
             if show_archived:
                 return self
-
-            related_settings = core.entity.settings.CampaignSettings.objects.all().filter(
-                campaign__in=self
-            ).group_current_settings()
-
-            archived_campaigns = core.entity.settings.CampaignSettings.objects.all().filter(
-                pk__in=related_settings
-            ).filter(
-                archived=True
-            ).values_list(
-                'campaign__id', flat=True
-            )
-            return self.exclude(pk__in=archived_campaigns)
+            return self.exclude(settings__archived=True)
 
         def exclude_landing(self):
-            # FIXME:circular dependency
-            import core.entity.settings
-            related_settings = core.entity.settings.CampaignSettings.objects.all().filter(
-                campaign__in=self
-            ).group_current_settings()
-
-            excluded = core.entity.settings.CampaignSettings.objects.all().filter(
-                pk__in=related_settings
-            ).filter(
-                models.Q(automatic_campaign_stop=False) |
-                models.Q(landing_mode=True)
-            ).values_list(
-                'campaign__id', flat=True
+            return self.exclude(
+                models.Q(settings__automatic_campaign_stop=False) |
+                models.Q(settings__landing_mode=True)
             )
-
-            return self.exclude(pk__in=excluded)
 
         def filter_landing(self):
-            # FIXME:circular dependency
-            import core.entity.settings
-            related_settings = core.entity.settings.CampaignSettings.objects.all().filter(
-                campaign__in=self
-            ).group_current_settings()
-
-            filtered = core.entity.settings.CampaignSettings.objects.all().filter(
-                pk__in=related_settings
-            ).filter(
-                automatic_campaign_stop=True,
-                landing_mode=True
-            ).values_list(
-                'campaign__id', flat=True
+            return self.filter(
+                settings__automatic_campaign_stop=True,
+                settings__landing_mode=True,
             )
-
-            return self.filter(pk__in=filtered)

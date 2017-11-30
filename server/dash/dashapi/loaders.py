@@ -99,9 +99,9 @@ class AccountsLoader(Loader):
 
     @cached_property
     def settings_map(self):
-        settings_qs = models.AccountSettingsReadOnly.objects\
-                                                    .filter(account_id__in=self.objs_ids)\
-                                                    .group_current_settings()
+        settings_qs = models.AccountSettings.objects\
+                                            .filter(account_id__in=self.objs_ids)\
+                                            .group_current_settings()
 
         # workaround because select_related is currently malfunctioned on models that inherit histroymixin
         # - it doesn't do what its supposed to do
@@ -208,10 +208,10 @@ class CampaignsLoader(Loader):
 
     @cached_property
     def settings_map(self):
-        settings_qs = models.CampaignSettingsReadOnly.objects\
-                                                     .filter(campaign_id__in=self.objs_ids)\
-                                                     .group_current_settings()\
-                                                     .select_related('campaign_manager')
+        settings_qs = models.CampaignSettings.objects\
+                                             .filter(campaign_id__in=self.objs_ids)\
+                                             .group_current_settings()\
+                                             .select_related('campaign_manager')
         settings_obj_map = {x.campaign_id: x for x in settings_qs}
         status_map = self._get_status_map()
         settings_map = {}

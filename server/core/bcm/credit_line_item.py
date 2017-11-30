@@ -33,7 +33,7 @@ class CreditLineItemManager(core.common.QuerySetManager):
         return cli
 
 
-class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixin):
+class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
 
     class Meta:
         app_label = 'dash'

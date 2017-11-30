@@ -1105,7 +1105,7 @@ def _restore_user_sources_settings(ad_group):
         ags.ad_group_source_id: ags for ags in dash.models.AdGroupSourceSettings.objects.filter(
             ad_group_source__in=ad_group_sources,
             landing_mode=False,
-        ).group_current_settings()
+        ).latest_per_entity()
     }
     current_ad_group_sources_settings = {
         ags.ad_group_source_id: ags for ags in dash.models.AdGroupSourceSettings.objects.filter(
@@ -1365,7 +1365,7 @@ def _get_sources_settings_dict(date, ad_group_sources):
         latest_settings_before = dash.models.AdGroupSourceSettings.objects.filter(
             ad_group_source__in=tz_sources,
             created_dt__lt=dt_tz,
-        ).select_related('ad_group_source__source').group_current_settings()
+        ).select_related('ad_group_source__source').latest_per_entity()
 
         settings_on_date = dash.models.AdGroupSourceSettings.objects.filter(
             ad_group_source__in=tz_sources,
@@ -1408,7 +1408,7 @@ def _get_ag_settings_dict(date, ad_groups):
     latest_settings_before = dash.models.AdGroupSettings.objects.filter(
         ad_group__in=ad_groups,
         created_dt__lt=dt_min_tz,
-    ).select_related('ad_group').group_current_settings()
+    ).select_related('ad_group').latest_per_entity()
 
     settings_on_date = dash.models.AdGroupSettings.objects.filter(
         ad_group__in=ad_groups,
@@ -1429,7 +1429,7 @@ def _get_ag_settings_dict(date, ad_groups):
 def _get_user_daily_budget_per_ags(date, campaign):
     ag_settings = {}
     for s in dash.models.AdGroupSettings.objects.filter(
-            ad_group__campaign=campaign, landing_mode=False).group_current_settings():
+            ad_group__campaign=campaign, landing_mode=False).latest_per_entity():
         ag_settings[s.ad_group_id] = s
 
     active_ag_ids = dash.models.AdGroupSettings.objects.filter(
@@ -1440,7 +1440,7 @@ def _get_user_daily_budget_per_ags(date, campaign):
 
     ags_settings_list = dash.models.AdGroupSourceSettings.objects.filter(
         ad_group_source__ad_group_id__in=active_ag_ids, landing_mode=False
-    ).group_current_settings().select_related('ad_group_source__source__source_type')
+    ).latest_per_entity().select_related('ad_group_source__source__source_type')
 
     ags_budget = {}
     for ags_settings in ags_settings_list:
@@ -1662,7 +1662,7 @@ def _get_ag_ids_active_on_date(date, ad_groups):
     latest_ad_group_settings_before_date = dash.models.AdGroupSettings.objects.filter(
         ad_group__in=ad_groups,
         created_dt__lt=date,
-    ).group_current_settings().values('ad_group_id', 'state')
+    ).latest_per_entity().values('ad_group_id', 'state')
     for ag_sett in latest_ad_group_settings_before_date.iterator():
         if ag_sett['state'] == dash.constants.AdGroupSettingsState.ACTIVE:
             ag_ids_active_on_date.add(ag_sett['ad_group_id'])

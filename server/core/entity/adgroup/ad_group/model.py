@@ -55,15 +55,16 @@ class AdGroupManager(core.common.QuerySetManager):
             ad_group = self._create(request, campaign, name=name)
 
             if is_restapi:
-                ad_group_settings = core.entity.settings.AdGroupSettings.objects.create_restapi_default(
+                ad_group.settings = core.entity.settings.AdGroupSettings.objects.create_restapi_default(
                     ad_group, name=name)
             else:
-                ad_group_settings = core.entity.settings.AdGroupSettings.objects.create_default(ad_group, name=name)
+                ad_group.settings = core.entity.settings.AdGroupSettings.objects.create_default(ad_group, name=name)
+            ad_group.save(request)
 
             core.entity.AdGroupSource.objects.bulk_create_on_allowed_sources(
                 request, ad_group, write_history=False, k1_sync=False)
 
-        self._post_create(ad_group, ad_group_settings)
+        self._post_create(ad_group, ad_group.settings)
         ad_group.write_history_created(request)
         return ad_group
 
@@ -77,19 +78,20 @@ class AdGroupManager(core.common.QuerySetManager):
 
         with transaction.atomic():
             ad_group = self._create(request, campaign, name=new_name)
-            ad_group_settings = core.entity.settings.AdGroupSettings.objects.clone(
+            ad_group.settings = core.entity.settings.AdGroupSettings.objects.clone(
                 request, ad_group, source_ad_group.get_current_settings())
+            ad_group.save(request)
 
             core.entity.AdGroupSource.objects.bulk_clone_on_allowed_sources(
                 request, ad_group, source_ad_group, write_history=False, k1_sync=False)
 
-        self._post_create(ad_group, ad_group_settings)
+        self._post_create(ad_group, ad_group.settings)
         ad_group.write_history_cloned_from(request, source_ad_group)
         source_ad_group.write_history_cloned_to(request, ad_group)
         return ad_group
 
 
-class AdGroup(models.Model, core.common.SettingsProxyMixin, bcm_mixin.AdGroupBCMMixin):
+class AdGroup(models.Model, bcm_mixin.AdGroupBCMMixin):
     _current_settings = None
 
     class Meta:
@@ -121,7 +123,7 @@ class AdGroup(models.Model, core.common.SettingsProxyMixin, bcm_mixin.AdGroupBCM
 
     custom_flags = JSONField(null=True, blank=True)
 
-    new_settings = models.ForeignKey('AdGroupSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_ad_group', db_column='settings_id')
+    settings = models.ForeignKey('AdGroupSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_ad_group')
 
     objects = AdGroupManager()
 
@@ -141,21 +143,7 @@ class AdGroup(models.Model, core.common.SettingsProxyMixin, bcm_mixin.AdGroupBCM
 
     @newrelic.agent.function_trace()
     def get_current_settings(self):
-        # FIXME:circular dependency
-        import core.entity.settings
-        if not self.pk:
-            raise exc.BaseError(
-                'Ad group setting couldn\'t be fetched because ad group hasn\'t been saved yet.'
-            )
-
-        settings = core.entity.settings.AdGroupSettings.objects.\
-            filter(ad_group_id=self.pk).\
-            order_by('created_dt').last()
-        if settings is None:
-            settings = core.entity.settings.AdGroupSettings(
-                ad_group=self, **core.entity.settings.AdGroupSettings.get_defaults_dict())
-
-        return settings
+        return self.settings
 
     def can_archive(self):
         # FIXME:circular dependency
@@ -402,7 +390,7 @@ class AdGroup(models.Model, core.common.SettingsProxyMixin, bcm_mixin.AdGroupBCM
         return u"{} ({})".format(self.name, self.id)
 
     def save(self, request, *args, **kwargs):
-        self.modified_by = request and request.user or None
+        self.modified_by = request.user if request else None
         super(AdGroup, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
@@ -422,22 +410,9 @@ class AdGroup(models.Model, core.common.SettingsProxyMixin, bcm_mixin.AdGroupBCM
                 campaign__account__agency__in=agencies)
 
         def filter_by_account_types(self, account_types):
-            # FIXME:circular dependency
-            import core.entity.settings
             if not account_types:
                 return self
-
-            latest_settings = core.entity.settings.AccountSettings.objects.all().filter(
-                account__campaign__adgroup__in=self
-            ).group_current_settings()
-
-            filtered_accounts = core.entity.settings.AccountSettings.objects.all().filter(
-                id__in=latest_settings,
-                account_type__in=account_types
-            ).values_list('account__id', flat=True)
-
-            return self.filter(
-                campaign__account__in=filtered_accounts)
+            return self.filter(campaign__account__settings__account_type__in=account_types)
 
         def filter_by_sources(self, sources):
             # FIXME:circular dependency
@@ -448,26 +423,11 @@ class AdGroup(models.Model, core.common.SettingsProxyMixin, bcm_mixin.AdGroupBCM
             return self.filter(adgroupsource__source__in=sources).distinct()
 
         def exclude_archived(self, show_archived=False):
-            # FIXME:circular dependency
-            import core.entity.settings
             if show_archived:
                 return self
-
-            related_settings = core.entity.settings.AdGroupSettings.objects.all().filter(
-                ad_group__in=self
-            ).group_current_settings()
-
-            archived_adgroups = core.entity.settings.AdGroupSettings.objects.filter(
-                pk__in=related_settings
-            ).filter(
-                archived=True
-            ).values_list('ad_group', flat=True)
-
-            return self.exclude(pk__in=archived_adgroups)
+            return self.exclude(settings__archived=True)
 
         def filter_running(self, date=None):
-            # FIXME:circular dependency
-            import core.entity.settings
             """
             This function checks if adgroup is running on arbitrary number of adgroups
             with a fixed amount of queries.
@@ -477,51 +437,19 @@ class AdGroup(models.Model, core.common.SettingsProxyMixin, bcm_mixin.AdGroupBCM
             """
             if not date:
                 date = dates_helper.local_today()
-            latest_ad_group_settings = core.entity.settings.AdGroupSettings.objects.filter(
-                ad_group__in=self
-            ).group_current_settings()
-
-            ad_group_settings = core.entity.settings.AdGroupSettings.objects.filter(
-                pk__in=latest_ad_group_settings
-            ).filter(
-                state=constants.AdGroupSettingsState.ACTIVE,
-                start_date__lte=date
+            return self.filter(
+                settings__state=constants.AdGroupSettingsState.ACTIVE,
+                settings__start_date__lte=date,
             ).exclude(
-                end_date__isnull=False,
-                end_date__lt=date
-            ).values_list('ad_group__id', flat=True)
-
-            ids = set(ad_group_settings)
-            return self.filter(id__in=ids)
+                settings__end_date__isnull=False,
+                settings__end_date__lt=date,
+            )
 
         def filter_active(self):
-            # FIXME:circular dependency
-            import core.entity.settings
             """
             Returns only ad groups that have settings set to active.
             """
-            latest_ad_group_settings = core.entity.settings.AdGroupSettings.objects.\
-                filter(ad_group__in=self).\
-                group_current_settings()
-            active_ad_group_ids = core.entity.settings.AdGroupSettings.objects.\
-                filter(id__in=latest_ad_group_settings).\
-                filter(state=constants.AdGroupSettingsState.ACTIVE).\
-                values_list('ad_group_id', flat=True)
-            return self.filter(id__in=active_ad_group_ids)
+            return self.filter(settings__state=constants.AdGroupSettingsState.ACTIVE)
 
         def filter_landing(self):
-            # FIXME:circular dependency
-            import core.entity.settings
-            related_settings = core.entity.settings.AdGroupSettings.objects.all().filter(
-                ad_group__in=self
-            ).group_current_settings()
-
-            filtered = core.entity.settings.AdGroupSettings.objects.all().filter(
-                pk__in=related_settings
-            ).filter(
-                landing_mode=True
-            ).values_list(
-                'ad_group__id', flat=True
-            )
-
-            return self.filter(pk__in=filtered)
+            return self.filter(settings__landing_mode=True)

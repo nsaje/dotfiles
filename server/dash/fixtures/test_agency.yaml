@@ -22,13 +22,30 @@
     model: dash.agency
     pk: 1
 
+# test accountsettings
+
+-   fields:
+        account: 1000
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.accountsettings
+    pk: 1000
+
 -   fields:
         name: Chuck ads
         agency: 1
         created_dt: '2015-09-23T09:57:22'
         modified_dt: '2015-09-23T09:57:22'
         modified_by: 1000
+        settings: 1000
     model: dash.account
+    pk: 1000
+
+# test campaignsettings
+
+-   fields:
+        campaign: 1000
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaignsettings
     pk: 1000
 
 -   fields:
@@ -37,7 +54,16 @@
         modified_dt: '2015-09-23T09:57:22'
         modified_by: 1000
         account: 1000
+        settings: 1000
     model: dash.campaign
+    pk: 1000
+
+# test adgroupsettings
+
+-   fields:
+        ad_group: 1000
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.adgroupsettings
     pk: 1000
 
 -   fields:
@@ -45,6 +71,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1000
         campaign: 1000
+        settings: 1000
         name: 'Mobile'
     model: dash.adgroup
     pk: 1000

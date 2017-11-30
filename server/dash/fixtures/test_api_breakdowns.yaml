@@ -102,19 +102,6 @@
     pk: 4
 
 
-# test account
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-        modified_by: 1
-        users: [1, 2, 3]
-        allowed_sources: [1,2]
-        name: 'test account 1'
-    model: dash.account
-    pk: 1
-
-
 # test accountsettings
 
 -   fields:
@@ -132,6 +119,20 @@
     pk: 1
 
 
+# test account
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        users: [1, 2, 3]
+        allowed_sources: [1,2]
+        settings: 1
+        name: 'test account 1'
+    model: dash.account
+    pk: 1
+
+
 # test campaign
 
 -   fields:
@@ -139,6 +140,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         account: 1 # test account 1
+        settings: 1
         name: 'test campaign 1'
     model: dash.campaign
     pk: 1
@@ -148,6 +150,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         account: 1 # test account 1
+        settings: 2
         name: 'test campaign 2'
     model: dash.campaign
     pk: 2
@@ -189,6 +192,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         campaign: 1
+        settings: 4
         name: 'test adgroup 1'
     model: dash.adgroup
     pk: 1
@@ -198,6 +202,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         campaign: 1
+        settings: 2
         name: 'test adgroup 2'
     model: dash.adgroup
     pk: 2
@@ -207,6 +212,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         campaign: 2
+        settings: 3
         name: 'test adgroup 3'
     model: dash.adgroup
     pk: 3
@@ -349,6 +355,7 @@
 -   fields:
         source: 1
         ad_group: 1
+        settings: 1
         source_campaign_key: '["fake"]'
         last_successful_sync_dt: '2014-06-10T09:58:21'
         can_manage_content_ads: true
@@ -358,6 +365,7 @@
 -   fields:
         source: 2
         ad_group: 1
+        settings: 2
         source_campaign_key: '["fake"]'
         last_successful_sync_dt: '2014-06-10T09:58:21'
     model: dash.adgroupsource
@@ -366,6 +374,7 @@
 -   fields:
         source: 1
         ad_group: 2
+        settings: 3
         source_campaign_key: '["fake"]'
         last_successful_sync_dt: '2014-06-10T09:58:21'
     model: dash.adgroupsource
@@ -374,6 +383,7 @@
 -   fields:
         source: 2
         ad_group: 2
+        settings: 4
         source_campaign_key: '["fake"]'
         last_successful_sync_dt: '2014-06-10T09:58:21'
     model: dash.adgroupsource
@@ -382,6 +392,7 @@
 -   fields:
         source: 1
         ad_group: 3
+        settings: 5
         source_campaign_key: {}
         last_successful_sync_dt: '2014-06-10T09:58:21'
     model: dash.adgroupsource

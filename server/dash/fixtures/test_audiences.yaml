@@ -32,6 +32,20 @@
     model: zemauth.user
     pk: 2
 
+# test accountsettings
+
+-   fields:
+        account: 1
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.accountsettings
+    pk: 1
+
+-   fields:
+        account: 2
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.accountsettings
+    pk: 2
+
 # test account
 
 -   fields:
@@ -40,6 +54,7 @@
         modified_by: 1
         name: 'test account 1'
         users: [1, 2]
+        settings: 1
     model: dash.account
     pk: 1
 
@@ -49,6 +64,7 @@
         modified_by: 1
         name: 'test account 2'
         users: [1]
+        settings: 2
     model: dash.account
     pk: 2
 

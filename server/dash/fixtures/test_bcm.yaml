@@ -32,40 +32,6 @@
     model: zemauth.user
     pk: 10
 
-# test accounts
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-        modified_by: 1
-        name: 'test account 1'
-    model: dash.account
-    pk: 1
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-        modified_by: 1
-        name: 'test account 2'
-    model: dash.account
-    pk: 2
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-        modified_by: 1
-        name: 'test account 3'
-    model: dash.account
-    pk: 3
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-        modified_by: 10
-        name: 'test account non-connected'
-    model: dash.account
-    pk: 10
-
 # test accountsettings
 
 -   fields:
@@ -107,7 +73,65 @@
         default_sales_representative: 10
     model: dash.accountsettings
     pk: 10
-  
+
+# test accounts
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        settings: 1
+        name: 'test account 1'
+    model: dash.account
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        settings: 2
+        name: 'test account 2'
+    model: dash.account
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        settings: 3
+        name: 'test account 3'
+    model: dash.account
+    pk: 3
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 10
+        settings: 10
+        name: 'test account non-connected'
+    model: dash.account
+    pk: 10
+
+# test campaignsettings
+
+-   fields:
+        campaign: 1
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaignsettings
+    pk: 1
+
+-   fields:
+        campaign: 2
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaignsettings
+    pk: 2
+
+-   fields:
+        campaign: 10
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaignsettings
+    pk: 10
+
 # test campaigns
 
 -   fields:
@@ -115,6 +139,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         account: 1 # test account 1
+        settings: 1
         name: 'test campaign 1'
     model: dash.campaign
     pk: 1
@@ -124,6 +149,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         account: 2 # test account 1
+        settings: 2
         name: 'test campaign 2'
     model: dash.campaign
     pk: 2
@@ -133,6 +159,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 10
         account: 10 # test account 1
+        settings: 10
         name: 'test campaign non-connected'
     model: dash.campaign
     pk: 10

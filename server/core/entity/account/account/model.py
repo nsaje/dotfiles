@@ -20,7 +20,7 @@ import core.entity.helpers
 import manager
 
 
-class Account(models.Model, core.common.SettingsProxyMixin):
+class Account(models.Model):
 
     class Meta:
         ordering = ('-created_dt',)
@@ -67,7 +67,7 @@ class Account(models.Model, core.common.SettingsProxyMixin):
     )
     custom_flags = JSONField(null=True, blank=True)
 
-    new_settings = models.ForeignKey('AccountSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_account', db_column='settings_id')
+    settings = models.ForeignKey('AccountSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_account')
 
     def __unicode__(self):
         return self.name
@@ -82,23 +82,7 @@ class Account(models.Model, core.common.SettingsProxyMixin):
         return 'b{}'.format(self.pk)
 
     def get_current_settings(self):
-        if not self.pk:
-            raise exc.BaseError(
-                'Account settings can\'t be fetched because acount hasn\'t been saved yet.'
-            )
-
-        # FIXME:circular dependency
-        import core.entity.settings
-        settings = core.entity.settings.AccountSettings.objects.\
-            filter(account_id=self.pk).\
-            order_by('-created_dt').first()
-        if not settings:
-            settings = core.entity.settings.AccountSettings(
-                account=self,
-                name=self.name,
-            )
-
-        return settings
+        return self.settings
 
     @newrelic.agent.function_trace()
     def can_archive(self):
@@ -246,39 +230,14 @@ class Account(models.Model, core.common.SettingsProxyMixin):
                 agency__in=agencies)
 
         def filter_by_account_types(self, account_types):
-            # FIXME:circular dependency
-            import core.entity.settings
             if not account_types:
                 return self
-            latest_settings = core.entity.settings.AccountSettings.objects.all().filter(
-                account__in=self
-            ).group_current_settings()
-
-            filtered_ac_ids = core.entity.settings.AccountSettings.objects.all().filter(
-                id__in=latest_settings,
-                account_type__in=account_types
-            ).values_list('account__id', flat=True)
-
-            return self.filter(id__in=filtered_ac_ids)
+            return self.filter(settings__account_type__in=account_types)
 
         def exclude_archived(self, show_archived=False):
-            # FIXME:circular dependency
-            import core.entity.settings
             if show_archived:
                 return self
-
-            related_settings = core.entity.settings.AccountSettings.objects.all().filter(
-                account__in=self
-            ).group_current_settings()
-
-            archived_accounts = core.entity.settings.AccountSettings.objects.all().filter(
-                pk__in=related_settings
-            ).filter(
-                archived=True
-            ).values_list(
-                'account__id', flat=True
-            )
-            return self.exclude(pk__in=archived_accounts)
+            return self.exclude(settings__archived=True)
 
         def filter_with_spend(self):
             return self.filter(

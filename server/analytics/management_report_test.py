@@ -135,7 +135,7 @@ class ManagementReportTestCase(test.TestCase):
 
     def test_fixture_context(self):
         context = analytics.management_report.ReportContext(self.today)
-        self.assertEqual(context.account_types, {})
+        self.assertEqual(context.account_types, {1: 1})
         self.assertEqual(context.campaign_types, {1: 1, 2: 1})
         self.assertEqual(context.agency_accounts, set([]))
         self.assertEqual(context.agency_campaigns, set([]))

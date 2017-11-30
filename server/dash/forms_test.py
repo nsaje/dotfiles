@@ -154,11 +154,7 @@ class AdGroupAdminFormTest(TestCase):
         self.request.user = user
 
     def test_instance_without_settings(self):
-        ad_group = models.AdGroup(
-            name='Test',
-            campaign_id=1,
-        )
-        ad_group.save(self.request)
+        ad_group = magic_mixer.blend(models.AdGroup, name='Test', campaign_id=1)
         form = forms.AdGroupAdminForm(
             instance=ad_group
         )
@@ -170,11 +166,7 @@ class AdGroupAdminFormTest(TestCase):
         self.assertEqual('', form.initial['redirect_javascript'])
 
     def test_instance_with_settings(self):
-        ad_group = models.AdGroup(
-            name='Test',
-            campaign_id=1,
-        )
-        ad_group.save(self.request)
+        ad_group = magic_mixer.blend(models.AdGroup, name='Test', campaign_id=1)
         settings = ad_group.get_current_settings().copy_settings()
         settings.notes = 'a'
         settings.bluekai_targeting = ['a']
@@ -968,22 +960,14 @@ class CampaignAdminFormTest(TestCase):
         self.assertTrue(form.initial['automatic_campaign_stop'])
 
     def test_instance_witout_settings(self):
-        campaign = models.Campaign(
-            name='Test',
-            account_id=1,
-        )
-        campaign.save(None)
+        campaign = magic_mixer.blend(models.Campaign)
         form = forms.CampaignAdminForm(
             instance=campaign
         )
         self.assertTrue(form.initial['automatic_campaign_stop'])
 
     def test_instance_with_settings(self):
-        campaign = models.Campaign(
-            name='Test',
-            account_id=1,
-        )
-        campaign.save(None)
+        campaign = magic_mixer.blend(models.Campaign)
         settings = campaign.get_current_settings().copy_settings()
         settings.automatic_campaign_stop = True
         settings.save(None)

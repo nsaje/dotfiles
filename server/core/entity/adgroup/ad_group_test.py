@@ -31,7 +31,7 @@ class AdGroupCreate(TestCase):
 
         history = history_helpers.get_ad_group_history(ad_group)
         self.assertEqual(len(history), 1)
-        self.assertIsNone(history[0].action_type, constants.HistoryActionType.CREATE)
+        self.assertEqual(history[0].action_type, constants.HistoryActionType.SETTINGS_CHANGE)
 
 
 @patch.object(core.entity.AdGroupSource.objects, 'bulk_clone_on_allowed_sources')
@@ -59,7 +59,7 @@ class AdGroupClone(TestCase):
 
         history = history_helpers.get_ad_group_history(ad_group)
         self.assertEqual(len(history), 1)
-        self.assertIsNone(history[0].action_type, constants.HistoryActionType.CREATE)
+        self.assertEqual(history[0].action_type, constants.HistoryActionType.SETTINGS_CHANGE)
 
 
 class AdGroupHistory(TestCase):
@@ -73,7 +73,7 @@ class AdGroupHistory(TestCase):
 
         history = history_helpers.get_ad_group_history(ad_group)
 
-        self.assertEqual(len(history), 6)
+        self.assertEqual(len(history), 7)
         self.assertRegexpMatches(
             history.first().changes_text,
             r'Created settings and automatically created campaigns for 5 sources .*')

@@ -207,9 +207,7 @@ class DailyStatementsK1TestCase(TestCase):
         self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
 
-        campaign_settings = self.campaign1.get_current_settings()
-        campaign_settings.automatic_campaign_stop = False
-        campaign_settings.save(None)
+        self.campaign1.settings.update(None, automatic_campaign_stop=False)
 
         update_from = datetime.date(2015, 11, 1)
         daily_statements.reprocess_daily_statements(update_from)
@@ -247,9 +245,7 @@ class DailyStatementsK1TestCase(TestCase):
             status=dash.constants.CreditLineItemStatus.SIGNED,
         )
 
-        campaign_settings = self.campaign1.get_current_settings()
-        campaign_settings.automatic_campaign_stop = False
-        campaign_settings.save(None)
+        self.campaign1.settings.update(None, automatic_campaign_stop=False)
 
         update_from = datetime.date(2015, 10, 1)
         daily_statements.reprocess_daily_statements(update_from)

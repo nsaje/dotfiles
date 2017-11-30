@@ -907,7 +907,7 @@ class TestBatchUpload(TestCase):
     @mock.patch('dash.features.contentupload.upload._invoke_external_validation', mock.Mock())
     def test_batch_upload_success(self):
         to_upload = [self._mock_content_ad('test1'), self._mock_content_ad('test2')]
-        r = self.client.post(reverse('contentads_batch_list') + '?adGroupId=1', to_upload, format='json')
+        r = self.client.post(reverse('contentads_batch_list') + '?adGroupId=987', to_upload, format='json')
         self.assertEqual(r.status_code, 201)
         resp_json = json.loads(r.content)
         self.assertIsInstance(resp_json['data'], dict)
@@ -956,7 +956,7 @@ class TestBatchUpload(TestCase):
     @mock.patch('dash.features.contentupload.upload._invoke_external_validation', mock.Mock())
     def test_batch_upload_failure(self):
         to_upload = [self._mock_content_ad('test1'), self._mock_content_ad('test2')]
-        r = self.client.post(reverse('contentads_batch_list') + '?adGroupId=1', to_upload, format='json')
+        r = self.client.post(reverse('contentads_batch_list') + '?adGroupId=987', to_upload, format='json')
         self.assertEqual(r.status_code, 201)
         resp_json = json.loads(r.content)
         self.assertIsInstance(resp_json['data'], dict)

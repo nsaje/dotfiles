@@ -255,6 +255,7 @@ class AutopilotPlusTestCase(test.TestCase):
         new_budgets = autopilot_plus._set_paused_ad_group_sources_to_minimum_values(
             adg.get_current_settings(), {'fee': Decimal('0.15'), 'margin': Decimal('0.3')})
 
+        adg.settings.refresh_from_db()
         self.assertTrue(paused_ad_group_source not in new_budgets)
         self.assertTrue(active_ad_group_source not in new_budgets)
         self.assertEqual(new_budgets.get(dash.constants.SourceAllRTB)['old_budget'], Decimal('30.'))

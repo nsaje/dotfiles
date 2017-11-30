@@ -7,6 +7,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         campaign: 1
+        settings: 1
         name: 'AdGroup 1'
     model: dash.adgroup
     pk: 1
@@ -16,6 +17,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         campaign: 1
+        settings: 2
         name: 'AdGroup 2'
     model: dash.adgroup
     pk: 2
@@ -58,6 +60,7 @@
 -   fields:
         ad_group: 1
         source: 1
+        settings: 11
         source_campaign_key: '["fake"]'
         source_credentials: 1
         last_successful_sync_dt: '2014-06-10T09:58:21'
@@ -68,6 +71,7 @@
 -   fields:
         ad_group: 1
         source: 2
+        settings: 12
         source_campaign_key: '["fake"]'
         source_credentials: 1
         last_successful_sync_dt: '2014-06-10T09:58:21'
@@ -77,6 +81,7 @@
 -   fields:
         ad_group: 2
         source: 1
+        settings: 21
         source_campaign_key: '["fake"]'
         source_credentials: 1
         last_successful_sync_dt: '2014-06-10T09:58:21'
@@ -87,6 +92,7 @@
 -   fields:
         ad_group: 2
         source: 2
+        settings: 22
         source_campaign_key: '["fake"]'
         source_credentials: 1
         last_successful_sync_dt: '2014-06-10T09:58:21'

@@ -76,8 +76,6 @@ class AdGroupSourceCreate(TestCase):
     @patch('dash.retargeting_helper.can_add_source_with_retargeting')
     def test_create_retargeting(self, mock_retargeting, mock_k1):
         mock_retargeting.return_value = False
-        ad_group_settings = self.ad_group.get_current_settings()
-        ad_group_settings.save(None)
 
         with self.assertRaises(utils.exc.ValidationError):
             core.entity.AdGroupSource.objects.create(
@@ -117,12 +115,12 @@ class AdGroupSourceClone(TestCase):
     def test_clone(self, mock_k1):
         source_ad_group_source = magic_mixer.blend(core.entity.AdGroupSource,
                                                    source=magic_mixer.blend_source_w_defaults())
-
-        source_ad_group_source_settings = magic_mixer.blend_latest_settings(
-            source_ad_group_source,
+        source_ad_group_source.settings.update_unsafe(
+            None,
             daily_budget_cc=decimal.Decimal('5'),
             cpc_cc=decimal.Decimal('0.1'),
-            state=magic_mixer.RANDOM)
+            state=constants.AdGroupSourceSettingsState.ACTIVE,
+        )
 
         ad_group = magic_mixer.blend(core.entity.AdGroup)
 
@@ -131,8 +129,8 @@ class AdGroupSourceClone(TestCase):
 
         ad_group_source_settings = ad_group_source.get_current_settings()
         self.assertEqual(ad_group_source.source, source_ad_group_source.source)
-        self.assertEqual(ad_group_source_settings.daily_budget_cc, source_ad_group_source_settings.daily_budget_cc)
-        self.assertEqual(ad_group_source_settings.cpc_cc, source_ad_group_source_settings.cpc_cc)
+        self.assertEqual(ad_group_source_settings.daily_budget_cc, source_ad_group_source.settings.daily_budget_cc)
+        self.assertEqual(ad_group_source_settings.cpc_cc, source_ad_group_source.settings.cpc_cc)
 
         self.assertTrue(mock_k1.called)
 
@@ -244,9 +242,7 @@ class AdGroupSourceUpdate(TestCase):
             self.ad_group_source.update(cpc_cc=decimal.Decimal('-1.2'))
 
     def test_update_validate_cpc_ad_group_max_cpc(self):
-        adgs = self.ad_group.get_current_settings()
-        adgs.cpc_cc = 1.1
-        adgs.save(None)
+        self.ad_group.settings.update_unsafe(None, cpc_cc=1.1)
 
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.update(cpc_cc=decimal.Decimal('1.2'))
@@ -289,9 +285,7 @@ class AdGroupSourceUpdate(TestCase):
             self.ad_group_source.update(daily_budget_cc=decimal.Decimal('2.2'))
 
     def test_update_validate_state_retargeting(self):
-        adgs = self.ad_group.get_current_settings()
-        adgs.retargeting_ad_groups = [1]
-        adgs.save(None)
+        self.ad_group.settings.update_unsafe(None, retargeting_ad_groups=[1])
         self.source.supports_retargeting = False
         self.source.supports_retargeting_manually = False
         self.source.save()
@@ -306,18 +300,14 @@ class AdGroupSourceUpdate(TestCase):
 
     def test_update_validate_state_yahoo(self):
         self.ad_group_source.update(cpc_cc=decimal.Decimal('0.1'))
-        adgs = self.ad_group.get_current_settings()
-        adgs.target_devices = [constants.AdTargetDevice.DESKTOP]
-        adgs.save(None)
+        self.ad_group.settings.update_unsafe(None, target_devices=[constants.AdTargetDevice.DESKTOP])
         self.source_type.type = constants.SourceType.YAHOO
         self.source_type.save()
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.update(state=constants.AdGroupSourceSettingsState.ACTIVE)
 
     def test_update_landing_mode(self):
-        campaign_settings = self.ad_group.campaign.get_current_settings()
-        campaign_settings.landing_mode = True
-        campaign_settings.save(None)
+        self.ad_group.campaign.settings.update(None, landing_mode=True)
 
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.update(state=constants.AdGroupSourceSettingsState.ACTIVE)
@@ -329,9 +319,7 @@ class AdGroupSourceUpdate(TestCase):
 
     @patch('automation.campaign_stop.get_max_settable_source_budget')
     def test_update_campaign_stop_budget(self, get_budget_mock):
-        campaign_settings = self.ad_group.campaign.get_current_settings()
-        campaign_settings.automatic_campaign_stop = True
-        campaign_settings.save(None)
+        self.ad_group.campaign.settings.update(None, automatic_campaign_stop=True)
 
         get_budget_mock.return_value = decimal.Decimal('1.0')
 
@@ -342,9 +330,7 @@ class AdGroupSourceUpdate(TestCase):
 
     @patch('automation.campaign_stop.can_enable_media_source')
     def test_update_campaign_stop_state(self, can_enable_mock):
-        campaign_settings = self.ad_group.campaign.get_current_settings()
-        campaign_settings.automatic_campaign_stop = True
-        campaign_settings.save(None)
+        self.ad_group.campaign.settings.update(None, automatic_campaign_stop=True)
 
         can_enable_mock.return_value = False
 
@@ -353,9 +339,7 @@ class AdGroupSourceUpdate(TestCase):
 
     @patch('dash.views.helpers.enabling_autopilot_sources_allowed')
     def test_update_autopilot_state(self, enabling_allowed_mock):
-        campaign_settings = self.ad_group.campaign.get_current_settings()
-        campaign_settings.automatic_campaign_stop = True
-        campaign_settings.save(None)
+        self.ad_group.campaign.settings.update(None, automatic_campaign_stop=True)
 
         enabling_allowed_mock.return_value = False
 

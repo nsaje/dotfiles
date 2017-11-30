@@ -2,6 +2,7 @@ import itertools
 import time
 import json
 import datetime
+from operator import itemgetter
 
 import mock
 from mock import patch, ANY
@@ -42,6 +43,7 @@ class K1ApiBaseTest(TestCase):
         settings.BIDDER_API_SIGN_KEY = ['test_api_key2']
         self.verify_patcher = patch('utils.request_signer.verify_wsgi_request')
         self.mock_verify_wsgi_request = self.verify_patcher.start()
+        self.campaign = dash.models.Campaign.objects.all().first()
 
         self.maxDiff = None
 
@@ -437,9 +439,7 @@ class K1ApiTest(K1ApiBaseTest):
         )
 
     def test_get_ga_accounts_since_yesterday(self):
-        campaign_settings = dash.models.CampaignSettings.objects.all().group_current_settings().first().copy_settings()
-        campaign_settings.ga_property_id = 'UA-123-4'
-        campaign_settings.save(None)
+        self.campaign.settings.update(None, ga_property_id='UA-123-4')
 
         response = self.client.get(
             reverse('k1api.ga_accounts'),
@@ -462,9 +462,7 @@ class K1ApiTest(K1ApiBaseTest):
         self.assertEqual(data['ga_accounts'][2]['ga_web_property_id'], 'UA-123-3')
 
     def test_get_ga_accounts_since_yesterday_with_additional_campaigns(self):
-        campaign_settings = dash.models.CampaignSettings.objects.all().group_current_settings().first().copy_settings()
-        campaign_settings.ga_property_id = 'UA-123-4'
-        campaign_settings.save(None)
+        self.campaign.settings.update(None, ga_property_id='UA-123-4')
 
         response = self.client.get(
             reverse('k1api.ga_accounts'),
@@ -835,8 +833,10 @@ class K1ApiTest(K1ApiBaseTest):
         source = magic_mixer.blend(dash.models.Source, source_type__type='abc')
         ad_groups = magic_mixer.cycle(n).blend(dash.models.AdGroup, campaign_id=1)
         magic_mixer.cycle(n).blend(dash.models.AdGroupSource, ad_group=(ag for ag in ad_groups), source=source)
-        magic_mixer.cycle(n).blend(dash.models.AdGroupSettings, ad_group=(ag for ag in ad_groups), archived=False, brand_name='old')
-        magic_mixer.cycle(n).blend(dash.models.AdGroupSettings, ad_group=(ag for ag in ad_groups), archived=False, brand_name='new')
+        for ad_group in ad_groups:
+            ad_group.settings.update_unsafe(None, brand_name='old')
+        for ad_group in ad_groups:
+            ad_group.settings.update_unsafe(None, brand_name='new')
 
         # make the first one archived
         request = magic_mixer.blend_request_user()
@@ -861,7 +861,6 @@ class K1ApiTest(K1ApiBaseTest):
         n = 10
         source = magic_mixer.blend(dash.models.Source, source_type__type='abc')
         ad_groups = magic_mixer.cycle(n).blend(dash.models.AdGroup, campaign_id=1)
-        magic_mixer.cycle(n).blend(dash.models.AdGroupSettings, ad_group=(ag for ag in ad_groups))
         magic_mixer.cycle(n).blend(dash.models.AdGroupSource, ad_group=(ag for ag in ad_groups), source=source)
         response = self.client.get(
             reverse('k1api.ad_groups'),
@@ -923,6 +922,7 @@ class K1ApiTest(K1ApiBaseTest):
         data = data['response']
 
         self.assertEqual(len(data), 2)
+        data = sorted(data, key=itemgetter('ad_group_id'))
 
         self.assertDictEqual(data[0], {
             u'ad_group_id': 1,
@@ -957,11 +957,10 @@ class K1ApiTest(K1ApiBaseTest):
             today, today, 100,
             margin='0.1')
         ad_group = magic_mixer.blend(dash.models.AdGroup, campaign=campaign)
-        ad_group_settings = magic_mixer.blend(dash.models.AdGroupSettings, ad_group=ad_group)
         source = dash.models.Source.objects.get(bidder_slug='b1_google')
         ad_group_source = magic_mixer.blend(dash.models.AdGroupSource, ad_group=ad_group, source=source)
-        magic_mixer.blend(
-            dash.models.AdGroupSourceSettings,
+        ad_group_source.settings.update_unsafe(
+            None,
             cpc_cc='0.12',
             daily_budget_cc='50.00',
             ad_group_source=ad_group_source,
@@ -985,7 +984,7 @@ class K1ApiTest(K1ApiBaseTest):
             u'cpc_cc': u'0.0864',
             u'daily_budget_cc': u'36.0000',
             u'source_campaign_key': {},
-            u'tracking_code': ad_group_settings.tracking_code,
+            u'tracking_code': ad_group.settings.tracking_code,
         })
 
     def test_get_ad_groups_exchanges_with_id(self):

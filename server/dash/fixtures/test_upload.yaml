@@ -47,6 +47,14 @@
   model: zemauth.user
   pk: 3
 
+# test accountsettings
+
+-   fields:
+        account: 1
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.accountsettings
+    pk: 1
+
 # Accounts
 - fields:
     created_dt: '2014-06-04T09:58:21'
@@ -54,8 +62,17 @@
     modified_by: 1
     name: 'Test Account 1'
     users: [1, 2, 3]
+    settings: 1
   model: dash.account
   pk: 1
+
+# test campaignsettings
+
+-   fields:
+        campaign: 1
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaignsettings
+    pk: 1
 
 # Campaigns
 - fields:
@@ -63,6 +80,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     account: 1
+    settings: 1
     name: 'Test Campaign 1'
   model: dash.campaign
   pk: 1
@@ -73,6 +91,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 1
+    settings: 1
     name: 'Test AdGroup 1'
   model: dash.adgroup
   pk: 1
@@ -82,6 +101,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 1
+    settings: 2
     name: 'Test AdGroup 2'  # batch with unprocessed content
   model: dash.adgroup
   pk: 2
@@ -91,6 +111,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 1
+    settings: 3
     name: 'Test AdGroup 3'  # batch with processed and valid content
   model: dash.adgroup
   pk: 3
@@ -100,6 +121,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 1
+    settings: 4
     name: 'Test AdGroup 4'  # batch with processed and invalid content
   model: dash.adgroup
   pk: 4
@@ -109,6 +131,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 1
+    settings: 5
     name: 'Test AdGroup 5'  # processed batch
   model: dash.adgroup
   pk: 5
@@ -118,6 +141,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 1
+    settings: 6
     name: 'Test AdGroup 5'  # edit batch in progress
   model: dash.adgroup
   pk: 6
@@ -134,6 +158,36 @@
     call_to_action: 'Click here!'
   model: dash.adgroupsettings
   pk: 1
+
+-   fields:
+        ad_group: 2
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.adgroupsettings
+    pk: 2
+
+-   fields:
+        ad_group: 3
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.adgroupsettings
+    pk: 3
+
+-   fields:
+        ad_group: 4
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.adgroupsettings
+    pk: 4
+
+-   fields:
+        ad_group: 5
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.adgroupsettings
+    pk: 5
+
+-   fields:
+        ad_group: 6
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.adgroupsettings
+    pk: 6
 
 # Source Types
 -   fields:
@@ -174,6 +228,7 @@
 - fields:
     source: 1
     ad_group: 1
+    settings: 1
     source_campaign_key: '["fake"]'
     can_manage_content_ads: true
   model: dash.adgroupsource
@@ -182,6 +237,7 @@
 - fields:
     source: 2
     ad_group: 1
+    settings: 2
     can_manage_content_ads: true
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
@@ -190,6 +246,7 @@
 - fields:
     source: 1
     ad_group: 3
+    settings: 3
     source_campaign_key: '["fake"]'
     can_manage_content_ads: true
   model: dash.adgroupsource
@@ -214,6 +271,14 @@
   model: dash.adgroupsourcesettings
   pk: 2
 
+- fields:
+    created_dt: '2014-06-01T09:58:21'
+    ad_group_source: 3
+    cpc_cc: '0.12'
+    daily_budget_cc: '50.'
+    state: 1
+  model: dash.adgroupsourcesettings
+  pk: 3
 
 # Upload batches
 - fields:

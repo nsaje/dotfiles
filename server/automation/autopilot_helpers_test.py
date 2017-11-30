@@ -39,13 +39,14 @@ class AutopilotHelpersTestCase(test.TestCase):
         ag_source_settings = ag_source.get_current_settings()
         old_daily_budget = ag_source_settings.daily_budget_cc
         old_cpc = ag_source_settings.cpc_cc
+        old_count = dash.models.AdGroupSourceSettings.objects.count()
         autopilot_helpers.update_ad_group_source_values(ag_source, {
             'daily_budget_cc': old_daily_budget + Decimal('10'),
             'cpc_cc': old_cpc + Decimal('0.5')})
-        new_ag_source_settings = ag_source.get_current_settings()
-        self.assertNotEqual(ag_source_settings, new_ag_source_settings)
-        self.assertEqual(new_ag_source_settings.daily_budget_cc, old_daily_budget + Decimal('10'))
-        self.assertEqual(new_ag_source_settings.cpc_cc, old_cpc + Decimal('0.5'))
+        new_count = dash.models.AdGroupSourceSettings.objects.count()
+        self.assertNotEqual(new_count, old_count)
+        self.assertEqual(ag_source_settings.daily_budget_cc, old_daily_budget + Decimal('10'))
+        self.assertEqual(ag_source_settings.cpc_cc, old_cpc + Decimal('0.5'))
 
     def test_get_autopilot_active_sources_settings(self):
         adgroups = dash.models.AdGroup.objects.filter(id__in=[1, 2, 3])

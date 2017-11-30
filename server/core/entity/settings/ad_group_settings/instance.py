@@ -18,26 +18,8 @@ import core.source
 
 class AdGroupSettingsMixin(object):
 
-    def save(self,
-             request,
-             action_type=None,
-             changes_text=None,
-             *args, **kwargs):
-        if self.pk is None:
-            if request is None:
-                self.created_by = None
-            else:
-                self.created_by = request.user
-        super(AdGroupSettingsMixin, self).save(*args, **kwargs)
-        self.add_to_history(request and request.user,
-                            action_type, changes_text)
-
-    def add_to_history(self, user, action_type, history_changes_text):
-        changes = self.get_model_state_changes(
-            self.get_settings_dict()
-        )
-        changes_text = history_changes_text or self.get_changes_text_from_dict(
-            changes)
+    def add_to_history(self, user, action_type, changes, history_changes_text=None):
+        changes_text = history_changes_text or self.get_changes_text_from_dict(changes)
         self.ad_group.write_history(
             self.changes_text or changes_text,
             changes=changes,
@@ -83,7 +65,7 @@ class AdGroupSettingsMixin(object):
 
         # save
         ad_group.save(request)
-        if changes:
+        if self.pk is None or changes:
             if new_settings.id is None or 'tracking_code' in changes or 'click_capping_daily_ad_group_max_clicks' in changes:
                 redirector_helper.insert_adgroup(
                     ad_group,
@@ -107,22 +89,17 @@ class AdGroupSettingsMixin(object):
             dash.views.helpers.set_ad_group_sources_cpcs(
                 ad_group_sources_cpcs, ad_group, new_settings, skip_validation=skip_validation)
 
-            new_settings.save(
-                request,
-                action_type=constants.HistoryActionType.SETTINGS_CHANGE)
+            changes_text = core.entity.settings.AdGroupSettings.get_changes_text(
+                current_settings, new_settings, request.user if request else None, separator='\n')
+
+            new_settings.save(request)
             k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
 
             if self._should_initialize_budget_autopilot(changes, new_settings):
                 autopilot_plus.initialize_budget_autopilot_on_ad_group(new_settings, send_mail=True)
 
-            changes_text = core.entity.settings.AdGroupSettings.get_changes_text(
-                current_settings, new_settings, request.user, separator='\n')
-
-            email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
-
-        # when we have a FK to latest settings, this return can be removed
-        # since we no longer have to manually replace the object on the parent entity
-        return new_settings
+            if request is not None:
+                email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
 
     def get_external_max_cpm(self, account, license_fee, margin):
         if self.max_cpm is None:
@@ -169,7 +146,7 @@ class AdGroupSettingsMixin(object):
 
     @classmethod
     def _set_settings(cls, request, new_settings, kwargs):
-        user = request.user
+        user = request.user if request else None
         special_case_fields = {'autopilot_state', 'autopilot_daily_budget'}
         valid_fields = set(cls._settings_fields) - special_case_fields
 
