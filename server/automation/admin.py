@@ -98,7 +98,7 @@ class CampaignListFilter(admin.SimpleListFilter):
 
 
 class CampaignStopLogAdmin(admin.ModelAdmin):
-    search_fields = ['campaign__name']
+    search_fields = ['campaign__name', 'campaign_id', 'campaign__account_id']
     list_display = (
         'id',
         'campaign_link',
