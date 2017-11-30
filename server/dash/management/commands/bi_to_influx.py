@@ -5,16 +5,19 @@ import logging
 from influxdb import InfluxDBClient
 from django.conf import settings
 
-import stats.api_breakdowns
-import redshiftapi.api_breakdowns
-from stats.helpers import Goals
-from utils.command_helpers import ExceptionCommand, parse_date
+from core.publisher_groups import publisher_group_helpers
 from dash import constants
 from dash import models
-from core.publisher_groups import publisher_group_helpers
+import redshiftapi.api_breakdowns
+import stats.api_breakdowns
+from stats.helpers import Goals
+from utils.command_helpers import ExceptionCommand, parse_date
+from utils import grouper
 import zemauth.models
 
 logger = logging.getLogger(__name__)
+
+INFLUX_MAX_POINTS_PER_REQUEST = 10000
 
 
 class Command(ExceptionCommand):
@@ -42,6 +45,10 @@ class Command(ExceptionCommand):
             self._agency_to_influx(influx, date, 'agency_mtd')
 
             date += datetime.timedelta(days=1)
+
+    def _write_to_influx(self, influx, all_data):
+        for data in grouper(INFLUX_MAX_POINTS_PER_REQUEST, all_data):
+            influx.write_points(data)
 
     def _agency_to_influx(self, influx, date, measurement):
         data = redshiftapi.api_breakdowns.query(
@@ -80,7 +87,7 @@ class Command(ExceptionCommand):
             'time': date.strftime('%Y-%m-%d') + 'T12:00:00Z'
         } for entry in data_by_agency.itervalues()]
 
-        influx.write_points(influx_data)
+        self._write_to_influx(influx, influx_data)
 
     def _redshift_to_influx(self, influx, date, breakdown, measurement):
         data = redshiftapi.api_breakdowns.query(
@@ -104,7 +111,7 @@ class Command(ExceptionCommand):
             'time': date.strftime('%Y-%m-%d') + 'T12:00:00Z'
         } for entry in data]
 
-        influx.write_points(influx_data)
+        self._write_to_influx(influx, influx_data)
 
     def _stats_to_influx(self, influx, date, breakdown, measurement):
         data = stats.api_breakdowns.query(
@@ -140,4 +147,4 @@ class Command(ExceptionCommand):
             'time': date.strftime('%Y-%m-%d') + 'T12:00:00Z'
         } for entry in data]
 
-        influx.write_points(influx_data)
+        self._write_to_influx(influx, influx_data)

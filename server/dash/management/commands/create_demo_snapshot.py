@@ -24,7 +24,7 @@ from dash import constants
 import dash.models
 import zemauth.models
 from utils.command_helpers import ExceptionCommand
-from utils import demo_anonymizer, s3helpers, request_signer, json_helper
+from utils import demo_anonymizer, s3helpers, request_signer, json_helper, grouper
 
 import logging
 logger = logging.getLogger(__name__)
@@ -152,7 +152,7 @@ class Command(ExceptionCommand):
         tararchive = tarfile.open(mode='w', fileobj=tarbuffer)
 
         filtered_reversed_list = filter(lambda obj: obj is not None, reversed(serialize_list))
-        grouped_list = _grouper(MAX_PER_FILE, filtered_reversed_list)
+        grouped_list = grouper(MAX_PER_FILE, filtered_reversed_list)
 
         for i, group_data in enumerate(grouped_list):
             dump_group_data = serialize('python', group_data)
@@ -349,12 +349,3 @@ def _get_many_to_many_fields(obj):
         return obj._meta.many_to_many
     except AttributeError:
         return []
-
-
-def _grouper(n, iterable):
-    it = iter(iterable)
-    while True:
-        chunk = tuple(itertools.islice(it, n))
-        if not chunk:
-            return
-        yield chunk
