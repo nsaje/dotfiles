@@ -46,7 +46,7 @@ DATABASES = {
         'PORT': 5439
     }
 }
-DATABASE_READ_REPLICAS = []
+DATABASE_READ_REPLICAS = ['read-replica']
 
 ALLOWED_HOSTS = ['*']
 
