@@ -10,7 +10,7 @@ import influx
 logger = logging.getLogger(__name__)
 
 
-KEYS_TO_CHECK_ADGROUP = ('tracking_code', 'click_capping_daily_ad_group_max_clicks')
+KEYS_TO_CHECK_ADGROUP = ('tracking_code', )
 KEYS_TO_CHECK_CAMPAIGN = ('enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param')
 
 
