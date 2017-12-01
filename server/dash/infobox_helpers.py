@@ -702,27 +702,27 @@ def _retrieve_active_creditlineitems(account, date):
 def _compute_daily_cap(ad_groups):
     adgroup_sources = dash.models.AdGroupSource.objects.filter(
         ad_group__in=ad_groups,
-    ).select_related('source__source_type', 'settings')
+    ).values('settings__state', 'settings__daily_budget_cc', 'ad_group_id', 'source__source_type__type')
     adgroup_map = {ad_group.id: ad_group for ad_group in ad_groups}
 
     ret = 0
 
     ad_groups_with_active_b1_sources = set()
     for adgroup_source in adgroup_sources:
-        if adgroup_source.settings.state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
+        if adgroup_source['settings__state'] != dash.constants.AdGroupSourceSettingsState.ACTIVE:
             continue
 
-        adgroup_settings = adgroup_map[adgroup_source.ad_group_id].settings
+        adgroup_settings = adgroup_map[adgroup_source['ad_group_id']].settings
 
         if adgroup_settings.state != dash.constants.AdGroupSettingsState.ACTIVE:
             continue
 
         if adgroup_settings.b1_sources_group_enabled and\
-           adgroup_source.source.source_type.type == dash.constants.SourceType.B1:
-            ad_groups_with_active_b1_sources.add(adgroup_source.ad_group_id)
+           adgroup_source['source__source_type__type'] == dash.constants.SourceType.B1:
+            ad_groups_with_active_b1_sources.add(adgroup_source['ad_group_id'])
             continue
 
-        ret += adgroup_source.settings.daily_budget_cc or 0
+        ret += adgroup_source['settings__daily_budget_cc'] or 0
 
     for ad_group_id in ad_groups_with_active_b1_sources:
         ags = adgroup_map[ad_group_id].settings
