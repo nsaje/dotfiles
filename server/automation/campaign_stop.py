@@ -286,7 +286,7 @@ def can_enable_ad_groups(campaign, campaign_settings):
         ad_group_source__ad_group__in=ad_groups,
     ).group_current_settings().select_related('ad_group_source__source'):
         if ags_settings.state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
-            current_active_ags_settings[ags_settings.ad_group_source.ad_group].append(ags_settings)
+            current_active_ags_settings[ags_settings.ad_group_source.ad_group_id].append(ags_settings)
 
     today = dates_helper.local_today()
     max_daily_budget_per_ags, max_group_daily_budget_per_ag = _get_max_daily_budget_per_ags(today, campaign)
@@ -305,13 +305,13 @@ def can_enable_ad_groups(campaign, campaign_settings):
            ag_settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
             ad_groups = [ad_group]  # b1 sources group is active - it adds budget if enabled
 
-        active_ad_group_sources = [s.ad_group_source for s in current_active_ags_settings[ad_group]]
+        active_ad_group_sources = [s.ad_group_source for s in current_active_ags_settings[ad_group.id]]
         ret[ad_group.id] = _can_enable_all_sources(
             campaign,
             active_ad_group_sources,
             ad_groups,
             [ag_settings],
-            current_active_ags_settings[ad_group],
+            current_active_ags_settings[ad_group.id],
             max_daily_budget_per_ags,
             max_group_daily_budget_per_ag,
             remaining_today,
