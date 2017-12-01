@@ -61,7 +61,7 @@ class Account(models.Model):
 
     # migration to the new system introduced by margings and fees project
     uses_bcm_v2 = models.BooleanField(
-        default=False,
+        default=True,
         verbose_name='Margins v2',
         help_text='This account will have license fee and margin included into all costs.'
     )
