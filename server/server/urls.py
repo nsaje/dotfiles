@@ -59,6 +59,9 @@ if settings.DEBUG and settings.ENABLE_DEBUG_TOOLBAR:
         url(r'^__debug__/', include(debug_toolbar.urls)),
     ]
 
+if settings.DEBUG and settings.ENABLE_SILK:
+    urlpatterns += [url(r'^silk/', include('silk.urls', namespace='silk'))]
+
 urlpatterns += [
     url(r'^signin$',
         zemauth.views.login,

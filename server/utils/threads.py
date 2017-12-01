@@ -1,6 +1,7 @@
 from threading import Thread
 import logging
 
+from django.conf import settings
 from django.db import connection
 
 logger = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ class MockAsyncFunction(object):
         return self._result
 
 
-class AsyncFunction(Thread):
+class RealAsyncFunction(Thread):
     """
     A more general class that takes a function and runs it in a new thread.
     The recepie:
@@ -79,6 +80,11 @@ class AsyncFunction(Thread):
     def join_and_get_result(self):
         self.join()
         return self.get_result()
+
+
+AsyncFunction = RealAsyncFunction
+if settings.ENABLE_SILK:
+    AsyncFunction = MockAsyncFunction
 
 # uncomment the following statement to disable async behaviour
 # AsyncFunction = MockAsyncFunction

@@ -149,16 +149,13 @@ class AccountsLoader(Loader):
         Returns dict with account_id as key and status as value
         """
 
-        ad_group_w_account = models.AdGroup.objects.filter(campaign__account_id__in=self.objs_ids)\
-                                                   .values_list('id', 'campaign__account_id')
+        account_ids_state = models.AdGroup.objects.filter(campaign__account_id__in=self.objs_ids)\
+                                                  .values_list('campaign__account_id', 'settings__state')
 
-        ad_groups_settings = models.AdGroupSettings.objects\
-                                                   .filter(ad_group_id__in=[x[0] for x in ad_group_w_account])\
-                                                   .group_current_settings()\
-                                                   .only_state_fields()
-
-        status_map = view_helpers.get_ad_group_table_running_state_by_obj_id(
-            ad_group_w_account, ad_groups_settings)
+        status_map = {}
+        for account_id, state in account_ids_state:
+            if state == constants.AdGroupRunningStatus.ACTIVE:
+                status_map[account_id] = state
 
         for account_id in self.objs_ids:
             if account_id not in status_map:

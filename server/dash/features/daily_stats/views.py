@@ -25,6 +25,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
             'end_date': dash.views.helpers.get_stats_end_date(request.GET.get('end_date')),
             'filtered_sources': dash.views.helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources')),
             'show_archived': request.GET.get('show_archived') == 'true',
+            'only_used_sources': False,
         }
 
     def get_stats(self, request, group_key, should_use_publishers_view=False):
@@ -242,7 +243,6 @@ class AllAccountsPublishersDailyStats(AllAccountsDailyStatsView):
         params['show_blacklisted_publishers'] = request.GET.get(
             'show_blacklisted_publishers', constants.PublisherBlacklistFilter.SHOW_ALL
         )
-        params['only_used_sources'] = False
         return params
 
     def get(self, request):
@@ -341,7 +341,6 @@ class AccountPublishersDailyStats(AccountDailyStatsView):
         params['show_blacklisted_publishers'] = request.GET.get(
             'show_blacklisted_publishers', constants.PublisherBlacklistFilter.SHOW_ALL
         )
-        params['only_used_sources'] = False
         return params
 
     def get(self, request, account_id):
@@ -452,7 +451,6 @@ class CampaignPublishersDailyStats(CampaignDailyStatsView):
         params['show_blacklisted_publishers'] = request.GET.get(
             'show_blacklisted_publishers', constants.PublisherBlacklistFilter.SHOW_ALL
         )
-        params['only_used_sources'] = False
         return params
 
     def get(self, request, campaign_id):
@@ -566,7 +564,6 @@ class AdGroupPublishersDailyStats(AdGroupDailyStatsView):
         params['show_blacklisted_publishers'] = request.GET.get(
             'show_blacklisted_publishers', constants.PublisherBlacklistFilter.SHOW_ALL
         )
-        params['only_used_sources'] = False
         return params
 
     def get(self, request, ad_group_id, ):

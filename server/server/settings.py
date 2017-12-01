@@ -139,6 +139,7 @@ DEFAULT_FROM_EMAIL = ''
 
 ENABLE_DJANGO_EXTENSIONS = False
 ENABLE_DEBUG_TOOLBAR = False
+ENABLE_SILK = False
 
 # cache settings
 CACHES = {
@@ -246,6 +247,15 @@ if ENABLE_DEBUG_TOOLBAR:
             'MAX_ENTRIES': 1000000
         }
     }
+
+if ENABLE_SILK:
+    MIDDLEWARE = [
+        'silk.middleware.SilkyMiddleware',
+    ] + MIDDLEWARE
+
+    INSTALLED_APPS.extend([
+        'silk',
+    ])
 
 STATIC_URL = SERVER_STATIC_URL + '/'
 
