@@ -491,7 +491,7 @@ class AccountOverview(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     def get(self, request, account_id):
-        account = helpers.get_account(request.user, account_id)
+        account = helpers.get_account(request.user, account_id, select_related_users=True)
 
         account_running_status = infobox_helpers.get_account_running_status(account)
 

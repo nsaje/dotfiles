@@ -34,12 +34,17 @@ def get_agency(user, agency_id):
         raise utils.exc.MissingDataError('Agency does not exist')
 
 
-def get_account(user, account_id, sources=None):
+def get_account(user, account_id, sources=None, select_related_users=False):
     try:
         account = core.entity.Account.objects.all().filter_by_user(user).select_related('settings')
 
         if sources:
             account = account.filter_by_sources(sources)
+
+        if select_related_users:
+            account = account.select_related('settings__default_account_manager')
+            account = account.select_related('settings__default_cs_representative')
+            account = account.select_related('settings__default_sales_representative')
 
         return account.filter(id=int(account_id)).get()
     except core.entity.Account.DoesNotExist:
