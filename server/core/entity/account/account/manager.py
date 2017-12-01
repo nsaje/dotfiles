@@ -17,6 +17,7 @@ class AccountManager(core.common.QuerySetManager):
         account = model.Account(name=name, agency=agency)
         if agency is not None:
             account.uses_bcm_v2 = agency.new_accounts_use_bcm_v2
+        account.uses_bcm_v2 = True  # FIXME: should be default on model field
         account.save(request)
         account.write_history(
             'Created account',
