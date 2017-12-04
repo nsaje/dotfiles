@@ -765,7 +765,7 @@ class AdGroupSourcesView(K1APIView):
         ad_group_ids = list(ad_groups.values_list('id', flat=True))
 
         campaigns = dash.models.Campaign.objects.filter(adgroup__in=ad_groups)
-        campaignstop_map = automation.campaignstop.service.get_campaignstop_states(campaigns)
+        campaignstop_map = automation.campaignstop.get_campaignstop_states(campaigns)
 
         ad_groups_settings_query = dash.models.AdGroupSettings.objects.filter(ad_group__in=ad_group_ids)
         ad_groups_settings = ad_groups_settings_query.group_current_settings()
