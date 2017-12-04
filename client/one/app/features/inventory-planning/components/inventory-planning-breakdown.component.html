@@ -13,8 +13,12 @@
 
     <div class="zem-inventory-planning-breakdown__options-container custom-scroller">
         <div class="zem-inventory-planning-breakdown__option-item"
-             *ngFor="let option of searchResults; trackBy: trackByOption">
-            <span class="zem-inventory-planning-breakdown__name">
+             *ngFor="let option of searchResults; let index = index; trackBy: trackByOption"
+             (click)="toggle(option.value)">
+            <input class="input-checkbox zem-inventory-planning-breakdown__checkbox"
+                   type="checkbox"
+                   [checked]="selectedIndices.indexOf(index) !== -1" />
+            <span class="zem-inventory-planning-breakdown__name checkbox-text">
                 {{option.name || option.value}}
             </span>
             <span class="zem-inventory-planning-breakdown__auction-count">

@@ -45,19 +45,19 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
         this.refreshData(placeholderSelectedFilters);
     }
 
-    removeOption (removedOption: {key: string, value: string}): void {
-        if (!this.state.selectedFilters.hasOwnProperty(removedOption.key)) {
+    toggleOption (toggledOption: {key: string, value: string}): void {
+        if (!this.state.selectedFilters.hasOwnProperty(toggledOption.key)) {
             return;
         }
-        const selectedWithRemovedOption = this.state.selectedFilters[removedOption.key]
-            .filter((option: FilterOption) => {
-                return option.value !== removedOption.value;
-            });
         this.setState({
             ...this.state,
             selectedFilters: {
                 ...this.state.selectedFilters,
-                [removedOption.key]: selectedWithRemovedOption,
+                [toggledOption.key]: this.getSelectedWithToggledOption(
+                    this.state.availableFilters[toggledOption.key],
+                    this.state.selectedFilters[toggledOption.key],
+                    toggledOption.value
+                ),
             },
         });
         this.refreshData(this.state.selectedFilters);
@@ -180,6 +180,25 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
             ...this.state,
             selectedFilters: selectedFilters,
         });
+    }
+
+    private getSelectedWithToggledOption (
+        available: FilterOption[],
+        selected: FilterOption[],
+        value: string
+    ): FilterOption[] {
+        const selectedWithNoToggledOption = selected.filter(i => i.value !== value);
+        if (selectedWithNoToggledOption.length === selected.length) {
+            for (const filter of available) {
+                if (filter.value === value) {
+                    return [
+                        ...selectedWithNoToggledOption,
+                        filter,
+                    ];
+                }
+            }
+        }
+        return selectedWithNoToggledOption;
     }
 
     private getFilterOption (key: string, value: string): FilterOption {

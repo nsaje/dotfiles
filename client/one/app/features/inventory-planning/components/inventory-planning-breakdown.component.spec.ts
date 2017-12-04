@@ -42,6 +42,7 @@ describe('InventoryPlanningBreakdownComponent', () => {
 
     it('should correctly search through available filter options and exclude options with 0 auctions', fakeAsync(() => {
         component.options = [testOption1, testOption2, testOption3, testOption4];
+        component.selected = [];
         component.ngOnInit();
 
         component.search$.next('');
@@ -64,6 +65,7 @@ describe('InventoryPlanningBreakdownComponent', () => {
     it('should execute search with current search query when options update', () => {
         let changes: SimpleChanges;
         component.options = [];
+        component.selected = [];
         component.searchQuery = '2';
 
         component.ngOnInit();
@@ -88,5 +90,44 @@ describe('InventoryPlanningBreakdownComponent', () => {
         };
         component.ngOnChanges(changes);
         expect(component.searchResults).toEqual([testOption2]);
+    });
+
+
+    it('should update selected indices when options update', () => {
+        let changes: SimpleChanges;
+        component.options = [testOption1, testOption2, testOption4];
+        component.selected = [];
+
+        component.ngOnInit();
+
+        changes = {
+            options: new SimpleChange(null, component.options, false),
+            selected: new SimpleChange(null, component.selected, false),
+        };
+        component.ngOnChanges(changes);
+        expect(component.selectedIndices).toEqual([]);
+
+        component.selected = [testOption2, testOption4];
+        changes = {
+            selected: new SimpleChange(null, component.selected, false),
+        };
+        component.ngOnChanges(changes);
+        expect(component.selectedIndices).toEqual([1]);
+
+        component.options = [testOption2, testOption3, testOption4];
+        changes = {
+            options: new SimpleChange(null, component.options, false),
+        };
+        component.ngOnChanges(changes);
+        expect(component.selectedIndices).toEqual([0]);
+
+        component.options = [testOption1, testOption2, testOption3, testOption4];
+        component.selected = [testOption2, testOption3];
+        changes = {
+            options: new SimpleChange(null, component.options, false),
+            selected: new SimpleChange(null, component.selected, false),
+        };
+        component.ngOnChanges(changes);
+        expect(component.selectedIndices).toEqual([1, 2]); // tslint:disable-line no-magic-numbers
     });
 });

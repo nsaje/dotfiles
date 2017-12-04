@@ -134,7 +134,7 @@ describe('InventoryPlanningStore', () => {
             });
         });
 
-        it('should correctly remove selected options', () => {
+        it('should correctly toggle selected options', () => {
             store.setState({
                 ...store.state,
                 selectedFilters: {
@@ -156,25 +156,43 @@ describe('InventoryPlanningStore', () => {
                 {value: 'test device 2', name: 'Test device 2', auctionCount: 20000},
             ]);
 
-            store.removeOption({key: 'countries', value: 'test country 1'});
+            store.toggleOption({key: 'countries', value: 'test country 1'});
             expect(store.state.selectedFilters.countries).toEqual([
                 {value: 'test country 2', name: 'Test country 2', auctionCount: 2000},
             ]);
 
-            store.removeOption({key: 'publishers', value: 'test publisher 1'});
+            store.toggleOption({key: 'publishers', value: 'test publisher 1'});
             expect(store.state.selectedFilters.publishers).toEqual([
                 {value: 'test publisher 2', name: 'Test publisher 2', auctionCount: 200},
             ]);
 
-            store.removeOption({key: 'devices', value: 'test device 1'});
+            store.toggleOption({key: 'devices', value: 'test device 1'});
             expect(store.state.selectedFilters.devices).toEqual([
                 {value: 'test device 2', name: 'Test device 2', auctionCount: 20000},
             ]);
+
+            store.toggleOption({key: 'countries', value: 'test country 1'});
+            expect(store.state.selectedFilters.countries).toEqual([
+                {value: 'test country 2', name: 'Test country 2', auctionCount: 2000},
+                {value: 'test country 1', name: 'Test country 1', auctionCount: 1000},
+            ]);
+
+            store.toggleOption({key: 'publishers', value: 'test publisher 1'});
+            expect(store.state.selectedFilters.publishers).toEqual([
+                {value: 'test publisher 2', name: 'Test publisher 2', auctionCount: 200},
+                {value: 'test publisher 1', name: 'Test publisher 1', auctionCount: 100},
+            ]);
+
+            store.toggleOption({key: 'devices', value: 'test device 1'});
+            expect(store.state.selectedFilters.devices).toEqual([
+                {value: 'test device 2', name: 'Test device 2', auctionCount: 20000},
+                {value: 'test device 1', name: 'Test device 1', auctionCount: 10000},
+            ]);
         });
 
-        it('should skip option with invalid key on remove', () => {
+        it('should skip option with invalid key on toggle', () => {
             spyOn(store, 'setState');
-            store.removeOption({key: 'invalid', value: 'test value'});
+            store.toggleOption({key: 'invalid', value: 'test value'});
             expect(store.setState).not.toHaveBeenCalled();
         });
 

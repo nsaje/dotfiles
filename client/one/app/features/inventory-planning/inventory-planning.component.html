@@ -1,6 +1,3 @@
-<!-- FIXME(nsaje): remove after release -->
-<div *ngIf="zemPermissions.hasPermission('zemauth.fea_can_see_inventory_planning')">
-
 <h1 class="content-container__title">Inventory Planning</h1>
 
 <zem-inventory-planning-summary class="zem-inventory-planning-summary"
@@ -13,7 +10,7 @@
 <zem-inventory-planning-filter class="zem-inventory-planning-filter"
                                [availableFilters]="(store.state$ | async).availableFilters"
                                [selectedFilters]="(store.state$ | async).selectedFilters"
-                               (onRemove)="store.removeOption($event)"
+                               (onRemove)="store.toggleOption($event)"
                                (onApply)="store.applyFilters($event)">
 </zem-inventory-planning-filter>
 
@@ -21,23 +18,26 @@
     <zem-inventory-planning-breakdown class="zem-inventory-planning-breakdown"
                                       breakdownName="Country"
                                       [options]="(store.state$ | async).availableFilters.countries"
-                                      [isLoading]="(store.state$ | async).requests.countries.inProgress">
+                                      [selected]="(store.state$ | async).selectedFilters.countries"
+                                      [isLoading]="(store.state$ | async).requests.countries.inProgress"
+                                      (onToggle)="store.toggleOption({key: 'countries', value: $event})">
     </zem-inventory-planning-breakdown>
     <zem-inventory-planning-breakdown class="zem-inventory-planning-breakdown"
                                       breakdownName="Publisher"
                                       [options]="(store.state$ | async).availableFilters.publishers"
-                                      [isLoading]="(store.state$ | async).requests.publishers.inProgress">
+                                      [selected]="(store.state$ | async).selectedFilters.publishers"
+                                      [isLoading]="(store.state$ | async).requests.publishers.inProgress"
+                                      (onToggle)="store.toggleOption({key: 'publishers', value: $event})">
     </zem-inventory-planning-breakdown>
     <zem-inventory-planning-breakdown class="zem-inventory-planning-breakdown"
                                       breakdownName="Device Type"
                                       [options]="(store.state$ | async).availableFilters.devices"
-                                      [isLoading]="(store.state$ | async).requests.devices.inProgress">
+                                      [selected]="(store.state$ | async).selectedFilters.devices"
+                                      [isLoading]="(store.state$ | async).requests.devices.inProgress"
+                                      (onToggle)="store.toggleOption({key: 'devices', value: $event})">
     </zem-inventory-planning-breakdown>
 </div>
 
 <div class="message message--info message--with-icon block m-b">
     This report is an aggregate over 30 consecutive days and includes only RTB media sources. Outbrain and Yahoo data is not included. The report is updated every month.
-</div>
-
-<!-- FIXME(nsaje): remove after release -->
 </div>
