@@ -72,6 +72,13 @@ class Source(models.Model):
         choices=constants.SourceSubmissionType.get_choices()
     )
 
+    content_ad_submission_policy = models.IntegerField(
+        default=constants.SourceSubmissionPolicy.AUTOMATIC,
+        choices=constants.SourceSubmissionPolicy.get_choices(),
+        help_text=_(
+            'Designates weather content ads are submitted automatically')
+    )
+
     default_cpc_cc = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('0.15'),
                                          verbose_name='Default CPC')
     default_mobile_cpc_cc = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('0.15'),

@@ -2280,3 +2280,13 @@ class AdGroupDeliveryType(ConstantBase):
         STANDARD: 'Standard',
         ACCELERATED: 'Accelerated',
     }
+
+
+class SourceSubmissionPolicy(ConstantBase):
+    AUTOMATIC = 1
+    MANUAL = 2
+
+    _VALUES = {
+        AUTOMATIC: 'Automatic',
+        MANUAL: 'Manual',
+    }
