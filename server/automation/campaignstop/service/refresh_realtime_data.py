@@ -1,8 +1,9 @@
 import core.entity
-from .. import RealTimeDataHistory
+import core.source
+from .. import RealTimeDataHistory, RealTimeCampaignDataHistory
+import dash.features.realtimestats
 
 from utils import dates_helper
-import dash.features.realtimestats
 
 
 def refresh_realtime_data(campaigns=None):
@@ -13,15 +14,14 @@ def refresh_realtime_data(campaigns=None):
 
 def _refresh_campaigns_realtime_data(campaigns):
     for campaign in campaigns:
-        _refresh_ad_groups_realtime_data(
-            campaign.adgroup_set.all().exclude_archived()
-        )
+        _refresh_ad_groups_realtime_data(campaign)
+        _refresh_campaign_realtime_data(campaign)
 
 
-def _refresh_ad_groups_realtime_data(ad_groups):
-    for ad_group in ad_groups:
+def _refresh_ad_groups_realtime_data(campaign):
+    for ad_group in campaign.adgroup_set.all().exclude_archived():
         try:
-            stats = dash.features.realtimestats.service.get_ad_group_sources_stats(ad_group)
+            stats = dash.features.realtimestats.get_ad_group_sources_stats(ad_group)
         except Exception:
             # TODO: handle failure to fetch data
             continue
@@ -43,4 +43,38 @@ def _add_source_stat(ad_group, source, spend):
         source=source,
         date=tz_today,
         etfm_spend=spend,
+    )
+
+
+def _refresh_campaign_realtime_data(campaign):
+    _refresh_realtime_campaign_data_for_date(campaign, dates_helper.local_today())
+    if _should_refresh_campaign_realtime_data_for_yesterday(campaign):
+        _refresh_realtime_campaign_data_for_date(campaign, dates_helper.local_yesterday())
+
+
+def _should_refresh_campaign_realtime_data_for_yesterday(campaign):
+    local_today = dates_helper.local_today()
+    any_source_tz_date_behind = any(
+        dates_helper.tz_today(source_type.budgets_tz) < local_today
+        for source_type in core.source.SourceType.objects.all())
+    return any_source_tz_date_behind
+
+
+def _refresh_realtime_campaign_data_for_date(campaign, date):
+    spends = RealTimeDataHistory.objects.filter(
+        ad_group__in=campaign.adgroup_set.all().exclude_archived(),
+        date=date,
+    ).distinct(
+        'ad_group_id',
+        'source_id',
+    ).order_by(
+        'ad_group_id',
+        'source_id',
+        '-created_dt'
+    ).values_list('etfm_spend', flat=True)
+
+    RealTimeCampaignDataHistory.objects.create(
+        campaign=campaign,
+        date=date,
+        etfm_spend=sum(spends)
     )

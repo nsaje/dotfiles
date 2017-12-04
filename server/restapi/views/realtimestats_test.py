@@ -7,17 +7,15 @@ from django.core.urlresolvers import reverse
 from restapi.views_test import RESTAPITest
 
 from dash import models
-from dash.features import realtimestats
 from zemauth.models import User
 from utils.magic_mixer import magic_mixer
 
 
 class RealtimestatsViewsTest(RESTAPITest):
 
-    @mock.patch('dash.features.realtimestats.service.get_ad_group_stats')
+    @mock.patch('dash.features.realtimestats.get_ad_group_stats')
+    @mock.patch('restapi.views.realtimestats.REALTIME_STATS_AGENCIES', [1])
     def test_adgroups_realtimestats(self, mock_get):
-        realtimestats.views.REALTIME_STATS_AGENCIES.append(1)
-
         mock_get.return_value = {'clicks': 12321, 'spend': 12.3}
         r = self.client.get(reverse('adgroups_realtimestats', kwargs={'ad_group_id': 2040}))
 
@@ -26,13 +24,11 @@ class RealtimestatsViewsTest(RESTAPITest):
 
         mock_get.assert_called_with(models.AdGroup.objects.get(pk=2040))
 
-        realtimestats.views.REALTIME_STATS_AGENCIES.remove(1)
-
     def test_adgroups_realtimestats_unauthorized(self):
         r = self.client.get(reverse('adgroups_realtimestats', kwargs={'ad_group_id': 2040}))
         self.assertEqual(r.status_code, 404)
 
-    @mock.patch('dash.features.realtimestats.service.get_ad_group_sources_stats')
+    @mock.patch('dash.features.realtimestats.get_ad_group_sources_stats')
     def test_adgroup_sources_realtimestats(self, mock_get):
         permission = Permission.objects.get(codename='can_use_restapi')
         user = User.objects.get(pk=1)

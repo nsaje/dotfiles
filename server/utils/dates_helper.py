@@ -45,8 +45,24 @@ def local_yesterday():
     return day_before(local_today())
 
 
-def day_before(today):
-    return today - datetime.timedelta(days=1)
+def tz_today(tz):
+    return utc_to_tz_datetime(utc_now(), tz).date()
+
+
+def day_before(date):
+    return days_before(date, 1)
+
+
+def days_before(date, days):
+    return date - datetime.timedelta(days=days)
+
+
+def day_after(date):
+    return days_after(date, 1)
+
+
+def days_after(date, days):
+    return date + datetime.timedelta(days=days)
 
 
 def local_midnight_to_utc_time():

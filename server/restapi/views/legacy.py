@@ -32,8 +32,8 @@ from dash.features import contentupload
 import redshiftapi.api_quickstats
 
 import utils.rest_common.authentication
-import fields
-import bcm.views
+from restapi import fields
+import restapi.bcm.views
 import core.bcm
 
 import dash.features.geolocation
@@ -192,7 +192,7 @@ class AccountCreditSerializer(serializers.Serializer):
 class AccountCreditViewList(RESTAPIBaseView):
 
     def get(self, request, account_id):
-        internal_view = bcm.views.AccountCreditView(rest_proxy=True)
+        internal_view = restapi.bcm.views.AccountCreditView(rest_proxy=True)
         data_internal, _ = internal_view.get(self.request, account_id)
         serializer = AccountCreditSerializer(data_internal['data']['active'], many=True)
         return self.response_ok(serializer.data)
@@ -728,7 +728,7 @@ class CampaignBudgetViewList(RESTAPIBaseView):
         serializer = CampaignBudgetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        internal_view = bcm.views.CampaignBudgetView(rest_proxy=True)
+        internal_view = restapi.bcm.views.CampaignBudgetView(rest_proxy=True)
         post_data = serializer.validated_data
 
         self.request.body = json.dumps(post_data, cls=json_helper.JSONEncoder)
@@ -743,14 +743,14 @@ class CampaignBudgetViewList(RESTAPIBaseView):
 class CampaignBudgetViewDetails(RESTAPIBaseView):
 
     def get(self, request, campaign_id, budget_id):
-        internal_view = bcm.views.CampaignBudgetItemView(rest_proxy=True)
+        internal_view = restapi.bcm.views.CampaignBudgetItemView(rest_proxy=True)
         data_internal, _ = internal_view.get(request, campaign_id, budget_id)
         data_internal['data']['credit'] = data_internal['data']['credit']['id']
         serializer = CampaignBudgetSerializer(data_internal['data'])
         return self.response_ok(serializer.data)
 
     def put(self, request, campaign_id, budget_id):
-        internal_view = bcm.views.CampaignBudgetItemView(rest_proxy=True)
+        internal_view = restapi.bcm.views.CampaignBudgetItemView(rest_proxy=True)
 
         data_internal_get, _ = internal_view.get(request, campaign_id, budget_id)
         serializer = CampaignBudgetSerializer(instance=data_internal_get['data'], data=request.data, partial=True)

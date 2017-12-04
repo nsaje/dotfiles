@@ -5,6 +5,7 @@ import dash.constants
 import core.entity.campaign
 import core.entity.adgroup
 
+from campaignstop.campaignstop_state import *  # noqa
 from campaignstop.real_time_data_history import *  # noqa
 
 

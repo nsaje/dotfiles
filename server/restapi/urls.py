@@ -1,6 +1,7 @@
 from django.conf.urls import url
 
 import views
+import views.realtimestats
 import adgroupsource.views
 import publishers.views
 import geolocation
@@ -8,7 +9,6 @@ import dash.features.videoassets.urls
 import dash.features.bluekai.urls
 from dash.features.bulkactions import clonecontent
 from dash.features import cloneadgroup
-from dash.features import realtimestats
 import campaignlauncher.urls
 import bcm.urls
 import inventory_planning.urls
@@ -137,6 +137,16 @@ urlpatterns = [
         geolocation.GeolocationListView.as_view(),
         name='geolocation_list'
     ),
+    url(
+        r'^v1/adgroups/(?P<ad_group_id>\d+)/realtimestats/$',
+        views.realtimestats.AdGroupRealtimeStatsView.as_view(),
+        name='adgroups_realtimestats'
+    ),
+    url(
+        r'^v1/adgroups/(?P<ad_group_id>\d+)/realtimestats/sources/$',
+        views.realtimestats.AdGroupSourcesRealtimeStatsView.as_view(),
+        name='adgroups_realtimestats_sources'
+    ),
 ]
 
 urlpatterns += account.urls.urlpatterns
@@ -144,7 +154,6 @@ urlpatterns += clonecontent.urls.urlpatterns
 urlpatterns += cloneadgroup.urls.urlpatterns
 urlpatterns += dash.features.videoassets.urls.urlpatterns
 urlpatterns += dash.features.bluekai.urls.urlpatterns
-urlpatterns += realtimestats.urls.urlpatterns
 urlpatterns += campaignlauncher.urls.urlpatterns
 urlpatterns += bcm.urls.urlpatterns
 urlpatterns += inventory_planning.urls.urlpatterns
