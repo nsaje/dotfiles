@@ -55,11 +55,27 @@ CONVERSION_VIEWS = [
 ]
 
 
+TOUCH_DEVICE = {sc.DEVICE, sc.DEVICE_OS}
+TOUCH_PLACEMENT = {sc.PLACEMENT_MEDIUM}
+TOUCH_GEO = {sc.COUNTRY, sc.STATE, sc.DMA}
+
 TOUCHPOINT_VIEWS = [
     ['mv_account_touch', ACCOUNT],
+    ['mv_account_touch_device', ACCOUNT | TOUCH_DEVICE],
+    ['mv_account_touch_placement', ACCOUNT | TOUCH_PLACEMENT],
+    ['mv_account_touch_geo', ACCOUNT | TOUCH_GEO],
     ['mv_campaign_touch', CAMPAIGN_N_ABOVE],
+    ['mv_campaign_touch_device', CAMPAIGN_N_ABOVE | TOUCH_DEVICE],
+    ['mv_campaign_touch_placement', CAMPAIGN_N_ABOVE | TOUCH_PLACEMENT],
+    ['mv_campaign_touch_geo', CAMPAIGN_N_ABOVE | TOUCH_GEO],
     ['mv_adgroup_touch', AD_GROUP_N_ABOVE],
+    ['mv_adgroup_touch_device', AD_GROUP_N_ABOVE | TOUCH_DEVICE],
+    ['mv_adgroup_touch_placement', AD_GROUP_N_ABOVE | TOUCH_PLACEMENT],
+    ['mv_adgroup_touch_geo', AD_GROUP_N_ABOVE | TOUCH_GEO],
     ['mv_contentad_touch', CONTENT_AD_N_ABOVE],
+    ['mv_contentad_touch_device', CONTENT_AD_N_ABOVE | TOUCH_DEVICE],
+    ['mv_contentad_touch_placement', CONTENT_AD_N_ABOVE | TOUCH_PLACEMENT],
+    ['mv_contentad_touch_geo', CONTENT_AD_N_ABOVE | TOUCH_GEO],
     ['mv_touchpointconversions', CONTENT_AD_N_ABOVE | {sc.PUBLISHER} | DEVICE | {sc.PLACEMENT_MEDIUM} | GEO],
 ]
 

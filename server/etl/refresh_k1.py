@@ -68,6 +68,21 @@ MATERIALIZED_VIEWS = [
         breakdown=AD_BREAKDOWN + ['slug', 'conversion_window', 'conversion_label'],
         sortkey=AD_BREAKDOWN + ['slug', 'conversion_window', 'conversion_label'],
         distkey='content_ad_id'),
+    materialize_views.TouchpointConversionsDerivedView.create(
+        table_name='mv_contentad_touch_device',
+        breakdown=AD_BREAKDOWN + ['device_type', 'device_os'] + ['slug', 'conversion_window', 'conversion_label'],
+        sortkey=AD_BREAKDOWN + ['device_type', 'device_os'] + ['slug', 'conversion_window', 'conversion_label'],
+        distkey='content_ad_id'),
+    materialize_views.TouchpointConversionsDerivedView.create(
+        table_name='mv_contentad_touch_placement',
+        breakdown=AD_BREAKDOWN + ['placement_medium'] + ['slug', 'conversion_window', 'conversion_label'],
+        sortkey=AD_BREAKDOWN + ['placement_medium'] + ['slug', 'conversion_window', 'conversion_label'],
+        distkey='content_ad_id'),
+    materialize_views.TouchpointConversionsDerivedView.create(
+        table_name='mv_contentad_touch_geo',
+        breakdown=AD_BREAKDOWN + ['country', 'state', 'dma'] + ['slug', 'conversion_window', 'conversion_label'],
+        sortkey=AD_BREAKDOWN + ['country', 'state', 'dma'] + ['slug', 'conversion_window', 'conversion_label'],
+        distkey='content_ad_id'),
 
     # VIEW: Ad Group, TAB: Sources
     # VIEW: Campaign, TAB: Ad Groups
@@ -100,6 +115,21 @@ MATERIALIZED_VIEWS = [
         table_name='mv_adgroup_touch',
         breakdown=AD_GROUP_BREAKDOWN + ['slug', 'conversion_window', 'conversion_label'],
         sortkey=AD_GROUP_BREAKDOWN + ['slug', 'conversion_window', 'conversion_label'],
+        distkey='ad_group_id'),
+    materialize_views.TouchpointConversionsDerivedView.create(
+        table_name='mv_adgroup_touch_device',
+        breakdown=AD_GROUP_BREAKDOWN + ['device_type', 'device_os'] + ['slug', 'conversion_window', 'conversion_label'],
+        sortkey=AD_GROUP_BREAKDOWN + ['device_type', 'device_os'] + ['slug', 'conversion_window', 'conversion_label'],
+        distkey='ad_group_id'),
+    materialize_views.TouchpointConversionsDerivedView.create(
+        table_name='mv_adgroup_touch_placement',
+        breakdown=AD_GROUP_BREAKDOWN + ['placement_medium'] + ['slug', 'conversion_window', 'conversion_label'],
+        sortkey=AD_GROUP_BREAKDOWN + ['placement_medium'] + ['slug', 'conversion_window', 'conversion_label'],
+        distkey='ad_group_id'),
+    materialize_views.TouchpointConversionsDerivedView.create(
+        table_name='mv_adgroup_touch_geo',
+        breakdown=AD_GROUP_BREAKDOWN + ['country', 'state', 'dma'] + ['slug', 'conversion_window', 'conversion_label'],
+        sortkey=AD_GROUP_BREAKDOWN + ['country', 'state', 'dma'] + ['slug', 'conversion_window', 'conversion_label'],
         distkey='ad_group_id'),
 
     # VIEW: Campaign, TAB: Sources
@@ -134,6 +164,21 @@ MATERIALIZED_VIEWS = [
         breakdown=CAMPAIGN_BREAKDOWN + ['slug', 'conversion_window', 'conversion_label'],
         sortkey=CAMPAIGN_BREAKDOWN + ['slug', 'conversion_window', 'conversion_label'],
         distkey='campaign_id'),
+    materialize_views.TouchpointConversionsDerivedView.create(
+        table_name='mv_campaign_touch_device',
+        breakdown=CAMPAIGN_BREAKDOWN + ['device_type', 'device_os'] + ['slug', 'conversion_window', 'conversion_label'],
+        sortkey=CAMPAIGN_BREAKDOWN + ['device_type', 'device_os'] + ['slug', 'conversion_window', 'conversion_label'],
+        distkey='campaign_id'),
+    materialize_views.TouchpointConversionsDerivedView.create(
+        table_name='mv_campaign_touch_placement',
+        breakdown=CAMPAIGN_BREAKDOWN + ['placement_medium'] + ['slug', 'conversion_window', 'conversion_label'],
+        sortkey=CAMPAIGN_BREAKDOWN + ['placement_medium'] + ['slug', 'conversion_window', 'conversion_label'],
+        distkey='campaign_id'),
+    materialize_views.TouchpointConversionsDerivedView.create(
+        table_name='mv_campaign_touch_geo',
+        breakdown=CAMPAIGN_BREAKDOWN + ['country', 'state', 'dma'] + ['slug', 'conversion_window', 'conversion_label'],
+        sortkey=CAMPAIGN_BREAKDOWN + ['country', 'state', 'dma'] + ['slug', 'conversion_window', 'conversion_label'],
+        distkey='campaign_id'),
 
     # VIEW: Account, TAB: Sources
     # VIEW: All Accounts, TAB: Accounts
@@ -167,6 +212,21 @@ MATERIALIZED_VIEWS = [
         table_name='mv_account_touch',
         breakdown=ACCOUNT_BREAKDOWN + ['slug', 'conversion_window', 'conversion_label'],
         sortkey=ACCOUNT_BREAKDOWN + ['slug', 'conversion_window', 'conversion_label'],
+        distkey='account_id'),
+    materialize_views.TouchpointConversionsDerivedView.create(
+        table_name='mv_account_touch_device',
+        breakdown=ACCOUNT_BREAKDOWN + ['device_type', 'device_os'] + ['slug', 'conversion_window', 'conversion_label'],
+        sortkey=ACCOUNT_BREAKDOWN + ['device_type', 'device_os'] + ['slug', 'conversion_window', 'conversion_label'],
+        distkey='account_id'),
+    materialize_views.TouchpointConversionsDerivedView.create(
+        table_name='mv_account_touch_placement',
+        breakdown=ACCOUNT_BREAKDOWN + ['placement_medium'] + ['slug', 'conversion_window', 'conversion_label'],
+        sortkey=ACCOUNT_BREAKDOWN + ['placement_medium'] + ['slug', 'conversion_window', 'conversion_label'],
+        distkey='account_id'),
+    materialize_views.TouchpointConversionsDerivedView.create(
+        table_name='mv_account_touch_geo',
+        breakdown=ACCOUNT_BREAKDOWN + ['country', 'state', 'dma'] + ['slug', 'conversion_window', 'conversion_label'],
+        sortkey=ACCOUNT_BREAKDOWN + ['country', 'state', 'dma'] + ['slug', 'conversion_window', 'conversion_label'],
         distkey='account_id'),
 
     # View: Ad Group, Tab: Publishers
