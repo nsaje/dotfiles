@@ -30,6 +30,7 @@ import dash.features.geolocation
 import dash.features.ga
 import dash.features.custom_flags
 import core.publisher_bid_modifiers
+import automation.campaignstop.service
 
 logger = logging.getLogger(__name__)
 
@@ -763,6 +764,9 @@ class AdGroupSourcesView(K1APIView):
         ad_groups = ad_groups.exclude_archived()
         ad_group_ids = list(ad_groups.values_list('id', flat=True))
 
+        campaigns = dash.models.Campaign.objects.filter(adgroup__in=ad_groups)
+        campaignstop_map = automation.campaignstop.service.get_campaignstop_states(campaigns)
+
         ad_groups_settings_query = dash.models.AdGroupSettings.objects.filter(ad_group__in=ad_group_ids)
         ad_groups_settings = ad_groups_settings_query.group_current_settings()
 
@@ -796,8 +800,13 @@ class AdGroupSourcesView(K1APIView):
         # build the list of objects
         ad_group_sources = []
         for ad_group_source_settings in ad_group_source_settings:
-            ad_group_settings = ad_group_settings_map[ad_group_source_settings.ad_group_source.ad_group_id]
-            if self._is_ad_group_source_enabled(ad_group_settings, ad_group_source_settings):
+            ad_group = ad_group_source_settings.ad_group_source.ad_group
+            ad_group_settings = ad_group_settings_map[ad_group.id]
+            campaignstop_allowed_to_run = campaignstop_map[ad_group.campaign]
+            if self._is_ad_group_source_enabled(
+                    ad_group_settings,
+                    ad_group_source_settings,
+                    campaignstop_allowed_to_run):
                 source_state = constants.AdGroupSettingsState.ACTIVE
             else:
                 source_state = constants.AdGroupSettingsState.INACTIVE
@@ -843,7 +852,10 @@ class AdGroupSourcesView(K1APIView):
 
         return self.response_ok(ad_group_sources)
 
-    def _is_ad_group_source_enabled(self, ad_group_settings, ad_group_source_settings):
+    def _is_ad_group_source_enabled(self, ad_group_settings, ad_group_source_settings, campaignstop_allowed_to_run):
+        if not campaignstop_allowed_to_run:
+            return False
+
         if ad_group_settings.state != constants.AdGroupSettingsState.ACTIVE:
             return False
 
