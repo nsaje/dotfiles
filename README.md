@@ -22,7 +22,7 @@ For the description of how the client code is organized and written, please view
 - clone this repository
 - make sure you have `git` and `docker` installed (tested with Docker CE 17.06.0 on both Linux & macOS)
 - make sure `awscli` is installed and AWS credentials configured (test with `aws s3 ls s3://z1-demo/`)
-- run `make build_baseimage && make build`
+- run `make pull`
 - run `make run`
 - run `make reset_local_database` to set up your local postgres DB for development (can take a while - 5-10min, grab some coffee)
 
