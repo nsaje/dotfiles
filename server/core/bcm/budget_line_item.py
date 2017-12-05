@@ -24,6 +24,9 @@ import core.history
 import bcm_slack
 
 
+SKIP_AMOUNT_VALIDATION_CREDIT_IDS = [1251]
+
+
 class BudgetLineItemManager(core.common.QuerySetManager):
 
     @transaction.atomic
@@ -402,6 +405,9 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
             return
         if self.amount < 0:
             raise ValidationError('Amount cannot be negative.')
+
+        if self.credit_id in SKIP_AMOUNT_VALIDATION_CREDIT_IDS:
+            return
 
         budgets = self.credit.budgets.exclude(pk=self.pk)
         delta = self.credit.effective_amount() - sum(b.allocated_amount()
