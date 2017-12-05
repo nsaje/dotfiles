@@ -700,10 +700,11 @@ def _retrieve_active_creditlineitems(account, date):
 
 
 def _compute_daily_cap(ad_groups):
-    adgroup_sources = dash.models.AdGroupSource.objects.filter(
-        ad_group__in=ad_groups,
-    ).values('settings__state', 'settings__daily_budget_cc', 'ad_group_id', 'source__source_type__type')
     adgroup_map = {ad_group.id: ad_group for ad_group in ad_groups}
+    adgroup_ids = adgroup_map.keys()
+    adgroup_sources = dash.models.AdGroupSource.objects.filter(
+        ad_group_id__in=adgroup_ids,
+    ).values('settings__state', 'settings__daily_budget_cc', 'ad_group_id', 'source__source_type__type')
 
     ret = 0
 
