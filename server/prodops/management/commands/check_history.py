@@ -7,7 +7,7 @@ import dash.constants
 
 
 class Command(utils.command_helpers.ExceptionCommand):
-    help = "Create audience report"
+    help = "Check history"
 
     def add_arguments(self, parser):
         parser.add_argument('--agency', dest='agency', default=None,
