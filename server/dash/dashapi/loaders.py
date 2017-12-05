@@ -150,16 +150,13 @@ class AccountsLoader(Loader):
         """
 
         account_ids_state = models.AdGroup.objects.filter(campaign__account_id__in=self.objs_ids)\
-                                                  .values_list('campaign__account_id', 'settings__state')
+                                                  .values_list('campaign__account_id', 'settings__state')\
+                                                  .order_by()
 
-        status_map = {}
+        status_map = collections.defaultdict(lambda: constants.AdGroupRunningStatus.INACTIVE)
         for account_id, state in account_ids_state:
             if state == constants.AdGroupRunningStatus.ACTIVE:
                 status_map[account_id] = state
-
-        for account_id in self.objs_ids:
-            if account_id not in status_map:
-                status_map[account_id] = constants.AdGroupRunningStatus.INACTIVE
 
         return status_map
 
@@ -234,19 +231,14 @@ class CampaignsLoader(Loader):
         return settings_map
 
     def _get_status_map(self):
-        ad_group_w_campaing = models.AdGroup.objects.filter(campaign_id__in=self.objs_ids)\
-                                                    .values_list('id', 'campaign_id')
-        ad_groups_settings = models.AdGroupSettings.objects\
-                                                   .filter(ad_group_id__in=[x[0] for x in ad_group_w_campaing])\
-                                                   .group_current_settings()\
-                                                   .only_state_fields()
+        campaign_ids_state = models.AdGroup.objects.filter(campaign__in=self.objs_ids)\
+                                                   .values_list('campaign_id', 'settings__state')\
+                                                   .order_by()
 
-        status_map = view_helpers.get_ad_group_table_running_state_by_obj_id(
-            ad_group_w_campaing, ad_groups_settings)
-
-        for campaign_id in self.objs_ids:
-            if campaign_id not in status_map:
-                status_map[campaign_id] = constants.AdGroupRunningStatus.INACTIVE
+        status_map = collections.defaultdict(lambda: constants.AdGroupRunningStatus.INACTIVE)
+        for campaign_id, state in campaign_ids_state:
+            if state == constants.AdGroupRunningStatus.ACTIVE:
+                status_map[campaign_id] = state
 
         return status_map
 
@@ -275,7 +267,7 @@ class AdGroupsLoader(Loader):
 
     def __init__(self, ad_groups_qs, filtered_sources_qs, **kwargs):
         super(AdGroupsLoader, self).__init__(
-            ad_groups_qs.select_related('campaign', 'campaign__account'), **kwargs)
+            ad_groups_qs.select_related('campaign__account', 'settings'), **kwargs)
         self.filtered_sources_qs = filtered_sources_qs
 
     @classmethod
@@ -288,21 +280,13 @@ class AdGroupsLoader(Loader):
 
     @cached_property
     def settings_map(self):
-        settings_qs = models.AdGroupSettings.objects\
-                                            .filter(ad_group_id__in=self.objs_ids)\
-                                            .group_current_settings()\
-                                            .only('ad_group_id', 'archived', 'state')
-        settings_obj_map = {x.ad_group_id: x for x in settings_qs}
-
         settings_map = {}
-        for ad_group_id in self.objs_ids:
-            settings = settings_obj_map[ad_group_id]
-
+        for ad_group_id, ad_group in self.objs_map.items():
             settings_map[ad_group_id] = {
-                'archived': settings.archived,
-                'status': settings.state,
-                'state': settings.state,
-                'settings_id': settings.id,
+                'archived': ad_group.settings.archived,
+                'status': ad_group.settings.state,
+                'state': ad_group.settings.state,
+                'settings_id': ad_group.settings.id,
             }
 
         return settings_map
@@ -333,7 +317,8 @@ class AdGroupsLoader(Loader):
 class ContentAdsLoader(Loader):
 
     def __init__(self, content_ads_qs, filtered_sources_qs, **kwargs):
-        super(ContentAdsLoader, self).__init__(content_ads_qs.select_related('batch'), **kwargs)
+        super(ContentAdsLoader, self).__init__(
+            content_ads_qs.select_related('batch', 'ad_group__campaign__account'), **kwargs)
         self.filtered_sources_qs = filtered_sources_qs
 
     @classmethod

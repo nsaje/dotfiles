@@ -66,64 +66,6 @@ class ViewHelpersTestCase(TestCase):
         self.assertTrue(mock_insert_adgroup.called)
 
 
-class RunningStateHelpersTestCase(TestCase):
-    fixtures = ['test_api.yaml']
-
-    def setUp(self):
-        self.ad_groups = models.AdGroup.objects.filter(pk__in=[1, 3, 6, 7])
-
-        for ag in self.ad_groups:
-            ags = ag.get_current_settings()
-            new_ags = ags.copy_settings()
-            new_ags.state = (constants.AdGroupSettingsState.ACTIVE if ag.id in (1, 3)
-                             else constants.AdGroupSettingsState.INACTIVE)
-            new_ags.save(None)
-
-        self.ad_groups_settings = models.AdGroupSettings.objects\
-                                                        .filter(ad_group__in=self.ad_groups)\
-                                                        .group_current_settings()
-
-    def test_get_ad_group_table_running_state_by_campaign_id(self):
-
-        status_dict = helpers.get_ad_group_table_running_state_by_obj_id(
-            self.ad_groups.values_list('id', 'campaign_id'), self.ad_groups_settings)
-
-        self.assertDictEqual(status_dict, {
-            1: constants.AdGroupSettingsState.ACTIVE,
-            3: constants.AdGroupSettingsState.ACTIVE,
-        })
-
-        ad_groups = models.AdGroup.objects.filter(id__in=[6, 7])
-        self.assertTrue(all(status_dict[ag.campaign_id] == constants.AdGroupSettingsState.INACTIVE for ag in ad_groups))
-
-    def test_get_ad_group_table_running_state_by_account_id(self):
-
-        status_dict = helpers.get_ad_group_table_running_state_by_obj_id(
-            self.ad_groups.values_list('id', 'campaign__account_id'), self.ad_groups_settings)
-
-        self.assertDictEqual(status_dict, {
-            1: constants.AdGroupSettingsState.ACTIVE,
-            2: constants.AdGroupSettingsState.ACTIVE,
-        })
-
-        ad_groups = models.AdGroup.objects.filter(id__in=[6, 7])
-        self.assertTrue(
-            all(status_dict[ag.campaign.account_id] == constants.AdGroupSettingsState.INACTIVE for ag in ad_groups))
-
-    def test_get_ad_group_table_running_state_by_ad_group_id(self):
-
-        status_dict = helpers.get_ad_group_table_running_state_by_obj_id(
-            self.ad_groups.values_list('id', 'id'), self.ad_groups_settings)
-
-        self.assertDictEqual(status_dict, {
-            1: constants.AdGroupSettingsState.ACTIVE,
-            3: constants.AdGroupSettingsState.ACTIVE,
-        })
-
-        ad_groups = models.AdGroup.objects.filter(id__in=[6, 7])
-        self.assertTrue(all(status_dict[ag.id] == constants.AdGroupSettingsState.INACTIVE for ag in ad_groups))
-
-
 class GetChangedContentAdsTestCase(TestCase):
     fixtures = ['test_api']
 

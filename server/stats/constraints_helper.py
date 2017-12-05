@@ -2,7 +2,7 @@ import copy
 
 import newrelic.agent
 
-from utils.queryset_helper import simplify_query
+from utils.queryset_helper import simplify_query, get_pk_list
 from dash import models
 from core.publisher_groups import publisher_group_helpers
 from stats import constants
@@ -80,7 +80,7 @@ def prepare_account_constraints(user, account, breakdown, start_date, end_date, 
     if filtered_campaigns:
         allowed_campaigns = allowed_campaigns.filter(id__in=filtered_campaigns.values_list('id', flat=True))
 
-    allowed_ad_groups = models.AdGroup.objects.filter(campaign__in=allowed_campaigns)
+    allowed_ad_groups = models.AdGroup.objects.filter(campaign_id__in=get_pk_list(allowed_campaigns))
 
     # campaigns tab
     if constants.get_base_dimension(breakdown) == 'campaign_id':
@@ -90,7 +90,7 @@ def prepare_account_constraints(user, account, breakdown, start_date, end_date, 
     constraints = {
         'account': account,
         'allowed_campaigns': simplify_query(allowed_campaigns),
-        'allowed_ad_groups': simplify_query(allowed_ad_groups),
+        'allowed_ad_groups': allowed_ad_groups,
     }
 
     if only_used_sources:

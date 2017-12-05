@@ -1,4 +1,3 @@
-import collections
 import datetime
 import dateutil.parser
 import pytz
@@ -412,25 +411,6 @@ def get_ad_group_sources_settings(ad_group_sources):
         .filter(ad_group_source__in=ad_group_sources)\
         .group_current_settings()\
         .select_related('ad_group_source')
-
-
-def get_ad_group_table_running_state_by_obj_id(ad_group_id_with_group, ad_groups_settings):
-    by_ad_group = {}
-    for ag_settings in ad_groups_settings:
-        by_ad_group[ag_settings.ad_group_id] = ag_settings.state
-
-    by_group_key = collections.defaultdict(list)
-    for ad_group_id, key in ad_group_id_with_group:
-        state = by_ad_group.get(ad_group_id)
-        if state is not None:
-            by_group_key[key].append(state)
-
-    status_dict = collections.defaultdict(lambda: constants.AdGroupSettingsState.INACTIVE)
-    for group_key, states in by_group_key.iteritems():
-        if constants.AdGroupSettingsState.ACTIVE in states:
-            status_dict[group_key] = constants.AdGroupRunningStatus.ACTIVE
-
-    return status_dict
 
 
 def parse_get_request_content_ad_ids(request_data, param_name):
