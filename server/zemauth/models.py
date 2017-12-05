@@ -344,7 +344,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
                 perms = auth_models.Permission.objects.all()
             else:
                 perms = auth_models.Permission.objects.\
-                    filter(models.Q(user=self) | models.Q(group__user=self)).\
+                    filter(models.Q(id__in=self.user_permissions.all()) | models.Q(group__in=self.groups.all())).\
                     order_by('id').\
                     distinct('id')
 
