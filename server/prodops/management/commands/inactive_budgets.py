@@ -9,6 +9,7 @@ import prodops.helpers
 
 QUERY = "SELECT campaign_id, SUM(impressions) FROM mv_campaign WHERE date >= '{}' AND campaign_id IN ({}) GROUP BY campaign_id"
 
+
 class Command(utils.command_helpers.ExceptionCommand):
     help = "Generate report of depleted budgets"
 
@@ -41,7 +42,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             self._print('No lookup parameters')
             return
         name += str(today)
-        
+
         campaign_ids = campaigns.values_list('id', flat=True)
         impressions = {}
         with redshiftapi.db.get_stats_cursor() as cur:
@@ -71,4 +72,3 @@ class Command(utils.command_helpers.ExceptionCommand):
             'Campaign ID', 'Campaign name', 'Budget ID', 'Budget end date',
             'Budget amount', 'Budget spend', 'Budget available',
         )] + out))
-
