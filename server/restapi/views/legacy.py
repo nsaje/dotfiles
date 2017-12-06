@@ -485,7 +485,7 @@ class SettingsViewList(RESTAPIBaseView):
 
         paginator = StandardPagination()
         paginator.default_limit = 50000  # FIXME(nsaje): remove this after OEN starts using pagination
-        settings_list = self._get_settings_list(request)
+        settings_list = self._get_settings_list(request).order_by('pk')
         settings_list_paginated = paginator.paginate_queryset(settings_list, request)
 
         data_list_internal = [{'data': {
