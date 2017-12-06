@@ -52,8 +52,6 @@ def get_segment_reach(expression):
         data=json.dumps(_transform_expression(expression)).replace(' ', ''),
     )
     query_result = json.loads(response.content)
-    if query_result['status'] != 'QUERY_SUCCESS':
-        raise Exception('BlueKai query didn\'t complete successfully')
     return query_result['reach']
 
 

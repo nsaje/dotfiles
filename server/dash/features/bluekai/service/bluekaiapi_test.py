@@ -16,7 +16,6 @@ class SegmentReachTestCase(TestCase):
         self.mock_perform_request = patcher.start()
         self.mock_perform_request.return_value = MockRequestsResponse(
             content=json.dumps({
-                'status': 'QUERY_SUCCESS',
                 'reach': 1,
             })
         )
