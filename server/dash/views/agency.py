@@ -1005,6 +1005,9 @@ class AccountSettings(api_common.BaseApiView):
                 account.agency = agency
 
     def get_non_removable_sources(self, account, sources_to_be_removed):
+        if not sources_to_be_removed:
+            return
+
         non_removable_source_ids_list = []
 
         for campaign in models.Campaign.objects.filter(account_id=account.id).exclude_archived():
