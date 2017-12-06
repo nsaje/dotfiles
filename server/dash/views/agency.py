@@ -1009,13 +1009,22 @@ class AccountSettings(api_common.BaseApiView):
 
         for campaign in models.Campaign.objects.filter(account_id=account.id).exclude_archived():
 
-            for adgroup in campaign.adgroup_set.all():
-                adgroup_settings = adgroup.get_current_settings()
+            ad_groups = campaign.adgroup_set.all()
+            ad_group_settings_map = {
+                ags.ad_group_id: ags for ags in
+                models.AdGroupSettings.objects.filter(ad_group__in=ad_groups)
+            }
+            for adgroup in ad_groups:
+                adgroup_settings = ad_group_settings_map[adgroup.id]
                 if adgroup_settings.state == constants.AdGroupSettingsState.INACTIVE:
                     continue
 
+                ad_group_source_settings_map = {
+                    ags.ad_group_source_id: ags for ags in
+                    models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group__in=ad_groups)
+                }
                 for adgroup_source in adgroup.adgroupsource_set.filter(source__in=sources_to_be_removed):
-                    adgroup_source_settings = adgroup_source.get_current_settings()
+                    adgroup_source_settings = ad_group_source_settings_map[adgroup_source.id]
                     if adgroup_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE:
                         non_removable_source_ids_list.append(adgroup_source.source_id)
 
