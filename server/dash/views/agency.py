@@ -1006,7 +1006,7 @@ class AccountSettings(api_common.BaseApiView):
 
     def get_non_removable_sources(self, account, sources_to_be_removed):
         if not sources_to_be_removed:
-            return
+            return []
 
         non_removable_source_ids_list = []
 
