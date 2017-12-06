@@ -149,9 +149,11 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         request._body = json.dumps({'settings': ad_group_settings_dict})
 
         views.agency.AdGroupSettings().put(request, ad_group_id)
+        ad_group_settings = ad_group.get_current_settings()
+        ad_group_settings.refresh_from_db()
         row = breakdown_helpers.create_all_rtb_source_row_data(
             ad_group,
-            ad_group.get_current_settings(),
+            ad_group_settings,
             show_rtb_group_cpc=request.user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc'))
         response_update = legacy.get_updated_ad_group_sources_changes(
             request.user, None, filtered_sources, ad_group_id_=ad_group_id)
