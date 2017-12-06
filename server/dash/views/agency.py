@@ -1012,7 +1012,9 @@ class AccountSettings(api_common.BaseApiView):
             ad_groups = campaign.adgroup_set.all()
             ad_group_settings_map = {
                 ags.ad_group_id: ags for ags in
-                models.AdGroupSettings.objects.filter(ad_group__in=ad_groups)
+                models.AdGroupSettings.objects.filter(
+                    ad_group__in=ad_groups
+                ).group_current_settings()
             }
             for adgroup in ad_groups:
                 adgroup_settings = ad_group_settings_map[adgroup.id]
@@ -1021,7 +1023,9 @@ class AccountSettings(api_common.BaseApiView):
 
                 ad_group_source_settings_map = {
                     ags.ad_group_source_id: ags for ags in
-                    models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group__in=ad_groups)
+                    models.AdGroupSourceSettings.objects.filter(
+                        ad_group_source__ad_group__in=ad_groups
+                    ).group_current_settings()
                 }
                 for adgroup_source in adgroup.adgroupsource_set.filter(source__in=sources_to_be_removed):
                     adgroup_source_settings = ad_group_source_settings_map[adgroup_source.id]
