@@ -482,7 +482,12 @@ class SettingsViewList(RESTAPIBaseView):
 
     def get(self, request):
         view_internal = self.internal_view_cls(rest_proxy=True)
+
+        paginator = StandardPagination()
+        paginator.default_limit = 50000  # FIXME(nsaje): remove this after OEN starts using pagination
         settings_list = self._get_settings_list(request)
+        settings_list_paginated = paginator.paginate_queryset(settings_list, request)
+
         data_list_internal = [{'data': {
             'settings': view_internal.get_dict(
                 request,
@@ -493,9 +498,10 @@ class SettingsViewList(RESTAPIBaseView):
             ),
             'archived': settings.archived
         }}
-            for settings in settings_list]
+            for settings in settings_list_paginated]
+
         serializer = self.serializer_cls(request, view_internal, data_list_internal, many=True)
-        return self.response_ok(serializer.data)
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
         if not hasattr(self, 'internal_create_view_cls'):

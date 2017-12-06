@@ -189,6 +189,15 @@ class CampaignsTest(RESTAPITest):
         for item in resp_json['data']:
             self.validate_campaign(item)
 
+    def test_campaigns_list_pagination(self):
+        account = magic_mixer.blend(dash.models.Account, users=[self.user])
+        magic_mixer.cycle(10).blend(dash.models.Campaign, account=account)
+        r = self.client.get(reverse('campaigns_list'), {'accountId': account.id})
+        r_paginated = self.client.get(reverse('campaigns_list'), {'accountId': account.id, 'limit': 2, 'offset': 5})
+        resp_json = self.assertResponseValid(r, data_type=list)
+        resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
+        self.assertEqual(resp_json['data'][5:7], resp_json_paginated['data'])
+
     def test_campaigns_post(self):
         r = self.client.post(reverse('campaigns_list'), {'accountId': 186, 'name': 'test campaign'}, format='json')
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
@@ -610,6 +619,15 @@ class AdGroupsTest(RESTAPITest):
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json['data']:
             self.validate_against_db(item)
+
+    def test_adgroups_list_pagination(self):
+        campaign = magic_mixer.blend(dash.models.Campaign, account__users=[self.user])
+        magic_mixer.cycle(10).blend(dash.models.AdGroup, campaign=campaign)
+        r = self.client.get(reverse('adgroups_list'), {'campaignId': campaign.id})
+        r_paginated = self.client.get(reverse('adgroups_list'), {'campaignId': campaign.id, 'limit': 2, 'offset': 5})
+        resp_json = self.assertResponseValid(r, data_type=list)
+        resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
+        self.assertEqual(resp_json['data'][5:7], resp_json_paginated['data'])
 
     def test_adgroups_list_campaign_filter(self):
         # TODO(nsaje): create a prettier test, this one is urgent and hackish
