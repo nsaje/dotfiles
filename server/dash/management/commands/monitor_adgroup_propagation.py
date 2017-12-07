@@ -116,4 +116,4 @@ class Command(ExceptionCommand):
 
         if not options['no_statsd']:
             influx.gauge('propagation_consistency.ad_group_r1', nr_exceptions, state='exceptions')
-            influx.gauge('propagation_consistency.ad_group_r1', nr_exceptions, state='out_of_sync')
+            influx.gauge('propagation_consistency.ad_group_r1', nr_not_in_sync, state='out_of_sync')
