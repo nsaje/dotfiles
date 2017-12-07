@@ -18,6 +18,7 @@ import core.history
 import core.source
 
 import prodops_mixin
+import instance
 
 
 class ContentAdManager(models.Manager):
@@ -81,7 +82,7 @@ class ContentAdManager(models.Manager):
             content_ad.save()
 
 
-class ContentAd(models.Model, prodops_mixin.ProdopsMixin):
+class ContentAd(models.Model, prodops_mixin.ProdopsMixin, instance.ContentAdInstanceMixin):
     class Meta:
         get_latest_by = 'created_dt'
         app_label = 'dash'

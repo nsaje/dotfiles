@@ -163,7 +163,7 @@ def persist_edit_batch(request, batch):
 
     candidates = models.ContentAdCandidate.objects.filter(batch=batch)
     with transaction.atomic():
-        content_ads = _update_content_ads(candidates)
+        content_ads = _update_content_ads(request, candidates)
         redirector_helper.update_redirects(content_ads)
 
         candidates.delete()
@@ -215,10 +215,10 @@ def get_candidates_csv(batch):
     return _get_candidates_csv(candidates)
 
 
-def _update_content_ads(update_candidates):
+def _update_content_ads(request, update_candidates):
     updated_content_ads = []
     for candidate in update_candidates:
-        updated_content_ads.append(_apply_content_ad_edit(candidate))
+        updated_content_ads.append(_apply_content_ad_edit(request, candidate))
 
     return updated_content_ads
 
@@ -486,7 +486,7 @@ def _create_candidates(content_ads_data, ad_group, batch):
     return candidates_added
 
 
-def _apply_content_ad_edit(candidate):
+def _apply_content_ad_edit(request, candidate):
     content_ad = candidate.original_content_ad
     if not content_ad:
         raise exc.ChangeForbidden('Update not permitted - original content ad not set')
@@ -495,18 +495,17 @@ def _apply_content_ad_edit(candidate):
     if not f.is_valid():
         raise exc.CandidateErrorsRemaining('Save not permitted - candidate errors exist')
 
-    for field in VALID_UPDATE_FIELDS:
-        setattr(content_ad, field, f.cleaned_data[field])
-
-    content_ad.tracker_urls = []
-
+    tracker_urls = []
     primary_tracker_url = f.cleaned_data['primary_tracker_url']
     if primary_tracker_url:
-        content_ad.tracker_urls.append(primary_tracker_url)
-
+        tracker_urls.append(primary_tracker_url)
     secondary_tracker_url = f.cleaned_data['secondary_tracker_url']
     if secondary_tracker_url:
-        content_ad.tracker_urls.append(secondary_tracker_url)
+        tracker_urls.append(secondary_tracker_url)
 
-    content_ad.save()
+    updates = {k: v for k, v in f.cleaned_data.items() if k in VALID_UPDATE_FIELDS}
+    if tracker_urls:
+        updates['tracker_urls'] = tracker_urls
+    content_ad.update(request, write_history=False, **updates)
+
     return content_ad
