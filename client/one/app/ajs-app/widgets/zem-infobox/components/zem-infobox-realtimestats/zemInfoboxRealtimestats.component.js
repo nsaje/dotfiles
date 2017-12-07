@@ -35,7 +35,7 @@ angular.module('one.widgets').component('zemInfoboxRealtimestats', {
                 var oldValue = spendRow.value;
 
                 spendRow.value = formatSpend(sourceStats.reduce(function (sum, stat) {
-                    return sum + stat.spend;
+                    return sum + parseFloat(stat.spend);
                 }, 0));
                 spendRow.detailsContent = sourceStats.map(function (stat) {
                     return stat.source + ': ' + formatSpend(stat.spend);
