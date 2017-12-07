@@ -213,8 +213,6 @@
       true,
       "Directive"
     ],
-    "templates-use-public": true,
-    "invoke-injectable": true,
     "no-duplicate-case": true,
     "no-empty-character-class": true,
     "no-ex-assign": true,

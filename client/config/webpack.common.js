@@ -89,7 +89,7 @@ function generateMainConfig (appConfig) {
         // Workaround for angular/angular#11580
         new webpack.ContextReplacementPlugin(
             // The (\\|\/) piece accounts for path separators in *nix and Windows
-            /angular(\\|\/)core(\\|\/)@angular/,
+            /angular(\\|\/)core(\\|\/)(@angular|esm5)/,
             root('./one'), // location of your src
             {} // a map of your routes
         ),
