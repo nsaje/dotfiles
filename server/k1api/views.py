@@ -836,8 +836,8 @@ class AdGroupSourcesView(K1APIView):
                 margin,
             )
 
-            if (ad_group_settings.ad_group.campaign.account.agency_id in BLOCKED_AGENCIES
-                    or ad_group_settings.ad_group.campaign.account_id in BLOCKED_ACCOUNTS):
+            if (ad_group.campaign.account.agency_id in BLOCKED_AGENCIES
+                    or ad_group.campaign.account_id in BLOCKED_ACCOUNTS):
                 source_state = constants.AdGroupSettingsState.INACTIVE
             source = {
                 'ad_group_id': ad_group_settings.ad_group_id,
