@@ -2174,6 +2174,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             cpaCol.field = AVG_COST_PREFIX + goal.id;
             cpaCol.shown = true;
             cpaCol.goal = true;
+            cpaCol.costMode = constants.costMode.LEGACY;
 
             var etCpaCol = angular.copy(COLUMNS.conversionCpa);
             var cpaFieldGroup = AVG_COST_PREFIX + goal.id;
@@ -2194,6 +2195,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
 
             newFields.push(conversionsCol.field);
             newFields.push(cpaCol.field);
+            newFields.push(etCpaCol.field);
+            newFields.push(etfmCpaCol.field);
 
             orderedColumns.push(conversionsCol);
             orderedColumns.push(cpaCol);

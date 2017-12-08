@@ -330,8 +330,11 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
                 costMode: constants.costMode.PUBLIC,
                 fieldGroup: 'avg_cost_per_' + goal.id
             });
-
         });
+
+        checkPermissions(conversionMetrics);
+        checkPermissions(conversionGoalMetrics);
+
         categories.push({
             name: CONVERSIONS_CATEGORY_NAME,
             metrics: [].concat(conversionMetrics, conversionGoalMetrics).filter(
