@@ -2029,6 +2029,7 @@ class OperatingSystemVersion(ConstantBase):
     ANDROID_7_0 = 'android_7_0'
     ANDROID_7_1 = 'android_7_1'
     ANDROID_8_0 = 'android_8_0'
+    ANDROID_8_1 = 'android_8_1'
     IOS_3_2 = 'ios_3_2'
     IOS_4_0 = 'ios_4_0'
     IOS_4_1 = 'ios_4_1'
@@ -2095,6 +2096,7 @@ class OperatingSystemVersion(ConstantBase):
         ANDROID_7_0: '7.0 Nougat',
         ANDROID_7_1: '7.1 Nougat',
         ANDROID_8_0: '8.0 Oreo',
+        ANDROID_8_1: '8.1 Oreo',
         IOS_3_2: '3.2',
         IOS_4_0: '4.0',
         IOS_4_1: '4.1',
@@ -2165,6 +2167,8 @@ OSV_MAPPING = {
         OperatingSystemVersion.ANDROID_6_0,
         OperatingSystemVersion.ANDROID_7_0,
         OperatingSystemVersion.ANDROID_7_1,
+        OperatingSystemVersion.ANDROID_8_0,
+        OperatingSystemVersion.ANDROID_8_1,
     ],
     OperatingSystem.IOS: [
         OperatingSystemVersion.IOS_3_2,

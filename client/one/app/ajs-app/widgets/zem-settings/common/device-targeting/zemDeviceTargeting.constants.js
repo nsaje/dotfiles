@@ -19,6 +19,7 @@ angular.module('one.widgets').factory('zemDeviceTargetingConstants', function ()
         {value: 'ANDROID_7_0', name: '7.0 Nougat'},
         {value: 'ANDROID_7_1', name: '7.1 Nougat'},
         {value: 'ANDROID_8_0', name: '8.0 Oreo'},
+        {value: 'ANDROID_8_1', name: '8.1 Oreo'},
     ];
 
     var VERSIONS_IOS = [
