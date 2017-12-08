@@ -63,7 +63,7 @@ def _validate_ad_group_source_state(ad_group_source, updates, ad_group_settings,
             raise utils.exc.ValidationError(errors={
                 'state': 'Cannot enable Facebook media source that isn\'t connected to a Facebook page.',
             })
-        elif not helpers.check_yahoo_min_cpc(ad_group_settings, ad_group_source_settings):
+        elif not helpers.check_yahoo_min_cpc(ad_group_settings, ad_group_source, ad_group_source_settings):
             raise utils.exc.ValidationError(errors={
                 'state': 'Cannot enable Yahoo media source with the current settings - CPC too low',
             })

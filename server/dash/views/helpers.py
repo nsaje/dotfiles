@@ -575,7 +575,7 @@ def _get_editable_fields_status_setting(ad_group, ad_group_source, ad_group_sett
         message = 'This source can not be enabled because it does not support retargeting.'
     elif message is None and not check_facebook_source(ad_group_source):
         message = 'Please connect your Facebook page to add Facebook as media source.'
-    elif message is None and not check_yahoo_min_cpc(ad_group_settings, ad_group_source_settings):
+    elif message is None and not check_yahoo_min_cpc(ad_group_settings, ad_group_source, ad_group_source_settings):
         message = 'This source can not be enabled with the current settings - CPC too low for desktop targeting.'
     elif message is None and not check_max_cpm(ad_group_source, ad_group_settings):
         message = 'This source can not be enabled because it does not support max CPM restriction.'
@@ -605,8 +605,8 @@ def check_facebook_source(ad_group_source):
         return False
 
 
-def check_yahoo_min_cpc(ad_group_settings, ad_group_source_settings):
-    source_type = ad_group_source_settings.ad_group_source.source.source_type
+def check_yahoo_min_cpc(ad_group_settings, ad_group_source, ad_group_source_settings):
+    source_type = ad_group_source.source.source_type
     if source_type.type != constants.SourceType.YAHOO:
         return True
 
