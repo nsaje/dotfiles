@@ -9,7 +9,8 @@ class UpdateObject(object):
         return getattr(self.settings, key)
 
     def __setattr__(self, key, value):
-        old_value = getattr(self.settings, key)
+        old_value = key in self.__dict__ and self.__dict__[key] or getattr(self.settings, key)
+
         if value != old_value:
             self.__dict__[key] = value
 

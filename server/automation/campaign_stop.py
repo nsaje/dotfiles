@@ -1007,28 +1007,26 @@ def _calculate_daily_source_caps(
 
 
 def _switch_campaign_to_landing_mode(campaign):
-    new_campaign_settings = campaign.get_current_settings().copy_settings()
-    new_campaign_settings.landing_mode = True
-    new_campaign_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
-    new_campaign_settings.save(None)
+    campaign.settings.update_unsafe(None, landing_mode=True, system_user=dash.constants.SystemUserType.CAMPAIGN_STOP)
 
     today = dates_helper.local_today()
     for ad_group in campaign.adgroup_set.all().filter_active():
-        new_ag_settings = ad_group.get_current_settings().copy_settings()
+        ad_group.settings.update_unsafe(
+            None,
+            landing_mode=True,
+            system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
+        )
 
-        new_ag_settings.landing_mode = True
-        new_ag_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
-        new_ag_settings.save(None)
-
-        if new_ag_settings.end_date and new_ag_settings.end_date < today:
+        if ad_group.settings.end_date and ad_group.settings.end_date < today:
             _stop_ad_group(ad_group)
         else:
             _set_ad_group_end_date(ad_group, today)
 
         for ad_group_source in ad_group.adgroupsource_set.all().filter_active():
-            new_ags_settings = ad_group_source.get_current_settings().copy_settings()
-            new_ags_settings.landing_mode = True
-            new_ags_settings.save(None)
+            ad_group_source.settings.update_unsafe(
+                None,
+                landing_mode=True,
+            )
 
     models.CampaignStopLog.objects.create(
         campaign=campaign,
@@ -1054,12 +1052,11 @@ def _wrap_up_landing(campaign):
 
 
 def _turn_off_landing_mode(campaign, pause_ad_groups=False):
-    current_settings = campaign.get_current_settings()
-    new_campaign_settings = current_settings.copy_settings()
-    new_campaign_settings.landing_mode = False
-    new_campaign_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
-    if new_campaign_settings.get_setting_changes(current_settings):
-        new_campaign_settings.save(None)
+    campaign.settings.update_unsafe(
+        None,
+        landing_mode=False,
+        system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
+    )
 
     for ad_group in campaign.adgroup_set.all().filter_landing():
         _restore_user_ad_group_settings(ad_group, pause_ad_group=pause_ad_groups)
@@ -1078,24 +1075,25 @@ def _get_last_user_ad_group_settings(ad_group):
 
 
 def _restore_user_ad_group_settings(ad_group, pause_ad_group=False):
+    updates = {
+        'landing_mode': False,
+        'system_user': dash.constants.SystemUserType.CAMPAIGN_STOP,
+    }
+
     user_settings = _get_last_user_ad_group_settings(ad_group)
-
-    current_settings = ad_group.get_current_settings()
-
-    new_settings = current_settings.copy_settings()
-    new_settings.landing_mode = False
-    new_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
-
     if user_settings:
-        new_settings.state = user_settings.state
-        new_settings.end_date = user_settings.end_date
-        new_settings.b1_sources_group_state = user_settings.b1_sources_group_state
-        new_settings.b1_sources_group_daily_budget = user_settings.b1_sources_group_daily_budget
+        updates['state'] = user_settings.state
+        updates['end_date'] = user_settings.end_date
+        updates['b1_sources_group_state'] = user_settings.b1_sources_group_state
+        updates['b1_sources_group_daily_budget'] = user_settings.b1_sources_group_daily_budget
 
     if pause_ad_group:
-        new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
+        updates['state'] = dash.constants.AdGroupSettingsState.INACTIVE
 
-    new_settings.save(None)
+    ad_group.settings.update_unsafe(
+        None,
+        **updates
+    )
     _restore_user_sources_settings(ad_group)
 
 
@@ -1135,10 +1133,11 @@ def _restore_user_sources_settings(ad_group):
 
 
 def _stop_ad_group(ad_group):
-    new_settings = ad_group.get_current_settings().copy_settings()
-    new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
-    new_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
-    new_settings.save(None)
+    ad_group.settings.update_unsafe(
+        None,
+        state=dash.constants.AdGroupSettingsState.INACTIVE,
+        system_user=dash.constants.SystemUserType.CAMPAIGN_STOP
+    )
 
 
 def _set_end_date_to_today(campaign):
@@ -1152,11 +1151,11 @@ def _set_end_date_to_today(campaign):
 
 
 def _set_ad_group_end_date(ad_group, end_date):
-    current_ag_settings = ad_group.get_current_settings()
-    new_ag_settings = current_ag_settings.copy_settings()
-    new_ag_settings.end_date = end_date
-    new_ag_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
-    new_ag_settings.save(None)
+    ad_group.settings.update_unsafe(
+        None,
+        end_date=end_date,
+        system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
+    )
 
 
 def _stop_ad_group_source(ad_group_source):
@@ -1184,17 +1183,19 @@ def _update_ad_group_source_cap(ad_group_source, cap):
 
 
 def _stop_b1_group(ad_group):
-    new_settings = ad_group.get_current_settings().copy_settings()
-    new_settings.b1_sources_group_state = dash.constants.AdGroupSourceSettingsState.INACTIVE
-    new_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
-    new_settings.save(None)
+    ad_group.settings.update_unsafe(
+        None,
+        b1_sources_group_state=dash.constants.AdGroupSourceSettingsState.INACTIVE,
+        system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
+    )
 
 
 def _update_b1_group_cap(ad_group, cap):
-    new_settings = ad_group.get_current_settings().copy_settings()
-    new_settings.b1_sources_group_daily_budget = cap
-    new_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
-    new_settings.save(None)
+    ad_group.settings.update_unsafe(
+        None,
+        b1_sources_group_daily_budget=cap,
+        system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
+    )
 
 
 def _get_yesterday_source_spends(campaign, ad_groups):
