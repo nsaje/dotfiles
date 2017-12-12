@@ -26,7 +26,7 @@ def queries_to_influx(get_response):
                     query_time = query.get('duration', 0) / 1000
                 total_time += float(query_time)
 
-            path = re.sub('/[0-9]+/', '/_ID_/', request.path)
+            path = re.sub('/[0-9]+(/|$)', '/_ID_\\1', request.path)
 
             influx.timing(
                 'queries.timer',
