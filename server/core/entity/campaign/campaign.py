@@ -22,6 +22,7 @@ import bcm_mixin
 # (for example Outbrain)
 AGENCIES_WITHOUT_CAMPAIGN_STOP = {55}
 ACCOUNTS_WITHOUT_CAMPAIGN_STOP = {490, 512, 513}  # inPowered
+AGENCIES_WITHOUT_REAL_TIME_CAMPAIGN_STOP = {55}
 
 
 class CampaignManager(core.common.QuerySetManager):
@@ -36,6 +37,9 @@ class CampaignManager(core.common.QuerySetManager):
             name=name,
             account=account
         )
+        if account.agency_id in AGENCIES_WITHOUT_REAL_TIME_CAMPAIGN_STOP:
+            campaign.real_time_campaign_stop = False
+
         campaign.save(request=request)
 
         settings_updates = core.entity.settings.CampaignSettings.get_defaults_dict()
