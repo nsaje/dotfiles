@@ -21,12 +21,12 @@ def utc_to_tz_datetime(dt, tz):
     return dt.astimezone(tz)
 
 
-def utc_to_local_datetime(dt):
+def utc_to_local(dt):
     return utc_to_tz_datetime(dt, pytz.timezone(settings.DEFAULT_TIME_ZONE))
 
 
 def utc_datetime_to_local_date(dt):
-    return utc_to_local_datetime(dt).date()
+    return utc_to_local(dt).date()
 
 
 def utc_today():
@@ -34,11 +34,11 @@ def utc_today():
 
 
 def local_now():
-    return utc_to_local_datetime(utc_now())
+    return utc_to_local(utc_now())
 
 
 def local_today():
-    return utc_to_local_datetime(utc_now()).date()
+    return utc_to_local(utc_now()).date()
 
 
 def local_yesterday():
@@ -66,7 +66,7 @@ def days_after(date, days):
 
 
 def local_midnight_to_utc_time():
-    local_now = utc_to_local_datetime(utc_now())
+    local_now = utc_to_local(utc_now())
     local_midnight = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
     return local_midnight.astimezone(pytz.utc)
 

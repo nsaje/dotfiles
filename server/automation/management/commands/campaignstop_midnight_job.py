@@ -1,0 +1,16 @@
+import automation.campaignstop
+
+from utils.command_helpers import ExceptionCommand
+from utils import dates_helper
+
+
+class Command(ExceptionCommand):
+
+    def add_arguments(self, parser):
+        parser.add_argument('--check-time', dest='check_time', action='store_true',
+                            help="Check if it's local midnight.")
+
+    def handle(self, *args, **options):
+        if options.get('check_time') and not dates_helper.local_now().hour == 0:
+            return
+        automation.campaignstop.update_campaigns_end_date()

@@ -11,13 +11,15 @@ import dash.constants
 from utils.magic_mixer import magic_mixer
 from utils import dates_helper
 
-from .. import CampaignStopState, RealTimeCampaignDataHistory, constants
+from .. import CampaignStopState, RealTimeCampaignDataHistory, constants, signals
 import update_campaignstop_state
 
 
 class UpdateCampaignStopStateTest(TestCase):
 
     def setUp(self):
+        signals.disconnect_update_budgets()
+
         self.campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
 
         today = dates_helper.local_today()
@@ -47,6 +49,23 @@ class UpdateCampaignStopStateTest(TestCase):
 
         campaign_stop_state = CampaignStopState.objects.get(campaign=self.campaign)
         self.assertEqual(constants.CampaignStopState.ACTIVE, campaign_stop_state.state)
+
+    @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
+    def test_stop_campaign_past_max_end_date(self):
+        self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).exists())
+        update_campaignstop_state.update_campaigns_state(
+            campaigns=[self.campaign])
+
+        campaign_stop_state = CampaignStopState.objects.get(campaign=self.campaign)
+        self.assertEqual(constants.CampaignStopState.ACTIVE, campaign_stop_state.state)
+
+        today = dates_helper.local_today()
+        campaign_stop_state.update_max_allowed_end_date(dates_helper.day_before(today))
+        update_campaignstop_state.update_campaigns_state(
+            campaigns=[self.campaign])
+
+        campaign_stop_state = CampaignStopState.objects.get(campaign=self.campaign)
+        self.assertEqual(constants.CampaignStopState.STOPPED, campaign_stop_state.state)
 
     def test_stop_campaign_without_budget(self):
         campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)

@@ -25,10 +25,24 @@ def _update_campaigns(campaigns):
 @transaction.atomic
 def _update_campaign(campaign):
     campaign_state, _ = CampaignStopState.objects.get_or_create(campaign=campaign)
-    campaign_state.set_allowed_to_run(_is_allowed_to_run(campaign))
+    campaign_state.set_allowed_to_run(_is_allowed_to_run(campaign, campaign_state))
 
 
-def _is_allowed_to_run(campaign):
+def _is_allowed_to_run(campaign, campaign_state):
+    return (
+        not _is_max_end_date_past(campaign, campaign_state) and
+        not _is_below_threshold(campaign)
+    )
+
+
+def _is_max_end_date_past(campaign, campaign_state):
+    return (
+        campaign_state.max_allowed_end_date and
+        campaign_state.max_allowed_end_date < dates_helper.local_today()
+    )
+
+
+def _is_below_threshold(campaign):
     budget_spends_until_date = _get_until_date_for_budget_spends(campaign)
     available_budget = _get_available_campaign_budget(
         campaign, budget_spends_until_date)
@@ -44,7 +58,7 @@ def _is_allowed_to_run(campaign):
         spend_rate = current_rt_spend - prev_rt_spend
 
     predicted = remaining - spend_rate
-    return predicted > THRESHOLD
+    return predicted < THRESHOLD
 
 
 def _get_until_date_for_budget_spends(campaign):
