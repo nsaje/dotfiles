@@ -176,7 +176,7 @@ def send_autopilot_changes_email(campaign, emails, changes_data, bcm_modifiers):
     }
     try:
         email_helper.send_official_email(
-            emails,
+            recipient_list=emails,
             agency_or_user=campaign.account.agency,
             from_email=automation.autopilot_settings.AUTOPILOT_EMAIL,
             **email_helper.params_from_template(
@@ -209,7 +209,7 @@ def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
     }
     try:
         email_helper.send_official_email(
-            emails,
+            recipient_list=emails,
             agency_or_user=campaign.account.agency,
             from_email=automation.autopilot_settings.AUTOPILOT_EMAIL,
             **email_helper.params_from_template(

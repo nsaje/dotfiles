@@ -666,7 +666,7 @@ def send_depleting_credits_email(user, accounts):
         )
 
     send_official_email(
-        [user.email],
+        recipient_list=[user.email],
         agency_or_user=user,
         **params_from_template(
             dash.constants.EmailTemplateType.DEPLETING_CREDITS,

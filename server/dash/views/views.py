@@ -919,7 +919,7 @@ class Demo(api_common.BaseApiView):
         instance = self._start_instance()
 
         email_helper.send_official_email(
-            request.user,
+            agency_or_user=request.user,
             recipient_list=[request.user.email],
             **email_helper.params_from_template(
                 constants.EmailTemplateType.DEMO_RUNNING,
