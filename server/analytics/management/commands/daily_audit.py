@@ -68,17 +68,11 @@ class Command(utils.command_helpers.ExceptionCommand):
         self.audit_click_discrepancy(options)
 
         if self.alarms and self.send_emails:
-            email = utils.email_helper.EmailMultiAlternatives(
-                'Daily audit v2',
-                self.email_body,
-                'Zemanta <{}>'.format(
-                    settings.FROM_EMAIL
-                ), RECIPIANTS)
-            email.attach_alternative(
-                utils.email_helper.format_template('Daily audit', self.email_body),
-                "text/html"
+            utils.email_helper.send_internal_email(
+                recipient_list=RECIPIANTS,
+                subject='Daily audit v2',
+                body=self.email_body
             )
-            email.send()
 
     def delivery(self, options):
         reports = analytics.delivery.generate_delivery_reports()
