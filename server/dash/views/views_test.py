@@ -6,6 +6,7 @@ import datetime
 import decimal
 
 from django.test import TestCase, Client, RequestFactory
+from django.core import mail
 from django.test.utils import override_settings
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
@@ -1267,27 +1268,19 @@ class DemoTest(TestCase):
         return client
 
     @patch.object(views.Demo, '_start_instance')
-    @patch('dash.views.views.send_mail')
-    @patch('dash.views.views.email_helper')
-    def test_get(self, email_helper_mock, send_mail_mock, start_instance_mock):
+    def test_get(self, start_instance_mock):
         start_instance_mock.return_value = {'url': 'test-url', 'password': 'test-password'}
-        email_helper_mock.format_email.return_value = ('test-subject', 'test-body', [])
-        email_helper_mock.format_template.return_value = 'html'
 
         reversed_url = reverse('demov3')
         response = self._get_client().get(reversed_url, follow=True)
         self.assertEqual(200, response.status_code)
 
         start_instance_mock.assert_called_once_with()
-        email_helper_mock.format_email.assert_called_once_with(15, url='test-url', password='test-password')
-        send_mail_mock.assert_called_once_with(
-            'test-subject',
-            'test-body',
-            'Zemanta <help-test@zemanta.com>',
-            ['mad.max@zemanta.com'],
-            fail_silently=False,
-            html_message='html',
-        )
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['mad.max@zemanta.com'])
+        self.assertEqual(mail.outbox[0].subject, 'Demo is running')
+        self.assertEqual(mail.outbox[0].body, 'Hi,\n\nDemo is running.\nLog in to test-url\nu/p: regular.user+demo@zemanta.com / test-password\n\nNote: This instance will selfdestroy in 7 days\n\nYours truly,\nZemanta\n    ')
 
         data = json.loads(response.content)
         self.assertEqual({'data': {'url': 'test-url', 'password': 'test-password'}, 'success': True}, data)

@@ -4,7 +4,6 @@ import re
 from decimal import Decimal
 
 from django.db.models import Q
-from django.core.mail import send_mail
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.contrib.auth.tokens import default_token_generator
@@ -14,11 +13,11 @@ from django.template.loader import render_to_string
 
 import dash.constants
 import dash.models
+import zemauth.models
 import analytics.management_report
 import analytics.client_report
 import analytics.statements
 
-from utils import pagerduty_helper
 from utils import dates_helper
 
 
@@ -44,11 +43,150 @@ EMAIL_RE = re.compile(
 NO_REPLY_EMAIL = 'noreply@zemanta.com'
 
 
-def _lookup_whitelabel(user=None, agency=None):
-    if user and not agency:
+def send_official_email(agency_or_user,
+                        recipient_list=None,
+                        subject=None,
+                        body=None,
+                        additional_recipients=None,
+                        tags=None,
+                        from_email=None):
+    """ Sends an official email, meaning it requires an agency or a user to determine
+        if the e-mail should be whitelabeled. """
+    email = create_official_email(
+        agency_or_user=agency_or_user,
+        recipient_list=recipient_list,
+        subject=subject,
+        body=body,
+        additional_recipients=additional_recipients,
+        tags=tags,
+        from_email=from_email)
+    email.send()
+
+
+def create_official_email(agency_or_user,
+                          recipient_list=None,
+                          subject=None,
+                          body=None,
+                          additional_recipients=None,
+                          tags=None,
+                          from_email=None):
+    whitelabel = _lookup_whitelabel(agency_or_user)
+    if whitelabel:
+        subject = _adjust_product_name(whitelabel, subject)
+        body = _adjust_product_name(whitelabel, body)
+
+    return _create_email(
+        whitelabel=whitelabel,
+        recipient_list=recipient_list,
+        subject=subject,
+        body=body,
+        additional_recipients=additional_recipients,
+        tags=tags,
+        from_email=from_email)
+
+
+def send_internal_email(recipient_list=None,
+                        subject=None,
+                        body=None,
+                        additional_recipients=None,
+                        tags=None,
+                        from_email=None,
+                        custom_html=None):
+    email = create_internal_email(
+        recipient_list=recipient_list,
+        subject=subject,
+        body=body,
+        additional_recipients=additional_recipients,
+        tags=tags,
+        from_email=from_email,
+        custom_html=custom_html)
+    email.send()
+
+
+def create_internal_email(recipient_list=None,
+                          subject=None,
+                          body=None,
+                          additional_recipients=None,
+                          tags=None,
+                          from_email=None,
+                          custom_html=None):
+    return _create_email(
+        recipient_list=recipient_list,
+        subject=subject,
+        body=body,
+        additional_recipients=additional_recipients,
+        tags=tags,
+        from_email=from_email,
+        custom_html=custom_html)
+
+
+def _create_email(whitelabel=None,
+                  recipient_list=None,
+                  subject=None,
+                  body=None,
+                  additional_recipients=None,
+                  tags=None,
+                  from_email=None,
+                  custom_html=None):
+    if not recipient_list and not additional_recipients:
+        return
+    if not tags:
+        tags = ['unclassified']
+    if not from_email:
+        from_email = settings.FROM_EMAIL
+    if recipient_list is None:
+        recipient_list = []
+
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=body,
+        from_email='Zemanta <{}>'.format(from_email),
+        to=recipient_list,
+        bcc=additional_recipients,
+        headers={'X-Mailgun-Tag': tags}
+    )
+    if custom_html:
+        email.attach_alternative(custom_html, "text/html")
+    else:
+        email.attach_alternative(_format_template(subject, body, whitelabel), "text/html")
+    return email
+
+
+def params_from_template(template_type, **kwargs):
+    template = dash.models.EmailTemplate.objects.get(template_type=template_type)
+    return dict(
+        subject=template.subject.format(**kwargs),
+        body=template.body.format(**kwargs),
+        additional_recipients=_prepare_recipients(template.recipients),
+        tags=[dash.constants.EmailTemplateType.get_name(template_type)]
+    )
+
+
+def _format_template(subject, content, whitelabel=None):
+    template_file = 'email.html'
+    if whitelabel:
+        template_file = 'whitelabel/{}/email.html'.format(whitelabel)
+    return render_to_string(template_file, {
+        'subject': subject,
+        'content': _format_whitespace(content),
+    })
+
+
+def _lookup_whitelabel(agency_or_user):
+    if not agency_or_user:
+        return None
+
+    agency = None
+    if isinstance(agency_or_user, dash.models.Agency):
+        agency = agency_or_user
+    elif isinstance(agency_or_user, zemauth.models.User):
+        user = agency_or_user
         agency = dash.models.Agency.objects.all().filter(
             Q(users__id=user.id) | Q(account__users__id=user.id)
         ).first()
+    else:
+        raise Exception('Incorrect agency or user for whitelabel purposes!')
+
     if agency:
         return agency.whitelabel
     return None
@@ -73,28 +211,8 @@ def _bold(text, bold):
     return text.replace(bold, '<b>' + bold + '</b>')
 
 
-def prepare_recipients(email_text):
-    return (email.strip() for email in email_text.split(',') if email)
-
-
-def format_email(template_type, **kwargs):
-    # since editing through admin is currently unavailable no validation takes
-    # place
-    template = dash.models.EmailTemplate.objects.get(template_type=template_type)
-    return template.subject.format(**kwargs), template.body.format(**kwargs), prepare_recipients(template.recipients)
-
-
-def format_template(subject, content, user=None, agency=None):
-    template_file = 'email.html'
-    whitelabel = _lookup_whitelabel(user, agency)
-    if whitelabel:
-        template_file = 'whitelabel/{}/email.html'.format(whitelabel)
-        subject = _adjust_product_name(whitelabel, subject)
-        content = _adjust_product_name(whitelabel, content)
-    return render_to_string(template_file, {
-        'subject': subject,
-        'content': _format_whitespace(content),
-    })
+def _prepare_recipients(email_text):
+    return [email.strip() for email in email_text.split(',') if email]
 
 
 def _format_whitespace(content):
@@ -122,55 +240,19 @@ def email_manager_list(campaign):
     return list(ret)
 
 
-def send_notification_mail(to_emails, subject, body, settings_url=None, agency=None):
-    if not to_emails:
-        return
-    try:
-        send_mail(
-            subject,
-            body,
-            'Zemanta <{}>'.format(settings.FROM_EMAIL),
-            to_emails,
-            fail_silently=False,
-            html_message=format_template(subject, body, agency=agency),
-        )
-    except Exception as e:
-        logger.exception(
-            'Account manager email notification was not sent because '
-            'an exception was raised'
-        )
-
-        desc = {}
-        if settings_url:
-            desc['settings_url'] = settings_url
-
-        pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
-            incident_key='account_manager_notification_mail_failed',
-            description='Account manager email notification was not sent because '
-            'an exception was raised: {}'.format(traceback.format_exc(e)),
-            details=desc,
-        )
-
-
 def send_pacing_notification_email(campaign, emails, pacing, alert, projections):
-    subject, body, additional_emails = format_email(
-        dash.constants.EmailTemplateType.PACING_NOTIFICATION,
-        campaign=campaign,
-        account=campaign.account,
-        pacing=pacing.quantize(Decimal('.01')),
-        alert=alert == 'low' and 'underpacing' or 'overpacing',
-        daily_ideal=projections['ideal_daily_media_spend'].quantize(Decimal('.01')),
+    send_official_email(
+        agency_or_user=campaign.account.agency,
+        recipient_list=emails,
+        **params_from_template(
+            dash.constants.EmailTemplateType.PACING_NOTIFICATION,
+            campaign=campaign,
+            account=campaign.account,
+            pacing=pacing.quantize(Decimal('.01')),
+            alert=alert == 'low' and 'underpacing' or 'overpacing',
+            daily_ideal=projections['ideal_daily_media_spend'].quantize(Decimal('.01')),
+        )
     )
-    email = EmailMultiAlternatives(
-        subject,
-        body,
-        'Zemanta <{}>'.format(settings.FROM_EMAIL),
-        emails,
-        bcc=additional_emails
-    )
-    email.attach_alternative(format_template(subject, body), "text/html")
-    email.send(fail_silently=False)
 
 
 def send_obj_changes_notification_email(obj, request, changes_text):
@@ -199,13 +281,14 @@ def send_ad_group_notification_email(ad_group, request, changes_text):
         'changes_text': _format_changes_text(changes_text)
     }
 
-    subject, body, _ = format_email(dash.constants.EmailTemplateType.ADGROUP_CHANGE, **args)
     emails = list(set(email_manager_list(ad_group.campaign)) - set([request.user.email]))
     if not emails:
         return
-    send_notification_mail(
-        emails, subject, body, ad_group.campaign.get_campaign_url(request),
-        agency=ad_group.campaign.account.agency)
+    send_official_email(
+        agency_or_user=ad_group.campaign.account.agency,
+        recipient_list=emails,
+        **params_from_template(dash.constants.EmailTemplateType.ADGROUP_CHANGE, **args)
+    )
 
 
 def send_campaign_notification_email(campaign, request, changes_text):
@@ -223,13 +306,14 @@ def send_campaign_notification_email(campaign, request, changes_text):
         'changes_text': _format_changes_text(changes_text)
     }
 
-    subject, body, _ = format_email(dash.constants.EmailTemplateType.CAMPAIGN_CHANGE, **args)
     emails = list(set(email_manager_list(campaign)) - set([request.user.email]))
     if not emails:
         return
-    send_notification_mail(
-        emails, subject, body, campaign.get_campaign_url(request),
-        agency=campaign.account.agency)
+    send_official_email(
+        agency_or_user=campaign.account.agency,
+        recipient_list=emails,
+        **params_from_template(dash.constants.EmailTemplateType.CAMPAIGN_CHANGE, **args)
+    )
 
 
 def send_account_notification_email(account, request, changes_text):
@@ -246,10 +330,11 @@ def send_account_notification_email(account, request, changes_text):
         'changes_text': _format_changes_text(changes_text)
     }
 
-    subject, body, _ = format_email(dash.constants.EmailTemplateType.ACCOUNT_CHANGE, **args)
-    send_notification_mail(
-        [account.get_current_settings().default_account_manager.email],
-        subject, body, account.get_account_url(request))
+    send_official_email(
+        agency_or_user=account.agency,
+        recipient_list=[account.get_current_settings().default_account_manager.email],
+        **params_from_template(dash.constants.EmailTemplateType.ACCOUNT_CHANGE, **args)
+    )
 
 
 def send_budget_notification_email(campaign, request, changes_text):
@@ -265,13 +350,14 @@ def send_budget_notification_email(campaign, request, changes_text):
         'link_url': link_url,
         'changes_text': _format_changes_text(changes_text),
     }
-    subject, body, _ = format_email(dash.constants.EmailTemplateType.BUDGET_CHANGE, **args)
     emails = list(set(email_manager_list(campaign)) - set([request.user.email]))
     if not emails:
         return
-    send_notification_mail(
-        emails, subject, body, campaign.get_campaign_url(request),
-        agency=campaign.account.agency)
+    send_official_email(
+        agency_or_user=campaign.account.agency,
+        recipient_list=emails,
+        **params_from_template(dash.constants.EmailTemplateType.BUDGET_CHANGE, **args)
+    )
 
 
 def send_account_pixel_notification(account, request):
@@ -284,15 +370,12 @@ def send_account_pixel_notification(account, request):
         'account': account,
         'link_url': link_url
     }
-    subject, body, _ = format_email(dash.constants.EmailTemplateType.PIXEL_ADD, **args)
     account_settings = account.get_current_settings()
 
-    send_notification_mail(
-        [account_settings.default_account_manager.email],
-        subject,
-        body,
-        account.get_account_url(request),
-        agency=account.agency
+    send_official_email(
+        agency_or_user=account.agency,
+        recipient_list=[account_settings.default_account_manager.email],
+        **params_from_template(dash.constants.EmailTemplateType.PIXEL_ADD, **args)
     )
 
 
@@ -302,8 +385,11 @@ def send_password_reset_email(user, request):
         'link_url': _generate_password_reset_url(user, request),
     }
 
-    subject, body, _ = format_email(dash.constants.EmailTemplateType.PASSWORD_RESET, **args)
-    _send_email_to_user(user, request, subject, body)
+    send_official_email(
+        agency_or_user=user,
+        recipient_list=[user.email],
+        **params_from_template(dash.constants.EmailTemplateType.PASSWORD_RESET, **args)
+    )
 
 
 def send_email_to_new_user(user, request, agency=None):
@@ -311,9 +397,11 @@ def send_email_to_new_user(user, request, agency=None):
         'user': user,
         'link_url': _generate_password_reset_url(user, request),
     }
-    subject, body, _ = format_email(dash.constants.EmailTemplateType.USER_NEW, **args)
-    subject = _adjust_product_name(_lookup_whitelabel(user=user, agency=agency), subject)
-    return _send_email_to_user(user, request, subject, body, agency=agency)
+    send_official_email(
+        agency_or_user=agency,
+        recipient_list=[user.email],
+        **params_from_template(dash.constants.EmailTemplateType.USER_NEW, **args)
+    )
 
 
 def _generate_password_reset_url(user, request):
@@ -327,48 +415,6 @@ def _generate_password_reset_url(user, request):
     return url.replace('http://', 'https://')
 
 
-def _send_email_to_user(user, request, subject, body, agency=None):
-    try:
-        send_mail(
-            subject,
-            body,
-            'Zemanta <{}>'.format(settings.FROM_EMAIL),
-            [user.email],
-            fail_silently=False,
-            html_message=format_template(subject, body, user=user, agency=agency)
-        )
-    except Exception as e:
-        if user is None:
-            message = 'Email for user was not sent because exception was raised: {}'.format(
-                traceback.format_exc(e))
-            desc = {}
-        else:
-            message =\
-                'Email for user {} ({}) was not sent because an exception was raised: {}'.format(
-                    user.get_full_name(),
-                    user.email,
-                    traceback.format_exc(e)
-                )
-
-            user_url = request.build_absolute_uri(
-                reverse('admin:zemauth_user_change', args=(user.pk,))
-            )
-            user_url = user_url.replace('http://', 'https://')
-
-            desc = {
-                'user_url': user_url
-            }
-
-        logger.error(message)
-
-        pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
-            incident_key='user_mail_failed',
-            description=message,
-            details=desc,
-        )
-
-
 def send_supply_report_email(email, date, impressions, cost, custom_subject=None, publisher_report=None):
     date = dates_helper.format_date_mmddyyyy(date)
     args = {
@@ -376,21 +422,19 @@ def send_supply_report_email(email, date, impressions, cost, custom_subject=None
         'impressions': impressions,
         'cost': cost,
     }
-    subject, body, _ = format_email(dash.constants.EmailTemplateType.SUPPLY_REPORT, **args)
+    params = params_from_template(dash.constants.EmailTemplateType.SUPPLY_REPORT, **args)
     if custom_subject:
-        subject = custom_subject.format(date=date)
+        params['subject'] = custom_subject.format(date=date)
 
     try:
-        email = EmailMultiAlternatives(
-            subject,
-            body,
-            'Zemanta <{}>'.format(settings.SUPPLY_REPORTS_FROM_EMAIL),
-            [email]
-        )
+        email = create_official_email(
+            None,
+            recipient_list=[email],
+            from_email=settings.SUPPLY_REPORTS_FROM_EMAIL,
+            **params)
         if publisher_report:
             email.attach('publisher_report.csv', publisher_report, 'text/csv')
-
-        email.send(fail_silently=False)
+        email.send()
     except Exception as e:
         logger.error(
             'Supply report e-mail to %s was not sent because an exception was raised: %s',
@@ -409,17 +453,6 @@ def should_send_account_notification_mail(account, user, request):
             'Could not send e-mail because there is no default account '
             'manager set for account with id %s.',
             account.pk
-        )
-
-        desc = {
-            'settings_url': account.get_account_url(request)
-        }
-        pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
-            incident_key='notification_mail_failed',
-            description='E-mail notification was not sent because '
-            'default account manager is not set.',
-            details=desc,
         )
         return False
 
@@ -441,17 +474,6 @@ def should_send_notification_mail(campaign, user, request):
             'set for campaign with id %s.',
             campaign.pk
         )
-
-        desc = {
-            'settings_url': campaign.get_campaign_url(request)
-        }
-        pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
-            incident_key='notification_mail_failed',
-            description='E-mail notification was not sent because '
-            'account manager is not set.',
-            details=desc,
-        )
         return False
 
     if user.pk == campaign_settings.campaign_manager.pk:
@@ -461,93 +483,78 @@ def should_send_notification_mail(campaign, user, request):
 
 
 def send_livestream_email(user, session_url):
-    subject, body, recipients = format_email(
-        dash.constants.EmailTemplateType.LIVESTREAM_SESSION,
-        user=user,
-        session_url=session_url,
+    send_internal_email(
+        **params_from_template(
+            dash.constants.EmailTemplateType.LIVESTREAM_SESSION,
+            user=user,
+            session_url=session_url,
+        )
     )
-    email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
-        settings.FROM_EMAIL
-    ), recipients)
-    email.attach_alternative(format_template(subject, body, user=user), "text/html")
-    email.send(fail_silently=False)
 
 
 def send_daily_management_report_email():
-    subject, body, recipients = format_email(dash.constants.EmailTemplateType.DAILY_MANAGEMENT_REPORT)
-    email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
-        settings.FROM_EMAIL
-    ), recipients)
-    email.attach_alternative(analytics.management_report.get_daily_report_html(), "text/html")
-    email.send(fail_silently=False)
+    send_internal_email(
+        custom_html=analytics.management_report.get_daily_report_html(),
+        **params_from_template(dash.constants.EmailTemplateType.DAILY_MANAGEMENT_REPORT)
+    )
 
 
 def send_weekly_client_report_email():
-    subject, body, recipients = format_email(dash.constants.EmailTemplateType.WEEKLY_CLIENT_REPORT)
-    email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
-        settings.FROM_EMAIL
-    ), recipients)
-    email.attach_alternative(analytics.client_report.get_weekly_report_html(), "text/html")
-    email.send(fail_silently=False)
+    send_internal_email(
+        custom_html=analytics.client_report.get_weekly_report_html(),
+        **params_from_template(dash.constants.EmailTemplateType.WEEKLY_CLIENT_REPORT)
+    )
 
 
 def send_weekly_inventory_report_email():
-    subject, body, recipients = format_email(
-        dash.constants.EmailTemplateType.WEEKLY_INVENTORY_REPORT,
-        report_url=analytics.statements.generate_csv(
-            'inventory-report/valid-{}.csv'.format(str(dates_helper.local_today())),
-            analytics.statements.inventory_report_csv,
-            blacklisted=False
-        ),
-        bl_report_url=analytics.statements.generate_csv(
-            'inventory-report/blacklisted-{}.csv'.format(str(dates_helper.local_today())),
-            analytics.statements.inventory_report_csv,
-            blacklisted=True
+    send_internal_email(
+        **params_from_template(
+            dash.constants.EmailTemplateType.WEEKLY_INVENTORY_REPORT,
+            report_url=analytics.statements.generate_csv(
+                'inventory-report/valid-{}.csv'.format(str(dates_helper.local_today())),
+                analytics.statements.inventory_report_csv,
+                blacklisted=False
+            ),
+            bl_report_url=analytics.statements.generate_csv(
+                'inventory-report/blacklisted-{}.csv'.format(str(dates_helper.local_today())),
+                analytics.statements.inventory_report_csv,
+                blacklisted=True
+            )
         )
     )
-    email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
-        settings.FROM_EMAIL
-    ), recipients)
-    email.attach_alternative(format_template(subject, body), "text/html")
-    email.send(fail_silently=False)
 
 
 def send_new_user_device_email(request, browser, os, city, country):
-    subject, body, _ = format_email(
-        dash.constants.EmailTemplateType.NEW_DEVICE_LOGIN,
-        time=dates_helper.local_now().strftime('%A, %d %b %Y %I:%m %p %Z'),
-        browser=browser,
-        os=os,
-        city=city,
-        country=country,
-        reset_password_url=request.build_absolute_uri(('password_reset'))
+    send_official_email(
+        agency_or_user=request.user,
+        recipient_list=[request.user.email],
+        **params_from_template(
+            dash.constants.EmailTemplateType.NEW_DEVICE_LOGIN,
+            time=dates_helper.local_now().strftime('%A, %d %b %Y %I:%m %p %Z'),
+            browser=browser,
+            os=os,
+            city=city,
+            country=country,
+            reset_password_url=request.build_absolute_uri(('password_reset'))
+        )
     )
-    email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
-        settings.FROM_EMAIL,
-    ), [request.user.email])
-    email.attach_alternative(format_template(subject, body), "text/html")
-    email.send(fail_silently=False)
 
 
 def send_outbrain_accounts_running_out_email(n):
-    subject, body, recipients = format_email(
-        dash.constants.EmailTemplateType.OUTBRAIN_ACCOUNTS_RUNNING_OUT,
-        n=n,
+    send_internal_email(
+        **params_from_template(
+            dash.constants.EmailTemplateType.OUTBRAIN_ACCOUNTS_RUNNING_OUT,
+            n=n,
+        )
     )
-    email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
-        settings.FROM_EMAIL
-    ), recipients)
-    email.attach_alternative(format_template(subject, body), "text/html")
-    email.send()
 
 
 def send_ga_setup_instructions(user):
-    subject, body, _ = format_email(dash.constants.EmailTemplateType.GA_SETUP_INSTRUCTIONS)
-    email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
-        settings.FROM_EMAIL
-    ), [user.email])
-    email.attach_alternative(format_template(subject, _url_to_link(body)), "text/html")
-    email.send(fail_silently=True)
+    send_official_email(
+        agency_or_user=user,
+        recipient_list=[user.email],
+        **params_from_template(dash.constants.EmailTemplateType.GA_SETUP_INSTRUCTIONS)
+    )
 
 
 def _format_report_filters(show_archived, show_blacklisted_publishers, filtered_sources):
@@ -570,27 +577,25 @@ def send_async_report(
 
     filters = _format_report_filters(show_archived, show_blacklisted_publishers, filtered_sources)
 
-    subject, plain_body, _ = format_email(
-        dash.constants.EmailTemplateType.ASYNC_REPORT_RESULTS,
-        link_url=report_path,
-        account_name=account_name or '/',
-        campaign_name=campaign_name or '/',
-        ad_group_name=ad_group_name or '/',
-        start_date=dates_helper.format_date_mmddyyyy(start_date),
-        end_date=dates_helper.format_date_mmddyyyy(end_date),
-        expiry_date=dates_helper.format_date_mmddyyyy(expiry_date),
-        tab_name=view,
-        breakdown=', '.join(breakdowns) or '/',
-        columns=', '.join(columns),
-        filters=', '.join(filters) if filters else '/',
-        include_totals='Yes' if include_totals else 'No',
+    send_official_email(
+        agency_or_user=user,
+        recipient_list=recipients,
+        **params_from_template(
+            dash.constants.EmailTemplateType.ASYNC_REPORT_RESULTS,
+            link_url=report_path,
+            account_name=account_name or '/',
+            campaign_name=campaign_name or '/',
+            ad_group_name=ad_group_name or '/',
+            start_date=dates_helper.format_date_mmddyyyy(start_date),
+            end_date=dates_helper.format_date_mmddyyyy(end_date),
+            expiry_date=dates_helper.format_date_mmddyyyy(expiry_date),
+            tab_name=view,
+            breakdown=', '.join(breakdowns) or '/',
+            columns=', '.join(columns),
+            filters=', '.join(filters) if filters else '/',
+            include_totals='Yes' if include_totals else 'No',
+        )
     )
-
-    email = EmailMultiAlternatives(subject, plain_body, 'Zemanta <{}>'.format(
-        settings.FROM_EMAIL
-    ), (recipients or []))
-    email.attach_alternative(format_template(subject, _url_to_link(plain_body), user=user), "text/html")
-    email.send(fail_silently=False)
 
 
 def send_async_report_fail(
@@ -601,28 +606,23 @@ def send_async_report_fail(
 
     filters = _format_report_filters(show_archived, show_blacklisted_publishers, filtered_sources)
 
-    subject, plain_body, _ = format_email(
-        dash.constants.EmailTemplateType.ASYNC_REPORT_FAIL,
-        account_name=account_name or '/',
-        campaign_name=campaign_name or '/',
-        ad_group_name=ad_group_name or '/',
-        start_date=dates_helper.format_date_mmddyyyy(start_date),
-        end_date=dates_helper.format_date_mmddyyyy(end_date),
-        tab_name=view,
-        breakdown=', '.join(breakdowns) or '/',
-        columns=', '.join(columns),
-        filters=', '.join(filters) if filters else '/',
-        include_totals='Yes' if include_totals else 'No',
+    send_official_email(
+        agency_or_user=user,
+        recipient_list=recipients,
+        **params_from_template(
+            dash.constants.EmailTemplateType.ASYNC_REPORT_FAIL,
+            account_name=account_name or '/',
+            campaign_name=campaign_name or '/',
+            ad_group_name=ad_group_name or '/',
+            start_date=dates_helper.format_date_mmddyyyy(start_date),
+            end_date=dates_helper.format_date_mmddyyyy(end_date),
+            tab_name=view,
+            breakdown=', '.join(breakdowns) or '/',
+            columns=', '.join(columns),
+            filters=', '.join(filters) if filters else '/',
+            include_totals='Yes' if include_totals else 'No',
+        )
     )
-
-    html_body = _bold(plain_body, 'Report settings')
-    html_body = _email_to_link(html_body)
-
-    email = EmailMultiAlternatives(subject, plain_body, 'Zemanta <{}>'.format(
-        settings.FROM_EMAIL
-    ), (recipients or []))
-    email.attach_alternative(format_template(subject, html_body, user=user), "text/html")
-    email.send(fail_silently=False)
 
 
 def send_async_scheduled_report(
@@ -632,34 +632,29 @@ def send_async_scheduled_report(
 
     filters = _format_report_filters(show_archived, show_blacklisted_publishers, filtered_sources)
 
-    subject, plain_body, _ = format_email(
-        dash.constants.EmailTemplateType.ASYNC_SCHEDULED_REPORT_RESULTS,
-        report_name=report_name,
-        frequency=frequency.lower(),
-        cancel_url='https://one.zemanta.com/v2/reports/accounts',
-        link_url=report_path,
-        account_name=account_name or '/',
-        campaign_name=campaign_name or '/',
-        ad_group_name=ad_group_name or '/',
-        start_date=dates_helper.format_date_mmddyyyy(start_date),
-        end_date=dates_helper.format_date_mmddyyyy(end_date),
-        expiry_date=dates_helper.format_date_mmddyyyy(expiry_date),
-        tab_name=view,
-        breakdown=', '.join(breakdowns) or '/',
-        columns=', '.join(columns),
-        filters=', '.join(filters) if filters else '/',
-        include_totals='Yes' if include_totals else 'No',
+    send_official_email(
+        agency_or_user=user,
+        recipient_list=recipients,
+        from_email=NO_REPLY_EMAIL,
+        **params_from_template(
+            dash.constants.EmailTemplateType.ASYNC_SCHEDULED_REPORT_RESULTS,
+            report_name=report_name,
+            frequency=frequency.lower(),
+            cancel_url='https://one.zemanta.com/v2/reports/accounts',
+            link_url=report_path,
+            account_name=account_name or '/',
+            campaign_name=campaign_name or '/',
+            ad_group_name=ad_group_name or '/',
+            start_date=dates_helper.format_date_mmddyyyy(start_date),
+            end_date=dates_helper.format_date_mmddyyyy(end_date),
+            expiry_date=dates_helper.format_date_mmddyyyy(expiry_date),
+            tab_name=view,
+            breakdown=', '.join(breakdowns) or '/',
+            columns=', '.join(columns),
+            filters=', '.join(filters) if filters else '/',
+            include_totals='Yes' if include_totals else 'No',
+        )
     )
-
-    html_body = _bold(plain_body, 'Report settings')
-    html_body = _bold(html_body, 'Note:')
-    html_body = _url_to_link(html_body)
-
-    email = EmailMultiAlternatives(subject, plain_body, 'Zemanta <{}>'.format(
-        NO_REPLY_EMAIL
-    ), (recipients or []))
-    email.attach_alternative(format_template(subject, html_body, user=user), "text/html")
-    email.send(fail_silently=False)
 
 
 def send_depleting_credits_email(user, accounts):
@@ -669,15 +664,15 @@ def send_depleting_credits_email(user, accounts):
             account.get_long_name(),
             'https://one.zemanta.com/v2/credit/account/{}'.format(account.pk)
         )
-    subject, plain_body, recipients = format_email(
-        dash.constants.EmailTemplateType.DEPLETING_CREDITS,
-        accounts_list=accounts_list
+
+    send_official_email(
+        [user.email],
+        agency_or_user=user,
+        **params_from_template(
+            dash.constants.EmailTemplateType.DEPLETING_CREDITS,
+            accounts_list=accounts_list
+        )
     )
-    email = EmailMultiAlternatives(subject, plain_body, 'Zemanta <{}>'.format(
-        settings.FROM_EMAIL
-    ), [user.email], bcc=recipients or [])
-    email.attach_alternative(format_template(subject, plain_body, user=user), "text/html")
-    email.send(fail_silently=False)
 
 
 def _format_changes_text(changes_text):
@@ -696,18 +691,13 @@ def _format_changes_text(changes_text):
 
 
 def send_oen_postclickkpi_cpa_factors_email(factors):
-    subject, body, recipients = format_email(dash.constants.EmailTemplateType.OEN_POSTCLICKKPI_CPA_FACTORS)
     try:
-        email = EmailMultiAlternatives(
-              subject,
-              body,
-              'Zemanta <{}>'.format(NO_REPLY_EMAIL),
-              recipients
+        email = create_internal_email(
+            **params_from_template(dash.constants.EmailTemplateType.OEN_POSTCLICKKPI_CPA_FACTORS)
         )
         email.attach('cpa_optimization_factors.csv', factors, 'text/csv')
-        email.send(fail_silently=False)
+        email.send()
     except Exception as e:
         logger.error(
-            'OEN CPA Optimization factors e-mail to %s was not sent because an exception was raised: %s',
-            ','.join(recipients),
+            'OEN CPA Optimization factors e-mail was not sent because an exception was raised: %s',
             traceback.format_exc(e))

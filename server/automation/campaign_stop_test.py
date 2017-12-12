@@ -219,7 +219,7 @@ class SwitchToLandingModeTestCase(TestCase):
         new_settings.landing_mode = False
         new_settings.save(None)
 
-    @patch('utils.email_helper.send_notification_mail')
+    @patch('utils.email_helper.send_official_email')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
     @patch('automation.campaign_stop._get_max_daily_budget')
     @patch('automation.campaign_stop._get_user_daily_budget')
@@ -236,7 +236,7 @@ class SwitchToLandingModeTestCase(TestCase):
         self.assertFalse(mock_switch.called)
         self.assertEqual(mock_k1_ping.call_count, 0)
 
-    @patch('utils.email_helper.send_notification_mail')
+    @patch('utils.email_helper.send_official_email')
     @patch('automation.campaign_stop._get_max_daily_budget')
     @patch('automation.campaign_stop._get_user_daily_budget')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
@@ -279,7 +279,7 @@ class SwitchToLandingModeTestCase(TestCase):
                     active_ad_group_sources.add(ags)
 
     @patch('automation.campaign_stop._set_end_date_to_today')
-    @patch('utils.email_helper.send_notification_mail')
+    @patch('utils.email_helper.send_official_email')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
     @patch('automation.campaign_stop._switch_campaign_to_landing_mode')
     def test_all_ad_groups_over_end_date(self, mock_switch, mock_get_mrb, mock_send_email, mock_set_end_date):

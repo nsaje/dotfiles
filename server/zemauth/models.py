@@ -1,7 +1,6 @@
 import operator
 
 from django.contrib.auth import models as auth_models
-from django.core.mail import send_mail
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -313,19 +312,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
     def get_short_name(self):
         "Returns the short name for the user."
         return self.first_name
-
-    def email_user(self, subject, message, from_email=None, **kwargs):
-        """
-        Sends an email to this User.
-        """
-        send_mail(
-            subject,
-            message,
-            from_email or 'Zemanta <{}>'.format(settings.FROM_EMAIL),
-            [self.email],
-            html_message=utils.email_helper.format_template(subject, message, user=self),
-            **kwargs
-        )
 
     def __unicode__(self):
         return self.email

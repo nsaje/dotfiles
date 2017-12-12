@@ -1719,11 +1719,14 @@ def _send_campaign_stop_notification_email(campaign):
             '/v2/analytics/campaign/{}?settings&settingsScrollTo=zemCampaignBudgetsSettings'.format(campaign.pk)
         ),
     }
-    subject, body, _ = email_helper.format_email(
-        dash.constants.EmailTemplateType.CAMPAIGN_LANDING_MODE_SWITCH,
-        **args
+    email_helper.send_official_email(
+        recipient_list=email_helper.email_manager_list(campaign),
+        agency_or_user=campaign.account.agency,
+        **email_helper.params_from_template(
+            dash.constants.EmailTemplateType.CAMPAIGN_LANDING_MODE_SWITCH,
+            **args
+        )
     )
-    _send_notification_email(subject, body, campaign)
 
 
 def _send_depleting_budget_notification_email(campaign):
@@ -1734,14 +1737,11 @@ def _send_depleting_budget_notification_email(campaign):
             '/v2/analytics/campaign/{}?settings&settingsScrollTo=zemCampaignBudgetsSettings'.format(campaign.pk)
         ),
     }
-
-    subject, body, _ = email_helper.format_email(
-        dash.constants.EmailTemplateType.CAMPAIGN_BUDGET_LOW,
-        **args
+    email_helper.send_official_email(
+        recipient_list=email_helper.email_manager_list(campaign),
+        agency_or_user=campaign.account.agency,
+        **email_helper.params_from_template(
+            dash.constants.EmailTemplateType.CAMPAIGN_BUDGET_LOW,
+            **args
+        )
     )
-    _send_notification_email(subject, body, campaign)
-
-
-def _send_notification_email(subject, body, campaign):
-    emails = email_helper.email_manager_list(campaign)
-    email_helper.send_notification_mail(emails, subject, body, agency=campaign.account.agency)

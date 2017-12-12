@@ -12,7 +12,6 @@ import threading
 
 from django.db.models import Q
 from django.conf import settings
-from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404
@@ -919,15 +918,13 @@ class Demo(api_common.BaseApiView):
 
         instance = self._start_instance()
 
-        subject, body, _ = email_helper.format_email(constants.EmailTemplateType.DEMO_RUNNING, **instance)
-
-        send_mail(
-            subject,
-            body,
-            'Zemanta <{}>'.format(settings.FROM_EMAIL),
-            [request.user.email],
-            fail_silently=False,
-            html_message=email_helper.format_template(subject, body)
+        email_helper.send_official_email(
+            request.user,
+            recipient_list=[request.user.email],
+            **email_helper.params_from_template(
+                constants.EmailTemplateType.DEMO_RUNNING,
+                **instance
+            )
         )
 
         return self.create_api_response(instance)

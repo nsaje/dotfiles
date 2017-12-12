@@ -14,6 +14,117 @@ from utils import email_helper
 from utils.magic_mixer import magic_mixer
 
 
+class EmailAPITestCase(TestCase):
+
+    def setUp(self):
+        request_factory = RequestFactory()
+        self.normal_user = User.objects.create_user('test1@user.com')
+        self.whitelabel_agency_user = User.objects.create_user('test2@user.com')
+
+        self.request = request_factory.get('/test')
+        self.request.user = self.normal_user
+
+        self.agency = dash_models.Agency(name='Agency 1')
+        self.agency.save(self.request)
+        self.agency.users.add(self.normal_user)
+
+        self.whitelabel_agency = dash_models.Agency(name='Agency 2', whitelabel='greenpark')
+        self.whitelabel_agency.save(self.request)
+        self.whitelabel_agency.users.add(self.whitelabel_agency_user)
+
+    @patch('utils.email_helper.render_to_string')
+    def test_basic(self, mock_render):
+        email_helper.send_official_email(
+            recipient_list=['test@test.com'],
+            subject='Zemanta Subject',
+            body='Zemanta Body',
+            additional_recipients=['additional@test.com'],
+            tags=['tag1', 'tag2'],
+            agency_or_user=self.agency
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['test@test.com'])
+        self.assertEqual(mail.outbox[0].subject, 'Zemanta Subject')
+        self.assertEqual(mail.outbox[0].body, 'Zemanta Body')
+        self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
+        self.assertEqual(mail.outbox[0].bcc, ['additional@test.com'])
+        self.assertEqual(mail.outbox[0].extra_headers, {'X-Mailgun-Tag': ['tag1', 'tag2']})
+        mock_render.assert_called_with('email.html', {'content': u'<p>Zemanta Body</p>', 'subject': 'Zemanta Subject'})
+
+    @patch('utils.email_helper.render_to_string')
+    def test_whitelabel(self, mock_render):
+        email_helper.send_official_email(
+            recipient_list=['test@test.com'],
+            subject='Zemanta Subject',
+            body='Zemanta Body',
+            agency_or_user=self.whitelabel_agency
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['test@test.com'])
+        self.assertEqual(mail.outbox[0].subject, 'Telescope Subject')
+        self.assertEqual(mail.outbox[0].body, 'Telescope Body')
+        mock_render.assert_called_with('whitelabel/greenpark/email.html', {'content': u'<p>Telescope Body</p>', 'subject': 'Telescope Subject'})
+
+    def test_from_email(self):
+        email_helper.send_official_email(
+            recipient_list=['test@test.com'],
+            subject='Zemanta Subject',
+            body='Zemanta Body',
+            from_email='newfrom@zemanta.com',
+            agency_or_user=self.agency
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].from_email, 'Zemanta <newfrom@zemanta.com>')
+
+    def test_custom_html(self):
+        email_helper.send_internal_email(
+            recipient_list=['test@test.com'],
+            subject='Zemanta Subject',
+            body='Zemanta Body',
+            custom_html='<b>hi!</b>',
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].alternatives, [('<b>hi!</b>', 'text/html')])
+
+    def test_no_recipients_just_bcc(self):
+        email_helper.send_official_email(
+            additional_recipients=['test@test.com'],
+            subject='Zemanta Subject',
+            body='Zemanta Body',
+            agency_or_user=self.agency
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].bcc, ['test@test.com'])
+
+    def test_no_tags(self):
+        email_helper.send_official_email(
+            additional_recipients=['test@test.com'],
+            subject='Zemanta Subject',
+            body='Zemanta Body',
+            agency_or_user=self.agency
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].extra_headers, {'X-Mailgun-Tag': ['unclassified']})
+
+    def test_params_from_template(self):
+        template_type = dash.constants.EmailTemplateType.OUTBRAIN_ACCOUNTS_RUNNING_OUT
+        email_template = dash.models.EmailTemplate.objects.get(template_type=template_type)
+        email_template.subject = 'mysubject'
+        email_template.body = 'mybody'
+        email_template.recipients = 'test@test.com, test2@test.com'
+        email_template.save()
+
+        params = email_helper.params_from_template(
+            template_type,
+        )
+        self.assertEqual(params, {
+            'subject': 'mysubject',
+            'body': 'mybody',
+            'additional_recipients': ['test@test.com', 'test2@test.com'],
+            'tags': ['OUTBRAIN_ACCOUNTS_RUNNING_OUT']
+        })
+
+
 @override_settings(
     SEND_NOTIFICATION_MAIL=True
 )
@@ -30,44 +141,6 @@ class EmailHelperTestCase(TestCase):
         self.assertRegexpMatches(
             reset_url,
             r'https://testserver/set_password/[a-zA-Z0-9]+-[a-zA-Z0-9]+-[0-9a-zA-Z]{20}/')
-
-    def test_send_email_to_user(self):
-        subject = 'This is subject'
-        body = 'This is body text'
-
-        email_helper._send_email_to_user(self.user, self.request, subject, body)
-
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, subject)
-        self.assertEqual(mail.outbox[0].body, body)
-        self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, [self.user.email])
-
-    @override_settings(
-        HOSTNAME='testhost',
-        PAGER_DUTY_ENABLED=True,
-        PAGER_DUTY_URL='http://pagerduty.example.com',
-        PAGER_DUTY_ADOPS_SERVICE_KEY='123abc'
-    )
-    @patch('utils.email_helper.pagerduty_helper.trigger')
-    @patch('utils.email_helper.send_mail')
-    def test_send_email_to_user_failed(self, mock_send_mail, mock_trigger_event):
-        self.user.email = None
-        mock_send_mail.side_effect = Exception
-        email_helper._send_email_to_user(self.user, self.request, None, None)
-
-        self.assertTrue(mock_trigger_event.called)
-
-    @override_settings(
-        HOSTNAME='testhost',
-        PAGER_DUTY_ENABLED=True,
-        PAGER_DUTY_URL='http://pagerduty.example.com',
-        PAGER_DUTY_ADOPS_SERVICE_KEY='123abc'
-    )
-    @patch('utils.email_helper.pagerduty_helper.trigger')
-    def test_send_email_to_user_failed_user_none(self, mock_trigger_event):
-        email_helper._send_email_to_user(None, self.request, None, None)
-        self.assertTrue(mock_trigger_event.called)
 
     def test_send_ad_group_notification_email(self):
         campaign_manager = User.objects.create_user('manager@user.com')
@@ -94,20 +167,6 @@ class EmailHelperTestCase(TestCase):
         email_helper.send_ad_group_notification_email(ad_group, self.request, 'Test')
 
         self.assertEqual(len(mail.outbox), 1)
-
-    @override_settings(
-        HOSTNAME='testhost',
-        PAGER_DUTY_ENABLED=True,
-        PAGER_DUTY_URL='http://pagerduty.example.com',
-        PAGER_DUTY_ADOPS_SERVICE_KEY='123abc',
-    )
-    @patch('utils.email_helper.pagerduty_helper.trigger')
-    def test_send_ad_group_notification_email_failed(self, mock_trigger_event):
-        ad_group = magic_mixer.blend(dash_models.AdGroup)
-
-        email_helper.send_ad_group_notification_email(ad_group, self.request, 'Test')
-
-        self.assertTrue(mock_trigger_event.called)
 
     def test_send_campaign_notification_email(self):
         campaign_manager = User.objects.create_user('manager@user.com')
@@ -200,20 +259,6 @@ Zemanta
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
         self.assertEqual(mail.outbox[0].to, ['asd@gmail.com'])
 
-    @override_settings(
-        HOSTNAME='testhost',
-        PAGER_DUTY_ENABLED=True,
-        PAGER_DUTY_URL='http://pagerduty.example.com',
-        PAGER_DUTY_ADOPS_SERVICE_KEY='123abc'
-    )
-    @patch('utils.email_helper.pagerduty_helper.trigger')
-    def test_send_campaign_notification_email_failed(self, mock_trigger_event):
-        campaign = magic_mixer.blend(dash_models.Campaign)
-
-        email_helper.send_campaign_notification_email(campaign, self.request, 'Test')
-
-        self.assertTrue(mock_trigger_event.called)
-
     def test_send_livestream_email(self):
         email_helper.send_livestream_email(self.user, 'http://www.google.com')
         self.assertEqual(len(mail.outbox), 1)
@@ -222,8 +267,8 @@ Zemanta
             mail.outbox[0].body,
             'User test@user.com started a new livestream session, accesssible on: http://www.google.com')
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, [u'operations@zemanta.com',
-                                             u'ziga.stopinsek@zemanta.com'])
+        self.assertEqual(mail.outbox[0].bcc, [u'operations@zemanta.com',
+                                              u'ziga.stopinsek@zemanta.com'])
 
     def test_send_pacing_email_low(self):
         account = dash_models.Account(name='Test account')
@@ -308,20 +353,6 @@ Zemanta''')
 
         self.assertEqual(len(mail.outbox), 1)
 
-    @override_settings(
-        HOSTNAME='testhost',
-        PAGER_DUTY_ENABLED=True,
-        PAGER_DUTY_URL='http://pagerduty.example.com',
-        PAGER_DUTY_ADOPS_SERVICE_KEY='123abc'
-    )
-    @patch('utils.email_helper.pagerduty_helper.trigger')
-    def test_send_budget_notification_email_failed(self, mock_trigger_event):
-        campaign = magic_mixer.blend(dash_models.Campaign)
-
-        email_helper.send_budget_notification_email(campaign, self.request, 'Test')
-
-        self.assertTrue(mock_trigger_event.called)
-
     @patch('utils.email_helper.send_account_notification_email')
     def test_send_obj_notification_email_account(self, mock_email):
         email_helper.send_obj_changes_notification_email(dash_models.Account(), self.request, "")
@@ -337,6 +368,15 @@ Zemanta''')
         email_helper.send_obj_changes_notification_email(dash_models.AdGroup(), self.request, "")
         self.assertTrue(mock_email.called)
 
+    def test_send_supply_report_email(self):
+        email_helper.send_supply_report_email('testsupply@test.com', datetime.date(2016, 1, 1), 1000, 5.0)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, 'Zemanta Report for 1/1/2016')
+        self.assertEqual(mail.outbox[0].body, '\nHello,\n\nHere are the impressions and spend for 1/1/2016.\n\nImpressions: 1000\nSpend: 5.0\n\nYours truly,\nZemanta\n\n---\nThe reporting data is an estimate. Final amounts are tallied and should be invoiced per your agreement with Zemanta.\n* All times are in Eastern Standard Time (EST).\n    ')
+        self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.SUPPLY_REPORTS_FROM_EMAIL))
+        self.assertEqual(mail.outbox[0].to, ['testsupply@test.com'])
+
 
 class FormatChangesTextTest(TestCase):
 
@@ -349,7 +389,7 @@ class FormatChangesTextTest(TestCase):
 
 
 @patch('utils.email_helper.render_to_string')
-class FormatTemplateTestCase(TestCase):
+class WhitelabelTestCase(TestCase):
 
     def setUp(self):
         request_factory = RequestFactory()
@@ -367,64 +407,64 @@ class FormatTemplateTestCase(TestCase):
         self.whitelabel_agency.save(self.request)
         self.whitelabel_agency.users.add(self.whitelabel_agency_user)
 
+    @staticmethod
+    def _create_official_email(subject, body, **kwargs):
+        kwargs['recipient_list'] = ['test@test.com']
+        kwargs['subject'] = subject
+        kwargs['body'] = body
+        email_helper.create_official_email(**kwargs)
+
+    @staticmethod
+    def _create_internal_email(subject, body, **kwargs):
+        kwargs['recipient_list'] = ['test@test.com']
+        kwargs['subject'] = subject
+        kwargs['body'] = body
+        email_helper.create_internal_email(**kwargs)
+
     def test_no_params(self, mock_render):
-        email_helper.format_template('Subject', 'Body')
+        self._create_internal_email(subject='Subject', body='Body')
         mock_render.assert_called_with('email.html',
                                        {'content': '<p>Body</p>', 'subject': 'Subject'})
 
     def test_normal_user(self, mock_render):
-        email_helper.format_template('Subject', 'Body', user=self.normal_user)
+        self._create_official_email('Subject', 'Body', agency_or_user=self.normal_user)
         mock_render.assert_called_with('email.html',
                                        {'content': '<p>Body</p>', 'subject': 'Subject'})
 
     def test_whitelabel_agency_user(self, mock_render):
-        email_helper.format_template('Subject', 'Body', user=self.whitelabel_agency_user)
+        self._create_official_email('Subject', 'Body', agency_or_user=self.whitelabel_agency_user)
         mock_render.assert_called_with('whitelabel/greenpark/email.html',
                                        {'content': '<p>Body</p>', 'subject': 'Subject'})
 
     def test_normal_agency(self, mock_render):
-        email_helper.format_template('Subject', 'Body', agency=self.agency)
+        self._create_official_email('Subject', 'Body', agency_or_user=self.agency)
         mock_render.assert_called_with('email.html',
                                        {'content': '<p>Body</p>', 'subject': 'Subject'})
 
     def test_whitelabel_agency(self, mock_render):
-        email_helper.format_template('Subject', 'Body', agency=self.whitelabel_agency)
+        self._create_official_email('Subject', 'Body', agency_or_user=self.whitelabel_agency)
         mock_render.assert_called_with('whitelabel/greenpark/email.html',
-                                       {'content': '<p>Body</p>', 'subject': 'Subject'})
-
-    def test_param_priority_agency(self, mock_render):
-        email_helper.format_template('Subject', 'Body',
-                                     agency=self.whitelabel_agency,
-                                     user=self.normal_user)
-        mock_render.assert_called_with('whitelabel/greenpark/email.html',
-                                       {'content': '<p>Body</p>', 'subject': 'Subject'})
-
-    def test_param_priority_user(self, mock_render):
-        email_helper.format_template('Subject', 'Body',
-                                     agency=self.agency,
-                                     user=self.whitelabel_agency_user)
-        mock_render.assert_called_with('email.html',
                                        {'content': '<p>Body</p>', 'subject': 'Subject'})
 
     def test_product_name_subject(self, mock_render):
-        email_helper.format_template('Subject Zemanta', 'Body', user=self.whitelabel_agency_user)
+        self._create_official_email('Subject Zemanta', 'Body', agency_or_user=self.whitelabel_agency_user)
         mock_render.assert_called_with('whitelabel/greenpark/email.html',
                                        {'content': '<p>Body</p>', 'subject': 'Subject Telescope'})
 
     def test_product_name_subject_long(self, mock_render):
-        email_helper.format_template('Subject Zemanta One', 'Body', user=self.whitelabel_agency_user)
+        self._create_official_email('Subject Zemanta One', 'Body', agency_or_user=self.whitelabel_agency_user)
         mock_render.assert_called_with('whitelabel/greenpark/email.html',
                                        {'content': '<p>Body</p>', 'subject': 'Subject Telescope'})
 
     def test_product_name_body(self, mock_render):
-        email_helper.format_template('Subject', 'Body Zemanta, Zemanta',
-                                     user=self.whitelabel_agency_user)
+        self._create_official_email('Subject', 'Body Zemanta, Zemanta',
+                                    agency_or_user=self.whitelabel_agency_user)
         mock_render.assert_called_with('whitelabel/greenpark/email.html',
                                        {'content': '<p>Body Telescope, Telescope</p>',
                                         'subject': 'Subject'})
 
     def test_product_name_body_long(self, mock_render):
-        email_helper.format_template('Subject', 'Body: Zemanta One',
-                                     user=self.whitelabel_agency_user)
+        self._create_official_email('Subject', 'Body: Zemanta One',
+                                    agency_or_user=self.whitelabel_agency_user)
         mock_render.assert_called_with('whitelabel/greenpark/email.html',
                                        {'content': '<p>Body: Telescope</p>', 'subject': 'Subject'})

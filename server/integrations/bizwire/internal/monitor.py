@@ -82,7 +82,7 @@ def monitor_remaining_budget():
     body = '''Hi,
 
 Businesswire campaign is running out of budget. Configure any additional budgets: https://one.zemanta.com/v2/analytics/campaign/{}?settings&settingsScrollTo=zemCampaignBudgetsSettings'''.format(config.AUTOMATION_CAMPAIGN)  # noqa
-    email_helper.send_notification_mail(emails, subject, body)
+    email_helper.send_internal_email(recipient_list=emails, subject=subject, body=body)
 
 
 def _get_content_ad_ids_added_yesterday():
@@ -193,7 +193,7 @@ def _send_unexpected_spend_email_alert(expected_spend, actual_spend):
     body = '''Hi,
 
 Yesterday's expected spend was {} and actual spend was {}.'''.format(expected_spend, actual_spend)
-    email_helper.send_notification_mail(emails, subject, body)
+    email_helper.send_internal_email(recipient_list=emails, subject=subject, body=body)
 
 
 def _send_missing_clicks_email_alert(missing_clicks):
@@ -208,4 +208,4 @@ def _send_missing_clicks_email_alert(missing_clicks):
     body = '''Hi,
 
 Missing {} on content ads yesterday.'''.format(missing_clicks)
-    email_helper.send_notification_mail(emails, subject, body)
+    email_helper.send_internal_email(recipient_list=emails, subject=subject, body=body)

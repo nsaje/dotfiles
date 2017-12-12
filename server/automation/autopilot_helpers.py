@@ -1,8 +1,5 @@
 import datetime
 import logging
-import traceback
-
-from django.core.mail import send_mail
 
 import dash
 import dash.constants
@@ -10,8 +7,7 @@ import dash.models
 from automation import autopilot_settings
 import automation.helpers
 from automation.constants import DailyBudgetChangeComment, CpcChangeComment
-from utils import pagerduty_helper, url_helper, k1_helper
-from utils.email_helper import format_email, format_template, email_manager_list
+from utils import url_helper, k1_helper, email_helper
 
 logger = logging.getLogger(__name__)
 
@@ -152,7 +148,7 @@ def get_campaign_goal_column_importance(campaign_goal):
 
 def send_autopilot_changes_emails(email_changes_data, bcm_modifiers_map, initialization):
     for camp, changes_data in email_changes_data.iteritems():
-        emails = email_manager_list(camp)
+        emails = email_helper.email_manager_list(camp)
         emails.append(autopilot_settings.AUTOPILOT_EMAIL_FOR_COPIES)
         if initialization:
             send_budget_autopilot_initialisation_email(camp, emails, changes_data)
@@ -178,32 +174,20 @@ def send_autopilot_changes_email(campaign, emails, changes_data, bcm_modifiers):
         'link_url': url_helper.get_full_z1_url('/v2/analytics/campaign/{}'.format(campaign.id)),
         'changes': ''.join(changes_text)
     }
-    subject, body, _ = format_email(dash.constants.EmailTemplateType.AUTOPILOT_AD_GROUP_CHANGE, **args)
     try:
-        send_mail(
-            subject,
-            body,
-            u'Zemanta <{}>'.format(automation.autopilot_settings.AUTOPILOT_EMAIL),
+        email_helper.send_official_email(
             emails,
-            fail_silently=False,
-            html_message=format_template(subject, body, agency=campaign.account.agency)
+            agency_or_user=campaign.account.agency,
+            from_email=automation.autopilot_settings.AUTOPILOT_EMAIL,
+            **email_helper.params_from_template(
+                dash.constants.EmailTemplateType.AUTOPILOT_AD_GROUP_CHANGE, **args
+            )
         )
-    except Exception as e:
+    except Exception:
         logger.exception(u'Autopilot e-mail for campaign %s to %s was not sent' +
                          'because an exception was raised:',
                          campaign.name,
                          u', '.join(emails))
-        desc = {
-            'campaign_name': campaign.name,
-            'email': ', '.join(emails)
-        }
-        pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
-            incident_key='automation_autopilot_email',
-            description=u'Autopilot e-mail for campaign was not sent because an exception was raised: {}'.
-                        format(traceback.format_exc(e)),
-            details=desc
-        )
 
 
 def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
@@ -223,33 +207,20 @@ def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
         'link_url': url_helper.get_full_z1_url('/v2/analytics/campaign/{}'.format(campaign.id)),
         'changes': ''.join(changes_text)
     }
-    subject, body, _ = format_email(dash.constants.EmailTemplateType.AUTOPILOT_AD_GROUP_BUDGET_INIT, **args)
     try:
-        send_mail(
-            subject,
-            body,
-            u'Zemanta <{}>'.format(automation.autopilot_settings.AUTOPILOT_EMAIL),
+        email_helper.send_official_email(
             emails,
-            fail_silently=False,
-            html_message=format_template(subject, body, agency=campaign.account.agency)
+            agency_or_user=campaign.account.agency,
+            from_email=automation.autopilot_settings.AUTOPILOT_EMAIL,
+            **email_helper.params_from_template(
+                dash.constants.EmailTemplateType.AUTOPILOT_AD_GROUP_BUDGET_INIT, **args
+            )
         )
-    except Exception as e:
+    except Exception:
         logger.exception(u'Autopilot e-mail for initialising budget autopilot on an adroup in ' +
                          'campaign %s to %s was not sent because an exception was raised:',
                          campaign.name,
                          u', '.join(emails))
-        desc = {
-            'campaign_name': campaign.name,
-            'email': ', '.join(emails)
-        }
-        pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
-            incident_key='automation_autopilot_budget_initialisation_email',
-            description=u'Autopilot e-mail for initialising budget autopilot on an adroup in ' +
-                         'campaign was not sent because an exception was raised: {}'.
-                        format(traceback.format_exc(e)),
-            details=desc
-        )
 
 
 def _get_email_adgroup_text(adgroup):

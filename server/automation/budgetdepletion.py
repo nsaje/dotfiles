@@ -1,21 +1,18 @@
 import datetime
 import logging
 import pytz
-import traceback
 import decimal
 
 import influx
 
 from django.db.models import Q
 from django.conf import settings
-from django.core.mail import send_mail
 from dash.constants import EmailTemplateType
 
 import automation.models
 import automation.settings
 import automation.helpers
-from utils import pagerduty_helper, url_helper
-from utils.email_helper import format_email, format_template, email_manager_list
+from utils import url_helper, email_helper
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +32,7 @@ def manager_has_been_notified(campaign):
 def notify_campaign_with_depleting_budget(campaign, available_budget, yesterdays_spend):
     campaign_manager = campaign.get_current_settings().campaign_manager
     sales_rep = campaign.get_sales_representative()
-    emails = email_manager_list(campaign)
+    emails = email_helper.email_manager_list(campaign)
     if sales_rep is not None:
         emails.append(sales_rep.email)
 
@@ -78,32 +75,20 @@ def _send_depleting_budget_notification_email(
         'cap': _round_budget(total_daily_budget),
         'yesterday_spend': _round_budget(yesterdays_spend)
     }
-    subject, body, _ = format_email(EmailTemplateType.BUDGET_DEPLETING, **args)
 
     try:
-        send_mail(
-            subject,
-            body,
-            'Zemanta <{}>'.format(automation.settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL),
-            emails,
-            fail_silently=False,
-            html_message=format_template(subject, body, agency=campaign.account.agency)
+        email_helper.send_official_email(
+            agency_or_user=campaign.account.agency,
+            recipient_list=emails,
+            from_email=automation.settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL,
+            **email_helper.params_from_template(
+                EmailTemplateType.BUDGET_DEPLETING, **args
+            )
         )
-    except Exception as e:
+    except Exception:
         logger.exception(u'Budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:',
                          campaign.name,
                          ', '.join(emails))
-        desc = {
-            'campaign_name': campaign.name,
-            'email': ''.join(emails)
-        }
-        pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
-            incident_key='automation_budget_depletion_notification_email',
-            description='Budget depletion e-mail for campaign was not sent because an exception was raised: {}'.format(
-                traceback.format_exc(e)),
-            details=desc
-        )
 
 
 def _round_budget(budget):
@@ -122,31 +107,19 @@ def _send_campaign_stopped_notification_email(
         'account': campaign.account,
         'link_url': campaign_url,
     }
-    subject, body, _ = format_email(EmailTemplateType.CAMPAIGN_STOPPED, **args)
     try:
-        send_mail(
-            subject,
-            body,
-            'Zemanta <{}>'.format(automation.settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL),
-            emails,
-            fail_silently=False,
-            html_message=format_template(subject, body, agency=campaign.account.agency)
+        email_helper.send_official_email(
+            agency_or_user=campaign.account.agency,
+            recipient_list=emails,
+            from_email=automation.settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL,
+            **email_helper.params_from_template(
+                EmailTemplateType.CAMPAIGN_STOPPED, **args
+            )
         )
-    except Exception as e:
+    except Exception:
         logger.exception('Campaign stop because of budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:',
                          campaign.name,
                          ', '.join(emails))
-        desc = {
-            'campaign_name': campaign.name,
-            'email': ', '.join(emails)
-        }
-        pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
-            incident_key='automation_budget_stop_notification_email',
-            description='Campaign stop because of budget depletion e-mail was not sent because an exception was raised: {}'.format(
-                traceback.format_exc(e)),
-            details=desc
-        )
 
 
 def _is_automatic_campaign_stop_disabled(camp):
@@ -190,7 +163,7 @@ def _notify_depleted_budget_campaign_stopped(campaign, available_budget, yesterd
     campaign_manager = campaign.get_current_settings().campaign_manager
     sales_rep = campaign.get_sales_representative()
 
-    emails = email_manager_list(campaign)
+    emails = email_helper.email_manager_list(campaign)
     if sales_rep is not None:
         emails.append(sales_rep.email)
 
