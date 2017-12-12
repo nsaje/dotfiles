@@ -29,6 +29,7 @@ import etl.materialize_views
 import dash.features.geolocation
 import dash.features.ga
 import dash.features.custom_flags
+import dash.features.submission_filters
 import core.publisher_bid_modifiers
 import automation.campaignstop.service
 
@@ -461,7 +462,7 @@ class AdGroupsView(K1APIView):
         all_custom_flags = {
             flag: False
             for flag in dash.features.custom_flags.CustomFlag.objects.all().values_list(
-                    'id', flat=True
+                'id', flat=True
             )
         }
 
@@ -1029,10 +1030,15 @@ class ContentAdSourcesView(K1APIView):
         content_ad_sources = (
             dash.models.ContentAdSource.objects
             .filter(source__deprecated=False)
-            .select_related('content_ad', 'source')
+            .select_related('content_ad', 'source', 'content_ad__ad_group__campaign__account')
             .values('id',
                     'content_ad_id',
                     'content_ad__ad_group_id',
+                    'content_ad__ad_group__campaign_id',
+                    'content_ad__ad_group__campaign__account_id',
+                    'content_ad__ad_group__campaign__account__agency_id',
+                    'source_id',
+                    'source__content_ad_submission_policy',
                     'source__bidder_slug',
                     'source__tracking_slug',
                     'source_content_ad_id',
@@ -1050,6 +1056,8 @@ class ContentAdSourcesView(K1APIView):
         if source_content_ad_ids:
             content_ad_sources = content_ad_sources.filter(source_content_ad_id__in=source_content_ad_ids.split(','))
 
+        if request.GET.get('use_filters', 'false') == 'true':
+            content_ad_sources = dash.features.submission_filters.filter_valid_content_ad_sources(content_ad_sources)
         response = []
         for content_ad_source in content_ad_sources:
             response.append({

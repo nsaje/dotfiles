@@ -47,6 +47,18 @@ class SubmissionFilter(models.Model):
         choices=constants.SubmissionFilterState.get_choices()
     )
 
+    def get_lookup_key(self):
+        if self.content_ad_id:
+            return (self.source_id, 'content_ad', self.content_ad_id)
+        if self.ad_group_id:
+            return (self.source_id, 'ad_group', self.ad_group_id)
+        if self.campaign_id:
+            return (self.source_id, 'campaign', self.campaign_id)
+        if self.account_id:
+            return (self.source_id, 'account', self.account_id)
+        if self.agency_id:
+            return (self.source_id, 'agency', self.agency_id)
+
     class QuerySet(models.QuerySet):
         def filter_applied(self, source, content_ad=None, **levels):
             ad_group = levels.get('ad_group') or content_ad and content_ad.ad_group
