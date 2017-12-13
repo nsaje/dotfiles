@@ -106,8 +106,10 @@ PAGER_DUTY_SYSOPS_SERVICE_KEY = Secret('').get()
 PAGER_DUTY_ENGINEERS_SERVICE_KEY = Secret('').get()
 
 # Sentry config
+_SENTRY_PUBLIC_KEY = '96ae3fca225743d0b52c08870527386e'
+_SENTRY_SECRET_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwYn+tJNvoCzQR/1vwCARCAO7Mj3d1tkc+m/hDo+ySG+pugkfDvrULlVcxm1nPRJSzGAHkhrwKFoJMoUwlab+8QvU2E//vGExuaG0c6').get()
 RAVEN_CONFIG = {
-    'dsn': '',
+    'dsn': 'https://%s:%s@app.getsentry.com/29768' % (_SENTRY_PUBLIC_KEY, _SENTRY_SECRET_KEY),
 }
 
 # Amazon AWS keys
