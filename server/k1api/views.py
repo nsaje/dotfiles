@@ -576,7 +576,7 @@ class AdGroupsView(K1APIView):
         if ad_group_settings.end_date is None:
             return campaignstop_end_dates.get(campaign)
 
-        return min(ad_group_settings.end_date, campaignstop_end_dates.get[campaign])
+        return min(ad_group_settings.end_date, campaignstop_end_dates[campaign])
 
     @staticmethod
     def _get_campaign_goal_types(campaign_ids):
