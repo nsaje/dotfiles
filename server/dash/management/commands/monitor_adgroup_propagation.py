@@ -80,6 +80,8 @@ class Command(ExceptionCommand):
                 logger.exception(
                     'Cannot retrieve ad group settings from redirector for ad group %d', ad_group.id)
                 nr_exceptions += 1
+                logger.info('Creating ad group on R1')
+                redirector_helper.insert_adgroup(ad_group, ad_group.settings, ad_group.campaign.settings)
                 continue
 
             ad_group_settings_dict = ad_group_settings.get_settings_dict()
