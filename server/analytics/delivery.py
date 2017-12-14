@@ -155,6 +155,7 @@ def check_ad_group_delivery(ad_group, ad_group_settings, ad_group_stats):
         content_ad__ad_group_id=ad_group.pk,
         submission_status=dash.constants.ContentAdSubmissionStatus.APPROVED,
     )
+    api_active_sources_count = api_active_sources.count()
     b1_active_sources_count = b1_active_sources.count()
     rtb_as_1_mvp_enabled = ad_group_settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.ACTIVE
     if not content_ads.count():
@@ -170,10 +171,10 @@ def check_ad_group_delivery(ad_group, ad_group_settings, ad_group_stats):
             return analytics.constants.AdGroupDeliveryStatus.WHITELIST_AND_INTERESTS
         if ad_group_settings.bluekai_targeting:
             return analytics.constants.AdGroupDeliveryStatus.WHITELIST_AND_DATA
-    if not api_active_sources.count() and ad_group_settings.interest_targeting \
+    if not api_active_sources_count and ad_group_settings.interest_targeting \
        and b1_active_sources_count <= MIN_B1_ACTIVE_SOURCES_FOR_INTEREST_TARGETING:
         return analytics.constants.AdGroupDeliveryStatus.TOO_LITTLE_B1_SOURCES_FOR_INTEREST_TARGETING
-    if _extract_unbillable_data_segments(ad_group_settings.bluekai_targeting) and media and not data:
+    if _extract_unbillable_data_segments(ad_group_settings.bluekai_targeting) and b1_active_sources_count and media and not data:
         return analytics.constants.AdGroupDeliveryStatus.MISSING_DATA_COST
     is_video_spending = _has_video_assets(content_ads) and media
     if is_video_spending and not data and ad_group.pk not in IGNORED_VIDEO_COST_AD_GROUPS:

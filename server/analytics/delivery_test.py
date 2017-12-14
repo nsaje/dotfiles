@@ -358,6 +358,23 @@ class AdGroupDeliveryTestCase(test.TestCase):
         )
 
     def test_missing_data_cost(self):
+        self.ad_group_source.settings.update_unsafe(
+            None,
+            state=2
+        )
+        # Add an B1 source and disable B1 source
+        source_type = magic_mixer.blend(core.source.SourceType, type='b1')
+        source = magic_mixer.blend(core.source.Source, name='Test B1 Source', source_type=source_type)
+        b1_ad_group_source = magic_mixer.blend(
+            core.entity.adgroup.AdGroupSource,
+            ad_group=self.ad_group,
+            source=source
+        )
+        b1_ad_group_source.settings.update_unsafe(
+            None,
+            state=1
+        )
+
         s = self.ad_group_settings.copy_settings()
         s.bluekai_targeting = ['OR', 'bluekai:123']
         s.save(None)
@@ -383,6 +400,28 @@ class AdGroupDeliveryTestCase(test.TestCase):
         self.assertEqual(
             delivery.check_ad_group_delivery(self.ad_group, s, {'media': 100, 'data': 0}),
             constants.AdGroupDeliveryStatus.MISSING_DATA_COST
+        )
+
+        # Add an API source and disable B1 source
+        b1_ad_group_source.settings.update_unsafe(
+            None,
+            state=2
+        )
+        source_type = magic_mixer.blend(core.source.SourceType, type='yahoo')
+        source = magic_mixer.blend(core.source.Source, name='Test B1 Source', source_type=source_type)
+        api_ad_group_source = magic_mixer.blend(
+            core.entity.adgroup.AdGroupSource,
+            ad_group=self.ad_group,
+            source=source
+        )
+        api_ad_group_source.settings.update_unsafe(
+            None,
+            state=1
+        )
+
+        self.assertEqual(
+            delivery.check_ad_group_delivery(self.ad_group, s, {'media': 100, 'data': 0}),
+            constants.AdGroupDeliveryStatus.OK
         )
 
     def test_missing_data_cost_unbillable(self):
