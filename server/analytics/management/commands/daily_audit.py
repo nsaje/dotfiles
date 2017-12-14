@@ -170,7 +170,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         self._print(title)
         self.email_body += title + '\n'
         for account in alarms:
-            self._print('- {} {}'.format(account.name, account.pk))
+            self._print(u'- {} {}'.format(account.name, account.pk))
             self.email_body += u' - {} {}\n'.format(
                 account.get_long_name(),
                 'https://one.zemanta.com/v2/credit/account/{}'.format(account.pk),
