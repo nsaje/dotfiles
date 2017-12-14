@@ -184,8 +184,8 @@ def _get_dates(date_since, campaign):
     from_date = min(date_since, *(budget.start_date for budget in budgets))
     if from_date < date_since:
         logger.debug('Found unprocessed budgets older than requested reprocess period for campaign %s,'
-                    'unprocessed range %s - %s, requested since %s',
-                    campaign.id, from_date, to_date, date_since)
+                     'unprocessed range %s - %s, requested since %s',
+                     campaign.id, from_date, to_date, date_since)
 
     while from_date <= to_date and from_date < date_since:
         found = False
