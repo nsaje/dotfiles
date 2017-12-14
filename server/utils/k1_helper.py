@@ -9,6 +9,7 @@ from django.conf import settings
 from server.celery import app
 
 from utils import request_signer
+from utils import dates_helper
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +62,8 @@ def update_blacklist(ad_group_id, msg=''):
 def _send_task(queue_name, task_name, **kwargs):
     if settings.K1_DEMO_MODE:
         return
+
+    kwargs['initiated_at'] = dates_helper.datetime_to_iso_string(dates_helper.utc_now())
 
     try:
         app.send_task(task_name, queue=queue_name, kwargs=kwargs)
