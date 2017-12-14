@@ -183,7 +183,7 @@ def _get_dates(date_since, campaign):
     to_date = min(max(budget.end_date for budget in budgets), today)
     from_date = min(date_since, *(budget.start_date for budget in budgets))
     if from_date < date_since:
-        logger.info('Found unprocessed budgets older than requested reprocess period for campaign %s,'
+        logger.debug('Found unprocessed budgets older than requested reprocess period for campaign %s,'
                     'unprocessed range %s - %s, requested since %s',
                     campaign.id, from_date, to_date, date_since)
 
