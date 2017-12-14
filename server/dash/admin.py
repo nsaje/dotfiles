@@ -32,10 +32,12 @@ import utils.redirector_helper
 from automation import campaign_stop
 from utils.admin_common import SaveWithRequestMixin
 
+from dash.features.submission_filters.admin import SubmissionFilterAdmin
+
 logger = logging.getLogger(__name__)
 
-
 # Forms for inline user functionality.
+
 
 class StrWidget(forms.Widget):
 
@@ -1739,3 +1741,4 @@ admin.site.register(models.PublisherGroupEntry, PublisherGroupEntryAdmin)
 admin.site.register(models.CpcConstraint, CpcConstraintAdmin)
 admin.site.register(models.CustomHack, CustomHackAdmin)
 admin.site.register(models.CustomFlag, CustomFlagAdmin)
+admin.site.register(models.SubmissionFilter, SubmissionFilterAdmin)

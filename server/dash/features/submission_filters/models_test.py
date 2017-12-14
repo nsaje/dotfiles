@@ -139,7 +139,78 @@ class TestManager(TestCase):
         self.source2 = magic_mixer.blend(
             core.source.Source, content_ad_submission_policy=dash.constants.SourceSubmissionPolicy.MANUAL)
 
-    def test_ad_group(self):
+    def test_ad_group_bulk_create(self):
+        ad_group1 = magic_mixer.blend(core.entity.AdGroup)
+        ad_group2 = magic_mixer.blend(core.entity.AdGroup)
+        sf_list = models.SubmissionFilter.objects.bulk_create(
+            self.source1,
+            constants.SubmissionFilterState.BLOCK,
+            'ad_group',
+            [ad_group1.pk, ad_group2.pk]
+        )
+        self.assertEquals(
+            set([constants.SubmissionFilterState.BLOCK]),
+            set(sf.state for sf in sf_list)
+        )
+        self.assertEquals(
+            set([ad_group1.pk, ad_group2.pk]),
+            set(sf.ad_group_id for sf in sf_list)
+        )
+
+    def test_campaign_bulk_create(self):
+        campaign1 = magic_mixer.blend(core.entity.Campaign)
+        campaign2 = magic_mixer.blend(core.entity.Campaign)
+        sf_list = models.SubmissionFilter.objects.bulk_create(
+            self.source1,
+            constants.SubmissionFilterState.BLOCK,
+            'campaign',
+            [campaign1.pk, campaign2.pk]
+        )
+        self.assertEquals(
+            set([campaign1.pk, campaign2.pk]),
+            set(sf.campaign_id for sf in sf_list)
+        )
+        self.assertEquals(
+            set([constants.SubmissionFilterState.BLOCK]),
+            set(sf.state for sf in sf_list)
+        )
+
+    def test_ad_group_invalid_allow_bulk_create(self):
+        ad_group = magic_mixer.blend(core.entity.AdGroup)
+        with self.assertRaises(exceptions.SourcePolicyException):
+            models.SubmissionFilter.objects.bulk_create(
+                self.source1,
+                constants.SubmissionFilterState.ALLOW,
+                'ad_group',
+                [ad_group.pk]
+            )
+
+    def test_ad_group_invalid_block_bulk_create(self):
+        ad_group = magic_mixer.blend(core.entity.AdGroup)
+        with self.assertRaises(exceptions.SourcePolicyException):
+            models.SubmissionFilter.objects.bulk_create(
+                self.source2,
+                constants.SubmissionFilterState.BLOCK,
+                'ad_group',
+                [ad_group.pk]
+            )
+
+    def test_duplicate_bulk_create(self):
+        ad_group = magic_mixer.blend(core.entity.AdGroup)
+        models.SubmissionFilter.objects.create(
+            self.source1,
+            constants.SubmissionFilterState.BLOCK,
+            ad_group=ad_group,
+        )
+        with self.assertRaises(exceptions.SubmissionFilterExistsException):
+            models.SubmissionFilter.objects.bulk_create(
+                self.source1,
+                constants.SubmissionFilterState.BLOCK,
+                'ad_group',
+                [ad_group.pk]
+            )
+
+    def test_ad_group_create(self):
         ad_group = magic_mixer.blend(core.entity.AdGroup)
         self.assertTrue(models.SubmissionFilter.objects.create(
             self.source1,
@@ -147,7 +218,7 @@ class TestManager(TestCase):
             ad_group=ad_group,
         ))
 
-    def test_campaign(self):
+    def test_campaign_create(self):
         campaign = magic_mixer.blend(core.entity.Campaign)
         self.assertTrue(models.SubmissionFilter.objects.create(
             self.source1,
@@ -155,7 +226,7 @@ class TestManager(TestCase):
             campaign=campaign,
         ))
 
-    def test_account(self):
+    def test_account_create(self):
         account = magic_mixer.blend(core.entity.Account)
         self.assertTrue(models.SubmissionFilter.objects.create(
             self.source2,
@@ -163,7 +234,7 @@ class TestManager(TestCase):
             account=account,
         ))
 
-    def test_agency(self):
+    def test_agency_create(self):
         agency = magic_mixer.blend(core.entity.Agency)
         self.assertTrue(models.SubmissionFilter.objects.create(
             self.source2,
@@ -171,7 +242,7 @@ class TestManager(TestCase):
             agency=agency,
         ))
 
-    def test_content_ad(self):
+    def test_content_ad_create(self):
         ad = magic_mixer.blend(core.entity.ContentAd)
         self.assertTrue(models.SubmissionFilter.objects.create(
             self.source2,
@@ -179,7 +250,7 @@ class TestManager(TestCase):
             content_ad=ad,
         ))
 
-    def test_ad_group_duplicate(self):
+    def test_ad_group_duplicate_create(self):
         ad_group = magic_mixer.blend(core.entity.AdGroup)
         models.SubmissionFilter.objects.create(
             self.source1,
@@ -193,7 +264,7 @@ class TestManager(TestCase):
                 ad_group=ad_group,
             )
 
-    def test_ad_group_invalid_allow(self):
+    def test_ad_group_invalid_allow_create(self):
         ad_group = magic_mixer.blend(core.entity.AdGroup)
         with self.assertRaises(exceptions.SourcePolicyException):
             models.SubmissionFilter.objects.create(
@@ -202,7 +273,7 @@ class TestManager(TestCase):
                 ad_group=ad_group,
             )
 
-    def test_ad_group_invalid_block(self):
+    def test_ad_group_invalid_block_create(self):
         ad_group = magic_mixer.blend(core.entity.AdGroup)
         with self.assertRaises(exceptions.SourcePolicyException):
             models.SubmissionFilter.objects.create(
@@ -211,7 +282,7 @@ class TestManager(TestCase):
                 ad_group=ad_group,
             )
 
-    def test_multiple_entities(self):
+    def test_multiple_entities_create(self):
         ad_group = magic_mixer.blend(core.entity.AdGroup)
         campaign = magic_mixer.blend(core.entity.Campaign)
         with self.assertRaises(exceptions.MultipleFilterEntitiesException):
