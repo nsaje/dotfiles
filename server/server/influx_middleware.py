@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 def queries_to_influx(get_response):
 
     def middleware(request):
+        connection.force_debug_cursor = True
+
         response = get_response(request)
 
         try:
