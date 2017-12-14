@@ -1,10 +1,8 @@
-import datetime
 from mock import patch
 
 from django.test import TestCase, override_settings
 
 from utils import k1_helper
-from utils import dates_helper
 
 
 @override_settings(
@@ -15,11 +13,6 @@ from utils import dates_helper
 )
 @patch('utils.k1_helper.app')
 class K1HelperTest(TestCase):
-    def setUp(self):
-        patcher = patch.object(dates_helper, 'utc_now', return_value=datetime.datetime(2017, 11, 11))
-        self.addCleanup(patcher.stop)
-        patcher.start()
-
     def test_update_account(self, mock_app):
         k1_helper.update_account(123, msg='test')
         mock_app.send_task.assert_called_once_with(
@@ -28,7 +21,6 @@ class K1HelperTest(TestCase):
             kwargs={
                 'msg': 'test',
                 'account_id': 123,
-                'initiated_at_dt': datetime.datetime(2017, 11, 11),
             }
         )
 
@@ -40,7 +32,6 @@ class K1HelperTest(TestCase):
             kwargs={
                 'msg': 'test',
                 'ad_group_id': 123,
-                'initiated_at_dt': datetime.datetime(2017, 11, 11),
             }
         )
 
@@ -53,7 +44,6 @@ class K1HelperTest(TestCase):
                 'msg': 'test',
                 'ad_group_id': 123,
                 'content_ad_id': 456,
-                'initiated_at_dt': datetime.datetime(2017, 11, 11),
             }
         )
 
@@ -65,6 +55,5 @@ class K1HelperTest(TestCase):
             kwargs={
                 'msg': 'test',
                 'ad_group_id': 123,
-                'initiated_at_dt': datetime.datetime(2017, 11, 11),
             }
         )
