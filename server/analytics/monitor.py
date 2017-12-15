@@ -86,6 +86,9 @@ def audit_spend_integrity(date, account_id=None, max_err=MAX_ERR):
         if 'pubs'in table_name or 'conversions' in table_name or 'touch' in table_name:
             # skip for the first version
             continue
+        if table_name.endswith('_conv'):
+            # skip for the first version
+            continue
         rs_spend = _get_rs_spend(table_name, date, account_id=account_id)
         for key in rs_spend:
             err = daily_spend[key] - rs_spend[key]
