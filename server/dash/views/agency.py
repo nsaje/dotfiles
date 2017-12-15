@@ -25,6 +25,7 @@ from utils import exc
 from utils import email_helper
 from utils import k1_helper
 from utils import redirector_helper
+from utils import dates_helper
 
 from zemauth.models import User as ZemUser
 
@@ -619,7 +620,8 @@ class ConversionPixel(api_common.BaseApiView):
         if audience_enabled_only:
             pixels = pixels.filter(Q(audience_enabled=True) | Q(additional_pixel=True))
 
-        rows = [self._format_pixel(pixel, request.user) for pixel in pixels]
+        yesterday = dates_helper.local_yesterday()
+        rows = [self._format_pixel(pixel, request.user, date=yesterday) for pixel in pixels]
 
         return self.create_api_response({
             'rows': rows,
@@ -817,7 +819,9 @@ class ConversionPixel(api_common.BaseApiView):
             action_type=constants.HistoryActionType.CONVERSION_PIXEL_SET_REDIRECT_URL,
         )
 
-    def _format_pixel(self, pixel, user):
+    def _format_pixel(self, pixel, user, date=None):
+        if date is None:
+            date = dates_helper.local_yesterday()
         data = {
             'id': pixel.id,
             'name': pixel.name,
@@ -828,7 +832,7 @@ class ConversionPixel(api_common.BaseApiView):
         }
         if user.has_perm('zemauth.can_see_pixel_traffic'):
             data['last_triggered'] = pixel.last_triggered
-            data['impressions'] = pixel.impressions
+            data['impressions'] = pixel.impressions if pixel.last_triggered.date() >= date else 0
         if user.has_perm('zemauth.can_redirect_pixels'):
             data['redirect_url'] = pixel.redirect_url
         if user.has_perm('zemauth.can_see_pixel_notes'):
