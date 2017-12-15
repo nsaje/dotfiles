@@ -16,7 +16,10 @@ angular.module('one.widgets').service('zemReportFieldsService', function (zemPer
     var FIELDS_WITH_STATUSES = ['Account', 'Campaign', 'Ad Group', 'Content Ad', 'Publisher'];
 
     var BREAKDOWN_REQUIRED_FIELDS = {
-        'content_ad': ['URL', 'Thumbnail', 'Brand Name', 'Description', 'Label', 'Call to action', 'Impression trackers'],
+        'content_ad': [
+            'URL', 'Thumbnail', 'Brand Name', 'Description',
+            'Label', 'Call to action', 'Impression trackers'
+        ],
     };
 
     var COLUMNS_TO_REMOVE = ['Actions'];
