@@ -1926,7 +1926,7 @@ class PublisherGroupUploadForm(forms.Form, ParseCSVExcelFile):
             raise forms.ValidationError(
                 'First column in header should be Publisher.')
 
-        if len(column_names) < 2 or column_names[1] != 'source':
+        if len(column_names) >= 2 and column_names[1] != 'source':
             raise forms.ValidationError(
                 'Second column in header should be Source.')
 
