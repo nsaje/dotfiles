@@ -3568,8 +3568,8 @@ class CampaignContentInsightsTest(TestCase):
     def user(self):
         return User.objects.get(pk=2)
 
-    @patch('redshiftapi.api_breakdowns.query_all')
-    def test_permission(self, mock_query_all):
+    @patch('redshiftapi.api_breakdowns.query')
+    def test_permission(self, mock_query):
         cis = agency.CampaignContentInsights()
         with self.assertRaises(exc.AuthorizationError):
             cis.get(fake_request(self.user()), 1)
@@ -3587,8 +3587,8 @@ class CampaignContentInsightsTest(TestCase):
             'success': True,
         }, json.loads(response.content))
 
-    @patch('redshiftapi.api_breakdowns.query_all')
-    def test_basic_archived(self, mock_query_all):
+    @patch('redshiftapi.api_breakdowns.query')
+    def test_basic_archived(self, mock_query):
         cis = agency.CampaignContentInsights()
         add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
 
@@ -3602,7 +3602,7 @@ class CampaignContentInsightsTest(TestCase):
         )
         cad.save()
 
-        mock_query_all.return_value = [
+        mock_query.return_value = [
             {
                 'content_ad_id': cad.id,
                 'clicks': 1000,
@@ -3621,8 +3621,8 @@ class CampaignContentInsightsTest(TestCase):
             'success': True,
         }, json.loads(response.content))
 
-    @patch('redshiftapi.api_breakdowns.query_all')
-    def test_basic_title_ctr(self, mock_query_all):
+    @patch('redshiftapi.api_breakdowns.query')
+    def test_basic_title_ctr(self, mock_query):
         cis = agency.CampaignContentInsights()
         add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
 
@@ -3635,7 +3635,7 @@ class CampaignContentInsightsTest(TestCase):
         )
         cad.save()
 
-        mock_query_all.return_value = [
+        mock_query.return_value = [
             {
                 'content_ad_id': cad.id,
                 'clicks': 1000,
@@ -3664,8 +3664,8 @@ class CampaignContentInsightsTest(TestCase):
             'success': True,
         }, json.loads(response.content))
 
-    @patch('redshiftapi.api_breakdowns.query_all')
-    def test_duplicate_title_ctr(self, mock_query_all):
+    @patch('redshiftapi.api_breakdowns.query')
+    def test_duplicate_title_ctr(self, mock_query):
         cis = agency.CampaignContentInsights()
         add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
 
@@ -3686,7 +3686,7 @@ class CampaignContentInsightsTest(TestCase):
         )
         cad2.save()
 
-        mock_query_all.return_value = [
+        mock_query.return_value = [
             {
                 'content_ad_id': cad1.id,
                 'clicks': 1000,
@@ -3721,8 +3721,8 @@ class CampaignContentInsightsTest(TestCase):
             'success': True,
         }, json.loads(response.content))
 
-    @patch('redshiftapi.api_breakdowns.query_all')
-    def test_order_title_ctr(self, mock_query_all):
+    @patch('redshiftapi.api_breakdowns.query')
+    def test_order_title_ctr(self, mock_query):
         cis = agency.CampaignContentInsights()
         add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
 
@@ -3743,7 +3743,7 @@ class CampaignContentInsightsTest(TestCase):
         )
         cad2.save()
 
-        mock_query_all.return_value = [
+        mock_query.return_value = [
             {
                 'content_ad_id': cad1.id,
                 'clicks': 100,

@@ -851,10 +851,10 @@ class AdGroupOverviewTest(TestCase):
         else:
             return None
 
-    @patch('redshiftapi.api_breakdowns.query_all')
-    def test_run_empty(self, mock_query_all):
+    @patch('redshiftapi.api_breakdowns.query')
+    def test_run_empty(self, mock_query):
         self.setUpPermissions()
-        mock_query_all.return_value = [{
+        mock_query.return_value = [{
             'adgroup_id': 1,
             'source_id': 9,
             'e_yesterday_cost': decimal.Decimal('0.0'),
@@ -920,8 +920,8 @@ class AdGroupOverviewTest(TestCase):
         yesterday_spend = self._get_setting(settings, 'yesterday')
         self.assertEqual('$0.00', yesterday_spend['value'])
 
-    @patch('redshiftapi.api_breakdowns.query_all')
-    def test_run_mid(self, mock_query_all):
+    @patch('redshiftapi.api_breakdowns.query')
+    def test_run_mid(self, mock_query):
         self.setUpPermissions()
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
         end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
@@ -967,7 +967,7 @@ class AdGroupOverviewTest(TestCase):
             margin_nano=0,
         )
 
-        mock_query_all.return_value = [{
+        mock_query.return_value = [{
             'e_yesterday_cost': decimal.Decimal('60.0'),
             'yesterday_et_cost': decimal.Decimal('60.0'),
             'yesterday_etfm_cost': decimal.Decimal('60.0'),
@@ -1028,9 +1028,9 @@ class CampaignOverviewTest(TestCase):
             return matching_settings[0]
         return None
 
-    @patch('redshiftapi.api_breakdowns.query_all')
-    def test_run_empty(self, mock_query_all):
-        mock_query_all.return_value = [{
+    @patch('redshiftapi.api_breakdowns.query')
+    def test_run_empty(self, mock_query):
+        mock_query.return_value = [{
             'campaign_id': 1,
             'source_id': 9,
             'e_yesterday_cost': decimal.Decimal('0.0'),

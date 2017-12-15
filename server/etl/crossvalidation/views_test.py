@@ -9,20 +9,20 @@ from django.test.utils import override_settings
 from utils import test_helper
 
 
-@patch('redshiftapi.api_breakdowns.query_all')
+@patch('redshiftapi.api_breakdowns.query')
 @patch('utils.request_signer.verify_wsgi_request')
 @override_settings(BIDDER_API_SIGN_KEY='test_api_key')
 class CrossvalidationViewTest(TestCase):
     fixtures = ['test_api_views']
 
-    def test_no_parameters(self, mock_verify_wsgi_request, mock_query_all):
+    def test_no_parameters(self, mock_verify_wsgi_request, mock_query):
         response = self.client.get(reverse('api.crossvalidation'))
 
         mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
         self.assertEqual(response.status_code, 400)
 
-    def test_valid_request(self, mock_verify_wsgi_request, mock_query_all):
-        mock_query_all.return_value = [
+    def test_valid_request(self, mock_verify_wsgi_request, mock_query):
+        mock_query.return_value = [
             {
                 'content_ad_id': 10,
                 'source_id': 1,
@@ -56,7 +56,7 @@ class CrossvalidationViewTest(TestCase):
 
         mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
-        mock_query_all.assert_called_once_with(
+        mock_query.assert_called_once_with(
             ['content_ad_id', 'source_id', 'ad_group_id'],
             {
                 'date__gte': date(2015, 11, 5),
@@ -65,7 +65,7 @@ class CrossvalidationViewTest(TestCase):
             },
             None,
             None,
-            False
+            query_all=True
         )
 
         self.assertEqual(response.status_code, 200)
