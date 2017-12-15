@@ -127,7 +127,9 @@ def validate_entries(entry_dicts):
 def clean_entry_sources(entry_dicts):
     sources_by_slug = {x.get_clean_slug(): x for x in models.Source.objects.all()}
     for entry in entry_dicts:
-        entry['source'] = sources_by_slug.get(entry['source'].lower())
+        entry['source'] = None
+        if 'source' in entry_dicts:
+            entry['source'] = sources_by_slug.get(entry['source'].lower())
 
 
 def save_entries_errors_csv(account, entry_dicts):
