@@ -604,6 +604,9 @@ class PublisherGroupCSVHelpersTest(TestCase):
             'publisher': 'https://pub2.com',
             'source': 'adsnative',
             'include_subdomains': True,
+        }, {
+            'publisher': 'https://pub3.com',
+            'include_subdomains': True,
         }]
 
         publisher_group_csv_helpers.clean_entry_sources(entries)
@@ -619,6 +622,10 @@ class PublisherGroupCSVHelpersTest(TestCase):
         }, {
             'publisher': 'https://pub2.com',
             'source': models.Source.objects.get(pk=1),
+            'include_subdomains': True,
+        }, {
+            'publisher': 'https://pub3.com',
+            'source': None,
             'include_subdomains': True,
         }])
 
