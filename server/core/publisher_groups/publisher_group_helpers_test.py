@@ -496,9 +496,9 @@ class PublisherGroupCSVHelpersTest(TestCase):
         self.assertEquals(
             publisher_group_csv_helpers.get_example_csv_content(),
             textwrap.dedent('''\
-            "Publisher","Source"\r
-            "example.com","mopub"\r
-            "examplenosource.com",""\r
+            "Publisher"\r
+            "example.com"\r
+            "examplenosource.com"\r
             '''))
 
     def test_validate_entries(self):
@@ -519,6 +519,10 @@ class PublisherGroupCSVHelpersTest(TestCase):
                     'source': 'asd',
                     'include_subdomains': False,
                 },
+                {
+                    'publisher': 'pub2.com',
+                    'include_subdomains': False,
+                },
             ]),
             [
                 {
@@ -537,6 +541,11 @@ class PublisherGroupCSVHelpersTest(TestCase):
                     'source': 'asd',
                     'include_subdomains': False,
                     'error': 'Remove the following prefixes: http, https; Unknown source',
+                },
+                {
+                    'publisher': 'pub2.com',
+                    'include_subdomains': False,
+                    'source': None,
                 },
             ]
         )

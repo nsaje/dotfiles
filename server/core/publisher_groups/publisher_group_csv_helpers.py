@@ -15,15 +15,13 @@ OUTBRAIN_AGENCY = 55
 
 EXAMPLE_CSV_CONTENT = [{
     "Publisher": "example.com",
-    "Source": "mopub",
 }, {
     "Publisher": "examplenosource.com",
-    "Source": "",
 }]
 
 
 def get_example_csv_content():
-    return csv_utils.dictlist_to_csv(['Publisher', 'Source'], EXAMPLE_CSV_CONTENT)
+    return csv_utils.dictlist_to_csv(['Publisher'], EXAMPLE_CSV_CONTENT)
 
 
 def get_csv_content(account, publisher_group_entries):
@@ -95,7 +93,7 @@ def validate_entries(entry_dicts):
     for entry in entry_dicts:
         # these two will get modified for validation purposes
         publisher = entry['publisher']
-        source_slug = entry['source']
+        source_slug = entry.get('source')
 
         error = []
 
