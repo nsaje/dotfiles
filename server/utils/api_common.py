@@ -5,11 +5,11 @@ from django.http import HttpResponse, Http404
 from django.views.generic import View
 from django.conf import settings
 
+from utils import influx_helper
 from utils import json_helper
 import exc
 import influx
 import time
-import re
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +118,7 @@ class BaseApiView(View):
                 'dash.request',
                 (time.time() - start_time),
                 endpoint=self.__class__.__name__,
-                path=re.sub('/[0-9]+/', '/_ID_/', request.path),
+                path=influx_helper.clean_path(request.path),
                 method=request.method,
                 status=str(response.status_code),
             )

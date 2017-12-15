@@ -1,6 +1,5 @@
 import json
 import logging
-import re
 import time
 from collections import defaultdict
 import datetime
@@ -22,6 +21,7 @@ from core.publisher_groups import publisher_group_helpers
 from utils import redirector_helper, email_helper
 from utils import url_helper, request_signer, converters
 from utils import db_for_reads
+from utils import influx_helper
 import redshiftapi.api_quickstats
 import redshiftapi.internal_stats.conversions
 import redshiftapi.internal_stats.content_ad_publishers
@@ -53,7 +53,7 @@ class K1APIView(View):
             'k1api.request',
             (time.time() - start_time),
             endpoint=self.__class__.__name__,
-            path=re.sub('/[0-9]+/', '/_ID_/', request.path),
+            path=influx_helper.clean_path(request.path),
             method=request.method,
             status=str(response.status_code),
         )
