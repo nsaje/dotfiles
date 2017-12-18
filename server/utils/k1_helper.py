@@ -1,3 +1,4 @@
+import time
 import json
 import logging
 import urllib
@@ -9,7 +10,6 @@ from django.conf import settings
 from server.celery import app
 
 from utils import request_signer
-from utils import dates_helper
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +63,7 @@ def _send_task(queue_name, task_name, **kwargs):
     if settings.K1_DEMO_MODE:
         return
 
-    kwargs['initiated_at'] = dates_helper.datetime_to_iso_string(dates_helper.utc_now())
+    kwargs['initiated_at'] = time.time()
 
     try:
         app.send_task(task_name, queue=queue_name, kwargs=kwargs)

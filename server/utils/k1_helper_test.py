@@ -16,7 +16,7 @@ from utils import dates_helper
 @patch('utils.k1_helper.app')
 class K1HelperTest(TestCase):
     def setUp(self):
-        patcher = patch.object(dates_helper, 'utc_now', return_value=datetime.datetime(2017, 11, 11))
+        patcher = patch.object(k1_helper.time, 'time', return_value=1513594339.172575)
         self.addCleanup(patcher.stop)
         patcher.start()
 
@@ -28,7 +28,7 @@ class K1HelperTest(TestCase):
             kwargs={
                 'msg': 'test',
                 'account_id': 123,
-                'initiated_at': '2017-11-11T00:00:00',
+                'initiated_at': 1513594339.172575,
             }
         )
 
@@ -40,7 +40,7 @@ class K1HelperTest(TestCase):
             kwargs={
                 'msg': 'test',
                 'ad_group_id': 123,
-                'initiated_at': '2017-11-11T00:00:00',
+                'initiated_at': 1513594339.172575,
             }
         )
 
@@ -53,7 +53,7 @@ class K1HelperTest(TestCase):
                 'msg': 'test',
                 'ad_group_id': 123,
                 'content_ad_id': 456,
-                'initiated_at': '2017-11-11T00:00:00',
+                'initiated_at': 1513594339.172575,
             }
         )
 
@@ -65,6 +65,6 @@ class K1HelperTest(TestCase):
             kwargs={
                 'msg': 'test',
                 'ad_group_id': 123,
-                'initiated_at': '2017-11-11T00:00:00',
+                'initiated_at': 1513594339.172575,
             }
         )
