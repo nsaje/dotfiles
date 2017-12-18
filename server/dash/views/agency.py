@@ -832,7 +832,9 @@ class ConversionPixel(api_common.BaseApiView):
         }
         if user.has_perm('zemauth.can_see_pixel_traffic'):
             data['last_triggered'] = pixel.last_triggered
-            data['impressions'] = pixel.impressions if pixel.last_triggered.date() >= date else 0
+            data['impressions'] = 0
+            if pixel.last_triggered and pixel.last_triggered.date() >= date:
+                data['impressions'] = pixel.impressions
         if user.has_perm('zemauth.can_redirect_pixels'):
             data['redirect_url'] = pixel.redirect_url
         if user.has_perm('zemauth.can_see_pixel_notes'):
