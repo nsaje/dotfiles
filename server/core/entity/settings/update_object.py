@@ -19,9 +19,9 @@ class UpdateObject(object):
         updates = {key: self.__dict__[key] for key in fields if key in self.__dict__}
         return updates
 
-    def save(self, request=None, action_type=None, changes_text=None):
+    def save(self, request=None, action_type=None, changes_text=None, update_fields=None):
         updates = self.get_updates()
-        self.settings.update_unsafe(request, **updates)
+        self.settings.update_unsafe(request, update_fields=update_fields, **updates)
 
     def get_settings_dict(self):
         settings_dict = self.settings.get_settings_dict()

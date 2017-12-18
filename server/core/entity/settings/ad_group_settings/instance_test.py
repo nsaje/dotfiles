@@ -32,7 +32,8 @@ class InstanceTest(TestCase):
         changes = current_settings.get_setting_changes(new_settings)
         self.assertDictEqual(changes, {'b1_sources_group_enabled': True})
 
-        changes_new, cs2, ns2 = instance.AdGroupSettingsMixin._b1_sources_group_adjustments(changes, current_settings, new_settings)
+        changes_new, cs2, ns2 = instance.AdGroupSettingsMixin._b1_sources_group_adjustments(
+            changes, current_settings, new_settings)
 
         self.assertDictEqual(changes_new, {
             'b1_sources_group_enabled': True,
@@ -66,7 +67,8 @@ class InstanceTest(TestCase):
             'b1_sources_group_daily_budget': Decimal('10.0'),
         })
 
-        changes_new, cs2, ns2 = instance.AdGroupSettingsMixin._b1_sources_group_adjustments(changes, current_settings, new_settings)
+        changes_new, cs2, ns2 = instance.AdGroupSettingsMixin._b1_sources_group_adjustments(
+            changes, current_settings, new_settings)
 
         self.assertDictEqual(changes_new, {
             'b1_sources_group_enabled': True,
@@ -98,7 +100,8 @@ class InstanceTest(TestCase):
             'cpc_cc': Decimal('0.05'),
         })
 
-        changes_new, cs2, ns2 = instance.AdGroupSettingsMixin._b1_sources_group_adjustments(changes, current_settings, new_settings)
+        changes_new, cs2, ns2 = instance.AdGroupSettingsMixin._b1_sources_group_adjustments(
+            changes, current_settings, new_settings)
 
         self.assertDictEqual(changes_new, {
             'b1_sources_group_enabled': True,
@@ -119,10 +122,12 @@ class InstanceTest(TestCase):
 
         ad_group.settings.update(
             request, max_cpm=Decimal('0.5'))
-        self.assertEqual(Decimal('0.5'), ad_group.settings.get_external_max_cpm(account, Decimal('0.2'), Decimal('0.1')))
+        self.assertEqual(Decimal('0.5'), ad_group.settings.get_external_max_cpm(
+            account, Decimal('0.2'), Decimal('0.1')))
 
         account.uses_bcm_v2 = True
-        self.assertEqual(Decimal('0.36'), ad_group.settings.get_external_max_cpm(account, Decimal('0.2'), Decimal('0.1')))
+        self.assertEqual(Decimal('0.36'), ad_group.settings.get_external_max_cpm(
+            account, Decimal('0.2'), Decimal('0.1')))
 
     @patch('utils.redirector_helper.insert_adgroup')
     def test_get_external_b1_sources_group_daily_budget(self, mock_insert_adgroup):
@@ -145,3 +150,24 @@ class InstanceTest(TestCase):
             Decimal('360'),
             ad_group.settings.get_external_b1_sources_group_daily_budget(account, Decimal('0.2'), Decimal('0.1'))
         )
+
+    @patch('utils.redirector_helper.insert_adgroup')
+    def test_update_fields(self, mock_insert_adgroup):
+        ad_group = magic_mixer.blend(core.entity.AdGroup)
+
+        ad_group.settings.update(
+            None,
+            bluekai_targeting=['outbrain:1234']
+        )
+        self.assertEqual(
+            ['outbrain:1234'],
+            ad_group.settings.bluekai_targeting
+        )
+
+        with patch('core.entity.settings.settings_base.SettingsBase.update_unsafe') as save_mock:
+            ad_group.settings.update(
+                None,
+                bluekai_targeting=['outbrain:4321']
+            )
+            save_mock.assert_called_once_with(
+                None, update_fields=['bluekai_targeting'], bluekai_targeting=['outbrain:4321'])

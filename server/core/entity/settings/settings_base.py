@@ -45,7 +45,7 @@ class SettingsBase(models.Model, core.history.HistoryMixin):
 
     # Unsafe update without validation and notification of other systems
     @transaction.atomic()
-    def update_unsafe(self, request, **kwargs):
+    def update_unsafe(self, request, update_fields=None, **kwargs):
         user = request.user if request else None
         changes = self.get_changes(kwargs)
 
@@ -61,7 +61,9 @@ class SettingsBase(models.Model, core.history.HistoryMixin):
         self.created_dt = datetime.datetime.utcnow()
         for k, v in changes.iteritems():
             setattr(self, k, v)
-        super(SettingsBase, self).save()
+        if update_fields is not None:
+            update_fields.extend(['created_by', 'created_dt'])
+        super(SettingsBase, self).save(update_fields=update_fields)
 
     def copy_settings(self):
         return UpdateObject(self)

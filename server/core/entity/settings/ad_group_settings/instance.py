@@ -92,7 +92,10 @@ class AdGroupSettingsMixin(object):
             changes_text = core.entity.settings.AdGroupSettings.get_changes_text(
                 current_settings, new_settings, request.user if request else None, separator='\n')
 
-            new_settings.save(request)
+            if new_settings.pk is None:
+                new_settings.save(request)
+            else:
+                new_settings.save(request, update_fields=changes.keys())
             k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
 
             if self._should_initialize_budget_autopilot(changes, new_settings):
