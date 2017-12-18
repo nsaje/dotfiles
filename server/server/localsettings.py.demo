@@ -109,7 +109,7 @@ PAGER_DUTY_ENGINEERS_SERVICE_KEY = Secret('').get()
 _SENTRY_PUBLIC_KEY = '1b43af2fb6d84ba188ecdf0a85ee5800'  # Zemanta One / Eins Demo project
 _SENTRY_SECRET_KEY = Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAH4wfAYJKoZIhvcNAQcGoG8wbQIBADBoBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDD60uxKYgW5fGI0CsQIBEIA7Z4+hsMpOSzem98MCWlAEORplhQhny/FVyjhKDDdLCPJEvCeZPxND5JWvRmEdUipX5chDyoULbYzKcdA=').get()
 RAVEN_CONFIG = {
-    'dsn': 'https://%s:%s@app.getsentry.com/260920' % (_SENTRY_PUBLIC_KEY, _SENTRY_SECRET_KEY),
+    'dsn': 'https://%s:%s@sentry.io/260920' % (_SENTRY_PUBLIC_KEY, _SENTRY_SECRET_KEY),
 }
 
 # Amazon AWS keys
