@@ -1,10 +1,8 @@
-import datetime
 from mock import patch
 
 from django.test import TestCase, override_settings
 
 from utils import k1_helper
-from utils import dates_helper
 
 
 @override_settings(
