@@ -6,7 +6,7 @@
 15 10 * * *          /home/ubuntu/docker-manage-py.sh audit_autopilot --slack
 0 12 * * *          /home/ubuntu/docker-manage-py.sh run_campaign_stop
 0 12 * * *          /home/ubuntu/docker-manage-py.sh audit_overspend --slack --influx
-#25 * * * *          /home/ubuntu/docker-manage-py.sh refresh_k1 3
+25 * * * *          /home/ubuntu/docker-manage-py.sh refresh_k1 3
 0 12 * * *          /home/ubuntu/docker-manage-py.sh send_outbrain_manual_actions_email
 40 * * * *          /home/ubuntu/docker-manage-py.sh monitor_adgroup_propagation
 10 9-20 * * *          /home/ubuntu/docker-manage-py.sh send_scheduled_reports
