@@ -1,18 +1,15 @@
 from .. import constants, CampaignStopState
+from utils import dates_helper
+
+
+def get_campaignstop_state(campaign):
+    return get_campaignstop_states([campaign])[campaign.id]
 
 
 def get_campaignstop_states(campaigns):
     states_map = _get_states_map(campaigns)
     return {
-        campaign: _is_allowed_to_run(campaign, states_map) for campaign in campaigns
-    }
-
-
-def get_max_end_dates(campaigns):
-    states_map = _get_states_map(campaigns)
-
-    return {
-        campaign: _get_max_allowed_end_date(campaign, states_map) for campaign in campaigns
+        campaign.id: _get_campaign_stop_state(campaign, states_map) for campaign in campaigns
     }
 
 
@@ -22,11 +19,11 @@ def _get_states_map(campaigns):
     }
 
 
-def _get_max_allowed_end_date(campaign, states_map):
-    if not campaign.real_time_campaign_stop or campaign.id not in states_map:
-        return None
-
-    return states_map[campaign.id].max_allowed_end_date
+def _get_campaign_stop_state(campaign, states_map):
+    return {
+        'allowed_to_run': _is_allowed_to_run(campaign, states_map),
+        'max_allowed_end_date': _get_max_allowed_end_date(campaign, states_map)
+    }
 
 
 def _is_allowed_to_run(campaign, states_map):
@@ -38,3 +35,14 @@ def _is_allowed_to_run(campaign, states_map):
         return False
 
     return campaignstop_state.state == constants.CampaignStopState.ACTIVE
+
+
+def _get_max_allowed_end_date(campaign, states_map):
+    if not campaign.real_time_campaign_stop:
+        return None
+
+    campaignstop_state = states_map.get(campaign.id)
+    if not campaignstop_state or not campaignstop_state.max_allowed_end_date:
+        return dates_helper.day_before(dates_helper.utc_to_local(campaign.created_dt).date())
+
+    return campaignstop_state.max_allowed_end_date

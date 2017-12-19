@@ -53,6 +53,8 @@ var constants = {
         STOPPED: 'stopped',
         LANDING_MODE: 'landing-mode',
         AUTOPILOT: 'autopilot',
+        CAMPAIGNSTOP_STOPPED: 'campaignstop-stopped',
+        CAMPAIGNSTOP_LOW_BUDGET: 'campaignstop-low-budget',
     },
     publisherStatus: {
         ENABLED: 1,

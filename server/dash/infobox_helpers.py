@@ -7,6 +7,7 @@ from django.db import models
 from django.db.models import Sum, F, ExpressionWrapper
 from django.core.cache import caches
 
+import automation.campaignstop
 import dash.constants
 import dash.models
 import dash.campaign_goals
@@ -618,11 +619,15 @@ def get_adgroup_running_status(user, ad_group_settings, filtered_sources=None):
         autopilot_state,
         running_status,
         state,
+        ad_group_settings.ad_group.campaign.real_time_campaign_stop,
+        automation.campaignstop.get_campaignstop_state(ad_group_settings.ad_group.campaign),
         ad_group_settings.landing_mode
     )
 
 
-def get_adgroup_running_status_class(user, autopilot_state, running_status, state, is_in_landing):
+def get_adgroup_running_status_class(
+        user, autopilot_state, running_status, state,
+        real_time_campaign_stop, campaignstop_state, is_in_landing):
     if is_in_landing:
         return dash.constants.InfoboxStatus.LANDING_MODE
 
@@ -636,6 +641,12 @@ def get_adgroup_running_status_class(user, autopilot_state, running_status, stat
              state == dash.constants.AdGroupSettingsState.INACTIVE):
         return dash.constants.InfoboxStatus.INACTIVE
 
+    if real_time_campaign_stop and campaignstop_state:
+        if not campaignstop_state['allowed_to_run']:
+            return dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED
+        if False:  # TODO: set when campaign is marked as running out of budget
+            return dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET
+
     if autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
         return dash.constants.InfoboxStatus.AUTOPILOT
     elif autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC:
@@ -647,6 +658,13 @@ def get_adgroup_running_status_class(user, autopilot_state, running_status, stat
 def get_campaign_running_status(campaign, campaign_settings):
     if campaign_settings.landing_mode:
         return dash.constants.InfoboxStatus.LANDING_MODE
+
+    if campaign.real_time_campaign_stop:
+        campaignstop_state = automation.campaignstop.get_campaignstop_state(campaign)
+        if not campaignstop_state['allowed_to_run']:
+            return dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED
+        if False:  # TODO: set when campaign is marked as running out of budget
+            return dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET
 
     running_exists = dash.models.AdGroup.objects.filter(
         campaign=campaign

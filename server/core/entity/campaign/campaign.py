@@ -221,6 +221,10 @@ class Campaign(models.Model, core.common.PermissionMixin, bcm_mixin.CampaignBCMM
         custom_flags.update(self.custom_flags or {})
         return custom_flags
 
+    def set_real_time_campaign_stop(self, request=None, is_enabled=False):
+        self.real_time_campaign_stop = is_enabled
+        self.save(request)
+
     def save(self, request=None, user=None, *args, **kwargs):
         self.modified_by = None
         if request is not None:

@@ -3,6 +3,7 @@ import logging
 
 from utils import api_common
 
+import automation.campaignstop
 from dash import models
 from dash.views import helpers
 from dash.views import navigation_helpers
@@ -64,7 +65,9 @@ class NavigationDataView(api_common.BaseApiView):
                 request.user,
                 ad_group.__dict__,
                 ad_group.get_current_settings(),
-                ad_group.campaign.get_current_settings()
+                ad_group.campaign.get_current_settings(),
+                automation.campaignstop.get_campaignstop_state(ad_group.campaign),
+                real_time_campaign_stop=ad_group.campaign.real_time_campaign_stop,
             )
 
         return self.create_api_response(response)
@@ -103,17 +106,19 @@ class NavigationTreeView(api_common.BaseApiView):
         load_settings = request.GET.get('loadStatuses') != 'false'
 
         accounts = self._fetch_account_data_from_db(user, view_filter)
-        campaigns, map_campaign_settings = self._fetch_campaign_data_from_db(
+        campaigns, map_campaign_settings, map_campaignstop_states = self._fetch_campaign_data_from_db(
             user, view_filter, accounts, load_settings)
         ad_groups_data = self._load_ad_groups_data(
-            user, view_filter, map_campaign_settings, campaigns, load_settings)
+            user, view_filter, map_campaign_settings, map_campaignstop_states, campaigns, load_settings)
         campaigns_data = self._load_campaigns_data(
             ad_groups_data, campaigns, map_campaign_settings, load_settings)
         accounts_data = self._load_accounts_data(
             campaigns_data, accounts, load_settings)
         return self.create_api_response(accounts_data)
 
-    def _load_ad_groups_data(self, user, view_filter, map_campaign_settings, campaigns, load_settings=True):
+    def _load_ad_groups_data(
+            self, user, view_filter, map_campaign_settings,
+            map_campaignstop_states, campaigns, load_settings=True):
         # load necessary objects
         ad_groups = models.AdGroup.objects.all()\
             .filter_by_sources(view_filter.filtered_sources)\
@@ -128,7 +133,7 @@ class NavigationTreeView(api_common.BaseApiView):
             map_ad_groups_settings = {ags.ad_group_id: ags for ags in ad_groups_settings}
 
         data_ad_groups = {}
-        for ad_group in ad_groups.values('id', 'campaign_id', 'name'):
+        for ad_group in ad_groups.values('id', 'campaign_id', 'name', 'campaign__real_time_campaign_stop'):
             ad_group_settings = map_ad_groups_settings.get(ad_group['id'])
 
             ad_group_dict = navigation_helpers.get_ad_group_dict(
@@ -136,6 +141,8 @@ class NavigationTreeView(api_common.BaseApiView):
                 ad_group,
                 ad_group_settings,
                 map_campaign_settings.get(ad_group['campaign_id']),
+                map_campaignstop_states[ad_group['campaign_id']],
+                real_time_campaign_stop=ad_group['campaign__real_time_campaign_stop'],
                 with_settings=load_settings,
             )
 
@@ -155,7 +162,8 @@ class NavigationTreeView(api_common.BaseApiView):
                 campaign__in=campaigns).group_current_settings()
             map_campaigns_settings = {cs.campaign_id: cs for cs in campaigns_settings}
 
-        return campaigns, map_campaigns_settings
+        map_campaignstop_states = automation.campaignstop.get_campaignstop_states(campaigns)
+        return campaigns, map_campaigns_settings, map_campaignstop_states
 
     def _load_campaigns_data(self, ad_groups_data,
                              campaigns, map_campaign_settings, load_settings=True):

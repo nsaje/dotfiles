@@ -708,6 +708,19 @@ class InfoBoxAccountHelpersTest(TestCase):
             dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
         )
 
+        with mock.patch('automation.campaignstop.get_campaignstop_state') as mock_get_campaignstop_state:
+            old_value = ad_group_settings.ad_group.campaign.real_time_campaign_stop
+            ad_group_settings.ad_group.campaign.set_real_time_campaign_stop(None, True)
+
+            ad_group_settings.refresh_from_db()
+            mock_get_campaignstop_state.return_value = {'allowed_to_run': False}
+            self.assertEqual(
+                dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED,
+                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
+            )
+
+            ad_group_settings.ad_group.campaign.set_real_time_campaign_stop(None, old_value)
+
         # adgroup is in landing mode and active, sources are active
         new_ad_group_settings = ad_group.get_current_settings().copy_settings()
         new_ad_group_settings.landing_mode = True
@@ -823,6 +836,18 @@ class InfoBoxAccountHelpersTest(TestCase):
             dash.constants.InfoboxStatus.ACTIVE,
             dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
         )
+
+        with mock.patch('automation.campaignstop.get_campaignstop_state') as mock_get_campaignstop_state:
+            old_value = campaign.real_time_campaign_stop
+            campaign.set_real_time_campaign_stop(None, True)
+
+            mock_get_campaignstop_state.return_value = {'allowed_to_run': False}
+            self.assertEqual(
+                dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED,
+                dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
+            )
+
+            campaign.set_real_time_campaign_stop(None, old_value)
 
         for adg in campaign.adgroup_set.all():
             adg_settings = adg.get_current_settings().copy_settings()

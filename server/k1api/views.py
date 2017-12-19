@@ -454,7 +454,7 @@ class AdGroupsView(K1APIView):
             campaigns_settings_map,\
             accounts_settings_map,\
             campaigns_budgets_map,\
-            campaignstop_end_dates = self._get_settings_maps(ad_group_ids, source_types, slugs, marker, limit)
+            campaignstop_states = self._get_settings_maps(ad_group_ids, source_types, slugs, marker, limit)
 
         campaign_goal_types = self._get_campaign_goal_types(campaigns_settings_map.keys())
         campaign_goals = self._get_campaign_goals(campaigns_settings_map.keys())
@@ -508,7 +508,7 @@ class AdGroupsView(K1APIView):
                 'id': ad_group.id,
                 'name': ad_group.get_external_name(),
                 'start_date': ad_group_settings.start_date,
-                'end_date': self._get_end_date(ad_group_settings, campaignstop_end_dates),
+                'end_date': self._get_end_date(ad_group_settings, campaignstop_states),
                 'time_zone': settings.DEFAULT_TIME_ZONE,
                 'brand_name': ad_group_settings.brand_name,
                 'display_url': ad_group_settings.display_url,
@@ -568,15 +568,16 @@ class AdGroupsView(K1APIView):
         return retargeting
 
     @staticmethod
-    def _get_end_date(ad_group_settings, campaignstop_end_dates):
+    def _get_end_date(ad_group_settings, campaignstop_states):
         campaign = ad_group_settings.ad_group.campaign
-        if campaignstop_end_dates.get(campaign) is None:
+        max_allowed_end_date = campaignstop_states.get(campaign, {}).get('max_allowed_end_date')
+        if max_allowed_end_date is None:
             return ad_group_settings.end_date
 
         if ad_group_settings.end_date is None:
-            return campaignstop_end_dates.get(campaign)
+            return max_allowed_end_date
 
-        return min(ad_group_settings.end_date, campaignstop_end_dates[campaign])
+        return min(ad_group_settings.end_date, max_allowed_end_date)
 
     @staticmethod
     def _get_campaign_goal_types(campaign_ids):
@@ -642,7 +643,7 @@ class AdGroupsView(K1APIView):
                               .group_current_settings()
                               .only('campaign_id', 'iab_category', 'whitelist_publisher_groups', 'blacklist_publisher_groups'))
         campaigns_settings_map = {cs.campaign_id: cs for cs in campaigns_settings}
-        campaignstop_end_dates = automation.campaignstop.get_max_end_dates(
+        campaignstop_states = automation.campaignstop.get_campaignstop_states(
             set(ad_group_settings.ad_group.campaign for ad_group_settings in ad_groups_settings))
 
         accounts_settings = (dash.models.AccountSettings.objects
@@ -662,7 +663,7 @@ class AdGroupsView(K1APIView):
             campaigns_settings_map,\
             accounts_settings_map,\
             campaigns_budgets_map,\
-            campaignstop_end_dates
+            campaignstop_states
 
 
 class AdGroupStatsView(K1APIView):
@@ -818,7 +819,7 @@ class AdGroupSourcesView(K1APIView):
         for ad_group_source_settings in ad_group_source_settings:
             ad_group = ad_group_source_settings.ad_group_source.ad_group
             ad_group_settings = ad_group_settings_map[ad_group.id]
-            campaignstop_allowed_to_run = campaignstop_map[ad_group.campaign]
+            campaignstop_allowed_to_run = campaignstop_map[ad_group.campaign.id]
             if self._is_ad_group_source_enabled(
                     ad_group_settings,
                     ad_group_source_settings,

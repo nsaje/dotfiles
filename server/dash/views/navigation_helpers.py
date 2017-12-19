@@ -3,7 +3,9 @@ from dash import constants
 from dash import infobox_helpers
 
 
-def get_ad_group_dict(user, ad_group, ad_group_settings, campaign_settings, with_settings=True):
+def get_ad_group_dict(
+        user, ad_group, ad_group_settings, campaign_settings,
+        campaignstop_state, real_time_campaign_stop=False, with_settings=True):
     if not with_settings:
         return {
             'id': ad_group['id'],
@@ -23,7 +25,8 @@ def get_ad_group_dict(user, ad_group, ad_group_settings, campaign_settings, with
         'archived': ad_group_settings.archived if ad_group_settings else False,
         'autopilot_state': autopilot_state,
         'active': infobox_helpers.get_adgroup_running_status_class(
-            user, autopilot_state, running_status, state, is_in_landing),
+            user, autopilot_state, running_status, state,
+            real_time_campaign_stop, campaignstop_state, is_in_landing),
         'landingMode': ad_group_settings.landing_mode if ad_group_settings else False,
     }
     return ad_group_dict

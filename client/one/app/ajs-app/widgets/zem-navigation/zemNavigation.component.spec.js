@@ -67,5 +67,11 @@ describe('ZemNavigationCtrl', function () {
 
         item.data.active = constants.infoboxStatus.LANDING_MODE;
         expect(ctrl.getItemIconClass(item)).toEqual('zem-navigation__item-icon--landing');
+
+        item.data.active = constants.infoboxStatus.CAMPAIGNSTOP_LOW_BUDGET;
+        expect(ctrl.getItemIconClass(item)).toEqual('zem-navigation__item-icon--active');
+
+        item.data.active = constants.infoboxStatus.CAMPAIGNSTOP_STOPPED;
+        expect(ctrl.getItemIconClass(item)).toEqual('zem-navigation__item-icon--stopped');
     });
 });

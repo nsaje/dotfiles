@@ -1,5 +1,6 @@
 from rest_framework import permissions
 
+import automation.campaignstop
 from restapi.views import RESTAPIBaseView
 import restapi.access
 import dash.views.navigation_helpers
@@ -25,7 +26,13 @@ class CloneAdGroup(RESTAPIBaseView):
                                  form.validated_data['clone_ads'])
 
         response = dash.views.navigation_helpers.get_ad_group_dict(
-            request.user, ad_group.__dict__, ad_group.get_current_settings(), ad_group.campaign.get_current_settings())
+            request.user,
+            ad_group.__dict__,
+            ad_group.get_current_settings(),
+            ad_group.campaign.get_current_settings(),
+            automation.campaignstop.get_campaignstop_state(ad_group.campaign),
+            real_time_campaign_stop=ad_group.campaign.real_time_campaign_stop,
+        )
 
         response['campaign_id'] = ad_group.campaign_id
         return self.response_ok(serializers.AdGroupSerializer(response).data)

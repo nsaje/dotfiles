@@ -109,6 +109,10 @@ angular.module('one.widgets').component('zemNavigation', {
             if (adGroup.active === constants.infoboxStatus.LANDING_MODE) return 'zem-navigation__item-icon--landing';
             if (adGroup.active === constants.infoboxStatus.INACTIVE) return 'zem-navigation__item-icon--inactive';
             if (adGroup.active === constants.infoboxStatus.AUTOPILOT) return 'zem-navigation__item-icon--autopilot';
+            if (adGroup.active === constants.infoboxStatus.CAMPAIGNSTOP_LOW_BUDGET)
+                return 'zem-navigation__item-icon--active';
+            if (adGroup.active === constants.infoboxStatus.CAMPAIGNSTOP_STOPPED)
+                return 'zem-navigation__item-icon--stopped';
             return 'zem-navigation__item-icon--active';
         }
 

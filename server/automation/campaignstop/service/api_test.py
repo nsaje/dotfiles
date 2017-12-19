@@ -12,9 +12,12 @@ class GetCampaignStopStatesTest(TestCase):
     def setUp(self):
         self.campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
 
-    def test_states_default(self):
+    def test_default(self):
         states = api.get_campaignstop_states([self.campaign])
-        self.assertFalse(states[self.campaign])
+        self.assertEqual({
+            'allowed_to_run': False,
+            'max_allowed_end_date': dates_helper.local_yesterday(),
+        }, states[self.campaign.id])
 
     def test_states_active(self):
         magic_mixer.blend(
@@ -23,27 +26,10 @@ class GetCampaignStopStatesTest(TestCase):
             state=constants.CampaignStopState.ACTIVE
         )
         states = api.get_campaignstop_states([self.campaign])
-        self.assertTrue(states[self.campaign])
-
-    def test_no_realtime_campaign_stop(self):
-        campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=False)
-        magic_mixer.blend(
-            CampaignStopState,
-            campaign=campaign,
-            state=constants.CampaignStopState.ACTIVE
-        )
-        states = api.get_campaignstop_states([campaign])
-        self.assertTrue(states[campaign])
-
-
-class GetMaxEndDatesTest(TestCase):
-
-    def setUp(self):
-        self.campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
-
-    def test_default(self):
-        end_dates = api.get_max_end_dates([self.campaign])
-        self.assertEqual(None, end_dates[self.campaign])
+        self.assertEqual({
+            'allowed_to_run': True,
+            'max_allowed_end_date': dates_helper.local_yesterday(),
+        }, states[self.campaign.id])
 
     def test_max_end_date_set(self):
         today = dates_helper.local_today()
@@ -53,17 +39,21 @@ class GetMaxEndDatesTest(TestCase):
             max_allowed_end_date=today,
         )
 
-        end_dates = api.get_max_end_dates([self.campaign])
-        self.assertEqual(today, end_dates[self.campaign])
+        states = api.get_campaignstop_states([self.campaign])
+        self.assertEqual({
+            'allowed_to_run': False,
+            'max_allowed_end_date': today,
+        }, states[self.campaign.id])
 
     def test_no_realtime_campaign_stop(self):
         campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=False)
-        today = dates_helper.local_today()
         magic_mixer.blend(
             CampaignStopState,
             campaign=campaign,
-            max_allowed_end_date=today,
+            state=constants.CampaignStopState.ACTIVE
         )
-
-        end_dates = api.get_max_end_dates([campaign])
-        self.assertEqual(None, end_dates[campaign])
+        states = api.get_campaignstop_states([campaign])
+        self.assertEqual({
+            'allowed_to_run': True,
+            'max_allowed_end_date': None,
+        }, states[campaign.id])
