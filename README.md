@@ -225,6 +225,8 @@ builds are not yet supported as builds that are not from master branch do not ge
 2. Ssh into the container and set the following settings in `server/localsettings.py`:
    ```
    SECURE_SSL_REDIRECT = False
+   SESSION_COOKIE_SECURE = False
+   CSRF_COOKIE_SECURE = False
 
    # put here the current build of the master branch (its used to get static files from s3 which were not uploaded for your pull request)
    # this line should be located before the `if BUILD_NUMBER:` statement
