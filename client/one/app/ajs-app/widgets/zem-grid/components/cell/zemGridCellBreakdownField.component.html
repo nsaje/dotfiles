@@ -2,8 +2,29 @@
     <a ng-show="ctrl.collapsable" class="zem-grid-cell-breakdown-collapse" ng-click="ctrl.toggleCollapse()">
         <img class="collapse-icon" ng-class="{'expanded': !ctrl.collapsed}" ng-src="{{ctrl.config.staticUrl}}/one/images/arrow.svg">
     </a>
-    <span ng-show="ctrl.fieldType === ctrl.types.TOTALS_LABEL" class="zem-grid-cell-totals-label">TOTALS</span>
-    <span ng-show="ctrl.fieldType === ctrl.types.BASE_FIELD" class="zem-grid-cell-base-breakdown-field" ng-bind="ctrl.data.value" title="{{ctrl.data.value}}"></span>
-    <zem-grid-cell-internal-link ng-show="ctrl.fieldType === ctrl.types.INTERNAL_LINK" data="ctrl.data" row="ctrl.row" column="ctrl.column" grid="ctrl.grid"></zem-grid-cell-internal-link>
-    <zem-grid-cell-external-link ng-show="ctrl.fieldType === ctrl.types.EXTERNAL_LINK" data="ctrl.data" row="ctrl.row" column="ctrl.column" grid="ctrl.grid"></zem-grid-cell-external-link>
+    <span ng-show="ctrl.fieldType === ctrl.types.TOTALS_LABEL"
+          class="zem-grid-cell-totals-label">
+        TOTALS
+    </span>
+    <span ng-show="ctrl.fieldType === ctrl.types.BASE_FIELD"
+          class="zem-grid-cell-base-breakdown-field"
+          ng-bind="ctrl.data.value"
+          title="{{ctrl.data.value}}"
+          zem-lazy-popover-html-unsafe="{{ctrl.data.popoverMessage}}"
+          zem-lazy-popover-placement="right"
+          zem-lazy-popover-animation-class="fade"
+          zem-lazy-popover-append-to-body="true">
+    </span>
+    <zem-grid-cell-internal-link ng-show="ctrl.fieldType === ctrl.types.INTERNAL_LINK"
+                                 data="ctrl.data"
+                                 row="ctrl.row"
+                                 column="ctrl.column"
+                                 grid="ctrl.grid">
+    </zem-grid-cell-internal-link>
+    <zem-grid-cell-external-link ng-show="ctrl.fieldType === ctrl.types.EXTERNAL_LINK"
+                                 data="ctrl.data"
+                                 row="ctrl.row"
+                                 column="ctrl.column"
+                                 grid="ctrl.grid">
+    </zem-grid-cell-external-link>
 </span>

@@ -45,6 +45,7 @@ angular.module('one.widgets').directive('zemGridBody', function (zemGridConstant
                 });
             }
 
+            var isScrolling;
             function scrollWindowListener () {
                 NgZone.runOutsideAngular(function () {
                     var scrollTop = Math.max(0, window.pageYOffset - element.offset().top);
@@ -55,6 +56,13 @@ angular.module('one.widgets').directive('zemGridBody', function (zemGridConstant
                             grid.body.ui.scrollTop
                         );
                     }
+
+                    // Disable triggering of elements' event listeners while scrolling
+                    element.addClass('disable-pointer-events');
+                    window.clearTimeout(isScrolling);
+                    isScrolling = setTimeout(function () {
+                        element.removeClass('disable-pointer-events');
+                    }, 500);
                 });
             }
 

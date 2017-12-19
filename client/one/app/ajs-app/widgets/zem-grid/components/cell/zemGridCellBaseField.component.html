@@ -1,4 +1,8 @@
 <span class="zem-grid-cell-base-field"
       ng-class="ctrl.class"
       title="{{ctrl.formattedValue}}"
-      ng-bind="ctrl.formattedValue"></span>
+      ng-bind="ctrl.formattedValue"
+      zem-lazy-popover-text="{{ctrl.data.popoverMessage}}"
+      zem-lazy-popover-placement="left"
+      zem-lazy-popover-animation-class="fade"
+      zem-lazy-popover-append-to-body="true"></span>

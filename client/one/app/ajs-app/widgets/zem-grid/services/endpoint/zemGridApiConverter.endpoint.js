@@ -1,6 +1,7 @@
 /* eslint-disable camelcase*/
 
 angular.module('one.widgets').factory('zemGridEndpointApiConverter', function (zemGridConstants, zemGridEndpointColumns, zemUtils) { // eslint-disable-line max-len
+    var DELIVERY_BREAKDOWNS;
 
     return {
         convertBreakdownFromApi: convertBreakdownFromApi,
@@ -11,6 +12,16 @@ angular.module('one.widgets').factory('zemGridEndpointApiConverter', function (z
     function convertBreakdownFromApi (config, breakdown, metaData, convertDiffAfterSave) {
         var convertedBreakdown = zemUtils.convertToCamelCase(breakdown);
         convertedBreakdown.level = config.level;
+
+        // Update DELIVERY_BREAKDOWNS list used in fields conversion
+        if (metaData.breakdownGroups && metaData.breakdownGroups.delivery) {
+            DELIVERY_BREAKDOWNS = (metaData.breakdownGroups.delivery.breakdowns || [])
+                .map(function (b) {
+                    return b.query;
+                });
+        } else {
+            DELIVERY_BREAKDOWNS = [];
+        }
 
         if (config.level === 1 && !convertDiffAfterSave) {
             // set dynamic columns based on pixels, conversion goals and campaign goals from response
@@ -25,12 +36,12 @@ angular.module('one.widgets').factory('zemGridEndpointApiConverter', function (z
         }
 
         if (breakdown.totals) {
-            convertedBreakdown.totals = convertStatsFromApi(breakdown.totals, metaData);
+            convertedBreakdown.totals = convertStatsFromApi(breakdown.totals, metaData, config);
         }
 
         convertedBreakdown.rows = breakdown.rows ? breakdown.rows.map(function (row) {
             return {
-                stats: convertStatsFromApi(row, metaData),
+                stats: convertStatsFromApi(row, metaData, config),
                 group: row.group,
                 breakdownId: row.breakdown_id,
                 archived: row.archived,
@@ -110,10 +121,10 @@ angular.module('one.widgets').factory('zemGridEndpointApiConverter', function (z
         return convertedSettings;
     }
 
-    function convertStatsFromApi (row, metaData) {
+    function convertStatsFromApi (row, metaData, config) {
         var convertedStats = {};
         metaData.columns.forEach(function (column) {
-            convertedStats[column.field] = convertField(row[column.field], column.type);
+            convertedStats[column.field] = convertField(config, metaData, column, row[column.field]);
         });
         convertedStats = setUrlLinkField(convertedStats, row.url);
         convertedStats = setBreakdownField(convertedStats, metaData, row.url, row.redirector_url, row.title);
@@ -122,8 +133,8 @@ angular.module('one.widgets').factory('zemGridEndpointApiConverter', function (z
         return convertedStats;
     }
 
-    function convertField (value, type) {
-        switch (type) {
+    function convertField (config, metaData, column, value) {
+        switch (column.type) {
         case zemGridConstants.gridColumnTypes.PERFORMANCE_INDICATOR: return value;
         case zemGridConstants.gridColumnTypes.SUBMISSION_STATUS: return value;
         case zemGridConstants.gridColumnTypes.STATE_SELECTOR: return value;
@@ -131,7 +142,7 @@ angular.module('one.widgets').factory('zemGridEndpointApiConverter', function (z
         case zemGridConstants.gridColumnTypes.THUMBNAIL: return convertThumbnailValue(value);
         case zemGridConstants.gridColumnTypes.VISIBLE_LINK: return convertUrlValue(value);
         case zemGridConstants.gridColumnTypes.ICON_LINK: return convertUrlValue(value);
-        default: return convertValueToDefaultObject(value);
+        default: return convertValueToDefaultObject(config, metaData, column, value);
         }
     }
 
@@ -205,11 +216,26 @@ angular.module('one.widgets').factory('zemGridEndpointApiConverter', function (z
         }
     }
 
-    function convertValueToDefaultObject (value) {
-        return {
-            value: value,
-        };
+    function convertValueToDefaultObject (config, metaData, column, value) {
+        var convertedObject = {value: value};
+        var popoverMessage = getPopoverMessage(config, metaData, column, value);
+        if (popoverMessage) {
+            convertedObject.popoverMessage = popoverMessage;
+        }
+        return convertedObject;
     }
+
+    function getPopoverMessage (config, metaData, column, value) {
+        if ((value === undefined || value === null) && zemGridEndpointColumns.isAudienceMetricColumn(column)) {
+            var rowBreakdown = config.breakdown[config.level - 1];
+            if (DELIVERY_BREAKDOWNS.indexOf(rowBreakdown.query) !== -1) {
+                return 'Due to technical limitations breakdowns for on-site engagement metrics are not available.';
+            }
+        } else if (column.type === zemGridConstants.gridColumnTypes.BREAKDOWN && value === 'Not reported') {
+            return 'Due to technical and supply source limitations we are not able to report breakdowns for all your data.'; // eslint-disable-line max-len
+        }
+    }
+
 
     function getRowEntity (config, breakdownId) {
         var type;

@@ -1731,7 +1731,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         VIDEO_METRICS_GROUP
     );
 
-    // //////////////V////////////////////////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
     //  COLUMNS CONFIGURATION (order, availability, ...)
     //
 
@@ -2255,9 +2255,20 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         return findColumnByField.cache[field];
     }
 
+    var AUDIENCE_METRICS_FIELDS = AUDIENCE_METRICS_GROUP.map(function (column) {
+        return column.field;
+    });
+    function isAudienceMetricColumn (column) {
+        if (!column) {
+            return false;
+        }
+        return AUDIENCE_METRICS_FIELDS.indexOf(column.field) !== -1;
+    }
+
     return {
         COLUMNS: COLUMNS,
         findColumnByField: findColumnByField,
+        isAudienceMetricColumn: isAudienceMetricColumn,
         createColumns: createColumns,
         createCategories: createCategories,
         setDynamicColumns: setDynamicColumns,
