@@ -318,7 +318,7 @@ def _refresh_k1_reports(update_since, views, account_id=None, skip_vacuum=False)
 def _handle_replicas(views, job_id, date_from, date_to, account_id=None):
     for mv_class in views:
         if not mv_class.IS_TEMPORARY_TABLE:
-            materialize_views.unload_table(mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
+            materialize_views.unload_table(job_id, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
 
 
 def get_all_views_table_names(temporary=False):
