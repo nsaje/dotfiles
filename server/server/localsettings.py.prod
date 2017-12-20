@@ -14,6 +14,8 @@ DEBUG = False
 SECRET_KEY = Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwdv95WCXwB4vicB+MCARCAU+PL5uf/GBWZWzZH+srZyKibkP9MhQ9mzthgXlB/zw8iR6SqnGf0HTjWmNzuFxx/2pi9PWsTlJtVZV18OhKxhzN6Jn42P92xz0t8Li3mSp2KuhFf').get()
 
 STATS_DB_NAME = 'k1'
+STATS_DB_WRITE_REPLICAS = []
+STATS_DB_READ_REPLICAS = []
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases

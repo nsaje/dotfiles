@@ -28,6 +28,7 @@ import derived_views
 logger = logging.getLogger(__name__)
 
 MATERIALIZED_VIEWS_S3_PREFIX = 'materialized_views'
+MATERIALIZED_VIEWS_REPLICATION_S3_PREFIX = 'materialized_views_replication'
 MATERIALIZED_VIEWS_FILENAME = '{}_{}.csv'
 
 S3_FILE_URI = 's3://{bucket_name}/{key}'
@@ -81,26 +82,61 @@ def upload_csv(table_name, date, job_id, generator):
     return s3_path
 
 
-def prepare_copy_csv_query(s3_path, table_name):
-    sql = backtosql.generate_sql('etl_copy_csv.sql', {
+def unload_table(job_id, table_name, date_from, date_to, account_id=None):
+    s3_path = os.path.join(
+        MATERIALIZED_VIEWS_REPLICATION_S3_PREFIX,
+        job_id,
+        table_name,
+        '{}-{}-{}-{}'.format(table_name, date_from.strftime("%Y-%m-%d"), date_to.strftime("%Y-%m-%d"), account_id or 0),
+    )
+    with db.get_write_stats_cursor() as c:
+        logger.info('Unloading table "%s" to S3 path "%s"', table_name, s3_path)
+        sql, params = prepare_unload_csv_query(s3_path, table_name, date_from, date_to, account_id)
+        c.execute(sql, params)
+        logger.info('Unloaded table "%s" to S3 path "%s"', table_name, s3_path)
+    return s3_path
+
+
+def prepare_unload_csv_query(s3_path, table_name, date_from, date_to, account_id=None):
+    sql = backtosql.generate_sql('etl_unload_csv.sql', {
         'table': table_name,
+        'date_from_str': date_from.strftime('%Y-%m-%d'),
+        'date_to_str': date_to.strftime('%Y-%m-%d'),
+        'account_id_str': str(account_id) if account_id else None,
     })
 
     s3_url = S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_path)
-
-    if settings.AWS_ACCESS_KEY_ID is not None and settings.AWS_ACCESS_KEY_ID != '':
-        credentials = helpers.get_aws_credentials_string(
-            settings.AWS_ACCESS_KEY_ID,
-            settings.AWS_SECRET_ACCESS_KEY,
-        )
-    else:
-        credentials = helpers.get_aws_credentials_from_role()
+    credentials = _get_aws_credentials()
 
     return sql, {
         's3_url': s3_url,
         'credentials': credentials,
         'delimiter': CSV_DELIMITER,
     }
+
+
+def prepare_copy_csv_query(s3_path, table_name):
+    sql = backtosql.generate_sql('etl_copy_csv.sql', {
+        'table': table_name,
+    })
+
+    s3_url = S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_path)
+    credentials = _get_aws_credentials()
+
+    return sql, {
+        's3_url': s3_url,
+        'credentials': credentials,
+        'delimiter': CSV_DELIMITER,
+    }
+
+
+def _get_aws_credentials():
+    if settings.AWS_ACCESS_KEY_ID is not None and settings.AWS_ACCESS_KEY_ID != '':
+        return helpers.get_aws_credentials_string(
+            settings.AWS_ACCESS_KEY_ID,
+            settings.AWS_SECRET_ACCESS_KEY,
+        )
+    return helpers.get_aws_credentials_from_role()
 
 
 def prepare_daily_delete_query(table_name, date, account_id):

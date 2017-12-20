@@ -311,6 +311,15 @@ def _refresh_k1_reports(update_since, views, account_id=None, skip_vacuum=False)
     # so might as well leave cache until refresh finishes
     invalidate_breakdowns_rs_cache()
 
+    # save processed data to S3 to for potential read replication
+    _handle_replicas(views, job_id, date_from, date_to, account_id=account_id)
+
+
+def _handle_replicas(views, job_id, date_from, date_to, account_id=None):
+    for mv_class in views:
+        if not mv_class.IS_TEMPORARY_TABLE:
+            materialize_views.unload_table(mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
+
 
 def get_all_views_table_names(temporary=False):
     return [x.TABLE_NAME for x in MATERIALIZED_VIEWS if x.IS_TEMPORARY_TABLE is temporary]

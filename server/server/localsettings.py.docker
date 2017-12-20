@@ -12,6 +12,8 @@ DEBUG = True
 SECRET_KEY = '=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l'
 
 STATS_DB_NAME = 'stats'
+STATS_DB_WRITE_REPLICAS = []
+STATS_DB_READ_REPLICAS = []
 
 _REDSHIFT_PASSWORD = ''
 _PG01_PASSWORD = ''
