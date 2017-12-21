@@ -105,7 +105,7 @@ def update_table_from_s3(db_name, s3_manifest_path, table_name, date_from, date_
             sql, params = prepare_date_range_delete_query(table_name, date_from, date_to, account_id)
             c.execute(sql, params)
 
-            sql, params = prepare_copy_csv_query(s3_manifest_path, table_name, is_manifest=True)
+            sql, params = prepare_copy_csv_query(s3_manifest_path, table_name, format_csv=False, removequotes=True, escape=True, is_manifest=True)
             c.execute(sql, params)
 
             logger.info('Loaded table "%s" into replica "%s" from S3 path "%s"', table_name, db_name, s3_manifest_path)
@@ -129,10 +129,13 @@ def prepare_unload_csv_query(s3_path, table_name, date_from, date_to, account_id
     }
 
 
-def prepare_copy_csv_query(s3_path, table_name, is_manifest=False):
+def prepare_copy_csv_query(s3_path, table_name, format_csv=True, removequotes=False, escape=False, is_manifest=False):
     sql = backtosql.generate_sql('etl_copy_csv.sql', {
         'table': table_name,
         'is_manifest': is_manifest,
+        'format_csv': format_csv,
+        'removequotes': removequotes,
+        'escape': escape,
     })
 
     s3_url = S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_path)

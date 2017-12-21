@@ -2,10 +2,12 @@
 
 COPY {{ table }}
 FROM %(s3_url)s
-FORMAT CSV
+{% if format_csv %}FORMAT CSV{% endif %}
 DELIMITER AS %(delimiter)s
 CREDENTIALS %(credentials)s
 MAXERROR 0 BLANKSASNULL EMPTYASNULL
+{% if removequotes %}REMOVEQUOTES{% endif %}
+{% if escape %}ESCAPE{% endif %}
 {% if is_manifest %}MANIFEST{% endif %}
 ;
 
