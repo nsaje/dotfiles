@@ -7,6 +7,7 @@ DELIMITER AS %(delimiter)s
 CREDENTIALS %(credentials)s
 ADDQUOTES
 ESCAPE
+MANIFEST
 ;
 
 {% endautoescape %}

@@ -1058,6 +1058,7 @@ class UnloadTest(TestCase, backtosql.TestSQLMixin):
         CREDENTIALS %(credentials)s
         ADDQUOTES
         ESCAPE
+        MANIFEST
         ;
         """)
 
@@ -1085,6 +1086,7 @@ class UnloadTest(TestCase, backtosql.TestSQLMixin):
         CREDENTIALS %(credentials)s
         ADDQUOTES
         ESCAPE
+        MANIFEST
         ;
         """)
 
