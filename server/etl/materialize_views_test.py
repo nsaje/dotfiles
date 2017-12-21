@@ -1041,7 +1041,7 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
         ])
 
 
-class UnloadTest(TestCase, backtosql.TestSQLMixin):
+class ReplicasTest(TestCase, backtosql.TestSQLMixin):
 
     @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
     def test_prepare_unload_query(self):
@@ -1099,3 +1099,18 @@ class UnloadTest(TestCase, backtosql.TestSQLMixin):
         materialize_views.unload_table('jobid', 'mytable', from_date, to_date, account_id=16)
         mock_prepare_query.assert_called_with(
             'materialized_views_replication/jobid/mytable/mytable-2016-05-01-2016-05-03-16', 'mytable', from_date, to_date, 16)
+
+    @mock.patch('redshiftapi.db.get_write_stats_transaction', autospec=True)
+    @mock.patch('redshiftapi.db.get_write_stats_cursor', autospec=True)
+    @mock.patch.object(materialize_views, 'prepare_copy_csv_query', autospec=True)
+    @mock.patch.object(materialize_views, 'prepare_date_range_delete_query', autospec=True)
+    def test_update_table_from_s3(self, mock_prepare_delete, mock_prepare_copy, mock_cursor, mock_transaction):
+        mock_prepare_copy.return_value = '', {}
+        mock_prepare_delete.return_value = '', {}
+        mock_cursor.return_value = mock.MagicMock()
+        mock_transaction.return_value = mock.MagicMock()
+        from_date = datetime.date(2016, 5, 1)
+        to_date = datetime.date(2016, 5, 3)
+        materialize_views.update_table_from_s3('mydb', 's3://mypath/', 'mytable', from_date, to_date, account_id=16)
+        mock_transaction.assert_called_with('mydb')
+        mock_cursor.assert_called_with('mydb')

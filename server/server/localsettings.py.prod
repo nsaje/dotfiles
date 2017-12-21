@@ -14,8 +14,8 @@ DEBUG = False
 SECRET_KEY = Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwdv95WCXwB4vicB+MCARCAU+PL5uf/GBWZWzZH+srZyKibkP9MhQ9mzthgXlB/zw8iR6SqnGf0HTjWmNzuFxx/2pi9PWsTlJtVZV18OhKxhzN6Jn42P92xz0t8Li3mSp2KuhFf').get()
 
 STATS_DB_NAME = 'k1'
-STATS_DB_WRITE_REPLICAS = []
-STATS_DB_READ_REPLICAS = []
+STATS_DB_WRITE_REPLICAS = ['stats-replica']
+STATS_DB_READ_REPLICAS = ['stats-replica']
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
@@ -45,6 +45,14 @@ DATABASES = {
         'USER': 'eins2',
         'PASSWORD': Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxVfiVeNgjFHmhgsLoCARCAU68r77GeEWk2Sp3ZD4In553dgo5e1YH6CdOfqT6pHw5klSLYu6pEDYWFq9UFErwAwY3cj1c67pKR5qtecEghHY9YYDnzag8J6cCkD/k2tUdzv8oy').get(),
         'HOST': 'zemantaone-hamax.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
+        'PORT': 5439
+    },
+    'stats-replica': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'k1',
+        'USER': 'eins2',
+        'PASSWORD': Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxVfiVeNgjFHmhgsLoCARCAU68r77GeEWk2Sp3ZD4In553dgo5e1YH6CdOfqT6pHw5klSLYu6pEDYWFq9UFErwAwY3cj1c67pKR5qtecEghHY9YYDnzag8J6cCkD/k2tUdzv8oy').get(),
+        'HOST': 'zemantaone-replica.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
         'PORT': 5439
     }
 }

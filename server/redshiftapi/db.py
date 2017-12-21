@@ -13,16 +13,22 @@ logger = logging.getLogger(__name__)
 CACHE_MISS_FLAG = None
 
 
-def get_stats_cursor():
-    return connections[settings.STATS_DB_NAME].cursor()
+def get_stats_cursor(db_name=None):
+    if not db_name:
+        db_name = settings.STATS_DB_NAME
+    return connections[db_name].cursor()
 
 
-def get_write_stats_cursor():
-    return connections[settings.STATS_DB_NAME].cursor()
+def get_write_stats_cursor(db_name=None):
+    if not db_name:
+        db_name = settings.STATS_DB_NAME
+    return connections[db_name].cursor()
 
 
-def get_write_stats_transaction():
-    return transaction.atomic(using=settings.STATS_DB_NAME)
+def get_write_stats_transaction(db_name=None):
+    if not db_name:
+        db_name = settings.STATS_DB_NAME
+    return transaction.atomic(using=db_name)
 
 
 def dictfetchall(cursor):

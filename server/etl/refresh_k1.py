@@ -5,6 +5,7 @@ import string
 import logging
 
 from django.core.cache import caches
+from django.conf import settings
 import dash.models
 
 from etl import daily_statements_k1
@@ -318,7 +319,12 @@ def _refresh_k1_reports(update_since, views, account_id=None, skip_vacuum=False)
 def _handle_replicas(views, job_id, date_from, date_to, account_id=None):
     for mv_class in views:
         if not mv_class.IS_TEMPORARY_TABLE:
-            materialize_views.unload_table(job_id, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
+            s3_path = materialize_views.unload_table(job_id, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
+            # TODO: parallelize if more than one replica
+            for db_name in settings.STATS_DB_WRITE_REPLICAS:
+                materialize_views.update_table_from_s3(db_name, s3_path, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
+                maintenance.vacuum(mv_class.TABLE_NAME, db_name=db_name)
+                maintenance.analyze(mv_class.TABLE_NAME, db_name=db_name)
 
 
 def get_all_views_table_names(temporary=False):
