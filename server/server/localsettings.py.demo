@@ -28,9 +28,9 @@ DATABASES = {
     STATS_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'k1',
-        'USER': 'eins',
-        'PASSWORD': Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKYAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAABvMG0GCSqGSIb3DQEHBqBgMF4CAQAwWQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxNqKE9myZXmnLwhqUCARCALHbH8JP18GmTUhaxOmWSi2ClezAYVZ+r72uvYNuk3CFW6UOuiQUtXQrujDQU').get(),
-        'HOST': 'zemantaone-hamax.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
+        'USER': 'demo',
+        'PASSWORD': Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAG4wbAYJKoZIhvcNAQcGoF8wXQIBADBYBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDG/t2po+cdvc+jCzBwIBEIArLrJSOLL8jbhDxgaLYPv/svoFIhPLyhEqUARtuq2PLUU/7AZy1k5TqrAD4g==').get(),
+        'HOST': 'zemantaone.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
         'PORT': 5439
     }
 }
@@ -137,13 +137,20 @@ CACHES = {
         'LOCATION': 'demo-default-cache',
     },
     'breakdowns_rs': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'breakdowns_rs_cache',
     },
     'audience_sample_size': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'audience_sample_size_rs_cache',
     },
     'inventory_planning': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'audience_sample_size_rs_cache',
+    },
+    'dash_db_cache': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'dash_db_cache',
     },
     'local_memory_cache': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
