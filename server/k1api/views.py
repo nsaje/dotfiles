@@ -629,14 +629,14 @@ class AdGroupsView(K1APIView):
 
         ad_groups = ad_groups.exclude_archived()
 
+        # apply pagination
+        ad_groups = ad_groups.order_by('pk')[:limit]
+
         ad_groups_settings = (dash.models.AdGroupSettings.objects
                               .filter(ad_group__in=ad_groups)
                               .select_related('ad_group__campaign__account__agency')
                               .order_by('ad_group_id')
                               .group_current_settings())
-
-        # apply pagination
-        ad_groups_settings = ad_groups_settings[:limit]
 
         campaigns_settings = (dash.models.CampaignSettings.objects
                               .filter(campaign_id__in=set([ag.ad_group.campaign_id for ag in ad_groups_settings]))
@@ -652,9 +652,12 @@ class AdGroupsView(K1APIView):
                              .only('account_id', 'whitelist_publisher_groups', 'blacklist_publisher_groups'))
         accounts_settings_map = {accs.account_id: accs for accs in accounts_settings}
 
-        budgets = dash.models.BudgetLineItem.objects.all().filter_today().distinct('campaign_id').select_related('credit')
-        if ad_group_ids:
-            budgets = budgets.filter(campaign__adgroup__in=ad_group_ids)
+        budgets = (dash.models.BudgetLineItem.objects
+                   .filter(campaign_id__in=set([ag.ad_group.campaign_id for ag in ad_groups_settings]))
+                   .filter_today()
+                   .distinct('campaign_id')
+                   .select_related('credit', 'campaign')
+                   )
         campaigns_budgets_map = {
             budget.campaign_id: budget for budget in budgets
         }
