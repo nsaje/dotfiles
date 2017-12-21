@@ -1057,6 +1057,7 @@ class UnloadTest(TestCase, backtosql.TestSQLMixin):
         DELIMITER AS %(delimiter)s
         CREDENTIALS %(credentials)s
         ADDQUOTES
+        ESCAPE
         MANIFEST
         ;
         """)
@@ -1084,6 +1085,7 @@ class UnloadTest(TestCase, backtosql.TestSQLMixin):
         DELIMITER AS %(delimiter)s
         CREDENTIALS %(credentials)s
         ADDQUOTES
+        ESCAPE
         MANIFEST
         ;
         """)

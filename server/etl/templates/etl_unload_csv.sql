@@ -6,6 +6,7 @@ TO %(s3_url)s
 DELIMITER AS %(delimiter)s
 CREDENTIALS %(credentials)s
 ADDQUOTES
+ESCAPE
 MANIFEST
 ;
 
