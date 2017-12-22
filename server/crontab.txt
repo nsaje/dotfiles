@@ -33,7 +33,7 @@
 0 0 * * *           /home/ubuntu/docker-manage-py.sh cleartokens
 0 5 * * *          /home/ubuntu/docker-manage-py.sh get_pixel_traffic
 50 * * * *          /home/ubuntu/docker-manage-py.sh compare_blacklists
-#0 6 * * *          /home/ubuntu/docker-manage-py.sh vacuum_stats
+0 6 * * *          /home/ubuntu/docker-manage-py.sh vacuum_stats
 30 6 * * *          /home/ubuntu/docker-manage-py.sh bi_to_influx
 0 12 * * *          /home/ubuntu/docker-manage-py.sh bluekai_refresh --slack
 44 */5 * * *          /home/ubuntu/docker-manage-py.sh refresh_audience_sample_size_cache
