@@ -765,14 +765,9 @@ def format_percent_to_decimal(num):
     return Decimal(str(num).replace(',', '').strip('%')) / 100
 
 
-def _update_ad_groups_redirector_settings(campaign, campaign_settings):
-    for ad_group in campaign.adgroup_set.all():
-        ad_group_settings = ad_group.get_current_settings()
-        redirector_helper.insert_adgroup(
-            ad_group,
-            ad_group_settings,
-            campaign_settings,
-        )
+def _update_ad_groups_redirector_settings(campaign):
+    for ad_group in campaign.adgroup_set.all().select_related('settings', 'campaign__settings'):
+        redirector_helper.insert_adgroup(ad_group)
 
 
 def save_campaign_settings_and_propagate(campaign, old_settings, new_settings, request):
@@ -786,7 +781,7 @@ def save_campaign_settings_and_propagate(campaign, old_settings, new_settings, r
         any_tracking_changes = any(prop in old_settings.get_setting_changes(new_settings) for prop in
                                    ['enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param'])
         if any_tracking_changes:
-            _update_ad_groups_redirector_settings(campaign, new_settings)
+            _update_ad_groups_redirector_settings(campaign)
 
     k1_helper.update_ad_groups((ad_group.pk for ad_group in campaign_ad_groups),
                                msg='views.helpers.save_campaign_settings_and_propagate')

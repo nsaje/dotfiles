@@ -36,13 +36,13 @@ class AdGroupManager(core.common.QuerySetManager):
         ad_group.save(request)
         return ad_group
 
-    def _post_create(self, ad_group, ad_group_settings):
-        if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+    def _post_create(self, ad_group):
+        if ad_group.settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
             from automation import autopilot_plus
-            autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False)
+            autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group.settings, send_mail=False)
 
         k1_helper.update_ad_group(ad_group.pk, msg='CampaignAdGroups.put')
-        redirector_helper.insert_adgroup(ad_group, ad_group_settings, ad_group.campaign.get_current_settings())
+        redirector_helper.insert_adgroup(ad_group)
 
     def create(self, request, campaign, is_restapi=False, name=None, **kwargs):
         core.common.entity_limits.enforce(
@@ -64,7 +64,7 @@ class AdGroupManager(core.common.QuerySetManager):
             core.entity.AdGroupSource.objects.bulk_create_on_allowed_sources(
                 request, ad_group, write_history=False, k1_sync=False)
 
-        self._post_create(ad_group, ad_group.settings)
+        self._post_create(ad_group)
         ad_group.write_history_created(request)
         return ad_group
 
@@ -85,7 +85,7 @@ class AdGroupManager(core.common.QuerySetManager):
             core.entity.AdGroupSource.objects.bulk_clone_on_allowed_sources(
                 request, ad_group, source_ad_group, write_history=False, k1_sync=False)
 
-        self._post_create(ad_group, ad_group.settings)
+        self._post_create(ad_group)
         ad_group.write_history_cloned_from(request, source_ad_group)
         source_ad_group.write_history_cloned_to(request, ad_group)
         return ad_group

@@ -69,23 +69,23 @@ def update_redirect(url, redirect_id):
         raise
 
 
-def insert_adgroup(ad_group, ad_group_settings, campaign_settings):
+def insert_adgroup(ad_group):
     try:
         url = settings.R1_REDIRECTS_ADGROUP_API_URL.format(adgroup=ad_group.id)
         data = {
             'campaignid': ad_group.campaign_id,
             'accountid': ad_group.campaign.account_id,
-            'trackingcode': ad_group_settings.get_tracking_codes(),
-            'enablegatracking': campaign_settings.enable_ga_tracking,
-            'enableadobetracking': campaign_settings.enable_adobe_tracking,
-            'adobetrackingparam': campaign_settings.adobe_tracking_param,
+            'trackingcode': ad_group.settings.get_tracking_codes(),
+            'enablegatracking': ad_group.campaign.settings.enable_ga_tracking,
+            'enableadobetracking': ad_group.campaign.settings.enable_adobe_tracking,
+            'adobetrackingparam': ad_group.campaign.settings.adobe_tracking_param,
         }
-        if ad_group_settings.redirect_pixel_urls:
-            data['specialredirecttrackers'] = ad_group_settings.redirect_pixel_urls
-        if ad_group_settings.redirect_javascript:
-            data['specialredirectjavascript'] = ad_group_settings.redirect_javascript
-        if ad_group_settings.click_capping_daily_ad_group_max_clicks:
-            data['clickcappingdailyadgroupmaxclicks'] = ad_group_settings.click_capping_daily_ad_group_max_clicks
+        if ad_group.settings.redirect_pixel_urls:
+            data['specialredirecttrackers'] = ad_group.settings.redirect_pixel_urls
+        if ad_group.settings.redirect_javascript:
+            data['specialredirectjavascript'] = ad_group.settings.redirect_javascript
+        if ad_group.settings.click_capping_daily_ad_group_max_clicks:
+            data['clickcappingdailyadgroupmaxclicks'] = ad_group.settings.click_capping_daily_ad_group_max_clicks
         return _call_api_retry(url, json.dumps(data), method='PUT')
     except Exception:
         logger.exception('Exception in insert_adgroup')

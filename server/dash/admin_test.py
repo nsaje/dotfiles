@@ -63,7 +63,6 @@ class AdGroupAdmin(TestCase):
         self.assertEqual(ad_group.settings.notes, 'new notes')
         mock_r1_insert_adgroup.assert_not_called()
 
-        campaign_settings = ad_group.campaign.get_current_settings()
         form.cleaned_data['redirect_pixel_urls'] = trackers
         form.cleaned_data['redirect_javascript'] = javascript
         form.cleaned_data['interest_targeting'] = interest_targeting
@@ -75,8 +74,4 @@ class AdGroupAdmin(TestCase):
         self.assertEqual(ad_group.settings.redirect_pixel_urls, trackers)
         self.assertEqual(ad_group.settings.redirect_javascript, javascript)
         self.assertEqual(ad_group.settings.interest_targeting, interest_targeting)
-        mock_r1_insert_adgroup.assert_called_with(
-            ad_group,
-            mock.ANY,
-            campaign_settings,
-        )
+        mock_r1_insert_adgroup.assert_called_with(ad_group)

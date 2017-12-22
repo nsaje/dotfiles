@@ -747,21 +747,12 @@ class AdGroupAdmin(admin.ModelAdmin):
         if changes:
             new_settings.save(request)
             if 'redirect_pixel_urls' in changes or 'redirect_javascript' in changes:
-                self._update_redirector_adgroup(ad_group, new_settings)
+                utils.redirector_helper.insert_adgroup(ad_group)
             changes_text = models.AdGroupSettings.get_changes_text(
                 current_settings, new_settings, request.user, separator='\n')
             utils.email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
         ad_group.save(request)
         utils.k1_helper.update_ad_group(ad_group.pk, msg='AdGroupAdmin.save_model')
-
-    @staticmethod
-    def _update_redirector_adgroup(ad_group, new_settings):
-        campaign_settings = ad_group.campaign.get_current_settings()
-        utils.redirector_helper.insert_adgroup(
-            ad_group,
-            new_settings,
-            campaign_settings
-        )
 
     def account_(self, obj):
         return '<a href="{account_url}">{account}</a>'.format(

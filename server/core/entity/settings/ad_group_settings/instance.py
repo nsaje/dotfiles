@@ -66,12 +66,6 @@ class AdGroupSettingsMixin(object):
         # save
         ad_group.save(request)
         if self.pk is None or changes:
-            if new_settings.id is None or 'tracking_code' in changes or 'click_capping_daily_ad_group_max_clicks' in changes:
-                redirector_helper.insert_adgroup(
-                    ad_group,
-                    new_settings,
-                    campaign_settings,
-                )
 
             if self._should_set_cpc_autopilot_initial_cpcs(current_settings, new_settings):
                 self._set_cpc_autopilot_initial_cpcs(request, ad_group, new_settings)
@@ -96,6 +90,9 @@ class AdGroupSettingsMixin(object):
                 new_settings.save(request)
             else:
                 new_settings.save(request, update_fields=changes.keys())
+
+            if new_settings.id is None or 'tracking_code' in changes or 'click_capping_daily_ad_group_max_clicks' in changes:
+                redirector_helper.insert_adgroup(ad_group)
             k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
 
             if self._should_initialize_budget_autopilot(changes, new_settings):

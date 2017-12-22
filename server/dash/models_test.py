@@ -1307,7 +1307,7 @@ class HistoryTest(TestCase):
             , Locations set to "United States"
             ''').replace('\n', ''), hist.changes_text)
 
-    @patch('dash.models.AdGroup.objects._post_create', lambda ag, ags: None)
+    @patch('dash.models.AdGroup.objects._post_create', lambda ag: None)
     def test_create_ad_group(self):
         req = test_helper.fake_request(self.u)
         campaign = models.Campaign.objects.all().get(pk=1)

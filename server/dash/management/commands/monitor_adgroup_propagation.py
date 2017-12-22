@@ -81,7 +81,7 @@ class Command(ExceptionCommand):
                     'Cannot retrieve ad group settings from redirector for ad group %d', ad_group.id)
                 nr_exceptions += 1
                 logger.info('Creating ad group on R1')
-                redirector_helper.insert_adgroup(ad_group, ad_group.settings, ad_group.campaign.settings)
+                redirector_helper.insert_adgroup(ad_group)
                 continue
 
             ad_group_settings_dict = ad_group_settings.get_settings_dict()
@@ -109,7 +109,7 @@ class Command(ExceptionCommand):
                 logger.error('Ad group %s is not in sync, differing keys %s', ad_group.id, diff)
                 logger.info('Updating ad group on R1')
                 ad_group = models.AdGroup.objects.get(pk=ad_group.pk)  # refresh object
-                redirector_helper.insert_adgroup(ad_group, ad_group.settings, ad_group.campaign.settings)
+                redirector_helper.insert_adgroup(ad_group)
 
         logger.info(
             'Ad group propagation consistency - %d exceptions, %d not in sync, %d total scanned',

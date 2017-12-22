@@ -399,7 +399,7 @@ class AdGroupSettingsTest(TestCase):
             self.assertEqual(new_settings.call_to_action, 'Call to action')
             self.assertEqual(new_settings.delivery_type, 2)
 
-            mock_redirector_insert_adgroup.assert_called_with(ad_group, ANY, ANY)
+            mock_redirector_insert_adgroup.assert_called_with(ad_group)
 
             hist = history_helpers.get_ad_group_history(ad_group).first()
             self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
@@ -439,7 +439,7 @@ class AdGroupSettingsTest(TestCase):
                 if ags.source.source_type.type == constants.SourceType.B1:
                     self.assertTrue(cpc <= Decimal('0.05'))
 
-            mock_insert_adgroup.assert_called_with(ad_group, ANY, ANY)
+            mock_insert_adgroup.assert_called_with(ad_group)
 
     @patch('utils.redirector_helper.insert_adgroup')
     def test_put_without_non_propagated_settings(self, mock_redirector_insert_adgroup):
@@ -479,7 +479,7 @@ class AdGroupSettingsTest(TestCase):
             self.assertEqual(new_settings.cpc_cc, None)
             self.assertEqual(new_settings.daily_budget_cc, None)
 
-            mock_redirector_insert_adgroup.assert_called_with(ad_group, ANY, ANY)
+            mock_redirector_insert_adgroup.assert_called_with(ad_group)
 
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
@@ -549,7 +549,7 @@ class AdGroupSettingsTest(TestCase):
             new_settings = ad_group.get_current_settings()
             self.assertIsNotNone(new_settings.pk)
 
-            mock_redirector_insert_adgroup.assert_called_with(ad_group, ANY, ANY)
+            mock_redirector_insert_adgroup.assert_called_with(ad_group)
 
             hist = history_helpers.get_ad_group_history(ad_group).first()
             self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
@@ -590,7 +590,7 @@ class AdGroupSettingsTest(TestCase):
                 if ags.source.source_type.type == constants.SourceType.B1:
                     self.assertTrue(cpc == Decimal('0.1'))
 
-            mock_insert_adgroup.assert_called_with(ad_group, ANY, ANY)
+            mock_insert_adgroup.assert_called_with(ad_group)
 
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('utils.k1_helper.update_ad_group')
@@ -660,7 +660,7 @@ class AdGroupSettingsTest(TestCase):
                 if ags.source.source_type.type == constants.SourceType.B1:
                     self.assertEqual(Decimal('0.2150'), agss.cpc_cc)
 
-            mock_insert_adgroup.assert_called_with(ad_group, ANY, ANY)
+            mock_insert_adgroup.assert_called_with(ad_group)
 
     @patch('utils.redirector_helper.insert_adgroup')
     def test_put_tracking_codes_with_permission(self, mock_redirector_insert_adgroup):
@@ -1927,8 +1927,7 @@ class CampaignSettingsTest(TestCase):
         mock_send_ga_email.assert_called_with(self.user)
         mock_ga_readable.assert_called_with('UA-123456789-3')
         mock_r1_insert_adgroup.assert_has_calls(
-            [call(ag, ag.get_current_settings(), ANY)
-             for ag in campaign.adgroup_set.all()])
+            [call(ag) for ag in campaign.adgroup_set.all()])
 
         hist = history_helpers.get_campaign_history(models.Campaign.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)

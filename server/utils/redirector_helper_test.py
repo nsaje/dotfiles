@@ -189,11 +189,7 @@ class InsertAdGroupTest(TestCase):
         response.getcode = lambda: 200
         mock_urlopen.return_value = response
 
-        redirector_helper.insert_adgroup(
-            ad_group,
-            ad_group.get_current_settings(),
-            ad_group.campaign.get_current_settings(),
-        )
+        redirector_helper.insert_adgroup(ad_group)
 
         call = mock_urlopen.call_args[0][0]
 
@@ -216,11 +212,7 @@ class InsertAdGroupTest(TestCase):
         new_ad_group_settings.click_capping_daily_ad_group_max_clicks = 10
         new_ad_group_settings.save(None)
 
-        redirector_helper.insert_adgroup(
-            ad_group,
-            ad_group.get_current_settings(),
-            ad_group.campaign.get_current_settings(),
-        )
+        redirector_helper.insert_adgroup(ad_group)
 
         call = mock_urlopen.call_args[0][0]
 
@@ -245,11 +237,7 @@ class InsertAdGroupTest(TestCase):
 
         ad_group = dash.models.AdGroup.objects.get(id=1)
         with self.assertRaises(Exception):
-            redirector_helper.insert_adgroup(
-                ad_group,
-                ad_group.get_current_settings(),
-                ad_group.campaign.get_current_settings()
-            )
+            redirector_helper.insert_adgroup(ad_group)
         self.assertEqual(len(mock_urlopen.call_args_list), 3)
 
     def test_status_not_success(self, mock_urlopen):
@@ -260,11 +248,7 @@ class InsertAdGroupTest(TestCase):
 
         ad_group = dash.models.AdGroup.objects.get(id=1)
         with self.assertRaises(Exception):
-            redirector_helper.insert_adgroup(
-                ad_group,
-                ad_group.get_current_settings(),
-                ad_group.campaign.get_current_settings()
-            )
+            redirector_helper.insert_adgroup(ad_group)
         self.assertEqual(len(mock_urlopen.call_args_list), 3)
 
 
