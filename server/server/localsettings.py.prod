@@ -44,7 +44,7 @@ DATABASES = {
         'NAME': 'k1',
         'USER': 'eins2',
         'PASSWORD': Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxVfiVeNgjFHmhgsLoCARCAU68r77GeEWk2Sp3ZD4In553dgo5e1YH6CdOfqT6pHw5klSLYu6pEDYWFq9UFErwAwY3cj1c67pKR5qtecEghHY9YYDnzag8J6cCkD/k2tUdzv8oy').get(),
-        'HOST': 'zemantaone-hamax.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
+        'HOST': 'zemantaone.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
         'PORT': 5439
     },
     'stats-replica': {
