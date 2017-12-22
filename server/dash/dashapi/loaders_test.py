@@ -1,3 +1,5 @@
+import mock
+
 from django.test import TestCase
 from decimal import Decimal
 
@@ -24,11 +26,11 @@ class AccountsLoaderTest(TestCase):
     fixtures = ['test_api_breakdowns.yaml']
 
     def setUp(self):
-        accounts = models.Account.objects.all()
-        sources = models.Source.objects.all()
+        self.accounts = models.Account.objects.all()
+        self.sources = models.Source.objects.all()
         self.user = User.objects.get(pk=1)
 
-        self.loader = loaders.AccountsLoader(accounts, sources, self.user)
+        self.loader = loaders.AccountsLoader(self.accounts, self.sources, self.user)
 
     def test_from_constraints(self):
         loader = loaders.AccountsLoader.from_constraints(User.objects.get(pk=1), {
@@ -73,6 +75,27 @@ class AccountsLoaderTest(TestCase):
             'settings_id': 1,
             'salesforce_url': '',
         }})
+
+    @mock.patch('automation.campaignstop.get_campaignstop_states')
+    def test_status_map_campaignstop(self, mock_campaignstop):
+        mock_campaignstop.return_value = {
+            1: {'allowed_to_run': False},
+            2: {'allowed_to_run': True},
+        }
+
+        loader = loaders.AccountsLoader(self.accounts, self.sources, self.user)
+        self.assertDictEqual(loader.settings_map, {
+            1: {
+                'archived': False,
+                'status': constants.AdGroupRunningStatus.INACTIVE,
+                'default_account_manager': 'mad.max@zemanta.com',
+                'default_sales_representative': 'supertestuser@test.com',
+                'default_cs_representative': 'supercsuser@test.com',
+                'account_type': constants.AccountType.get_text(constants.AccountType.ACTIVATED),
+                'settings_id': 1,
+                'salesforce_url': '',
+            },
+        })
 
 
 class CampaignsLoaderTest(TestCase):
@@ -136,6 +159,25 @@ class CampaignsLoaderTest(TestCase):
                 'settings_id': 2,
                 'campaign_manager': 'mad.max@zemanta.com',
             }
+        })
+
+    @mock.patch('automation.campaignstop.get_campaignstop_states')
+    def test_status_map_campaignstop(self, mock_campaignstop):
+        mock_campaignstop.return_value = {
+            1: {'allowed_to_run': False},
+            2: {'allowed_to_run': True},
+        }
+
+        campaigns = models.Campaign.objects.filter(id=1)
+        sources = models.Source.objects.all()
+        loader = loaders.CampaignsLoader(campaigns, sources, self.user)
+        self.assertDictEqual(loader.settings_map, {
+            1: {
+                'status': constants.AdGroupRunningStatus.INACTIVE,
+                'archived': False,
+                'settings_id': 1,
+                'campaign_manager': 'supertestuser@test.com',
+            },
         })
 
 
@@ -212,6 +254,38 @@ class AdGroupsLoaderTest(TestCase):
         self.assertDictEqual(loader.settings_map, {
             1: {
                 'status': constants.AdGroupRunningStatus.ACTIVE,
+                'state': constants.AdGroupRunningStatus.ACTIVE,
+                'archived': False,
+                'settings_id': 4,
+            },
+            2: {
+                'status': constants.AdGroupRunningStatus.INACTIVE,
+                'state': constants.AdGroupRunningStatus.INACTIVE,
+                'archived': False,
+                'settings_id': 2,
+            },
+            3: {
+                'status': constants.AdGroupRunningStatus.INACTIVE,
+                'state': constants.AdGroupRunningStatus.INACTIVE,
+                'archived': True,
+                'settings_id': 3,
+            },
+        })
+
+    @mock.patch('automation.campaignstop.get_campaignstop_states')
+    def test_status_map_campaignstop(self, mock_campaignstop):
+        mock_campaignstop.return_value = {
+            1: {'allowed_to_run': False},
+            2: {'allowed_to_run': True},
+        }
+
+        ad_groups = models.AdGroup.objects.all()
+        sources = models.Source.objects.all()
+
+        loader = loaders.AdGroupsLoader(ad_groups, sources)
+        self.assertDictEqual(loader.settings_map, {
+            1: {
+                'status': constants.AdGroupRunningStatus.INACTIVE,
                 'state': constants.AdGroupRunningStatus.ACTIVE,
                 'archived': False,
                 'settings_id': 4,

@@ -3,6 +3,7 @@ from django.utils.functional import cached_property
 from django.db.models.query import QuerySet
 
 from automation import campaign_stop
+import automation.campaignstop
 from zemauth.models import User as ZemUser
 
 from analytics.projections import BudgetProjections
@@ -149,13 +150,17 @@ class AccountsLoader(Loader):
         Returns dict with account_id as key and status as value
         """
 
-        account_ids_state = models.AdGroup.objects.filter(campaign__account_id__in=self.objs_ids)\
-                                                  .values_list('campaign__account_id', 'settings__state')\
-                                                  .order_by()
+        account_ids_state = models.AdGroup.objects.filter(
+            campaign__account_id__in=self.objs_ids
+        ).values_list(
+            'campaign_id', 'campaign__account_id', 'settings__state'
+        ).order_by()  # removes default ordering to speed up the query
+        campaignstop_states = automation.campaignstop.get_campaignstop_states(
+            models.Campaign.objects.filter(account_id__in=self.objs_ids))
 
         status_map = collections.defaultdict(lambda: constants.AdGroupRunningStatus.INACTIVE)
-        for account_id, state in account_ids_state:
-            if state == constants.AdGroupRunningStatus.ACTIVE:
+        for campaign_id, account_id, state in account_ids_state:
+            if state == constants.AdGroupRunningStatus.ACTIVE and campaignstop_states[campaign_id]['allowed_to_run']:
                 status_map[account_id] = state
 
         return status_map
@@ -233,11 +238,14 @@ class CampaignsLoader(Loader):
     def _get_status_map(self):
         campaign_ids_state = models.AdGroup.objects.filter(campaign__in=self.objs_ids)\
                                                    .values_list('campaign_id', 'settings__state')\
-                                                   .order_by()
+                                                   .order_by()  # removes default ordering to speed up the query
+        campaignstop_states = automation.campaignstop.get_campaignstop_states(
+            models.Campaign.objects.filter(id__in=self.objs_ids))
 
         status_map = collections.defaultdict(lambda: constants.AdGroupRunningStatus.INACTIVE)
         for campaign_id, state in campaign_ids_state:
-            if state == constants.AdGroupRunningStatus.ACTIVE:
+            if state == constants.AdGroupRunningStatus.ACTIVE and\
+               campaignstop_states[campaign_id]['allowed_to_run']:
                 status_map[campaign_id] = state
 
         return status_map
@@ -281,27 +289,34 @@ class AdGroupsLoader(Loader):
     @cached_property
     def settings_map(self):
         settings_map = {}
-        for ad_group_id, ad_group in self.objs_map.items():
+        status_map = self._get_status_map()
+        for ad_group_id, ad_group in self.objs_map.iteritems():
             settings_map[ad_group_id] = {
                 'archived': ad_group.settings.archived,
-                'status': ad_group.settings.state,
+                'status': status_map[ad_group_id],
                 'state': ad_group.settings.state,
                 'settings_id': ad_group.settings.id,
             }
 
         return settings_map
 
+    def _get_status_map(self):
+        campaignstop_states = automation.campaignstop.get_campaignstop_states(
+            self._campaign_ad_groups_map.keys())
+        status_map = collections.defaultdict(lambda: constants.AdGroupRunningStatus.INACTIVE)
+        for ad_group_id, ad_group in self.objs_map.iteritems():
+            if ad_group.settings.state == constants.AdGroupRunningStatus.ACTIVE and\
+               campaignstop_states[ad_group.campaign_id]['allowed_to_run']:
+                status_map[ad_group_id] = ad_group.settings.state
+
+        return status_map
+
     @cached_property
     def base_level_settings_map(self):
-        campaign_ad_groups = collections.defaultdict(list)
-        for _, ad_group in self.objs_map.iteritems():
-            campaign_ad_groups[ad_group.campaign_id].append(ad_group)
-
-        campaigns_map = {x.id: x for x in models.Campaign.objects.filter(pk__in=campaign_ad_groups.keys())}
+        campaign_ad_groups = self._campaign_ad_groups_map
 
         settings_map = {}
-        for campaign_id, ad_groups in campaign_ad_groups.items():
-            campaign = campaigns_map[campaign_id]
+        for campaign, ad_groups in campaign_ad_groups.items():
             campaign_stop_check_map = campaign_stop.can_enable_ad_groups(campaign, campaign.get_current_settings())
             campaign_has_available_budget = data_helper.campaign_has_available_budget(campaign)
 
@@ -312,6 +327,14 @@ class AdGroupsLoader(Loader):
                 }
 
         return settings_map
+
+    @cached_property
+    def _campaign_ad_groups_map(self):
+        campaign_ad_groups = collections.defaultdict(list)
+        for _, ad_group in self.objs_map.iteritems():
+            campaign_ad_groups[ad_group.campaign].append(ad_group)
+
+        return campaign_ad_groups
 
 
 class ContentAdsLoader(Loader):
