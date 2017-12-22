@@ -275,16 +275,18 @@ def can_enable_ad_groups(campaign, campaign_settings):
     if campaign_settings.landing_mode:
         return {ag.id: False for ag in ad_groups}
 
+    ad_group_ids = set(ag.id for ag in ad_groups)
+
     current_ag_settings = {}
     for ag_settings in dash.models.AdGroupSettings.objects.filter(
-        ad_group__in=ad_groups
+        ad_group_id__in=ad_group_ids
     ).group_current_settings().select_related('ad_group'):
         current_ag_settings[ag_settings.ad_group] = ag_settings
 
     current_active_ags_settings = defaultdict(list)
     for ags_settings in dash.models.AdGroupSourceSettings.objects.filter(
-        ad_group_source__ad_group__in=ad_groups,
-    ).group_current_settings().select_related('ad_group_source__source'):
+        ad_group_source__ad_group_id__in=ad_group_ids,
+    ).group_current_settings().select_related('ad_group_source__source__source_type'):
         if ags_settings.state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
             current_active_ags_settings[ags_settings.ad_group_source.ad_group_id].append(ags_settings)
 
@@ -1408,7 +1410,7 @@ def _get_ag_settings_dict(date, ad_groups):
 
     # this is true only for min_tz - last setting before date has to be found for sources with other tzs
     latest_settings_before = dash.models.AdGroupSettings.objects.filter(
-        ad_group__in=ad_groups,
+        ad_group_id__in=set(ag.id for ag in ad_groups),
         created_dt__lt=dt_min_tz,
     ).select_related('ad_group').latest_per_entity()
 
