@@ -1,16 +1,9 @@
-import threading
 import functools
 
-threadlocal = threading.local()
+import utils.request_context
 
 
-class use_read_replica(object):
-
-    def __enter__(self):
-        setattr(threadlocal, 'USE_READ_REPLICA', True)
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        setattr(threadlocal, 'USE_READ_REPLICA', None)
+class _use_read_replica_base(object):
 
     def __call__(self, func):
         @functools.wraps(func)
@@ -20,5 +13,19 @@ class use_read_replica(object):
         return inner
 
 
-def get_thread_local(attr, default=None):
-    return getattr(threadlocal, attr, default)
+class use_read_replica(_use_read_replica_base):
+
+    def __enter__(self):
+        utils.request_context.set('USE_READ_REPLICA', True)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        utils.request_context.set('USE_READ_REPLICA', None)
+
+
+class use_stats_read_replica(_use_read_replica_base):
+
+    def __enter__(self):
+        utils.request_context.set('USE_STATS_READ_REPLICA', True)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        utils.request_context.set('USE_STATS_READ_REPLICA', None)

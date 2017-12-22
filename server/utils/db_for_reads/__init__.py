@@ -1,1 +1,3 @@
 from decorator import use_read_replica
+from decorator import use_stats_read_replica
+from router import UseStatsReadReplicaRouter

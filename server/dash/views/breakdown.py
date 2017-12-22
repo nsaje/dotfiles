@@ -11,6 +11,7 @@ from core.publisher_groups import publisher_group_helpers
 from dash.views import helpers
 from dash.views import breakdown_helpers
 from utils import api_common, exc, threads
+from utils import db_for_reads
 import stats.api_breakdowns
 import stats.constraints_helper
 import stats.helpers
@@ -114,6 +115,7 @@ def _get_page_and_size(offset, limit):
 
 class AllAccountsBreakdown(api_common.BaseApiView):
 
+    @db_for_reads.use_stats_read_replica()
     def post(self, request, breakdown):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
             raise exc.MissingDataError()
@@ -178,6 +180,7 @@ class AllAccountsBreakdown(api_common.BaseApiView):
 
 class AccountBreakdown(api_common.BaseApiView):
 
+    @db_for_reads.use_stats_read_replica()
     @newrelic.agent.function_trace()
     def post(self, request, account_id, breakdown):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
@@ -246,6 +249,7 @@ class AccountBreakdown(api_common.BaseApiView):
 
 class CampaignBreakdown(api_common.BaseApiView):
 
+    @db_for_reads.use_stats_read_replica()
     @newrelic.agent.function_trace()
     def post(self, request, campaign_id, breakdown):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
@@ -318,6 +322,7 @@ class CampaignBreakdown(api_common.BaseApiView):
 
 class AdGroupBreakdown(api_common.BaseApiView):
 
+    @db_for_reads.use_stats_read_replica()
     @newrelic.agent.function_trace()
     def post(self, request, ad_group_id, breakdown):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature_on_ad_group_level'):

@@ -2,33 +2,38 @@ import influx
 import logging
 from collections import namedtuple
 
-from django.conf import settings
 from django.db import connections, transaction
 from django.core.cache import caches
 
 from utils import cache_helper
+import utils.db_for_reads
 
 logger = logging.getLogger(__name__)
 
 CACHE_MISS_FLAG = None
 
 
-def get_stats_cursor(db_name=None):
-    if not db_name:
-        db_name = settings.STATS_DB_NAME
-    return connections[db_name].cursor()
+stats_db_router = utils.db_for_reads.UseStatsReadReplicaRouter()
 
 
-def get_write_stats_cursor(db_name=None):
-    if not db_name:
-        db_name = settings.STATS_DB_NAME
-    return connections[db_name].cursor()
+def get_stats_cursor(db_alias=None):
+    if not db_alias:
+        db_alias = stats_db_router.db_for_read(None)
+    influx.incr('redshiftapi.cursor', 1, db_alias=db_alias, type='read')
+    return connections[db_alias].cursor()
 
 
-def get_write_stats_transaction(db_name=None):
-    if not db_name:
-        db_name = settings.STATS_DB_NAME
-    return transaction.atomic(using=db_name)
+def get_write_stats_cursor(db_alias=None):
+    if not db_alias:
+        db_alias = stats_db_router.db_for_write(None)
+    influx.incr('redshiftapi.cursor', 1, db_alias=db_alias, type='write')
+    return connections[db_alias].cursor()
+
+
+def get_write_stats_transaction(db_alias=None):
+    if not db_alias:
+        db_alias = stats_db_router.db_for_write(None)
+    return transaction.atomic(using=db_alias)
 
 
 def dictfetchall(cursor):

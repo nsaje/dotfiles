@@ -8,7 +8,7 @@ import httplib
 import urllib
 import urllib2
 import pytz
-import threading
+from functools import partial
 
 from django.db.models import Q
 from django.conf import settings
@@ -25,6 +25,8 @@ from utils import api_common
 from utils import exc
 from utils import email_helper
 from utils import request_signer
+from utils import threads
+from utils import db_for_reads
 
 from automation import campaign_stop
 
@@ -180,25 +182,18 @@ class CampaignRestore(api_common.BaseApiView):
 
 class AdGroupOverview(api_common.BaseApiView):
 
-    class AsyncQuery(threading.Thread):
-
-        def __init__(self, user, ad_group):
-            super(AdGroupOverview.AsyncQuery, self).__init__()
-            self.user = user
-            self.ad_group = ad_group
-            self.yesterday_costs = None
-
-        def run(self):
-            self.yesterday_costs = infobox_helpers.get_yesterday_adgroup_spend(
-                self.user,
-                self.ad_group
-            ) or 0
-
     @influx.timer('dash.api')
+    @db_for_reads.use_stats_read_replica()
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        async_perf_query = AdGroupOverview.AsyncQuery(request.user, ad_group)
+        async_perf_query = threads.AsyncFunction(
+            partial(
+                infobox_helpers.get_yesterday_adgroup_spend,
+                request.user,
+                ad_group
+            )
+        )
         async_perf_query.start()
 
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
@@ -264,8 +259,7 @@ class AdGroupOverview(api_common.BaseApiView):
                               daily_cap, async_query, filtered_sources):
         settings = []
 
-        async_query.join()
-        yesterday_costs = async_query.yesterday_costs
+        yesterday_costs = async_query.join_and_get_result() or 0
 
         settings.append(infobox_helpers.create_yesterday_spend_setting(
             yesterday_costs,
@@ -338,6 +332,7 @@ class CampaignAdGroups(api_common.BaseApiView):
 class CampaignOverview(api_common.BaseApiView):
 
     @influx.timer('dash.api')
+    @db_for_reads.use_stats_read_replica()
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
@@ -489,6 +484,7 @@ class CampaignOverview(api_common.BaseApiView):
 class AccountOverview(api_common.BaseApiView):
 
     @influx.timer('dash.api')
+    @db_for_reads.use_stats_read_replica()
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id, select_related_users=True)
 
@@ -743,6 +739,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 class AllAccountsOverview(api_common.BaseApiView):
 
     @influx.timer('dash.api')
+    @db_for_reads.use_stats_read_replica()
     def get(self, request):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))

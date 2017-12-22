@@ -4,6 +4,9 @@ import logging
 from django.conf import settings
 from django.db import connection
 
+import utils.request_context
+
+
 logger = logging.getLogger(__name__)
 
 TRANSACTION_END_WAIT = 3
@@ -62,6 +65,7 @@ class RealAsyncFunction(Thread):
         self.func = func
         self._result = None
         self._exception = None
+        self._request_context = utils.request_context.get_dict()
 
     def get_result(self):
         if self._exception:
@@ -69,6 +73,8 @@ class RealAsyncFunction(Thread):
         return self._result
 
     def run(self):
+        # make sure the async thread has the correct request context
+        utils.request_context.set_dict(self._request_context)
         try:
             self._result = self.func()
         except Exception as e:

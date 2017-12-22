@@ -26,6 +26,7 @@ from utils import email_helper
 from utils import k1_helper
 from utils import redirector_helper
 from utils import dates_helper
+from utils import db_for_reads
 
 from zemauth.models import User as ZemUser
 
@@ -1445,6 +1446,7 @@ class AccountUserAction(api_common.BaseApiView):
 
 class CampaignContentInsights(api_common.BaseApiView):
 
+    @db_for_reads.use_stats_read_replica()
     def get(self, request, campaign_id):
         if not request.user.has_perm('zemauth.can_view_campaign_content_insights_side_tab'):
             raise exc.AuthorizationError()
