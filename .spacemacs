@@ -42,7 +42,6 @@ values."
      csharp
      sql
      go
-     gtags
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press <SPC f e R> (Vim style) or
@@ -326,6 +325,10 @@ before packages are loaded. If you are unsure, you should try in setting them in
     (add-hook 'ruby-mode-hook #'(lambda () (modify-syntax-entry ?_ "w")))
     ;; For Javascript
     (add-hook 'js2-mode-hook #'(lambda () (modify-syntax-entry ?_ "w")))
+
+    ; dont auto set pyvenv, slow load
+    (setq python-auto-set-local-pyvenv-virtualenv nil)
+    (setq python-auto-set-local-pyenv-version nil)
   )
 
 (defun dotspacemacs/user-config ()
@@ -335,6 +338,12 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
+
+    ;; fix "symbol's value as variable is void helm-bookmark-map" error
+    (push '("melpa-stable" . "stable.melpa.org/packages/") configuration-layer--elpa-archives)
+    (push '(helm . "melpa-stable") package-pinned-packages)
+    (require 'helm-bookmark)
+
     (global-linum-mode)
     (global-company-mode t)
 
@@ -456,4 +465,7 @@ you should place your code here."
     ; theme customization
     (setq solarized-use-more-italic t)
     (setq solarized-high-contrast-mode-line nil)
+
+    ;; ; flycheck custom
+    ;; (setq flycheck-check-syntax-automatically '(idle-change))
 )
