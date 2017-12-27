@@ -129,6 +129,12 @@ class DemographicSerializerTests(TestCase):
                         {'category': 'lotame:56789'},
                     ]
                 }, {
+                    'OR': [
+                        {'category': 'obs:98765'},
+                        {'category': 'obi:98765'},
+                    ]
+                },
+                {
                     'NOT': [
                         {'category': 'bluekai:98765'},
                     ]
@@ -138,7 +144,8 @@ class DemographicSerializerTests(TestCase):
             'and',
             ['or', 'bluekai:12345', 'lotame:23456', 'lr-test:34567'],
             ['or', 'outbrain:45678', 'lotame:56789'],
-            ['not', 'bluekai:98765']]
+            ['or', 'obs:98765', 'obi:98765'],
+            ['not', 'bluekai:98765', ]]
 
     def test_deserialization(self):
         data = self.serialized
