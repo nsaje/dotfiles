@@ -1,9 +1,12 @@
+import datetime
+
 from django.conf import settings
 
 from utils import s3helpers
 import analytics.statements
 import utils.csv_utils
 import redshiftapi.db
+from dash.features.reports import constants, reports
 
 
 def upload_report_from_fs(path, filepath):
@@ -43,3 +46,12 @@ def generate_report_from_query(name, query):
         data = cur.fetchall()
         return generate_report(name, [columns] + data)
     return None
+
+
+def reprocess_report_job(job_id):
+    original_job = reports.ReportJob.objects.get(pk=job_id)
+
+    new_job = reports.ReportJob(user=original_job.user, oquery=original_job.query)
+    new_job.save()
+    reports.ReportJobExecutor(new_job).execute()
+    return new_job.result
