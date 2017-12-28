@@ -295,7 +295,7 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertTrue(changed_source in changed_sources)
         self.assertTrue(not_changed_source not in changed_sources)
 
-    @patch('redshiftapi.api_breakdowns.query_all')
+    @patch('redshiftapi.api_breakdowns.query')
     @patch('influx.gauge')
     def test_report_adgroups_data_to_influx(self, mock_influx, mock_query):
         mock_query.return_value = [
@@ -339,7 +339,7 @@ class AutopilotPlusTestCase(test.TestCase):
             ]
         )
 
-    @patch('redshiftapi.api_breakdowns.query_all')
+    @patch('redshiftapi.api_breakdowns.query')
     @patch('influx.gauge')
     def test_report_new_budgets_on_ap_to_influx(self, mock_influx, mock_query):
         mock_query.return_value = [

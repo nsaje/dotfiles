@@ -3,7 +3,6 @@ from utils import queryset_helper
 import dash.constants
 
 from redshiftapi import api_breakdowns
-from redshiftapi import postprocess
 
 
 __all__ = ['query', 'query_totals']
@@ -13,8 +12,8 @@ def query(breakdown, constraints, goals, order, offset, limit, use_publishers_vi
     constraints = extract_constraints(constraints)
 
     rows = api_breakdowns.query(
-        breakdown, constraints, None, goals, order, offset, limit, use_publishers_view,
-        is_reports=True,
+        breakdown, constraints, None, goals, order, offset, limit,
+        use_publishers_view=use_publishers_view, is_reports=True, extra_name='report_all',
     )
 
     return rows
@@ -23,9 +22,10 @@ def query(breakdown, constraints, goals, order, offset, limit, use_publishers_vi
 def query_totals(breakdown, constraints, goals, use_publishers_view=False):
     constraints = extract_constraints(constraints)
 
-    rows = api_breakdowns.query_all([], constraints, None, goals, use_publishers_view,
-                                    breakdown_for_name=breakdown, extra_name='report_totals')
-    postprocess.set_default_values([], rows)
+    rows = api_breakdowns.query(
+        [], constraints, None, goals,
+        use_publishers_view=use_publishers_view, breakdown_for_name=breakdown, extra_name='report_total',
+    )
     return rows
 
 

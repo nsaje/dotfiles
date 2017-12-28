@@ -11,7 +11,7 @@ MIN_BEST_PERFORMER_CLICKS = 20
 
 def fetch_campaign_content_ad_metrics(user, campaign, start_date, end_date):
     goals = stats.api_breakdowns.get_goals({'campaign': campaign}, ['content_ad_id'])
-    query_results = redshiftapi.api_breakdowns.query_all(
+    query_results = redshiftapi.api_breakdowns.query(
         breakdown=['content_ad_id'],
         constraints={
             'date__gte': start_date,

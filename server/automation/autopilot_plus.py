@@ -387,7 +387,7 @@ def _fetch_data(ad_groups, sources):
         days=autopilot_settings.AUTOPILOT_CONVERSION_DATA_LOOKBACK_DAYS)
     campaign_goals, conversion_goals, pixels = _get_autopilot_goals(ad_groups)
 
-    yesterday_data = redshiftapi.api_breakdowns.query_all(
+    yesterday_data = redshiftapi.api_breakdowns.query(
         ['ad_group_id', 'source_id'],
         {
             'date__gte': yesterday,
@@ -400,7 +400,7 @@ def _fetch_data(ad_groups, sources):
         use_publishers_view=False,
     )
 
-    days_ago_data = redshiftapi.api_breakdowns.query_all(
+    days_ago_data = redshiftapi.api_breakdowns.query(
         ['ad_group_id', 'source_id'],
         {
             'date__gte': days_ago,
@@ -421,7 +421,7 @@ def _fetch_data(ad_groups, sources):
         campaign_goal_values=[],
         primary_goals=[]
     )
-    conversions_days_ago_data = redshiftapi.api_breakdowns.query_all(
+    conversions_days_ago_data = redshiftapi.api_breakdowns.query(
         ['ad_group_id', 'source_id'],
         {
             'date__gte': conversion_data_days_ago,
@@ -526,7 +526,7 @@ def _report_adgroups_data_to_influx(ad_groups_settings):
     yesterday_spend_on_cpc_ap = Decimal(0.0)
     yesterday_spend_on_budget_ap = Decimal(0.0)
     yesterday = dates_helper.local_today() - datetime.timedelta(days=1)
-    yesterday_data = redshiftapi.api_breakdowns.query_all(
+    yesterday_data = redshiftapi.api_breakdowns.query(
         ['ad_group_id'],
         {
             'date__lte': yesterday,
