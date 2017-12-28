@@ -78,7 +78,7 @@ class Command(ExceptionCommand):
             yield [out[c] for c in EXPECTED_COLS]
 
     def _get_conversions_data(self, ad_group_ids):
-        data = redshiftapi.api_breakdowns.query(
+        data = redshiftapi.api_breakdowns.query_all(
             ['ad_group_id', 'publisher_id'],
             {
                 'date__lte': dates_helper.local_today(),
@@ -93,7 +93,6 @@ class Command(ExceptionCommand):
                 pixels=[models.ConversionPixel.objects.get(id=844)],
                 primary_goals=None, ),
             use_publishers_view=True,
-            query_all=True,
         )
 
         conversions_data = {}

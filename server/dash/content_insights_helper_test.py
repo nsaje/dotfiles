@@ -14,8 +14,8 @@ class ContentInsightsHelperTestCase(test.TestCase):
     def user(self):
         return User.objects.get(pk=2)
 
-    @patch('redshiftapi.api_breakdowns.query')
-    def test_fetch_campaign_content_ad_metrics(self, mock_query):
+    @patch('redshiftapi.api_breakdowns.query_all')
+    def test_fetch_campaign_content_ad_metrics(self, mock_query_all):
         campaign = dash.models.Campaign.objects.get(pk=1)
         ids = []
         for i in range(3):
@@ -29,7 +29,7 @@ class ContentInsightsHelperTestCase(test.TestCase):
             cad.save()
             ids.append(cad.id)
 
-        mock_query.return_value = [
+        mock_query_all.return_value = [
             {
                 'content_ad_id': ids[0],
                 'clicks': 100,
@@ -64,8 +64,8 @@ class ContentInsightsHelperTestCase(test.TestCase):
             }
         ], best)
 
-    @patch('redshiftapi.api_breakdowns.query')
-    def test_fetch_campaign_content_ad_metrics_with_filters(self, mock_query):
+    @patch('redshiftapi.api_breakdowns.query_all')
+    def test_fetch_campaign_content_ad_metrics_with_filters(self, mock_query_all):
         campaign = dash.models.Campaign.objects.get(pk=1)
         ids = []
         for i in range(3):
@@ -79,7 +79,7 @@ class ContentInsightsHelperTestCase(test.TestCase):
             cad.save()
             ids.append(cad.id)
 
-        mock_query.return_value = [
+        mock_query_all.return_value = [
             {
                 'content_ad_id': ids[0],
                 'clicks': 10,

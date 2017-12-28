@@ -34,10 +34,8 @@ def should_query_all(breakdown):
     return False
 
 
-def query(breakdown, constraints, parents, goals, order=None, offset=None, limit=None, use_publishers_view=False, is_reports=False, query_all=False, breakdown_for_name=None, extra_name='', metrics=None):
-    orders = ['-media_cost'] + breakdown
-    if order is not None:
-        orders = [order] + orders
+def query(breakdown, constraints, parents, goals, order, offset, limit, use_publishers_view=False, is_reports=False):
+    orders = [order, '-media_cost'] + breakdown
 
     target_dimension = stats.constants.get_target_dimension(breakdown)
     if target_dimension in stats.constants.TimeDimension._ALL:
@@ -45,12 +43,9 @@ def query(breakdown, constraints, parents, goals, order=None, offset=None, limit
         # offset is not needed anymore because constraints were set accordingly
         offset = 0
 
-    if breakdown_for_name is None:
-        breakdown_for_name = breakdown
-
-    if query_all or should_query_all(breakdown):
-        all_rows = _query_all(breakdown, constraints, parents, goals, use_publishers_view,
-                              breakdown_for_name=breakdown_for_name, extra_name=extra_name, metrics=metrics)
+    if should_query_all(breakdown):
+        all_rows = query_all(breakdown, constraints, parents, goals, use_publishers_view,
+                             breakdown_for_name=breakdown, extra_name='all')
 
         rows = sort_helper.sort_results(all_rows, orders)
         if not is_reports:
@@ -68,27 +63,25 @@ def query(breakdown, constraints, parents, goals, order=None, offset=None, limit
             sql, params = queries.prepare_query_joint_levels(
                 breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view)
 
-        rows = db.execute_query(sql, params, helpers.get_query_name(breakdown_for_name))
+        rows = db.execute_query(sql, params, helpers.get_query_name(breakdown))
 
         postprocess.postprocess_joint_query_rows(rows)
         if not is_reports:
             rows = postprocess.fill_in_missing_rows(rows, breakdown, constraints, parents, orders, offset, limit)
-    postprocess.set_default_values(breakdown, rows)
 
+    postprocess.set_default_values(breakdown, rows)
     return rows
 
 
 def query_stats_for_rows(rows, breakdown, constraints, goals, use_publishers_view=False):
     if should_query_all(breakdown):
-        stats_rows = query(
-            breakdown, constraints, None, goals,
-            use_publishers_view=use_publishers_view, query_all=True, extra_name='rows')
+        stats_rows = query_all(breakdown, constraints, None, goals, use_publishers_view,
+                               breakdown_for_name=breakdown, extra_name='rows')
         rows = helpers.select_relevant_stats_rows(breakdown, rows, stats_rows)
     else:
         parents = helpers.create_parents(rows, breakdown)  # this limits the query to rows we are looking for
-        rows = query(
-            breakdown, constraints, parents, goals,
-            use_publishers_view=use_publishers_view, query_all=True, extra_name='rows')
+        rows = query_all(breakdown, constraints, parents, goals, use_publishers_view,
+                         breakdown_for_name=breakdown, extra_name='rows')
 
     postprocess.set_default_values(breakdown, rows)
     return rows
@@ -100,12 +93,14 @@ def query_structure_with_stats(breakdown, constraints, use_publishers_view=False
 
 
 def query_totals(breakdown, constraints, goals, use_publishers_view=False):
-    rows = query([], constraints, None, goals, use_publishers_view=use_publishers_view, breakdown_for_name=breakdown, extra_name='totals')
+    rows = query_all([], constraints, None, goals, use_publishers_view,
+                     breakdown_for_name=breakdown, extra_name='totals')
+    postprocess.set_default_values([], rows)
     return rows
 
 
-def _query_all(breakdown, constraints, parents, goals, use_publishers_view,
-               breakdown_for_name=[], extra_name='', metrics=None):
+def query_all(breakdown, constraints, parents, goals, use_publishers_view,
+              breakdown_for_name=[], extra_name='', metrics=None):
 
     t_base = None
     t_yesterday = None

@@ -1202,7 +1202,7 @@ def _update_b1_group_cap(ad_group, cap):
 
 def _get_yesterday_source_spends(campaign, ad_groups):
     yesterday = dates_helper.local_yesterday()
-    rows = redshiftapi.api_breakdowns.query(
+    rows = redshiftapi.api_breakdowns.query_all(
         ['ad_group_id', 'source_id'],
         {
             'date__gte': yesterday,
@@ -1320,7 +1320,7 @@ def _get_ad_group_ratios(active_ad_groups, per_date_data):
 
 def _get_past_7_days_data(campaign):
     today = dates_helper.local_today()
-    rows = redshiftapi.api_breakdowns.query(
+    rows = redshiftapi.api_breakdowns.query_all(
         ['date', 'ad_group_id', 'source_id'],
         {
             'date__gte': today - datetime.timedelta(days=7),
@@ -1330,7 +1330,6 @@ def _get_past_7_days_data(campaign):
         parents=None,
         goals=None,
         use_publishers_view=False,
-        query_all=True,
     )
 
     date_spend = defaultdict(int)

@@ -140,11 +140,6 @@ def get_time_dimension_constraints(time_dimension, constraints, offset, limit):
     is smaller.
     """
 
-    if offset is None:
-        offset = 0
-    if limit is None:
-        limit = (constraints['date__lte'] - constraints['date__gte']).days
-
     constraints = copy.copy(constraints)
 
     start_date = constraints['date__gte']

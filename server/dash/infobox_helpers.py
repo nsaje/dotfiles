@@ -161,7 +161,7 @@ def get_media_campaign_spend(user, campaign, until_date=None):
 
 def get_yesterday_adgroup_spend(user, ad_group):
     yesterday = utils.dates_helper.local_yesterday()
-    query_results = redshiftapi.api_breakdowns.query(
+    query_results = redshiftapi.api_breakdowns.query_all(
         ['ad_group_id'],
         constraints={
             'date__gte': yesterday,
@@ -182,7 +182,7 @@ def get_yesterday_adgroup_spend(user, ad_group):
 
 def get_yesterday_campaign_spend(user, campaign):
     yesterday = utils.dates_helper.local_yesterday()
-    query_results = redshiftapi.api_breakdowns.query(
+    query_results = redshiftapi.api_breakdowns.query_all(
         ['campaign_id'],
         constraints={
             'date__gte': yesterday,

@@ -1516,7 +1516,7 @@ class StopNonSpendingSourcesTestCase(TestCase):
     fixtures = ['test_campaign_stop.yaml']
 
     @patch('utils.dates_helper.local_today')
-    @patch('redshiftapi.api_breakdowns.query', autospec=True)
+    @patch('redshiftapi.api_breakdowns.query_all', autospec=True)
     def test_stop_non_spending_sources(self, mock_get_yesterday_spends, mock_local_today):
         mock_local_today.return_value = datetime.date(2016, 3, 15)
         campaign = dash.models.Campaign.objects.get(id=1)
@@ -1564,7 +1564,7 @@ class StopNonSpendingSourcesTestCase(TestCase):
         self.assertItemsEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
 
     @patch('utils.dates_helper.local_today')
-    @patch('redshiftapi.api_breakdowns.query', autospec=True)
+    @patch('redshiftapi.api_breakdowns.query_all', autospec=True)
     def test_stop_whole_ad_group(self, mock_get_yesterday_spends, mock_local_today):
         mock_local_today.return_value = datetime.date(2016, 3, 15)
         campaign = dash.models.Campaign.objects.get(id=1)

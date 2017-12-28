@@ -252,9 +252,9 @@ class InfoBoxHelpersTest(TestCase):
             dash.infobox_helpers.get_total_and_media_campaign_spend(user, campaign)
         )
 
-    @mock.patch('redshiftapi.api_breakdowns.query')
-    def test_get_yesterday_total_spend(self, mock_query):
-        mock_query.return_value = [{
+    @mock.patch('redshiftapi.api_breakdowns.query_all')
+    def test_get_yesterday_total_spend(self, mock_query_all):
+        mock_query_all.return_value = [{
             'campaign_id': u'1',
             'e_yesterday_cost': 50,
             'yesterday_et_cost': 60,
@@ -294,11 +294,11 @@ class InfoBoxHelpersTest(TestCase):
 
         self.assertEqual(0, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
 
-    @mock.patch('redshiftapi.api_breakdowns.query')
-    def test_get_yesterday_adgroup_spend(self, mock_query):
+    @mock.patch('redshiftapi.api_breakdowns.query_all')
+    def test_get_yesterday_adgroup_spend(self, mock_query_all):
         user = zemauth.models.User.objects.get(pk=1)
         ad_group = dash.models.AdGroup.objects.get(pk=1)
-        mock_query.return_value = [{
+        mock_query_all.return_value = [{
             'ad_group_id': u'1',
             'e_yesterday_cost': 50,
             'yesterday_et_cost': 60,

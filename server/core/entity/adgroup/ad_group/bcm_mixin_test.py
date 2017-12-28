@@ -34,7 +34,7 @@ class MigrateToBcmV2Test(TestCase):
         redirector_insert_patcher.start()
         self.addCleanup(redirector_insert_patcher.stop)
 
-        redshiftapi_patcher = patch('redshiftapi.api_breakdowns.query', MagicMock())
+        redshiftapi_patcher = patch('redshiftapi.api_breakdowns.query_all', MagicMock())
         redshiftapi_patcher.start()
         self.addCleanup(redshiftapi_patcher.stop)
 

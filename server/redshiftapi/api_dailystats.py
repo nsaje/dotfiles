@@ -1,6 +1,9 @@
 from redshiftapi import api_breakdowns
+from redshiftapi import postprocess
 
 import dash.constants
+
+from utils import sort_helper
 
 
 __all__ = ['query']
@@ -9,9 +12,13 @@ __all__ = ['query']
 def query(breakdown, metrics, constraints, goals, order, use_publishers_view=False):
     constraints = extract_constraints(constraints, use_publishers_view)
 
-    rows = api_breakdowns.query(
-        breakdown, constraints, None, goals, order, metrics=metrics,
-        use_publishers_view=use_publishers_view, extra_name='dailystats_all', query_all=True)
+    rows = api_breakdowns.query_all(
+        breakdown, constraints, None, goals, use_publishers_view,
+        breakdown_for_name=breakdown, extra_name='dailystats_all',
+        metrics=metrics)
+    postprocess.set_default_values(breakdown, rows)
+    postprocess.fill_in_missing_rows(rows, breakdown, constraints, None, [order], 0, (constraints['date__lte'] - constraints['date__gte']).days)
+    rows = sort_helper.sort_results(rows, [order])
 
     return rows
 

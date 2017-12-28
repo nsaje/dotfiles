@@ -35,7 +35,7 @@ def crossvalidation(request):
     sources = dash.models.Source.objects.filter(source_type__type='b1')
     bidder_slugs = {source.id: source.bidder_slug for source in sources}
 
-    stats = redshiftapi.api_breakdowns.query(
+    stats = redshiftapi.api_breakdowns.query_all(
         ['content_ad_id', 'source_id', 'ad_group_id'],
         {
             'date__gte': start_date,
@@ -44,7 +44,7 @@ def crossvalidation(request):
         },
         None,
         None,
-        query_all=True,
+        False
     )
 
     # filter stats without impressions, so we don't have to use pointers in b1 for json decoding
