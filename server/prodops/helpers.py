@@ -1,12 +1,10 @@
-import datetime
-
 from django.conf import settings
 
 from utils import s3helpers
 import analytics.statements
 import utils.csv_utils
 import redshiftapi.db
-from dash.features.reports import constants, reports
+from dash.features.reports import reports
 
 
 def upload_report_from_fs(path, filepath):
