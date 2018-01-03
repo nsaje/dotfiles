@@ -140,6 +140,14 @@ function generateStyleConfig (theme) {
                         }
                     },
                     {
+                        loader: 'postcss-loader',
+                        options: {
+                            plugins: [
+                                require('autoprefixer')(),
+                            ]
+                        }
+                    },
+                    {
                         loader: 'less-loader',
                         options: {
                             paths: [root('./one/app/themes/' + theme.name)],
