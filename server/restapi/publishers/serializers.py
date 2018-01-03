@@ -10,4 +10,4 @@ class PublisherSerializer(serializers.Serializer):
     source = restapi.fields.SourceIdSlugField(required=False, allow_null=True)
     status = restapi.fields.DashConstantField(dash.constants.PublisherStatus)
     level = restapi.fields.DashConstantField(dash.constants.PublisherBlacklistLevel, label='level')
-    modifier = serializers.FloatField(min_value=0.01, max_value=7.0, required=False, allow_null=True)
+    modifier = serializers.FloatField(min_value=0.01, max_value=11.0, required=False, allow_null=True)
