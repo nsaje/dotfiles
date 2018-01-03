@@ -294,7 +294,7 @@ export class CategorizedSelectComponent implements OnInit, OnChanges, OnDestroy 
 
         if (selectedPosition < viewFrom) {
             scrollContainer.scrollTop = selectedPosition;
-        } else if (selectedPosition >= viewTo) {
+        } else if (selectedPosition + listItemHeight >= viewTo) {
             scrollContainer.scrollTop = selectedPosition - scrollContainerHeight + listItemHeight;
         }
     }
