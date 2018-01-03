@@ -6,8 +6,7 @@ import {
 } from '@angular/core';
 import {Subscription} from 'rxjs/Subscription';
 import {Subject} from 'rxjs/Subject';
-import 'rxjs/add/operator/debounceTime';
-import 'rxjs/add/operator/distinctUntilChanged';
+import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
 
 import {Config} from './types/config';
 import {Category} from './types/category';
@@ -51,8 +50,10 @@ export class CategorizedSelectComponent implements OnInit, OnChanges, OnDestroy 
 
     ngOnInit () {
         this.searchSubscription = this.search$
-            .debounceTime(SEARCH_DEBOUNCE_TIME)
-            .distinctUntilChanged()
+            .pipe(
+                debounceTime(SEARCH_DEBOUNCE_TIME),
+                distinctUntilChanged()
+            )
             .subscribe(searchQuery => {
                 if (!this.selectedCategory) {
                     // User might have reset selected category before search executed. Ignore search in that case.

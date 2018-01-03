@@ -4,8 +4,7 @@ import {
     Component, Input, Output, EventEmitter, OnInit, OnDestroy, Inject, ChangeDetectionStrategy
 } from '@angular/core';
 import {Subject} from 'rxjs/Subject';
-import 'rxjs/add/operator/takeUntil';
-import 'rxjs/add/operator/distinctUntilChanged';
+import {map, takeUntil, distinctUntilChanged} from 'rxjs/operators';
 
 import {InventoryPlanningStore} from './inventory-planning.store';
 import {InventoryPlanningEndpoint} from './inventory-planning.endpoint';
@@ -33,9 +32,11 @@ export class InventoryPlanningComponent implements OnInit, OnDestroy {
         }
 
         this.store.state$
-            .takeUntil(this.ngUnsubscribe$)
-            .map(state => state.selectedFilters)
-            .distinctUntilChanged()
+            .pipe(
+                takeUntil(this.ngUnsubscribe$),
+                map(state => state.selectedFilters),
+                distinctUntilChanged()
+            )
             .subscribe(selectedFilters => {
                 this.onSelectedFiltersUpdate.emit(selectedFilters);
             });

@@ -6,8 +6,7 @@ import {
 } from '@angular/core';
 import {Subscription} from 'rxjs/Subscription';
 import {Subject} from 'rxjs/Subject';
-import 'rxjs/add/operator/debounceTime';
-import 'rxjs/add/operator/distinctUntilChanged';
+import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
 
 import {FilterOption} from '../types/filter-option';
 
@@ -37,8 +36,10 @@ export class InventoryPlanningBreakdownComponent implements OnInit, OnChanges, O
 
     ngOnInit () {
         this.searchSubscription = this.search$
-            .debounceTime(SEARCH_DEBOUNCE_TIME)
-            .distinctUntilChanged()
+            .pipe(
+                debounceTime(SEARCH_DEBOUNCE_TIME),
+                distinctUntilChanged()
+            )
             .subscribe(searchQuery => {
                 this.searchResults = this.search(searchQuery);
                 this.selectedIndices = this.getSelectedIndices(this.searchResults, this.selected);

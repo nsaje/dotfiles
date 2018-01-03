@@ -1,8 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs/Observable';
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/catch';
+import {map} from 'rxjs/operators';
 
 import {RestApiResponse} from '../../shared/types/rest-api-response';
 import {Inventory} from './types/inventory';
@@ -30,40 +29,52 @@ export class InventoryPlanningEndpoint {
     loadSummary (selectedFilters: Filters): Observable<Inventory> {
         const {method, params, body} = this.buildRequestProperties(selectedFilters);
         return this.http.request<RestApiResponse>(
-            method,
-            '/rest/internal/inventory-planning/summary',
-            {params: params, body: body})
-            .map(res => res.data);
+                method,
+                '/rest/internal/inventory-planning/summary',
+                {params: params, body: body}
+            )
+            .pipe(
+                map(res => res.data)
+            );
     }
 
     loadCountries (selectedFilters: Filters): Observable<FilterOption[]> {
         const {method, params, body} = this.buildRequestProperties(selectedFilters);
         return this.http.request<RestApiResponse>(
-            method,
-            '/rest/internal/inventory-planning/countries',
-            {params: params, body: body})
-            .map(res => res.data)
-            .map(this.convertOptionsValueToSting);
+                method,
+                '/rest/internal/inventory-planning/countries',
+                {params: params, body: body}
+            )
+            .pipe(
+                map(res => res.data),
+                map(this.convertOptionsValueToSting)
+            );
     }
 
     loadPublishers (selectedFilters: Filters): Observable<FilterOption[]> {
         const {method, params, body} = this.buildRequestProperties(selectedFilters);
         return this.http.request<RestApiResponse>(
-            method,
-            '/rest/internal/inventory-planning/publishers',
-            {params: params, body: body})
-            .map(res => res.data)
-            .map(this.convertOptionsValueToSting);
+                method,
+                '/rest/internal/inventory-planning/publishers',
+                {params: params, body: body}
+            )
+            .pipe(
+                map(res => res.data),
+                map(this.convertOptionsValueToSting)
+            );
     }
 
     loadDevices (selectedFilters: Filters): Observable<FilterOption[]> {
         const {method, params, body} = this.buildRequestProperties(selectedFilters);
         return this.http.request<RestApiResponse>(
-            method,
-            '/rest/internal/inventory-planning/device-types',
-            {params: params, body: body})
-            .map(res => res.data)
-            .map(this.convertOptionsValueToSting);
+                method,
+                '/rest/internal/inventory-planning/device-types',
+                {params: params, body: body}
+            )
+            .pipe(
+                map(res => res.data),
+                map(this.convertOptionsValueToSting)
+            );
     }
 
     private buildRequestProperties (selectedFilters: Filters): RequestProperties {

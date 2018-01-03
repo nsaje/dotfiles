@@ -1,8 +1,8 @@
-import {Observable} from 'rxjs/Observable';
 import {TestBed, inject} from '@angular/core/testing';
 import {HttpClientModule} from '@angular/common/http';
+import {Observable} from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
-import 'rxjs/add/operator/delay';
+import {delay} from 'rxjs/operators';
 
 import {InventoryPlanningStore} from './inventory-planning.store';
 import {InventoryPlanningEndpoint} from './inventory-planning.endpoint';
@@ -60,11 +60,11 @@ describe('InventoryPlanningStore', () => {
     describe('with delayed mocked http requests', () => {
         beforeEach(inject([InventoryPlanningEndpoint], (endpoint: InventoryPlanningEndpoint) => {
             spyOn(endpoint, 'loadSummary').and.returnValue(
-                Observable.of({auctionCount: 100000, avgCpm: 2, winRatio: 0.5}).delay(0)
+                Observable.of({auctionCount: 100000, avgCpm: 2, winRatio: 0.5}).pipe(delay(0))
             );
-            spyOn(endpoint, 'loadCountries').and.returnValue(Observable.of(availableCountries).delay(0));
-            spyOn(endpoint, 'loadPublishers').and.returnValue(Observable.of(availablePublishers).delay(0));
-            spyOn(endpoint, 'loadDevices').and.returnValue(Observable.of(availableDevices).delay(0));
+            spyOn(endpoint, 'loadCountries').and.returnValue(Observable.of(availableCountries).pipe(delay(0)));
+            spyOn(endpoint, 'loadPublishers').and.returnValue(Observable.of(availablePublishers).pipe(delay(0)));
+            spyOn(endpoint, 'loadDevices').and.returnValue(Observable.of(availableDevices).pipe(delay(0)));
 
             store = new InventoryPlanningStore(endpoint);
         }));
