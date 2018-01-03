@@ -2,8 +2,8 @@ import utils.command_helpers
 import utils.slack
 import analytics.monitor
 
-ALERT_MSG_ENTITY = """{} {} ({}) is spending ({}) with an unconfirmed hack - *{}*"""
-ALERT_MSG_GLOBAL = """Unconfirmed global hack *{}* is spending"""
+ALERT_MSG_ENTITY = u"""{} {} ({}) is spending ({}) with an unconfirmed hack - *{}*"""
+ALERT_MSG_GLOBAL = u"""Unconfirmed global hack *{}* is spending"""
 
 
 class Command(utils.command_helpers.ExceptionCommand):
@@ -32,7 +32,7 @@ class Command(utils.command_helpers.ExceptionCommand):
                     entity.name,
                     entity.pk,
                     spend,
-                    str(hack)
+                    hack,
                 )
             self._print(message)
             if options.get('slack'):
