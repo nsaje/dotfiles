@@ -157,7 +157,6 @@ class _ValidHTTPSConnection(httplib.HTTPConnection):
         self.sock = ssl.wrap_socket(
             sock,
             cert_reqs=ssl.CERT_NONE,
-            ssl_version=ssl.PROTOCOL_TLSv1,
         )
 
 
