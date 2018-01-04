@@ -137,9 +137,7 @@ class CampaignSettings(SettingsBase):
         return core.history.helpers.get_changes_text_from_dict(cls, changes, separator=separator)
 
     class QuerySet(SettingsQuerySet):
-
-        def group_current_settings(self):
-            return self.filter(latest_for_campaign__isnull=False)
+        pass
 
     @classmethod
     def get_defaults_dict(cls):

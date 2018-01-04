@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.forms import ValidationError
 from django.db import models
 
@@ -12,17 +14,38 @@ class CpcValidationError(ValidationError):
     pass
 
 
-def validate_cpc(cpc, bcm_modifiers=None, **levels):
-    rules = dash.models.CpcConstraint.objects.all().filter_applied(cpc, bcm_modifiers, **levels)
-    if not rules:
-        return
-    raise ValidationError(
-        'Bid CPC is violating some constraints: ' + ', '.join(map(str, rules))
-    )
+def validate_cpc(cpc, bcm_modifiers=None, rules=None, **levels):
+    if rules is None:
+        rules = get_rules(cpc, bcm_modifiers, **levels)
+    for rule in rules:
+        if ((rule.bcm_min_cpc is not None and rule.bcm_min_cpc > cpc) or
+           (rule.bcm_max_cpc is not None and rule.bcm_max_cpc < cpc)):
+            raise ValidationError(
+                'Bid CPC is violating some constraints: ' + ', '.join(map(str, rules))
+            )
 
 
-def adjust_cpc(cpc, bcm_modifiers=None, **levels):
+def get_rules(cpc, bcm_modifiers=None, select_related=False, **levels):
     rules = dash.models.CpcConstraint.objects.all().filter_applied(cpc, bcm_modifiers, **levels)
+    if select_related:
+        rules = rules.select_related('source')
+    return rules
+
+
+def get_rules_per_source(ad_group, bcm_modifiers=None):
+    rules = get_rules(None, bcm_modifiers, select_related=True, ad_group=ad_group)
+    rules_for_all_sources = [rule for rule in rules if rule.source is None]
+    rules_per_source = defaultdict(lambda: list(rules_for_all_sources))
+    for rule in rules:
+        if rule.source is None:
+            continue
+        rules_per_source[rule.source].append(rule)
+    return rules_per_source
+
+
+def adjust_cpc(cpc, bcm_modifiers=None, rules=None, **levels):
+    if rules is None:
+        rules = get_rules(cpc, bcm_modifiers, **levels)
     for rule in rules:
         cpc = max(rule.bcm_min_cpc or cpc, cpc)
         cpc = min(rule.bcm_max_cpc or cpc, cpc)

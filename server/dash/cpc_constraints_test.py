@@ -245,6 +245,31 @@ class AdjustCpcTestCase(test.TestCase):
         )
         self.assertEqual(cpc, Decimal('0.25'))
 
+    def test_adjust_cpc_min_and_max_rules(self):
+        cpc_constraints.create(
+            min_cpc=Decimal('0.05'),
+            max_cpc=Decimal('0.15'),
+            source_id=1,
+            ad_group_id=1,
+        )
+        rules = cpc_constraints.get_rules_per_source(models.AdGroup.objects.get(pk=1))
+        source = models.Source.objects.get(pk=1)
+        cpc = cpc_constraints.adjust_cpc(
+            Decimal('0.01'),
+            rules=rules[source],
+        )
+        self.assertEqual(cpc, Decimal('0.05'))
+        cpc = cpc_constraints.adjust_cpc(
+            Decimal('0.10'),
+            rules=rules[source],
+        )
+        self.assertEqual(cpc, Decimal('0.10'))
+        cpc = cpc_constraints.adjust_cpc(
+            Decimal('0.20'),
+            rules=rules[source],
+        )
+        self.assertEqual(cpc, Decimal('0.15'))
+
 
 class ValidateCpcTestCase(test.TestCase):
     fixtures = ['test_models.yaml']
@@ -269,6 +294,30 @@ class ValidateCpcTestCase(test.TestCase):
             Decimal('0.01'),
             source=models.Source.objects.get(pk=2),
             ad_group=models.AdGroup.objects.get(pk=1),
+        )
+
+    def test_validate_max_cpc_rules(self):
+        cpc_constraints.create(
+            min_cpc=Decimal('0.05'),
+            max_cpc=Decimal('0.15'),
+            source_id=1,
+            ad_group_id=1,
+        )
+        rules = cpc_constraints.get_rules_per_source(models.AdGroup.objects.get(pk=1))
+        source = models.Source.objects.get(pk=1)
+        with self.assertRaises(forms.ValidationError):
+            cpc_constraints.validate_cpc(
+                Decimal('0.01'),
+                rules=rules[source],
+            )
+        with self.assertRaises(forms.ValidationError):
+            cpc_constraints.validate_cpc(
+                Decimal('0.2'),
+                rules=rules[source],
+            )
+        cpc_constraints.validate_cpc(
+            Decimal('0.1'),
+            rules=rules[source],
         )
 
     def test_validate_min_max_cpc_with_bcm_modifiers(self):

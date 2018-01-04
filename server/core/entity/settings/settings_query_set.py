@@ -10,3 +10,6 @@ class SettingsQuerySet(models.QuerySet):
 
     def delete(self, *args, **kwargs):
         raise AssertionError('Using delete not allowed.')
+
+    def group_current_settings(self):
+        return self.filter(latest_for_entity__isnull=False)

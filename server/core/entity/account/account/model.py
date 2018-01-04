@@ -67,7 +67,7 @@ class Account(models.Model):
     )
     custom_flags = JSONField(null=True, blank=True)
 
-    settings = models.ForeignKey('AccountSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_account')
+    settings = models.OneToOneField('AccountSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_entity')
 
     def __unicode__(self):
         return self.name

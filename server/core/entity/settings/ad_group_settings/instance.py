@@ -42,7 +42,7 @@ class AdGroupSettingsMixin(object):
         latest_ad_group_source_settings = core.entity.settings.AdGroupSourceSettings.objects.all().\
             filter(ad_group_source__ad_group=ad_group).\
             group_current_settings().\
-            select_related('ad_group_source')
+            select_related('ad_group_source__source')
         kwargs = self._remove_unsupported_fields(kwargs, latest_ad_group_source_settings)
         kwargs = self._remap_fields_for_compatibility(kwargs)
         self._set_settings(
@@ -75,13 +75,13 @@ class AdGroupSettingsMixin(object):
                 bcm_modifiers = self.ad_group.campaign.get_bcm_modifiers()
                 try:
                     dash.views.helpers.validate_ad_group_sources_cpc_constraints(
-                        bcm_modifiers, ad_group_sources_cpcs)
+                        bcm_modifiers, ad_group_sources_cpcs, ad_group)
                 except dash.cpc_constraints.ValidationError as err:
                     raise exc.ValidationError(errors={
                         'b1_sources_group_cpc_cc': list(set(err))
                     })
             dash.views.helpers.set_ad_group_sources_cpcs(
-                ad_group_sources_cpcs, ad_group, new_settings, skip_validation=skip_validation)
+                ad_group_sources_cpcs, ad_group, new_settings, skip_validation=True)
 
             changes_text = core.entity.settings.AdGroupSettings.get_changes_text(
                 current_settings, new_settings, request.user if request else None, separator='\n')

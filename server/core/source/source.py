@@ -153,7 +153,7 @@ class Source(models.Model):
 
     def get_default_settings(self):
         try:
-            default_settings = core.source.DefaultSourceSettings.objects.get(source=self)
+            default_settings = self.defaultsourcesettings
         except core.source.DefaultSourceSettings.DoesNotExist:
             raise utils.exc.MissingDataError('No default settings set for {}.'.format(self.name))
 

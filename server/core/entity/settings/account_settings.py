@@ -131,6 +131,4 @@ class AccountSettings(SettingsBase):
         )
 
     class QuerySet(SettingsQuerySet):
-
-        def group_current_settings(self):
-            return self.filter(latest_for_account__isnull=False)
+        pass

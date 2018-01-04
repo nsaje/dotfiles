@@ -129,9 +129,6 @@ class AdGroupSourceSettings(SettingsBase):
 
     class QuerySet(SettingsQuerySet):
 
-        def group_current_settings(self):
-            return self.filter(latest_for_ad_group_source__isnull=False)
-
         def latest_per_entity(self):
             return self.order_by('ad_group_source_id', '-created_dt').distinct('ad_group_source')
 

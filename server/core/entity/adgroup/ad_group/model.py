@@ -123,7 +123,7 @@ class AdGroup(models.Model, bcm_mixin.AdGroupBCMMixin):
 
     custom_flags = JSONField(null=True, blank=True)
 
-    settings = models.ForeignKey('AdGroupSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_ad_group')
+    settings = models.OneToOneField('AdGroupSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_entity')
 
     objects = AdGroupManager()
 

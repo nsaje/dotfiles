@@ -699,7 +699,7 @@ def _enabling_autopilot_sources_allowed(ad_group_settings, number_of_sources_to_
 
 def get_adjusted_ad_group_sources_cpcs(ad_group, ad_group_settings):
     adjusted_cpcs = {}
-    for ad_group_source in ad_group.adgroupsource_set.all().select_related('source__source_type', 'ad_group'):
+    for ad_group_source in ad_group.adgroupsource_set.all().select_related('source__source_type', 'settings', 'ad_group__settings', 'ad_group__campaign__settings', 'ad_group__campaign__account__agency'):
         proposed_cpc = ad_group_source.get_current_settings().cpc_cc
         adjusted_cpc = _get_adjusted_ad_group_source_cpc(proposed_cpc, ad_group_source, ad_group_settings)
         if ad_group_source.source.source_type.type != constants.SourceType.B1\
@@ -709,23 +709,23 @@ def get_adjusted_ad_group_sources_cpcs(ad_group, ad_group_settings):
     return adjusted_cpcs
 
 
-def validate_ad_group_sources_cpc_constraints(bcm_modifiers, ad_group_sources_cpcs):
+def validate_ad_group_sources_cpc_constraints(bcm_modifiers, ad_group_sources_cpcs, ad_group):
+    rules_per_source = cpc_constraints.get_rules_per_source(ad_group, bcm_modifiers)
     for ad_group_source, proposed_cpc in ad_group_sources_cpcs.items():
         if proposed_cpc:
             cpc_constraints.validate_cpc(
                 proposed_cpc,
-                bcm_modifiers,
-                ad_group=ad_group_source.ad_group,
-                source=ad_group_source.source
+                rules=rules_per_source[ad_group_source.source],
             )
 
 
 @transaction.atomic
 def set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, ad_group_settings, skip_validation=False):
+    rules_per_source = cpc_constraints.get_rules_per_source(ad_group)
     for ad_group_source, proposed_cpc in ad_group_sources_cpcs.items():
         adjusted_cpc = _get_adjusted_ad_group_source_cpc(proposed_cpc, ad_group_source, ad_group_settings)
         if adjusted_cpc:
-            adjusted_cpc = cpc_constraints.adjust_cpc(adjusted_cpc, ad_group=ad_group, source=ad_group_source.source)
+            adjusted_cpc = cpc_constraints.adjust_cpc(adjusted_cpc, rules=rules_per_source[ad_group_source.source])
 
         ad_group_source_settings = ad_group_source.get_current_settings()
         if ad_group_source_settings.cpc_cc == adjusted_cpc:

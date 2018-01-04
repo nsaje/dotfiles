@@ -73,10 +73,12 @@ class CpcConstraint(models.Model):
             queryset = self.filter(rules).annotate(
                 bcm_min_cpc=CpcConstraint.QuerySet._transform_min_cpc_to_bcm(bcm_modifiers),
                 bcm_max_cpc=CpcConstraint.QuerySet._transform_max_cpc_to_bcm(bcm_modifiers),
-            ).filter(
-                models.Q(bcm_min_cpc__isnull=False) & models.Q(bcm_min_cpc__gt=cpc) |
-                models.Q(bcm_max_cpc__isnull=False) & models.Q(bcm_max_cpc__lt=cpc)
             )
+            if cpc is not None:
+                queryset = queryset.filter(
+                    models.Q(bcm_min_cpc__isnull=False) & models.Q(bcm_min_cpc__gt=cpc) |
+                    models.Q(bcm_max_cpc__isnull=False) & models.Q(bcm_max_cpc__lt=cpc)
+                )
 
             if source:
                 queryset = queryset.filter(models.Q(source=source) | models.Q(source=None))

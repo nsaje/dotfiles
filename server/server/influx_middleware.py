@@ -17,6 +17,13 @@ def queries_to_influx(get_response):
         try:
             if len(connection.queries) > 0:
                 total_time = 0
+                queries_per_verb = {
+                    'SELECT': 0,
+                    'INSERT': 0,
+                    'UPDATE': 0,
+                    'DELETE': 0,
+                    'OTHER': 0,
+                }
 
                 for query in connection.queries:
                     query_time = query.get('time')
@@ -28,6 +35,10 @@ def queries_to_influx(get_response):
                         # in milliseconds, not seconds.
                         query_time = query.get('duration', 0) / 1000
                     total_time += float(query_time)
+                    try:
+                        queries_per_verb[query['sql'][:6]] += 1
+                    except KeyError:
+                        queries_per_verb['OTHER'] += 1
 
                 path = influx_helper.clean_path(request.path)
 
@@ -45,6 +56,15 @@ def queries_to_influx(get_response):
                     method=request.method,
                     status=str(response.status_code),
                 )
+                for verb, count in queries_per_verb.items():
+                    influx.timing(
+                        'queries.count',
+                        count,
+                        verb=verb,
+                        path=path,
+                        method=request.method,
+                        status=str(response.status_code),
+                    )
 
         except Exception as e:
             logger.exception(e)

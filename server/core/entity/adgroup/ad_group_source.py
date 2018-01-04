@@ -42,19 +42,19 @@ class AdGroupSourceManager(core.common.QuerySetManager):
         return ad_group_source
 
     @transaction.atomic
-    def create(self, request, ad_group, source, write_history=True, k1_sync=True, **updates):
+    def create(self, request, ad_group, source, write_history=True, k1_sync=True, skip_validation=False, **updates):
         ad_group_settings = ad_group.get_current_settings()
 
-        if not ad_group.campaign.account.allowed_sources.filter(pk=source.id).exists():
+        if not skip_validation and not ad_group.campaign.account.allowed_sources.filter(pk=source.id).exists():
             raise utils.exc.ValidationError(
                 '{} media source can not be added to this account.'.format(source.name)
             )
 
-        if AdGroupSource.objects.filter(source=source, ad_group=ad_group).exists():
+        if not skip_validation and AdGroupSource.objects.filter(source=source, ad_group=ad_group).exists():
             raise utils.exc.ValidationError(
                 '{} media source for ad group {} already exists.'.format(source.name, ad_group.id))
 
-        if not retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings):
+        if not skip_validation and not retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings):
             raise utils.exc.ValidationError(
                 '{} media source can not be added because it does not support retargeting.'.format(source.name))
 
@@ -80,14 +80,16 @@ class AdGroupSourceManager(core.common.QuerySetManager):
 
     @transaction.atomic
     def bulk_create_on_allowed_sources(self, request, ad_group, write_history=True, k1_sync=True):
-        sources = ad_group.campaign.account.allowed_sources.all()
+        sources = ad_group.campaign.account.allowed_sources.all().select_related('source_type', 'defaultsourcesettings__credentials')
         added_ad_group_sources = []
+        if not retargeting_helper.can_add_source_with_retargeting(sources, ad_group.settings):
+            raise utils.exc.ValidationError('Media sources can not be added because some do not support retargeting.')
         for source in sources:
             if source.maintenance:
                 continue
 
             try:
-                ad_group_source = self.create(request, ad_group, source, write_history=False, k1_sync=False)
+                ad_group_source = self.create(request, ad_group, source, write_history=False, k1_sync=False, skip_validation=True)
                 added_ad_group_sources.append(ad_group_source)
             except utils.exc.MissingDataError:
                 # skips ad group sources creation without default sources
@@ -175,7 +177,7 @@ class AdGroupSource(models.Model):
         max_length=100, null=True, blank=True)
     blockers = jsonfield.JSONField(blank=True, default={})
 
-    settings = models.ForeignKey('AdGroupSourceSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_ad_group_source')
+    settings = models.OneToOneField('AdGroupSourceSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_entity')
 
     objects = AdGroupSourceManager()
 
