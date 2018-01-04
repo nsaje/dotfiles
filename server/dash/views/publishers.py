@@ -3,6 +3,7 @@ import os
 
 import slugify
 from django.conf import settings
+from django.db.models import Count
 
 from dash import constants
 from dash import forms
@@ -19,12 +20,16 @@ from utils import s3helpers
 
 def serialize_publisher_group(publisher_group):
     type_, level, obj, obj_name = publisher_group_helpers.parse_default_publisher_group_origin(publisher_group)
+    if hasattr(publisher_group, 'num_entries'):
+        entries_count = publisher_group.num_entries
+    else:
+        entries_count = publisher_group.entries.all().count()
     return {
         'id': publisher_group.id,
         'name': publisher_group.name,
         'include_subdomains': publisher_group.default_include_subdomains,
         'implicit': publisher_group.implicit,
-        'size': publisher_group.entries.all().count(),
+        'size': entries_count,
         'modified': publisher_group.modified_dt,
         'created': publisher_group.created_dt,
         'type': type_,
@@ -113,7 +118,7 @@ class PublisherGroups(api_common.BaseApiView):
 
         account = helpers.get_account(request.user, account_id)
 
-        publisher_groups_q = models.PublisherGroup.objects.all().filter_by_account(account)
+        publisher_groups_q = models.PublisherGroup.objects.all().filter_by_account(account).annotate(num_entries=Count('entries'))
         if request.GET.get('not_implicit'):
             publisher_groups_q = publisher_groups_q.filter(implicit=False)
 

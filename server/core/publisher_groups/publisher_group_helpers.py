@@ -512,8 +512,9 @@ def parse_default_publisher_group_origin(publisher_group):
         type_, level = 'Whitelist', 'Ad Group'
         obj = models.AdGroup.objects.filter(pk=possible_ids[-1])
 
-    if obj is not None and obj.exists():
+    if obj is not None:
         obj = obj.first()
-        name = u"{} [{}]".format(obj.name, obj.id)
+        if obj is not None:
+            name = u"{} [{}]".format(obj.name, obj.id)
 
     return type_, level, obj, name
