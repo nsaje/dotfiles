@@ -9,7 +9,7 @@ __all__ = ['query']
 def query(breakdown, metrics, constraints, goals, order, use_publishers_view=False):
     constraints = extract_constraints(constraints, use_publishers_view)
 
-    rows = api_breakdowns.query_with_background_cache(
+    rows = api_breakdowns.query(
         breakdown, constraints, None, goals, order, metrics=metrics,
         use_publishers_view=use_publishers_view, extra_name='dailystats_all', query_all=True)
 

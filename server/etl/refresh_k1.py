@@ -9,7 +9,6 @@ from django.conf import settings
 import dash.models
 
 from etl import daily_statements_k1
-from etl import materialization_run
 from etl import materialize_views
 from etl import maintenance
 
@@ -270,7 +269,6 @@ def refresh_k1_reports(update_since, account_id=None, skip_vacuum=False):
     _refresh_k1_reports(update_since, MATERIALIZED_VIEWS, account_id, skip_vacuum=skip_vacuum)
     if do_post_to_slack:
         _post_to_slack('finished', update_since, account_id)
-    materialization_run.create_done()
 
 
 def _refresh_k1_reports(update_since, views, account_id=None, skip_vacuum=False):

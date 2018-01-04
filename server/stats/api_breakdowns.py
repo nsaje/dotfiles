@@ -69,7 +69,7 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
             structure_thread = threads.AsyncFunction(query_structure_fn)
             structure_thread.start()
 
-        stats_rows = redshiftapi.api_breakdowns.query_with_background_cache(
+        stats_rows = redshiftapi.api_breakdowns.query(
             breakdown,
             stats_constraints,
             parents,

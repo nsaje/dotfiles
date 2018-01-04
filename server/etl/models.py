@@ -1,17 +1,8 @@
-from django.db import models
 import backtosql
 
 
 BREAKDOWN = 1
 AGGREGATES = 2
-
-
-class MaterializationRun(models.Model):
-    id = models.AutoField(primary_key=True)
-    finished_dt = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Finished at',
-    )
 
 
 class RSBreakdownMixin(object):
