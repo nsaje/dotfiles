@@ -1,12 +1,81 @@
 from django.test import TestCase
 
-import cache_helper
+from dash import models
+from stats.helpers import Goals
+from utils.magic_mixer import magic_mixer
+
+from cache_helper import get_cache_key
+
+
+class C(object):
+    def __init__(self, v):
+        self.v = v
 
 
 class CacheHelperTest(TestCase):
-    def test_get_cache_key(self):
-        self.assertEqual(cache_helper.get_cache_key('asd', 'asd'), '85136c79cbf9fe36bb9d05d0639c70c265c18d37')
-        self.assertEqual(cache_helper.get_cache_key('asd', 'aad'), '9262531712dfe1c5ea8a37e04ad63c4f40f992ad')
+    def test_queryset(self):
+        magic_mixer.cycle(3).blend(models.CampaignGoal)
 
-        self.assertEqual(cache_helper.get_cache_key(['asd', 1], 'aad'), '17155bea8f9fd875057f9ff8e7b67c9ee9a5c337')
-        self.assertEqual(cache_helper.get_cache_key(['asd', 2], 'aad'), 'c9cdba951c910e037e8191ab7f9ceb04e8dd432e')
+        self.assertEqual(
+            get_cache_key(models.CampaignGoal.objects.all()),
+            get_cache_key(models.CampaignGoal.objects.all()))
+        self.assertNotEqual(
+            get_cache_key(models.CampaignGoal.objects.all()),
+            get_cache_key(models.CampaignGoal.objects.none()))
+
+    def test_model(self):
+        goal1 = magic_mixer.blend(models.CampaignGoal)
+        goal2 = magic_mixer.blend(models.CampaignGoal)
+
+        self.assertEqual(get_cache_key(goal1), get_cache_key(goal1))
+        self.assertNotEqual(get_cache_key(goal1), get_cache_key(goal2))
+
+    def test_namedtuple(self):
+        goals1 = Goals(1, 2, 3, 4, 5)
+        goals2 = Goals(5, 4, 3, 2, 1)
+
+        self.assertEqual(get_cache_key(goals1), get_cache_key(goals1))
+        self.assertNotEqual(get_cache_key(goals1), get_cache_key(goals2))
+
+    def test_class(self):
+        c1 = C(1)
+        c2 = C(2)
+
+        self.assertEqual(get_cache_key(c1), get_cache_key(c1))
+        self.assertNotEqual(get_cache_key(c1), get_cache_key(c2))
+
+    def test_dict(self):
+        self.assertEqual(get_cache_key({1: 1, 9: 9}), get_cache_key({9: 9, 1: 1}))
+        self.assertNotEqual(get_cache_key({1: 1}), get_cache_key({1: 2}))
+        self.assertNotEqual(get_cache_key({1: 1}), get_cache_key({2: 1}))
+
+    def test_str(self):
+        self.assertEqual(get_cache_key("abc"), get_cache_key("abc"))
+        self.assertNotEqual(get_cache_key("abc"), get_cache_key("abd"))
+
+    def test_list(self):
+        self.assertEqual(get_cache_key([1, 2]), get_cache_key([1, 2]))
+        self.assertNotEqual(get_cache_key([1, 2]), get_cache_key([2, 3]))
+
+    def test_multiple(self):
+        self.assertEqual(get_cache_key(1, 2, a=3), get_cache_key(1, 2, a=3))
+        self.assertNotEqual(get_cache_key(1, 2, a=3), get_cache_key(1, 3, a=3))
+        self.assertNotEqual(get_cache_key(1, 2, a=3), get_cache_key(1, 2, a=4))
+
+    def test_hierarchy(self):
+        a = [{
+            'a': 1,
+            'b': {
+                'c': 2,
+                'd': [1, 3],
+            },
+        }]
+        b = [{
+            'a': 1,
+            'b': {
+                'c': 2,
+                'd': [1, 4],
+            },
+        }]
+        self.assertEqual(get_cache_key(a), get_cache_key(a))
+        self.assertNotEqual(get_cache_key(a), get_cache_key(b))

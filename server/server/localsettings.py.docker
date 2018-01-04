@@ -162,6 +162,10 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
         'LOCATION': ['memcached:11211']
     },
+    'redshift_background': {
+        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+        'LOCATION': ['memcached:11211']
+    },
     'dash_db_cache': {
         'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
         'LOCATION': ['memcached:11211']
@@ -185,6 +189,8 @@ CACHES = {
 USE_HASH_CACHE = False
 HASH_CACHE_TTL = 24 * 60 * 60
 
+USE_REDSHIFT_BACKGROUND_CACHE = False
+
 IMAGE_THUMBNAIL_URL = 'https://images2.zemanta.com/'
 
 # QUEUES
@@ -200,6 +206,7 @@ CELERY_ACCEPT_CONTENT = ['pickle']
 CELERY_ROUTES = {
     'reports_execute': {'queue': 'reports'},
     'upload_lambda_execute': {'queue': 'upload-lambda'},
+    'redshift_background_cache': {'queue': 'redshift-background-cache'},
 }
 
 QUEUE_NAME_PREFIX = 'test'
