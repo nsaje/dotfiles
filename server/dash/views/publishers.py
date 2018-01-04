@@ -185,9 +185,13 @@ class PublisherGroupsDownload(api_common.BaseApiView):
         if not publisher_group:
             raise exc.MissingDataError()
 
-        return self.create_csv_response('publisher_group_{}'.format(slugify.slugify(publisher_group.name)),
-                                        content=publisher_group_csv_helpers.get_csv_content(account,
-                                                                                            publisher_group.entries.all()))
+        return self.create_csv_response(
+            'publisher_group_{}'.format(slugify.slugify(publisher_group.name)),
+            content=publisher_group_csv_helpers.get_csv_content(
+                account,
+                publisher_group.entries.all().select_related('source'),
+            ),
+        )
 
 
 class PublisherGroupsExampleDownload(api_common.BaseApiView):

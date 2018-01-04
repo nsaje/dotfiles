@@ -942,7 +942,7 @@ class PublisherGroupEntryViewSet(RESTAPIBaseView, viewsets.ModelViewSet):
     def get_queryset(self):
         publisher_group = dash.models.PublisherGroup.objects.get(pk=self.kwargs['publisher_group_id'])
         helpers.get_account(self.request.user, publisher_group.account_id)
-        return publisher_group.entries.all()
+        return publisher_group.entries.all().select_related('source')
 
     def create(self, request, *args, **kwargs):
         # support create multiple through the "many" parameter
