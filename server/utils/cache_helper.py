@@ -12,7 +12,11 @@ def get_cache_key(*args, **kwargs):
 
     h = hashlib.sha1()
 
-    h.update(_serialize((args, kwargs)))
+    serialized = _serialize((args, kwargs))
+    try:
+        h.update(serialized)
+    except UnicodeEncodeError:
+        h.update(serialized.encode('utf-8', errors='ignore'))
 
     return h.hexdigest()
 
