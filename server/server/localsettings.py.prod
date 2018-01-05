@@ -162,6 +162,14 @@ CACHES = {
             'MAX_ENTRIES': 5000,
         }
     },
+    'redshift_background': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'redshift_background_cache',
+        'TIMEOUT': 60 * 60 * 12,  # 12 hours
+        'OPTIONS': {
+            'MAX_ENTRIES': 10000,
+        }
+    },
     'audience_sample_size': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': 'audience_sample_size_rs_cache',
@@ -204,6 +212,8 @@ CACHES = {
 USE_HASH_CACHE = True
 HASH_CACHE_TTL = 24 * 60 * 60
 
+USE_REDSHIFT_BACKGROUND_CACHE = True
+
 IMAGE_THUMBNAIL_URL = 'https://images2.zemanta.com/'
 
 BROKER_TRANSPORT = 'sqs'
@@ -218,6 +228,7 @@ CELERY_ACCEPT_CONTENT = ['pickle']
 CELERY_ROUTES = {
     'reports_execute': {'queue': 'z1-reports'},
     'upload_lambda_execute': {'queue': 'z1-upload-lambda'},
+    'redshift_background_cache': {'queue': 'redshift-background-cache'},
 }
 
 # must be empty otherwise k1 queues get prefixed as well

@@ -118,6 +118,17 @@ services:
         entrypoint: ""
         command: "celery worker -A server -c 1 -Q z1-reports -l INFO -f /app/logs/eins_celery_reports.log --prefetch-multiplier 0 -P solo"
 
+    einsworker_redshift_background_cache:
+        extends: eins
+        environment:
+          VIRTUAL_HOST: "oneredshiftbackgroundcache.zemanta.com"
+          NEW_RELIC_APP_NAME: "Zemanta One (Redshift Background Cache)"
+        mem_limit: 512m
+        labels:
+          traefik.enable: "false"
+        entrypoint: ""
+        command: "celery worker -A server -c 1 -Q redshift-background-cache -l INFO -f /app/logs/eins_celery_redshift_background_cache.log --prefetch-multiplier 0 -P solo"
+
     einsworker_upload_lambda:
         environment:
           VIRTUAL_HOST: "onelambda.zemanta.com"

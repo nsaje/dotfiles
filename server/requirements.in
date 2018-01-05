@@ -79,6 +79,7 @@ termcolor==1.1.0
 
 # required for celery
 pycurl==7.43.0
+redis==2.10.6
 
 # user agent parser
 ua-parser==0.7.3

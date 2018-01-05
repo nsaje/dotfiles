@@ -1,8 +1,10 @@
 from functools import partial
-import stats.constants
 
+import stats.constants
+from utils import cache_helper
 from utils import sort_helper, threads
 
+import background_cache
 import db
 import exceptions
 import helpers
@@ -32,6 +34,17 @@ def should_query_all(breakdown):
             return True
 
     return False
+
+
+def query_with_background_cache(*args, **kwargs):
+    key = cache_helper.get_cache_key(args, kwargs)
+
+    rows = background_cache.get(key)
+    if rows is None:
+        rows = query(*args, **kwargs)
+        background_cache.set(key, rows, args, kwargs)
+
+    return rows
 
 
 def query(breakdown, constraints, parents, goals, order=None, offset=None, limit=None, use_publishers_view=False, is_reports=False, query_all=False, breakdown_for_name=None, extra_name='', metrics=None):
@@ -80,13 +93,13 @@ def query(breakdown, constraints, parents, goals, order=None, offset=None, limit
 
 def query_stats_for_rows(rows, breakdown, constraints, goals, use_publishers_view=False):
     if should_query_all(breakdown):
-        stats_rows = query(
+        stats_rows = query_with_background_cache(
             breakdown, constraints, None, goals,
             use_publishers_view=use_publishers_view, query_all=True, extra_name='rows')
         rows = helpers.select_relevant_stats_rows(breakdown, rows, stats_rows)
     else:
         parents = helpers.create_parents(rows, breakdown)  # this limits the query to rows we are looking for
-        rows = query(
+        rows = query_with_background_cache(
             breakdown, constraints, parents, goals,
             use_publishers_view=use_publishers_view, query_all=True, extra_name='rows')
 
@@ -100,7 +113,9 @@ def query_structure_with_stats(breakdown, constraints, use_publishers_view=False
 
 
 def query_totals(breakdown, constraints, goals, use_publishers_view=False):
-    rows = query([], constraints, None, goals, use_publishers_view=use_publishers_view, breakdown_for_name=breakdown, extra_name='totals')
+    rows = query_with_background_cache(
+        [], constraints, None, goals,
+        use_publishers_view=use_publishers_view, breakdown_for_name=breakdown, extra_name='totals')
     return rows
 
 

@@ -150,6 +150,9 @@ CACHES = {
     'breakdowns_rs': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     },
+    'redshift_background': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
+    },
     'dash_db_cache': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     },
@@ -360,6 +363,9 @@ if TESTING:
             'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
         },
         'breakdowns_rs': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
+        },
+        'redshift_background': {
             'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
         },
         'audience_sample_size': {

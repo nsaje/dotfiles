@@ -161,7 +161,7 @@ def get_media_campaign_spend(user, campaign, until_date=None):
 
 def get_yesterday_adgroup_spend(user, ad_group):
     yesterday = utils.dates_helper.local_yesterday()
-    query_results = redshiftapi.api_breakdowns.query(
+    query_results = redshiftapi.api_breakdowns.query_with_background_cache(
         ['ad_group_id'],
         constraints={
             'date__gte': yesterday,
@@ -182,7 +182,7 @@ def get_yesterday_adgroup_spend(user, ad_group):
 
 def get_yesterday_campaign_spend(user, campaign):
     yesterday = utils.dates_helper.local_yesterday()
-    query_results = redshiftapi.api_breakdowns.query(
+    query_results = redshiftapi.api_breakdowns.query_with_background_cache(
         ['campaign_id'],
         constraints={
             'date__gte': yesterday,
@@ -522,7 +522,7 @@ def get_weekly_active_users(filtered_agencies, filtered_account_types):
     # it is ok if this data is a bit dated - confirmed by product
 
     cache = caches['dash_db_cache']
-    cache_key = _filtered_agencies_account_types_cache_key(
+    cache_key = utils.cache_helper.get_cache_key(
         'active_users_ids', filtered_agencies, filtered_account_types)
     active_users_ids = cache.get(cache_key, None)
     if active_users_ids is not None:
@@ -553,7 +553,7 @@ def count_weekly_selfmanaged_actions(filtered_agencies, filtered_account_types):
     # it is ok if this data is a bit dated - confirmed by product
 
     # cache = caches['dash_db_cache']
-    # cache_key = _filtered_agencies_account_types_cache_key(
+    # cache_key = utils.cache_helper.get_cache_key(
     #     'selfmanaged_actions', filtered_agencies, filtered_account_types)
     # count = cache.get(cache_key, None)
 
@@ -578,14 +578,6 @@ def count_weekly_selfmanaged_actions(filtered_agencies, filtered_account_types):
 
     # return count
     return 0
-
-
-def _filtered_agencies_account_types_cache_key(name, filtered_agencies, filtered_account_types):
-    key = "{}__{}".format(
-        sorted(filtered_agencies.values_list('pk', flat=True)) if filtered_agencies is not None else '',
-        sorted(filtered_account_types) if filtered_account_types is not None else ''
-    )
-    return utils.cache_helper.get_cache_key(name, key)
 
 
 def _one_week_ago():
