@@ -476,7 +476,7 @@ class SettingsViewList(RESTAPIBaseView):
 
     parser_classes = (rest_framework.parsers.JSONParser,)
 
-    def _get_settings_list(self, request):
+    def _get_entities_list(self, request):
         raise NotImplementedError()
 
     def get(self, request):
@@ -484,20 +484,18 @@ class SettingsViewList(RESTAPIBaseView):
 
         paginator = StandardPagination()
         paginator.default_limit = 50000  # FIXME(nsaje): remove this after OEN starts using pagination
-        settings_list = self._get_settings_list(request).order_by('pk')
-        settings_list_paginated = paginator.paginate_queryset(settings_list, request)
+        entities_list = self._get_entities_list(request).order_by('pk')
+        entities_list_paginated = paginator.paginate_queryset(entities_list, request)
 
         data_list_internal = [{'data': {
             'settings': view_internal.get_dict(
                 request,
-                settings,
-                (getattr(settings, 'ad_group', None) or
-                 getattr(settings, 'campaign', None) or
-                 getattr(settings, 'account'))
+                entity.settings,
+                entity,
             ),
-            'archived': settings.archived
+            'archived': entity.settings.archived
         }}
-            for settings in settings_list_paginated]
+            for entity in entities_list_paginated]
 
         serializer = self.serializer_cls(request, view_internal, data_list_internal, many=True)
         return paginator.get_paginated_response(serializer.data)
@@ -531,7 +529,7 @@ class CampaignViewList(SettingsViewList):
     details_view_cls = CampaignViewDetails
     parent_id_field = 'accountId'
 
-    def _get_settings_list(self, request):
+    def _get_entities_list(self, request):
         account_id = request.query_params.get('accountId', None)
 
         if account_id:
@@ -540,10 +538,8 @@ class CampaignViewList(SettingsViewList):
         else:
             campaigns = dash.models.Campaign.objects.all().filter_by_user(request.user)
 
-        campaign_settings = dash.models.CampaignSettings.objects.filter(
-            campaign__in=campaigns).group_current_settings().select_related('campaign', 'campaign_manager')
-
-        return campaign_settings
+        campaigns = campaigns.select_related('settings__campaign_manager')
+        return campaigns
 
 
 class AdGroupViewDetails(SettingsViewDetails):
@@ -558,7 +554,7 @@ class AdGroupViewList(SettingsViewList):
     details_view_cls = AdGroupViewDetails
     parent_id_field = 'campaignId'
 
-    def _get_settings_list(self, request):
+    def _get_entities_list(self, request):
         campaign_id = request.query_params.get('campaignId', None)
 
         if campaign_id:
@@ -567,9 +563,8 @@ class AdGroupViewList(SettingsViewList):
         else:
             ad_groups = dash.models.AdGroup.objects.all().filter_by_user(request.user)
 
-        ag_settings = dash.models.AdGroupSettings.objects.filter(
-            ad_group__in=ad_groups).group_current_settings().select_related('ad_group')
-        return ag_settings
+        ad_groups = ad_groups.select_related('settings')
+        return ad_groups
 
 
 class CampaignGoalsSerializer(serializers.BaseSerializer):
