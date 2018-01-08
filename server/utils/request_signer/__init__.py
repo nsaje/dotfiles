@@ -133,41 +133,14 @@ def verify_wsgi_request(wsgi_request, secret_keys):
     raise SignatureError('Invalid signature')
 
 
-class _ValidHTTPSConnection(httplib.HTTPConnection):
-    "This class allows communication via SSL."
-
-    default_port = httplib.HTTPS_PORT
-
-    def __init__(self, *args, **kwargs):
-        httplib.HTTPConnection.__init__(self, *args, **kwargs)
-
-    def connect(self):
-        "Connect to a host on a given (SSL) port."
-
-        sock = socket.create_connection(
-            (self.host, self.port),
-            self.timeout,
-            self.source_address,
-        )
-
-        if self._tunnel_host:
-            self.sock = sock
-            self._tunnel()
-
-        self.sock = ssl.wrap_socket(
-            sock,
-            cert_reqs=ssl.CERT_NONE,
-            ssl_version=ssl.PROTOCOL_TLSv1_1,
-        )
+def _get_https_handler():
+    context = ssl.create_default_context()
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+    return urllib2.HTTPSHandler(context=context)
 
 
-class _ValidHTTPSHandler(urllib2.HTTPSHandler):
-
-    def https_open(self, req):
-        return self.do_open(_ValidHTTPSConnection, req)
-
-
-_secure_opener = urllib2.build_opener(_ValidHTTPSHandler)
+_secure_opener = urllib2.build_opener(_get_https_handler())
 
 
 def urllib2_secure_open(urllib_request, secret_key):
