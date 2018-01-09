@@ -13,7 +13,7 @@ INSERT INTO mv_master (
       d.content_ad_id,
 
       d.publisher,
-      NVL(d.publisher, '') || '__' || d.source_id as publisher_source_id,
+      COALESCE(d.publisher, '') || '__' || d.source_id as publisher_source_id,
 
       d.device_type,
       d.device_os,

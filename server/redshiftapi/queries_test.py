@@ -109,11 +109,11 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.account_id AS account_id,
             base_table.source_id AS source_id,
             base_table.dma AS dma,
-            (NVL(SUM(base_table.cost_nano), 0) + NVL(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
-            (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
-            (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0) + NVL(SUM(base_table.license_fee_nano), 0) + NVL(SUM(base_table.margin_nano), 0))::float/1000000000 yesterday_etfm_cost,
-            (NVL(SUM(base_table.cost_nano), 0) + NVL(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-            (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost
+            (COALESCE(SUM(base_table.cost_nano), 0) + COALESCE(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
+            (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
+            (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0) + COALESCE(SUM(base_table.license_fee_nano), 0) + COALESCE(SUM(base_table.margin_nano), 0))::float/1000000000 yesterday_etfm_cost,
+            (COALESCE(SUM(base_table.cost_nano), 0) + COALESCE(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_cost,
+            (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost
         FROM mv_account_geo base_table
         WHERE (( base_table.date = %s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
@@ -140,11 +140,11 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.publisher AS publisher,
             base_table.source_id AS source_id,
             base_table.date AS day,
-            (NVL(SUM(base_table.cost_nano), 0) + NVL(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
-            (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
-            (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0) + NVL(SUM(base_table.license_fee_nano), 0) + NVL(SUM(base_table.margin_nano), 0))::float/1000000000 yesterday_etfm_cost,
-            (NVL(SUM(base_table.cost_nano), 0) + NVL(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-            (NVL(SUM(base_table.effective_cost_nano), 0) + NVL(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
+            (COALESCE(SUM(base_table.cost_nano), 0) + COALESCE(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
+            (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
+            (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0) + COALESCE(SUM(base_table.license_fee_nano), 0) + COALESCE(SUM(base_table.margin_nano), 0))::float/1000000000 yesterday_etfm_cost,
+            (COALESCE(SUM(base_table.cost_nano), 0) + COALESCE(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_cost,
+            (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
             MAX(base_table.publisher_source_id) publisher_id
         FROM mv_account_pubs base_table
         WHERE (( base_table.date = %s)
@@ -221,14 +221,14 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.account_id AS account_id,
             base_table.source_id AS source_id,
             base_table.slug AS slug,
-            base_table.conversion_window AS window,
+            base_table.conversion_window AS "window",
             SUM(base_table.conversion_value_nano)/1000000000.0 conversion_value,
             SUM(base_table.conversion_count) count
         FROM mv_account_touch base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3, 4
-        ORDER BY count DESC NULLS LAST, account_id ASC NULLS LAST, source_id ASC NULLS LAST, slug ASC NULLS LAST, window ASC NULLS LAST
+        ORDER BY count DESC NULLS LAST, account_id ASC NULLS LAST, source_id ASC NULLS LAST, slug ASC NULLS LAST, "window" ASC NULLS LAST
         """)
 
         self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
@@ -249,7 +249,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.source_id AS source_id,
             base_table.date AS day,
             base_table.slug AS slug,
-            base_table.conversion_window AS window,
+            base_table.conversion_window AS "window",
             SUM(base_table.conversion_value_nano)/1000000000.0 conversion_value,
             SUM(base_table.conversion_count) count,
             MAX(base_table.publisher_source_id) publisher_id
@@ -257,7 +257,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3, 4, 5
-        ORDER BY count DESC NULLS LAST, publisher_id ASC NULLS LAST, day ASC NULLS LAST, slug ASC NULLS LAST, window ASC NULLS LAST""")
+        ORDER BY count DESC NULLS LAST, publisher_id ASC NULLS LAST, day ASC NULLS LAST, slug ASC NULLS LAST, "window" ASC NULLS LAST""")
 
         self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
 
@@ -305,11 +305,11 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
             temp_yesterday AS (
                 SELECT
                     a.account_id AS account_id,
-                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
-                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
-                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
-                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0) + NVL(SUM(a.license_fee_nano), 0) + NVL(SUM(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
+                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
+                    (COALESCE(SUM(a.cost_nano), 0) + COALESCE(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
+                    (COALESCE(SUM(a.cost_nano), 0) + COALESCE(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
+                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
+                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0) + COALESCE(SUM(a.license_fee_nano), 0) + COALESCE(SUM(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
                 FROM mv_account a
                 WHERE (a.date=%s)
                 GROUP BY 1
@@ -364,11 +364,11 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                 SELECT
                     a.publisher AS publisher,
                     a.source_id AS source_id,
-                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
-                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
-                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
-                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0) + NVL(SUM(a.license_fee_nano), 0) + NVL(SUM(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
+                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
+                    (COALESCE(SUM(a.cost_nano), 0) + COALESCE(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
+                    (COALESCE(SUM(a.cost_nano), 0) + COALESCE(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
+                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
+                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0) + COALESCE(SUM(a.license_fee_nano), 0) + COALESCE(SUM(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
                 FROM mv_account_pubs a
                 WHERE (a.date=%s)
                 GROUP BY 1, 2
@@ -425,11 +425,11 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                 SELECT
                     a.account_id AS account_id,
                     a.campaign_id AS campaign_id,
-                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
-                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
-                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
-                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0) + NVL(SUM(a.license_fee_nano), 0) + NVL(SUM(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
+                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
+                    (COALESCE(SUM(a.cost_nano), 0) + COALESCE(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
+                    (COALESCE(SUM(a.cost_nano), 0) + COALESCE(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
+                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
+                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0) + COALESCE(SUM(a.license_fee_nano), 0) + COALESCE(SUM(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
                 FROM mv_campaign a
                 WHERE (a.date=%s)
                 GROUP BY 1, 2
@@ -512,11 +512,11 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                     a.publisher AS publisher,
                     a.source_id AS source_id,
                     a.dma AS dma,
-                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
-                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
-                    (NVL(SUM(a.cost_nano), 0) + NVL(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
-                    (NVL(SUM(a.effective_cost_nano), 0) + NVL(SUM(a.effective_data_cost_nano), 0) + NVL(SUM(a.license_fee_nano), 0) + NVL(SUM(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
+                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
+                    (COALESCE(SUM(a.cost_nano), 0) + COALESCE(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
+                    (COALESCE(SUM(a.cost_nano), 0) + COALESCE(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
+                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
+                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0) + COALESCE(SUM(a.license_fee_nano), 0) + COALESCE(SUM(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
                 FROM mv_master_pubs a
                 WHERE (a.date=%s)
                 GROUP BY 1, 2, 3

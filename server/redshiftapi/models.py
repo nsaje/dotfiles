@@ -288,7 +288,7 @@ class MVTouchpointConversions(BreakdownsBase):
     dma = backtosql.Column('dma', BREAKDOWN)
 
     slug = backtosql.Column('slug', BREAKDOWN)
-    window = backtosql.Column('conversion_window', BREAKDOWN)
+    window = backtosql.Column('conversion_window', BREAKDOWN, alias='"window"')  # window is reserved word in PostgreSQL
 
     count = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'conversion_count'}, AGGREGATE)
     conversion_value = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'conversion_value_nano'}, AGGREGATE)  # noqa

@@ -3,8 +3,8 @@
 CASE
   WHEN
       {{ is_cost_dependent }}
-      AND TRUNC(NVL({{ cost_column }}, 0), 2) > 0  -- has cost
-      AND NVL(
+      AND TRUNC(COALESCE({{ cost_column }}, 0), 2) > 0  -- has cost
+      AND COALESCE(
             TRUNC(CASE WHEN {{ has_conversion_key }} THEN {{ cost_column }} / NULLIF({{ conversion_key }}, 0) ELSE {{ metric_column }} END, {{ metric_val_decimal_places }})  -- metric value
           , 0) = 0 -- no spend
     THEN 0 -- underperforming

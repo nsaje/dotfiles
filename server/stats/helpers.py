@@ -59,7 +59,8 @@ def get_goals(constraints, breakdown):
     if account:
         pixels = account.conversionpixel_set.filter(archived=False)
 
-    return Goals(campaign_goals, conversion_goals, campaign_goal_values, pixels, primary_goals)
+    # force evaluation of querysets, otherwise we get "missing FROM-clause" error sporadically in threaded environments
+    return Goals(list(campaign_goals), list(conversion_goals), list(campaign_goal_values), list(pixels), list(primary_goals))
 
 
 def extract_stats_constraints(constraints, breakdown):

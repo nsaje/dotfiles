@@ -14,9 +14,9 @@ INSERT INTO mv_touchpointconversions (
              WHEN a.source_id = {{ yahoo_id }} THEN 'all publishers'
              ELSE LOWER(a.publisher)
         END AS publisher,
-        CASE WHEN a.source_id = {{ outbrain_id }} THEN NVL(a.publisher, '') || '__{{ outbrain_id }}'
+        CASE WHEN a.source_id = {{ outbrain_id }} THEN COALESCE(a.publisher, '') || '__{{ outbrain_id }}'
              WHEN a.source_id = {{ yahoo_id }} THEN 'all publishers__{{ yahoo_id }}'
-             ELSE LOWER(NVL(a.publisher, '')) || '__' || a.source_id
+             ELSE LOWER(COALESCE(a.publisher, '')) || '__' || a.source_id
         END AS publisher_source_id,
 
         -- IMPORTANT: the delivery dimensions cleanup should be kept in sync with how it is

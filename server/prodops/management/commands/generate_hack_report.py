@@ -9,7 +9,7 @@ import redshiftapi.db
 import influx
 from django.db.models import Count, Min
 
-RS_QUERY = '''SELECT {entity}_id, (NVL(SUM(effective_cost_nano), 0) / 1000000000.0 / {n})::decimal
+RS_QUERY = '''SELECT {entity}_id, (COALESCE(SUM(effective_cost_nano), 0) / 1000000000.0 / {n})::decimal
 FROM mv_master
 WHERE date >= '{start_date}' AND date <= '{end_date}'
 GROUP BY {entity}_id'''

@@ -29,3 +29,15 @@ class use_stats_read_replica(_use_read_replica_base):
 
     def __exit__(self, exc_type, exc_value, traceback):
         utils.request_context.set('USE_STATS_READ_REPLICA', None)
+
+
+class use_stats_read_replica_postgres(_use_read_replica_base):
+
+    def __init__(self, should_use_postgres=True):
+        self.should_use_postgres = should_use_postgres
+
+    def __enter__(self):
+        utils.request_context.set('USE_STATS_READ_REPLICA_POSTGRES', self.should_use_postgres)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        utils.request_context.set('USE_STATS_READ_REPLICA_POSTGRES', None)

@@ -1,1 +1,1 @@
-(NVL(SUM({{ p }}visits)) - NVL(SUM({{ p }}bounced_visits), 0)) {{ alias }}
+(COALESCE(SUM({{ p }}visits)) - COALESCE(SUM({{ p }}bounced_visits), 0)) {{ alias }}

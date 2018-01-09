@@ -67,7 +67,7 @@ INSERT INTO mvh_clean_stats (
 
       NULLIF(TRIM(LOWER(age)), '') as age,
       NULLIF(TRIM(LOWER(gender)), '') as gender,
-      NULLIF(TRIM(LOWER(age)), '') || ' ' || NVL(TRIM(LOWER(gender)), '') AS age_gender,
+      NULLIF(TRIM(LOWER(age)), '') || ' ' || COALESCE(TRIM(LOWER(gender)), '') AS age_gender,
 
       SUM(impressions) as impressions,
       SUM(clicks) as clicks,
