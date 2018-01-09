@@ -66,6 +66,11 @@ class Account(models.Model):
         help_text='This account will have license fee and margin included into all costs.'
     )
     custom_flags = JSONField(null=True, blank=True)
+    real_time_campaign_stop = models.BooleanField(
+        default=False,
+        verbose_name='Default to real time campaign stop',
+        help_text='Campaigns of this account will use real time campaign stop instead of landing mode.',
+    )
 
     settings = models.OneToOneField('AccountSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_entity')
 

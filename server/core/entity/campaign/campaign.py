@@ -39,6 +39,8 @@ class CampaignManager(core.common.QuerySetManager):
         )
         if account.agency_id in AGENCIES_WITHOUT_REAL_TIME_CAMPAIGN_STOP:
             campaign.real_time_campaign_stop = False
+        if account.real_time_campaign_stop:
+            campaign.real_time_campaign_stop = True
 
         campaign.save(request=request)
 
@@ -48,7 +50,9 @@ class CampaignManager(core.common.QuerySetManager):
         if request:
             settings_updates['campaign_manager'] = request.user
 
-        if account.id in ACCOUNTS_WITHOUT_CAMPAIGN_STOP or account.agency_id in AGENCIES_WITHOUT_CAMPAIGN_STOP:
+        if campaign.real_time_campaign_stop or\
+           account.id in ACCOUNTS_WITHOUT_CAMPAIGN_STOP or\
+           account.agency_id in AGENCIES_WITHOUT_CAMPAIGN_STOP:
             settings_updates['automatic_campaign_stop'] = False
 
         campaign.settings = core.entity.settings.CampaignSettings(campaign=campaign)
