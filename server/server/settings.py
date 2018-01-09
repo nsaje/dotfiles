@@ -252,7 +252,7 @@ if ENABLE_DEBUG_TOOLBAR:
         }
     }
 
-if ENABLE_SILK:
+if ENABLE_SILK and not TESTING:
     MIDDLEWARE = [
         'silk.middleware.SilkyMiddleware',
     ] + MIDDLEWARE
