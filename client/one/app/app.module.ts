@@ -15,7 +15,8 @@ import {ViewsModule} from './views/views.module';
         shouldSendCallback: () => APP_CONFIG.env.prod,
     }
 )
-.addPlugin((<any>window).Raven.Plugins.Angular); // tslint:disable-line
+.addPlugin((<any>window).Raven.Plugins.Angular) // tslint:disable-line
+.install();
 
 @NgModule({
     imports: [
