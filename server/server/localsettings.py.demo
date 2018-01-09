@@ -12,6 +12,7 @@ SECRET_KEY = '=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l'
 
 STATS_DB_NAME = 'k1'
 STATS_DB_WRITE_REPLICAS = []
+STATS_DB_WRITE_REPLICAS_POSTGRES = []
 STATS_DB_READ_REPLICAS = []
 
 # Database

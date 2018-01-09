@@ -1,10 +1,18 @@
 import os
+import io
 import hashlib
+from functools import partial
 
+import json
 import boto
 from boto.s3.key import Key
 
+import utils.threads
 from django.conf import settings
+
+
+class TimeoutException(Exception):
+    pass
 
 
 class S3Helper(object):
@@ -28,6 +36,33 @@ class S3Helper(object):
         if settings.FILE_STORAGE_DIR:
             with open(os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(key)), 'r') as f:
                 return f.read()
+
+    def open_keys_async(self, keys):
+        keys = list(keys)
+
+        t = utils.threads.AsyncFunction(partial(self._download_file, keys[0]))
+        t.start()
+
+        def _get_result(t):
+            result = t.join_and_get_result(timeout=600)
+            if t.isAlive():
+                raise TimeoutException("Downloading file from S3 taking too long")
+            return result
+
+        for key in keys[1:]:
+            result = _get_result(t)
+            t = utils.threads.AsyncFunction(partial(self._download_file, key))
+            t.start()
+            yield result
+        yield _get_result(t)
+
+    def _download_file(self, key):
+        k = Key(self.bucket)
+        k.key = key
+        f = io.BytesIO()
+        k.get_contents_to_file(f)
+        f.seek(0)
+        return f
 
     def put(self, key, contents, human_readable_filename=None):
         if settings.USE_S3:
@@ -74,6 +109,12 @@ class S3Helper(object):
             except OSError:
                 return []
         return []
+
+    def list_manifest(self, manifest_path):
+        if settings.USE_S3:
+            manifest = json.loads(self.get(manifest_path))
+            for entry in manifest['entries']:
+                yield entry['url'].lstrip('s3://%s/' % self.bucket.name)
 
 
 class FakeMultiPartUpload(object):

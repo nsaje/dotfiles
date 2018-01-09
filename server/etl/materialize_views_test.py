@@ -1056,8 +1056,9 @@ class ReplicasTest(TestCase, backtosql.TestSQLMixin):
         TO %(s3_url)s
         DELIMITER AS %(delimiter)s
         CREDENTIALS %(credentials)s
-        ADDQUOTES
         ESCAPE
+        NULL AS '$NA$'
+        GZIP
         MANIFEST
         ;
         """)
@@ -1084,8 +1085,9 @@ class ReplicasTest(TestCase, backtosql.TestSQLMixin):
         TO %(s3_url)s
         DELIMITER AS %(delimiter)s
         CREDENTIALS %(credentials)s
-        ADDQUOTES
         ESCAPE
+        NULL AS '$NA$'
+        GZIP
         MANIFEST
         ;
         """)

@@ -24,6 +24,22 @@ def generate_table_definition(table_name, table_definition_stream, breakdown, so
     ))
 
 
+def generate_table_definition_postgres(table_name, table_definition_stream, breakdown, index,
+                                       breakdown_overrides=None):
+    dimensions, aggregates = parse_table_definition(table_definition_stream)
+
+    if breakdown_overrides:
+        for column_name, definition in breakdown_overrides.items():
+            dimensions[column_name] = definition
+
+    return backtosql.generate_sql('etl_create_table_postgres.sql', dict(
+        table_name=table_name,
+        dimensions=[dimensions[x] for x in breakdown],
+        aggregates=aggregates,
+        index=index,
+    ))
+
+
 def parse_table_definition(stream):
     dimensions, aggregates = {}, []
 

@@ -1,3 +1,4 @@
+import gzip
 import backtosql
 import io
 import logging
@@ -105,10 +106,28 @@ def update_table_from_s3(db_name, s3_manifest_path, table_name, date_from, date_
             sql, params = prepare_date_range_delete_query(table_name, date_from, date_to, account_id)
             c.execute(sql, params)
 
-            sql, params = prepare_copy_csv_query(s3_manifest_path, table_name, format_csv=False, removequotes=True, escape=True, is_manifest=True)
+            sql, params = prepare_copy_csv_query(s3_manifest_path, table_name, format_csv=False, removequotes=True,
+                                                 escape=True, is_manifest=True, null_as='$NA$', gzip=True)
             c.execute(sql, params)
 
             logger.info('Loaded table "%s" into replica "%s" from S3 path "%s"', table_name, db_name, s3_manifest_path)
+
+
+def update_table_from_s3_postgres(db_name, s3_manifest_path, table_name, date_from, date_to, account_id=None):
+    with db.get_write_stats_transaction(db_name):
+        with db.get_write_stats_cursor(db_name) as c:
+            logger.info('Loading table "%s" into Postgres replica "%s" from S3 path "%s"', table_name, db_name, s3_manifest_path)
+
+            sql, params = prepare_date_range_delete_query(table_name, date_from, date_to, account_id)
+            c.execute(sql, params)
+
+            bucket = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS)
+            keys = bucket.list_manifest(s3_manifest_path)
+            for f in bucket.open_keys_async(keys):
+                with gzip.GzipFile(fileobj=f, mode='rb') as gunzipped:
+                    c.copy_expert("COPY %s FROM STDIN NULL '$NA$'" % table_name, gunzipped)
+
+            logger.info('Loaded table "%s" into Postgres replica "%s" from S3 path "%s"', table_name, db_name, s3_manifest_path)
 
 
 def prepare_unload_csv_query(s3_path, table_name, date_from, date_to, account_id=None):
@@ -129,13 +148,16 @@ def prepare_unload_csv_query(s3_path, table_name, date_from, date_to, account_id
     }
 
 
-def prepare_copy_csv_query(s3_path, table_name, format_csv=True, removequotes=False, escape=False, is_manifest=False):
+def prepare_copy_csv_query(s3_path, table_name, format_csv=True, removequotes=False, escape=False,
+                           is_manifest=False, null_as=None, gzip=False):
     sql = backtosql.generate_sql('etl_copy_csv.sql', {
         'table': table_name,
         'is_manifest': is_manifest,
         'format_csv': format_csv,
         'removequotes': removequotes,
         'escape': escape,
+        'null_as': null_as,
+        'gzip': gzip,
     })
 
     s3_url = S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_path)
@@ -777,6 +799,15 @@ class MasterDerivedView(Materialize):
         with open(cls.TEMPLATE) as rs:
             sql = derived_views.generate_table_definition(
                 cls.TABLE_NAME, rs, cls.BREAKDOWN, cls.SORTKEY, distkey=cls.DISTKEY, diststyle=cls.DISTSTYLE)
+        return sql
+
+    def prepare_create_table_postgres(cls):
+        template = cls.TEMPLATE.replace('/redshift/', '/postgres/')
+        with open(template) as rs:
+            assert cls.SORTKEY[0] == 'date'
+            index = cls.SORTKEY[1:] + ['date']
+            sql = derived_views.generate_table_definition_postgres(
+                cls.TABLE_NAME, rs, cls.BREAKDOWN, index)
         return sql
 
     def prepare_insert_query(self, date_from, date_to):

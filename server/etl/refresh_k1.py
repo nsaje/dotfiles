@@ -322,9 +322,15 @@ def _handle_replicas(views, job_id, date_from, date_to, account_id=None):
     for mv_class in views:
         if not mv_class.IS_TEMPORARY_TABLE:
             s3_path = materialize_views.unload_table(job_id, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
-            # TODO: parallelize if more than one replica
             for db_name in settings.STATS_DB_WRITE_REPLICAS:
                 materialize_views.update_table_from_s3(db_name, s3_path, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
+                maintenance.vacuum(mv_class.TABLE_NAME, db_name=db_name)
+                maintenance.analyze(mv_class.TABLE_NAME, db_name=db_name)
+            if mv_class in (materialize_views.MasterView, materialize_views.MasterPublishersView):
+                # do not copy mv_master and mv_master_pubs into postgres, too large
+                continue
+            for db_name in settings.STATS_DB_WRITE_REPLICAS_POSTGRES:
+                materialize_views.update_table_from_s3_postgres(db_name, s3_path, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
                 maintenance.vacuum(mv_class.TABLE_NAME, db_name=db_name)
                 maintenance.analyze(mv_class.TABLE_NAME, db_name=db_name)
 

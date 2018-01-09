@@ -83,8 +83,8 @@ class RealAsyncFunction(Thread):
         finally:
             connection.close()
 
-    def join_and_get_result(self):
-        self.join()
+    def join_and_get_result(self, timeout=None):
+        self.join(timeout)
         return self.get_result()
 
 

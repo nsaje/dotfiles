@@ -8,6 +8,8 @@ CREDENTIALS %(credentials)s
 MAXERROR 0 BLANKSASNULL EMPTYASNULL
 {% if removequotes %}REMOVEQUOTES{% endif %}
 {% if escape %}ESCAPE{% endif %}
+{% if null_as %}NULL AS '{{ null_as }}'{% endif %}
+{% if gzip %}GZIP{% endif %}
 {% if is_manifest %}MANIFEST{% endif %}
 ;
 
