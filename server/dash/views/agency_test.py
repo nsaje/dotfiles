@@ -3124,19 +3124,6 @@ class AccountSettingsTest(TestCase):
 
         self.assertEqual(view.get_non_removable_sources(account, [2]), [2])
 
-    def test_get_non_removable_sources_archived_campaign(self):
-        view = agency.AccountSettings()
-        account = models.Account.objects.get(pk=111)
-        self.assertEqual(view.get_non_removable_sources(account, [2]), [2])
-
-        request = HttpRequest()
-        request.user = User.objects.get(pk=1)
-        campaign_settings = models.CampaignSettings.objects.get(pk=1112)
-        new_campaign_settings = campaign_settings.copy_settings()
-        new_campaign_settings.archived = True
-        new_campaign_settings.save(request)
-        self.assertEqual(view.get_non_removable_sources(account, [2]), [])
-
 
 class AccountUsersTest(TestCase):
     fixtures = ['test_views.yaml', 'test_agency.yaml']

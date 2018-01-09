@@ -1012,21 +1012,15 @@ class AccountSettings(api_common.BaseApiView):
                 account.agency = agency
 
     def get_non_removable_sources(self, account, sources_to_be_removed):
-        non_removable_source_ids_list = []
-
-        for campaign in models.Campaign.objects.filter(account_id=account.id).exclude_archived():
-
-            for adgroup in campaign.adgroup_set.all():
-                adgroup_settings = adgroup.get_current_settings()
-                if adgroup_settings.state == constants.AdGroupSettingsState.INACTIVE:
-                    continue
-
-                for adgroup_source in adgroup.adgroupsource_set.filter(source__in=sources_to_be_removed):
-                    adgroup_source_settings = adgroup_source.get_current_settings()
-                    if adgroup_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE:
-                        non_removable_source_ids_list.append(adgroup_source.source_id)
-
-        return non_removable_source_ids_list
+        return list(
+            models.AdGroupSource.objects.all()
+            .filter(settings__state=constants.AdGroupSourceSettingsState.ACTIVE)
+            .filter(ad_group__settings__state=constants.AdGroupSettingsState.ACTIVE)
+            .filter(ad_group__campaign__account=account.id)
+            .filter(source__in=sources_to_be_removed)
+            .values_list('source_id', flat=True)
+            .distinct()
+        )
 
     def add_error_to_account_agency_form(self, form, to_be_removed):
         source_names = [source.name for source in models.Source.objects.filter(id__in=to_be_removed).order_by('id')]
