@@ -361,6 +361,16 @@ class AgencyAdmin(ExportMixin, admin.ModelAdmin):
         super(AgencyAdmin, self).__init__(model, admin_site)
         self.form.admin_site = admin_site
 
+    def get_queryset(self, request):
+        qs = super(AgencyAdmin, self).get_queryset(request)
+        return qs.select_related(
+            'sales_representative',
+            'cs_representative',
+        ).prefetch_related(
+            'users',
+            'account_set',
+        )
+
     def _users(self, obj):
         names = []
         for user in obj.users.all():
@@ -539,6 +549,12 @@ class SourceAdmin(admin.ModelAdmin):
         'modified_dt',
     )
     readonly_fields = ('created_dt', 'modified_dt', 'deprecated')
+
+    def get_queryset(self, request):
+        qs = super(SourceAdmin, self).get_queryset(request)
+        return qs.select_related(
+            'source_type',
+        )
 
     @transaction.atomic
     def deprecate_selected(self, request, queryset):

@@ -356,17 +356,21 @@ class CampaignSettings(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(request, campaign_settings, campaign),
-            'can_archive': campaign.can_archive(),
-            'can_restore': campaign.can_restore(),
             'archived': campaign_settings.archived,
         }
-        if request.user.has_perm('zemauth.can_modify_campaign_manager'):
-            response['campaign_managers'] = self.get_campaign_managers(request, campaign, campaign_settings)
-
         if request.user.has_perm('zemauth.can_see_campaign_goals'):
             response['goals'] = self.get_campaign_goals(
                 campaign
             )
+        if self.rest_proxy:
+            return self.create_api_response(response)
+
+        response['can_archive'] = campaign.can_archive()
+        response['can_restore'] = campaign.can_restore()
+
+        if request.user.has_perm('zemauth.can_modify_campaign_manager'):
+            response['campaign_managers'] = self.get_campaign_managers(request, campaign, campaign_settings)
+
         if request.user.has_perm('zemauth.can_see_backend_hacks'):
             response['hacks'] = models.CustomHack.objects.all().filter_applied(
                 campaign=campaign
@@ -550,8 +554,8 @@ class CampaignSettings(api_common.BaseApiView):
         }
 
         if request.user.has_perm('zemauth.can_modify_campaign_manager'):
-            result['campaign_manager'] = str(settings.campaign_manager.id)\
-                if settings.campaign_manager is not None else None
+            result['campaign_manager'] = str(settings.campaign_manager_id)\
+                if settings.campaign_manager_id is not None else None
 
         if request.user.has_perm('zemauth.can_modify_campaign_iab_category'):
             result['iab_category'] = settings.iab_category
@@ -1512,7 +1516,7 @@ class History(api_common.BaseApiView):
     def get_history(self, filters, order=['-created_dt']):
         history_entries = models.History.objects.filter(
             **filters
-        ).order_by(*order)
+        ).order_by(*order).select_related('created_by')
 
         history = []
         for history_entry in history_entries:
