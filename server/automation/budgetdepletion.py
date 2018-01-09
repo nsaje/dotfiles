@@ -123,7 +123,8 @@ def _send_campaign_stopped_notification_email(
 
 
 def _is_automatic_campaign_stop_disabled(camp):
-    return not camp.get_current_settings().automatic_campaign_stop
+    return not camp.get_current_settings().automatic_campaign_stop and\
+        not camp.real_time_campaign_stop
 
 
 @influx.timer('automation.budgetdepletion.budget_campaigns', operation='notify_depleting')
@@ -150,6 +151,8 @@ def stop_and_notify_depleted_budget_campaigns():
     yesterdays_spends = automation.helpers.get_yesterdays_spends(campaigns)
 
     for camp in campaigns:
+        if camp.real_time_campaign_stop:
+            continue
         if available_budgets.get(camp.id) <= 0:
             automation.helpers.stop_campaign(camp)
             _notify_depleted_budget_campaign_stopped(
