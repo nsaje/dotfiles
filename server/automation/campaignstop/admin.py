@@ -66,7 +66,7 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
     @staticmethod
     def _format_state(obj):
         state = constants.CampaignStopState.STOPPED
-        if obj['allowed_to_run']:
+        if obj.context['allowed_to_run']:
             state = constants.CampaignStopState.ACTIVE
         return '<div style="color:{color}"><b>{state_text}</b></div>'.format(
             color='green' if state == constants.CampaignStopState.ACTIVE else 'red',
