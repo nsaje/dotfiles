@@ -97,7 +97,8 @@ def _get_realtime_spends(campaign, start):
 def _get_realtime_spends_for_date(campaign, date):
     spends = list(
         RealTimeCampaignDataHistory.objects.filter(
-            date=date
+            date=date,
+            campaign=campaign,
         ).order_by('-created_dt')[:2]
     )
 
