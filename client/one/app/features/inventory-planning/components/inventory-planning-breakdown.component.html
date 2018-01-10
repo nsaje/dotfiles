@@ -12,18 +12,22 @@
     </div>
 
     <div class="zem-inventory-planning-breakdown__options-container custom-scroller">
-        <div class="zem-inventory-planning-breakdown__option-item"
-             *ngFor="let option of searchResults; let index = index; trackBy: trackByOption"
-             (click)="toggle(option.value)">
-            <input class="input-checkbox zem-inventory-planning-breakdown__checkbox"
-                   type="checkbox"
-                   [checked]="selectedIndices.indexOf(index) !== -1" />
-            <span class="zem-inventory-planning-breakdown__name checkbox-text">
-                {{option.name || option.value}}
-            </span>
-            <span class="zem-inventory-planning-breakdown__auction-count">
-                <span class="zem-inventory-planning-breakdown__auction-count-number">{{option.auctionCount | bigNumber}}</span>
-            </span>
-        </div>
+        <table class="zem-inventory-planning__options-table">
+            <tr class="zem-inventory-planning-breakdown__option-item"
+                *ngFor="let option of searchResults; let index = index; trackBy: trackByOption"
+                (click)="toggle(option.value)">
+                <td class="zem-inventory-planning-breakdown__name">
+                    <input class="input-checkbox zem-inventory-planning-breakdown__checkbox"
+                           type="checkbox"
+                           [checked]="selectedIndices.indexOf(index) !== -1" />
+                    <span class="zem-inventory-planning-breakdown__name-text checkbox-text">
+                        {{option.name || option.value}}
+                    </span>
+                </td>
+                <td class="zem-inventory-planning-breakdown__auction-count">
+                    <span class="zem-inventory-planning-breakdown__auction-count-number">{{option.auctionCount | bigNumber}}</span>
+                </td>
+            </tr>
+        </table>
     </div>
 </div>
