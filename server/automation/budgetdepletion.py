@@ -151,8 +151,6 @@ def stop_and_notify_depleted_budget_campaigns():
     yesterdays_spends = automation.helpers.get_yesterdays_spends(campaigns)
 
     for camp in campaigns:
-        if camp.real_time_campaign_stop:
-            continue
         if available_budgets.get(camp.id) <= 0:
             automation.helpers.stop_campaign(camp)
             _notify_depleted_budget_campaign_stopped(
@@ -163,6 +161,9 @@ def stop_and_notify_depleted_budget_campaigns():
 
 
 def _notify_depleted_budget_campaign_stopped(campaign, available_budget, yesterdays_spend):
+    if campaign.real_time_campaign_stop:
+        return
+
     campaign_manager = campaign.get_current_settings().campaign_manager
     sales_rep = campaign.get_sales_representative()
 
