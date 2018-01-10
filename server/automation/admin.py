@@ -5,6 +5,8 @@ from django.utils.html import format_html
 from . import models
 import dash.models
 
+from .campaignstop.admin import RealTimeCampaignStopLogAdmin
+
 
 class CampaignBudgetDepletionNotificationAdmin(admin.ModelAdmin):
     search_fields = ['campaign__name']
@@ -122,3 +124,4 @@ class CampaignStopLogAdmin(admin.ModelAdmin):
 
 
 admin.site.register(models.CampaignStopLog, CampaignStopLogAdmin)
+admin.site.register(models.RealTimeCampaignStopLog, RealTimeCampaignStopLogAdmin)
