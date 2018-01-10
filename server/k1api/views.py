@@ -822,7 +822,7 @@ class AdGroupSourcesView(K1APIView):
         for ad_group_source_settings in ad_group_source_settings:
             ad_group = ad_group_source_settings.ad_group_source.ad_group
             ad_group_settings = ad_group_settings_map[ad_group.id]
-            campaignstop_allowed_to_run = campaignstop_map[ad_group.campaign.id]
+            campaignstop_allowed_to_run = campaignstop_map[ad_group.campaign.id]['allowed_to_run']
             if self._is_ad_group_source_enabled(
                     ad_group_settings,
                     ad_group_source_settings,
