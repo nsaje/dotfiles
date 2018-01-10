@@ -36,7 +36,9 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
             Available budget (until above date): ${budget_spends_until_date}''')
         if 'budget_spends_until_date' in obj.context:
             desc += textwrap.dedent('''
+
                 Spend from daily statements was taken until <b>{budget_spends_until_date}</b>. Real time data was used for dates after that.
+
                 Spend data taken into account:
                     - Real time spend (current): ${current_rt_spend}
                     - Real time spend (previous check): ${prev_rt_spend}
