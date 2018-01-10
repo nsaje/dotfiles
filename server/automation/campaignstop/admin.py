@@ -9,7 +9,8 @@ from .service.update_campaignstop_state import THRESHOLD
 
 class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
     list_display = ('campaign', 'event', 'event_result', 'created_dt')
-    readonly_fields = ('created_dt', 'event_result', 'event_description')
+    readonly_fields = ('event', 'created_dt', 'event_result', 'event_description')
+    raw_id_fields = ('campaign',)
     exclude = ('context',)
 
     def event_description(self, obj):
@@ -42,14 +43,14 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
                     - Spend rate: ${spend_rate}
                     - Prediction for next check: ${predicted}
                     - Is below threshold (${threshold}): {is_below_threshold}''')
-        return desc.format(state=self._format_state(obj), threshold=THRESHOLD, **obj.context)
+        return desc.format(state=self._format_state(obj), threshold=THRESHOLD, **obj.context).replace('\n', '<br />')
 
     def _get_max_allowed_end_date_update_description(self, obj):
         desc = 'Calculated maximum allowed campaign end date: {max_allowed_end_date}'.format(**obj.context)
         desc += 'Campaign budgets taken into account:'
         for budget in obj.context['budgets']:
             desc += '\n    - id: {id}, start: {start_date}, end: {end_date}'.format(**budget)
-        return desc
+        return desc.replace('\n', '<br />')
 
     def event_result(self, obj):
         if obj.event == constants.CampaignStopEvent.BUDGET_DEPLETION_CHECK:
@@ -68,7 +69,7 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
         state = constants.CampaignStopState.STOPPED
         if obj.context['allowed_to_run']:
             state = constants.CampaignStopState.ACTIVE
-        return '<div style="color:{color}"><b>{state_text}</b></div>'.format(
-            color='green' if state == constants.CampaignStopState.ACTIVE else 'red',
+        return '<span style="color:{color}"><b>{state_text}</b></span>'.format(
+            color='#4bb543' if state == constants.CampaignStopState.ACTIVE else '#ba2121',
             state_text=constants.CampaignStopState.get_text(state),
         )
