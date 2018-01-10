@@ -9,9 +9,18 @@ from .service.update_campaignstop_state import THRESHOLD
 
 class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
     list_display = ('campaign', 'event', 'event_result', 'created_dt')
+    list_filter = ('event',)
     readonly_fields = ('event', 'created_dt', 'event_result', 'event_description')
     raw_id_fields = ('campaign',)
     exclude = ('context',)
+    search_fields = (
+        'campaign__account__agency__id',
+        'campaign__account__agency__name',
+        'campaign__account__name',
+        'campaign__account__id',
+        'campaign__name',
+        'campaign__id',
+    )
 
     def event_description(self, obj):
         if not obj.context:
