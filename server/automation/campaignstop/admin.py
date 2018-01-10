@@ -33,7 +33,7 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
 
             Max allowed end date: {max_allowed_end_date} (is in past: {is_max_end_date_past})
             Available budget (until above date): ${budget_spends_until_date}''')
-        if ['budget_spends_until_date'] in obj.context:
+        if 'budget_spends_until_date' in obj.context:
             desc += textwrap.dedent('''
                 Spend from daily statements was taken until <b>{budget_spends_until_date}</b>. Real time data was used for dates after that.
                 Spend data taken into account:
