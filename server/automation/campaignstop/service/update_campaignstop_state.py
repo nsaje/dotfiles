@@ -5,7 +5,8 @@ from django.db import transaction
 import core.entity
 from utils import dates_helper
 
-from .. import CampaignStopState, RealTimeCampaignDataHistory
+from ..constants import CampaignStopEvent
+from .. import RealTimeCampaignStopLog, CampaignStopState, RealTimeCampaignDataHistory
 
 THRESHOLD = decimal.Decimal('10')
 HOURS_DELAY = 6
@@ -25,24 +26,31 @@ def _update_campaigns(campaigns):
 @transaction.atomic
 def _update_campaign(campaign):
     campaign_state, _ = CampaignStopState.objects.get_or_create(campaign=campaign)
-    campaign_state.set_allowed_to_run(_is_allowed_to_run(campaign, campaign_state))
+    log = RealTimeCampaignStopLog(
+        campaign=campaign, event=CampaignStopEvent.BUDGET_DEPLETION_CHECK)
+    campaign_state.set_allowed_to_run(_is_allowed_to_run(log, campaign, campaign_state))
 
 
-def _is_allowed_to_run(campaign, campaign_state):
+def _is_allowed_to_run(log, campaign, campaign_state):
     return (
-        not _is_max_end_date_past(campaign, campaign_state) and
-        not _is_below_threshold(campaign)
+        not _is_max_end_date_past(log, campaign, campaign_state) and
+        not _is_below_threshold(log, campaign)
     )
 
 
-def _is_max_end_date_past(campaign, campaign_state):
-    return (
+def _is_max_end_date_past(log, campaign, campaign_state):
+    is_past = (
         campaign_state.max_allowed_end_date and
         campaign_state.max_allowed_end_date < dates_helper.local_today()
     )
+    log.add_context({
+        'max_allowed_end_date': campaign_state.max_allowed_end_date,
+        'is_max_end_date_past': is_past,
+    })
+    return is_past
 
 
-def _is_below_threshold(campaign):
+def _is_below_threshold(log, campaign):
     budget_spends_until_date = _get_until_date_for_budget_spends(campaign)
     available_budget = _get_available_campaign_budget(
         campaign, budget_spends_until_date)
@@ -58,7 +66,17 @@ def _is_below_threshold(campaign):
         spend_rate = current_rt_spend - prev_rt_spend
 
     predicted = remaining - spend_rate
-    return predicted < THRESHOLD
+    is_below = predicted < THRESHOLD
+    log.add_context({
+        'budget_spends_until_date': budget_spends_until_date,
+        'available_budget': available_budget,
+        'current_rt_spend': current_rt_spend,
+        'prev_rt_spend': prev_rt_spend,
+        'spend_rate': spend_rate,
+        'predicted': predicted,
+        'is_below_threshold': is_below,
+    })
+    return is_below
 
 
 def _get_until_date_for_budget_spends(campaign):

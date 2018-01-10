@@ -33,13 +33,6 @@ class JSONEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, obj)
 
 
-class DateJSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime.date) and not isinstance(obj, datetime.datetime):
-            return obj.isoformat()
-        return super(DateJSONEncoder, self).default(obj)
-
-
 def json_serializable_changes(changes):
     if not changes:
         return

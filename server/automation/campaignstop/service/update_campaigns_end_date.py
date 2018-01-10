@@ -3,7 +3,8 @@ from django.db import transaction
 import core.entity
 
 import core.bcm
-from .. import CampaignStopState
+from .. import constants
+from .. import RealTimeCampaignStopLog, CampaignStopState
 from utils import dates_helper
 
 
@@ -26,9 +27,10 @@ def _update_campaigns_end_date(campaigns):
 def _update_campaign_end_date(campaign, campaign_budgets):
     today = dates_helper.local_today()
     campaign_stop_state, _ = CampaignStopState.objects.get_or_create(campaign=campaign)
+    log = RealTimeCampaignStopLog(
+        campaign=campaign, event=constants.CampaignStopEvent.MAX_ALLOWED_END_DATE_UPDATE)
     campaign_stop_state.update_max_allowed_end_date(
-        _calculate_max_allowed_end_date(campaign, campaign_budgets, today)
-    )
+        _calculate_max_allowed_end_date(log, campaign, campaign_budgets, today))
 
 
 def _prefetch_budgets(campaigns):
@@ -41,7 +43,7 @@ def _prefetch_budgets(campaigns):
     return budgets_by_campaign
 
 
-def _calculate_max_allowed_end_date(campaign, campaign_budgets, current_date):
+def _calculate_max_allowed_end_date(log, campaign, campaign_budgets, current_date):
     campaign_created_date = dates_helper.utc_to_local(campaign.created_dt).date()
     max_allowed_end_date = dates_helper.day_before(campaign_created_date)
     for budget in campaign_budgets:
@@ -50,4 +52,8 @@ def _calculate_max_allowed_end_date(campaign, campaign_budgets, current_date):
             break
 
         max_allowed_end_date = max(max_allowed_end_date, budget['end_date'])
+    log.add_context({
+        'budgets': campaign_budgets,
+        'max_allowed_end_date': max_allowed_end_date,
+    })
     return max_allowed_end_date

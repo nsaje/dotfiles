@@ -7,6 +7,7 @@ import core.entity.adgroup
 
 from campaignstop.campaignstop_state import *  # noqa
 from campaignstop.real_time_data_history import *  # noqa
+from campaignstop.real_time_campaign_stop_log import *  # noqa
 
 
 class CampaignBudgetDepletionNotification(models.Model):
