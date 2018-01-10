@@ -64,7 +64,7 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
     event_result.allow_tags = True
 
     @staticmethod
-    def _format_state(self, obj):
+    def _format_state(obj):
         state = constants.CampaignStopState.STOPPED
         if obj['allowed_to_run']:
             state = constants.CampaignStopState.ACTIVE
