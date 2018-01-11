@@ -69,10 +69,11 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
         ).replace('\n', '<br />')
 
     def _get_max_allowed_end_date_update_description(self, obj):
-        desc = 'Calculated maximum allowed campaign end date: {max_allowed_end_date}'.format(**obj.context)
-        desc += 'Campaign budgets taken into account:'
+        desc = 'Calculated maximum allowed campaign end date: <b>{}</b>'.format(
+            self._format_max_allowed_end_date(obj))
+        desc += '\nCampaign budgets taken into account:'
         for budget in obj.context['budgets']:
-            desc += '\n    - id: {id}, start: {start_date}, end: {end_date}'.format(**budget)
+            desc += '\n&nbsp;&nbsp;&nbsp;&nbsp;- id: {id}, start date: {start_date}, end date: {end_date}'.format(**budget)
         return desc.replace('\n', '<br />')
 
     def event_result(self, obj):
@@ -81,7 +82,7 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
         elif obj.event == constants.CampaignStopEvent.SELECTION_CHECK:
             pass
         elif obj.event == constants.CampaignStopEvent.MAX_ALLOWED_END_DATE_UPDATE:
-            return obj.context['max_allowed_end_date']
+            return self._format_max_allowed_end_date(obj)
         elif obj.event == constants.CampaignStopEvent.BUDGET_AMOUNT_VALIDATION:
             pass
         return 'N/A'
@@ -96,3 +97,7 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
             color='#4bb543' if state == constants.CampaignStopState.ACTIVE else '#ba2121',
             state_text=constants.CampaignStopState.get_text(state),
         )
+
+    @staticmethod
+    def _format_max_allowed_end_date(obj):
+        return '<b>' + obj.context['max_allowed_end_date'] + '</b>'
