@@ -41,20 +41,36 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
         desc = textwrap.dedent('''\
             The calculated campaign state is: {state}.
 
-            Max allowed end date: {max_allowed_end_date} (is in past: {is_max_end_date_past})''')
+            Max allowed end date: <b>{max_allowed_end_date}</b> (is in past: {is_max_end_date_past})''')
         if 'budget_spends_until_date' in obj.context:
+            curr_spends = 'n/a'
+            if 'current_rt_spends_per_date' in obj.context:
+                curr_spends = ', '.join('{}: {}'.format(el) for el in obj.context['current_rt_spends_per_date'])
+            prev_spends = 'n/a'
+            if 'prev_rt_spends_per_date' in obj.context:
+                prev_spends = ', '.join('{}: {}'.format(el) for el in obj.context['prev_rt_spends_per_date'])
             desc += textwrap.dedent('''
+                Prediction for next check: <b>${predicted}</b> (${available_budget} - ${current_rt_spend} - ${spend_rate}) <b>{threshold_op} ${threshold}</b> (threshold)
 
-                Spend from daily statements was taken until <b>{budget_spends_until_date}</b>. Real time data was used for dates after that.
-                Available budget (until above date): ${available_budget}
+                Spend from daily statements was taken until {budget_spends_until_date}. Real time data was used for dates after that.
+                Available budget (up until {budget_spends_until_date}): ${available_budget}
 
-                Spend data taken into account:
-                    - Real time spend (current): ${current_rt_spend}
-                    - Real time spend (previous check): ${prev_rt_spend}
-                    - Spend rate: ${spend_rate}
-                    - Prediction for next check: ${predicted}
-                    - Is below threshold (${threshold}): {is_below_threshold}''')
-        return desc.format(state=self._format_state(obj), threshold=THRESHOLD, **obj.context).replace('\n', '<br />')
+                Real time data break down:
+                &nbsp;&nbsp;&nbsp;&nbsp;- Real time spend (current check): ${current_rt_spend}; per date: {curr_spends}
+                &nbsp;&nbsp;&nbsp;&nbsp;- Real time spend (previous check): ${prev_rt_spend}; per date: {prev_spends}
+                &nbsp;&nbsp;&nbsp;&nbsp;- Spend rate: ${spend_rate} (= ${current_rt_spend} - ${prev_rt_spend})''')
+        try:
+            return desc.format(
+                state=self._format_state(obj),
+                threshold=THRESHOLD,
+                curr_spends=curr_spends,
+                prev_spends=prev_spends,
+                threshold_op='<' if obj.context['is_below_threshold'] else '>',
+                **obj.context
+            ).replace('\n', '<br />')
+        except:
+            import traceback
+            traceback.print_exc()
 
     def _get_max_allowed_end_date_update_description(self, obj):
         desc = 'Calculated maximum allowed campaign end date: {max_allowed_end_date}'.format(**obj.context)

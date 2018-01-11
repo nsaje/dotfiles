@@ -57,7 +57,7 @@ def _is_below_threshold(log, campaign):
     available_budget = _get_available_campaign_budget(
         campaign, budget_spends_until_date)
     current_rt_spend, prev_rt_spend = _get_realtime_spends(
-        campaign, dates_helper.day_after(budget_spends_until_date))
+        log, campaign, dates_helper.day_after(budget_spends_until_date))
 
     remaining = available_budget
     if current_rt_spend:
@@ -104,13 +104,21 @@ def _get_available_campaign_budget(campaign, until):
     return sum(bli.get_available_etfm_amount(date=until) for bli in budgets_active_today)
 
 
-def _get_realtime_spends(campaign, start):
+def _get_realtime_spends(log, campaign, start):
     tomorrow = dates_helper.day_after(dates_helper.local_today())
     current_spend, prev_spend = None, None
+    current_spends_per_date = []
+    prev_spends_per_date = []
     for date in dates_helper.date_range(start, tomorrow):
         curr, prev = _get_realtime_spends_for_date(campaign, date)
+        current_spends_per_date.append(curr)
+        prev_spends_per_date.append(prev)
         current_spend = current_spend + curr if current_spend else curr
         prev_spend = prev_spend + prev if prev_spend else prev
+    log.add_context({
+        'current_rt_spends_per_date': current_spends_per_date,
+        'prev_rt_spends_per_date': prev_spends_per_date
+    })
     return current_spend, prev_spend
 
 
