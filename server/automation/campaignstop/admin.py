@@ -42,11 +42,11 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
             The calculated campaign state is: {state}.
 
             Max allowed end date: <b>{max_allowed_end_date}</b> (is in past: {is_max_end_date_past})''')
+        curr_spends = 'n/a'
+        prev_spends = 'n/a'
         if 'budget_spends_until_date' in obj.context:
-            curr_spends = 'n/a'
             if 'current_rt_spends_per_date' in obj.context:
                 curr_spends = ', '.join('{}: {}'.format(*el) for el in obj.context['current_rt_spends_per_date'])
-            prev_spends = 'n/a'
             if 'prev_rt_spends_per_date' in obj.context:
                 prev_spends = ', '.join('{}: {}'.format(*el) for el in obj.context['prev_rt_spends_per_date'])
             desc += textwrap.dedent('''
