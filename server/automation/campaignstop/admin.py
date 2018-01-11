@@ -45,10 +45,10 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
         if 'budget_spends_until_date' in obj.context:
             curr_spends = 'n/a'
             if 'current_rt_spends_per_date' in obj.context:
-                curr_spends = ', '.join('{}: {}'.format(el) for el in obj.context['current_rt_spends_per_date'])
+                curr_spends = ', '.join('{}: {}'.format(*el) for el in obj.context['current_rt_spends_per_date'])
             prev_spends = 'n/a'
             if 'prev_rt_spends_per_date' in obj.context:
-                prev_spends = ', '.join('{}: {}'.format(el) for el in obj.context['prev_rt_spends_per_date'])
+                prev_spends = ', '.join('{}: {}'.format(*el) for el in obj.context['prev_rt_spends_per_date'])
             desc += textwrap.dedent('''
                 Prediction for next check: <b>${predicted}</b> (${available_budget} - ${current_rt_spend} - ${spend_rate}) <b>{threshold_op} ${threshold}</b> (threshold)
 
@@ -56,8 +56,8 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
                 Available budget (up until {budget_spends_until_date}): ${available_budget}
 
                 Real time data break down:
-                &nbsp;&nbsp;&nbsp;&nbsp;- Real time spend (current check): ${current_rt_spend}; per date: {curr_spends}
-                &nbsp;&nbsp;&nbsp;&nbsp;- Real time spend (previous check): ${prev_rt_spend}; per date: {prev_spends}
+                &nbsp;&nbsp;&nbsp;&nbsp;- Real time spend (current check): ${current_rt_spend}; per date - {curr_spends}
+                &nbsp;&nbsp;&nbsp;&nbsp;- Real time spend (previous check): ${prev_rt_spend}; per date - {prev_spends}
                 &nbsp;&nbsp;&nbsp;&nbsp;- Spend rate: ${spend_rate} (= ${current_rt_spend} - ${prev_rt_spend})''')
         return desc.format(
             state=self._format_state(obj),
