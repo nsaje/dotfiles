@@ -81,7 +81,7 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
         elif obj.event == constants.CampaignStopEvent.SELECTION_CHECK:
             pass
         elif obj.event == constants.CampaignStopEvent.MAX_ALLOWED_END_DATE_UPDATE:
-            return obj.context['max_allowed_end_date'].isoformat()
+            return obj.context['max_allowed_end_date']
         elif obj.event == constants.CampaignStopEvent.BUDGET_AMOUNT_VALIDATION:
             pass
         return 'N/A'
