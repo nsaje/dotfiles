@@ -58,7 +58,7 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
                 Real time data break down:
                 &nbsp;&nbsp;&nbsp;&nbsp;- Real time spend (current check): ${current_rt_spend}; per date - {curr_spends}
                 &nbsp;&nbsp;&nbsp;&nbsp;- Real time spend (previous check): ${prev_rt_spend}; per date - {prev_spends}
-                &nbsp;&nbsp;&nbsp;&nbsp;- Spend rate: ${spend_rate} (= ${current_rt_spend} (current) - ${prev_rt_spend}) (previous)''')
+                &nbsp;&nbsp;&nbsp;&nbsp;- Spend rate: ${spend_rate} (= ${current_rt_spend} (current) - ${prev_rt_spend} (previous))''')
         return desc.format(
             state=self._format_state(obj),
             threshold=THRESHOLD,
