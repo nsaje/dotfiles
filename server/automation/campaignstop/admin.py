@@ -64,7 +64,7 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
             threshold=THRESHOLD,
             curr_spends=curr_spends,
             prev_spends=prev_spends,
-            threshold_op='<' if obj.context['is_below_threshold'] else '>',
+            threshold_op='<' if obj.context.get('is_below_threshold') else '>',
             **obj.context
         ).replace('\n', '<br />')
 
