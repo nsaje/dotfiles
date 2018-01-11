@@ -1,0 +1,48 @@
+<div class="dropdown-menu__search">
+    <input
+        id="search-column"
+        class="input-text"
+        type="text"
+        ng-model="$ctrl.searchQuery"
+        ng-keyup="$ctrl.onSearch($ctrl.searchQuery)"
+        placeholder="Search">
+    <button class="button-as-link button-as-link--secondary-color" ng-click="$ctrl.onToggleColumns({isChecked: true})">Select All</button>
+    <button class="button-as-link button-as-link--secondary-color" ng-click="$ctrl.onToggleColumns({isChecked: false})">Select None</button>
+</div>
+<div class="dropdown-menu__no-match" ng-if="$ctrl.filteredCategories.length === 0">
+    No match
+</div>
+<div class="dropdown-menu__columns-container custom-scroller" ng-if="$ctrl.filteredCategories.length !== 0">
+    <div class="dropdown-menu__category" ng-repeat="category in $ctrl.filteredCategories">
+        <div class="dropdown-menu__category-name">{{ category.name }}</div>
+        <div class="dropdown-menu__category-description" ng-if="category.description">{{ category.description }}</div>
+        <ul class="dropdown-menu__list dropdown-menu__list--two-columns" ng-if="category.columns.length > 0">
+            <li class="dropdown-menu__list-item" ng-repeat="column in category.columns"
+                zem-lazy-popover-visible="{{ $ctrl.getTooltip(column) }}"
+                zem-lazy-popover-text="{{ $ctrl.getTooltip(column) }}"
+                zem-lazy-popover-placement="left"
+                zem-lazy-popover-animation-class="fade"
+                zem-lazy-popover-append-to-body="true"
+                is-internal="{{column.internal}}">
+                <label ng-click="$ctrl.onSelectColumn({field: column.field})">
+                    <input class="input-checkbox"
+                           ng-disabled="column.disabled"
+                           type="checkbox"
+                           ng-checked="column.visible">
+                    <span class="checkbox-text" ng-class="{disabled: column.disabled}">{{ column.data.name }}</span>
+                </label>
+            </li>
+        </ul>
+        <div class="dropdown-menu__subcategory" ng-repeat="subcategory in category.subcategories">
+            <div class="dropdown-menu__subcategory-name">{{ subcategory.name }}</div>
+            <ul ng-if="subcategory.type === 'condensed'" class="dropdown-menu__list dropdown-menu__list--condensed">
+                <li class="dropdown-menu__list-item" ng-repeat="subColumn in subcategory.columns">
+                    <label ng-click="$ctrl.onSelectColumn({field: subColumn.field})">
+                        <input class="input-checkbox" type="checkbox" ng-checked="subColumn.visible">
+                        <span class="checkbox-text">{{ subColumn.data.shortName }}</span>
+                    </label>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

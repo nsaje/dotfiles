@@ -23,49 +23,17 @@ describe('component: zemGridColumnSelector', function () {
         $ctrl = $componentController('zemGridColumnSelector', locals, bindings);
     }));
 
-    it('should initialize categories using api', function () {
-        spyOn(api, 'getMetaData').and.callThrough();
-        spyOn(api, 'getColumns').and.callThrough();
-        spyOn(api, 'onColumnsUpdated').and.callThrough();
-
-        $ctrl.$onInit();
-
-        expect(api.getMetaData).toHaveBeenCalled();
-        expect(api.getColumns).toHaveBeenCalled();
-        expect(api.onColumnsUpdated).toHaveBeenCalled();
-
-        expect($ctrl.categories).toBeDefined();
-        expect($ctrl.categories.length).toBe(4);
+    it('calls setVisibleColumns when toggleColumns method is called', function () {
+        spyOn($ctrl.api, 'setVisibleColumns');
+        $ctrl.toggleColumns();
+        expect($ctrl.api.setVisibleColumns).toHaveBeenCalled();
     });
 
-    it('should configure visible columns through api', function () {
-        var column = {name: 'column', visible: true};
-
-        spyOn(api, 'setVisibleColumns').and.callThrough();
-        $ctrl.columnChecked(column);
-        expect(api.setVisibleColumns).toHaveBeenCalled();
-        expect(api.setVisibleColumns).toHaveBeenCalledWith(column, true);
-
-        api.setVisibleColumns.calls.reset();
-        column.visible = false;
-        $ctrl.columnChecked(column);
-        expect(api.setVisibleColumns).toHaveBeenCalled();
-        expect(api.setVisibleColumns).toHaveBeenCalledWith(column, false);
-    });
-
-    it('should get appropriate costMode columns', function () {
-        var columns = [
-            {name: 'column1', field: 'c1', visible: true, data: {shown: true, costMode: constants.costMode.PLATFORM}},
-            {name: 'column2', field: 'c1', visible: true, data: {shown: true, costMode: constants.costMode.PUBLIC}},
-        ];
-        var category = {fields: ['c1'], columns: columns};
-
-        api.getCostMode = function () { return constants.costMode.PUBLIC; };
-        api.getColumns = function () { return columns; };
-        api.getMetaData = function () { return {categories: [category]}; };
-
-        $ctrl.$onInit();
-
-        expect($ctrl.categories[0].columns).toEqual([columns[1]]);
+    it('calls findColumnInCategories and setVisibleColumns when onSelectColumn method is called', function () {
+        spyOn($ctrl.api, 'findColumnInCategories').and.callThrough();
+        spyOn($ctrl.api, 'setVisibleColumns');
+        $ctrl.onSelectColumn();
+        expect($ctrl.api.setVisibleColumns).toHaveBeenCalled();
+        expect($ctrl.api.findColumnInCategories).toHaveBeenCalled();
     });
 });

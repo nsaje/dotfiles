@@ -136,3 +136,6 @@ DEADJOE
 # tags script
 rebuild_tags.sh
 tags
+
+# influx
+server/src/

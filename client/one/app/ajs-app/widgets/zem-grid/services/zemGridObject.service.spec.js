@@ -47,7 +47,7 @@ describe('zemGridObject', function () {
 
         expect(column.type).toBe(data.type);
         expect(column.field).toBe(data.field);
-        expect(column.data).toBe(data);
+        expect(JSON.stringify(column.data)).toBe(JSON.stringify(data));
         expect(column.visible).toBe(true);
     });
 });

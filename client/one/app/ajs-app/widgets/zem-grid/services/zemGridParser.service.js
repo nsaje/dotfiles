@@ -93,15 +93,10 @@ angular.module('one.widgets').factory('zemGridParser', function ($filter, zemGri
     function createColumn (data) {
         // Create column - try to reuse column if already crated
         //  - column can already have some data used by different services (e.g. order)
-        //  - it is a bit more efficient then to re-create row objects through sequential requests
-
-        // (optional) FIXME For the simplicity we save (cache) column instance into the data itself.
-        // This creates circular dependency, which should not cause problems, but it can be avoided
-        // with modifying data source to create unique keys that can be used here for storage
+        //  - it is a bit more efficient then to re-create column objects through sequential requests
         if (!data.column) {
             data.column = zemGridObject.createColumn(data);
         }
-
         return data.column;
     }
 

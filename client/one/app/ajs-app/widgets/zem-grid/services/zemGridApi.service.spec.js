@@ -21,7 +21,7 @@ describe('zemGridApi', function () {
 
         grid.meta.scope = scope;
         grid.meta.pubsub = zemGridPubSub.createInstance(scope);
-        grid.meta.data = {};
+        grid.meta.data = generateCategories();
         grid.meta.dataService = {};
         grid.meta.selectionService = {};
         grid.meta.columnsService = {};
@@ -75,4 +75,107 @@ describe('zemGridApi', function () {
         api.onSelectionUpdated(null, callback);
         expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.EXT_SELECTION_UPDATED, null, callback);
     });
+
+    it('returns corresponding category', function () {
+        var grid = createGrid();
+        var api = zemGridApi.createInstance(grid);
+        var zemCostModeService = {
+            getCostMode: function () { return 'cost mode'; },
+            isTogglableCostMode: function () { return false; }
+        };
+        var columns = generateColumns();
+        var filteredCategories = api.getCategorizedColumns(zemCostModeService, columns);
+        expect(filteredCategories.length).toBe(1);
+        expect(filteredCategories[0].name).toBe('category name 1');
+    });
+
+    it('returns the right category', function () {
+        var grid = createGrid();
+        var api = zemGridApi.createInstance(grid);
+        var zemCostModeService = {
+            getCostMode: function () { return 'cost mode'; },
+            isTogglableCostMode: function () { return false; }
+        };
+        var columns = generateColumns2();
+        var filteredCategories = api.getCategorizedColumns(zemCostModeService, columns);
+        expect(filteredCategories.length).toBe(1);
+        expect(filteredCategories[0].name).toBe('category name 2');
+    });
+
+    function generateCategories () {
+        return {
+            categories: [
+                {
+                    name: 'category name 1',
+                    fields: ['field 1', 'field 2', 'field 3'],
+                    description: 'category 1 description',
+                    type: 'category 1 type',
+                    subcategories: [],
+                    columns: []
+                },
+                {
+                    name: 'category name 2',
+                    fields: ['field 4'],
+                    description: 'category 2 description',
+                    type: 'category 2 type',
+                    subcategories: [],
+                    columns: []
+                },
+                {
+                    name: 'category name 3',
+                    fields: ['field 5', 'field 6'],
+                    description: 'category 3 description',
+                    type: 'category 3 type',
+                    subcategories: [],
+                    columns: []
+                }
+            ]
+        };
+    }
+
+    function generateColumns () {
+        return [
+            {
+                field: 'field 1',
+                data:
+                    {
+                        shown: true,
+                        permanent: false,
+                        costMode: 'cost mode'
+                    }
+            },
+            {
+                field: 'field 2',
+                data:
+                    {
+                        shown: false,
+                        permanent: false,
+                        costMode: 'cost mode'
+                    }
+            },
+            {
+                field: 'field 3',
+                data:
+                    {
+                        shown: true,
+                        permanent: true,
+                        costMode: 'cost mode'
+                    }
+            },
+        ];
+    }
+
+    function generateColumns2 () {
+        return [
+            {
+                field: 'field 4',
+                data:
+                    {
+                        shown: true,
+                        permanent: false,
+                        costMode: 'cost mode'
+                    }
+            }
+        ];
+    }
 });

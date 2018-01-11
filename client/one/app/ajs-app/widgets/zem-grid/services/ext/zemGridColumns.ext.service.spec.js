@@ -52,7 +52,7 @@ describe('zemGridColumnsService', function () {
         pubsub.notify(pubsub.EVENTS.METADATA_UPDATED);
         expect(zemGridStorageService.loadColumns).toHaveBeenCalled();
 
-        columnsService.setColumnVisibility(grid.header.columns[0], false);
+        columnsService.setVisibleColumns(grid.header.columns[0], false);
         expect(zemGridStorageService.saveColumns).toHaveBeenCalled();
     });
 
@@ -62,20 +62,67 @@ describe('zemGridColumnsService', function () {
         grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.METADATA_UPDATED);
 
         var columns = grid.header.columns;
-        columnsService.setColumnVisibility(columns[0], false);
-        expect(columnsService.isColumnVisible(columns[0])).toBe(false);
-        expect(columnsService.isColumnVisible(columns[1])).toBe(true);
-        expect(columnsService.isColumnVisible(columns[2])).toBe(true);
+        columnsService.setVisibleColumns(columns[0], false);
+        expect(columns[0].visible).toBe(false);
+        expect(columns[1].visible).toBe(true);
+        expect(columns[2].visible).toBe(true);
         expect(columnsService.getVisibleColumns().length).toBe(2);
 
         columnsService.setVisibleColumns(columns, false);
-        expect(columnsService.isColumnVisible(columns[0])).toBe(false);
-        expect(columnsService.isColumnVisible(columns[1])).toBe(false);
-        expect(columnsService.isColumnVisible(columns[2])).toBe(false);
+        expect(columns[0].visible).toBe(false);
+        expect(columns[1].visible).toBe(false);
+        expect(columns[2].visible).toBe(false);
         expect(columnsService.getVisibleColumns().length).toBe(0);
 
         columnsService.setVisibleColumns(columns, true);
         expect(columnsService.getVisibleColumns().length).toBe(3);
+    });
+
+    it('correctly wraps togglable column inside array', function () {
+        var grid = createGrid();
+        var columnsService = zemGridColumnsService.createInstance(grid);
+        var output = columnsService.getColumnsToToggle({});
+        expect(JSON.stringify(output)).toBe(JSON.stringify([{}]));
+    });
+
+    it('returns empty array if there are no toggled columns', function () {
+        var grid = createGrid();
+        var columnsService = zemGridColumnsService.createInstance(grid);
+        var output = columnsService.getColumnsToToggle(undefined);
+        expect(output.length).toBe(0);
+    });
+
+    it('goes through allColumns (if) branch', function () {
+        var grid = createGrid();
+        var columnsService = zemGridColumnsService.createInstance(grid);
+        var output = columnsService.getColumnsToToggle({}, []);
+        expect(output.length).toBe(1);
+    });
+
+    it('selects columns with autoSelect property', function () {
+        var grid = createGrid();
+        var columnsService = zemGridColumnsService.createInstance(grid);
+        var toggledColumns = generateToggledColumns();
+        var allColumns = generateAllColumns();
+        var output = columnsService.getColumnsToToggle(toggledColumns, allColumns);
+        expect(output.length).toBe(4);
+    });
+
+    it('doesn\'t select columns with autoSelect value that differs to all fields value', function () {
+        var grid = createGrid();
+        var columnsService = zemGridColumnsService.createInstance(grid);
+        var toggledColumns = generateToggledColumns();
+        var allColumns = generateAllColumns2();
+        var output = columnsService.getColumnsToToggle(toggledColumns, allColumns);
+        expect(output.length).toBe(3);
+    });
+
+    it('returns togglable columns', function () {
+        var grid = createGrid();
+        var columnsService = zemGridColumnsService.createInstance(grid);
+        var allColumns = generateAllColumns();
+        var output = columnsService.getTogglableColumns(allColumns);
+        expect(output.length).toBe(2);
     });
 
     it('should disable columns that cannot be viewed using current breakdown configuration', function () {
@@ -155,4 +202,108 @@ describe('zemGridColumnsService', function () {
         columns[0].disabled = undefined;
         expect(columnsService.getVisibleColumns().length).toBe(3);
     });
+
+    it('finds column in categories', function () {
+        var grid = createGrid();
+        var columnsService = zemGridColumnsService.createInstance(grid);
+        var categories = generateCategories();
+
+        var foundField = columnsService.findColumnInCategories(categories, 'field1');
+        expect(foundField).toEqual({field: 'field1'});
+    });
+
+    it('find column in subcategories', function () {
+        var grid = createGrid();
+        var columnsService = zemGridColumnsService.createInstance(grid);
+        var categories = generateCategoriesAndSubcategories();
+
+        var foundField = columnsService.findColumnInCategories(categories, 'subField1');
+        expect(foundField).toEqual({field: 'subField1'});
+    });
+
+    it('does not find column in categories nor in subcategories', function () {
+        var grid = createGrid();
+        var columnsService = zemGridColumnsService.createInstance(grid);
+        var categories = generateCategoriesAndSubcategories();
+
+        var foundField = columnsService.findColumnInCategories(categories, 'does not exist');
+        expect(foundField).toBe(undefined);
+
+    });
+
+    function generateCategories () {
+        return [
+            {
+                columns: [
+                    {field: 'field1'},
+                    {field: 'field2'},
+                    {field: 'field3'}
+                ]
+            }
+        ];
+    }
+
+    function generateCategoriesAndSubcategories () {
+        return [
+            {
+                subcategories: [
+                    {
+                        columns: [
+                            {field: 'subField1'},
+                            {field: 'subField2'},
+                            {field: 'subField3'}
+                        ]
+                    }
+                ],
+                columns: [
+                    {field: 'field1'},
+                    {field: 'field2'},
+                    {field: 'field3'}
+                ]
+            }
+        ];
+    }
+
+    function generateToggledColumns () {
+        return [{field: 'field 1'}, {field: 'field 2'}, {field: 'field 3'}];
+    }
+
+    function generateAllColumns () {
+        return [
+            {
+                data: {
+                    autoSelect: 'field 3',
+                    shown: true,
+                    permanent: false
+                },
+                disabled: false,
+            },
+            {
+                data: {
+                    autoSelect: 'other field',
+                    shown: true,
+                    permanent: false
+                },
+                disabled: false,
+            },
+            {
+                data: {
+                    autoSelect: 'another field',
+                    shown: false,
+                    permanent: true
+                },
+                disabled: false,
+            }
+        ];
+    }
+
+    function generateAllColumns2 () {
+        return [
+            {
+                data: {
+                    autoSelect: 'not found'
+                }
+            }
+        ];
+    }
 });

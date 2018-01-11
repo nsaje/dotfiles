@@ -8,10 +8,11 @@ angular.module('one.widgets').factory('zemGridColumnsService', function (zemGrid
         //
         // Public API
         //
-        this.setVisibleColumns = setVisibleColumns;
         this.getVisibleColumns = getVisibleColumns;
-        this.isColumnVisible = isColumnVisible;
-        this.setColumnVisibility = setColumnVisibility;
+        this.setVisibleColumns = setVisibleColumns;
+        this.getColumnsToToggle = getColumnsToToggle;
+        this.findColumnInCategories = findColumnInCategories;
+        this.getTogglableColumns = getTogglableColumns;
 
         function initialize () {
             pubsub.register(pubsub.EVENTS.METADATA_UPDATED, null, initializeColumns);
@@ -72,24 +73,81 @@ angular.module('one.widgets').factory('zemGridColumnsService', function (zemGrid
             return visibleColumns;
         }
 
-        function setVisibleColumns (columns, visible) {
-            if (!Array.isArray(columns)) columns = [columns];
-
-            columns.forEach(function (column) {
+        function setVisibleColumns (toggledColumns, visible, allColumns) {
+            getColumnsToToggle(toggledColumns, allColumns).forEach(function (column) {
                 column.visible = visible;
             });
+
             zemGridStorageService.saveColumns(grid);
             pubsub.notify(grid.meta.pubsub.EVENTS.EXT_COLUMNS_UPDATED);
         }
 
-        function isColumnVisible (column) {
-            return column.visible;
+        function getColumnsToToggle (toggledColumns, allColumns) {
+            if (!toggledColumns) {
+                return [];
+            }
+            var costMode = zemCostModeService.getCostMode();
+            var autoSelectableColumns = [];
+
+            if (!Array.isArray(toggledColumns)) {
+                toggledColumns = [toggledColumns];
+            }
+
+            if (allColumns) {
+                toggledColumns.forEach(function (toggledColumn) {
+                    allColumns.forEach(function (col) {
+                        if (col.data.hasOwnProperty('autoSelect') && col.data.autoSelect === toggledColumn.field) {
+                            if (zemCostModeService.isTogglableCostMode(col.data.costMode)) {
+                                if (col.data.costMode === costMode) {
+                                    autoSelectableColumns.push(col);
+                                }
+                            } else {
+                                autoSelectableColumns.push(col);
+                            }
+                        }
+                    });
+                });
+            }
+
+            return toggledColumns.concat(autoSelectableColumns);
         }
 
-        function setColumnVisibility (column, visible) {
-            column.visible = visible;
-            zemGridStorageService.saveColumns(grid);
-            pubsub.notify(grid.meta.pubsub.EVENTS.EXT_COLUMNS_UPDATED);
+        function getTogglableColumns (allColumns) {
+            var costMode = zemCostModeService.getCostMode();
+            return allColumns.filter(function (column) {
+                if (column.disabled || !column.data.shown || column.data.permanent) return false;
+                if (zemCostModeService.isTogglableCostMode(column.data.costMode)) {
+                    return column.data.costMode === costMode;
+                }
+                return true;
+            });
+        }
+
+        function findColumnInCategories (categories, columnField) {
+            var currentColumn;
+            categories.some(function (category) {
+                currentColumn = category.columns.find(function (column) {
+                    return columnField === column.field;
+                });
+                return currentColumn;
+            });
+            return currentColumn || findColumnInSubCategories(categories, columnField);
+        }
+
+        function findColumnInSubCategories (categories, columnField) {
+            var column;
+            categories.some(function (category) {
+                if (category.subcategories.length > 0) {
+                    category.subcategories.some(function (subCategory) {
+                        column = subCategory.columns.find(function (subColumn) {
+                            return subColumn.field === columnField;
+                        });
+                        return column;
+                    });
+                    return column;
+                }
+            });
+            return column;
         }
     }
 

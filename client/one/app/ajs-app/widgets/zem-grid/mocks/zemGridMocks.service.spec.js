@@ -18,6 +18,9 @@ angular.module('one.widgets').service('zemGridMocks', function ($q, zemGridEndpo
             getMetaData: function () { return metaData; },
             getRows: function () { return []; },
             getColumns: function () { return []; },
+            getCategorizedColumns: function () { return []; },
+            findColumnInCategories: function () { return {}; },
+            getColumnsToToggle: function () { return []; },
 
             loadData: fnWithPromise,
             loadMetaData: fnWithPromise,
@@ -41,6 +44,8 @@ angular.module('one.widgets').service('zemGridMocks', function ($q, zemGridEndpo
             getVisibleColumns: angular.noop,
             getCostMode: angular.noop,
             setCostMode: angular.noop,
+            getTogglableColumns: angular.noop,
+            onSelectColumn: angular.noop,
 
             // Listeners - pubsub rewiring
             onMetaDataUpdated: angular.noop,
@@ -61,7 +66,7 @@ angular.module('one.widgets').service('zemGridMocks', function ($q, zemGridEndpo
                     type: col.type,    // Reuse data type - type of column (text, link, icon, etc.)
                     field: col.field,  // Reuse data field - some kind of id  (data retrieval, storage, etc.)
                     data: col,         // Column meta-data retrieved from endpoint
-                    visible: true,      // Visibility flag
+                    visible: true,     // Visibility flag
                 };
             });
         };

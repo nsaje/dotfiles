@@ -69,10 +69,10 @@ angular.module('one.widgets').factory('zemGridObject', function (zemGridConstant
 
     function createColumn (data) {
         return {
-            type: data.type,    // Reuse data type - type of column (text, link, icon, etc.)
-            field: data.field,  // Reuse data field - some kind of id  (data retrieval, storage, etc.)
-            data: data,         // Column meta-data retrieved from endpoint
-            visible: true,      // Visibility flag
+            type: data.type,          // Reuse data type - type of column (text, link, icon, etc.)
+            field: data.field,        // Reuse data field - some kind of id  (data retrieval, storage, etc.)
+            data: angular.copy(data), // Column metadata retrieved from endpoint (cloned to prevent circular references)
+            visible: true,            // Visibility flag
         };
     }
 
