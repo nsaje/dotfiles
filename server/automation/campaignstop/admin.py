@@ -39,7 +39,7 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
 
     def _get_depletion_check_description(self, obj):
         desc = textwrap.dedent('''\
-            The calculated campaign state is: {state}.
+            The calculated campaign state is: {state}
 
             Max allowed end date: <b>{max_allowed_end_date}</b> (is in past: {is_max_end_date_past})''')
         curr_spends = 'n/a'
