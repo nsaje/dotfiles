@@ -111,8 +111,8 @@ def _get_realtime_spends(log, campaign, start):
     prev_spends_per_date = []
     for date in dates_helper.date_range(start, tomorrow):
         curr, prev = _get_realtime_spends_for_date(campaign, date)
-        current_spends_per_date.append(curr)
-        prev_spends_per_date.append(prev)
+        current_spends_per_date.append((date, curr))
+        prev_spends_per_date.append((date, prev))
         current_spend = current_spend + curr if current_spend else curr
         prev_spend = prev_spend + prev if prev_spend else prev
     log.add_context({
