@@ -71,7 +71,7 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
     def _get_max_allowed_end_date_update_description(self, obj):
         desc = 'Calculated maximum allowed campaign end date: <b>{}</b>'.format(
             self._format_max_allowed_end_date(obj))
-        desc += '\nCampaign budgets taken into account:'
+        desc += '\n\nCampaign budgets taken into account:'
         for budget in obj.context['budgets']:
             desc += '\n&nbsp;&nbsp;&nbsp;&nbsp;- id: {id}, start date: {start_date}, end date: {end_date}'.format(**budget)
         return desc.replace('\n', '<br />')
