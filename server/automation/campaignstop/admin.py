@@ -46,11 +46,11 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
         prev_spends = 'n/a'
         if 'budget_spends_until_date' in obj.context:
             if 'current_rt_spends_per_date' in obj.context:
-                curr_spends = ', '.join('{}: {}'.format(*el) for el in obj.context['current_rt_spends_per_date'])
+                curr_spends = ', '.join('{}: ${}'.format(*el) for el in obj.context['current_rt_spends_per_date'])
             if 'prev_rt_spends_per_date' in obj.context:
-                prev_spends = ', '.join('{}: {}'.format(*el) for el in obj.context['prev_rt_spends_per_date'])
+                prev_spends = ', '.join('{}: ${}'.format(*el) for el in obj.context['prev_rt_spends_per_date'])
             desc += textwrap.dedent('''
-                Prediction for next check: <b>${predicted}</b> (${available_budget} - ${current_rt_spend} - ${spend_rate}) <b>{threshold_op} ${threshold}</b> (threshold)
+                Prediction for next check: <b>${predicted}</b> (= ${available_budget} (available budget) - ${current_rt_spend} (real time spend) - ${spend_rate} (spend rate)) <b>{threshold_op} ${threshold}</b> (threshold)
 
                 Spend from daily statements was taken until {budget_spends_until_date}. Real time data was used for dates after that.
                 Available budget (up until {budget_spends_until_date}): ${available_budget}
@@ -58,7 +58,7 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
                 Real time data break down:
                 &nbsp;&nbsp;&nbsp;&nbsp;- Real time spend (current check): ${current_rt_spend}; per date - {curr_spends}
                 &nbsp;&nbsp;&nbsp;&nbsp;- Real time spend (previous check): ${prev_rt_spend}; per date - {prev_spends}
-                &nbsp;&nbsp;&nbsp;&nbsp;- Spend rate: ${spend_rate} (= ${current_rt_spend} - ${prev_rt_spend})''')
+                &nbsp;&nbsp;&nbsp;&nbsp;- Spend rate: ${spend_rate} (= ${current_rt_spend} (current) - ${prev_rt_spend}) (previous)''')
         return desc.format(
             state=self._format_state(obj),
             threshold=THRESHOLD,
