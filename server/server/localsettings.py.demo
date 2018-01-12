@@ -30,8 +30,8 @@ DATABASES = {
     STATS_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'stats',
-        'USER': 'eins',
-        'PASSWORD': Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAGYwZAYJKoZIhvcNAQcGoFcwVQIBADBQBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDCX77CkQWFHkc0f3FgIBEIAjHCDzAGIzaXT1Y1bjBYKkMBrZEfiJThS9ed0TqN9nm1I6ugY=').get(),
+        'USER': 'demo',
+        'PASSWORD': Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAG4wbAYJKoZIhvcNAQcGoF8wXQIBADBYBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDBDb8DE5OXc1+Nb2ZQIBEIArn2mgpGeErWfhKa5/BF4kNoO4P3lX+61WldqOd9qccwQ8ptcGPsxNjDXkoA==').get(),
         'HOST': 'stats-postgres.cmkkg7ghktp5.us-east-1.rds.amazonaws.com',
         'PORT': 5432,
     }
