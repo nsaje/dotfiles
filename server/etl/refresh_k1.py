@@ -310,12 +310,12 @@ def _refresh_k1_reports(update_since, views, account_id=None, skip_vacuum=False)
 
     influx.incr('etl.refresh_k1.refresh_k1_reports_finished', 1)
 
+    # save processed data to S3 to for potential read replication
+    _handle_replicas(views, job_id, date_from, date_to, account_id=account_id)
+
     # while everything is being updated data is not consistent among tables
     # so might as well leave cache until refresh finishes
     invalidate_breakdowns_rs_cache()
-
-    # save processed data to S3 to for potential read replication
-    _handle_replicas(views, job_id, date_from, date_to, account_id=account_id)
 
 
 def _handle_replicas(views, job_id, date_from, date_to, account_id=None):
