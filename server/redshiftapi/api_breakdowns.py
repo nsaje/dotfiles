@@ -13,7 +13,7 @@ import queries
 import view_selector
 
 
-POSTGRES_MAX_DAYS = 40
+POSTGRES_MAX_DAYS = 43
 POSTGRES_CONSTRAINT_LIMIT = 1000
 POSTGRES_EXCLUDE_VIEWS = ('mv_master', 'mv_master_pubs')
 
