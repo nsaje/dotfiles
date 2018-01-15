@@ -1049,6 +1049,8 @@ class ContentAdSourcesView(K1APIView):
                     'submission_status',
                     'state')
         )
+        if not content_ad_ids:  # exclude archived if not querying by id explicitly
+            content_ad_sources.filter(content_ad__archived=False)
         if content_ad_ids:
             content_ad_sources = content_ad_sources.filter(content_ad_id__in=content_ad_ids.split(','))
         if ad_group_ids:
