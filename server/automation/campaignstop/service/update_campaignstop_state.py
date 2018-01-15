@@ -64,7 +64,7 @@ def _is_below_threshold(log, campaign):
         remaining -= current_rt_spend
 
     spend_rate = 0
-    if current_rt_spend and prev_rt_spend:
+    if current_rt_spend is not None and prev_rt_spend is not None:
         spend_rate = current_rt_spend - prev_rt_spend
 
     predicted = remaining - spend_rate
