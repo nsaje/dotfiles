@@ -178,14 +178,14 @@ describe('CategorizedSelectComponent', () => {
         expect(component.selectedCategory).toEqual(null);
 
         component.selectCategory('category1');
-        expect(component.selectedCategory).toEqual(testCategory1);
+        expect(component.selectedCategory.key).toEqual(testCategory1.key);
 
         component.categorizedItems = [testCategory1, testCategory2];
         changes = {
             categorizedItems: new SimpleChange(null, component.categorizedItems, false),
         };
         component.ngOnChanges(changes);
-        expect(component.selectedCategory).toEqual(testCategory1);
+        expect(component.selectedCategory.key).toEqual(testCategory1.key);
     });
 
     it('should correctly update rendered items when categorizedItems input changes', () => {
@@ -205,7 +205,9 @@ describe('CategorizedSelectComponent', () => {
             categorizedItems: new SimpleChange(null, component.categorizedItems, false),
         };
         component.ngOnChanges(changes);
-        expect(component.renderedItems).toEqual(testCategory1.items);
+        expect(component.renderedItems.length).toBe(2); // tslint:disable-line no-magic-numbers
+        expect(component.renderedItems[0].value).toEqual(testCategory1.items[0].value);
+        expect(component.renderedItems[1].value).toEqual(testCategory1.items[1].value);
 
         component.searchQuery = 'Item 2';
         component.categorizedItems = [testCategory1, testCategory2];
@@ -213,23 +215,29 @@ describe('CategorizedSelectComponent', () => {
             categorizedItems: new SimpleChange(null, component.categorizedItems, false),
         };
         component.ngOnChanges(changes);
-        expect(component.renderedItems).toEqual([testItem2]);
+        expect(component.renderedItems.length).toBe(1);
+        expect(component.renderedItems[0].value).toEqual(testItem2.value);
     });
 
     it('should correctly toggle items', () => {
         component.ngOnInit();
+        component.categorizedItems = [testCategory1, testCategory2];
+        const changes: SimpleChanges = {
+            categorizedItems: new SimpleChange(null, component.categorizedItems, false),
+        };
+        component.ngOnChanges(changes);
+
         component.selectedItems = [{categoryKey: 'category1', itemValue: '1'}];
         component.unselectedItems = [{categoryKey: 'category2', itemValue: '3'}];
 
-        component.selectedCategory = testCategory1;
-        component.toggleItem(testItem1);
+        component.toggleItem(component.categorizedItems[0].items[0]);
         expect(component.selectedItems).toEqual([]);
         expect(component.unselectedItems).toEqual([
             {categoryKey: 'category2', itemValue: '3'},
             {categoryKey: 'category1', itemValue: '1'},
         ]);
 
-        component.toggleItem(testItem2);
+        component.toggleItem(component.categorizedItems[0].items[1]);
         expect(component.selectedItems).toEqual([
             {categoryKey: 'category1', itemValue: '2'},
         ]);
@@ -238,8 +246,7 @@ describe('CategorizedSelectComponent', () => {
             {categoryKey: 'category1', itemValue: '1'},
         ]);
 
-        component.selectedCategory = testCategory2;
-        component.toggleItem(testItem3);
+        component.toggleItem(component.categorizedItems[1].items[0]);
         expect(component.selectedItems).toEqual([
             {categoryKey: 'category1', itemValue: '2'},
             {categoryKey: 'category2', itemValue: '3'},

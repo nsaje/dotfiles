@@ -3,4 +3,5 @@ export interface Item {
     value: string;
     description: string;
     selected: boolean;
+    categoryKey?: string;
 }

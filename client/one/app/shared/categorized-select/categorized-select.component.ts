@@ -69,6 +69,7 @@ export class CategorizedSelectComponent implements OnInit, OnChanges, OnDestroy 
 
     ngOnChanges (changes: SimpleChanges) {
         if (changes.categorizedItems) {
+            this.categorizedItems = this.addCategoryKeyToItems(this.categorizedItems);
             this.selectedItems = this.getSelectedItems(this.categorizedItems, this.selectedItems, this.unselectedItems);
             this.unselectedItems = [];
 
@@ -119,30 +120,46 @@ export class CategorizedSelectComponent implements OnInit, OnChanges, OnDestroy 
     toggleItem (toggledItem: Item): void {
         if (this.isItemInList(toggledItem, this.selectedItems)) {
             this.selectedItems = this.selectedItems.filter(selectedItem => {
-                return selectedItem.itemValue !== toggledItem.value;
+                return selectedItem.categoryKey !== toggledItem.categoryKey ||
+                       selectedItem.itemValue !== toggledItem.value;
             });
             this.unselectedItems = [
                 ...this.unselectedItems,
-                {categoryKey: this.selectedCategory.key, itemValue: toggledItem.value},
+                {categoryKey: toggledItem.categoryKey, itemValue: toggledItem.value},
             ];
         } else {
             this.unselectedItems = this.unselectedItems.filter(unselectedItem => {
-                return unselectedItem.itemValue !== toggledItem.value;
+                return unselectedItem.categoryKey !== toggledItem.categoryKey ||
+                       unselectedItem.itemValue !== toggledItem.value;
             });
             this.selectedItems = [
                 ...this.selectedItems,
-                {categoryKey: this.selectedCategory.key, itemValue: toggledItem.value},
+                {categoryKey: toggledItem.categoryKey, itemValue: toggledItem.value},
             ];
         }
     }
 
     isItemInList (item: Item, list: SelectionItem[]): boolean {
         for (const listItem of list) {
-            if (listItem.itemValue === item.value) {
+            if (listItem.categoryKey === item.categoryKey && listItem.itemValue === item.value) {
                 return true;
             }
         }
         return false;
+    }
+
+    private addCategoryKeyToItems (categorizedItems: Category[]): Category[] {
+        return categorizedItems.map(category => {
+            return {
+                ...category,
+                items: category.items.map(item => {
+                    return {
+                        ...item,
+                        categoryKey: category.key,
+                    };
+                }),
+            };
+        });
     }
 
     private getSelectedItems (
