@@ -1,12 +1,15 @@
-postgres:
-    ports:
-      - "5432:5432"
+version: '2'
 
-# this is fake telegraf that only prints stats on stdout
-telegraf:
-    ports:
-      - "8135:8135/udp"
+services:
+    postgres:
+        ports:
+          - "5432:5432"
 
-memcached:
-    ports:
-      - "11211:11211"
+    # this is fake telegraf that only prints stats on stdout
+    telegraf:
+        ports:
+          - "8135:8135/udp"
+
+    memcached:
+        ports:
+          - "11211:11211"

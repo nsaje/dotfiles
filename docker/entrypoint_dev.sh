@@ -2,9 +2,9 @@
 
 set -e
 
-DB_HOST=${DB_ENV_POSTGRES_HOST:-db}
-DB_NAME=${DB_ENV_POSTGRES_DB:-z1}
-DB_USER=${DB_ENV_POSTGRES_USER:-z1}
+DB_HOST=${DB_ENV_POSTGRES_HOST:-postgres}
+DB_NAME=${DB_ENV_POSTGRES_DB:-one-dev}
+DB_USER=${DB_ENV_POSTGRES_USER:-eins}
 DB_PASS=${DB_ENV_POSTGRES_PASSWORD:-devpwd}
 
 until PGPASSWORD="$DB_PASS" psql -w -h "$DB_HOST" -U "$DB_USER" "$DB_NAME" -c '\l' -P pager=off; do

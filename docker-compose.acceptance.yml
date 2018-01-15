@@ -1,41 +1,44 @@
-postgres:
-    expose:
-      - "5432"
+version: '2'
 
-# this is fake telegraf that only prints stats on stdout
-telegraf:
-    expose:
-      - "8135/udp"
+services:
+    postgres:
+        expose:
+          - "5432"
 
-memcached:
-    expose:
-      - "11211"
+    # this is fake telegraf that only prints stats on stdout
+    telegraf:
+        expose:
+          - "8135/udp"
 
-einsacceptance:
-    restart: always
-    hostname: einsacceptance
-    image: $ACCEPTANCE_IMAGE
-    expose:
-      - "8123"
-      - "8124"  # for testing
-    links:
-      - "postgres:db"
-      - "memcached:memcached"
-      - "telegraf"
-    volumes:
-      - "./server/:/app/z1/"
-      - ".:/src:ro"
-    working_dir: /app/z1/
-    entrypoint: /src/docker/entrypoint_dev.sh
-    command: python restapi-test-server.py
-    tty: true
-    stdin_open: true
+    memcached:
+        expose:
+          - "11211"
 
-dredd:
-    image: nsaje/dredd-python:2.2.5
-    links:
-      - "einsacceptance"
-    entrypoint: bash
-    volumes:
-      - "./server/:/app/z1/"
-    working_dir: /app/z1/
+    einsacceptance:
+        restart: always
+        hostname: einsacceptance
+        image: $ACCEPTANCE_IMAGE
+        expose:
+          - "8123"
+          - "8124"  # for testing
+        links:
+          - "postgres:db"
+          - "memcached:memcached"
+          - "telegraf"
+        volumes:
+          - "./server/:/app/z1/"
+          - ".:/src:ro"
+        working_dir: /app/z1/
+        entrypoint: /src/docker/entrypoint_dev.sh
+        command: python restapi-test-server.py
+        tty: true
+        stdin_open: true
+
+    dredd:
+        image: nsaje/dredd-python:2.2.5
+        links:
+          - "einsacceptance"
+        entrypoint: bash
+        volumes:
+          - "./server/:/app/z1/"
+        working_dir: /app/z1/
