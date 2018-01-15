@@ -58,3 +58,11 @@ def as_kw(value):
 @register.filter
 def indices(value):
     return ", ".join([str(x) for x in range(1, len(value) + 1)])
+
+
+@register.filter
+def columns_equal_or_null(value, tables):
+    if tables is None:
+        return ""
+    table1, table2 = [name.strip() for name in tables.split(",")]
+    return "AND ".join(x.column_equal_or_null(table1, table2) for x in value)

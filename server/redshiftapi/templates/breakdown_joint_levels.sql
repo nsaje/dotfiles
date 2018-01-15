@@ -103,9 +103,13 @@ FROM (
                   ,{{ after_join_aggregates|column_as_alias }}
               {% endif %}
           FROM
-              temp_base NATURAL LEFT OUTER JOIN temp_yesterday
-              {% if conversions_aggregates %} NATURAL LEFT OUTER JOIN temp_conversions {% endif %}
-              {% if touchpoints_aggregates %} NATURAL LEFT OUTER JOIN temp_touchpoints {% endif %}
+              temp_base LEFT OUTER JOIN temp_yesterday ON {{ breakdown|columns_equal_or_null:"temp_base,temp_yesterday" }}
+              {% if conversions_aggregates %}
+                LEFT OUTER JOIN temp_conversions ON {{ breakdown|columns_equal_or_null:"temp_base,temp_conversions" }}
+              {% endif %}
+              {% if touchpoints_aggregates %}
+                LEFT OUTER JOIN temp_touchpoints ON {{ breakdown|columns_equal_or_null:"temp_base,temp_touchpoints" }}
+              {% endif %}
     ) a
 ) b
 WHERE

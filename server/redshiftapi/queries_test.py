@@ -478,8 +478,9 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                         temp_yesterday.yesterday_cost,
                         temp_yesterday.yesterday_et_cost,
                         temp_yesterday.yesterday_etfm_cost
-                FROM temp_base NATURAL
-                LEFT OUTER JOIN temp_yesterday
+                FROM temp_base LEFT OUTER JOIN temp_yesterday ON
+                    (temp_base.account_id = temp_yesterday.account_id OR temp_base.account_id IS NULL AND temp_yesterday.account_id IS NULL) AND
+                    (temp_base.campaign_id = temp_yesterday.campaign_id OR temp_base.campaign_id IS NULL AND temp_yesterday.campaign_id IS NULL)
                 ) a
             ) b
         WHERE r >= 5+1 AND r <= 10
@@ -567,7 +568,10 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                         temp_yesterday.yesterday_cost,
                         temp_yesterday.yesterday_et_cost,
                         temp_yesterday.yesterday_etfm_cost
-                FROM temp_base NATURAL LEFT OUTER JOIN temp_yesterday
+                FROM temp_base LEFT OUTER JOIN temp_yesterday ON
+                    (temp_base.publisher = temp_yesterday.publisher OR temp_base.publisher IS NULL AND temp_yesterday.publisher IS NULL) AND
+                    (temp_base.source_id = temp_yesterday.source_id OR temp_base.source_id IS NULL AND temp_yesterday.source_id IS NULL) AND
+                    (temp_base.dma = temp_yesterday.dma OR temp_base.dma IS NULL AND temp_yesterday.dma IS NULL)
                 ) a
             ) b
         WHERE r >= 5+1 AND r <= 10

@@ -46,6 +46,13 @@ class TemplateColumn(object):
 
         return helpers.generate_sql(self.template_name, context)
 
+    def column_equal_or_null(self, table1, table2):
+        context = {
+            'first_table_column': self.only_column(table1),
+            'second_table_column': self.only_column(table2),
+        }
+        return helpers.generate_sql('column_equal_or_null.sql', context)
+
     def as_order(self, direction_hint, nulls=None):
         return OrderColumn(self, direction_hint, nulls)
 
