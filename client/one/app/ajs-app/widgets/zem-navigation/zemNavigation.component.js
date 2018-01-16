@@ -32,7 +32,7 @@ angular.module('one.widgets').component('zemNavigation', {
             initializeList();
 
             hierarchyUpdateHandler = zemNavigationNewService.onHierarchyUpdate(initializeList);
-            activeEntityUpdateHandler = zemNavigationNewService.onActiveEntityChange(initializeList);
+            activeEntityUpdateHandler = zemNavigationNewService.onActiveEntityChange(initializeActiveEntityList);
             filteredStatusesUpdateHandler = zemDataFilterService.onFilteredStatusesUpdate(filterList);
             $element.keydown(handleKeyDown);
         };
@@ -119,12 +119,19 @@ angular.module('one.widgets').component('zemNavigation', {
         function initializeList () {
             var hierarchy = zemNavigationNewService.getNavigationHierarchy();
             if (hierarchy) {
-                var account = zemNavigationNewService.getActiveAccount();
-                $ctrl.activeEntity = zemNavigationNewService.getActiveEntity();
                 $ctrl.list = zemNavigationUtils.convertToEntityList(hierarchy);
-                $ctrl.entityList = account ? zemNavigationUtils.convertToEntityList(account) : null;
-                filterList();
+                initializeActiveEntityList();
             }
+        }
+
+        function initializeActiveEntityList () {
+            if (!$ctrl.list) return;
+
+            var account = zemNavigationNewService.getActiveAccount();
+            $ctrl.activeEntity = zemNavigationNewService.getActiveEntity();
+            $ctrl.entityList = account ? zemNavigationUtils.convertToEntityList(account) : null;
+
+            filterList();
         }
 
         function filterList () {
