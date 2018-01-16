@@ -20,6 +20,10 @@ class CampaignBudgetDepletionNotificationAdmin(admin.ModelAdmin):
     )
     readonly_fields = ['created_dt']
 
+    def get_queryset(self, request):
+        qs = super(CampaignBudgetDepletionNotificationAdmin, self).get_queryset(request)
+        qs = qs.select_related('account_manager', 'campaign')
+        return qs
 
 admin.site.register(models.CampaignBudgetDepletionNotification, CampaignBudgetDepletionNotificationAdmin)
 
@@ -68,6 +72,14 @@ class AutopilotLogAdmin(admin.ModelAdmin):
     )
     readonly_fields = ['created_dt']
 
+    def get_queryset(self, request):
+        qs = super(AutopilotLogAdmin, self).get_queryset(request)
+        qs = qs.select_related(
+            'ad_group_source__source',
+            'ad_group_source__ad_group',
+            'ad_group__campaign')
+        return qs
+
     def get_campaign(self, obj):
         return obj.ad_group.campaign
     get_campaign.short_description = 'Campaign'
@@ -109,6 +121,11 @@ class CampaignStopLogAdmin(admin.ModelAdmin):
     )
     readonly_fields = ['created_dt']
     list_filter = [CampaignListFilter]
+
+    def get_queryset(self, request):
+        qs = super(CampaignStopLogAdmin, self).get_queryset(request)
+        qs = qs.select_related('campaign')
+        return qs
 
     def formatted_notes(self, obj):
         return format_html(u'<div style="white-space: pre-wrap">{}</div>', obj.notes)

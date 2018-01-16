@@ -51,6 +51,11 @@ class ReportJobAdmin(admin.ModelAdmin):
 
     ordering = ('-created_dt', )
 
+    def get_queryset(self, request):
+        qs = super(ReportJobAdmin, self).get_queryset(request)
+        qs = qs.select_related('user')
+        return qs
+
     def link_to_scheduled_report(self, obj):
         if obj.scheduled_report is None:
             return ''

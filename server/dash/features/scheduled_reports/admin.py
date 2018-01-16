@@ -36,6 +36,7 @@ class ScheduledReportAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         today = dates_helper.utc_today()
         qs = super(ScheduledReportAdmin, self).get_queryset(request)
+        qs = qs.select_related('account', 'user')
         return qs.prefetch_related(
             Prefetch('jobs', to_attr='last_job', queryset=(
                 reports.ReportJob.objects

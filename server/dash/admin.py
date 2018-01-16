@@ -256,6 +256,11 @@ class DefaultSourceSettingsAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('default_cpc_cc', 'mobile_cpc_cc', 'daily_budget_cc')
 
+    def get_queryset(self, request):
+        qs = super(DefaultSourceSettingsAdmin, self).get_queryset(request)
+        qs = qs.select_related('credentials', 'source')
+        return qs
+
     def credentials_(self, obj):
         if obj.credentials is None:
             return '/'
@@ -738,6 +743,11 @@ class AdGroupAdmin(admin.ModelAdmin):
         }),
     )
 
+    def get_queryset(self, request):
+        qs = super(AdGroupAdmin, self).get_queryset(request)
+        qs = qs.select_related('campaign__account')
+        return qs
+
     def view_on_site(self, obj):
         return '/v2/analytics/adgroup/{}'.format(obj.id)
 
@@ -795,6 +805,11 @@ class AdGroupSourceAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     exclude = ('settings',)
 
     list_filter = ('source',)
+
+    def get_queryset(self, request):
+        qs = super(AdGroupSourceAdmin, self).get_queryset(request)
+        qs = qs.select_related('ad_group__campaign__account', 'source')
+        return qs
 
     def ad_group_(self, obj):
         return u'<a href="{ad_group_url}">{name}</a>'.format(
@@ -993,6 +1008,14 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         constants.ContentAdSubmissionStatus.NOT_SUBMITTED: '#bcbcbc',
     }
 
+    def get_queryset(self, request):
+        qs = super(ContentAdSourceAdmin, self).get_queryset(request)
+        qs = qs.select_related(
+            'content_ad__ad_group__settings',
+            'content_ad__ad_group__campaign__account',
+            'source')
+        return qs
+
     def has_add_permission(self, request):
         return False
 
@@ -1078,6 +1101,11 @@ class CreditLineItemAdmin(ExportMixin, SaveWithRequestMixin, admin.ModelAdmin):
 
     resource_class = CreditLineItemResource
 
+    def get_queryset(self, request):
+        qs = super(CreditLineItemAdmin, self).get_queryset(request)
+        qs = qs.select_related('account', 'agency', 'created_by')
+        return qs
+
     def get_actions(self, request):
         actions = super(CreditLineItemAdmin, self).get_actions(request)
         del actions['delete_selected']
@@ -1098,7 +1126,7 @@ class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         'created_dt',
     )
     date_hierarchy = 'start_date'
-    list_filter = ['credit', 'created_by']
+    list_filter = ['created_by']
     readonly_fields = ('created_dt', 'created_by', 'freed_cc')
     search_fields = ('campaign__name', 'campaign__account__name', 'amount')
     form = dash_forms.BudgetLineItemAdminForm
@@ -1239,7 +1267,10 @@ class EmailTemplateAdmin(admin.ModelAdmin):
 
 
 class FacebookAccount(admin.ModelAdmin):
-    pass
+    def get_queryset(self, request):
+        qs = super(FacebookAccount, self).get_queryset(request)
+        qs = qs.select_related('account')
+        return qs
 
 
 class HistoryResource(resources.ModelResource):
@@ -1348,6 +1379,11 @@ class HistoryAdmin(ExportMixin, admin.ModelAdmin):
 
     resource_class = HistoryResource
 
+    def get_queryset(self, request):
+        qs = super(HistoryAdmin, self).get_queryset(request)
+        qs = qs.select_related('agency', 'account', 'campaign', 'ad_group', 'created_by')
+        return qs
+
     def get_readonly_fields(self, request, obj=None):
         return list(set(
             [field.name for field in self.opts.local_fields] +
@@ -1412,6 +1448,11 @@ class PublisherGroupAdmin(admin.ModelAdmin):
     list_display = ('name', 'account', 'agency', 'created_dt', 'modified_dt')
     readonly_fields = ('modified_by',)
 
+    def get_queryset(self, request):
+        qs = super(PublisherGroupAdmin, self).get_queryset(request)
+        qs = qs.select_related('account', 'agency')
+        return qs
+
     def save_model(self, request, obj, form, change):
         obj.save(request)
 
@@ -1442,6 +1483,11 @@ class PublisherGroupEntryAdmin(ExportMixin, admin.ModelAdmin):
         PublisherGroupListFilter,
         'source',
     )
+
+    def get_queryset(self, request):
+        qs = super(PublisherGroupEntryAdmin, self).get_queryset(request)
+        qs = qs.select_related('source', 'publisher_group')
+        return qs
 
     def get_readonly_fields(self, request, obj=None):
         if obj:

@@ -44,9 +44,19 @@ class UserAdmin(authadmin.UserAdmin):
 
 
 class InternalGroupAdmin(admin.ModelAdmin):
-    pass
+    def get_queryset(self, request):
+        qs = super(InternalGroupAdmin, self).get_queryset(request)
+        qs = qs.select_related('group')
+        return qs
+
+
+class PermissionAdmin(admin.ModelAdmin):
+    def get_queryset(self, request):
+        qs = super(PermissionAdmin, self).get_queryset(request)
+        qs = qs.select_related('content_type')
+        return qs
 
 
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.InternalGroup, InternalGroupAdmin)
-admin.site.register(Permission)
+admin.site.register(Permission, PermissionAdmin)
