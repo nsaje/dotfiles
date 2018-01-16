@@ -96,7 +96,7 @@ INSERT INTO mv_master (
         {% if account_id %}
           AND account_id=%(account_id)s
         {% endif %}
-        GROUP BY 1, 2, 3, 4, 5
+        GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
       ) tpc
     ) d
     join mvh_adgroup_structure c on d.ad_group_id=c.ad_group_id
