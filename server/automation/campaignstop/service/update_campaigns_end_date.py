@@ -34,6 +34,9 @@ def _update_campaign_end_date(campaign, campaign_budgets):
 
 
 def _prefetch_budgets(campaigns):
+    # NOTE: taking all budgets into account (vs. only active/non-depleted) allows us
+    # to consistently set end dates also for past campaigns. This way we avoid
+    # changing end dates in external systems after they are over.
     budgets_by_campaign = {}
     for budget in core.bcm.BudgetLineItem.objects.filter(
             campaign__in=campaigns
