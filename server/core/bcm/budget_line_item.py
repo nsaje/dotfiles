@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db import transaction
-from django.db.models import Sum, Q
+from django.db.models import Sum, Q, F
 from django.forms.models import model_to_dict
 
 import utils.demo_anonymizer
@@ -20,6 +20,7 @@ import core.bcm
 import core.bcm.helpers
 import core.common
 import core.history
+from dailystatement import ET_TOTALS_FIELDS, ETF_TOTALS_FIELDS, ETFM_TOTALS_FIELDS
 
 import bcm_slack
 
@@ -282,6 +283,16 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
         return self.statements.filter(id=latest_statement.id)
 
     def get_spend_data(self, date=None):
+        if (date is None or date == utils.dates_helper.local_today()) and hasattr(self, 'spend_data_media'):
+            return {
+                'media': utils.converters.nano_to_decimal(self.spend_data_media or 0),
+                'data': utils.converters.nano_to_decimal(self.spend_data_data or 0),
+                'license_fee': utils.converters.nano_to_decimal(self.spend_data_license_fee or 0),
+                'margin': utils.converters.nano_to_decimal(self.spend_data_margin or 0),
+                'et_total': utils.converters.nano_to_decimal(self.spend_data_et_total or 0),
+                'etf_total': utils.converters.nano_to_decimal(self.spend_data_etf_total or 0),
+                'etfm_total': utils.converters.nano_to_decimal(self.spend_data_etfm_total or 0),
+            }
         statements = self.statements
         if date:
             statements = statements.filter(
@@ -459,3 +470,14 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
         def filter_today(self):
             current_date = utils.dates_helper.local_today()
             return self.filter_overlapping(current_date, current_date)
+
+        def annotate_spend_data(self):
+            return self.annotate(
+                spend_data_media=Sum('statements__media_spend_nano'),
+                spend_data_data=Sum('statements__data_spend_nano'),
+                spend_data_license_fee=Sum('statements__license_fee_nano'),
+                spend_data_margin=Sum('statements__margin_nano'),
+                spend_data_et_total=Sum(sum(F('statements__' + field) for field in ET_TOTALS_FIELDS)),
+                spend_data_etf_total=Sum(sum(F('statements__' + field) for field in ETF_TOTALS_FIELDS)),
+                spend_data_etfm_total=Sum(sum(F('statements__' + field) for field in ETFM_TOTALS_FIELDS)),
+            )

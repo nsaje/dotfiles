@@ -328,20 +328,22 @@ class CampaignBudgetView(api_common.BaseApiView):
     def _get_response(self, user, campaign):
         budget_items = models.BudgetLineItem.objects.filter(
             campaign_id=campaign.id,
-        ).select_related('credit').order_by('-created_dt')
+        ).select_related('credit').order_by('-created_dt').annotate_spend_data()
+        credit_items = (models.CreditLineItem.objects
+                        .filter_by_account(campaign.account)
+                        .prefetch_related('budgets'))
         active_budget = self._get_active_budget(user, campaign, budget_items)
         automatic_campaign_stop = campaign.get_current_settings().automatic_campaign_stop
         return self.create_api_response({
             'active': active_budget,
             'past': self._get_past_budget(user, campaign, budget_items),
-            'totals': self._get_budget_totals(user, campaign, active_budget),
-            'credits': self._get_available_credit_items(user, campaign),
+            'totals': self._get_budget_totals(user, campaign, active_budget, budget_items, credit_items),
+            'credits': self._get_available_credit_items(user, campaign, credit_items),
             'min_amount': (automatic_campaign_stop and
                            campaign_stop.get_min_budget_increase(campaign) or "0"),
         })
 
-    def _get_available_credit_items(self, user, campaign):
-        available_credits = models.CreditLineItem.objects.filter_by_account(campaign.account)
+    def _get_available_credit_items(self, user, campaign, available_credits):
         credits = []
         for credit in available_credits:
             credit_dict = {
@@ -373,7 +375,7 @@ class CampaignBudgetView(api_common.BaseApiView):
             constants.BudgetLineItemState.INACTIVE,
         )]
 
-    def _get_budget_totals(self, user, campaign, active_budget):
+    def _get_budget_totals(self, user, campaign, active_budget, budget_items, credits):
         data = {
             'current': {
                 'available': sum([x['available'] for x in active_budget]),
@@ -393,13 +395,12 @@ class CampaignBudgetView(api_common.BaseApiView):
         if _should_add_agency_costs(user, campaign):
             data['lifetime']['margin'] = Decimal('0.0000')
 
-        credits = models.CreditLineItem.objects.filter_by_account(campaign.account)
         for item in credits:
             if item.status != constants.CreditLineItemStatus.SIGNED or item.is_past():
                 continue
             data['current']['unallocated'] += Decimal(item.amount - item.flat_fee() - item.get_allocated_amount())
 
-        for item in models.BudgetLineItem.objects.filter(campaign_id=campaign.id):
+        for item in budget_items:
             if item.state() == constants.BudgetLineItemState.PENDING:
                 continue
 
