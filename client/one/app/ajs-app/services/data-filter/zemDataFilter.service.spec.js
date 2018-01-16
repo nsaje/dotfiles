@@ -19,14 +19,14 @@ describe('zemDataFilterService', function () {
     }));
 
     it('should init correctly with default values', function () {
-        var today = moment('2016-01-01').toDate();
+        var today = moment('2016-01-05').toDate();
         jasmine.clock().mockDate(today);
 
         zemDataFilterService.init();
 
         var dateRange = zemDataFilterService.getDateRange();
-        expect(dateRange.startDate.valueOf()).toEqual(moment('2015-12-03').startOf('day').valueOf());
-        expect(dateRange.endDate.valueOf()).toEqual(moment('2015-12-31').endOf('day').valueOf());
+        expect(dateRange.startDate.valueOf()).toEqual(moment('2016-01-01').startOf('day').valueOf());
+        expect(dateRange.endDate.valueOf()).toEqual(moment('2016-01-31').endOf('day').valueOf());
 
         var expectedConditions = {};
         expectedConditions[zemDataFilterService.CONDITIONS.publisherStatus.name] = zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.all; // eslint-disable-line max-len

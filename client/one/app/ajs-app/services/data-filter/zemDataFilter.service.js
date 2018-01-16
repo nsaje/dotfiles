@@ -101,8 +101,8 @@ angular.module('one.services').service('zemDataFilterService', function ($locati
     //
     function init () {
         dateRange = {
-            startDate: moment().subtract(29, 'day').startOf('day'),
-            endDate: moment().subtract(1, 'day').endOf('day'),
+            startDate: moment().startOf('month'),
+            endDate: moment().endOf('month'),
         };
 
         // Set conditions default values and update them with url params
