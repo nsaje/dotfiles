@@ -25,6 +25,7 @@ class CampaignBudgetDepletionNotificationAdmin(admin.ModelAdmin):
         qs = qs.select_related('account_manager', 'campaign')
         return qs
 
+
 admin.site.register(models.CampaignBudgetDepletionNotification, CampaignBudgetDepletionNotificationAdmin)
 
 
