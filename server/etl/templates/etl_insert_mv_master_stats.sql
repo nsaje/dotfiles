@@ -15,6 +15,8 @@ INSERT INTO mv_master (
       d.publisher,
       COALESCE(d.publisher, '') || '__' || d.source_id as publisher_source_id,
 
+      -- When adding new breakdown dimensions, add them to natural full outer join with mv_touchpointconversions below
+      -- too!
       d.device_type,
       d.device_os,
       d.device_os_version,
@@ -77,7 +79,17 @@ INSERT INTO mv_master (
       (mvh_clean_stats a left outer join mvh_source b on a.source_slug=b.bidder_slug)
       natural full outer join (
         SELECT
-          date, source_id, ad_group_id, content_ad_id,
+          date,
+          source_id,
+          ad_group_id,
+          content_ad_id,
+          device_type,
+          device_os,
+          device_os_version,
+          placement_medium,
+          country,
+          state,
+          dma,
           CASE WHEN source_id = 3 THEN NULL ELSE publisher END AS publisher
         FROM mv_touchpointconversions
         WHERE date=%(date)s
