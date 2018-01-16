@@ -42,3 +42,4 @@
 0 * * * *           /home/ubuntu/docker-manage-py.sh refresh_ga_linked_accounts
 */5 * * * *           /home/ubuntu/docker-manage-py.sh campaignstop_main_job
 0 4,5 * * *           /home/ubuntu/docker-manage-py.sh campaignstop_midnight_job --check-time
+30 7 1 * *           /home/ubuntu/docker-manage-py.sh refresh_inventory_data
