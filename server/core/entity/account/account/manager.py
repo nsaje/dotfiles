@@ -38,6 +38,9 @@ class AccountManager(core.common.QuerySetManager):
         account.settings_id = account.settings.id
         account.save(request)
 
-        account.allowed_sources.add(*core.source.Source.objects.filter(released=True, deprecated=False))
+        if account.agency and account.agency.allowed_sources.count() > 0:  # FIXME(nsaje): rethink this
+            account.allowed_sources.add(*agency.allowed_sources)
+        else:
+            account.allowed_sources.add(*core.source.Source.objects.filter(released=True, deprecated=False))
 
         return account

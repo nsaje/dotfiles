@@ -19,6 +19,7 @@ class AgencyManager(core.common.QuerySetManager):
     def create(self, request, name, **kwargs):
         agency = Agency(name=name, **kwargs)
         agency.save(request)
+        agency.allowed_sources.add(*core.source.Source.objects.filter(released=True, deprecated=False))
         return agency
 
 
@@ -87,6 +88,7 @@ class Agency(models.Model):
         help_text=('New accounts created by this agency\'s users will have '
                    'license fee and margin included into all costs.')
     )
+    allowed_sources = models.ManyToManyField('Source')
     custom_flags = JSONField(null=True, blank=True)
 
     settings = models.OneToOneField('AgencySettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_entity')

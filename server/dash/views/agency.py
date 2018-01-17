@@ -1042,7 +1042,7 @@ class AccountSettings(api_common.BaseApiView):
         if not allowed_sources_dict:
             return
 
-        all_available_sources = self.get_all_media_sources(can_see_all_available_sources)
+        all_available_sources = self.get_all_media_sources(account, can_see_all_available_sources)
         current_allowed_sources = self.get_allowed_media_sources(account, can_see_all_available_sources)
         new_allowed_sources = self.filter_allowed_sources_dict(all_available_sources, allowed_sources_dict)
 
@@ -1080,7 +1080,9 @@ class AccountSettings(api_common.BaseApiView):
         facebook_helper.update_facebook_account(facebook_account, new_url, credentials['business_id'],
                                                 credentials['access_token'])
 
-    def get_all_media_sources(self, can_see_all_available_sources):
+    def get_all_media_sources(self, account, can_see_all_available_sources):
+        if account.agency and account.agency.allowed_sources.count() > 0:
+            return list(account.agency.allowed_sources.all())
         qs_sources = models.Source.objects.all()
         if not can_see_all_available_sources:
             qs_sources = qs_sources.filter(released=True)
@@ -1115,10 +1117,12 @@ class AccountSettings(api_common.BaseApiView):
         if resource['default_cs_representative']:
             settings.default_cs_representative = resource['default_cs_representative']
 
-    def get_allowed_sources(self, include_unreleased_sources, allowed_sources_ids_list):
+    def get_allowed_sources(self, account, include_unreleased_sources, allowed_sources_ids_list):
         allowed_sources_dict = {}
 
         all_sources_queryset = models.Source.objects.all()
+        if account.agency and account.agency.allowed_sources.count() > 0:
+            all_sources_queryset = account.agency.allowed_sources.all()
         if not include_unreleased_sources:
             all_sources_queryset = all_sources_queryset.filter(released=True)
 
@@ -1170,6 +1174,7 @@ class AccountSettings(api_common.BaseApiView):
             result['account_type'] = settings.account_type
         if request.user.has_perm('zemauth.can_modify_allowed_sources'):
             result['allowed_sources'] = self.get_allowed_sources(
+                account,
                 request.user.has_perm('zemauth.can_see_all_available_sources'),
                 [source.id for source in account.allowed_sources.all()]
             )
