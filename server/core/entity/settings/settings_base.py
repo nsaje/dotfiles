@@ -31,6 +31,7 @@ class SettingsBase(models.Model, core.history.HistoryMixin):
             'adgroup': 'ad_group',
             'campaign': 'campaign',
             'account': 'account',
+            'agency': 'agency',
         }
         model_name = self._meta.get_field('latest_for_entity').related_model._meta.model_name
         field_name = model_to_field[model_name]

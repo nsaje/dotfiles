@@ -6,6 +6,7 @@ from django.contrib.postgres.fields import JSONField
 
 from dash import constants
 from utils import json_helper
+from utils import exc
 
 import core.common
 import core.entity
@@ -88,11 +89,29 @@ class Agency(models.Model):
     )
     custom_flags = JSONField(null=True, blank=True)
 
+    settings = models.OneToOneField('AgencySettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_entity')
+
     def get_long_name(self):
         return u'Agency {}'.format(self.name)
 
     def get_salesforce_id(self):
         return 'a{}'.format(self.pk)
+
+    def get_current_settings(self):
+        if not self.pk:
+            raise exc.BaseError(
+                'Account settings can\'t be fetched because acount hasn\'t been saved yet.'
+            )
+
+        # FIXME:circular dependency
+        import core.entity.settings
+        settings = core.entity.settings.AgencySettings.objects.\
+            filter(agency_id=self.pk).\
+            order_by('-created_dt').first()
+        if not settings:
+            settings = core.entity.settings.AgencySettings(agency=self)
+
+        return settings
 
     def write_history(self, changes_text, changes=None,
                       user=None, system_user=None,

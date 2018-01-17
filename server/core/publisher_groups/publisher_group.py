@@ -73,6 +73,9 @@ class PublisherGroup(models.Model):
 
             return self.filter(account=account)
 
+        def filter_by_agency(self, agency):
+            return self.filter(models.Q(agency=agency))
+
     def can_delete(self):
         # Check all ad group settings of the corresponding account/agency if they reference the publisher group
         if self.agency:

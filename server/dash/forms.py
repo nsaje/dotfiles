@@ -79,6 +79,8 @@ class PublisherGroupsFormMixin(forms.Form):
     whitelist_publisher_groups = forms.ModelMultipleChoiceField(
         required=False,
         queryset=None,
+        widget=FilteredSelectMultiple(verbose_name="whitelist publisher groups",
+                                      is_stacked=False),
         error_messages={
             'invalid_choice': 'Invalid whitelist publisher group selection.'
         }
@@ -87,6 +89,8 @@ class PublisherGroupsFormMixin(forms.Form):
     blacklist_publisher_groups = forms.ModelMultipleChoiceField(
         required=False,
         queryset=None,
+        widget=FilteredSelectMultiple(verbose_name="blacklist publisher groups",
+                                      is_stacked=False),
         error_messages={
             'invalid_choice': 'Invalid blacklist publisher group selection.'
         }
@@ -94,10 +98,13 @@ class PublisherGroupsFormMixin(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(PublisherGroupsFormMixin, self).__init__(*args, **kwargs)
-        self.fields['whitelist_publisher_groups'].queryset = models.PublisherGroup.objects.all().filter_by_account(
-            self.account)
-        self.fields['blacklist_publisher_groups'].queryset = models.PublisherGroup.objects.all().filter_by_account(
-            self.account)
+        qs = models.PublisherGroup.objects.all()
+        if hasattr(self, 'account'):
+            self.fields['whitelist_publisher_groups'].queryset = qs.filter_by_account(self.account)
+            self.fields['blacklist_publisher_groups'].queryset = qs.filter_by_account(self.account)
+        elif hasattr(self, 'agency'):
+            self.fields['whitelist_publisher_groups'].queryset = qs.filter_by_agency(self.agency)
+            self.fields['blacklist_publisher_groups'].queryset = qs.filter_by_agency(self.agency)
 
     def clean_whitelist_publisher_groups(self):
         publisher_groups = self.cleaned_data.get('whitelist_publisher_groups') or []
@@ -806,14 +813,27 @@ class AccountAdminForm(forms.ModelForm, CustomFlagsFormMixin):
         fields = '__all__'
 
 
-class AgencyAdminForm(forms.ModelForm, CustomFlagsFormMixin):
+class AgencyAdminForm(PublisherGroupsFormMixin, forms.ModelForm, CustomFlagsFormMixin):
+    SETTINGS_FIELDS = [
+        'whitelist_publisher_groups',
+        'blacklist_publisher_groups',
+    ]
 
     class Meta:
         model = models.Agency
         fields = '__all__'
 
     def __init__(self, *args, **kwargs):
+        initial = kwargs.get('initial', {})
+        if 'instance' in kwargs:
+            self.agency = kwargs.get('instance')
+            settings = self.agency.get_current_settings()
+            for field in self.SETTINGS_FIELDS:
+                initial[field] = getattr(settings, field)
+        kwargs['initial'] = initial
+
         super(AgencyAdminForm, self).__init__(*args, **kwargs)
+
         self.fields['sales_representative'].queryset =\
             ZemUser.objects.all().exclude(
                 first_name=''

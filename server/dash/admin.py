@@ -398,6 +398,15 @@ class AgencyAdmin(ExportMixin, admin.ModelAdmin):
             formset.save()
 
     def save_model(self, request, obj, form, change):
+        current_settings = obj.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        for field in form.SETTINGS_FIELDS:
+            value = form.cleaned_data.get(field)
+            if getattr(new_settings, field) != value:
+                setattr(new_settings, field, value)
+        changes = current_settings.get_setting_changes(new_settings)
+        if changes:
+            new_settings.save(request)
         obj.save(request)
         utils.k1_helper.update_ad_groups(
             models.AdGroup.objects.filter(campaign__account__agency_id=obj.id).values_list('id', flat=True),

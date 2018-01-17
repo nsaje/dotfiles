@@ -15,6 +15,9 @@ class CopySettingsMixin(object):
                 continue
             setattr(new_settings, name, getattr(self, name))
 
+        if type(self) == core.entity.settings.AgencySettings:
+            new_settings.agency = self.agency
+            new_settings.snapshot(previous=self)
         if type(self) == core.entity.settings.AccountSettings:
             new_settings.account = self.account
             new_settings.snapshot(previous=self)
