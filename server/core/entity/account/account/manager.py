@@ -39,7 +39,7 @@ class AccountManager(core.common.QuerySetManager):
         account.save(request)
 
         if account.agency and account.agency.allowed_sources.count() > 0:  # FIXME(nsaje): rethink this
-            account.allowed_sources.add(*agency.allowed_sources)
+            account.allowed_sources.add(*agency.allowed_sources.all())
         else:
             account.allowed_sources.add(*core.source.Source.objects.filter(released=True, deprecated=False))
 
