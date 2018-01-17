@@ -8,6 +8,7 @@ from utils import k1_helper
 
 class CampaignStopState(models.Model):
     campaign = models.OneToOneField(core.entity.Campaign)
+    almost_depleted = models.BooleanField(default=False)
     state = models.IntegerField(
         choices=constants.CampaignStopState.get_choices(),
         default=constants.CampaignStopState.STOPPED,
@@ -39,3 +40,17 @@ class CampaignStopState(models.Model):
                 ad_group_ids,
                 'campaignstop.end_date_change'
             )
+
+    def update_almost_depleted(self, is_depleted):
+        self.almost_depleted = is_depleted
+        self.save()
+
+    def __unicode__(self):
+        return u'{} (state: {}, almost_depleted: {})'.format(
+            self.campaign,
+            self.state,
+            self.almost_depleted
+        )
+
+    def __str__(self):
+        return unicode(self).encode('ascii', 'ignore')

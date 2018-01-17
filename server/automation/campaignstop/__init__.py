@@ -7,5 +7,6 @@ from service import (
     get_campaignstop_states,
     update_campaigns_end_date,
     update_campaigns_state,
+    mark_almost_depleted_campaigns,
 )
 import signals

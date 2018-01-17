@@ -2058,12 +2058,12 @@ class GetMatchingPairsTestCase(TestCase):
         account = dash.models.Account()
         account.save(request)
 
-        camapaign = dash.models.Campaign()
-        camapaign.account = account
-        camapaign.save(request)
+        campaign = dash.models.Campaign()
+        campaign.account = account
+        campaign.save(request)
 
         ag = dash.models.AdGroup()
-        ag.campaign = camapaign
+        ag.campaign = campaign
         ag.save(request)
         new_ag_settings = dash.models.AdGroupSettings(ad_group=ag)
         new_ag_settings.b1_sources_group_enabled = False
