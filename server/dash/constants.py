@@ -1960,12 +1960,14 @@ class Whitelabel(ConstantBase):
     ADTECHNACITY = 'adtechnacity'
     NEWSCORP = 'newscorp'
     BURDA = 'burda'
+    MEDIAMOND = 'mediamond'
 
     _VALUES = {
         GREENPARK: 'Green Park Content',
         ADTECHNACITY: 'Adtechnacity',
         NEWSCORP: 'Newscorp',
         BURDA: 'Burda',
+        MEDIAMOND: 'Mediamond',
     }
 
 

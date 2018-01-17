@@ -10,6 +10,7 @@ var THEMES = {
     greenpark: {name: 'greenpark'},
     newscorp: {name: 'newscorp'},
     burda: {name: 'burda'},
+    mediamond: {name: 'mediamond'},
 };
 
 module.exports.getBuildConfig = getBuildConfig;
