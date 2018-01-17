@@ -1118,13 +1118,16 @@ class AccountSettings(api_common.BaseApiView):
     def get_allowed_sources(self, include_unreleased_sources, allowed_sources_ids_list):
         allowed_sources_dict = {}
 
-        all_sources_queryset = models.Source.objects.filter(deprecated=False)
+        all_sources_queryset = models.Source.objects.all()
         if not include_unreleased_sources:
             all_sources_queryset = all_sources_queryset.filter(released=True)
 
         all_sources = list(all_sources_queryset)
 
         for source in all_sources:
+            if source.id not in allowed_sources_ids_list and source.deprecated:
+                continue
+
             source_settings = {'name': source.name}
             if source.id in allowed_sources_ids_list:
                 source_settings['allowed'] = True

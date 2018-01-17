@@ -3043,6 +3043,7 @@ class AccountSettingsTest(TestCase):
         response = json.loads(response.content)
 
         self.assertEqual(response['data']['settings']['allowed_sources'], {
+            '1': {'name': 'Source 1', 'allowed': True, 'released': True},
             '2': {'name': 'Source 2', 'allowed': True, 'released': True},
             '3': {'name': 'Source 3', 'released': False},
             '100': {'name': 'AdsNative', 'released': True},
@@ -3061,6 +3062,7 @@ class AccountSettingsTest(TestCase):
         response = json.loads(response.content)
 
         self.assertEqual(response['data']['settings']['allowed_sources'], {
+            '1': {'name': 'Source 1', 'allowed': True, 'released': True},
             '2': {'name': 'Source 2', 'allowed': True, 'released': True},
             '100': {'name': 'AdsNative', 'released': True},
             '200': {'name': 'Facebook', 'released': True},
