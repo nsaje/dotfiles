@@ -72,6 +72,12 @@ class Account(models.Model):
         help_text='Campaigns of this account will use real time campaign stop instead of landing mode.',
     )
 
+    currency = models.CharField(
+        max_length=3,
+        default=constants.Currency.USD,
+        choices=constants.Currency.get_choices()
+    )
+
     settings = models.OneToOneField('AccountSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_entity')
 
     def __unicode__(self):

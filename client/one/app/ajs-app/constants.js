@@ -46,6 +46,10 @@ var constants = {
         MANAGED: 6,
         PAAS: 7,
     },
+    currency: {
+        USD: 'USD',
+        EUR: 'EUR',
+    },
     infoboxStatus: {
         ACTIVE: 'active',
         ACTIVE_PRICE_DISCOVERY: 'active-price-discovery',

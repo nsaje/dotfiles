@@ -150,6 +150,16 @@ class AccountType(ConstantBase):
     }
 
 
+class Currency(ConstantBase):
+    USD = 'USD'
+    EUR = 'EUR'
+
+    _VALUES = {
+        USD: 'US Dollar',
+        EUR: 'Euro',
+    }
+
+
 class InfoboxLevel(ConstantBase):
     ADGROUP = 'adgroup'
     CAMPAIGN = 'campaign'
