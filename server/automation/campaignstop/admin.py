@@ -4,7 +4,6 @@ import textwrap
 from django.contrib import admin
 
 from . import constants
-from .service.update_campaignstop_state import THRESHOLD
 
 
 class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
