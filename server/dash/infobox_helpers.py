@@ -447,30 +447,27 @@ def count_active_campaigns(account):
     return len(active_campaign_ids)
 
 
+def _active_account_ids():
+    return set(
+        dash.models.AdGroup.objects.all()
+        .filter_running()
+        .order_by()  # disable default adgroup order
+        .values_list(
+            'campaign__account',
+            flat=True
+        ).distinct()
+    )
+
+
 def count_active_agency_accounts(user):
     return dash.models.Account.objects.all().filter_by_user(user).filter(
-        id__in=set(
-            dash.models.AdGroup.objects.all()
-            .filter_running()
-            .values_list(
-                'campaign__account',
-                flat=True
-            )
-        )
+        id__in=_active_account_ids()
     ).count()
 
 
 def count_active_accounts(filtered_agencies, filtered_account_types):
-    account_ids = set(
-        dash.models.AdGroup.objects.all()
-        .filter_running()
-        .values_list(
-            'campaign__account',
-            flat=True
-        )
-    )
     count_filtered_ids = dash.models.Account.objects.all()\
-        .filter(id__in=account_ids)\
+        .filter(id__in=_active_account_ids())\
         .filter_by_agencies(filtered_agencies)\
         .filter_by_account_types(filtered_account_types)\
         .count()
