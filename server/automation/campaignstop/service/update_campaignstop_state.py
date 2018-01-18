@@ -77,6 +77,7 @@ def _is_below_threshold(log, campaign):
         'spend_rate': spend_rate,
         'predicted': predicted,
         'is_below_threshold': is_below,
+        'threshold': THRESHOLD,
     })
     return is_below
 
