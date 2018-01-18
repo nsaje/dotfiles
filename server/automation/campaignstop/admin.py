@@ -60,7 +60,7 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
                 &nbsp;&nbsp;&nbsp;&nbsp;- Spend rate: ${spend_rate} (= ${current_rt_spend} (current) - ${prev_rt_spend} (previous))''')
         return desc.format(
             state=self._format_state(obj),
-            threshold=obj.context.get('threshold', 10),  # old default
+            threshold=obj.context.get('threshold', '10'),  # old default
             curr_spends=curr_spends,
             prev_spends=prev_spends,
             threshold_op='<' if obj.context.get('is_below_threshold') else '>',
