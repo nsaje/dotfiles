@@ -31,13 +31,13 @@ def extract_constraints(constraints, use_publishers_view):
 
     if 'campaign' in constraints:
         new_constraints['campaign_id'] = constraints['campaign'].id
-    elif 'allowed_campaigns' in constraints:
+    elif 'allowed_campaigns' in constraints and 'account' in constraints:
         new_constraints['campaign_id'] = list(
             constraints['allowed_campaigns'].values_list('pk', flat=True).order_by('pk'))
 
     if 'ad_group' in constraints:
         new_constraints['ad_group_id'] = constraints['ad_group'].id
-    elif 'allowed_ad_groups' in constraints:
+    elif 'allowed_ad_groups' in constraints and 'campaign' in constraints:
         new_constraints['ad_group_id'] = list(
             constraints['allowed_ad_groups'].values_list('pk', flat=True).order_by('pk'))
 
@@ -45,7 +45,7 @@ def extract_constraints(constraints, use_publishers_view):
         # NOTE: publishers view doesn't support breakdown by content ad
         if 'content_ad' in constraints:
             new_constraints['content_ad_id'] = constraints['content_ad'].id
-        elif 'allowed_content_ads' in constraints:
+        elif 'allowed_content_ads' in constraints and 'ad_group' in constraints:
             new_constraints['content_ad_id'] = list(
                 constraints['allowed_content_ads'].values_list('pk', flat=True).order_by('pk'))
 
