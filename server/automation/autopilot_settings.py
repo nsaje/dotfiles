@@ -11,8 +11,9 @@ AUTOPILOT_EMAIL_FOR_COPIES = 'autopilot@zemanta.com'
 
 # CPC Autopilot Settings
 AUTOPILOT_CPC_CHANGE_TABLE = (
-    {'underspend_upper_limit': -1, 'underspend_lower_limit': -0.8, 'bid_cpc_proc_increase': Decimal('0.5')},
-    {'underspend_upper_limit': -0.8, 'underspend_lower_limit': -0.4, 'bid_cpc_proc_increase': Decimal('0.25')},
+    {'underspend_upper_limit': -1, 'underspend_lower_limit': -0.8, 'bid_cpc_proc_increase': Decimal('1.0')},
+    {'underspend_upper_limit': -0.8, 'underspend_lower_limit': -0.6, 'bid_cpc_proc_increase': Decimal('0.5')},
+    {'underspend_upper_limit': -0.6, 'underspend_lower_limit': -0.4, 'bid_cpc_proc_increase': Decimal('0.25')},
     {'underspend_upper_limit': -0.4, 'underspend_lower_limit': -0.2, 'bid_cpc_proc_increase': Decimal('0.1')},
     {'underspend_upper_limit': -0.2, 'underspend_lower_limit': -0.1, 'bid_cpc_proc_increase': Decimal('0.05')},
     {'underspend_upper_limit': -0.1, 'underspend_lower_limit': -0.05, 'bid_cpc_proc_increase': Decimal('-0.02')},
