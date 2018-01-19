@@ -89,14 +89,20 @@ def _update_campaign_budgets(campaign_budgets, campaign_available_amount):
         min_remaining_budget = remaining_current_budget - campaign_budget
         log = RealTimeCampaignStopLog(campaign=campaign, event=CampaignStopEvent.SELECTION_CHECK)
         is_almost_depleted = min_remaining_budget < 0
-        campaignstop_state, _ = CampaignStopState.objects.get_or_create(campaign=campaign)
-        campaignstop_state.update_almost_depleted(is_almost_depleted)
+
+        _update_almost_depleted(campaign, is_almost_depleted)
+
         log.add_context(
             {'min_remaining_budget': min_remaining_budget,
              'campaign_budget': campaign_budget,
              'remaining_current_budget': remaining_current_budget,
              'is_almost_depleted': is_almost_depleted}
         )
+
+
+def _update_almost_depleted(campaign, is_almost_depleted):
+    campaignstop_state, _ = CampaignStopState.objects.get_or_create(campaign=campaign)
+    campaignstop_state.update_almost_depleted(is_almost_depleted)
 
 
 def _get_spend(adg_sources, adg_source_spends):
