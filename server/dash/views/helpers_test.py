@@ -37,34 +37,6 @@ class ViewHelpersTestCase(TestCase):
         with self.assertRaises(exc.ValidationError):
             helpers.parse_post_request_ids({'ids': ['1', 'a']}, 'ids')
 
-    @patch('utils.redirector_helper.insert_adgroup')
-    def test_save_campaign_settings_and_propagate(self, mock_insert_adgroup):
-        campaign = models.Campaign.objects.get(pk=1)
-        s1 = models.CampaignSettings(campaign=campaign)
-        s1.name = ''
-        s2 = s1.copy_settings()
-        s2.name = 'cid'
-
-        request = HttpRequest()
-        request.user = User.objects.get(pk=1)
-        helpers.save_campaign_settings_and_propagate(campaign, s1, s2, request)
-        self.assertFalse(mock_insert_adgroup.called)
-
-        campaign = models.Campaign.objects.get(pk=1)
-        s1 = models.CampaignSettings(campaign=campaign)
-        s1.enable_ga_tracking = False
-        s1.enable_adobe_tracking = False
-        s1.adobe_tracking_param = ''
-        s2 = s1.copy_settings()
-        s2.enable_ga_tracking = True
-        s2.enable_adobe_tracking = True
-        s2.adobe_tracking_param = 'cid'
-
-        request = HttpRequest()
-        request.user = User.objects.get(pk=1)
-        helpers.save_campaign_settings_and_propagate(campaign, s1, s2, request)
-        self.assertTrue(mock_insert_adgroup.called)
-
 
 class GetChangedContentAdsTestCase(TestCase):
     fixtures = ['test_api']

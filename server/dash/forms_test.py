@@ -298,7 +298,7 @@ class CampaignSettingsFormTest(TestCase):
         form = forms.CampaignSettingsForm(self.campaign, self.data)
         self.assertTrue(form.is_valid())
         self.assertIn('ga_property_id', form.cleaned_data)
-        self.assertIsNone(form.cleaned_data['ga_property_id'])
+        self.assertEqual(form.cleaned_data['ga_property_id'], '')
 
     @patch('utils.dates_helper.local_today')
     def test_ga_tracking_disabled(self, mock_today):
@@ -310,7 +310,7 @@ class CampaignSettingsFormTest(TestCase):
         form = forms.CampaignSettingsForm(self.campaign, self.data)
         self.assertTrue(form.is_valid())
         self.assertIn('ga_property_id', form.cleaned_data)
-        self.assertIsNone(form.cleaned_data['ga_property_id'])
+        self.assertEqual(form.cleaned_data['ga_property_id'], '')
 
     @patch('utils.dates_helper.local_today')
     def test_ga_property_id_missing(self, mock_today):

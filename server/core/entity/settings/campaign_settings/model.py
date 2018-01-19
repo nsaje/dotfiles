@@ -16,13 +16,15 @@ import core.entity
 import core.history
 import core.source
 
-import helpers
+from .. import helpers
 
-from settings_base import SettingsBase
-from settings_query_set import SettingsQuerySet
+from ..settings_base import SettingsBase
+from ..settings_query_set import SettingsQuerySet
+
+import instance
 
 
-class CampaignSettings(SettingsBase):
+class CampaignSettings(instance.CampaignSettingsMixin, SettingsBase):
     class Meta:
         app_label = 'dash'
         ordering = ('-created_dt',)
@@ -131,9 +133,7 @@ class CampaignSettings(SettingsBase):
         )
 
     @classmethod
-    def get_changes_text(cls, old_settings, new_settings, separator=', '):
-        changes = old_settings.get_setting_changes(
-            new_settings) if old_settings is not None else None
+    def get_changes_text(cls, changes, separator=', '):
         return core.history.helpers.get_changes_text_from_dict(cls, changes, separator=separator)
 
     class QuerySet(SettingsQuerySet):

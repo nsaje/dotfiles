@@ -19,10 +19,7 @@ from dash import cpc_constraints
 from dash.dashapi import data_helper
 
 from utils import exc
-from utils import email_helper
-from utils import k1_helper
 from utils import columns
-from utils import redirector_helper
 
 from restapi.access import get_content_ad, get_ad_group, get_campaign, get_account, get_upload_batch  # noqa
 
@@ -763,47 +760,6 @@ def format_decimal_to_percent(num):
 
 def format_percent_to_decimal(num):
     return Decimal(str(num).replace(',', '').strip('%')) / 100
-
-
-def _update_ad_groups_redirector_settings(campaign):
-    for ad_group in campaign.adgroup_set.all().select_related('settings', 'campaign__settings'):
-        redirector_helper.insert_adgroup(ad_group)
-
-
-def save_campaign_settings_and_propagate(campaign, old_settings, new_settings, request):
-    with transaction.atomic():
-        campaign.save(request)
-        new_settings.save(request)
-
-        # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
-        campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
-
-        any_tracking_changes = any(prop in old_settings.get_setting_changes(new_settings) for prop in
-                                   ['enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param'])
-        if any_tracking_changes:
-            _update_ad_groups_redirector_settings(campaign)
-
-    k1_helper.update_ad_groups((ad_group.pk for ad_group in campaign_ad_groups),
-                               msg='views.helpers.save_campaign_settings_and_propagate')
-
-
-def log_and_notify_campaign_settings_change(campaign, old_settings, new_settings, request):
-    changes = old_settings.get_setting_changes(new_settings)
-    if changes:
-        history_changes_text = models.CampaignSettings.get_changes_text(
-            old_settings,
-            new_settings,
-            separator=', ')
-        campaign.write_history(
-            history_changes_text,
-            user=request.user,
-            action_type=constants.HistoryActionType.SETTINGS_CHANGE)
-
-        changes_text = models.CampaignSettings.get_changes_text(
-            old_settings,
-            new_settings,
-            separator='\n')
-        email_helper.send_campaign_notification_email(campaign, request, changes_text)
 
 
 def get_users_for_manager(user, account, current_manager=None):

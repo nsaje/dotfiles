@@ -943,7 +943,7 @@ class CampaignSettingsForm(PublisherGroupsFormMixin, forms.Form):
         enable_ga_tracking = self.cleaned_data.get('enable_ga_tracking')
 
         if not enable_ga_tracking or tracking_type == constants.GATrackingType.EMAIL:
-            return None  # property ID should not be set when email type is selected
+            return ''  # property ID should not be set when email type is selected
 
         if not property_id:
             raise forms.ValidationError('Web property ID is required.')

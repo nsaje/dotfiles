@@ -352,11 +352,10 @@ class CampaignSettings(api_common.BaseApiView):
 
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
-        campaign_settings = campaign.get_current_settings()
 
         response = {
-            'settings': self.get_dict(request, campaign_settings, campaign),
-            'archived': campaign_settings.archived,
+            'settings': self.get_dict(request, campaign.settings, campaign),
+            'archived': campaign.settings.archived,
         }
         if request.user.has_perm('zemauth.can_see_campaign_goals'):
             response['goals'] = self.get_campaign_goals(
@@ -369,7 +368,7 @@ class CampaignSettings(api_common.BaseApiView):
         response['can_restore'] = campaign.can_restore()
 
         if request.user.has_perm('zemauth.can_modify_campaign_manager'):
-            response['campaign_managers'] = self.get_campaign_managers(request, campaign, campaign_settings)
+            response['campaign_managers'] = self.get_campaign_managers(request, campaign, campaign.settings)
 
         if request.user.has_perm('zemauth.can_see_backend_hacks'):
             response['hacks'] = models.CustomHack.objects.all().filter_applied(
@@ -383,9 +382,6 @@ class CampaignSettings(api_common.BaseApiView):
         resource = json.loads(request.body)
 
         settings_dict = resource.get('settings', {})
-
-        current_settings = campaign.get_current_settings()
-        new_settings = current_settings.copy_settings()
 
         settings_form = forms.CampaignSettingsForm(campaign, settings_dict)
         errors = {}
@@ -407,6 +403,8 @@ class CampaignSettings(api_common.BaseApiView):
             errors['no_goals'] = 'At least one goal must be defined'
             raise exc.ValidationError(errors=errors)
 
+        campaign.settings.update(request, **settings_form.cleaned_data)
+
         with transaction.atomic():
             goal_errors = self.set_goals(request, campaign, changes)
 
@@ -416,27 +414,9 @@ class CampaignSettings(api_common.BaseApiView):
         if errors:
             raise exc.ValidationError(errors=errors)
 
-        self.set_settings(request, new_settings, campaign, settings_form.cleaned_data)
-        self.set_campaign(campaign, settings_form.cleaned_data)
-
-        if current_settings.get_setting_changes(new_settings):
-            helpers.log_and_notify_campaign_settings_change(
-                campaign, current_settings, new_settings, request
-            )
-            if (current_settings.ga_property_id != new_settings.ga_property_id and
-                    new_settings.enable_ga_tracking and
-                    new_settings.ga_property_id):
-                try:
-                    is_readable = ga.is_readable(new_settings.ga_property_id)
-                except Exception:
-                    is_readable = False
-                if not is_readable:
-                    email_helper.send_ga_setup_instructions(request.user)
-            helpers.save_campaign_settings_and_propagate(campaign, current_settings, new_settings, request)
-
         response = {
-            'settings': self.get_dict(request, new_settings, campaign),
-            'archived': new_settings.archived,
+            'settings': self.get_dict(request, campaign.settings, campaign),
+            'archived': campaign.settings.archived,
         }
 
         if request.user.has_perm('zemauth.can_see_campaign_goals'):
@@ -575,37 +555,6 @@ class CampaignSettings(api_common.BaseApiView):
         result['target_placements'] = PlacementsSerializer(settings.target_placements).data
 
         return result
-
-    def set_settings(self, request, settings, campaign, resource):
-        settings.name = resource['name']
-        settings.campaign_goal = resource['campaign_goal']
-        settings.goal_quantity = resource['goal_quantity']
-        settings.target_devices = resource['target_devices']
-        settings.target_regions = resource['target_regions']
-        settings.exclusion_target_regions = resource['exclusion_target_regions']
-        settings.enable_ga_tracking = resource['enable_ga_tracking']
-        settings.enable_adobe_tracking = resource['enable_adobe_tracking']
-        settings.adobe_tracking_param = resource['adobe_tracking_param']
-        if request.user.has_perm('zemauth.can_modify_campaign_manager'):
-            settings.campaign_manager = resource['campaign_manager']
-        if request.user.has_perm('zemauth.can_modify_campaign_iab_category'):
-            settings.iab_category = resource['iab_category']
-        if settings.enable_ga_tracking and request.user.has_perm('zemauth.can_set_ga_api_tracking'):
-            settings.ga_tracking_type = resource['ga_tracking_type']
-
-            if settings.ga_tracking_type == constants.GATrackingType.API:
-                settings.ga_property_id = resource['ga_property_id']
-
-        if request.user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
-            settings.whitelist_publisher_groups = resource['whitelist_publisher_groups']
-            settings.blacklist_publisher_groups = resource['blacklist_publisher_groups']
-
-        if request.user.has_perm('zemauth.can_set_advanced_device_targeting'):
-            settings.target_os = resource['target_os']
-            settings.target_placements = resource['target_placements']
-
-    def set_campaign(self, campaign, resource):
-        campaign.name = resource['name']
 
     def get_campaign_managers(self, request, campaign, settings):
         users = helpers.get_users_for_manager(request.user, campaign.account, settings.campaign_manager)
