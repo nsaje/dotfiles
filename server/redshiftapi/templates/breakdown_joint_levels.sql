@@ -105,10 +105,10 @@ FROM (
           FROM
               temp_base LEFT OUTER JOIN temp_yesterday ON {{ breakdown|columns_equal_or_null:"temp_base,temp_yesterday" }}
               {% if conversions_aggregates %}
-                  LEFT OUTER JOIN temp_conversions ON {{ breakdown|columns_equal_or_null:"temp_base,temp_conversions" }}
+                LEFT OUTER JOIN temp_conversions ON {{ breakdown|columns_equal_or_null:"temp_base,temp_conversions" }}
               {% endif %}
               {% if touchpoints_aggregates %}
-                  LEFT OUTER JOIN temp_touchpoints ON {{ breakdown|columns_equal_or_null:"temp_base,temp_touchpoints" }}
+                LEFT OUTER JOIN temp_touchpoints ON {{ breakdown|columns_equal_or_null:"temp_base,temp_touchpoints" }}
               {% endif %}
     ) a
 ) b
