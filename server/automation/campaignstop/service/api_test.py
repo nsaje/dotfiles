@@ -17,6 +17,7 @@ class GetCampaignStopStatesTest(TestCase):
         self.assertEqual({
             'allowed_to_run': False,
             'max_allowed_end_date': dates_helper.local_yesterday(),
+            'almost_depleted': False,
         }, states[self.campaign.id])
 
     def test_states_active(self):
@@ -29,6 +30,7 @@ class GetCampaignStopStatesTest(TestCase):
         self.assertEqual({
             'allowed_to_run': True,
             'max_allowed_end_date': dates_helper.local_yesterday(),
+            'almost_depleted': False,
         }, states[self.campaign.id])
 
     def test_max_end_date_set(self):
@@ -43,6 +45,23 @@ class GetCampaignStopStatesTest(TestCase):
         self.assertEqual({
             'allowed_to_run': False,
             'max_allowed_end_date': today,
+            'almost_depleted': False,
+        }, states[self.campaign.id])
+
+    def test_almost_depleted(self):
+        today = dates_helper.local_today()
+        magic_mixer.blend(
+            CampaignStopState,
+            campaign=self.campaign,
+            max_allowed_end_date=today,
+            almost_depleted=True,
+        )
+
+        states = api.get_campaignstop_states([self.campaign])
+        self.assertEqual({
+            'allowed_to_run': False,
+            'max_allowed_end_date': today,
+            'almost_depleted': True,
         }, states[self.campaign.id])
 
     def test_no_realtime_campaign_stop(self):
@@ -56,4 +75,5 @@ class GetCampaignStopStatesTest(TestCase):
         self.assertEqual({
             'allowed_to_run': True,
             'max_allowed_end_date': None,
+            'almost_depleted': False,
         }, states[campaign.id])

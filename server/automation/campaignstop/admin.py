@@ -28,7 +28,7 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
         if obj.event == constants.CampaignStopEvent.BUDGET_DEPLETION_CHECK:
             return self._get_depletion_check_description(obj)
         elif obj.event == constants.CampaignStopEvent.SELECTION_CHECK:
-            pass
+            return self._get_almost_depleted_budget_description(obj)
         elif obj.event == constants.CampaignStopEvent.MAX_ALLOWED_END_DATE_UPDATE:
             return self._get_max_allowed_end_date_update_description(obj)
         elif obj.event == constants.CampaignStopEvent.BUDGET_AMOUNT_VALIDATION:
@@ -75,11 +75,22 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
             desc += '\n&nbsp;&nbsp;&nbsp;&nbsp;- id: {id}, start date: {start_date}, end date: {end_date}'.format(**budget)
         return desc.replace('\n', '<br />')
 
+    def _get_almost_depleted_budget_description(self, obj):
+        desc = textwrap.dedent('''\
+            Min remaining budget: {min_remaining_budget}
+            Campaign budget: {campaign_budget}
+            Remaining_current_budget: {remaining_current_budget}''')
+        return desc.format(
+            min_remaining_budget=obj.context['min_remaining_budget'],
+            campaign_budget=obj.context['campaign_budget'],
+            remaining_current_budget=obj.context['remaining_current_budget'],
+        ).replace('\n', '<br />')
+
     def event_result(self, obj):
         if obj.event == constants.CampaignStopEvent.BUDGET_DEPLETION_CHECK:
             return self._format_state(obj)
         elif obj.event == constants.CampaignStopEvent.SELECTION_CHECK:
-            pass
+            return self._format_almost_depleted(obj)
         elif obj.event == constants.CampaignStopEvent.MAX_ALLOWED_END_DATE_UPDATE:
             return self._format_max_allowed_end_date(obj)
         elif obj.event == constants.CampaignStopEvent.BUDGET_AMOUNT_VALIDATION:
@@ -100,3 +111,7 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
     @staticmethod
     def _format_max_allowed_end_date(obj):
         return '<b>' + obj.context['max_allowed_end_date'] + '</b>'
+
+    @staticmethod
+    def _format_almost_depleted(obj):
+        return "<b>{}</b>".format(obj.context.get('is_almost_depleted'))

@@ -4,7 +4,7 @@ from datetime import datetime
 
 import core.bcm
 import core.goals
-from .. import CampaignStopState, RealTimeDataHistory
+from .. import CampaignStopState, RealTimeDataHistory, RealTimeCampaignStopLog
 from automation import campaignstop
 
 import dash.constants
@@ -30,6 +30,19 @@ class UpdateAlmostDepletedTestCase(TestCase):
         campaign_stop_count = CampaignStopState.objects.count()
         self.assertEqual(campaign_stop_count, 0)
         campaignstop.service.update_almost_depleted.mark_almost_depleted_campaigns()
+
+    @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
+    def test_script_should_produce_log(self, _):
+        RealTimeCampaignStopLog.objects.all().delete()
+        today = dates_helper.local_today()
+        RealTimeDataHistory.objects.create(
+            ad_group=self.ad_group,
+            source=self.source,
+            date=today,
+            etfm_spend=901.0,
+        )
+        campaignstop.service.update_almost_depleted.mark_almost_depleted_campaigns()
+        self.assertEqual(RealTimeCampaignStopLog.objects.count(), 1)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
     def test_mark_almost_depleted_for_one_campaign(self, _):

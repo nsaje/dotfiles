@@ -1,9 +1,11 @@
+from django.db import transaction
+
 import dash.constants
 import core.entity
 import core.bcm
 from utils import dates_helper
-
-from .. import CampaignStopState, RealTimeDataHistory
+from ..constants import CampaignStopEvent
+from .. import CampaignStopState, RealTimeDataHistory, RealTimeCampaignStopLog
 
 HOURS_DELAY = 6
 
@@ -16,6 +18,7 @@ def mark_almost_depleted_campaigns(campaigns=None):
     campaign_budget_line_items = _get_campaign_budget_line_items(budget_line_items)
     campaign_available_amount = _get_campaign_available_amount(campaign_budget_line_items)
     campaign_spends = _get_campaign_spends(campaigns)
+
     _update_campaign_budgets(campaign_spends, campaign_available_amount)
 
 
@@ -79,18 +82,21 @@ def _get_adgroup_sources(campaign):
     )
 
 
+@transaction.atomic
 def _update_campaign_budgets(campaign_budgets, campaign_available_amount):
     for campaign, campaign_budget in campaign_budgets.iteritems():
         remaining_current_budget = campaign_available_amount.get(campaign, 0)
         min_remaining_budget = remaining_current_budget - campaign_budget
-
-        if min_remaining_budget < 0:
-            _update_almost_depleted(campaign, True)
-
-
-def _update_almost_depleted(campaign, is_almost_depleted):
-    campaignstop_state, _ = CampaignStopState.objects.get_or_create(campaign=campaign)
-    campaignstop_state.update_almost_depleted(is_almost_depleted)
+        log = RealTimeCampaignStopLog(campaign=campaign, event=CampaignStopEvent.SELECTION_CHECK)
+        is_almost_depleted = min_remaining_budget < 0
+        campaignstop_state, _ = CampaignStopState.objects.get_or_create(campaign=campaign)
+        campaignstop_state.update_almost_depleted(is_almost_depleted)
+        log.add_context(
+            {'min_remaining_budget': min_remaining_budget,
+             'campaign_budget': campaign_budget,
+             'remaining_current_budget': remaining_current_budget,
+             'is_almost_depleted': is_almost_depleted}
+        )
 
 
 def _get_spend(adg_sources, adg_source_spends):

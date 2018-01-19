@@ -633,7 +633,7 @@ def get_adgroup_running_status_class(
     if real_time_campaign_stop and campaignstop_state:
         if not campaignstop_state['allowed_to_run']:
             return dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED
-        if False:  # TODO: set when campaign is marked as running out of budget
+        if campaignstop_state['almost_depleted']:
             return dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET
 
     if autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
@@ -652,7 +652,7 @@ def get_campaign_running_status(campaign, campaign_settings):
         campaignstop_state = automation.campaignstop.get_campaignstop_state(campaign)
         if not campaignstop_state['allowed_to_run']:
             return dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED
-        if False:  # TODO: set when campaign is marked as running out of budget
+        if campaignstop_state['almost_depleted']:
             return dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET
 
     running_exists = dash.models.AdGroup.objects.filter(
