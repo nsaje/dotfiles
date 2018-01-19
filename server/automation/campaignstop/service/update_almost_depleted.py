@@ -12,16 +12,16 @@ def mark_almost_depleted_campaigns(campaigns=None):
     if not campaigns:
         campaigns = core.entity.Campaign.objects.filter(real_time_campaign_stop=True)
 
-    budget_line_items = _get_all_budget_line_items()
+    budget_line_items = _get_all_budget_line_items(campaigns)
     campaign_budget_line_items = _get_campaign_budget_line_items(budget_line_items)
     campaign_available_amount = _get_campaign_available_amount(campaign_budget_line_items)
     campaign_spends = _get_campaign_spends(campaigns)
     _update_campaign_budgets(campaign_spends, campaign_available_amount)
 
 
-def _get_all_budget_line_items():
+def _get_all_budget_line_items(campaigns):
     return core.bcm.BudgetLineItem.objects.filter(
-        campaign__real_time_campaign_stop=True
+        campaign__in=campaigns
     ).select_related('campaign')
 
 
@@ -35,14 +35,17 @@ def _get_campaign_budget_line_items(budget_line_items):
 
 def _get_campaign_available_amount(campaign_budget_line_items):
     campaign_available_amount = {}
+    date_to_digest = _get_date_to_digest()
     for campaign, budget_line_items in campaign_budget_line_items.iteritems():
-        if _in_critical_hours():
-            day_before_yesterday = dates_helper.days_before(dates_helper.local_today(), 2)
-            date_to_digest = day_before_yesterday
-        else:
-            date_to_digest = dates_helper.local_yesterday()
         campaign_available_amount[campaign] = sum(bli.get_available_amount(date=date_to_digest) for bli in budget_line_items)
     return campaign_available_amount
+
+
+def _get_date_to_digest():
+    if _in_critical_hours():
+        day_before_yesterday = dates_helper.days_before(dates_helper.local_today(), 2)
+        return day_before_yesterday
+    return dates_helper.local_yesterday()
 
 
 def _in_critical_hours():
@@ -65,7 +68,8 @@ def _calculate_campaign_spend(campaign):
 
 def _get_latest_real_time_data(campaign):
     return RealTimeDataHistory.objects.filter(
-        ad_group__campaign=campaign
+        ad_group__campaign=campaign,
+        date__gte=dates_helper.local_yesterday()
     ).distinct('ad_group', 'source', 'date').order_by('ad_group_id', 'source_id', '-date', '-created_dt')[:2]
 
 

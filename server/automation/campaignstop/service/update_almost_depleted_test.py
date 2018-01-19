@@ -46,7 +46,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
     def test_b1_source_type_gets_added_to_budget_if_adg_source_inactive(self, _):
-        self.source.source_type.type = dash.constants.Service.B1
+        self.source.source_type.type = dash.constants.SourceType.B1
         self.source.source_type.save()
         self.ad_group.settings.update(None, b1_sources_group_enabled=True)
         self.ad_group_source.settings.update(None, state=dash.constants.AdGroupSourceSettingsState.INACTIVE)
@@ -66,7 +66,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_morning_est_now)
     def test_day_before_yesterday_is_used_when_in_critical_hours(self, _):
-        self.source.source_type.type = dash.constants.Service.B1
+        self.source.source_type.type = dash.constants.SourceType.B1
         self.source.source_type.save()
         self.ad_group.settings.update(None, b1_sources_group_enabled=True)
         self.ad_group_source.settings.update(None, state=dash.constants.AdGroupSourceSettingsState.INACTIVE)
@@ -79,14 +79,14 @@ class UpdateAlmostDepletedTestCase(TestCase):
             date=today,
             etfm_spend=10.0,
         )
-        yesterday = dates_helper.local_today()
+        yesterday = dates_helper.local_yesterday()
         RealTimeDataHistory.objects.create(
             ad_group=self.ad_group,
             source=self.source,
             date=yesterday,
             etfm_spend=100.0,
         )
-        day_before_yesterday = dates_helper.local_today()
+        day_before_yesterday = dates_helper.days_before(yesterday, 1)
         RealTimeDataHistory.objects.create(
             ad_group=self.ad_group,
             source=self.source,
@@ -96,7 +96,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
 
         self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
         campaignstop.service.update_almost_depleted.mark_almost_depleted_campaigns()
-        self.assertTrue(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
+        self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
     def test_daily_budget_cc_and_etfm_spend_do_not_set_almost_depleted_to_true(self, _):
@@ -265,7 +265,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         today = dates_helper.local_today()
         source_type2 = magic_mixer.blend(
             core.source.source_type.SourceType,
-            type=dash.constants.Service.B1
+            type=dash.constants.SourceType.B1
         )
         source2 = magic_mixer.blend(core.source.Source, type=source_type2)
         ad_group2 = magic_mixer.blend(core.entity.AdGroup, campaign=self.campaign)
@@ -288,7 +288,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         yesterday = dates_helper.local_yesterday()
         source_type2 = magic_mixer.blend(
             core.source.source_type.SourceType,
-            type=dash.constants.Service.B1
+            type=dash.constants.SourceType.B1
         )
         source2 = magic_mixer.blend(core.source.Source, type=source_type2)
         ad_group2 = magic_mixer.blend(core.entity.AdGroup, campaign=self.campaign)

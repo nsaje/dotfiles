@@ -46,10 +46,11 @@ class CampaignStopState(models.Model):
         self.save()
 
     def __unicode__(self):
-        return u'{} (state: {}, almost_depleted: {})'.format(
+        return u'{} (state: {}, almost_depleted: {}, max_allowed_end_date: {})'.format(
             self.campaign,
             self.state,
-            self.almost_depleted
+            self.almost_depleted,
+            self.max_allowed_end_date
         )
 
     def __str__(self):
