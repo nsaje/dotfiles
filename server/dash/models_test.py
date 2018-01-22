@@ -339,6 +339,7 @@ class CampaignSettingsTest(TestCase):
             'target_os': None,
             'target_placements': None,
             'campaign_manager': User.objects.get(pk=1),
+            'language': 1,
             'promotion_goal': 1,
             'target_regions': [u'CA', u'501'],
             'exclusion_target_regions': ['US-NY'],

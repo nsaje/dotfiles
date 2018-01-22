@@ -35,6 +35,7 @@ class CampaignSettings(instance.CampaignSettingsMixin, SettingsBase):
     _settings_fields = [
         'name',
         'campaign_manager',
+        'language',
         'iab_category',
         'campaign_goal',
         'goal_quantity',
@@ -72,6 +73,10 @@ class CampaignSettings(instance.CampaignSettingsMixin, SettingsBase):
         null=True,
         related_name="+",
         on_delete=models.PROTECT
+    )
+    language = models.IntegerField(
+        default=constants.CampaignSettingsLanguage.ENGLISH,
+        choices=constants.CampaignSettingsLanguage.get_choices()
     )
     iab_category = models.SlugField(
         max_length=10,

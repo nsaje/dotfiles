@@ -150,6 +150,50 @@ class AccountType(ConstantBase):
     }
 
 
+class CampaignSettingsLanguage(ConstantBase):
+    ENGLISH = 1
+    GERMAN = 2
+    GREEK = 3
+    ARABIC = 4
+    SPANISH = 5
+    FRENCH = 6
+    INDONESIAN = 7
+    ITALIAN = 8
+    JAPANESE = 9
+    MALAY = 10
+    DUTCH = 11
+    PORTUGUESE = 12
+    ROMANIAN = 13
+    RUSSIAN = 14
+    SWEDISH = 15
+    TURKISH = 16
+    VIETNAMESE = 17
+    SIMPLIFIED_CHINESE = 18
+    TRADITIONAL_CHINESE = 19
+
+    _VALUES = {
+        ARABIC: 'Arabic',
+        GERMAN: 'German',
+        GREEK: 'Greek',
+        ENGLISH: 'English',
+        SPANISH: 'Spanish',
+        FRENCH: 'French',
+        INDONESIAN: 'Indonesian',
+        ITALIAN: 'Italian',
+        JAPANESE: 'Japanese',
+        MALAY: 'Malay',
+        DUTCH: 'Dutch',
+        PORTUGUESE: 'Portuguese',
+        ROMANIAN: 'Romanian',
+        RUSSIAN: 'Russian',
+        SWEDISH: 'Swedish',
+        TURKISH: 'Turkish',
+        VIETNAMESE: 'Vietnamese',
+        SIMPLIFIED_CHINESE: 'Simplified Chinese',
+        TRADITIONAL_CHINESE: 'Traditional Chinese',
+    }
+
+
 class Currency(ConstantBase):
     USD = 'USD'
     EUR = 'EUR'
