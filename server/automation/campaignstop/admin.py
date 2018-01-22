@@ -77,12 +77,24 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
 
     def _get_almost_depleted_budget_description(self, obj):
         desc = textwrap.dedent('''\
-            Min remaining budget: {min_remaining_budget}
-            Campaign budget: {campaign_budget}
-            Remaining_current_budget: {remaining_current_budget}''')
+            <div style="width: 280px"><pre>
+            <div>Min remaining budget: <span style="font-size:1.2em; float: right">{min_remaining_budget}</span></div>
+            <div>Campaign daily budget: <span style="font-size:1.2em; float: right">{campaign_daily_budget}</span></div>
+            <div>Remaining current budget: <span style="font-size:1.2em; float: right">{remaining_current_budget}</span></div>
+            </pre></div>
+            <hr>
+
+            <strong>Formula</strong>:
+            min remaining budget = remaining current budget - campaign daily budget
+
+            <strong>Description</strong>:
+            "Min remaining budget" tells us what would happen if we do not stop the spending today.
+            "Campaign daily budget" is campaign daily cap.
+            "Remaining current budget" is campaign\'s available amount.''')
+
         return desc.format(
             min_remaining_budget=obj.context['min_remaining_budget'],
-            campaign_budget=obj.context['campaign_budget'],
+            campaign_daily_budget=obj.context['campaign_daily_budget'],
             remaining_current_budget=obj.context['remaining_current_budget'],
         ).replace('\n', '<br />')
 

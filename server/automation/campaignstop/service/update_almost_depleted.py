@@ -83,10 +83,10 @@ def _get_adgroup_sources(campaign):
 
 
 @transaction.atomic
-def _update_campaign_budgets(campaign_budgets, campaign_available_amount):
-    for campaign, campaign_budget in campaign_budgets.iteritems():
+def _update_campaign_budgets(campaign_daily_budgets, campaign_available_amount):
+    for campaign, campaign_daily_budget in campaign_daily_budgets.iteritems():
         remaining_current_budget = campaign_available_amount.get(campaign, 0)
-        min_remaining_budget = remaining_current_budget - campaign_budget
+        min_remaining_budget = remaining_current_budget - campaign_daily_budget
         log = RealTimeCampaignStopLog(campaign=campaign, event=CampaignStopEvent.SELECTION_CHECK)
         is_almost_depleted = min_remaining_budget < 0
 
@@ -94,7 +94,7 @@ def _update_campaign_budgets(campaign_budgets, campaign_available_amount):
 
         log.add_context(
             {'min_remaining_budget': min_remaining_budget,
-             'campaign_budget': campaign_budget,
+             'campaign_daily_budget': campaign_daily_budget,
              'remaining_current_budget': remaining_current_budget,
              'is_almost_depleted': is_almost_depleted}
         )
