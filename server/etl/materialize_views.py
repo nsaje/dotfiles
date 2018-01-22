@@ -411,6 +411,7 @@ class MVHelpersNormalizedStats(Materialize):
             'date_ranges': params.pop('date_ranges'),
             'account_id': self.account_id,
             'yahoo_slug': yahoo.bidder_slug,
+            'valid_placement_mediums': dash.constants.PlacementMedium.get_all(),
         })
 
         return sql, self._add_ad_group_id_param(params)

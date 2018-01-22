@@ -48,8 +48,8 @@ class TemplateColumn(object):
 
     def column_equal_or_null(self, table1, table2):
         context = {
-            'first_table_column': self.only_column(table1),
-            'second_table_column': self.only_column(table2),
+            'first_table_column': self.only_alias(table1),
+            'second_table_column': self.only_alias(table2),
         }
         return helpers.generate_sql('column_equal_or_null.sql', context)
 

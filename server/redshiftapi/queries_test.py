@@ -332,7 +332,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
             temp_yesterday.yesterday_cost,
             temp_yesterday.yesterday_et_cost,
             temp_yesterday.yesterday_etfm_cost
-        FROM temp_base NATURAL LEFT JOIN temp_yesterday
+        FROM temp_base LEFT OUTER JOIN temp_yesterday ON
+            (temp_base.account_id = temp_yesterday.account_id OR temp_base.account_id IS NULL AND temp_yesterday.account_id IS NULL)
         ORDER BY total_seconds ASC NULLS LAST
         LIMIT 10
         OFFSET 5
@@ -393,7 +394,9 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
             temp_yesterday.yesterday_cost,
             temp_yesterday.yesterday_et_cost,
             temp_yesterday.yesterday_etfm_cost
-        FROM temp_base NATURAL LEFT JOIN temp_yesterday
+        FROM temp_base LEFT OUTER JOIN temp_yesterday ON
+            (temp_base.publisher = temp_yesterday.publisher OR temp_base.publisher IS NULL AND temp_yesterday.publisher IS NULL) AND
+            (temp_base.source_id = temp_yesterday.source_id OR temp_base.source_id IS NULL AND temp_yesterday.source_id IS NULL)
         ORDER BY total_seconds ASC NULLS LAST
         LIMIT 10
         OFFSET 5

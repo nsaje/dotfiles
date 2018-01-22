@@ -112,6 +112,7 @@ def query(breakdown, constraints, parents, goals, order=None, offset=None, limit
             if not is_reports:
                 rows = postprocess.fill_in_missing_rows(rows, breakdown, constraints, parents, orders, offset, limit)
         postprocess.set_default_values(breakdown, rows)
+        postprocess.remove_empty_rows_delivery_dimension(breakdown, rows)
 
         return rows
 
@@ -129,6 +130,7 @@ def query_stats_for_rows(rows, breakdown, constraints, goals, use_publishers_vie
             use_publishers_view=use_publishers_view, query_all=True, extra_name='rows')
 
     postprocess.set_default_values(breakdown, rows)
+    postprocess.remove_empty_rows_delivery_dimension(breakdown, rows)
     return rows
 
 

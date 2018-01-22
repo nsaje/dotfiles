@@ -9,6 +9,7 @@ import dash.models
 
 import stats.helpers
 from stats import constants
+from stats import fields
 
 
 """
@@ -110,6 +111,13 @@ def _get_representative_dates(time_dimension, constraints):
     return list(x.date() for x in dates)
 
 
+def _is_row_empty(row):
+    for key, value in row.items():
+        if key not in fields.DIMENSION_FIELDS and value:
+            return False
+    return True
+
+
 def set_default_values(breakdown, rows):
     remove_postclicks = constants.get_delivery_dimension(breakdown) is not None
 
@@ -124,6 +132,12 @@ def set_default_values(breakdown, rows):
             for key in POSTCLICK_FIELDS:
                 if key in row:
                     row[key] = None
+
+
+def remove_empty_rows_delivery_dimension(breakdown, rows):
+    if constants.get_target_dimension(breakdown) not in constants.DeliveryDimension._ALL:
+        return
+    rows[:] = [row for row in rows if not _is_row_empty(row)]
 
 
 def postprocess_joint_query_rows(rows):

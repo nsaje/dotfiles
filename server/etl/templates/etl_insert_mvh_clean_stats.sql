@@ -51,7 +51,18 @@ INSERT INTO mvh_clean_stats (
            WHEN NULLIF(TRIM(device_os_version), '') IS NOT NULL THEN 'Other'
            ELSE NULL
       END AS device_os_version,
-      NULLIF(TRIM(placement_medium), '') as placement_medium,
+
+      CASE WHEN placement_medium IN (
+               {% for placement_medium in valid_placement_mediums %}
+                   {% if forloop.last %}
+                       '{{ placement_medium }}'
+                   {% else %}
+                       '{{ placement_medium }}',
+                   {% endif %}
+               {% endfor %}
+           ) THEN placement_medium
+           ELSE NULL
+      END as placement_medium,
 
       NULLIF(placement_type, 0) as placement_type,
       NULLIF(video_playback_method, 0) as video_playback_method,

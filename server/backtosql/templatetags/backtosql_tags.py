@@ -65,4 +65,4 @@ def columns_equal_or_null(value, tables):
     if tables is None:
         return ""
     table1, table2 = [name.strip() for name in tables.split(",")]
-    return "AND ".join(x.column_equal_or_null(table1, table2) for x in value)
+    return " AND ".join(x.column_equal_or_null(table1, table2) for x in value)
