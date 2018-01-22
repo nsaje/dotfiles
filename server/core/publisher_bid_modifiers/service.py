@@ -19,7 +19,7 @@ def get(ad_group):
 
 @transaction.atomic
 def set(ad_group, publisher, source, modifier):
-    if not modifier or modifier == 1.0:
+    if not modifier:
         _delete(ad_group, source, publisher)
         return
 

@@ -79,12 +79,12 @@ class TestPublisherBidModifierService(TestCase):
 
         service.set(self.ad_group, 'testpub', self.source, 1.0)
 
-        count = PublisherBidModifier.objects.filter(
+        actual = PublisherBidModifier.objects.get(
             ad_group=self.ad_group,
             source=self.source,
             publisher='testpub'
-        ).count()
-        self.assertEqual(0, count)
+        ).modifier
+        self.assertEqual(1.0, actual)
 
     def test_set_invalid(self):
         self._create(0.5)
