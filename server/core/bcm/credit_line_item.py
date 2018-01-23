@@ -244,7 +244,7 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
             and (self.effective_amount() - self.get_allocated_amount()) > 0
 
     def is_agency(self):
-        return self.agency is not None
+        return self.agency_id is not None
 
     def clean(self):
         if self.account is not None and self.agency is not None:

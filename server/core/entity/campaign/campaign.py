@@ -132,11 +132,11 @@ class Campaign(models.Model, core.common.PermissionMixin, bcm_mixin.CampaignBCMM
         return self.settings
 
     def can_archive(self):
-        for ad_group in self.adgroup_set.all():
+        for ad_group in self.adgroup_set.all().select_related('settings'):
             if not ad_group.can_archive():
                 return False
 
-        for budget in self.budgets.all():
+        for budget in self.budgets.all().annotate_spend_data():
             if budget.state() in (constants.BudgetLineItemState.ACTIVE,
                                   constants.BudgetLineItemState.PENDING):
                 return False
