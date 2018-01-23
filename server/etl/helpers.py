@@ -1,6 +1,4 @@
 import datetime
-import boto
-import boto.s3
 
 from dateutil import rrule
 
@@ -110,27 +108,6 @@ def get_breakdown_key_for_postclickstats(source_id, content_ad_id):
     # this is a helper function just so that we don't mess up the order of these
 
     return (source_id, content_ad_id)
-
-
-def get_aws_credentials_string(aws_access_key_id, aws_secret_access_key):
-    return 'aws_access_key_id={key};aws_secret_access_key={secret}'.format(
-        key=aws_access_key_id,
-        secret=aws_secret_access_key,
-    )
-
-
-def get_aws_credentials_from_role():
-    s3_client = boto.s3.connect_to_region('us-east-1')
-
-    access_key = s3_client.aws_access_key_id
-    access_secret = s3_client.aws_secret_access_key
-
-    security_token_param = ''
-    if s3_client.provider.security_token:
-        security_token_param = ';token=%s' % s3_client.provider.security_token
-
-    return 'aws_access_key_id=%s;aws_secret_access_key=%s%s' % (
-        access_key, access_secret, security_token_param)
 
 
 def get_conversion_prefix(postclick_source, k):

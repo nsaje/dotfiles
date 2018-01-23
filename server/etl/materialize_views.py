@@ -171,12 +171,7 @@ def prepare_copy_csv_query(s3_path, table_name, format_csv=True, removequotes=Fa
 
 
 def _get_aws_credentials():
-    if settings.AWS_ACCESS_KEY_ID is not None and settings.AWS_ACCESS_KEY_ID != '':
-        return helpers.get_aws_credentials_string(
-            settings.AWS_ACCESS_KEY_ID,
-            settings.AWS_SECRET_ACCESS_KEY,
-        )
-    return helpers.get_aws_credentials_from_role()
+    return s3helpers.get_credentials_string()
 
 
 def prepare_daily_delete_query(table_name, date, account_id):

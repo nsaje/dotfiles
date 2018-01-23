@@ -10,8 +10,6 @@ MAX_MESSAGES_PER_BATCH = 10
 def _get_connection():
     return boto.sqs.connect_to_region(
         settings.SQS_REGION,
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
     )
 
 

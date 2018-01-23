@@ -138,10 +138,6 @@ RAVEN_CONFIG = {
     'dsn': '',
 }
 
-# Amazon AWS keys
-AWS_ACCESS_KEY_ID = ''
-AWS_SECRET_ACCESS_KEY = Secret('').get()
-
 # S3 related settings
 S3_BUCKET = ''
 S3_BUCKET_STATS = ''
@@ -197,10 +193,7 @@ IMAGE_THUMBNAIL_URL = 'https://images2.zemanta.com/'
 
 # QUEUES
 BROKER_TRANSPORT = 'memory'
-BROKER_USER = AWS_ACCESS_KEY_ID
-BROKER_PASSWORD = AWS_SECRET_ACCESS_KEY
-
-BROKER_URL = BROKER_TRANSPORT + '://' + BROKER_USER + ':' + BROKER_PASSWORD + '@'
+BROKER_URL = BROKER_TRANSPORT + '://'
 
 CELERY_TASK_SERIALIZER = 'pickle'
 CELERY_ACCEPT_CONTENT = ['pickle']

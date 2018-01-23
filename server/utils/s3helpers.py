@@ -21,14 +21,12 @@ class S3Helper(object):
     """
 
     def __init__(self, bucket_name=settings.S3_BUCKET):
-        if settings.USE_S3:
-            self.bucket = boto.connect_s3(
-                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
-            ).get_bucket(bucket_name)
+        self.use_s3 = settings.USE_S3 and not settings.TESTING
+        if self.use_s3:
+            self.bucket = boto.connect_s3().get_bucket(bucket_name)
 
     def get(self, key):
-        if settings.USE_S3:
+        if self.use_s3:
             k = Key(self.bucket)
             k.key = key
             return k.get_contents_as_string()
@@ -64,8 +62,20 @@ class S3Helper(object):
         f.seek(0)
         return f
 
+    def move(self, frm, to):
+        if self.use_s3:
+            k = self.bucket.new_key(frm)
+            k.copy(self.bucket, to)
+            k.delete()
+
+        elif settings.FILE_STORAGE_DIR:
+            os.rename(self._local_file_name(frm), self._local_file_name(to))
+
+    def _local_file_name(self, key):
+        return os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(key))
+
     def put(self, key, contents, human_readable_filename=None):
-        if settings.USE_S3:
+        if self.use_s3:
             k = self.bucket.new_key(key)
 
             if human_readable_filename:
@@ -74,11 +84,11 @@ class S3Helper(object):
             k.set_contents_from_string(contents)
 
         elif settings.FILE_STORAGE_DIR:
-            with open(os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(key)), 'w+') as f:
+            with open(self._local_file_name(key), 'w+') as f:
                 f.write(contents)
 
     def put_file(self, key, source, human_readable_filename=None):
-        if settings.USE_S3:
+        if self.use_s3:
             k = self.bucket.new_key(key)
 
             if human_readable_filename:
@@ -87,11 +97,11 @@ class S3Helper(object):
             k.set_contents_from_file(source)
 
         elif settings.FILE_STORAGE_DIR:
-            with open(os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(key)), 'w+') as f:
+            with open(self._local_file_name(key), 'w+') as f:
                 _copy_file(source, f)
 
     def put_multipart(self, key, human_readable_filename=None):
-        if settings.USE_S3:
+        if self.use_s3:
             metadata = {}
             if human_readable_filename:
                 metadata['Content-Disposition'] = 'attachment; filename={}'.format(human_readable_filename)
@@ -101,7 +111,7 @@ class S3Helper(object):
             return FakeMultiPartUpload(key)
 
     def list(self, prefix):
-        if settings.USE_S3:
+        if self.use_s3:
             return self.bucket.list(prefix=prefix)
         elif settings.FILE_STORAGE_DIR:
             try:
@@ -111,7 +121,7 @@ class S3Helper(object):
         return []
 
     def list_manifest(self, manifest_path):
-        if settings.USE_S3:
+        if self.use_s3:
             manifest = json.loads(self.get(manifest_path))
             for entry in manifest['entries']:
                 yield entry['url'].lstrip('s3://%s/' % self.bucket.name)
@@ -157,3 +167,22 @@ def generate_safe_filename(filename, content):
     digest = hashlib.md5(content).hexdigest() + str(len(content))
 
     return basefnm + '_' + digest + extension
+
+
+def get_credentials_string():
+    if settings.TESTING:
+        return 'aws_access_key_id=bar;aws_secret_access_key=foo'
+    if not settings.USE_S3:
+        return ''
+
+    s3_client = boto.s3.connect_to_region('us-east-1')
+
+    access_key = s3_client.aws_access_key_id
+    access_secret = s3_client.aws_secret_access_key
+
+    security_token_param = ''
+    if s3_client.provider.security_token:
+        security_token_param = ';token=%s' % s3_client.provider.security_token
+
+    return 'aws_access_key_id=%s;aws_secret_access_key=%s%s' % (
+        access_key, access_secret, security_token_param)

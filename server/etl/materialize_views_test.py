@@ -26,7 +26,7 @@ PostclickstatsResults = collections.namedtuple('Result2',
 class MVHSourceTest(TestCase, backtosql.TestSQLMixin):
     fixtures = ['test_materialize_views']
 
-    @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
+    @override_settings(S3_BUCKET_STATS='test_bucket')
     def test_generate(self, mock_s3helper, mock_transaction, mock_cursor):
         mv = materialize_views.MVHelpersSource('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
 
@@ -69,7 +69,7 @@ class MVHSourceTest(TestCase, backtosql.TestSQLMixin):
 class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
     fixtures = ['test_materialize_views']
 
-    @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
+    @override_settings(S3_BUCKET_STATS='test_bucket')
     def test_generate(self, mock_s3helper, mock_transaction, mock_cursor):
         mv = materialize_views.MVHelpersCampaignFactors('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 2), account_id=None)
 
@@ -118,7 +118,7 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
             })
         ])
 
-    @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
+    @override_settings(S3_BUCKET_STATS='test_bucket')
     def test_generate_checks_range_continuation(self, mock_s3helper, mock_transaction, mock_cursor):
         mv = materialize_views.MVHelpersCampaignFactors('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
 
@@ -135,7 +135,7 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
                 },
             })
 
-    @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
+    @override_settings(S3_BUCKET_STATS='test_bucket')
     def test_generate_account_id(self, mock_s3helper, mock_transaction, mock_cursor):
         mv = materialize_views.MVHelpersCampaignFactors(
             'asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 2), account_id=1)
@@ -187,7 +187,7 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
 class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
     fixtures = ['test_materialize_views']
 
-    @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
+    @override_settings(S3_BUCKET_STATS='test_bucket')
     def test_generate(self, mock_s3helper, mock_transaction, mock_cursor):
         mv = materialize_views.MVHelpersAdGroupStructure('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
 
@@ -225,7 +225,7 @@ class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
             })
         ])
 
-    @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
+    @override_settings(S3_BUCKET_STATS='test_bucket')
     def test_generate_account_id(self, mock_s3helper, mock_transaction, mock_cursor):
         mv = materialize_views.MVHelpersAdGroupStructure(
             'asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=1)
@@ -312,7 +312,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
 
     fixtures = ['test_materialize_views']
 
-    @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
+    @override_settings(S3_BUCKET_STATS='test_bucket')
     @mock.patch('redshiftapi.db.get_write_stats_cursor')
     @mock.patch('redshiftapi.db.get_write_stats_transaction')
     @mock.patch('utils.s3helpers.S3Helper')
@@ -525,7 +525,7 @@ class MasterViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
 
     fixtures = ['test_materialize_views']
 
-    @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
+    @override_settings(S3_BUCKET_STATS='test_bucket')
     @mock.patch('redshiftapi.db.get_write_stats_cursor')
     @mock.patch('redshiftapi.db.get_write_stats_transaction')
     @mock.patch('utils.s3helpers.S3Helper')
@@ -637,7 +637,7 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
 
     fixtures = ['test_materialize_views']
 
-    @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
+    @override_settings(S3_BUCKET_STATS='test_bucket')
     @mock.patch('redshiftapi.db.get_write_stats_cursor')
     @mock.patch('redshiftapi.db.get_write_stats_transaction')
     @mock.patch('utils.s3helpers.S3Helper')
@@ -750,7 +750,7 @@ class MVConversionsTestAccountId(TestCase, backtosql.TestSQLMixin):
 
     fixtures = ['test_materialize_views']
 
-    @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
+    @override_settings(S3_BUCKET_STATS='test_bucket')
     @mock.patch('redshiftapi.db.get_write_stats_cursor')
     @mock.patch('redshiftapi.db.get_write_stats_transaction')
     @mock.patch('utils.s3helpers.S3Helper')
@@ -1043,7 +1043,7 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
 
 class ReplicasTest(TestCase, backtosql.TestSQLMixin):
 
-    @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
+    @override_settings(S3_BUCKET_STATS='test_bucket')
     def test_prepare_unload_query(self):
         from_date = datetime.date(2016, 5, 1)
         to_date = datetime.date(2016, 5, 3)
@@ -1072,7 +1072,7 @@ class ReplicasTest(TestCase, backtosql.TestSQLMixin):
             }
         )
 
-    @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
+    @override_settings(S3_BUCKET_STATS='test_bucket')
     def test_prepare_unload_query_account(self):
         from_date = datetime.date(2016, 5, 1)
         to_date = datetime.date(2016, 5, 3)
