@@ -56,3 +56,31 @@
         background-image: url('images/remove-red.svg');
     }
 }
+
+///////////////////////////
+// RESPONSIVE //
+///////////////////////////
+
+@media only screen and (max-width: @tablet-breakpoint) {
+    .zem-categorized-tags-list {
+        display: block;
+        margin-top: @default-spacing;
+        border-top: 1px solid darken(@light-gray, 10%);
+    }
+
+    .zem-categorized-tags-list__category-container {
+        padding-top: @default-spacing;
+        width: auto;
+    }
+
+    .zem-categorized-tags-list__category-container,
+    .zem-categorized-tags-list__empty-text-container {
+        margin-left: 0;
+        padding-left: 0;
+        border-left: none;
+    }
+
+    .zem-categorized-tags-list__empty-text-container {
+        padding-top: @default-spacing;
+    }
+}

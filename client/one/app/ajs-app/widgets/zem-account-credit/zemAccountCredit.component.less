@@ -43,3 +43,32 @@
         font-size: 18px;
     }
 }
+
+///////////////////////////
+// RESPONSIVE - Budget //
+///////////////////////////
+
+@media only screen and (max-width: @tablet-breakpoint) {
+    .zem-account-credit__credit-overview {
+        display: block;
+    }
+
+    .zem-account-credit__credit-overview-box {
+        display: block;
+        text-align: left;
+        border-right: none;
+        width: 100%;
+    }
+
+    .zem-account-credit__credit-overview-name::after {
+        content: ":";
+    }
+
+    .zem-account-credit__credit-overview-value {
+        display: inline;
+    }
+
+    .zem-account-credit__credit-overview-box--exposed {
+        margin-top: 5px;
+    }
+}

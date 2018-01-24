@@ -15,7 +15,7 @@
                 <div class="content-upload__field-additional-info content-upload__change-status" ng-class="{
                      'content-upload__change-status--loading': ctrl.fieldsLoading.url,
                      'content-upload__change-status--successful': ctrl.fieldsSaved.url && !ctrl.fieldsHaveErrors('url')}">
-                    {{ ctrl.selectedCandidate.url.length }}/{{ ctrl.MAX_URL_LENGTH }}
+                    <span class="content-upload__count-characters">{{ ctrl.selectedCandidate.url.length }}/{{ ctrl.MAX_URL_LENGTH }}</span>
                 </div>
                 <div class="message message--error" for="url-input" ng-if="ctrl.fieldsApiErrors['url']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'url')">Try again</a></div>
                 <div class="message message--error" for="url-input" ng-repeat="error in ctrl.selectedCandidate.errors.url">{{ error }}</div>
@@ -30,7 +30,7 @@
                 <div class="content-upload__field-additional-info content-upload__change-status" ng-class="{
                      'content-upload__change-status--loading': ctrl.fieldsLoading.title,
                      'content-upload__change-status--successful': ctrl.fieldsSaved.title && !ctrl.fieldsHaveErrors('title')}">
-                    {{ ctrl.selectedCandidate.title.length }}/{{ ctrl.MAX_TITLE_LENGTH }}
+                    <span class="content-upload__count-characters">{{ ctrl.selectedCandidate.title.length }}/{{ ctrl.MAX_TITLE_LENGTH }}</span>
                 </div>
                 <div class="message message--error" for="title-input" ng-if="ctrl.fieldsApiErrors['title']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'title')" tabindex="-1">Try again</a></div>
                 <div class="message message--error" for="title-input" ng-repeat="error in ctrl.selectedCandidate.errors.title">{{ error }}</div>
@@ -132,7 +132,7 @@
                 <div class="content-upload__field-additional-info content-upload__field-additional-info--with-link content-upload__change-status" ng-class="{
                      'content-upload__change-status--loading': ctrl.fieldsLoading.description,
                      'content-upload__change-status--successful': ctrl.fieldsSaved.description && !ctrl.fieldsHaveErrors('description')}">
-                    {{ ctrl.selectedCandidate.description.length }}/{{ ctrl.MAX_DESCRIPTION_LENGTH }}<br>
+                    <span class="content-upload__count-characters">{{ ctrl.selectedCandidate.description.length }}/{{ ctrl.MAX_DESCRIPTION_LENGTH }}</span>
                     <a href class="alternative-link" ng-click="ctrl.updateField(ctrl.selectedCandidate, 'description', true)" tabindex="-1" ng-if="!ctrl.isEdit">
                         Use as default
                     </a>
@@ -151,7 +151,7 @@
                 <div class="content-upload__field-additional-info content-upload__field-additional-info--with-link content-upload__change-status" ng-class="{
                      'content-upload__change-status--loading': ctrl.fieldsLoading.displayUrl,
                      'content-upload__change-status--successful': ctrl.fieldsSaved.displayUrl && !ctrl.fieldsHaveErrors('displayUrl')}">
-                    {{ ctrl.selectedCandidate.displayUrl.length }}/{{ ctrl.MAX_DISPLAY_URL_LENGTH }}<br>
+                    <span class="content-upload__count-characters">{{ ctrl.selectedCandidate.displayUrl.length }}/{{ ctrl.MAX_DISPLAY_URL_LENGTH }}</span>
                     <a href class="alternative-link" ng-click="ctrl.updateField(ctrl.selectedCandidate, 'displayUrl', true)" tabindex="-1" ng-if="!ctrl.isEdit">
                         Use as default
                     </a>
@@ -170,7 +170,7 @@
                 <div class="content-upload__field-additional-info content-upload__field-additional-info--with-link content-upload__change-status" ng-class="{
                      'content-upload__change-status--loading': ctrl.fieldsLoading.brandName,
                      'content-upload__change-status--successful': ctrl.fieldsSaved.brandName && !ctrl.fieldsHaveErrors('brandName')}">
-                    {{ ctrl.selectedCandidate.brandName.length }}/{{ ctrl.MAX_BRAND_NAME_LENGTH }}<br>
+                    <span class="content-upload__count-characters">{{ ctrl.selectedCandidate.brandName.length }}/{{ ctrl.MAX_BRAND_NAME_LENGTH }}</span>
                     <a href class="alternative-link" ng-click="ctrl.updateField(ctrl.selectedCandidate, 'brandName', true)" tabindex="-1" ng-if="!ctrl.isEdit">
                         Use as default
                     </a>
@@ -190,7 +190,7 @@
                 <div class="content-upload__field-additional-info content-upload__field-additional-info--with-link content-upload__change-status content-upload__change-status--dropdown-on-the-left" ng-class="{
                      'content-upload__change-status--loading': ctrl.fieldsLoading.callToAction,
                      'content-upload__change-status--successful': ctrl.fieldsSaved.callToAction && !ctrl.fieldsHaveErrors('callToAction')}">
-                    {{ ctrl.selectedCandidate.callToAction.length }}/{{ ctrl.MAX_CALL_TO_ACTION_LENGTH }}<br>
+                    <span class="content-upload__count-characters">{{ ctrl.selectedCandidate.callToAction.length }}/{{ ctrl.MAX_CALL_TO_ACTION_LENGTH }}</span>
                     <a href class="alternative-link" ng-click="ctrl.updateField(ctrl.selectedCandidate, 'callToAction', true)" tabindex="-1" ng-if="!ctrl.isEdit">
                         Use as default
                     </a>
@@ -210,7 +210,7 @@
                 <div class="content-upload__field-additional-info content-upload__change-status" ng-class="{
                      'content-upload__change-status--loading': ctrl.fieldsLoading.label,
                      'content-upload__change-status--successful': ctrl.fieldsSaved.label && !ctrl.fieldsHaveErrors('label')}">
-                    {{ ctrl.selectedCandidate.label.length }}/{{ ctrl.MAX_LABEL_LENGTH }}
+                    <span class="content-upload__count-characters">{{ ctrl.selectedCandidate.label.length }}/{{ ctrl.MAX_LABEL_LENGTH }}</span>
                 </div>
                 <div class="form__text--small">Label is an internal field and is not part of the ad placement.</div>
                 <div class="message message--error" for="label-input" ng-if="ctrl.fieldsApiErrors['label']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'label')" tabindex="-1">Try again</a></div>

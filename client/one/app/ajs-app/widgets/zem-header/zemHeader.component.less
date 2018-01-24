@@ -350,6 +350,48 @@
     transition: all @default-animation;
 }
 
+.zem-header-date-range-picker-dropdown {
+    &.dropdown-menu {
+        z-index: 9999;
+        margin-top: 10px;
+        overflow: hidden;
+        border: none !important;
+        opacity: 0;
+        visibility: hidden;
+        display: block !important;
+        border-radius: 0;
+        .border-bottom-radius (@border-radius);
+        box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
+        transition: opacity @default-animation;
+
+        &.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .ranges:before {
+            background: linear-gradient(to bottom, fade(black,20%), fade(black,0%));
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            content: "";
+            display: block;
+        }
+
+        .calendar {
+            .daterangepicker_input {
+                display: none;
+            }
+        }
+    }
+}
+
+///////////////////////////
+// RESPONSIVE //
+///////////////////////////
+
 @media only screen and (max-width: 1210px) {
     .zem-header-filter-selector-toggle {
         .button {
@@ -414,7 +456,7 @@
     .zem-header-breadcrumb__link { max-width: 314px; }
 }
 
-@media only screen and (min-width: @min-app-width) {
+@media only screen and (min-width: ((@desktop-breakpoint)+1)) {
     .fixed-header {
         .zem-header {
             height: @header-height-minimized;
@@ -551,19 +593,6 @@
     }
 }
 
-@media only screen and (max-width: ((@min-app-width)-1)) {
-    .zem-header {
-        position: relative;
-        width: auto;
-    }
-}
-
-@media only screen and (min-width: @min-app-width) and (max-width: 1210px) {
-    .fixed-header .zem-header .zem-header-filter-selector-toggle .button--with-icon {
-        padding-left: 26px;
-    }
-}
-
 @media only screen and (max-width: 1180px) {
     .zem-header-date-range-picker .button--with-input .button__input-field {
         font-size: 0;
@@ -573,40 +602,190 @@
     }
 }
 
-.zem-header-date-range-picker-dropdown {
-    &.dropdown-menu {
-        z-index: 9999;
-        margin-top: 10px;
-        overflow: hidden;
-        border: none !important;
-        opacity: 0;
-        visibility: hidden;
-        display: block !important;
-        border-radius: 0;
-        .border-bottom-radius (@border-radius);
-        box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
-        transition: opacity @default-animation;
+@media only screen and (max-width: @desktop-breakpoint) {
+    .zem-header {
+        position: relative;
+        width: auto;
+        height: @header-height-small-screen;
 
-        &.open {
-            opacity: 1;
-            visibility: visible;
+        .button {
+            background-color: transparent;
+            margin: 0;
+            transition: all @default-animation;
+            border-radius: 0px;
+            border-left: 1px solid fade(white, 20%);
+
+            &:not(.button--disabled):not([disabled]):hover {
+                background-color: fade(white, 10%);
+                color: white;
+                border-left: 1px solid fade(white, 20%);
+            }
         }
 
-        .ranges:before {
-            background: linear-gradient(to bottom, fade(black,20%), fade(black,0%));
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 6px;
-            content: "";
-            display: block;
-        }
-
-        .calendar {
-            .daterangepicker_input {
+        .button--dropdown-toggle-icon {
+            &::after {
                 display: none;
             }
+        }
+
+        .button--zem-header-filter-active {
+            height: @header-height-small-screen;
+        }
+    }
+
+    .zem-header__logo-container {
+        height: @header-height-small-screen;
+        padding: 6px 20px;
+        background-size: 16px;
+        width: 160px;
+    }
+
+    .zem-header__logo {
+        height: @header-height-small-screen - 12;
+    }
+
+    .zem-header-navigation {
+        .dropdown {
+            position: static;
+        }
+    }
+
+    .zem-header__dropdown-menu--navigation {
+        width: 100%;
+        margin-top: 0;
+    }
+
+    .zem-header-date-range-picker {
+        margin: 0;
+
+        .button--with-input .button__input-field {
+            padding-right: 0;
+        }
+    }
+
+    .zem-header-date-range-picker-dropdown.dropdown-menu,
+    .zem-header__dropdown-menu--header-menu {
+        margin-top: 0;
+    }
+
+    .zem-header-filter-selector-toggle {
+        margin: 0;
+    }
+
+    .zem-header__dropdown-button {
+        padding: 10px;
+        margin: 0;
+    }
+
+    .zem-header-breadcrumb {
+        position: absolute;
+        left: @default-spacing;
+        top: @header-height-small-screen;
+        right: @default-spacing;
+        margin: 10px 0;
+        height: 26px;
+        float: none;
+        white-space: nowrap;
+        overflow-x: scroll;
+    }
+
+    .zem-header-breadcrumb__item {
+        height: 16px;
+        float: none;
+        display: inline;
+    }
+
+    .zem-header-breadcrumb__item--with-slash {
+        &::before {
+            top: 2px;
+            height: 12px;
+            background-color: @gray;
+        }
+    }
+
+    .zem-header-breadcrumb__link {
+        padding: 0;
+        color: @gray;
+        max-width: inherit;
+        display: inline;
+
+        &:hover {
+            color: @text-color;
+            background-color: transparent;
+        }
+    }
+
+    .zem-header-breadcrumb__type-name {
+        display: none;
+    }
+}
+
+@media only screen and (max-width: @mobile-breakpoint) {
+    .zem-header {
+        .button--with-icon {
+            padding-left: 36px;
+            padding-right: 0;
+
+            &:before {
+                left: 10px;
+                top: 12px;
+                width: 16px;
+                height: 16px;
+                background-size: 16px;
+            }
+        }
+
+        .button--dropdown-toggle-icon {
+            &::after {
+                display: none;
+            }
+        }
+    }
+
+    .zem-header-date-range-picker {
+        .button--with-input {
+            padding-left: 0;
+
+            .button__input-field {
+                padding-left: 36px;
+            }
+        }
+    }
+
+    .zem-header__logo-container {
+        height: @header-height-small-screen;
+        padding: 6px 20px;
+        background-size: 16px;
+        width: 160px;
+    }
+
+    .zem-header__logo {
+        height: @header-height-small-screen - 12;
+    }
+
+    .zem-header__dropdown-button-icon {
+        width: 16px;
+    }
+
+    .zem-header__dropdown-button-icon--bigger {
+        width: 20px;
+    }
+
+    .zem-header-navigation {
+        .zem-header__dropdown-button {
+            float: none;
+            position: absolute;
+            right: 114px;
+        }
+
+        &.zem-header-navigation--without-filer-and-date {
+            .zem-header__dropdown-button {
+                right: 41px;
+            }
+        }
+
+        .zem-header__dropdown-button--right-border {
+            border-right: none;
         }
     }
 }

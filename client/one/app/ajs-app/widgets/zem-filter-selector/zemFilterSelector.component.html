@@ -13,7 +13,7 @@
     <button ng-click="$ctrl.scrollAppliedConditionsList('right')" ng-show="$ctrl.isListElementOverflowing" class="applied-conditions__arrow applied-conditions__arrow--right"></button>
     <button ng-click="$ctrl.clearFilter()" class="applied-conditions__clear-filter button button--dark-backgrounds button--with-icon remove-icon">Clear filter</button>
 </div>
-<div ng-show="$ctrl.isExpanded()" class="filter-sections clearfix" ng-class="$ctrl.getVisibleSectionsClasses()">
+<div ng-show="$ctrl.isExpanded()" class="filter-sections custom-scroller clearfix" ng-class="$ctrl.getVisibleSectionsClasses()">
     <div ng-repeat="section in $ctrl.visibleSections" is-internal="{{section.permissions[0]}}" class="filter-sections__section filter-sections__section--{{section.cssClass}}">
         <div class="filter-sections__section-title">
             {{section.title}}

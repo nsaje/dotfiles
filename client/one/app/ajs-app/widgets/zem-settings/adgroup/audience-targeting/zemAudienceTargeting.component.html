@@ -3,7 +3,7 @@
 
     <div class="form__title" is-internal="zemauth.can_target_custom_audiences">Audience targeting</div>
     <div class="form__text m-b">Target people you have seen previously. Audience targeting can be based on pixels you placed or on clicks to other ad groups.</div>
-    <div class="message message--info message--with-icon m-t"
+    <div class="message message--warning message--with-icon m-t"
          ng-if="$ctrl.entity.warnings.retargeting">
         {{ $ctrl.getTargetingWarningMessage() }}
     </div>

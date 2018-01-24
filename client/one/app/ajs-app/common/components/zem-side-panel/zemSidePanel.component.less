@@ -77,3 +77,26 @@
         background-image: url('images/arrow-gray.svg');
     }
 }
+
+///////////////////////////
+// RESPONSIVE //
+///////////////////////////
+
+@media only screen and (max-width: @desktop-breakpoint) {
+    .zem-side-panel__drawer {
+        width: 95%;
+        min-width: 0;
+    }
+}
+
+@media only screen and (max-width: @tablet-breakpoint) {
+    .zem-side-panel__drawer {
+        width: 94%;
+    }
+}
+
+@media only screen and (max-width: @mobile-breakpoint) {
+    .zem-side-panel__drawer {
+        width: 90%;
+    }
+}

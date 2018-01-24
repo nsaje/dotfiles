@@ -137,7 +137,8 @@ hr {
 .select2-results,
 .ui-select-choices,
 .media-source-control-row select,
-.textarea {
+.textarea,
+.modal .modal__body {
     &::-webkit-scrollbar {
         width: 16px;
     }
@@ -159,5 +160,43 @@ hr {
 
     &::-webkit-scrollbar-corner {
         background-color: transparent;
+    }
+}
+
+.custom-scroller--horizontal,
+.custom-table__mobile-container {
+    &::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border: 2px solid rgba(0, 0, 0, 0);
+        background-clip: padding-box;
+        min-width: 30px;
+        -webkit-border-radius: 3px;
+        background-color: rgba(0, 0, 0, 0.05);
+        -webkit-box-shadow: inset -1px -1px 0 rgba(0, 0, 0, 0.05), inset 1px 1px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    &::-webkit-scrollbar-button {
+        width: 0;
+        height: 0;
+        display: none;
+    }
+
+    &::-webkit-scrollbar-corner {
+        background-color: transparent;
+    }
+}
+
+.custom-table__mobile-container {
+    &::-webkit-scrollbar {
+        height: 16px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border: 4px solid rgba(0, 0, 0, 0);
+        -webkit-border-radius: 7px;
+        background-color: rgba(0, 0, 0, 0.15);
     }
 }

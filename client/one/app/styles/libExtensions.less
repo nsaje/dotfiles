@@ -1,7 +1,7 @@
 @import 'variables';
 
 ///////////////////////////
-// Dropdowns //
+// Select Dropdowns //
 ///////////////////////////
 
 .button {
@@ -37,12 +37,6 @@
         &.button--with-icon {
             .select2-choice {
                 padding-left: 33px;
-            }
-
-            &.button--small {
-                .select2-choice {
-                    padding-left: 28px;
-                }
             }
         }
 
@@ -131,10 +125,21 @@
 
         input {
             width: 100% !important;
-            background: url('images/magnifier-gray.svg') no-repeat 7px center;
-            background-size: 16px;
+            background: white url('images/magnifier-gray.svg') no-repeat 7px center !important;
+            background-size: 16px !important;
             box-sizing: border-box;
-            padding-left: 30px;
+            border: 1px solid @input-border-color;
+            height: @default-button-input-height;
+            line-height: 18px;
+            padding: 5px 10px 5px 30px;
+            border-radius: @border-radius;
+            box-shadow: inset 3px 3px 3px 0px rgba(0,0,0,0.05);
+
+            &:focus {
+                border: 1px solid darken(@input-border-color, 20%);
+                outline: none;
+                box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.2);
+            }
         }
     }
 }
@@ -319,6 +324,61 @@
                 top: 10px;
                 display: inline-block;
             }
+        }
+    }
+}
+
+///////////////////////////
+// RESPONSIVE - Select Dropdowns //
+///////////////////////////
+
+@media only screen and (max-width: @tablet-breakpoint) {
+    .select2-mobile-fullscreen-dropdown.select2-dropdown-open {
+        .select2-drop,
+        .select2-drop.select2-drop-above {
+            border: 1px solid @border-color;
+            box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1) !important;
+            border-radius: @border-radius !important;
+            outline: none;
+            width: 80%;
+            height: 80%;
+            left: 10%;
+            top: 10% !important;
+            transform: translateX(-3%);
+            position: fixed !important;
+            padding: 10px;
+
+            .select2-results {
+                max-height: none;
+                position: absolute;
+                .position-properties(52px,10px,10px,10px);
+            }
+        }
+
+        &::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            background-color: fade(black,80%);
+            width: 120%;
+            height: 100%;
+            .position-properties(0,0,0,-20%);
+            z-index: 9998;
+        }
+
+        &::after {
+            content: " ";
+            display: block;
+            clear: both;
+            position: fixed;
+            background-image: url('images/remove-white.svg');
+            width: 24px;
+            height: 24px;
+            background-size: 24px;
+            top: 20px;
+            right: 10px;
+            z-index: 9999;
+            cursor: pointer;
         }
     }
 }
@@ -726,6 +786,49 @@ tags-input .host .tags {
                     }
                 }
             }
+        }
+    }
+}
+
+///////////////////////////
+// RESPONSIVE - Datepicker //
+///////////////////////////
+
+@media only screen and (max-width: @tablet-breakpoint) {
+    .calendar-is-open {
+        .uib-datepicker-popup {
+            z-index: 9999;
+            margin: 0;
+            position: fixed;
+            left: 50% !important;
+            top: 50% !important;
+            transform: translate(-53%,-50%);
+        }
+
+        &::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            background-color: fade(black,80%);
+            width: 120%;
+            height: 100%;
+            .position-properties(0,0,0,-20%);
+            z-index: 9998;
+        }
+
+        &::after {
+            content: " ";
+            display: block;
+            clear: both;
+            position: fixed;
+            background-image: url('images/remove-white.svg');
+            width: 24px;
+            height: 24px;
+            background-size: 24px;
+            top: 10px;
+            right: 10px;
+            z-index: 9999;
+            cursor: pointer;
         }
     }
 }

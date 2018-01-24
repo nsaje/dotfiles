@@ -314,3 +314,58 @@ input[type="text"]:focus, input[type="password"]:focus {
 .newscorp .color-overlay {
     background-color: rgba(4, 7, 7, 0.8);
 }
+
+/* RESPONSIVE */
+
+@media only screen and (max-width: 1024px) {
+    .container {
+        width: 100%;
+        max-width: 500px;
+        margin: 40px auto;
+    }
+
+    .container__left {
+        width: auto;
+        margin: 0 auto;
+        padding: 40px;
+        display: block;
+    }
+    
+    .container__left--logo-on-top {
+        height: 60px;
+        padding: 40px;
+    }
+
+    .container__right {
+        display: block;
+        width: auto;
+    }
+}
+
+@media only screen and (max-width: 640px) {
+    .page {
+        padding: 20px;
+    }
+
+    .container {
+        margin: 0 auto;
+        width: auto;
+    }
+
+    .container__left {
+        padding: 40px 20px 20px 20px;
+    }
+
+    .container__left--logo-on-top {
+        padding: 30px 20px 20px 20px;
+    }
+    
+    .container__right {
+        padding: 20px;
+    }
+
+    .container__right h2 {
+        font-size: 26px;
+        line-height: 30px;
+    }
+}

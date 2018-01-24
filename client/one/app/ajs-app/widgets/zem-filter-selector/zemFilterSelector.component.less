@@ -181,6 +181,7 @@
     .filter-sections__select-all-toggle {
         float: right;
         font-size: @default-font-size;
+        font-weight: 400;
     }
 
     .filter-sections__select-all-toggle--select-none {
@@ -327,17 +328,6 @@
                 @default-spacing;
     }
 
-    .zem-tabset {
-        top:    @filter-sections_border-width +
-                @filter-sections_padding-top +
-                @filter-sections__section_vertical-padding*2 +
-                @filter-sections__section-title_margin-bottom +
-                @filter-sections__section-title_font-size +
-                @filter-sections__section-options-container_max-height +
-                @default-spacing +
-                @header-height;
-    }
-
     .zem-container {
         padding-top: @filter-sections_border-width +
                     @filter-sections_padding-top +
@@ -371,11 +361,6 @@
         height: @applied-conditions_height;
     }
 
-    .zem-tabset {
-        top:    @applied-conditions_height +
-                @header-height;
-    }
-
     .zem-container {
         padding-top: @applied-conditions_height +
                     @header-height +
@@ -406,18 +391,6 @@
                 @filter-sections__section-options-container_max-height +
                 @default-spacing +
                 @applied-conditions_height;
-    }
-
-    .zem-tabset {
-        top:    @filter-sections_border-width +
-                @filter-sections_padding-top +
-                @filter-sections__section_vertical-padding*2 +
-                @filter-sections__section-title_margin-bottom +
-                @filter-sections__section-title_font-size +
-                @filter-sections__section-options-container_max-height +
-                @default-spacing +
-                @applied-conditions_height +
-                @header-height;
     }
 
     .zem-container {
@@ -457,11 +430,6 @@
 
     &.data-filter-enabled,
     &.data-filter-enabled .no-tabset {
-        .zem-tabset {
-            top:    @header-height-minimized +
-                    @applied-conditions_height;
-        }
-
         &.zem-container {
             padding-top: @header-height +
                         @applied-conditions_height +
@@ -470,17 +438,6 @@
     }
 
     &.filter-selector-expanded {
-        .zem-tabset {
-            top:    @filter-sections_border-width +
-                    @filter-sections_padding-top +
-                    @filter-sections__section_vertical-padding*2 +
-                    @filter-sections__section-title_margin-bottom +
-                    @filter-sections__section-title_font-size +
-                    @filter-sections__section-options-container_max-height +
-                    @default-spacing +
-                    @header-height-minimized;
-        }
-
         .zem-container.no-tabset {
             padding-top: @header-height +
                         @default-spacing*1.5;
@@ -488,18 +445,6 @@
     }
 
     &.data-filter-enabled.filter-selector-expanded {
-        .zem-tabset {
-            top:    @filter-sections_border-width +
-                    @filter-sections_padding-top +
-                    @filter-sections__section_vertical-padding*2 +
-                    @filter-sections__section-title_margin-bottom +
-                    @filter-sections__section-title_font-size +
-                    @filter-sections__section-options-container_max-height +
-                    @default-spacing +
-                    @header-height-minimized +
-                    @applied-conditions_height;
-        }
-
         .zem-container.no-tabset {
             padding-top: @header-height +
                         @applied-conditions_height +
@@ -508,14 +453,185 @@
     }
 }
 
+///////////////////////////
+// RESPONSIVE //
+///////////////////////////
 
-@media only screen and (max-width: ((@min-app-width)-1)) {
+@media only screen and (max-width: @desktop-common-breakpoint) {
+    .zem-filter-selector {
+        .filter-sections__section-title {
+            font-size: 14px;
+            line-height: 14px;
+            font-weight: 700;
+        }
+    }
+}
+
+@media only screen and (max-width: @desktop-breakpoint) {
     .zem-filter-selector {
         position: relative;
         top: 0px;
+
+        .filter-sections {
+            height: 264px;
+            overflow: auto;
+            position: static;
+        }
+
+        .filter-sections__options-container {
+            max-height: none;
+        }
+
+        .filter-sections__section {
+            width: 50%;
+            height: auto;
+            padding: 10px @default-spacing;
+            border-right: none;
+
+            &:first-child {
+                padding-left: 0;
+                border-right: @filter-sections_border-width solid lighten(@very-dark-gray, 5%);
+            }
+        }
+
+        .filter-sections__section-title {
+            font-size: 18px;
+            line-height: 18px;
+            font-weight: 500;
+        }
+
+        .filter-sections__button-container {
+            background-color: fade(white, 10%);
+            right: 0;
+            bottom: 0;
+            left: 0;
+            padding: @default-spacing;
+
+            .button {
+                float: right;
+            }
+        }
+
+        .filter-sections__section--statuses {
+            width: 100%;
+            padding-left: 0;
+        }
+
+        .filter-sections__section--sources {
+            .filter-sections__options-list {
+                column-count: 2;
+                column-gap: 2*@default-spacing;
+            }
+        }
+
+        .filter-sections--visible-sources:not(.filter-sections--visible-agencies),
+        .filter-sections--visible-sources:not(.filter-sections--visible-account-types) {
+            .filter-sections__section--sources {
+                width: 50%;
+
+                .filter-sections__options-list {
+                    column-count: 2;
+                    column-gap: @default-spacing;
+                }
+            }
+        }
+
+        .filter-sections--visible-sources:not(.filter-sections--visible-agencies):not(.filter-sections--visible-account-types) {
+            .filter-sections__section--sources {
+                width: 100%;
+                border-right: none;
+
+                .filter-sections__options-list {
+                    column-count: 4;
+                    column-gap: 2*@default-spacing;
+                }
+            }
+        }
     }
 
     .fixed-header .zem-filter-selector {
         top: 0px;
+    }
+
+    .filter-selector-expanded,
+    .data-filter-enabled,
+    .data-filter-enabled.filter-selector-expanded {
+        .no-tabset.zem-container,
+        .zem-container {
+            padding-top: 0;
+        }
+    }
+
+    .filter-selector-expanded .zem-header-breadcrumb {
+        top: @header-height-small-screen +
+             @default-spacing +
+             @filter-sections_border-width +
+             @filter-sections_padding-top +
+             @filter-sections__section_vertical-padding*2 +
+             @filter-sections__section-title_margin-bottom +
+             @filter-sections__section-title_font-size +
+             @filter-sections__section-options-container_max-height;
+    }
+
+    .data-filter-enabled .zem-header-breadcrumb {
+        top: @applied-conditions_height + @header-height-small-screen;
+    }
+
+    .data-filter-enabled.filter-selector-expanded .zem-header-breadcrumb {
+        top: @header-height-small-screen +
+             @applied-conditions_height +
+             @default-spacing +
+             @filter-sections_border-width +
+             @filter-sections_padding-top +
+             @filter-sections__section_vertical-padding*2 +
+             @filter-sections__section-title_margin-bottom +
+             @filter-sections__section-title_font-size +
+             @filter-sections__section-options-container_max-height;
+    }
+}
+
+@media only screen and (max-width: @tablet-breakpoint) {
+    .zem-filter-selector {
+        .filter-sections__section-title {
+            font-size: 14px;
+            line-height: 14px;
+            font-weight: 700;
+        }
+
+        .filter-sections--visible-sources:not(.filter-sections--visible-agencies):not(.filter-sections--visible-account-types) {
+            .filter-sections__section--sources {
+                .filter-sections__options-list {
+                    column-count: 3;
+                }
+            }
+        }
+    }
+}
+
+@media only screen and (max-width: @mobile-breakpoint) {
+    .zem-filter-selector {
+        .filter-sections__section {
+            width: 100%;
+            float: none;
+            padding: 10px 0;
+
+            &:first-child {
+                border-right: none;
+            }
+        }
+
+        .filter-sections__section-title {
+            font-size: 18px;
+            line-height: 18px;
+            font-weight: 500;
+        }
+
+        .filter-sections--visible-sources:not(.filter-sections--visible-agencies):not(.filter-sections--visible-account-types) {
+            .filter-sections__section--sources {
+                .filter-sections__options-list {
+                    column-count: 2;
+                }
+            }
+        }
     }
 }

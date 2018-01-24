@@ -60,3 +60,44 @@
     }
 }
 
+///////////////////////////
+// RESPONSIVE //
+///////////////////////////
+
+@media only screen and (max-width: @desktop-breakpoint) {
+    .zem-campaign-launcher-objectives {
+        .zem-campaign-launcher-objectives__objective {
+            height: 220px;
+        }
+    }
+}
+
+@media only screen and (max-width: @tablet-breakpoint) {
+    .zem-campaign-launcher-objectives {
+        .zem-campaign-launcher-objectives__objective {
+            width: 49%;
+            float: left;
+            margin: 0 2% 2% 0;
+            height: 200px;
+
+            &:nth-child(even) {
+                margin-right: 0;
+            }
+        }
+    }
+}
+
+@media only screen and (max-width: @mobile-breakpoint) {
+    .zem-campaign-launcher-objectives {
+        .zem-campaign-launcher-objectives__objective {
+            width: 100%;
+            float: none;
+            margin: 0 0 @default-spacing 0;
+            height: auto;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+}

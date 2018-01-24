@@ -21,9 +21,9 @@
 <!-- TODO: refactor - move to separate component -->
 <div class="zem-settings__footer buttons-panel">
     <div class="zem-settings__footer-cell">
-        <button type="button" class="button button--highlight button--with-icon check-icon" ng-if="!$ctrl.entity.archived" ng-click="$ctrl.save()">Save</button>
-        <button type="button" class="button button--outline" ng-click="$ctrl.close()">Close</button>
-        <div class="settings-archive-container inline-block" ng-if="$ctrl.hasPermission('zemauth.archive_restore_entity')">
+        <button type="button" class="button button--highlight button--with-icon check-icon zem-settings__save-button" ng-if="!$ctrl.entity.archived" ng-click="$ctrl.save()">Save</button>
+        <button type="button" class="button button--outline zem-settings__close-button" ng-click="$ctrl.close()">Close</button>
+        <div class="zem-settings__archive-button-container" ng-if="$ctrl.hasPermission('zemauth.archive_restore_entity')">
             <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.archive_restore_entity')" popover-placement="bottom"></zem-internal-feature>
             <button ng-if="!$ctrl.entity.archived" type="button" class="button button--outline" ng-class="{'button--disabled': !$ctrl.entity.canArchive}" title="{{ $ctrl.getArchiveTooltip() }}" ng-click="$ctrl.archive()">
                 Archive {{ $ctrl.getEntityTypeName() }}

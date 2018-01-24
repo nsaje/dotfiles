@@ -35,54 +35,56 @@
     </div>
 
     <h3 class="custom-panel__sub-title">Active Budget items</h3>
-    <table class="custom-table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Budget</th>
-                <th ng-if="$ctrl.canAccessPlatformCosts()">License Fee</th>
-                <th ng-if="$ctrl.canAccessAgencyCosts()">
-                    Margin
-                </th>
-                <th>Total Spend</th>
-                <th>Available Budget</th>
-                <th class="notes">Notes</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr ng-repeat="item in $ctrl.budgets.active" ng-class="{ 'row-updated': item.id == $ctrl.updatedId }">
-                <td>{{ item.id }}</td>
-                <td>{{ item.startDate }}</td>
-                <td>{{ item.endDate }}</td>
-                <td>{{ item.total | decimalCurrency:"$":2 }}</td>
-                <td ng-if="$ctrl.canAccessPlatformCosts()">{{ item.licenseFee }}</td>
-                <td ng-if="$ctrl.canAccessAgencyCosts()">
-                    {{ item.margin }}
-                </td>
-                <td>{{ item.spend | decimalCurrency:"$":2 }}</td>
-                <td>{{ item.available | decimalCurrency:"$":2 }}</td>
-                <td class="custom-table__notes">
-                    <zem-note-popover content="{{ item.comment }}" placement="top" ng-if="item.comment.length > 0"
-                                      class="note-popover"></zem-note-popover>
-                </td>
-                <td class="custom-table__action-buttons">
-                    <a class="button button--small button--with-icon button--only-icon edit-icon" ng-click="$ctrl.editBudgetItem(item.id)"
-                       ng-if="(item.isEditable || item.isUpdatable) && !$ctrl.hasPermission('zemauth.disable_budget_management')"></a>
-                </td>
-            </tr>
-            <tr ng-hide="$ctrl.budgets.active.length || $ctrl.loadingInProgress">
-                <td colspan="10" class="custom-table__no-data">No active budget items.</td>
-            </tr>
-            <tr ng-if="$ctrl.loadingInProgress">
-                <td colspan="10">
-                    <div class="loader loader--full-width"></div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="custom-table__mobile-container">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Budget</th>
+                    <th ng-if="$ctrl.canAccessPlatformCosts()">License Fee</th>
+                    <th ng-if="$ctrl.canAccessAgencyCosts()">
+                        Margin
+                    </th>
+                    <th>Total Spend</th>
+                    <th>Available Budget</th>
+                    <th class="notes">Notes</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="item in $ctrl.budgets.active" ng-class="{ 'row-updated': item.id == $ctrl.updatedId }">
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.startDate }}</td>
+                    <td>{{ item.endDate }}</td>
+                    <td>{{ item.total | decimalCurrency:"$":2 }}</td>
+                    <td ng-if="$ctrl.canAccessPlatformCosts()">{{ item.licenseFee }}</td>
+                    <td ng-if="$ctrl.canAccessAgencyCosts()">
+                        {{ item.margin }}
+                    </td>
+                    <td>{{ item.spend | decimalCurrency:"$":2 }}</td>
+                    <td>{{ item.available | decimalCurrency:"$":2 }}</td>
+                    <td class="custom-table__notes">
+                        <zem-note-popover content="{{ item.comment }}" placement="top" ng-if="item.comment.length > 0"
+                                          class="note-popover"></zem-note-popover>
+                    </td>
+                    <td class="custom-table__action-buttons">
+                        <a class="button button--small button--with-icon button--only-icon edit-icon" ng-click="$ctrl.editBudgetItem(item.id)"
+                           ng-if="(item.isEditable || item.isUpdatable) && !$ctrl.hasPermission('zemauth.disable_budget_management')"></a>
+                    </td>
+                </tr>
+                <tr ng-hide="$ctrl.budgets.active.length || $ctrl.loadingInProgress">
+                    <td colspan="10" class="custom-table__no-data">No active budget items.</td>
+                </tr>
+                <tr ng-if="$ctrl.loadingInProgress">
+                    <td colspan="10">
+                        <div class="loader loader--full-width"></div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
     <button type="button" class="button button--with-icon add-icon" ng-click="$ctrl.addBudgetItem()"
             ng-disabled="!$ctrl.getAvailableCredit().length" ng-show="!$ctrl.hasPermission('zemauth.disable_budget_management')">Add Budget Item
     </button>
@@ -91,56 +93,58 @@
 
     <div class="collapsable zem-campaign-budgets-settings__collapsable" ng-show="$ctrl.showCollapsed">
         <h3 class="custom-panel__sub-title">Depleted Budget Items</h3>
-        <table class="custom-table">
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Total Budget</th>
-                <th ng-if="$ctrl.canAccessPlatformCosts()">License Fee</th>
-                <th ng-if="$ctrl.canAccessAgencyCosts()">
-                    Margin
-                </th>
-                <th>Total Spend</th>
-                <th>Available Budget</th>
-                <th class="custom-table__notes">Notes</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr ng-repeat="item in $ctrl.budgets.past" ng-class="{ 'row-updated': item.id == updatedId }">
-                <td>{{ item.id }}</td>
-                <td>{{ item.startDate }}</td>
-                <td>{{ item.endDate }}</td>
+        <div class="custom-table__mobile-container">
+            <table class="custom-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Total Budget</th>
+                    <th ng-if="$ctrl.canAccessPlatformCosts()">License Fee</th>
+                    <th ng-if="$ctrl.canAccessAgencyCosts()">
+                        Margin
+                    </th>
+                    <th>Total Spend</th>
+                    <th>Available Budget</th>
+                    <th class="custom-table__notes">Notes</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="item in $ctrl.budgets.past" ng-class="{ 'row-updated': item.id == updatedId }">
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.startDate }}</td>
+                    <td>{{ item.endDate }}</td>
 
-                <td>{{ item.total | decimalCurrency:"$":2 }}</td>
-                <td ng-if="$ctrl.canAccessPlatformCosts()">{{ item.licenseFee }}</td>
-                <td ng-if="$ctrl.canAccessAgencyCosts()">
-                    {{ item.margin }}
-                </td>
-                <td>{{ item.spend | decimalCurrency:"$":2 }}</td>
-                <td>{{ item.available | decimalCurrency:"$":2 }}</td>
+                    <td>{{ item.total | decimalCurrency:"$":2 }}</td>
+                    <td ng-if="$ctrl.canAccessPlatformCosts()">{{ item.licenseFee }}</td>
+                    <td ng-if="$ctrl.canAccessAgencyCosts()">
+                        {{ item.margin }}
+                    </td>
+                    <td>{{ item.spend | decimalCurrency:"$":2 }}</td>
+                    <td>{{ item.available | decimalCurrency:"$":2 }}</td>
 
-                <td class="custom-table__notes">
-                    <zem-note-popover content="{{ item.comment }}" placement="top" ng-if="item.comment.length > 0"
-                                      class="note-popover"></zem-note-popover>
-                </td>
-                <td class="custom-table__action-buttons">
-                    <a class="button button--small button--with-icon edit-icon" ng-click="$ctrl.editBudgetItem(item.id)"
-                       ng-if="item.isEditable">Edit</a>
-                </td>
-            </tr>
-            <tr ng-hide="$ctrl.budgets.past.length || $ctrl.loadingInProgress" class="message">
-                <td colspan="10" class="custom-table__no-data">No depleted budget items.</td>
-            </tr>
-            <tr ng-if="$ctrl.loadingInProgress">
-                <td colspan="10">
-                    <div class="loader loader--full-width"></div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+                    <td class="custom-table__notes">
+                        <zem-note-popover content="{{ item.comment }}" placement="top" ng-if="item.comment.length > 0"
+                                          class="note-popover"></zem-note-popover>
+                    </td>
+                    <td class="custom-table__action-buttons">
+                        <a class="button button--small button--with-icon edit-icon" ng-click="$ctrl.editBudgetItem(item.id)"
+                           ng-if="item.isEditable">Edit</a>
+                    </td>
+                </tr>
+                <tr ng-hide="$ctrl.budgets.past.length || $ctrl.loadingInProgress">
+                    <td colspan="10" class="custom-table__no-data">No depleted budget items.</td>
+                </tr>
+                <tr ng-if="$ctrl.loadingInProgress">
+                    <td colspan="10">
+                        <div class="loader loader--full-width"></div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
     <a href="" class="collapsable__hide-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="!$ctrl.showCollapsed">Hide depleted budget items</a>
 </div>

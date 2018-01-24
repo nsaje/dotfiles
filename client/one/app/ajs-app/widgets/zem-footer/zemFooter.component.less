@@ -1,26 +1,93 @@
 @import 'variables';
 
 .zem-footer {
-    padding-bottom: 20px;
+    display: table;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    padding: 0 @default-spacing @default-spacing @default-spacing;
+}
 
-    .logo {
-        float: left;
-        height: 36px;
-        margin-top: 4px;
+.zem-footer__logo,
+.zem-footer__copyright,
+.zem-footer__notification {
+    display: table-cell;
+    vertical-align: middle;
+
+    a {
+        color: @gray;
+    }
+}
+
+.zem-footer__logo {
+    width: 132px;
+    padding-right: 20px;
+}
+
+.zem-footer__logo-image {
+    height: 36px;
+}
+
+.zem-footer__copyright,
+.zem-footer__notification {
+    padding: 0 20px;
+    text-align: left;
+    color: @gray;
+    font-size: @default-font-size;
+    line-height: 16px;
+    border-left: 1px solid @almost-gray;
+}
+
+.zem-footer__notification {
+    .list-with-bullets {
+        margin-bottom: 0;
+
+        li::before {
+            background-color: @almost-gray;
+        }
+    }
+}
+
+///////////////////////////
+// RESPONSIVE //
+///////////////////////////
+
+@media only screen and (max-width: @tablet-breakpoint) {
+    .zem-footer {
+        position: relative;
+        bottom: auto;
+        left: auto;
+        right: auto;
+        padding-top: @default-spacing;
+    }
+}
+
+@media only screen and (max-width: 650px) {
+    .zem-footer {
+        display: block;
     }
 
-    .small-text {
-        text-align: left;
-        color: @gray;
-        font-size: @default-font-size;
-        line-height: 16px;
-        float: left;
-        padding: 5px 0 3px 20px;
-        margin-left: 20px;
-        border-left: 1px solid @almost-gray;
+    .zem-footer__logo,
+    .zem-footer__copyright,
+    .zem-footer__notification {
+        display: block;
+        text-align: center;
+        width: 100%;
+        padding: 10px 0;
+        border-left: none;
+    }
 
-        a {
-            color: @gray;
+    .zem-footer__copyright {
+        border-top: 1px solid @almost-gray;
+        border-bottom: 1px solid @almost-gray;
+    }
+
+    .zem-footer__notification {
+        .list-with-bullets {
+            li::before {
+                display: none;
+            }
         }
     }
 }

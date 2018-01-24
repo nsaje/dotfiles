@@ -1,3 +1,5 @@
+@import 'variables';
+
 .zem-campaign-launcher-goal {
     .zem-campaign-goal-edit-form__goal-value {
         width: 16%;
@@ -25,5 +27,33 @@
     .zem-campaign-launcher-goal__preview-edit-button {
         display: block;
         margin-top: 10px;
+    }
+}
+
+///////////////////////////
+// RESPONSIVE //
+///////////////////////////
+
+@media only screen and (max-width: @tablet-breakpoint) {
+    .zem-campaign-launcher-goal {
+        .zem-campaign-goal-edit-form__goal-value {
+            width: 24%;
+        }
+
+        .zem-campaign-goal-edit-form__goal-type {
+            width: 75%;
+        }
+    }
+}
+
+@media only screen and (max-width: @mobile-breakpoint) {
+    .zem-campaign-launcher-goal {
+        .zem-campaign-goal-edit-form__goal-value {
+            width: 34%;
+        }
+
+        .zem-campaign-goal-edit-form__goal-type {
+            width: 65%;
+        }
     }
 }

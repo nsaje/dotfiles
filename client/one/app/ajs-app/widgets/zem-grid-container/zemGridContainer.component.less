@@ -52,10 +52,6 @@ zem-grid-container-tabs { display: block; }
     }
 }
 
-.zem-grid-container-actions {
-
-}
-
 .zem-dummy-grid-container__actions {
     height: 45px;
 }
@@ -74,4 +70,39 @@ zem-grid-container-tabs { display: block; }
 }
 .zem-dummy-grid-container__footer {
     border-top: 1px solid fade(@secondary-color, 20%);
+}
+
+///////////////////////////
+// RESPONSIVE //
+///////////////////////////
+
+@media only screen and (max-width: @mobile-breakpoint) {
+    .zem-grid-container-tabs {
+        display: table;
+    }
+
+    .zem-grid__tab {
+        display: table-cell;
+        font-size: 13px;
+        line-height: 15px;
+        max-width: 31%;
+        margin: 0;
+        vertical-align: middle;
+        float: none !important;
+        border: 2px solid @background-light-gray;
+        border-right: none;
+    }
+
+    .zem-grid__tab--active {
+        font-weight: 400;
+        border: none;
+        border-bottom: 2px solid white;
+        border-top: 2px solid @secondary-color;
+    }
+}
+
+@media only screen and (max-width: 360px) {
+    .zem-grid__tab {
+        padding: 6px 10px;
+    }
 }

@@ -1,4 +1,4 @@
-<div class="form form--last" ng-if="$ctrl.hasPermission('zemauth.can_set_white_blacklist_publisher_groups') && $ctrl.hasPermission('zemauth.can_see_publisher_groups_ui')">
+<div class="form" ng-if="$ctrl.hasPermission('zemauth.can_set_white_blacklist_publisher_groups') && $ctrl.hasPermission('zemauth.can_see_publisher_groups_ui')">
     <div class="form__title" is-internal="zemauth.can_see_publisher_groups_ui">Publishers</div>
     <div class="form__text">Define your publisher targeting by whitelisting or blacklisting publisher groups.</div>
     <zem-inclusion-targeting-list

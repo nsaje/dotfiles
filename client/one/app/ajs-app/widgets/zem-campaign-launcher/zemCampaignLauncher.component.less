@@ -2,7 +2,7 @@
 
 .zem-campaign-launcher {
     display: block;
-    width: @min-app-width - 2*@default-spacing;
+    width: @desktop-breakpoint - 2*@default-spacing;
     margin: 0 auto;
 
     .loader {
@@ -22,10 +22,6 @@
                 top: 6px;
             }
         }
-    }
-
-    .custom-panel {
-
     }
 
     .buttons-panel {
@@ -133,6 +129,37 @@
 
         &::after {
             background-color: darken(@light-gray, 10%);
+        }
+    }
+}
+
+///////////////////////////
+// RESPONSIVE //
+///////////////////////////
+
+@media only screen and (max-width: @desktop-breakpoint) {
+    .zem-campaign-launcher {
+        width: 100%;
+        padding-top: 75px;
+
+        .zem-campaign-launcher__step-indicator-container {
+            padding: 25px @default-spacing @default-spacing @default-spacing;
+            background-color: fade(white, 50%);
+            width: 100%;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 75px;
+        }
+    }
+}
+
+@media only screen and (max-width: @tablet-breakpoint) {
+    .zem-campaign-launcher {
+        .zem-campaign-launcher__step-indicator:not(.zem-campaign-launcher__step-indicator--current) {
+            .zem-campaign-launcher__step-title {
+                display: none;
+            }
         }
     }
 }

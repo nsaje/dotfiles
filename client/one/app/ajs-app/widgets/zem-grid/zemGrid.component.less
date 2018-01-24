@@ -859,3 +859,44 @@ zem-grid {
         background-image: url('images/autopilot-green.svg');
     }
 }
+
+///////////////////////////
+// RESPONSIVE //
+///////////////////////////
+
+@media only screen and (max-width: @tablet-breakpoint) {
+    .button-bar {
+        margin-bottom: @default-spacing - 5;
+
+        .button-bar-item {
+            display: block;
+            float: left;
+            margin-right: 0;
+
+            .button {
+                margin: 0 5px 5px 0;
+            }
+        }
+
+        .pull-right {
+            float: left !important;
+            margin: 0 5px 5px 0;
+
+            .show-rows {
+                margin-right: 0;
+            }
+        }
+
+        .show-rows {
+            margin-right: 0;
+        }
+    }
+
+    .zem-grid-header-cell,
+    .zem-grid-cell {
+        transform: none !important;
+        margin-left: 0px !important;
+        position: relative !important;
+        border-right: none !important;
+    }
+}

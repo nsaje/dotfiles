@@ -38,27 +38,17 @@
     background-color: @secondary-color;
     color: white;
 
-    .icon,
-    .icon::before {
+    .icon {
         width: 100px;
         height: 100px;
-    }
-
-    .icon {
         margin-bottom: 20px;
         opacity: 0.2;
     }
-}
 
-@media only screen and (max-width: 1500px) {
-    .zem-inventory-planning-summary__info-container {
-        width: 250px;
-    }
-}
-
-@media only screen and (max-width: 1280px) {
-    .zem-inventory-planning-summary__info-container {
-        width: 200px;
+    .icon::before {
+        width: 100px;
+        height: 100px;
+        top: 0;
     }
 }
 
@@ -89,4 +79,107 @@
 .zem-inventory-planning-summary__spacing {
     display: table-cell;
     width: @default-spacing*1.5;
+}
+
+///////////////////////////
+// RESPONSIVE //
+///////////////////////////
+
+@media only screen and (max-width: 1500px) {
+    .zem-inventory-planning-summary__info-container {
+        width: 250px;
+    }
+}
+
+@media only screen and (max-width: 1280px) {
+    .zem-inventory-planning-summary__info-container {
+        width: 200px;
+    }
+}
+
+@media only screen and (max-width: @desktop-breakpoint) {
+    .zem-inventory-planning-summary__section,
+    .zem-inventory-planning-summary__spacing {
+        display: block;
+        float: left;
+        margin-top: 0;
+    }
+
+    .zem-inventory-planning-summary__info-container {
+        width: 49%;
+        text-align: left;
+        position: relative;
+        padding-left: 100px;
+        box-sizing: border-box;
+
+        .zem-inventory-planning-summary__value-name {
+            font-size: 16px;
+            line-height: 20px;
+        }
+
+        .zem-inventory-planning-summary__value {
+            line-height: 40px;
+        }
+
+        .icon {
+            width: 60px;
+            height: 60px;
+            margin: 0;
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+
+            &::before {
+                width: 60px;
+                height: 60px;
+            }
+        }
+    }
+
+    .zem-inventory-planning-summary__spacing {
+        width: 2%;
+        height: 20px;
+    }
+}
+
+@media only screen and (max-width: @tablet-breakpoint) {
+    .zem-inventory-planning-summary__info-container {
+        padding-left: 70px;
+
+        .zem-inventory-planning-summary__value-name {
+            font-size: 14px;
+            line-height: 18px;
+        }
+
+        .zem-inventory-planning-summary__value {
+            font-size: 30px;
+            line-height: 34px;
+        }
+
+        .icon {
+            width: 40px;
+            height: 40px;
+            left: 15px;
+
+            &::before {
+                width: 40px;
+                height: 40px;
+            }
+        }
+    }
+}
+
+@media only screen and (max-width: @mobile-breakpoint) {
+    .zem-inventory-planning-summary__section,
+    .zem-inventory-planning-summary__spacing {
+        display: block;
+        float: none;
+        margin-bottom: @default-spacing;
+        width: 100%;
+    }
+
+    .zem-inventory-planning-summary__spacing {
+        display: none;
+    }
 }

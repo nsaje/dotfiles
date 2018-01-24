@@ -8,7 +8,9 @@
                  for="name-input">{{ error }}</div>
         </div>
 
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.startDate}">
+        <div class="form__group" ng-class="{
+                                     'form--error': !!$ctrl.errors.startDate,
+                                     'calendar-is-open': $ctrl.startDatePicker.isOpen}">
             <label class="form__label" for="start-date-input">
                 Start date:
                 <zem-help-popover content="The date when content promotion commenced." placement="top"></zem-help-popover>
@@ -22,7 +24,9 @@
                  for="start-date-input">{{ error }}</div>
         </div>
 
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.endDate}">
+        <div class="form__group" ng-class="{
+                                     'form--error': !!$ctrl.errors.endDate,
+                                     'calendar-is-open': $ctrl.endDatePicker.isOpen}">
             <label class="form__label" for="end-date-input">
                 End date:
                 <zem-help-popover content="The date when content promotion paused." placement="top"></zem-help-popover>

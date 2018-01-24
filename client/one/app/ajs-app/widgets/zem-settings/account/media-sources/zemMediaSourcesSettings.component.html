@@ -1,32 +1,30 @@
-<div class="form" ng-if="$ctrl.hasPermission('zemauth.can_modify_allowed_sources')">
-    <div class="row">
-        <div class="col-xs-6">
-            <label class="form__label">Available</label>
-            <select ng-model="$ctrl.selectedMediaSources.available" multiple="" class="multiselect custom-scroller">
-                <option ng-repeat="mediaSource in $ctrl.mediaSources.available | orderBy: 'name'"
-                        value="{{mediaSource.value}}">{{mediaSource.name}} {{mediaSource.released ? '' :
-                    '(unreleased)'}}
-                </option>
-            </select>
-            <button ng-click="$ctrl.addToAllowedMediaSources()" class="button button--full-width">
-                Move to allowed
-                <span class="button__inline-arrow-icon"></span>
-            </button>
-        </div>
+<div class="form clearfix" ng-if="$ctrl.hasPermission('zemauth.can_modify_allowed_sources')">
+    <div class="zem-media-sources-settings__sources-list zem-media-sources-settings__sources-list-avaliable">
+        <label class="form__label">Available</label>
+        <select ng-model="$ctrl.selectedMediaSources.available" multiple="" class="multiselect custom-scroller">
+            <option ng-repeat="mediaSource in $ctrl.mediaSources.available | orderBy: 'name'"
+                    value="{{mediaSource.value}}">{{mediaSource.name}} {{mediaSource.released ? '' :
+                '(unreleased)'}}
+            </option>
+        </select>
+        <button ng-click="$ctrl.addToAllowedMediaSources()" class="button button--full-width">
+            Move to allowed
+            <span class="button__inline-arrow-icon"></span>
+        </button>
+    </div>
 
-        <div class="col-xs-6" ng-class="{'form--error': !!$ctrl.errors.allowedSources}">
-            <label class="form__label">Allowed</label>
-            <select ng-model="$ctrl.selectedMediaSources.allowed" multiple="" class="multiselect custom-scroller">
-                <option ng-repeat="mediaSource in $ctrl.mediaSources.allowed | orderBy:'name'"
-                        value="{{mediaSource.value}}">{{mediaSource.name}} {{mediaSource.released ? '' :
-                    '(unreleased)'}}
-                </option>
-            </select>
-            <button ng-click="$ctrl.removeFromAllowedMediaSources()" class="button button--full-width">
-                <span class="button__inline-arrow-icon button__inline-arrow-icon--left"></span>
-                Remove from allowed
-            </button>
-        </div>
+    <div class="zem-media-sources-settings__sources-list zem-media-sources-settings__sources-list-allowed" ng-class="{'form--error': !!$ctrl.errors.allowedSources}">
+        <label class="form__label">Allowed</label>
+        <select ng-model="$ctrl.selectedMediaSources.allowed" multiple="" class="multiselect custom-scroller">
+            <option ng-repeat="mediaSource in $ctrl.mediaSources.allowed | orderBy:'name'"
+                    value="{{mediaSource.value}}">{{mediaSource.name}} {{mediaSource.released ? '' :
+                '(unreleased)'}}
+            </option>
+        </select>
+        <button ng-click="$ctrl.removeFromAllowedMediaSources()" class="button button--full-width">
+            <span class="button__inline-arrow-icon button__inline-arrow-icon--left"></span>
+            Remove from allowed
+        </button>
     </div>
     <div ng-repeat="error in $ctrl.errors.allowedSources" class="message message--error m-t"
                        for="service-fee-select">{{ error }}</div>

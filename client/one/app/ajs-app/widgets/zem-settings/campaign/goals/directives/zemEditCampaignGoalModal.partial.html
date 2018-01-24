@@ -23,10 +23,10 @@
     <span ng-if="showAddConversionGoalForm()">
         <button type="submit" class="button button--highlight button--with-icon add-icon" ng-if="newCampaignGoal"
                 ng-click="save()" ng-class="{'disabled': !!addConversionGoalInProgress}"
-                ng-disabled="!campaignGoal.conversionGoal.goalId || savingInProgress">Add goal and conversion tracking</button>
+                ng-disabled="!campaignGoal.conversionGoal.goalId || savingInProgress">Add goal</button>
         <button type="submit" class="button button--highlight button--with-icon check-icon" ng-if="!newCampaignGoal"
                 ng-click="save()" ng-class="{'disabled': !!addConversionGoalInProgress}"
-                ng-disabled="!campaignGoal.conversionGoal.goalId || savingInProgress">Save goal and conversion tracking</button>
+                ng-disabled="!campaignGoal.conversionGoal.goalId || savingInProgress">Update goal</button>
     </span>
     <button type="button" class="button button--outline" ng-click="cancel()">Cancel</button>
     <div class="loader" ng-show="addConversionGoalInProgress"></div>

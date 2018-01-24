@@ -32,22 +32,6 @@
     padding-top: @default-spacing*1.5+@header-height;
 }
 
-@media only screen and (min-width: @min-app-width) {
-    .fixed-header .zem-container {
-        padding-top: @default-spacing*1.5+@header-height;
-    }
-}
-
-@media only screen and (max-width: ((@min-app-width)-1)) {
-    .zem-container {
-        padding: 0 0 72px 0 !important;
-    }
-
-    .content-container {
-        padding: @default-spacing*1.5 @default-spacing 0 @default-spacing;
-    }
-}
-
 .content-container {
     display: block;
 }
@@ -56,43 +40,162 @@
     margin: -10px 0 -10px 0;
 }
 
-.zem-footer {
-    position: absolute;
-    bottom: 0;
-    left: @default-spacing;
-    right: @default-spacing;
+///////////////////////////
+// RESPONSIVE //
+///////////////////////////
+
+@media only screen and (max-width: @desktop-breakpoint) {
+    .content-container__title {
+        margin-top: -5px;
+    }
 }
 
 ///////////////////////////
 // Chart & Infobox //
 ///////////////////////////
 
-.chart-infobox__container {
-    display: table;
-    table-layout: fixed;
-    width: 100%;
-    position: relative;
+@supports not (display: flex) {
+    .chart-infobox__container {
+        display: table;
+        table-layout: fixed;
+        width: 100%;
+        position: relative;
+    }
+
+    .chart-infobox__chart {
+        display: table-cell;
+        position: relative;
+        width: 100%;
+        height: 375px;
+        padding: @default-spacing @default-spacing 0 @default-spacing;
+        vertical-align: top;
+        margin-top: 0;
+    }
+
+    .chart-infobox__infobox {
+        display: table-cell;
+        width: 350px;
+        position: relative;
+        padding: 0;
+        margin-top: 0;
+    }
+
+    .chart-infobox__spacing {
+        display: table-cell;
+        width: @default-spacing*1.5;
+    }
 }
 
-.chart-infobox__chart {
-    display: table-cell;
-    position: relative;
-    width: 100%;
-    height: 375px;
-    padding: @default-spacing @default-spacing 0 @default-spacing;
-    vertical-align: top;
-    margin-top: 0;
+@supports (display: flex) {
+    .chart-infobox__container {
+        display: flex;
+        width: 100%;
+        position: relative;
+        max-height: 420px;
+    }
+
+    .chart-infobox__chart {
+        flex: 1;
+        min-width: 0;
+        position: relative;
+        padding: @default-spacing @default-spacing 0 @default-spacing;
+        margin-top: 0;
+    }
+
+    .chart-infobox__infobox {
+        flex: 0 0 350px;
+        width: 350px;
+        position: relative;
+        padding: 0;
+        margin-top: 0;
+        margin-left: @default-spacing*1.5;
+    }
+
+    .chart-infobox__spacing {
+        display: none;
+    }
 }
 
-.chart-infobox__infobox {
-    display: table-cell;
-    width: 350px;
-    position: relative;
-    padding: 0;
-    margin-top: 0;
+///////////////////////////
+// RESPONSIVE //
+///////////////////////////
+
+@media only screen and (min-width: ((@desktop-breakpoint)+1)) {
+    .fixed-header .zem-container {
+        padding-top: @default-spacing*1.5+@header-height;
+    }
 }
 
-.chart-infobox__spacing {
-    display: table-cell;
-    width: @default-spacing*1.5;
+@media only screen and (max-width: @desktop-breakpoint) {
+    .zem-container,
+    .no-tabset.zem-container {
+        padding: 0 0 72px 0;
+    }
+
+    .content-container {
+        padding: 40px @default-spacing 0 @default-spacing;
+    }
+
+    @supports not (display: flex) {
+        .chart-infobox__infobox {
+            width: 300px;
+        }
+    }
+
+    @supports (display: flex) {
+        .chart-infobox__container {
+            max-height: none;
+        }
+
+        .chart-infobox__infobox {
+            flex: 0 0 300px;
+            width: 300px;
+        }
+    }
+}
+
+@media only screen and (max-width: @tablet-breakpoint) {
+    .zem-container,
+    .no-tabset.zem-container {
+        padding-bottom: 0;
+    }
+
+    @supports not (display: flex) {
+        .chart-infobox__container {
+            display: block;
+            width: 100%;
+        }
+
+        .chart-infobox__chart {
+            display: block;
+            position: relative;
+            width: 100%;
+        }
+
+        .chart-infobox__infobox {
+            display: block;
+            width: 100%;
+        }
+
+        .chart-infobox__spacing {
+            display: none;
+        }
+    }
+
+    @supports (display: flex) {
+        .chart-infobox__container {
+            flex-direction: column-reverse;
+        }
+
+        .chart-infobox__chart {
+            height: auto;
+        }
+
+        .chart-infobox__infobox {
+            flex: 1;
+            width: 100%;
+            margin-left: 0;
+            margin-bottom: @default-spacing*1.5;
+        }
+    }
 }

@@ -9,11 +9,12 @@
         ng-class="{
             'zem-os-device-targeting--desktop': operatingSystem.devices.indexOf('DESKTOP') > -1,
             'zem-os-device-targeting--tablet-mobile': operatingSystem.devices.indexOf('DESKTOP') === -1,
+            'zem-os-device-targeting__no-versions': !operatingSystem.versions,
         }"
 >
     <div class="zem-os-device-targeting__platform-icon"></div>
     <div class="zem-os-device-targeting__platform-name zem-os-device-targeting__platform-name--{{operatingSystem.value}}">{{operatingSystem.name}}</div>
-    <div ng-if="operatingSystem.versions" class="form__vertical-group">
+    <div ng-if="operatingSystem.versions" class="form__vertical-group zem-os-device-targeting__min-os-version">
         <label class="form__label">
             Min OS version:
         </label>
@@ -26,7 +27,7 @@
             </ui-select-choices>
         </ui-select>
     </div>
-    <div ng-if="operatingSystem.versions" class="form__vertical-group">
+    <div ng-if="operatingSystem.versions" class="form__vertical-group zem-os-device-targeting__max-os-version">
         <label class="form__label">
             Max OS version:
         </label>

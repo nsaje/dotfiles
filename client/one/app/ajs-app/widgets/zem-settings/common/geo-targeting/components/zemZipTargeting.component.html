@@ -16,7 +16,7 @@
             </ui-select-choices>
         </ui-select>
 
-        <ui-select theme="select2" class="button button--dropdown-toggle-icon zem-zip-targeting__country"
+        <ui-select theme="select2" class="button button--dropdown-toggle-icon zem-zip-targeting__country select2-mobile-fullscreen-dropdown"
                 ng-model="$ctrl.state.selectedCountry" ng-change="$ctrl.stateService.updateState()" >
             <ui-select-match class="ui-select-match" placeholder="Select country">{{$select.selected.name}}</ui-select-match>
             <ui-select-choices repeat="country in $ctrl.state.countrySearchResults"
@@ -49,8 +49,9 @@
     </div>
 
     <div class="more-messages__container">
-        <div ng-if="$ctrl.state.blockers.countryIncluded" class="message message--warning message--with-icon">
+        <div ng-if="$ctrl.state.blockers.countryIncluded" class="message message--warning message--with-icon m-b-s">
             Please remove {{ $ctrl.state.selectedCountry.name }} from general location targeting or pick a different country for postal code targeting.
         </div>
+        <div class="message message--info message--with-icon m-b-none">Outbrain and Yahoo don't support ZIP code targeting.</div>
     </div>
 </div>

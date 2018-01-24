@@ -34,3 +34,30 @@
 .zem-inventory-planning__breakdowns {
     margin-bottom: @default-spacing*1.5;
 }
+
+///////////////////////////
+// RESPONSIVE //
+///////////////////////////
+
+@media only screen and (max-width: @tablet-breakpoint) {
+    .zem-inventory-planning {
+        .zem-inventory-planning-breakdown {
+            float: none;
+            width: 100%;
+            border-left: none;
+            padding: 0 0 @default-spacing 0;
+            margin: 0 0 @default-spacing 0;
+            border-bottom: 1px solid @light-gray;
+
+            &:last-child {
+                margin-bottom: 0;
+                padding-bottom: 0;
+                border-bottom: none;
+            }
+        }
+
+        .zem-inventory-planning-breakdown__container {
+            height: 250px;
+        }
+    }
+}

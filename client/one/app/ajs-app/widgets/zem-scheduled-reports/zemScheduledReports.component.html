@@ -2,53 +2,55 @@
 <div class="custom-panel">
     <div class="custom-panel__description">Overview of your reports scheduled for this account.</div>
     <div class="message message--error-box message--with-icon zem-scheduled-reports__message" ng-show="$ctrl.state.removeErrorMessage">{{$ctrl.state.removeErrorMessage}}</div>
-    <table class="custom-table">
-        <thead>
-            <tr>
-                <th>Report Name</th>
-                <th>Report Level</th>
-                <th ng-if="!$ctrl.hasPermission('zemauth.can_see_new_report_schedule')">Granularity</th>
-                <th ng-if="$ctrl.hasPermission('zemauth.can_see_new_report_schedule')">Breakdown</th>
-                <th>Frequency</th>
-                <th ng-if="$ctrl.hasPermission('zemauth.can_set_day_of_week_in_scheduled_reports')">Day of week</th>
-                <th ng-if="$ctrl.hasPermission('zemauth.can_set_time_period_in_scheduled_reports')">Time period</th>
-                <th>Recipients</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr ng-repeat="report in $ctrl.state.reports">
-                <td><strong>{{ report.name }}</strong></td>
-                <td>{{ report.level }}</td>
-                <td ng-if="!$ctrl.hasPermission('zemauth.can_see_new_report_schedule')">{{ report.granularity }}</td>
-                <td ng-if="$ctrl.hasPermission('zemauth.can_see_new_report_schedule')">{{ report.breakdown }}</td>
-                <td>{{ report.frequency }}</td>
-                <td ng-if="$ctrl.hasPermission('zemauth.can_set_day_of_week_in_scheduled_reports')">
-                    {{ report.dayOfWeek }}
-                </td>
-                <td ng-if="$ctrl.hasPermission('zemauth.can_set_time_period_in_scheduled_reports')">
-                    {{ report.timePeriod }}
-                </td>
-                <td>{{ report.recipients }}</td>
-                <td class="custom-table__action-buttons">
-                    <button type="button"
-                            class="button button--small button--with-icon remove-icon"
-                            ng-click="$ctrl.removeReport(report)">
-                        Remove
-                    </button>
-                </td>
-            </tr>
-            <tr ng-if="$ctrl.state.loadReportsRequestInProgress && !$ctrl.state.reports.length">
-                <td colspan="8">
-                    <div class="loader loader--full-width"></div>
-                </td>
-            </tr>
-            <tr ng-show="(!$ctrl.state.reports || !$ctrl.state.reports.length) && !$ctrl.state.loadReportsRequestInProgress && !$ctrl.state.loadErrorMessage">
-                <td colspan="8" class="custom-table__no-data">No data</td>
-            </tr>
-            <tr ng-show="$ctrl.state.loadErrorMessage">
-                <td class="message message--error" colspan="8">{{ $ctrl.state.loadErrorMessage }}</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="custom-table__mobile-container">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Report Name</th>
+                    <th>Report Level</th>
+                    <th ng-if="!$ctrl.hasPermission('zemauth.can_see_new_report_schedule')">Granularity</th>
+                    <th ng-if="$ctrl.hasPermission('zemauth.can_see_new_report_schedule')">Breakdown</th>
+                    <th>Frequency</th>
+                    <th ng-if="$ctrl.hasPermission('zemauth.can_set_day_of_week_in_scheduled_reports')">Day of week</th>
+                    <th ng-if="$ctrl.hasPermission('zemauth.can_set_time_period_in_scheduled_reports')">Time period</th>
+                    <th>Recipients</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="report in $ctrl.state.reports">
+                    <td><strong>{{ report.name }}</strong></td>
+                    <td>{{ report.level }}</td>
+                    <td ng-if="!$ctrl.hasPermission('zemauth.can_see_new_report_schedule')">{{ report.granularity }}</td>
+                    <td ng-if="$ctrl.hasPermission('zemauth.can_see_new_report_schedule')">{{ report.breakdown }}</td>
+                    <td>{{ report.frequency }}</td>
+                    <td ng-if="$ctrl.hasPermission('zemauth.can_set_day_of_week_in_scheduled_reports')">
+                        {{ report.dayOfWeek }}
+                    </td>
+                    <td ng-if="$ctrl.hasPermission('zemauth.can_set_time_period_in_scheduled_reports')">
+                        {{ report.timePeriod }}
+                    </td>
+                    <td>{{ report.recipients }}</td>
+                    <td class="custom-table__action-buttons">
+                        <button type="button"
+                                class="button button--small button--with-icon remove-icon"
+                                ng-click="$ctrl.removeReport(report)">
+                            Remove
+                        </button>
+                    </td>
+                </tr>
+                <tr ng-if="$ctrl.state.loadReportsRequestInProgress && !$ctrl.state.reports.length">
+                    <td colspan="8">
+                        <div class="loader loader--full-width"></div>
+                    </td>
+                </tr>
+                <tr ng-show="(!$ctrl.state.reports || !$ctrl.state.reports.length) && !$ctrl.state.loadReportsRequestInProgress && !$ctrl.state.loadErrorMessage">
+                    <td colspan="8" class="custom-table__no-data">No data</td>
+                </tr>
+                <tr ng-show="$ctrl.state.loadErrorMessage">
+                    <td class="message message--error" colspan="8">{{ $ctrl.state.loadErrorMessage }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>

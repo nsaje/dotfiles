@@ -1,28 +1,30 @@
 <div class="custom-panel zem-settings-component__container zem-backend-hacks" ng-if="$ctrl.hasPermission('zemauth.can_see_backend_hacks')">
     <h2 class="custom-panel__title" is-internal="zemauth.can_see_backend_hacks">Backend hacks</h2>
     <div class="message" ng-if="!$ctrl.entity.hacks.length">No backend hacks set.</div>
-    <table class="custom-table" ng-if="$ctrl.entity.hacks.length">
-        <thead>
-            <tr>
-                <th>Level</th>
-                <th>Source</th>
-                <th>Description</th>
-                <th class="text-right">Confirmed</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr ng-repeat="hack in $ctrl.entity.hacks">
-                <td>{{ hack.level }}</td>
-                <td>{{ hack.source || 'all' }}</td>
-                <td>
-                    <strong>{{ hack.summary }}</strong><span ng-if="hack.details.length"><strong>:</strong> {{ hack.details }}</span>
-                </td>
-                <td class="text-right">
-                    <span class="icon check-icon" ng-if="hack.confirmed"></span>
-                    <span class="icon remove-icon" ng-if="!hack.confirmed"></span>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="custom-table__mobile-container">
+        <table class="custom-table" ng-if="$ctrl.entity.hacks.length">
+            <thead>
+                <tr>
+                    <th>Level</th>
+                    <th>Source</th>
+                    <th>Description</th>
+                    <th class="text-right">Confirmed</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="hack in $ctrl.entity.hacks">
+                    <td>{{ hack.level }}</td>
+                    <td>{{ hack.source || 'all' }}</td>
+                    <td>
+                        <strong>{{ hack.summary }}</strong><span ng-if="hack.details.length"><strong>:</strong> {{ hack.details }}</span>
+                    </td>
+                    <td class="text-right">
+                        <span class="icon check-icon" ng-if="hack.confirmed"></span>
+                        <span class="icon remove-icon" ng-if="!hack.confirmed"></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 

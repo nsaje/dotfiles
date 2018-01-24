@@ -1,8 +1,8 @@
 <div class="zem-header__logo-container">
     <a ui-sref="v2" class="zem-header__logo"></a>
 </div>
-<zem-header-navigation class="zem-header-navigation"></zem-header-navigation>
-<zem-header-breadcrumb class="zem-header-breadcrumb"></zem-header-breadcrumb>
+<zem-header-navigation class="zem-header-navigation" ng-class="{'zem-header-navigation--without-filer-and-date': !$ctrl.isDateRangePickerVisible && !$ctrl.isFilterSelectorToggleVisible}"></zem-header-navigation>
+<zem-header-breadcrumb class="zem-header-breadcrumb custom-scroller--horizontal"></zem-header-breadcrumb>
 <zem-header-menu class="zem-header-menu"></zem-header-menu>
 <zem-header-date-range-picker ng-if="$ctrl.isDateRangePickerVisible" class="zem-header-date-range-picker"></zem-header-date-range-picker>
 <zem-header-filter-selector-toggle ng-if="$ctrl.isFilterSelectorToggleVisible" class="zem-header-filter-selector-toggle"></zem-header-filter-selector-toggle>

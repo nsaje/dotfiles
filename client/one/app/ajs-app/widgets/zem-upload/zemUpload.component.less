@@ -1,6 +1,10 @@
 @import 'variables';
+@import '../../styles/utilities.less';
 
-@modal-content-width: 1180px;
+@modal-content-width: 90%;
+@content-upload-ad-editing-width: 60%;
+@content-upload-ad-editing-width-common-breakpoint: 60%;
+@content-upload-ad-editing-width-desktop-breakpoint: 100%;
 @form-input-width-content-upload: 68%;
 @form-additional-info-width-content-upload: 14%;
 
@@ -14,6 +18,17 @@
         width: 49%;
         float: left;
         margin-right: 2%;
+        line-height: 28px;
+        padding-top: @default-spacing;
+
+        strong {
+            display: block;
+            margin: 15px 0 5px 0;
+        }
+    }
+
+    .content-upload__file-upload-button {
+        margin-right: 0;
     }
 
     .file-upload-form {
@@ -36,12 +51,12 @@
 
         .form__group--choose-file {
             .button {
-                width: 10%;
+                width: 15%;
                 margin-right: 1%;
             }
 
             .input-text {
-                width: 77%;
+                width: 72%;
             }
         }
     }
@@ -49,7 +64,7 @@
     .modal__body {
         overflow: hidden;
         position: relative;
-		margin-bottom: 60px !important;
+		margin-bottom: 60px;
     }
 
     .modal__footer {
@@ -70,7 +85,7 @@
 .content-upload__content-ad-picker-container--editing {
     .content-upload__ads-container,
     .content-upload__batch-name-container {
-        width: @modal-content-width - @modal-content-width*0.6;
+        width: 100% - @content-upload-ad-editing-width;
         transition: all @default-animation;
     }
 
@@ -121,7 +136,7 @@
 }
 
 .content-upload__ads-container {
-    width: @modal-content-width;
+    width: 100%;
     transition: none;
     position: absolute;
     top: 0;
@@ -138,7 +153,7 @@
 
 .content-upload__batch-name-container {
     border-bottom: 4px solid @primary-color;
-    width: @modal-content-width;
+    width: 100%;
     padding: 8px 60px 8px 15px;
     margin: 0;
     color: @primary-color;
@@ -344,12 +359,12 @@
 }
 
 .content-upload__edit-form {
-    width: @modal-content-width - @modal-content-width*0.4;
+    width: @content-upload-ad-editing-width;
     position: absolute;
     overflow: hidden;
     top: 0;
     bottom: 0;
-    right: -(@modal-content-width - @modal-content-width*0.4 + 20);
+    right: -@content-upload-ad-editing-width - 1;
     transition: all @default-animation;
     padding: 0 15px 15px 15px;
     background: tint(@secondary-color,96%);
@@ -414,24 +429,33 @@
     border: none;
     height: 49px;
     line-height: 49px;
-    padding-right: 20px;
+    padding-right: 46px;
+    outline: none;
 
     &::after {
         content: "";
         display: block;
         position: absolute;
-        width: 12px;
-        height: 12px;
-        background: url('images/arrow-gray.svg') center center no-repeat;
+        width: 36px;
+        height: 36px;
+        background: tint(@secondary-color,90%) url('@{images-folder}/arrow-sec.svg') 14px center no-repeat;
+        background-size: 10px;
+        border-radius: 50%;
         right: 0;
         top: 50%;
         transform: translateY(-50%);
+    }
+
+    &:hover {
+        &::after {
+            background-color: tint(@secondary-color, 80%);
+        }
     }
 }
 
 .content-upload__edit-form-title-container {
     border-bottom: 1px solid #d2d2d2;
-    padding: 15px 100px 11px 0;
+    padding: 15px 120px 11px 0;
     margin: 0 0 20px 0;
     font-size: 18px;
     line-height: 22px;
@@ -458,6 +482,10 @@
     color: @gray;
     font-size: 11px;
     padding-left: 10px;
+
+    .alternative-link {
+        display: block;
+    }
 }
 
 .content-upload__field-additional-info--with-link {
@@ -556,4 +584,320 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+///////////////////////////
+// RESPONSIVE //
+///////////////////////////
+
+@media only screen and (max-width: @desktop-common-breakpoint) {
+    .content-upload__content-ad-picker-container--editing {
+        .content-upload__ads-container,
+        .content-upload__batch-name-container {
+            width: 100% - @content-upload-ad-editing-width-common-breakpoint;
+        }
+    }
+
+    .content-upload__edit-form {
+        width: @content-upload-ad-editing-width-common-breakpoint;
+        position: absolute;
+        overflow: hidden;
+        top: 0;
+        bottom: 0;
+        right: -@content-upload-ad-editing-width-common-breakpoint - 1;
+    }
+}
+
+@media only screen and (max-width: @desktop-breakpoint) {
+    .content-upload .modal-dialog {
+        width: auto;
+        max-width: none;
+        height: auto;
+        max-height: none;
+        margin: 0;
+        position: fixed;
+        top: 5%;
+        right: 5%;
+        bottom: 5%;
+        left: 5%;
+
+        .button--big {
+            .small-text {
+                margin-top: @default-spacing;
+            }
+
+            strong {
+                display: inline;
+            }
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+
+        .modal__body {
+            position: absolute;
+            top: 57px;
+            margin-bottom: 0;
+            overflow: auto;
+        }
+
+        .content-upload__content-ad-picker-container {
+            height: auto;
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 60px;
+            left: 0;
+            margin-bottom: 0;
+            overflow: hidden;
+        }
+    }
+
+    .content-upload__ads-container {
+        overflow: hidden;
+    }
+
+    .content-upload__content-ad-picker-container--editing {
+        .content-upload__ads-container,
+        .content-upload__batch-name-container {
+            width: 100%;
+            overflow: hidden;
+        }
+    }
+
+    .content-upload__edit-form {
+        width: @content-upload-ad-editing-width-desktop-breakpoint;
+        position: absolute;
+        overflow: hidden;
+        top: 0;
+        bottom: 0;
+        right: -@content-upload-ad-editing-width-desktop-breakpoint - 1;
+        border-top-left-radius: @border-radius;
+    }
+
+    .content-upload__selected-ad,
+    .content-upload__ads-table tbody tr:hover td {
+        background-color: transparent;
+    }
+}
+
+@media only screen and (max-width: @tablet-breakpoint) {
+    .content-upload .modal-dialog {
+        .modal__body {
+            top: 44px;
+        }
+
+        .content-upload__content-ad-picker-container {
+            top: 0;
+        }
+    }
+
+    .content-upload__edit-form {
+        .form__indented-group {
+            width: 100%;
+            margin-left: 0;
+        }
+
+        .form__group {
+            margin: 10px 0;
+
+            .form__text,
+            .form__text--small {
+                width: 100%;
+                margin-left: 0;
+            }
+
+            .message {
+                width: auto;
+                clear: none;
+                float: left;
+                margin-left: 0;
+            }
+
+            .button--full-width {
+                width: 100%;
+            }
+
+            .form__label {
+                width: 100%;
+            }
+
+            .textarea,
+            .form__checkbox,
+            .form__radio,
+            .input-text,
+            .multiselect,
+            .prefixed-field,
+            .postfixed-field,
+            .form__information {
+                width: 100%;
+                float: none;
+            }
+
+            .textarea {
+                max-width: 100%;
+            }
+        }
+    }
+
+    .content-upload__field-additional-info {
+        float: right;
+        padding-left: 0;
+        text-align: right;
+        line-height: 24px;
+        height: auto;
+        width: auto;
+        white-space: nowrap;
+        position: relative;
+
+        .content-upload__count-characters {
+            float: right;
+        }
+
+        &.content-upload__field-additional-info--with-link {
+            .content-upload__count-characters {
+                margin-left: 10px;
+                padding-left: 10px;
+                border-left: 1px solid @light-gray;
+            }
+        }
+
+        .alternative-link {
+            float: right;
+        }
+
+        .clearfix();
+    }
+
+    .content-upload__ad-error-container {
+        width: 30px;
+    }
+
+    .content-upload__ad-error {
+        font-size: 0;
+        padding-left: 0;
+        height: 18px;
+        width: 14px;
+    }
+
+    .content-upload__ad-action-buttons {
+        width: 100px;
+
+        .button {
+            font-size: 0;
+            padding-left: 22px;
+            margin-right: 0;
+        }
+    }
+}
+
+@media only screen and (max-width: @mobile-breakpoint) {
+    .content-upload .modal-dialog {
+        .button--big {
+            width: 100%;
+            float: none;
+            margin: 0 0 @default-spacing 0;
+        }
+    }
+
+    .content-upload__batch-name-container {
+        .button {
+            font-size: 0;
+            padding-left: 22px;
+        }
+    }
+
+    .content-upload__content-ad-picker-container--editing .content-upload__ads-table,
+    .content-upload__ads-table {
+        display: block;
+
+        tbody {
+            width: auto;
+            display: block;
+
+            tr {
+                position: relative;
+                display: block;
+                padding: @default-spacing;
+                width: auto;
+                height: auto;
+                border-bottom: 1px solid tint(@secondary-color,90%);
+
+                &:last-child {
+                    border-bottom: none;
+                }
+
+                td {
+                    display: block;
+                    padding: 0;
+                    width: auto;
+                    height: auto;
+                    border-bottom: none;
+
+                    &.content-upload__ad-status {
+                        position: absolute;
+                        top: @default-spacing;
+                        right: @default-spacing;
+                    }
+
+                    &.content-upload__ad-image-container {
+                        position: absolute;
+                        top: @default-spacing;
+                        left: @default-spacing;
+                        width: 40px;
+                        height: 40px;
+                    }
+
+                    &.content-upload__ad-title {
+                        margin-bottom: 10px;
+                    }
+
+                    &.content-upload__ad-action-buttons {
+                        margin-top: 10px;
+                    }
+
+                    &.content-upload__ad-title,
+                    &.content-upload__ad-error-container,
+                    &.content-upload__ad-action-buttons {
+                        padding: 0 0 0 50px;
+
+                    }
+
+                    .content-upload__ad-error {
+                        font-size: @default-font-size;
+                        padding-left: 18px;
+                        height: 18px;
+                        width: auto;
+                    }
+
+                    &.content-upload__ad-action-buttons {
+                        text-align: left;
+
+                        .button {
+                            font-size: 12px;
+                            padding-left: 28px;
+                            margin-right: 10px;
+                        }
+                    }
+
+                    .content-upload__ad-title--two-lines {
+                        height: auto;
+                    }
+                }
+            }
+        }
+    }
+
+    .content-upload__ads-container {
+        .buttons-panel {
+            .button {
+                margin: 0 10px 10px 0;
+            }
+        }
+    }
 }
