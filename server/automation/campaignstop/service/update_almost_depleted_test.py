@@ -319,6 +319,45 @@ class UpdateAlmostDepletedTestCase(TestCase):
         returned_spend = campaignstop.service.update_almost_depleted._get_spend(adg_sources, adg_source_spends)
         self.assertEqual(returned_spend, 1500.000)
 
+    @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
+    def test_when_user_disables_adgroup_we_should_get_realtime_data_from_all_sources(self, _):
+        self.source.source_type.save()
+        self.ad_group_source.settings.update(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
+
+        source_2 = magic_mixer.blend(core.source.Source)
+        source_3 = magic_mixer.blend(core.source.Source)
+
+        magic_mixer.blend(core.entity.AdGroupSource, ad_group=self.ad_group, source=source_2)
+        magic_mixer.blend(core.entity.AdGroupSource, ad_group=self.ad_group, source=source_3)
+
+        today = dates_helper.local_today()
+        RealTimeDataHistory.objects.create(
+            ad_group=self.ad_group,
+            source=self.source,
+            date=today,
+            etfm_spend=200.0,
+        )
+
+        today = dates_helper.local_today()
+        RealTimeDataHistory.objects.create(
+            ad_group=self.ad_group,
+            source=source_2,
+            date=today,
+            etfm_spend=300.0,
+        )
+
+        today = dates_helper.local_today()
+        RealTimeDataHistory.objects.create(
+            ad_group=self.ad_group,
+            source=source_3,
+            date=today,
+            etfm_spend=500.0,
+        )
+
+        self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
+        campaignstop.service.update_almost_depleted.mark_almost_depleted_campaigns()
+        self.assertTrue(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
+
     def setup_initial_state(self):
         self.today = dates_helper.local_today()
         self.campaign = magic_mixer.blend(

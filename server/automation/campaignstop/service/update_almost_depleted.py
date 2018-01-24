@@ -73,7 +73,7 @@ def _get_latest_real_time_data(campaign):
     return RealTimeDataHistory.objects.filter(
         ad_group__campaign=campaign,
         date__gte=dates_helper.local_yesterday()
-    ).distinct('ad_group', 'source', 'date').order_by('ad_group_id', 'source_id', '-date', '-created_dt')[:2]
+    ).distinct('ad_group', 'source', 'date').order_by('ad_group_id', 'source_id', '-date', '-created_dt')
 
 
 def _get_adgroup_sources(campaign):
