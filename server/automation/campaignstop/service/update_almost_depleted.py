@@ -40,7 +40,7 @@ def _get_campaign_available_amount(campaign_budget_line_items):
     campaign_available_amount = {}
     date_to_digest = _get_date_to_digest()
     for campaign, budget_line_items in campaign_budget_line_items.iteritems():
-        campaign_available_amount[campaign] = sum(bli.get_available_amount(date=date_to_digest) for bli in budget_line_items)
+        campaign_available_amount[campaign] = sum(bli.get_available_etfm_amount(date=date_to_digest) for bli in budget_line_items)
     return campaign_available_amount
 
 
