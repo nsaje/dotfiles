@@ -4,7 +4,7 @@ from utils import dates_helper
 from utils import s3helpers
 
 select_query = """
-SELECT publisher, exchange, sum(bid_reqs) AS num_bid_req,
+SELECT publisher, exchange, sum(bid_reqs) AS num_bid_req
 FROM supply_stats
 WHERE date >= %s
 GROUP BY exchange, publisher
