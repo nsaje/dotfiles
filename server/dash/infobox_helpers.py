@@ -306,21 +306,15 @@ def calculate_daily_ad_group_cap(ad_group):
     """
     Daily media cap
     """
-    return _compute_daily_cap([ad_group])
+    return _compute_daily_cap(id=ad_group.id)
 
 
 def calculate_daily_campaign_cap(campaign):
-    ad_groups = dash.models.AdGroup.objects.filter(
-        campaign=campaign
-    ).exclude_archived().select_related('settings')
-    return _compute_daily_cap(ad_groups)
+    return _compute_daily_cap(campaign_id=campaign.id)
 
 
 def calculate_daily_account_cap(account):
-    ad_groups = dash.models.AdGroup.objects.filter(
-        campaign__account=account
-    ).exclude_archived().select_related('settings')
-    return _compute_daily_cap(ad_groups)
+    return _compute_daily_cap(campaign__account_id=account.id)
 
 
 def calculate_available_media_account_budget(account):
@@ -710,24 +704,27 @@ def _retrieve_active_creditlineitems(account, date):
     return ret.filter_active()
 
 
-def _compute_daily_cap(ad_groups):
-    adgroup_map = {ad_group.id: ad_group for ad_group in ad_groups}
-    adgroup_ids = adgroup_map.keys()
-    adgroup_sources = dash.models.AdGroupSource.objects.filter(
-        ad_group_id__in=adgroup_ids,
-    ).values('settings__state', 'settings__daily_budget_cc', 'ad_group_id', 'source__source_type__type')
+def _compute_daily_cap(**filters):
+    ad_groups = dash.models.AdGroup.objects.filter(
+        settings__state=dash.constants.AdGroupSettingsState.ACTIVE,
+        **filters
+    ).select_related('settings')
 
+    adgroup_sources = dash.models.AdGroupSource.objects.filter(
+        settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
+        ad_group__in=ad_groups,
+    ).values(
+        'settings__daily_budget_cc',
+        'ad_group_id',
+        'source__source_type__type',
+    )
+
+    adgroup_map = {ad_group.id: ad_group for ad_group in ad_groups}
     ret = 0
 
     ad_groups_with_active_b1_sources = set()
     for adgroup_source in adgroup_sources:
-        if adgroup_source['settings__state'] != dash.constants.AdGroupSourceSettingsState.ACTIVE:
-            continue
-
         adgroup_settings = adgroup_map[adgroup_source['ad_group_id']].settings
-
-        if adgroup_settings.state != dash.constants.AdGroupSettingsState.ACTIVE:
-            continue
 
         if adgroup_settings.b1_sources_group_enabled and\
            adgroup_source['source__source_type__type'] == dash.constants.SourceType.B1:
@@ -738,8 +735,6 @@ def _compute_daily_cap(ad_groups):
 
     for ad_group_id in ad_groups_with_active_b1_sources:
         ags = adgroup_map[ad_group_id].settings
-        if ags.state != dash.constants.AdGroupSettingsState.ACTIVE:
-            continue
 
         if not ags.b1_sources_group_enabled:
             continue

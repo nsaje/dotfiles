@@ -151,17 +151,18 @@ class AccountsLoader(Loader):
         """
 
         account_ids_state = models.AdGroup.objects.filter(
-            campaign__account_id__in=self.objs_ids
+            campaign__account_id__in=self.objs_ids,
+            settings__state=constants.AdGroupRunningStatus.ACTIVE,
         ).values_list(
-            'campaign_id', 'campaign__account_id', 'settings__state'
-        ).order_by()  # removes default ordering to speed up the query
+            'campaign_id', 'campaign__account_id'
+        ).distinct().order_by()  # removes default ordering to speed up the query
         campaignstop_states = automation.campaignstop.get_campaignstop_states(
             models.Campaign.objects.filter(account_id__in=self.objs_ids))
 
         status_map = collections.defaultdict(lambda: constants.AdGroupRunningStatus.INACTIVE)
-        for campaign_id, account_id, state in account_ids_state:
-            if state == constants.AdGroupRunningStatus.ACTIVE and campaignstop_states[campaign_id]['allowed_to_run']:
-                status_map[account_id] = state
+        for campaign_id, account_id in account_ids_state:
+            if campaignstop_states[campaign_id]['allowed_to_run']:
+                status_map[account_id] = constants.AdGroupRunningStatus.ACTIVE
 
         return status_map
 
