@@ -1,0 +1,2 @@
+class CannotChangeLanguage(Exception):
+    pass

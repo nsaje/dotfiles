@@ -15,6 +15,9 @@ class CampaignSettingsMixin(object):
         clean_updates = self._clean_updates(kwargs)
         changes = self.get_changes(clean_updates)
 
+        # FIXME clean method should be called automatically from CampaignSettings model
+        self.clean(changes)
+
         super(CampaignSettingsMixin, self).update(request, **changes)
         self._update_campaign(kwargs)
 
@@ -23,6 +26,7 @@ class CampaignSettingsMixin(object):
             self._handle_ga_setup_instructions(request, changes)
             self._propagate_settings(changes)
 
+    @classmethod
     def _clean_updates(cls, kwargs):
         cleaned_updates = {}
         for field, value in kwargs.items():

@@ -356,6 +356,7 @@ class CampaignSettings(api_common.BaseApiView):
         response = {
             'settings': self.get_dict(request, campaign.settings, campaign),
             'archived': campaign.settings.archived,
+            'language': campaign.settings.language,
         }
         if request.user.has_perm('zemauth.can_see_campaign_goals'):
             response['goals'] = self.get_campaign_goals(
@@ -523,6 +524,7 @@ class CampaignSettings(api_common.BaseApiView):
             'account_id': str(campaign.account_id),
             'name': campaign.name,
             'campaign_goal': settings.campaign_goal,
+            'language': settings.language,
             'goal_quantity': settings.goal_quantity,
             'enable_ga_tracking': settings.enable_ga_tracking,
             'ga_property_id': settings.ga_property_id,

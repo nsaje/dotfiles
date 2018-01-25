@@ -895,6 +895,13 @@ class CampaignSettingsForm(PublisherGroupsFormMixin, forms.Form):
     )
 
     campaign_manager = forms.IntegerField(required=False)
+
+    language = forms.TypedChoiceField(
+        choices=constants.CampaignSettingsLanguage.get_choices(),
+        coerce=int,
+        required=False,
+    )
+
     iab_category = forms.ChoiceField(
         choices=constants.IABCategory.get_choices(),
         required=False,

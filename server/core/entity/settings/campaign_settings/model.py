@@ -15,6 +15,7 @@ import core.common
 import core.entity
 import core.history
 import core.source
+import validation
 
 from .. import helpers
 
@@ -24,7 +25,9 @@ from ..settings_query_set import SettingsQuerySet
 import instance
 
 
-class CampaignSettings(instance.CampaignSettingsMixin, SettingsBase):
+class CampaignSettings(validation.CampaignSettingsValidatorMixin,
+                       instance.CampaignSettingsMixin,
+                       SettingsBase):
     class Meta:
         app_label = 'dash'
         ordering = ('-created_dt',)
@@ -156,6 +159,7 @@ class CampaignSettings(instance.CampaignSettingsMixin, SettingsBase):
         NAMES = {
             'name': 'Name',
             'campaign_manager': 'Campaign Manager',
+            'language': 'Language',
             'iab_category': 'IAB Category',
             'campaign_goal': 'Campaign Goal',
             'goal_quantity': 'Goal Quantity',
@@ -186,6 +190,8 @@ class CampaignSettings(instance.CampaignSettingsMixin, SettingsBase):
             import dash.views.helpers
             value = dash.views.helpers.get_user_full_name_or_email(
                 value)
+        elif prop_name == 'language':
+            value = constants.CampaignSettingsLanguage.get_text(value)
         elif prop_name == 'iab_category':
             value = constants.IABCategory.get_text(value)
         elif prop_name == 'campaign_goal':
