@@ -70,7 +70,7 @@ def _should_query_realtime_stats_for_yesterday(campaign, date):
 
 def _get_available_campaign_budget(campaign, until):
     budgets_active_today = _get_budgets_active_today(campaign)
-    return sum(bli.get_available_etfm_amount(date=until) for bli in budgets_active_today)
+    return sum(max(bli.get_available_etfm_amount(date=until), 0) for bli in budgets_active_today)
 
 
 def _get_budgets_active_today(campaign):

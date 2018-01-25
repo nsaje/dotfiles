@@ -66,6 +66,28 @@ class GetPredictionTest(TestCase):
         prediction = campaign_spends.get_predicted_remaining_budget(LogMock(), self.campaign)
         self.assertEqual(200, prediction)
 
+    def test_get_prediction_with_another_budget_overspent(self):
+        today = dates_helper.local_today()
+        overspent_budget = magic_mixer.blend(
+            core.bcm.BudgetLineItem,
+            campaign=self.campaign,
+            start_date=dates_helper.days_before(today, 7),
+            end_date=today,
+            credit=self.credit,
+            amount=0,
+        )
+        magic_mixer.blend(
+            core.bcm.BudgetDailyStatement,
+            budget=overspent_budget,
+            date=dates_helper.local_yesterday(),
+            media_spend_nano=500 * (10**9),
+            data_spend_nano=0,
+            license_fee_nano=50 * (10**9),
+            margin_nano=0,
+        )
+        prediction = campaign_spends.get_predicted_remaining_budget(LogMock(), self.campaign)
+        self.assertEqual(500, prediction)
+
     @mock.patch.object(core.bcm.BudgetLineItem, 'get_available_etfm_amount')
     def test_get_prediction_with_spent_budget(self, mock_available_amount):
         mock_available_amount.return_value = 0
