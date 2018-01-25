@@ -7,7 +7,7 @@ angular.module('one.widgets').component('zemInfoboxRealtimestats', {
 
         var spendRow = {
             name: 'Today\'s spend:',
-            warning: 'Today\'s spend is calculated in real-time and represents the amount of money spent on media and data costs today. Today\'s spend does not include fees that might apply. The final amount might be different due to post-processing. Outbrain, Yahoo and Facebook today\'s spend is delayed by 15 minutes.',  // eslint-disable-line max-len
+            warning: 'Today\'s spend is calculated in real-time and represents the amount of money spent on media and data costs today. Today\'s spend does not include fees that might apply. The final amount might be different due to post-processing. Outbrain, Yahoo and Facebook today\'s spend is delayed by 15 minutes. Yahoo data is offset because of the time zone difference and will not be displayed for the first 3 hours of the day.',  // eslint-disable-line max-len
         };
 
         $ctrl.spendRow = null;
