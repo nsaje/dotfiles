@@ -9,7 +9,6 @@ from utils import api_common, exc
 from dash.views import helpers
 from automation import campaign_stop
 
-import automation.campaignstop
 import core.bcm
 import core.bcm.bcm_slack
 
@@ -513,11 +512,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         amount = Decimal(data.get('amount', '0'))
         if amount >= prev_amount:
             return
-        if item.instance.campaign.get_current_settings().automatic_campaign_stop:
-            self._validate_automatic_campaign_stop(item, amount)
-        elif item.instance.campaign.real_time_campaign_stop:
-            automation.campaignstop.validate_minimum_budget_amount(item, amount)
-        else:
+        if not item.instance.campaign.get_current_settings().automatic_campaign_stop:
             acc_id = item.instance.campaign.account_id
             if amount < prev_amount and acc_id not in EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK:
                 item.errors.setdefault('amount', []).append(
@@ -525,7 +520,6 @@ class CampaignBudgetItemView(api_common.BaseApiView):
                 )
                 return
 
-    def _validate_automatic_campaign_stop(self, item, amount):
         min_amount = campaign_stop.get_minimum_budget_amount(item.instance)
         if min_amount is None:
             return
