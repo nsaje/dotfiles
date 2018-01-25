@@ -26,7 +26,8 @@ class CampaignStopState(models.Model):
             ad_group_ids = self.campaign.adgroup_set.all().exclude_archived().values_list('id', flat=True)
             k1_helper.update_ad_groups(
                 ad_group_ids,
-                'campaignstop.status_change'
+                'campaignstop.status_change',
+                priority=True
             )
 
     def update_max_allowed_end_date(self, max_allowed_end_date):

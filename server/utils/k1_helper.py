@@ -14,48 +14,52 @@ from utils import request_signer
 logger = logging.getLogger(__name__)
 
 
-def update_accounts(account_ids, msg=''):
+def update_accounts(account_ids, msg='', priority=False):
     for account_id in account_ids:
-        update_account(account_id, msg=msg)
+        update_account(account_id, msg=msg, priority=priority)
 
 
-def update_account(account_id, msg=''):
+def update_account(account_id, msg='', priority=False):
     _send_task(settings.K1_CONSISTENCY_PING_ACCOUNT_QUEUE,
                'consistency_ping_account',
                account_id=account_id,
-               msg=msg)
+               msg=msg,
+               priority=priority)
 
 
-def update_ad_groups(ad_group_ids, msg=''):
+def update_ad_groups(ad_group_ids, msg='', priority=False):
     for ag_id in ad_group_ids:
-        update_ad_group(ag_id, msg=msg)
+        update_ad_group(ag_id, msg=msg, priority=priority)
 
 
-def update_ad_group(ad_group_id, msg=''):
+def update_ad_group(ad_group_id, msg='', priority=False):
     _send_task(settings.K1_CONSISTENCY_PING_AD_GROUP_QUEUE,
                'consistency_ping_ad_group',
                ad_group_id=ad_group_id,
-               msg=msg)
+               msg=msg,
+               priority=priority)
 
 
-def update_content_ads(ad_group_id, content_ad_ids, msg=''):
+def update_content_ads(ad_group_id, content_ad_ids, msg='', priority=False):
     for ad_id in content_ad_ids:
-        update_content_ad(ad_group_id, ad_id, msg=msg)
+        update_content_ad(ad_group_id, ad_id, msg=msg, priority=priority)
 
 
-def update_content_ad(ad_group_id, content_ad_id, msg=''):
+def update_content_ad(ad_group_id, content_ad_id, msg='', priority=False):
     _send_task(settings.K1_CONSISTENCY_PING_CONTENT_AD_QUEUE,
                'consistency_ping_content_ad',
                ad_group_id=ad_group_id,
                content_ad_id=content_ad_id,
-               msg=msg)
+               msg=msg,
+               priority=priority)
 
 
-def update_blacklist(ad_group_id, msg=''):
+def update_blacklist(ad_group_id, msg='', priority=False):
     _send_task(settings.K1_CONSISTENCY_PING_BLACKLIST_QUEUE,
                'consistency_ping_blacklist',
                ad_group_id=ad_group_id,
-               msg=msg)
+               msg=msg,
+               priority=priority)
 
 
 @newrelic.agent.function_trace()

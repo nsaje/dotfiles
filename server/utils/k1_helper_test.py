@@ -27,6 +27,7 @@ class K1HelperTest(TestCase):
                 'msg': 'test',
                 'account_id': 123,
                 'initiated_at': 1513594339.172575,
+                'priority': False,
             }
         )
 
@@ -39,6 +40,7 @@ class K1HelperTest(TestCase):
                 'msg': 'test',
                 'ad_group_id': 123,
                 'initiated_at': 1513594339.172575,
+                'priority': False,
             }
         )
 
@@ -52,6 +54,7 @@ class K1HelperTest(TestCase):
                 'ad_group_id': 123,
                 'content_ad_id': 456,
                 'initiated_at': 1513594339.172575,
+                'priority': False,
             }
         )
 
@@ -64,5 +67,6 @@ class K1HelperTest(TestCase):
                 'msg': 'test',
                 'ad_group_id': 123,
                 'initiated_at': 1513594339.172575,
+                'priority': False,
             }
         )
