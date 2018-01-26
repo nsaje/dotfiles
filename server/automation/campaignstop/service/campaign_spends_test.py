@@ -223,10 +223,15 @@ class GetBudgetSpendEstimateTest(TestCase):
             margin_nano=0,
         )
 
-        estimate = campaign_spends.get_budget_spend_estimates(LogMock(), self.campaign)
-        self.assertEqual({
-            self.budget: 200
-        }, estimate)
+        today = dates_helper.local_today()
+        with mock.patch('utils.dates_helper.utc_now') as mock_utc_now:
+            noon = datetime.datetime(today.year, today.month, today.day, 12)
+            mock_utc_now.return_value = noon
+
+            estimate = campaign_spends.get_budget_spend_estimates(LogMock(), self.campaign)
+            self.assertEqual({
+                self.budget: 200
+            }, estimate)
 
     def test_real_time_data_spend(self):
         today = dates_helper.local_today()
