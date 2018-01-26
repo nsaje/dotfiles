@@ -19,9 +19,6 @@ class RealtimestatsServiceTest(TestCase):
         }, {
             'type': 'yahoo',
             'source_campaign_key': 'test_yahoo_1',
-        }, {
-            'type': 'facebook',
-            'source_campaign_key': 'test_facebook_1',
         }]
         self.account = magic_mixer.blend(core.entity.Account, uses_bcm_v2=True)
         self.campaign = magic_mixer.blend(core.entity.Campaign, account=self.account)
@@ -35,7 +32,6 @@ class RealtimestatsServiceTest(TestCase):
         self.expected_params = {
             'outbrain_campaign_id': 'test_outbrain_1',
             'yahoo_campaign_id': 'test_yahoo_1',
-            'facebook_campaign_id': 'test_facebook_1',
         }
 
         self._set_up_budgets()
@@ -107,6 +103,34 @@ class RealtimestatsServiceTest(TestCase):
 
         mock_k1_get.assert_called_once_with(self.ad_group.id, self.expected_params)
 
+    @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
+    def test_get_ad_group_sources_stats_without_cache(self, mock_k1_get):
+        sources = magic_mixer.cycle(2).blend(core.source.Source, bidder_slug=magic_mixer.RANDOM)
+        mock_k1_get.return_value = [{
+            'source_slug': sources[0].bidder_slug,
+            'spend': 1.1,
+        }, {
+            'source_slug': sources[1].bidder_slug,
+            'spend': 3.0,
+        }]
+
+        result = service.get_ad_group_sources_stats_without_caching(self.ad_group)
+        self.assertEqual(result, [
+            {
+                'source_slug': sources[1].bidder_slug,
+                'source': sources[1],
+                'spend': test_helper.AlmostMatcher(decimal.Decimal('5.7689')),
+            },
+            {
+                'source_slug': sources[0].bidder_slug,
+                'source': sources[0],
+                'spend': test_helper.AlmostMatcher(decimal.Decimal('2.1153')),
+            },
+        ])
+
+        expected_params = dict(self.expected_params, **{'no_cache': True})
+        mock_k1_get.assert_called_once_with(self.ad_group.id, expected_params)
+
     @mock.patch('dash.features.realtimestats.service.influx')
     @mock.patch('dash.features.realtimestats.service.logger')
     @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
@@ -119,6 +143,15 @@ class RealtimestatsServiceTest(TestCase):
 
         mock_logger.exception.assert_called_once_with(e)
         mock_influx.incr.assert_called_once_with('dash.realtimestats.error', 1, type='exception')
+
+    @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
+    def test_k1_exception_without_caching(self, mock_k1_get):
+        e = Exception('test')
+        mock_k1_get.side_effect = e
+
+        with self.assertRaises(Exception) as cm:
+            service.get_ad_group_sources_stats_without_caching(self.ad_group)
+            self.assertIs(e, cm.exception)
 
     @mock.patch('dash.features.realtimestats.service.influx')
     @mock.patch('dash.features.realtimestats.service.logger')
@@ -133,6 +166,15 @@ class RealtimestatsServiceTest(TestCase):
         mock_logger.exception.assert_not_called()
         mock_influx.incr.assert_called_once_with('dash.realtimestats.error', 1, type='http', status='400')
 
+    @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
+    def test_k1_http_exception_without_caching(self, mock_k1_get):
+        e = urllib2.HTTPError('url', 400, 'msg', None, None)
+        mock_k1_get.side_effect = e
+
+        with self.assertRaises(urllib2.HTTPError) as cm:
+            service.get_ad_group_sources_stats_without_caching(self.ad_group)
+            self.assertEqual(e, cm.exception)
+
     @mock.patch('dash.features.realtimestats.service.influx')
     @mock.patch('dash.features.realtimestats.service.logger')
     @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
@@ -145,3 +187,12 @@ class RealtimestatsServiceTest(TestCase):
 
         mock_logger.exception.assert_not_called()
         mock_influx.incr.assert_called_once_with('dash.realtimestats.error', 1, type='ioerror')
+
+    @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
+    def test_k1_ioerror_exception_without_caching(self, mock_k1_get):
+        e = IOError()
+        mock_k1_get.side_effect = e
+
+        with self.assertRaises(IOError) as cm:
+            service.get_ad_group_sources_stats_without_caching(self.ad_group)
+            self.assertEqual(e, cm.exception)
