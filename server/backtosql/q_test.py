@@ -1,5 +1,3 @@
-import mock
-
 import backtosql
 import datetime
 
@@ -122,42 +120,3 @@ class QTestCase(TestCase, backtosql.TestSQLMixin):
         (TROL.bar=%s AND TROL.foo=ANY(%s)))'''
         self.assertSQLEquals(constraints, expected.replace('        ', ''))
         self.assertItemsEqual(q.get_params(), [[1, 2, 3], datetime.date.today()] * 10)
-
-    @mock.patch('backtosql.q.random.randrange', lambda x: 33)
-    def test_generate_tmp_tables(self):
-        q = backtosql.Q(self.ModelA(), py_foo=[1, 2, 3], py_bar=[u'a', 'b', 'c'])
-        q.use_tmp_tables = True
-
-        constraints = q.generate("TROL")
-        create_tmp_tables = q.get_create_tmp_tables()
-        drop_tmp_tables = q.get_drop_tmp_tables()
-
-        expected_sql = '''
-        (TROL.bar IN (SELECT id FROM tmp_filter_bar_33) AND
-        TROL.foo IN (SELECT id FROM tmp_filter_foo_33))'''
-        expected_create_sql = '''
-        CREATE TEMP TABLE tmp_filter_bar_33 (id text);
-        INSERT INTO tmp_filter_bar_33 (id) VALUES (%s),(%s),(%s);
-        CREATE TEMP TABLE tmp_filter_foo_33 (id int);
-        INSERT INTO tmp_filter_foo_33 (id) VALUES (%s),(%s),(%s);'''
-        expected_drop_sql = '''
-        DROP TABLE tmp_filter_bar_33;
-        DROP TABLE tmp_filter_foo_33;'''
-
-        self.assertSQLEquals(constraints, expected_sql)
-        self.assertEqual(q.get_params(), [])
-        self.assertSQLEquals(create_tmp_tables[0], expected_create_sql)
-        self.assertEqual(create_tmp_tables[1], ['a', 'b', 'c', 1, 2, 3])
-        self.assertSQLEquals(drop_tmp_tables[0], expected_drop_sql)
-        self.assertEqual(drop_tmp_tables[1], [])
-
-    def test_generate_tmp_tables_none(self):
-        q = backtosql.Q(self.ModelA(), py_foo=1, py_bar='a')
-        q.use_tmp_tables = True
-
-        q.generate("TROL")
-        create_tmp_tables = q.get_create_tmp_tables()
-        drop_tmp_tables = q.get_drop_tmp_tables()
-
-        self.assertIsNone(create_tmp_tables)
-        self.assertIsNone(drop_tmp_tables)

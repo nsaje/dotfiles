@@ -3,7 +3,7 @@ from redshiftapi import queries
 
 
 def query_campaign(campaign_id, date_from, date_to):
-    sql, params, create_tmp_tables, drop_tmp_tables = queries.prepare_query_all_base(
+    sql, params = queries.prepare_query_all_base(
         breakdown=[],
         constraints={
             'campaign_id': campaign_id,
@@ -14,12 +14,7 @@ def query_campaign(campaign_id, date_from, date_to):
         use_publishers_view=False
     )
 
-    rows = db.execute_query(
-        sql, params,
-        'campaign_quick_stats',
-        create_tmp_tables=create_tmp_tables,
-        drop_tmp_tables=drop_tmp_tables,
-    )
+    rows = db.execute_query(sql, params, 'campaign_quick_stats')
     return rows[0]
 
 
@@ -31,17 +26,12 @@ def query_adgroup(ad_group_id, date_from, date_to, source_id=None):
     }
     if source_id:
         constraints['source_id'] = source_id
-    sql, params, create_tmp_tables, drop_tmp_tables = queries.prepare_query_all_base(
+    sql, params = queries.prepare_query_all_base(
         breakdown=[],
         constraints=constraints,
         parents=None,
         use_publishers_view=False
     )
 
-    rows = db.execute_query(
-        sql, params,
-        'adgroup_quick_stats',
-        create_tmp_tables=create_tmp_tables,
-        drop_tmp_tables=drop_tmp_tables,
-    )
+    rows = db.execute_query(sql, params, 'adgroup_quick_stats')
     return rows[0]
