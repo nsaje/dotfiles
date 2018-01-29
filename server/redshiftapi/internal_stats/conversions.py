@@ -13,14 +13,13 @@ def query_conversions(date_from, date_to, ad_group_ids=None):
     if ad_group_ids:
         constraints['ad_group_id'] = ad_group_ids
 
-    sql, params, create_tmp_tables, drop_tmp_tables = queries.prepare_query_all_touchpoints(
+    sql, params = queries.prepare_query_all_touchpoints(
         breakdown=['ad_group_id', 'content_ad_id', 'publisher_id', 'publisher', 'source_id', 'slug'],
         constraints=constraints,
         parents=None)
 
     cursor = db.get_stats_cursor()
-    cursor.execute(
-        sql, params, create_tmp_tables=create_tmp_tables, drop_tmp_tables=drop_tmp_tables)
+    cursor.execute(sql, params)
     return _fetch_all_with_source_slug(cursor)
 
 

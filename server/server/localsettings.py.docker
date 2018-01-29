@@ -42,11 +42,11 @@ DATABASES = {
     'testing_default': _DOCKER_POSTGRES,
     STATS_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'k1',
-        'USER': 'eins',
-        'PASSWORD': 'R0tverschi3bung51',
-        'HOST': 'zemantaone-nsaje-test-downscale-dc.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
-        'PORT': 5439
+        'NAME': 'dev',
+        'USER': 'developer',
+        'PASSWORD': _REDSHIFT_PASSWORD,
+        'HOST': 'development-cluster.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
+        'PORT': 5439,
     },
 }
 

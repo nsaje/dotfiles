@@ -46,20 +46,6 @@ def generate(q, prefix=None):
 
 
 @register.filter
-def values_type(values):
-    if isinstance(values[0], basestring):
-        return 'text'
-    elif isinstance(values[0], int):
-        return 'int'
-    raise backtosql.BackToSQLException('Invalid type for temp table filter')
-
-
-@register.filter
-def values_for_insert(values):
-    return ("(%s),"*len(values))[:-1]
-
-
-@register.filter
 def lspace(value):
     return " " + str(value).strip() if value else value
 
