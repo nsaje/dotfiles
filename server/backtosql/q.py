@@ -1,4 +1,9 @@
+import logging
+
 from backtosql import helpers
+from utils import cache_helper
+
+logger = logging.getLogger(__name__)
 
 
 def dissect_constraint_key(constraint_key):
@@ -20,6 +25,7 @@ class Q(object):
         self.join_operator = self.AND
         self.children = list(args) + sorted(list(kwargs.iteritems()))
         self.model = model
+        self.use_tmp_tables = False
 
         # cache, used to preserve the order of parameters
         self.params = None
@@ -47,9 +53,9 @@ class Q(object):
     def generate(self, prefix=None):
         if self.prefix is not None and self.prefix != prefix:
             raise helpers.BackToSQLException("Only 1 prefix per Q")
-
-        self.query, self.params = self._generate(prefix)
         self.prefix = prefix
+
+        self.query, self.params, self.tmp_tables = self._generate(prefix, self.use_tmp_tables)
 
         return self.query
 
@@ -63,7 +69,22 @@ class Q(object):
             raise helpers.BackToSQLException("Query not yet generated")
         return self.params
 
-    def _generate(self, prefix=None, depth=1):
+    def get_create_tmp_tables(self):
+        if not self.was_generated():
+            raise helpers.BackToSQLException("Query not yet generated")
+        if len(self.tmp_tables) == 0:
+            return None
+        params = [param for table in self.tmp_tables for param in table[1]]
+        return helpers.generate_sql('tmp_tables.sql', {'tmp_tables': self.tmp_tables}), params
+
+    def get_drop_tmp_tables(self):
+        if not self.was_generated():
+            raise helpers.BackToSQLException("Query not yet generated")
+        if len(self.tmp_tables) == 0:
+            return None
+        return helpers.generate_sql('tmp_tables_cleanup.sql', {'tmp_tables': self.tmp_tables}), []
+
+    def _generate(self, prefix, use_tmp_tables, depth=1):
         if depth >= self.MAX_RECURSION_DEPTH:
             # This code would overflow the stack in case there are too many
             # nested WHERE conditions. This is a limit defined by max recursion
@@ -73,24 +94,26 @@ class Q(object):
 
         parts = []
         params = []
+        tmp_tables = []
 
         for child in self.children:
             if isinstance(child, type(self)):
-                child_parts, child_params = child._generate(prefix, depth + 1)
+                child_parts, child_params, child_tables = child._generate(prefix, use_tmp_tables, depth + 1)
             else:
-                child_parts, child_params = self._generate_sql(child, prefix)
+                child_parts, child_params, child_tables = self._generate_sql(child, prefix, use_tmp_tables)
 
             parts.append(child_parts)
             params.extend(child_params)
+            tmp_tables.extend(child_tables)
 
         if not parts and not params:
-            return '1=1', []
+            return '1=1', [], []
 
         ret = '(' + self.join_operator.join(parts) + ')'
         if self.negate:
             ret = 'NOT ' + ret
 
-        return ret, params
+        return ret, params, tmp_tables
 
     def _prepare_constraint(self, constraint):
         constraint_name, value = constraint
@@ -109,7 +132,7 @@ class Q(object):
         column = self.model.get_column(alias)
         return column, operator, value
 
-    def _generate_sql(self, constraint, prefix):
+    def _generate_sql(self, constraint, prefix, use_tmp_tables):
         column, operator, value = self._prepare_constraint(constraint)
 
         operator_dict = {
@@ -120,30 +143,40 @@ class Q(object):
         }
 
         if operator == 'none':
-            return "1=%s", [2]
+            return "1=%s", [2], []
 
         if operator in operator_dict:
-            return operator_dict[operator].format(column.only_column(prefix)), [value]
+            return operator_dict[operator].format(column.only_column(prefix)), [value], []
         elif operator == "eq":
             if helpers.is_collection(value):
-                if value:
-                    return '{}=ANY(%s)'.format(column.only_column(prefix)), [value]
-                return 'FALSE', []
+                if not value:
+                    return 'FALSE', [], []
+                if use_tmp_tables:
+                    if isinstance(value[0], int) or isinstance(value[0], basestring):
+                        tmp_table_name = 'tmp_filter_{}_{}'.format(column.only_column(),
+                                                                   cache_helper.get_cache_key(value))[:63]
+                        return '{} IN (SELECT id FROM {})'.format(
+                            column.only_column(prefix),
+                            tmp_table_name,
+                        ), [], [(tmp_table_name, value)]
+                    else:
+                        logger.warning('Invalid type %s for temp tables, using x=ANY()', type(value[0]).__name__)
+                return '{}=ANY(%s)'.format(column.only_column(prefix)), [value], []
 
             if value is None:
-                return '{} IS %s'.format(column.only_column(prefix)), [value]
-            return '{}=%s'.format(column.only_column(prefix)), [value]
+                return '{} IS %s'.format(column.only_column(prefix)), [value], []
+            return '{}=%s'.format(column.only_column(prefix)), [value], []
 
         elif operator == "neq":
             if helpers.is_collection(value):
                 if value:
-                    return '{}!=ANY(%s)'.format(column.only_column(prefix)), [value]
+                    return '{}!=ANY(%s)'.format(column.only_column(prefix)), [value], []
 
-                return 'TRUE', []
+                return 'TRUE', [], []
 
             if value is None:
-                return '{} IS NOT %s'.format(column.only_column(prefix)), [value]
+                return '{} IS NOT %s'.format(column.only_column(prefix)), [value], []
 
-            return '{}!=%s'.format(column.only_column(prefix)), [value]
+            return '{}!=%s'.format(column.only_column(prefix)), [value], []
 
         raise helpers.BackToSQLException("Unknown constraint type: {}".format(operator))

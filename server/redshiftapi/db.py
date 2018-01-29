@@ -72,7 +72,7 @@ def xnamedtuplefetchall(cursor):
         yield nt_result(*row)
 
 
-def execute_query(sql, params, query_name, cache_name='breakdowns_rs', refresh_cache=False):
+def execute_query(sql, params, query_name, cache_name='breakdowns_rs', refresh_cache=False, create_tmp_tables=None, drop_tmp_tables=None):
     cache_key = cache_helper.get_cache_key(sql, params)
     cache = caches[cache_name]
 
@@ -84,8 +84,12 @@ def execute_query(sql, params, query_name, cache_name='breakdowns_rs', refresh_c
 
         with get_stats_cursor() as cursor:
             with influx.block_timer('redshiftapi.api_breakdowns.query', breakdown=query_name, db_alias=cursor.db.alias):
+                if create_tmp_tables:
+                    cursor.execute(*create_tmp_tables)
                 cursor.execute(sql, params)
                 results = dictfetchall(cursor)
+                if drop_tmp_tables:
+                    cursor.execute(*drop_tmp_tables)
 
         with influx.block_timer('redshiftapi.api_breakdowns.set_cache_value_overhead'):
             cache.set(cache_key, results)

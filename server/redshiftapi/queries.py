@@ -67,8 +67,9 @@ def prepare_query_all_touchpoints(breakdown, constraints, parents):
 
 
 def _prepare_query_all_for_model(model, context, template_name='breakdown.sql'):
+    context['constraints'].use_tmp_tables = True
     sql = backtosql.generate_sql(template_name, context)
-    return sql, context['constraints'].get_params()
+    return sql, context['constraints'].get_params(), context['constraints'].get_create_tmp_tables(), context['constraints'].get_drop_tmp_tables()
 
 
 def prepare_query_joint_base(breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view, skip_performance_columns=False):
@@ -108,19 +109,41 @@ def prepare_query_joint_levels(breakdown, constraints, parents, orders, offset, 
 
 
 def _prepare_query_joint_for_model(context, template_name):
+    constraints_list = ['conversions_constraints', 'touchpoints_constraints', 'yesterday_constraints', 'constraints']
+    constraints_list = [c for c in constraints_list if c in context]
+    for constraints in constraints_list:
+        context[constraints].use_tmp_tables = True
+
     sql = backtosql.generate_sql(template_name, context)
 
-    params = []
-    if 'conversions_constraints' in context and context['conversions_constraints'].was_generated():
-        params.extend(context['conversions_constraints'].get_params())
+    all_params = []
+    all_create_tmp_tables = None
+    all_drop_tmp_tables = None
 
-    if 'touchpoints_constraints' in context and context['touchpoints_constraints'].was_generated():
-        params.extend(context['touchpoints_constraints'].get_params())
+    for constraints in constraints_list:
+        if not context[constraints].was_generated():
+            continue
+        all_params.extend(context[constraints].get_params())
+        create_tmp_tables = context[constraints].get_create_tmp_tables()
+        drop_tmp_tables = context[constraints].get_drop_tmp_tables()
+        if create_tmp_tables is not None:
+            if all_create_tmp_tables is None:
+                all_create_tmp_tables = create_tmp_tables
+            else:
+                all_create_tmp_tables = (
+                    all_create_tmp_tables[0] + create_tmp_tables[0],
+                    all_create_tmp_tables[1] + create_tmp_tables[1],
+                )
+        if drop_tmp_tables is not None:
+            if all_drop_tmp_tables is None:
+                all_drop_tmp_tables = drop_tmp_tables
+            else:
+                all_drop_tmp_tables = (
+                    all_drop_tmp_tables[0] + drop_tmp_tables[0],
+                    all_drop_tmp_tables[1] + drop_tmp_tables[1],
+                )
 
-    params.extend(context['yesterday_constraints'].get_params())
-    params.extend(context['constraints'].get_params())
-
-    return sql, params
+    return sql, all_params, all_create_tmp_tables, all_drop_tmp_tables
 
 
 def prepare_query_structure_with_stats(breakdown, constraints, use_publishers_view):
