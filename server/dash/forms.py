@@ -923,8 +923,16 @@ class CampaignSettingsForm(PublisherGroupsFormMixin, forms.Form):
     adobe_tracking_param = PlainCharField(max_length=10, required=False)
 
     def __init__(self, campaign, *args, **kwargs):
+        self.campaign = campaign
         self.account = campaign.account
         super(CampaignSettingsForm, self).__init__(*args, **kwargs)
+
+    def clean_language(self):
+        language = self.cleaned_data.get('language')
+        if self.campaign.settings.language != language and self.campaign.adgroup_set.count() > 0:
+            err_msg = "Cannot set language for campaign with ad groups"
+            raise forms.ValidationError(err_msg)
+        return language
 
     def clean_campaign_manager(self):
         campaign_manager_id = self.cleaned_data.get('campaign_manager')

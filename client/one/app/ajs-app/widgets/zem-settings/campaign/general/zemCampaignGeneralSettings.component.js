@@ -11,6 +11,7 @@ angular.module('one.widgets').component('zemCampaignGeneralSettings', {
         iabCategoriesSorted.sort(sortIab);
 
         $ctrl.iabCategoriesSorted = iabCategoriesSorted;
+        $ctrl.languages = options.languages;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
 

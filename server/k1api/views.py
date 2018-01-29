@@ -520,6 +520,7 @@ class AdGroupsView(K1APIView):
                 'target_regions': ad_group_settings.target_regions,
                 'exclusion_target_regions': ad_group_settings.exclusion_target_regions,
                 'iab_category': campaign_settings.iab_category,
+                'campaign_language': campaign_settings.language,
                 'retargeting': self._get_retargeting(ad_group_settings),
                 'demographic_targeting': ad_group_settings.bluekai_targeting,
                 'interest_targeting': ad_group_settings.interest_targeting,

@@ -301,6 +301,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_view_breakdown_by_delivery_extended', 'User can view extended breakdowns by delivery.'),
             ('can_breakdown_reports_by_ads_and_publishers', 'User can breakdown reports by ad and publishers'),
             ('can_see_all_accounts', 'User can see all accounts.'),
+            ('can_see_campaign_language_choices', 'User can see campaign language choices'),
         )
 
     def get_full_name(self):

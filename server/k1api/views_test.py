@@ -708,6 +708,7 @@ class K1ApiTest(K1ApiBaseTest):
             u'target_os': None,
             u'target_placements': None,
             u'iab_category': u'IAB24',
+            u'campaign_language': 1,
             u'target_regions': [],
             u'exclusion_target_regions': [],
             u'retargeting': [
@@ -783,6 +784,7 @@ class K1ApiTest(K1ApiBaseTest):
             u'target_os': None,
             u'target_placements': None,
             u'iab_category': u'IAB24',
+            u'campaign_language': 1,
             u'target_regions': [],
             u'exclusion_target_regions': [],
             u'retargeting': [
