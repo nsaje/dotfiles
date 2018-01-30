@@ -55,13 +55,13 @@ CREATE TABLE mv_master (
        video_midpoint integer encode lzo,
        video_third_quartile integer encode lzo,
        video_complete integer encode lzo,
-       video_progress_3s integer encode lzo
+       video_progress_3s integer encode lzo,
 
        local_cost_nano bigint encode zstd,
        local_data_cost_nano bigint encode zstd,
        local_effective_cost_nano bigint encode zstd,
        local_effective_data_cost_nano bigint encode zstd,
        local_license_fee_nano bigint encode zstd,
-       local_margin_nano bigint encode zstd,
+       local_margin_nano bigint encode zstd
        -- kw::end
 ) sortkey(date, source_id, account_id, campaign_id, ad_group_id, content_ad_id, publisher_source_id);

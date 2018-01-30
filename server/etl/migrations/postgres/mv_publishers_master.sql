@@ -53,14 +53,14 @@ CREATE TABLE mv_master_pubs (
         video_midpoint integer,
         video_third_quartile integer,
         video_complete integer,
-        video_progress_3s integer
+        video_progress_3s integer,
 
         local_cost_nano bigint,
         local_data_cost_nano bigint,
         local_effective_cost_nano bigint,
         local_effective_data_cost_nano bigint,
         local_license_fee_nano bigint,
-        local_margin_nano bigint,
+        local_margin_nano bigint
         -- kw::end
 );
 CREATE INDEX IF NOT EXISTS mv_master_pubs_main_idx ON mv_master_pubs (source_id, account_id, campaign_id, ad_group_id, publisher_source_id, date);
