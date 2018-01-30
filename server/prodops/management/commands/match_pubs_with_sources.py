@@ -8,7 +8,7 @@ import dash.models
 import prodops.helpers as hlp
 
 PUBS_PER_CHUNK = 1000
-QUERY = """SELECT DISTINCT publisher, source_id
+QUERY = u"""SELECT DISTINCT publisher, source_id
 FROM mv_master_pubs
 WHERE date >= '{date}' AND publisher IN ({publist})"""
 
@@ -38,6 +38,7 @@ class Command(utils.command_helpers.ExceptionCommand):
 
         publishers = []
         pubs_source_match = set()
+        verticals = {}
         with open(options['publishers_csv']) as fd:
             for row in csv.reader(fd):
                 if row[0].lower() in ('domains', 'publishers', 'domain', 'publisher'):
@@ -46,19 +47,24 @@ class Command(utils.command_helpers.ExceptionCommand):
                 publishers.append(pub)
                 source = row[1] if len(row) > 1 else None
                 pubs_source_match.add((pub, source))
+                category = row[2] if len(row) > 2 else None
+                if category:
+                    verticals.setdefault(pub, set()).add(category)
 
         data = []
         pubs_len = float(len(publishers))
         for i, pub_sublist in enumerate(chunks(publishers, PUBS_PER_CHUNK)):
             self._print('Processing batch {}/{}'.format(i + 1, int(pubs_len / PUBS_PER_CHUNK) + 1))
-            data.extend(self._match_sources(pub_sublist))
+            data.extend(self._match_sources(pub_sublist, verticals))
 
         self._print('Report generated.')
 
         self._print('Publisher matches: {}%'.format(round(float(len(data)) / len(publishers) * 100, 2)))
 
         count_source_matches = 0
-        for pub, sources in data:
+        for row in data:
+            pub = row[0]
+            sources = row[1]
             for source in sources.split(','):
                 if (pub, source) in pubs_source_match:
                     count_source_matches += 1
@@ -66,20 +72,23 @@ class Command(utils.command_helpers.ExceptionCommand):
 
         self._print('Report URL: ' + hlp.generate_report(
             'publisher-sources-map-' + uuid.uuid4().hex,
-            [('publisher', 'media source', )] + data)
+            [('publisher', 'media source', 'interest') if verticals else ('publisher', 'media source', )] + data)
         )
 
-    def _match_sources(self, publishers):
+    def _match_sources(self, publishers, verticals={}):
         pub_source_map = {}
         with redshiftapi.db.get_stats_cursor() as c:
-            c.execute(QUERY.format(date=self.from_date, publist=', '.join(
-                ['\'{}\''.format(pub) for pub in publishers]
+            c.execute(QUERY.format(date=self.from_date, publist=u', '.join(
+                [u'\'{}\''.format(pub.encode('utf-8')) for pub in publishers]
             )))
             for row in c.fetchall():
                 source = self.sources.get(row[1])
                 pub_source_map.setdefault(row[0], set()).add(
                     source.name if self.use_source_names else source.bidder_slug)
-
+        if verticals:
+            return [
+                (pub, ', '.join(sources), ','.join(verticals.get(pub, [])), ) for pub, sources in pub_source_map.iteritems()
+            ]
         return [
-            (pub, ', '.join(sources)) for pub, sources in pub_source_map.iteritems()
+            (pub, ', '.join(sources), ) for pub, sources in pub_source_map.iteritems()
         ]

@@ -88,7 +88,7 @@ class Agency(models.Model):
         help_text=('New accounts created by this agency\'s users will have '
                    'license fee and margin included into all costs.')
     )
-    allowed_sources = models.ManyToManyField('Source')
+    allowed_sources = models.ManyToManyField('Source', blank=True)
     custom_flags = JSONField(null=True, blank=True)
 
     settings = models.OneToOneField('AgencySettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_entity')
