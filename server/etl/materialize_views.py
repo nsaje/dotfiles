@@ -583,6 +583,12 @@ class MasterView(Materialize):
                         None,  # video_complete
                         None,  # video_progress_3s
 
+                        None,  # local_cost_nano
+                        None,  # local_data_cost_nano
+                        None,  # local_effective_cost_nano
+                        None,  # local_effective_data_cost_nano
+                        None,  # local_license_fee_nano
+                        None,  # local_margin_nano
                     ),
                     (row.conversions, row.postclick_source)
                 )

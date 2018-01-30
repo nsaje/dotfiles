@@ -473,6 +473,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                       None, None, None, None,
                       constants.Age.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGender.UNDEFINED,
                       0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0, 24, 2,
+                      None, None, None, None, None, None,
                       None, None, None, None, None, None), ('{einpix: 2}', 'gaapi')),
             ((3, 4), (date, 3, 2, 2, 2, 4, 'Trol', 'Trol__3',
                       constants.DeviceType.UNKNOWN, None, None, constants.PlacementMedium.UNKNOWN,
@@ -480,6 +481,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                       None, None, None, None,
                       constants.Age.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGender.UNDEFINED,
                       0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0, 24, 2,
+                      None, None, None, None, None, None,
                       None, None, None, None, None, None), ('{einpix: 2}', 'omniture')),
             ((1, 3), (date, 1, 1, 3, 3, 3, 'nesto.com', 'nesto.com__1',
                       constants.DeviceType.UNKNOWN, None, None, constants.PlacementMedium.UNKNOWN,
@@ -487,6 +489,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                       None, None, None, None,
                       constants.Age.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGender.UNDEFINED,
                       0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0, 24, 2,
+                      None, None, None, None, None, None,
                       None, None, None, None, None, None), ('{einpix: 2}', 'gaapi')),
         ])
 
