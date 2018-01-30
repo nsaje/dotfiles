@@ -918,7 +918,13 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                     video_midpoint integer encode lzo,
                     video_third_quartile integer encode lzo,
                     video_complete integer encode lzo,
-                    video_progress_3s integer encode lzo
+                    video_progress_3s integer encode lzo,
+                    local_cost_nano bigint encode zstd,
+                    local_data_cost_nano bigint encode zstd,
+                    local_effective_cost_nano bigint encode zstd,
+                    local_effective_data_cost_nano bigint encode zstd,
+                    local_license_fee_nano bigint encode zstd,
+                    local_margin_nano bigint encode zstd
                 )
                 diststyle key distkey(source_id) sortkey(date, source_id, account_id)
                 """)

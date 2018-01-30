@@ -35,4 +35,10 @@ CREATE TABLE mv_master_diff (
 
        users integer encode lzo,
        returning_users integer encode lzo
+
+       local_cost_nano bigint encode zstd,
+       local_data_cost_nano bigint encode zstd,
+       local_effective_cost_nano bigint encode zstd,
+       local_effective_data_cost_nano bigint encode zstd,
+       local_license_fee_nano bigint encode zstd,
 ) sortkey(date, source_id, account_id, campaign_id, ad_group_id, content_ad_id);
