@@ -103,7 +103,7 @@ def article_upload(request):
 
         contentupload.upload.insert_candidates(None, ad_group.campaign.account,
                                                candidates_data, ad_group, batch_name,
-                                               filename='', auto_save=True)
+                                               filename='no-verify', auto_save=True)
 
     for ad_group_id in candidates_per_ad_group.keys():
         try:
