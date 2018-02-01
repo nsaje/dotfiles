@@ -77,9 +77,9 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin,
         related_name="+",
         on_delete=models.PROTECT
     )
-    language = models.IntegerField(
-        default=constants.CampaignSettingsLanguage.ENGLISH,
-        choices=constants.CampaignSettingsLanguage.get_choices()
+    language = models.SlugField(
+        default=constants.Language.ENGLISH,
+        choices=constants.Language.get_choices()
     )
     iab_category = models.SlugField(
         max_length=10,
@@ -191,7 +191,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin,
             value = dash.views.helpers.get_user_full_name_or_email(
                 value)
         elif prop_name == 'language':
-            value = constants.CampaignSettingsLanguage.get_text(value)
+            value = constants.Language.get_text(value)
         elif prop_name == 'iab_category':
             value = constants.IABCategory.get_text(value)
         elif prop_name == 'campaign_goal':

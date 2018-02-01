@@ -897,8 +897,7 @@ class CampaignSettingsForm(PublisherGroupsFormMixin, forms.Form):
     campaign_manager = forms.IntegerField(required=False)
 
     language = forms.TypedChoiceField(
-        choices=constants.CampaignSettingsLanguage.get_choices(),
-        coerce=int,
+        choices=constants.Language.get_choices(),
         required=False,
     )
 

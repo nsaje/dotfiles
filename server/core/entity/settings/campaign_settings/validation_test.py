@@ -12,16 +12,16 @@ class ValidationTestCase(TestCase):
         self.campaign = magic_mixer.blend(core.entity.Campaign)
 
     def test_user_changes_language_for_new_campaign(self):
-        self.assertEqual(self.campaign.settings.language, constants.CampaignSettingsLanguage.ENGLISH)
-        self.campaign.settings.update(None, language=constants.CampaignSettingsLanguage.SPANISH)
-        self.assertEqual(self.campaign.settings.language, constants.CampaignSettingsLanguage.SPANISH)
+        self.assertEqual(self.campaign.settings.language, constants.Language.ENGLISH)
+        self.campaign.settings.update(None, language=constants.Language.SPANISH)
+        self.assertEqual(self.campaign.settings.language, constants.Language.SPANISH)
 
     def test_user_changes_language_for_campaign_with_ad_group(self):
         magic_mixer.blend(core.entity.AdGroup, campaign=self.campaign)
         with self.assertRaises(CannotChangeLanguage):
-            self.campaign.settings.update(None, language=constants.CampaignSettingsLanguage.SPANISH)
+            self.campaign.settings.update(None, language=constants.Language.SPANISH)
 
     def test_user_changes_language_for_campaign_with_multiple_ad_groups(self):
         magic_mixer.cycle(10).blend(core.entity.AdGroup, campaign=self.campaign)
         with self.assertRaises(CannotChangeLanguage):
-            self.campaign.settings.update(None, language=constants.CampaignSettingsLanguage.SPANISH)
+            self.campaign.settings.update(None, language=constants.Language.SPANISH)
