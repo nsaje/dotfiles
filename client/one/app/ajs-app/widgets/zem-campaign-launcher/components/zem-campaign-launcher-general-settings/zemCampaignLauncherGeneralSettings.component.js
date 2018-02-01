@@ -17,7 +17,7 @@ angular.module('one').component('zemCampaignLauncherGeneralSettings', {
             $ctrl.availableIabCategories = getAvailableIabCategories();
             $ctrl.availableLanguages = options.languages;
             if (!zemPermissions.hasPermission('zemauth.can_see_campaign_language_choices')) {
-                $ctrl.state.fields.language = options.language.ENGLISH;
+                $ctrl.state.fields.language = 'ENGLISH';
             }
         };
 
