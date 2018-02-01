@@ -14,7 +14,6 @@ import view_selector
 
 
 POSTGRES_MAX_DAYS = 62
-POSTGRES_CONSTRAINT_LIMIT = 1000
 POSTGRES_EXCLUDE_VIEWS = ('mv_master', 'mv_master_pubs',
                           'mv_account_pubs', 'mv_campaign_pubs',
                           'mv_adgroup_pubs', 'mv_contentad_pubs')
@@ -61,12 +60,7 @@ def _should_use_postgres(breakdown, constraints, parents, use_publishers_view):
     date_constraint = constraints.get('date__gte') or constraints.get('date__gt') or constraints.get('date')
     date_in_postgres = dates_helper.days_before(dates_helper.local_today(), POSTGRES_MAX_DAYS)
 
-    large_constraints = False
-    for _, value in constraints.items():
-        if hasattr(value, '__len__') and len(value) > POSTGRES_CONSTRAINT_LIMIT:
-            large_constraints = True
-
-    if not large_constraints and date_constraint and date_constraint > date_in_postgres and view not in POSTGRES_EXCLUDE_VIEWS:
+    if date_constraint and date_constraint > date_in_postgres and view not in POSTGRES_EXCLUDE_VIEWS:
         return True
     return False
 
