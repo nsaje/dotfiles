@@ -938,6 +938,7 @@ var constants = {
         VIETNAMESE: 'vi',
         SIMPLIFIED_CHINESE: 'zh_CN',
         TRADITIONAL_CHINESE: 'zh_TW',
+        OTHER: 'any',
     },
     campaignObjective: {
         CONTENT_DISTRIBUTION: 1,
@@ -1372,6 +1373,7 @@ var options = {
         {name: 'Vietnamese', value: constants.language.VIETNAMESE},
         {name: 'Simplified Chinese', value: constants.language.SIMPLIFIED_CHINESE},
         {name: 'Traditional Chinese', value: constants.language.TRADITIONAL_CHINESE},
+        {name: 'Other', value: constants.language.OTHER},
     ],
     iabCategories: [
         {name: 'Uncategorized (IAB24)', value: constants.iabCategory.IAB24},

@@ -170,6 +170,7 @@ class Language(ConstantBase):
     VIETNAMESE = 'vi'
     SIMPLIFIED_CHINESE = 'zh_CN'
     TRADITIONAL_CHINESE = 'zh_TW'
+    OTHER = 'any'
 
     _VALUES = {
         ARABIC: 'Arabic',
@@ -191,6 +192,7 @@ class Language(ConstantBase):
         VIETNAMESE: 'Vietnamese',
         SIMPLIFIED_CHINESE: 'Simplified Chinese',
         TRADITIONAL_CHINESE: 'Traditional Chinese',
+        OTHER: 'Other',
     }
 
 
