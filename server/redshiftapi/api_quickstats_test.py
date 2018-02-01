@@ -11,7 +11,7 @@ from redshiftapi import api_quickstats
 class QuickstatsTest(TestCase):
 
     @mock.patch.object(db, 'execute_query', autospec=True)
-    @mock.patch.object(queries, 'prepare_query_all_base', autospec=True, return_value=(None, None))
+    @mock.patch.object(queries, 'prepare_query_all_base', autospec=True, return_value=(None, None, None))
     def test_query_campaign(self, mock_prepare_query_all_base, _):
         date_from = datetime.date.today() - datetime.timedelta(days=7)
         date_to = datetime.date.today()
@@ -29,7 +29,7 @@ class QuickstatsTest(TestCase):
         )
 
     @mock.patch.object(db, 'execute_query', autospec=True)
-    @mock.patch.object(queries, 'prepare_query_all_base', autospec=True, return_value=(None, None))
+    @mock.patch.object(queries, 'prepare_query_all_base', autospec=True, return_value=(None, None, None))
     def test_query_adgroup(self, mock_prepare_query_all_base, _):
         date_from = datetime.date.today() - datetime.timedelta(days=7)
         date_to = datetime.date.today()
