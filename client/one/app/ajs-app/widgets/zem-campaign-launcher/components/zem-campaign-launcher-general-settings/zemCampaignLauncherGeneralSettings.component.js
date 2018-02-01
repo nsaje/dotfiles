@@ -6,14 +6,19 @@ angular.module('one').component('zemCampaignLauncherGeneralSettings', {
         account: '<',
     },
     template: require('./zemCampaignLauncherGeneralSettings.component.html'), // eslint-disable-line max-len
-    controller: function () {
+    controller: function (zemPermissions) {
         var $ctrl = this;
 
         $ctrl.onFieldChange = onFieldChange;
+        $ctrl.hasPermission = zemPermissions.hasPermission;
 
         $ctrl.$onInit = function () {
             $ctrl.state = $ctrl.stateService.getState();
             $ctrl.availableIabCategories = getAvailableIabCategories();
+            $ctrl.availableLanguages = options.languages;
+            if (!zemPermissions.hasPermission('zemauth.can_see_campaign_language_choices')) {
+                $ctrl.state.fields.language = options.language.ENGLISH;
+            }
         };
 
         function onFieldChange () {

@@ -62,6 +62,7 @@ class CampaignLauncherLaunchTest(restapi.views_test.RESTAPITest):
         data = {
             'campaign_name': 'xyz',
             'iabCategory': 'IAB1_1',
+            'language': 'ENGLISH',
             'budgetAmount': 123,
             'maxCpc': '0.6',
             'dailyBudget': '15.0',
@@ -106,6 +107,7 @@ class CampaignLauncherLaunchTest(restapi.views_test.RESTAPITest):
             account=account,
             name='xyz',
             iab_category='IAB1-1',
+            language='en',
             budget_amount=123,
             max_cpc=Decimal('0.6'),
             daily_budget=Decimal('15.0'),

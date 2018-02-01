@@ -83,6 +83,7 @@ describe('zemCampaignLauncherStateService', function () {
         expect(stateService.getState().fields).toEqual({
             campaignName: 'default campaign name',
             iabCategory: null,
+            language: null,
             budgetAmount: null,
             maxCpc: null,
             dailyBudget: null,

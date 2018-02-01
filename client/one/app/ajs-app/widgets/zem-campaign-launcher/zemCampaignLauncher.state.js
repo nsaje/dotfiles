@@ -10,6 +10,7 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
             fields: [
                 {name: 'campaignName', required: true},
                 {name: 'iabCategory', required: true},
+                {name: 'language', required: true},
                 {name: 'budgetAmount', required: true},
                 {name: 'maxCpc', required: false},
                 {name: 'dailyBudget', required: true},

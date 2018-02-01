@@ -37,6 +37,7 @@ class TestService(TestCase):
             account=account,
             name='xyz',
             iab_category=dash.constants.IABCategory.IAB1_1,
+            language=dash.constants.Language.SPANISH,
             budget_amount=234,
             upload_batch=upload_batch,
             goal_type=dash.constants.CampaignGoalKPI.CPA,
@@ -56,6 +57,7 @@ class TestService(TestCase):
         campaign_settings = campaign.get_current_settings()
         self.assertEqual(campaign_settings.name, 'xyz')
         self.assertEqual(campaign_settings.iab_category, dash.constants.IABCategory.IAB1_1)
+        self.assertEqual(campaign_settings.language, dash.constants.Language.SPANISH)
 
         budget = campaign.budgets.first()
         self.assertEqual(budget, credit.budgets.first())

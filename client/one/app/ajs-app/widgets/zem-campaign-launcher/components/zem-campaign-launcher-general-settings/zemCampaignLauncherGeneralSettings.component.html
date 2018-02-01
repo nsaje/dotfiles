@@ -36,6 +36,34 @@
             </div>
         </div>
 
+        <div ng-if="$ctrl.hasPermission('zemauth.can_see_campaign_language_choices')"
+            class="form__group" ng-class="{'form--error': !!$ctrl.state.fieldsErrors.language}">
+            <label class="form__label" for="language-select">
+                Language in which ads are created:
+                <zem-help-popover content="Language can be updated only if Campaign has no Ad Groups yet."
+                                  placement="top">
+                </zem-help-popover>
+            </label>
+            <ui-select class="button button--plain button--full-width button--dropdown-toggle-icon"
+                       theme="select2"
+                       id="language-select"
+                       ng-model="$ctrl.state.fields.language"
+                       on-select="$ctrl.onFieldChange()"
+                       search-enabled="true">
+                <ui-select-match>{{ $select.selected.name }}</ui-select-match>
+                <ui-select-choices
+                    repeat="language.value as language in $ctrl.availableLanguages | filter: $select.search"
+                    class="ui-select-choices">
+                    {{ language.name }}
+                </ui-select-choices>
+            </ui-select>
+            <div class="message message--error"
+                 ng-repeat="error in $ctrl.state.fieldsErrors.language"
+                 for="language-select">
+                {{ error }}
+            </div>
+        </div>
+
         <div class="form__group" ng-class="{'form--error': !!$ctrl.state.fieldsErrors.budgetAmount}">
             <label class="form__label" for="budget-amount-input">Total budget:</label>
             <div class="prefixed-field postfixed-field prefixed-field--narrow postfixed-field--narrow">

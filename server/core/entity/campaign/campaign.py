@@ -28,7 +28,8 @@ AGENCIES_WITHOUT_REAL_TIME_CAMPAIGN_STOP = {55}
 class CampaignManager(core.common.QuerySetManager):
 
     @transaction.atomic
-    def create(self, request, account, name, iab_category=constants.IABCategory.IAB24):
+    def create(self, request, account, name, iab_category=constants.IABCategory.IAB24,
+               language=constants.Language.ENGLISH):
         core.common.entity_limits.enforce(
             Campaign.objects.filter(account=account).exclude_archived(),
             account.id,
@@ -47,6 +48,7 @@ class CampaignManager(core.common.QuerySetManager):
         settings_updates = core.entity.settings.CampaignSettings.get_defaults_dict()
         settings_updates['name'] = name
         settings_updates['iab_category'] = iab_category
+        settings_updates['language'] = language
         if request:
             settings_updates['campaign_manager'] = request.user
 

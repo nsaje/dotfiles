@@ -30,7 +30,7 @@ def _extract_error_list(e):
     return error_list
 
 
-def launch(request, account, name, iab_category, budget_amount,
+def launch(request, account, name, iab_category, language, budget_amount,
            goal_type, goal_value, max_cpc, daily_budget, upload_batch,
            target_regions=None, exclusion_target_regions=None, target_devices=None, target_os=None, target_placements=None,
            conversion_goal_type=None, conversion_goal_goal_id=None, conversion_goal_window=None):
@@ -39,6 +39,7 @@ def launch(request, account, name, iab_category, budget_amount,
         account=account,
         name=name,
         iab_category=iab_category,
+        language=language,
     )
 
     credit_to_use = models.CreditLineItem.objects.get_any_for_budget_creation(account)

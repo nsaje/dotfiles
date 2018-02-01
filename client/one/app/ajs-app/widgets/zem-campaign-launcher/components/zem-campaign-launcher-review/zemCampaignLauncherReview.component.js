@@ -5,8 +5,10 @@ angular.module('one').component('zemCampaignLauncherReview', {
         stateService: '=',
     },
     template: require('./zemCampaignLauncherReview.component.html'),
-    controller: function (zemDeviceTargetingConstants) {
+    controller: function (zemDeviceTargetingConstants, zemPermissions) {
         var $ctrl = this;
+
+        $ctrl.hasPermission = zemPermissions.hasPermission;
 
         var PREVIEW_CREATIVES_PER_ROW = 4;
 
@@ -17,6 +19,7 @@ angular.module('one').component('zemCampaignLauncherReview', {
         $ctrl.$onInit = function () {
             $ctrl.state = $ctrl.stateService.getState();
             $ctrl.iabCategoryName = getIabCategoryName($ctrl.state.fields.iabCategory);
+            $ctrl.language = getLanguageName($ctrl.state.fields.language);
             $ctrl.dummyCreatives = getDummyCreatives($ctrl.state.creatives.candidates || []);
 
             updateDeviceTargetingReview();
@@ -26,6 +29,14 @@ angular.module('one').component('zemCampaignLauncherReview', {
             for (var i = 0; i < options.iabCategories.length; i++) {
                 if (options.iabCategories[i].value === iabCategory) {
                     return options.iabCategories[i].name;
+                }
+            }
+        }
+
+        function getLanguageName (language) {
+            for (var i = 0; i < options.languages.length; i++) {
+                if (options.languages[i].value === language) {
+                    return options.languages[i].name;
                 }
             }
         }

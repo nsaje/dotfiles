@@ -15,6 +15,12 @@
             <label class="form__label">Campaign category:</label>
             <div class="form__information">{{ $ctrl.iabCategoryName }}</div>
         </div>
+        <div ng-if="$ctrl.hasPermission('zemauth.can_see_campaign_language_choices')"
+             class="form__group form__group--informative"
+             ng-class="{'form--error': !!$ctrl.state.fieldsErrors.language}">
+            <label class="form__label">Language in which ads are created:</label>
+            <div class="form__information">{{ $ctrl.language }}</div>
+        </div>
         <div class="form__group form__group--informative"  ng-class="{'form--error': !!$ctrl.state.fieldsErrors.budgetAmount}">
             <label class="form__label">Total budget:</label>
             <div class="form__information">{{ $ctrl.state.fields.budgetAmount | decimalCurrency:"$":2 }}</div>

@@ -34,6 +34,10 @@ class CampaignLauncherSerializer(serializers.Serializer):
         dash.constants.IABCategory,
         error_messages={'required': 'Please specify the IAB category.'}
     )
+    language = restapi.fields.DashConstantField(
+        dash.constants.Language,
+        error_messages={'required': 'Please specify the language of the campaign\'s ads.'}
+    )
     budget_amount = fields.IntegerField(min_value=0)
     max_cpc = fields.DecimalField(
         required=False,
