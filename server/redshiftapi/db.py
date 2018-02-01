@@ -1,3 +1,4 @@
+import contextlib
 import influx
 import logging
 from collections import namedtuple
@@ -7,6 +8,7 @@ from django.core.cache import caches
 
 from utils import cache_helper
 import utils.db_for_reads
+import queries
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +74,19 @@ def xnamedtuplefetchall(cursor):
         yield nt_result(*row)
 
 
-def execute_query(sql, params, query_name, cache_name='breakdowns_rs', refresh_cache=False):
+@contextlib.contextmanager
+def create_temp_tables(cursor, temp_tables):
+    if not temp_tables:
+        yield
+        return
+    sql, params = queries.prepare_temp_table_create(temp_tables)
+    cursor.execute(sql, params)
+    yield
+    sql, params = queries.prepare_temp_table_drop(temp_tables)
+    cursor.execute(sql, params)
+
+
+def execute_query(sql, params, query_name, cache_name='breakdowns_rs', refresh_cache=False, temp_tables=None):
     cache_key = cache_helper.get_cache_key(sql, params)
     cache = caches[cache_name]
 
@@ -84,8 +98,9 @@ def execute_query(sql, params, query_name, cache_name='breakdowns_rs', refresh_c
 
         with get_stats_cursor() as cursor:
             with influx.block_timer('redshiftapi.api_breakdowns.query', breakdown=query_name, db_alias=cursor.db.alias):
-                cursor.execute(sql, params)
-                results = dictfetchall(cursor)
+                with create_temp_tables(cursor, temp_tables):
+                    cursor.execute(sql, params)
+                    results = dictfetchall(cursor)
 
         with influx.block_timer('redshiftapi.api_breakdowns.set_cache_value_overhead'):
             cache.set(cache_key, results)

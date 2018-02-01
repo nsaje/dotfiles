@@ -4,6 +4,7 @@ import copy
 
 from utils import converters
 from utils.dict_helper import dict_join
+from utils import cache_helper
 
 import dash.constants
 import stats.constants
@@ -18,6 +19,8 @@ YESTERDAY_AGGREGATES = 3
 CONVERSION_AGGREGATES = 4
 TOUCHPOINTS_AGGREGATES = 5
 AFTER_JOIN_AGGREGATES = 6
+
+MAX_IDENTIFIER_LENGTH = 63
 
 A_COST_COLUMNS = {'column_name': 'cost_nano'}
 AT_COST_COLUMNS = {'column_name1': 'cost_nano', 'column_name2': 'data_cost_nano'}
@@ -113,16 +116,33 @@ class BreakdownsBase(backtosql.Model):
         return parent_constraints
 
     def get_query_all_context(self, breakdown, constraints, parents, orders, view):
+        constraints, temp_tables = self._constraints_to_temp_tables(constraints)
         return {
             'breakdown': self.get_breakdown(breakdown),
             'aggregates': self.get_aggregates(breakdown, view),
             'constraints': self.get_constraints(constraints, parents),
+            'temp_tables': temp_tables,
             'view': view,
             'orders': self.get_order(orders),
         }
 
+    @staticmethod
+    def _constraints_to_temp_tables(constraints):
+        constraints = copy.copy(constraints)
+        temp_tables = set()
+        for constraint, value in constraints.items():
+            is_collection = isinstance(value, collections.Iterable) and type(value) not in (str, unicode)
+            if not value or not is_collection:
+                continue
+            table_name = 'tmp_filter_{}_{}'.format(constraint, cache_helper.get_cache_key(value))[:MAX_IDENTIFIER_LENGTH]
+            temp_table = backtosql.ConstraintTempTable(table_name, constraint, value)
+            constraints[constraint] = temp_table
+            temp_tables.add(temp_table)
+        return constraints, temp_tables
+
     def get_query_all_yesterday_context(self, breakdown, constraints, parents, orders, view):
         constraints = helpers.get_yesterday_constraints(constraints)
+        constraints, temp_tables = self._constraints_to_temp_tables(constraints)
 
         aggregates = ['yesterday_at_cost', 'yesterday_et_cost', 'yesterday_etfm_cost',
                       'yesterday_cost', 'e_yesterday_cost']
@@ -141,6 +161,7 @@ class BreakdownsBase(backtosql.Model):
             'breakdown': self.get_breakdown(breakdown),
             'aggregates': self.select_columns(aggregates),
             'constraints': self.get_constraints(constraints, parents),
+            'temp_tables': temp_tables,
             'view': view,
             'orders': self.get_order(orders),
         }
@@ -456,6 +477,8 @@ class MVJointMaster(MVMaster):
         skip_performance_columns |= 'publisher_id' in breakdown and\
                                     not set(['campaign_id', 'ad_group_id']) & set(constraints.keys())
 
+        constraints, temp_tables = self._constraints_to_temp_tables(constraints)
+
         if supports_conversions:
             self.init_conversion_columns(goals.conversion_goals)
         if supports_touchpoints:
@@ -472,6 +495,7 @@ class MVJointMaster(MVMaster):
 
             'constraints': self.get_constraints(constraints, parents),
             'yesterday_constraints': self.get_constraints(helpers.get_yesterday_constraints(constraints), parents),
+            'temp_tables': temp_tables,
 
             'aggregates': self.get_aggregates(breakdown, views['base']),
             'yesterday_aggregates': self.select_columns(group=YESTERDAY_AGGREGATES),

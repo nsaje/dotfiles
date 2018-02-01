@@ -5,6 +5,7 @@ from helpers import is_collection
 from columns import Column
 from columns import OrderColumn
 from columns import TemplateColumn
+from temp_tables import ConstraintTempTable
 from models import Model
 from backtosql_test import SQLMatcher
 from backtosql_test import TestRenderMixin

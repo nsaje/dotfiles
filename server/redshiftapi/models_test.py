@@ -103,10 +103,20 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
                                                    ['clicks'] + ['account_id'], view)
 
         self.assertEqual(context['breakdown'], self.model.select_columns(['account_id']))
-        self.assertSQLEquals(context['constraints'].generate('A'), '(A.account_id=ANY(%s))')
+        self.assertSQLEquals(
+            context['constraints'].generate('A'),
+            '''(a.account_id IN
+                   (SELECT account_id
+                   FROM tmp_filter_account_id_0017c395f39ceeaee171dff6a1b5bb3d6388e221))
+            ''')
         self.assertEqual(context['aggregates'], self.model.get_aggregates(breakdown, ''))
         self.assertEqual(context['view'], 'mv_account')
         self.assertEqual([x.alias for x in context['orders']], ['clicks', 'account_id'])
+
+        self.assertEqual(len(context['temp_tables']), 1)
+        temp_table = list(context['temp_tables'])[0]
+        self.assertEqual(temp_table.name, 'tmp_filter_account_id_0017c395f39ceeaee171dff6a1b5bb3d6388e221')
+        self.assertEqual(temp_table.values, [1, 2, 3])
 
     @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 10, 3))
     def test_get_query_all_yesterday_context(self, mock_yesterday):
@@ -119,13 +129,24 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             ['-yesterday_cost'], 'mv_account')
 
         self.assertEqual(context['breakdown'], self.model.select_columns(['account_id']))
-        self.assertSQLEquals(context['constraints'].generate('A'), '(A.account_id=ANY(%s) AND A.date=%s)')
-        self.assertEqual(context['constraints'].get_params(), [[1, 2, 3], datetime.date(2016, 10, 2)])
+        self.assertSQLEquals(
+            context['constraints'].generate('A'),
+            '''(a.account_id IN
+                   (SELECT account_id
+                   FROM tmp_filter_account_id_0017c395f39ceeaee171dff6a1b5bb3d6388e221)
+                AND a.date=%s)
+            ''')
+        self.assertEqual(context['constraints'].get_params(), [datetime.date(2016, 10, 2)])
 
         self.assertItemsEqual(context['aggregates'], self.model.select_columns([
             'yesterday_cost', 'e_yesterday_cost', 'yesterday_et_cost', 'yesterday_at_cost', 'yesterday_etfm_cost']))
         self.assertEqual(context['view'], 'mv_account')
         self.assertSQLEquals(context['orders'][0].only_alias(), 'yesterday_cost DESC NULLS LAST')
+
+        self.assertEqual(len(context['temp_tables']), 1)
+        temp_table = list(context['temp_tables'])[0]
+        self.assertEqual(temp_table.name, 'tmp_filter_account_id_0017c395f39ceeaee171dff6a1b5bb3d6388e221')
+        self.assertEqual(temp_table.values, [1, 2, 3])
 
 
 class MVMasterPublishersTest(TestCase, backtosql.TestSQLMixin):

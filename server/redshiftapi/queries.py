@@ -6,6 +6,17 @@ import view_selector
 import helpers
 
 
+def prepare_temp_table_create(temp_tables):
+    sql = backtosql.generate_sql('temp_tables_create.sql', {'temp_tables': temp_tables})
+    params = [value for table in temp_tables for value in table.values]
+    return sql, params
+
+
+def prepare_temp_table_drop(temp_tables):
+    sql = backtosql.generate_sql('temp_tables_drop.sql', {'temp_tables': temp_tables})
+    return sql, []
+
+
 def prepare_query_all_base(breakdown, constraints, parents, use_publishers_view):
     needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
     view = view_selector.get_best_view_base(needed_dimensions, use_publishers_view)
@@ -68,7 +79,7 @@ def prepare_query_all_touchpoints(breakdown, constraints, parents):
 
 def _prepare_query_all_for_model(model, context, template_name='breakdown.sql'):
     sql = backtosql.generate_sql(template_name, context)
-    return sql, context['constraints'].get_params()
+    return sql, context['constraints'].get_params(), context['temp_tables']
 
 
 def prepare_query_joint_base(breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view, skip_performance_columns=False):
@@ -120,7 +131,7 @@ def _prepare_query_joint_for_model(context, template_name):
     params.extend(context['yesterday_constraints'].get_params())
     params.extend(context['constraints'].get_params())
 
-    return sql, params
+    return sql, params, context['temp_tables']
 
 
 def prepare_query_structure_with_stats(breakdown, constraints, use_publishers_view):

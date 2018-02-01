@@ -1,4 +1,5 @@
 from backtosql import helpers
+from backtosql import temp_tables
 
 
 def dissect_constraint_key(constraint_key):
@@ -125,6 +126,10 @@ class Q(object):
         if operator in operator_dict:
             return operator_dict[operator].format(column.only_column(prefix)), [value]
         elif operator == "eq":
+            if isinstance(value, temp_tables.ConstraintTempTable):
+                return '{} IN (SELECT {} FROM {})'.format(column.only_column(prefix),
+                                                          value.constraint,
+                                                          value.name), []
             if helpers.is_collection(value):
                 if value:
                     return '{}=ANY(%s)'.format(column.only_column(prefix)), [value]
