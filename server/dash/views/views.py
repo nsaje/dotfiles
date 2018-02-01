@@ -308,6 +308,12 @@ class CampaignAdGroups(api_common.BaseApiView):
     @influx.timer('dash.api')
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
+        self._validate_campaign_ready(request, campaign)
+        ad_group = core.entity.AdGroup.objects.create(request, campaign, is_restapi=self.rest_proxy)
+        return self.create_api_response({'name': ad_group.name, 'id': ad_group.id})
+
+    @staticmethod
+    def _validate_campaign_ready(request, campaign):
         primary_goal = campaign_goals.get_primary_campaign_goal(campaign)
         if not primary_goal:
             url = request.build_absolute_uri(
@@ -324,9 +330,21 @@ class CampaignAdGroups(api_common.BaseApiView):
                     }
                 }
             )
-
-        ad_group = core.entity.AdGroup.objects.create(request, campaign, is_restapi=self.rest_proxy)
-        return self.create_api_response({'name': ad_group.name, 'id': ad_group.id})
+        if not campaign.settings.language:
+            url = request.build_absolute_uri(
+                '/v2/analytics/campaign/{}?settings&settingsScrollTo=zemCampaignGeneralSettings'.format(
+                    campaign.id,
+                )
+            )
+            raise exc.ValidationError(
+                data={
+                    'message': 'You are not able to add an ad group because campaign language is not defined.',
+                    'action': {
+                        'text': 'Configure the campaign language',
+                        'url': url,
+                    }
+                }
+            )
 
 
 class CampaignOverview(api_common.BaseApiView):
@@ -684,7 +702,8 @@ class AccountCampaigns(api_common.BaseApiView):
 
         name = core.entity.helpers.create_default_name(models.Campaign.objects.filter(account=account), 'New campaign')
 
-        campaign = models.Campaign.objects.create(request, account, name)
+        language = constants.Language.ENGLISH if self.rest_proxy else None
+        campaign = models.Campaign.objects.create(request, account, name, language=language)
 
         response = {
             'name': campaign.name,

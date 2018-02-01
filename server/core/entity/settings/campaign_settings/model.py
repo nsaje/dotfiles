@@ -79,7 +79,8 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin,
     )
     language = models.SlugField(
         default=constants.Language.ENGLISH,
-        choices=constants.Language.get_choices()
+        choices=constants.Language.get_choices(),
+        null=True
     )
     iab_category = models.SlugField(
         max_length=10,

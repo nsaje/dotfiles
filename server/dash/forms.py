@@ -898,7 +898,7 @@ class CampaignSettingsForm(PublisherGroupsFormMixin, forms.Form):
 
     language = forms.TypedChoiceField(
         choices=constants.Language.get_choices(),
-        required=False,
+        error_messages={'required': 'Please choose a language in which ads will be created.'}
     )
 
     iab_category = forms.ChoiceField(
