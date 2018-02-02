@@ -20,6 +20,12 @@ class AgencyManager(core.common.QuerySetManager):
         agency = Agency(name=name, **kwargs)
         agency.save(request)
         agency.allowed_sources.add(*core.source.Source.objects.filter(released=True, deprecated=False))
+
+        agency.settings = core.entity.settings.AgencySettings(agency=agency)
+        agency.settings.update(request)
+        agency.settings_id = agency.settings.id
+        agency.save(request)
+
         return agency
 
 
