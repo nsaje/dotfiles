@@ -651,6 +651,31 @@ pixelUrl         | url                           | pixel url, if applicable    |
             }
         }
 
+
+### Get campagin goal details [GET /rest/v1/campaigns/{campaignId}/goals/{goalId}]
+
++ Parameters
+    + campaignId: 608 (required)
+    + goalId: 1239 (required)
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "1239",
+                "type": "CPA",
+                "value": "30.0",
+                "primary": true,
+                "conversionGoal": {
+                    "type": "GA",
+                    "name": "My conversion goal 2",
+                    "conversionWindow": "LEQ_7_DAYS",
+                    "goalId": "mygoal",
+                    "pixelUrl": "http://example.com/mypixel1"
+                }
+            }
+        }
+
 ### Modify a campaign goal [PUT /rest/v1/campaigns/{campaignId}/goals/{goalId}]
 
 + Parameters
