@@ -740,6 +740,7 @@ class K1ApiTest(K1ApiBaseTest):
             }],
             u'b1_sources_group': {
                 u'daily_budget': u'10.0000',
+                u'cpc_cc': u'0.0100',
                 u'enabled': True,
                 u'state': 2,
             },
@@ -816,6 +817,7 @@ class K1ApiTest(K1ApiBaseTest):
             }],
             u'b1_sources_group': {
                 u'daily_budget': u'10.0000',
+                u'cpc_cc': u'0.0100',
                 u'enabled': True,
                 u'state': 2,
             },

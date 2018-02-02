@@ -499,6 +499,11 @@ class AdGroupsView(K1APIView):
                 license_fee,
                 margin
             )
+            b1_sources_group_cpc_cc = ad_group_settings.get_external_b1_sources_group_cpc_cc(
+                ad_group.campaign.account,
+                license_fee,
+                margin,
+            )
 
             # FIXME: k1 doesn't update missing keys, find a better solution
             flags = {}
@@ -535,6 +540,7 @@ class AdGroupsView(K1APIView):
                 'b1_sources_group': {
                     'enabled': ad_group_settings.b1_sources_group_enabled,
                     'daily_budget': b1_sources_group_daily_budget,
+                    'cpc_cc': b1_sources_group_cpc_cc,
                     'state': ad_group_settings.b1_sources_group_state,
                 },
                 'whitelist_publisher_groups': whitelist,

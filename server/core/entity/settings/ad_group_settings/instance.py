@@ -124,6 +124,16 @@ class AdGroupSettingsMixin(object):
             )
         return b1_sources_group_daily_budget
 
+    def get_external_b1_sources_group_cpc_cc(self, account, license_fee, margin):
+        b1_sources_group_cpc_cc = self.b1_sources_group_cpc_cc
+        if account.uses_bcm_v2:
+            b1_sources_group_cpc_cc = core.bcm.calculations.subtract_fee_and_margin(
+                b1_sources_group_cpc_cc,
+                license_fee,
+                margin,
+            )
+        return b1_sources_group_cpc_cc
+
     @staticmethod
     def _set_ad_group(ad_group, resource):
         if 'name' in resource:
