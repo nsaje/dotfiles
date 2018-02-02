@@ -82,10 +82,11 @@ class ContentAdsTest(RESTAPITest):
     def test_contentads_put(self):
         r = self.client.put(
             reverse('contentads_details', kwargs={'content_ad_id': 16805}),
-            data={'state': 'INACTIVE'}, format='json')
+            data={'state': 'INACTIVE', 'label': 'My new label'}, format='json')
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json['data'])
         self.assertEqual(resp_json['data']['state'], 'INACTIVE')
+        self.assertEqual(resp_json['data']['label'], 'My new label')
 
     def test_contentads_put_url(self):
         content_ad = dash.models.ContentAd.objects.get(pk=16805)

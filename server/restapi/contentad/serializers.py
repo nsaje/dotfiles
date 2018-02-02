@@ -12,7 +12,7 @@ class ContentAdSerializer(rest_framework.serializers.ModelSerializer):
         model = dash.models.ContentAd
         fields = ('id', 'ad_group_id', 'state', 'url', 'title', 'image_url', 'display_url', 'brand_name',
                   'description', 'call_to_action', 'label', 'image_crop', 'tracker_urls')
-        read_only_fields = tuple(set(fields) - set(('state', 'url', 'tracker_urls')))
+        read_only_fields = tuple(set(fields) - set(('state', 'url', 'tracker_urls', 'label')))
 
     id = restapi.fields.IdField(required=False)
     ad_group_id = restapi.fields.IdField(source='ad_group', required=False)

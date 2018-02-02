@@ -1249,8 +1249,9 @@ approvedContentAds | array[[Content Ad](#content-ad)] | An array that contains t
 
 ### Edit a content ad [PUT /rest/v1/contentads/{contentAdId}]
 
-Note: At the moment only the `state` field can be modified through the API. As an alternative to editing other fields,
-please pause and/or archive the existing ads you want to change and create new ones via the API.
+Note: At the moment only the `state`, `label` and `trackerUrls` fields can be modified through the API.
+As an alternative to editing other fields, please pause and/or archive the existing ads you want to change
+and create new ones via the API.
 
 + Parameters
     + contentAdId: 16805 (required)
