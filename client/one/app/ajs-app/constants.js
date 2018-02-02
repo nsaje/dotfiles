@@ -1252,6 +1252,17 @@ constants.entityTypeToLevelMap[constants.entityType.CAMPAIGN] = constants.level.
 constants.entityTypeToLevelMap[constants.entityType.AD_GROUP] = constants.level.AD_GROUPS;
 
 var options = {
+    // used for converting options lists values into REST API flavoured constant values
+    convertToNames: function (optionsList, constantsObj) {
+        var reversedConstants = {};
+        Object.keys(constants.language).forEach(function (prop) {
+            reversedConstants[constantsObj[prop]] = prop;
+        });
+        var optionsListNames = optionsList.map(function (language) {
+            return {name: language.name, value: reversedConstants[language.value]};
+        });
+        return optionsListNames;
+    },
     accountTypes: [
         {name: 'Unknown', id: constants.accountTypes.UNKNOWN},
         {name: 'Test', id: constants.accountTypes.TEST},

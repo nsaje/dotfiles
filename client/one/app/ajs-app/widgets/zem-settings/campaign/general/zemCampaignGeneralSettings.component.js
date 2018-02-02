@@ -21,6 +21,14 @@ angular.module('one.widgets').component('zemCampaignGeneralSettings', {
             });
         };
 
+        $ctrl.$onChanges = function () {
+            if ($ctrl.entity &&
+                    !zemPermissions.hasPermission('zemauth.can_see_campaign_language_choices') &&
+                    !$ctrl.entity.settings.language) {
+                $ctrl.entity.settings.language = constants.language.ENGLISH;
+            }
+        };
+
         function sortIab (obj1, obj2) {
             if (obj1.value === constants.legacyIabCategory.IAB24) {
                 return -1;
