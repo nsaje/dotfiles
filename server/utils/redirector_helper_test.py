@@ -176,6 +176,7 @@ class InsertAdGroupTest(TestCase):
         new_ad_group_settings.tracking_code = 'lala=1'
         new_ad_group_settings.redirect_pixel_urls = []
         new_ad_group_settings.redirect_javascript = ''
+        new_ad_group_settings.click_capping_daily_ad_group_max_clicks = None
         new_ad_group_settings.save(None)
 
         new_campaign_settings = ad_group.campaign.get_current_settings().copy_settings()
@@ -203,7 +204,9 @@ class InsertAdGroupTest(TestCase):
             "enablegatracking": True,
             "enableadobetracking": False,
             "adobetrackingparam": 'cid',
-            "clickcappingdailyadgroupmaxclicks": 10,
+            "specialredirecttrackers": [],
+            "specialredirectjavascript": '',
+            "clickcappingdailyadgroupmaxclicks": 0,
         })
 
         new_ad_group_settings = ad_group.get_current_settings().copy_settings()
