@@ -132,7 +132,7 @@ class BreakdownsBase(backtosql.Model):
         temp_tables = set()
         for constraint, value in constraints.items():
             is_collection = isinstance(value, collections.Iterable) and type(value) not in (str, unicode)
-            if not value or not is_collection:
+            if not value or not is_collection or not isinstance(value[0], int):
                 continue
             table_name = 'tmp_filter_{}_{}'.format(constraint, cache_helper.get_cache_key(value))[:MAX_IDENTIFIER_LENGTH]
             temp_table = backtosql.ConstraintTempTable(table_name, constraint, value)
