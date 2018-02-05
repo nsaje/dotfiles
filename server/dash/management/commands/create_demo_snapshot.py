@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 demo_anonymizer.set_fake_factory(faker.Faker())
 
-TIMEOUT = 20 * 60
+TIMEOUT = 30 * 60
 
 IGNORE_FIELDS = {
     dash.models.PublisherGroup: {'account'},  # due to cyclical foreign key dependency, we want to ignore the account field
