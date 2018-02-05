@@ -516,7 +516,7 @@ tags-input .host .tags {
 ////////////////////////////
 
 @media only screen and (max-width: @tablet-breakpoint) {
-    .intercom-container {
+    #intercom-container {
         display: none !important;
     }
 }
@@ -654,6 +654,7 @@ tags-input .host .tags {
     &.opensleft:before {
         content: none;
     }
+
     &.opensleft:after {
         content: none;
     }
@@ -748,6 +749,10 @@ tags-input .host .tags {
                 background-color: fade(@secondary-color, 50%);
             }
         }
+    }
+
+    &.zem-header-date-range-picker-dropdown.dropdown-menu:not([style*='top']) {
+        display: none !important;
     }
 }
 

@@ -343,6 +343,15 @@
     transition: all @default-animation;
 }
 
+.zem-header-date-range-picker--desktop {
+    display: block;
+}
+
+.zem-header-date-range-picker--mobile {
+    display: none;
+    pointer-events: none;
+}
+
 .zem-header-filter-selector-toggle {
     float: right;
     display: block;
@@ -663,6 +672,16 @@
             padding-right: 0;
             width: 45px;
         }
+    }
+
+    .zem-header-date-range-picker--desktop {
+        display: none;
+        pointer-events: none;
+    }
+    
+    .zem-header-date-range-picker--mobile {
+        display: block;
+        pointer-events: auto;
     }
 
     .zem-header-date-range-picker-dropdown.dropdown-menu,
