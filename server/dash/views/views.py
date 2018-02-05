@@ -45,6 +45,24 @@ YAHOO_DASH_URL = 'https://gemini.yahoo.com/advertiser/{advertiser_id}/campaign/{
 OUTBRAIN_DASH_URL = 'https://my.outbrain.com/amplify/site/marketers/{marketer_id}/reports/content?campaignId={campaign_id}'
 FACEBOOK_DASH_URL = 'https://business.facebook.com/ads/manager/campaign/?ids={campaign_id}&business_id={business_id}'
 
+CAMPAIGN_NOT_CONFIGURED_SCENARIOS = {
+    'multiple_missing': {
+        'message': 'You are not able to add an ad group because campaign is missing some required configuration.',
+        'action_text': 'Configure the campaign',
+        'url_postfix': '',
+    },
+    'goal_missing': {
+        'message': 'You are not able to add an ad group because campaign goal is not defined.',
+        'action_text': 'Configure the campaign goal',
+        'url_postfix': '&settingsScrollTo=zemCampaignGoalsSettings',
+    },
+    'language_missing': {
+        'message': 'You are not able to add an ad group because campaign language is not defined.',
+        'action_text': 'Configure the campaign language',
+        'url_postfix': '&settingsScrollTo=zemCampaignGeneralSettings',
+    },
+}
+
 
 def index(request):
     associated_agency = models.Agency.objects.all().filter(
@@ -315,32 +333,26 @@ class CampaignAdGroups(api_common.BaseApiView):
     @staticmethod
     def _validate_campaign_ready(request, campaign):
         primary_goal = campaign_goals.get_primary_campaign_goal(campaign)
-        if not primary_goal:
+        scenario = None
+
+        if not primary_goal and not campaign.settings.language:
+            scenario = 'multiple_missing'
+        elif not primary_goal:
+            scenario = 'goal_missing'
+        elif not campaign.settings.language:
+            scenario = 'language_missing'
+
+        if scenario:
             url = request.build_absolute_uri(
-                '/v2/analytics/campaign/{}?settings&settingsScrollTo=zemCampaignGoalsSettings'.format(
+                '/v2/analytics/campaign/{}?settings'.format(
                     campaign.id,
                 )
-            )
+            ) + CAMPAIGN_NOT_CONFIGURED_SCENARIOS[scenario]['url_postfix']
             raise exc.ValidationError(
                 data={
-                    'message': 'You are not able to add an ad group because campaign goal is not defined.',
+                    'message': CAMPAIGN_NOT_CONFIGURED_SCENARIOS[scenario]['message'],
                     'action': {
-                        'text': 'Configure the campaign goal',
-                        'url': url,
-                    }
-                }
-            )
-        if not campaign.settings.language:
-            url = request.build_absolute_uri(
-                '/v2/analytics/campaign/{}?settings&settingsScrollTo=zemCampaignGeneralSettings'.format(
-                    campaign.id,
-                )
-            )
-            raise exc.ValidationError(
-                data={
-                    'message': 'You are not able to add an ad group because campaign language is not defined.',
-                    'action': {
-                        'text': 'Configure the campaign language',
+                        'text': CAMPAIGN_NOT_CONFIGURED_SCENARIOS[scenario]['action_text'],
                         'url': url,
                     }
                 }
