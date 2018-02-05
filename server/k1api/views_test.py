@@ -1033,6 +1033,7 @@ class K1ApiTest(K1ApiBaseTest):
             "campaign_id": 1,
             "account_id": 1,
             "agency_id": 20,
+            "language": "en",
             "call_to_action": "",
             "url": "http://testurl.com",
             "title": "Test Article 1",

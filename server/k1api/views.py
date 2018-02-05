@@ -993,6 +993,15 @@ class ContentAdsView(K1APIView):
             ad_group_ids = ad_group_ids.split(',')
             content_ads = content_ads.filter(ad_group_id__in=ad_group_ids)
         content_ads = content_ads.select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account')
+        campaign_settings_map = {
+            cs.campaign_id: cs
+            for cs in (
+                dash.models.CampaignSettings.objects
+                .filter(campaign_id__in=set([ca.ad_group.campaign_id for ca in content_ads]))
+                .group_current_settings()
+                .only('campaign_id', 'language')
+            )
+        }
 
         response = []
         for item in content_ads:
@@ -1010,6 +1019,7 @@ class ContentAdsView(K1APIView):
                 'campaign_id': item.ad_group.campaign_id,
                 'account_id': item.ad_group.campaign.account_id,
                 'agency_id': item.ad_group.campaign.account.agency_id,
+                'language': campaign_settings_map[item.ad_group.campaign_id].language,
                 'title': item.title,
                 'url': item.url,
                 'redirect_id': item.redirect_id,
