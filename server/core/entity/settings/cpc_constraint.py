@@ -47,10 +47,10 @@ class CpcConstraint(models.Model):
             desc += ' on all sources'
         desc += ' with'
 
-        if self.bcm_min_cpc:
+        if hasattr(self, 'bcm_min_cpc') and self.bcm_min_cpc:
             desc += ' min. CPC {}'.format(lc_helper.default_currency(self.bcm_min_cpc))
-        if self.bcm_max_cpc:
-            if self.bcm_min_cpc:
+        if hasattr(self, 'bcm_max_cpc') and self.bcm_max_cpc:
+            if hasattr(self, 'bcm_min_cpc') and self.bcm_min_cpc:
                 desc += ' and'
             desc += ' max. CPC {}'.format(lc_helper.default_currency(self.bcm_max_cpc))
         return desc
