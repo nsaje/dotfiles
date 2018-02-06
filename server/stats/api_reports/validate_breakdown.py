@@ -38,10 +38,6 @@ def validate_breakdown_by_structure(level, breakdown):
     if time:
         clean_breakdown.append(time)
 
-    delivery = constants.get_delivery_dimension(breakdown)
-    if delivery:
-        raise exc.InvalidBreakdownError("Unsupported breakdown - delivery not supported in reports")
-
     unsupported_breakdowns = set(breakdown) - set(clean_breakdown)
     if unsupported_breakdowns:
         raise exc.InvalidBreakdownError("Unsupported breakdowns: {}".format(', '.join(unsupported_breakdowns)))
