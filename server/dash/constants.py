@@ -2301,20 +2301,25 @@ class PlacementMedium(ConstantBase):
     }
 
 
-# Video placement
 class PlacementType(ConstantBase):
     UNKNOWN = None
-    IN_FEED = 1
-    IN_CONTENT = 2
-    OUTSIDE_CONTENT = 3
-    RECOMMENDATION_WIDGET = 4
+    IN_APP = 1
+    IN_FEED_WITH_IMAGE = 2
+    SINGLE_TEXT_ONLY_AD = 3
+    RECOMMENDATION_WIDGET_WITH_IMAGE = 4
+    RECOMMENDATION_WIDGET_TEXT_ONLY = 5
+    AD_BLOCKER = 6
+    NEWSLETTER = 7
 
     _VALUES = {
         UNKNOWN: "Unknown",
-        IN_FEED: "In Feed",
-        IN_CONTENT: "In Content",
-        OUTSIDE_CONTENT: "Outside Content",
-        RECOMMENDATION_WIDGET: "Recommendation Widget",
+        IN_APP: "In-App",
+        IN_FEED_WITH_IMAGE: "In-Feed With Image",
+        SINGLE_TEXT_ONLY_AD: "Single Text-Only Ad",
+        RECOMMENDATION_WIDGET_WITH_IMAGE: "Recommendation Widget With Image",
+        RECOMMENDATION_WIDGET_TEXT_ONLY: "Recommendation Widget Text Only",
+        AD_BLOCKER: "Ad Blocker",
+        NEWSLETTER: "Newsletter",
     }
 
 
