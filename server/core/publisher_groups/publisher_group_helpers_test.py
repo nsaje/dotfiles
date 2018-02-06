@@ -388,6 +388,8 @@ class PublisherGroupHelpersTest(TestCase):
         campaign_settings = campaign.get_current_settings()
         account = models.Account.objects.get(pk=1)
         account_settings = account.get_current_settings()
+        agency = models.Agency.objects.get(pk=1)
+        agency_settings = agency.get_current_settings()
 
         with override_settings(GLOBAL_BLACKLIST_ID=1):
             ad_group.default_blacklist_id = 2
@@ -396,6 +398,8 @@ class PublisherGroupHelpersTest(TestCase):
             campaign_settings.blacklist_publisher_groups = [5]
             account.default_blacklist_id = 6
             account_settings.blacklist_publisher_groups = [7]
+            agency.default_blacklist_id = 8
+            agency_settings.blacklist_publisher_groups = [9]
 
             ad_group.default_whitelist_id = 11
             ad_group_settings.whitelist_publisher_groups = [12]
@@ -403,13 +407,15 @@ class PublisherGroupHelpersTest(TestCase):
             campaign_settings.whitelist_publisher_groups = [14]
             account.default_whitelist_id = 15
             account_settings.whitelist_publisher_groups = [16]
+            agency.default_whitelist_id = 17
+            agency_settings.whitelist_publisher_groups = [18]
 
             blacklist, whitelist = publisher_group_helpers.concat_publisher_group_targeting(
-                ad_group, ad_group_settings, campaign, campaign_settings, account, account_settings
+                ad_group, ad_group_settings, campaign, campaign_settings, account, account_settings, agency, agency_settings
             )
 
-        self.assertEqual(blacklist, [1, 2, 3, 4, 5, 6, 7])
-        self.assertEqual(whitelist, [11, 12, 13, 14, 15, 16])
+        self.assertEqual(blacklist, [1, 2, 3, 4, 5, 6, 7, 8, 9])
+        self.assertEqual(whitelist, [11, 12, 13, 14, 15, 16, 17, 18])
 
     def test_blacklist_outbrain_validation(self):
         outbrain = models.Source.objects.get(pk=3)

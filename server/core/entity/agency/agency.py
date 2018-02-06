@@ -97,6 +97,11 @@ class Agency(models.Model):
     allowed_sources = models.ManyToManyField('Source', blank=True)
     custom_flags = JSONField(null=True, blank=True)
 
+    default_whitelist = models.OneToOneField('PublisherGroup', related_name='whitelisted_agencies',
+                                             on_delete=models.PROTECT, null=True, blank=True)
+    default_blacklist = models.OneToOneField('PublisherGroup', related_name='blacklisted_agencies',
+                                             on_delete=models.PROTECT, null=True, blank=True)
+
     settings = models.OneToOneField('AgencySettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_entity')
 
     def get_long_name(self):

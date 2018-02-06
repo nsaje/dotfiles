@@ -75,12 +75,15 @@ class Command(ExceptionCommand):
         ad_groups = ad_groups.select_related('campaign', 'campaign__account')
         campaigns = models.Campaign.objects.filter(pk__in=ad_groups.values_list('campaign_id', flat=True))
         accounts = models.Account.objects.filter(pk__in=campaigns.values_list('account_id', flat=True))
+        agencies = models.Agency.objects.filter(agency_id__isnull=False, pk__in=accounts.values_list('agency_id', flat=True))
         ad_group_settings_map = {x.ad_group_id: x for x in models.AdGroupSettings.objects.filter(
             ad_group__in=ad_groups).group_current_settings()}
         campaign_settings_map = {x.campaign_id: x for x in models.CampaignSettings.objects.filter(
             campaign__in=campaigns).group_current_settings()}
         account_settings_map = {x.account_id: x for x in models.AccountSettings.objects.filter(
             account__in=accounts).group_current_settings()}
+        agency_settings_map = {x.agency_id: x for x in models.AgencySettings.objects.filter(
+            agency__in=agencies).group_current_settings()}
 
         outbrain = models.Source.objects.get(source_type__type=constants.SourceType.OUTBRAIN)
 
@@ -93,6 +96,7 @@ class Command(ExceptionCommand):
                 ad_group, ad_group_settings_map[ad_group.id],
                 ad_group.campaign, campaign_settings_map[ad_group.campaign_id],
                 ad_group.campaign.account, account_settings_map[ad_group.campaign.account_id],
+                ad_group.campaign.account.agency, agency_settings_map.get(ad_group.campaign.account.agency_id),
                 include_global=True)
 
             blacklisted_publishers = set(list_helper.flatten(publishers_map[x] for x in blacklist))

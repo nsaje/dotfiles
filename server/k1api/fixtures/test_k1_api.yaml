@@ -110,8 +110,15 @@
         modified_by: 1
         name: 'test agency 1'
         custom_flags: {'flag_4': True}
+        settings: 1
     model: dash.agency
     pk: 20
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        agency: 20
+    model: dash.agencysettings
+    pk: 1
 
 
 # test campaign

@@ -454,6 +454,7 @@ class AdGroupsView(K1APIView):
         ad_groups_settings,\
             campaigns_settings_map,\
             accounts_settings_map,\
+            agencies_settings_map,\
             campaigns_budgets_map,\
             campaignstop_states = self._get_settings_maps(ad_group_ids, source_types, slugs, marker, limit)
 
@@ -471,6 +472,7 @@ class AdGroupsView(K1APIView):
         for ad_group_settings in ad_groups_settings:
             campaign_settings = campaigns_settings_map[ad_group_settings.ad_group.campaign_id]
             account_settings = accounts_settings_map[ad_group_settings.ad_group.campaign.account_id]
+            agency_settings = agencies_settings_map.get(ad_group_settings.ad_group.campaign.account.agency_id)  # FIXME(nsaje): settings should exist
 
             blacklist = ad_group_settings.blacklist_publisher_groups
             whitelist = ad_group_settings.whitelist_publisher_groups
@@ -480,6 +482,7 @@ class AdGroupsView(K1APIView):
                 ad_group, ad_group_settings,
                 ad_group.campaign, campaign_settings,
                 ad_group.campaign.account, account_settings,
+                ad_group.campaign.account.agency, agency_settings,
                 include_global=False  # global blacklist is handled separately by the bidder, no need to duplicate work
             )
 
@@ -660,6 +663,12 @@ class AdGroupsView(K1APIView):
                              .only('account_id', 'whitelist_publisher_groups', 'blacklist_publisher_groups'))
         accounts_settings_map = {accs.account_id: accs for accs in accounts_settings}
 
+        agencies_settings = (dash.models.AgencySettings.objects
+                             .filter(agency_id__in=set([ag.ad_group.campaign.account.agency_id for ag in ad_groups_settings]))
+                             .group_current_settings()
+                             .only('agency_id', 'whitelist_publisher_groups', 'blacklist_publisher_groups'))
+        agencies_settings_map = {agncs.agency_id: agncs for agncs in agencies_settings}
+
         budgets = (dash.models.BudgetLineItem.objects
                    .filter(campaign_id__in=set([ag.ad_group.campaign_id for ag in ad_groups_settings]))
                    .filter_today()
@@ -673,6 +682,7 @@ class AdGroupsView(K1APIView):
         return ad_groups_settings,\
             campaigns_settings_map,\
             accounts_settings_map,\
+            agencies_settings_map,\
             campaigns_budgets_map,\
             campaignstop_states
 

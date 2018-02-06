@@ -81,7 +81,8 @@ def can_user_handle_publisher_listing_level(user, obj):
 
 
 def concat_publisher_group_targeting(ad_group, ad_group_settings, campaign,
-                                     campaign_settings, account, account_settings, include_global=True):
+                                     campaign_settings, account, account_settings,
+                                     agency=None, agency_settings=None, include_global=True):
 
     blacklist = set()
     whitelist = set()
@@ -95,6 +96,9 @@ def concat_publisher_group_targeting(ad_group, ad_group_settings, campaign,
     if account:
         blacklist |= _get_blacklists(account, account_settings)
         whitelist |= _get_whitelists(account, account_settings)
+    if agency:
+        blacklist |= _get_blacklists(agency, agency_settings)
+        whitelist |= _get_whitelists(agency, agency_settings)
 
     if include_global:
         blacklist |= set([get_global_blacklist().id])
