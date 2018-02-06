@@ -1253,24 +1253,26 @@ constants.entityTypeToLevelMap[constants.entityType.AD_GROUP] = constants.level.
 
 var options = {
     // used for converting options lists values into REST API flavoured constant values
-    convertToNames: function (optionsList, constantsObj) {
+    convertToRestApiCompliantOptions: function (optionsList, constantsObj) {
         var reversedConstants = {};
-        Object.keys(constants.language).forEach(function (prop) {
+        Object.keys(constantsObj).forEach(function (prop) {
             reversedConstants[constantsObj[prop]] = prop;
         });
-        var optionsListNames = optionsList.map(function (language) {
-            return {name: language.name, value: reversedConstants[language.value]};
+        var optionsListNames = optionsList.map(function (option) {
+            var newOption = angular.copy(option);
+            newOption.value = reversedConstants[option.value];
+            return newOption;
         });
         return optionsListNames;
     },
     accountTypes: [
-        {name: 'Unknown', id: constants.accountTypes.UNKNOWN},
-        {name: 'Test', id: constants.accountTypes.TEST},
-        {name: 'Sandbox', id: constants.accountTypes.SANDBOX},
-        {name: 'Pilot', id: constants.accountTypes.PILOT},
-        {name: 'Activated', id: constants.accountTypes.ACTIVATED},
-        {name: 'Managed', id: constants.accountTypes.MANAGED},
-        {name: 'PAAS', id: constants.accountTypes.PAAS},
+        {name: 'Unknown', value: constants.accountTypes.UNKNOWN},
+        {name: 'Test', value: constants.accountTypes.TEST},
+        {name: 'Sandbox', value: constants.accountTypes.SANDBOX},
+        {name: 'Pilot', value: constants.accountTypes.PILOT},
+        {name: 'Activated', value: constants.accountTypes.ACTIVATED},
+        {name: 'Managed', value: constants.accountTypes.MANAGED},
+        {name: 'PAAS', value: constants.accountTypes.PAAS},
     ],
     adGroupSettingsStates: [
         {name: 'Paused', value: constants.settingsState.INACTIVE},

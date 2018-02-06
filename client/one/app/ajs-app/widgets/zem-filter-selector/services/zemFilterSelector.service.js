@@ -294,7 +294,7 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
     function getAccountTypesOptions () {
         var availableAccountTypes = [];
         options.accountTypes.forEach(function (accountType) {
-            var accountTypeId = String(accountType.id);
+            var accountTypeId = String(accountType.value);
             availableAccountTypes.push({
                 value: accountTypeId,
                 text: accountType.name,
