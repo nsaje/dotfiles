@@ -28,6 +28,11 @@ def write_message_json(queue_name, body):
     queue.write(message)
 
 
+def get_all_messages_json(queue_name):
+    messages = get_all_messages(queue_name)
+    return [message.get_body() for message in messages]
+
+
 def get_all_messages(queue_name):
     queue = _get_queue(_get_connection(), queue_name)
     rs = queue.get_messages(MAX_MESSAGES_PER_BATCH)

@@ -25,8 +25,7 @@ def handle_updates():
 
 
 def _get_messages_from_queue():
-    messages = sqs_helper.get_all_messages(settings.CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE)
-    return [json.loads(message.get_body()) for message in messages]
+    return sqs_helper.get_all_messages_json(settings.CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE)
 
 
 def _handle_budget_updates(campaigns):
