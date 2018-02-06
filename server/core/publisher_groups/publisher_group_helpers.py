@@ -12,6 +12,7 @@ from utils import email_helper
 
 logger = logging.getLogger(__name__)
 
+OUTBRAIN_MAX_BLACKLISTED_PUBLISHERS = 30
 OUTBRAIN_CPC_CONSTRAINT_LIMIT = 30
 OUTBRAIN_CPC_CONSTRAINT_MIN = Decimal('0.65')
 
@@ -260,6 +261,7 @@ def blacklist_publishers(request, entry_dicts, obj, enforce_cpc=False):
 
     for entry in entries:
         validate_blacklist_entry(obj, entry)
+    validate_outbrain_blacklist_count(obj, entries)
 
     models.PublisherGroupEntry.objects.bulk_create(entries)
 
@@ -456,6 +458,20 @@ def validate_blacklist_entry(obj, entry):
         raise PublisherGroupTargetingException("Outbrain specific blacklisting is only available on account level")
 
 
+def validate_outbrain_blacklist_count(obj, entries):
+    if obj is None:
+        # no need to handle when we do global blacklisting:
+        return
+    account = obj.get_account()
+    ob_blacklist_count_existing = get_ob_blacklisted_publishers_count(account)
+    ob_blacklist_count_added = len(filter(lambda e: e.source and e.source.source_type.type == constants.SourceType.OUTBRAIN,
+                                          entries))
+
+    if (ob_blacklist_count_added and
+            ob_blacklist_count_existing + ob_blacklist_count_added > OUTBRAIN_MAX_BLACKLISTED_PUBLISHERS):
+        raise PublisherGroupTargetingException("Outbrain blacklist limit exceeded")
+
+
 def apply_outbrain_account_constraints_if_needed(obj, enforce_cpc):
     outbrain = models.Source.objects.filter(source_type__type=constants.SourceType.OUTBRAIN)
     if not outbrain.exists():
@@ -468,11 +484,9 @@ def apply_outbrain_account_constraints_if_needed(obj, enforce_cpc):
 
     outbrain = outbrain.first()
     account = obj.get_account()
+    ob_blacklist_count = get_ob_blacklisted_publishers_count(account)
 
-    blacklist_ids = _get_blacklists(account, account.get_current_settings())
-    entries = models.PublisherGroupEntry.objects.filter(publisher_group_id__in=blacklist_ids, source=outbrain)
-
-    if entries.count() >= OUTBRAIN_CPC_CONSTRAINT_LIMIT:
+    if ob_blacklist_count > OUTBRAIN_CPC_CONSTRAINT_LIMIT:
         cpc_constraints.create(
             min_cpc=OUTBRAIN_CPC_CONSTRAINT_MIN,
             constraint_type=constants.CpcConstraintType.OUTBRAIN_BLACKLIST,

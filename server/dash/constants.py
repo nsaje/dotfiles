@@ -4,12 +4,6 @@ from decimal import Decimal
 from dash import regions
 from utils.constant_base import ConstantBase
 
-# Outbrain supports only 10 blocked publisher per marketer id
-# which corresponds to 10 blacklisted publishers per Z1 account
-# Experiment 6/13/2016: we can blacklist 30 publishers on OB dashboard, it's not documented
-#                       but we can try to enable 30 via API
-MANUAL_ACTION_OUTBRAIN_BLACKLIST_THRESHOLD = 30
-
 MAX_CONVERSION_GOALS_PER_CAMPAIGN = 15
 
 GA_PROPERTY_ID_REGEX = r'UA-([0-9]+)-([0-9]+)'
