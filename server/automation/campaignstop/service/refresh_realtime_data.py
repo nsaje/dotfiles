@@ -9,7 +9,7 @@ from utils import dates_helper
 def refresh_realtime_data(campaigns=None):
     if not campaigns:
         campaigns = core.entity.Campaign.objects.filter(real_time_campaign_stop=True)
-    _refresh_campaigns_realtime_data(campaigns)
+    _refresh_campaigns_realtime_data([campaign for campaign in campaigns if campaign.real_time_campaign_stop])
 
 
 def _refresh_campaigns_realtime_data(campaigns):

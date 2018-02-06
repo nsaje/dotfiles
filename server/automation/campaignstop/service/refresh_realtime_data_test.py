@@ -87,7 +87,7 @@ class RefreshRealtimeDataTest(TestCase):
         self.assertFalse(RealTimeDataHistory.objects.exists())
 
         refresh_realtime_data.refresh_realtime_data([campaign])
-        self.assertEqual(1, RealTimeDataHistory.objects.count())
+        self.assertFalse(RealTimeDataHistory.objects.exists())
 
     @mock.patch('dash.features.realtimestats.get_ad_group_sources_stats')
     def test_refresh_budgets_tz_behind_source(self, mock_get_realtime_data):
@@ -128,7 +128,7 @@ class RefreshRealtimeDataTest(TestCase):
 
     @mock.patch('dash.features.realtimestats.get_ad_group_sources_stats')
     def test_multiple(self, mock_get_realtime_data):
-        campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=False)
+        campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
         ad_groups = magic_mixer.cycle(2).blend(core.entity.AdGroup, campaign=campaign)
         sources = magic_mixer.cycle(2).blend(core.source.Source, source_type=self.source_type)
         for ad_group, source in itertools.product(ad_groups, sources):
