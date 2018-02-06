@@ -51,7 +51,14 @@ INSERT INTO mv_master_pubs(
         SUM(video_midpoint) as video_midpoint,
         SUM(video_third_quartile) as video_third_quartile,
         SUM(video_complete) as video_complete,
-        SUM(video_progress_3s) as video_progress_3s
+        SUM(video_progress_3s) as video_progress_3s,
+
+        SUM(local_cost_nano) as local_cost_nano,
+        SUM(local_data_cost_nano) as local_data_cost_nano,
+        SUM(local_effective_cost_nano) as local_effective_cost_nano,
+        SUM(local_effective_data_cost_nano) as local_effective_data_cost_nano,
+        SUM(local_license_fee_nano) as local_license_fee_nano,
+        SUM(local_margin_nano) as local_margin_nano
     FROM mv_master
     WHERE date BETWEEN %(date_from)s AND %(date_to)s AND publisher IS NOT NULL AND publisher <> '' AND source_id <> 3
           {% if account_id %}
@@ -59,4 +66,3 @@ INSERT INTO mv_master_pubs(
           {% endif %}
     GROUP BY 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
 )
-

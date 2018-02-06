@@ -69,7 +69,14 @@ INSERT INTO mv_master (
       NULL AS video_midpoint,
       NULL AS video_third_quartile,
       NULL AS video_complete,
-      NULL AS video_progress_3s
+      NULL AS video_progress_3s,
+
+      NULL AS local_cost_nano,                 -- TODO (jurebajt): Calculate using mvh_currency_exchange_rates
+      NULL AS local_data_cost_nano,            -- TODO (jurebajt): Calculate using mvh_currency_exchange_rates
+      NULL AS local_effective_cost_nano,       -- TODO (jurebajt): Calculate using mvh_currency_exchange_rates
+      NULL AS local_effective_data_cost_nano,  -- TODO (jurebajt): Calculate using mvh_currency_exchange_rates
+      NULL AS local_license_fee_nano,          -- TODO (jurebajt): Calculate using mvh_currency_exchange_rates
+      NULL AS local_margin_nano                -- TODO (jurebajt): Calculate using mvh_currency_exchange_rates
   FROM
     (
       mv_master_diff a

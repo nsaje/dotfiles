@@ -110,6 +110,13 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
     video_complete = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'video_complete'}, AGGREGATES)
     video_progress_3s = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'video_progress_3s'}, AGGREGATES)
 
+    local_cost_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'local_cost_nano'}, AGGREGATES)
+    local_data_cost_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'local_data_cost_nano'}, AGGREGATES)
+    local_effective_cost_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'local_effective_cost_nano'}, AGGREGATES)  # noqa
+    local_effective_data_cost_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'local_effective_data_cost_nano'}, AGGREGATES)  # noqa
+    local_license_fee_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'local_license_fee_nano'}, AGGREGATES)  # noqa
+    local_margin_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'local_margin_nano'}, AGGREGATES)
+
     def get_ordered_aggregates(self):
         """
         Returns aggregates in order as it is used in materialized view table definitions.
@@ -121,6 +128,8 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
             'effective_data_cost_nano', 'license_fee_nano', 'margin_nano', 'users',
             'returning_users', 'video_start', 'video_first_quartile', 'video_midpoint',
             'video_third_quartile', 'video_complete', 'video_progress_3s',
+            'local_cost_nano', 'local_data_cost_nano', 'local_effective_cost_nano', 'local_effective_data_cost_nano',
+            'local_license_fee_nano', 'local_margin_nano',
         ])
 
 

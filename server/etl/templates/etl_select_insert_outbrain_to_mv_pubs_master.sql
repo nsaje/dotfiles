@@ -65,7 +65,14 @@ SELECT
     NULL as video_midpoint,
     NULL as video_third_quartile,
     NULL as video_complete,
-    NULL as video_progress_3s
+    NULL as video_progress_3s,
+
+    NULL as local_cost_nano,                 -- TODO (jurebajt): Calculate using mvh_currency_exchange_rates
+    NULL as local_data_cost_nano,            -- TODO (jurebajt): Calculate using mvh_currency_exchange_rates
+    NULL as local_effective_cost_nano,       -- TODO (jurebajt): Calculate using mvh_currency_exchange_rates
+    NULL as local_effective_data_cost_nano,  -- TODO (jurebajt): Calculate using mvh_currency_exchange_rates
+    NULL as local_license_fee_nano,          -- TODO (jurebajt): Calculate using mvh_currency_exchange_rates
+    NULL as local_margin_nano                -- TODO (jurebajt): Calculate using mvh_currency_exchange_rates
 FROM
   (
     (

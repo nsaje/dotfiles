@@ -964,7 +964,13 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                     SUM(video_midpoint) video_midpoint,
                     SUM(video_third_quartile) video_third_quartile,
                     SUM(video_complete) video_complete,
-                    SUM(video_progress_3s) video_progress_3s
+                    SUM(video_progress_3s) video_progress_3s,
+                    SUM(local_cost_nano) local_cost_nano,
+                    SUM(local_data_cost_nano) local_data_cost_nano,
+                    SUM(local_effective_cost_nano) local_effective_cost_nano,
+                    SUM(local_effective_data_cost_nano) local_effective_data_cost_nano,
+                    SUM(local_license_fee_nano) local_license_fee_nano,
+                    SUM(local_margin_nano) local_margin_nano
                 FROM mv_master
                 WHERE (date>=%s AND date<=%s)
                 GROUP BY date, source_id, account_id
@@ -1021,7 +1027,13 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                     SUM(video_midpoint) video_midpoint,
                     SUM(video_third_quartile) video_third_quartile,
                     SUM(video_complete) video_complete,
-                    SUM(video_progress_3s) video_progress_3s
+                    SUM(video_progress_3s) video_progress_3s,
+                    SUM(local_cost_nano) local_cost_nano,
+                    SUM(local_data_cost_nano) local_data_cost_nano,
+                    SUM(local_effective_cost_nano) local_effective_cost_nano,
+                    SUM(local_effective_data_cost_nano) local_effective_data_cost_nano,
+                    SUM(local_license_fee_nano) local_license_fee_nano,
+                    SUM(local_margin_nano) local_margin_nano
                 FROM mv_master
                 WHERE (account_id=%s AND date>=%s AND date<=%s)
                 GROUP BY date, source_id, account_id
