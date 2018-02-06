@@ -30,7 +30,7 @@ def write_message_json(queue_name, body):
 
 def get_all_messages_json(queue_name):
     messages = get_all_messages(queue_name)
-    return [message.get_body() for message in messages]
+    return [json.loads(message.get_body()) for message in messages]
 
 
 def get_all_messages(queue_name):
