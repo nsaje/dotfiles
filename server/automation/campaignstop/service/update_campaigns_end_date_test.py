@@ -2,7 +2,7 @@ import datetime
 from django.test import TestCase
 from mock import patch
 
-from .. import CampaignStopState, signals
+from .. import CampaignStopState
 from update_campaigns_end_date import update_campaigns_end_date
 
 import core.bcm
@@ -14,8 +14,6 @@ from utils import dates_helper
 class UpdateCampaignEndDateTestCase(TestCase):
 
     def setUp(self):
-        signals.disconnect_update_budgets()
-
         self.campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
 
         self.today = dates_helper.local_today()

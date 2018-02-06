@@ -9,5 +9,5 @@ from service import (
     update_campaigns_state,
     validate_minimum_budget_amount,
     mark_almost_depleted_campaigns,
+    handle_updates,
 )
-import signals

@@ -7,7 +7,7 @@ from utils import dates_helper
 
 from . import campaign_spends
 from .. import CampaignStopState
-from ..constants import CampaignStopEvent
+from .. import constants
 from .. import RealTimeCampaignStopLog
 
 THRESHOLD = decimal.Decimal('10')
@@ -16,7 +16,7 @@ HOURS_DELAY = 6
 
 def update_campaigns_state(campaigns=None):
     if not campaigns:
-        campaigns = core.entity.Campaign.objects.all()
+        campaigns = core.entity.Campaign.objects.filter(real_time_campaign_stop=True)
     _update_campaigns(campaign for campaign in campaigns if campaign.real_time_campaign_stop)
 
 
@@ -28,8 +28,9 @@ def _update_campaigns(campaigns):
 @transaction.atomic
 def _update_campaign(campaign):
     campaign_state, _ = CampaignStopState.objects.get_or_create(campaign=campaign)
+
     log = RealTimeCampaignStopLog(
-        campaign=campaign, event=CampaignStopEvent.BUDGET_DEPLETION_CHECK)
+        campaign=campaign, event=constants.CampaignStopEvent.BUDGET_DEPLETION_CHECK)
     campaign_state.set_allowed_to_run(_is_allowed_to_run(log, campaign, campaign_state))
 
 

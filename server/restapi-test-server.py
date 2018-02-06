@@ -30,19 +30,19 @@ parser.add_argument('--keepdb', dest='keepdb', action='store_true')
 parser.add_argument('--autoreload', dest='autoreload', action='store_true')
 args = parser.parse_args()
 
+# OVERRIDE SETTINGS
+from django.conf import settings  # noqa
+settings.K1_DEMO_MODE = True
+settings.R1_DEMO_MODE = True
+settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'mock'
+settings.DISABLE_SIGNALS = True
+
 print "Setting up django"
 django.setup()
 
 print "Creating a test database..."
 db = connection.creation.create_test_db(autoclobber=True, keepdb=args.keepdb)
 print "Using test database: %s" % db
-
-
-# OVERRIDE SETTINGS
-from django.conf import settings  # noqa
-settings.K1_DEMO_MODE = True
-settings.R1_DEMO_MODE = True
-settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'mock'
 
 
 def sigterm_handler(signum, frame):

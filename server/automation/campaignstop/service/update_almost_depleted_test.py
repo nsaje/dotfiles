@@ -25,6 +25,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         return datetime(2020, 1, 1, 7, 10, 10)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
+    @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_does_not_fail_if_campaign_has_no_campaignstop(self, _):
         CampaignStopState.objects.all().delete()
         campaign_stop_count = CampaignStopState.objects.count()
@@ -32,6 +33,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         campaignstop.service.update_almost_depleted.mark_almost_depleted_campaigns()
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
+    @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_script_should_produce_log(self, _):
         RealTimeCampaignStopLog.objects.all().delete()
         today = dates_helper.local_today()
@@ -45,6 +47,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.assertEqual(RealTimeCampaignStopLog.objects.count(), 1)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
+    @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_mark_almost_depleted_for_one_campaign(self, _):
         today = dates_helper.local_today()
         RealTimeDataHistory.objects.create(
@@ -58,6 +61,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.assertTrue(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
+    @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_b1_source_type_gets_added_to_budget_if_adg_source_inactive(self, _):
         self.source.source_type.type = dash.constants.SourceType.B1
         self.source.source_type.save()
@@ -78,6 +82,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.assertTrue(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_morning_est_now)
+    @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_day_before_yesterday_is_used_when_in_critical_hours(self, _):
         self.source.source_type.type = dash.constants.SourceType.B1
         self.source.source_type.save()
@@ -112,6 +117,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
+    @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_daily_budget_cc_and_etfm_spend_do_not_set_almost_depleted_to_true(self, _):
         active_adg = dash.constants.AdGroupSettingsState.ACTIVE
         active_adg_source = dash.constants.AdGroupSourceSettingsState.ACTIVE
@@ -135,6 +141,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
+    @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_daily_budget_cc_and_etfm_spend_set_almost_depleted_to_true(self, _):
         active_adg = dash.constants.AdGroupSettingsState.ACTIVE
         active_adg_source = dash.constants.AdGroupSourceSettingsState.ACTIVE
@@ -158,6 +165,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.assertTrue(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
+    @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_daily_budget_cc_and_etfm_spend_set_almost_depleted_column_to_true(self, _):
         active_adg = dash.constants.AdGroupSettingsState.ACTIVE
         active_adg_source = dash.constants.AdGroupSourceSettingsState.ACTIVE
@@ -181,6 +189,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.assertTrue(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
+    @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_user_has_both_ad_group_and_ad_group_source_turned_on(self, _):
         active_adg = dash.constants.AdGroupSettingsState.ACTIVE
         active_adg_source = dash.constants.AdGroupSourceSettingsState.ACTIVE
@@ -197,6 +206,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.assertTrue(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
+    @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_user_turns_on_ad_group_and_has_ad_group_source_off(self, _):
         inactive_adg = dash.constants.AdGroupSettingsState.INACTIVE
         inactive_adg_source = dash.constants.AdGroupSourceSettingsState.INACTIVE
@@ -221,6 +231,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.assertTrue(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
+    @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_user_turns_off_ad_group_and_ad_group_source(self, _):
         self.ad_group.settings.update(None, state=dash.constants.AdGroupSettingsState.INACTIVE)
         self.ad_group_source.settings.update(None, state=dash.constants.AdGroupSourceSettingsState.INACTIVE)
@@ -238,6 +249,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.assertTrue(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
+    @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_get_spend_method_one_entry(self, _):
         today = dates_helper.local_today()
         adg_sources = [self.ad_group_source]
@@ -246,6 +258,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.assertEqual(returned_spend, 900.000)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
+    @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_get_spend_method_one_entry_with_settings_budget(self, _):
         today = dates_helper.local_today()
         self.ad_group_source.settings.update(None, daily_budget_cc=900.0000)
@@ -255,6 +268,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.assertEqual(returned_spend, 900.000)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
+    @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_get_spend_method_multiple_entries(self, _):
         source_type2 = magic_mixer.blend(core.source.source_type.SourceType)
         source2 = magic_mixer.blend(core.source.Source, type=source_type2)
@@ -274,6 +288,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.assertEqual(returned_spend, 1000.000)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
+    @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_get_spend_method_multiple_entries_with_source_type_of_b1(self, _):
         today = dates_helper.local_today()
         source_type2 = magic_mixer.blend(
@@ -296,6 +311,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.assertEqual(returned_spend, 1000.000)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_morning_est_now)
+    @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_in_critical_hours(self, _):
         today = dates_helper.local_today()
         yesterday = dates_helper.local_yesterday()
@@ -320,6 +336,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.assertEqual(returned_spend, 1500.000)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
+    @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_when_user_disables_adgroup_we_should_get_realtime_data_from_all_sources(self, _):
         self.source.source_type.save()
         self.ad_group_source.settings.update(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)

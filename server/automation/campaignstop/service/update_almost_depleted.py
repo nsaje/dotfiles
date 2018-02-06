@@ -14,6 +14,11 @@ def mark_almost_depleted_campaigns(campaigns=None):
     if not campaigns:
         campaigns = core.entity.Campaign.objects.filter(real_time_campaign_stop=True)
 
+    campaigns = [campaign for campaign in campaigns if campaign.real_time_campaign_stop]
+    _mark_almost_depleted_campaigns(campaigns)
+
+
+def _mark_almost_depleted_campaigns(campaigns):
     budget_line_items = _get_all_budget_line_items(campaigns)
     campaign_budget_line_items = _get_campaign_budget_line_items(budget_line_items)
     campaign_available_amount = _get_campaign_available_amount(campaign_budget_line_items)

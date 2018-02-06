@@ -1,5 +1,3 @@
-import influx
-
 from django.db import transaction
 
 from dash import constants
@@ -14,6 +12,7 @@ import core.common
 import core.entity
 import core.history
 import core.source
+import core.signals
 
 
 class AdGroupSettingsMixin(object):
@@ -60,9 +59,6 @@ class AdGroupSettingsMixin(object):
         changes, current_settings, new_settings = self._b1_sources_group_adjustments(
             changes, current_settings, new_settings)
 
-        if current_settings.bluekai_targeting != new_settings.bluekai_targeting:
-            influx.incr('dash.agency.bluekai_targeting_change', 1, adgroup=str(ad_group.id))
-
         # save
         ad_group.save(request)
         if self.pk is None or changes:
@@ -90,6 +86,9 @@ class AdGroupSettingsMixin(object):
                 new_settings.save(request)
             else:
                 new_settings.save(request, update_fields=changes.keys())
+            core.signals.settings_change.send_robust(
+                sender=self.__class__, request=request, instance=new_settings,
+                changes=current_settings.get_setting_changes(new_settings))
 
             if new_settings.id is None or 'tracking_code' in changes or 'click_capping_daily_ad_group_max_clicks' in changes:
                 redirector_helper.insert_adgroup(ad_group)

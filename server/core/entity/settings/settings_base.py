@@ -6,6 +6,7 @@ from django.db import models
 from django.db import transaction
 
 import core.history
+import core.signals
 from dash import constants
 
 from update_object import UpdateObject
@@ -82,6 +83,9 @@ class SettingsBase(models.Model, core.history.HistoryMixin):
         if update_fields is not None:
             update_fields.extend(['created_by', 'created_dt'])
         super(SettingsBase, self).save(update_fields=update_fields)
+        core.signals.settings_change.send_robust(
+            sender=self.__class__, request=request,
+            instance=self, changes=kwargs)
 
     def copy_settings(self):
         return UpdateObject(self)

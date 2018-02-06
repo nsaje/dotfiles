@@ -201,6 +201,7 @@ REST_FRAMEWORK = {
 ALL_ACCOUNTS_USE_BCM_V2 = False
 DISABLE_FACEBOOK = True
 SLACK_LOG_ENABLE = True
+DISABLE_SIGNALS = False
 
 from localsettings import *
 
@@ -353,6 +354,7 @@ LOGGING = {
 CELERYD_LOG_FORMAT = LOGGING['formatters']['standard']['format']
 
 if TESTING:
+    DISABLE_SIGNALS = True
     LOGGING = None
     GOOGLE_OAUTH_ENABLED = False
     PAGER_DUTY_ENABLED = False

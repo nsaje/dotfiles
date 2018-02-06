@@ -10,7 +10,7 @@ from utils import dates_helper
 
 def update_campaigns_end_date(campaigns=None):
     if not campaigns:
-        campaigns = core.entity.Campaign.objects.all()
+        campaigns = core.entity.Campaign.objects.filter(real_time_campaign_stop=True)
 
     _update_campaigns_end_date(
         [campaign for campaign in campaigns if campaign.real_time_campaign_stop]

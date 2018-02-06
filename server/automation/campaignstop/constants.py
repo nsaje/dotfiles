@@ -23,3 +23,13 @@ class CampaignStopEvent(ConstantBase):
         MAX_ALLOWED_END_DATE_UPDATE: 'Max allowed end date update',
         BUDGET_AMOUNT_VALIDATION: 'Budget amount validation',
     }
+
+
+class CampaignUpdateType(ConstantBase):
+    BUDGET = 'budget'
+    DAILY_CAP = 'daily_cap'
+
+    _VALUES = {
+        BUDGET: 'Campaign budget update',
+        DAILY_CAP: 'Campaign total daily cap update',
+    }

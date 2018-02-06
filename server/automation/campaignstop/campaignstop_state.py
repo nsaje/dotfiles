@@ -20,6 +20,11 @@ class CampaignStopState(models.Model):
         self.state = constants.CampaignStopState.STOPPED
         if is_allowed:
             self.state = constants.CampaignStopState.ACTIVE
+
+        if previous == constants.CampaignStopState.ACTIVE and\
+           self.state == constants.CampaignStopState.STOPPED:
+            self.almost_depleted = False
+
         self.save()
 
         if self.state != previous:

@@ -6,14 +6,13 @@ import core.entity
 from utils.magic_mixer import magic_mixer
 from utils import dates_helper
 
-from .. import CampaignStopState, constants, signals
+from .. import CampaignStopState, constants
 import update_campaignstop_state
 
 
 class UpdateCampaignStopStateTest(TestCase):
 
     def setUp(self):
-        signals.disconnect_update_budgets()
         self.campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
 
     @mock.patch('automation.campaignstop.service.campaign_spends.get_predicted_remaining_budget')
