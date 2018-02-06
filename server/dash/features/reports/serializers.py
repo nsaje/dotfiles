@@ -78,8 +78,6 @@ class ReportQuerySerializer(serializers.Serializer):
             stats.api_reports.validate_breakdown_by_permissions(level, self.context['request'].user, breakdown)
         except exc.InvalidBreakdownError as e:
             raise serializers.ValidationError(e)
-        if stats.constants.get_delivery_dimension(breakdown):
-            raise serializers.ValidationError("Delivery dimension not supported!")
         return data
 
 
