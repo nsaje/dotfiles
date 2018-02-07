@@ -9,14 +9,16 @@ import {RavenErrorHandler} from './core/raven/raven-error-handler';
 import {ViewsModule} from './views/views.module';
 
 // Raven (Sentry) configuration
-(<any>window).Raven.config( // tslint:disable-line
-    'https://5443376e0b054647b8c8759811ad4d5b@sentry.io/147373',
-    {
-        shouldSendCallback: () => APP_CONFIG.env.prod,
-    }
-)
-.addPlugin((<any>window).Raven.Plugins.Angular) // tslint:disable-line
-.install();
+if (APP_CONFIG.env.prod) {
+    (<any> window).Raven.config(
+        'https://5443376e0b054647b8c8759811ad4d5b@sentry.io/147373',
+        {
+            shouldSendCallback: () => APP_CONFIG.env.prod,
+        }
+    )
+    .addPlugin((<any> window).Raven.Plugins.Angular)
+    .install();
+}
 
 @NgModule({
     imports: [
