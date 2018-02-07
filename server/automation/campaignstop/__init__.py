@@ -10,4 +10,5 @@ from service import (
     validate_minimum_budget_amount,
     mark_almost_depleted_campaigns,
     handle_updates,
+    audit_stopped_campaigns,
 )
