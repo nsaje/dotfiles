@@ -2450,9 +2450,9 @@ class AccountSettingsTest(TestCase):
             'default_account_manager': None,
             'default_sales_representative': None,
             'default_cs_representative': None,
-            'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True},
-                                u'100': {u'name': u'AdsNative', u'released': True},
-                                u'200': {u'name': u'Facebook', u'released': True}
+            'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True, 'deprecated': False},
+                                u'100': {u'name': u'AdsNative', u'released': True, 'deprecated': False},
+                                u'200': {u'name': u'Facebook', u'released': True, 'deprecated': False}
                                 },
             'id': '1000',
             'archived': False,
@@ -2473,9 +2473,9 @@ class AccountSettingsTest(TestCase):
             'default_account_manager': None,
             'default_sales_representative': None,
             'default_cs_representative': None,
-            'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True},
-                                u'100': {u'name': u'AdsNative', u'released': True},
-                                u'200': {u'name': u'Facebook', u'released': True}
+            'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True, 'deprecated': False},
+                                u'100': {u'name': u'AdsNative', u'released': True, 'deprecated': False},
+                                u'200': {u'name': u'Facebook', u'released': True, 'deprecated': False}
                                 },
             'account_type': constants.AccountType.UNKNOWN,
             'id': '1000',
@@ -2497,9 +2497,9 @@ class AccountSettingsTest(TestCase):
             'default_account_manager': None,
             'default_sales_representative': None,
             'default_cs_representative': None,
-            'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True},
-                                u'100': {u'name': u'AdsNative', u'released': True},
-                                u'200': {u'name': u'Facebook', u'released': True}
+            'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True, 'deprecated': False},
+                                u'100': {u'name': u'AdsNative', u'released': True, 'deprecated': False},
+                                u'200': {u'name': u'Facebook', u'released': True, 'deprecated': False}
                                 },
             'account_type': constants.AccountType.UNKNOWN,
             'salesforce_url': None,
@@ -3048,11 +3048,11 @@ class AccountSettingsTest(TestCase):
         response = json.loads(response.content)
 
         self.assertEqual(response['data']['settings']['allowed_sources'], {
-            '1': {'name': 'Source 1', 'allowed': True, 'released': True},
-            '2': {'name': 'Source 2', 'allowed': True, 'released': True},
-            '3': {'name': 'Source 3', 'released': False},
-            '100': {'name': 'AdsNative', 'released': True},
-            '200': {'name': 'Facebook', 'released': True},
+            '1': {'name': 'Source 1', 'allowed': True, 'released': True, 'deprecated': True},
+            '2': {'name': 'Source 2', 'allowed': True, 'released': True, 'deprecated': False},
+            '3': {'name': 'Source 3', 'released': False, 'deprecated': False},
+            '100': {'name': 'AdsNative', 'released': True, 'deprecated': False},
+            '200': {'name': 'Facebook', 'released': True, 'deprecated': False},
         })
 
     def test_get_allowed_sources_no_released(self):
@@ -3067,10 +3067,10 @@ class AccountSettingsTest(TestCase):
         response = json.loads(response.content)
 
         self.assertEqual(response['data']['settings']['allowed_sources'], {
-            '1': {'name': 'Source 1', 'allowed': True, 'released': True},
-            '2': {'name': 'Source 2', 'allowed': True, 'released': True},
-            '100': {'name': 'AdsNative', 'released': True},
-            '200': {'name': 'Facebook', 'released': True},
+            '1': {'name': 'Source 1', 'allowed': True, 'released': True, 'deprecated': True},
+            '2': {'name': 'Source 2', 'allowed': True, 'released': True, 'deprecated': False},
+            '100': {'name': 'AdsNative', 'released': True, 'deprecated': False},
+            '200': {'name': 'Facebook', 'released': True, 'deprecated': False},
         })
 
     def test_add_error_to_account_agency_form(self):

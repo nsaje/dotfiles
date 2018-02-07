@@ -25,6 +25,7 @@ angular.module('one.widgets').component('zemMediaSourcesSettings', {
         $ctrl.getAvailableMediaSources = getAvailableMediaSources;
         $ctrl.addToAllowedMediaSources = addToAllowedMediaSources;
         $ctrl.removeFromAllowedMediaSources = removeFromAllowedMediaSources;
+        $ctrl.getSourceText = getSourceText;
 
         $ctrl.$onInit = function () {
             $ctrl.api.register({
@@ -53,6 +54,7 @@ angular.module('one.widgets').component('zemMediaSourcesSettings', {
                     this.push({
                         value: key,
                         released: value.released,
+                        deprecated: value.deprecated,
                         name: value.name,
                     });
                 }
@@ -70,6 +72,7 @@ angular.module('one.widgets').component('zemMediaSourcesSettings', {
                         value: key,
                         name: value.name,
                         released: value.released,
+                        deprecated: value.deprecated,
                     });
                 }
             }, list);
@@ -90,6 +93,19 @@ angular.module('one.widgets').component('zemMediaSourcesSettings', {
             });
 
             initialize();
+        }
+
+        function getSourceText (mediaSource) {
+            var text = mediaSource.name;
+            if (!mediaSource.released && mediaSource.deprecated) {
+                text += ' (unreleased, deprecated)';
+            } else if (!mediaSource.released) {
+                text += ' (unreleased)';
+            } else if (mediaSource.deprecated) {
+                text += ' (deprecated)';
+            }
+
+            return text;
         }
     },
 });

@@ -1083,10 +1083,13 @@ class AccountSettings(api_common.BaseApiView):
             if source.id not in allowed_sources_ids_list and source.deprecated:
                 continue
 
-            source_settings = {'name': source.name}
+            source_settings = {
+                'name': source.name,
+                'released': source.released,
+                'deprecated': source.deprecated,
+            }
             if source.id in allowed_sources_ids_list:
                 source_settings['allowed'] = True
-            source_settings['released'] = source.released
             allowed_sources_dict[source.id] = source_settings
 
         return allowed_sources_dict
