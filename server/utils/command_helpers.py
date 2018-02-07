@@ -1,12 +1,16 @@
 import logging
 import datetime
 import dateutil.parser
+import sys
 
 from django.core.management.base import BaseCommand
+import newrelic.agent
 
 import dash.models
 
 logger = logging.getLogger(__name__)
+
+application = newrelic.agent.register_application(timeout=10.0)
 
 
 class ExceptionCommand(BaseCommand):
@@ -15,7 +19,8 @@ class ExceptionCommand(BaseCommand):
 
     def execute(self, *args, **options):
         try:
-            return super(ExceptionCommand, self).execute(*args, **options)
+            with newrelic.agent.BackgroundTask(application, name=sys.argv[1]):
+                return super(ExceptionCommand, self).execute(*args, **options)
         except SystemExit as err:
             raise err
         except Exception:

@@ -19,7 +19,9 @@ echo "running $0 $TASK $TASK_PARAMS"
 exec /usr/bin/docker run --rm -h $(hostname) \
     --name="${TASK}" \
     -e "CONF_ENV=prod" \
+    -e "NEW_RELIC_LICENSE_KEY=1dfbd7b07a5cbf7bcc6eb18db5003808a058d16f" \
+    -e "NEW_RELIC_APP_NAME=Zemanta One (Cron jobs)" \
+    -e "NEW_RELIC_PROCESS_HOST_DISPLAY_NAME=$(hostname)-docker" \
     --network legacynet \
-    --entrypoint=python \
     --label "traefik.enable=false" \
-    z1-bundle:current manage.py "${TASK}" $TASK_PARAMS 2>&1 | sudo tee -a "/mnt/logs/eins/cron-${TASK}.log" > /dev/null
+    z1-bundle:current /usr/local/bin/newrelic-admin run-program python manage.py "${TASK}" $TASK_PARAMS 2>&1 | sudo tee -a "/mnt/logs/eins/cron-${TASK}.log" > /dev/null
