@@ -27,6 +27,9 @@ def validate_breakdown_by_permissions(level, user, breakdown):
     if delivery_dimension is not None and not user.has_perm('zemauth.can_view_breakdown_by_delivery'):
         raise exc.MissingDataError()
 
+    if delivery_dimension in constants.DeliveryDimension._EXTENDED and not user.has_perm('zemauth.can_view_breakdown_by_delivery_extended'):
+        raise exc.MissingDataError()
+
 
 def validate_breakdown_by_structure(level, breakdown):
     if constants.StructureDimension.PUBLISHER in breakdown and constants.StructureDimension.SOURCE in breakdown:
@@ -37,6 +40,11 @@ def validate_breakdown_by_structure(level, breakdown):
     time = constants.get_time_dimension(breakdown)
     if time:
         clean_breakdown.append(time)
+
+    delivery = [dimension for dimension in breakdown if dimension in constants.DeliveryDimension._ALL]
+    if len(delivery) > 1:
+        raise exc.InvalidBreakdownError("Unsupported breakdown - only one delivery breakdown supported per report")
+    clean_breakdown.extend(delivery)
 
     unsupported_breakdowns = set(breakdown) - set(clean_breakdown)
     if unsupported_breakdowns:

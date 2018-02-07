@@ -55,8 +55,12 @@ class ValidateBreakdownTest(TestCase):
     def test_breakdown_validate_delivery(self):
         User.objects.get(pk=1)
         for dimension in constants.DeliveryDimension._ALL:
-            with self.assertRaises(exc.InvalidBreakdownError):
-                validate_breakdown_by_structure(Level.AD_GROUPS, [dimension])
+            validate_breakdown_by_structure(Level.AD_GROUPS, [dimension])
+
+    def test_breakdown_validate_delivery_multiple(self):
+        User.objects.get(pk=1)
+        with self.assertRaises(exc.InvalidBreakdownError):
+            validate_breakdown_by_structure(Level.AD_GROUPS, constants.DeliveryDimension._ALL)
 
     def test_breakdown_validate_time(self):
         User.objects.get(pk=1)
