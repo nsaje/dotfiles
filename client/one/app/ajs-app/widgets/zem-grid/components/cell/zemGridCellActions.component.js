@@ -103,9 +103,12 @@ angular.module('one.widgets').directive('zemGridCellActions', function ($timeout
 
                 vm.grid.meta.dataService.saveData(state, vm.row, {data: {field: 'state'}})
                     .catch(function (data) {
+                        if (!data) {
+                            return;
+                        }
                         if (data.state) {
                             zemToastsService.error(data.state);
-                        } else {
+                        } else if (data.data && data.data.message) {
                             zemToastsService.error(data.data.message);
                         }
                     })
