@@ -10,8 +10,6 @@ import dash.models
 
 logger = logging.getLogger(__name__)
 
-application = newrelic.agent.register_application(timeout=10.0)
-
 
 class ExceptionCommand(BaseCommand):
     # execute in BaseCommand calls handle()
@@ -19,6 +17,7 @@ class ExceptionCommand(BaseCommand):
 
     def execute(self, *args, **options):
         try:
+            application = newrelic.agent.application()
             with newrelic.agent.BackgroundTask(application, name=sys.argv[1]):
                 return super(ExceptionCommand, self).execute(*args, **options)
         except SystemExit as err:
