@@ -1564,7 +1564,7 @@ class ContentAdForm(ContentAdCandidateForm):
         },
     )
     description = PlainCharField(
-        max_length=140,
+        max_length=150,
         error_messages={
             'required': 'Missing description',
             'max_length': 'Description too long (max %(limit_value)d characters)',

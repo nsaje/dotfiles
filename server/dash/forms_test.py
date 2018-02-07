@@ -1420,7 +1420,7 @@ class ContentAdFormTestCase(TestCase):
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'description': ['Description too long (max 140 characters)']
+            'description': ['Description too long (max 150 characters)']
         }, f.errors)
 
     def test_missing_call_to_action(self):
