@@ -21,7 +21,8 @@ def _refresh_campaigns_realtime_data(campaigns):
 def _refresh_ad_groups_realtime_data(campaign):
     for ad_group in campaign.adgroup_set.all().exclude_archived():
         try:
-            stats = dash.features.realtimestats.get_ad_group_sources_stats(ad_group)
+            stats = dash.features.realtimestats.get_ad_group_sources_stats(
+                ad_group, use_source_tz=True)
         except Exception:
             # TODO: handle failure to fetch data
             continue

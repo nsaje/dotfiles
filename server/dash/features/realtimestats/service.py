@@ -8,6 +8,7 @@ import influx
 from dash import constants, models
 from utils import k1_helper
 from utils import redirector_helper
+from utils import dates_helper
 
 import core.bcm.calculations
 
@@ -25,17 +26,17 @@ def get_ad_group_stats(ad_group):
     return stats
 
 
-def get_ad_group_sources_stats(ad_group):
-    stats = _get_ad_group_sources_stats(ad_group)
+def get_ad_group_sources_stats(ad_group, use_source_tz=False):
+    stats = _get_ad_group_sources_stats(ad_group, use_source_tz=use_source_tz)
     return stats
 
 
-def get_ad_group_sources_stats_without_caching(ad_group):
-    return _get_ad_group_sources_stats(ad_group, no_cache=True)
+def get_ad_group_sources_stats_without_caching(ad_group, use_source_tz=False):
+    return _get_ad_group_sources_stats(ad_group, no_cache=True, use_source_tz=use_source_tz)
 
 
-def _get_ad_group_sources_stats(ad_group, no_cache=False):
-    stats = _get_etfm_source_stats(ad_group, no_cache=no_cache)
+def _get_ad_group_sources_stats(ad_group, no_cache=False, use_source_tz=False):
+    stats = _get_etfm_source_stats(ad_group, no_cache=no_cache, use_source_tz=use_source_tz)
 
     sources = models.Source.objects.all().select_related('source_type')
     sources_by_slug = {source.bidder_slug: source for source in sources}
@@ -52,8 +53,8 @@ def _augment_source(stats, sources_by_slug):
             stat['source'] = source
 
 
-def _get_etfm_source_stats(ad_group, no_cache=False):
-    stats = _get_k1_source_stats(ad_group, no_cache=no_cache)
+def _get_etfm_source_stats(ad_group, no_cache=False, use_source_tz=False):
+    stats = _get_k1_source_stats(ad_group, no_cache=no_cache, use_source_tz=use_source_tz)
     _add_fee_and_margin(ad_group, stats)
     return stats
 
@@ -69,15 +70,15 @@ def _add_fee_and_margin(ad_group, k1_stats):
             )
 
 
-def _get_k1_source_stats(ad_group, no_cache=False):
+def _get_k1_source_stats(ad_group, no_cache=False, use_source_tz=False):
     if no_cache:
-        return _try_get_k1_source_stats(ad_group, no_cache)
-    return _get_k1_source_stats_with_error_handling(ad_group)
+        return _try_get_k1_source_stats(ad_group, no_cache, use_source_tz=use_source_tz)
+    return _get_k1_source_stats_with_error_handling(ad_group, use_source_tz=use_source_tz)
 
 
-def _get_k1_source_stats_with_error_handling(ad_group):
+def _get_k1_source_stats_with_error_handling(ad_group, use_source_tz=False):
     try:
-        return _try_get_k1_source_stats(ad_group)
+        return _try_get_k1_source_stats(ad_group, use_source_tz=use_source_tz)
     except urllib2.HTTPError as e:
         influx.incr('dash.realtimestats.error', 1, type='http', status=str(e.code))
         return []
@@ -90,8 +91,8 @@ def _get_k1_source_stats_with_error_handling(ad_group):
         return []
 
 
-def _try_get_k1_source_stats(ad_group, no_cache=False):
-    params = _get_params(ad_group, no_cache)
+def _try_get_k1_source_stats(ad_group, no_cache=False, use_source_tz=False):
+    params = _get_params(ad_group, no_cache, use_source_tz=use_source_tz)
     stats = k1_helper.get_adgroup_realtimestats(ad_group.id, params)
 
     if 'stats' in stats:  # NOTE: support for k1 api change
@@ -99,15 +100,15 @@ def _try_get_k1_source_stats(ad_group, no_cache=False):
     return stats
 
 
-def _get_params(ad_group, no_cache):
-    params = _get_source_params(ad_group)
+def _get_params(ad_group, no_cache, use_source_tz=False):
+    params = _get_source_params(ad_group, use_source_tz=use_source_tz)
     if no_cache:
         params['no_cache'] = True
 
     return params
 
 
-def _get_source_params(ad_group):
+def _get_source_params(ad_group, use_source_tz=False):
     source_types = [
         constants.SourceType.OUTBRAIN,
         constants.SourceType.YAHOO,
@@ -124,5 +125,8 @@ def _get_source_params(ad_group):
         elif ad_group_source.source.source_type.type == constants.SourceType.YAHOO \
                 and ad_group_source.source_campaign_key:
             params['yahoo_campaign_id'] = ad_group_source.source_campaign_key
+            if use_source_tz:
+                params['yahoo_date'] = dates_helper.tz_today(
+                    ad_group_source.source.source_type.budgets_tz).isoformat()
 
     return params

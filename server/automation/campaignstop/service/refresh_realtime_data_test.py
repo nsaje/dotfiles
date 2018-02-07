@@ -140,7 +140,7 @@ class RefreshRealtimeDataTest(TestCase):
             ad_groups[1]: [{'source': sources[0], 'spend': decimal.Decimal('8.0')},
                            {'source': sources[1], 'spend': decimal.Decimal('1.0')}],
         }
-        mock_get_realtime_data.side_effect = lambda ad_group: rt_stats_before[ad_group]
+        mock_get_realtime_data.side_effect = lambda ad_group, **kwargs: rt_stats_before[ad_group]
         refresh_realtime_data.refresh_realtime_data([campaign])
 
         rt_stats_after = {
@@ -148,7 +148,7 @@ class RefreshRealtimeDataTest(TestCase):
                            {'source': sources[1], 'spend': decimal.Decimal('3.0')}],
             ad_groups[1]: [{'source': sources[0], 'spend': decimal.Decimal('8.0')}],
         }
-        mock_get_realtime_data.side_effect = lambda ad_group: rt_stats_after[ad_group]
+        mock_get_realtime_data.side_effect = lambda ad_group, **kwargs: rt_stats_after[ad_group]
         refresh_realtime_data.refresh_realtime_data([campaign])
 
         campaign_history = RealTimeCampaignDataHistory.objects.filter(
