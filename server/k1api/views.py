@@ -325,8 +325,8 @@ class GAAccountsView(K1APIView):
             for m in dash.features.ga.GALinkedAccounts.objects.filter(customer_ga_account_id__in=ga_account_ids)
         }
         # TODO: sigi 8.2.2018
-        # both accounts have access to the same profile but only one is reciving data
-        mapping[367] = 'account-2@zemanta-api.iam.gserviceaccount.com'
+        # both zem users have access to the same profile but only one is reciving data
+        mapping['5428971'] = 'account-1@zemanta-api.iam.gserviceaccount.com'
         return mapping
 
 
