@@ -126,6 +126,7 @@ class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
         'target_devices',
         'target_placements',
         'target_os',
+        'click_capping_daily_ad_group_max_clicks',
     ]
     notes = PlainCharField(required=False, widget=forms.Textarea,
                            help_text='Describe what kind of additional targeting was setup on the backend.')
@@ -180,6 +181,10 @@ class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
             ", ".join(sorted(x[0] for x in constants.OperatingSystem.get_choices())),
             ", ".join(sorted(x[0] for x in constants.OperatingSystemVersion.get_choices())),
         )
+    )
+    click_capping_daily_ad_group_max_clicks = forms.IntegerField(
+        required=False,
+        default=None,
     )
 
     def __init__(self, *args, **kwargs):
