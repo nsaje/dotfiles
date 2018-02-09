@@ -326,7 +326,8 @@ class GAAccountsView(K1APIView):
         }
         # TODO: sigi 8.2.2018
         # both zem users have access to the same profile but only one is reciving data
-        mapping['5428971'] = 'account-1@zemanta-api.iam.gserviceaccount.com'
+        if '5428971' in mapping:
+            mapping['5428971'] = 'account-1@zemanta-api.iam.gserviceaccount.com'
         return mapping
 
 
