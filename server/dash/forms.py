@@ -184,7 +184,6 @@ class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
     )
     click_capping_daily_ad_group_max_clicks = forms.IntegerField(
         required=False,
-        default=None,
     )
 
     def __init__(self, *args, **kwargs):
