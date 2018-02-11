@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 FIND_MISSING_NUM_DAYS = 7
 
 
-def get_missing_keys():
-    dates = [dates_helper.utc_today() - datetime.timedelta(days=i) for i in reversed(range(FIND_MISSING_NUM_DAYS))]
+def get_missing_keys(num_days=FIND_MISSING_NUM_DAYS):
+    dates = [dates_helper.utc_today() - datetime.timedelta(days=i) for i in reversed(range(num_days))]
     keys = [k for k in helpers.get_s3_keys_for_dates(dates)
             if helpers.get_s3_key_dt(k).date() >= config.START_DATE]
     labels_keys = {
