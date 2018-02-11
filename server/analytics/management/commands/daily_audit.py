@@ -13,6 +13,7 @@ import dash.models
 RECIPIANTS = (
     'operations@zemanta.com',
     'prodops@zemanta.com',
+    'oen-supply-team@outbrain.com',
 )
 
 VALID_PACING_ACCOUNT_TYPES = (
