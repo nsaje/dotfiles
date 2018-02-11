@@ -42,6 +42,15 @@ def ad_group_url(ad_group, tab='ads'):
     return link(url, ad_group.name)
 
 
+def campaign_url(campaign, tab=''):
+    url = DASH_URL.format(
+        level='campaign',
+        id=campaign.pk,
+        tab=tab
+    )
+    return link(url, campaign.name)
+
+
 def account_url(account, tab='campaigns'):
     url = DASH_URL.format(
         level='account',
