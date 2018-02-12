@@ -1,3 +1,5 @@
+import json
+
 from mock import patch
 from django.test import TestCase
 
@@ -8,13 +10,22 @@ from . import update_handler
 from utils.magic_mixer import magic_mixer
 
 
+class Message():
+
+    def __init__(self, body):
+        self.body = json.dumps(body)
+
+    def get_body(self):
+        return self.body
+
+
 class HandleUpdatesTest(TestCase):
 
     def setUp(self):
         self.campaign = magic_mixer.blend(core.entity.Campaign)
 
     @patch('utils.sqs_helper.delete_messages')
-    @patch('automation.campaignstop.service.update_handler._get_messages_from_queue')
+    @patch('utils.sqs_helper.get_all_messages')
     @patch('automation.campaignstop.service.update_handler.update_campaigns_state')
     @patch('automation.campaignstop.service.update_handler.update_campaigns_end_date')
     @patch('automation.campaignstop.service.update_handler.mark_almost_depleted_campaigns')
@@ -22,7 +33,7 @@ class HandleUpdatesTest(TestCase):
     def test_handle_budget_updates(
             self, mock_refresh, mock_mark_almost_depleted, mock_update_end_date,
             mock_update_state, mock_get_messages, mock_delete_messages):
-        messages = [{'campaign_id': self.campaign.id, 'type': constants.CampaignUpdateType.BUDGET}]
+        messages = [Message(body={'campaign_id': self.campaign.id, 'type': constants.CampaignUpdateType.BUDGET})]
         mock_get_messages.return_value = messages
 
         update_handler.handle_updates()
@@ -34,7 +45,7 @@ class HandleUpdatesTest(TestCase):
         self.assertTrue(mock_delete_messages.called)
 
     @patch('utils.sqs_helper.delete_messages')
-    @patch('automation.campaignstop.service.update_handler._get_messages_from_queue')
+    @patch('utils.sqs_helper.get_all_messages')
     @patch('automation.campaignstop.service.update_handler.update_campaigns_state')
     @patch('automation.campaignstop.service.update_handler.update_campaigns_end_date')
     @patch('automation.campaignstop.service.update_handler.mark_almost_depleted_campaigns')
@@ -42,7 +53,7 @@ class HandleUpdatesTest(TestCase):
     def test_handle_budget_daily_caps(
             self, mock_refresh, mock_mark_almost_depleted, mock_update_end_date,
             mock_update_state, mock_get_messages, mock_delete_messages):
-        messages = [{'campaign_id': self.campaign.id, 'type': constants.CampaignUpdateType.DAILY_CAP}]
+        messages = [Message(body={'campaign_id': self.campaign.id, 'type': constants.CampaignUpdateType.DAILY_CAP})]
         mock_get_messages.return_value = messages
 
         update_handler.handle_updates()

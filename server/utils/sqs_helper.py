@@ -1,4 +1,5 @@
 import json
+import contextlib
 
 import boto.sqs
 from boto.sqs.message import Message
@@ -28,8 +29,14 @@ def write_message_json(queue_name, body):
     queue.write(message)
 
 
-def get_all_messages_json(queue_name):
+@contextlib.contextmanager
+def process_all_json_messages(queue_name):
     messages = get_all_messages(queue_name)
+    yield _get_json_content(messages)
+    delete_messages(messages)
+
+
+def _get_json_content(messages):
     return [json.loads(message.get_body()) for message in messages]
 
 

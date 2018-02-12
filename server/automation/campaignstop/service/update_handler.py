@@ -11,21 +11,14 @@ from utils import sqs_helper
 
 
 def handle_updates():
-    messages = _get_messages_from_queue()
+    with sqs_helper.process_all_json_messages(settings.CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE) as messages:
+        budget_campaigns = _extract_campaigns(_filter_messages(constants.CampaignUpdateType.BUDGET, messages))
+        if budget_campaigns:
+            _handle_budget_updates(budget_campaigns)
 
-    budget_campaigns = _extract_campaigns(_filter_messages(constants.CampaignUpdateType.BUDGET, messages))
-    if budget_campaigns:
-        _handle_budget_updates(budget_campaigns)
-
-    daily_cap_campaigns = _extract_campaigns(_filter_messages(constants.CampaignUpdateType.DAILY_CAP, messages))
-    if daily_cap_campaigns:
-        _handle_daily_cap_updates(daily_cap_campaigns)
-
-    sqs_helper.delete_messages(settings.CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE, messages)
-
-
-def _get_messages_from_queue():
-    return sqs_helper.get_all_messages_json(settings.CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE)
+        daily_cap_campaigns = _extract_campaigns(_filter_messages(constants.CampaignUpdateType.DAILY_CAP, messages))
+        if daily_cap_campaigns:
+            _handle_daily_cap_updates(daily_cap_campaigns)
 
 
 def _handle_budget_updates(campaigns):
