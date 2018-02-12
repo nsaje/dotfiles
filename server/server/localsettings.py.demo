@@ -31,7 +31,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'stats',
         'USER': 'demo',
-        'PASSWORD': Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAG4wbAYJKoZIhvcNAQcGoF8wXQIBADBYBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDBDb8DE5OXc1+Nb2ZQIBEIArn2mgpGeErWfhKa5/BF4kNoO4P3lX+61WldqOd9qccwQ8ptcGPsxNjDXkoA==').get(),
+        'PASSWORD': Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAG4wbAYJKoZIhvcNAQcGoF8wXQIBADBYBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDBDb8DE5OXc1+Nb2ZQIBEIArn2mgpGeErWfhKa5/BF4kNoO4P3lX+61WldqOd9qccwQ8ptcGPsxNjDXkoA==').get().decode('utf-8'),
         'HOST': 'stats-postgres.cmkkg7ghktp5.us-east-1.rds.amazonaws.com',
         'PORT': 5432,
     }
@@ -55,7 +55,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST = ''
 EMAIL_PORT = 587
 EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = Secret('').get()
+EMAIL_HOST_PASSWORD = Secret('').get().decode('utf-8')
 
 SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = False
 SEND_NOTIFICATION_MAIL = False
@@ -71,12 +71,12 @@ STATSD_INFLUX_PORT = int(os.environ.get('TELEGRAF_PORT_8135_UDP_PORT', '8135'))
 
 # Saucelabs
 SAUCELABS_USERNAME = ''
-SAUCELABS_ACCESS_KEY = Secret('').get()
+SAUCELABS_ACCESS_KEY = Secret('').get().decode('utf-8')
 
 # Auth
 GOOGLE_OAUTH_ENABLED = False
 GOOGLE_OAUTH_CLIENT_ID = ''
-GOOGLE_OAUTH_CLIENT_SECRET = Secret('').get()
+GOOGLE_OAUTH_CLIENT_SECRET = Secret('').get().decode('utf-8')
 
 # Static files
 BUILD_NUMBER = None
@@ -105,13 +105,13 @@ CREDENTIALS_ENCRYPTION_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').g
 # Pagerduty settings
 PAGER_DUTY_ENABLED = False
 PAGER_DUTY_URL = ''
-PAGER_DUTY_ADOPS_SERVICE_KEY = Secret('').get()
-PAGER_DUTY_SYSOPS_SERVICE_KEY = Secret('').get()
-PAGER_DUTY_ENGINEERS_SERVICE_KEY = Secret('').get()
+PAGER_DUTY_ADOPS_SERVICE_KEY = Secret('').get().decode('utf-8')
+PAGER_DUTY_SYSOPS_SERVICE_KEY = Secret('').get().decode('utf-8')
+PAGER_DUTY_ENGINEERS_SERVICE_KEY = Secret('').get().decode('utf-8')
 
 # Sentry config
 _SENTRY_PUBLIC_KEY = '1b43af2fb6d84ba188ecdf0a85ee5800'  # Zemanta One / Eins Demo project
-_SENTRY_SECRET_KEY = Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAH4wfAYJKoZIhvcNAQcGoG8wbQIBADBoBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDD60uxKYgW5fGI0CsQIBEIA7Z4+hsMpOSzem98MCWlAEORplhQhny/FVyjhKDDdLCPJEvCeZPxND5JWvRmEdUipX5chDyoULbYzKcdA=').get()
+_SENTRY_SECRET_KEY = Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAH4wfAYJKoZIhvcNAQcGoG8wbQIBADBoBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDD60uxKYgW5fGI0CsQIBEIA7Z4+hsMpOSzem98MCWlAEORplhQhny/FVyjhKDDdLCPJEvCeZPxND5JWvRmEdUipX5chDyoULbYzKcdA=').get().decode('utf-8')
 RAVEN_CONFIG = {
     'dsn': 'https://%s:%s@sentry.io/260920' % (_SENTRY_PUBLIC_KEY, _SENTRY_SECRET_KEY),
 }
@@ -254,12 +254,12 @@ LAMBDA_ENVIRONMENT = 'demo'
 VIDEO_PREVIEW_URL = 'https://s3.amazonaws.com/zemvideos/transcoded/{filename}'
 
 # Slack hooks
-SLACK_INCOMING_HOOK_URL = Secret('').get()
+SLACK_INCOMING_HOOK_URL = Secret('').get().decode('utf-8')
 
 # GA credentials - order newest to oldest
 GA_CREDENTIALS = collections.OrderedDict()
-GA_CREDENTIALS['account-2@example.com'] = Secret('').get()
-GA_CREDENTIALS['account-1@example.com'] = Secret('').get()
+GA_CREDENTIALS['account-2@example.com'] = Secret('').get().decode('utf-8')
+GA_CREDENTIALS['account-1@example.com'] = Secret('').get().decode('utf-8')
 
 # bizwire
 BIZWIRE_API_SIGN_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()
@@ -279,7 +279,7 @@ INFLUX_DATABASES = {
 
 BLUEKAI_API_PARTNER_ID = '2661'
 BLUEKAI_API_USER_KEY = ''
-BLUEKAI_API_SECRET_KEY = Secret('').get()
+BLUEKAI_API_SECRET_KEY = Secret('').get().decode('utf-8')
 
 REST_FRAMEWORK = {
     'UNICODE_JSON': False,

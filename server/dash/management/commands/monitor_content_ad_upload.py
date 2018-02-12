@@ -37,8 +37,8 @@ class Command(ExceptionCommand):
         interactive = bool(options.get('interactive', False))
 
         if interactive:
-            print 'Number of candidates pending start: {}'.format(num_pending)
-            print 'Number of candidates waiting response: {}'.format(num_waiting)
+            print('Number of candidates pending start: {}'.format(num_pending))
+            print('Number of candidates waiting response: {}'.format(num_waiting))
         else:
             influx.gauge('upload.candidates_num', num_pending, status='pending')
             influx.gauge('upload.candidates_num', num_waiting, status='waiting')

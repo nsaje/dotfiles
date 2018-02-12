@@ -75,7 +75,7 @@ class AgencyAccountsView(base.ServiceAPIBaseView):
 
         return self.response_ok([
             {
-                'name': u'#{} {}'.format(account.pk, account.name),
+                'name': '#{} {}'.format(account.pk, account.name),
                 'z1_account_id': account.get_salesforce_id(),
             } for account in accounts
         ])

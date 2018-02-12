@@ -1,1 +1,1 @@
-from demo_mapping import DemoMapping
+from .demo_mapping import DemoMapping

@@ -4,7 +4,7 @@ from mock import patch
 
 from django.test import TestCase
 
-import bluekaiapi
+from . import bluekaiapi
 
 MockRequestsResponse = namedtuple('MockRequestsResponse', ['content'])
 

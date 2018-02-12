@@ -24,8 +24,8 @@ class Command(BaseCommand):
                     usage[template] += 1
 
         print("Times used\tTemplate path")
-        for template, counter in sorted(usage.items(), reverse=True, key=operator.itemgetter(1, 0)):
-            print("{:>10}\t{}".format(counter, template))
+        for template, counter in sorted(list(usage.items()), reverse=True, key=operator.itemgetter(1, 0)):
+            print(("{:>10}\t{}".format(counter, template)))
 
 
 def get_template_name(path):

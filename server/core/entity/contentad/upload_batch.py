@@ -100,7 +100,7 @@ class UploadBatch(models.Model):
 
     @classmethod
     def generate_cloned_name(cls, source_ad_group):
-        return u"Cloned from {} on {}".format(
+        return "Cloned from {} on {}".format(
             source_ad_group.get_name_with_id(),
             dates_helper.format_date_mmddyyyy(dates_helper.local_now()))
 

@@ -1,7 +1,7 @@
 from django.db import models
 
-import constants
-import managers
+from . import constants
+from . import managers
 
 
 class BlueKaiCategoryQuerySet(models.QuerySet):

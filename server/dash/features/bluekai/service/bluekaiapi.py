@@ -4,8 +4,8 @@ import copy
 import hashlib
 import hmac
 import json
-import urllib
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 
 import requests
 from django.conf import settings
@@ -74,8 +74,8 @@ def update_audience(audience_id, data):
 
 
 def _get_signed_params(method, url, params, data):
-    path = urlparse.urlparse(url).path
-    params_vals = ''.join(urllib.quote(val) for val in params.values())
+    path = urllib.parse.urlparse(url).path
+    params_vals = ''.join(urllib.parse.quote(val) for val in list(params.values()))
     payload = method + path + params_vals + data
     signature = base64.b64encode(
         hmac.new(
@@ -105,19 +105,19 @@ def _transform_expression(expression):
 
 
 def _format_expression(expression):
-    if expression.keys() == ['OR']:
+    if list(expression.keys()) == ['OR']:
         expression = {'AND': [{'AND': [expression]}]}
-    elif expression.keys() == ['NOT'] or\
-        (expression.keys() == ['AND'] and
-         any(el.keys() == ['OR'] for el in expression['AND'])):
+    elif list(expression.keys()) == ['NOT'] or\
+        (list(expression.keys()) == ['AND'] and
+         any(list(el.keys()) == ['OR'] for el in expression['AND'])):
         expression = {'AND': [expression]}
 
     for subexp in expression['AND']:
-        if subexp.keys() != ['AND']:
+        if list(subexp.keys()) != ['AND']:
             continue
 
         for i, subsubexp in enumerate(subexp['AND']):
-            if subsubexp.keys() == ['NOT']:
+            if list(subsubexp.keys()) == ['NOT']:
                 # extract NOT into top level AND
                 expression['AND'][0]['AND'].pop(i)
                 expression['AND'].append(subsubexp)
@@ -127,7 +127,7 @@ def _format_expression(expression):
 
 
 def _transform_expression_recur(expression):
-    if isinstance(expression, basestring) and expression.startswith('bluekai:'):
+    if isinstance(expression, str) and expression.startswith('bluekai:'):
         return {'cat': int(expression.replace('bluekai:', ''))}
     operator = expression[0].upper()
     subexpression = [_transform_expression_recur(s) for s in expression[1:]]
@@ -135,7 +135,7 @@ def _transform_expression_recur(expression):
         # NOT must hold a dict instead of a list
         return {
             operator: {
-                subexpression[0].keys()[0]: subexpression[0].values()[0],
+                list(subexpression[0].keys())[0]: list(subexpression[0].values())[0],
             }
         }
     return {

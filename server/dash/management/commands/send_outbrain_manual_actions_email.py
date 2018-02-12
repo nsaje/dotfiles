@@ -36,8 +36,8 @@ class Command(ExceptionCommand):
 
 
 OUTBRAIN_SOURCE_ID = 3
-SUBJECT_CONTENT_APPROVALS = u'Zemanta auto-generated approval email for Outbrain {}'
-BODY_CONTENT_APPROVALS = textwrap.dedent(u"""\
+SUBJECT_CONTENT_APPROVALS = 'Zemanta auto-generated approval email for Outbrain {}'
+BODY_CONTENT_APPROVALS = textwrap.dedent("""\
         Subject: Content approvals - {date}
 
         Hi!
@@ -61,7 +61,7 @@ def get_content_submission_content():
     subject = SUBJECT_CONTENT_APPROVALS.format(date_str)
     body = BODY_CONTENT_APPROVALS.format(
         date=date_str,
-        content=u'\n'.join(content)
+        content='\n'.join(content)
     )
     return subject, body
 
@@ -88,7 +88,7 @@ def get_ad_group_sources_with_content_submission_pending():
 
 
 def get_campaign_name(ad_group_source):
-    return u"{name} / {marketer_name} / {one_dash_url} / {supply_dash_url}".format(
+    return "{name} / {marketer_name} / {one_dash_url} / {supply_dash_url}".format(
         name=ad_group_source.get_external_name(),
         marketer_name=get_outbrain_marketer_name(ad_group_source),
         one_dash_url=get_full_z1_url(

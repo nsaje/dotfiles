@@ -1,1 +1,1 @@
-from model import AdGroup
+from .model import AdGroup

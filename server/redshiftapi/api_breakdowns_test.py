@@ -53,7 +53,7 @@ class QueryTest(TestCase):
         )
 
         # commented lines indicate the whole result set
-        self.assertItemsEqual(rows, [
+        self.assertCountEqual(rows, [
             # {'campaign_id': 2, 'clicks': 4, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
             {'campaign_id': 2, 'clicks': 3, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
             # {'campaign_id': 1, 'clicks': 2, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
@@ -86,7 +86,7 @@ class QueryTest(TestCase):
         )
 
         # commented lines indicate the whole result set
-        self.assertItemsEqual(rows, [
+        self.assertCountEqual(rows, [
             # {'campaign_id': 2, 'ad_group_id': 4, 'clicks': 4, 'yesterday_cost': 0, 'e_yesterday_cost': 0},  # offset
             {'campaign_id': 2, 'ad_group_id': 3, 'clicks': 3, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
             # {'campaign_id': 1, 'ad_group_id': 2, 'clicks': 2, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
@@ -128,7 +128,7 @@ class QueryTest(TestCase):
         )
 
         # commented lines indicate the whole result set
-        self.assertItemsEqual(rows, [
+        self.assertCountEqual(rows, [
             # {'campaign_id': 1, 'ad_group_id': 1, 'dma': 501, 'clicks': 1, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
             {'campaign_id': 1, 'ad_group_id': 1, 'dma': 502, 'clicks': 2, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
             # {'campaign_id': 1, 'ad_group_id': 2, 'dma': 501, 'clicks': 3, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
@@ -167,7 +167,7 @@ class QueryTest(TestCase):
 
         # offset and limit are applied directly to sql queries and so they don't
         # have an effect to the returned result here
-        self.assertItemsEqual(rows, [
+        self.assertCountEqual(rows, [
             {'campaign_id': 2, 'clicks': 4, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
             {'campaign_id': 2, 'clicks': 3, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
             {'campaign_id': 1, 'clicks': 2, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
@@ -210,7 +210,7 @@ class QueryTest(TestCase):
 
         # offset and limit are applied directly to sql queries and so they don't
         # have an effect to the returned result here
-        self.assertItemsEqual(rows, [
+        self.assertCountEqual(rows, [
             {'campaign_id': 1, 'ad_group_id': 1, 'dma': 501, 'clicks': 1, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
             {'campaign_id': 1, 'ad_group_id': 1, 'dma': 502, 'clicks': 2, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
             {'campaign_id': 1, 'ad_group_id': 2, 'dma': 501, 'clicks': 3, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
@@ -255,7 +255,7 @@ class QueryTest(TestCase):
             0, 10, False
         )
 
-        self.assertItemsEqual(rows, [
+        self.assertCountEqual(rows, [
             {'campaign_id': 1, 'ad_group_id': 1, 'dma': 501, 'clicks': 1, 'yesterday_cost': 0, 'e_yesterday_cost': 0, 'new_users': None},  # noqa
             {'campaign_id': 1, 'ad_group_id': 1, 'dma': 502, 'clicks': 2, 'yesterday_cost': 0, 'e_yesterday_cost': 0, 'new_users': None},  # noqa
             {'campaign_id': 1, 'ad_group_id': 2, 'dma': 501, 'clicks': 3, 'yesterday_cost': 0, 'e_yesterday_cost': 0, 'new_users': None},  # noqa
@@ -357,7 +357,7 @@ class QueryStatsForRowsTest(TestCase):
             False
         )
 
-        self.assertItemsEqual(rows, [
+        self.assertCountEqual(rows, [
             {'campaign_id': 1, 'clicks': 1, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
             {'campaign_id': 2, 'clicks': 2, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
         ])
@@ -392,7 +392,7 @@ class QueryStatsForRowsTest(TestCase):
             False
         )
 
-        self.assertItemsEqual(rows, [
+        self.assertCountEqual(rows, [
             {'campaign_id': 1, 'ad_group_id': 1, 'clicks': 1, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
             {'campaign_id': 2, 'ad_group_id': 3, 'clicks': 3, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
             {'campaign_id': 2, 'ad_group_id': 4, 'clicks': 4, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
@@ -424,7 +424,7 @@ class QueryStatsForRowsTest(TestCase):
             False
         )
 
-        self.assertItemsEqual(rows, [
+        self.assertCountEqual(rows, [
             {'campaign_id': 1, 'clicks': 1, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
             {'campaign_id': 2, 'clicks': 2, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
         ])
@@ -457,7 +457,7 @@ class QueryStatsForRowsTest(TestCase):
             False
         )
 
-        self.assertItemsEqual(rows, [
+        self.assertCountEqual(rows, [
             {'campaign_id': 1, 'ad_group_id': 1, 'clicks': 1, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
             {'campaign_id': 2, 'ad_group_id': 3, 'clicks': 3, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
             {'campaign_id': 2, 'ad_group_id': 4, 'clicks': 4, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
@@ -484,6 +484,6 @@ class QueryTotalsTest(TestCase):
             False
         )
 
-        self.assertItemsEqual(rows, [
+        self.assertCountEqual(rows, [
             {'clicks': 4, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
         ])

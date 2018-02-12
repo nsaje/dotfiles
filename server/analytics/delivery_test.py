@@ -217,7 +217,8 @@ class AdGroupDeliveryTestCase(test.TestCase):
             core.entity.contentad.ContentAd,
             title='Zemanta',
             url='http://www.zemanta.com',
-            ad_group=self.ad_group
+            ad_group=self.ad_group,
+            batch__account=self.account
         )
         self.source = magic_mixer.blend(core.source.Source, name='Test Source')
 
@@ -385,7 +386,7 @@ class AdGroupDeliveryTestCase(test.TestCase):
         )
 
         s = self.ad_group_settings.copy_settings()
-        s.bluekai_targeting = [u'not', u'outbrain:custom_eng_1', 'bluekai:1234']
+        s.bluekai_targeting = ['not', 'outbrain:custom_eng_1', 'bluekai:1234']
         s.save(None)
 
         self.assertEqual(
@@ -436,9 +437,9 @@ class AdGroupDeliveryTestCase(test.TestCase):
 
         s = self.ad_group_settings.copy_settings()
         s.bluekai_targeting = [
-            u'not',
-            [u'or', u'lr-PayPal:1582823078', u'lr-PayPal:1740944458', u'lr-PayPal:325263093',
-             u'lr-PayPal:564635189', u'lr-PayPal:573908747', u'lr-PayPal:727146366', u'lr-PayPal:1892779779', u'lr-PayPal:1022665586']
+            'not',
+            ['or', 'lr-PayPal:1582823078', 'lr-PayPal:1740944458', 'lr-PayPal:325263093',
+             'lr-PayPal:564635189', 'lr-PayPal:573908747', 'lr-PayPal:727146366', 'lr-PayPal:1892779779', 'lr-PayPal:1022665586']
         ]
         s.save(None)
         self.assertEqual(

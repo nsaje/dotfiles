@@ -49,7 +49,7 @@ class CreateContentAd(TestCase):
         for content_ad in content_ads:
             self.assertEqual(content_ad.batch, batch)
             self.assertEqual(content_ad.ad_group, batch.ad_group)
-            self.assertItemsEqual(
+            self.assertCountEqual(
                 [x.source for x in content_ad.contentadsource_set.all()],
                 list(batch.ad_group.sources.all()))
 
@@ -72,7 +72,7 @@ class CreateContentAd(TestCase):
             self.assertEqual(content_ad.batch, batch)
             self.assertEqual(content_ad.state, constants.ContentAdSourceState.INACTIVE)
             self.assertEqual(content_ad.ad_group, batch.ad_group)
-            self.assertItemsEqual(
+            self.assertCountEqual(
                 [x.source for x in content_ad.contentadsource_set.all()],
                 list(batch.ad_group.sources.all()))
 
@@ -96,7 +96,7 @@ class CreateContentAd(TestCase):
             self.assertEqual(content_ad.batch, batch)
             self.assertEqual(content_ad.state, constants.ContentAdSourceState.ACTIVE)
             self.assertEqual(content_ad.ad_group, batch.ad_group)
-            self.assertItemsEqual(
+            self.assertCountEqual(
                 [x.source for x in content_ad.contentadsource_set.all()],
                 list(batch.ad_group.sources.all()))
 

@@ -31,8 +31,8 @@ class Command(ExceptionCommand):
 
         objs = []
         updated_keys = set()
-        for loc_type, location in locations_by_type.iteritems():
-            for key, name in location.iteritems():
+        for loc_type, location in locations_by_type.items():
+            for key, name in location.items():
                 updated_keys.add(key)
                 objs.append(dash.features.geolocation.Geolocation(
                     type=loc_type,
@@ -111,6 +111,6 @@ class Command(ExceptionCommand):
 
     @staticmethod
     def get_zips(mapping):
-        for key in mapping.keys():
+        for key in list(mapping.keys()):
             if len(key) > 2 and key[2] == ':':
                 yield key

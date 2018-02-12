@@ -3,7 +3,7 @@ from django.db import transaction
 from dash import constants
 import core.common
 
-import model
+from . import model
 
 
 class AccountManager(core.common.QuerySetManager):

@@ -4,7 +4,7 @@ import core.bcm
 import core.entity.settings
 from core.signals import settings_change
 
-from service import update_notifier
+from .service import update_notifier
 
 
 def connect_notify_budgets():

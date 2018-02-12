@@ -6,8 +6,8 @@ from dash import constants
 import dash.models
 import dash.features.performance_tracking.constants
 
-import manager
-import validator
+from . import manager
+from . import validator
 
 
 class ConversionGoal(validator.ConversionGoalValidator, models.Model):

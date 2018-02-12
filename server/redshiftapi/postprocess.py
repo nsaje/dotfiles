@@ -55,7 +55,7 @@ def _fill_in_missing_rows(target_dimension, rows, breakdown, parent, all_values)
         rows_per_parent_breakdown[parent_br_key].append(row)
 
     if not parent:
-        assert len(rows_per_parent_breakdown.keys()) <= 1
+        assert len(list(rows_per_parent_breakdown.keys())) <= 1
         parent = [sort_helper.get_breakdown_key({}, parent_breakdown)]
 
     for bc in parent:
@@ -112,7 +112,7 @@ def _get_representative_dates(time_dimension, constraints):
 
 
 def _is_row_empty(row):
-    for key, value in row.items():
+    for key, value in list(row.items()):
         if key not in fields.DIMENSION_FIELDS and value:
             return False
     return True
@@ -142,7 +142,7 @@ def remove_empty_rows_delivery_dimension(breakdown, rows):
 
 def postprocess_joint_query_rows(rows):
     for row in rows:
-        for column in [x for x in row.keys() if x.startswith('performance_') or x.startswith('etfm_performance_')]:
+        for column in [x for x in list(row.keys()) if x.startswith('performance_') or x.startswith('etfm_performance_')]:
             # this is specific to joint queries - performance returned needs to be converted to category
             row[column] = dash.campaign_goals.get_goal_performance_category(row[column])
 

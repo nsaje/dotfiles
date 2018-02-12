@@ -3,7 +3,7 @@ import datetime
 import logging
 import random
 import string
-import StringIO
+import io
 import os.path
 
 import influx
@@ -29,9 +29,9 @@ import utils.dates_helper
 from utils import threads
 from utils import csv_utils
 
-import constants
-import helpers
-from reportjob import ReportJob
+from . import constants
+from . import helpers
+from .reportjob import ReportJob
 
 
 logger = logging.getLogger(__name__)
@@ -62,9 +62,7 @@ def execute(job_id):
     logger.info('Done job executor for report id: %d', job_id)
 
 
-class JobExecutor(object):
-    __metaclass__ = abc.ABCMeta
-
+class JobExecutor(object, metaclass=abc.ABCMeta):
     def __init__(self, job):
         self.job = job
 
@@ -186,7 +184,7 @@ class ReportJobExecutor(JobExecutor):
         column_names = cls._extract_column_names(job.query['fields'])
         columns = [column_to_field_name_map[column_name] for column_name in column_names]
 
-        output = StringIO.StringIO()
+        output = io.StringIO()
         dashapi_cache = {}
 
         offset = 0
@@ -228,9 +226,7 @@ class ReportJobExecutor(JobExecutor):
 
             cls.convert_to_csv(job, [totals], column_to_field_name_map, output, header=False)
 
-        output.seek(0)
-
-        return output, stats.api_reports.get_filename(breakdown, constraints)
+        return output.getvalue(), stats.api_reports.get_filename(breakdown, constraints)
 
     @classmethod
     def convert_to_csv(cls, job, data, field_name_mapping, output, header=True):
@@ -273,7 +269,7 @@ class ReportJobExecutor(JobExecutor):
     def save_to_s3(cls, csv, human_readable_filename):
         filename = cls._generate_random_filename()
         human_readable_filename = human_readable_filename + '.csv' if human_readable_filename else None
-        utils.s3helpers.S3Helper(settings.RESTAPI_REPORTS_BUCKET).put_file(filename, csv, human_readable_filename)
+        utils.s3helpers.S3Helper(settings.RESTAPI_REPORTS_BUCKET).put(filename, csv, human_readable_filename)
         return os.path.join(settings.RESTAPI_REPORTS_URL, filename)
 
     @classmethod
@@ -353,7 +349,7 @@ class ReportJobExecutor(JobExecutor):
 
     @staticmethod
     def _generate_random_filename():
-        return ''.join(random.choice(string.letters + string.digits) for _ in range(64)) + '.csv'
+        return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(64)) + '.csv'
 
     @staticmethod
     def _date_column_names(names):

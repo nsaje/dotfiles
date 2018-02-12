@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import datetime
-import httplib
+import http.client
 
 from mock import patch, ANY, call
 from decimal import Decimal
@@ -128,7 +128,7 @@ class AdGroupSettingsTest(TestCase):
                     {
                         "campaign_name": "test campaign 1",
                         "archived": False,
-                        "id": 1, "name": u"test adgroup 1 Čžš",
+                        "id": 1, "name": "test adgroup 1 Čžš",
                     },
                     {
                         "campaign_name": "test campaign 2",
@@ -186,7 +186,7 @@ class AdGroupSettingsTest(TestCase):
                     'end_date': '2015-04-02',
                     'id': '1',
                     'campaign_id': '1',
-                    'name': u'test adgroup 1 Čžš',
+                    'name': 'test adgroup 1 Čžš',
                     'start_date': '2015-03-02',
                     'state': 2,
                     'target_devices': ['DESKTOP', 'MOBILE'],
@@ -1021,7 +1021,7 @@ class ConversionPixelTestCase(TestCase):
         decoded_response = json.loads(response.content)
         self.assertEqual(200, response.status_code)
         self.assertTrue(decoded_response['success'])
-        self.assertItemsEqual([{
+        self.assertCountEqual([{
             'id': 1,
             'name': 'test',
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
@@ -1053,7 +1053,7 @@ class ConversionPixelTestCase(TestCase):
         decoded_response = json.loads(response.content)
         self.assertEqual(200, response.status_code)
         self.assertTrue(decoded_response['success'])
-        self.assertItemsEqual([{
+        self.assertCountEqual([{
             'id': 1,
             'name': 'test',
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
@@ -1092,7 +1092,7 @@ class ConversionPixelTestCase(TestCase):
         decoded_response = json.loads(response.content)
         self.assertEqual(200, response.status_code)
         self.assertTrue(decoded_response['success'])
-        self.assertItemsEqual([{
+        self.assertCountEqual([{
             'id': 1,
             'name': 'test',
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
@@ -1129,7 +1129,7 @@ class ConversionPixelTestCase(TestCase):
         decoded_response = json.loads(response.content)
         self.assertEqual(200, response.status_code)
         self.assertTrue(decoded_response['success'])
-        self.assertItemsEqual([{
+        self.assertCountEqual([{
             'id': 1,
             'name': 'test',
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
@@ -1206,15 +1206,15 @@ class ConversionPixelTestCase(TestCase):
         self.assertEqual(audience_enabled_pixels[0].name, 'name')
 
         self.assertDictEqual({
-            u'data': {
-                u'id': audience_enabled_pixels[0].id,
-                u'name': u'name',
-                u'archived': False,
-                u'audience_enabled': True,
-                u'additional_pixel': False,
-                u'url': u'https://p1.zemanta.com/p/1/{}/'.format(audience_enabled_pixels[0].slug)
+            'data': {
+                'id': audience_enabled_pixels[0].id,
+                'name': 'name',
+                'archived': False,
+                'audience_enabled': True,
+                'additional_pixel': False,
+                'url': 'https://p1.zemanta.com/p/1/{}/'.format(audience_enabled_pixels[0].slug)
             },
-            u'success': True
+            'success': True
         }, json.loads(response.content))
 
         ping_mock.assert_called_with(1, msg='conversion_pixel.create')
@@ -1236,15 +1236,15 @@ class ConversionPixelTestCase(TestCase):
         )
         self.assertEqual(400, response.status_code)
         self.assertDictEqual({
-            u'data': {
-                u'error_code': u'ValidationError',
-                u'message': None,
-                u'errors': {
-                    u'audience_enabled': u'This pixel cannot be used for building custom audiences because another pixel is already used: test.'
+            'data': {
+                'error_code': 'ValidationError',
+                'message': None,
+                'errors': {
+                    'audience_enabled': 'This pixel cannot be used for building custom audiences because another pixel is already used: test.'
                 },
-                u'data': None
+                'data': None
             },
-            u'success': False
+            'success': False
         }, json.loads(response.content))
 
         self.assertFalse(ping_mock.called)
@@ -1403,15 +1403,15 @@ class ConversionPixelTestCase(TestCase):
         self.assertEqual(audience_enabled_pixels[0].id, existing_audience_enabled_pixels[0].id)
 
         self.assertDictEqual({
-            u'data': {
-                u'id': audience_enabled_pixels[0].id,
-                u'name': u'name',
-                u'archived': False,
-                u'audience_enabled': True,
-                u'additional_pixel': False,
-                u'url': u'https://p1.zemanta.com/p/1/{}/'.format(audience_enabled_pixels[0].slug)
+            'data': {
+                'id': audience_enabled_pixels[0].id,
+                'name': 'name',
+                'archived': False,
+                'audience_enabled': True,
+                'additional_pixel': False,
+                'url': 'https://p1.zemanta.com/p/1/{}/'.format(audience_enabled_pixels[0].slug)
             },
-            u'success': True
+            'success': True
         }, json.loads(response.content))
 
         ping_mock.assert_called_with(1, msg='conversion_pixel.update')
@@ -1433,15 +1433,15 @@ class ConversionPixelTestCase(TestCase):
         )
         self.assertEqual(400, response.status_code)
         self.assertDictEqual({
-            u'data': {
-                u'error_code': u'ValidationError',
-                u'message': None,
-                u'errors': {
-                    u'audience_enabled': u'This pixel cannot be used for building custom audiences because another pixel is already used: test.'
+            'data': {
+                'error_code': 'ValidationError',
+                'message': None,
+                'errors': {
+                    'audience_enabled': 'This pixel cannot be used for building custom audiences because another pixel is already used: test.'
                 },
-                u'data': None
+                'data': None
             },
-            u'success': False
+            'success': False
         }, json.loads(response.content))
 
         self.assertFalse(ping_mock.called)
@@ -1503,14 +1503,14 @@ class ConversionPixelTestCase(TestCase):
         self.assertFalse(conversion_pixel.archived)
 
         self.assertDictEqual({
-            u'data': {
-                u'error_code': u'ValidationError',
-                u'message': None,
-                u'errors': {
-                    u'audience_enabled': u'Cannot archive pixel used for building custom audiences.'},
-                u'data': None
+            'data': {
+                'error_code': 'ValidationError',
+                'message': None,
+                'errors': {
+                    'audience_enabled': 'Cannot archive pixel used for building custom audiences.'},
+                'data': None
             },
-            u'success': False
+            'success': False
         }, json.loads(response.content))
 
         self.assertFalse(redirector_mock.called)
@@ -2288,13 +2288,13 @@ class CampaignSettingsTest(TestCase):
         mock_is_readable.return_value = True
         settings_dict = settings_view.get_dict(request, settings, campaign)
         mock_is_readable.called_with(ga_property_id)
-        self.assertEquals(settings_dict['ga_property_readable'], True)
+        self.assertEqual(settings_dict['ga_property_readable'], True)
 
         # not readable
         mock_is_readable.return_value = False
         settings_dict = settings_view.get_dict(request, settings, campaign)
         mock_is_readable.called_with(ga_property_id)
-        self.assertEquals(settings_dict['ga_property_readable'], False)
+        self.assertEqual(settings_dict['ga_property_readable'], False)
 
 
 class AccountSettingsTest(TestCase):
@@ -2450,9 +2450,9 @@ class AccountSettingsTest(TestCase):
             'default_account_manager': None,
             'default_sales_representative': None,
             'default_cs_representative': None,
-            'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True, 'deprecated': False},
-                                u'100': {u'name': u'AdsNative', u'released': True, 'deprecated': False},
-                                u'200': {u'name': u'Facebook', u'released': True, 'deprecated': False}
+            'allowed_sources': {'2': {'name': 'Source 2', 'released': True, 'deprecated': False},
+                                '100': {'name': 'AdsNative', 'released': True, 'deprecated': False},
+                                '200': {'name': 'Facebook', 'released': True, 'deprecated': False}
                                 },
             'id': '1000',
             'archived': False,
@@ -2473,9 +2473,9 @@ class AccountSettingsTest(TestCase):
             'default_account_manager': None,
             'default_sales_representative': None,
             'default_cs_representative': None,
-            'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True, 'deprecated': False},
-                                u'100': {u'name': u'AdsNative', u'released': True, 'deprecated': False},
-                                u'200': {u'name': u'Facebook', u'released': True, 'deprecated': False}
+            'allowed_sources': {'2': {'name': 'Source 2', 'released': True, 'deprecated': False},
+                                '100': {'name': 'AdsNative', 'released': True, 'deprecated': False},
+                                '200': {'name': 'Facebook', 'released': True, 'deprecated': False}
                                 },
             'account_type': constants.AccountType.UNKNOWN,
             'id': '1000',
@@ -2497,9 +2497,9 @@ class AccountSettingsTest(TestCase):
             'default_account_manager': None,
             'default_sales_representative': None,
             'default_cs_representative': None,
-            'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True, 'deprecated': False},
-                                u'100': {u'name': u'AdsNative', u'released': True, 'deprecated': False},
-                                u'200': {u'name': u'Facebook', u'released': True, 'deprecated': False}
+            'allowed_sources': {'2': {'name': 'Source 2', 'released': True, 'deprecated': False},
+                                '100': {'name': 'AdsNative', 'released': True, 'deprecated': False},
+                                '200': {'name': 'Facebook', 'released': True, 'deprecated': False}
                                 },
             'account_type': constants.AccountType.UNKNOWN,
             'salesforce_url': None,
@@ -2530,15 +2530,15 @@ class AccountSettingsTest(TestCase):
             'default_account_manager': None,
             'id': '1000',
             'archived': False,
-            'agency': u'Alfa&Omega',
+            'agency': 'Alfa&Omega',
             'whitelist_publisher_groups': [],
             'blacklist_publisher_groups': [],
         })
         agencies = [{
-            u'name': u'Alfa&Omega',
-            u'default_account_type': 1,
-            u'sales_representative': None,
-            u'cs_representative': None,
+            'name': 'Alfa&Omega',
+            'default_account_type': 1,
+            'sales_representative': None,
+            'cs_representative': None,
         }]
         self.assertEqual(agencies, response['data']['agencies'])
 
@@ -2726,7 +2726,7 @@ class AccountSettingsTest(TestCase):
         ).json()
 
         self.assertTrue(response['success'])
-        self.assertItemsEqual(response['data']['account_managers'], [
+        self.assertCountEqual(response['data']['account_managers'], [
             {
                 'id': '2',
                 'name': 'user@test.com',
@@ -2747,7 +2747,7 @@ class AccountSettingsTest(TestCase):
         ).json()
 
         self.assertTrue(response['success'])
-        self.assertItemsEqual(response['data']['account_managers'], [
+        self.assertCountEqual(response['data']['account_managers'], [
             {
                 'id': '2',
                 'name': 'user@test.com',
@@ -2802,7 +2802,7 @@ class AccountSettingsTest(TestCase):
         response.status_code = 200
         mock_request.return_value = response
 
-        response._content = '{"id": "1234"}'
+        response._content = b'{"id": "1234"}'
         mock_page_id.return_value = response
 
         add_permissions(User.objects.get(pk=2), ['campaign_settings_cs_rep'])
@@ -3017,7 +3017,7 @@ class AccountSettingsTest(TestCase):
 
         self.assertEqual(
             dict(form.errors),
-            {'allowed_sources': [u'Can\'t save changes because media source Source 2 is still used on this account.']}
+            {'allowed_sources': ['Can\'t save changes because media source Source 2 is still used on this account.']}
         )
 
     def test_set_allowed_sources_none(self):
@@ -3081,7 +3081,7 @@ class AccountSettingsTest(TestCase):
             dict(form.errors),
             {
                 'allowed_sources':
-                    [u'Can\'t save changes because media sources Source 1, Source 2 are still used on this account.']
+                    ['Can\'t save changes because media sources Source 1, Source 2 are still used on this account.']
             }
         )
 
@@ -3093,7 +3093,7 @@ class AccountSettingsTest(TestCase):
             dict(form.errors),
             {
                 'allowed_sources':
-                    [u'Can\'t save changes because media source Source 1 is still used on this account.']
+                    ['Can\'t save changes because media source Source 1 is still used on this account.']
             }
         )
 
@@ -3154,30 +3154,30 @@ class AccountUsersTest(TestCase):
         user = User.objects.get(pk=2)
 
         self.assertIsNone(response.json()['data']['agency_managers'])
-        self.assertItemsEqual([
+        self.assertCountEqual([
             {
-                u'name': u'',
-                u'is_active': True,
-                u'is_agency_manager': False,
-                u'id': 2,
-                u'last_login': user.last_login.date().isoformat(),
-                u'email': u'user@test.com'
+                'name': '',
+                'is_active': True,
+                'is_agency_manager': False,
+                'id': 2,
+                'last_login': user.last_login.date().isoformat(),
+                'email': 'user@test.com'
             },
             {
-                u'name': u'',
-                u'is_active': False,
-                u'is_agency_manager': False,
-                u'id': 3,
-                u'last_login': u'2014-06-16',
-                u'email': u'john@test.com'
+                'name': '',
+                'is_active': False,
+                'is_agency_manager': False,
+                'id': 3,
+                'last_login': '2014-06-16',
+                'email': 'john@test.com'
             },
             {
-                u'name': u'',
-                u'is_active': False,
-                u'is_agency_manager': False,
-                u'id': 1,
-                u'last_login': u'2014-06-16',
-                u'email': u'superuser@test.com'
+                'name': '',
+                'is_active': False,
+                'is_agency_manager': False,
+                'id': 1,
+                'last_login': '2014-06-16',
+                'email': 'superuser@test.com'
             }
         ],
             response.json()['data']['users']
@@ -3201,43 +3201,43 @@ class AccountUsersTest(TestCase):
             reverse('account_users', kwargs={'account_id': 1}),
         )
 
-        self.assertItemsEqual([
+        self.assertCountEqual([
             {
-                u'name': u'',
-                u'is_active': False,
-                u'is_agency_manager': True,
-                u'id': 1,
-                u'last_login': u'2014-06-16',
-                u'email': u'superuser@test.com'
+                'name': '',
+                'is_active': False,
+                'is_agency_manager': True,
+                'id': 1,
+                'last_login': '2014-06-16',
+                'email': 'superuser@test.com'
             }
         ],
             response.json()['data']['agency_managers']
         )
 
-        self.assertItemsEqual([
+        self.assertCountEqual([
             {
-                u'name': u'',
-                u'is_active': True,
-                u'is_agency_manager': False,
-                u'id': 2,
-                u'last_login': user.last_login.date().isoformat(),
-                u'email': u'user@test.com'
+                'name': '',
+                'is_active': True,
+                'is_agency_manager': False,
+                'id': 2,
+                'last_login': user.last_login.date().isoformat(),
+                'email': 'user@test.com'
             },
             {
-                u'name': u'',
-                u'is_active': False,
-                u'is_agency_manager': False,
-                u'id': 3,
-                u'last_login': u'2014-06-16',
-                u'email': u'john@test.com'
+                'name': '',
+                'is_active': False,
+                'is_agency_manager': False,
+                'id': 3,
+                'last_login': '2014-06-16',
+                'email': 'john@test.com'
             },
             {
-                u'name': u'',
-                u'is_active': False,
-                u'is_agency_manager': False,
-                u'id': 1,
-                u'last_login': u'2014-06-16',
-                u'email': u'superuser@test.com'
+                'name': '',
+                'is_active': False,
+                'is_agency_manager': False,
+                'id': 1,
+                'last_login': '2014-06-16',
+                'email': 'superuser@test.com'
             }
         ],
             response.json()['data']['users']
@@ -3262,51 +3262,51 @@ class AccountUsersTest(TestCase):
             reverse('account_users', kwargs={'account_id': 1}),
         )
 
-        self.assertItemsEqual([
+        self.assertCountEqual([
             {
-                u'name': u'',
-                u'is_active': False,
-                u'is_agency_manager': True,
-                u'id': 1,
-                u'last_login': u'2014-06-16',
-                u'email': u'superuser@test.com'
+                'name': '',
+                'is_active': False,
+                'is_agency_manager': True,
+                'id': 1,
+                'last_login': '2014-06-16',
+                'email': 'superuser@test.com'
             }
         ],
             response.json()['data']['agency_managers']
         )
 
-        self.assertItemsEqual([
+        self.assertCountEqual([
             {
-                u'name': u'',
-                u'is_active': False,
-                u'is_agency_manager': True,
-                u'id': 1,
-                u'last_login': u'2014-06-16',
-                u'email': u'superuser@test.com'
+                'name': '',
+                'is_active': False,
+                'is_agency_manager': True,
+                'id': 1,
+                'last_login': '2014-06-16',
+                'email': 'superuser@test.com'
             },
             {
-                u'name': u'',
-                u'is_active': True,
-                u'is_agency_manager': False,
-                u'id': 2,
-                u'last_login': user.last_login.date().isoformat(),
-                u'email': u'user@test.com'
+                'name': '',
+                'is_active': True,
+                'is_agency_manager': False,
+                'id': 2,
+                'last_login': user.last_login.date().isoformat(),
+                'email': 'user@test.com'
             },
             {
-                u'name': u'',
-                u'is_active': False,
-                u'is_agency_manager': False,
-                u'id': 3,
-                u'last_login': u'2014-06-16',
-                u'email': u'john@test.com'
+                'name': '',
+                'is_active': False,
+                'is_agency_manager': False,
+                'id': 3,
+                'last_login': '2014-06-16',
+                'email': 'john@test.com'
             },
             {
-                u'name': u'',
-                u'is_active': False,
-                u'is_agency_manager': False,
-                u'id': 1,
-                u'last_login': u'2014-06-16',
-                u'email': u'superuser@test.com'
+                'name': '',
+                'is_active': False,
+                'is_agency_manager': False,
+                'id': 1,
+                'last_login': '2014-06-16',
+                'email': 'superuser@test.com'
             }
         ],
             response.json()['data']['users']
@@ -3569,7 +3569,7 @@ class CampaignContentInsightsTest(TestCase):
 
         add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
         response = cis.get(fake_request(self.user()), 1)
-        self.assertEqual(httplib.OK, response.status_code)
+        self.assertEqual(http.client.OK, response.status_code)
         self.assertDictEqual({
             'data': {
                 'metric': 'CTR',
@@ -3603,7 +3603,7 @@ class CampaignContentInsightsTest(TestCase):
             }
         ]
         response = cis.get(fake_request(self.user()), 1)
-        self.assertEqual(httplib.OK, response.status_code)
+        self.assertEqual(http.client.OK, response.status_code)
         self.assertDictEqual({
             'data': {
                 'metric': 'CTR',
@@ -3636,7 +3636,7 @@ class CampaignContentInsightsTest(TestCase):
             }
         ]
         response = cis.get(fake_request(self.user()), 1)
-        self.assertEqual(httplib.OK, response.status_code)
+        self.assertEqual(http.client.OK, response.status_code)
         self.assertDictEqual({
             'data': {
                 'metric': 'CTR',
@@ -3693,7 +3693,7 @@ class CampaignContentInsightsTest(TestCase):
         ]
 
         response = cis.get(fake_request(self.user()), 1)
-        self.assertEqual(httplib.OK, response.status_code)
+        self.assertEqual(http.client.OK, response.status_code)
         self.assertDictEqual({
             'data': {
                 'metric': 'CTR',
@@ -3750,7 +3750,7 @@ class CampaignContentInsightsTest(TestCase):
         ]
 
         response = cis.get(fake_request(self.user()), 1)
-        self.assertEqual(httplib.OK, response.status_code)
+        self.assertEqual(http.client.OK, response.status_code)
         self.assertDictEqual({
             'data': {
                 'metric': 'CTR',
@@ -4082,7 +4082,7 @@ class AdFacebookAccountStatusTest(TestCase):
             follow=True
         )
         content = json.loads(response.content)
-        self.assertDictEqual(content['data'], {u'status': u'Connected'})
+        self.assertDictEqual(content['data'], {'status': 'Connected'})
         get_all_pages_mock.assert_called_with('fake_business_id', 'fake_access_token')
 
     def _get_client_with_permissions(self, permissions_list):

@@ -5,8 +5,8 @@ from restapi.views import RESTAPIBaseView
 import restapi.access
 import dash.views.navigation_helpers
 
-import serializers
-import service
+from . import serializers
+from . import service
 
 
 class CloneAdGroup(RESTAPIBaseView):

@@ -5,7 +5,7 @@ import jsonfield
 from django.db import models
 from django.conf import settings
 
-import constants
+from . import constants
 
 
 S3_UPLOAD_PATH_FORMAT = 'upload/{videoasset_id}'
@@ -25,8 +25,8 @@ def validate_format(item):
     assert isinstance(item.get('width'), int)
     assert isinstance(item.get('height'), int)
     assert isinstance(item.get('bitrate'), int)
-    assert isinstance(item.get('mime'), basestring)
-    assert isinstance(item.get('filename'), basestring)
+    assert isinstance(item.get('mime'), str)
+    assert isinstance(item.get('filename'), str)
 
 
 class VideoAssetManager(models.Manager):

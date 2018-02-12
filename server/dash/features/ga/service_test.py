@@ -2,8 +2,8 @@ import mock
 
 from django.test import TestCase, override_settings
 
-import service
-import models
+from . import service
+from . import models
 
 
 ACCOUNTS_LIST_RESPONSE = {

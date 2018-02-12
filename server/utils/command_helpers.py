@@ -31,7 +31,7 @@ def last_n_days(n):
     Returns last n days including today.
     '''
     today = datetime.datetime.utcnow().date()
-    return [today - datetime.timedelta(days=x) for x in xrange(n)]
+    return [today - datetime.timedelta(days=x) for x in range(n)]
 
 
 def get_ad_group_sources(ad_group_ids=None, source_ids=None, include_archived=False):

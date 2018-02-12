@@ -102,7 +102,7 @@ class AdGroupSourceCreate(TestCase):
         ad_group_sources = core.entity.AdGroupSource.objects.bulk_create_on_allowed_sources(
             request, self.ad_group, write_history=False)
 
-        self.assertItemsEqual(ad_group_sources, [])
+        self.assertCountEqual(ad_group_sources, [])
         self.assertFalse(mock_k1.called)
 
 
@@ -299,6 +299,7 @@ class AdGroupSourceUpdate(TestCase):
             self.ad_group_source.update(state=constants.AdGroupSourceSettingsState.ACTIVE)
 
     def test_update_validate_state_yahoo(self):
+        self.ad_group_source.source.source_type.min_cpc = decimal.Decimal('0.1')
         self.ad_group_source.update(cpc_cc=decimal.Decimal('0.1'))
         self.ad_group.settings.update_unsafe(None, target_devices=[constants.AdTargetDevice.DESKTOP])
         self.source_type.type = constants.SourceType.YAHOO

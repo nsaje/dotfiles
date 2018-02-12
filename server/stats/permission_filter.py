@@ -133,7 +133,7 @@ def _get_fields_to_keep(user, goals, uses_bcm_v2):
     if user.has_perm('zemauth.aggregate_postclick_engagement'):
         fields_to_keep |= fields.POSTCLICK_ENGAGEMENT_FIELDS
 
-    for field, permissions in FIELD_PERMISSION_MAPPING.iteritems():
+    for field, permissions in FIELD_PERMISSION_MAPPING.items():
         if not permissions or has_perms_bcm_v2(user, permissions, uses_bcm_v2=uses_bcm_v2):
             fields_to_keep.add(field)
         if permissions and not has_perms_bcm_v2(user, permissions, uses_bcm_v2=uses_bcm_v2) and field in fields_to_keep:
@@ -153,7 +153,7 @@ def _get_fields_to_keep(user, goals, uses_bcm_v2):
 
 def _remove_fields(rows, fields_to_keep):
     for row in rows:
-        for row_field in row.keys():
+        for row_field in list(row.keys()):
             if row_field not in fields_to_keep:
                 row.pop(row_field, None)
 
@@ -168,7 +168,7 @@ def _custom_cleanup(user, rows):
     if remove_content_ad_source_status:
         for row in rows:
             if row.get('status_per_source'):
-                for source_status in row['status_per_source'].values():
+                for source_status in list(row['status_per_source'].values()):
                     source_status.pop('source_status', None)
 
 

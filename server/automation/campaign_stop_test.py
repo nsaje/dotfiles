@@ -1526,10 +1526,10 @@ class StopNonSpendingSourcesTestCase(TestCase):
         ag1 = dash.models.AdGroup.objects.get(id=1)
         ag2 = dash.models.AdGroup.objects.get(id=2)
 
-        self.assertItemsEqual([ag1, ag2], campaign.adgroup_set.all().filter_active())
-        self.assertItemsEqual(
+        self.assertCountEqual([ag1, ag2], campaign.adgroup_set.all().filter_active())
+        self.assertCountEqual(
             [1, 2, 4, 5], ag1.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
-        self.assertItemsEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
+        self.assertCountEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
 
         mock_get_yesterday_spends.return_value = []
         for ags in dash.models.AdGroupSource.objects.filter(ad_group__in=ad_groups):
@@ -1553,15 +1553,15 @@ class StopNonSpendingSourcesTestCase(TestCase):
         for ags_id in non_spending_ags_ids:
             self.assertTrue(current_ags_settings[ags_id].state == dash.constants.AdGroupSourceSettingsState.ACTIVE)
 
-        self.assertItemsEqual(
+        self.assertCountEqual(
             [1, 2, 4, 5], ag1.adgroupsource_set.all().filter_active().values_list('id', flat=True))
 
         campaign_stop._adjust_source_caps(campaign, {1: Decimal(100), 2: Decimal(100)})
 
-        self.assertItemsEqual([ag1, ag2], campaign.adgroup_set.all().filter_active())
-        self.assertItemsEqual(
+        self.assertCountEqual([ag1, ag2], campaign.adgroup_set.all().filter_active())
+        self.assertCountEqual(
             [4, 5], ag1.adgroupsource_set.all().filter_active().values_list('id', flat=True))
-        self.assertItemsEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
+        self.assertCountEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
 
     @patch('utils.dates_helper.local_today')
     @patch('redshiftapi.api_breakdowns.query', autospec=True)
@@ -1586,14 +1586,14 @@ class StopNonSpendingSourcesTestCase(TestCase):
                 row['etfm_cost'] = Decimal('0.6')
             mock_get_yesterday_spends.return_value.append(row)
 
-        self.assertItemsEqual([1, 2], campaign.adgroup_set.all().filter_active().values_list('id', flat=True))
+        self.assertCountEqual([1, 2], campaign.adgroup_set.all().filter_active().values_list('id', flat=True))
 
         campaign_stop._adjust_source_caps(campaign, {1: Decimal(100), 2: Decimal(100)})
 
-        self.assertItemsEqual([2], campaign.adgroup_set.all().filter_active().values_list('id', flat=True))
-        self.assertItemsEqual(
+        self.assertCountEqual([2], campaign.adgroup_set.all().filter_active().values_list('id', flat=True))
+        self.assertCountEqual(
             [1, 2, 4, 5], ag1.adgroupsource_set.all().filter_active().values_list('id', flat=True))
-        self.assertItemsEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
+        self.assertCountEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
 
 
 class CalculateDailySpendsTestCase(TestCase):
@@ -1816,10 +1816,10 @@ class UpdateCampaignsInLandingTestCase(TestCase):
         ag1 = dash.models.AdGroup.objects.get(id=1)
         ag2 = dash.models.AdGroup.objects.get(id=2)
 
-        self.assertItemsEqual([ag1, ag2], campaign.adgroup_set.all().filter_active())
-        self.assertItemsEqual(
+        self.assertCountEqual([ag1, ag2], campaign.adgroup_set.all().filter_active())
+        self.assertCountEqual(
             [1, 2, 4, 5], ag1.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
-        self.assertItemsEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
+        self.assertCountEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
 
         yesterday_spends_mock.return_value = {
             (1, 1): Decimal('55'),  # db=55
@@ -1835,10 +1835,10 @@ class UpdateCampaignsInLandingTestCase(TestCase):
         }
 
         campaign_stop._adjust_source_caps(campaign, daily_caps)
-        self.assertItemsEqual([ag1, ag2], campaign.adgroup_set.all().filter_active())
-        self.assertItemsEqual(
+        self.assertCountEqual([ag1, ag2], campaign.adgroup_set.all().filter_active())
+        self.assertCountEqual(
             [1, 5], ag1.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
-        self.assertItemsEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
+        self.assertCountEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
 
         age_budget_sum = sum(
             s.get_current_settings().daily_budget_cc for s in ag1.adgroupsource_set.all().filter_active()
@@ -1854,10 +1854,10 @@ class UpdateCampaignsInLandingTestCase(TestCase):
         ag1 = dash.models.AdGroup.objects.get(id=1)
         ag2 = dash.models.AdGroup.objects.get(id=2)
 
-        self.assertItemsEqual([ag1, ag2], campaign.adgroup_set.all().filter_active())
-        self.assertItemsEqual(
+        self.assertCountEqual([ag1, ag2], campaign.adgroup_set.all().filter_active())
+        self.assertCountEqual(
             [1, 2, 4, 5], ag1.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
-        self.assertItemsEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
+        self.assertCountEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
 
         yesterday_spends_mock.return_value = {
             (1, 1): Decimal('100'),
@@ -1873,10 +1873,10 @@ class UpdateCampaignsInLandingTestCase(TestCase):
         }
 
         campaign_stop._adjust_source_caps(campaign, daily_caps)
-        self.assertItemsEqual([ag2], campaign.adgroup_set.all().filter_active())
-        self.assertItemsEqual(
+        self.assertCountEqual([ag2], campaign.adgroup_set.all().filter_active())
+        self.assertCountEqual(
             [1, 2, 4, 5], ag1.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
-        self.assertItemsEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
+        self.assertCountEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
 
 
 class MinimumBudgetAmountTestCase(TestCase):

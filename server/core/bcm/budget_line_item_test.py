@@ -10,7 +10,7 @@ import dash
 from utils.magic_mixer import magic_mixer
 import automation.campaign_stop
 
-from budget_line_item import BudgetLineItem
+from .budget_line_item import BudgetLineItem
 
 
 class TestBudgetLineItemManager(TestCase):

@@ -1,1 +1,1 @@
-from model import SourceType
+from .model import SourceType

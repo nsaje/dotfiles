@@ -59,7 +59,7 @@ def _group_seen_users(date, active_account_ids):
         )
         for acc in accounts:
             seen.setdefault(acc, set()).add(user)
-    return {acc.pk: len(acc_users) for acc, acc_users in seen.iteritems()}
+    return {acc.pk: len(acc_users) for acc, acc_users in seen.items()}
 
 
 def _prepare_table_rows(date):
@@ -83,18 +83,18 @@ def _prepare_table_rows(date):
             TableCell(seen.get(account.pk, 0)),
         ]))
 
-    header = [TableRow(map(TableCell, [
+    header = [TableRow(list(map(TableCell, [
         date.strftime('%B %d'),
         '# blacklisted publishers',
         '# self-managed actions',
         '# different users seen',
-    ]))]
-    totals = [TableRow(map(TableCell, [
+    ])))]
+    totals = [TableRow(list(map(TableCell, [
         '',
-        sum(blacklist.itervalues()),
-        sum(actions.itervalues()),
-        sum(seen.itervalues()),
-    ]), row_type=TableRow.TYPE_TOTALS)]
+        sum(blacklist.values()),
+        sum(actions.values()),
+        sum(seen.values()),
+    ])), row_type=TableRow.TYPE_TOTALS)]
     return header + _sort_rows(rows) + totals
 
 

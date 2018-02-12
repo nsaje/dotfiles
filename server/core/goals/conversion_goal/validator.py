@@ -2,7 +2,7 @@ import core.common
 import dash.constants
 import utils.exc
 
-import model
+from . import model
 
 
 class ConversionGoalValidator(core.common.BaseValidator):

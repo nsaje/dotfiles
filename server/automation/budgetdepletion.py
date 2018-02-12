@@ -86,7 +86,7 @@ def _send_depleting_budget_notification_email(
             )
         )
     except Exception:
-        logger.exception(u'Budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:',
+        logger.exception('Budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:',
                          campaign.name,
                          ', '.join(emails))
 

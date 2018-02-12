@@ -129,12 +129,12 @@ class CampaignStopLogAdmin(admin.ModelAdmin):
         return qs
 
     def formatted_notes(self, obj):
-        return format_html(u'<div style="white-space: pre-wrap">{}</div>', obj.notes)
+        return format_html('<div style="white-space: pre-wrap">{}</div>', obj.notes)
     formatted_notes.short_description = 'Notes'
 
     def campaign_link(self, obj):
         return format_html(
-            u'<a href="{}">{}</a>',
+            '<a href="{}">{}</a>',
             reverse('admin:dash_campaign_change', args=(obj.campaign_id,)),
             obj.campaign.name
         )

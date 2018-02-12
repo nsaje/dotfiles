@@ -83,9 +83,9 @@ class Command(ExceptionCommand):
         influx_data = [{
             'fields': {field: float(entry.get(field) or 0) for field in fields},
             'measurement': measurement,
-            'tags': {key: value for key, value in entry.iteritems() if key in tags},
+            'tags': {key: value for key, value in entry.items() if key in tags},
             'time': date.strftime('%Y-%m-%d') + 'T12:00:00Z'
-        } for entry in data_by_agency.itervalues()]
+        } for entry in data_by_agency.values()]
 
         self._write_to_influx(influx, influx_data)
 
@@ -105,9 +105,9 @@ class Command(ExceptionCommand):
         tags = set(breakdown)
 
         influx_data = [{
-            'fields': {key: float(value) for key, value in entry.iteritems() if key not in tags and value is not None},
+            'fields': {key: float(value) for key, value in entry.items() if key not in tags and value is not None},
             'measurement': measurement,
-            'tags': {key: value for key, value in entry.iteritems() if key in tags},
+            'tags': {key: value for key, value in entry.items() if key in tags},
             'time': date.strftime('%Y-%m-%d') + 'T12:00:00Z'
         } for entry in data]
 
@@ -143,7 +143,7 @@ class Command(ExceptionCommand):
         influx_data = [{
             'fields': {field: float(entry.get(field) or 0) for field in fields},
             'measurement': measurement,
-            'tags': {key: value for key, value in entry.iteritems() if key in tags},
+            'tags': {key: value for key, value in entry.items() if key in tags},
             'time': date.strftime('%Y-%m-%d') + 'T12:00:00Z'
         } for entry in data]
 

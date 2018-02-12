@@ -20,7 +20,7 @@ def generate_report_from_dicts(name, dicts):
     Generates a report with keys as column headers
     """
 
-    headers = dicts[0].keys()
+    headers = list(dicts[0].keys())
     headers.sort()
 
     rows = [headers]

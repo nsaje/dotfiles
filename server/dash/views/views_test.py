@@ -589,12 +589,12 @@ class AdGroupSourcesTest(TestCase):
         request.user = User(id=1)
 
         account = models.Account(
-            name=u'Account š name that is toooooooo long',
+            name='Account š name that is toooooooo long',
         )
         account.save(request)
 
         campaign = models.Campaign(
-            name=u'Campaign š name that is toooooooo long',
+            name='Campaign š name that is toooooooo long',
             account=account,
         )
         campaign.save(request)
@@ -608,26 +608,26 @@ class AdGroupSourcesTest(TestCase):
             source=source,
             ad_group=models.AdGroup(
                 id=123,
-                name=u'Ad group š name that is toooooooo long',
+                name='Ad group š name that is toooooooo long',
                 campaign=campaign,
             ),
         )
 
         name = ad_group_source.get_external_name()
         self.assertEqual(
-            name, u'ONE: Account š name that is / Campaign š name that / Ad group š name that / 123 / Outbrain')
+            name, 'ONE: Account š name that is / Campaign š name that / Ad group š name that / 123 / Outbrain')
 
     def test_get_name_long_first_word(self):
         request = HttpRequest()
         request.user = User(id=1)
 
         account = models.Account(
-            name=u'Accountšnamethatistoooooooolong',
+            name='Accountšnamethatistoooooooolong',
         )
         account.save(request)
 
         campaign = models.Campaign(
-            name=u'Campaignšnamethatistoooooooolong',
+            name='Campaignšnamethatistoooooooolong',
             account=account,
         )
         campaign.save(request)
@@ -641,26 +641,26 @@ class AdGroupSourcesTest(TestCase):
             source=source,
             ad_group=models.AdGroup(
                 id=123,
-                name=u'Adgroupšnamethatistoooooooolong',
+                name='Adgroupšnamethatistoooooooolong',
                 campaign=campaign,
             ),
         )
 
         name = ad_group_source.get_external_name()
         self.assertEqual(
-            name, u'ONE: Accountšnamethatistooo / Campaignšnamethatistoo / Adgroupšnamethatistooo / 123 / Outbrain')
+            name, 'ONE: Accountšnamethatistooo / Campaignšnamethatistoo / Adgroupšnamethatistooo / 123 / Outbrain')
 
     def test_get_name_empty_strings(self):
         request = HttpRequest()
         request.user = User(id=1)
 
         account = models.Account(
-            name=u'',
+            name='',
         )
         account.save(request)
 
         campaign = models.Campaign(
-            name=u'',
+            name='',
             account=account,
         )
         campaign.save(request)
@@ -674,7 +674,7 @@ class AdGroupSourcesTest(TestCase):
             source=source,
             ad_group=models.AdGroup(
                 id=123,
-                name=u'',
+                name='',
                 campaign=campaign,
             ),
         )
@@ -682,7 +682,7 @@ class AdGroupSourcesTest(TestCase):
         name = ad_group_source.get_external_name()
 
         self.assertEqual(
-            name, u'ONE:  /  /  / 123 / Outbrain')
+            name, 'ONE:  /  /  / 123 / Outbrain')
 
     def test_get_dma_targeting_compatible(self):
         username = User.objects.get(pk=1).email
@@ -702,7 +702,7 @@ class AdGroupSourcesTest(TestCase):
         )
 
         response_dict = json.loads(response.content)
-        self.assertItemsEqual(response_dict['data']['sources'], [
+        self.assertCountEqual(response_dict['data']['sources'], [
             {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False,
                 'can_retarget': True},  # should return False when DMAs used
             {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True, 'can_retarget': True},
@@ -896,7 +896,7 @@ class AdGroupOverviewTest(TestCase):
 
         self.assertTrue(response['success'])
         header = response['data']['header']
-        self.assertEqual(header['title'], u'test adgroup 1 Čžš')
+        self.assertEqual(header['title'], 'test adgroup 1 Čžš')
         self.assertEqual(constants.InfoboxStatus.INACTIVE, header['active'])
 
         settings = response['data']['basic_settings'] +\
@@ -977,7 +977,7 @@ class AdGroupOverviewTest(TestCase):
 
         self.assertTrue(response['success'])
         header = response['data']['header']
-        self.assertEqual(header['title'], u'test adgroup 1 Čžš')
+        self.assertEqual(header['title'], 'test adgroup 1 Čžš')
         self.assertEqual(constants.InfoboxStatus.AUTOPILOT, header['active'])
 
         settings = response['data']['basic_settings'] +\
@@ -1085,7 +1085,7 @@ class CampaignOverviewTest(TestCase):
         self.assertTrue(response['success'])
 
         header = response['data']['header']
-        self.assertEqual(u'test campaign 1 \u010c\u017e\u0161', header['title'])
+        self.assertEqual('test campaign 1 \u010c\u017e\u0161', header['title'])
         self.assertEqual(constants.InfoboxStatus.ACTIVE, header['active'])
 
         settings = response['data']['basic_settings'] +\
@@ -1291,6 +1291,7 @@ class DemoTest(TestCase):
         self.assertEqual(404, response.status_code)
         self.assertTemplateUsed(response, '404.html')
 
+    @override_settings(DK_DEMO_UP_ENDPOINT='http://example.com')
     @patch('dash.views.views.request_signer')
     def test_start_instance(self, request_signer_mock):
         data = {
@@ -1299,8 +1300,8 @@ class DemoTest(TestCase):
             'instance_password': 'test-password',
         }
 
-        request_signer_mock.urllib2_secure_open.return_value.getcode.return_value = 200
-        request_signer_mock.urllib2_secure_open.return_value.read.return_value = json.dumps(data)
+        request_signer_mock.urllib_secure_open.return_value.getcode.return_value = 200
+        request_signer_mock.urllib_secure_open.return_value.read.return_value = json.dumps(data)
 
         demo = views.Demo()
         instance = demo._start_instance()

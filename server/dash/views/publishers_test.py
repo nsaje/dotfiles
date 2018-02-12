@@ -39,7 +39,7 @@ class PublisherTargetingViewTest(TestCase):
         }]
         self.assertEqual(publisher_group.entries.count(), len(entry_dicts))
         entries = publisher_group.entries.all().values('publisher', 'source', 'include_subdomains')
-        self.assertItemsEqual(entry_dicts, entries)
+        self.assertCountEqual(entry_dicts, entries)
 
     def test_post_not_allowed(self):
         ad_group = models.AdGroup.objects.get(pk=1)

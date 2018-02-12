@@ -45,7 +45,7 @@ def get_active_ad_groups_on_autopilot(autopilot_state=None):
 def get_autopilot_active_sources_settings(ad_groups_and_settings,
                                           ad_group_setting_state=dash.constants.AdGroupSettingsState.ACTIVE):
     adgroup_sources = (dash.models.AdGroupSource.objects
-                       .filter(ad_group__in=ad_groups_and_settings.keys())
+                       .filter(ad_group__in=list(ad_groups_and_settings.keys()))
                        .filter(ad_group__settings__archived=False)
                        .select_related('settings__ad_group_source__source__source_type')
                        .select_related('settings__ad_group_source__ad_group__campaign__account'))
@@ -147,7 +147,7 @@ def get_campaign_goal_column_importance(campaign_goal):
 
 
 def send_autopilot_changes_emails(email_changes_data, bcm_modifiers_map, initialization):
-    for camp, changes_data in email_changes_data.iteritems():
+    for camp, changes_data in email_changes_data.items():
         emails = email_helper.email_manager_list(camp)
         emails.append(autopilot_settings.AUTOPILOT_EMAIL_FOR_COPIES)
         if initialization:
@@ -158,7 +158,7 @@ def send_autopilot_changes_emails(email_changes_data, bcm_modifiers_map, initial
 
 def send_autopilot_changes_email(campaign, emails, changes_data, bcm_modifiers):
     changes_text = []
-    for adgroup, adgroup_changes in changes_data.iteritems():
+    for adgroup, adgroup_changes in changes_data.items():
         changes_text.append(_get_email_adgroup_text(adgroup))
         if dash.constants.SourceAllRTB in adgroup_changes:
             changes_text.append(_get_email_source_changes_text(dash.constants.SourceAllRTB.NAME,
@@ -184,15 +184,15 @@ def send_autopilot_changes_email(campaign, emails, changes_data, bcm_modifiers):
             )
         )
     except Exception:
-        logger.exception(u'Autopilot e-mail for campaign %s to %s was not sent' +
+        logger.exception('Autopilot e-mail for campaign %s to %s was not sent' +
                          'because an exception was raised:',
                          campaign.name,
-                         u', '.join(emails))
+                         ', '.join(emails))
 
 
 def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
     changes_text = []
-    for adgroup, adgroup_changes in changes_data.iteritems():
+    for adgroup, adgroup_changes in changes_data.items():
         changes_text.append(_get_email_adgroup_text(adgroup))
         if dash.constants.SourceAllRTB in adgroup_changes:
             changes_text.append(_get_email_source_changes_text(dash.constants.SourceAllRTB.NAME,
@@ -217,14 +217,14 @@ def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
             )
         )
     except Exception:
-        logger.exception(u'Autopilot e-mail for initialising budget autopilot on an adroup in ' +
+        logger.exception('Autopilot e-mail for initialising budget autopilot on an adroup in ' +
                          'campaign %s to %s was not sent because an exception was raised:',
                          campaign.name,
-                         u', '.join(emails))
+                         ', '.join(emails))
 
 
 def _get_email_adgroup_text(adgroup):
-    return u'''
+    return '''
 
 AdGroup: {adg_name} ({adg_url}):'''.format(
         adg_name=adgroup.name,
@@ -238,10 +238,10 @@ def _get_email_source_changes_text(source_name, changes):
     budget_pilot_on = all(b in changes for b in ['new_budget', 'old_budget'])
     budget_changed = budget_pilot_on and changes['old_budget'] != changes['new_budget']
 
-    text = u'\n- on {} '.format(source_name)
+    text = '\n- on {} '.format(source_name)
     if budget_pilot_on:
         text += _get_budget_changes_text(budget_changed, changes)
-        text += u' and ' if cpc_pilot_on else u''
+        text += ' and ' if cpc_pilot_on else ''
     if cpc_pilot_on:
         text += _get_cpc_changes_text(cpc_changed, changes)
     return text
@@ -263,27 +263,27 @@ def _get_email_adgroup_pausing_suggestions_text(adgroup_changes, bcm_modifiers):
 
 def _get_budget_changes_text(budget_changed, changes):
     if budget_changed:
-        return u'daily spend cap changed from ${} to ${}'.format(
+        return 'daily spend cap changed from ${} to ${}'.format(
             '{0:.2f}'.format(changes['old_budget']),
             '{0:.2f}'.format(changes['new_budget']))
     elif DailyBudgetChangeComment.NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET in changes['budget_comments']:
-        return u'daily spend cap did not change because ' +\
+        return 'daily spend cap did not change because ' +\
             DailyBudgetChangeComment.get_text(DailyBudgetChangeComment.NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET)
     else:
-        return u'daily spend cap did not change'
+        return 'daily spend cap did not change'
 
 
 def _get_cpc_changes_text(cpc_changed, changes):
     if cpc_changed:
-        text = u'bid CPC changed from ${} to ${}'.format(
+        text = 'bid CPC changed from ${} to ${}'.format(
             changes['old_cpc_cc'].normalize(),
             changes['new_cpc_cc'].normalize())
         if changes['cpc_comments']:
-            text += u' because ' + u' and '.join(CpcChangeComment.get_text(c) for c in changes['cpc_comments'])
+            text += ' because ' + ' and '.join(CpcChangeComment.get_text(c) for c in changes['cpc_comments'])
         return text
     elif changes['cpc_comments'] != []:
-        return u'bid CPC remained unchanged at ${} because {}.'.format(
+        return 'bid CPC remained unchanged at ${} because {}.'.format(
             changes['old_cpc_cc'].normalize(),
-            u' and '.join(CpcChangeComment.get_text(c) for c in changes['cpc_comments']))
-    return u'bid CPC remained unchanged at ${}.'.format(
+            ' and '.join(CpcChangeComment.get_text(c) for c in changes['cpc_comments']))
+    return 'bid CPC remained unchanged at ${}.'.format(
         changes['old_cpc_cc'].normalize())

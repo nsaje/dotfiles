@@ -6,7 +6,7 @@ from utils.magic_mixer import magic_mixer
 
 import core.entity.account
 import restapi.views_test
-import models
+from . import models
 
 
 class VideoAssetTest(restapi.views_test.RESTAPITest):

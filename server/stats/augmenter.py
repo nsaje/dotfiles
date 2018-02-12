@@ -74,7 +74,7 @@ def augment_row_delivery(row, target_dimension):
     if target_dimension in mapping:
         value = row[target_dimension]
         if target_dimension == 'dma':
-            value = unicode(value)
+            value = str(value)
 
         row['name'] = mapping[target_dimension].get_text(value) or UNKNOWN
 
@@ -107,4 +107,4 @@ def _has_postclick_data(row):
 
 
 def _has_conversion_goal_data(row):
-    return any(k.startswith('conversion_goal_') and v > 0 for k, v in row.iteritems())
+    return any(k.startswith('conversion_goal_') and v > 0 for k, v in row.items())

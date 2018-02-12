@@ -24,10 +24,10 @@ import core.source
 
 from ..settings_base import SettingsBase
 
-import manager
-import queryset
-import instance
-import validation
+from . import manager
+from . import queryset
+from . import instance
+from . import validation
 from .. import helpers
 
 
@@ -418,7 +418,7 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
             excluded_keys.update(['target_os', 'target_placements'])
 
         valid_changes = {
-            key: value for key, value in changes.iteritems()
+            key: value for key, value in changes.items()
             if key not in excluded_keys
         }
         return core.history.helpers.get_changes_text_from_dict(cls, valid_changes, separator=separator)

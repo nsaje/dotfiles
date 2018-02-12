@@ -38,11 +38,11 @@ class AccountsLoaderTest(TestCase):
             'filtered_sources': models.Source.objects.all(),
         })
 
-        self.assertItemsEqual(loader.objs_ids, self.loader.objs_ids)
-        self.assertItemsEqual(loader.settings_map, self.loader.settings_map)
+        self.assertCountEqual(loader.objs_ids, self.loader.objs_ids)
+        self.assertCountEqual(loader.settings_map, self.loader.settings_map)
 
     def test_objs(self):
-        self.assertItemsEqual(self.loader.objs_ids, [1])
+        self.assertCountEqual(self.loader.objs_ids, [1])
         self.assertDictEqual(self.loader.objs_map, {
             1: models.Account.objects.get(pk=1)
         })
@@ -114,11 +114,11 @@ class CampaignsLoaderTest(TestCase):
             'filtered_sources': models.Source.objects.all(),
         })
 
-        self.assertItemsEqual(loader.objs_ids, self.loader.objs_ids)
-        self.assertItemsEqual(loader.settings_map, self.loader.settings_map)
+        self.assertCountEqual(loader.objs_ids, self.loader.objs_ids)
+        self.assertCountEqual(loader.settings_map, self.loader.settings_map)
 
     def test_objs(self):
-        self.assertItemsEqual(self.loader.objs_ids, [1, 2])
+        self.assertCountEqual(self.loader.objs_ids, [1, 2])
         self.assertDictEqual(self.loader.objs_map, {
             1: models.Campaign.objects.get(pk=1),
             2: models.Campaign.objects.get(pk=2),
@@ -196,8 +196,8 @@ class AdGroupsLoaderTest(TestCase):
             'filtered_sources': models.Source.objects.all(),
         })
 
-        self.assertItemsEqual(loader.objs_ids, self.loader.objs_ids)
-        self.assertItemsEqual(loader.settings_map, self.loader.settings_map)
+        self.assertCountEqual(loader.objs_ids, self.loader.objs_ids)
+        self.assertCountEqual(loader.settings_map, self.loader.settings_map)
 
     def test_settings_map(self):
         self.assertDictEqual(self.loader.settings_map, {
@@ -238,7 +238,7 @@ class AdGroupsLoaderTest(TestCase):
         })
 
     def test_objs(self):
-        self.assertItemsEqual(self.loader.objs_ids, [1, 2, 3])
+        self.assertCountEqual(self.loader.objs_ids, [1, 2, 3])
         self.assertDictEqual(self.loader.objs_map, {
             1: models.AdGroup.objects.get(pk=1),
             2: models.AdGroup.objects.get(pk=2),
@@ -320,11 +320,11 @@ class ContentAdLoaderTest(TestCase):
             'filtered_sources': models.Source.objects.all(),
         })
 
-        self.assertItemsEqual(loader.objs_ids, self.loader.objs_ids)
-        self.assertItemsEqual(loader.status_map, self.loader.status_map)
+        self.assertCountEqual(loader.objs_ids, self.loader.objs_ids)
+        self.assertCountEqual(loader.status_map, self.loader.status_map)
 
     def test_objs(self):
-        self.assertItemsEqual(self.loader.objs_ids, [1, 2, 3])
+        self.assertCountEqual(self.loader.objs_ids, [1, 2, 3])
         self.assertDictEqual(self.loader.objs_map, {
             1: models.ContentAd.objects.get(pk=1),
             2: models.ContentAd.objects.get(pk=2),
@@ -445,11 +445,11 @@ class SourcesLoaderTest(TestCase):
             'filtered_sources': models.Source.objects.all(),
         })
 
-        self.assertItemsEqual(loader.objs_ids, self.loader.objs_ids)
-        self.assertItemsEqual(loader.settings_map, self.loader.settings_map)
+        self.assertCountEqual(loader.objs_ids, self.loader.objs_ids)
+        self.assertCountEqual(loader.settings_map, self.loader.settings_map)
 
     def test_objs(self):
-        self.assertItemsEqual(self.loader.objs_ids, [1, 2])
+        self.assertCountEqual(self.loader.objs_ids, [1, 2])
         self.assertDictEqual(self.loader.objs_map, {
             1: models.Source.objects.get(pk=1),
             2: models.Source.objects.get(pk=2),
@@ -483,11 +483,11 @@ class AdGroupSourcesLoaderTest(TestCase):
             'filtered_sources': models.Source.objects.all(),
         })
 
-        self.assertItemsEqual(loader.objs_ids, self.loader.objs_ids)
-        self.assertItemsEqual(loader.settings_map, self.loader.settings_map)
+        self.assertCountEqual(loader.objs_ids, self.loader.objs_ids)
+        self.assertCountEqual(loader.settings_map, self.loader.settings_map)
 
     def test_objs(self):
-        self.assertItemsEqual(self.loader.objs_ids, [1, 2])
+        self.assertCountEqual(self.loader.objs_ids, [1, 2])
         self.assertDictEqual(self.loader.objs_map, {
             1: models.Source.objects.get(pk=1),
             2: models.Source.objects.get(pk=2),
@@ -669,10 +669,10 @@ class PublisherBlacklistLoaderTest(TestCase):
             'filtered_sources': models.Source.objects.all(),
         })
 
-        self.assertItemsEqual(loader.whitelist_qs, self.loader.whitelist_qs)
-        self.assertItemsEqual(loader.blacklist_qs, self.loader.blacklist_qs)
-        self.assertItemsEqual(loader.publisher_group_targeting, self.loader.publisher_group_targeting)
-        self.assertItemsEqual(loader.filtered_sources_qs, self.loader.filtered_sources_qs)
+        self.assertCountEqual(loader.whitelist_qs, self.loader.whitelist_qs)
+        self.assertCountEqual(loader.blacklist_qs, self.loader.blacklist_qs)
+        self.assertCountEqual(loader.publisher_group_targeting, self.loader.publisher_group_targeting)
+        self.assertCountEqual(loader.filtered_sources_qs, self.loader.filtered_sources_qs)
 
     def test_can_blacklist_source(self):
         self.assertTrue(self.loader.can_blacklist_source_map[1])

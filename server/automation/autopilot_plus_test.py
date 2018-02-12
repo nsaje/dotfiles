@@ -16,7 +16,7 @@ import dash.api
 class AutopilotPlusTestCase(test.TestCase):
     fixtures = ['test_automation.yaml']
 
-    @patch('urllib2.urlopen')
+    @patch('urllib.request.urlopen')
     @test.override_settings(
         HOSTNAME='testhost',
         PAGER_DUTY_ENABLED=True,
@@ -28,7 +28,7 @@ class AutopilotPlusTestCase(test.TestCase):
         ex = Exception()
         autopilot_plus._report_autopilot_exception(ad_group, ex)
         desc = 'Autopilot failed operating on element because an exception was raised: {}'.format(
-            traceback.format_exc(ex)
+            traceback.format_exc()
         )
         mock_urlopen.assert_called_with(
             'http://pagerduty.example.com',

@@ -8,6 +8,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/dev/ref/settings/
 """
 
+# pickle py2 compatibility, FIXME(nsaje): remove after migration to py3 complete
+import pickle
+pickle.HIGHEST_PROTOCOL = 2
+pickle.DEFAULT_PROTOCOL = 2
+
 import copy
 from secretcrypt import Secret
 
@@ -203,7 +208,7 @@ DISABLE_FACEBOOK = True
 SLACK_LOG_ENABLE = True
 DISABLE_SIGNALS = False
 
-from localsettings import *
+from .localsettings import *
 
 if ENABLE_DJANGO_EXTENSIONS:
     INSTALLED_APPS.append('django_extensions')
@@ -396,17 +401,17 @@ if TESTING:
     IMAGE_THUMBNAIL_URL = ''
 
     TESTING_DB_PREFIX = 'testing_'
-    for database_name in DATABASES.keys():
+    for database_name in list(DATABASES.keys()):
         if database_name.startswith(TESTING_DB_PREFIX):
             continue
         testing_db_replacement = 'testing_{}'.format(database_name)
         if testing_db_replacement in DATABASES:
             # make a copy to avoid issues when using --parallel
             DATABASES[database_name] = copy.copy(DATABASES[testing_db_replacement])
-            print('Using {testdbname} instead of {dbname} for testing...'.format(
+            print(('Using {testdbname} instead of {dbname} for testing...'.format(
                 testdbname=testing_db_replacement,
                 dbname=database_name
-            ))
+            )))
 
     if len(sys.argv) > 1 and '--redshift' not in sys.argv:
         # if not redshift testing

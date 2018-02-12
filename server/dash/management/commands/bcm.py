@@ -119,7 +119,7 @@ def _delete_budget_traces(budget):
 
 def _updates_to_sql(updates):
     sql, args = [], []
-    for field, value in updates.iteritems():
+    for field, value in updates.items():
         sql.append(field + ' = %s')
         args.append(value)
     return ', '.join(sql), args
@@ -163,7 +163,7 @@ class Command(BaseCommand):
         parser.add_argument('--skip-spend-validation', dest='skip_spend_validation',
                             action='store_true')
 
-        for field, field_type in UPDATABLE_FIELDS.iteritems():
+        for field, field_type in UPDATABLE_FIELDS.items():
             parser.add_argument('--' + field, dest=field, nargs='?', type=field_type)
 
     def _get_updates(self, options):
@@ -360,7 +360,7 @@ class Command(BaseCommand):
             return None
 
     def _confirm(self, message):
-        return raw_input('{} [yN] '.format(message)).lower() == 'y'
+        return input('{} [yN] '.format(message)).lower() == 'y'
 
     def _print(self, msg):
         self.stdout.write('{}\n'.format(msg))

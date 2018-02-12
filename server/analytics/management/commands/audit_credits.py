@@ -22,7 +22,7 @@ class Command(utils.command_helpers.ExceptionCommand):
     def _print(self, msg):
         if not self.verbose:
             return
-        self.stdout.write(u'{}\n'.format(msg))
+        self.stdout.write('{}\n'.format(msg))
 
     def handle(self, *args, **options):
         self.verbose = options['verbose']
@@ -40,7 +40,7 @@ class Command(utils.command_helpers.ExceptionCommand):
                 []
             ).append(account)
 
-        for sales_user, accounts in sales.iteritems():
+        for sales_user, accounts in sales.items():
             has_permissions = sales_user.has_perm('zemauth.can_receive_sales_credit_email')
             self._print('{}: {}'.format(sales_user, ', '.join(a.name for a in accounts)))
             if options['send_emails'] and has_permissions:

@@ -1,5 +1,5 @@
 import datetime
-import httplib
+import http.client
 import operator
 import mock
 from contextlib import contextmanager
@@ -8,6 +8,7 @@ from django.contrib.auth.models import Permission
 import django.core.files
 
 from django.test.client import RequestFactory
+from functools import reduce
 
 
 def add_permissions(user, permissions):
@@ -119,7 +120,7 @@ def prepare_mock_urlopen(mock_urlopen, exception=None):
         return
 
     mock_request = mock.Mock()
-    mock_request.status_code = httplib.OK
+    mock_request.status_code = http.client.OK
     mock_urlopen.return_value = mock_request
 
 
@@ -130,7 +131,7 @@ def format_csv_content(content):
         if not line:
             continue
         fields = line.split(',')
-        fields_formatted = map(lambda f: '"' + f + '"', fields)
+        fields_formatted = ['"' + f + '"' for f in fields]
         line_formatted = ','.join(fields_formatted)
         lines_formatted.append(line_formatted)
 

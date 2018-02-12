@@ -43,7 +43,7 @@ def extract_constraints(constraints):
         'filtered_sources': 'source_id',
     }
 
-    for key, column in mapping.items():
+    for key, column in list(mapping.items()):
         if constraints.get(key) is not None:
             new_constraints[column] = queryset_helper.get_pk_list(constraints[key])
 

@@ -7,8 +7,8 @@ from django.test import TestCase, override_settings
 import zemauth.models
 from dash import history_helpers
 from dash import models
-import publisher_group_helpers
-import publisher_group_csv_helpers
+from . import publisher_group_helpers
+from . import publisher_group_csv_helpers
 
 
 class PublisherGroupHelpersTest(TestCase):
@@ -19,7 +19,7 @@ class PublisherGroupHelpersTest(TestCase):
         self.request.user = zemauth.models.User.objects.get(id=1)
 
     def assertEntriesEqual(self, publisher_group, entries):
-        self.assertItemsEqual(
+        self.assertCountEqual(
             publisher_group.entries.all().values('publisher', 'include_subdomains', 'source'),
             entries
         )
@@ -499,7 +499,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
 
     def test_get_csv_content(self):
         publisher_group = models.PublisherGroup.objects.get(pk=1)
-        self.assertEquals(
+        self.assertEqual(
             publisher_group_csv_helpers.get_csv_content(publisher_group.account, publisher_group.entries.all()),
             textwrap.dedent('''\
             "Publisher","Source"\r
@@ -510,7 +510,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
     def test_get_csv_content_outbrain_publisher_id(self):
         publisher_group = models.PublisherGroup.objects.get(pk=1)
         publisher_group.account.agency.id = 55
-        self.assertEquals(
+        self.assertEqual(
             publisher_group_csv_helpers.get_csv_content(publisher_group.account, publisher_group.entries.all()),
             textwrap.dedent('''\
             "Publisher","Source","Outbrain Publisher Id","Outbrain Section Id","Outbrain Amplify Publisher Id","Outbrain Engage Publisher Id"\r
@@ -519,7 +519,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
             '''))
 
     def test_get_example_csv_content(self):
-        self.assertEquals(
+        self.assertEqual(
             publisher_group_csv_helpers.get_example_csv_content(),
             textwrap.dedent('''\
             "Publisher"\r
@@ -528,7 +528,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
             '''))
 
     def test_validate_entries(self):
-        self.assertEquals(
+        self.assertEqual(
             publisher_group_csv_helpers.validate_entries([
                 {
                     'publisher': 'wwwpub1.com',
@@ -577,7 +577,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
         )
 
     def test_validate_entries_with_error(self):
-        self.assertEquals(
+        self.assertEqual(
             publisher_group_csv_helpers.validate_entries([
                 {
                     'publisher': 'wwwpub1.com',
@@ -637,7 +637,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
 
         publisher_group_csv_helpers.clean_entry_sources(entries)
 
-        self.assertEquals(entries, [{
+        self.assertEqual(entries, [{
             'publisher': 'pub1.com',
             'source': models.Source.objects.get(pk=1),
             'include_subdomains': True,
@@ -671,7 +671,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
         }]
         account = models.Account.objects.get(pk=1)
         account.agency.id = 55
-        self.assertEquals(
+        self.assertEqual(
             publisher_group_csv_helpers.get_entries_errors_csv_content(account, entries),
             textwrap.dedent('''\
             "Publisher","Source","Outbrain Publisher Id","Outbrain Section Id","Outbrain Amplify Publisher Id","Outbrain Engage Publisher Id","Error"\r

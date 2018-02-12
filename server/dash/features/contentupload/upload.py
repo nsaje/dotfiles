@@ -14,8 +14,8 @@ from utils import lambda_helper
 from utils import redirector_helper
 from utils import csv_utils
 
-import exc
-import upload_dev
+from . import exc
+from . import upload_dev
 
 logger = logging.getLogger(__name__)
 
@@ -236,7 +236,7 @@ def _get_candidates_csv_rows(candidates):
     rows = []
     for candidate in sorted(candidates, key=lambda x: x.id):
         rows.append({
-            _transform_field(k): v for k, v in candidate.to_dict().items()
+            _transform_field(k): v for k, v in list(candidate.to_dict().items())
             if k in forms.ALL_CSV_FIELDS
         })
     return rows
@@ -419,7 +419,7 @@ def _handle_auto_save(batch):
 
     should_fail = False
     _, errors = _clean_candidates(batch.contentadcandidate_set.all())
-    for error_dict in errors.values():
+    for error_dict in list(errors.values()):
         keys = set(error_dict.keys())
         keys.discard('__all__')
         if len(keys) > 0:
@@ -472,7 +472,7 @@ def _create_candidates(content_ads_data, ad_group, batch):
         form = forms.ContentAdCandidateForm(content_ad)
         form.is_valid()  # used only to clean data of any possible unsupported fields
 
-        fields = {k: v for k, v in form.cleaned_data.items() if k != 'image'}
+        fields = {k: v for k, v in list(form.cleaned_data.items()) if k != 'image'}
         if 'original_content_ad' in content_ad:
             fields['original_content_ad'] = content_ad['original_content_ad']
 
@@ -503,7 +503,7 @@ def _apply_content_ad_edit(request, candidate):
     if secondary_tracker_url:
         tracker_urls.append(secondary_tracker_url)
 
-    updates = {k: v for k, v in f.cleaned_data.items() if k in VALID_UPDATE_FIELDS}
+    updates = {k: v for k, v in list(f.cleaned_data.items()) if k in VALID_UPDATE_FIELDS}
     if tracker_urls:
         updates['tracker_urls'] = tracker_urls
     content_ad.update(request, write_history=False, **updates)

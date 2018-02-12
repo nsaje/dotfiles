@@ -1,6 +1,5 @@
 import logging
 import operator
-import exceptions
 from decimal import Decimal, ROUND_CEILING
 from random import betavariate, random
 
@@ -16,9 +15,9 @@ logger = logging.getLogger(__name__)
 def get_autopilot_daily_budget_recommendations(
         ad_group, daily_budget, data, bcm_modifiers, campaign_goal=None, rtb_as_one=False):
     if rtb_as_one:
-        data = {ags: v for ags, v in data.iteritems() if
+        data = {ags: v for ags, v in data.items() if
                 ags == dash.constants.SourceAllRTB or ags.source.source_type.type != dash.constants.SourceType.B1}
-    active_sources = data.keys()
+    active_sources = list(data.keys())
     max_budgets, new_budgets, old_budgets = _get_autopilot_budget_constraints(data, daily_budget, bcm_modifiers)
     comments = []
     budget_left = daily_budget - sum(new_budgets.values())
@@ -33,7 +32,7 @@ def get_autopilot_daily_budget_recommendations(
     else:
         bandit = BetaBandit(active_sources_with_spend, backup_sources=active_sources)
         min_value_of_optimization_goal, max_value_of_optimization_goal = _get_min_max_values_of_optimization_goal(
-            data.values(), campaign_goal, ad_group.campaign.account.uses_bcm_v2)
+            list(data.values()), campaign_goal, ad_group.campaign.account.uses_bcm_v2)
         # Train bandit
         for s in active_sources_with_spend:
             for i in range(5):
@@ -100,7 +99,7 @@ def _get_min_max_values_of_optimization_goal(data, campaign_goal, uses_bcm_v2):
 def _uniformly_redistribute_remaining_budget(sources, budget_left, min_budgets, bcm_modifiers):
     while budget_left >= 1:
         for s in sources:
-            if any(b < min_budgets[s] for b in min_budgets.values()) and\
+            if any(b < min_budgets[s] for b in list(min_budgets.values())) and\
                s != dash.constants.SourceAllRTB and\
                min_budgets[s] == s.source.source_type.get_etfm_min_daily_budget(bcm_modifiers):
                 continue
@@ -130,7 +129,7 @@ def _get_optimistic_autopilot_budget_constraints(data, bcm_modifiers):
     max_budgets = {}
     min_budgets = {}
     old_budgets = {}
-    active_sources = data.keys()
+    active_sources = list(data.keys())
     if dash.constants.SourceAllRTB in active_sources:
         max_budgets, min_budgets, old_budgets = _populate_optimistic_budget_constraints_row(
             data[dash.constants.SourceAllRTB]['old_budget'], max_budgets, min_budgets, old_budgets,
@@ -165,7 +164,7 @@ def _populate_optimistic_budget_constraints_row(current_budget, max_budgets, min
 def _get_minimum_autopilot_budget_constraints(data, bcm_modifiers):
     max_budgets = {}
     min_budgets = {}
-    active_sources = data.keys()
+    active_sources = list(data.keys())
     all_rtb = dash.constants.SourceAllRTB
     if all_rtb in active_sources:
         min_budgets[all_rtb] = autopilot_helpers.get_ad_group_sources_minimum_daily_budget(
@@ -220,7 +219,7 @@ def _get_campaign_goal_value(campaign_goal_type, data_value, max_value_of_campai
                               cg_kpi.CP_NEW_VISITOR, cg_kpi.CP_PAGE_VIEW, cg_kpi.CPCV):
         return float(min_value_of_campaign_goal / data_value) if (data_value > 0.0 and
                                                                   min_value_of_campaign_goal < float("inf")) else 0.0
-    raise exceptions.NotImplementedError('Budget Autopilot campaign goal is not implemented: ', campaign_goal_type)
+    raise NotImplementedError('Budget Autopilot campaign goal is not implemented: ', campaign_goal_type)
 
 
 def get_adgroup_minimum_daily_budget(ad_group, ad_group_settings):
@@ -278,7 +277,7 @@ class BetaBandit(object):
                                                 self.prior[1] + self.trials[source] - self.successes[source])
 
         # Return non-banned source with the largest success probability
-        sorted_probs = sorted(sampled_probs.items(), key=operator.itemgetter(1), reverse=True)
+        sorted_probs = sorted(list(sampled_probs.items()), key=operator.itemgetter(1), reverse=True)
         for prob in sorted_probs:
             if prob[0] not in self.banned_sources:
                 return prob[0]

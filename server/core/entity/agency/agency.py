@@ -105,7 +105,7 @@ class Agency(models.Model):
     settings = models.OneToOneField('AgencySettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_entity')
 
     def get_long_name(self):
-        return u'Agency {}'.format(self.name)
+        return 'Agency {}'.format(self.name)
 
     def get_salesforce_id(self):
         return 'a{}'.format(self.pk)
@@ -150,9 +150,6 @@ class Agency(models.Model):
         super(Agency, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.name
-
-    def __unicode__(self):
         return self.name
 
     class QuerySet(models.QuerySet):

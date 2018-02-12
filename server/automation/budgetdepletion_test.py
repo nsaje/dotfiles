@@ -62,7 +62,7 @@ class BudgetDepletionTestCase(test.TestCase):
         mock.assert_called_with(
             campaign,
             'https://one.zemanta.com/v2/analytics/campaign/1?settings&settingsScrollTo=zemCampaignBudgetsSettings',
-            ['em@il.com', 'accountmanager@test.com'],
+            ['accountmanager@test.com', 'em@il.com'],
             100, 150,
             decimal.Decimal('60.0000')
         )
@@ -187,5 +187,5 @@ class BetaBanditTestCase(test.TestCase):
         for i in range(100):
             recommendations[bandit.get_recommendation()] += 1
 
-        most_recommended = max(recommendations.iteritems(), key=operator.itemgetter(1))[0]
+        most_recommended = max(iter(recommendations.items()), key=operator.itemgetter(1))[0]
         self.assertEqual(most_recommended, ags[0])

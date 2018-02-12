@@ -19,7 +19,7 @@ def create_parents(rows, breakdown):
     groups = sort_helper.group_rows_by_breakdown_key(parent_breakdown, rows)
 
     parents = []
-    for group_key, child_rows in groups.iteritems():
+    for group_key, child_rows in groups.items():
         parent = stats.helpers.get_breakdown_id(child_rows[0], parent_breakdown)
         parent[target_dimension] = [row[target_dimension] for row in child_rows]
         parents.append(parent)
@@ -62,7 +62,7 @@ def optimize_parent_constraints(parents):
     for parent in parents:
         # this will make an 'IN' statement instead of many 'OR' statements
         if len(parent) == 1:
-            field_name = parent.keys()[0]
+            field_name = list(parent.keys())[0]
             val = parent[field_name]
             if backtosql.is_collection(val):
                 one_field_values[field_name].extend(val)
@@ -82,11 +82,11 @@ def optimize_parent_constraints(parents):
 
     parents = other_parents
     if one_field_values:
-        parents.extend([{k: v[0] if len(v) == 1 else v} for k, v in one_field_values.items()])
+        parents.extend([{k: v[0] if len(v) == 1 else v} for k, v in list(one_field_values.items())])
 
     if source_publishers:
         parents.extend([
-            {'source_id': k, 'publisher': v} for k, v in source_publishers.items()
+            {'source_id': k, 'publisher': v} for k, v in list(source_publishers.items())
         ])
 
     return parents
@@ -110,13 +110,13 @@ def select_relevant_stats_rows(breakdown, rows, stats_rows):
 
     group_stats_rows = sort_helper.group_rows_by_breakdown_key(breakdown, stats_rows, max_1=True)
     group_rows = sort_helper.group_rows_by_breakdown_key(breakdown, rows, max_1=True)
-    return [stat_row for breakdown_key, stat_row in group_stats_rows.iteritems() if breakdown_key in group_rows]
+    return [stat_row for breakdown_key, stat_row in group_stats_rows.items() if breakdown_key in group_rows]
 
 
 def get_all_dimensions(breakdown, constraints, parents):
     # TODO this should take dimensions from a model to be reliable, also base view_selecter on model fields
-    constraints_dimensions = set(backtosql.dissect_constraint_key(x)[0] for x in constraints.keys())
-    parents_dimensions = set(backtosql.dissect_constraint_key(x)[0] for parent in parents for x in parent.keys()) if parents else set([])
+    constraints_dimensions = set(backtosql.dissect_constraint_key(x)[0] for x in list(constraints.keys()))
+    parents_dimensions = set(backtosql.dissect_constraint_key(x)[0] for parent in parents for x in list(parent.keys())) if parents else set([])
     breakdown_dimensions = set(breakdown)
 
     non_date_dimensions = set(constants.StructureDimension._ALL) | set(constants.DeliveryDimension._ALL)

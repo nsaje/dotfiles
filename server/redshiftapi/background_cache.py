@@ -9,7 +9,7 @@ from server import celery
 from utils import dates_helper
 from utils import db_for_reads
 
-import api_breakdowns
+from . import api_breakdowns
 
 cache = caches['redshift_background']
 
@@ -50,7 +50,7 @@ def _get(key):
 def set(key, rows, args, kwargs):
     if not settings.USE_REDSHIFT_BACKGROUND_CACHE:
         return
-    _set(key, rows, pickle.dumps((args, kwargs)))
+    _set(key, rows, pickle.dumps((args, kwargs), protocol=2))  # FIXME(nsaje): remove protocol after py3 migration complete
 
 
 def _set(key, rows, pickled_args):

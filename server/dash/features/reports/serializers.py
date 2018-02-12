@@ -7,9 +7,9 @@ import stats.api_reports
 import stats.constants
 from utils import exc
 
-import constants
-import helpers
-from reportjob import ReportJob
+from . import constants
+from . import helpers
+from .reportjob import ReportJob
 
 
 class ReportNamesSerializer(serializers.Serializer):

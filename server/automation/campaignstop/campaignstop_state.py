@@ -1,7 +1,7 @@
 from django.db import models
 
 import core.entity
-import constants
+from . import constants
 
 from utils import k1_helper
 
@@ -52,7 +52,7 @@ class CampaignStopState(models.Model):
         self.save()
 
     def __unicode__(self):
-        return u'{} (state: {}, almost_depleted: {}, max_allowed_end_date: {})'.format(
+        return '{} (state: {}, almost_depleted: {}, max_allowed_end_date: {})'.format(
             self.campaign,
             self.state,
             self.almost_depleted,
@@ -60,4 +60,4 @@ class CampaignStopState(models.Model):
         )
 
     def __str__(self):
-        return unicode(self).encode('ascii', 'ignore')
+        return str(self).encode('ascii', 'ignore')

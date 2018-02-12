@@ -7,7 +7,7 @@ from utils.magic_mixer import magic_mixer
 from utils import dates_helper
 
 from .. import CampaignStopState, constants
-import update_campaignstop_state
+from . import update_campaignstop_state
 
 
 class UpdateCampaignStopStateTest(TestCase):

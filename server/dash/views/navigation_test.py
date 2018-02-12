@@ -342,12 +342,12 @@ class NavigationTreeViewTest(TestCase):
     @patch('datetime.datetime', MockDatetime)
     def test_get(self):
         response = self._get(1)
-        self.assertItemsEqual(response['data'], self.expected_response)
+        self.assertCountEqual(response['data'], self.expected_response)
 
     @patch('datetime.datetime', MockDatetime)
     def test_get_no_statuses(self):
         response = self._get(1, loadStatuses='false')
-        self.assertItemsEqual([{
+        self.assertCountEqual([{
             "campaigns": [{
                 "adGroups": [{
                     "id": 1,
@@ -412,7 +412,7 @@ class NavigationTreeViewTest(TestCase):
             "name": "test account 1",
             "usesBCMv2": False,
         }]
-        self.assertItemsEqual(response['data'], expected_response)
+        self.assertCountEqual(response['data'], expected_response)
 
     @patch('datetime.datetime', MockDatetime)
     def test_get_archived_flag(self):
@@ -444,7 +444,7 @@ class NavigationTreeViewTest(TestCase):
             "usesBCMv2": False,
         }]
 
-        self.assertItemsEqual(response['data'], expected_response)
+        self.assertCountEqual(response['data'], expected_response)
 
     def test_get_no_data(self):
         self.assertDictEqual(self._get(4), {"success": True})
@@ -455,7 +455,7 @@ class NavigationTreeViewTest(TestCase):
 
         account = models.Account.objects.get(pk=1)
         response = self._get(1)
-        self.assertItemsEqual(response['data'], self.expected_response)
+        self.assertCountEqual(response['data'], self.expected_response)
 
         agency = models.Agency.objects.get(pk=1)
 
@@ -466,27 +466,27 @@ class NavigationTreeViewTest(TestCase):
         account.save(test_helper.fake_request(user))
 
         response = self._get(1, filtered_agencies=[agency2.id])
-        self.assertItemsEqual({"success": True}, response)
+        self.assertCountEqual({"success": True}, response)
 
         response = self._get(1, filtered_agencies=[agency.id])
-        self.assertItemsEqual(self.expected_response, response['data'])
+        self.assertCountEqual(self.expected_response, response['data'])
 
         response = self._get(1, filtered_agencies=[agency2.id, agency.id])
-        self.assertItemsEqual(self.expected_response, response['data'])
+        self.assertCountEqual(self.expected_response, response['data'])
 
     @patch('datetime.datetime', MockDatetime)
     def test_get_account_type_filter(self):
         response = self._get(1)
-        self.assertItemsEqual(self.expected_response, response['data'])
+        self.assertCountEqual(self.expected_response, response['data'])
 
         response = self._get(
             1,
             filtered_account_types=[constants.AccountType.MANAGED]
         )
-        self.assertItemsEqual({"success": True}, response)
+        self.assertCountEqual({"success": True}, response)
 
         response = self._get(
             1,
             filtered_account_types=[constants.AccountType.UNKNOWN]
         )
-        self.assertItemsEqual(self.expected_response, response['data'])
+        self.assertCountEqual(self.expected_response, response['data'])

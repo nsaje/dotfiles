@@ -1,4 +1,4 @@
-import httplib
+import http.client
 import json
 import logging
 
@@ -63,7 +63,7 @@ def get_page_id(page_url, access_token):
     params = {'access_token': access_token}
     response = requests.get(FB_PAGE_ID_URL.format(api_version=FB_API_VERSION, page_id=page_id), params=params)
 
-    if response.status_code != httplib.OK:
+    if response.status_code != http.client.OK:
         logger.error('Error while retrieving facebook page id. Status code: %s, Error %s', response.status_code,
                      response.content)
         return None
@@ -117,7 +117,7 @@ def get_all_pages(business_id, access_token):
     params = {'access_token': access_token}
     response = requests.get(FB_PAGES_URL.format(api_version=FB_API_VERSION, business_id=business_id), params=params)
 
-    if response.status_code != httplib.OK:
+    if response.status_code != http.client.OK:
         logger.error('Error while accessing facebook page api. Status code: %s, Error %s', response.status_code,
                      response.content)
         return None
@@ -142,7 +142,7 @@ def create_ad_account(name, page_id, app_id, business_id, access_token):
               'access_token': access_token}
     response = requests.post(FB_AD_ACCOUNT_CREATE_URL.format(api_version=FB_API_VERSION, business_id=business_id),
                              json.dumps(params), headers=HEADERS)
-    if response.status_code != httplib.OK:
+    if response.status_code != http.client.OK:
         logger.error('Error while creating facebook ad account. Status code: %s, Error %s', response.status_code,
                      response.content)
         return None
@@ -158,7 +158,7 @@ def add_system_user_permissions(connected_object_id, role, business_id, system_u
               'access_token': access_token}
     response = requests.post(FB_USER_PERMISSIONS_URL.format(api_version=FB_API_VERSION, object_id=connected_object_id),
                              json.dumps(params), headers=HEADERS)
-    if response.status_code != httplib.OK:
+    if response.status_code != http.client.OK:
         logger.error('Error while adding system user to a connected object. Status code: %s, Error %s',
                      response.status_code, response.content)
         return False
@@ -195,7 +195,7 @@ def get_ad_account_status(ad_account_id, access_token):
     response = requests.get(FB_AD_ACCOUNT_GET_URL.format(api_version=FB_API_VERSION, account_id=ad_account_id),
                             params=params)
 
-    if response.status_code != httplib.OK:
+    if response.status_code != http.client.OK:
         logger.error('Error while accessing facebook page api. Status code: %s, Error %s', response.status_code,
                      response.content)
         return models.constants.FacebookPageRequestType.ERROR

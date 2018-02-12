@@ -37,7 +37,7 @@ def json_serializable_changes(changes):
     if not changes:
         return
     ret = {}
-    for key, value in changes.iteritems():
+    for key, value in changes.items():
         if hasattr(value, 'id'):
             ret[key] = value.id
         else:

@@ -1,4 +1,4 @@
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import json
 
 from django.conf import settings
@@ -20,9 +20,9 @@ def _update_redirect(redirect_id, url):
         request_url += '/'
     request_url += redirect_id + '/'
 
-    request = urllib2.Request(request_url, data)
+    request = urllib.request.Request(request_url, data.encode('utf-8'))
     request.get_method = lambda: 'PUT'
-    response = request_signer.urllib2_secure_open(request, settings.R1_API_SIGN_KEY)
+    response = request_signer.urllib_secure_open(request, settings.R1_API_SIGN_KEY)
 
     status_code = response.getcode()
     if status_code != 200:
@@ -48,4 +48,4 @@ for ad_group_id in AD_GROUP_IDS:
         redirect_ids_before[content_ad.id] = content_ad.redirect_id
         resp = _update_redirect(content_ad.redirect_id, content_ad.url)
 
-        print content_ad.redirect_id, resp
+        print(content_ad.redirect_id, resp)

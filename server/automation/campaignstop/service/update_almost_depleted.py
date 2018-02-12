@@ -44,7 +44,7 @@ def _get_campaign_budget_line_items(budget_line_items):
 def _get_campaign_available_amount(campaign_budget_line_items):
     campaign_available_amount = {}
     date_to_digest = _get_date_to_digest()
-    for campaign, budget_line_items in campaign_budget_line_items.iteritems():
+    for campaign, budget_line_items in campaign_budget_line_items.items():
         campaign_available_amount[campaign] = sum(bli.get_available_etfm_amount(date=date_to_digest) for bli in budget_line_items)
     return campaign_available_amount
 
@@ -89,7 +89,7 @@ def _get_adgroup_sources(campaign):
 
 @transaction.atomic
 def _update_campaign_budgets(campaign_daily_budgets, campaign_available_amount):
-    for campaign, campaign_daily_budget in campaign_daily_budgets.iteritems():
+    for campaign, campaign_daily_budget in campaign_daily_budgets.items():
         remaining_current_budget = campaign_available_amount.get(campaign, 0)
         min_remaining_budget = remaining_current_budget - campaign_daily_budget
         log = RealTimeCampaignStopLog(campaign=campaign, event=CampaignStopEvent.SELECTION_CHECK)
@@ -136,7 +136,7 @@ def _get_spend(adg_sources, adg_source_spends):
             spend += todays_realtime_spend
             continue
 
-        settings_budget = adg_source.settings.daily_budget_cc
+        settings_budget = adg_source.settings.daily_budget_cc or 0
         spend += max(settings_budget, todays_realtime_spend)
 
     spend += _b1_spends(b1_sources_group_spends)
@@ -157,7 +157,7 @@ def _is_active_setting(ad_group_setting):
 
 def _b1_spends(b1_sources_group_spends):
     spend = 0
-    for ad_group, b1_group_spend in b1_sources_group_spends.iteritems():
+    for ad_group, b1_group_spend in b1_sources_group_spends.items():
         is_group_state_inactive = ad_group.settings.b1_sources_group_state == dash.constants.AdGroupSettingsState.INACTIVE
         if not _is_active_setting(ad_group.settings) or is_group_state_inactive:
             spend += b1_group_spend

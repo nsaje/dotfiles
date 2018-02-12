@@ -7,7 +7,7 @@ from utils.magic_mixer import magic_mixer
 import core.entity
 import restapi.views_test
 
-import service
+from . import service
 
 
 class CloneAdGroupViewTest(restapi.views_test.RESTAPITest):

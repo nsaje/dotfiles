@@ -274,7 +274,7 @@ class AccountCreditViewTest(BCMViewTestCase):
 
         hist = history_helpers.get_account_history(
             models.Account.objects.get(pk=1)).first()
-        self.assertEquals(self.user, hist.created_by)
+        self.assertEqual(self.user, hist.created_by)
         self.assertEqual(
             constants.HistoryActionType.CREATE,
             hist.action_type
@@ -355,7 +355,7 @@ class AccountCreditViewTest(BCMViewTestCase):
 
         hist = history_helpers.get_agency_history(
             models.Agency.objects.get(pk=1)).first()
-        self.assertEquals(self.user, hist.created_by)
+        self.assertEqual(self.user, hist.created_by)
         self.assertEqual(
             constants.HistoryActionType.CREATE,
             hist.action_type
@@ -395,7 +395,7 @@ class AccountCreditItemViewTest(BCMViewTestCase):
 
         response_item = json.loads(response.content)['data']
         self.assertEqual(response_item, {
-            "comment": u"Test case",
+            "comment": "Test case",
             "account_id": 1,
             "start_date": "2015-10-01",
             "end_date": "2015-11-30",
@@ -476,8 +476,8 @@ class AccountCreditItemViewTest(BCMViewTestCase):
         self.assertEqual(item.account_id, 3)
 
         hist = models.History.objects.order_by('-created_dt').first()
-        self.assertEquals(self.user, hist.created_by)
-        self.assertEquals(item.account, hist.account)
+        self.assertEqual(self.user, hist.created_by)
+        self.assertEqual(item.account, hist.account)
         self.assertEqual(
             constants.HistoryActionType.CREDIT_CHANGE,
             hist.action_type
@@ -506,7 +506,7 @@ class AccountCreditItemViewTest(BCMViewTestCase):
 
         response_item = response.json()['data']
         self.assertEqual(response_item, {
-            "comment": u"Test case",
+            "comment": "Test case",
             "account_id": 1,
             "start_date": "2015-10-01",
             "end_date": "2015-11-30",
@@ -599,8 +599,8 @@ class AccountCreditItemViewTest(BCMViewTestCase):
         self.assertEqual(item.agency_id, 1)
 
         hist = models.History.objects.order_by('-created_dt').first()
-        self.assertEquals(self.user, hist.created_by)
-        self.assertEquals(item.agency, hist.agency)
+        self.assertEqual(self.user, hist.created_by)
+        self.assertEqual(item.agency, hist.agency)
         self.assertEqual(
             constants.HistoryActionType.CREDIT_CHANGE,
             hist.action_type
@@ -627,7 +627,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertEqual(data, {
             "active": [
                 {
-                    u"credit": 1,
+                    "credit": 1,
                     "available": "100000.0000",
                     "is_editable": False,
                     "is_updatable": True,
@@ -739,7 +739,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertEqual(data, {
             "active": [
                 {
-                    u"credit": 1,
+                    "credit": 1,
                     "available": "100000.0000",
                     "is_editable": False,
                     "is_updatable": True,
@@ -790,7 +790,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertEqual(data, {
             "active": [
                 {
-                    u"credit": 1,
+                    "credit": 1,
                     "available": "100000.0000",
                     "is_editable": False,
                     "is_updatable": True,
@@ -848,14 +848,14 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertEqual(data, {
             "active": [
                 {
-                    u"credit": 1,
+                    "credit": 1,
                     "available": "100000.0000",
                     "is_editable": True,
                     "is_updatable": False,
                     "state": 2,
                     "end_date": "2015-11-30",
                     "license_fee": "20%",
-                    u"margin": u"15%",
+                    "margin": "15%",
                     "total": "100000.0000",
                     "spend": "0.0000",
                     "id": 1,
@@ -903,7 +903,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertEqual(response.status_code, 200)
 
         data = response.json()['data']
-        self.assertItemsEqual(data['credits'], [{
+        self.assertCountEqual(data['credits'], [{
             "available": "0.0000",
             "end_date": "2015-11-30",
             "id": 1,
@@ -928,7 +928,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertEqual(response.status_code, 200)
 
         data = response.json()['data']
-        self.assertItemsEqual(data['credits'], [{
+        self.assertCountEqual(data['credits'], [{
             "available": "0.0000",
             "end_date": "2015-11-30",
             "id": 1,
@@ -939,13 +939,13 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             "start_date": "2015-10-01",
             "is_agency": False,
         }, {
-            'available': u'99900.0000',
-            'comment': u'Agency credit',
-            'end_date': u'2015-11-30',
-            'start_date': u'2015-10-01',
+            'available': '99900.0000',
+            'comment': 'Agency credit',
+            'end_date': '2015-11-30',
+            'start_date': '2015-10-01',
             'is_available': True,
-            'license_fee': u'20',
-            'total': u'99900.0000',
+            'license_fee': '20',
+            'total': '99900.0000',
             'id': 1000,
             "is_agency": True,
         }])
@@ -1006,7 +1006,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         hist = models.History.objects.filter(
             level=constants.HistoryLevel.CAMPAIGN,
         ).order_by('-created_dt').first()
-        self.assertEquals(self.user, hist.created_by)
+        self.assertEqual(self.user, hist.created_by)
 
     @patch('automation.campaign_stop.perform_landing_mode_check')
     def test_put_margin_no_permission(self, mock_lmode):
@@ -1226,7 +1226,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         hist = models.History.objects.filter(
             level=constants.HistoryLevel.CAMPAIGN,
         ).order_by('-created_dt').first()
-        self.assertEquals(self.user, hist.created_by)
+        self.assertEqual(self.user, hist.created_by)
 
     @patch('automation.campaign_stop.perform_landing_mode_check')
     def test_post_margin(self, mock_lmode):
@@ -1505,63 +1505,63 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
         self.assertEqual(data, {
             "active": [
                 {
-                    u"credit": 1,
-                    u"available": u"99789.5000",
-                    u"is_editable": False,
-                    u"is_updatable": True,
-                    u"state": 1,
-                    u"end_date": u"2015-11-30",
-                    u"license_fee": u"20%",
-                    u"margin": u"15%",
-                    u"total": "100000.0000",
-                    u"spend": u"210.5000",
-                    u"id": 11,
-                    u"comment": u"Test case",
-                    u"start_date": u"2015-10-01",
+                    "credit": 1,
+                    "available": "99789.5000",
+                    "is_editable": False,
+                    "is_updatable": True,
+                    "state": 1,
+                    "end_date": "2015-11-30",
+                    "license_fee": "20%",
+                    "margin": "15%",
+                    "total": "100000.0000",
+                    "spend": "210.5000",
+                    "id": 11,
+                    "comment": "Test case",
+                    "start_date": "2015-10-01",
                 },
                 {
-                    u"credit": 1,
-                    u"available": u"99450.0000",
-                    u"is_editable": False,
-                    u"is_updatable": True,
-                    u"state": 1,
-                    u"end_date": u"2015-11-30",
-                    u"license_fee": u"20%",
-                    u"margin": u"15%",
-                    u"total": "100000.0000",
-                    u"spend": u"550.0000",
-                    u"id": 1,
-                    u"comment": u"Test case",
-                    u"start_date": u"2015-10-01",
+                    "credit": 1,
+                    "available": "99450.0000",
+                    "is_editable": False,
+                    "is_updatable": True,
+                    "state": 1,
+                    "end_date": "2015-11-30",
+                    "license_fee": "20%",
+                    "margin": "15%",
+                    "total": "100000.0000",
+                    "spend": "550.0000",
+                    "id": 1,
+                    "comment": "Test case",
+                    "start_date": "2015-10-01",
                 }
             ],
-            u"min_amount": "0",
-            u"past": [],
-            u"credits": [
+            "min_amount": "0",
+            "past": [],
+            "credits": [
                 {
-                    u"available": u"50000.0000",
-                    u"end_date": u"2015-11-30",
-                    u"id": 1,
-                    u"is_available": True,
-                    u"license_fee": u"20",
-                    u"comment": "Test case",
-                    u"total": "250000.0000",
-                    u"start_date": u"2015-10-01",
-                    u"is_agency": False,
+                    "available": "50000.0000",
+                    "end_date": "2015-11-30",
+                    "id": 1,
+                    "is_available": True,
+                    "license_fee": "20",
+                    "comment": "Test case",
+                    "total": "250000.0000",
+                    "start_date": "2015-10-01",
+                    "is_agency": False,
                 }
             ],
-            u"totals": {
-                u"current": {
-                    u"available": u"199239.5000",
-                    u"past": u"0.0000",
-                    u"unallocated": u"50000.0000"
+            "totals": {
+                "current": {
+                    "available": "199239.5000",
+                    "past": "0.0000",
+                    "unallocated": "50000.0000"
                 },
-                u"lifetime": {
-                    u"data_spend": u"300.0000",
-                    u"campaign_spend": u"760.5000",
-                    u"media_spend": u"400.0000",
-                    u"license_fee": u"60.5000",
-                    u"margin": u"76.0500",
+                "lifetime": {
+                    "data_spend": "300.0000",
+                    "campaign_spend": "760.5000",
+                    "media_spend": "400.0000",
+                    "license_fee": "60.5000",
+                    "margin": "76.0500",
                 }
             }
         })
@@ -1712,7 +1712,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
             ],
             "past": [],
             "totals":  {
-                u'past': u'0', u'available': u'5006.0000', u'allocated': u'4994.0000', u'total': u'10000.0000'}
+                'past': '0', 'available': '5006.0000', 'allocated': '4994.0000', 'total': '10000.0000'}
         }
         on_freed_data = {
             "active": [
@@ -1759,7 +1759,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                 }
             ],
             "past": [],
-            u'totals': {u'past': u'0', u'available': u'5050.0000', u'allocated': u'4950.0000', u'total': u'10000.0000'}
+            'totals': {'past': '0', 'available': '5050.0000', 'allocated': '4950.0000', 'total': '10000.0000'}
         }
 
         with patch('utils.dates_helper.local_today') as mock_now:

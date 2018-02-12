@@ -121,7 +121,7 @@ class FilterTestCase(TestCase):
 
         permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
 
-        self.assertItemsEqual(rows[0].keys(), self.public_fields)
+        self.assertCountEqual(list(rows[0].keys()), self.public_fields)
 
     def test_filter_columns_by_permission_no_perm_bcm_v2(self):
         uses_bcm_v2 = True
@@ -130,7 +130,7 @@ class FilterTestCase(TestCase):
 
         permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
 
-        self.assertItemsEqual(rows[0].keys(), self.public_fields_uses_bcm_v2)
+        self.assertCountEqual(list(rows[0].keys()), self.public_fields_uses_bcm_v2)
 
     def test_filter_columns_by_permission_actual_cost(self):
         uses_bcm_v2 = False
@@ -139,7 +139,7 @@ class FilterTestCase(TestCase):
 
         permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
 
-        self.assertItemsEqual(set(rows[0].keys()) - self.public_fields, [
+        self.assertCountEqual(set(rows[0].keys()) - self.public_fields, [
             'data_cost', 'yesterday_cost', 'at_cost', 'media_cost', 'yesterday_at_cost'
         ])
 
@@ -150,7 +150,7 @@ class FilterTestCase(TestCase):
 
         permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
 
-        self.assertItemsEqual(set(rows[0].keys()) - self.public_fields_uses_bcm_v2, [
+        self.assertCountEqual(set(rows[0].keys()) - self.public_fields_uses_bcm_v2, [
             'data_cost', 'at_cost', 'media_cost', 'yesterday_at_cost'
         ])
 
@@ -161,7 +161,7 @@ class FilterTestCase(TestCase):
 
         permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
 
-        self.assertItemsEqual(set(rows[0].keys()), self.public_fields)
+        self.assertCountEqual(set(rows[0].keys()), self.public_fields)
 
     def test_filter_columns_by_permission_platform_cost_bcm_v2(self):
         uses_bcm_v2 = True
@@ -170,7 +170,7 @@ class FilterTestCase(TestCase):
 
         permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
 
-        self.assertItemsEqual(set(rows[0].keys()) - self.public_fields_uses_bcm_v2, [
+        self.assertCountEqual(set(rows[0].keys()) - self.public_fields_uses_bcm_v2, [
             'avg_et_cost_for_new_visitor', 'avg_et_cost_per_minute', 'avg_et_cost_per_non_bounced_visit',
             'avg_et_cost_per_pageview', 'avg_et_cost_per_pixel_1_168', 'avg_et_cost_per_pixel_1_2160',
             'avg_et_cost_per_pixel_1_24', 'avg_et_cost_per_pixel_1_720', 'avg_et_cost_per_visit',
@@ -185,7 +185,7 @@ class FilterTestCase(TestCase):
         permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
 
         self.maxDiff = None
-        self.assertItemsEqual(set(rows[0].keys()) - self.public_fields_uses_bcm_v2, [
+        self.assertCountEqual(set(rows[0].keys()) - self.public_fields_uses_bcm_v2, [
             'et_cost', 'et_cpc', 'et_cpm', 'video_et_cpcv', 'video_et_cpv', 'yesterday_et_cost'
         ])
 
@@ -196,7 +196,7 @@ class FilterTestCase(TestCase):
 
         permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
 
-        self.assertItemsEqual(set(rows[0].keys()) - self.public_fields, [
+        self.assertCountEqual(set(rows[0].keys()) - self.public_fields, [
             'etf_cost',
         ])
 
@@ -207,7 +207,7 @@ class FilterTestCase(TestCase):
 
         permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
 
-        self.assertItemsEqual(set(rows[0].keys()) - self.public_fields_uses_bcm_v2, [
+        self.assertCountEqual(set(rows[0].keys()) - self.public_fields_uses_bcm_v2, [
             'etf_cost', 'margin',
         ])
 
@@ -218,7 +218,7 @@ class FilterTestCase(TestCase):
 
         permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
 
-        self.assertItemsEqual(set(rows[0].keys()) - self.public_fields, [
+        self.assertCountEqual(set(rows[0].keys()) - self.public_fields, [
             'avg_cost_per_conversion_goal_2', 'avg_cost_per_conversion_goal_3',
             'avg_cost_per_conversion_goal_4', 'avg_cost_per_conversion_goal_5',
             'avg_et_cost_per_conversion_goal_2', 'avg_et_cost_per_conversion_goal_3',
@@ -232,7 +232,7 @@ class FilterTestCase(TestCase):
 
         permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
 
-        self.assertItemsEqual(set(rows[0].keys()) - self.public_fields, [
+        self.assertCountEqual(set(rows[0].keys()) - self.public_fields, [
             'performance_campaign_goal_1', 'performance_campaign_goal_2',
             'performance', 'styles',
         ])
@@ -244,7 +244,7 @@ class FilterTestCase(TestCase):
 
         permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
 
-        self.assertItemsEqual(set(rows[0].keys()) - self.public_fields, [
+        self.assertCountEqual(set(rows[0].keys()) - self.public_fields, [
             'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5',
         ])
 
@@ -255,7 +255,7 @@ class FilterTestCase(TestCase):
 
         permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
 
-        self.assertItemsEqual(set(rows[0].keys()) - self.public_fields, [
+        self.assertCountEqual(set(rows[0].keys()) - self.public_fields, [
             'allocated_budgets',
         ])
 
@@ -266,7 +266,7 @@ class FilterTestCase(TestCase):
 
         permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
 
-        self.assertItemsEqual(set(rows[0].keys()) - self.public_fields, [
+        self.assertCountEqual(set(rows[0].keys()) - self.public_fields, [
             'agency', 'agency_id'
         ])
 
@@ -277,7 +277,7 @@ class FilterTestCase(TestCase):
 
         permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
 
-        self.assertItemsEqual(set(rows[0].keys()) - self.public_fields, [
+        self.assertCountEqual(set(rows[0].keys()) - self.public_fields, [
             'default_account_manager', 'default_sales_representative', 'campaign_manager',
             'default_cs_representative',
         ])

@@ -18,7 +18,7 @@ class HelperTest(TestCase):
             [{'source_id': [3, 4]}]
         )
 
-        self.assertItemsEqual(
+        self.assertCountEqual(
             helpers.create_parents([
                 {'source_id': 3, 'account_id': 1, 'status': 1, 'name': 'asd'},
                 {'source_id': 4, 'account_id': 2, 'status': 1, 'name': 'qwe'},
@@ -39,19 +39,19 @@ class HelperTest(TestCase):
         )
 
     def test_optimize_parent_constraints(self):
-        self.assertItemsEqual(
+        self.assertCountEqual(
             helpers.optimize_parent_constraints([{'source_id': [3]}, {'source_id': [2, 4]}]),
             [{'source_id': test_helper.ListMatcher([2, 3, 4])}]
         )
 
-        self.assertItemsEqual(
+        self.assertCountEqual(
             helpers.optimize_parent_constraints(
                 [{'source_id': 1, 'publisher': 'qwe'}, {'source_id': 1, 'publisher': 'sad'}]),
             [{'source_id': 1, 'publisher': ['qwe', 'sad']}]
         )
 
     def test_get_all_dimensions(self):
-        self.assertItemsEqual(
+        self.assertCountEqual(
             helpers.get_all_dimensions(
                 ['account_id', 'publisher_id'],
                 {
@@ -63,7 +63,7 @@ class HelperTest(TestCase):
             ['account_id', 'publisher_id', 'content_ad_id', 'source_id']
         )
 
-        self.assertItemsEqual(
+        self.assertCountEqual(
             helpers.get_all_dimensions(
                 ['account_id'],
                 {
@@ -76,7 +76,7 @@ class HelperTest(TestCase):
         )
 
     def test_select_relevant_stats_rows(self):
-        self.assertItemsEqual(
+        self.assertCountEqual(
             helpers.select_relevant_stats_rows(
                 ['account_id'], [{'account_id': 1}, {'account_id': 2}, {'account_id': 4}],
                 [
@@ -99,7 +99,7 @@ class PrepareTimeConstraintsTest(TestCase):
             'date__lte': datetime.date(2016, 2, 16),
         }
 
-        self.assertEquals(
+        self.assertEqual(
             helpers.get_time_dimension_constraints(constants.TimeDimension.DAY, constraints, 0, 5),
             {
                 'date__gte': datetime.date(2016, 2, 1),
@@ -107,7 +107,7 @@ class PrepareTimeConstraintsTest(TestCase):
             }
         )
 
-        self.assertEquals(
+        self.assertEqual(
             helpers.get_time_dimension_constraints(constants.TimeDimension.DAY, constraints, 10, 3),
             {
                 'date__gte': datetime.date(2016, 2, 11),
@@ -115,7 +115,7 @@ class PrepareTimeConstraintsTest(TestCase):
             }
         )
 
-        self.assertEquals(
+        self.assertEqual(
             helpers.get_time_dimension_constraints(constants.TimeDimension.DAY, constraints, 10, 10),
             {
                 'date__gte': datetime.date(2016, 2, 11),
@@ -123,7 +123,7 @@ class PrepareTimeConstraintsTest(TestCase):
             }
         )
 
-        self.assertEquals(
+        self.assertEqual(
             helpers.get_time_dimension_constraints(constants.TimeDimension.DAY, constraints, 20, 10),
             {
                 # offset is above date range - constraints should not select any row
@@ -138,14 +138,14 @@ class PrepareTimeConstraintsTest(TestCase):
             'date__lte': datetime.date(2016, 2, 16),
         }
 
-        self.assertEquals(
+        self.assertEqual(
             helpers.get_time_dimension_constraints(constants.TimeDimension.WEEK, constraints, 0, 2),
             {
                 'date__gte': datetime.date(2016, 2, 1),
                 'date__lte': datetime.date(2016, 2, 14),
             })
 
-        self.assertEquals(
+        self.assertEqual(
             helpers.get_time_dimension_constraints(constants.TimeDimension.WEEK, constraints, 1, 1),
             {
                 'date__gte': datetime.date(2016, 2, 8),
@@ -153,7 +153,7 @@ class PrepareTimeConstraintsTest(TestCase):
             }
         )
 
-        self.assertEquals(
+        self.assertEqual(
             helpers.get_time_dimension_constraints(constants.TimeDimension.WEEK, constraints, 1, 2),
             {
                 'date__gte': datetime.date(2016, 2, 8),
@@ -167,7 +167,7 @@ class PrepareTimeConstraintsTest(TestCase):
             'date__lte': datetime.date(2016, 4, 16),
         }
 
-        self.assertEquals(
+        self.assertEqual(
             helpers.get_time_dimension_constraints(constants.TimeDimension.MONTH, constraints, 0, 2),
             {
                 'date__gte': datetime.date(2016, 2, 5),
@@ -175,7 +175,7 @@ class PrepareTimeConstraintsTest(TestCase):
             }
         )
 
-        self.assertEquals(
+        self.assertEqual(
             helpers.get_time_dimension_constraints(constants.TimeDimension.MONTH, constraints, 2, 3),
             {
                 'date__gte': datetime.date(2016, 4, 1),

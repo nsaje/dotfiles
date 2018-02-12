@@ -1,4 +1,5 @@
 import datetime
+import json
 
 from django import test
 from django import http
@@ -17,15 +18,15 @@ class BaseApiViewTestCase(test.TestCase):
                 'datetime': datetime.datetime(2014, 1, 10, 18, 0, 0)
             }
         }
-        expected_content = '{"data": {"test_obj": {"first_name": "Something", "id": 100, "datetime": "2014-01-10T13:00:00"}}, "success": true}'
+        expected_content = {"data": {"test_obj": {"first_name": "Something", "id": 100, "datetime": "2014-01-10T13:00:00"}}, "success": True}
 
         response = api_common.BaseApiView().create_api_response(data)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, expected_content)
+        self.assertEqual(json.loads(response.content), expected_content)
 
         response = api_common.BaseApiView().create_api_response(data, status_code=500)
         self.assertEqual(response.status_code, 500)
-        self.assertEqual(response.content, expected_content)
+        self.assertEqual(json.loads(response.content), expected_content)
 
     def test_create_file_response(self):
         content_type = 'text/csv'
@@ -69,15 +70,15 @@ class BaseApiViewTestCase(test.TestCase):
 
         self.assertFalse(logger_mock.error.called)
 
-        expected_content = '{"data": {"message": null, "error_code": "MissingDataError"}, "success": false}'
+        expected_content = {"data": {"message": None, "error_code": "MissingDataError"}, "success": False}
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.content, expected_content)
+        self.assertEqual(json.loads(response.content), expected_content)
 
         error = exc.MissingDataError('Test')
         response = api_common.BaseApiView().get_exception_response(request, error)
-        expected_content = '{"data": {"message": "Test", "error_code": "MissingDataError"}, "success": false}'
+        expected_content = {"data": {"message": "Test", "error_code": "MissingDataError"}, "success": False}
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.content, expected_content)
+        self.assertEqual(json.loads(response.content), expected_content)
 
     @mock.patch('utils.api_common.logger')
     def test_handle_unknown_exception(self, logger_mock):
@@ -85,10 +86,10 @@ class BaseApiViewTestCase(test.TestCase):
         error = Exception()
         response = api_common.BaseApiView().get_exception_response(request, error)
 
-        expected_content = '{"data": {"message": "An error occurred.", "error_code": "ServerError"}, "success": false}'
+        expected_content = {"data": {"message": "An error occurred.", "error_code": "ServerError"}, "success": False}
         self.assertTrue(logger_mock.error.called)
         self.assertEqual(response.status_code, 500)
-        self.assertEqual(response.content, expected_content)
+        self.assertEqual(json.loads(response.content), expected_content)
 
     @mock.patch('utils.api_common.logger')
     def test_empty_log(self, logger_mock):

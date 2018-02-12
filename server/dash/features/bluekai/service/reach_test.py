@@ -1,7 +1,7 @@
 from django.test import TestCase
 from mock import patch
 
-import reach
+from . import reach
 
 
 class ReachTestCase(TestCase):

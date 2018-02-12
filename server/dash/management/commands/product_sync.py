@@ -2,7 +2,7 @@
 import collections
 import re
 import time
-import urlparse
+import urllib.parse
 
 from core import audiences
 from core import entity
@@ -44,14 +44,14 @@ class Command(ExceptionCommand):
         )
 
         product_data = self._parse_feed(config['feed_url'])
-        print("Syncing %d proudcts to campaign %d" % (len(product_data), campaign.id))
+        print(("Syncing %d proudcts to campaign %d" % (len(product_data), campaign.id)))
 
         existing_ad_groups = self._get_ad_groups(campaign)
         existing_audiences = self._get_audiences(campaign)
         existing_ads = self._get_ads(campaign)
 
         for product in product_data:
-            print('Processing product %s' % product['id'])
+            print(('Processing product %s' % product['id']))
             audience = existing_audiences.get(product['id'])
             if audience is None:
                 audience = self._create_audience(campaign, pixel, product)
@@ -165,7 +165,7 @@ class Command(ExceptionCommand):
 
         while batch.status == constants.UploadBatchStatus.IN_PROGRESS:
             batch.refresh_from_db()
-            print(constants.UploadBatchStatus.get_text(batch.status))
+            print((constants.UploadBatchStatus.get_text(batch.status)))
             time.sleep(1)
 
         if batch.status == constants.UploadBatchStatus.FAILED:
@@ -179,10 +179,10 @@ class Command(ExceptionCommand):
 
     @staticmethod
     def _domain_name(url):
-        return urlparse.urlparse(url).hostname
+        return urllib.parse.urlparse(url).hostname
 
     @staticmethod
     def _length_limit(text, max_length):
         if len(text) > max_length:
-            return text[:max_length].rsplit(' ', 1)[0] + u'…'
+            return text[:max_length].rsplit(' ', 1)[0] + '…'
         return text

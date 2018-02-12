@@ -21,7 +21,7 @@ class Command(utils.command_helpers.ExceptionCommand):
                             help='End date (excluded, default: today)')
 
     def _print(self, msg):
-        self.stdout.write(u'{}\n'.format(msg))
+        self.stdout.write('{}\n'.format(msg))
 
     def handle(self, *args, **options):
         lookup, lookup_id = None, None

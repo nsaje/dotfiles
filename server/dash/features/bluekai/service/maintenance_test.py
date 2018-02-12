@@ -2,7 +2,7 @@ from django.test import TestCase
 from mixer.backend.django import mixer
 from mock import patch, ANY
 
-import maintenance
+from . import maintenance
 from dash.features.bluekai import constants, models
 
 TEST_TAXONOMY = [
@@ -107,7 +107,7 @@ class GetUpdatedCategoriesTestCase(TestCase):
         self.assertEqual(False, new_category['navigation_only'])
 
         self.assertEqual(
-            self.existing_categories.values()[0].id,
+            list(self.existing_categories.values())[0].id,
             updated_category['id'])
         self.assertEqual(671901, updated_category['category_id'])
         self.assertEqual(344, updated_category['parent_category_id'])

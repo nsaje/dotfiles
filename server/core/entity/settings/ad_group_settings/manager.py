@@ -6,7 +6,7 @@ import core.common
 class AdGroupSettingsManager(core.common.QuerySetManager):
 
     def _create_default_obj(self, ad_group):
-        from model import AdGroupSettings
+        from .model import AdGroupSettings
         new_settings = AdGroupSettings(ad_group=ad_group, **AdGroupSettings.get_defaults_dict())
         campaign_settings = ad_group.campaign.get_current_settings()
 

@@ -57,7 +57,7 @@ def execute_api_call(url, method='GET', headers={}, params=None, data=None):
 
     if r.status_code != 200:
         raise Exception(
-            u'Bad status code in API response. status_code: {}, message: {}'.format(r.status_code, r.text)
+            'Bad status code in API response. status_code: {}, message: {}'.format(r.status_code, r.text)
         )
 
     if r.text:
@@ -125,6 +125,6 @@ if __name__ == '__main__':
 
             count += 1
 
-        print 'AD GROUP ID: {} NUM LINKS: {}, NON EXISTING: {}'.format(ad_group_id, len(promoted_links), len(unmatched_outbrain.get(ad_group_id, [])))
+        print('AD GROUP ID: {} NUM LINKS: {}, NON EXISTING: {}'.format(ad_group_id, len(promoted_links), len(unmatched_outbrain.get(ad_group_id, []))))
 
-    print 'COUNT:', count
+    print('COUNT:', count)

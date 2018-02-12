@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-import targeting
+from . import targeting
 
 
 class PlacementsSerializerTests(TestCase):

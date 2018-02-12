@@ -4,9 +4,9 @@ import json
 import decimal
 import logging
 import base64
-import httplib
-import urllib
-import urllib2
+import http.client
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import pytz
 from functools import partial
 
@@ -741,7 +741,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        data = {k: v for k, v in form.cleaned_data.items() if v is not None}
+        data = {k: v for k, v in list(form.cleaned_data.items()) if v is not None}
 
         response = ad_group_source.update(request, k1_sync=True, **data)
 
@@ -958,8 +958,8 @@ class Demo(api_common.BaseApiView):
         return self.create_api_response(instance)
 
     def _start_instance(self):
-        request = urllib2.Request(settings.DK_DEMO_UP_ENDPOINT)
-        response = request_signer.urllib2_secure_open(request, settings.DK_API_KEY)
+        request = urllib.request.Request(settings.DK_DEMO_UP_ENDPOINT)
+        response = request_signer.urllib_secure_open(request, settings.DK_API_KEY)
 
         status_code = response.getcode()
         if status_code != 200:
@@ -1007,7 +1007,7 @@ def oauth_authorize(request, source_name):
         'state': base64.b64encode(json.dumps(state))
     }
 
-    url = settings.SOURCE_OAUTH_URIS[source_name]['auth_uri'] + '?' + urllib.urlencode(params)
+    url = settings.SOURCE_OAUTH_URIS[source_name]['auth_uri'] + '?' + urllib.parse.urlencode(params)
     return redirect(url)
 
 
@@ -1045,14 +1045,14 @@ def oauth_redirect(request, source_name):
         'grant_type': 'authorization_code'
     }
 
-    req = urllib2.Request(
+    req = urllib.request.Request(
         settings.SOURCE_OAUTH_URIS[source_name]['token_uri'],
-        data=urllib.urlencode(data),
+        data=urllib.parse.urlencode(data),
         headers=headers
     )
-    r = urllib2.urlopen(req)
+    r = urllib.request.urlopen(req)
 
-    if r.getcode() == httplib.OK:
+    if r.getcode() == http.client.OK:
         decrypted['oauth_tokens'] = json.loads(r.read())
         decrypted['oauth_created_dt'] = datetime.datetime.utcnow().isoformat()
         credentials.credentials = json.dumps(decrypted)

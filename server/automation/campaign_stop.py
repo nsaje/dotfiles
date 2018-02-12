@@ -3,7 +3,7 @@ from collections import defaultdict
 import datetime
 import logging
 import decimal
-from itertools import tee, izip_longest
+from itertools import tee, zip_longest
 
 from django.db import transaction
 from django.db.models import Min, Max, Q
@@ -51,7 +51,7 @@ def switch_low_budget_campaigns_to_landing_mode(campaigns, pagerduty_on_fail=Fal
             logger.exception('Campaign stop check for campaign with id %s not successful', campaign.id)
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
-                notes=u'Failed to check non-landing campaign.'
+                notes='Failed to check non-landing campaign.'
             )
             if pagerduty_on_fail:
                 _trigger_check_pagerduty()
@@ -199,7 +199,7 @@ def update_campaigns_in_landing(campaigns, pagerduty_on_fail=True):
             logger.exception('Updating landing mode campaign with id %s not successful', campaign.id)
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
-                notes=u'Failed to update landing campaign.'
+                notes='Failed to update landing campaign.'
             )
             if pagerduty_on_fail:
                 _trigger_update_pagerduty()
@@ -234,7 +234,7 @@ def can_enable_all_ad_groups(campaign, campaign_settings, ad_groups):
     ).group_current_settings().select_related('ad_group_source__source')
 
     inactive_ad_group_settings = [
-        s for s in current_ag_settings.values() if s.state != dash.constants.AdGroupSettingsState.ACTIVE
+        s for s in list(current_ag_settings.values()) if s.state != dash.constants.AdGroupSettingsState.ACTIVE
     ]
 
     inactive_ad_group_active_ags_settings = [
@@ -257,7 +257,7 @@ def can_enable_all_ad_groups(campaign, campaign_settings, ad_groups):
         campaign,
         [s.ad_group_source for s in inactive_ad_group_active_ags_settings],
         inactive_ad_groups_with_active_b1_group,
-        current_ag_settings.values(),
+        list(current_ag_settings.values()),
         current_ags_settings,
         max_daily_budget_per_ags,
         max_group_daily_budget_per_ag,
@@ -567,7 +567,7 @@ def _can_enable_media_sources(ad_group_sources, campaign):
         campaign, _sum_daily_budget(max_daily_budget_per_ags, max_group_daily_budget_per_ag))
 
     ret = {}
-    for ad_group_source, ags_settings in current_ags_settings.iteritems():
+    for ad_group_source, ags_settings in current_ags_settings.items():
         if ags_settings.state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
             ret[ad_group_source.id] = True
             continue
@@ -749,7 +749,7 @@ def _get_minimum_remaining_budget(campaign, max_daily_budget):
         per_budget_remaining_today[bli.id] = max(0, spend_available - unattributed_budget)
         unattributed_budget = max(0, unattributed_budget - spend_available)
 
-    remaining_today = decimal.Decimal(sum(per_budget_remaining_today.itervalues()))
+    remaining_today = decimal.Decimal(sum(per_budget_remaining_today.values()))
     available_tomorrow = DECIMAL_ZERO
     for bli in budgets_active_tomorrow.order_by('created_dt'):
         if campaign.account.uses_bcm_v2:
@@ -801,8 +801,8 @@ def _check_ad_groups_end_date(campaign):
     if finished:
         models.CampaignStopLog.objects.create(
             campaign=campaign,
-            notes=u'Stopped finished ad groups {}'.format(', '.join(
-                unicode(ad_group) for ad_group in finished
+            notes='Stopped finished ad groups {}'.format(', '.join(
+                str(ad_group) for ad_group in finished
             ))
         )
 
@@ -811,14 +811,14 @@ def _adjust_source_caps(campaign, daily_caps):
     bcm_modifiers = campaign.get_bcm_modifiers()
     active_sources = _get_active_ad_group_sources(campaign)
 
-    flat_ag_group_sources = [ags for ags_list in active_sources.values() for ags in ags_list]
+    flat_ag_group_sources = [ags for ags_list in list(active_sources.values()) for ags in ags_list]
     current_ad_group_sources_settings = {
         ags.ad_group_source_id: ags for ags in dash.models.AdGroupSourceSettings.objects.filter(
             ad_group_source__in=flat_ag_group_sources,
         ).group_current_settings()
     }
 
-    active_ad_groups = active_sources.keys()
+    active_ad_groups = list(active_sources.keys())
     current_ad_group_settings = {
         ags.ad_group_id: ags for ags in dash.models.AdGroupSettings.objects.filter(
             ad_group__in=active_ad_groups,
@@ -829,7 +829,7 @@ def _adjust_source_caps(campaign, daily_caps):
     user_daily_budget_per_ags, user_group_daily_budget_per_ag = _get_user_daily_budget_per_ags(
         dates_helper.local_today(), campaign)
 
-    for ad_group, ad_group_sources in active_sources.iteritems():
+    for ad_group, ad_group_sources in active_sources.items():
         ag_settings = current_ad_group_settings[ad_group.id]
         ag_daily_cap = daily_caps[ad_group.id]
         current_daily_cap = DECIMAL_ZERO
@@ -879,7 +879,7 @@ def _adjust_source_caps(campaign, daily_caps):
             _stop_ad_group(ad_group)
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
-                notes=u'Stopping ad group {} - lowering budget not possible.\n'
+                notes='Stopping ad group {} - lowering budget not possible.\n'
                       'Minimum budget: {}, Daily cap: {}.'.format(
                           ad_group.id,
                           _get_min_ap_budget(ad_group_sources, bcm_modifiers),
@@ -893,7 +893,7 @@ def _adjust_source_caps(campaign, daily_caps):
                 _stop_ad_group_source(ags)
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
-                notes=u'Stopping sources on ad group {}:\n{}\n\nLowering budget not possible.\n'
+                notes='Stopping sources on ad group {}:\n{}\n\nLowering budget not possible.\n'
                       'Minimum budget: {}, Daily cap: {}.'.format(
                           ad_group.id,
                           '\n'.join([ags.source.name for ags in sorted(sources_to_stop, key=lambda x: x.source.name)]),
@@ -907,8 +907,8 @@ def _adjust_source_caps(campaign, daily_caps):
                 _update_ad_group_source_cap(ags, cap)
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
-                notes=u'Updating sources on ad group {}:\n'
-                      u'New daily caps:\n{}.'.format(
+                notes='Updating sources on ad group {}:\n'
+                      'New daily caps:\n{}.'.format(
                           ad_group.id,
                           '\n'.join(["{}: {}".format(ags.source.name, c)
                                      for ags, c in sorted(sources_new_cap, key=lambda x: x[1])]),
@@ -920,7 +920,7 @@ def _adjust_source_caps(campaign, daily_caps):
                 _stop_b1_group(ad_group)
                 models.CampaignStopLog.objects.create(
                     campaign=campaign,
-                    notes=u'Stopping rtb sources on ad group {}.\n'
+                    notes='Stopping rtb sources on ad group {}.\n'
                           'Lowering minimum autopilot budget not possible.'.format(
                               ad_group.id,
                           )
@@ -929,8 +929,8 @@ def _adjust_source_caps(campaign, daily_caps):
                 _update_b1_group_cap(ad_group, b1_group_new_cap)
                 models.CampaignStopLog.objects.create(
                     campaign=campaign,
-                    notes=u'Updating rtb sources on ad group {}:\n'
-                          u'New daily cap: {}'.format(
+                    notes='Updating rtb sources on ad group {}:\n'
+                          'New daily cap: {}'.format(
                               ad_group.id,
                               b1_group_new_cap,
                           )
@@ -1005,7 +1005,7 @@ def _calculate_daily_source_caps(
         else:
             b1_group_new_cap = cap
 
-    return sources_to_stop, sources_new_cap.items(), b1_group_stop, b1_group_new_cap
+    return sources_to_stop, list(sources_new_cap.items()), b1_group_stop, b1_group_new_cap
 
 
 def _switch_campaign_to_landing_mode(campaign):
@@ -1032,14 +1032,14 @@ def _switch_campaign_to_landing_mode(campaign):
 
     models.CampaignStopLog.objects.create(
         campaign=campaign,
-        notes=u'Switched to landing mode.'
+        notes='Switched to landing mode.'
     )
 
 
 def _resume_campaign(campaign):
     models.CampaignStopLog.objects.create(
         campaign=campaign,
-        notes=u'Campaign returned to normal mode - enough campaign budget '
+        notes='Campaign returned to normal mode - enough campaign budget '
               'today and tomorrow to cover daily spend caps set before landing mode.'
     )
     return _turn_off_landing_mode(campaign, pause_ad_groups=False)
@@ -1048,7 +1048,7 @@ def _resume_campaign(campaign):
 def _wrap_up_landing(campaign):
     models.CampaignStopLog.objects.create(
         campaign=campaign,
-        notes=u'Campaign landed - no ad groups are left running.'
+        notes='Campaign landed - no ad groups are left running.'
     )
     return _turn_off_landing_mode(campaign, pause_ad_groups=True)
 
@@ -1148,7 +1148,7 @@ def _set_end_date_to_today(campaign):
         _set_ad_group_end_date(ad_group, today)
     models.CampaignStopLog.objects.create(
         campaign=campaign,
-        notes=u'End date set to {}'.format(today)
+        notes='End date set to {}'.format(today)
     )
 
 
@@ -1250,15 +1250,15 @@ def _get_min_ap_budget(ad_group_sources, bcm_modifiers):
 
 
 def _persist_new_daily_caps_to_log(campaign, daily_caps, ad_groups, remaining_today, per_date_spend, daily_cap_ratios):
-    notes = u'Calculated ad group daily caps to:\n'
+    notes = 'Calculated ad group daily caps to:\n'
     for ad_group in ad_groups:
         notes += 'Ad group: {}, Daily cap: ${}\n'.format(ad_group.id, daily_caps[ad_group.id])
-    notes += u'\nRemaining budget today: {:.2f}\n\n'.format(remaining_today)
-    notes += u'Past spends:\n'
+    notes += '\nRemaining budget today: {:.2f}\n\n'.format(remaining_today)
+    notes += 'Past spends:\n'
     for ad_group in sorted(ad_groups, key=lambda ag: ag.name):
-        per_date_ag_spend = [amount for key, amount in per_date_spend.iteritems() if key[0] == ad_group.id]
-        notes += u'Ad group: {} ({}), Past 7 day spend: {:.2f}, Avg: {:.2f} (was running for {} days), '\
-                 u'Calculated ratio: {:.2f}\n'.format(
+        per_date_ag_spend = [amount for key, amount in per_date_spend.items() if key[0] == ad_group.id]
+        notes += 'Ad group: {} ({}), Past 7 day spend: {:.2f}, Avg: {:.2f} (was running for {} days), '\
+                 'Calculated ratio: {:.2f}\n'.format(
                      ad_group.name,
                      ad_group.id,
                      sum(per_date_ag_spend),
@@ -1297,7 +1297,7 @@ def _calculate_daily_caps(campaign, per_date_spend):
 def _get_ad_group_ratios(active_ad_groups, per_date_data):
     active_ids = set(ag.id for ag in active_ad_groups)
     spend_per_ad_group = defaultdict(list)
-    for key, val in per_date_data.iteritems():
+    for key, val in per_date_data.items():
         ad_group_id, _ = key
         if ad_group_id not in active_ids:
             continue
@@ -1305,13 +1305,13 @@ def _get_ad_group_ratios(active_ad_groups, per_date_data):
         spend_per_ad_group[ad_group_id].append(val)
 
     avg_spends = {}
-    for ad_group_id, spends in spend_per_ad_group.iteritems():
+    for ad_group_id, spends in spend_per_ad_group.items():
         if len(spends) > 0:
             avg_spends[ad_group_id] = sum(spends) / len(spends)
 
-    total = sum(avg_spends.itervalues())
+    total = sum(avg_spends.values())
     normalized = {}
-    for ad_group_id, avg_spend in avg_spends.iteritems():
+    for ad_group_id, avg_spend in avg_spends.items():
         if total > 0:
             normalized[ad_group_id] = avg_spend / total
 
@@ -1364,7 +1364,7 @@ def _get_sources_settings_dict(date, ad_group_sources):
     sources_by_tz = _get_sources_by_tz(ad_group_sources)
 
     ret = defaultdict(list)
-    for budgets_tz, tz_sources in sources_by_tz.items():
+    for budgets_tz, tz_sources in list(sources_by_tz.items()):
         dt_tz = budgets_tz.localize(datetime.datetime(date.year, date.month, date.day)).astimezone(pytz.utc)
         latest_settings_before = dash.models.AdGroupSourceSettings.objects.filter(
             ad_group_source__in=tz_sources,
@@ -1438,7 +1438,7 @@ def _get_user_daily_budget_per_ags(date, campaign):
 
     active_ag_ids = dash.models.AdGroupSettings.objects.filter(
         Q(end_date=None) | Q(end_date__gte=date),
-        id__in=[s.id for s in ag_settings.values()],
+        id__in=[s.id for s in list(ag_settings.values())],
         state=dash.constants.AdGroupSettingsState.ACTIVE,
     ).values_list('ad_group_id', flat=True)
 
@@ -1494,7 +1494,7 @@ def _get_max_daily_budget_per_ags(date, campaign):
         ad_group_sources_settings_per_ag[ags.ad_group_id].append(ad_group_sources_settings[ags.id])
 
     group_budget_per_ag = {}
-    for ad_group_id, ad_group_settings in ad_groups_settings.iteritems():
+    for ad_group_id, ad_group_settings in ad_groups_settings.items():
         ad_group_source_settings = ad_group_sources_settings_per_ag[ad_group_id]
         b1_group_budget = _get_b1_group_max_daily_budget(date, ad_group_settings, ad_group_source_settings)
         if b1_group_budget > 0:
@@ -1585,7 +1585,7 @@ def _get_lookahead_iter(iterable):
     """
     it1, it2 = tee(iterable)
     next(it2, None)
-    return izip_longest(it1, it2)
+    return zip_longest(it1, it2)
 
 
 def _prepare_valid_ad_group_settings(date, ad_group_source, ad_group_settings):

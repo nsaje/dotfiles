@@ -21,5 +21,11 @@ if socket.socket is gevent.socket.socket:  # if running in gevent
     import psycogreen.gevent
     psycogreen.gevent.patch_psycopg()
 
+
+# pickle py2 compatibility, FIXME(nsaje): remove after migration to py3 complete
+import pickle
+pickle.HIGHEST_PROTOCOL = 2
+pickle.DEFAULT_PROTOCOL = 2
+
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()

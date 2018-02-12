@@ -133,7 +133,7 @@ class AdGroupSourceState(BaseBulkActionView):
         response_update = legacy.get_updated_ad_group_sources_changes(
             request.user, last_change_dt, [], ad_group_id_=ad_group_id)
         if 'rows' in response_update:
-            for row_id, row_update in response_update['rows'].iteritems():
+            for row_id, row_update in response_update['rows'].items():
                 row = self._get_row(response, row_id)
                 if 'stats' not in row:
                     row['stats'] = {}
@@ -143,7 +143,7 @@ class AdGroupSourceState(BaseBulkActionView):
 
     def _convert_stats(self, stats):
         new_stats = {}
-        for field, value in stats.iteritems():
+        for field, value in stats.items():
             if field[:6] == 'status':
                 continue
             new_stats[field] = {
@@ -355,8 +355,8 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
                     content_ad_dict['secondary_tracker_url'] = content_ad.tracker_urls[1]
 
             # delete keys that are not to be exported
-            for k in content_ad_dict.keys():
-                if k not in forms.CSV_EXPORT_COLUMN_NAMES_DICT.keys():
+            for k in list(content_ad_dict.keys()):
+                if k not in list(forms.CSV_EXPORT_COLUMN_NAMES_DICT.keys()):
                     del content_ad_dict[k]
 
             content_ad_dicts.append(content_ad_dict)
@@ -367,7 +367,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
             datetime.datetime.now().strftime('%Y-%m-%d')
         )
         content = csv_utils.dictlist_to_csv(
-            forms.CSV_EXPORT_COLUMN_NAMES_DICT.values(),
+            list(forms.CSV_EXPORT_COLUMN_NAMES_DICT.values()),
             self._map_to_csv_column_names(content_ad_dicts),
         )
 
@@ -375,7 +375,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
 
     def _map_to_csv_column_names(self, content_ads):
         return [{
-            forms.CSV_EXPORT_COLUMN_NAMES_DICT[key]: value for key, value in content_ad.items()
+            forms.CSV_EXPORT_COLUMN_NAMES_DICT[key]: value for key, value in list(content_ad.items())
         } for content_ad in content_ads]
 
 

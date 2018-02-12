@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 
@@ -16,9 +16,9 @@ def default_allowed_sources_take_2(apps, schema_editor):
     for i, account in enumerate(Account.objects.all()):
         account.allowed_sources.add(*default_allowed_sources_list)
 
-        print 'Account settings saved - {0} of {1}'.format(i+1, accounts_count)
+        print('Account settings saved - {0} of {1}'.format(i+1, accounts_count))
 
-    print 'Done.'
+    print('Done.')
 
 
 class Migration(migrations.Migration):

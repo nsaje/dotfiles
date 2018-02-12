@@ -16,7 +16,7 @@ FIND_MISSING_NUM_DAYS = 7
 
 
 def get_missing_keys(num_days=FIND_MISSING_NUM_DAYS):
-    dates = [dates_helper.utc_today() - datetime.timedelta(days=i) for i in reversed(range(num_days))]
+    dates = [dates_helper.utc_today() - datetime.timedelta(days=i) for i in reversed(list(range(num_days)))]
     keys = [k for k in helpers.get_s3_keys_for_dates(dates)
             if helpers.get_s3_key_dt(k).date() >= config.START_DATE]
     labels_keys = {
@@ -27,12 +27,12 @@ def get_missing_keys(num_days=FIND_MISSING_NUM_DAYS):
     content_ad_labels = set(
         dash.models.ContentAd.objects.filter(
             ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
-            label__in=labels_keys.keys(),
+            label__in=list(labels_keys.keys()),
         ).values_list('label', flat=True)
     )
 
     to_reprocess = set([
-        l for l in labels_keys.keys() if l not in content_ad_labels
+        l for l in list(labels_keys.keys()) if l not in content_ad_labels
     ])
     candidate_labels = set(
         dash.models.ContentAd.objects.filter(

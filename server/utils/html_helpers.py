@@ -10,7 +10,7 @@ class Url():
         self.text = text or href
 
     def as_html(self):
-        return u'<a href="{}">{}</a>'.format(self.href, self.text)
+        return '<a href="{}">{}</a>'.format(self.href, self.text)
 
 
 class TableCell():
@@ -51,7 +51,7 @@ class TableCell():
         if not self.attributes:
             return ''
         return ' ' + ' '.join(
-            '{}="{}"'.format(key, val) for key, val in self.attributes.iteritems()
+            '{}="{}"'.format(key, val) for key, val in self.attributes.items()
         )
 
     def as_html(self, position=1, row_type=None):

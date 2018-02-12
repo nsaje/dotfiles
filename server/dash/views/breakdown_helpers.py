@@ -42,15 +42,15 @@ def format_report_rows_performance_fields(rows, goals):
         if row.get('campaign_id'):
             rows_by_campaign_id[row['campaign_id']].append(row)
 
-    if len(campaign_goals_by_campaign_id.keys()) > 1 and len(rows_by_campaign_id.keys()) < 1:
+    if len(list(campaign_goals_by_campaign_id.keys())) > 1 and len(list(rows_by_campaign_id.keys())) < 1:
         # in case we have data for multiple campaigns but we couldn't separate rows by campaigns
         # then don't add performance info
         return
 
     uses_bcm_v2_map = dict(core.entity.Campaign.objects.filter(
-        pk__in=campaign_goals_by_campaign_id.keys()).values_list('id', 'account__uses_bcm_v2'))
+        pk__in=list(campaign_goals_by_campaign_id.keys())).values_list('id', 'account__uses_bcm_v2'))
 
-    for campaign_id, campaign_goals in campaign_goals_by_campaign_id.items():
+    for campaign_id, campaign_goals in list(campaign_goals_by_campaign_id.items()):
         uses_bcm_v2 = uses_bcm_v2_map[campaign_id]
 
         primary_goal = next((x for x in goals.primary_goals if x.campaign_id == campaign_id), None)
@@ -67,7 +67,7 @@ def format_report_rows_performance_fields(rows, goals):
 
             # user rights for performance were already checked in the stats module
             # here just add additional formatting if keys are present
-            if any(x for x in row.keys() if x.startswith(performance_prefix)):
+            if any(x for x in list(row.keys()) if x.startswith(performance_prefix)):
                 row.update({
                     'performance': {
                         'overall': None,
@@ -108,7 +108,7 @@ def format_report_rows_content_ad_editable_fields(rows):
     for row in rows:
         submission_states = []
 
-        for _, source_status in row.get('status_per_source', {}).items():
+        for _, source_status in list(row.get('status_per_source', {}).items()):
 
             source_status_text = ''
             if ('source_status' in source_status and
@@ -199,7 +199,7 @@ def clean_non_relevant_fields(rows):
         row.pop('status_per_source', None)
         row.pop('notifications', None)
 
-        for key in row.keys():
+        for key in list(row.keys()):
             if key.startswith('performance_'):
                 row.pop(key, None)
 
@@ -229,7 +229,7 @@ def create_all_rtb_source_row(constraints, can_show_rtb_group_cpc):
     rtb_source_ids = constraints['filtered_sources'] \
         .filter(source_type__type=constants.SourceType.B1) \
         .values_list('id', flat=True)
-    rtb_source_ids = map(str, rtb_source_ids)
+    rtb_source_ids = list(map(str, rtb_source_ids))
 
     # Create All RTB Source row using rtb_source_ids for newly created group
     all_rtb_source_row = create_all_rtb_source_row_data(

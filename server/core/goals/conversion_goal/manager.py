@@ -4,8 +4,8 @@ from dash import constants
 import core.common
 import utils.exc
 
-import model
-import validator
+from . import model
+from . import validator
 
 
 class ConversionGoalManager(core.common.BaseManager):
@@ -34,7 +34,7 @@ class ConversionGoalManager(core.common.BaseManager):
         conversion_goal.save()
 
         campaign.write_history(
-            u'Added conversion goal with name "{}" of type {}'.format(
+            'Added conversion goal with name "{}" of type {}'.format(
                 conversion_goal.name,
                 constants.ConversionGoalType.get_text(conversion_goal.type)
             ),

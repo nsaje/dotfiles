@@ -1,1 +1,1 @@
-from email_template import EmailTemplate
+from .email_template import EmailTemplate

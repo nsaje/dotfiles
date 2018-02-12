@@ -15,14 +15,14 @@ import core.common
 import core.entity
 import core.history
 import core.source
-import validation
+from . import validation
 
 from .. import helpers
 
 from ..settings_base import SettingsBase
 from ..settings_query_set import SettingsQuerySet
 
-import instance
+from . import instance
 
 
 class CampaignSettings(validation.CampaignSettingsValidatorMixin,
@@ -189,8 +189,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin,
         if prop_name == 'campaign_manager':
             # FIXME: circular dependency
             import dash.views.helpers
-            value = dash.views.helpers.get_user_full_name_or_email(
-                value)
+            value = dash.views.helpers.get_user_full_name_or_email(value)
         elif prop_name == 'language':
             value = constants.Language.get_text(value)
         elif prop_name == 'iab_category':

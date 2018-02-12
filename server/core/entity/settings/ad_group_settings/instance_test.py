@@ -7,7 +7,7 @@ from utils.magic_mixer import magic_mixer
 import core.entity
 from dash import constants
 
-import instance
+from . import instance
 
 
 class InstanceTest(TestCase):

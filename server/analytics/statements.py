@@ -1,5 +1,5 @@
 import datetime
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from django.conf import settings
 
@@ -36,10 +36,10 @@ BIDDER_DEVICE_TYPES = {
 def get_media_source_performance_report(from_date, till_date):
     sources = {s.pk: s for s in dash.models.Source.objects.all()}
     query = SOURCE_PERFORMANCE_REPORT_QUERY.format(
-        metrics=', '.join(map(lambda col: col.only_column(), [
+        metrics=', '.join([col.only_column() for col in [
             MVMaster.ctr, MVMaster.cpc, MVMaster.cpm,
             MVMaster.pv_per_visit, MVMaster.bounce_rate, MVMaster.avg_tos,
-        ])),
+        ]]),
         from_date=format(from_date),
         till_date=format(till_date),
     )
@@ -82,7 +82,7 @@ def media_source_performance_report_csv(from_date, till_date):
 
 
 def get_url(path):
-    return DOWNLOAD_URL + '?' + urllib.urlencode({
+    return DOWNLOAD_URL + '?' + urllib.parse.urlencode({
         'path': path
     })
 

@@ -19,7 +19,7 @@ class Q(object):
     def __init__(self, model, *args, **kwargs):
         self.negate = False
         self.join_operator = self.AND
-        self.children = list(args) + sorted(list(kwargs.iteritems()))
+        self.children = list(args) + sorted(list(kwargs.items()))
         self.model = model
 
         # cache, used to preserve the order of parameters

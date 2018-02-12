@@ -5,7 +5,7 @@ from django.test import TestCase
 from core import entity
 from utils.magic_mixer import magic_mixer
 
-import entity_limits
+from . import entity_limits
 
 
 class EntityLimitEnforceTest(TestCase):

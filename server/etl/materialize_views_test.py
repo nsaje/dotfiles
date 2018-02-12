@@ -423,7 +423,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
             rows = list(mv.generate_rows(mock_cursor, date))
 
             self.maxDiff = None
-            self.assertItemsEqual(rows, [
+            self.assertCountEqual(rows, [
                 (
                     date, 3, 1, 1, 1, 1, 'bla.com', 'bla.com__3',
                     constants.DeviceType.UNKNOWN, None, None, constants.PlacementMedium.UNKNOWN,
@@ -466,7 +466,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         mv.prefetch()
 
         self.maxDiff = None
-        self.assertItemsEqual(list(mv.get_postclickstats(None, date)), [
+        self.assertCountEqual(list(mv.get_postclickstats(None, date)), [
             ((3, 1), (date, 3, 1, 1, 1, 1, 'Bla.com', 'Bla.com__3',
                       constants.DeviceType.UNKNOWN, None, None, constants.PlacementMedium.UNKNOWN,
                       constants.PlacementType.UNKNOWN, constants.VideoPlaybackMethod.UNKNOWN,
@@ -741,7 +741,7 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
             mv = materialize_views.MVConversions('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
             rows = list(mv.generate_rows(mock_cursor, date))
 
-            self.assertItemsEqual(rows, [
+            self.assertCountEqual(rows, [
                 (date, 3, 1, 1, 1, 1, 1, 'bla.com', 'ga__einpix', 2),
                 (date, 3, 1, 1, 1, 1, 1, 'bla.com', 'ga__preuba', 1),
                 (date, 1, 1, 1, 3, 3, 3, 'nesto.com', 'omniture__poop', 111),

@@ -7,7 +7,7 @@ class AutomationAppConfig(AppConfig):
 
     def ready(self):
         if not settings.DISABLE_SIGNALS:
-            import campaignstop.signals  # noqa
-            campaignstop.signals.connect_notify_budgets()
-            campaignstop.signals.connect_notify_ad_group_settings_change()
-            campaignstop.signals.connect_notify_ad_group_source_settings_change()
+            import automation.campaignstop.signals  # noqa
+            automation.campaignstop.signals.connect_notify_budgets()
+            automation.campaignstop.signals.connect_notify_ad_group_settings_change()
+            automation.campaignstop.signals.connect_notify_ad_group_source_settings_change()

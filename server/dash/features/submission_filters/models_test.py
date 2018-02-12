@@ -21,7 +21,7 @@ class TestModels(TestCase):
     def test_filter_applied_ad_group(self):
         magic_mixer.blend(models.SubmissionFilter, source=self.source1, ad_group=self.ad_group1,
                           state=constants.SubmissionFilterState.BLOCK)
-        self.assertEquals(
+        self.assertEqual(
             models.SubmissionFilter.objects.all().filter_applied(self.source1, ad_group=self.ad_group1).count(),
             1
         )
@@ -30,19 +30,19 @@ class TestModels(TestCase):
         magic_mixer.blend(models.SubmissionFilter,
                           source=self.source1, campaign=self.ad_group1.campaign,
                           state=constants.SubmissionFilterState.BLOCK)
-        self.assertEquals(
+        self.assertEqual(
             models.SubmissionFilter.objects.all().filter_applied(
                 self.source1, ad_group=self.ad_group1
             ).count(),
             1
         )
-        self.assertEquals(
+        self.assertEqual(
             models.SubmissionFilter.objects.all().filter_applied(
                 self.source2, ad_group=self.ad_group1
             ).count(),
             0
         )
-        self.assertEquals(
+        self.assertEqual(
             models.SubmissionFilter.objects.all().filter_applied(
                 self.source1, account=self.ad_group1.campaign.account
             ).count(),
@@ -53,19 +53,19 @@ class TestModels(TestCase):
         magic_mixer.blend(models.SubmissionFilter,
                           source=self.source1, account=self.ad_group1.campaign.account,
                           state=constants.SubmissionFilterState.BLOCK)
-        self.assertEquals(
+        self.assertEqual(
             models.SubmissionFilter.objects.all().filter_applied(
                 self.source1, ad_group=self.ad_group1
             ).count(),
             1
         )
-        self.assertEquals(
+        self.assertEqual(
             models.SubmissionFilter.objects.all().filter_applied(
                 self.source1, campaign=self.ad_group1.campaign
             ).count(),
             1
         )
-        self.assertEquals(
+        self.assertEqual(
             models.SubmissionFilter.objects.all().filter_applied(
                 self.source1, account=self.ad_group1.campaign.account
             ).count(),
@@ -80,25 +80,25 @@ class TestModels(TestCase):
         magic_mixer.blend(models.SubmissionFilter,
                           source=self.source1, agency=self.ad_group1.campaign.account.agency,
                           state=constants.SubmissionFilterState.BLOCK)
-        self.assertEquals(
+        self.assertEqual(
             models.SubmissionFilter.objects.all().filter_applied(
                 self.source1, ad_group=self.ad_group1
             ).count(),
             1
         )
-        self.assertEquals(
+        self.assertEqual(
             models.SubmissionFilter.objects.all().filter_applied(
                 self.source1, campaign=self.ad_group1.campaign
             ).count(),
             1
         )
-        self.assertEquals(
+        self.assertEqual(
             models.SubmissionFilter.objects.all().filter_applied(
                 self.source1, account=self.ad_group1.campaign.account
             ).count(),
             1
         )
-        self.assertEquals(
+        self.assertEqual(
             models.SubmissionFilter.objects.all().filter_applied(
                 self.source1, agency=self.ad_group1.campaign.account.agency
             ).count(),
@@ -111,20 +111,20 @@ class TestModels(TestCase):
         magic_mixer.blend(models.SubmissionFilter,
                           source=self.source1, content_ad=ad,
                           state=constants.SubmissionFilterState.ALLOW)
-        self.assertEquals(
+        self.assertEqual(
             models.SubmissionFilter.objects.all().filter_applied(
                 self.source1, content_ad=ad
             ).count(),
             1
         )
-        self.assertEquals(
+        self.assertEqual(
             models.SubmissionFilter.objects.all().filter_applied(
                 self.source1, ad_group=self.ad_group1
             ).count(),
             0
         )
 
-        self.assertEquals(
+        self.assertEqual(
             models.SubmissionFilter.objects.all().filter_applied(
                 self.source2, content_ad=ad
             ).count(),
@@ -148,11 +148,11 @@ class TestManager(TestCase):
             'ad_group',
             [ad_group1.pk, ad_group2.pk]
         )
-        self.assertEquals(
+        self.assertEqual(
             set([constants.SubmissionFilterState.BLOCK]),
             set(sf.state for sf in sf_list)
         )
-        self.assertEquals(
+        self.assertEqual(
             set([ad_group1.pk, ad_group2.pk]),
             set(sf.ad_group_id for sf in sf_list)
         )
@@ -166,11 +166,11 @@ class TestManager(TestCase):
             'campaign',
             [campaign1.pk, campaign2.pk]
         )
-        self.assertEquals(
+        self.assertEqual(
             set([campaign1.pk, campaign2.pk]),
             set(sf.campaign_id for sf in sf_list)
         )
-        self.assertEquals(
+        self.assertEqual(
             set([constants.SubmissionFilterState.BLOCK]),
             set(sf.state for sf in sf_list)
         )

@@ -3,12 +3,12 @@ import io
 
 from django.test import TestCase
 
-import derived_views
+from . import derived_views
 
 
 class GenerateTableTestCase(TestCase):
     def setUp(self):
-        self.stream = io.StringIO(u"""
+        self.stream = io.StringIO("""
         CREATE TABLE test (
             -- kw::dimensions
             date date not null encode delta,
@@ -57,6 +57,6 @@ class GenerateTableTestCase(TestCase):
         })
 
         self.assertEqual(aggregates, [
-            u'impressions integer encode zstd',
-            u'clicks integer encode zstd',
+            'impressions integer encode zstd',
+            'clicks integer encode zstd',
         ])

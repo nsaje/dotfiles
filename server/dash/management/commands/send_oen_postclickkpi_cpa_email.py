@@ -2,7 +2,7 @@ import logging
 import influx
 import datetime
 import gzip
-from StringIO import StringIO
+from io import StringIO
 
 from dash import models
 from utils.command_helpers import ExceptionCommand

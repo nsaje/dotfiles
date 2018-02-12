@@ -11,7 +11,7 @@ import core.common
 import utils.exc
 
 from ..campaign_goal_value import CampaignGoalValue
-import bcm_mixin
+from . import bcm_mixin
 
 # FIXME: the same dict is in dash/campaign_goals
 CAMPAIGN_GOAL_NAME_FORMAT = {
@@ -53,7 +53,7 @@ class CampaignGoalManager(core.common.BaseManager):
             goal.set_primary(request)
 
         campaign.write_history(
-            u'Added campaign goal "{}{}"'.format(
+            'Added campaign goal "{}{}"'.format(
                 (str(value) + ' ') if value else '',
                 constants.CampaignGoalKPI.get_text(goal.type)
             ),
@@ -141,7 +141,7 @@ class CampaignGoal(models.Model, bcm_mixin.CampaignGoalBCMMixin):
 
         if not skip_history:
             self.campaign.write_history(
-                u'Changed campaign goal value: "{}"'.format(
+                'Changed campaign goal value: "{}"'.format(
                     CAMPAIGN_GOAL_NAME_FORMAT[self.type].format(value)
                 ),
                 action_type=constants.HistoryActionType.GOAL_CHANGE,
@@ -161,7 +161,7 @@ class CampaignGoal(models.Model, bcm_mixin.CampaignGoalBCMMixin):
         self.save()
 
         self.campaign.write_history(
-            u'Campaign goal "{}" set as primary'.format(
+            'Campaign goal "{}" set as primary'.format(
                 constants.CampaignGoalKPI.get_text(self.type)
             ),
             action_type=constants.HistoryActionType.GOAL_CHANGE,

@@ -1,19 +1,19 @@
 from django.conf.urls import url
 
-import views
-import views.realtimestats
-import adgroupsource.views
-import publishers.views
-import geolocation
+from . import views
+import restapi.views.realtimestats
+import restapi.adgroupsource.views
+import restapi.publishers.views
+from . import geolocation
 import dash.features.videoassets.urls
 import dash.features.bluekai.urls
 from dash.features.bulkactions import clonecontent
 from dash.features import cloneadgroup
-import campaignlauncher.urls
-import bcm.urls
-import inventory_planning.urls
-import account.urls
-import contentad.urls
+import restapi.campaignlauncher.urls
+import restapi.bcm.urls
+import restapi.inventory_planning.urls
+import restapi.account.urls
+import restapi.contentad.urls
 
 urlpatterns = [
     url(
@@ -68,7 +68,7 @@ urlpatterns = [
     ),
     url(
         r'^v1/adgroups/(?P<ad_group_id>\d+)/sources/$',
-        adgroupsource.views.AdGroupSourcesViewList.as_view(),
+        restapi.adgroupsource.views.AdGroupSourcesViewList.as_view(),
         name='adgroups_sources_list'
     ),
     url(
@@ -78,7 +78,7 @@ urlpatterns = [
     ),
     url(
         r'^v1/adgroups/(?P<ad_group_id>\d+)/publishers/$',
-        publishers.views.PublishersViewList.as_view(),
+        restapi.publishers.views.PublishersViewList.as_view(),
         name='publishers_list'
     ),
     url(
@@ -120,22 +120,22 @@ urlpatterns = [
     ),
     url(
         r'^v1/adgroups/(?P<ad_group_id>\d+)/realtimestats/$',
-        views.realtimestats.AdGroupRealtimeStatsView.as_view(),
+        restapi.views.realtimestats.AdGroupRealtimeStatsView.as_view(),
         name='adgroups_realtimestats'
     ),
     url(
         r'^v1/adgroups/(?P<ad_group_id>\d+)/realtimestats/sources/$',
-        views.realtimestats.AdGroupSourcesRealtimeStatsView.as_view(),
+        restapi.views.realtimestats.AdGroupSourcesRealtimeStatsView.as_view(),
         name='adgroups_realtimestats_sources'
     ),
 ]
 
-urlpatterns += account.urls.urlpatterns
-urlpatterns += contentad.urls.urlpatterns
+urlpatterns += restapi.account.urls.urlpatterns
+urlpatterns += restapi.contentad.urls.urlpatterns
 urlpatterns += clonecontent.urls.urlpatterns
 urlpatterns += cloneadgroup.urls.urlpatterns
 urlpatterns += dash.features.videoassets.urls.urlpatterns
 urlpatterns += dash.features.bluekai.urls.urlpatterns
-urlpatterns += campaignlauncher.urls.urlpatterns
-urlpatterns += bcm.urls.urlpatterns
-urlpatterns += inventory_planning.urls.urlpatterns
+urlpatterns += restapi.campaignlauncher.urls.urlpatterns
+urlpatterns += restapi.bcm.urls.urlpatterns
+urlpatterns += restapi.inventory_planning.urls.urlpatterns

@@ -59,7 +59,7 @@ class Command(utils.command_helpers.ExceptionCommand):
                 dates.append(date)
         if options['past_days']:
             dates = [
-                yesterday - datetime.timedelta(x) for x in xrange(int(options['past_days']), 0, -1)
+                yesterday - datetime.timedelta(x) for x in range(int(options['past_days']), 0, -1)
             ]
 
         all_issues = []

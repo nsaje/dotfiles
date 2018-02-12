@@ -1,2 +1,2 @@
-import admin
-from reportjob import ReportJob
+from . import admin
+from .reportjob import ReportJob

@@ -226,7 +226,7 @@ class AdGroupContentAdArchiveTest(TestCase):
         self.assertTrue(all([ad.archived is True for ad in content_ads]))
 
         response_dict = json.loads(response.content)
-        self.assertItemsEqual(
+        self.assertCountEqual(
             response_dict['data']['rows'],
             [{
                 'breakdownId': str(ad.id),
@@ -261,7 +261,7 @@ class AdGroupContentAdArchiveTest(TestCase):
         self.assertTrue(all([ad.archived is True for ad in content_ads]))
 
         response_dict = json.loads(response.content)
-        self.assertItemsEqual(
+        self.assertCountEqual(
             response_dict['data']['rows'],
             [{
                 'breakdownId': str(ad.id),
@@ -430,7 +430,7 @@ class AdGroupContentAdRestore(TestCase):
         self.assertTrue(all([ad.archived is False for ad in content_ads]))
 
         response_dict = json.loads(response.content)
-        self.assertItemsEqual(
+        self.assertCountEqual(
             response_dict['data']['rows'],
             [{
                 'breakdownId': str(ad.id),
@@ -466,7 +466,7 @@ class AdGroupContentAdRestore(TestCase):
         self.assertTrue(all([ad.archived is False for ad in content_ads]))
 
         response_dict = json.loads(response.content)
-        self.assertItemsEqual(
+        self.assertCountEqual(
             response_dict['data']['rows'],
             [{
                 'breakdownId': str(ad.id),
@@ -751,11 +751,11 @@ class AdGroupContentAdCSVTest(TestCase):
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '\r\n'.join([
-            '"URL","Title","Image URL","Image crop","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-            '"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
-            '"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""'  # noqa
-        ]) + '\r\n'
+        expected_content = b'\r\n'.join([
+            b'"URL","Title","Image URL","Image crop","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
+            b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
+            b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""'  # noqa
+        ]) + b'\r\n'
 
         self.assertEqual(response.content, expected_content)
 
@@ -767,12 +767,12 @@ class AdGroupContentAdCSVTest(TestCase):
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '\r\n'.join([
-            '"URL","Title","Image URL","Image crop","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-            '"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
-            '"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""',  # noqa
-            '"http://testurl.com","Test Article with no content_ad_sources 2","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""'  # noqa
-        ]) + '\r\n'
+        expected_content = b'\r\n'.join([
+            b'"URL","Title","Image URL","Image crop","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
+            b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
+            b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""',  # noqa
+            b'"http://testurl.com","Test Article with no content_ad_sources 2","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""'  # noqa
+        ]) + b'\r\n'
 
         self.assertEqual(response.content, expected_content)
 
@@ -784,10 +784,10 @@ class AdGroupContentAdCSVTest(TestCase):
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '\r\n'.join([
-            '"URL","Title","Image URL","Image crop","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-            '"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""'  # noqa
-        ]) + '\r\n'
+        expected_content = b'\r\n'.join([
+            b'"URL","Title","Image URL","Image crop","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
+            b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""'  # noqa
+        ]) + b'\r\n'
 
         self.assertEqual(response.content, expected_content)
 
@@ -798,11 +798,11 @@ class AdGroupContentAdCSVTest(TestCase):
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '\r\n'.join([
-            '"URL","Title","Image URL","Image crop","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-            '"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
-            '"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""',  # noqa
-        ]) + '\r\n'
+        expected_content = b'\r\n'.join([
+            b'"URL","Title","Image URL","Image crop","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
+            b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
+            b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""',  # noqa
+        ]) + b'\r\n'
 
         self.assertEqual(response.content, expected_content)
 
@@ -814,12 +814,12 @@ class AdGroupContentAdCSVTest(TestCase):
 
         response = self._get_csv_from_server(data, ad_group_id=2)
 
-        expected_content = '\r\n'.join([
-            '"URL","Title","Image URL","Image crop","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',
-            '"http://testurl.com","Test Article with no content_ad_sources 3","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""',
-            '"http://testurl.com","Test Article with no content_ad_sources 4","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""',
-            '"http://testurl.com","Test Article with no content_ad_sources 5","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""'
-        ]) + '\r\n'
+        expected_content = b'\r\n'.join([
+            b'"URL","Title","Image URL","Image crop","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',
+            b'"http://testurl.com","Test Article with no content_ad_sources 3","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""',
+            b'"http://testurl.com","Test Article with no content_ad_sources 4","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""',
+            b'"http://testurl.com","Test Article with no content_ad_sources 5","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""'
+        ]) + b'\r\n'
 
         self.assertEqual(response.content, expected_content)
 
@@ -828,11 +828,11 @@ class AdGroupContentAdCSVTest(TestCase):
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '\r\n'.join([
-            '"URL","Title","Image URL","Image crop","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-            '"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
-            '"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""',  # noqa
-        ]) + '\r\n'
+        expected_content = b'\r\n'.join([
+            b'"URL","Title","Image URL","Image crop","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
+            b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
+            b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""',  # noqa
+        ]) + b'\r\n'
 
         self.assertEqual(response.content, expected_content)
 

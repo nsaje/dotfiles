@@ -9,7 +9,7 @@ import core.entity
 import core.history
 import core.source
 
-import prodops_mixin
+from . import prodops_mixin
 
 
 class ContentAdSourceManager(models.Manager):
@@ -80,7 +80,7 @@ class ContentAdSource(models.Model, prodops_mixin.ProdopsMixin):
         else:
             return self.source_content_ad_id
 
-    def __unicode__(self):
+    def __str__(self):
         return '{}(id={}, content_ad={}, source={}, state={}, source_state={}, submission_status={}, source_content_ad_id={})'.format(
             self.__class__.__name__,
             self.id,
@@ -91,9 +91,6 @@ class ContentAdSource(models.Model, prodops_mixin.ProdopsMixin):
             self.submission_status,
             self.source_content_ad_id,
         )
-
-    def __str__(self):
-        return unicode(self).encode('ascii', 'ignore')
 
     class QuerySet(models.QuerySet):
 

@@ -83,7 +83,7 @@ class BudgetProjections(object):
         return self.totals[field] if field else self.totals
 
     def keys(self):
-        return self.projections.keys()
+        return list(self.projections.keys())
 
     @newrelic.agent.function_trace()
     def _prepare_budgets(self, constraints):
@@ -141,12 +141,12 @@ class BudgetProjections(object):
         if self.past_days <= 0:
             self.totals = self._blank_projections()
             for field in BudgetProjections.FUTURE_METRICS[self.breakdown]:
-                self.totals[field] = sum(row[field] for row in self.projections.values())
+                self.totals[field] = sum(row[field] for row in list(self.projections.values()))
             return
 
         self.totals = collections.defaultdict(Decimal)
-        for row in self.projections.values():
-            for key, value in row.iteritems():
+        for row in list(self.projections.values()):
+            for key, value in row.items():
                 self.totals[key] += (value or Decimal(0))
 
         self.totals['pacing'] = None
@@ -158,7 +158,7 @@ class BudgetProjections(object):
     def _get_credit_line_items_by_account(self):
         if self.breakdown != 'account':
             return {}
-        credit_line_items = dash.models.CreditLineItem.objects.filter(account_id__in=self.accounts.keys())
+        credit_line_items = dash.models.CreditLineItem.objects.filter(account_id__in=list(self.accounts.keys()))
 
         m = collections.defaultdict(list)
         for cli in credit_line_items:
@@ -186,14 +186,14 @@ class BudgetProjections(object):
         credit_line_items_map = self._get_credit_line_items_by_account()
         accounts_with_spend_map = self._get_accounts_with_spend_by_agency()
 
-        for key, budgets in self.calculation_groups.iteritems():
+        for key, budgets in self.calculation_groups.items():
             if self.past_days <= 0:
                 row = self._blank_projections()
                 self._calculate_allocated_budgets(row, budgets)
                 self._calculate_recognized_fees(row, budgets, key, credit_line_items_map, accounts_with_spend_map)
                 self.projections[key] = {
                     metric: value and value.quantize(BudgetProjections.PRECISION, rounding=BudgetProjections.ROUNDING)
-                    for metric, value in row.iteritems()
+                    for metric, value in row.items()
                 }
                 continue
             statements_on_date, row = {}, {}
@@ -201,10 +201,10 @@ class BudgetProjections(object):
                 for statement in budget.statements.all():
                     statements_on_date.setdefault(statement.date, []).append(statement)
 
-            num_of_positive_statements = len(filter(lambda x: x, [
+            num_of_positive_statements = len([x for x in [
                 s.media_spend_nano + s.data_spend_nano
-                for slist in statements_on_date.values() for s in slist
-            ]))
+                for slist in list(statements_on_date.values()) for s in slist
+            ] if x])
 
             self._calculate_allocated_budgets(row, budgets)
             self._calculate_pacing(row, budgets)
@@ -217,7 +217,7 @@ class BudgetProjections(object):
 
             self.projections[key] = {
                 metric: value and value.quantize(BudgetProjections.PRECISION, rounding=BudgetProjections.ROUNDING)
-                for metric, value in row.iteritems()
+                for metric, value in row.items()
             }
 
     def _blank_projections(self):

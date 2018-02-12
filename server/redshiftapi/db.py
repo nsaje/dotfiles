@@ -8,7 +8,7 @@ from django.core.cache import caches
 
 from utils import cache_helper
 import utils.db_for_reads
-import queries
+from . import queries
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ def dictfetchall(cursor):
 
     columns = [col[0] for col in cursor.description]
     return [
-        dict(zip(columns, row))
+        dict(list(zip(columns, row)))
         for row in cursor.fetchall()
     ]
 

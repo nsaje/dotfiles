@@ -1,15 +1,13 @@
 import datetime
 import signal
-import collections
-import itertools
 import json
 import functools
 import os
 import tarfile
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import sys
-import StringIO
+import io
 
 import faker
 import influx
@@ -25,6 +23,7 @@ import dash.models
 import zemauth.models
 from utils.command_helpers import ExceptionCommand
 from utils import demo_anonymizer, s3helpers, request_signer, json_helper, grouper
+from utils import unique_ordered_list
 
 import logging
 logger = logging.getLogger(__name__)
@@ -122,7 +121,7 @@ class Command(ExceptionCommand):
     # put connection in read-only mode
     @_postgres_read_only(using='default')
     def handle(self, *args, **options):
-        if options.get('verbosity') > 1:
+        if options.get('verbosity', 0) > 1:
             logger.setLevel(logging.DEBUG)
             ch = logging.StreamHandler()
             ch.setLevel(logging.DEBUG)
@@ -140,7 +139,7 @@ class Command(ExceptionCommand):
             demo_users_set = set(zemauth.models.User.objects.filter(email__endswith='+demo@zemanta.com'))
             demo_users_pks = set(demo_user.pk for demo_user in demo_users_set)
 
-            serialize_list = collections.OrderedDict()
+            serialize_list = unique_ordered_list.UniqueOrderedList()
             _prepare_demo_objects(serialize_list, demo_mappings, demo_users_set)
 
             # roll back any changes we might have made (shouldn't be any)
@@ -148,10 +147,10 @@ class Command(ExceptionCommand):
 
         snapshot_id = _get_snapshot_id()
 
-        tarbuffer = StringIO.StringIO()
+        tarbuffer = io.BytesIO()
         tararchive = tarfile.open(mode='w', fileobj=tarbuffer)
 
-        filtered_reversed_list = filter(lambda obj: obj is not None, reversed(serialize_list))
+        filtered_reversed_list = [obj for obj in reversed(list(serialize_list)) if obj is not None]
         grouped_list = grouper(MAX_PER_FILE, filtered_reversed_list)
 
         for i, group_data in enumerate(grouped_list):
@@ -160,12 +159,13 @@ class Command(ExceptionCommand):
 
             group_json = json.dumps(dump_group_data, indent=4, cls=json_helper.JSONEncoder)
 
-            dumpbuffer = StringIO.StringIO()
-            dumpbuffer.write(group_json)
-            dumpbuffer.seek(0)
+            dumpbuffer = io.BytesIO()
+            dumpbuffer.write(group_json.encode('utf-8'))
 
             info = tarfile.TarInfo('dump{i}.json'.format(i=i))
-            info.size = len(dumpbuffer.buf)
+            info.size = dumpbuffer.tell()
+
+            dumpbuffer.seek(0)
 
             tararchive.addfile(info, fileobj=dumpbuffer)
 
@@ -194,8 +194,8 @@ def _get_snapshot_id():
 
 
 def _deploykitty_prepare(snapshot_id):
-    request = urllib2.Request(settings.DK_DEMO_PREPARE_ENDPOINT + '?' + urllib.urlencode({'version': snapshot_id}))
-    request_signer.urllib2_secure_open(request, settings.DK_API_KEY)
+    request = urllib.request.Request(settings.DK_DEMO_PREPARE_ENDPOINT + '?' + urllib.parse.urlencode({'version': snapshot_id}))
+    request_signer.urllib_secure_open(request, settings.DK_API_KEY)
 
 
 def _prepare_demo_objects(serialize_list, demo_mappings, demo_users_set):
@@ -286,14 +286,7 @@ def _add_to_serialize_list(serialize_list, objs):
         if obj._meta.proxy:
             obj = obj._meta.proxy_for_model.objects.get(pk=obj.pk)
 
-        # explanation: django ORM hashes model objects by PK so we need to save
-        # the object as well, since it might hold anonymization changes
-        if obj not in serialize_list:
-            serialize_list[obj] = obj
-        else:  # move to end
-            obj = serialize_list[obj]
-            del serialize_list[obj]
-            serialize_list[obj] = obj
+        serialize_list.add_or_move_to_end(obj)
 
 
 def _add_explicit_object_dependents(serialize_list, obj, dependencies):
@@ -319,7 +312,7 @@ def _add_explicit_object_dependents(serialize_list, obj, dependencies):
 
 
 def _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects, start_at=0):
-    for obj in itertools.islice(serialize_list, start_at, None):
+    for obj in serialize_list:
         logger.debug('%s %s' % (obj.__class__, obj))
         anonymize = getattr(obj, '_demo_fields', {})
         if obj in demo_users_set or obj in anonymized_objects:  # don't anonymize demo users

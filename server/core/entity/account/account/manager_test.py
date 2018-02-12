@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 import core.source
-from model import Account
+from .model import Account
 
 from utils.magic_mixer import magic_mixer
 

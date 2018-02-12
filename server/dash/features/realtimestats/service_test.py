@@ -1,7 +1,7 @@
 import datetime
 import decimal
 import mock
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import pytz
 
 from django.test import TestCase
@@ -190,7 +190,7 @@ class RealtimestatsServiceTest(TestCase):
     @mock.patch('dash.features.realtimestats.service.logger')
     @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
     def test_k1_http_exception(self, mock_k1_get, mock_logger, mock_influx):
-        e = urllib2.HTTPError('url', 400, 'msg', None, None)
+        e = urllib.error.HTTPError('url', 400, 'msg', None, None)
         mock_k1_get.side_effect = e
 
         result = service.get_ad_group_sources_stats(self.ad_group)
@@ -201,10 +201,10 @@ class RealtimestatsServiceTest(TestCase):
 
     @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
     def test_k1_http_exception_without_caching(self, mock_k1_get):
-        e = urllib2.HTTPError('url', 400, 'msg', None, None)
+        e = urllib.error.HTTPError('url', 400, 'msg', None, None)
         mock_k1_get.side_effect = e
 
-        with self.assertRaises(urllib2.HTTPError) as cm:
+        with self.assertRaises(urllib.error.HTTPError) as cm:
             service.get_ad_group_sources_stats_without_caching(self.ad_group)
             self.assertEqual(e, cm.exception)
 

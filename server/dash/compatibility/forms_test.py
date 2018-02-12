@@ -19,12 +19,12 @@ class RestFrameworkFieldTest(TestCase):
     def test_rest_field_required(self):
         f = self.FooBarForm({'foo': ''})
         self.assertFalse(f.is_valid())
-        self.assertEquals(f.errors['foo'], ['This field may not be blank.'])
+        self.assertEqual(f.errors['foo'], ['This field may not be blank.'])
 
     def test_rest_field_length(self):
         f = self.FooBarForm({'foo': '1234'})
         self.assertFalse(f.is_valid())
-        self.assertEquals(f.errors['foo'], ['Ensure this field has no more than 3 characters.'])
+        self.assertEqual(f.errors['foo'], ['Ensure this field has no more than 3 characters.'])
 
 
 class BarSerializer(serializers.Serializer):

@@ -30,7 +30,7 @@ class Command(utils.command_helpers.ExceptionCommand):
                             ))
 
     def _print(self, msg):
-        self.stdout.write(u'{}\n'.format(msg))
+        self.stdout.write('{}\n'.format(msg))
 
     def handle(self, *args, **options):
         today = datetime.date.today()
@@ -64,7 +64,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             grouped.setdefault(entry.action_type, []).append(entry)
 
         self._print('Summary: ')
-        for action_type, entires in grouped.iteritems():
+        for action_type, entires in grouped.items():
             self._print(' - {}: {}'.format(dash.constants.HistoryActionType.get_text(action_type), len(entires)))
 
         self._print('History: ')

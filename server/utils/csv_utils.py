@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import cStringIO as StringIO
-import unicodecsv
+import io as StringIO
+import csv
 
 
 FORMULA_SYMBOLS = ('@', '+', '-', '=')
@@ -10,8 +10,8 @@ FORMULA_SYMBOLS = ('@', '+', '-', '=')
 
 def tuplelist_to_csv(data):
     out = StringIO.StringIO()
-    csv_file = unicodecsv.writer(
-        out, encoding='utf-8', dialect='excel', quoting=unicodecsv.QUOTE_ALL)
+    csv_file = csv.writer(
+        out, dialect='excel', quoting=csv.QUOTE_ALL)
     for row in data:
         csv_file.writerow(_sanitize_list_row(row))
     return out.getvalue()
@@ -19,8 +19,8 @@ def tuplelist_to_csv(data):
 
 def dictlist_to_csv(fields, rows, writeheader=True):
     out = StringIO.StringIO()
-    writer = unicodecsv.DictWriter(
-        out, fields, encoding='utf-8', dialect='excel', quoting=unicodecsv.QUOTE_ALL)
+    writer = csv.DictWriter(
+        out, fields, dialect='excel', quoting=csv.QUOTE_ALL)
 
     if writeheader:
         writer.writeheader()
@@ -37,7 +37,7 @@ def _sanitize_list_row(row):
 
 def _sanitize_dict_row(row):
     transformed = {}
-    for key, value in row.items():
+    for key, value in list(row.items()):
         transformed[key] = _prepend_if_formula(value)
     return transformed
 
@@ -45,6 +45,6 @@ def _sanitize_dict_row(row):
 def _prepend_if_formula(value):
     # NOTE: aims to prevent malicious input performing formula injection in spredsheet applications
     # See https://www.contextis.com/blog/comma-separated-vulnerabilities
-    if value and unicode(value).startswith(FORMULA_SYMBOLS):
-        value = "'" + unicode(value)
+    if value and str(value).startswith(FORMULA_SYMBOLS):
+        value = "'" + str(value)
     return value

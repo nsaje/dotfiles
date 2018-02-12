@@ -20,7 +20,7 @@ def get_spend(date, **lookup):
         'date': str(date),
         'operator': '=',
     }
-    for key, obj in lookup.iteritems():
+    for key, obj in lookup.items():
         if obj is None:
             continue
         context['key'] = key
@@ -56,7 +56,7 @@ def get_stats_multiple(date, **lookup):
     context = {
         'date': str(date),
     }
-    for key, objects in lookup.iteritems():
+    for key, objects in lookup.items():
         if objects is None:
             continue
         context['key'] = key

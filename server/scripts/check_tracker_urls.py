@@ -54,18 +54,18 @@ def check_tracker_urls(exchange):
         account_dict[campaign.name] = campaign_dict
         result_dict[account.name] = account_dict
 
-    for acc, acc_dict in result_dict.iteritems():
-        print("\nAccount: " + acc + "\t\t[TRACKED: %s FREE: %s]" % count_for_account(acc_dict))
-        for campaign, campaign_dict in acc_dict.iteritems():
-            print("Campaign: " + campaign + "\t\t[TRACKED: %s FREE: %s]" % count_for_campaign(campaign_dict))
-            for ag, values in campaign_dict.iteritems():
-                print("AdGroup: " + ag + "\t\t[TRACKED: %s FREE: %s]" % (values[0], values[1]))
+    for acc, acc_dict in result_dict.items():
+        print(("\nAccount: " + acc + "\t\t[TRACKED: %s FREE: %s]" % count_for_account(acc_dict)))
+        for campaign, campaign_dict in acc_dict.items():
+            print(("Campaign: " + campaign + "\t\t[TRACKED: %s FREE: %s]" % count_for_campaign(campaign_dict)))
+            for ag, values in campaign_dict.items():
+                print(("AdGroup: " + ag + "\t\t[TRACKED: %s FREE: %s]" % (values[0], values[1])))
 
 
 def count_for_account(acc_dict):
     tracked, free = 0, 0
-    for camp, camp_dict in acc_dict.iteritems():
-        for ag, values in camp_dict.iteritems():
+    for camp, camp_dict in acc_dict.items():
+        for ag, values in camp_dict.items():
             tracked += values[0]
             free += values[1]
     return tracked, free
@@ -73,7 +73,7 @@ def count_for_account(acc_dict):
 
 def count_for_campaign(camp_dict):
     tracked, free = 0, 0
-    for ag, values in camp_dict.iteritems():
+    for ag, values in camp_dict.items():
         tracked += values[0]
         free += values[1]
     return tracked, free

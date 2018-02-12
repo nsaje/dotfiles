@@ -21,7 +21,7 @@ NOTE 1: The following dicts represent rows that are returned by dashapi.api_brea
 Whenever a new field is added to augmenter/loader, add it here so that all instances of the row
 get updated.
 
-NOTE 2: To check for correct results use "assertEqual" and not "assertItemsEqual" as the order in which results
+NOTE 2: To check for correct results use "assertEqual" and not "assertCountEqual" as the order in which results
 are returned matters.
 """
 
@@ -90,7 +90,7 @@ CONTENT_AD_1 = {
             'submission_errors': None
         }
     },
-    'tracker_urls': [u'http://testurl1.com', u'http://testurl2.com'],
+    'tracker_urls': ['http://testurl1.com', 'http://testurl2.com'],
 }
 
 CONTENT_AD_2 = {
@@ -168,7 +168,7 @@ SOURCE_1__CONTENT_AD_1 = {
     'source_id': 1, 'content_ad_id': 1, 'ad_group_id': 1, 'campaign_id': 1, 'account_id': 1, 'agency_id': None,
     'title': 'Title 1', 'description': 'Example description', 'brand_name': 'Example',
     'archived': False, 'name': 'Title 1', 'display_url': 'example.com', 'call_to_action': 'Call to action', 'label': '',
-    'tracker_urls': [u'http://testurl1.com', u'http://testurl2.com'],
+    'tracker_urls': ['http://testurl1.com', 'http://testurl2.com'],
     'image_hash': '100', 'image_urls': {
         'square': '/100.jpg?w=160&h=160&fit=crop&crop=center&fm=jpg',
         'landscape': '/100.jpg?w=256&h=160&fit=crop&crop=center&fm=jpg'
@@ -1406,30 +1406,30 @@ class HelpersTest(TestCase):
 
     def test_get_adjusted_limits_for_additional_rows(self):
 
-        self.assertEquals(helpers.get_adjusted_limits_for_additional_rows(range(5), range(5), 0, 10), (0, 5))
+        self.assertEqual(helpers.get_adjusted_limits_for_additional_rows(list(range(5)), list(range(5)), 0, 10), (0, 5))
 
-        self.assertEquals(helpers.get_adjusted_limits_for_additional_rows([], range(5), 5, 10), (0, 10))
+        self.assertEqual(helpers.get_adjusted_limits_for_additional_rows([], list(range(5)), 5, 10), (0, 10))
 
-        self.assertEquals(helpers.get_adjusted_limits_for_additional_rows([], range(5), 10, 10), (5, 10))
+        self.assertEqual(helpers.get_adjusted_limits_for_additional_rows([], list(range(5)), 10, 10), (5, 10))
 
-        self.assertEquals(helpers.get_adjusted_limits_for_additional_rows(range(5), range(15), 10, 10), (0, 5))
+        self.assertEqual(helpers.get_adjusted_limits_for_additional_rows(list(range(5)), list(range(15)), 10, 10), (0, 5))
 
     def test_get_default_order(self):
 
-        self.assertEquals(api_breakdowns.get_default_order('source_id', '-clicks'), ['-name', '-source_id'])
+        self.assertEqual(api_breakdowns.get_default_order('source_id', '-clicks'), ['-name', '-source_id'])
 
-        self.assertEquals(api_breakdowns.get_default_order('source_id', 'clicks'), ['name', 'source_id'])
+        self.assertEqual(api_breakdowns.get_default_order('source_id', 'clicks'), ['name', 'source_id'])
 
-        self.assertEquals(api_breakdowns.get_default_order('ad_group_id', 'clicks'), ['name', 'ad_group_id'])
+        self.assertEqual(api_breakdowns.get_default_order('ad_group_id', 'clicks'), ['name', 'ad_group_id'])
 
     def test_make_rows(self):
-        self.assertItemsEqual(augmenter.make_dash_rows('account_id', [1, 2, 3], None), [
+        self.assertCountEqual(augmenter.make_dash_rows('account_id', [1, 2, 3], None), [
             {'account_id': 1},
             {'account_id': 2},
             {'account_id': 3},
         ])
 
-        self.assertItemsEqual(augmenter.make_dash_rows('account_id', [1, 2, 3], {'source_id': 2}), [
+        self.assertCountEqual(augmenter.make_dash_rows('account_id', [1, 2, 3], {'source_id': 2}), [
             {'account_id': 1, 'source_id': 2},
             {'account_id': 2, 'source_id': 2},
             {'account_id': 3, 'source_id': 2},

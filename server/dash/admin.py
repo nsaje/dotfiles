@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 class StrWidget(forms.Widget):
 
     def render(self, name, value, attrs=None):
-        return mark_safe(unicode(value))
+        return mark_safe(str(value))
 
     def value_from_datadict(self, data, files, name):
         return "Something"
@@ -51,7 +51,7 @@ class StrWidget(forms.Widget):
 class StrFieldWidget(forms.Widget):
 
     def render(self, name, value, attrs=None):
-        return mark_safe('<p>' + unicode(value) + '</p>')
+        return mark_safe('<p>' + str(value) + '</p>')
 
     def value_from_datadict(self, data, files, name):
         return "Something"
@@ -79,7 +79,7 @@ class AbstractUserForm(forms.ModelForm):
             self.fields["last_name"].initial = user.last_name
             self.fields['last_name'].widget.attrs['disabled'] = 'disabled'
             self.fields['last_name'].required = False
-            self.fields["link"].initial = u'<a href="/admin/zemauth/user/%i/">Edit user</a>' % (user.id)
+            self.fields["link"].initial = '<a href="/admin/zemauth/user/%i/">Edit user</a>' % (user.id)
 
 
 class AgencyUserForm(AbstractUserForm):
@@ -139,7 +139,7 @@ class SourceCredentialsForm(forms.ModelForm):
 
     def _set_oauth_refresh(self, instance):
         if not instance or not instance.pk or\
-           not (instance.source.source_type and instance.source.source_type.type in settings.SOURCE_OAUTH_URIS.keys()):
+           not (instance.source.source_type and instance.source.source_type.type in list(settings.SOURCE_OAUTH_URIS.keys())):
             self.fields['oauth_refresh'].widget = forms.HiddenInput()
             return
 
@@ -283,7 +283,7 @@ class AgencyUserInline(admin.TabularInline):
     verbose_name = "Agency Manager"
     verbose_name_plural = "Agency Managers"
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -328,8 +328,8 @@ class AgencyResource(resources.ModelResource):
         return obj.cs_representative and obj.cs_representative.get_full_name() or ''
 
     def dehydrate_accounts(self, obj):
-        return u', '.join([
-            unicode(account) for account in obj.account_set.all()
+        return ', '.join([
+            str(account) for account in obj.account_set.all()
         ])
 
     def dehydrate_agency_managers(self, obj):
@@ -380,12 +380,12 @@ class AgencyAdmin(ExportMixin, admin.ModelAdmin):
         names = []
         for user in obj.users.all():
             names.append(user.get_full_name())
-        return u', '.join(names)
+        return ', '.join(names)
     _users.short_description = 'Agency Managers'
 
     def _accounts(self, obj):
-        return u', '.join([
-            unicode(account) for account in obj.account_set.all()
+        return ', '.join([
+            str(account) for account in obj.account_set.all()
         ])
     _accounts.short_description = 'Accounts'
 
@@ -435,7 +435,7 @@ class AccountUserInline(admin.TabularInline):
     extra = 0
     raw_id_fields = ("user", )
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -821,9 +821,9 @@ class AdGroupSourceAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         return qs
 
     def ad_group_(self, obj):
-        return u'<a href="{ad_group_url}">{name}</a>'.format(
+        return '<a href="{ad_group_url}">{name}</a>'.format(
             ad_group_url=reverse('admin:dash_adgroup_change', args=(obj.ad_group.id,)),
-            name=u'{} / {} / {} - {} ({})'.format(
+            name='{} / {} / {} - {} ({})'.format(
                 obj.ad_group.campaign.account.name,
                 obj.ad_group.campaign.name,
                 obj.ad_group.name,
@@ -869,7 +869,7 @@ class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
 class AdGroupModelChoiceField(forms.ModelChoiceField):
 
     def label_from_instance(self, obj):
-        return u'{} | {} | {}'.format(obj.campaign.account.name, obj.campaign.name, obj.name)
+        return '{} | {} | {}'.format(obj.campaign.account.name, obj.campaign.name, obj.name)
 
 
 class DemoMappingAdminForm(forms.ModelForm):
@@ -917,7 +917,7 @@ class OutbrainAccountAdmin(admin.ModelAdmin):
     readonly_fields = ('_z1_account', )
 
     def _z1_account(self, obj):
-        return u', '.join(
+        return ', '.join(
             '<a href="{account_url}">{account}</a>'.format(
                 account_url=reverse('admin:dash_account_change', args=(account.pk,)),
                 account=account.name
@@ -1042,7 +1042,7 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
 
     def ad_group_name(self, obj):
         ad_group = obj.content_ad.ad_group
-        return u'<a href="{account_url}">{account_name}</a> / <a href="{campaign_url}">{campaign_name}</a>'\
+        return '<a href="{account_url}">{account_name}</a> / <a href="{campaign_url}">{campaign_name}</a>'\
             ' / <a href="{ad_group_url}">{ad_group_name}</a> - ({ad_group_id})'.format(
                 account_url=reverse('admin:dash_account_change', args=(ad_group.campaign.account.id, )),
                 account_name=ad_group.campaign.account.name,
@@ -1189,7 +1189,7 @@ class ScheduledExportReportAdmin(admin.ModelAdmin):
 
     def report_(self, obj):
         link = reverse("admin:dash_exportreport_change", args=(obj.report.id,))
-        return u'<a href="%s">%s</a>' % (link, obj.report)
+        return '<a href="%s">%s</a>' % (link, obj.report)
     report_.allow_tags = True
 
     def _agencies(self, obj):
@@ -1745,7 +1745,7 @@ class CustomHackAdmin(admin.ModelAdmin):
              obj.ad_group.campaign.account and obj.ad_group.campaign.account.agency) or
             None
         )
-        return entity and u'{} | {}'.format(entity.pk, unicode(entity.name)) or ''
+        return entity and '{} | {}'.format(entity.pk, str(entity.name)) or ''
 
     def _account(self, obj):
         entity = (
@@ -1754,14 +1754,14 @@ class CustomHackAdmin(admin.ModelAdmin):
             (obj.ad_group and obj.ad_group.campaign and obj.ad_group.campaign.account) or
             None
         )
-        return entity and u'{} | {}'.format(entity.pk, unicode(entity.name)) or ''
+        return entity and '{} | {}'.format(entity.pk, str(entity.name)) or ''
 
     def _campaign(self, obj):
         entity = obj.campaign or (obj.ad_group and obj.ad_group.campaign) or ''
-        return entity and u'{} | {}'.format(entity.pk, unicode(entity.name)) or ''
+        return entity and '{} | {}'.format(entity.pk, str(entity.name)) or ''
 
     def _ad_group(self, obj):
-        return obj.ad_group and u'{} | {}'.format(obj.ad_group.pk, unicode(obj.ad_group.name)) or ''
+        return obj.ad_group and '{} | {}'.format(obj.ad_group.pk, str(obj.ad_group.name)) or ''
 
 
 class CustomFlagAdmin(admin.ModelAdmin):

@@ -100,11 +100,11 @@ def initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False):
     autopilot_changes_data = run_autopilot(ad_groups=[ad_group.id], adjust_cpcs=False,
                                            adjust_budgets=True, initialization=True, send_mail=send_mail)
     changed_sources = set()
-    for source, changes in paused_sources_changes.iteritems():
+    for source, changes in paused_sources_changes.items():
         if changes['old_budget'] != changes['new_budget']:
             changed_sources.add(source)
     if autopilot_changes_data:
-        for source, changes in autopilot_changes_data[ad_group.campaign][ad_group].iteritems():
+        for source, changes in autopilot_changes_data[ad_group.campaign][ad_group].items():
             if changes['old_budget'] != changes['new_budget']:
                 changed_sources.add(source)
     return changed_sources
@@ -149,7 +149,7 @@ def _get_autopilot_campaign_changes_data(ad_group, email_changes_data, cpc_chang
     if camp not in email_changes_data:
         email_changes_data[camp] = {}
     email_changes_data[camp][ad_group] = {}
-    for s in set(cpc_changes.keys() + budget_changes.keys()):
+    for s in set(list(cpc_changes.keys()) + list(budget_changes.keys())):
         email_changes_data[camp][ad_group][s] = {}
         if s in cpc_changes:
             email_changes_data[camp][ad_group][s] = cpc_changes[s].copy()
@@ -161,7 +161,7 @@ def _get_autopilot_campaign_changes_data(ad_group, email_changes_data, cpc_chang
 def persist_autopilot_changes_to_log(ad_group_settings, cpc_changes, budget_changes, data, autopilot_state,
                                      campaign_goal_data=None, is_autopilot_job_run=False):
     rtb_as_one = ad_group_settings.b1_sources_group_enabled
-    for ag_source in data.keys():
+    for ag_source in list(data.keys()):
         old_budget = data[ag_source]['old_budget']
         goal_c = None
         if campaign_goal_data:
@@ -212,7 +212,7 @@ def persist_autopilot_changes_to_log(ad_group_settings, cpc_changes, budget_chan
 def set_autopilot_changes(cpc_changes={}, budget_changes={}, ad_group=None,
                           system_user=dash.constants.SystemUserType.AUTOPILOT,
                           dry_run=False, landing_mode=None):
-    for ag_source in set(cpc_changes.keys() + budget_changes.keys()):
+    for ag_source in set(list(cpc_changes.keys()) + list(budget_changes.keys())):
         changes = {}
         if (cpc_changes and ag_source in cpc_changes and
                 cpc_changes[ag_source]['old_cpc_cc'] != cpc_changes[ag_source]['new_cpc_cc']):
@@ -231,7 +231,7 @@ def prefetch_autopilot_data(ad_groups_and_settings):
     enabled_ag_sources_settings = autopilot_helpers.get_autopilot_active_sources_settings(ad_groups_and_settings)
     sources = set(s.ad_group_source.source.id for s in enabled_ag_sources_settings)
     yesterday_data, days_ago_data, conv_days_ago_data, campaign_goals, conv_goals, bcm_modifiers_map = _fetch_data(
-        ad_groups_and_settings.keys(), sources)
+        list(ad_groups_and_settings.keys()), sources)
     data = {}
     for source_setting in enabled_ag_sources_settings:
         ag_source = source_setting.ad_group_source
@@ -282,7 +282,7 @@ def _populate_prefetch_adgroup_source_goal_data(
         dividend, divisor, goal_value = _get_other_goal_cost_value(
             ags, row, campaign_goal_data['goal'], goal_col)
 
-    if goal_optimal > 0.0 and goal_value > 0.0:
+    if goal_optimal and goal_value and goal_optimal > 0.0 and goal_value > 0.0:
         goal_performance = (min(float(goal_value) / float(goal_optimal), 1.0) if goal_high_is_good else
                             min(float(goal_optimal) / float(goal_value), 1.0))
 
@@ -323,7 +323,8 @@ def _populate_b1_sources_data(row, current_b1_data, goal_col, goal_optimal, goal
         autopilot_settings.GOALS_WORST_VALUE.get(goal_col)
     current_b1_data['goal_optimal'] = goal_optimal
 
-    if current_b1_data['goal_optimal'] > 0.0 and current_b1_data[goal_col] > 0.0:
+    if (current_b1_data['goal_optimal'] and current_b1_data[goal_col] and
+            current_b1_data['goal_optimal'] > 0.0 and current_b1_data[goal_col] > 0.0):
         if goal_high_is_good:
             current_b1_data['goal_performance'] = min(float(current_b1_data[goal_col]) /
                                                       float(current_b1_data['goal_optimal']), 1.0)
@@ -504,17 +505,17 @@ def _get_bcm_modifiers(ad_groups):
 
 
 def _report_autopilot_exception(element, e):
-    logger.exception(u'Autopilot failed operating on {} because an exception was raised: {}'.format(
+    logger.exception('Autopilot failed operating on {} because an exception was raised: {}'.format(
                      element,
-                     traceback.format_exc(e)))
+                     traceback.format_exc()))
     desc = {
         'element': ''  # repr(element)
     }
     pagerduty_helper.trigger(
         event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
         incident_key='automation_autopilot_error',
-        description=u'Autopilot failed operating on element because an exception was raised: {}'.format(
-            traceback.format_exc(e)),
+        description='Autopilot failed operating on element because an exception was raised: {}'.format(
+            traceback.format_exc()),
         details=desc
     )
 

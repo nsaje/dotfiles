@@ -8,8 +8,8 @@ import core.entity
 from dash import constants
 from utils import exc
 
-import validation
-import model
+from . import validation
+from . import model
 
 
 class ValidationTest(TestCase):

@@ -4,8 +4,8 @@ from dash.views import helpers
 from utils import api_common
 from utils import exc
 
-import models
-import serializers
+from . import models
+from . import serializers
 
 
 class ScheduledReports(api_common.BaseApiView):

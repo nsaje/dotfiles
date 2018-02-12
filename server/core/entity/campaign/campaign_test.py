@@ -3,7 +3,7 @@ from django.test import TestCase
 import dash
 from utils.magic_mixer import magic_mixer
 
-from campaign import Campaign
+from .campaign import Campaign
 
 
 class TestCampaignManager(TestCase):

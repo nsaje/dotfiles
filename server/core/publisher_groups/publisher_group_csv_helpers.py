@@ -134,7 +134,7 @@ def clean_entry_sources(entry_dicts):
 
 def save_entries_errors_csv(account, entry_dicts):
     csv_content = get_entries_errors_csv_content(account, entry_dicts)
-    csv_key = ''.join(random.choice(string.letters + string.digits) for _ in range(64))
+    csv_key = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(64))
     s3_helper = s3helpers.S3Helper(settings.S3_BUCKET_PUBLISHER_GROUPS)
     s3_helper.put(os.path.join(
         'publisher_group_errors', 'account_{}'.format(account.id), csv_key + '.csv'), csv_content)

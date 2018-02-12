@@ -59,7 +59,7 @@ class BreakdownsBase(backtosql.Model):
             breakdown = breakdown[:publisher_id_idx] + ['publisher', 'source_id'] + breakdown[publisher_id_idx + 1:]
 
         # remove duplicated dimensions
-        breakdown = collections.OrderedDict(zip(breakdown, breakdown)).keys()
+        breakdown = list(collections.OrderedDict(list(zip(breakdown, breakdown))).keys())
 
         return self.select_columns(subset=breakdown)
 
@@ -130,8 +130,8 @@ class BreakdownsBase(backtosql.Model):
     def _constraints_to_temp_tables(constraints):
         constraints = copy.copy(constraints)
         temp_tables = set()
-        for constraint, value in constraints.items():
-            is_collection = isinstance(value, collections.Iterable) and type(value) not in (str, unicode)
+        for constraint, value in list(constraints.items()):
+            is_collection = isinstance(value, collections.Iterable) and type(value) not in (str, str)
             if not value or not is_collection or not isinstance(value[0], int):
                 continue
             table_name = 'tmp_filter_{}_{}'.format(constraint, cache_helper.get_cache_key(value))[:MAX_IDENTIFIER_LENGTH]

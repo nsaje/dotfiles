@@ -18,4 +18,4 @@ class MVMasterTest(TestCase):
 
     def test_get_ordered_aggregates(self):
         # items should be equal, just order can differ
-        self.assertItemsEqual(models.MVMaster().get_aggregates(), models.MVMaster().get_ordered_aggregates())
+        self.assertCountEqual(models.MVMaster().get_aggregates(), models.MVMaster().get_ordered_aggregates())

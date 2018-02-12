@@ -3,7 +3,7 @@ import numbers
 from django.db import transaction
 
 from . import exceptions
-from publisher_bid_modifier import PublisherBidModifier
+from .publisher_bid_modifier import PublisherBidModifier
 
 MODIFIER_MAX = 11.0
 MODIFIER_MIN = 0.0

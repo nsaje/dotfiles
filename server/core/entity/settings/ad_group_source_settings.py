@@ -15,8 +15,8 @@ import core.common
 import core.history
 import core.source
 
-from settings_base import SettingsBase
-from settings_query_set import SettingsQuerySet
+from .settings_base import SettingsBase
+from .settings_query_set import SettingsQuerySet
 
 
 class AdGroupSourceSettings(SettingsBase):

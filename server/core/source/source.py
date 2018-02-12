@@ -167,5 +167,5 @@ class Source(models.Model):
         def filter_can_manage_content_ads(self):
             return self.filter(id__in=[x.id for x in self.select_related('source_type') if x.can_manage_content_ads()])
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name

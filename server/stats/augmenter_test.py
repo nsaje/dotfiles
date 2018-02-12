@@ -128,7 +128,7 @@ class AugmenterTestCase(TestCase):
 
         augmenter.augment(['week'], rows)
 
-        self.assertItemsEqual(rows, [
+        self.assertCountEqual(rows, [
             {'day': datetime.date(2016, 5, 1), 'week': datetime.date(2016, 5, 1), 'month': datetime.date(2016, 5, 1),
              'clicks': 10, 'breakdown_name': 'Week 2016-05-01 - 2016-05-07', 'name': 'Week 2016-05-01 - 2016-05-07',
              'breakdown_id': '2016-05-01', 'parent_breakdown_id': ''},
@@ -147,7 +147,7 @@ class AugmenterTestCase(TestCase):
 
         augmenter.augment(['month'], rows)
 
-        self.assertItemsEqual(rows, [
+        self.assertCountEqual(rows, [
             {'day': datetime.date(2016, 5, 1), 'week': datetime.date(2016, 5, 1), 'month': datetime.date(2016, 5, 1),
              'clicks': 10, 'breakdown_name': 'Month 5/2016', 'name': 'Month 5/2016',
              'breakdown_id': '2016-05-01', 'parent_breakdown_id': ''},
@@ -166,7 +166,7 @@ class AugmenterTestCase(TestCase):
 
         augmenter.augment(breakdown, rows)
 
-        self.assertItemsEqual(rows, [
+        self.assertCountEqual(rows, [
             {'ad_group_id': 1, 'source_id': 1, 'breakdown_id': '1||1', 'parent_breakdown_id': '1',
              'name': 'Source1', 'breakdown_name': 'Source1', 'age': 1, 'dma': 501, 'clicks': 10},
             {'ad_group_id': 2, 'source_id': 2, 'breakdown_id': '2||2', 'parent_breakdown_id': '2',
@@ -183,7 +183,7 @@ class AugmenterTestCase(TestCase):
 
         augmenter.augment(breakdown, rows)
 
-        self.assertItemsEqual(rows, [
+        self.assertCountEqual(rows, [
             {'content_ad_id': 1, 'source_id': 1, 'name': 'Source1', 'clicks': 10,
              'breakdown_id': '1||1', 'breakdown_name': 'Source1', 'parent_breakdown_id': '1'},
             {'content_ad_id': 2, 'source_id': 2, 'name': 'Source2', 'clicks': 20,

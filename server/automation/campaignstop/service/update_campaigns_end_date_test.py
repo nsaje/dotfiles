@@ -3,7 +3,7 @@ from django.test import TestCase
 from mock import patch
 
 from .. import CampaignStopState
-from update_campaigns_end_date import update_campaigns_end_date
+from .update_campaigns_end_date import update_campaigns_end_date
 
 import core.bcm
 import dash.constants

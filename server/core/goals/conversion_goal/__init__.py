@@ -1,1 +1,1 @@
-from model import ConversionGoal  # noqa
+from .model import ConversionGoal  # noqa

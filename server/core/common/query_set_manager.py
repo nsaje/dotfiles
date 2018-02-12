@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import base_manager
+from . import base_manager
 
 
 class QuerySetManager(base_manager.BaseManager):

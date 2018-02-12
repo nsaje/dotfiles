@@ -28,7 +28,7 @@ class SourceCredentials(models.Model):
     modified_dt = models.DateTimeField(
         auto_now=True, verbose_name='Modified at')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):

@@ -49,7 +49,7 @@ class ContentInsightsHelperTestCase(test.TestCase):
 
         s, e = datetime.datetime.utcnow(), datetime.datetime.utcnow()
         best, worst = content_insights_helper.fetch_campaign_content_ad_metrics(self.user(), campaign, s, e)
-        self.assertItemsEqual([
+        self.assertCountEqual([
             {
                 'metric': '10.00%',
                 'summary': 'Test Ad 2',
@@ -99,7 +99,7 @@ class ContentInsightsHelperTestCase(test.TestCase):
 
         s, e = datetime.datetime.utcnow(), datetime.datetime.utcnow()
         best, worst = content_insights_helper.fetch_campaign_content_ad_metrics(self.user(), campaign, s, e)
-        self.assertItemsEqual([
+        self.assertCountEqual([
             {
                 'metric': '10.00%',
                 'summary': 'Test Ad 2',
@@ -151,13 +151,13 @@ class ContentInsightsHelperTestCase(test.TestCase):
         res = content_insights_helper._deduplicate_content_ad_titles(
             campaign=campaign
         )
-        self.assertEqual(['Test Ad'], res.keys())
+        self.assertEqual(['Test Ad'], list(res.keys()))
         self.assertEqual(ids, set(res['Test Ad']))
 
         res = content_insights_helper._deduplicate_content_ad_titles(
             ad_group=campaign.adgroup_set.first()
         )
-        self.assertEqual(['Test Ad'], res.keys())
+        self.assertEqual(['Test Ad'], list(res.keys()))
         self.assertEqual(ids, set(res['Test Ad']))
 
         for i in range(10):
@@ -174,11 +174,11 @@ class ContentInsightsHelperTestCase(test.TestCase):
             campaign=campaign
         )
         # archived are ignored
-        self.assertEqual(['Test Ad'], res.keys())
+        self.assertEqual(['Test Ad'], list(res.keys()))
         self.assertEqual(ids, set(res['Test Ad']))
 
         res = content_insights_helper._deduplicate_content_ad_titles(
             ad_group=campaign.adgroup_set.first()
         )
-        self.assertEqual(['Test Ad'], res.keys())
+        self.assertEqual(['Test Ad'], list(res.keys()))
         self.assertEqual(ids, set(res['Test Ad']))

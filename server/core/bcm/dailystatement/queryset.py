@@ -30,5 +30,5 @@ class BudgetDailyStatementQuerySet(QuerySet):
                 et_total=Sum(sum(F(field) for field in ET_TOTALS_FIELDS)),
                 etf_total=Sum(sum(F(field) for field in ETF_TOTALS_FIELDS)),
                 etfm_total=Sum(sum(F(field) for field in ETFM_TOTALS_FIELDS))
-            ).iteritems()
+            ).items()
         }

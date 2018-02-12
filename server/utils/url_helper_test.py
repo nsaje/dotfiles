@@ -1,4 +1,4 @@
-import urlparse
+import urllib.parse
 
 from django.test import TestCase
 from django.conf import settings
@@ -36,4 +36,4 @@ class GetURLTest(TestCase):
     def test_get_full_z1_url(self):
         url = url_helper.get_full_z1_url('abcd/123')
 
-        self.assertEqual(url, urlparse.urljoin(settings.BASE_URL, '/abcd/123'))
+        self.assertEqual(url, urllib.parse.urljoin(settings.BASE_URL, '/abcd/123'))

@@ -55,7 +55,7 @@ def authorize(request, flow=None):
         if resp and resp.status == 200:
             return json.loads(content)
 
-    except Exception, e:
+    except Exception as e:
         logger.error('Google authentification failed')
         logger.exception(e)
 

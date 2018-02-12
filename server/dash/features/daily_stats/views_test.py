@@ -7,7 +7,7 @@ from django.contrib.auth import models as authmodels
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 
-from utils.test_helper import ListMatcher, fake_request
+from utils.test_helper import fake_request
 from zemauth.models import User
 from dash import constants, models
 
@@ -600,12 +600,12 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
                         ],
                     }
                 }],
-                'conversion_goals': ListMatcher([
-                    {'id': 'conversion_goal_5', 'name': 'Test Cg'},
-                    {'id': 'conversion_goal_4', 'name': 'test conversion goal 4'},
-                    {'id': 'conversion_goal_3', 'name': 'test conversion goal 3'},
+                'conversion_goals': [
                     {'id': 'conversion_goal_2', 'name': 'test conversion goal 2'},
-                ]),
+                    {'id': 'conversion_goal_3', 'name': 'test conversion goal 3'},
+                    {'id': 'conversion_goal_4', 'name': 'test conversion goal 4'},
+                    {'id': 'conversion_goal_5', 'name': 'Test Cg'},
+                ],
                 'campaign_goals': {},
                 'pixels': [
                     {'prefix': 'pixel_1', 'name': 'test'},
@@ -731,24 +731,24 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                         ]
                     },
                 }],
-                'conversion_goals': ListMatcher([
+                'conversion_goals': [
                     {
-                        'id': 'conversion_goal_5',
-                        'name': 'test conversion goal 5'
-                    },
-                    {
-                        'id': 'conversion_goal_4',
-                        'name': 'test conversion goal 4'
+                        'id': 'conversion_goal_2',
+                        'name': 'test conversion goal 2'
                     },
                     {
                         'id': 'conversion_goal_3',
                         'name': 'test conversion goal 3'
                     },
                     {
-                        'id': 'conversion_goal_2',
-                        'name': 'test conversion goal 2'
+                        'id': 'conversion_goal_4',
+                        'name': 'test conversion goal 4'
                     },
-                ]),
+                    {
+                        'id': 'conversion_goal_5',
+                        'name': 'test conversion goal 5'
+                    },
+                ],
                 'campaign_goals': {},
                 'pixels': [
                     {'prefix': 'pixel_1', 'name': 'test'},
@@ -874,24 +874,24 @@ class CampaignPublishersDailyStatsTest(TestCase):
                         ]
                     },
                 }],
-                'conversion_goals': ListMatcher([
+                'conversion_goals': [
                     {
-                        'id': 'conversion_goal_5',
-                        'name': 'test conversion goal 5'
-                    },
-                    {
-                        'id': 'conversion_goal_4',
-                        'name': 'test conversion goal 4'
+                        'id': 'conversion_goal_2',
+                        'name': 'test conversion goal 2'
                     },
                     {
                         'id': 'conversion_goal_3',
                         'name': 'test conversion goal 3'
                     },
                     {
-                        'id': 'conversion_goal_2',
-                        'name': 'test conversion goal 2'
+                        'id': 'conversion_goal_4',
+                        'name': 'test conversion goal 4'
                     },
-                ]),
+                    {
+                        'id': 'conversion_goal_5',
+                        'name': 'test conversion goal 5'
+                    },
+                ],
                 'campaign_goals': {},
                 'pixels': [
                     {'prefix': 'pixel_1', 'name': 'test'},

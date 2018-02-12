@@ -138,7 +138,7 @@ def get_filtered_agencies(agency_filter):
     if not agency_filter:
         return filtered_agencies
 
-    filtered_ids = map(int, agency_filter)
+    filtered_ids = list(map(int, agency_filter))
     if filtered_ids:
         filtered_agencies = models.Agency.objects.all().filter(
             id__in=filtered_ids
@@ -152,7 +152,7 @@ def get_filtered_account_types(account_type_filter):
         return filtered_account_types
 
     filtered_account_types = constants.AccountType.get_all()
-    filtered_ids = map(int, account_type_filter)
+    filtered_ids = list(map(int, account_type_filter))
     return list(set(filtered_account_types) & set(filtered_ids))
 
 
@@ -417,7 +417,7 @@ def parse_get_request_content_ad_ids(request_data, param_name):
         return []
 
     try:
-        return map(int, content_ad_ids.split(','))
+        return list(map(int, content_ad_ids.split(',')))
     except ValueError:
         raise exc.ValidationError()
 
@@ -426,7 +426,7 @@ def parse_post_request_ids(request_data, param_name):
     ids = request_data.get(param_name, [])
 
     try:
-        return map(int, ids)
+        return list(map(int, ids))
     except ValueError:
         raise exc.ValidationError()
 
@@ -452,7 +452,7 @@ def get_conversion_goals_wo_pixels(conversion_goals):
     are to be returned separately.
     """
     return [{'id': k, 'name': v} for k, v in
-            columns.get_conversion_goals_column_names_mapping(conversion_goals).items()]
+            sorted(columns.get_conversion_goals_column_names_mapping(conversion_goals).items())]
 
 
 def get_pixels_list(pixels):
@@ -476,7 +476,7 @@ def copy_stats_to_row(stat, row):
                 'avg_cost_per_visit']:
         row[key] = stat.get(key)
 
-    for key in stat.keys():
+    for key in list(stat.keys()):
         if key.startswith('conversion_goal_') or key.startswith('pixel_') or key.startswith('avg_cost_per_pixel_'):
             row[key] = stat.get(key)
 
@@ -645,7 +645,7 @@ def _get_status_setting_disabled_message_for_target_regions(
                 manual_targets.append(constants.RegionType.get_text(region_type))
 
     if unsupported_targets:
-        return 'This source can not be enabled because it does not support {} targeting.'.format(" and ".join(unsupported_targets))
+        return 'This source can not be enabled because it does not support {} targeting.'.format(" and ".join(sorted(unsupported_targets)))
 
 
 def _get_daily_budget_disabled_message(ad_group, ad_group_source, ad_group_settings, campaign_settings):
@@ -708,7 +708,7 @@ def get_adjusted_ad_group_sources_cpcs(ad_group, ad_group_settings):
 
 def validate_ad_group_sources_cpc_constraints(bcm_modifiers, ad_group_sources_cpcs, ad_group):
     rules_per_source = cpc_constraints.get_rules_per_source(ad_group, bcm_modifiers)
-    for ad_group_source, proposed_cpc in ad_group_sources_cpcs.items():
+    for ad_group_source, proposed_cpc in list(ad_group_sources_cpcs.items()):
         if proposed_cpc:
             cpc_constraints.validate_cpc(
                 proposed_cpc,
@@ -719,7 +719,7 @@ def validate_ad_group_sources_cpc_constraints(bcm_modifiers, ad_group_sources_cp
 @transaction.atomic
 def set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, ad_group_settings, skip_validation=False):
     rules_per_source = cpc_constraints.get_rules_per_source(ad_group)
-    for ad_group_source, proposed_cpc in ad_group_sources_cpcs.items():
+    for ad_group_source, proposed_cpc in list(ad_group_sources_cpcs.items()):
         adjusted_cpc = _get_adjusted_ad_group_source_cpc(proposed_cpc, ad_group_source, ad_group_settings)
         if adjusted_cpc:
             adjusted_cpc = cpc_constraints.adjust_cpc(adjusted_cpc, rules=rules_per_source[ad_group_source.source])

@@ -32,7 +32,7 @@ class S3Helper(object):
             return k.get_contents_as_string()
 
         if settings.FILE_STORAGE_DIR:
-            with open(os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(key)), 'r') as f:
+            with open(os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(key)), 'rb') as f:
                 return f.read()
 
     def open_keys_async(self, keys):
@@ -75,6 +75,10 @@ class S3Helper(object):
         return os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(key))
 
     def put(self, key, contents, human_readable_filename=None):
+        try:
+            contents = contents.encode('utf-8')
+        except AttributeError:
+            pass
         if self.use_s3:
             k = self.bucket.new_key(key)
 
@@ -84,7 +88,7 @@ class S3Helper(object):
             k.set_contents_from_string(contents)
 
         elif settings.FILE_STORAGE_DIR:
-            with open(self._local_file_name(key), 'w+') as f:
+            with open(self._local_file_name(key), 'wb+') as f:
                 f.write(contents)
 
     def put_file(self, key, source, human_readable_filename=None):
@@ -97,7 +101,7 @@ class S3Helper(object):
             k.set_contents_from_file(source)
 
         elif settings.FILE_STORAGE_DIR:
-            with open(self._local_file_name(key), 'w+') as f:
+            with open(self._local_file_name(key), 'wb+') as f:
                 _copy_file(source, f)
 
     def put_multipart(self, key, human_readable_filename=None):
@@ -132,7 +136,7 @@ class FakeMultiPartUpload(object):
         self.key = key
         self.last_num = 0
         if settings.FILE_STORAGE_DIR:
-            open(self._get_file(), 'w').close()
+            open(self._get_file(), 'wb').close()
 
     def _get_file(self):
         return os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(self.key))
@@ -149,7 +153,7 @@ class FakeMultiPartUpload(object):
             raise Exception("Only sequential uploads supported, expected part_num: %d" % self.last_num + 1)
         self.last_num = part_num
         if settings.FILE_STORAGE_DIR:
-            with open(self._get_file(), 'a+') as f:
+            with open(self._get_file(), 'ab+') as f:
                 _copy_file(source, f)
 
 

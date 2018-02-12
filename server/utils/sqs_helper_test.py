@@ -52,7 +52,7 @@ class SqsHelperTestCase(TestCase):
 
         messages = sqs_helper.get_all_messages(queue_name)
         self.assertEqual(6, queue_mock.get_messages.call_count)
-        self.assertItemsEqual([
+        self.assertCountEqual([
             message1,
             message2,
             message3,

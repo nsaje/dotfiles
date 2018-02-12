@@ -168,7 +168,7 @@ class CampaignGoalsTestCase(TestCase):
         values = campaign_goals.get_campaign_goal_values(
             self.campaign
         ).values_list('value', flat=True)
-        self.assertItemsEqual([75, 5, 60], values)
+        self.assertCountEqual([75, 5, 60], values)
 
     def test_get_campaign_goals(self):
         self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 75)
@@ -225,7 +225,7 @@ class CampaignGoalsTestCase(TestCase):
             },
         ]
 
-        self.assertItemsEqual(result, cam_goals)
+        self.assertCountEqual(result, cam_goals)
 
     @patch('stats.api_breakdowns.totals')
     def test_get_goal_performance(self, mock_totals):
@@ -259,7 +259,7 @@ class CampaignGoalsTestCase(TestCase):
         }
         performance = campaign_goals.get_goals_performance_campaign(
             self.user, self.campaign, start_date, end_date)
-        self.assertItemsEqual(
+        self.assertCountEqual(
             performance,
             [
                 (cgp.SUPERPERFORMING, 10, Decimal('75.00000'), goal_1),
@@ -281,7 +281,7 @@ class CampaignGoalsTestCase(TestCase):
         performance = campaign_goals.get_goals_performance_campaign(
             self.user, self.campaign, start_date, end_date)
 
-        self.assertItemsEqual(
+        self.assertCountEqual(
             performance,
             [
                 (cgp.SUPERPERFORMING, 10, Decimal('75.00000'), goal_1),

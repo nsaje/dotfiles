@@ -1,10 +1,9 @@
-import urllib2
-import urlparse
+import urllib.request, urllib.error, urllib.parse
 import base64
 import hmac
 import hashlib
 import time
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import json
 
 SECRET = 'a' * 16
@@ -14,15 +13,15 @@ TS_HEADER = 'Zapi-auth-ts'
 SIGNATURE_HEADER = 'Zapi-auth-signature'
 
 
-encoded_query = urllib.urlencode({
+encoded_query = urllib.parse.urlencode({
     'article_url': BIZWIRE_URL
 })
 
 request_url = '{}?{}'.format(ZEMANTA_ENDPOINT, encoded_query)
 
-urllib_request = urllib2.Request(url=request_url)
+urllib_request = urllib.request.Request(url=request_url)
 
-parsed_selector = urlparse.urlparse(urllib_request.get_selector())
+parsed_selector = urllib.parse.urlparse(urllib_request.get_selector())
 
 
 ts = str(int(time.time()))
@@ -34,10 +33,10 @@ signature_base64 = base64.urlsafe_b64encode(signature.digest())
 urllib_request.add_header(TS_HEADER, ts)
 urllib_request.add_header(SIGNATURE_HEADER, signature_base64)
 
-response = urllib2.urlopen(urllib_request)
+response = urllib.request.urlopen(urllib_request)
 
 assert response.getcode() == 200
 
 json_data = json.load(response)
 
-print json_data
+print(json_data)

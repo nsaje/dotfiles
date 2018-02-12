@@ -72,8 +72,8 @@ class CreateClientTestCase(TestCase):
         r = self.client.put(url, data=data, format='json')
         self.assertEqual(r.status_code, 400)
         self.assertEqual(r.json(), {
-            'details': {u'name': [u'This field is required.']},
-            u'errorCode': u'ValidationError'
+            'details': {'name': ['This field is required.']},
+            'errorCode': 'ValidationError'
         })
 
         data = {
@@ -83,8 +83,8 @@ class CreateClientTestCase(TestCase):
         r = self.client.put(url, data=data, format='json')
         self.assertEqual(r.status_code, 400)
         self.assertEqual(r.json(), {
-            'details': {u'type': [u'This field is required.']},
-            u'errorCode': u'ValidationError'
+            'details': {'type': ['This field is required.']},
+            'errorCode': 'ValidationError'
         })
 
         data = {
@@ -95,8 +95,8 @@ class CreateClientTestCase(TestCase):
         self.assertEqual(r.status_code, 400)
 
         self.assertEqual(r.json(), {
-            'details': {u'salesforceAccountId': [u'This field is required.']},
-            u'errorCode': u'ValidationError',
+            'details': {'salesforceAccountId': ['This field is required.']},
+            'errorCode': 'ValidationError',
         })
 
         data = {
@@ -107,8 +107,8 @@ class CreateClientTestCase(TestCase):
         r = self.client.put(url, data=data, format='json')
         self.assertEqual(r.status_code, 400)
         self.assertEqual(r.json(), {
-            'details': {u'type': [u'"invalid-type" is not a valid choice.']},
-            u'errorCode': u'ValidationError',
+            'details': {'type': ['"invalid-type" is not a valid choice.']},
+            'errorCode': 'ValidationError',
         })
 
         magic_mixer.blend(core.entity.agency.Agency, name='Name exists')
@@ -120,8 +120,8 @@ class CreateClientTestCase(TestCase):
         r = self.client.put(url, data=data, format='json')
         self.assertEqual(r.status_code, 400)
         self.assertEqual(r.json(), {
-            u'details': {u'name': u'Name is not unique for this account type.'},
-            u'errorCode': u'ValidationError',
+            'details': {'name': 'Name is not unique for this account type.'},
+            'errorCode': 'ValidationError',
         })
 
 
@@ -142,81 +142,81 @@ class CreateCreditTestCase(TestCase):
         r = self.client.put(url, data=data, format='json')
         self.assertEqual(r.json(), {
             'details': {
-                u'amountAtSigning': [u'This field is required.'],
-                u'contractNumber': [u'This field is required.'],
-                u'description': [u'This field is required.'],
-                u'endDate': [u'This field is required.'],
-                u'pfSchedule': [u'This field is required.'],
-                u'salesforceAccountId': [u'This field is required.'],
-                u'salesforceContractId': [u'This field is required.'],
-                u'startDate': [u'This field is required.'],
-                u'z1_accountId': [u'This field is required.'],
+                'amountAtSigning': ['This field is required.'],
+                'contractNumber': ['This field is required.'],
+                'description': ['This field is required.'],
+                'endDate': ['This field is required.'],
+                'pfSchedule': ['This field is required.'],
+                'salesforceAccountId': ['This field is required.'],
+                'salesforceContractId': ['This field is required.'],
+                'startDate': ['This field is required.'],
+                'z1_accountId': ['This field is required.'],
             },
-            u'errorCode': u'ValidationError',
+            'errorCode': 'ValidationError',
         })
 
     def test_invalid_fields(self):
         url = reverse('service.salesforce.credit')
 
         data = {
-            u'amountAtSigning': '500.0',
-            u'billingContract': 'contract',
-            u'contractNumber': '00',
-            u'description': 'Some description',
-            u'endDate': '2017-05-10',
-            u'startDate': '2017-06-20',
-            u'pfSchedule': 'bla',
-            u'salesforceAccountId': '123',
-            u'salesforceContractId': '111',
-            u'z1_accountId': 'c1',
-            u'pct_of_budget': '0.1',
+            'amountAtSigning': '500.0',
+            'billingContract': 'contract',
+            'contractNumber': '00',
+            'description': 'Some description',
+            'endDate': '2017-05-10',
+            'startDate': '2017-06-20',
+            'pfSchedule': 'bla',
+            'salesforceAccountId': '123',
+            'salesforceContractId': '111',
+            'z1_accountId': 'c1',
+            'pct_of_budget': '0.1',
         }
         r = self.client.put(url, data=data, format='json')
         self.assertEqual(r.json(), {
-            u'details': {u'pfSchedule': [u'"bla" is not a valid choice.']},
-            u'errorCode': u'ValidationError'
+            'details': {'pfSchedule': ['"bla" is not a valid choice.']},
+            'errorCode': 'ValidationError'
         })
 
     def test_missing_fee(self):
         url = reverse('service.salesforce.credit')
 
         data = {
-            u'amountAtSigning': '500.0',
-            u'billingContract': 'contract',
-            u'contractNumber': '00',
-            u'description': 'Some description',
-            u'startDate': '2017-05-10',
-            u'endDate': '2017-06-20',
-            u'pfSchedule': 'monthly as used',
-            u'salesforceAccountId': '123',
-            u'salesforceContractId': '111',
-            u'z1_accountId': 'a1',
+            'amountAtSigning': '500.0',
+            'billingContract': 'contract',
+            'contractNumber': '00',
+            'description': 'Some description',
+            'startDate': '2017-05-10',
+            'endDate': '2017-06-20',
+            'pfSchedule': 'monthly as used',
+            'salesforceAccountId': '123',
+            'salesforceContractId': '111',
+            'z1_accountId': 'a1',
         }
         r = self.client.put(url, data=data, format='json')
         self.assertEqual(r.json(), {
-            u'details': {u'nonFieldErrors': [u'Fee not provided']},
-            u'errorCode': u'ValidationError',
+            'details': {'nonFieldErrors': ['Fee not provided']},
+            'errorCode': 'ValidationError',
         })
 
     def test_invalid_account(self):
         url = reverse('service.salesforce.credit')
         data = {
-            u'amountAtSigning': '500.0',
-            u'billingContract': 'contract',
-            u'contractNumber': '00',
-            u'description': 'Some description',
-            u'startDate': '2017-05-10',
-            u'endDate': '2017-06-20',
-            u'pfSchedule': 'monthly as used',
-            u'salesforceAccountId': '123',
-            u'salesforceContractId': '111',
-            u'z1_accountId': '10',
-            u'pct_of_budget': '0.1',
+            'amountAtSigning': '500.0',
+            'billingContract': 'contract',
+            'contractNumber': '00',
+            'description': 'Some description',
+            'startDate': '2017-05-10',
+            'endDate': '2017-06-20',
+            'pfSchedule': 'monthly as used',
+            'salesforceAccountId': '123',
+            'salesforceContractId': '111',
+            'z1_accountId': '10',
+            'pct_of_budget': '0.1',
         }
         r = self.client.put(url, data=data, format='json')
         self.assertEqual(r.json(), {
-            u'details': {u'z1_accountId': 'Invalid format'},
-            u'errorCode': u'ValidationError',
+            'details': {'z1_accountId': 'Invalid format'},
+            'errorCode': 'ValidationError',
         })
 
     @mock.patch('core.bcm.bcm_slack.log_to_slack')
@@ -224,33 +224,33 @@ class CreateCreditTestCase(TestCase):
         url = reverse('service.salesforce.credit')
 
         data = {
-            u'amountAtSigning': '500.0',
-            u'billingContract': 'contract',
-            u'contractNumber': '00',
-            u'description': 'Some description',
-            u'startDate': '2017-05-10',
-            u'endDate': '2017-06-20',
-            u'pfSchedule': 'monthly as used',
-            u'salesforceAccountId': '123',
-            u'salesforceContractId': '111',
-            u'z1_accountId': 'a1',
-            u'pct_of_budget': '0.1',
+            'amountAtSigning': '500.0',
+            'billingContract': 'contract',
+            'contractNumber': '00',
+            'description': 'Some description',
+            'startDate': '2017-05-10',
+            'endDate': '2017-06-20',
+            'pfSchedule': 'monthly as used',
+            'salesforceAccountId': '123',
+            'salesforceContractId': '111',
+            'z1_accountId': 'a1',
+            'pct_of_budget': '0.1',
         }
         r = self.client.put(url, data=data, format='json')
         cli = core.bcm.credit_line_item.CreditLineItem.objects.all().order_by('-created_dt').first()
         self.assertEqual(r.json(), {
-            u'data': {
-                u'z1_cliId': cli.pk,
-                u'z1_data': {
-                    u'amount': 500.0,
-                    u'comment': u'Some description',
-                    u'startDate': u'2017-05-10',
-                    u'flatFeeCc': 0,
-                    u'flatFeeEndDate': None,
-                    u'flatFeeStartDate': None,
-                    u'licenseFee': 0.1,
-                    u'endDate': u'2017-06-20',
-                    u'status': 1
+            'data': {
+                'z1_cliId': cli.pk,
+                'z1_data': {
+                    'amount': 500.0,
+                    'comment': 'Some description',
+                    'startDate': '2017-05-10',
+                    'flatFeeCc': 0,
+                    'flatFeeEndDate': None,
+                    'flatFeeStartDate': None,
+                    'licenseFee': 0.1,
+                    'endDate': '2017-06-20',
+                    'status': 1
                 }
             }
         })
@@ -266,33 +266,33 @@ class CreateCreditTestCase(TestCase):
     def test_create_account_credit(self, mock_slack):
         url = reverse('service.salesforce.credit')
         data = {
-            u'amountAtSigning': '500.0',
-            u'billingContract': 'contract',
-            u'contractNumber': '00',
-            u'description': 'Some description',
-            u'startDate': '2017-05-10',
-            u'endDate': '2017-06-20',
-            u'pfSchedule': 'monthly as used',
-            u'salesforceAccountId': '123',
-            u'salesforceContractId': '111',
-            u'z1_accountId': 'b1',
-            u'pct_of_budget': '0.1',
+            'amountAtSigning': '500.0',
+            'billingContract': 'contract',
+            'contractNumber': '00',
+            'description': 'Some description',
+            'startDate': '2017-05-10',
+            'endDate': '2017-06-20',
+            'pfSchedule': 'monthly as used',
+            'salesforceAccountId': '123',
+            'salesforceContractId': '111',
+            'z1_accountId': 'b1',
+            'pct_of_budget': '0.1',
         }
         r = self.client.put(url, data=data, format='json')
         cli = core.bcm.credit_line_item.CreditLineItem.objects.all().order_by('-created_dt').first()
         self.assertEqual(r.json(), {
-            u'data': {
-                u'z1_cliId': cli.pk,
-                u'z1_data': {
-                    u'amount': 500.0,
-                    u'comment': u'Some description',
-                    u'startDate': u'2017-05-10',
-                    u'flatFeeCc': 0,
-                    u'flatFeeEndDate': None,
-                    u'flatFeeStartDate': None,
-                    u'licenseFee': 0.1,
-                    u'endDate': u'2017-06-20',
-                    u'status': 1
+            'data': {
+                'z1_cliId': cli.pk,
+                'z1_data': {
+                    'amount': 500.0,
+                    'comment': 'Some description',
+                    'startDate': '2017-05-10',
+                    'flatFeeCc': 0,
+                    'flatFeeEndDate': None,
+                    'flatFeeStartDate': None,
+                    'licenseFee': 0.1,
+                    'endDate': '2017-06-20',
+                    'status': 1
                 }
             }
         })
@@ -308,33 +308,33 @@ class CreateCreditTestCase(TestCase):
     def test_flat_fee_upfront(self, mock_slack):
         url = reverse('service.salesforce.credit')
         data = {
-            u'amountAtSigning': '500.0',
-            u'billingContract': 'contract',
-            u'contractNumber': '00',
-            u'description': 'Some description',
-            u'endDate': '2017-06-20',
-            u'startDate': '2017-05-10',
-            u'pfSchedule': 'upon execution of this agreement',
-            u'salesforceAccountId': '123',
-            u'salesforceContractId': '111',
-            u'z1_accountId': 'b1',
-            u'calc_variable_fee': '100.0',
+            'amountAtSigning': '500.0',
+            'billingContract': 'contract',
+            'contractNumber': '00',
+            'description': 'Some description',
+            'endDate': '2017-06-20',
+            'startDate': '2017-05-10',
+            'pfSchedule': 'upon execution of this agreement',
+            'salesforceAccountId': '123',
+            'salesforceContractId': '111',
+            'z1_accountId': 'b1',
+            'calc_variable_fee': '100.0',
         }
         r = self.client.put(url, data=data, format='json')
         cli = core.bcm.credit_line_item.CreditLineItem.objects.all().order_by('-created_dt').first()
         self.assertEqual(r.json(), {
-            u'data': {
-                u'z1_cliId': cli.pk,
-                u'z1_data': {
-                    u'amount': 500.0,
-                    u'comment': u'Some description',
-                    u'endDate': u'2017-06-20',
-                    u'flatFeeCc': 1000000,
-                    u'flatFeeEndDate': u'2017-05-10',
-                    u'flatFeeStartDate': u'2017-05-10',
-                    u'licenseFee': 0.0,
-                    u'startDate': u'2017-05-10',
-                    u'status': 1
+            'data': {
+                'z1_cliId': cli.pk,
+                'z1_data': {
+                    'amount': 500.0,
+                    'comment': 'Some description',
+                    'endDate': '2017-06-20',
+                    'flatFeeCc': 1000000,
+                    'flatFeeEndDate': '2017-05-10',
+                    'flatFeeStartDate': '2017-05-10',
+                    'licenseFee': 0.0,
+                    'startDate': '2017-05-10',
+                    'status': 1
                 }
             }
         })
@@ -350,33 +350,33 @@ class CreateCreditTestCase(TestCase):
     def test_flat_fee(self, mock_slack):
         url = reverse('service.salesforce.credit')
         data = {
-            u'amountAtSigning': '500.0',
-            u'billingContract': 'contract',
-            u'contractNumber': '00',
-            u'description': 'Some description',
-            u'startDate': '2017-05-10',
-            u'endDate': '2017-06-20',
-            u'pfSchedule': 'monthly in installments',
-            u'salesforceAccountId': '123',
-            u'salesforceContractId': '111',
-            u'z1_accountId': 'b1',
-            u'calc_variable_fee': '100.0',
+            'amountAtSigning': '500.0',
+            'billingContract': 'contract',
+            'contractNumber': '00',
+            'description': 'Some description',
+            'startDate': '2017-05-10',
+            'endDate': '2017-06-20',
+            'pfSchedule': 'monthly in installments',
+            'salesforceAccountId': '123',
+            'salesforceContractId': '111',
+            'z1_accountId': 'b1',
+            'calc_variable_fee': '100.0',
         }
         r = self.client.put(url, data=data, format='json')
         cli = core.bcm.credit_line_item.CreditLineItem.objects.all().order_by('-created_dt').first()
         self.assertEqual(r.json(), {
-            u'data': {
-                u'z1_cliId': cli.pk,
-                u'z1_data': {
-                    u'amount': 500.0,
-                    u'comment': u'Some description',
-                    u'startDate': u'2017-05-10',
-                    u'flatFeeCc': 1000000,
-                    u'flatFeeEndDate': u'2017-06-20',
-                    u'flatFeeStartDate': u'2017-05-10',
-                    u'licenseFee': 0.0,
-                    u'endDate': u'2017-06-20',
-                    u'status': 1
+            'data': {
+                'z1_cliId': cli.pk,
+                'z1_data': {
+                    'amount': 500.0,
+                    'comment': 'Some description',
+                    'startDate': '2017-05-10',
+                    'flatFeeCc': 1000000,
+                    'flatFeeEndDate': '2017-06-20',
+                    'flatFeeStartDate': '2017-05-10',
+                    'licenseFee': 0.0,
+                    'endDate': '2017-06-20',
+                    'status': 1
                 }
             }
         })
@@ -410,9 +410,9 @@ class AgencyAccountsTestCase(TestCase):
             'z1_accountId': 'a1'
         }, format='json')
         self.assertEqual(r.json(), {
-            u'data': [
-                {u'name': u'#2 Acc 1', u'z1_accountId': u'b2'},
-                {u'name': u'#3 Acc 2', u'z1_accountId': u'b3'}
+            'data': [
+                {'name': '#2 Acc 1', 'z1_accountId': 'b2'},
+                {'name': '#3 Acc 2', 'z1_accountId': 'b3'}
             ]
         })
 
@@ -424,6 +424,6 @@ class AgencyAccountsTestCase(TestCase):
             'z1_accountId': 'b1'
         }, format='json')
         self.assertEqual(r.json(), {
-            u'details': {u'z1_accountId': [u'An agency account must be provided.']},
-            u'errorCode': u'ValidationError'
+            'details': {'z1_accountId': ['An agency account must be provided.']},
+            'errorCode': 'ValidationError'
         })

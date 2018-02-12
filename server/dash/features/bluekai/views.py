@@ -3,8 +3,8 @@ from rest_framework import permissions
 import restapi.views
 from restapi.serializers.targeting import AudienceSerializer
 
-import service
-import serializers
+from . import service
+from . import serializers
 
 
 class TaxonomyTreeInternalView(restapi.views.RESTAPIBaseView):
@@ -40,7 +40,7 @@ class SegmentReachView(restapi.views.RESTAPIBaseView):
         try:
             serializer.is_valid(raise_exception=True)
         except Exception as e:
-            return self.response_ok({'errors': [e.message]})
+            return self.response_ok({'errors': [str(e)]})
 
         reach = service.get_reach(serializer.validated_data)
         return self.response_ok(serializers.BlueKaiReachSerializer(reach).data)

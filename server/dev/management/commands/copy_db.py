@@ -35,11 +35,11 @@ class Command(ExceptionCommand):
         cursor.execute(sql)
         logger.info('Database copied')
 
-        print """
+        print("""
         You can set the following settings in your localsettings.py
 
         DATABASES['default']['NAME'] = '{}'
-        """.format(new_db_name)
+        """.format(new_db_name))
 
     def kill_connections(self, cursor, src_db_name):
         sql = """

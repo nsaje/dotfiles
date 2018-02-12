@@ -5,8 +5,8 @@ from django.db import models
 
 from dash import constants
 
-from history_query_set import HistoryQuerySet
-from history_query_set_manager import HistoryQuerySetManager
+from .history_query_set import HistoryQuerySet
+from .history_query_set_manager import HistoryQuerySetManager
 
 
 class History(models.Model):

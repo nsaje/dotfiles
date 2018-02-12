@@ -100,7 +100,7 @@ class SplitTestsRunner(django.test.runner.DiscoverRunner):
             connections.databases[settings.STATS_TEST_DB_NAME] = stats_meta_conn
 
         if self.redshift_tests:
-            print 'Running tests including Redshift database'
+            print('Running tests including Redshift database')
             db_name = settings.DATABASES[settings.STATS_DB_NAME]['NAME']
             test_db_name = 'test_' + db_name
             settings.DATABASES[settings.STATS_DB_NAME]['NAME'] = test_db_name
@@ -109,7 +109,7 @@ class SplitTestsRunner(django.test.runner.DiscoverRunner):
                          settings.STATS_TEST_DB_NAME,
                          verbosity=0)
             call_command('redshift_migrate', verbosity=0)
-            print 'Using "{}" Redshift database'.format(test_db_name)
+            print('Using "{}" Redshift database'.format(test_db_name))
 
         return old_configs
 
@@ -194,11 +194,11 @@ def monkey_patch_test_case_for_timing(test_timings):
 
 def print_times(test_timings, nr_top_slow=10):
     by_time = sorted(
-        iter(test_timings.items()),
+        iter(list(test_timings.items())),
         key=operator.itemgetter(1),
         reverse=True
     )[:nr_top_slow]
-    print "\n{} slowest tests:".format(nr_top_slow)
+    print("\n{} slowest tests:".format(nr_top_slow))
     for func_name, timing in by_time:
         if timing < 1000.0:
             color = "\033[92m"
@@ -206,4 +206,4 @@ def print_times(test_timings, nr_top_slow=10):
             color = "\033[93m"
         else:
             color = "\033[91m"
-        print "{color}{t:.2f}ms {f}".format(color=color, f=func_name, t=timing)
+        print("{color}{t:.2f}ms {f}".format(color=color, f=func_name, t=timing))

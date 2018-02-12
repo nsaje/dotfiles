@@ -5,8 +5,8 @@ import restapi.fields
 import restapi.serializers
 import restapi.common.serializers
 
-import models
-import constants
+from . import models
+from . import constants
 
 
 DIRECT_UPLOAD = 'DIRECT_UPLOAD'

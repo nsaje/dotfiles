@@ -1,3 +1,5 @@
+import json
+
 from rest_framework.test import APIClient
 from django.test import TestCase
 from django.core.urlresolvers import reverse
@@ -29,7 +31,7 @@ class VideoUploadCallbackTestCase(TestCase):
         r = self.client.put(
             reverse('service.videoassets', kwargs={'videoasset_id': self.videoasset.id}),
             data=data, format='json')
-        self.assertEqual(r.content, '{"data":"ok"}')
+        self.assertEqual(json.loads(r.content), {"data": "ok"})
         self.videoasset.refresh_from_db()
         self.assertEqual(self.videoasset.status, dash.features.videoassets.constants.VideoAssetStatus.PROCESSING)
         self.assertEqual(self.videoasset.duration, 23)
@@ -41,7 +43,7 @@ class VideoUploadCallbackTestCase(TestCase):
         r = self.client.put(
             reverse('service.videoassets', kwargs={'videoasset_id': self.videoasset.id}),
             data=data, format='json')
-        self.assertEqual(r.content, '{"data":"ok"}')
+        self.assertEqual(json.loads(r.content), {"data": "ok"})
         self.videoasset.refresh_from_db()
         self.assertEqual(self.videoasset.status, dash.features.videoassets.constants.VideoAssetStatus.PROCESSING_ERROR)
         self.assertEqual(self.videoasset.error_code, '4006')

@@ -85,7 +85,7 @@ class AdGroupSettingsMixin(object):
             if new_settings.pk is None:
                 new_settings.save(request)
             else:
-                new_settings.save(request, update_fields=changes.keys())
+                new_settings.save(request, update_fields=list(changes.keys()))
             core.signals.settings_change.send_robust(
                 sender=self.__class__, request=request, instance=new_settings,
                 changes=current_settings.get_setting_changes(new_settings))
@@ -159,7 +159,7 @@ class AdGroupSettingsMixin(object):
         special_case_fields = {'autopilot_state', 'autopilot_daily_budget'}
         valid_fields = set(cls._settings_fields) - special_case_fields
 
-        for field, value in kwargs.items():
+        for field, value in list(kwargs.items()):
             required_permission = cls._permissioned_fields.get(field)
             if required_permission and not user.has_perm(required_permission):
                 continue

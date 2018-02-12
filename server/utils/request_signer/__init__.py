@@ -1,14 +1,12 @@
 '''
 Sign https requests with hmac to ensure secrecy and security.
-To ensure ssl certificate validity, use urllib2_secure_open.
+To ensure ssl certificate validity, use urllib_secure_open.
 '''
 
-import urllib2
-import httplib
-import socket
+import urllib
 import ssl
 import os
-import urlparse
+import urllib.parse
 import base64
 import hmac
 import hashlib
@@ -31,13 +29,13 @@ class SignatureError(Exception):
 
 def _validate_request(urllib_request):
     # Force https for requests outside of localhost
-    if urllib_request.get_type() != 'https' and \
-            urllib_request.get_origin_req_host() not in LOCAL_HOSTS:
+    if urllib_request.type != 'https' and \
+            urllib_request.origin_req_host not in LOCAL_HOSTS:
         raise SignatureError('Only https requests are allowed for public hosts')
 
 
 def _validate_key(secret_key):
-    if not isinstance(secret_key, (str, unicode)):
+    if not isinstance(secret_key, (bytes, str)):
         raise SignatureError('Invalid key type')
 
     if not secret_key:
@@ -53,14 +51,14 @@ def _validate_key(secret_key):
 
 def _get_signature(ts, path, query, data, secret_key):
     if data is None:
-        data = ''
+        data = b''
 
-    request_content = '{}\n{}\n{}\n{}'.format(ts, path, query, data)
-    signature = hmac.new(secret_key, request_content, hashlib.sha256)
+    request_content = '{}\n{}\n{}\n{}'.format(ts, path, query, data.decode('utf-8'))
+    signature = hmac.new(secret_key, request_content.encode('utf-8'), hashlib.sha256)
     return base64.urlsafe_b64encode(signature.digest())
 
 
-def sign_urllib2_request(urllib_request, secret_key):
+def sign_urllib_request(urllib_request, secret_key):
     '''
     Adds signature to urllib2 request header.
     Only https post requests are supported.
@@ -68,14 +66,14 @@ def sign_urllib2_request(urllib_request, secret_key):
     _validate_request(urllib_request)
     _validate_key(secret_key)
 
-    parsed_selector = urlparse.urlparse(urllib_request.get_selector())
+    parsed_selector = urllib.parse.urlparse(urllib_request.selector)
 
     ts = str(int(time.time()))
     signature = _get_signature(
         ts,
         parsed_selector.path,
         parsed_selector.query,
-        urllib_request.get_data(),
+        urllib_request.data,
         secret_key,
     )
 
@@ -117,7 +115,7 @@ def verify_wsgi_request(wsgi_request, secret_keys):
 
     header_signature = _normalize_signature(header_signature)
 
-    if isinstance(secret_keys, basestring):
+    if isinstance(secret_keys, (bytes, str)):
         secret_keys = [secret_keys]
     for secret_key in secret_keys:
         calc_signature = _get_signature(
@@ -128,7 +126,7 @@ def verify_wsgi_request(wsgi_request, secret_keys):
             secret_key,
         )
 
-        if calc_signature == header_signature:
+        if calc_signature.decode('utf-8') == header_signature:
             return
     raise SignatureError('Invalid signature')
 
@@ -137,15 +135,15 @@ def _get_https_handler():
     context = ssl.create_default_context()
     context.check_hostname = False
     context.verify_mode = ssl.CERT_NONE
-    return urllib2.HTTPSHandler(context=context)
+    return urllib.request.HTTPSHandler(context=context)
 
 
-_secure_opener = urllib2.build_opener(_get_https_handler())
+_secure_opener = urllib.request.build_opener(_get_https_handler())
 
 
-def urllib2_secure_open(urllib_request, secret_key):
+def urllib_secure_open(urllib_request, secret_key):
     '''
     Create secure connection with server certificate verification.
     '''
-    sign_urllib2_request(urllib_request, secret_key)
+    sign_urllib_request(urllib_request, secret_key)
     return _secure_opener.open(urllib_request)

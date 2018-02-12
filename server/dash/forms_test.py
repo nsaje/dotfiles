@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-import unicodecsv
+import csv
 import datetime
 from decimal import Decimal
-import StringIO
+import io
 
 from django.forms import ValidationError
 from django.test import TestCase
@@ -727,31 +727,31 @@ class AdGroupAdsUploadFormTest(TestCase):
     def test_parse_unknown_file(self):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
         form = self._init_form(csv_file, {})
-        with open('./dash/test_files/test.gif') as f:
+        with open('./dash/test_files/test.gif', 'rb') as f:
             with self.assertRaises(ValidationError):
                 form._parse_file(f)
-        with open('./dash/test_files/test.jpg') as f:
+        with open('./dash/test_files/test.jpg', 'rb') as f:
             with self.assertRaises(ValidationError):
                 form._parse_file(f)
 
     def test_parse_csv_file(self):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
         form = self._init_form(csv_file, {})
-        with open('./dash/test_files/test.csv') as f:
+        with open('./dash/test_files/test.csv', 'rb') as f:
             rows = form._parse_file(f)
             self.assertEqual(self.file_contents, rows)
 
     def test_parse_xls_file(self):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
         form = self._init_form(csv_file, {})
-        with open('./dash/test_files/test.xls') as f:
+        with open('./dash/test_files/test.xls', 'rb') as f:
             rows = form._parse_file(f)
             self.assertEqual(self.file_contents, rows)
 
     def test_parse_xlsx_file(self):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
         form = self._init_form(csv_file, {})
-        with open('./dash/test_files/test.xlsx') as f:
+        with open('./dash/test_files/test.xlsx', 'rb') as f:
             rows = form._parse_file(f)
             self.assertEqual(self.file_contents, rows)
 
@@ -760,28 +760,28 @@ class AdGroupAdsUploadFormTest(TestCase):
 
         form = self._init_form(csv_file, {'display_url': 'test.com'})
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'candidates': [u'First column in header should be URL.']})
+        self.assertEqual(form.errors, {'candidates': ['First column in header should be URL.']})
 
     def test_missing_title_and_image_url(self):
         csv_file = self._get_csv_file(['Url'], ['http://example.com', 'Example', 'img.jpg'])
 
         form = self._init_form(csv_file, {'display_url': 'test.com'})
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'candidates': [u'Second column in header should be Title.']})
+        self.assertEqual(form.errors, {'candidates': ['Second column in header should be Title.']})
 
     def test_missing_image_url(self):
         csv_file = self._get_csv_file(['Url', 'Title'], ['http://example.com', 'Example', 'img.jpg'])
 
         form = self._init_form(csv_file, {'display_url': 'test.com'})
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'candidates': [u'Third column in header should be Image URL.']})
+        self.assertEqual(form.errors, {'candidates': ['Third column in header should be Image URL.']})
 
     def test_no_csv_content(self):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Primary impression tracker url'], [])
 
         form = self._init_form(csv_file, {'display_url': 'test.com'})
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'candidates': [u'Uploaded file is empty.']})
+        self.assertEqual(form.errors, {'candidates': ['Uploaded file is empty.']})
 
     def test_csv_empty_lines(self):
         csv_file = self._get_csv_file([], [['Url', 'Title', 'Image Url', 'Primary impression tracker url'], [],
@@ -808,7 +808,7 @@ class AdGroupAdsUploadFormTest(TestCase):
                                       [EXAMPLE_CSV_CONTENT])
         form = self._init_form(csv_file, {})
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'candidates': [u'Uploaded file is empty.']})
+        self.assertEqual(form.errors, {'candidates': ['Uploaded file is empty.']})
 
     def test_csv_example_content_with_data(self):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Description', 'Primary impression tracker url'],
@@ -852,10 +852,10 @@ class AdGroupAdsUploadFormTest(TestCase):
             'account_id': None,
             'batch_name': self.batch_name,
             'candidates': [{
-                u'image_url': self.image_url,
-                u'title': self.title,
-                u'url': self.url,
-                u'primary_tracker_url': self.primary_tracker_url,
+                'image_url': self.image_url,
+                'title': self.title,
+                'url': self.url,
+                'primary_tracker_url': self.primary_tracker_url,
             }]
         })
 
@@ -866,11 +866,11 @@ class AdGroupAdsUploadFormTest(TestCase):
 
         form = self._init_form(csv_file, None)
         self.assertEqual(form.errors, {'candidates': [
-                         u'Column "Primary impression tracker url" appears multiple times (2) in the CSV file.']})
+                         'Column "Primary impression tracker url" appears multiple times (2) in the CSV file.']})
 
     def test_incorrect_csv_format(self):
-        csv_file = StringIO.StringIO()
-        csv_file.write('TEST\x00TEST')
+        csv_file = io.BytesIO()
+        csv_file.write(b'TEST\x00TEST')
 
         form = self._init_form(csv_file, {'batch_name': self.batch_name})
 
@@ -921,13 +921,13 @@ class AdGroupAdsUploadFormTest(TestCase):
     def test_windows_1252_encoding(self):
         csv_file = self._get_csv_file(
             ['URL', 'Title', 'Image URL', 'Primary impression tracker url'],
-            [[self.url, u'\u00ae', self.image_url, self.crop_areas]],
+            [[self.url, '\u00ae', self.image_url, self.crop_areas]],
             encoding='windows-1252'
         )
         form = self._init_form(csv_file, None)
 
         self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data['candidates'][0]['title'], u'\xae')
+        self.assertEqual(form.cleaned_data['candidates'][0]['title'], '\xae')
 
     def _init_form(self, csv_file, data_updates):
         data = {
@@ -943,15 +943,15 @@ class AdGroupAdsUploadFormTest(TestCase):
         )
 
     def _get_csv_file(self, header, rows, encoding='utf-8'):
-        csv_file = StringIO.StringIO()
+        csv_string = io.StringIO()
 
-        writer = unicodecsv.writer(csv_file, encoding=encoding)
+        writer = csv.writer(csv_string)
         writer.writerow(header)
 
         for row in rows:
             writer.writerow(row)
 
-        return csv_file
+        return io.BytesIO(csv_string.getvalue().encode(encoding))
 
 
 class CampaignAdminFormTest(TestCase):
@@ -1016,12 +1016,12 @@ class ContentAdCandidateFormTestCase(TestCase):
 
         self.valid_image = SimpleUploadedFile(
             name='test.jpg',
-            content=open('./dash/test_files/test.jpg').read(),
+            content=open('./dash/test_files/test.jpg', 'rb').read(),
             content_type='image/jpg'
         )
         self.invalid_image = SimpleUploadedFile(
             name='test.jpg',
-            content=open('./dash/test_files/test.csv').read(),
+            content=open('./dash/test_files/test.csv', 'rb').read(),
             content_type='text/csv'
         )
 
@@ -1604,7 +1604,7 @@ class PublisherTargetingFormTestCase(TestCase):
 
         self.assertTrue(f.is_valid())
         self.assertEqual(f.cleaned_data, {
-            'entries': test_helper.ListMatcher([{
+            'entries': [{
                 'publisher': 'cnn.com',
                 'source': None,
                 'include_subdomains': False,
@@ -1612,7 +1612,7 @@ class PublisherTargetingFormTestCase(TestCase):
                 'publisher': 'cnn2.com',
                 'source': models.Source.objects.get(pk=1),
                 'include_subdomains': True,
-            }]),
+            }],
             'status': constants.PublisherTargetingStatus.BLACKLISTED,
             'ad_group': models.AdGroup.objects.get(pk=1),
             'campaign': None,
@@ -1671,7 +1671,7 @@ class PublisherTargetingFormTestCase(TestCase):
 
         self.assertTrue(f.is_valid())
         self.assertEqual(f.cleaned_data, {
-            'entries': test_helper.ListMatcher([{
+            'entries': [{
                 'publisher': 'cnn.com',
                 'source': None,
                 'include_subdomains': False,
@@ -1679,7 +1679,7 @@ class PublisherTargetingFormTestCase(TestCase):
                 'publisher': 'cnn2.com',
                 'source': models.Source.objects.get(pk=1),
                 'include_subdomains': True,
-            }]),
+            }],
             'status': constants.PublisherTargetingStatus.BLACKLISTED,
             'ad_group': models.AdGroup.objects.get(pk=1),
             'campaign': None,

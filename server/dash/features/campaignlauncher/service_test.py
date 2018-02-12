@@ -8,7 +8,7 @@ from utils.magic_mixer import magic_mixer
 import dash.models
 import dash.constants
 
-import service
+from . import service
 
 
 class TestService(TestCase):

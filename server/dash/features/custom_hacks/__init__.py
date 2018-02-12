@@ -1,1 +1,1 @@
-from custom_hack import CustomHack
+from .custom_hack import CustomHack

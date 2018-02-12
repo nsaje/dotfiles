@@ -65,7 +65,7 @@ class Loader(object):
 
     @cached_property
     def objs_ids(self):
-        return self.objs_map.keys()
+        return list(self.objs_map.keys())
 
     @property
     def start_date(self):
@@ -291,7 +291,7 @@ class AdGroupsLoader(Loader):
     def settings_map(self):
         settings_map = {}
         status_map = self._get_status_map()
-        for ad_group_id, ad_group in self.objs_map.iteritems():
+        for ad_group_id, ad_group in self.objs_map.items():
             settings_map[ad_group_id] = {
                 'archived': ad_group.settings.archived,
                 'status': status_map[ad_group_id],
@@ -303,9 +303,9 @@ class AdGroupsLoader(Loader):
 
     def _get_status_map(self):
         campaignstop_states = automation.campaignstop.get_campaignstop_states(
-            self._campaign_ad_groups_map.keys())
+            list(self._campaign_ad_groups_map.keys()))
         status_map = collections.defaultdict(lambda: constants.AdGroupRunningStatus.INACTIVE)
-        for ad_group_id, ad_group in self.objs_map.iteritems():
+        for ad_group_id, ad_group in self.objs_map.items():
             if ad_group.settings.state == constants.AdGroupRunningStatus.ACTIVE and\
                campaignstop_states[ad_group.campaign_id]['allowed_to_run']:
                 status_map[ad_group_id] = ad_group.settings.state
@@ -317,7 +317,7 @@ class AdGroupsLoader(Loader):
         campaign_ad_groups = self._campaign_ad_groups_map
 
         settings_map = {}
-        for campaign, ad_groups in campaign_ad_groups.items():
+        for campaign, ad_groups in list(campaign_ad_groups.items()):
             campaign_stop_check_map = campaign_stop.can_enable_ad_groups(campaign, campaign.get_current_settings())
             campaign_has_available_budget = data_helper.campaign_has_available_budget(campaign)
 
@@ -332,7 +332,7 @@ class AdGroupsLoader(Loader):
     @cached_property
     def _campaign_ad_groups_map(self):
         campaign_ad_groups = collections.defaultdict(list)
-        for _, ad_group in self.objs_map.iteritems():
+        for _, ad_group in self.objs_map.items():
             campaign_ad_groups[ad_group.campaign].append(ad_group)
 
         return campaign_ad_groups
@@ -367,14 +367,14 @@ class ContentAdsLoader(Loader):
     @cached_property
     def ad_group_map(self):
         ad_group_map = {}
-        for content_ad_id, content_ad in self.objs_map.iteritems():
+        for content_ad_id, content_ad in self.objs_map.items():
             ad_group_map[content_ad_id] = self.ad_group_loader.objs_map[content_ad.ad_group_id]
         return ad_group_map
 
     @cached_property
     def status_map(self):
         status_map = {}
-        for content_ad_id, content_ad in self.objs_map.iteritems():
+        for content_ad_id, content_ad in self.objs_map.items():
             content_ad_sources = self.content_ads_sources_map[content_ad_id]
             if (any([x.state == constants.ContentAdSourceState.ACTIVE for x in content_ad_sources]) and
                 self.ad_group_loader.settings_map[content_ad.ad_group_id]['status'] ==
@@ -390,7 +390,7 @@ class ContentAdsLoader(Loader):
         sources = {x.id: x.name for x in self.filtered_sources_qs}
         source_status_map = self._get_per_ad_group_source_status_map()
 
-        for content_ad_id, content_ad in self.objs_map.iteritems():
+        for content_ad_id, content_ad in self.objs_map.items():
             for content_ad_source in self.content_ads_sources_map[content_ad_id]:
                 source_id = content_ad_source.source_id
 
@@ -523,7 +523,7 @@ class PublisherBlacklistLoader(Loader):
     def can_blacklist_source_map(self):
         d = collections.defaultdict(lambda: False)
 
-        for source_id, source in self.source_map.items():
+        for source_id, source in list(self.source_map.items()):
             can_blacklist_outbrain_publisher = source.source_type.type == constants.SourceType.OUTBRAIN and\
                 self.user.has_perm(
                     'zemauth.can_modify_outbrain_account_publisher_blacklist_status')
@@ -576,7 +576,7 @@ class AdGroupSourcesLoader(Loader):
         result = {}
         ad_group_sources_map = {x.source_id: x for x in self._active_ad_groups_sources_qs}
 
-        for source_id, source in self.objs_map.items():
+        for source_id, source in list(self.objs_map.items()):
             ad_group_source = ad_group_sources_map[source_id]
             source_settings = self._ad_group_source_settings_map[source_id]
 
@@ -661,7 +661,7 @@ class AdGroupSourcesLoader(Loader):
     @cached_property
     def totals(self):
         daily_budget = sum([
-            v['daily_budget'] for v in self.settings_map.values()
+            v['daily_budget'] for v in list(self.settings_map.values())
             if v['daily_budget'] and v['state'] == constants.AdGroupSourceSettingsState.ACTIVE])
 
         # MVP for all-RTB-sources-as-one

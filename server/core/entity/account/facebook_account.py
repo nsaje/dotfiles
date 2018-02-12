@@ -18,5 +18,5 @@ class FacebookAccount(models.Model):
         choices=constants.FacebookPageRequestType.get_choices()
     )
 
-    def __unicode__(self):
+    def __str__(self):
         return self.account.name

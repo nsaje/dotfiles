@@ -180,6 +180,6 @@ if __name__ == '__main__':
                 unmatched_yahoo[ad_group_id] = []
             unmatched_yahoo[ad_group_id].append(promoted_link)
 
-        print 'AD GROUP ID: {} NUM LINKS: {}, NON EXISTING: {}'.format(ad_group_id, len(promoted_links), len(unmatched_yahoo.get(ad_group_id, [])))
+        print('AD GROUP ID: {} NUM LINKS: {}, NON EXISTING: {}'.format(ad_group_id, len(promoted_links), len(unmatched_yahoo.get(ad_group_id, []))))
 
-    print 'COUNT:', count
+    print('COUNT:', count)

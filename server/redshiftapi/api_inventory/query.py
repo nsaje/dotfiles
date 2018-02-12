@@ -1,7 +1,7 @@
 import backtosql
 import redshiftapi.db
 
-import model
+from . import model
 
 
 COUNTRY = 'country'
@@ -14,7 +14,7 @@ def query(breakdown=None, constraints=None):
     constraints = constraints or {}
     assert breakdown in VALID_BREAKDOWNS
     if constraints:
-        for field in constraints.keys():
+        for field in list(constraints.keys()):
             assert field in VALID_BREAKDOWNS
 
     m = model.Inventory()

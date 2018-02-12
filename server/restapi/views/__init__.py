@@ -1,1 +1,1 @@
-from legacy import *  # noqa
+from .legacy import *  # noqa

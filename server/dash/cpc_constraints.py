@@ -175,7 +175,7 @@ def _get_bcm_modifiers_map(ag_sources_settings):
 
 def _get_ags_level_constraints(levels):
     constraints = {}
-    for level, value in levels.iteritems():
+    for level, value in levels.items():
         search_key = ''
         if 'ad_group' in level:
             search_key = 'ad_group'

@@ -10,8 +10,8 @@ from zemauth.models import User
 from django.core.urlresolvers import reverse
 
 import dash.models
-import fields
-import views as restapi_views
+from . import fields
+from . import views as restapi_views
 from dash import constants
 import redshiftapi.api_quickstats
 from automation import autopilot_plus
@@ -976,7 +976,7 @@ class PublisherGroupEntryTest(RESTAPITest):
         response = self.assertResponseValid(r, data_type=list, status_code=200)
         for x in response['data']:
             self.validate_against_db(x)
-        self.assertItemsEqual([x['id'] for x in response['data']], ['1', '2'])
+        self.assertCountEqual([x['id'] for x in response['data']], ['1', '2'])
 
     def test_get_list_check_pagination(self):
         r = self.client.get(reverse('publisher_group_entry_list', kwargs={'publisher_group_id': 1}),

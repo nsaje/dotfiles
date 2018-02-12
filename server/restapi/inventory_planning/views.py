@@ -5,7 +5,7 @@ import django.utils.cache
 from restapi.views import RESTAPIBaseView
 import dash.features.inventory_planning
 
-import serializers
+from . import serializers
 
 
 CLIENT_SIDE_CACHE_TIME = 60 * 60 * 24  # cache for 1 day
@@ -55,7 +55,7 @@ class InventoryPlanningView(RESTAPIBaseView):
 
     @staticmethod
     def _extract_filters(filters_serializer):
-        return {field: values for field, values in filters_serializer.validated_data.items() if values}
+        return {field: values for field, values in list(filters_serializer.validated_data.items()) if values}
 
     @staticmethod
     def _remap_summary(data):

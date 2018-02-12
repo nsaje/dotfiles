@@ -8,7 +8,7 @@ import os.path
 from collections import defaultdict
 from dateutil import rrule
 from functools import partial
-import unicodecsv as csv
+import csv
 
 from django.conf import settings
 from django.utils.functional import cached_property
@@ -21,9 +21,9 @@ import dash.constants
 
 from redshiftapi import db
 
-import models
-import helpers
-import derived_views
+from . import models
+from . import helpers
+from . import derived_views
 
 
 logger = logging.getLogger(__name__)
@@ -44,7 +44,7 @@ available for the whole range.
 def _do_upload_csv(s3_path, generator):
     bucket = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS)
 
-    with io.BytesIO() as csvfile:
+    with io.StringIO() as csvfile:
         writer = csv.writer(csvfile, dialect='excel', delimiter=CSV_DELIMITER)
 
         for line in generator():
@@ -315,8 +315,8 @@ class MVHelpersCampaignFactors(Materialize):
                 logger.info('Copied CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
 
     def generate_rows(self, campaign_factors):
-        for date, campaign_dict in campaign_factors.iteritems():
-            for campaign, factors in campaign_dict.iteritems():
+        for date, campaign_dict in campaign_factors.items():
+            for campaign, factors in campaign_dict.items():
                 yield (
                     date,
                     campaign.id,
@@ -496,11 +496,11 @@ class MasterView(Materialize):
             postclick_source = helpers.extract_postclick_source(row.postclick_source)
             rows_by_ad_group[row.ad_group_id][postclick_source].append(row)
 
-        for ad_group_id, rows_by_postclick_source in rows_by_ad_group.iteritems():
+        for ad_group_id, rows_by_postclick_source in rows_by_ad_group.items():
 
-            if len(rows_by_postclick_source.keys()) > 1:
+            if len(list(rows_by_postclick_source.keys())) > 1:
                 logger.info("Postclick stats for a single ad group (%s) from different sources %s, date %s",
-                            ad_group_id, rows_by_postclick_source.keys(), date)
+                            ad_group_id, list(rows_by_postclick_source.keys()), date)
 
             rows = helpers.get_highest_priority_postclick_source(rows_by_postclick_source)
 
@@ -538,7 +538,7 @@ class MasterView(Materialize):
                         ad_group.id,
                         row.content_ad_id,
                         publisher,
-                        u'{}__{}'.format(publisher if publisher else u'', source.id),  # publisher_source_id
+                        '{}__{}'.format(publisher if publisher else '', source.id),  # publisher_source_id
 
                         dash.constants.DeviceType.UNKNOWN,
                         None,  # device_os
@@ -711,7 +711,7 @@ class MVConversions(Materialize):
             if conversions:
                 conversions = json.loads(conversions)
 
-                for slug, hits in conversions.iteritems():
+                for slug, hits in conversions.items():
                     slug = helpers.get_conversion_prefix(postclick_source, slug)
                     yield tuple(list(row)[:8] + [slug, hits])
 

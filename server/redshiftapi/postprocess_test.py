@@ -19,7 +19,7 @@ class PostprocessTest(TestCase):
         }
 
         dates = postprocess._get_representative_dates(stats.constants.TimeDimension.DAY, constraints)
-        self.assertItemsEqual(dates, [
+        self.assertCountEqual(dates, [
             datetime.date(2016, 2, 2),
             datetime.date(2016, 2, 3),
             datetime.date(2016, 2, 4),
@@ -32,7 +32,7 @@ class PostprocessTest(TestCase):
         }
 
         dates = postprocess._get_representative_dates(stats.constants.TimeDimension.DAY, constraints)
-        self.assertItemsEqual(dates, [
+        self.assertCountEqual(dates, [
             datetime.date(2016, 2, 2),
             datetime.date(2016, 2, 3),
             datetime.date(2016, 2, 4),
@@ -45,7 +45,7 @@ class PostprocessTest(TestCase):
         }
 
         dates = postprocess._get_representative_dates(stats.constants.TimeDimension.WEEK, constraints)
-        self.assertItemsEqual(dates, [
+        self.assertCountEqual(dates, [
             datetime.date(2016, 2, 1),
             datetime.date(2016, 2, 8),
             datetime.date(2016, 2, 15),
@@ -59,7 +59,7 @@ class PostprocessTest(TestCase):
         }
 
         dates = postprocess._get_representative_dates(stats.constants.TimeDimension.WEEK, constraints)
-        self.assertItemsEqual(dates, [
+        self.assertCountEqual(dates, [
             datetime.date(2016, 2, 1),
             datetime.date(2016, 2, 8),
             datetime.date(2016, 2, 15),
@@ -73,7 +73,7 @@ class PostprocessTest(TestCase):
         }
 
         dates = postprocess._get_representative_dates(stats.constants.TimeDimension.MONTH, constraints)
-        self.assertItemsEqual(dates, [
+        self.assertCountEqual(dates, [
             datetime.date(2016, 2, 1),
             datetime.date(2016, 3, 1),
             datetime.date(2016, 4, 1),
@@ -85,7 +85,7 @@ class PostprocessTest(TestCase):
         }
 
         dates = postprocess._get_representative_dates(stats.constants.TimeDimension.MONTH, constraints)
-        self.assertItemsEqual(dates, [
+        self.assertCountEqual(dates, [
             datetime.date(2016, 2, 1),
             datetime.date(2016, 3, 1),
         ])
@@ -100,7 +100,7 @@ class PostprocessTest(TestCase):
             [{'ad_group_id': 1}]
         )
 
-        self.assertItemsEqual(rows, [
+        self.assertCountEqual(rows, [
             {'ad_group_id': 1, 'day': datetime.date(2016, 7, 1)},
             {'ad_group_id': 1, 'day': datetime.date(2016, 7, 2)},
             {'ad_group_id': 1, 'day': datetime.date(2016, 7, 3)},

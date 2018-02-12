@@ -10,7 +10,7 @@ import utils.slack
 
 
 INFLUX_MEASUREMENT = 'z1_analytics_overspend'
-ALERT_MSG_OVERSPEND = u"""Overspend on {date} on accounts:
+ALERT_MSG_OVERSPEND = """Overspend on {date} on accounts:
 {details}"""
 
 
@@ -30,7 +30,7 @@ class Command(utils.command_helpers.ExceptionCommand):
     def _print(self, msg):
         if not self.verbose:
             return
-        self.stdout.write(u'{}\n'.format(msg))
+        self.stdout.write('{}\n'.format(msg))
 
     def handle(self, *args, **options):
         self.verbose = options['verbose']
@@ -49,11 +49,11 @@ class Command(utils.command_helpers.ExceptionCommand):
             return
 
         self._print(ALERT_MSG_OVERSPEND.format(date=self.date.strftime('%Y-%m-%d'), details=''))
-        details = u''
+        details = ''
         influx_data = []
-        for account, account_overspend in alarms.items():
-            self._print(u'- {} {}: ${:.2f}'.format(account.name, account.id, account_overspend))
-            details += u' - {}: ${:.2f}\n'.format(
+        for account, account_overspend in list(alarms.items()):
+            self._print('- {} {}: ${:.2f}'.format(account.name, account.id, account_overspend))
+            details += ' - {}: ${:.2f}\n'.format(
                 utils.slack.account_url(account),
                 account_overspend,
             )

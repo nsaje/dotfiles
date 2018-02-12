@@ -6,7 +6,7 @@ from operator import itemgetter
 
 import mock
 from mock import patch, ANY
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from django.test import TestCase
 from django.core.urlresolvers import reverse
@@ -21,7 +21,6 @@ import core.publisher_bid_modifiers
 
 import logging
 
-from utils.test_helper import ListMatcher
 from utils import request_signer
 from utils import email_helper
 from utils.magic_mixer import magic_mixer
@@ -111,64 +110,64 @@ class K1ApiTest(K1ApiBaseTest):
 
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0], {
-            u'id': 1,
-            u'name': u'test account 1',
-            u'outbrain_marketer_id': u'abcde',
-            u'custom_audiences': ListMatcher([
-                {u'pixel_id': 1,
-                 u'rules': [
-                     {u'type': 1, u'values': u'dummy', u'id': 1},
-                     {u'type': 2, u'values': u'dummy2', u'id': 2}],
-                 u'name': 'Audience 1',
-                 u'id': 1,
-                 u'ttl': 90},
-                {u'pixel_id': 2,
-                 u'rules': [
-                     {u'type': 1, u'values': u'dummy3', u'id': 3},
-                     {u'type': 2, u'values': u'dummy4', u'id': 4}],
-                 u'name': 'Audience 2',
-                 u'id': 2,
-                 u'ttl': 60}]),
-            u'pixels': ListMatcher([
-                {u'id': 1,
-                 u'name': u'Pixel 1',
-                 u'slug': u'testslug1',
-                 u'audience_enabled': False,
-                 u'additional_pixel': False,
-                 u'source_pixels': ListMatcher([
-                     {u'url': u'http://www.ob.com/pixelendpoint',
-                      u'source_pixel_id': u'ob_zem1',
-                      u'source_type': u'outbrain',
+            'id': 1,
+            'name': 'test account 1',
+            'outbrain_marketer_id': 'abcde',
+            'custom_audiences': [
+                {'pixel_id': 1,
+                 'rules': [
+                     {'type': 1, 'values': 'dummy', 'id': 1},
+                     {'type': 2, 'values': 'dummy2', 'id': 2}],
+                 'name': 'Audience 1',
+                 'id': 1,
+                 'ttl': 90},
+                {'pixel_id': 2,
+                 'rules': [
+                     {'type': 1, 'values': 'dummy3', 'id': 3},
+                     {'type': 2, 'values': 'dummy4', 'id': 4}],
+                 'name': 'Audience 2',
+                 'id': 2,
+                 'ttl': 60}],
+            'pixels': [
+                {'id': 1,
+                 'name': 'Pixel 1',
+                 'slug': 'testslug1',
+                 'audience_enabled': False,
+                 'additional_pixel': False,
+                 'source_pixels': [
+                     {'url': 'http://www.ob.com/pixelendpoint',
+                      'source_pixel_id': 'ob_zem1',
+                      'source_type': 'outbrain',
                       },
-                     {u'url': u'http://www.y.com/pixelendpoint',
-                      u'source_pixel_id': u'y_zem1',
-                      u'source_type': u'yahoo',
+                     {'url': 'http://www.y.com/pixelendpoint',
+                      'source_pixel_id': 'y_zem1',
+                      'source_type': 'yahoo',
                       },
-                     {u'url': u'http://www.fb.com/pixelendpoint',
-                      u'source_pixel_id': u'fb_zem1',
-                      u'source_type': u'facebook',
+                     {'url': 'http://www.fb.com/pixelendpoint',
+                      'source_pixel_id': 'fb_zem1',
+                      'source_type': 'facebook',
                       },
-                 ])},
-                {u'id': 2,
-                 u'name': u'Pixel 2',
-                 u'slug': u'testslug2',
-                 u'audience_enabled': True,
-                 u'additional_pixel': False,
-                 u'source_pixels': ListMatcher([
-                     {u'url': u'http://www.xy.com/pixelendpoint',
-                      u'source_pixel_id': u'xy_zem2',
-                      u'source_type': u'taboola',
+                 ]},
+                {'id': 2,
+                 'name': 'Pixel 2',
+                 'slug': 'testslug2',
+                 'audience_enabled': True,
+                 'additional_pixel': False,
+                 'source_pixels': [
+                     {'url': 'http://www.xy.com/pixelendpoint',
+                      'source_pixel_id': 'xy_zem2',
+                      'source_type': 'taboola',
                       },
-                     {u'url': u'http://www.y.com/pixelendpoint',
-                      u'source_pixel_id': u'y_zem2',
-                      u'source_type': u'yahoo',
+                     {'url': 'http://www.y.com/pixelendpoint',
+                      'source_pixel_id': 'y_zem2',
+                      'source_type': 'yahoo',
                       },
-                     {u'url': u'http://www.fb.com/pixelendpoint',
-                      u'source_pixel_id': u'fb_zem2',
-                      u'source_type': u'facebook',
+                     {'url': 'http://www.fb.com/pixelendpoint',
+                      'source_pixel_id': 'fb_zem2',
+                      'source_type': 'facebook',
                       },
-                 ])},
-            ])})
+                 ]},
+            ]})
 
     def test_get_default_source_credentials(self):
         response = self.client.get(
@@ -180,7 +179,7 @@ class K1ApiTest(K1ApiBaseTest):
         self._assert_response_ok(response, data)
 
         data = data['response']
-        self.assertEqual(data[0]['credentials']['credentials'], u'h')
+        self.assertEqual(data[0]['credentials']['credentials'], 'h')
 
     def test_get_custom_audience(self):
         response = self.client.get(
@@ -195,37 +194,37 @@ class K1ApiTest(K1ApiBaseTest):
         data = accounts_data[0]['custom_audiences']
 
         self.assertEqual(2, len(data))
-        self.assertEqual(data, ListMatcher([{
-            u'id': 1,
-            u'name': u'Audience 1',
-            u'pixel_id': 1,
-            u'rules': ListMatcher([
-                {u'id': 1,
-                 u'type': 1,
-                 u'values': u'dummy',
+        self.assertEqual(data, [{
+            'id': 1,
+            'name': 'Audience 1',
+            'pixel_id': 1,
+            'rules': [
+                {'id': 1,
+                 'type': 1,
+                 'values': 'dummy',
                  },
-                {u'id': 2,
-                 u'type': 2,
-                 u'values': u'dummy2',
+                {'id': 2,
+                 'type': 2,
+                 'values': 'dummy2',
                  },
-            ]),
-            u'ttl': 90,
+            ],
+            'ttl': 90,
         }, {
-            u'id': 2,
-            u'name': u'Audience 2',
-            u'pixel_id': 2,
-            u'rules': ListMatcher([
-                {u'id': 3,
-                 u'type': 1,
-                 u'values': u'dummy3',
+            'id': 2,
+            'name': 'Audience 2',
+            'pixel_id': 2,
+            'rules': [
+                {'id': 3,
+                 'type': 1,
+                 'values': 'dummy3',
                  },
-                {u'id': 4,
-                 u'type': 2,
-                 u'values': u'dummy4',
+                {'id': 4,
+                 'type': 2,
+                 'values': 'dummy4',
                  },
-            ]),
-            u'ttl': 60,
-        }]))
+            ],
+            'ttl': 60,
+        }])
 
     @patch('utils.redirector_helper.upsert_audience')
     def test_update_source_pixel_with_existing(self, redirector_mock):
@@ -421,7 +420,7 @@ class K1ApiTest(K1ApiBaseTest):
 
         response = self.client.get(
             reverse('k1api.ga_accounts'),
-            QUERY_STRING=urllib.urlencode({'date_since': '2014-07-01'}),
+            QUERY_STRING=urllib.parse.urlencode({'date_since': '2014-07-01'}),
         )
 
         data = json.loads(response.content)
@@ -431,11 +430,11 @@ class K1ApiTest(K1ApiBaseTest):
         self.assertEqual(len(data['ga_accounts']), 5)
         self.assertEqual(
             list(sorted(data['ga_accounts'], key=lambda x: x['ga_web_property_id'])),
-            [{u'ga_web_property_id': u'UA-123-0', u'account_id': 2, u'ga_account_id': u'123'},
-             {u'ga_web_property_id': u'UA-123-1', u'account_id': 2, u'ga_account_id': u'123'},
-             {u'ga_web_property_id': u'UA-123-2', u'account_id': 1, u'ga_account_id': u'123'},
-             {u'ga_web_property_id': u'UA-123-3', u'account_id': 2, u'ga_account_id': u'123'},
-             {u'ga_web_property_id': u'UA-123-4', u'account_id': 1, u'ga_account_id': u'123'}]
+            [{'ga_web_property_id': 'UA-123-0', 'account_id': 2, 'ga_account_id': '123'},
+             {'ga_web_property_id': 'UA-123-1', 'account_id': 2, 'ga_account_id': '123'},
+             {'ga_web_property_id': 'UA-123-2', 'account_id': 1, 'ga_account_id': '123'},
+             {'ga_web_property_id': 'UA-123-3', 'account_id': 2, 'ga_account_id': '123'},
+             {'ga_web_property_id': 'UA-123-4', 'account_id': 1, 'ga_account_id': '123'}]
         )
 
     def test_get_ga_accounts_since_yesterday(self):
@@ -443,7 +442,7 @@ class K1ApiTest(K1ApiBaseTest):
 
         response = self.client.get(
             reverse('k1api.ga_accounts'),
-            QUERY_STRING=urllib.urlencode({'date_since': str(datetime.date.today() - datetime.timedelta(1))}),
+            QUERY_STRING=urllib.parse.urlencode({'date_since': str(datetime.date.today() - datetime.timedelta(1))}),
         )
 
         data = json.loads(response.content)
@@ -453,10 +452,10 @@ class K1ApiTest(K1ApiBaseTest):
         self.assertEqual(len(data['ga_accounts']), 3)
         self.assertEqual(data['ga_accounts'][0]['account_id'], 1)
         self.assertEqual(data['ga_accounts'][0]['ga_account_id'], '123')
-        self.assertEqual(data['ga_accounts'][0]['ga_web_property_id'], 'UA-123-4')
+        self.assertEqual(data['ga_accounts'][0]['ga_web_property_id'], 'UA-123-2')
         self.assertEqual(data['ga_accounts'][1]['account_id'], 1)
         self.assertEqual(data['ga_accounts'][1]['ga_account_id'], '123')
-        self.assertEqual(data['ga_accounts'][1]['ga_web_property_id'], 'UA-123-2')
+        self.assertEqual(data['ga_accounts'][1]['ga_web_property_id'], 'UA-123-4')
         self.assertEqual(data['ga_accounts'][2]['account_id'], 2)
         self.assertEqual(data['ga_accounts'][2]['ga_account_id'], '123')
         self.assertEqual(data['ga_accounts'][2]['ga_web_property_id'], 'UA-123-3')
@@ -466,7 +465,7 @@ class K1ApiTest(K1ApiBaseTest):
 
         response = self.client.get(
             reverse('k1api.ga_accounts'),
-            QUERY_STRING=urllib.urlencode(
+            QUERY_STRING=urllib.parse.urlencode(
                 {
                     'campaigns': '1'
                 }),
@@ -493,14 +492,14 @@ class K1ApiTest(K1ApiBaseTest):
         data = data['response']
 
         required_fields = {
-            u'id',
-            u'content_ad_id',
-            u'ad_group_id',
-            u'source_content_ad_id',
-            u'submission_status',
-            u'tracking_slug',
-            u'source_slug',
-            u'state',
+            'id',
+            'content_ad_id',
+            'ad_group_id',
+            'source_content_ad_id',
+            'submission_status',
+            'tracking_slug',
+            'source_slug',
+            'state',
         }
 
         db_ags = dash.models.ContentAdSource.objects.filter(content_ad__ad_group_id=ad_group_id)
@@ -644,14 +643,14 @@ class K1ApiTest(K1ApiBaseTest):
         self._assert_response_ok(response, data)
         data = data['response']
 
-        for account_id, account_data in data.items():
+        for account_id, account_data in list(data.items()):
             self.assertIn(int(account_id), accounts)
 
             self.assertIn('ad_groups', account_data)
             self.assertIn('slugs', account_data)
 
             self.assertGreater(len(account_data['ad_groups']), 0)
-            for ad_group in account_data['ad_groups'].values():
+            for ad_group in list(account_data['ad_groups'].values()):
                 self.assertIn('campaign_id', ad_group)
 
             self.assertGreater(len(account_data['slugs']), 0)
@@ -671,15 +670,15 @@ class K1ApiTest(K1ApiBaseTest):
                 .filter(publisher_group_id__in=[1000, 11, 12])
                 .filter(source__bidder_slug='outbrain')
                 .annotate(name=F('publisher'))
-                .values(u'name')
+                .values('name')
         )
         self.assertGreater(len(expected), 0)
         self.assertEqual(data, {
-            u'blacklist': list(expected),
-            u'account': {
-                u'id': 1000,
-                u'name': u'test outbrain account',
-                u'outbrain_marketer_id': u'cdefg'
+            'blacklist': list(expected),
+            'account': {
+                'id': 1000,
+                'name': 'test outbrain account',
+                'outbrain_marketer_id': 'cdefg'
             }
         })
 
@@ -696,62 +695,62 @@ class K1ApiTest(K1ApiBaseTest):
         self.assertEqual(len(data), 1)
 
         self.assertDictEqual(data[0], {
-            u'id': 1,
-            u'name': u'ONE: test account 1 / test campaign 1 / test adgroup 1 / 1',
-            u'start_date': u'2014-06-04',
-            u'end_date': None,
-            u'time_zone': u'America/New_York',
-            u'brand_name': u'brand1',
-            u'display_url': u'brand1.com',
-            u'tracking_codes': u'tracking1&tracking2',
-            u'target_devices': [],
-            u'target_os': None,
-            u'target_placements': None,
-            u'iab_category': u'IAB24',
-            u'campaign_language': 'en',
-            u'target_regions': [],
-            u'exclusion_target_regions': [],
-            u'retargeting': [
-                             {u'event_id': u'100', u'event_type': u'redirect_adgroup', u'exclusion': False},
-                             {u'event_id': u'200', u'event_type': u'redirect_adgroup', u'exclusion': True},
-                             {u'event_id': u'1', u'event_type': u'aud', u'exclusion': False},
-                             {u'event_id': u'2', u'event_type': u'aud', u'exclusion': True}],
-            u'demographic_targeting': [u"or", u"bluekai:1", u"bluekai:2"],
-            u'interest_targeting': [u"tech", u"entertainment"],
-            u'exclusion_interest_targeting': [u"politics", u"war"],
-            u'campaign_id': 1,
-            u'account_id': 1,
-            u'agency_id': 20,
-            u'goal_types': [2, 5],
-            u'goals': [{
-                           u'campaign_id': 1,
-                           u'conversion_goal': None,
-                           u'id': 2,
-                           u'primary': True,
-                           u'type': 2,
-                           u'values': [],
+            'id': 1,
+            'name': 'ONE: test account 1 / test campaign 1 / test adgroup 1 / 1',
+            'start_date': '2014-06-04',
+            'end_date': None,
+            'time_zone': 'America/New_York',
+            'brand_name': 'brand1',
+            'display_url': 'brand1.com',
+            'tracking_codes': 'tracking1&tracking2',
+            'target_devices': [],
+            'target_os': None,
+            'target_placements': None,
+            'iab_category': 'IAB24',
+            'campaign_language': 'en',
+            'target_regions': [],
+            'exclusion_target_regions': [],
+            'retargeting': [
+                             {'event_id': '100', 'event_type': 'redirect_adgroup', 'exclusion': False},
+                             {'event_id': '200', 'event_type': 'redirect_adgroup', 'exclusion': True},
+                             {'event_id': '1', 'event_type': 'aud', 'exclusion': False},
+                             {'event_id': '2', 'event_type': 'aud', 'exclusion': True}],
+            'demographic_targeting': ["or", "bluekai:1", "bluekai:2"],
+            'interest_targeting': ["tech", "entertainment"],
+            'exclusion_interest_targeting': ["politics", "war"],
+            'campaign_id': 1,
+            'account_id': 1,
+            'agency_id': 20,
+            'goal_types': [2, 5],
+            'goals': [{
+                'campaign_id': 1,
+                'conversion_goal': None,
+                'id': 2,
+                'primary': True,
+                'type': 2,
+                'values': [],
             }, {
-                u'campaign_id': 1,
-                u'conversion_goal': None,
-                u'id': 1,
-                u'primary': False,
-                u'type': 5,
-                u'values': [],
+                'campaign_id': 1,
+                'conversion_goal': None,
+                'id': 1,
+                'primary': False,
+                'type': 5,
+                'values': [],
             }],
-            u'b1_sources_group': {
-                u'daily_budget': u'10.0000',
-                u'cpc_cc': u'0.0100',
-                u'enabled': True,
-                u'state': 2,
+            'b1_sources_group': {
+                'daily_budget': '10.0000',
+                'cpc_cc': '0.0100',
+                'enabled': True,
+                'state': 2,
             },
-            u'dayparting': {u'monday': [1, 2, 3], u'timezone': u'CET'},
-            u'max_cpm': u'1.6000',
-            u'whitelist_publisher_groups': ListMatcher([1, 2, 5, 6, 9, 10]),
-            u'blacklist_publisher_groups': ListMatcher([3, 4, 7, 8, 11, 12]),
-            u'delivery_type': 1,
-            u'click_capping_daily_ad_group_max_clicks': 15,
-            u'click_capping_daily_click_budget': '5.0000',
-            u'custom_flags': {u'flag_1': True, u'flag_2': True, u'flag_3': True, u'flag_4': True},
+            'dayparting': {'monday': [1, 2, 3], 'timezone': 'CET'},
+            'max_cpm': '1.6000',
+            'whitelist_publisher_groups': [1, 2, 5, 6, 9, 10],
+            'blacklist_publisher_groups': [3, 4, 7, 8, 11, 12],
+            'delivery_type': 1,
+            'click_capping_daily_ad_group_max_clicks': 15,
+            'click_capping_daily_click_budget': '5.0000',
+            'custom_flags': {'flag_1': True, 'flag_2': True, 'flag_3': True, 'flag_4': True},
         })
 
     def test_get_ad_groups_with_id_with_some_flags(self):
@@ -773,62 +772,62 @@ class K1ApiTest(K1ApiBaseTest):
         self.assertEqual(len(data), 1)
 
         self.assertDictEqual(data[0], {
-            u'id': 1,
-            u'name': u'ONE: test account 1 / test campaign 1 / test adgroup 1 / 1',
-            u'start_date': u'2014-06-04',
-            u'end_date': None,
-            u'time_zone': u'America/New_York',
-            u'brand_name': u'brand1',
-            u'display_url': u'brand1.com',
-            u'tracking_codes': u'tracking1&tracking2',
-            u'target_devices': [],
-            u'target_os': None,
-            u'target_placements': None,
-            u'iab_category': u'IAB24',
-            u'campaign_language': 'en',
-            u'target_regions': [],
-            u'exclusion_target_regions': [],
-            u'retargeting': [
-                             {u'event_id': u'100', u'event_type': u'redirect_adgroup', u'exclusion': False},
-                             {u'event_id': u'200', u'event_type': u'redirect_adgroup', u'exclusion': True},
-                             {u'event_id': u'1', u'event_type': u'aud', u'exclusion': False},
-                             {u'event_id': u'2', u'event_type': u'aud', u'exclusion': True}],
-            u'demographic_targeting': [u"or", u"bluekai:1", u"bluekai:2"],
-            u'interest_targeting': [u"tech", u"entertainment"],
-            u'exclusion_interest_targeting': [u"politics", u"war"],
-            u'campaign_id': 1,
-            u'account_id': 1,
-            u'agency_id': 20,
-            u'goal_types': [2, 5],
-            u'goals': [{
-                           u'campaign_id': 1,
-                           u'conversion_goal': None,
-                           u'id': 2,
-                           u'primary': True,
-                           u'type': 2,
-                           u'values': [],
+            'id': 1,
+            'name': 'ONE: test account 1 / test campaign 1 / test adgroup 1 / 1',
+            'start_date': '2014-06-04',
+            'end_date': None,
+            'time_zone': 'America/New_York',
+            'brand_name': 'brand1',
+            'display_url': 'brand1.com',
+            'tracking_codes': 'tracking1&tracking2',
+            'target_devices': [],
+            'target_os': None,
+            'target_placements': None,
+            'iab_category': 'IAB24',
+            'campaign_language': 'en',
+            'target_regions': [],
+            'exclusion_target_regions': [],
+            'retargeting': [
+                {'event_id': '100', 'event_type': 'redirect_adgroup', 'exclusion': False},
+                {'event_id': '200', 'event_type': 'redirect_adgroup', 'exclusion': True},
+                {'event_id': '1', 'event_type': 'aud', 'exclusion': False},
+                {'event_id': '2', 'event_type': 'aud', 'exclusion': True}],
+            'demographic_targeting': ["or", "bluekai:1", "bluekai:2"],
+            'interest_targeting': ["tech", "entertainment"],
+            'exclusion_interest_targeting': ["politics", "war"],
+            'campaign_id': 1,
+            'account_id': 1,
+            'agency_id': 20,
+            'goal_types': [2, 5],
+            'goals': [{
+                'campaign_id': 1,
+                'conversion_goal': None,
+                'id': 2,
+                'primary': True,
+                'type': 2,
+                'values': [],
             }, {
-                u'campaign_id': 1,
-                u'conversion_goal': None,
-                u'id': 1,
-                u'primary': False,
-                u'type': 5,
-                u'values': [],
+                'campaign_id': 1,
+                'conversion_goal': None,
+                'id': 1,
+                'primary': False,
+                'type': 5,
+                'values': [],
             }],
-            u'b1_sources_group': {
-                u'daily_budget': u'10.0000',
-                u'cpc_cc': u'0.0100',
-                u'enabled': True,
-                u'state': 2,
+            'b1_sources_group': {
+                'daily_budget': '10.0000',
+                'cpc_cc': '0.0100',
+                'enabled': True,
+                'state': 2,
             },
-            u'dayparting': {u'monday': [1, 2, 3], u'timezone': u'CET'},
-            u'max_cpm': u'1.6000',
-            u'whitelist_publisher_groups': ListMatcher([1, 2, 5, 6, 9, 10]),
-            u'blacklist_publisher_groups': ListMatcher([3, 4, 7, 8, 11, 12]),
-            u'delivery_type': 1,
-            u'click_capping_daily_ad_group_max_clicks': 15,
-            u'click_capping_daily_click_budget': '5.0000',
-            u'custom_flags': {u'flag_1': False, u'flag_2': True, u'flag_3': True, u'flag_4': True},
+            'dayparting': {'monday': [1, 2, 3], 'timezone': 'CET'},
+            'max_cpm': '1.6000',
+            'whitelist_publisher_groups': [1, 2, 5, 6, 9, 10],
+            'blacklist_publisher_groups': [3, 4, 7, 8, 11, 12],
+            'delivery_type': 1,
+            'click_capping_daily_ad_group_max_clicks': 15,
+            'click_capping_daily_click_budget': '5.0000',
+            'custom_flags': {'flag_1': False, 'flag_2': True, 'flag_3': True, 'flag_4': True},
         })
 
     @patch('utils.redirector_helper.insert_adgroup')
@@ -929,23 +928,23 @@ class K1ApiTest(K1ApiBaseTest):
         data = sorted(data, key=itemgetter('ad_group_id'))
 
         self.assertDictEqual(data[0], {
-            u'ad_group_id': 1,
-            u'slug': u'b1_adiant',
-            u'state': 2,
-            u'cpc_cc': u'0.1200',
-            u'daily_budget_cc': u'1.5000',
-            u'source_campaign_key': [u'fake'],
-            u'tracking_code': u'tracking1&tracking2',
+            'ad_group_id': 1,
+            'slug': 'b1_adiant',
+            'state': 2,
+            'cpc_cc': '0.1200',
+            'daily_budget_cc': '1.5000',
+            'source_campaign_key': ['fake'],
+            'tracking_code': 'tracking1&tracking2',
         })
 
         self.assertDictEqual(data[1], {
-            u'ad_group_id': 2,
-            u'slug': u'b1_google',
-            u'state': 1,
-            u'cpc_cc': u'0.1300',
-            u'daily_budget_cc': u'1.6000',
-            u'source_campaign_key': [u'fake'],
-            u'tracking_code': u'tracking1&tracking2',
+            'ad_group_id': 2,
+            'slug': 'b1_google',
+            'state': 1,
+            'cpc_cc': '0.1300',
+            'daily_budget_cc': '1.6000',
+            'source_campaign_key': ['fake'],
+            'tracking_code': 'tracking1&tracking2',
         })
 
     def test_get_ad_groups_source_bcm_v2(self):
@@ -982,13 +981,13 @@ class K1ApiTest(K1ApiBaseTest):
         self.assertEqual(len(data), 1)
 
         self.assertDictEqual(data[0], {
-            u'ad_group_id': ad_group.id,
-            u'slug': u'b1_google',
-            u'state': 2,
-            u'cpc_cc': u'0.0864',
-            u'daily_budget_cc': u'36.0000',
-            u'source_campaign_key': {},
-            u'tracking_code': ad_group.settings.tracking_code,
+            'ad_group_id': ad_group.id,
+            'slug': 'b1_google',
+            'state': 2,
+            'cpc_cc': '0.0864',
+            'daily_budget_cc': '36.0000',
+            'source_campaign_key': {},
+            'tracking_code': ad_group.settings.tracking_code,
         })
 
     def test_get_ad_groups_exchanges_with_id(self):
@@ -1005,13 +1004,13 @@ class K1ApiTest(K1ApiBaseTest):
         self.assertEqual(len(data), 1)
 
         self.assertDictEqual(data[0], {
-            u'ad_group_id': 1,
-            u'slug': u'b1_adiant',
-            u'state': 2,
-            u'cpc_cc': u'0.1200',
-            u'daily_budget_cc': u'1.5000',
-            u'source_campaign_key': [u'fake'],
-            u'tracking_code': u'tracking1&tracking2',
+            'ad_group_id': 1,
+            'slug': 'b1_adiant',
+            'state': 2,
+            'cpc_cc': '0.1200',
+            'daily_budget_cc': '1.5000',
+            'source_campaign_key': ['fake'],
+            'tracking_code': 'tracking1&tracking2',
         })
 
     def test_get_content_ads_by_id(self):
@@ -1149,7 +1148,7 @@ class K1ApiTest(K1ApiBaseTest):
                 'source_content_ad_id': 123
             }),
             'application/json',
-            QUERY_STRING=urllib.urlencode({'content_ad_id': 1, 'source_slug': 'adblade'})
+            QUERY_STRING=urllib.parse.urlencode({'content_ad_id': 1, 'source_slug': 'adblade'})
         )
 
         data = json.loads(response.content)
@@ -1178,7 +1177,7 @@ class K1ApiTest(K1ApiBaseTest):
                 'source_content_ad_id': ''
             }),
             'application/json',
-            QUERY_STRING=urllib.urlencode({'content_ad_id': 1, 'source_slug': 'adblade'})
+            QUERY_STRING=urllib.parse.urlencode({'content_ad_id': 1, 'source_slug': 'adblade'})
         )
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
@@ -1194,7 +1193,7 @@ class K1ApiTest(K1ApiBaseTest):
             reverse('k1api.ad_groups.sources'),
             json.dumps({'source_campaign_key': ['abc']}),
             'application/json',
-            QUERY_STRING=urllib.urlencode({'ad_group_id': 1, 'source_slug': 'adblade'})
+            QUERY_STRING=urllib.parse.urlencode({'ad_group_id': 1, 'source_slug': 'adblade'})
         )
 
         data = json.loads(response.content)
@@ -1225,7 +1224,7 @@ class K1ApiTest(K1ApiBaseTest):
         response = self.client.generic(
             'PUT',
             reverse('k1api.outbrain_marketer_sync'),
-            QUERY_STRING=urllib.urlencode({'marketer_id': 'abc-456', 'marketer_name': 'Abc 456'})
+            QUERY_STRING=urllib.parse.urlencode({'marketer_id': 'abc-456', 'marketer_name': 'Abc 456'})
         )
         self.assertEqual(
             json.loads(response.content)['response'],
@@ -1252,7 +1251,7 @@ class K1ApiTest(K1ApiBaseTest):
         response = self.client.generic(
             'PUT',
             reverse('k1api.outbrain_marketer_sync'),
-            QUERY_STRING=urllib.urlencode({'marketer_id': 'abc-123', 'marketer_name': 'Abc 123'})
+            QUERY_STRING=urllib.parse.urlencode({'marketer_id': 'abc-123', 'marketer_name': 'Abc 123'})
         )
         self.assertEqual(
             json.loads(response.content)['response'],
@@ -1279,7 +1278,7 @@ class K1ApiTest(K1ApiBaseTest):
         response = self.client.generic(
             'PUT',
             reverse('k1api.outbrain_marketer_sync'),
-            QUERY_STRING=urllib.urlencode({'marketer_id': 'abc-123', 'marketer_name': 'New 123'})
+            QUERY_STRING=urllib.parse.urlencode({'marketer_id': 'abc-123', 'marketer_name': 'New 123'})
         )
         self.assertEqual(
             json.loads(response.content)['response'],
@@ -1322,14 +1321,14 @@ class K1ApiTest(K1ApiBaseTest):
         data = data['response']
         self.assertEqual(len(data), 2)
         self.assertDictEqual(data[0], {
-            u'account_id': 1,
-            u'ad_account_id': u'act_123',
-            u'page_id': u'1234',
+            'account_id': 1,
+            'ad_account_id': 'act_123',
+            'page_id': '1234',
         })
         self.assertDictEqual(data[1], {
-            u'account_id': 2,
-            u'ad_account_id': u'act_456',
-            u'page_id': u'5678',
+            'account_id': 2,
+            'ad_account_id': 'act_456',
+            'page_id': '5678',
         })
 
     def test_get_facebook_accounts_with_ad_group(self):
@@ -1364,7 +1363,7 @@ class K1ApiTest(K1ApiBaseTest):
             reverse('k1api.ad_groups.sources'),
             json.dumps({'state': 2}),
             'application/json',
-            QUERY_STRING=urllib.urlencode(params)
+            QUERY_STRING=urllib.parse.urlencode(params)
         )
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -1382,7 +1381,7 @@ class K1ApiTest(K1ApiBaseTest):
             reverse('k1api.ad_groups.sources'),
             json.dumps({'source_campaign_key': ''}),
             'application/json',
-            QUERY_STRING=urllib.urlencode(params)
+            QUERY_STRING=urllib.parse.urlencode(params)
         )
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
@@ -1396,7 +1395,7 @@ class K1ApiTest(K1ApiBaseTest):
             reverse('k1api.ad_groups.sources'),
             json.dumps({'state': 2}),
             'application/json',
-            QUERY_STRING=urllib.urlencode(params)
+            QUERY_STRING=urllib.parse.urlencode(params)
         )
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 404)
@@ -1409,7 +1408,7 @@ class K1ApiTest(K1ApiBaseTest):
             reverse('k1api.ad_groups.sources'),
             json.dumps({'state': 2}),
             'application/json',
-            QUERY_STRING=urllib.urlencode(params)
+            QUERY_STRING=urllib.parse.urlencode(params)
         )
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 404)
@@ -1423,7 +1422,7 @@ class K1ApiTest(K1ApiBaseTest):
             reverse('k1api.ad_groups.sources.blockers'),
             json.dumps(put_body),
             'application/json',
-            QUERY_STRING=urllib.urlencode(params)
+            QUERY_STRING=urllib.parse.urlencode(params)
         )
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -1444,7 +1443,7 @@ class K1ApiTest(K1ApiBaseTest):
             reverse('k1api.ad_groups.sources.blockers'),
             json.dumps(put_body),
             'application/json',
-            QUERY_STRING=urllib.urlencode(params)
+            QUERY_STRING=urllib.parse.urlencode(params)
         )
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -1466,7 +1465,7 @@ class K1ApiTest(K1ApiBaseTest):
                 reverse('k1api.ad_groups.sources.blockers'),
                 json.dumps(put_body),
                 'application/json',
-                QUERY_STRING=urllib.urlencode(params)
+                QUERY_STRING=urllib.parse.urlencode(params)
             )
             data = json.loads(response.content)
             self.assertEqual(response.status_code, 200)

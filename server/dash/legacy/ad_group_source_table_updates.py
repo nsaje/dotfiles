@@ -29,7 +29,7 @@ def get_updated_ad_group_sources_changes(user, last_change_dt, filtered_sources,
 
     response = {
         'last_change': new_last_change_dt,
-        'in_progress': any(n['in_progress'] for n in notifications.values())
+        'in_progress': any(n['in_progress'] for n in list(notifications.values()))
     }
 
     if new_last_change_dt is not None:

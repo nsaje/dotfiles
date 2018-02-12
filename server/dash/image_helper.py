@@ -1,5 +1,5 @@
 import os
-import urlparse
+import urllib.parse
 import time
 import random
 
@@ -16,7 +16,7 @@ def get_image_url(image_id, width, height, crop):
 
     path = '/{}.jpg?w={}&h={}&fit=crop&crop={}&fm=jpg'.format(
         image_id, width, height, crop)
-    return urlparse.urljoin(settings.IMAGE_THUMBNAIL_URL, path)
+    return urllib.parse.urljoin(settings.IMAGE_THUMBNAIL_URL, path)
 
 
 def upload_image_to_s3(image, batch_id):
@@ -31,4 +31,4 @@ def upload_image_to_s3(image, batch_id):
     )
 
     s3helpers.S3Helper(settings.S3_BUCKET_THUMBNAILER).put(key, image.read())
-    return urlparse.urljoin(settings.IMAGE_THUMBNAIL_URL, key)
+    return urllib.parse.urljoin(settings.IMAGE_THUMBNAIL_URL, key)

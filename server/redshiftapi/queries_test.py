@@ -8,8 +8,8 @@ from stats.helpers import Goals
 
 import dash.models
 
-import queries
-import models
+from . import queries
+from . import models
 
 
 class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
@@ -39,7 +39,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         ORDER BY clicks DESC NULLS LAST, account_id ASC NULLS LAST, source_id ASC NULLS LAST, dma ASC NULLS LAST
         """)
 
-        self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
+        self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
 
     @mock.patch.object(models.MVMaster, 'get_aggregates', return_value=[models.MVMaster.clicks])
     def test_query_all_base_totals(self, _):
@@ -61,7 +61,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         ORDER BY clicks DESC NULLS LAST
         """)
 
-        self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
+        self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
 
     @mock.patch.object(models.MVMaster, 'get_aggregates', return_value=[
         models.MVMaster.clicks, models.MVMaster.external_id, models.MVMaster.publisher_id])
@@ -90,7 +90,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         ORDER BY clicks DESC NULLS LAST, publisher_id ASC NULLS LAST, dma ASC NULLS LAST
         """)
 
-        self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
+        self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
 
     @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 10, 3))
     def test_query_all_yesterday(self, _):
@@ -121,7 +121,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         ORDER BY yesterday_cost DESC NULLS LAST, account_id ASC NULLS LAST, source_id ASC NULLS LAST, dma ASC NULLS LAST
         """)
 
-        self.assertEquals(params, [datetime.date(2016, 10, 2), 1, 2])
+        self.assertEqual(params, [datetime.date(2016, 10, 2), 1, 2])
 
     @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 10, 3))
     def test_query_all_yesterday_publishers(self, _):
@@ -153,7 +153,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         ORDER BY yesterday_cost DESC NULLS LAST, publisher_id ASC NULLS LAST, day ASC NULLS LAST
         """)
 
-        self.assertEquals(params, [datetime.date(2016, 10, 2), 1, 2])
+        self.assertEqual(params, [datetime.date(2016, 10, 2), 1, 2])
 
     def test_query_all_conversions(self):
         sql, params, _ = queries.prepare_query_all_conversions(
@@ -178,7 +178,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         ORDER BY count DESC NULLS LAST, account_id ASC NULLS LAST, source_id ASC NULLS LAST, slug ASC NULLS LAST
         """)
 
-        self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
+        self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
 
     def test_query_all_conversions_publishers(self):
         sql, params, _ = queries.prepare_query_all_conversions(
@@ -204,7 +204,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         ORDER BY count DESC NULLS LAST, publisher_id ASC NULLS LAST, day ASC NULLS LAST
         """)
 
-        self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
+        self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
 
     def test_query_all_touchpoints(self):
         sql, params, _ = queries.prepare_query_all_touchpoints(
@@ -231,7 +231,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         ORDER BY count DESC NULLS LAST, account_id ASC NULLS LAST, source_id ASC NULLS LAST, slug ASC NULLS LAST, "window" ASC NULLS LAST
         """)
 
-        self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
+        self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
 
     def test_query_all_touchpoints_publishers(self):
         sql, params, _ = queries.prepare_query_all_touchpoints(
@@ -259,7 +259,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         GROUP BY 1, 2, 3, 4, 5
         ORDER BY count DESC NULLS LAST, publisher_id ASC NULLS LAST, day ASC NULLS LAST, slug ASC NULLS LAST, "window" ASC NULLS LAST""")
 
-        self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
+        self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
 
     def test_query_structure_with_stats(self):
         sql, params, _ = queries.prepare_query_structure_with_stats(
@@ -281,7 +281,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         GROUP BY 1, 2, 3;
         """)
 
-        self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
+        self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
 
 
 class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
@@ -297,8 +297,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
 
         goals = Goals(None, None, None, None, None)
 
-        sql, params, _ = queries.prepare_query_joint_base(['account_id'], constraints, None, [
-                                                       'total_seconds'], 5, 10, goals, False)
+        sql, params, _ = queries.prepare_query_joint_base(['account_id'], constraints, None,
+                                                          ['total_seconds'], 5, 10, goals, False)
 
         self.assertSQLEquals(sql, """
         WITH
@@ -339,7 +339,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         OFFSET 5
         """)
 
-        self.assertEquals(params, [
+        self.assertEqual(params, [
             datetime.date(2016, 7, 1),
             datetime.date(2016, 4, 1),
             datetime.date(2016, 5, 1),
@@ -356,8 +356,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
 
         goals = Goals(None, None, None, None, None)
 
-        sql, params, _ = queries.prepare_query_joint_base(['publisher_id'], constraints, None, [
-                                                       'total_seconds'], 5, 10, goals, True)
+        sql, params, _ = queries.prepare_query_joint_base(['publisher_id'], constraints, None,
+                                                          ['total_seconds'], 5, 10, goals, True)
 
         self.assertSQLEquals(sql, """
         WITH
@@ -402,7 +402,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         OFFSET 5
         """)
 
-        self.assertEquals(params, [
+        self.assertEqual(params, [
             datetime.date(2016, 7, 1),
             datetime.date(2016, 4, 1),
             datetime.date(2016, 5, 1),
@@ -489,7 +489,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         WHERE r >= 5+1 AND r <= 10
         """)
 
-        self.assertEquals(params, [
+        self.assertEqual(params, [
             datetime.date(2016, 7, 1),
             datetime.date(2016, 4, 1),
             datetime.date(2016, 5, 1),
@@ -580,7 +580,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         WHERE r >= 5+1 AND r <= 10
         """)
 
-        self.assertEquals(params, [
+        self.assertEqual(params, [
             datetime.date(2016, 7, 1),
             datetime.date(2016, 4, 1),
             datetime.date(2016, 5, 1),
@@ -608,10 +608,10 @@ class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
 
         goals = Goals(campaign_goals, conversion_goals, campaign_goal_values, pixels, None)
 
-        _, params, _ = queries.prepare_query_joint_base(['account_id'], constraints, None, [
-                                                       'total_seconds'], 5, 10, goals, False)
+        _, params, _ = queries.prepare_query_joint_base(['account_id'], constraints, None,
+                                                        ['total_seconds'], 5, 10, goals, False)
 
-        self.assertEquals(params, [
+        self.assertEqual(params, [
             datetime.date(2016, 4, 1),
             datetime.date(2016, 5, 1),
             datetime.date(2016, 4, 1),
@@ -641,7 +641,7 @@ class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
         _, params, _ = queries.prepare_query_joint_levels(['account_id', 'campaign_id'],
                                                           constraints, None, ['total_seconds'], 5, 10, goals, False)
 
-        self.assertEquals(params, [
+        self.assertEqual(params, [
             datetime.date(2016, 4, 1),
             datetime.date(2016, 5, 1),
             datetime.date(2016, 4, 1),

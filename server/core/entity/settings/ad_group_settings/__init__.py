@@ -1,1 +1,1 @@
-from model import AdGroupSettings  # noqa
+from .model import AdGroupSettings  # noqa

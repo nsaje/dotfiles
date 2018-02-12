@@ -8,14 +8,14 @@ import dash.models
 import prodops.helpers as hlp
 
 PUBS_PER_CHUNK = 1000
-QUERY = u"""SELECT DISTINCT publisher, source_id
+QUERY = """SELECT DISTINCT publisher, source_id
 FROM mv_master_pubs
 WHERE date >= '{date}' AND publisher IN ({publist})"""
 
 
 def chunks(l, n):
     n = max(1, n)
-    return (l[i:i + n] for i in xrange(0, len(l), n))
+    return (l[i:i + n] for i in range(0, len(l), n))
 
 
 class Command(utils.command_helpers.ExceptionCommand):
@@ -29,7 +29,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         parser.add_argument('publishers_csv', type=str)
 
     def _print(self, msg):
-        self.stdout.write(u'{}\n'.format(msg))
+        self.stdout.write('{}\n'.format(msg))
 
     def handle(self, *args, **options):
         self.from_date = datetime.date.today() - datetime.timedelta(options['days'])
@@ -78,8 +78,8 @@ class Command(utils.command_helpers.ExceptionCommand):
     def _match_sources(self, publishers, verticals={}):
         pub_source_map = {}
         with redshiftapi.db.get_stats_cursor() as c:
-            c.execute(QUERY.format(date=self.from_date, publist=u', '.join(
-                [u'\'{}\''.format(pub.encode('utf-8')) for pub in publishers]
+            c.execute(QUERY.format(date=self.from_date, publist=', '.join(
+                ['\'{}\''.format(pub.encode('utf-8')) for pub in publishers]
             )))
             for row in c.fetchall():
                 source = self.sources.get(row[1])
@@ -87,8 +87,8 @@ class Command(utils.command_helpers.ExceptionCommand):
                     source.name if self.use_source_names else source.bidder_slug)
         if verticals:
             return [
-                (pub, ', '.join(sources), ','.join(verticals.get(pub, [])), ) for pub, sources in pub_source_map.iteritems()
+                (pub, ', '.join(sources), ','.join(verticals.get(pub, [])), ) for pub, sources in pub_source_map.items()
             ]
         return [
-            (pub, ', '.join(sources), ) for pub, sources in pub_source_map.iteritems()
+            (pub, ', '.join(sources), ) for pub, sources in pub_source_map.items()
         ]

@@ -20,9 +20,9 @@ import core.bcm
 import core.bcm.helpers
 import core.common
 import core.history
-from dailystatement import ET_TOTALS_FIELDS, ETF_TOTALS_FIELDS, ETFM_TOTALS_FIELDS
+from .dailystatement import ET_TOTALS_FIELDS, ETF_TOTALS_FIELDS, ETFM_TOTALS_FIELDS
 
-import bcm_slack
+from . import bcm_slack
 
 
 SKIP_AMOUNT_VALIDATION_CREDIT_IDS = [1251]
@@ -105,13 +105,13 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
 
     objects = BudgetLineItemManager()
 
-    def __unicode__(self):
-        return u'${} - from {} to {} (id: {}, campaign: {})'.format(
+    def __str__(self):
+        return '${} - from {} to {} (id: {}, campaign: {})'.format(
             self.amount,
             self.start_date,
             self.end_date,
             self.id,
-            unicode(self.campaign),
+            str(self.campaign),
         )
 
     @classmethod

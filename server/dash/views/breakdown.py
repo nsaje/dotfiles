@@ -39,7 +39,7 @@ def get_constraints_kwargs(form_data, **overrides):
     if form_data.get('show_blacklisted_publishers'):
         kwargs['show_blacklisted_publishers'] = form_data['show_blacklisted_publishers']
 
-    for k, v in overrides.items():
+    for k, v in list(overrides.items()):
         kwargs[k] = v
 
     return kwargs

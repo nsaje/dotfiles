@@ -1,5 +1,5 @@
 from .. import models
-import reach
+from . import reach
 
 ROOT_NODE_ID = 671901
 
@@ -23,7 +23,7 @@ def get_tree():
             'child_nodes': [],
         }
 
-    for node in nodes.values():
+    for node in list(nodes.values()):
         parent = nodes.get(node['parent_category_id'])
         if not parent:
             continue

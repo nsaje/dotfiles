@@ -9,7 +9,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 from dash import constants
 
-import models
+from . import models
 
 GA_SCOPE = ['https://www.googleapis.com/auth/analytics.readonly']
 MANAGEMENT_API_NAME = 'analytics'
@@ -52,7 +52,7 @@ def refresh_mappings():
                 has_read_and_analyze=READ_AND_ANALYZE in ga_account['permissions']['effective']
             )
     models.GALinkedAccounts.objects.all().delete()
-    models.GALinkedAccounts.objects.bulk_create(mapping_objects.values())
+    models.GALinkedAccounts.objects.bulk_create(list(mapping_objects.values()))
 
 
 def extract_ga_account_id(ga_property_id):

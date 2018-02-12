@@ -10,6 +10,7 @@ from django.conf import settings
 
 import utils.demo_anonymizer
 import utils.email_helper
+from functools import reduce
 
 
 class UserManager(auth_models.BaseUserManager):
@@ -315,7 +316,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
         "Returns the short name for the user."
         return self.first_name
 
-    def __unicode__(self):
+    def __str__(self):
         return self.email
 
     def clean(self):
@@ -361,7 +362,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
 class InternalGroup(models.Model):
     group = models.OneToOneField(auth_models.Group, on_delete=models.PROTECT)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.group.name
 
 

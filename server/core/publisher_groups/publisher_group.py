@@ -119,8 +119,5 @@ class PublisherGroup(models.Model):
             action_type=action_type
         )
 
-    def __unicode__(self):
-        return u'{} ({})'.format(self.name, self.id)
-
     def __str__(self):
-        return unicode(self).encode('ascii', 'ignore')
+        return '{} ({})'.format(self.name, self.id)

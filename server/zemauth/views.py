@@ -1,4 +1,4 @@
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from django.conf import settings
 from django.contrib import auth
@@ -14,7 +14,7 @@ from ratelimit.decorators import ratelimit
 
 import influx
 
-import gauth
+from . import gauth
 from utils import email_helper
 from zemauth.models import User
 from zemauth import forms
@@ -135,6 +135,6 @@ def google_callback(request, *args, **kwargs):
 def _fail_response(message='Google authentication failed.'):
     url = reverse('signin')
     if message:
-        message = urllib.urlencode({'gauth_error': message or ""})
+        message = urllib.parse.urlencode({'gauth_error': message or ""})
         url += "?" + message
     return redirect(url)

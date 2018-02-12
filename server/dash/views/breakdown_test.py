@@ -120,15 +120,15 @@ class AllAccountsBreakdownTestCase(TestCase):
 
         mock_query.return_value = [{
             'account_id': 116,
-            'account_type': u'Activated',
-            'agency': u'MBuy',
+            'account_type': 'Activated',
+            'agency': 'MBuy',
             'archived': False,
-            'breakdown_id': u'116',
-            'breakdown_name': u"Cat's Pride",
+            'breakdown_id': '116',
+            'breakdown_name': "Cat's Pride",
             'click_discrepancy': None,
             'ctr': 0.682212242285772,
-            'default_account_manager': u'Helen Wagner',
-            'default_sales_representative': u'David Kaplan',
+            'default_account_manager': 'Helen Wagner',
+            'default_sales_representative': 'David Kaplan',
             'impressions': 9484585,
             'name': "Cat's Pride",
             'parent_breakdown_id': None,
@@ -136,15 +136,15 @@ class AllAccountsBreakdownTestCase(TestCase):
             'status': 1,
         }, {
             'account_id': 305,
-            'account_type': u'Pilot',
+            'account_type': 'Pilot',
             'agency': '',
             'archived': False,
-            'breakdown_id': u'305',
-            'breakdown_name': u'Outbrain',
+            'breakdown_id': '305',
+            'breakdown_name': 'Outbrain',
             'click_discrepancy': None,
             'ctr': 0.445301342321372,
-            'default_account_manager': u'Tadej Pavli\u010d',
-            'default_sales_representative': u'David Kaplan',
+            'default_account_manager': 'Tadej Pavli\u010d',
+            'default_sales_representative': 'David Kaplan',
             'impressions': 13136273,
             'name': 'Outbrain',
             'parent_breakdown_id': None,
@@ -188,33 +188,33 @@ class AllAccountsBreakdownTestCase(TestCase):
                 },
                 'rows': [{
                     'account_id': 116,
-                    'account_type': u'Activated',
-                    'agency': u'MBuy',
+                    'account_type': 'Activated',
+                    'agency': 'MBuy',
                     'archived': False,
-                    'breakdown_id': u'116',
-                    'breakdown_name': u"Cat's Pride",
+                    'breakdown_id': '116',
+                    'breakdown_name': "Cat's Pride",
                     'click_discrepancy': None,
                     'ctr': 0.682212242285772,
-                    'default_account_manager': u'Helen Wagner',
-                    'default_sales_representative': u'David Kaplan',
+                    'default_account_manager': 'Helen Wagner',
+                    'default_sales_representative': 'David Kaplan',
                     'impressions': 9484585,
-                    'name': u"Cat's Pride",
+                    'name': "Cat's Pride",
                     'parent_breakdown_id': None,
                     'pv_per_visit': None,
                     'status': {'value': 1},
                 }, {
                     'account_id': 305,
-                    'account_type': u'Pilot',
-                    'agency': u'',
+                    'account_type': 'Pilot',
+                    'agency': '',
                     'archived': False,
-                    'breakdown_id': u'305',
-                    'breakdown_name': u'Outbrain',
+                    'breakdown_id': '305',
+                    'breakdown_name': 'Outbrain',
                     'click_discrepancy': None,
                     'ctr': 0.445301342321372,
-                    'default_account_manager': u'Tadej Pavli\u010d',
-                    'default_sales_representative': u'David Kaplan',
+                    'default_account_manager': 'Tadej Pavli\u010d',
+                    'default_sales_representative': 'David Kaplan',
                     'impressions': 13136273,
-                    'name': u'Outbrain',
+                    'name': 'Outbrain',
                     'parent_breakdown_id': None,
                     'pv_per_visit': None,
                     'status': {'value': 1},
@@ -324,7 +324,7 @@ class AccountBreakdownTestCase(TestCase):
             'breakdown_name': 'Blog Campaign [Desktop]',
             'parent_breakdown_id': None,
             'archived': False,
-            'campaign_manager': u'Ana Dejanovi\u0107',
+            'campaign_manager': 'Ana Dejanovi\u0107',
             'cost': 9196.1064,
             'impressions': 9621740,
             'name': 'Blog Campaign [Desktop]',
@@ -336,10 +336,10 @@ class AccountBreakdownTestCase(TestCase):
             'breakdown_name': 'Learning Center',
             'parent_breakdown_id': None,
             'archived': False,
-            'campaign_manager': u'Ana Dejanovi\u0107',
+            'campaign_manager': 'Ana Dejanovi\u0107',
             'cost': 7726.1054,
             'impressions': 10441143,
-            'name': u'Learning Center',
+            'name': 'Learning Center',
             'pageviews': 51896,
             'status': 1,
         }]
@@ -382,29 +382,29 @@ class AccountBreakdownTestCase(TestCase):
                     'offset': 1,
                 },
                 'rows': [{
-                    u'campaign_id': 198,
-                    u'breakdown_id': u'198',
-                    u'breakdown_name': u'Blog Campaign [Desktop]',
-                    u'parent_breakdown_id': None,
-                    u'archived': False,
-                    u'campaign_manager': u'Ana Dejanovi\u0107',
-                    u'cost': 9196.1064,
-                    u'impressions': 9621740,
-                    u'name': u'Blog Campaign [Desktop]',
-                    u'pageviews': 78853,
-                    u'status': {'value': 1},
+                    'campaign_id': 198,
+                    'breakdown_id': '198',
+                    'breakdown_name': 'Blog Campaign [Desktop]',
+                    'parent_breakdown_id': None,
+                    'archived': False,
+                    'campaign_manager': 'Ana Dejanovi\u0107',
+                    'cost': 9196.1064,
+                    'impressions': 9621740,
+                    'name': 'Blog Campaign [Desktop]',
+                    'pageviews': 78853,
+                    'status': {'value': 1},
                 }, {
-                    u'campaign_id': 413,
-                    u'breakdown_id': u'413',
-                    u'breakdown_name': u'Learning Center',
-                    u'parent_breakdown_id': None,
-                    u'archived': False,
-                    u'campaign_manager': u'Ana Dejanovi\u0107',
-                    u'cost': 7726.1054,
-                    u'impressions': 10441143,
-                    u'name': u'Learning Center',
-                    u'pageviews': 51896,
-                    u'status': {'value': 1},
+                    'campaign_id': 413,
+                    'breakdown_id': '413',
+                    'breakdown_name': 'Learning Center',
+                    'parent_breakdown_id': None,
+                    'archived': False,
+                    'campaign_manager': 'Ana Dejanovi\u0107',
+                    'cost': 7726.1054,
+                    'impressions': 10441143,
+                    'name': 'Learning Center',
+                    'pageviews': 51896,
+                    'status': {'value': 1},
                 }],
                 'totals': {
                     'clicks': 123,
@@ -651,10 +651,10 @@ class AdGroupBreakdownTestCase(TestCase):
                 "rows": {},
                 "breakdown_id": None,
                 "totals": {"clicks": 123},
-                "batches": test_helper.ListMatcher([
+                "batches": [
                     {"id": 1, "name": "batch 1"},
                     {"id": 4, "name": "batch 4"},
-                ]),
+                ],
                 "conversion_goals": [
                     {"id": "conversion_goal_2", "name": "test conversion goal 2"},
                     {"id": "conversion_goal_3", "name": "test conversion goal 3"},
@@ -954,10 +954,10 @@ class RequestOverflowTest(TestCase):
 class LimitOffsetToPageTest(TestCase):
 
     def test_get_page_and_size(self):
-        self.assertEquals(breakdown._get_page_and_size(0, 10), (1, 10))
-        self.assertEquals(breakdown._get_page_and_size(10, 20), (1, 30))
-        self.assertEquals(breakdown._get_page_and_size(30, 20), (1, 50))
-        self.assertEquals(breakdown._get_page_and_size(50, 20), (1, 70))
+        self.assertEqual(breakdown._get_page_and_size(0, 10), (1, 10))
+        self.assertEqual(breakdown._get_page_and_size(10, 20), (1, 30))
+        self.assertEqual(breakdown._get_page_and_size(30, 20), (1, 50))
+        self.assertEqual(breakdown._get_page_and_size(50, 20), (1, 70))
 
 
 class BreakdownHelperTest(TestCase):
@@ -986,7 +986,7 @@ class BreakdownHelperTest(TestCase):
             rows, Goals(campaign_goals, [], [], [], [campaign_goals[0]]))
 
         self.maxDiff = None
-        self.assertEquals(rows, [{
+        self.assertEqual(rows, [{
             'ad_group_id': 1,
             'cpc': 0.2,
             'performance': {
@@ -1023,7 +1023,7 @@ class BreakdownHelperTest(TestCase):
 
         breakdown_helpers.format_report_rows_performance_fields(rows, Goals([], [], [], [], []))
 
-        self.assertEquals(rows, [
+        self.assertEqual(rows, [
             {'ad_group_id': 1},
             {'ad_group_id': 2},
         ])
@@ -1039,7 +1039,7 @@ class BreakdownHelperTest(TestCase):
 
         breakdown_helpers.clean_non_relevant_fields(rows)
 
-        self.assertEquals(rows, [
+        self.assertEqual(rows, [
             {'ad_group_id': 1, 'performance': {}},
             {'ad_group_id': 2, 'performance': {}},
         ])
@@ -1066,7 +1066,7 @@ class BreakdownHelperTest(TestCase):
 
         breakdown_helpers.format_report_rows_content_ad_editable_fields(rows)
 
-        self.assertEquals(rows, [{
+        self.assertEqual(rows, [{
             'content_ad_id': 1,
             'id': 1,
             'submission_status': [{

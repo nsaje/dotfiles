@@ -9,7 +9,7 @@ import dash
 from utils.magic_mixer import magic_mixer
 from utils import test_helper
 
-from credit_line_item import CreditLineItem
+from .credit_line_item import CreditLineItem
 
 
 class TestCreditLineItemManager(TestCase):

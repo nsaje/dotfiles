@@ -4,7 +4,7 @@ from utils.magic_mixer import magic_mixer
 
 import core.entity
 import core.source
-import service
+from . import service
 
 
 @patch.object(core.entity.ContentAd.objects, 'insert_redirects', autospec=True)
@@ -18,7 +18,7 @@ class Clone(TestCase):
 
         batch = service.clone(request, source_ad_group, source_content_ads, ad_group)
 
-        self.assertItemsEqual(
+        self.assertCountEqual(
             [x.to_cloned_candidate_dict() for x in source_content_ads],
             [x.to_cloned_candidate_dict() for x in core.entity.ContentAd.objects.filter(batch=batch)]
         )

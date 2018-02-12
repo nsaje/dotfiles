@@ -1,1 +1,1 @@
-import clonecontent
+from . import clonecontent

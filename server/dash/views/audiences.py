@@ -10,7 +10,7 @@ from utils import api_common
 from utils import exc
 from utils import k1_helper
 from utils import redirector_helper
-import helpers
+from . import helpers
 
 
 class AudiencesView(api_common.BaseApiView):
@@ -89,7 +89,7 @@ class AudiencesView(api_common.BaseApiView):
                 audience.save(
                     request,
                     constants.HistoryActionType.AUDIENCE_UPDATE,
-                    u'Changed audience name from "{}" to "{}".'.format(old_name, audience.name)
+                    'Changed audience name from "{}" to "{}".'.format(old_name, audience.name)
                 )
                 redirector_helper.upsert_audience(audience)
 
@@ -195,7 +195,7 @@ class AudienceArchive(api_common.BaseApiView):
             audience.save(
                 request,
                 constants.HistoryActionType.AUDIENCE_ARCHIVE,
-                u'Archived audience "{}".'.format(audience.name)
+                'Archived audience "{}".'.format(audience.name)
             )
             redirector_helper.upsert_audience(audience)
 
@@ -228,7 +228,7 @@ class AudienceRestore(api_common.BaseApiView):
             audience.save(
                 request,
                 constants.HistoryActionType.AUDIENCE_RESTORE,
-                u'Restored audience "{}".'.format(audience.name)
+                'Restored audience "{}".'.format(audience.name)
             )
             redirector_helper.upsert_audience(audience)
 

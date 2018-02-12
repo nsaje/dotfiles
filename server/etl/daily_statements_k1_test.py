@@ -360,7 +360,7 @@ class DailyStatementsK1TestCase(TestCase):
 
         update_from = datetime.date(2015, 10, 31)
         dates = daily_statements._get_dates(update_from, self.campaign1)
-        self.assertItemsEqual([update_from], dates)
+        self.assertCountEqual([update_from], dates)
 
     @patch('etl.daily_statements_k1._generate_statements')
     def test_daily_statements_already_exist(self, mock_generate_statements, mock_campaign_with_spend,
@@ -386,7 +386,7 @@ class DailyStatementsK1TestCase(TestCase):
         update_from = datetime.date(2015, 11, 30)
         for campaign in campaigns:
             dates = daily_statements._get_dates(update_from, campaign)
-            self.assertItemsEqual([datetime.date(2015, 11, 30)], dates)
+            self.assertCountEqual([datetime.date(2015, 11, 30)], dates)
 
         daily_statements.reprocess_daily_statements(update_from, account_id=1)
         self.assertEqual(mock_generate_statements.call_count, len(campaigns))

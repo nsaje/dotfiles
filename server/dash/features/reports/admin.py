@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.core import urlresolvers
 
-from reportjob import ReportJob
+from .reportjob import ReportJob
 
 
 class IsScheduledListFilter(admin.SimpleListFilter):
@@ -60,7 +60,7 @@ class ReportJobAdmin(admin.ModelAdmin):
         if obj.scheduled_report is None:
             return ''
         link = urlresolvers.reverse("admin:dash_scheduledreport_change", args=[obj.scheduled_report.id])
-        return u'<a href="%s">%s</a>' % (link, obj.scheduled_report.name)
+        return '<a href="%s">%s</a>' % (link, obj.scheduled_report.name)
     link_to_scheduled_report.allow_tags = True
 
     def is_scheduled(self, obj):

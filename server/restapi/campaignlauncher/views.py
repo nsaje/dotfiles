@@ -10,7 +10,7 @@ import dash.features.contentupload
 import core.entity.settings
 import automation.autopilot_budgets
 
-import serializers
+from . import serializers
 
 
 BUDGET_DAILY_CAP_FACTOR = 3

@@ -1,1 +1,1 @@
-from model import CampaignGoal
+from .model import CampaignGoal

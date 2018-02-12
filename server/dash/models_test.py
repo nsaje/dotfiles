@@ -58,7 +58,7 @@ class AdGroupSettingsTest(TestCase):
                 }
             }],
             'target_placements': ['app'],
-            'tracking_code': u'',
+            'tracking_code': '',
             'target_regions': ['US'],
             'exclusion_target_regions': ['US-NY'],
             'retargeting_ad_groups': [1, 2],
@@ -99,7 +99,7 @@ class AdGroupSettingsTest(TestCase):
 
     def test_get_tracking_ids(self):
         ad_group_settings = models.AdGroupSettings.objects.get(id=1)
-        self.assertEqual(ad_group_settings.get_tracking_codes(), u'')
+        self.assertEqual(ad_group_settings.get_tracking_codes(), '')
 
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
@@ -107,7 +107,7 @@ class AdGroupSettingsTest(TestCase):
         new_ad_group_settings = ad_group_settings.copy_settings()
         new_ad_group_settings.tracking_code = '?param1=value1&param2=value2#hash?a=b&c=d'
         new_ad_group_settings.save(request)
-        self.assertEqual(new_ad_group_settings.get_tracking_codes(), u'param1=value1&param2=value2#hash?a=b&c=d')
+        self.assertEqual(new_ad_group_settings.get_tracking_codes(), 'param1=value1&param2=value2#hash?a=b&c=d')
 
     def test_adgroup_settings_end_datetime(self):
         ad_group_settings = models.AdGroupSettings()
@@ -137,13 +137,13 @@ class AdGroupSettingsTest(TestCase):
         old_settings = models.AdGroupSettings.objects.get(id=1)
         new_settings = models.AdGroupSettings.objects.get(id=1)
         new_settings.changes_text = None
-        new_settings.ad_group_name = u'Ččšćžđ name'
+        new_settings.ad_group_name = 'Ččšćžđ name'
 
         user = User.objects.get(pk=1)
 
         self.assertEqual(
             models.AdGroupSettings.get_changes_text(old_settings, new_settings, user),
-            u'Ad group name set to "\u010c\u010d\u0161\u0107\u017e\u0111 name"')
+            'Ad group name set to "\u010c\u010d\u0161\u0107\u017e\u0111 name"')
 
     def test_get_changes_text(self):
         old_settings = models.AdGroupSettings(ad_group_id=1)
@@ -173,7 +173,7 @@ class AdGroupSettingsTest(TestCase):
             'Custom audience targeting set to "test audience 1, test audience 2"',
             'Autopilot set to "Optimize Bids and Daily Spend Caps"',
             'Exclusion ad groups set to "test adgroup 3, test adgroup 4 on budget autopilot"',
-            'Dayparting set to "Timezone: CET; Tuesday: 10, 12; Monday: 1, 2, 5"',
+            'Dayparting set to "Monday: 1, 2, 5; Tuesday: 10, 12; Timezone: CET"',
             'Pixel retargeting tags set to "http://a.com/b.jpg, http://a.com/c.jpg"',
             'Max CPM set to "$1.60"',
             'Operating Systems set to "Android (6.0 Marshmallow)"',
@@ -191,7 +191,7 @@ class AdGroupSettingsTest(TestCase):
             'Daily maximum number of clicks for ad group set to "10"',
             'Daily click budget for ad group set to "$5.00"',
         ]
-        self.assertItemsEqual(expected, actual)
+        self.assertCountEqual(expected, actual)
 
 
 class AdGroupRunningStatusTest(TestCase):
@@ -333,25 +333,25 @@ class CampaignSettingsTest(TestCase):
     def test_get_settings_dict(self):
         settings_dict = {
             'archived': False,
-            'iab_category': u'1',
-            'name': u'Test campaign 1',
-            'target_devices': [u'mobile'],
+            'iab_category': '1',
+            'name': 'Test campaign 1',
+            'target_devices': ['mobile'],
             'target_os': None,
             'target_placements': None,
             'campaign_manager': User.objects.get(pk=1),
             'language': constants.Language.ENGLISH,
             'promotion_goal': 1,
-            'target_regions': [u'CA', u'501'],
+            'target_regions': ['CA', '501'],
             'exclusion_target_regions': ['US-NY'],
             'campaign_goal': 2,
             'goal_quantity': Decimal('10.00'),
             'automatic_campaign_stop': True,
             'landing_mode': False,
             'enable_ga_tracking': True,
-            'ga_property_id': u'',
+            'ga_property_id': '',
             'ga_tracking_type': 1,
             'enable_adobe_tracking': False,
-            'adobe_tracking_param': u'',
+            'adobe_tracking_param': '',
             'whitelist_publisher_groups': [1],
             'blacklist_publisher_groups': [2],
         }
@@ -363,31 +363,31 @@ class CampaignSettingsTest(TestCase):
 
     def test_get_changes_text_unicode(self):
         settings = models.CampaignSettings.objects.get(id=1)
-        new_name = u'Ččšćžđ name'
+        new_name = 'Ččšćžđ name'
 
         user = User.objects.create_user('test@example.com')
         user.first_name = 'Tadej'
-        user.last_name = u'Pavlič'
+        user.last_name = 'Pavlič'
         new_campaign_manager = user
 
         changes = settings.get_changes(dict(name=new_name, campaign_manager=new_campaign_manager))
 
         self.assertEqual(
-            models.CampaignSettings.get_changes_text(changes), u'Campaign Manager set to "Tadej Pavli\u010d", Name set to "\u010c\u010d\u0161\u0107\u017e\u0111 name"')
+            models.CampaignSettings.get_changes_text(changes), 'Campaign Manager set to "Tadej Pavli\u010d", Name set to "\u010c\u010d\u0161\u0107\u017e\u0111 name"')
 
     def test_get_changes_text_nonunicode(self):
         settings = models.CampaignSettings.objects.get(id=1)
-        new_name = u'name'
+        new_name = 'name'
 
         user = User.objects.create_user('test@example.com')
         user.first_name = 'Tadej'
-        user.last_name = u'Pavlic'
+        user.last_name = 'Pavlic'
         new_campaign_manager = user
 
         changes = settings.get_changes(dict(name=new_name, campaign_manager=new_campaign_manager))
 
         self.assertEqual(
-            models.CampaignSettings.get_changes_text(changes), u'Campaign Manager set to "Tadej Pavlic", Name set to "name"')
+            models.CampaignSettings.get_changes_text(changes), 'Campaign Manager set to "Tadej Pavlic", Name set to "name"')
 
 
 class AdGroupSourceTest(TestCase):
@@ -809,7 +809,7 @@ class CampaignTestCase(TestCase):
 
         self.assertEqual(settings.name, '')
         self.assertEqual(settings.iab_category, 'IAB24')
-        self.assertEqual(settings.target_devices, ['tablet', 'mobile', 'desktop'])
+        self.assertEqual(set(settings.target_devices), set(['tablet', 'mobile', 'desktop']))
         self.assertEqual(settings.target_regions, ['US'])
 
     def test_filter_by_agencies(self):
@@ -981,6 +981,7 @@ class HistoryTest(TestCase):
         self.u = User.objects.get(pk=1)
         self.acc = models.Account.objects.get(pk=1)
         self.su = constants.SystemUserType.AUTOPILOT
+        self.maxDiff = None
 
     def _latest_ad_group_history(self, ad_group=None):
         return models.History.objects.all().filter(
@@ -1047,9 +1048,9 @@ class HistoryTest(TestCase):
             )
         )
 
-        self.assertEquals(0, models.History.objects.all().count())
-        self.assertEquals(0, models.History.objects.all().count())
-        self.assertEquals(0, models.History.objects.all().count())
+        self.assertEqual(0, models.History.objects.all().count())
+        self.assertEqual(0, models.History.objects.all().count())
+        self.assertEqual(0, models.History.objects.all().count())
 
     def test_save_fail(self):
         entry = models.History.objects.create(
@@ -1246,17 +1247,18 @@ class HistoryTest(TestCase):
         )
 
         history = models.History.objects.all().first()
+        self.maxDiff = None
         self.assertEqual(textwrap.dedent(
             '''
             Created credit
-            . Credit: #{cid}. Status set to "Signed"
+            . Credit: #{cid}. Start Date set to "{sd}"
             , End Date set to "{ed}"
-            , Flat Fee Start Date set to ""
-            , Flat Fee (cc) set to "$0.00"
-            , Start Date set to "{sd}"
-            , Flat Fee End Date set to ""
             , Amount set to "$100.00"
             , License Fee set to "20.00%"
+            , Flat Fee (cc) set to "$0.00"
+            , Flat Fee Start Date set to ""
+            , Flat Fee End Date set to ""
+            , Status set to "Signed"
             , Comment set to ""
             '''.format(cid=credit.id,
                        sd=start_date.isoformat(),
@@ -1276,12 +1278,12 @@ class HistoryTest(TestCase):
         self.assertEqual(textwrap.dedent(
             '''
             Created budget
-            . Budget: #{budid}. Comment set to ""
+            . Budget: #{budid}. Start Date set to "{sd}"
             , End Date set to "{ed}"
-            , Start Date set to "{sd}"
+            , Margin set to "0.00%"
             , Amount set to "$100.00"
             , Released amount set to "$0.00"
-            , Margin set to "0.00%"
+            , Comment set to ""
             '''.format(budid=budget.id,
                        sd=start_date.isoformat(),
                        ed=end_date.isoformat())
@@ -1304,7 +1306,7 @@ class HistoryTest(TestCase):
             Created settings
             . Name set to "test"
             , Campaign Manager set to "luka.silovinac@zemanta.com"
-            , Device targeting set to "Tablet, Mobile, Desktop"
+            , Device targeting set to "Desktop, Tablet, Mobile"
             , Locations set to "United States"
             ''').replace('\n', ''), hist.changes_text)
 

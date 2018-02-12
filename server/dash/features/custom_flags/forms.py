@@ -1,7 +1,7 @@
 from django import forms
 
-import model
-import fields
+from . import model
+from . import fields
 
 
 class CustomFlagsFormMixin(forms.Form):

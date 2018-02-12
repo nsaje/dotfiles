@@ -1,5 +1,5 @@
 from decimal import Decimal
-from constants import CpcChangeComment as cpc_com
+from .constants import CpcChangeComment as cpc_com
 from dash.constants import CampaignGoalKPI
 
 # Autopilot General Settings

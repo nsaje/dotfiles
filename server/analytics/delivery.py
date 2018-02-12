@@ -222,7 +222,7 @@ def _prepare_ad_group_data(running_ad_groups, ad_group_settings_map, ad_group_st
         spend = ad_group_stats.get(ad_group.pk, {}).get('media', Decimal(0)) + \
             ad_group_stats.get(ad_group.pk, {}).get('data', Decimal(0))
         ad_group_data.append((
-            u'{}, {}'.format(ad_group.campaign.get_long_name(), ad_group.name),
+            '{}, {}'.format(ad_group.campaign.get_long_name(), ad_group.name),
             ad_group.pk,
             AD_GROUP_URL.format(ad_group.pk),
             account_settings_map[ad_group.campaign.account_id].default_cs_representative,

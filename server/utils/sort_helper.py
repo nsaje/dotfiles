@@ -23,7 +23,7 @@ def sort_results(results, order_fields=None):
         def _key(item):
             value = item.get(field)
 
-            if isinstance(value, basestring):
+            if isinstance(value, str):
                 value = value.lower()
 
             # here we use a tuple that will be used for comparison.
@@ -38,7 +38,7 @@ def sort_results(results, order_fields=None):
 
 
 def sort_rows_by_order_and_archived(rows, order_fields, archived_field='archived'):
-    if isinstance(order_fields, (str, unicode)):
+    if isinstance(order_fields, str):
         order_fields = [order_fields]
 
     order_fields = [archived_field] + order_fields
@@ -91,7 +91,7 @@ def group_rows_by_breakdown_key(breakdown, rows, max_1=False):
         groups[key].append(row)
 
     if max_1:
-        for breakdown_id, rows in groups.iteritems():
+        for breakdown_id, rows in groups.items():
             if len(rows) > 1:
                 raise Exception('Expected 1 row per breakdown got {}'.format(len(rows)))
             groups[breakdown_id] = rows[0]
@@ -115,7 +115,7 @@ def apply_offset_limit(rows, offset, limit):
 def apply_offset_limit_to_breakdown(breakdown, rows, offset, limit):
     groups = group_rows_by_breakdown_key(breakdown, rows)
     rows = []
-    for group_rows in groups.values():
+    for group_rows in list(groups.values()):
         rows.extend(apply_offset_limit(group_rows, offset, limit))
 
     return rows

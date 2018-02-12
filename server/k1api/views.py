@@ -100,12 +100,12 @@ class AccountsView(K1APIView):
         account_dicts = []
         for account in accounts:
             pixels = []
-            for pixel in account.conversionpixel_set.all():
+            for pixel in account.conversionpixel_set.all().order_by('pk'):
                 if pixel.archived:
                     continue
 
                 source_pixels = []
-                for source_pixel in pixel.sourcetypepixel_set.all():
+                for source_pixel in pixel.sourcetypepixel_set.all().order_by('pk'):
                     source_pixel_dict = {
                         'url': source_pixel.url,
                         'source_pixel_id': source_pixel.source_pixel_id,
@@ -139,10 +139,11 @@ class AccountsView(K1APIView):
         audiences = (dash.models.Audience.objects
                      .filter(pixel__account__in=accounts, archived=False)
                      .select_related('pixel')
-                     .prefetch_related('audiencerule_set'))
+                     .prefetch_related('audiencerule_set')
+                     .order_by('pk'))
         for audience in audiences:
             rules = []
-            for rule in audience.audiencerule_set.all():
+            for rule in audience.audiencerule_set.all().order_by('pk'):
                 rule_dict = {
                     'id': rule.id,
                     'type': rule.type,
@@ -298,7 +299,7 @@ class GAAccountsView(K1APIView):
                 self._extract_ga_settings(ga_accounts, previous_settings)
         ga_accounts_dicts = [
             {'account_id': account_id, 'ga_account_id': ga_account_id, 'ga_web_property_id': ga_web_property_id}
-            for account_id, ga_account_id, ga_web_property_id in ga_accounts
+            for account_id, ga_account_id, ga_web_property_id in sorted(ga_accounts)
         ]
         ga_account_ids = set(ga_account_id for _, ga_account_id, _ in ga_accounts)
 
@@ -463,8 +464,8 @@ class AdGroupsView(K1APIView):
             campaigns_budgets_map,\
             campaignstop_states = self._get_settings_maps(ad_group_ids, source_types, slugs, marker, limit)
 
-        campaign_goal_types = self._get_campaign_goal_types(campaigns_settings_map.keys())
-        campaign_goals = self._get_campaign_goals(campaigns_settings_map.keys())
+        campaign_goal_types = self._get_campaign_goal_types(list(campaigns_settings_map.keys()))
+        campaign_goals = self._get_campaign_goals(list(campaigns_settings_map.keys()))
 
         all_custom_flags = {
             flag: False
@@ -604,7 +605,7 @@ class AdGroupsView(K1APIView):
         campaign_goals = {cid: [] for cid in campaign_ids}
         for goal in dash.models.CampaignGoal.objects.filter(campaign__in=campaign_ids):
             campaign_goals[goal.campaign_id].append((goal.primary, goal.type))
-        for cid in campaign_goals.keys():
+        for cid in list(campaign_goals.keys()):
             campaign_goals[cid] = [tup[1] for tup in sorted(campaign_goals[cid], reverse=True)]
         return campaign_goals
 
@@ -619,7 +620,7 @@ class AdGroupsView(K1APIView):
             campaign_goals[goal.campaign_id].append(goal)
 
         campaign_goals_dicts = {}
-        for cid, goals in campaign_goals.iteritems():
+        for cid, goals in campaign_goals.items():
             sorted_goals = sorted(goals, key=lambda x: (x.primary, x.pk), reverse=True)
             campaign_goals_dicts[cid] = [
                 goal.to_dict(with_values=True) for goal in sorted_goals
@@ -816,7 +817,7 @@ class AdGroupSourcesView(K1APIView):
         ad_group_settings_map = {ags.ad_group_id: ags for ags in ad_groups_settings}
 
         ag_source_settings_query = (dash.models.AdGroupSourceSettings.objects
-                                    .filter(ad_group_source__ad_group__in=ad_group_settings_map.keys())
+                                    .filter(ad_group_source__ad_group__in=list(ad_group_settings_map.keys()))
                                     .filter(ad_group_source__source__deprecated=False))
 
         # filter which sources we want
@@ -879,8 +880,8 @@ class AdGroupSourcesView(K1APIView):
                 margin,
             )
 
-            if (ad_group.campaign.account.agency_id in BLOCKED_AGENCIES
-                    or ad_group.campaign.account_id in BLOCKED_ACCOUNTS):
+            if (ad_group.campaign.account.agency_id in BLOCKED_AGENCIES or
+                    ad_group.campaign.account_id in BLOCKED_ACCOUNTS):
                 source_state = constants.AdGroupSettingsState.INACTIVE
             source = {
                 'ad_group_id': ad_group_settings.ad_group_id,
@@ -934,7 +935,7 @@ class AdGroupSourcesView(K1APIView):
         new_settings = ad_group_source_settings.copy_settings()
 
         settings_changed = False
-        for key, val in data.items():
+        for key, val in list(data.items()):
             if key == 'cpc_cc':
                 logger.error('K1API - unexpected update of ad group source cpc_cc')
                 new_settings.cpc_cc = converters.cc_to_decimal(val)
@@ -973,8 +974,8 @@ class AdGroupSourceBlockersView(K1APIView):
 
         blockers_update = json.loads(request.body)
         changes = 0
-        for key, value in blockers_update.items():
-            if not (isinstance(key, basestring) and (isinstance(value, basestring) or value is None)):
+        for key, value in list(blockers_update.items()):
+            if not (isinstance(key, str) and (isinstance(value, str) or value is None)):
                 return self.response_error("Bad input: blocker key should be string and value should be either string or None", status=400)
             if value and value != ad_group_source.blockers.get(key):
                 ad_group_source.blockers[key] = value

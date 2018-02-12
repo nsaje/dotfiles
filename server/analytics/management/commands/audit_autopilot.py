@@ -2,13 +2,13 @@ import utils.command_helpers
 import utils.slack
 import analytics.monitor
 
-ALERT_MSG_AD_GROUPS = u"""Autopilot did not run today on the following ad groups:
+ALERT_MSG_AD_GROUPS = """Autopilot did not run today on the following ad groups:
 {}"""
-ALERT_MSG_CPC_CHANGES = u"""Autopilot made irregular CPC adjustments on the following sources:
+ALERT_MSG_CPC_CHANGES = """Autopilot made irregular CPC adjustments on the following sources:
 {}"""
-ALERT_MSG_BUDGET_CHANGES = u"""Autopilot made irregular budget adjustments on the following ad groups:
+ALERT_MSG_BUDGET_CHANGES = """Autopilot made irregular budget adjustments on the following ad groups:
 {}"""
-ALERT_MSG_BUDGET_TOTALS = u"""Autopilot budget was not correctly allocated on the following ad groups:
+ALERT_MSG_BUDGET_TOTALS = """Autopilot budget was not correctly allocated on the following ad groups:
 {}"""
 
 
@@ -24,7 +24,7 @@ class Command(utils.command_helpers.ExceptionCommand):
     def _print(self, msg):
         if not self.verbose:
             return
-        self.stdout.write(u'{}\n'.format(msg))
+        self.stdout.write('{}\n'.format(msg))
 
     def handle(self, *args, **options):
         self.verbose = options['verbose']
@@ -41,10 +41,10 @@ class Command(utils.command_helpers.ExceptionCommand):
             return
 
         self._print(ALERT_MSG_AD_GROUPS.format(''))
-        details = u''
+        details = ''
         for ad_group in alarms:
-            self._print(u'- {} {}'.format(ad_group.name, ad_group.pk))
-            details += u' - {}\n'.format(utils.slack.ad_group_url(ad_group))
+            self._print('- {} {}'.format(ad_group.name, ad_group.pk))
+            details += ' - {}\n'.format(utils.slack.ad_group_url(ad_group))
         if self.slack:
             utils.slack.publish(
                 ALERT_MSG_AD_GROUPS.format(details),
@@ -57,10 +57,10 @@ class Command(utils.command_helpers.ExceptionCommand):
         if not alarms:
             return
         self._print(ALERT_MSG_BUDGET_TOTALS.format(''))
-        details = u''
-        for ad_group, error in alarms.iteritems():
-            self._print(u'- {} {}: {}'.format(ad_group.name, ad_group.pk, error))
-            details += u' - {}: {}$\n'.format(
+        details = ''
+        for ad_group, error in alarms.items():
+            self._print('- {} {}: {}'.format(ad_group.name, ad_group.pk, error))
+            details += ' - {}: {}$\n'.format(
                 utils.slack.ad_group_url(ad_group),
                 error
             )
@@ -76,10 +76,10 @@ class Command(utils.command_helpers.ExceptionCommand):
         if not alarms:
             return
         self._print(ALERT_MSG_BUDGET_CHANGES.format(''))
-        details = u''
-        for ad_group, error in alarms.iteritems():
-            self._print(u'- {} {}: {}'.format(unicode(ad_group.name), ad_group.pk, error))
-            details += u' - {}: {}$\n'.format(
+        details = ''
+        for ad_group, error in alarms.items():
+            self._print('- {} {}: {}'.format(str(ad_group.name), ad_group.pk, error))
+            details += ' - {}: {}$\n'.format(
                 utils.slack.ad_group_url(ad_group),
                 error
             )
@@ -95,12 +95,12 @@ class Command(utils.command_helpers.ExceptionCommand):
         if not alarms:
             return
         self._print(ALERT_MSG_CPC_CHANGES.format(''))
-        details = u''
-        for source, error in alarms.iteritems():
+        details = ''
+        for source, error in alarms.items():
             error_msg = 'all adjustments were positive' if error > 0 \
                         else 'all adjustments were negative'
-            self._print(u'- {}: {}'.format(source.name, error_msg))
-            details += u' - {}: {}\n'.format(
+            self._print('- {}: {}'.format(source.name, error_msg))
+            details += ' - {}: {}\n'.format(
                 source.name,
                 error_msg
             )

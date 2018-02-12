@@ -4,7 +4,7 @@ from dash import models
 from stats.helpers import Goals
 from utils.magic_mixer import magic_mixer
 
-from cache_helper import get_cache_key
+from .cache_helper import get_cache_key
 
 
 class C(object):

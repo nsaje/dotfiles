@@ -1,8 +1,8 @@
 import time
 import json
 import logging
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 
 import newrelic.agent
 from django.conf import settings
@@ -81,9 +81,9 @@ def _call_api(url, data=None, method='GET'):
     if settings.K1_DEMO_MODE and method != 'GET':
         return {}
 
-    request = urllib2.Request(url, data)
+    request = urllib.request.Request(url, data.encode('utf-8') if data else None)
     request.get_method = lambda: method
-    response = request_signer.urllib2_secure_open(request, settings.K1_API_SIGN_KEY[0])
+    response = request_signer.urllib_secure_open(request, settings.K1_API_SIGN_KEY[0])
 
     status_code = response.getcode()
     if status_code != 200:
@@ -101,5 +101,5 @@ def get_adgroup_realtimestats(ad_group_id, params={}):
     if not url:
         return []
     if params:
-        url += '?' + urllib.urlencode(params)
+        url += '?' + urllib.parse.urlencode(params)
     return _call_api(url)

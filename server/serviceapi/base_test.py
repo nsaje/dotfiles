@@ -4,7 +4,7 @@ from django.test import override_settings
 from django.core.urlresolvers import reverse
 from django.conf.urls import url
 
-import base
+from . import base
 
 
 class MockTestView(base.ServiceAPIBaseView):

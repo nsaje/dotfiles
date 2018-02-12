@@ -30,7 +30,7 @@ LIST_REPORT_DISPLAY = {
         _url(['v2', 'analytics', 'account', obj.pk]),
         obj.get_long_name()
     ).as_html(),
-    'credits': lambda obj: u'{} ({})'.format(
+    'credits': lambda obj: '{} ({})'.format(
         Url(
             obj.account and _url(['v2', 'analytics', 'account', obj.account_id]) or
             obj.agency and _url(['v2', 'analytics', 'account', obj.agency.account_set.all().first().pk]) or
@@ -38,9 +38,9 @@ LIST_REPORT_DISPLAY = {
             str(obj)
         ).as_html(), _get_bcm_changes('credit', obj)
     ),
-    'budgets': lambda obj: u'{} ({})'.format(Url(
+    'budgets': lambda obj: '{} ({})'.format(Url(
         _url(['v2', 'analytics', 'campaign', obj.campaign_id]),
-        u'{}, {}'.format(unicode(obj), obj.campaign.account.get_long_name())
+        '{}, {}'.format(str(obj), obj.campaign.account.get_long_name())
     ).as_html(), _get_bcm_changes('budget', obj)),
 }
 
@@ -50,9 +50,9 @@ OEN_AGENCIES = (55, )
 
 def _format_change(key, change):
     if '_nano' in key:
-        return map(converters.nano_to_decimal, change)
+        return list(map(converters.nano_to_decimal, change))
     if '_cc' in key:
-        return map(converters.cc_to_decimal, change)
+        return list(map(converters.cc_to_decimal, change))
     return change
 
 
@@ -65,11 +65,11 @@ def _get_dict_change(d_prev, d_after):
 def _get_bcm_changes(name, obj):
     history = obj.history.all().order_by('-created_dt')[:2]
     if len(history) < 2:
-        return u''
+        return ''
     changes = _get_dict_change(history[1].snapshot, history[0].snapshot)
-    return u', '.join([
-        u'{}: {} -> {}'.format(key, *_format_change(key, chng))
-        for key, chng in changes.iteritems()
+    return ', '.join([
+        '{}: {} -> {}'.format(key, *_format_change(key, chng))
+        for key, chng in changes.items()
     ])
 
 
@@ -140,14 +140,14 @@ class ReportContext(object):
         }
 
     def _filter_statements(self, fun, statements):
-        mapped_statements = map(fun, statements)
-        nonnill_statements = filter(bool, mapped_statements)
+        mapped_statements = list(map(fun, statements))
+        nonnill_statements = list(filter(bool, mapped_statements))
         return nonnill_statements
 
     def _get_subset_model(self, fun_get_id):
         return {
             time_span: set(self._filter_statements(fun_get_id, statements))
-            for time_span, statements in self.statements.iteritems()
+            for time_span, statements in self.statements.items()
         }
 
     def _prepare_main_model(self):
@@ -233,12 +233,12 @@ def _get_oen(context):
 def _populate_agency(context, type_filter):
     valid_accounts = set(
         account_id
-        for account_id, account_type in context.account_types.iteritems()
+        for account_id, account_type in context.account_types.items()
         if account_type == type_filter
     ) & context.agency_accounts
     valid_campaigns = set(
         campaign_id
-        for campaign_id, campaign_type in context.campaign_types.iteritems()
+        for campaign_id, campaign_type in context.campaign_types.items()
         if campaign_type == type_filter
     ) & context.agency_campaigns
 
@@ -264,12 +264,12 @@ def _populate_agency(context, type_filter):
 def _populate_clientdirect(context, type_filter):
     valid_accounts = set(
         account_id
-        for account_id, account_type in context.account_types.iteritems()
+        for account_id, account_type in context.account_types.items()
         if account_type == type_filter
     ) - context.agency_accounts
     valid_campaigns = set(
         campaign_id
-        for campaign_id, campaign_type in context.campaign_types.iteritems()
+        for campaign_id, campaign_type in context.campaign_types.items()
         if campaign_type == type_filter
     ) - context.agency_campaigns
 
@@ -293,7 +293,7 @@ def _populate_clientdirect(context, type_filter):
 
 
 def _prepare_table_rows(context):
-    header = [TableRow(map(TableCell, [
+    header = [TableRow(list(map(TableCell, [
         context.date.strftime('%B %d'),
         '# active accounts<br />(d/d, w/w, m/m)',
         '# active campaigns<br />(d/d, w/w, m/m)',
@@ -301,15 +301,15 @@ def _prepare_table_rows(context):
         'monthly budgets',
         'spend projection',
         'fee projection'
-    ]))]
-    agency_rows = map(TableRow.prepare(TableRow.TYPE_BREAKDOWN), [
+    ])))]
+    agency_rows = list(map(TableRow.prepare(TableRow.TYPE_BREAKDOWN), [
         [TableCell('Managed', align='right')] + _populate_agency(context, dash.constants.AccountType.MANAGED),
         [TableCell('PAAS', align='right')] + _populate_agency(context, dash.constants.AccountType.PAAS),
         [TableCell('Pilot', align='right')] + _populate_agency(context, dash.constants.AccountType.PILOT),
         [TableCell('Activated', align='right')] + _populate_agency(context, dash.constants.AccountType.ACTIVATED),
         [TableCell('Test', align='right')] + _populate_agency(context, dash.constants.AccountType.TEST),
         [TableCell('Unknown', align='right')] + _populate_agency(context, dash.constants.AccountType.UNKNOWN),
-    ])
+    ]))
     agency_costs = [TableRow([
         TableCell('{} agencies'.format(
             _get_counts(context.agencies, total_only=True).value_html()
@@ -320,7 +320,7 @@ def _prepare_table_rows(context):
         _get_totals(agency_rows, i) for i in range(3, 7)
     ], row_type=TableRow.TYPE_TOTALS)]
 
-    clientdirect_rows = map(TableRow.prepare(TableRow.TYPE_BREAKDOWN), [
+    clientdirect_rows = list(map(TableRow.prepare(TableRow.TYPE_BREAKDOWN), [
         [TableCell('Managed', align='right')] + _populate_clientdirect(context, dash.constants.AccountType.MANAGED),
         [TableCell('PAAS', align='right')] + _populate_clientdirect(context, dash.constants.AccountType.PAAS),
         [TableCell('Pilot', align='right')] + _populate_clientdirect(context, dash.constants.AccountType.PILOT),
@@ -328,7 +328,7 @@ def _prepare_table_rows(context):
         _populate_clientdirect(context, dash.constants.AccountType.ACTIVATED),
         [TableCell('Test', align='right')] + _populate_clientdirect(context, dash.constants.AccountType.TEST),
         [TableCell('Unknown', align='right')] + _populate_clientdirect(context, dash.constants.AccountType.UNKNOWN),
-    ])
+    ]))
     clientdirect_totals = [TableRow([TableCell('Client-direct')] + [
         _get_totals(clientdirect_rows, i) for i in range(1, 7)
     ], row_type=TableRow.TYPE_TOTALS)]
@@ -354,7 +354,7 @@ def _generate_table_html(context):
 
 def _generate_lists_html(context):
     data = []
-    for item, elements in context.yesterday_created.iteritems():
+    for item, elements in context.yesterday_created.items():
         data.append({
             'title': NEW_ITEMS_LIST_REPORT_TITLES[item],
             'elements': [
@@ -362,7 +362,7 @@ def _generate_lists_html(context):
             ]
         })
 
-    for item, elements in context.yesterday_modified.iteritems():
+    for item, elements in context.yesterday_modified.items():
         data.append({
             'title': CHANGED_ITEMS_LIST_REPORT_TITLES[item],
             'elements': [

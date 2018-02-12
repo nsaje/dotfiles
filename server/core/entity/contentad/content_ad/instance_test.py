@@ -9,8 +9,8 @@ from utils import k1_helper
 from utils import redirector_helper
 
 import core.entity.contentad.content_ad_source.model
-import model
-import instance
+from . import model
+from . import instance
 
 
 class InstanceTest(TestCase):

@@ -35,7 +35,7 @@ class Command(utils.command_helpers.ExceptionCommand):
     def _print(self, msg):
         if not self.verbose:
             return
-        self.stdout.write(u'{}\n'.format(msg))
+        self.stdout.write('{}\n'.format(msg))
 
     def handle(self, *args, **options):
         self.verbose = options['verbose']
@@ -59,7 +59,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             date=date,
             max_pacing=Decimal(options['max_pacing']),
             min_pacing=Decimal(options['min_pacing']),
-            campaign__in=flying_campaigns.values(),
+            campaign__in=list(flying_campaigns.values()),
         )
         valid_emails = set(
             user.email for user in zemauth.models.User.objects.get_users_with_perm(
@@ -73,12 +73,12 @@ class Command(utils.command_helpers.ExceptionCommand):
         for campaign_id, pacing, alert, projections in alarms:
             campaign = campaigns[campaign_id]
             emails = set(utils.email_helper.email_manager_list(campaign)) & valid_emails
-            self._print(u'Campaign {} ({}) has {} pacing {}: send to {}'.format(
+            self._print('Campaign {} ({}) has {} pacing {}: send to {}'.format(
                 campaign.pk,
                 campaign.name,
                 alert,
                 pacing,
-                u', '.join(emails) if emails else 'none'
+                ', '.join(emails) if emails else 'none'
             ))
             if not options['send_emails']:
                 continue

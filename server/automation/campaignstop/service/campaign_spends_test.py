@@ -11,8 +11,8 @@ from utils.magic_mixer import magic_mixer
 from utils import dates_helper
 
 from .. import RealTimeCampaignDataHistory
-import update_campaignstop_state
-import campaign_spends
+from . import update_campaignstop_state
+from . import campaign_spends
 
 
 class LogMock(object):

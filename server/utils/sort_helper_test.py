@@ -69,7 +69,7 @@ class MapByBreakdownTestCase(unittest.TestCase):
             },
         ]
 
-        self.assertItemsEqual(sort_helper.map_by_breakdown(rows, ['source'], lambda row: row['value']), {
+        self.assertCountEqual(sort_helper.map_by_breakdown(rows, ['source'], lambda row: row['value']), {
             1: 55,
             2: 44,
             3: 33,
@@ -104,7 +104,7 @@ class MapByBreakdownTestCase(unittest.TestCase):
             },
         ]
 
-        self.assertItemsEqual(
+        self.assertCountEqual(
             sort_helper.map_by_breakdown(rows, ['source', 'ad_group', 'day_index'], lambda row: row['value']), {
                 1: {
                     2: {
@@ -321,7 +321,7 @@ class ApplyOffsetLimitTest(unittest.TestCase):
         )
 
     def test_apply_offset_limit_to_breakdown(self):
-        self.assertItemsEqual(
+        self.assertCountEqual(
             sort_helper.apply_offset_limit_to_breakdown(
                 ['account_id'],
                 [
@@ -337,7 +337,7 @@ class ApplyOffsetLimitTest(unittest.TestCase):
             ]
         )
 
-        self.assertItemsEqual(
+        self.assertCountEqual(
             sort_helper.apply_offset_limit_to_breakdown(
                 ['account_id'],
                 [

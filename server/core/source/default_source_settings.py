@@ -54,5 +54,5 @@ class DefaultSourceSettings(models.Model):
         def with_credentials(self):
             return self.exclude(credentials__isnull=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.source.name

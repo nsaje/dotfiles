@@ -179,7 +179,7 @@ def get_goals(constraints, breakdown):
             for cg in campaign_goals:
                 if cg.campaign_id not in primary_goals_by_campaign:
                     primary_goals_by_campaign[cg.campaign_id] = cg
-            primary_goals = primary_goals_by_campaign.values()
+            primary_goals = list(primary_goals_by_campaign.values())
 
             for campaign in allowed_campaigns:
                 campaign_goal_values.extend(dash.campaign_goals.get_campaign_goal_values(campaign))

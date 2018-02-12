@@ -9,7 +9,7 @@ import core.history
 import core.signals
 from dash import constants
 
-from update_object import UpdateObject
+from .update_object import UpdateObject
 
 
 class SettingsBase(models.Model, core.history.HistoryMixin):
@@ -52,7 +52,7 @@ class SettingsBase(models.Model, core.history.HistoryMixin):
 
     def get_changes(self, kwargs):
         changes = {}
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             if getattr(self, key) != value:
                 changes[key] = value
         return changes
@@ -78,7 +78,7 @@ class SettingsBase(models.Model, core.history.HistoryMixin):
 
         self.created_by = user
         self.created_dt = datetime.datetime.utcnow()
-        for k, v in changes.iteritems():
+        for k, v in changes.items():
             setattr(self, k, v)
         if update_fields is not None:
             update_fields.extend(['created_by', 'created_dt'])

@@ -6,7 +6,7 @@ import dash.constants
 import stats.constants
 import utils.columns
 
-import constants
+from . import constants
 
 
 def get_breakdown_from_fields(fields, level):

@@ -255,7 +255,7 @@ class InfoBoxHelpersTest(TestCase):
     @mock.patch('redshiftapi.api_breakdowns.query')
     def test_get_yesterday_total_spend(self, mock_query):
         mock_query.return_value = [{
-            'campaign_id': u'1',
+            'campaign_id': '1',
             'e_yesterday_cost': 50,
             'yesterday_et_cost': 60,
             'yesterday_etfm_cost': 70,
@@ -299,7 +299,7 @@ class InfoBoxHelpersTest(TestCase):
         user = zemauth.models.User.objects.get(pk=1)
         ad_group = dash.models.AdGroup.objects.get(pk=1)
         mock_query.return_value = [{
-            'ad_group_id': u'1',
+            'ad_group_id': '1',
             'e_yesterday_cost': 50,
             'yesterday_et_cost': 60,
             'yesterday_etfm_cost': 70,

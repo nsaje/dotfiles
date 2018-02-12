@@ -20,12 +20,12 @@ class QTestCase(TestCase, backtosql.TestSQLMixin):
         c = backtosql.Q(self.ModelA(), **constraints_dict)
         constraints = c.generate()
         self.assertSQLEquals(constraints, "(bar=%s AND foo=ANY(%s))")
-        self.assertItemsEqual(c.get_params(), [[1, 2, 3], datetime.date.today()])
+        self.assertCountEqual(c.get_params(), [[1, 2, 3], datetime.date.today()])
 
         c = backtosql.Q(self.ModelA(), **constraints_dict)
         constraints = c.generate(prefix="v")
         self.assertSQLEquals(constraints, "(v.bar=%s AND v.foo=ANY(%s))")
-        self.assertItemsEqual(c.get_params(), [[1, 2, 3], datetime.date.today()])
+        self.assertCountEqual(c.get_params(), [[1, 2, 3], datetime.date.today()])
 
     def test_generate_constraints_none(self):
         constraints_dict = {
@@ -36,12 +36,12 @@ class QTestCase(TestCase, backtosql.TestSQLMixin):
         c = backtosql.Q(m, **constraints_dict) & backtosql.Q.none(m)
         constraints = c.generate()
         self.assertSQLEquals(constraints, "((foo=%s) AND (1=%s))")
-        self.assertItemsEqual(c.get_params(), [1, 2])
+        self.assertCountEqual(c.get_params(), [1, 2])
 
         c = backtosql.Q(m, **constraints_dict) & backtosql.Q.none(m)
         constraints = c.generate(prefix="v")
         self.assertSQLEquals(constraints, "((v.foo=%s) AND (1=%s))")
-        self.assertItemsEqual(c.get_params(), [1, 2])
+        self.assertCountEqual(c.get_params(), [1, 2])
 
     def test_generate_constraints_empty(self):
         constraints_dict = {}
@@ -50,7 +50,7 @@ class QTestCase(TestCase, backtosql.TestSQLMixin):
         c = backtosql.Q(m, **constraints_dict)
         constraints = c.generate()
         self.assertSQLEquals(constraints, "1=1")
-        self.assertItemsEqual(c.get_params(), [])
+        self.assertCountEqual(c.get_params(), [])
 
     def test_generate_nested_constraints(self):
         constraints_dict = {
@@ -80,7 +80,7 @@ class QTestCase(TestCase, backtosql.TestSQLMixin):
         '''
 
         self.assertSQLEquals(constraints, expected.replace('        ', ''))
-        self.assertItemsEqual(q.get_params(), [[1, 2, 3], datetime.date.today()] * 11)
+        self.assertCountEqual(q.get_params(), [[1, 2, 3], datetime.date.today()] * 11)
 
     def test_generate_nested_constraints_too_deep(self):
         constraints_dict = {
@@ -119,4 +119,4 @@ class QTestCase(TestCase, backtosql.TestSQLMixin):
         (TROL.bar=%s AND TROL.foo=ANY(%s)) OR \
         (TROL.bar=%s AND TROL.foo=ANY(%s)))'''
         self.assertSQLEquals(constraints, expected.replace('        ', ''))
-        self.assertItemsEqual(q.get_params(), [[1, 2, 3], datetime.date.today()] * 10)
+        self.assertCountEqual(q.get_params(), [[1, 2, 3], datetime.date.today()] * 10)

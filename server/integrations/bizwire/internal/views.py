@@ -91,7 +91,7 @@ def article_upload(request):
     logger.info('[bizwire] article upload - uploading articles with labels: %s', labels)
 
     candidates_per_ad_group = _distribute_articles(articles_data)
-    for ad_group_id, candidates_data in candidates_per_ad_group.iteritems():
+    for ad_group_id, candidates_data in candidates_per_ad_group.items():
         batch_name = 'Article ' + candidates_data[0]['label']
         if len(candidates_data) > 1:
             batch_name = 'Multiple articles upload'
@@ -105,7 +105,7 @@ def article_upload(request):
                                                candidates_data, ad_group, batch_name,
                                                filename='no-verify', auto_save=True)
 
-    for ad_group_id in candidates_per_ad_group.keys():
+    for ad_group_id in list(candidates_per_ad_group.keys()):
         try:
             if random.random() > 0.9:
                 actions.recalculate_and_set_new_daily_budgets(ad_group_id)

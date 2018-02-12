@@ -4,7 +4,7 @@ from utils.magic_mixer import magic_mixer
 
 import core.entity
 import core.source
-import serializers
+from . import serializers
 
 
 @patch.object(core.entity.ContentAd.objects, 'insert_redirects', autospec=True)

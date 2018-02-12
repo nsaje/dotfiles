@@ -6,7 +6,7 @@ import core
 import dash.models
 from dash.views import helpers
 
-import serializers
+from . import serializers
 
 
 class AdGroupSourcesViewList(RESTAPIBaseView):

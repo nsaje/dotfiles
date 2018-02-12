@@ -108,7 +108,7 @@ def totals(user, level, breakdown, constraints, goals):
 
     dash_total_row = dash.dashapi.api_breakdowns.get_totals(level, user, breakdown, constraints)
 
-    for k, v in dash_total_row.items():
+    for k, v in list(dash_total_row.items()):
         stats_rows[0][k] = v
 
     permission_filter.filter_columns_by_permission(user, stats_rows, goals, constraints)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import urlparse
+import urllib.parse
 
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
@@ -17,8 +17,8 @@ import core.entity
 import core.history
 import core.source
 
-import prodops_mixin
-import instance
+from . import prodops_mixin
+from . import instance
 
 
 class ContentAdManager(models.Manager):
@@ -135,7 +135,7 @@ class ContentAd(models.Model, prodops_mixin.ProdopsMixin, instance.ContentAdInst
         if self.image_id is None:
             return None
 
-        return urlparse.urljoin(settings.IMAGE_THUMBNAIL_URL, '{image_id}.jpg'.format(
+        return urllib.parse.urljoin(settings.IMAGE_THUMBNAIL_URL, '{image_id}.jpg'.format(
             image_id=self.image_id
         ))
 
@@ -152,7 +152,7 @@ class ContentAd(models.Model, prodops_mixin.ProdopsMixin, instance.ContentAdInst
         if not tracking_codes:
             return self.url
 
-        parsed = list(urlparse.urlparse(self.url))
+        parsed = list(urllib.parse.urlparse(self.url))
 
         parts = []
         if parsed[4]:
@@ -161,7 +161,7 @@ class ContentAd(models.Model, prodops_mixin.ProdopsMixin, instance.ContentAdInst
 
         parsed[4] = '&'.join(parts)
 
-        return urlparse.urlunparse(parsed)
+        return urllib.parse.urlunparse(parsed)
 
     def get_url(self, ad_group):
         return self.url
@@ -172,7 +172,7 @@ class ContentAd(models.Model, prodops_mixin.ProdopsMixin, instance.ContentAdInst
             content_ad_id=self.id
         )
 
-    def __unicode__(self):
+    def __str__(self):
         return '{cn}(id={id}, ad_group={ad_group}, image_id={image_id}, state={state})'.format(
             cn=self.__class__.__name__,
             id=self.id,
@@ -180,9 +180,6 @@ class ContentAd(models.Model, prodops_mixin.ProdopsMixin, instance.ContentAdInst
             image_id=self.image_id,
             state=self.state,
         )
-
-    def __str__(self):
-        return unicode(self).encode('ascii', 'ignore')
 
     def to_candidate_dict(self):
         return {

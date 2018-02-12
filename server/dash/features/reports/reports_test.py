@@ -9,9 +9,9 @@ import core.entity
 from dash.features import scheduled_reports
 from utils.magic_mixer import magic_mixer
 
-import constants
-import reports
-from reportjob import ReportJob
+from . import constants
+from . import reports
+from .reportjob import ReportJob
 
 
 class ReportsExecuteTest(TestCase):

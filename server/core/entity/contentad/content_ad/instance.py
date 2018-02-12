@@ -46,7 +46,7 @@ class ContentAdInstanceMixin(object):
 
     @transaction.atomic()
     def update(self, request, write_history=True, **kwargs):
-        for field, value in kwargs.items():
+        for field, value in list(kwargs.items()):
             if field in VALID_UPDATE_FIELDS:
                 setattr(self, field, value)
         self.save()

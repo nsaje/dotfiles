@@ -162,7 +162,7 @@ def create_report(breakdown, breakdown_id, gte, lt, path='.'):
         str(lt)
     ))
     with xlsxwriter.Workbook(filepath) as workbook:
-        for listname, rows in data.iteritems():
+        for listname, rows in data.items():
             worksheet = workbook.add_worksheet(listname)
             for r, columns in enumerate(rows):
                 for c, cell in enumerate(columns):

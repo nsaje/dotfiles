@@ -54,14 +54,14 @@ class EmailOrUsernameModelBackendTestCase(test.TestCase):
         user.save()
 
         oauth_data = {
-            u'family_name': u'',
-            u'name': u'',
-            u'picture': u'',
-            u'email': u'test.user@zemanta.com',
-            u'given_name': u'',
-            u'id': u'111111111111111111111',
-            u'hd': u'zemanta.com',
-            u'verified_email': True
+            'family_name': '',
+            'name': '',
+            'picture': '',
+            'email': 'test.user@zemanta.com',
+            'given_name': '',
+            'id': '111111111111111111111',
+            'hd': 'zemanta.com',
+            'verified_email': True
         }
 
         with self.settings(GOOGLE_OAUTH_ENABLED=True):
@@ -70,12 +70,12 @@ class EmailOrUsernameModelBackendTestCase(test.TestCase):
             self.assertEqual(result, user)
 
             unverified = oauth_data.copy()
-            unverified[u'verified_email'] = False
+            unverified['verified_email'] = False
             result = backend.authenticate(oauth_data=unverified)
             self.assertIs(result, None)
 
             wrong_email = oauth_data.copy()
-            wrong_email[u'email'] = u'non-existing@zemanta.com'
+            wrong_email['email'] = 'non-existing@zemanta.com'
             result = backend.authenticate(oauth_data=wrong_email)
             self.assertIs(result, None)
 

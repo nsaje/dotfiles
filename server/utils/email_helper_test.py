@@ -49,7 +49,7 @@ class EmailAPITestCase(TestCase):
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
         self.assertEqual(mail.outbox[0].bcc, ['additional@test.com'])
         self.assertEqual(mail.outbox[0].extra_headers, {'X-Mailgun-Tag': ['tag1', 'tag2']})
-        mock_render.assert_called_with('email.html', {'content': u'<p>Zemanta Body</p>', 'subject': 'Zemanta Subject'})
+        mock_render.assert_called_with('email.html', {'content': '<p>Zemanta Body</p>', 'subject': 'Zemanta Subject'})
 
     @patch('utils.email_helper.render_to_string')
     def test_whitelabel(self, mock_render):
@@ -63,7 +63,7 @@ class EmailAPITestCase(TestCase):
         self.assertEqual(mail.outbox[0].to, ['test@test.com'])
         self.assertEqual(mail.outbox[0].subject, 'Telescope Subject')
         self.assertEqual(mail.outbox[0].body, 'Telescope Body')
-        mock_render.assert_called_with('whitelabel/greenpark/email.html', {'content': u'<p>Telescope Body</p>', 'subject': 'Telescope Subject'})
+        mock_render.assert_called_with('whitelabel/greenpark/email.html', {'content': '<p>Telescope Body</p>', 'subject': 'Telescope Subject'})
 
     def test_from_email(self):
         email_helper.send_official_email(
@@ -138,7 +138,7 @@ class EmailHelperTestCase(TestCase):
 
     def test_generate_password_reset_url(self):
         reset_url = email_helper._generate_password_reset_url(self.user, self.request)
-        self.assertRegexpMatches(
+        self.assertRegex(
             reset_url,
             r'https://testserver/set_password/[a-zA-Z0-9]+-[a-zA-Z0-9]+-[0-9a-zA-Z]{20}/')
 
@@ -161,7 +161,7 @@ class EmailHelperTestCase(TestCase):
         self.assertEqual(mail.outbox[0].subject, subject)
         self.assertEqual(mail.outbox[0].body, body)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, [account_manager.email, campaign_manager.email])
+        self.assertEqual(set(mail.outbox[0].to), set([account_manager.email, campaign_manager.email]))
 
         self.request.user = campaign_manager
         email_helper.send_ad_group_notification_email(ad_group, self.request, 'Test')
@@ -187,7 +187,7 @@ class EmailHelperTestCase(TestCase):
         self.assertEqual(mail.outbox[0].subject, subject)
         self.assertEqual(mail.outbox[0].body, body)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, [account_manager.email, campaign_manager.email])
+        self.assertEqual(set(mail.outbox[0].to), set([account_manager.email, campaign_manager.email]))
 
         self.request.user = campaign_manager
         email_helper.send_campaign_notification_email(campaign, self.request, 'Test')
@@ -267,8 +267,8 @@ Zemanta
             mail.outbox[0].body,
             'User test@user.com started a new livestream session, accesssible on: http://www.google.com')
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].bcc, [u'operations@zemanta.com',
-                                              u'ziga.stopinsek@zemanta.com'])
+        self.assertEqual(mail.outbox[0].bcc, ['operations@zemanta.com',
+                                              'ziga.stopinsek@zemanta.com'])
 
     def test_send_pacing_email_low(self):
         account = dash_models.Account(name='Test account')
@@ -297,7 +297,7 @@ Please consider adjusting daily spend caps on ad group source settings. Visit ht
 Yours truly,
 Zemanta''')
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, [u'prodops@zemanta.com'])
+        self.assertEqual(mail.outbox[0].to, ['prodops@zemanta.com'])
 
     def test_send_pacing_email_high(self):
         account = dash_models.Account(name='Test account')
@@ -326,7 +326,7 @@ Please consider adjusting daily spend caps on ad group source settings. Visit ht
 Yours truly,
 Zemanta''')
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, [u'prodops@zemanta.com'])
+        self.assertEqual(mail.outbox[0].to, ['prodops@zemanta.com'])
 
     def test_send_budget_notification_email(self):
         campaign_manager = User.objects.create_user('manager@user.com')
@@ -346,7 +346,7 @@ Zemanta''')
         self.assertEqual(mail.outbox[0].subject, subject)
         self.assertEqual(mail.outbox[0].body, body)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, [account_manager.email, campaign_manager.email])
+        self.assertEqual(set(mail.outbox[0].to), set([account_manager.email, campaign_manager.email]))
 
         self.request.user = campaign_manager
         email_helper.send_budget_notification_email(campaign, self.request, 'Test')

@@ -49,7 +49,7 @@ class Command(utils.command_helpers.ExceptionCommand):
     def _print(self, msg):
         if not self.verbose:
             return
-        self.stdout.write(u'{}\n'.format(msg))
+        self.stdout.write('{}\n'.format(msg))
 
     def handle(self, *args, **options):
         self.verbose = options['verbose']
@@ -171,8 +171,8 @@ class Command(utils.command_helpers.ExceptionCommand):
         self._print(title)
         self.email_body += title + '\n'
         for account in alarms:
-            self._print(u'- {} {}'.format(account.name, account.pk))
-            self.email_body += u' - {} {}\n'.format(
+            self._print('- {} {}'.format(account.name, account.pk))
+            self.email_body += ' - {} {}\n'.format(
                 account.get_long_name(),
                 'https://one.zemanta.com/v2/credit/account/{}'.format(account.pk),
             )
@@ -190,10 +190,10 @@ class Command(utils.command_helpers.ExceptionCommand):
         self._print(title)
         self.email_body += title + '\n'
         for ad_group in alarms:
-            self._print(u'- {} {}'.format(ad_group.name, ad_group.pk))
-            self.email_body += u' - {} {}\n'.format(
+            self._print('- {} {}'.format(ad_group.name, ad_group.pk))
+            self.email_body += ' - {} {}\n'.format(
                 ad_group.name,
-                u'https://one.zemanta.com/v2/analytics/adgroup/{}'.format(ad_group.pk)
+                'https://one.zemanta.com/v2/analytics/adgroup/{}'.format(ad_group.pk)
             )
         self.email_body += '\n'
 
@@ -212,10 +212,10 @@ class Command(utils.command_helpers.ExceptionCommand):
         self._print(title)
         self.email_body += title + '\n'
         for ad_group in alarms:
-            self._print(u'- {} {}'.format(ad_group.name, ad_group.pk))
-            self.email_body += u' - {} {}\n'.format(
+            self._print('- {} {}'.format(ad_group.name, ad_group.pk))
+            self.email_body += ' - {} {}\n'.format(
                 ad_group.name,
-                u'https://one.zemanta.com/v2/analytics/adgroup/{}'.format(ad_group.pk)
+                'https://one.zemanta.com/v2/analytics/adgroup/{}'.format(ad_group.pk)
             )
         self.email_body += '\n'
 
@@ -225,12 +225,12 @@ class Command(utils.command_helpers.ExceptionCommand):
             return
         self.alarms = True
         self._print('Autopilot did not run on the following ad groups:')
-        self.email_body += u'Autopilot did not run on the following ad groups:\n'
+        self.email_body += 'Autopilot did not run on the following ad groups:\n'
 
         for ad_group in ap_alarms:
-            self._print(u'- {} {}'.format(ad_group.name, ad_group.pk))
-            self.email_body += u' - {} {}\n'.format(
+            self._print('- {} {}'.format(ad_group.name, ad_group.pk))
+            self.email_body += ' - {} {}\n'.format(
                 ad_group.name,
-                u'https://one.zemanta.com/v2/analytics/adgroup/{}'.format(ad_group.pk)
+                'https://one.zemanta.com/v2/analytics/adgroup/{}'.format(ad_group.pk)
             )
         self.email_body += '\n'

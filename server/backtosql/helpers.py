@@ -51,7 +51,7 @@ def clean_sql(dirty_sql, single_line=False):
                           strip_comments=True).strip()
 
     if single_line:
-        sql = u"".join([u" {}".format(x.strip()) for x in sql.splitlines()])
+        sql = "".join([" {}".format(x.strip()) for x in sql.splitlines()])
         sql = sql.strip()
 
     return sql
@@ -65,4 +65,4 @@ def clean_prefix(prefix=None):
 
 def is_collection(value):
     return (isinstance(value, collections.Iterable) or isinstance(value, QuerySet)) \
-        and type(value) not in (str, unicode)
+        and type(value) not in (str, str)

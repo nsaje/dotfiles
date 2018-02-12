@@ -550,17 +550,17 @@ class GetCandidatesWithErrorsTestCase(TestCase):
             'title': '',
             'url': 'ftp://zemanta.com/test-content-ad',
             'errors': {
-                'image_crop': [u'Choose a valid image crop'],
-                'description': [u'Missing description'],
-                '__all__': [u'Content ad still processing'],
-                'title': [u'Missing title'],
-                'url': [u'Invalid URL'],
-                'display_url': [u'Display URL too long (max 35 characters)'],
-                'label': [u'Label too long (max 256 characters)'],
-                'image_url': [u'Invalid image URL'],
-                'brand_name': [u'Missing brand name'],
-                'primary_tracker_url': [u'Impression tracker URLs have to be HTTPS'],
-                'secondary_tracker_url': [u'Impression tracker URLs have to be HTTPS'],
+                'image_crop': ['Choose a valid image crop'],
+                'description': ['Missing description'],
+                '__all__': ['Content ad still processing'],
+                'title': ['Missing title'],
+                'url': ['Invalid URL'],
+                'display_url': ['Display URL too long (max 35 characters)'],
+                'label': ['Label too long (max 256 characters)'],
+                'image_url': ['Invalid image URL'],
+                'brand_name': ['Missing brand name'],
+                'primary_tracker_url': ['Impression tracker URLs have to be HTTPS'],
+                'secondary_tracker_url': ['Impression tracker URLs have to be HTTPS'],
             },
             'display_url': 'zemanta.comzemanta.comzemanta.comzemanta.comzemanta.com'
                            'zemanta.comzemanta.comzemanta.comzemanta.comzemanta.com',
@@ -723,7 +723,7 @@ class UpdateCandidateTest(TestCase):
         files = {
             'image': SimpleUploadedFile(
                 name='test.jpg',
-                content=open('./dash/test_files/test.jpg').read(),
+                content=open('./dash/test_files/test.jpg', 'rb').read(),
                 content_type='image/jpg'
             )
         }
@@ -742,7 +742,7 @@ class UpdateCandidateTest(TestCase):
         files = {
             'image': SimpleUploadedFile(
                 name='test.csv',
-                content=open('./dash/test_files/test.csv').read(),
+                content=open('./dash/test_files/test.csv', 'rb').read(),
                 content_type='text/csv'
             )
         }

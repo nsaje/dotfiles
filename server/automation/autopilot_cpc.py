@@ -13,7 +13,7 @@ def get_autopilot_cpc_recommendations(
         ad_group, adgroup_settings, data, bcm_modifiers,
         budget_changes=None, adjust_rtb_sources=True):
     recommended_changes = {}
-    ag_sources = data.keys()
+    ag_sources = list(data.keys())
     SourceAllRTB = dash.constants.SourceAllRTB
     adjust_automatic_mode_rtb_cpcs = adjust_rtb_sources and SourceAllRTB in data
     for ag_source in ag_sources:
@@ -21,7 +21,7 @@ def get_autopilot_cpc_recommendations(
         if not adjust_rtb_sources:
             if source_type != SourceAllRTB and source_type.type == dash.constants.SourceType.B1:
                 continue
-            if source_type == SourceAllRTB and not _has_b1_sources(data.keys()):
+            if source_type == SourceAllRTB and not _has_b1_sources(list(data.keys())):
                 continue
         if adjust_rtb_sources and source_type == SourceAllRTB:
             continue
@@ -204,7 +204,7 @@ def _get_cpc_max_decimal_places(source_dec_places):
 def _get_source_type_min_max_cpc(source_type, adgroup_settings, bcm_modifiers):
     if source_type == dash.constants.SourceAllRTB:
         return dash.constants.SourceAllRTB.get_etfm_min_cpc(bcm_modifiers),\
-           dash.constants.SourceAllRTB.get_etfm_max_cpc(bcm_modifiers)
+            dash.constants.SourceAllRTB.get_etfm_max_cpc(bcm_modifiers)
     return source_type.get_min_cpc(adgroup_settings, bcm_modifiers),\
         source_type.get_etfm_max_cpc(bcm_modifiers)
 

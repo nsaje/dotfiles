@@ -168,7 +168,7 @@ class SettingsSerializer(serializers.BaseSerializer):
             return fields.NOT_PROVIDED
         new_dict = collections.defaultdict(lambda: fields.NOT_PROVIDED)
         new_dict.update(d)
-        for key, value in new_dict.items():
+        for key, value in list(new_dict.items()):
             if isinstance(value, dict):
                 new_dict[key] = cls._allow_not_provided(value)
         return new_dict
@@ -277,7 +277,7 @@ class CampaignSerializer(SettingsSerializer):
                 '-' not in settings['iab_category']):
             raise serializers.ValidationError(
                 {'iabCategory': 'Tier 1 IAB categories not allowed, please use Tier 2 IAB categories.'})
-        return {'settings': {k: v for k, v in settings.items() if v != fields.NOT_PROVIDED}}
+        return {'settings': {k: v for k, v in list(settings.items()) if v != fields.NOT_PROVIDED}}
 
 
 class AdGroupSerializer(SettingsSerializer):
@@ -335,8 +335,8 @@ class AdGroupSerializer(SettingsSerializer):
                 'os': settings['target_os'],
                 'placements': settings['target_placements'],
                 'interest': {
-                    'included': map(lambda x: fields.DashConstantField(constants.InterestCategory).to_representation(x), settings['interest_targeting']),
-                    'excluded': map(lambda x: fields.DashConstantField(constants.InterestCategory).to_representation(x), settings['exclusion_interest_targeting']),
+                    'included': [fields.DashConstantField(constants.InterestCategory).to_representation(x) for x in settings['interest_targeting']],
+                    'excluded': [fields.DashConstantField(constants.InterestCategory).to_representation(x) for x in settings['exclusion_interest_targeting']],
                 },
                 'demographic': settings['bluekai_targeting_old'],
                 'audience': settings['bluekai_targeting'],
@@ -406,7 +406,7 @@ class AdGroupSerializer(SettingsSerializer):
             'click_capping_daily_ad_group_max_clicks': data['clickCappingDailyAdGroupMaxClicks'],
             'click_capping_daily_click_budget': data['clickCappingDailyClickBudget'],
         }
-        return {'settings': {k: v for k, v in settings.items() if v != fields.NOT_PROVIDED}}
+        return {'settings': {k: v for k, v in list(settings.items()) if v != fields.NOT_PROVIDED}}
 
     @staticmethod
     def _partition_regions(target_regions):
@@ -598,7 +598,7 @@ class CampaignGoalsSerializer(serializers.BaseSerializer):
                 'value': data_external['value']
             }
         except KeyError as e:
-            raise serializers.ValidationError({e.message: 'missing'})
+            raise serializers.ValidationError({str(e): 'missing'})
 
     def _conversion_goal_to_internal_value(self, conversion_goal):
         if not conversion_goal:

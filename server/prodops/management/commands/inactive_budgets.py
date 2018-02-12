@@ -22,7 +22,7 @@ class Command(utils.command_helpers.ExceptionCommand):
                             help='Campaign ID')
 
     def _print(self, msg):
-        self.stdout.write(u'{}\n'.format(msg))
+        self.stdout.write('{}\n'.format(msg))
 
     def handle(self, *args, **options):
         today = datetime.date.today()
@@ -52,7 +52,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             ))
             impressions = dict(cur.fetchall())
 
-        campaigns = campaigns.exclude(pk__in=[cid for cid, impr in impressions.iteritems() if impr > 0])
+        campaigns = campaigns.exclude(pk__in=[cid for cid, impr in impressions.items() if impr > 0])
 
         out = []
         for budget in dash.models.BudgetLineItem.objects.filter(

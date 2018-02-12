@@ -10,5 +10,5 @@ class SortHelperTestCase(unittest.TestCase):
 
     def test_flatten(self):
         self.assertEqual(
-            range(5), list(list_helper.flatten([[0, 1, 2], [], [3, 4]]))
+            list(range(5)), list(list_helper.flatten([[0, 1, 2], [], [3, 4]]))
         )

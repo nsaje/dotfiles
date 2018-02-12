@@ -8,7 +8,7 @@ from timezone_field import TimeZoneField
 
 from dash import constants
 
-import bcm_mixin
+from . import bcm_mixin
 
 
 class SourceType(models.Model, bcm_mixin.SourceTypeBCMMixin):

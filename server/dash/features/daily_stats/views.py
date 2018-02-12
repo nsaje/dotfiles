@@ -11,7 +11,7 @@ import stats.api_breakdowns
 import stats.api_dailystats
 import stats.constraints_helper
 
-import helpers
+from . import helpers
 
 MAX_DAILY_STATS_BREAKDOWNS = 3
 

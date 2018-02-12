@@ -13,7 +13,7 @@ from utils.magic_mixer import magic_mixer
 from utils import dates_helper
 
 from .. import RealTimeDataHistory, RealTimeCampaignDataHistory
-import refresh_realtime_data
+from . import refresh_realtime_data
 
 
 class RefreshRealtimeDataTest(TestCase):
@@ -37,7 +37,7 @@ class RefreshRealtimeDataTest(TestCase):
         self.assertFalse(RealTimeDataHistory.objects.exists())
         self.assertFalse(RealTimeCampaignDataHistory.objects.exists())
 
-        refresh_realtime_data.refresh_realtime_data()
+        refresh_realtime_data()
         self.assertEqual(1, RealTimeDataHistory.objects.count())
         self.assertEqual(1, RealTimeCampaignDataHistory.objects.count())
 
@@ -64,7 +64,7 @@ class RefreshRealtimeDataTest(TestCase):
         )
         self.assertEqual(1, RealTimeDataHistory.objects.count())
 
-        refresh_realtime_data.refresh_realtime_data()
+        refresh_realtime_data()
         self.assertEqual(2, RealTimeDataHistory.objects.count())
 
         old_history.refresh_from_db()
@@ -86,7 +86,7 @@ class RefreshRealtimeDataTest(TestCase):
 
         self.assertFalse(RealTimeDataHistory.objects.exists())
 
-        refresh_realtime_data.refresh_realtime_data([campaign])
+        refresh_realtime_data([campaign])
         self.assertFalse(RealTimeDataHistory.objects.exists())
 
     @mock.patch('dash.features.realtimestats.get_ad_group_sources_stats')
@@ -108,7 +108,7 @@ class RefreshRealtimeDataTest(TestCase):
             local_tz_offset = datetime.datetime.now(pytz.timezone(settings.DEFAULT_TIME_ZONE)).utcoffset()
             mock_utc_now.return_value = datetime.datetime(today.year, today.month, today.day) - local_tz_offset
 
-            refresh_realtime_data.refresh_realtime_data([self.campaign])
+            refresh_realtime_data([self.campaign])
 
         history = RealTimeDataHistory.objects.get()
         self.assertEqual(self.ad_group.id, history.ad_group_id)
@@ -141,7 +141,7 @@ class RefreshRealtimeDataTest(TestCase):
                            {'source': sources[1], 'spend': decimal.Decimal('1.0')}],
         }
         mock_get_realtime_data.side_effect = lambda ad_group, **kwargs: rt_stats_before[ad_group]
-        refresh_realtime_data.refresh_realtime_data([campaign])
+        refresh_realtime_data([campaign])
 
         rt_stats_after = {
             ad_groups[0]: [{'source': sources[0], 'spend': decimal.Decimal('2.0')},
@@ -149,14 +149,14 @@ class RefreshRealtimeDataTest(TestCase):
             ad_groups[1]: [{'source': sources[0], 'spend': decimal.Decimal('8.0')}],
         }
         mock_get_realtime_data.side_effect = lambda ad_group, **kwargs: rt_stats_after[ad_group]
-        refresh_realtime_data.refresh_realtime_data([campaign])
+        refresh_realtime_data([campaign])
 
         campaign_history = RealTimeCampaignDataHistory.objects.filter(
             date=dates_helper.local_today()).latest('created_dt')
         self.assertEqual(campaign, campaign_history.campaign)
         self.assertEqual(decimal.Decimal('14.0'), campaign_history.etfm_spend)
 
-        for ad_group, stats in rt_stats_after.items():
+        for ad_group, stats in list(rt_stats_after.items()):
             for stat in stats:
                 history = RealTimeDataHistory.objects.filter(
                     ad_group=ad_group, source=stat['source']).latest('created_dt')

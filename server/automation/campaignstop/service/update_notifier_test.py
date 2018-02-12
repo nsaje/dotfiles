@@ -7,7 +7,7 @@ import core.entity.settings
 from utils.magic_mixer import magic_mixer
 
 from .. import constants
-import update_notifier
+from . import update_notifier
 
 
 class AdGroupSettingsNotifyTest(TestCase):

@@ -11,7 +11,7 @@ from stats import permission_filter
 from utils import sort_helper
 from utils import columns
 
-from format_helper import format_values
+from .format_helper import format_values
 
 
 def query(user, breakdown, constraints, goals, order, offset, limit, level, columns, include_items_with_no_spend=False, dashapi_cache=None):
@@ -72,7 +72,7 @@ def get_filename(breakdown, constraints):
         ad_group_name = slugify(constraints['allowed_ad_groups'][0].name)
 
     breakdown = ['by_' + columns.get_column_name(constants.get_dimension_name_key(x)).lower() for x in breakdown]
-    return '_'.join(filter(None, [
+    return '_'.join([_f for _f in [
         account_name,
         campaign_name,
         ad_group_name,
@@ -80,7 +80,7 @@ def get_filename(breakdown, constraints):
         'report',
         constraints['date__gte'].isoformat(),
         constraints['date__lte'].isoformat(),
-    ]))
+    ] if _f])
 
 
 # This API can only return rows sorted by columns in redshift and as sort by the following fields default

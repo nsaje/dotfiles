@@ -2,7 +2,7 @@ import redshiftapi.api_inventory
 
 import dash.features.geolocation
 
-import constants
+from . import constants
 
 
 ZERO_ROW = {'bids': 0, 'bid_reqs': 0, 'win_notices': 0, 'total_win_price': 0}
@@ -31,7 +31,7 @@ def get_summary(filters):
 
 def get_by_country(filters):
     data = redshiftapi.api_inventory.query(breakdown='country', constraints=filters)
-    data = filter(_min_auctions_filter, data)
+    data = list(filter(_min_auctions_filter, data))
     countries_map = _get_countries_map()
     _add_zero_rows(data, 'country', sorted(countries_map.keys()))
     for item in data:
@@ -41,7 +41,7 @@ def get_by_country(filters):
 
 def get_by_publisher(filters):
     data = redshiftapi.api_inventory.query(breakdown='publisher', constraints=filters)
-    data = filter(_min_auctions_filter, data)
+    data = list(filter(_min_auctions_filter, data))
     ordered_top_publishers = redshiftapi.api_inventory.query_top_publishers()
     _add_zero_rows(data, 'publisher', ordered_top_publishers)
     return data
@@ -49,7 +49,7 @@ def get_by_publisher(filters):
 
 def get_by_device_type(filters):
     data = redshiftapi.api_inventory.query(breakdown='device_type', constraints=filters)
-    data = filter(_min_auctions_filter, data)
+    data = list(filter(_min_auctions_filter, data))
     device_types_map = dict(constants.InventoryDeviceType.get_choices())
     _add_zero_rows(data, 'device_type', sorted(device_types_map.keys()))
     for item in data:

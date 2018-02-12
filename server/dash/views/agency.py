@@ -475,7 +475,7 @@ class CampaignSettings(api_common.BaseApiView):
             if is_primary:
                 new_primary_id = goal_added.pk
 
-        for goal_id, value in changes['modified'].iteritems():
+        for goal_id, value in changes['modified'].items():
             goal = models.CampaignGoal.objects.get(pk=goal_id)
             goal.add_value(request, value)
 
@@ -638,7 +638,7 @@ class ConversionPixel(api_common.BaseApiView):
 
                 k1_helper.update_account(account_id, msg="conversion_pixel.create")
 
-            changes_text = u'Added conversion pixel named {}.'.format(conversion_pixel.name)
+            changes_text = 'Added conversion pixel named {}.'.format(conversion_pixel.name)
             account.write_history(
                 changes_text,
                 user=request.user,
@@ -727,7 +727,7 @@ class ConversionPixel(api_common.BaseApiView):
         if data['archived'] == conversion_pixel.archived:
             return
 
-        changes_text = u'{} conversion pixel named {}.'.format(
+        changes_text = '{} conversion pixel named {}.'.format(
             'Archived' if data['archived'] else 'Restored',
             conversion_pixel.name
         )
@@ -741,7 +741,7 @@ class ConversionPixel(api_common.BaseApiView):
         if data['name'] == conversion_pixel.name:
             return
 
-        changes_text = u'Renamed conversion pixel named {} to {}.'.format(
+        changes_text = 'Renamed conversion pixel named {} to {}.'.format(
             conversion_pixel.name,
             data['name']
         )
@@ -753,7 +753,7 @@ class ConversionPixel(api_common.BaseApiView):
 
     def _write_audience_enabled_change_to_history(self, request, account, conversion_pixel, data):
         if data['audience_enabled'] and not conversion_pixel.audience_enabled:
-            change_text = u'Pixel {} enabled for building audiences'.format(data['name'])
+            change_text = 'Pixel {} enabled for building audiences'.format(data['name'])
             account.write_history(change_text,
                                   user=request.user,
                                   action_type=constants.HistoryActionType.CONVERSION_PIXEL_AUDIENCE_ENABLED)
@@ -763,12 +763,12 @@ class ConversionPixel(api_common.BaseApiView):
             return
 
         if data['redirect_url']:
-            changes_text = u'Set redirect url of pixel named {} to {}.'.format(
+            changes_text = 'Set redirect url of pixel named {} to {}.'.format(
                 conversion_pixel.name,
                 data['redirect_url']
             )
         else:
-            changes_text = u'Removed redirect url of pixel named {}.'.format(conversion_pixel.name)
+            changes_text = 'Removed redirect url of pixel named {}.'.format(conversion_pixel.name)
         account.write_history(
             changes_text,
             user=request.user,
@@ -1151,12 +1151,12 @@ class AccountSettings(api_common.BaseApiView):
         sources_text_list = []
         if added_sources:
             added_sources_names = [source.name for source in added_sources]
-            added_sources_text = u'Added allowed media sources ({})'.format(', '.join(added_sources_names))
+            added_sources_text = 'Added allowed media sources ({})'.format(', '.join(added_sources_names))
             sources_text_list.append(added_sources_text)
 
         if removed_sources:
             removed_sources_names = [source.name for source in removed_sources]
-            removed_sources_text = u'Removed allowed media sources ({})'.format(', '.join(removed_sources_names))
+            removed_sources_text = 'Removed allowed media sources ({})'.format(', '.join(removed_sources_names))
             sources_text_list.append(removed_sources_text)
 
         return ', '.join(sources_text_list)
@@ -1227,10 +1227,10 @@ class AccountUsers(api_common.BaseApiView):
             else:
                 self._raise_validation_error(
                     form.errors,
-                    message=u'The user with e-mail {} is already registred as \"{}\". '
-                            u'Please contact technical support if you want to change the user\'s '
-                            u'name or leave first and last names blank if you just want to add '
-                            u'access to the account for this user.'.format(user.email, user.get_full_name())
+                    message='The user with e-mail {} is already registred as \"{}\". '
+                            'Please contact technical support if you want to change the user\'s '
+                            'name or leave first and last names blank if you just want to add '
+                            'access to the account for this user.'.format(user.email, user.get_full_name())
                 )
         except ZemUser.DoesNotExist:
             if not is_valid:
@@ -1246,7 +1246,7 @@ class AccountUsers(api_common.BaseApiView):
         if not len(account.users.filter(pk=user.pk)):
             account.users.add(user)
 
-            changes_text = u'Added user {} ({})'.format(user.get_full_name(), user.email)
+            changes_text = 'Added user {} ({})'.format(user.get_full_name(), user.email)
 
             # add history entry
             new_settings = account.get_current_settings().copy_settings()
@@ -1267,7 +1267,7 @@ class AccountUsers(api_common.BaseApiView):
     def _raise_validation_error(self, errors, message=None):
         raise exc.ValidationError(
             errors=dict(errors),
-            pretty_message=message or u'Please specify the user\'s first name, last name and email.'
+            pretty_message=message or 'Please specify the user\'s first name, last name and email.'
         )
 
     def delete(self, request, account_id, user_id):
@@ -1303,13 +1303,13 @@ class AccountUsers(api_common.BaseApiView):
             user.groups.remove(*groups)
 
             account.agency.users.remove(user)
-            changes_text = u'Removed agency user {} ({})'.format(user.get_full_name(), user.email)
+            changes_text = 'Removed agency user {} ({})'.format(user.get_full_name(), user.email)
             account.agency.write_history(changes_text, user=request.user)
 
     def _remove_user_from_account(self, account, removed_user, request_user):
         if len(account.users.filter(pk=removed_user.pk)):
             account.users.remove(removed_user)
-            changes_text = u'Removed user {} ({})'.format(removed_user.get_full_name(), removed_user.email)
+            changes_text = 'Removed user {} ({})'.format(removed_user.get_full_name(), removed_user.email)
             account.write_history(changes_text, user=request_user)
 
     def _get_user_dict(self, user, agency_managers=False):
@@ -1352,7 +1352,7 @@ class AccountUserAction(api_common.BaseApiView):
             user = ZemUser.objects.get(pk=user_id)
         except ZemUser.DoesNotExist:
             raise exc.ValidationError(
-                pretty_message=u'Cannot {action} nonexisting user.'.format(action=action)
+                pretty_message='Cannot {action} nonexisting user.'.format(action=action)
             )
         if user not in account.users.all() and (not account.is_agency() or user not in account.agency.users.all()):
             raise exc.AuthorizationError()
@@ -1364,7 +1364,7 @@ class AccountUserAction(api_common.BaseApiView):
     def _activate(self, request, user, account):
         email_helper.send_email_to_new_user(user, request)
 
-        changes_text = u'Resent activation mail {} ({})'.format(user.get_full_name(), user.email)
+        changes_text = 'Resent activation mail {} ({})'.format(user.get_full_name(), user.email)
         account.write_history(changes_text, user=request.user)
 
     def _promote(self, request, user, account):
@@ -1389,14 +1389,14 @@ class AccountUserAction(api_common.BaseApiView):
     def _check_is_agency_account(self, account):
         if not account.is_agency():
             raise exc.ValidationError(
-                pretty_message=u'Cannot promote user on account without agency.'
+                pretty_message='Cannot promote user on account without agency.'
             )
 
     def _check_if_already_agency_user(self, account, user):
         agency = helpers.get_user_agency(user)
         if agency and account.agency != agency:
             raise exc.ValidationError(
-                pretty_message=u'Cannot promote user on more then one agency.'
+                pretty_message='Cannot promote user on more then one agency.'
             )
 
     def _get_agency_manager_groups(self):

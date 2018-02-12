@@ -17,7 +17,7 @@ def validate(*validators):
     for v in validators:
         try:
             v()
-        except ValidationError, e:
+        except ValidationError as e:
             errors[v.__name__.replace('validate_', '')] = e.error_list
     if errors:
         raise ValidationError(errors)

@@ -19,7 +19,7 @@ import utils.exc
 import utils.k1_helper
 import utils.numbers
 
-import validation
+from . import validation
 
 logger = logging.getLogger(__name__)
 
@@ -323,7 +323,7 @@ class AdGroupSource(models.Model):
             ad_group_name = new_adgroup_name
         ad_group_id = self.ad_group.id
         source_name = self.source.name
-        return u'ONE: {} / {} / {} / {} / {}'.format(
+        return 'ONE: {} / {} / {} / {} / {}'.format(
             core.entity.helpers.shorten_name(account_name),
             core.entity.helpers.shorten_name(campaign_name),
             core.entity.helpers.shorten_name(ad_group_name),
@@ -379,18 +379,15 @@ class AdGroupSource(models.Model):
     def save(self, request=None, *args, **kwargs):
         super(AdGroupSource, self).save(*args, **kwargs)
 
-    def __unicode__(self):
-        return u'{} - {}'.format(self.ad_group, self.source)
-
     def __str__(self):
-        return unicode(self).encode('ascii', 'ignore')
+        return '{} - {}'.format(self.ad_group, self.source)
 
     def _notify_ad_group_source_settings_changed(self, request, changes, old_settings):
         if not request:
             return
 
         changes_text_parts = []
-        for key, val in changes.items():
+        for key, val in list(changes.items()):
             if val is None:
                 continue
             field = self.settings.get_human_prop_name(key)

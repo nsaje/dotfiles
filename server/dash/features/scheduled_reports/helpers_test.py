@@ -4,7 +4,7 @@ from mock import patch
 from django.test import TestCase
 
 from dash import constants
-import helpers
+from . import helpers
 
 
 class GetScheduledReportDateRangeTestCase(TestCase):

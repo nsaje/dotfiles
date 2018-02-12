@@ -28,7 +28,7 @@ DIFF=$(docker run --rm \
     -v $PWD:/src \
     --workdir=/src/ \
     --entrypoint=sh \
-    py-tools -c "pip-compile server/requirements.in --no-annotate" | diff server/requirements.txt -)
+    py3-tools -c "pip-compile server/requirements.in --no-annotate" | diff server/requirements.txt -)
 if [ "$DIFF" != "" ]; then
     echo "$DIFF"
     banner 1 "requirements.in"
@@ -36,7 +36,7 @@ fi
 
 # Flake8 ------------------------------------------------------------------------
 blue "Flake8 lint in progress ..."
-docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=flake8 py-tools ./server/
+docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=flake8 py3-tools ./server/
 
 EXITCODE=$?
 banner $EXITCODE "Flake8"
@@ -57,7 +57,7 @@ banner $EXITCODE "ClientLint"
 
 # Xenon ------------------------------------------------------------------------
 blue "Xenon (cyclomatic complexity) check in progress ..."
-docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=xenon py-tools  \
+docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=xenon py3-tools  \
   --max-absolute D \
   -e "server/dash/table.py,server/dash/models.py,server/dash/views/views.py,server/dash/dashapi/api_breakdowns.py,server/core/entity/settings/ad_group_settings.py,server/core/entity/settings/ad_group_settings/model.py" \
   ./server/

@@ -86,7 +86,7 @@ class HistoryMixinOld(object):
         self._check_history_snapshot_allowed()
 
         change_strings = []
-        for key, value in changes.iteritems():
+        for key, value in changes.items():
             prop = self.get_human_prop_name(key)
             if not prop:
                 continue
@@ -103,11 +103,11 @@ class HistoryMixinOld(object):
             previous_value = self.get_human_value(key, previous_value_raw)
 
         if previous_value and previous_value != val:
-            return u'{} set from "{}" to "{}"'.format(
+            return '{} set from "{}" to "{}"'.format(
                 prop, previous_value, val
             )
         else:
-            return u'{} set to "{}"'.format(prop, val)
+            return '{} set to "{}"'.format(prop, val)
 
     def get_changes_text_from_dict(self, changes, separator=', '):
         self._check_history_snapshot_allowed()

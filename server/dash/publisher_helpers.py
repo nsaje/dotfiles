@@ -25,11 +25,11 @@ def get_publisher_domain_link(raw_str):
 
 
 def create_publisher_id(publisher, source_id):
-    return u'__'.join((publisher, unicode(source_id or '')))
+    return '__'.join((publisher, str(source_id or '')))
 
 
 def dissect_publisher_id(publisher_id):
-    publisher, source_id = publisher_id.rsplit(u'__', 1)
+    publisher, source_id = publisher_id.rsplit('__', 1)
     if source_id == 'all':
         return publisher, source_id
     return publisher, int(source_id) if source_id else None

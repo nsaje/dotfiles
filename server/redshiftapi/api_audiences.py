@@ -2,7 +2,7 @@ import datetime
 
 import backtosql
 from dash import constants
-import db
+from . import db
 
 
 def get_audience_sample_size(account_id, slug, ttl, rules, refresh_cache=False):

@@ -178,12 +178,12 @@ class AudiencesTest(TestCase):
         self.assertEqual(json.loads(response.content), response_dict)
 
         redshift_mock.assert_has_calls([
-            mock.call(1, u'1', 90, mock.ANY),
-            mock.call(1, u'1', 1, mock.ANY),
-            mock.call(1, u'1', 90, mock.ANY),
-            mock.call(1, u'1', 1, mock.ANY),
-            mock.call(1, u'2', 90, mock.ANY),
-            mock.call(1, u'2', 1, mock.ANY),
+            mock.call(1, '1', 90, mock.ANY),
+            mock.call(1, '1', 1, mock.ANY),
+            mock.call(1, '1', 90, mock.ANY),
+            mock.call(1, '1', 1, mock.ANY),
+            mock.call(1, '2', 90, mock.ANY),
+            mock.call(1, '2', 1, mock.ANY),
         ])
 
     def test_get_audiences_include_archived(self):

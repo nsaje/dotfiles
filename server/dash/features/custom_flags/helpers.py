@@ -19,7 +19,7 @@ def _get_source(flag_id):
 
 def _get_flags_dict_list(flags_map, entity, level):
     flags_dict_list = []
-    for flag_id, flag_value in (entity.custom_flags or {}).iteritems():
+    for flag_id, flag_value in (entity.custom_flags or {}).items():
         if not flag_value or flag_id not in flags_map:
             continue
         flag = flags_map[flag_id]

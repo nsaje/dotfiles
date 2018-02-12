@@ -17,7 +17,7 @@ from dash.features import contentupload
 from dash.views import helpers
 
 import stats.helpers
-import breakdown_helpers
+from . import breakdown_helpers
 
 from utils import api_common
 from utils import exc
@@ -169,7 +169,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 def convert_update_response(response, updated_id):
     if 'rows' in response:
         rows = []
-        for id, row in response['rows'].iteritems():
+        for id, row in response['rows'].items():
             row['id'] = str(id)
             if row['id'] == updated_id:
                 row['editable_fields'] = response['editable_fields']

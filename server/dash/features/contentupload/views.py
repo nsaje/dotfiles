@@ -10,8 +10,8 @@ from dash.views import helpers
 from utils import api_common
 import utils.exc
 
-import upload
-import exc
+from . import upload
+from . import exc
 
 
 def _get_account_ad_group(user, form):
@@ -112,7 +112,7 @@ class UploadSave(api_common.BaseApiView):
             try:
                 content_ads = upload.persist_batch(batch)
             except (exc.InvalidBatchStatus, exc.CandidateErrorsRemaining) as e:
-                raise utils.exc.ValidationError(message=e.message)
+                raise utils.exc.ValidationError(message=str(e))
 
         return content_ads
 
@@ -120,7 +120,7 @@ class UploadSave(api_common.BaseApiView):
         try:
             return upload.persist_edit_batch(request, batch)
         except (exc.InvalidBatchStatus, exc.CandidateErrorsRemaining) as e:
-            raise utils.exc.ValidationError(message=e.message)
+            raise utils.exc.ValidationError(message=str(e))
 
     def post(self, request, batch_id):
         batch = helpers.get_upload_batch(request.user, batch_id)

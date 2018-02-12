@@ -28,7 +28,7 @@ def custom_exception_handler(exception, context):
     # Django DoesNotExist
     if isinstance(exception, ObjectDoesNotExist):
         error_data['errorCode'] = "DoesNotExist"
-        error_data['details'] = exception.message
+        error_data['details'] = str(exception)
         status_code = 400
         return Response(error_data, status=status_code)
 
@@ -54,7 +54,7 @@ def _handle_client_api_exceptions(exception, context):
 
     if type(exception) in exc.custom_errors:
         error_data["errorCode"] = exception.error_code
-        error_data["details"] = exception.pretty_message or exception.message
+        error_data["details"] = exception.pretty_message or str(exception)
 
         if isinstance(exception, exc.ValidationError):
             if exception.errors:

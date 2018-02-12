@@ -5,7 +5,7 @@ from django.db.models.functions import Concat
 
 import core.entity
 import core.common
-from publisher_group import PublisherGroup
+from .publisher_group import PublisherGroup
 
 
 class PublisherGroupEntryManager(core.common.QuerySetManager):
@@ -72,8 +72,5 @@ class PublisherGroupEntry(models.Model):
             return self.annotate(publisher_id=Concat(
                 'publisher', models.Value('__'), 'source_id', output_field=models.CharField()))
 
-    def __unicode__(self):
-        return u'{} ({})'.format(self.publisher, self.source if self.source else 'All sources')
-
     def __str__(self):
-        return unicode(self).encode('ascii', 'ignore')
+        return '{} ({})'.format(self.publisher, self.source if self.source else 'All sources')

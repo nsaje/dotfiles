@@ -12,7 +12,7 @@ class EmailTemplate(models.Model):
     subject = models.CharField(blank=True, null=False, max_length=255)
     body = models.TextField(blank=True, null=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return constants.EmailTemplateType.get_text(self.template_type) if self.template_type else 'Unassigned'
 
     class Meta:

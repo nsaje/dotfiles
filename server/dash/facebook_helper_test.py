@@ -24,7 +24,7 @@ class FacebookPageAccessTest(TestCase):
     def _create_response(status_code, content):
         response = Response()
         response.status_code = status_code
-        response._content = content
+        response._content = content.encode('utf-8')
         return response
 
     @staticmethod
@@ -230,7 +230,7 @@ class FacebookPagesTest(TestCase):
     def _create_response(status_code, content):
         response = Response()
         response.status_code = status_code
-        response._content = content
+        response._content = content.encode('utf-8')
         return response
 
     @staticmethod
@@ -325,6 +325,9 @@ class FacebookAccountTest(TestCase):
 
     @staticmethod
     def _create_response(status_code, content):
+        if not isinstance(content, bytes):
+            content = content.encode('utf-8')
+
         response = Response()
         response.status_code = status_code
         response._content = content

@@ -12,7 +12,7 @@ from utils import pagerduty_helper
     PAGER_DUTY_URL='http://pagerduty.example.com',
     PAGER_DUTY_ENGINEERS_SERVICE_KEY='123abc'
 )
-@patch('utils.pagerduty_helper.urllib2.urlopen')
+@patch('utils.pagerduty_helper.urllib.request.urlopen')
 class PagerDutyHelperTestCase(TestCase):
     def test_trigger(self, mock_urlopen):
         data = json.dumps({

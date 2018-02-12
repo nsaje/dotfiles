@@ -45,8 +45,8 @@ class ScheduledExportReport(models.Model):
         choices=constants.ScheduledReportTimePeriod.get_choices()
     )
 
-    def __unicode__(self):
-        return u' '.join(filter(None, (
+    def __str__(self):
+        return ' '.join([_f for _f in (
             self.name,
             '(',
             self.created_by.email,
@@ -55,7 +55,7 @@ class ScheduledExportReport(models.Model):
                 self.sending_frequency),
             '-',
             str(self.report)
-        )))
+        ) if _f])
 
     def add_recipient_email(self, email_address):
         validate_email(email_address)

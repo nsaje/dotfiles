@@ -48,7 +48,7 @@ class DashConstantField(serializers.CharField):
     def to_internal_value_many(self, data):
         if data == NOT_PROVIDED:
             return NOT_PROVIDED
-        return map(lambda x: self.to_internal_value(x), data)
+        return [self.to_internal_value(x) for x in data]
 
     def to_representation(self, value):
         if value is None:
@@ -56,7 +56,7 @@ class DashConstantField(serializers.CharField):
         return self.const_cls.get_name(value)
 
     def to_representation_many(self, data):
-        return map(lambda x: self.to_representation(x), data)
+        return [self.to_representation(x) for x in data]
 
 
 class SourceIdSlugField(serializers.Field):

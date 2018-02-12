@@ -18,7 +18,7 @@ class Command(ExceptionCommand):
 
     def _log_error_message(self, options, message, type_=utils.slack.MESSAGE_TYPE_WARNING):
         if message and options.get('verbose'):
-            self.stdout.write(u'{}\n'.format(message))
+            self.stdout.write('{}\n'.format(message))
         if message and options.get('slack'):
             utils.slack.publish(
                 message,

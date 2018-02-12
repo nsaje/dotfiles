@@ -4,10 +4,10 @@ from django.test import TestCase
 from mock import patch
 from mixer.backend.django import mixer
 
-import constants
-import models
-import service
-import serializers
+from . import constants
+from . import models
+from . import service
+from . import serializers
 
 
 class TestSerializerCommonMixin(object):

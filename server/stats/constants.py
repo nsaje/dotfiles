@@ -117,7 +117,7 @@ def get_dimension_identifier(dimension):
 
 
 def get_dimension_name_key(dimension):
-    return next((k for k, v in DimensionIdentifierMapping.items() if v == dimension), dimension)
+    return next((k for k, v in list(DimensionIdentifierMapping.items()) if v == dimension), dimension)
 
 
 def get_delivery_dimension(breakdown):

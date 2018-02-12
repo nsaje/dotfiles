@@ -17,7 +17,7 @@ import core.history
 import core.entity
 import core.entity.helpers
 
-import manager
+from . import manager
 
 
 class Account(models.Model):
@@ -80,14 +80,14 @@ class Account(models.Model):
 
     settings = models.OneToOneField('AccountSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_entity')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def get_long_name(self):
         agency = ''
         if self.agency:
-            agency = self.agency.get_long_name() + u', '
-        return u'{}Account {}'.format(agency, self.name)
+            agency = self.agency.get_long_name() + ', '
+        return '{}Account {}'.format(agency, self.name)
 
     def get_salesforce_id(self):
         return 'b{}'.format(self.pk)
@@ -161,10 +161,10 @@ class Account(models.Model):
         return campaign_settings_url
 
     def get_default_blacklist_name(self):
-        return u"Default blacklist for account {}({})".format(self.name, self.id)
+        return "Default blacklist for account {}({})".format(self.name, self.id)
 
     def get_default_whitelist_name(self):
-        return u"Default whitelist for account {}({})".format(self.name, self.id)
+        return "Default whitelist for account {}({})".format(self.name, self.id)
 
     def get_publisher_level(self):
         return constants.PublisherBlacklistLevel.ACCOUNT

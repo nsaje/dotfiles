@@ -7,7 +7,7 @@ import core.entity
 import core.source
 import utils.exc
 
-import service
+from . import service
 
 
 @patch.object(core.entity.ContentAd.objects, 'insert_redirects', autospec=True)
@@ -45,7 +45,7 @@ class Clone(TestCase):
 
     def test_clone_unicode(self, mock_landing, mock_insert_adgroup, mock_redirects, mock_autopilot):
         ad_group = magic_mixer.blend(core.entity.AdGroup)
-        ad_group.name = u'Non–Gated'
+        ad_group.name = 'Non–Gated'
         magic_mixer.cycle(5).blend(core.entity.ContentAd, ad_group=ad_group, archived=False)
         dest_campaign = magic_mixer.blend(core.entity.Campaign)
         dest_campaign.get_current_settings().copy_settings().save()
@@ -59,7 +59,7 @@ class Clone(TestCase):
 
     def test_clone_landing(self, mock_landing, mock_insert_adgroup, mock_redirects, mock_autopilot):
         ad_group = magic_mixer.blend(core.entity.AdGroup)
-        ad_group.name = u'Non–Gated'
+        ad_group.name = 'Non–Gated'
 
         request = magic_mixer.blend_request_user()
 

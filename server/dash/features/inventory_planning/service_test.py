@@ -1,7 +1,7 @@
 import mock
 from django.test import TestCase
 
-import service
+from . import service
 import redshiftapi.api_inventory
 
 

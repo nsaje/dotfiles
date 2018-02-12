@@ -55,20 +55,20 @@ class GetChangedContentAdsTestCase(TestCase):
 
     def test_get_changed_content_ads(self):
         changed_content_ads = helpers.get_changed_content_ads(self.ag, self.sources)
-        self.assertItemsEqual([
+        self.assertCountEqual([
             models.ContentAd.objects.get(id=4),
             models.ContentAd.objects.get(id=5),
         ], changed_content_ads)
 
         changed_content_ads = helpers.get_changed_content_ads(self.ag, self.sources,
                                                               last_change_dt=datetime.datetime(2015, 2, 23))
-        self.assertItemsEqual([
+        self.assertCountEqual([
             models.ContentAd.objects.get(id=5),
         ], changed_content_ads)
 
         changed_content_ads = helpers.get_changed_content_ads(self.ag, self.sources,
                                                               last_change_dt=datetime.datetime(2015, 7, 1))
-        self.assertItemsEqual([], changed_content_ads)
+        self.assertCountEqual([], changed_content_ads)
 
 
 class GetSelectedEntityTest(TestCase):
@@ -276,7 +276,7 @@ class GetSelectedEntityTest(TestCase):
         )
 
         self.assertTrue(all(adgroup_source.ad_group_id == ad_group_id for adgroup_source in adgroup_sources))
-        self.assertItemsEqual([1, 2], [adgroup_source.id for adgroup_source in adgroup_sources])
+        self.assertCountEqual([1, 2], [adgroup_source.id for adgroup_source in adgroup_sources])
 
     def _assert_content_ads(self, content_ads, expected_ids):
         self.assertQuerysetEqual(
@@ -352,6 +352,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         source = models.Source.objects.get(pk=5)
         source.supports_retargeting = True
+        source.source_type.min_cpc = decimal.Decimal('0.1')
 
         ad_group_source = models.AdGroupSource.objects.get(pk=12)
         ad_group_source.source = source
@@ -943,7 +944,7 @@ class UtilityHelpers(TestCase):
         agency = models.Agency.objects.get(pk=1)
         agency.users.add(u)
 
-        self.assertEquals(agency, helpers.get_user_agency(u))
+        self.assertEqual(agency, helpers.get_user_agency(u))
 
         other_agency = models.Agency(
             name='Random agency'

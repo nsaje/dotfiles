@@ -1,5 +1,5 @@
 import json
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 from django.conf import settings
 
@@ -38,4 +38,4 @@ def trigger(event_type, incident_key, description, details=None):
         'client': 'Zemanta One - {0}'.format(settings.HOSTNAME),
         'details': details
     }
-    urllib2.urlopen(settings.PAGER_DUTY_URL, json.dumps(data))
+    urllib.request.urlopen(settings.PAGER_DUTY_URL, json.dumps(data))

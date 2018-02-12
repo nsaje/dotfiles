@@ -1,7 +1,7 @@
 from django.apps import apps
 from django.db import models
 
-import constants
+from . import constants
 
 
 class BlueKaiCategoryManager(models.Manager):

@@ -222,12 +222,12 @@ class Command(utils.command_helpers.ExceptionCommand):
             influx.gauge('backendhack_agency_count', cnt,
                          client=agency.name, retentionPolicy='1week')
 
-        for source, cnt in self.stats_by_source.iteritems():
+        for source, cnt in self.stats_by_source.items():
             influx.gauge('backendhack_source_count', cnt,
                          source=source, retentionPolicy='1week')
 
     def _print(self, msg):
-        line = u'{}\n'.format(msg)
+        line = '{}\n'.format(msg)
         self.stdout.write(line)
         self.buff += line
 
@@ -289,7 +289,7 @@ class Command(utils.command_helpers.ExceptionCommand):
                     stats.setdefault('all', []).append(hack)
             else:
                 stats.setdefault(hack.source.name, []).append(hack)
-        return {source: len(hacks) for source, hacks in stats.iteritems()}
+        return {source: len(hacks) for source, hacks in stats.items()}
 
     def _get_stats_by_client(self):
         hacks_by_ad_group = {}
@@ -324,8 +324,8 @@ class Command(utils.command_helpers.ExceptionCommand):
             if hack.agency:
                 hacks_by_agency.setdefault(hack.agency, []).append(hack)
         return {
-            'ad_group': Counter({entity: len(hacks) for entity, hacks in hacks_by_ad_group.iteritems()}),
-            'campaign': Counter({entity: len(hacks) for entity, hacks in hacks_by_campaign.iteritems()}),
-            'account': Counter({entity: len(hacks) for entity, hacks in hacks_by_account.iteritems()}),
-            'agency': Counter({entity: len(hacks) for entity, hacks in hacks_by_agency.iteritems()}),
+            'ad_group': Counter({entity: len(hacks) for entity, hacks in hacks_by_ad_group.items()}),
+            'campaign': Counter({entity: len(hacks) for entity, hacks in hacks_by_campaign.items()}),
+            'account': Counter({entity: len(hacks) for entity, hacks in hacks_by_account.items()}),
+            'agency': Counter({entity: len(hacks) for entity, hacks in hacks_by_agency.items()}),
         }

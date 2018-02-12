@@ -2,8 +2,8 @@ import utils.command_helpers
 import utils.slack
 import analytics.monitor
 
-ALERT_MSG_ENTITY = u"""{} {} ({}) is spending ({}) with an unconfirmed hack - *{}*"""
-ALERT_MSG_GLOBAL = u"""Unconfirmed global hack *{}* is spending"""
+ALERT_MSG_ENTITY = """{} {} ({}) is spending ({}) with an unconfirmed hack - *{}*"""
+ALERT_MSG_GLOBAL = """Unconfirmed global hack *{}* is spending"""
 
 
 class Command(utils.command_helpers.ExceptionCommand):
@@ -18,7 +18,7 @@ class Command(utils.command_helpers.ExceptionCommand):
     def _print(self, msg):
         if not self.verbose:
             return
-        self.stdout.write(u'{}\n'.format(msg))
+        self.stdout.write('{}\n'.format(msg))
 
     def handle(self, *args, **options):
         self.verbose = options['verbose']

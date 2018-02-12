@@ -110,7 +110,7 @@ def audit_spend_patterns(date=None, threshold=0.8, first_in_month_threshold=0.6,
     totals = [row['total'] for row in result]
     changes = [
         (date + datetime.timedelta(-x), float(totals[-x - 1]) / totals[-x - 2])
-        for x in xrange(0, day_range - 1)
+        for x in range(0, day_range - 1)
     ]
     alarming_dates = [
         (d, change) for d, change in changes
@@ -129,7 +129,7 @@ def audit_pacing(date, max_pacing=Decimal('200.0'), min_pacing=Decimal('50.0'), 
         **constraints
     )
     alarms = []
-    for campaign_id in monthly_proj.keys():
+    for campaign_id in list(monthly_proj.keys()):
         pacing = monthly_proj.row(campaign_id)['pacing']
         if pacing is None:
             continue
@@ -169,11 +169,11 @@ def audit_autopilot_cpc_changes(date=None, min_changes=25):
             []
         ).append(log.new_cpc_cc - log.previous_cpc_cc)
     alarms = {}
-    for source, changes in source_changes.iteritems():
+    for source, changes in source_changes.items():
         if len(changes) < min_changes:
             continue
-        positive_changes = filter(lambda x: x >= 0, changes)
-        negative_changes = filter(lambda x: x <= 0, changes)
+        positive_changes = [x for x in changes if x >= 0]
+        negative_changes = [x for x in changes if x <= 0]
         if len(positive_changes) == len(changes):
             alarms[source] = sum(positive_changes)
         if len(negative_changes) == len(changes):
@@ -192,10 +192,7 @@ def audit_autopilot_budget_totals(date=None, error=Decimal('0.001')):
     })
     for settings in ad_groups_settings:
         total_ap_budget = Decimal(0)
-        filtered_source_settings = filter(
-            lambda agss: agss.ad_group_source.ad_group_id == settings.ad_group_id,
-            ad_group_sources_settings
-        )
+        filtered_source_settings = [agss for agss in ad_group_sources_settings if agss.ad_group_source.ad_group_id == settings.ad_group_id]
         for source_settings in filtered_source_settings:
             total_ap_budget += source_settings.daily_budget_cc
         if abs(settings.autopilot_daily_budget - total_ap_budget) >= error:
@@ -225,7 +222,7 @@ def audit_autopilot_budget_changes(date=None, error=Decimal('0.001')):
             []
         ).append(log.new_daily_budget - log.previous_daily_budget)
     alarms = {}
-    for ad_group, changes in total_changes.iteritems():
+    for ad_group, changes in total_changes.items():
         budget_changes = sum(changes)
         if not budget_changes or abs(budget_changes) > error:
             alarms[ad_group] = budget_changes
@@ -333,20 +330,20 @@ def audit_click_discrepancy(date=None, days=30, threshold=20):
     data_base, data_test = {}, {}
     with redshiftapi.db.get_stats_cursor() as c:
         c.execute(CLICK_DISCREPANCY_QUERY.format(
-            campaigns=','.join(map(str, campaigns.keys())),
+            campaigns=','.join(map(str, list(campaigns.keys()))),
             from_date=from_date,
             till_date=till_date,
         ))
         data_base = {int(r[0]): r[1] for r in c.fetchall()}
         c.execute(CLICK_DISCREPANCY_QUERY.format(
-            campaigns=','.join(map(str, campaigns.keys())),
+            campaigns=','.join(map(str, list(campaigns.keys()))),
             from_date=date,
             till_date=date,
         ))
         data_test = {int(r[0]): r[1] for r in c.fetchall()}
 
     alarms = []
-    for campaign_id in data_test.keys():
+    for campaign_id in list(data_test.keys()):
         campaign = campaigns.get(campaign_id)
         test = data_test.get(campaign_id)
         base = data_base.get(campaign_id)

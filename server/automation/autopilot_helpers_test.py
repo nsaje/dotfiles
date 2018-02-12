@@ -71,6 +71,7 @@ class AutopilotHelpersTestCase(test.TestCase):
         ag = dash.models.AdGroup.objects.get(id=1)
 
         current_ag_settings = MagicMock()
+        current_ag_settings.cpc_cc = Decimal('0.1')
         mock_copy_settings.return_value = current_ag_settings
 
         changes = {

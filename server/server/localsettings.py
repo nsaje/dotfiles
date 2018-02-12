@@ -26,7 +26,7 @@ def discover_localsettings_path(suffix='docker'):
 
 _LOCALSETTINGS_FILENAME = discover_localsettings_path(
     os.environ.get('CONF_ENV', 'docker'))
-print >> sys.stderr, "Loading configuration from {filename}".format(filename=_LOCALSETTINGS_FILENAME)
+print("Loading configuration from {filename}".format(filename=_LOCALSETTINGS_FILENAME), file=sys.stderr)
 module = imp.load_source("localsettings", _LOCALSETTINGS_FILENAME)
 
 for attribute in dir(module):

@@ -14,7 +14,7 @@ node('master') {
         sh 'sudo git clean --force -d -x'
 
         // linter
-        sh 'docker build -t py-tools -f docker/Dockerfile.py-tools  docker/'
+        sh 'docker build -t py3-tools -f docker/Dockerfile.py3-tools  docker/'
 
         // client-linter
         //sh 'docker build -t client-lint -f docker/Dockerfile.client-lint -v $PWD/client/package.json:/package.json docker/'

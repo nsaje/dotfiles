@@ -6,7 +6,7 @@ from dash.views import helpers
 import dash.models
 from dash.features import contentupload
 
-import serializers
+from . import serializers
 
 
 ACCOUNTS_CAN_EDIT_URL = [305]

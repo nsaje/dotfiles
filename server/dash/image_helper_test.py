@@ -39,7 +39,7 @@ class UploadImageToS3(TestCase):
     def test_upload_image_to_s3(self, mock_randint, mock_time):
         mock_randint.return_value = 99999
         mock_time.return_value = time.mktime(datetime.datetime(2016, 9, 1).timetuple())
-        image = open('./dash/test_files/test.jpg')
+        image = open('./dash/test_files/test.jpg', 'rb')
         batch_id = 1234
 
         key = image_helper.upload_image_to_s3(image, batch_id)

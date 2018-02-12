@@ -54,7 +54,7 @@ class Command(ExceptionCommand):
                 return [acc_id for acc_id in account_ids if acc_id not in data]
             raise CommandError('Some accounts have impressions in RS: {}'.format(
                 ', '.join([
-                    'account {} - {}'.format(acc_id, spend) for acc_id, spend in data.iteritems()
+                    'account {} - {}'.format(acc_id, spend) for acc_id, spend in data.items()
                 ])
             ))
         return account_ids

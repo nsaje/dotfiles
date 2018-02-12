@@ -220,9 +220,9 @@ def _format_whitespace(content):
     '''
     Format multiple concurrent new line characters into paragraphs and single new lines into line breaks.
     '''
-    content = re.sub(r'\n\n+', u'</p><p>', content)
-    content = re.sub(r'\n', u'<br>', content)
-    return u'<p>{}</p>'.format(
+    content = re.sub(r'\n\n+', '</p><p>', content)
+    content = re.sub(r'\n', '<br>', content)
+    return '<p>{}</p>'.format(
         content
     )
 
@@ -238,7 +238,7 @@ def email_manager_list(campaign):
         ret.add(account_manager.email)
     if campaign_manager is not None:
         ret.add(campaign_manager.email)
-    return list(ret)
+    return sorted(ret)
 
 
 def send_pacing_notification_email(campaign, emails, pacing, alert, projections):
@@ -406,7 +406,7 @@ def send_email_to_new_user(user, request, agency=None):
 
 
 def _generate_password_reset_url(user, request):
-    encoded_id = urlsafe_base64_encode(str(user.pk))
+    encoded_id = urlsafe_base64_encode(str(user.pk).encode('utf-8'))
     token = default_token_generator.make_token(user)
 
     url = request.build_absolute_uri(
@@ -435,12 +435,13 @@ def send_supply_report_email(email, date, impressions, cost, custom_subject=None
             **params)
         if publisher_report:
             email.attach('publisher_report.csv', publisher_report, 'text/csv')
+
         email.send()
-    except Exception as e:
+    except Exception:
         logger.error(
             'Supply report e-mail to %s was not sent because an exception was raised: %s',
             email,
-            traceback.format_exc(e))
+            traceback.format_exc())
 
 
 def should_send_account_notification_mail(account, user, request):
@@ -698,7 +699,7 @@ def send_oen_postclickkpi_cpa_factors_email(factors):
         )
         email.attach('cpa_optimization_factors.csv', factors, 'text/csv')
         email.send()
-    except Exception as e:
+    except Exception:
         logger.error(
             'OEN CPA Optimization factors e-mail was not sent because an exception was raised: %s',
-            traceback.format_exc(e))
+            traceback.format_exc())

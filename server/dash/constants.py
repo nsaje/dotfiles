@@ -79,11 +79,11 @@ class AdTargetDevice(ConstantBase):
 
 
 class AdTargetLocation(ConstantBase):
-    _VALUES = dict(regions.COUNTRY_BY_CODE.items() + regions.DMA_BY_CODE.items() + regions.SUBDIVISION_BY_CODE.items())
+    _VALUES = dict(list(regions.COUNTRY_BY_CODE.items()) + list(regions.DMA_BY_CODE.items()) + list(regions.SUBDIVISION_BY_CODE.items()))
 
     @classmethod
     def get_choices(cls):
-        return cls._VALUES.items()
+        return list(cls._VALUES.items())
 
 
 class ContentAdSubmissionStatus(ConstantBase):
@@ -1135,36 +1135,36 @@ class InterestCategory(ConstantBase):
     SHOPPING = 'shopping'
 
     _VALUES = {
-        ENTERTAINMENT: u'Arts & Entertainment',
-        FUN_QUIZZES: u'Viral, lists & Quizzes',
+        ENTERTAINMENT: 'Arts & Entertainment',
+        FUN_QUIZZES: 'Viral, lists & Quizzes',
         MUSIC: 'Music',
         CARS: 'Automotive',
-        FINANCE: u'Business & Finance',
+        FINANCE: 'Business & Finance',
         EDUCATION: 'Education',
         FAMILY: 'Family & Parenting',
         HEALTH: 'Health & Fitness',
         FOOD: 'Food & Drink',
-        HOBBIES: u'Hobbies & Interests',
+        HOBBIES: 'Hobbies & Interests',
         GAMES: 'Games & Gaming',
         HOME: 'Home & Garden',
-        POLITICS_LAW: u'Law, Gov’t & Politics',
+        POLITICS_LAW: 'Law, Gov’t & Politics',
         MEDIA: 'News',
-        DATING: u'Dating & Relationships',
+        DATING: 'Dating & Relationships',
         SCIENCE: 'Science',
-        WEATHER: u'Weather & Environment',
+        WEATHER: 'Weather & Environment',
         PETS: 'Pets',
         SPORTS: 'Sports',
         FASHION: 'Beauty & Fashion',
         TECHNOLOGY: 'Technology',
-        UTILITY: u'Apps & Online services',
+        UTILITY: 'Apps & Online services',
         TRAVEL: 'Travel',
         SHOPPING_COUPONS: 'Shopping',
-        RELIGION: u'Religion & Spirituality',
+        RELIGION: 'Religion & Spirituality',
         COMMUNICATION: 'Communication Tools',
         CAREER: 'Careers',
         PREMIUM: 'Premium',
-        WOMEN: u'Women’s Lifestyle',
-        MEN: u'Men’s Lifestyle',
+        WOMEN: 'Women’s Lifestyle',
+        MEN: 'Men’s Lifestyle',
         FOREIGN: 'Foreign',
         FRENCH: 'French',
         SPANISH: 'Spanish',
@@ -1172,9 +1172,9 @@ class InterestCategory(ConstantBase):
         UNKNOWN: 'Unknown',
         OUTBRAIN: 'Outbrain',
         TECHNOLOGY_CONTEXTUAL: 'Technology - Contextual',
-        FUN: u'Fun & Entertaining Sites',
+        FUN: 'Fun & Entertaining Sites',
         QUIZZES: 'Quizzes',
-        POLITICS: u'Gov’t & Politics',
+        POLITICS: 'Gov’t & Politics',
         LAW: 'Law',
         COUPONS: 'Couponing',
         SHOPPING: 'Shopping',

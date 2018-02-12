@@ -1,7 +1,7 @@
 from collections import namedtuple
 
-import models
-import serializers
+from . import models
+from . import serializers
 
 
 UploadInfo = namedtuple('UploadInfo', ['type', 'url'])

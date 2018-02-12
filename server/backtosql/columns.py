@@ -1,4 +1,4 @@
-import helpers
+from . import helpers
 
 
 class TemplateColumn(object):

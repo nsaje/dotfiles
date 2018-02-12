@@ -402,10 +402,10 @@ def write_history(request, obj, entries, status, previous_status=None):
             constants.PublisherBlacklistLevel.get_text(obj.get_publisher_level()).lower())
         history_actiontype = constants.HistoryActionType.PUBLISHER_BLACKLIST_CHANGE
 
-    pubs_string = u", ".join(u"{} on {}".format(
+    pubs_string = ", ".join("{} on {}".format(
         x.publisher, x.source.name if x.source else "all sources") for x in entries)
 
-    changes_text = u'{action} the following publishers {level_description}: {pubs}.'.format(
+    changes_text = '{action} the following publishers {level_description}: {pubs}.'.format(
         action=action,
         level_description=level_description,
         pubs=pubs_string
@@ -433,7 +433,7 @@ def _prepare_entries(entry_dicts, publisher_group):
 
     # remove duplicates
     for entry in entry_dicts:
-        key = frozenset(entry.values())
+        key = frozenset(list(entry.values()))
         if key in added:
             continue
 
@@ -464,8 +464,7 @@ def validate_outbrain_blacklist_count(obj, entries):
         return
     account = obj.get_account()
     ob_blacklist_count_existing = get_ob_blacklisted_publishers_count(account)
-    ob_blacklist_count_added = len(filter(lambda e: e.source and e.source.source_type.type == constants.SourceType.OUTBRAIN,
-                                          entries))
+    ob_blacklist_count_added = len([e for e in entries if e.source and e.source.source_type.type == constants.SourceType.OUTBRAIN])
 
     if (ob_blacklist_count_added and
             ob_blacklist_count_existing + ob_blacklist_count_added > OUTBRAIN_MAX_BLACKLISTED_PUBLISHERS):
@@ -533,6 +532,6 @@ def parse_default_publisher_group_origin(publisher_group):
     if obj is not None:
         obj = obj.first()
         if obj is not None:
-            name = u"{} [{}]".format(obj.name, obj.id)
+            name = "{} [{}]".format(obj.name, obj.id)
 
     return type_, level, obj, name

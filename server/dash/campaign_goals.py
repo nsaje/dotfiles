@@ -218,7 +218,7 @@ def delete_campaign_goal(request, goal_id, campaign):
         request,
         campaign,
         constants.HistoryActionType.GOAL_CHANGE,
-        u'Deleted campaign goal "{}"'.format(
+        'Deleted campaign goal "{}"'.format(
             constants.CampaignGoalKPI.get_text(goal.type)
         )
     )
@@ -260,7 +260,7 @@ def delete_conversion_goal(request, conversion_goal_id, campaign):
             request,
             campaign,
             constants.HistoryActionType.GOAL_CHANGE,
-            u'Deleted conversion goal "{}"'.format(
+            'Deleted conversion goal "{}"'.format(
                 conversion_goal.name,
                 constants.ConversionGoalType.get_text(conversion_goal.type)
             )
@@ -503,10 +503,10 @@ def eliminate_duplicates(campaign_goal_values):
         date_hash[cgv_type][campaign_goal_value.created_dt.date()] = campaign_goal_value
 
     ret = []
-    for campaign_goal_type, date_values in date_hash.iteritems():
+    for campaign_goal_type, date_values in date_hash.items():
         if len(date_values) == 0:
             continue
-        sorted_values = sorted(date_values.values(), key=lambda x: x.created_dt)
+        sorted_values = sorted(list(date_values.values()), key=lambda x: x.created_dt)
         ret.extend(sorted_values)
     return sorted(ret, key=lambda x: x.created_dt)
 
@@ -526,7 +526,7 @@ def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, use
     # if starting campaign goal was defined before current range
     # or if no values are defined within current range(but exist before)
     # make sure to insert campaign goal value datapoints
-    for pre_cg_id, pre_cg_val in pre_cg_vals.iteritems():
+    for pre_cg_id, pre_cg_val in pre_cg_vals.items():
         pre_cg = pre_cg_val.campaign_goal
         pre_name = goal_name(pre_cg, conversion_goals, uses_bcm_v2=uses_bcm_v2)
         dp_to_preinsert = campaign_goal_dp(pre_cg_val, override_date=start_date)
@@ -541,7 +541,7 @@ def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, use
                 cg_series[pre_name] = [dp_to_preinsert] +\
                     cg_series[pre_name]
 
-    for name, last_cg_val in last_cg_vals.iteritems():
+    for name, last_cg_val in last_cg_vals.items():
         if last_cg_val.created_dt.date() >= end_date:
             continue
         # duplicate last data point with date set to end date
@@ -566,7 +566,7 @@ def create_line_series(cg_series):
     duplicate points. This results in a sequence of horizontal lines
     '''
     new_series = {}
-    for name, dps in cg_series.iteritems():
+    for name, dps in cg_series.items():
         new_series[name] = []
         previous_dp = None
         value_differs = False
@@ -587,7 +587,7 @@ def generate_missing(cg_series):
     day_delta = datetime.timedelta(days=1)
 
     new_series = {}
-    for name, line_list in cg_series.iteritems():
+    for name, line_list in cg_series.items():
         new_series[name] = []
         for point_pair in line_list:
             horizontal_series = []
@@ -638,7 +638,7 @@ def inverted_campaign_goal_map(conversion_goals, uses_bcm_v2):
 
     primary_metric_map = get_goal_to_primary_metric_map(uses_bcm_v2)
 
-    for goal_type in primary_metric_map.keys():
+    for goal_type in list(primary_metric_map.keys()):
         field = primary_metric_map[goal_type]
         ret[field] = {
             'id': constants.CampaignGoalKPI.get_text(goal_type),
@@ -653,7 +653,7 @@ def inverted_campaign_goal_map(conversion_goals, uses_bcm_v2):
             field = 'avg_etfm_cost_per_{}'.format(vk)
             ret[field] = {
                 'id': field,
-                'name': u'{prefix} - {conversion_goal_name}'.format(
+                'name': '{prefix} - {conversion_goal_name}'.format(
                     prefix=cpa_text,
                     conversion_goal_name=cg.name),
             }
@@ -661,7 +661,7 @@ def inverted_campaign_goal_map(conversion_goals, uses_bcm_v2):
             field = 'avg_cost_per_{}'.format(vk)
             ret[field] = {
                 'id': field,
-                'name': u'{prefix} - {conversion_goal_name}'.format(
+                'name': '{prefix} - {conversion_goal_name}'.format(
                     prefix=cpa_text,
                     conversion_goal_name=cg.name),
             }

@@ -1,7 +1,7 @@
 from restapi.views import RESTAPIBaseViewSet
 
 import restapi.access
-import serializers
+from . import serializers
 import core.entity
 
 
@@ -24,7 +24,7 @@ class AccountViewSet(RESTAPIBaseViewSet):
         serializer.is_valid(raise_exception=True)
         settings_updates = serializer.validated_data.get('settings')
         if settings_updates:
-            update = {key: value for key, value in settings_updates.items() if key in UPDATABLE_SETTINGS_FIELDS}
+            update = {key: value for key, value in list(settings_updates.items()) if key in UPDATABLE_SETTINGS_FIELDS}
             account.settings.update(request, **update)
         return self.response_ok(serializers.AccountSerializer(account).data)
 
@@ -49,6 +49,6 @@ class AccountViewSet(RESTAPIBaseViewSet):
 
         settings_updates = serializer.validated_data.get('settings')
         if settings_updates:
-            update = {key: value for key, value in settings_updates.items() if key in UPDATABLE_SETTINGS_FIELDS}
+            update = {key: value for key, value in list(settings_updates.items()) if key in UPDATABLE_SETTINGS_FIELDS}
             new_account.settings.update(request, **update)
         return self.response_ok(serializers.AccountSerializer(new_account).data, status=201)

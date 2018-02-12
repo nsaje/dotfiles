@@ -1,10 +1,10 @@
-from __future__ import unicode_literals
+
 import jsonfield
 
 from django.db import models
 from django.conf import settings
 
-import constants
+from . import constants
 
 
 class ReportJob(models.Model):

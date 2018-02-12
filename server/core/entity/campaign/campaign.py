@@ -16,7 +16,7 @@ import core.entity.helpers
 import core.history
 import core.source
 
-import bcm_mixin
+from . import bcm_mixin
 
 # These agencies should have campaign stop turned off
 # (for example Outbrain)
@@ -102,7 +102,7 @@ class Campaign(models.Model, core.common.PermissionMixin, bcm_mixin.CampaignBCMM
 
     objects = CampaignManager()
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def admin_link(self):
@@ -120,7 +120,7 @@ class Campaign(models.Model, core.common.PermissionMixin, bcm_mixin.CampaignBCMM
         return campaign_settings_url
 
     def get_long_name(self):
-        return u'{}, Campaign {}'.format(self.account.get_long_name(), self.name)
+        return '{}, Campaign {}'.format(self.account.get_long_name(), self.name)
 
     admin_link.allow_tags = True
 
@@ -211,10 +211,10 @@ class Campaign(models.Model, core.common.PermissionMixin, bcm_mixin.CampaignBCMM
         )
 
     def get_default_blacklist_name(self):
-        return u"Default blacklist for campaign {}({})".format(self.name, self.id)
+        return "Default blacklist for campaign {}({})".format(self.name, self.id)
 
     def get_default_whitelist_name(self):
-        return u"Default whitelist for campaign {}({})".format(self.name, self.id)
+        return "Default whitelist for campaign {}({})".format(self.name, self.id)
 
     def get_publisher_level(self):
         return constants.PublisherBlacklistLevel.CAMPAIGN

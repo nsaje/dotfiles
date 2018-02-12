@@ -56,7 +56,7 @@ def queries_to_influx(get_response):
                     method=request.method,
                     status=str(response.status_code),
                 )
-                for verb, count in queries_per_verb.items():
+                for verb, count in list(queries_per_verb.items()):
                     influx.timing(
                         'queries.count',
                         count,

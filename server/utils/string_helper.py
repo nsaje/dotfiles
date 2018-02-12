@@ -1,6 +1,3 @@
-from __future__ import division
-
-
 def format_decimal(x, min_decimals, max_decimals):
     assert isinstance(min_decimals, int)
     assert isinstance(max_decimals, int)

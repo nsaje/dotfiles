@@ -628,8 +628,8 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
             raise err
 
         allowed_sources = {}
-        for k, v in allowed_sources_dict.iteritems():
-            if not isinstance(k, basestring):
+        for k, v in allowed_sources_dict.items():
+            if not isinstance(k, str):
                 raise err
             if not isinstance(v, dict):
                 raise err
@@ -847,8 +847,8 @@ class AgencyAdminForm(PublisherGroupsFormMixin, forms.ModelForm, CustomFlagsForm
                 'first_name',
                 'last_name',
         )
-        self.fields['sales_representative'].label_from_instance = lambda obj: u"{} <{}>".format(
-            obj.get_full_name(), obj.email or u''
+        self.fields['sales_representative'].label_from_instance = lambda obj: "{} <{}>".format(
+            obj.get_full_name(), obj.email or ''
         )
         self.fields['cs_representative'].queryset =\
             ZemUser.objects.all().exclude(
@@ -859,8 +859,8 @@ class AgencyAdminForm(PublisherGroupsFormMixin, forms.ModelForm, CustomFlagsForm
                 'first_name',
                 'last_name',
         )
-        self.fields['cs_representative'].label_from_instance = lambda obj: u"{} <{}>".format(
-            obj.get_full_name(), obj.email or u''
+        self.fields['cs_representative'].label_from_instance = lambda obj: "{} <{}>".format(
+            obj.get_full_name(), obj.email or ''
         )
 
 
@@ -1003,7 +1003,7 @@ EXPRESSIVE_FIELD_NAME_MAPPING = {
     'secondary_impression_tracker_url': 'secondary_tracker_url',
 }
 INVERSE_EXPRESSIVE_FIELD_NAME_MAPPING = {
-    v: k for k, v in EXPRESSIVE_FIELD_NAME_MAPPING.iteritems()}
+    v: k for k, v in EXPRESSIVE_FIELD_NAME_MAPPING.items()}
 
 # Example CSV content - must be ignored if mistakenly uploaded
 # Example File is served by client (Zemanta_Content_Ads_Template.csv)
@@ -1124,7 +1124,7 @@ class ParseCSVExcelFile(object):
         return False
 
     def _is_empty_row(self, row):
-        return not any(x.strip() if x else x for x in row.values())
+        return not any(x.strip() if x else x for x in list(row.values()))
 
     def _remove_unnecessary_fields(self, row):
         # unicodecsv stores values of all unneeded columns
@@ -1175,7 +1175,7 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm, ParseCSVExcelFile):
             column_names[n] = field
 
         # Make sure each column_name appears only once
-        for column_name, count in Counter(column_names).iteritems():
+        for column_name, count in Counter(column_names).items():
             expr_column_name = INVERSE_EXPRESSIVE_FIELD_NAME_MAPPING.get(
                 column_name, column_name)
             formatted_name = expr_column_name.replace('_', ' ').capitalize()
@@ -1186,7 +1186,7 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm, ParseCSVExcelFile):
         return column_names
 
     def _is_example_row(self, row):
-        return all(row[example_key] == example_value for example_key, example_value in EXAMPLE_CSV_CONTENT.iteritems())
+        return all(row[example_key] == example_value for example_key, example_value in EXAMPLE_CSV_CONTENT.items())
 
     def clean_candidates(self):
         candidates_file = self.cleaned_data['candidates']
@@ -1198,7 +1198,7 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm, ParseCSVExcelFile):
 
         column_names = self._get_column_names(rows[0])
 
-        data = (dict(zip(column_names, row)) for row in rows[1:])
+        data = (dict(list(zip(column_names, row))) for row in rows[1:])
         data = [self._remove_unnecessary_fields(
             row) for row in data if not self._is_example_row(row)]
 
@@ -1358,13 +1358,13 @@ class CreditLineItemAdminForm(forms.ModelForm):
         ]
         # workaround to not change model __unicode__ methods
         self.fields[
-            'account'].label_from_instance = lambda obj: u'{} - {}'.format(obj.id, obj.name)
+            'account'].label_from_instance = lambda obj: '{} - {}'.format(obj.id, obj.name)
         self.fields['account'].queryset = models.Account.objects.filter(
             pk__in=not_archived
         ).order_by('id')
 
         self.fields[
-            'agency'].label_from_instance = lambda obj: u'{} - {}'.format(obj.id, obj.name)
+            'agency'].label_from_instance = lambda obj: '{} - {}'.format(obj.id, obj.name)
         self.fields[
             'agency'].queryset = models.Agency.objects.all().order_by('id')
 
@@ -1388,7 +1388,7 @@ class BudgetLineItemAdminForm(forms.ModelForm):
         # workaround to not change model __unicode__ methods
 
         self.fields[
-            'campaign'].label_from_instance = lambda obj: u'{} - {}'.format(obj.id, obj.name)
+            'campaign'].label_from_instance = lambda obj: '{} - {}'.format(obj.id, obj.name)
         self.fields['campaign'].queryset = models.Campaign.objects.filter(
             pk__in=not_archived
         ).order_by('id')
@@ -1436,7 +1436,7 @@ class BreakdownForm(forms.Form):
 
     parents = TypedMultipleAnyChoiceField(
         required=False,
-        coerce=unicode,
+        coerce=str,
     )
 
     filtered_sources = TypedMultipleAnyChoiceField(required=False, coerce=str)
@@ -1463,7 +1463,7 @@ class BreakdownForm(forms.Form):
     def clean_parents(self):
         parents = []
         if self.data.get('parents'):
-            parents = [unicode(x) for x in self.data['parents'] if x]
+            parents = [str(x) for x in self.data['parents'] if x]
         return parents
 
 
@@ -1627,7 +1627,7 @@ class ContentAdForm(ContentAdCandidateForm):
         except forms.ValidationError:
             pass
 
-        url = u'http://{}'.format(url)
+        url = 'http://{}'.format(url)
         validate_url(url)
 
         return url
@@ -1781,7 +1781,7 @@ class AudienceRulesField(forms.Field):
         for rule in rules:
             rule_form = AudienceRuleForm(rule)
             if not rule_form.is_valid():
-                for key, error in rule_form.errors.iteritems():
+                for key, error in rule_form.errors.items():
                     raise forms.ValidationError(error, code=key)
                 return
 
@@ -1884,7 +1884,7 @@ class PublisherTargetingForm(forms.Form):
         for entry in entries if entries else []:
             entry_form = PublisherGroupEntryForm(entry)
             if not entry_form.is_valid():
-                for key, error in entry_form.errors.iteritems():
+                for key, error in entry_form.errors.items():
                     raise forms.ValidationError(error, code=key)
                 return
             clean_entries.append(entry_form.cleaned_data)
@@ -1984,7 +1984,7 @@ class PublisherGroupUploadForm(forms.Form, ParseCSVExcelFile):
 
         column_names = self._get_column_names(rows[0])
 
-        data = (dict(zip(column_names, row)) for row in rows[1:])
+        data = (dict(list(zip(column_names, row))) for row in rows[1:])
         data = [self._remove_unnecessary_fields(
             row) for row in data if not self._is_example_row(row)]
         data = [row for row in data if not self._is_empty_row(row)]

@@ -52,7 +52,7 @@ def get_goals(constraints, breakdown):
         for cg in campaign_goals:
             if cg.campaign_id not in primary_goals_by_campaign:
                 primary_goals_by_campaign[cg.campaign_id] = cg
-        primary_goals = primary_goals_by_campaign.values()
+        primary_goals = list(primary_goals_by_campaign.values())
 
         campaign_goal_values = dash.campaign_goals.get_campaigns_goal_values(allowed_campaigns)
 
@@ -137,7 +137,7 @@ def decode_breakdown_id(breakdown, breakdown_id_str):
     """
 
     d = {}
-    ids = breakdown_id_str.split(u"||")
+    ids = breakdown_id_str.split("||")
     for i, dimension in enumerate(breakdown[:len(ids)]):
         str_id = ids[i]
         if str_id == '-None-':
@@ -168,9 +168,9 @@ def encode_breakdown_id(breakdown, row):
         if value is None:
             value = '-None-'
 
-        values.append(unicode(value))
+        values.append(str(value))
 
-    return u"||".join(values)
+    return "||".join(values)
 
 
 def get_breakdown_id(row, breakdown):

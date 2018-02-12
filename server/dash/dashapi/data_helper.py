@@ -55,7 +55,7 @@ def get_ad_group_source_notification(ad_group_source, ad_group_settings, ad_grou
 
     if ad_group_source.blockers:
         if ad_group_source_settings and ad_group_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE:
-            reasons = [v for k, v in ad_group_source.blockers.items()]
+            reasons = [v for k, v in list(ad_group_source.blockers.items())]
             notification['message'] = 'This media source is enabled but it is not running because: ' + ', '.join(reasons)
             notification['important'] = True
     return notification

@@ -2,7 +2,7 @@ from django.test import TestCase
 
 from django.core.exceptions import ValidationError
 
-import validation_helper
+from . import validation_helper
 
 
 class ValidatePlainTextTest(TestCase):

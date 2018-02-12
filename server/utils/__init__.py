@@ -1,1 +1,1 @@
-from grouper import grouper
+from .grouper import grouper

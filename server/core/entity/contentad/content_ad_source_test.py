@@ -27,5 +27,5 @@ class CreateContentAdSource(TestCase):
 
         self.assertEqual(len(content_ad_sources), 5)
         self.assertEqual([x.state for x in content_ad_sources], 5 * [content_ad.state])
-        self.assertItemsEqual([x.source for x in content_ad_sources], list(sources))
+        self.assertCountEqual([x.source for x in content_ad_sources], list(sources))
         self.assertEqual([x.content_ad for x in content_ad_sources], 5 * [content_ad])

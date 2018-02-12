@@ -3,7 +3,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import admin as authadmin, forms
 from django.contrib.auth.models import Permission
 
-import models
+from . import models
 
 
 class UserCreationForm(forms.UserCreationForm):

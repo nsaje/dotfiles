@@ -1,7 +1,7 @@
 import json
 import logging
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 
 from django.conf import settings
 
@@ -19,18 +19,18 @@ MESSAGE_TYPE_CRITICAL = ':rage:'
 
 def _post_to_slack(data):
     if settings.SLACK_LOG_ENABLE:
-        data = urllib.urlencode({
+        data = urllib.parse.urlencode({
             'payload': json.dumps(data)
         })
-        req = urllib2.Request(settings.SLACK_INCOMING_HOOK_URL, data)
-        response = urllib2.urlopen(req)
+        req = urllib.request.Request(settings.SLACK_INCOMING_HOOK_URL, data.encode('utf-8'))
+        response = urllib.request.urlopen(req)
         return response.read() == 'ok'
     else:
         logger.warning("Slack log disabled, message: %s", data)
 
 
 def link(url='', anchor=''):
-    return u'<{url}|{anchor}>'.format(url=url, anchor=anchor)
+    return '<{url}|{anchor}>'.format(url=url, anchor=anchor)
 
 
 def ad_group_url(ad_group, tab='ads'):

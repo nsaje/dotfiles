@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-import influx_helper
+from . import influx_helper
 
 
 class CleanPathTestCase(TestCase):

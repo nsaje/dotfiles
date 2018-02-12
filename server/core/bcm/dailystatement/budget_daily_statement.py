@@ -1,6 +1,6 @@
 from django.db import models
 
-import queryset
+from . import queryset
 
 
 class BudgetDailyStatement(models.Model):

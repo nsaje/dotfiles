@@ -4,8 +4,8 @@ import core.entity
 import restapi.access
 import restapi.views
 
-import serializers
-import service
+from . import serializers
+from . import service
 
 
 class CloneContentAds(restapi.views.RESTAPIBaseView):

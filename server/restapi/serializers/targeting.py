@@ -26,7 +26,7 @@ class OSSerializer(rest_framework.serializers.Serializer):
         version = data['version'] if 'version' in data else {}
         try:
             min_idx = versions.index(version['min']) if 'min' in version else 0
-            max_idx = versions.index(version['max']) if 'max' in version else sys.maxint
+            max_idx = versions.index(version['max']) if 'max' in version else sys.maxsize
 
             if min_idx > max_idx:
                 raise rest_framework.serializers.ValidationError('Max version must be greater or equal to min version.')
@@ -101,7 +101,7 @@ class AudienceSerializer(rest_framework.serializers.BaseSerializer):
         if len(data) != 1:
             raise rest_framework.serializers.ValidationError(
                 'Invalid expression - expected one operator, '
-                'got [{}]'.format(', '.join(str(k) for k in data.keys()))
+                'got [{}]'.format(', '.join(str(k) for k in list(data.keys())))
             )
 
         op, exp = list(data.items())[0]
@@ -207,7 +207,7 @@ class TargetRegionsSerializer(rest_framework.serializers.Serializer):
 
     def to_internal_value(self, data):
         data = super(TargetRegionsSerializer, self).to_internal_value(data)
-        return [location for location_list in data.values() for location in location_list if location_list]
+        return [location for location_list in list(data.values()) for location in location_list if location_list]
 
     def _get_geo_types(self, target_regions):
         locations_to_fetch = [loc for loc in target_regions if loc not in _geo_type_cache]

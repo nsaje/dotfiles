@@ -2,9 +2,9 @@ import rest_framework.serializers
 import rest_framework.permissions
 
 import restapi.views
-import serializers
-import models
-import service
+from . import serializers
+from . import models
+from . import service
 
 
 class VideoAssetBaseView(restapi.views.RESTAPIBaseView):

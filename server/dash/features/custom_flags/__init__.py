@@ -1,2 +1,2 @@
-from model import CustomFlag
+from .model import CustomFlag
 from . import helpers

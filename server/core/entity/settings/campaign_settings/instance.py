@@ -29,7 +29,7 @@ class CampaignSettingsMixin(object):
     @classmethod
     def _clean_updates(cls, kwargs):
         cleaned_updates = {}
-        for field, value in kwargs.items():
+        for field, value in list(kwargs.items()):
             if field in cls._settings_fields:
                 cleaned_updates[field] = value
         return cleaned_updates

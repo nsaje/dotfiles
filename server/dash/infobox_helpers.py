@@ -58,7 +58,7 @@ class OverviewSetting(object):
 
     def as_dict(self):
         ret = {}
-        for key, value in self.__dict__.iteritems():
+        for key, value in self.__dict__.items():
             if value is None:
                 continue
             ret[key] = value

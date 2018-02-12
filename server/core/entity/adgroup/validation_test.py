@@ -8,7 +8,7 @@ import dash.constants
 from utils.magic_mixer import magic_mixer
 from utils import dates_helper, exc
 
-import validation
+from . import validation
 
 
 class ValidateAdGroupSourceUpdatesTestCase(TestCase):

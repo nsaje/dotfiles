@@ -2,7 +2,7 @@ import influx
 import json
 import logging
 import time
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import requests
 
 from django.conf import settings
@@ -29,8 +29,8 @@ class Command(ExceptionCommand):
         influx.incr('demo.monitor', 1, status='ok')
 
     def _start_demo(self):
-        request = urllib2.Request(settings.DK_DEMO_UP_ENDPOINT)
-        response = request_signer.urllib2_secure_open(request, settings.DK_API_KEY)
+        request = urllib.request.Request(settings.DK_DEMO_UP_ENDPOINT)
+        response = request_signer.urllib_secure_open(request, settings.DK_API_KEY)
 
         status_code = response.getcode()
         if status_code != 200:
@@ -95,8 +95,8 @@ class Command(ExceptionCommand):
 
     def _stop_demo(self, name):
         url = settings.DK_DEMO_DOWN_ENDPOINT.format(instance=name)
-        request = urllib2.Request(url)
-        response = request_signer.urllib2_secure_open(request, settings.DK_API_KEY)
+        request = urllib.request.Request(url)
+        response = request_signer.urllib_secure_open(request, settings.DK_API_KEY)
 
         status_code = response.getcode()
         if status_code != 200:

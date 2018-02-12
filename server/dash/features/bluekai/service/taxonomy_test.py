@@ -3,7 +3,7 @@ from mock import patch
 from django.test import TestCase
 from mixer.backend.django import mixer
 
-import taxonomy
+from . import taxonomy
 from dash.features.bluekai import constants, models
 
 

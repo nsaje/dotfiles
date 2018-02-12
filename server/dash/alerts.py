@@ -19,7 +19,7 @@ def _construct_depleting_items(request, campaigns):
     campaign_items = []
     for campaign in sorted(campaigns, key=lambda x: x.name):
         campaign_items.append(
-            u'{} - <a href="{}">Add budget</a> or <a href="{}">Lower daily caps</a>'.format(
+            '{} - <a href="{}">Add budget</a> or <a href="{}">Lower daily caps</a>'.format(
                 campaign.name,
                 _get_campaign_budget_link(request, campaign),
                 _get_campaign_ad_groups_link(request, campaign),
@@ -32,7 +32,7 @@ def _construct_landing_items(request, campaigns):
     campaign_items = []
     for campaign in sorted(campaigns, key=lambda x: x.name):
         campaign_items.append(
-            u'{} - <a href="{}">Add budget</a>'.format(
+            '{} - <a href="{}">Add budget</a>'.format(
                 campaign.name,
                 _get_campaign_budget_link(request, campaign),
             )
@@ -55,34 +55,34 @@ def get_account_landing_mode_alerts(request, account):
 
     alerts = []
     if depleting_budget_campaigns:
-        message = u'<p><strong>Campaigns will soon run out of budget.</strong></p>'\
-                  u'<p>Please add budget or lower daily caps to continue to adjust media sources settings. If you '\
-                  u'don’t take any actions, the system will automatically turn on the landing mode to hit your '\
-                  u'budget. <a href="http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode" '\
-                  u'target="_blank">Learn more ...</a></p>'\
-                  u'<ul class="list-with-bullets">{campaigns}</ul>'
+        message = '<p><strong>Campaigns will soon run out of budget.</strong></p>'\
+                  '<p>Please add budget or lower daily caps to continue to adjust media sources settings. If you '\
+                  'don’t take any actions, the system will automatically turn on the landing mode to hit your '\
+                  'budget. <a href="http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode" '\
+                  'target="_blank">Learn more ...</a></p>'\
+                  '<ul class="list-with-bullets">{campaigns}</ul>'
 
         depleting_budget_campaign_items = _construct_depleting_items(request, depleting_budget_campaigns)
         alerts.append({
             'type': constants.AlertType.WARNING,
             'message': message.format(
-                campaigns=u''.join(u'<li>{}</li>'.format(item) for item in depleting_budget_campaign_items)),
+                campaigns=''.join('<li>{}</li>'.format(item) for item in depleting_budget_campaign_items)),
             'permission': 'zemauth.can_see_landing_mode_alerts',
         })
 
     if landing_campaigns:
-        message = u'<p><strong>Campaigns are currently running in landing mode.</strong></p>'\
-                  u'<p>Please add budget to continue to adjust media sources settings. If you don’t take any actions, '\
-                  u'your campaigns will end in a few days. <a '\
-                  u'href="http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode" '\
-                  u'target="_blank">Learn more ...</a></p>'\
-                  u'<ul class="list-with-bullets">{campaigns}</ul>'
+        message = '<p><strong>Campaigns are currently running in landing mode.</strong></p>'\
+                  '<p>Please add budget to continue to adjust media sources settings. If you don’t take any actions, '\
+                  'your campaigns will end in a few days. <a '\
+                  'href="http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode" '\
+                  'target="_blank">Learn more ...</a></p>'\
+                  '<ul class="list-with-bullets">{campaigns}</ul>'
 
         landing_campaign_items = _construct_landing_items(request, landing_campaigns)
         alerts.append({
             'type': constants.AlertType.INFO,
             'message': message.format(
-                campaigns=u''.join(u'<li>{}</li>'.format(item) for item in landing_campaign_items)),
+                campaigns=''.join('<li>{}</li>'.format(item) for item in landing_campaign_items)),
             'permission': 'zemauth.can_see_landing_mode_alerts',
         })
 
@@ -97,12 +97,12 @@ def get_campaign_landing_mode_alerts(request, campaign):
 
     alerts = []
     if campaign_stop.is_campaign_running_out_of_budget(campaign, campaign_settings):
-        message = u'<p><strong>This campaign will run out of budget soon.</strong></p>'\
-                  u'<p>Please <a href="{budget_link}">add budget</a> or <a href="{sources_link}">lower daily caps</a> '\
-                  u'to continue to adjust media sources settings. If you don’t take any actions, the system '\
-                  u'will automatically turn on the landing mode to hit your budget. <a '\
-                  u'href="http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode" '\
-                  u'target="_blank">Learn more ...</a></p>'
+        message = '<p><strong>This campaign will run out of budget soon.</strong></p>'\
+                  '<p>Please <a href="{budget_link}">add budget</a> or <a href="{sources_link}">lower daily caps</a> '\
+                  'to continue to adjust media sources settings. If you don’t take any actions, the system '\
+                  'will automatically turn on the landing mode to hit your budget. <a '\
+                  'href="http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode" '\
+                  'target="_blank">Learn more ...</a></p>'
         alerts.append({
             'type': constants.AlertType.WARNING,
             'message': message.format(
@@ -113,11 +113,11 @@ def get_campaign_landing_mode_alerts(request, campaign):
         })
 
     if campaign_settings.landing_mode:
-        message = u'<p><strong>This campaign is currently running in landing mode.</strong></p>'\
-                  u'<p>Please <a href="{budget_link}">add budget</a> to continue to adjust media sources settings. '\
-                  u'If you don’t take any actions, your campaign will end in a few days. <a '\
-                  u'href="http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode" '\
-                  u'target="_blank">Learn more ...</a></p>'
+        message = '<p><strong>This campaign is currently running in landing mode.</strong></p>'\
+                  '<p>Please <a href="{budget_link}">add budget</a> to continue to adjust media sources settings. '\
+                  'If you don’t take any actions, your campaign will end in a few days. <a '\
+                  'href="http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode" '\
+                  'target="_blank">Learn more ...</a></p>'
         alerts.append({
             'type': constants.AlertType.INFO,
             'message': message.format(

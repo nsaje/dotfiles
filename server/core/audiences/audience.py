@@ -9,7 +9,7 @@ from dash import constants
 from utils import k1_helper
 from utils import redirector_helper
 
-import audience_rule
+from . import audience_rule
 
 
 class AudienceManager(core.common.BaseManager):
@@ -25,7 +25,7 @@ class AudienceManager(core.common.BaseManager):
             audience.save(
                 request,
                 constants.HistoryActionType.AUDIENCE_CREATE,
-                u'Created audience "{}".'.format(audience.name)
+                'Created audience "{}".'.format(audience.name)
             )
 
             for rule in rules:

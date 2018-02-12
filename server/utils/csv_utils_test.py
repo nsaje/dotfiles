@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-import csv_utils
+from . import csv_utils
 
 
 class DictListToCsvTest(TestCase):

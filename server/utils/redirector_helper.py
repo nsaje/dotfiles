@@ -1,7 +1,7 @@
 import json
 import logging
 import time
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 from django.conf import settings
 
@@ -116,7 +116,7 @@ def get_adgroup_realtimestats(ad_group_id):
 
 def upsert_audience(audience):
     try:
-        rules = [{'id': str(rule.id), 'type': rule.type, 'value': rule.value} for rule in audience.audiencerule_set.all()]
+        rules = [{'id': str(rule.id), 'type': rule.type, 'value': rule.value} for rule in audience.audiencerule_set.all().order_by('pk')]
         source_pixels = [{'url': pixel.url, 'type': pixel.source_type.type} for pixel in audience.pixel.sourcetypepixel_set.all()]
 
         audience_dict = {
@@ -195,21 +195,22 @@ def _call_api_paginated(url, data=None, method='POST'):
 
 
 def _call_api_retry(url, data=None, method='POST'):
-    for _ in xrange(NUM_RETRIES):
+    last_error = None
+    for _ in range(NUM_RETRIES):
         try:
             return _call_api(url, data, method)
         except Exception as error:
-            pass
+            last_error = error
 
-    raise error
+    raise last_error
 
 
 def _call_api(url, data, method='POST'):
     if settings.R1_DEMO_MODE:
         return {}
-    request = urllib2.Request(url, data)
+    request = urllib.request.Request(url, data.encode('utf-8') if data else None)
     request.get_method = lambda: method
-    response = request_signer.urllib2_secure_open(request, settings.R1_API_SIGN_KEY)
+    response = request_signer.urllib_secure_open(request, settings.R1_API_SIGN_KEY)
 
     status_code = response.getcode()
     if status_code != 200:

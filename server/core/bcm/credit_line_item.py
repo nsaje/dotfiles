@@ -224,10 +224,10 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
                 action_type=action_type,
                 user=user)
 
-    def __unicode__(self):
+    def __str__(self):
         parent = self.agency or self.account
-        return u'{} - {} - ${} - from {} to {}'.format(
-            parent.id, unicode(parent), self.amount,
+        return '{} - {} - ${} - from {} to {}'.format(
+            parent.id, str(parent), self.amount,
             self.start_date, self.end_date)
 
     def is_editable(self):
@@ -303,6 +303,8 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
             )
 
     def validate_amount(self):
+        if not self.amount:
+            return
         if self.amount < 0:
             raise ValidationError('Amount cannot be negative.')
         if not self.pk or not self.has_changed('amount'):

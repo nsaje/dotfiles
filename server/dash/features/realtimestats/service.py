@@ -1,7 +1,7 @@
 import decimal
 import logging
 from operator import itemgetter
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 import influx
 
@@ -79,7 +79,7 @@ def _get_k1_source_stats(ad_group, no_cache=False, use_source_tz=False):
 def _get_k1_source_stats_with_error_handling(ad_group, use_source_tz=False):
     try:
         return _try_get_k1_source_stats(ad_group, use_source_tz=use_source_tz)
-    except urllib2.HTTPError as e:
+    except urllib.error.HTTPError as e:
         influx.incr('dash.realtimestats.error', 1, type='http', status=str(e.code))
         return []
     except IOError:

@@ -1,7 +1,7 @@
 import collections
 import dash.constants
 from utils import dates_helper
-import exceptions
+from . import exceptions
 
 
 _FIELD_MAPPING = {
@@ -175,16 +175,14 @@ class FieldsMeta(type):
         return model_class
 
 
-class FieldNames:
-    __metaclass__ = FieldsMeta
-
+class FieldNames(metaclass=FieldsMeta):
     @classmethod
     def __init_class__(cls):
-        for k, v in _FIELD_MAPPING.iteritems():
+        for k, v in _FIELD_MAPPING.items():
             setattr(cls, k, k)
-        for k, v in _FIELD_MAPPING_BCMV2_OVERRIDES.iteritems():
+        for k, v in _FIELD_MAPPING_BCMV2_OVERRIDES.items():
             setattr(cls, k, k)
-        for k, v in _FIELD_MAPPING_PUBLISHERS_OVERRIDES.iteritems():
+        for k, v in _FIELD_MAPPING_PUBLISHERS_OVERRIDES.items():
             setattr(cls, k, k)
 
 
@@ -197,7 +195,7 @@ def custom_column_to_field_name_mapping(pixels=[], conversion_goals=[], show_pub
 
     mapping = {}
     for m in mappings:
-        for field_name, column_names in m.items():
+        for field_name, column_names in list(m.items()):
             for column_name in column_names:
                 mapping[column_name] = field_name
 
@@ -218,7 +216,7 @@ def get_field_name(column_name, mapping=None, raise_exception=True):
 
 def custom_field_to_column_name_mapping(pixels=[], conversion_goals=[], show_publishers_fields=False, uses_bcm_v2=False):
     mapping = custom_column_to_field_name_mapping(pixels, conversion_goals, show_publishers_fields, uses_bcm_v2)
-    return {v: k for k, v in mapping.items()}
+    return {v: k for k, v in list(mapping.items())}
 
 
 def get_column_name(field_name, mapping=None, raise_exception=True):
@@ -237,7 +235,7 @@ def _get_pixel_field_names_mapping(pixels, uses_bcm_v2):
 
         for window, window_title in dash.constants.ConversionWindows.get_choices():
             field_name = '{}_{}'.format(prefix, window)
-            column_name = u'{} {}'.format(pixel.name, window_title)
+            column_name = '{} {}'.format(pixel.name, window_title)
             mapping[column_name] = field_name
             mapping.update(_get_cpa_field_names_mapping(field_name, column_name, uses_bcm_v2))
             mapping.update(_get_roas_field_names_mapping(field_name, column_name, uses_bcm_v2))
@@ -259,23 +257,23 @@ def _get_conversion_goals_field_names_mapping(conversion_goals, uses_bcm_v2):
 def _get_cpa_field_names_mapping(field_name, column_name, uses_bcm_v2):
     if uses_bcm_v2:
         return {
-            u'CPA ({})'.format(column_name): 'avg_etfm_cost_per_{}'.format(field_name),
-            u'Platform CPA ({})'.format(column_name): 'avg_et_cost_per_{}'.format(field_name),
+            'CPA ({})'.format(column_name): 'avg_etfm_cost_per_{}'.format(field_name),
+            'Platform CPA ({})'.format(column_name): 'avg_et_cost_per_{}'.format(field_name),
         }
 
     return {
-        u'CPA ({})'.format(column_name): 'avg_cost_per_{}'.format(field_name)
+        'CPA ({})'.format(column_name): 'avg_cost_per_{}'.format(field_name)
     }
 
 
 def _get_roas_field_names_mapping(field_name, column_name, uses_bcm_v2):
     if uses_bcm_v2:
         return {
-            u'ROAS ({})'.format(column_name): 'roas_etfm_{}'.format(field_name),
-            u'Platform ROAS ({})'.format(column_name): 'roas_et_{}'.format(field_name),
+            'ROAS ({})'.format(column_name): 'roas_etfm_{}'.format(field_name),
+            'Platform ROAS ({})'.format(column_name): 'roas_et_{}'.format(field_name),
         }
     return {
-        u'ROAS ({})'.format(column_name): 'roas_{}'.format(field_name),
+        'ROAS ({})'.format(column_name): 'roas_{}'.format(field_name),
     }
 
 
@@ -290,7 +288,7 @@ def get_conversion_goals_column_names_mapping(conversion_goals):
 
 def add_date_to_name(name):
     local_date = dates_helper.local_today()
-    return u'{} ({})'.format(name, local_date.strftime('%Y-%m-%d'))
+    return '{} ({})'.format(name, local_date.strftime('%Y-%m-%d'))
 
 
 DEFAULT_FIELD_MAPPING = custom_field_to_column_name_mapping()

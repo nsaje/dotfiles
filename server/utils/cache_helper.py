@@ -1,6 +1,5 @@
 import collections
 import hashlib
-import types
 
 from django.db.models.query import QuerySet
 from django.db.models import Model
@@ -13,10 +12,7 @@ def get_cache_key(*args, **kwargs):
     h = hashlib.sha1()
 
     serialized = _serialize((args, kwargs))
-    try:
-        h.update(serialized)
-    except UnicodeEncodeError:
-        h.update(serialized.encode('utf-8', errors='ignore'))
+    h.update(serialized.encode('utf-8', errors='ignore'))
 
     return h.hexdigest()
 
@@ -30,7 +26,7 @@ def _serialize(value, postfix='', prefix=''):
         serialized += value.__class__.__name__ + '(' + str(value.pk) + ')'
     elif isinstance(value, collections.OrderedDict):
         serialized += 'OrderedDict({'
-        for k, v in value.items():
+        for k, v in list(value.items()):
             serialized += _serialize(k, ':')
             serialized += _serialize(v, ',')
         serialized += '})'
@@ -42,7 +38,7 @@ def _serialize(value, postfix='', prefix=''):
             serialized += _serialize(k, ':')
             serialized += _serialize(v, ',')
         serialized += '}'
-    elif isinstance(value, types.StringTypes):
+    elif isinstance(value, (str,)):
         serialized += value
     elif isinstance(value, collections.Iterable):
         serialized += '['
@@ -51,7 +47,7 @@ def _serialize(value, postfix='', prefix=''):
         serialized += ']'
     else:
         try:
-            serialized += unicode(value)
+            serialized += str(value)
         except UnicodeEncodeError:
             serialized += value.decode('utf-8', errors='ignore')
 

@@ -1,1 +1,1 @@
-from geolocation import Geolocation
+from .geolocation import Geolocation

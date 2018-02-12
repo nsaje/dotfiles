@@ -7,7 +7,7 @@ from utils.magic_mixer import magic_mixer
 from dash import constants
 
 import core.entity
-import model
+from . import model
 
 
 class AdGroupSettingsCreate(TestCase):

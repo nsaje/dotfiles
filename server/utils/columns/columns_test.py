@@ -3,8 +3,8 @@ import mock
 from django.test import TestCase
 
 import dash.models
-import columns
-import exceptions
+from . import columns
+from . import exceptions
 
 
 class FieldNamesTest(TestCase):

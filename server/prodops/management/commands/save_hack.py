@@ -26,10 +26,10 @@ class Command(utils.command_helpers.ExceptionCommand):
         )
 
     def _print(self, msg):
-        self.stdout.write(u'{}\n'.format(msg))
+        self.stdout.write('{}\n'.format(msg))
 
     def _confirm(self, message):
-        return raw_input('{} [yN] '.format(message)).lower() == 'y'
+        return input('{} [yN] '.format(message)).lower() == 'y'
 
     def handle(self, *args, **options):
         hack, lookup = {}, {}
@@ -81,5 +81,5 @@ class Command(utils.command_helpers.ExceptionCommand):
             new_hacks += (1 if created else 0)
             updated_hacks += (1 if not created else 0)
 
-        print 'New hacks', new_hacks
-        print 'Updated hacks', updated_hacks
+        print('New hacks', new_hacks)
+        print('Updated hacks', updated_hacks)

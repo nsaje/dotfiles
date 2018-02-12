@@ -7,16 +7,17 @@ from django.conf import settings
 
 import dash.models
 from utils import redirector_helper
-from utils.test_helper import ListMatcher
 
 
 @override_settings(
-    R1_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA',
+    R1_API_SIGN_KEY=b'AAAAAAAAAAAAAAAAAAAAAAAA',
     R1_VALIDATE_API_URL='https://r1.zemanta.com/api/validate/',
     R1_DEMO_MODE=False
 )
 @patch('utils.request_signer._secure_opener.open')
 class ValidateURLTest(TestCase):
+    maxDiff = None
+
     def test_validate_url(self, mock_urlopen):
         url = "https://example.com"
 
@@ -30,7 +31,7 @@ class ValidateURLTest(TestCase):
         call = mock_urlopen.call_args[0][0]
 
         self.assertEqual(call.get_full_url(), settings.R1_VALIDATE_API_URL)
-        self.assertEqual(call.data, json.dumps({"url": url, "adgroupid": 1}))
+        self.assertEqual(json.loads(call.data), {"url": url, "adgroupid": 1})
 
     def test_code_error(self, mock_urlopen):
         url = 'https://example.com/image'
@@ -59,7 +60,7 @@ class ValidateURLTest(TestCase):
 @override_settings(
     R1_REDIRECTS_API_URL='https://r1.example.com/api/redirects/',
     R1_REDIRECTS_ADGROUP_API_URL='https://r1.example.com/api/redirects/',
-    R1_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA',
+    R1_API_SIGN_KEY=b'AAAAAAAAAAAAAAAAAAAAAAAA',
     R1_DEMO_MODE=False
 )
 @patch('utils.request_signer._secure_opener.open')
@@ -88,12 +89,12 @@ class UpdateRedirectTest(TestCase):
         call = mock_urlopen.call_args[0][0]
 
         self.assertEqual(call.get_full_url(), settings.R1_REDIRECTS_API_URL + redirect_id + '/')
-        self.assertEqual(call.data, json.dumps({"url": "https://example.com"}))
+        self.assertEqual(json.loads(call.data), {"url": "https://example.com"})
 
 
 @override_settings(
     R1_REDIRECTS_BATCH_API_URL='https://r1.example.com/api/redirects/redirectsbatch/',
-    R1_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA',
+    R1_API_SIGN_KEY=b'AAAAAAAAAAAAAAAAAAAAAAAA',
     R1_DEMO_MODE=False
 )
 @patch('utils.request_signer._secure_opener.open')
@@ -136,10 +137,10 @@ class InsertRedirectsBatchTest(TestCase):
         call = mock_urlopen.call_args[0][0]
 
         self.assertEqual(call.get_full_url(), settings.R1_REDIRECTS_BATCH_API_URL)
-        self.assertEqual(call.data, json.dumps([
+        self.assertEqual(json.loads(call.data), [
             {"url": content_ads[0].url, "creativeid": 1, "adgroupid": content_ads[0].ad_group_id, 'noclickthroughresolve': False},
             {"url": content_ads[1].url, "creativeid": 2, "adgroupid": content_ads[1].ad_group_id, 'noclickthroughresolve': False},
-        ]))
+        ])
 
     @override_settings(
         R1_DEMO_MODE=True,
@@ -161,7 +162,7 @@ class InsertRedirectsBatchTest(TestCase):
 @override_settings(
     R1_REDIRECTS_API_URL='https://r1.example.com/api/redirects/',
     R1_REDIRECTS_ADGROUP_API_URL='https://r1.example.com/api/redirects/',
-    R1_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA',
+    R1_API_SIGN_KEY=b'AAAAAAAAAAAAAAAAAAAAAAAA',
     R1_DEMO_MODE=False
 )
 @patch('utils.request_signer._secure_opener.open')
@@ -258,7 +259,7 @@ class InsertAdGroupTest(TestCase):
 @override_settings(
     R1_REDIRECTS_API_URL='https://r1.example.com/api/redirects/',
     R1_REDIRECTS_ADGROUP_API_URL='https://r1.example.com/api/redirects/',
-    R1_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA',
+    R1_API_SIGN_KEY=b'AAAAAAAAAAAAAAAAAAAAAAAA',
     R1_DEMO_MODE=False
 )
 @patch('utils.request_signer._secure_opener.open')
@@ -304,11 +305,12 @@ class GetAdgroupTest(TestCase):
 
 @override_settings(
     R1_CUSTOM_AUDIENCE_API_URL='https://r1.example.com/api/audience/{audience_id}',
-    R1_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA',
+    R1_API_SIGN_KEY=b'AAAAAAAAAAAAAAAAAAAAAAAA',
     R1_DEMO_MODE=False
 )
 @patch('utils.request_signer._secure_opener.open')
 class UpsertAudienceTest(TestCase):
+    maxDiff = None
 
     fixtures = ['test_k1_api.yaml']
 
@@ -321,26 +323,25 @@ class UpsertAudienceTest(TestCase):
         audience = dash.models.Audience.objects.get(pk=1)
         resp = redirector_helper.upsert_audience(audience)
 
-        self.assertDictEqual(resp, {u'audienceid': u'1'})
+        self.assertDictEqual(resp, {'audienceid': '1'})
 
         call = mock_urlopen.call_args[0][0]
 
         self.assertEqual(call.get_full_url(), settings.R1_CUSTOM_AUDIENCE_API_URL.format(audience_id=1))
         self.assertEqual(call.get_method(), 'PUT')
         expected = {
-            u'id': u'1',
-            u'accountid': 1,
-            u'pixieslug': u'testslug1',
-            u'archived': False,
-            u'rules': ListMatcher(
-                [{u'id': u'1', u'type': 1, u'value': u'dummy'}, {u'id': u'2', u'type': 2, u'value': u'dummy2'}]),
-            u'pixels': ListMatcher(
-                [{u'url': u'http://www.fb.com/pixelendpoint', u'type': u'facebook'},
-                 {u'url': u'http://www.y.com/pixelendpoint', u'type': u'yahoo'},
-                 {u'url': u'http://www.ob.com/pixelendpoint', u'type': u'outbrain'}]
-            ),
-            u'ttl': 90,
-            u'modifieddt': u'2015-02-23T00:00:00Z'
+            'id': '1',
+            'accountid': 1,
+            'pixieslug': 'testslug1',
+            'archived': False,
+            'rules':
+                [{'id': '1', 'type': 1, 'value': 'dummy'}, {'id': '2', 'type': 2, 'value': 'dummy2'}],
+            'pixels':
+                [{'url': 'http://www.fb.com/pixelendpoint', 'type': 'facebook'},
+                 {'url': 'http://www.y.com/pixelendpoint', 'type': 'yahoo'},
+                 {'url': 'http://www.ob.com/pixelendpoint', 'type': 'outbrain'}],
+            'ttl': 90,
+            'modifieddt': '2015-02-23T00:00:00Z'
         }
         self.assertJSONEqual(call.data, expected)
 
@@ -358,7 +359,7 @@ class UpsertAudienceTest(TestCase):
 
 @override_settings(
     R1_CUSTOM_AUDIENCE_API_URL='https://r1.example.com/api/audience/{audience_id}',
-    R1_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA',
+    R1_API_SIGN_KEY=b'AAAAAAAAAAAAAAAAAAAAAAAA',
     R1_DEMO_MODE=False
 )
 @patch('utils.request_signer._secure_opener.open')
@@ -373,7 +374,7 @@ class DeleteAudienceTest(TestCase):
         mock_urlopen.return_value = response
 
         resp = redirector_helper.delete_audience(1)
-        self.assertDictEqual(resp, {u'audienceid': u'1'})
+        self.assertDictEqual(resp, {'audienceid': '1'})
 
         call = mock_urlopen.call_args[0][0]
 
@@ -394,7 +395,7 @@ class DeleteAudienceTest(TestCase):
 
 @override_settings(
     R1_PIXEL_URL='https://r1.example.com/api/pixel/{account_id}/{slug}/',
-    R1_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA',
+    R1_API_SIGN_KEY=b'AAAAAAAAAAAAAAAAAAAAAAAA',
     R1_DEMO_MODE=False
 )
 @patch('utils.request_signer._secure_opener.open')

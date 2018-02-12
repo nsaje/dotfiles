@@ -8,7 +8,7 @@ import core.publisher_bid_modifiers
 import core.publisher_bid_modifiers.exceptions
 import dash.constants
 
-import serializers
+from . import serializers
 
 
 class PublishersViewList(restapi.views.RESTAPIBaseView):
@@ -67,7 +67,7 @@ class PublishersViewList(restapi.views.RESTAPIBaseView):
             item['modifier'] = modifier['modifier']
             remaining_modifiers_keys -= publisher_source_key
 
-        for publisher_source_key in sorted(remaining_modifiers_keys):
+        for publisher_source_key in sorted(remaining_modifiers_keys, key=lambda x: (x[0], x[1].name)):
             modifier = modifiers_by_publisher_source[publisher_source_key]
             items.append({
                 'name': modifier['publisher'],

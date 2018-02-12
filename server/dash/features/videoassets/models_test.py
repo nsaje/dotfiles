@@ -2,8 +2,8 @@ from django.test import TestCase
 from django.test import override_settings
 from utils.magic_mixer import magic_mixer
 
-import models
-import constants
+from . import models
+from . import constants
 
 TEST_URL = 'http://example.com/{filename}'
 

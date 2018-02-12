@@ -23,7 +23,7 @@ def format_metrics(stats, metrics, group_names, group_key=None, default_group='t
         'id': key,
         'name': value,
         'series_data': data[key],
-    } for key, value in group_names.iteritems()]
+    } for key, value in group_names.items()]
 
 
 def get_object_mapping(objects):

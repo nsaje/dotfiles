@@ -1,1 +1,1 @@
-from model import ContentAdSource
+from .model import ContentAdSource

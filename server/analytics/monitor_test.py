@@ -177,7 +177,7 @@ class TestAuditSpendPatterns(TestCase):
 
         self.assertTrue(alarms)
         self.assertEqual(
-            map(lambda row: row[:3], alarms),
+            [row[:3] for row in alarms],
             [(1, Decimal('209.0164'), 'high'),
              (2, Decimal('307.6923'), 'high'), ]
         )
@@ -195,7 +195,7 @@ class TestAuditSpendPatterns(TestCase):
 
         self.assertTrue(alarms)
         self.assertEqual(
-            map(lambda row: row[:3], alarms),
+            [row[:3] for row in alarms],
             [(1, Decimal('2.2992'), 'low'),
              (2, Decimal('3.3846'), 'low')]
         )

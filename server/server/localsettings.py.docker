@@ -20,11 +20,11 @@ STATS_DB_READ_REPLICAS_POSTGRES = []
 _REDSHIFT_PASSWORD = ''
 _PG01_PASSWORD = ''
 try:
-    _REDSHIFT_PASSWORD = Secret('kms:region=us-east-1:AQECAHi+LUun9zpdDynDViFKm08DnYVERdz5zNZO4BgKN2CjEAAAAG0wawYJKoZIhvcNAQcGoF4wXAIBADBXBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDDlDpTJN8Wk6owdToQIBEIAqTeV9zIxNgeNlrCP4EU1waJ6/VgR46uDjdSSW6OaQPqcKk3q95p3+nmFQ').get()
+    _REDSHIFT_PASSWORD = Secret('kms:region=us-east-1:AQECAHi+LUun9zpdDynDViFKm08DnYVERdz5zNZO4BgKN2CjEAAAAG0wawYJKoZIhvcNAQcGoF4wXAIBADBXBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDDlDpTJN8Wk6owdToQIBEIAqTeV9zIxNgeNlrCP4EU1waJ6/VgR46uDjdSSW6OaQPqcKk3q95p3+nmFQ').get().decode('utf-8')
 except:
     pass
 try:
-    _PG01_PASSWORD = Secret('kms:region=us-east-1:AQECAHi+LUun9zpdDynDViFKm08DnYVERdz5zNZO4BgKN2CjEAAAAHQwcgYJKoZIhvcNAQcGoGUwYwIBADBeBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDN+Qf0GjhUNyUYAMBwIBEIAxik4CbQ5ceWlyBNzT103YK0vZvq/KjSJKVTDp3DTbBuLO4ykRtSlOmOqESX5q7JRtmA==').get()
+    _PG01_PASSWORD = Secret('kms:region=us-east-1:AQECAHi+LUun9zpdDynDViFKm08DnYVERdz5zNZO4BgKN2CjEAAAAHQwcgYJKoZIhvcNAQcGoGUwYwIBADBeBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDN+Qf0GjhUNyUYAMBwIBEIAxik4CbQ5ceWlyBNzT103YK0vZvq/KjSJKVTDp3DTbBuLO4ykRtSlOmOqESX5q7JRtmA==').get().decode('utf-8')
 except:
     pass
 
@@ -39,7 +39,7 @@ _DOCKER_POSTGRES = {
 
 DATABASES = {
     'default': _DOCKER_POSTGRES,
-    'testing_default': _DOCKER_POSTGRES,
+    # 'testing_default': _DOCKER_POSTGRES,
     STATS_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'dev',
@@ -79,7 +79,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST = ''
 EMAIL_PORT = 587
 EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = Secret('').get()
+EMAIL_HOST_PASSWORD = Secret('').get().decode('utf-8')
 
 SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = True
 SEND_NOTIFICATION_MAIL = False
@@ -95,12 +95,12 @@ STATSD_INFLUX_PORT = int(os.environ.get('TELEGRAF_PORT_8135_UDP_PORT', '8135'))
 
 # Saucelabs
 SAUCELABS_USERNAME = ''
-SAUCELABS_ACCESS_KEY = Secret('').get()
+SAUCELABS_ACCESS_KEY = Secret('').get().decode('utf-8')
 
 # Auth
 GOOGLE_OAUTH_ENABLED = False
 GOOGLE_OAUTH_CLIENT_ID = ''
-GOOGLE_OAUTH_CLIENT_SECRET = Secret('').get()
+GOOGLE_OAUTH_CLIENT_SECRET = Secret('').get().decode('utf-8')
 
 # Static files
 BUILD_NUMBER = None
@@ -129,9 +129,9 @@ CREDENTIALS_ENCRYPTION_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').g
 # Pagerduty settings
 PAGER_DUTY_ENABLED = False
 PAGER_DUTY_URL = ''
-PAGER_DUTY_ADOPS_SERVICE_KEY = Secret('').get()
-PAGER_DUTY_SYSOPS_SERVICE_KEY = Secret('').get()
-PAGER_DUTY_ENGINEERS_SERVICE_KEY = Secret('').get()
+PAGER_DUTY_ADOPS_SERVICE_KEY = Secret('').get().decode('utf-8')
+PAGER_DUTY_SYSOPS_SERVICE_KEY = Secret('').get().decode('utf-8')
+PAGER_DUTY_ENGINEERS_SERVICE_KEY = Secret('').get().decode('utf-8')
 
 # Sentry config
 RAVEN_CONFIG = {
@@ -140,7 +140,7 @@ RAVEN_CONFIG = {
 
 # S3 related settings
 S3_BUCKET = ''
-S3_BUCKET_STATS = ''
+S3_BUCKET_STATS = 'nsaje-test'
 S3_BUCKET_DEMO = ''
 S3_BUCKET_THUMBNAILER = ''
 S3_BUCKET_CUSTOM_REPORTS = ''
@@ -278,12 +278,12 @@ LAMBDA_CALLBACK_HOST = ''
 VIDEO_PREVIEW_URL = 'https://s3.amazonaws.com/zemvideos/transcoded/{filename}'
 
 # Slack hooks
-SLACK_INCOMING_HOOK_URL = Secret('').get()
+SLACK_INCOMING_HOOK_URL = Secret('').get().decode('utf-8')
 
 # GA credentials - order newest to oldest
 GA_CREDENTIALS = collections.OrderedDict()
-GA_CREDENTIALS['account-2@example.com'] = Secret('').get()
-GA_CREDENTIALS['account-1@example.com'] = Secret('').get()
+GA_CREDENTIALS['account-2@example.com'] = Secret('').get().decode('utf-8')
+GA_CREDENTIALS['account-1@example.com'] = Secret('').get().decode('utf-8')
 
 # bizwire
 BIZWIRE_API_SIGN_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()
@@ -304,7 +304,7 @@ INFLUX_DATABASES = {
 
 BLUEKAI_API_PARTNER_ID = '2661'
 BLUEKAI_API_USER_KEY = ''
-BLUEKAI_API_SECRET_KEY = Secret('').get()
+BLUEKAI_API_SECRET_KEY = Secret('').get().decode('utf-8')
 
 REST_FRAMEWORK = {
     'UNICODE_JSON': False,

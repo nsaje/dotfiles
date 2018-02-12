@@ -74,7 +74,7 @@ def validate_ad_group_source_campaign_stop(ad_group_source, updates, campaign_se
     from dash.views import helpers
 
     if campaign_settings.landing_mode:
-        for key in updates.keys():
+        for key in list(updates.keys()):
             if key not in LANDING_MODE_PREVENT_UPDATE:
                 continue
             raise utils.exc.ValidationError(errors={key: 'Not allowed'})

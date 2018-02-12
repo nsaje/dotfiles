@@ -47,8 +47,8 @@ class ExportReport(models.Model):
     filtered_agencies = models.ManyToManyField(core.entity.Agency, blank=True)
     filtered_account_types = jsonfield.JSONField(blank=True, default=[])
 
-    def __unicode__(self):
-        return u' '.join(filter(None, (
+    def __str__(self):
+        return ' '.join([_f for _f in (
             constants.ScheduledReportLevel.get_text(self.level),
             '(',
             (self.account.name if self.account else ''),
@@ -58,7 +58,7 @@ class ExportReport(models.Model):
             constants.ScheduledReportGranularity.get_text(self.granularity),
             ('by Source' if self.breakdown_by_source else ''),
             ('by Day' if self.breakdown_by_day else '')
-        )))
+        ) if _f])
 
     @property
     def level(self):

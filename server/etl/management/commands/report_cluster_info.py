@@ -16,13 +16,13 @@ class Command(ExceptionCommand):
         usage = maintenance.cluster_disk_usage()
 
         if interactive:
-            print 'Disk capacity: {} GB'.format(usage.capacity_gbytes)
-            print 'Disk used: {} GB'.format(usage.used_gbytes)
-            print 'Disk free: {:d} GB ({:.2f}%)'.format(
-                usage.free_gbytes, ((usage.free_gbytes * 100.0) / usage.capacity_gbytes))
+            print('Disk capacity: {} GB'.format(usage.capacity_gbytes))
+            print('Disk used: {} GB'.format(usage.used_gbytes))
+            print('Disk free: {:d} GB ({:.2f}%)'.format(
+                usage.free_gbytes, ((usage.free_gbytes * 100.0) / usage.capacity_gbytes)))
 
             print_row('Database', 'Table', 'Used [MB]', 'Used [% of total]', 'Nr. rows', 'Unsorted [MB]')
-            print 100 * "-"
+            print(100 * "-")
 
         else:
             influx.gauge('etl.cluster.disk_capacity', usage.capacity_gbytes)
@@ -40,9 +40,9 @@ class Command(ExceptionCommand):
 
 
 def print_row(*values):
-    print "{: <16}".format(values[0]),
-    print "{: <30}".format(values[1]),
-    print "{: <12}".format(values[2]),
-    print "{: <16}".format(values[3]),
-    print "{: <10}".format(values[4]),
-    print "{: <10}".format(values[5])
+    print("{: <16}".format(values[0]), end=' ')
+    print("{: <30}".format(values[1]), end=' ')
+    print("{: <12}".format(values[2]), end=' ')
+    print("{: <16}".format(values[3]), end=' ')
+    print("{: <10}".format(values[4]), end=' ')
+    print("{: <10}".format(values[5]))

@@ -1,6 +1,6 @@
 from mock import patch
 import datetime
-import StringIO
+import io
 from decimal import Decimal
 
 from django.test import TestCase
@@ -857,7 +857,7 @@ class BudgetsTestCase(TestCase):
                 end_date=TODAY + datetime.timedelta(8),
                 campaign_id=2,
             )
-        self.assertEqual(err.exception.error_dict['amount'][0][0],
+        self.assertEqual(err.exception.error_dict['amount'][0].args[0],
                          'Budget exceeds the total credit amount by $1.00.')
 
         create_budget(
@@ -1687,8 +1687,8 @@ class BudgetReserveTestCase(TestCase):
                 end_date=TODAY - datetime.timedelta(1),
                 campaign_id=2,
             )
-        self.assertEqual(err.exception.error_dict['amount'][0][0],
-                         u'Budget exceeds the total credit amount by $500.00.')
+        self.assertEqual(err.exception.error_dict['amount'][0].args[0],
+                         'Budget exceeds the total credit amount by $500.00.')
         self.assertEqual(len(c.budgets.all()), 1)
 
         b.freed_cc = 200 * converters.DOLAR_TO_CC
@@ -1702,8 +1702,8 @@ class BudgetReserveTestCase(TestCase):
                 end_date=TODAY - datetime.timedelta(1),
                 campaign_id=2,
             )
-        self.assertEqual(err.exception.error_dict['amount'][0][0],
-                         u'Budget exceeds the total credit amount by $1.00.')
+        self.assertEqual(err.exception.error_dict['amount'][0].args[0],
+                         'Budget exceeds the total credit amount by $1.00.')
         self.assertEqual(len(c.budgets.all()), 1)
 
         create_budget(
@@ -1746,7 +1746,7 @@ class BCMCommandTestCase(TestCase):
         )
 
     def _call_command(self, *args, **kwargs):
-        output = StringIO.StringIO()
+        output = io.StringIO()
         if 'stdout' not in kwargs:
             kwargs['stdout'] = output
         call_command(*args, **kwargs)
@@ -1828,7 +1828,7 @@ class BCMCommandTestCase(TestCase):
         self.assertEqual(self.b2.freed_cc, 4321)
 
     def test_update_budget_amount_with_too_large_value(self):
-        err = StringIO.StringIO()
+        err = io.StringIO()
         with self.assertRaises(SystemExit):
             self._call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--amount', '800',
                                '--no-confirm', stderr=err)
@@ -1838,7 +1838,7 @@ class BCMCommandTestCase(TestCase):
         self.assertEqual(self.b1.amount, 200)
 
     def test_update_budget_start_date_with_too_early_date(self):
-        err = StringIO.StringIO()
+        err = io.StringIO()
         with self.assertRaises(SystemExit):
             self._call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--start_date',
                                str(TODAY - datetime.timedelta(2)), '--no-confirm', stderr=err)
@@ -1847,7 +1847,7 @@ class BCMCommandTestCase(TestCase):
         self.assertEqual(self.b1.start_date, TODAY - datetime.timedelta(1))
 
     def test_update_budget_end_date_with_invalid_date(self):
-        err = StringIO.StringIO()
+        err = io.StringIO()
         with self.assertRaises(SystemExit):
             self._call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--end_date',
                                str(TODAY - datetime.timedelta(100)), '--no-confirm', stderr=err)
@@ -1855,13 +1855,13 @@ class BCMCommandTestCase(TestCase):
         self.b1.refresh_from_db()
 
     def test_update_budget_with_nonexisting_fields(self):
-        err = StringIO.StringIO()
+        err = io.StringIO()
         with self.assertRaises(SystemExit):
             self._call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--flat_fee_cc', '1500',
                                '--no-confirm', stderr=err)
         self.assertEqual(err.getvalue(), 'Wrong fields.\n')
 
-        err = StringIO.StringIO()
+        err = io.StringIO()
         with self.assertRaises(SystemExit):
             self._call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--license_fee', '0.20',
                                '--no-confirm', stderr=err)
@@ -1888,7 +1888,7 @@ class BCMCommandTestCase(TestCase):
         self.assertEqual(self.c.end_date, date)
 
     def test_update_credit_license_fee(self):
-        msg = StringIO.StringIO()
+        msg = io.StringIO()
         self._call_command('bcm', 'update', 'credits', str(self.c.pk), '--license_fee', '0.3',
                            '--no-confirm', stdout=msg)
         self.c.refresh_from_db()
@@ -1902,7 +1902,7 @@ class BCMCommandTestCase(TestCase):
         self.assertEqual(self.c.flat_fee_cc, 1234)
 
     def test_update_credit_with_nonexisting_fields(self):
-        err = StringIO.StringIO()
+        err = io.StringIO()
         with self.assertRaises(SystemExit):
             self._call_command('bcm', 'update', 'credits', str(self.c.pk), '--freed_cc', '1234',
                                '--no-confirm', stderr=err)
@@ -1910,7 +1910,7 @@ class BCMCommandTestCase(TestCase):
         self.assertEqual(err.getvalue(), 'Wrong fields.\n')
 
     def test_update_credit_with_too_little_amount(self):
-        err = StringIO.StringIO()
+        err = io.StringIO()
         with self.assertRaises(SystemExit):
             self._call_command('bcm', 'update', 'credits', str(self.c.pk), '--amount', '50',
                                '--no-confirm', stderr=err)
@@ -1919,7 +1919,7 @@ class BCMCommandTestCase(TestCase):
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
 
     def test_update_credit_with_too_large_flat_fee(self):
-        err = StringIO.StringIO()
+        err = io.StringIO()
         with self.assertRaises(SystemExit):
             self._call_command('bcm', 'update', 'credits', str(self.c.pk),
                                '--flat_fee_cc', '15000000', '--no-confirm', stderr=err)
@@ -1927,7 +1927,7 @@ class BCMCommandTestCase(TestCase):
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
 
     def test_update_credit_with_too_early_end_date(self):
-        err = StringIO.StringIO()
+        err = io.StringIO()
         date = TODAY - datetime.timedelta(100)
         with self.assertRaises(SystemExit):
             self._call_command('bcm', 'update', 'credits', str(self.c.pk), '--end_date', str(date),
@@ -1935,7 +1935,7 @@ class BCMCommandTestCase(TestCase):
         self.c.refresh_from_db()
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
 
-        err = StringIO.StringIO()
+        err = io.StringIO()
         date = TODAY
         with self.assertRaises(SystemExit):
             self._call_command('bcm', 'update', 'credits', str(self.c.pk), '--end_date', str(date),
@@ -1944,7 +1944,7 @@ class BCMCommandTestCase(TestCase):
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
 
     def test_update_credit_with_late_start_date(self):
-        err = StringIO.StringIO()
+        err = io.StringIO()
         date = TODAY
         with self.assertRaises(SystemExit):
             self._call_command('bcm', 'update', 'credits', str(self.c.pk),
@@ -1953,14 +1953,14 @@ class BCMCommandTestCase(TestCase):
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
 
     def test_release_credit(self):
-        err = StringIO.StringIO()
+        err = io.StringIO()
         with self.assertRaises(SystemExit):
             self._call_command('bcm', 'release', 'credits', str(self.c.pk), '--no-confirm',
                                stderr=err)
         self.assertEqual(err.getvalue(), 'Cannot manage credits with action release\n')
 
     def test_release_active_budget(self):
-        err = StringIO.StringIO()
+        err = io.StringIO()
         with self.assertRaises(SystemExit):
             self._call_command('bcm', 'release', 'budgets', str(self.b1.pk), '--no-confirm',
                                stderr=err)

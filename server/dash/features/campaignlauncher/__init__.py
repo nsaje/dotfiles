@@ -1,3 +1,3 @@
 # noqa
 
-from service import launch
+from .service import launch

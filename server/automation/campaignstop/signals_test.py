@@ -8,7 +8,7 @@ import core.entity
 import core.entity.settings
 import dash.constants
 
-import signals
+from . import signals
 
 from utils.magic_mixer import magic_mixer
 from utils import dates_helper

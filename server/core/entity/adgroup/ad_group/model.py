@@ -22,7 +22,7 @@ import core.history
 import core.source
 import core.entity
 
-import bcm_mixin
+from . import bcm_mixin
 
 
 class AdGroupManager(core.common.QuerySetManager):
@@ -127,7 +127,7 @@ class AdGroup(models.Model, bcm_mixin.AdGroupBCMMixin):
 
     objects = AdGroupManager()
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def get_absolute_url(self):
@@ -246,7 +246,7 @@ class AdGroup(models.Model, bcm_mixin.AdGroupBCMMixin):
             ad_group_name = self.name
         else:
             ad_group_name = new_adgroup_name
-        return u'ONE: {} / {} / {} / {}'.format(
+        return 'ONE: {} / {} / {} / {}'.format(
             core.entity.helpers.shorten_name(account_name),
             core.entity.helpers.shorten_name(campaign_name),
             core.entity.helpers.shorten_name(ad_group_name),
@@ -303,10 +303,10 @@ class AdGroup(models.Model, bcm_mixin.AdGroupBCMMixin):
         return False
 
     def get_default_blacklist_name(self):
-        return u"Default blacklist for ad group {}({})".format(self.name, self.id)
+        return "Default blacklist for ad group {}({})".format(self.name, self.id)
 
     def get_default_whitelist_name(self):
-        return u"Default whitelist for ad group {}({})".format(self.name, self.id)
+        return "Default whitelist for ad group {}({})".format(self.name, self.id)
 
     def get_publisher_level(self):
         return constants.PublisherBlacklistLevel.ADGROUP
@@ -325,13 +325,13 @@ class AdGroup(models.Model, bcm_mixin.AdGroupBCMMixin):
         self.write_history(changes_text, user=request.user, action_type=constants.HistoryActionType.CREATE)
 
     def write_history_cloned_to(self, request, destination_ad_group):
-        changes_text = u'This Ad group was cloned to {}'.format(destination_ad_group.get_name_with_id())
+        changes_text = 'This Ad group was cloned to {}'.format(destination_ad_group.get_name_with_id())
         self.write_history(changes_text, user=request.user, action_type=constants.HistoryActionType.CREATE)
 
     def write_history_cloned_from(self, request, source_ad_group):
         source_names = list(self.adgroupsource_set.all().values_list('source__name', flat=True))
         if source_names:
-            changes_text = u'Cloned settings and content ads from {} and automatically created campaigns for {} sources ({})'.format(
+            changes_text = 'Cloned settings and content ads from {} and automatically created campaigns for {} sources ({})'.format(
                 source_ad_group.get_name_with_id(),
                 len(source_names), ', '.join(source_names))
         else:
@@ -340,12 +340,12 @@ class AdGroup(models.Model, bcm_mixin.AdGroupBCMMixin):
         self.write_history(changes_text, user=request.user, action_type=constants.HistoryActionType.CREATE)
 
     def write_history_content_ads_cloned(self, request, content_ads, batch, source_ad_group, overriden_state):
-        state_text = u'Cloned content ads state was left intact.'
+        state_text = 'Cloned content ads state was left intact.'
         if overriden_state is not None:
-            state_text = u'State of all cloned content ads was set to "{}".'.format(
+            state_text = 'State of all cloned content ads was set to "{}".'.format(
                 constants.ContentAdSourceState.get_text(overriden_state))
 
-        changes_text = u'Cloned {} content ad{} from "{}" as batch "{}". {}'.format(
+        changes_text = 'Cloned {} content ad{} from "{}" as batch "{}". {}'.format(
             len(content_ads),
             pluralize(len(content_ads)),
             source_ad_group.get_name_with_id(),
@@ -387,7 +387,7 @@ class AdGroup(models.Model, bcm_mixin.AdGroupBCMMixin):
         return custom_flags
 
     def get_name_with_id(self):
-        return u"{} ({})".format(self.name, self.id)
+        return "{} ({})".format(self.name, self.id)
 
     def save(self, request, *args, **kwargs):
         self.modified_by = request.user if request else None

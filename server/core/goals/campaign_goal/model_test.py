@@ -6,7 +6,7 @@ import dash.history_helpers
 import dash.constants
 from utils.magic_mixer import magic_mixer
 
-from model import CampaignGoal
+from .model import CampaignGoal
 from ..campaign_goal_value import CampaignGoalValue
 
 

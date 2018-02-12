@@ -36,10 +36,10 @@ ALL_AGGREGATES = [
 class BreakdownBaseTest(TestCase):
     def test_get_breakdown(self):
         model = models.BreakdownsBase()
-        self.assertEquals(model.get_breakdown(['publisher_id']),
-                          model.select_columns(['publisher', 'source_id']))
-        self.assertEquals(model.get_breakdown(['account_id', 'publisher_id', 'publisher']),
-                          model.select_columns(['account_id', 'publisher', 'source_id']))
+        self.assertEqual(model.get_breakdown(['publisher_id']),
+                         model.select_columns(['publisher', 'source_id']))
+        self.assertEqual(model.get_breakdown(['account_id', 'publisher_id', 'publisher']),
+                         model.select_columns(['account_id', 'publisher', 'source_id']))
 
 
 class MVMasterTest(TestCase, backtosql.TestSQLMixin):
@@ -47,7 +47,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
         self.model = models.MVMaster()
 
     def test_get_breakdown(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.get_breakdown(['account_id', 'campaign_id']),
             [self.model.get_column('account_id'), self.model.get_column('campaign_id')]
         )
@@ -57,7 +57,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             self.model.get_breakdown(['bla', 'campaign_id'])
 
     def test_get_aggregates(self):
-        self.assertItemsEqual([x.alias for x in self.model.get_aggregates([], 'mv_master')],
+        self.assertCountEqual([x.alias for x in self.model.get_aggregates([], 'mv_master')],
                               ALL_AGGREGATES)
 
     def test_get_constraints(self):
@@ -138,7 +138,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             ''')
         self.assertEqual(context['constraints'].get_params(), [datetime.date(2016, 10, 2)])
 
-        self.assertItemsEqual(context['aggregates'], self.model.select_columns([
+        self.assertCountEqual(context['aggregates'], self.model.select_columns([
             'yesterday_cost', 'e_yesterday_cost', 'yesterday_et_cost', 'yesterday_at_cost', 'yesterday_etfm_cost']))
         self.assertEqual(context['view'], 'mv_account')
         self.assertSQLEquals(context['orders'][0].only_alias(), 'yesterday_cost DESC NULLS LAST')
@@ -154,20 +154,20 @@ class MVMasterPublishersTest(TestCase, backtosql.TestSQLMixin):
         self.model = models.MVMaster()
 
     def test_get_breakdown(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.get_breakdown(['publisher_id']),
             self.model.select_columns(['publisher', 'source_id'])
         )
 
-        self.assertEquals(
+        self.assertEqual(
             self.model.get_breakdown(['publisher_id', 'dma']),
             self.model.select_columns(['publisher', 'source_id', 'dma'])
         )
 
     def test_get_aggregates(self):
-        self.assertItemsEqual([x.alias for x in self.model.get_aggregates(['publisher_id'], 'mv_master_pubs')],
+        self.assertCountEqual([x.alias for x in self.model.get_aggregates(['publisher_id'], 'mv_master_pubs')],
                               ALL_AGGREGATES + ['external_id', 'publisher_id'])
-        self.assertItemsEqual([x.alias for x in self.model.get_aggregates(['publisher_id'], 'mv_master')],
+        self.assertCountEqual([x.alias for x in self.model.get_aggregates(['publisher_id'], 'mv_master')],
                               ALL_AGGREGATES + ['publisher_id'])
 
     def test_get_constraints(self):
@@ -227,17 +227,17 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
         self.model = models.MVTouchpointConversions()
 
     def test_get_breakdown(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.get_breakdown(['publisher_id', 'slug', 'window']),
             self.model.select_columns(['publisher', 'source_id', 'slug', 'window'])
         )
 
     def test_get_aggregates(self):
-        self.assertItemsEqual(
+        self.assertCountEqual(
             [x.alias for x in self.model.get_aggregates(['account_id'], 'mv_account_touch')],
             ['count', 'conversion_value'])
 
-        self.assertItemsEqual(
+        self.assertCountEqual(
             [x.alias for x in self.model.get_aggregates(['account_id', 'publisher_id'], 'mv_touchpointconversions')],
             ['publisher_id', 'count', 'conversion_value'])
 
@@ -248,17 +248,17 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
         self.model = models.MVConversions()
 
     def test_get_breakdown(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.get_breakdown(['publisher_id', 'slug']),
             self.model.select_columns(['publisher', 'source_id', 'slug'])
         )
 
     def test_get_aggregates(self):
-        self.assertItemsEqual(
+        self.assertCountEqual(
             [x.alias for x in self.model.get_aggregates(['account_id'], 'mv_account_conv')],
             ['count'])
 
-        self.assertItemsEqual(
+        self.assertCountEqual(
             [x.alias for x in self.model.get_aggregates(['account_id', 'publisher_id'], 'mv_conversions')],
             ['publisher_id', 'count'])
 
@@ -279,7 +279,7 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
         touchpoint_columns = m.select_columns(group=models.TOUCHPOINTS_AGGREGATES)
         after_join_columns = m.select_columns(group=models.AFTER_JOIN_AGGREGATES)
 
-        self.assertItemsEqual([x.column_as_alias('a') for x in conversion_columns], [
+        self.assertCountEqual([x.column_as_alias('a') for x in conversion_columns], [
             backtosql.SQLMatcher(
                 "SUM(CASE WHEN a.slug='ga__2' THEN conversion_count ELSE 0 END) conversion_goal_2"),
             backtosql.SQLMatcher(
@@ -422,7 +422,7 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
             'roas_pixel_1_2160', 'et_roas_pixel_1_2160', 'etfm_roas_pixel_1_2160',
         ]))
 
-        self.assertEquals(context['orders'][0].alias, 'pixel_1_24')
+        self.assertEqual(context['orders'][0].alias, 'pixel_1_24')
 
 
 class MVJointMasterAfterJoinAggregatesTest(TestCase, backtosql.TestSQLMixin):
@@ -475,7 +475,7 @@ class MVJointMasterAfterJoinAggregatesTest(TestCase, backtosql.TestSQLMixin):
         self.assertListEqual(context['after_join_aggregates'], [m.get_column(order_field),
                                                                 m.get_column('etfm_' + order_field)])
 
-        self.assertEquals(context['orders'][0].alias, order_field)
+        self.assertEqual(context['orders'][0].alias, order_field)
 
 
 class MVJointMasterPublishersTest(TestCase, backtosql.TestSQLMixin):
@@ -484,9 +484,9 @@ class MVJointMasterPublishersTest(TestCase, backtosql.TestSQLMixin):
         self.model = models.MVJointMaster()
 
     def test_aggregates(self):
-        self.assertItemsEqual([x.alias for x in self.model.get_aggregates(['publisher_id'], 'mv_master_pubs')],
+        self.assertCountEqual([x.alias for x in self.model.get_aggregates(['publisher_id'], 'mv_master_pubs')],
                               ALL_AGGREGATES + ['external_id', 'publisher_id'])
-        self.assertItemsEqual([x.alias for x in self.model.get_aggregates(['publisher_id'], 'mv_master')],
+        self.assertCountEqual([x.alias for x in self.model.get_aggregates(['publisher_id'], 'mv_master')],
                               ALL_AGGREGATES + ['publisher_id'])
 
 
@@ -496,7 +496,7 @@ class MVJointMasterTest(TestCase, backtosql.TestSQLMixin):
         self.model = models.MVJointMaster()
 
     def test_get_aggregates(self):
-        self.assertItemsEqual([x.alias for x in self.model.get_aggregates([], 'mv_master')],
+        self.assertCountEqual([x.alias for x in self.model.get_aggregates([], 'mv_master')],
                               ALL_AGGREGATES)
 
     @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))

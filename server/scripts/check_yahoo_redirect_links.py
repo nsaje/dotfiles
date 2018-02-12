@@ -141,11 +141,11 @@ def _get_ad_group_id(campaign_id):
 y_cass = models.ContentAdSource.objects.filter(source_id=4, content_ad__redirect_id__isnull=False,
                                                source_content_ad_id__isnull=False)
 
-print 'getting ad group ids'
+print('getting ad group ids')
 ad_group_ids = set()
 for i, y_cas in enumerate(y_cass):
     if i % 1000 == 0:
-        print i
+        print(i)
     ad_group_ids.add(y_cas.content_ad.ad_group_id)
 
 to_update = []
@@ -153,11 +153,11 @@ for ad_group_id in ad_group_ids:
     ad_group_source = models.AdGroupSource.objects.get(source_id=4, ad_group_id=ad_group_id)
     y_ad_group_id = _get_ad_group_id(ad_group_source.source_campaign_key)
     ads = _get_promoted_links(y_ad_group_id)
-    print 'AD GROUP %s, NUM ADS: %s' % (ad_group_id, len(ads))
+    print('AD GROUP %s, NUM ADS: %s' % (ad_group_id, len(ads)))
 
     for y_cas in y_cass.filter(content_ad__ad_group_id=ad_group_id):
         for ad in ads:
             if int(ad['id']) == int(y_cas.source_content_ad_id):
                 if '//r1.zemanta.com' not in ad['landingUrl']:
-                    print y_cas.content_ad_id, ad['landingUrl']
+                    print(y_cas.content_ad_id, ad['landingUrl'])
                     to_update.append(y_cas.content_ad_id)

@@ -6,7 +6,7 @@ HTML_RE = re.compile(r".*<.+>.*")
 
 
 def validate_plain_text(value):
-    if not isinstance(value, basestring):
+    if not isinstance(value, str):
         return
     if HTML_RE.match(value) is not None:
         raise ValidationError('HTML tags are not allowed')

@@ -1,7 +1,7 @@
 from decimal import Decimal
 from django.test import TestCase
 
-import calculations
+from . import calculations
 
 
 class Calculations(TestCase):

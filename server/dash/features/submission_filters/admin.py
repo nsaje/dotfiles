@@ -55,16 +55,16 @@ class SubmissionFilterAdmin(admin.ModelAdmin):
         return qs.select_related('source', 'content_ad', 'ad_group', 'campaign', 'account', 'agency')
 
     def _content_ad(self, obj):
-        return obj.content_ad and u'{}: {}'.format(obj.content_ad_id, obj.content_ad.title) or u''
+        return obj.content_ad and '{}: {}'.format(obj.content_ad_id, obj.content_ad.title) or ''
 
     def _ad_group(self, obj):
-        return obj.ad_group and u'{}: {}'.format(obj.ad_group_id, obj.ad_group.name) or u''
+        return obj.ad_group and '{}: {}'.format(obj.ad_group_id, obj.ad_group.name) or ''
 
     def _campaign(self, obj):
-        return obj.campaign and u'{}: {}'.format(obj.campaign_id, obj.campaign.name) or u''
+        return obj.campaign and '{}: {}'.format(obj.campaign_id, obj.campaign.name) or ''
 
     def _account(self, obj):
-        return obj.account and u'{}: {}'.format(obj.account_id, obj.account.name) or u''
+        return obj.account and '{}: {}'.format(obj.account_id, obj.account.name) or ''
 
     def _agency(self, obj):
-        return obj.agency and u'{}: {}'.format(obj.agency_id, obj.agency.name) or u''
+        return obj.agency and '{}: {}'.format(obj.agency_id, obj.agency.name) or ''

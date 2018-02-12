@@ -36,10 +36,10 @@ class AutopilotBudgetsTestCase(test.TestCase):
             self.assertEqual(
                 autopilot_budgets._uniformly_redistribute_remaining_budget(
                     sources, Decimal(test_case[1]),
-                    {k: Decimal(v) for k, v in test_case[0].items()},
+                    {k: Decimal(v) for k, v in list(test_case[0].items())},
                     {'fee': Decimal('0.15'), 'margin': Decimal('0.3')}
                 ),
-                {k: Decimal(v) for k, v in test_case[2].items()}
+                {k: Decimal(v) for k, v in list(test_case[2].items())}
             )
 
     @patch('automation.autopilot_settings.AUTOPILOT_MIN_SPEND_PERC', 0.2)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import migrations
 from dash.constants import EmailTemplateType
@@ -13,7 +13,7 @@ def load_data(apps, schema_editor):
     except EmailTemplate.DoesNotExist:
         template = EmailTemplate(subject='Demo is running', template_type=EmailTemplateType.DEMO_RUNNING)
 
-    template.body = u'''Hi,
+    template.body = '''Hi,
 
 Demo is running.
 Log in to {url}

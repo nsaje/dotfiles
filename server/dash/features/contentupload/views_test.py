@@ -34,10 +34,10 @@ class UploadCsvTestCase(TestCase):
         ad_group_id = 1
         mock_file = SimpleUploadedFile(
             'test_upload.csv',
-            'URL,Title,Image URL,Label,Image Crop,Primary impression tracker url,Secondary impression tracker url,Brand name,Display URL,'
-            'Call to Action,Description\nhttp://zemanta.com/test-content-ad,test content ad,'
-            'http://zemanta.com/test-image.jpg,test,entropy,https://t.zemanta.com/px1.png,'
-            'https://t.zemanta.com/px2.png,Zemanta,zemanta.com,Click for more,description'
+            b'URL,Title,Image URL,Label,Image Crop,Primary impression tracker url,Secondary impression tracker url,Brand name,Display URL,'
+            b'Call to Action,Description\nhttp://zemanta.com/test-content-ad,test content ad,'
+            b'http://zemanta.com/test-image.jpg,test,entropy,https://t.zemanta.com/px1.png,'
+            b'https://t.zemanta.com/px2.png,Zemanta,zemanta.com,Click for more,description'
         )
         response = _get_client().post(
             reverse('upload_csv', kwargs={}),
@@ -92,10 +92,10 @@ class UploadCsvTestCase(TestCase):
 
         mock_file = SimpleUploadedFile(
             'test_upload.csv',
-            'URL,Title,Image URL,Label,Image Crop,Primary impression tracker url,'
-            'Secondary impression tracker url,Description,Display URL,brand name\nhttp://example.com/test-content-ad,'
-            'test content ad,http://zemanta.com/test-image.jpg,test,entropy,https://t.zemanta.com/px1.png,'
-            'https://t.zemanta.com/px2.png,description,example.com,Example'
+            b'URL,Title,Image URL,Label,Image Crop,Primary impression tracker url,'
+            b'Secondary impression tracker url,Description,Display URL,brand name\nhttp://example.com/test-content-ad,'
+            b'test content ad,http://zemanta.com/test-image.jpg,test,entropy,https://t.zemanta.com/px1.png,'
+            b'https://t.zemanta.com/px2.png,description,example.com,Example'
         )
         response = _get_client().post(
             reverse('upload_csv', kwargs={}),
@@ -146,10 +146,10 @@ class UploadCsvTestCase(TestCase):
         ad_group_id = 1
         mock_file = SimpleUploadedFile(
             'test_upload.csv',
-            'URL,Title,Image URL,Label,Image Crop,Primary impression tracker url,Secondary impression tracker url\n'
-            'ahttp://zemanta.com/test-content-ad,test content ad,ahttp://zemanta.com/test-image.jpg,'
-            'testtoolonglabelforthecontentadcandidatelabelfield,entropy,'
-            'http://t.zemanta.com/px1.png,https://t.zemanta.com/px2.png'
+            b'URL,Title,Image URL,Label,Image Crop,Primary impression tracker url,Secondary impression tracker url\n'
+            b'ahttp://zemanta.com/test-content-ad,test content ad,ahttp://zemanta.com/test-image.jpg,'
+            b'testtoolonglabelforthecontentadcandidatelabelfield,entropy,'
+            b'http://t.zemanta.com/px1.png,https://t.zemanta.com/px2.png'
         )
         response = _get_client().post(
             reverse('upload_csv', kwargs={}),
@@ -369,7 +369,6 @@ class UploadSaveTestCase(TestCase):
             content_type='application/json',
             follow=True,
         )
-        self.assertEqual(400, response.status_code)
         self.assertEqual({
             'success': False,
             'data': {
@@ -379,6 +378,7 @@ class UploadSaveTestCase(TestCase):
                 'message': 'Save not permitted - candidate errors exist'
             }
         }, json.loads(response.content))
+        self.assertEqual(400, response.status_code)
 
     @patch('utils.redirector_helper.insert_redirects')
     def test_redirector_error(self, mock_insert_batch):
@@ -468,12 +468,12 @@ class CandidatesDownloadTestCase(TestCase):
             follow=True,
         )
         self.assertEqual(200, response.status_code)
-        self.assertEqual(
+        self.assertEqual((
             '"URL","Title","Image URL","Display URL","Brand name","Description","Call to action",'
             '"Label","Image crop","Primary impression tracker URL","Secondary impression'
             ' tracker URL"\r\n"http://zemanta.com/blog","Zemanta blog čšž",'
             '"http://zemanta.com/img.jpg","zemanta.com","Zemanta","Zemanta blog","Read more",'
-            '"content ad 1","entropy","",""\r\n', response.content)
+            '"content ad 1","entropy","",""\r\n').encode('utf-8'), response.content)
         self.assertEqual('attachment; filename="batch 1.csv"', response.get('Content-Disposition'))
 
     def test_custom_batch_name(self):
@@ -663,34 +663,34 @@ class CandidateTest(TestCase):
 
         response = json.loads(response.content)
         self.assertEqual({
-            u'data': {
-                u'candidates': [{
-                    u'id': 1,
-                    u'label': u'content ad 1',
-                    u'url': u'http://zemanta.com/blog',
-                    u'title': u'Zemanta blog čšž',
-                    u'image_url': u'http://zemanta.com/img.jpg',
-                    u'image_crop': u'entropy',
-                    u'display_url': u'zemanta.com',
-                    u'brand_name': u'Zemanta',
-                    u'description': u'Zemanta blog',
-                    u'call_to_action': u'Read more',
-                    u'errors': {
-                        u'__all__': [u'Content ad still processing'],
+            'data': {
+                'candidates': [{
+                    'id': 1,
+                    'label': 'content ad 1',
+                    'url': 'http://zemanta.com/blog',
+                    'title': 'Zemanta blog čšž',
+                    'image_url': 'http://zemanta.com/img.jpg',
+                    'image_crop': 'entropy',
+                    'display_url': 'zemanta.com',
+                    'brand_name': 'Zemanta',
+                    'description': 'Zemanta blog',
+                    'call_to_action': 'Read more',
+                    'errors': {
+                        '__all__': ['Content ad still processing'],
                     },
-                    u'hosted_image_url': None,
-                    u'image_height': None,
-                    u'image_width': None,
-                    u'image_id': None,
-                    u'image_hash': None,
-                    u'image_status': constants.AsyncUploadJobStatus.PENDING_START,
-                    u'url_status': constants.AsyncUploadJobStatus.PENDING_START,
-                    u'primary_tracker_url': None,
-                    u'secondary_tracker_url': None,
-                    u'video_asset_id': None,
+                    'hosted_image_url': None,
+                    'image_height': None,
+                    'image_width': None,
+                    'image_id': None,
+                    'image_hash': None,
+                    'image_status': constants.AsyncUploadJobStatus.PENDING_START,
+                    'url_status': constants.AsyncUploadJobStatus.PENDING_START,
+                    'primary_tracker_url': None,
+                    'secondary_tracker_url': None,
+                    'video_asset_id': None,
                 }]
             },
-            u'success': True,
+            'success': True,
         }, response)
 
     def test_add_candidate(self):
@@ -865,23 +865,23 @@ class CandidateUpdateTest(TestCase):
 
         response = json.loads(response.content)
         expected = {
-            u'data': {
-                u'updated_fields': {
-                    u'brand_name': u'New brand name',
-                    u'call_to_action': u'New cta',
-                    u'description': u'New description',
-                    u'display_url': u'newurl.com',
-                    u'image_crop': u'center',
-                    u'image_url': u'http://zemanta.com/img.jpg',
-                    u'label': u'new label',
-                    u'primary_tracker_url': u'',
-                    u'secondary_tracker_url': u'',
-                    u'title': u'New title',
-                    u'url': u'http://zemanta.com/blog',
+            'data': {
+                'updated_fields': {
+                    'brand_name': 'New brand name',
+                    'call_to_action': 'New cta',
+                    'description': 'New description',
+                    'display_url': 'newurl.com',
+                    'image_crop': 'center',
+                    'image_url': 'http://zemanta.com/img.jpg',
+                    'label': 'new label',
+                    'primary_tracker_url': '',
+                    'secondary_tracker_url': '',
+                    'title': 'New title',
+                    'url': 'http://zemanta.com/blog',
                 },
-                u'errors': {},
+                'errors': {},
             },
-            u'success': True}
+            'success': True}
         self.assertEqual(expected, response)
 
     def test_non_existing_candidate(self):

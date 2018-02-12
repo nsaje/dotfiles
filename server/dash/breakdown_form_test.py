@@ -70,12 +70,12 @@ class BreakdownFormTest(TestCase):
             'end_date': '2016-02-03',
             'limit': 10,
             'offset': 20,
-            'parents': [None, u'mekani ć', 1],
+            'parents': [None, 'mekani ć', 1],
         }
 
         form = forms.BreakdownForm(self.user, '/account', copy.copy(request_body))
         self.assertTrue(form.is_valid())
-        self.assertEqual([u'mekani ć', '1'], form.cleaned_data['parents'])
+        self.assertEqual(['mekani ć', '1'], form.cleaned_data['parents'])
 
     def test_required_fields(self):
         form = forms.BreakdownForm(self.user, '', {})

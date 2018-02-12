@@ -3,7 +3,7 @@ import logging
 from functools import partial
 import json
 import re
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 import influx
 from ratelimit.mixins import RatelimitMixin
@@ -156,7 +156,7 @@ class PromotionExport(RatelimitMixin, BizwireView):
         article_id = request.GET.get('article_id')
         article_url = request.GET.get('article_url')
         if article_url:
-            m = re.search('news/home/([^/]+)/', urllib2.unquote(article_url))
+            m = re.search('news/home/([^/]+)/', urllib.parse.unquote(article_url))
             if m:
                 article_id = m.groups()[0]
 

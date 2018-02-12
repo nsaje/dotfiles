@@ -5,9 +5,9 @@ import dash.constants
 import core.entity.campaign
 import core.entity.adgroup
 
-from campaignstop.campaignstop_state import *  # noqa
-from campaignstop.real_time_data_history import *  # noqa
-from campaignstop.real_time_campaign_stop_log import *  # noqa
+from .campaignstop.campaignstop_state import *  # noqa
+from .campaignstop.real_time_data_history import *  # noqa
+from .campaignstop.real_time_campaign_stop_log import *  # noqa
 
 
 class CampaignBudgetDepletionNotification(models.Model):
@@ -47,7 +47,7 @@ class CampaignBudgetDepletionNotification(models.Model):
     )
     stopped = models.BooleanField(default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0} {1}'.format(self.account_manager_id, self.campaign_id)
 
 
@@ -106,7 +106,7 @@ class AutopilotAdGroupSourceBidCpcLog(models.Model):
     )
     comments = models.CharField(max_length=1024, null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0} {1} {2}'.format(
             self.campaign,
             self.ad_group,
@@ -198,7 +198,7 @@ class AutopilotLog(models.Model):
     is_autopilot_job_run = models.NullBooleanField(default=False, null=True, blank=True)
     is_rtb_as_one = models.NullBooleanField(default=False, null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0} {1}'.format(
             self.ad_group,
             self.ad_group_source)

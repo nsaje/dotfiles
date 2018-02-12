@@ -10,7 +10,7 @@ from zemauth.models import User
 import dash.models
 from dash.features import contentupload
 from dash import constants
-import views
+from . import views
 
 
 class ContentAdsTest(RESTAPITest):

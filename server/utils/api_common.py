@@ -7,7 +7,7 @@ from django.conf import settings
 
 from utils import influx_helper
 from utils import json_helper
-import exc
+from . import exc
 import influx
 import time
 
@@ -93,7 +93,7 @@ class BaseApiView(View):
         error_data = {}
         if type(exception) in exc.custom_errors:
             error_data["error_code"] = exception.error_code
-            error_data["message"] = exception.pretty_message or exception.message
+            error_data["message"] = exception.pretty_message or exception.args[0]
 
             if isinstance(exception, exc.ValidationError):
                 error_data['errors'] = exception.errors

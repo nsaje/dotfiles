@@ -28,7 +28,7 @@ class JsonHelperTestCase(unittest.TestCase):
             convert_datetimes_tz=self.timezone
         )
 
-        expected = '{"test": "something", "id": 100, "datetime": "2014-11-01T14:00:00"}'
+        expected = '{"id": 100, "test": "something", "datetime": "2014-11-01T14:00:00"}'
 
         self.assertEqual(result, expected)
 
@@ -41,7 +41,7 @@ class JsonHelperTestCase(unittest.TestCase):
             cls=json_helper.JSONEncoder
         )
 
-        expected = '{"test": "something", "id": 100, "datetime": "2014-11-01T18:00:00"}'
+        expected = '{"id": 100, "test": "something", "datetime": "2014-11-01T18:00:00"}'
 
         self.assertEqual(result, expected)
 
@@ -55,7 +55,7 @@ class JsonHelperTestCase(unittest.TestCase):
             convert_datetimes_tz=self.timezone
         )
 
-        expected = '{"test": "something", "id": 100, "datetime": "2014-01-01T13:00:00"}'
+        expected = '{"id": 100, "test": "something", "datetime": "2014-01-01T13:00:00"}'
 
         self.assertEqual(result, expected)
 
@@ -63,14 +63,14 @@ class JsonHelperTestCase(unittest.TestCase):
         test_datetime = datetime.datetime(2014, 11, 1, 18, 0, 0)
         test_obj = self._get_test_object(test_datetime.date())
 
-        expected = '{"test": "something", "id": 100, "datetime": "2014-11-01"}'
+        expected = '{"id": 100, "test": "something", "datetime": "2014-11-01"}'
         self.assertEqual(json.dumps(test_obj, cls=json_helper.JSONEncoder), expected)
 
     def test_naive_time(self):
         test_datetime = datetime.datetime(2014, 11, 1, 18, 0, 0)
         test_obj = self._get_test_object(test_datetime.time())
 
-        expected = '{"test": "something", "id": 100, "datetime": "18:00:00"}'
+        expected = '{"id": 100, "test": "something", "datetime": "18:00:00"}'
         self.assertEqual(json.dumps(test_obj, cls=json_helper.JSONEncoder), expected)
 
     def test_aware_datetime(self):
@@ -84,7 +84,7 @@ class JsonHelperTestCase(unittest.TestCase):
             convert_datetimes_tz=self.timezone
         )
 
-        expected = '{"test": "something", "id": 100, "datetime": "2014-11-01T14:00:00"}'
+        expected = '{"id": 100, "test": "something", "datetime": "2014-11-01T14:00:00"}'
 
         self.assertEqual(result, expected)
 
@@ -99,7 +99,7 @@ class JsonHelperTestCase(unittest.TestCase):
             convert_datetimes_tz=self.timezone
         )
 
-        expected = '{"test": "something", "id": 100, "datetime": "2014-12-01T12:00:00"}'
+        expected = '{"id": 100, "test": "something", "datetime": "2014-12-01T12:00:00"}'
 
         self.assertEqual(result, expected)
 
@@ -108,7 +108,7 @@ class JsonHelperTestCase(unittest.TestCase):
         test_datetime = test_datetime.replace(tzinfo=pytz.utc)
         test_obj = self._get_test_object(test_datetime.date())
 
-        expected = '{"test": "something", "id": 100, "datetime": "2014-11-01"}'
+        expected = '{"id": 100, "test": "something", "datetime": "2014-11-01"}'
         self.assertEqual(json.dumps(test_obj, cls=json_helper.JSONEncoder), expected)
 
     def test_aware_time(self):
@@ -116,7 +116,7 @@ class JsonHelperTestCase(unittest.TestCase):
         test_datetime = test_datetime.replace(tzinfo=pytz.utc)
         test_obj = self._get_test_object(test_datetime.time())
 
-        expected = '{"test": "something", "id": 100, "datetime": "18:00:00"}'
+        expected = '{"id": 100, "test": "something", "datetime": "18:00:00"}'
         self.assertEqual(json.dumps(test_obj, cls=json_helper.JSONEncoder), expected)
 
 

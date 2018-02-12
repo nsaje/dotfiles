@@ -16,13 +16,13 @@ def _extract_error_list(e):
     error_dict = getattr(e, 'message_dict', None) or getattr(e, 'errors', None)
     error_message = getattr(e, 'message', None)
     if error_dict:
-        for error in error_dict.values():
-            if isinstance(error, basestring):
+        for error in list(error_dict.values()):
+            if isinstance(error, str):
                 error_list.append(error)
             else:
                 error_list.extend(error)
     elif error_message:
-        if isinstance(error_message, basestring):
+        if isinstance(error_message, str):
             error_list.append(error_message)
         else:
             error_list.extend(error_message)

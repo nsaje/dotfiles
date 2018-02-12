@@ -37,9 +37,9 @@ class MagicMixer(mixer_base.__class__):
 
     def blend_source_w_defaults(self, **kwargs):
         kw = 'default_source_settings'
-        dss_kwargs = {k[25:]: v for k, v in kwargs.items() if k.startswith(kw)}
+        dss_kwargs = {k[25:]: v for k, v in list(kwargs.items()) if k.startswith(kw)}
 
-        source = self.blend(core.source.Source, **{k: v for k, v in kwargs.items() if not k.startswith(kw)})
+        source = self.blend(core.source.Source, **{k: v for k, v in list(kwargs.items()) if not k.startswith(kw)})
         self.blend(core.source.DefaultSourceSettings,
                    source=source, credentials=self.RANDOM, **dss_kwargs)
         return source

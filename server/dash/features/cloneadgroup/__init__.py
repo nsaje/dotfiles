@@ -1,2 +1,2 @@
-import urls
-import service
+from . import urls
+from . import service

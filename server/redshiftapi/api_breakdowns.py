@@ -4,13 +4,13 @@ import stats.constants
 from utils import cache_helper, dates_helper
 from utils import sort_helper, threads, db_for_reads
 
-import background_cache
-import db
-import exceptions
-import helpers
-import postprocess
-import queries
-import view_selector
+from . import background_cache
+from . import db
+from . import exceptions
+from . import helpers
+from . import postprocess
+from . import queries
+from . import view_selector
 
 
 POSTGRES_MAX_DAYS = 62

@@ -2,7 +2,7 @@ from rest_framework import permissions
 
 import restapi.views
 import dash.features.geolocation
-import serializers
+from . import serializers
 
 
 class GeolocationListView(restapi.views.RESTAPIBaseView):

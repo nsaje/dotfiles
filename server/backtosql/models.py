@@ -1,5 +1,5 @@
-import helpers
-from columns import TemplateColumn
+from . import helpers
+from .columns import TemplateColumn
 
 
 class ModelMeta(type):
@@ -15,9 +15,7 @@ class ModelMeta(type):
         return model_class
 
 
-class Model(object):
-    __metaclass__ = ModelMeta
-
+class Model(object, metaclass=ModelMeta):
     __COLUMNS__ = None
     __COLUMNS_DICT__ = None
 
@@ -40,7 +38,7 @@ class Model(object):
 
     def __init__(self):
         self.columns = self.__COLUMNS__[:]
-        self.columns_dict = {k: v for k, v in self.__COLUMNS_DICT__.iteritems()}
+        self.columns_dict = {k: v for k, v in self.__COLUMNS_DICT__.items()}
 
     def get_columns(self):
         return self.columns

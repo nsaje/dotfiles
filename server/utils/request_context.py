@@ -18,5 +18,5 @@ def get_dict():
 
 
 def set_dict(d):
-    for key, value in d.items():
+    for key, value in list(d.items()):
         setattr(_threadlocal, key, value)

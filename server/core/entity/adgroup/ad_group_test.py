@@ -17,7 +17,7 @@ class AdGroupCreate(TestCase):
     def test_create(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):
         request = magic_mixer.blend_request_user()
         campaign = magic_mixer.blend(core.entity.Campaign)
-        self.assertEquals(0, core.entity.settings.AdGroupSettings.objects.all().count())
+        self.assertEqual(0, core.entity.settings.AdGroupSettings.objects.all().count())
 
         ad_group = core.entity.AdGroup.objects.create(request, campaign)
 
@@ -74,6 +74,6 @@ class AdGroupHistory(TestCase):
         history = history_helpers.get_ad_group_history(ad_group)
 
         self.assertEqual(len(history), 7)
-        self.assertRegexpMatches(
+        self.assertRegex(
             history.first().changes_text,
             r'Created settings and automatically created campaigns for 5 sources .*')

@@ -1,1 +1,1 @@
-from model import CampaignSettings
+from .model import CampaignSettings

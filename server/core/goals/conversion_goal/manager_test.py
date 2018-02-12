@@ -4,7 +4,7 @@ import dash.history_helpers
 import dash.constants
 from utils.magic_mixer import magic_mixer
 
-from model import ConversionGoal
+from .model import ConversionGoal
 
 
 class TestConversionGoalManager(TestCase):

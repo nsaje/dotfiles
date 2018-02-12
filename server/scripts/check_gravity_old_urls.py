@@ -51,7 +51,7 @@ def _login(session):
         )
     except Exception:
         et, ei, tb = sys.exc_info()
-        raise Exception, ei, tb
+        raise Exception(ei).with_traceback(tb)
 
     # the response is empty, only check status code
     check_response_error(response, Exception,
@@ -68,7 +68,7 @@ def _login(session):
         )
     except Exception:
         et, ei, tb = sys.exc_info()
-        raise Exception, ei, tb
+        raise Exception(ei).with_traceback(tb)
 
     check_response_error(response, Exception,
                          'Login to /public failed.')
@@ -102,7 +102,7 @@ def list_articles(session, source_campaign_key):
         response = session.get(url, allow_redirects=True)
     except Exception:
         et, ei, tb = sys.exc_info()
-        raise Exception, ei, tb
+        raise Exception(ei).with_traceback(tb)
 
     check_response_error(response, Exception, 'Fetching campaign article list failed.')
 
@@ -144,6 +144,6 @@ if __name__ == '__main__':
 
             count += 1
 
-        print 'AD GROUP ID: {} NUM LINKS: {}, OLD URLS: {}'.format(ad_group_id, len(articles), len(old_urls_gravity.get(ad_group_id, [])))
+        print('AD GROUP ID: {} NUM LINKS: {}, OLD URLS: {}'.format(ad_group_id, len(articles), len(old_urls_gravity.get(ad_group_id, []))))
 
-    print 'COUNT:', count
+    print('COUNT:', count)
