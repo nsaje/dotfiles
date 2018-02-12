@@ -33,7 +33,7 @@ def write_message_json(queue_name, body):
 def process_all_json_messages(queue_name):
     messages = get_all_messages(queue_name)
     yield _get_json_content(messages)
-    delete_messages(messages)
+    delete_messages(queue_name, messages)
 
 
 def _get_json_content(messages):
