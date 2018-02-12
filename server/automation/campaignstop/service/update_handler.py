@@ -21,6 +21,8 @@ def handle_updates():
     if daily_cap_campaigns:
         _handle_daily_cap_updates(daily_cap_campaigns)
 
+    sqs_helper.delete_messages(settings.CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE, messages)
+
 
 def _get_messages_from_queue():
     return sqs_helper.get_all_messages_json(settings.CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE)
