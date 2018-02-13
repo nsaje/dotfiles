@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 
 import core.entity
@@ -8,6 +10,8 @@ from . import update_campaigns_end_date
 from .. import constants
 
 from utils import sqs_helper
+
+logger = logging.getLogger(__name__)
 
 
 def handle_updates():
@@ -22,6 +26,7 @@ def handle_updates():
 
 
 def _handle_budget_updates(campaigns):
+    logger.info('Handle campaign budget update: campaigns=%s', [campaign.id for campaign in campaigns])
     update_campaigns_end_date(campaigns)
 
     refresh_realtime_data(campaigns)
@@ -30,6 +35,7 @@ def _handle_budget_updates(campaigns):
 
 
 def _handle_daily_cap_updates(campaigns):
+    logger.info('Handle campaign daily cap update: campaigns=%s', [campaign.id for campaign in campaigns])
     refresh_realtime_data(campaigns)
     mark_almost_depleted_campaigns(campaigns)
 
