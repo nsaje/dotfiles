@@ -53,7 +53,7 @@ def create_job(user, query, scheduled_report=None):
     return job
 
 
-@celery.app.task(acks_late=True, name='reports_execute', soft_time_limit=30 * 60)
+@celery.app.task(acks_late=True, name='reports_execute', soft_time_limit=10 * 60)
 def execute(job_id):
     logger.info('Start job executor for report id: %d', job_id)
     job = ReportJob.objects.get(pk=job_id)
