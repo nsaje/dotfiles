@@ -46,4 +46,4 @@
 0 4,5 * * *      /home/ubuntu/docker-manage-py.sh campaignstop_midnight_job --check-time
 0 * * * *        /home/ubuntu/docker-manage-py.sh campaignstop_selection_job
 */5 * * * *      /home/ubuntu/docker-manage-py.sh campaignstop_handle_updates
-* 10 * * *       /home/ubuntu/docker-manage-py.sh campaignstop_monitor --slack
+0 10 * * *       /home/ubuntu/docker-manage-py.sh campaignstop_monitor --slack
