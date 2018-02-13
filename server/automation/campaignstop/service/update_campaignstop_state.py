@@ -31,7 +31,10 @@ def _update_campaign(campaign):
 
     log = RealTimeCampaignStopLog(
         campaign=campaign, event=constants.CampaignStopEvent.BUDGET_DEPLETION_CHECK)
+
+    log.add_context({'previous_state': campaign_state.state})
     campaign_state.set_allowed_to_run(_is_allowed_to_run(log, campaign, campaign_state))
+    log.add_context({'new_state': campaign_state.state})
 
 
 def _is_allowed_to_run(log, campaign, campaign_state):
