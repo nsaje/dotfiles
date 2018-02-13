@@ -1,7 +1,12 @@
+import logging
+
 from utils import sqs_helper
 from django.conf import settings
 
 from .. import constants
+
+
+logger = logging.getLogger(__name__)
 
 
 def notify_ad_group_settings_change(ad_group_settings, changes):
@@ -23,7 +28,8 @@ def notify_budget_line_item_change(campaign):
 
 
 def _notify(campaign_id, type_):
-        sqs_helper.write_message_json(
-            settings.CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE,
-            {'campaign_id': campaign_id, 'type': type_}
-        )
+    logger.info('Notify campaign update: campaign_id=%s, type=%s', campaign_id, type_)
+    sqs_helper.write_message_json(
+        settings.CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE,
+        {'campaign_id': campaign_id, 'type': type_}
+    )
