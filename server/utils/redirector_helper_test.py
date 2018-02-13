@@ -336,10 +336,10 @@ class UpsertAudienceTest(TestCase):
             'archived': False,
             'rules':
                 [{'id': '1', 'type': 1, 'value': 'dummy'}, {'id': '2', 'type': 2, 'value': 'dummy2'}],
-            'pixels':
-                [{'url': 'http://www.fb.com/pixelendpoint', 'type': 'facebook'},
-                 {'url': 'http://www.y.com/pixelendpoint', 'type': 'yahoo'},
-                 {'url': 'http://www.ob.com/pixelendpoint', 'type': 'outbrain'}],
+            'pixels': [
+                {'url': 'http://www.ob.com/pixelendpoint', 'type': 'outbrain'},
+                {'url': 'http://www.y.com/pixelendpoint', 'type': 'yahoo'},
+                {'url': 'http://www.fb.com/pixelendpoint', 'type': 'facebook'}],
             'ttl': 90,
             'modifieddt': '2015-02-23T00:00:00Z'
         }

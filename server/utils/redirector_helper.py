@@ -117,7 +117,7 @@ def get_adgroup_realtimestats(ad_group_id):
 def upsert_audience(audience):
     try:
         rules = [{'id': str(rule.id), 'type': rule.type, 'value': rule.value} for rule in audience.audiencerule_set.all().order_by('pk')]
-        source_pixels = [{'url': pixel.url, 'type': pixel.source_type.type} for pixel in audience.pixel.sourcetypepixel_set.all()]
+        source_pixels = [{'url': pixel.url, 'type': pixel.source_type.type} for pixel in audience.pixel.sourcetypepixel_set.all().order_by('pk')]
 
         audience_dict = {
             'id': str(audience.id),
