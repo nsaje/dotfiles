@@ -20,6 +20,8 @@ class ReportJob(models.Model):
     query = jsonfield.JSONField()
     result = jsonfield.JSONField(null=True, blank=True)
 
+    exception = models.TextField(null=True, blank=True)
+
     scheduled_report = models.ForeignKey(
         'ScheduledReport',
         related_name='jobs',

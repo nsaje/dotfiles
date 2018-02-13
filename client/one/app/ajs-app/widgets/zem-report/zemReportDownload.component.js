@@ -50,6 +50,7 @@ angular.module('one.widgets').component('zemReportDownload', {
                         if (data.data.status === 'FAILED') {
                             $ctrl.jobDone = true;
                             $ctrl.hasError = true;
+                            $ctrl.errorMsg = data.data.result;
                         } else if (data.data.status === 'DONE') {
                             $ctrl.jobDone = true;
                             $ctrl.reportUrl = data.data.result;
@@ -77,6 +78,7 @@ angular.module('one.widgets').component('zemReportDownload', {
         function startReport () {
             $ctrl.jobPosted = true;
             $ctrl.errors = undefined;
+            $ctrl.errorMsg = undefined;
             zemReportService
                 .startReport($ctrl.resolve.api, $ctrl.queryConfig, getRecipientsList())
                 .then(function (data) {

@@ -4,6 +4,7 @@ import logging
 import random
 import string
 import io
+import traceback
 import os.path
 
 import influx
@@ -23,6 +24,7 @@ import stats.api_reports
 
 import utils.s3helpers
 import utils.email_helper
+import utils.exc
 import utils.columns
 import utils.sort_helper
 import utils.dates_helper
@@ -53,7 +55,7 @@ def create_job(user, query, scheduled_report=None):
     return job
 
 
-@celery.app.task(acks_late=True, name='reports_execute', soft_time_limit=10 * 60)
+@celery.app.task(acks_late=True, name='reports_execute', soft_time_limit=9 * 60)
 def execute(job_id):
     logger.info('Start job executor for report id: %d', job_id)
     job = ReportJob.objects.get(pk=job_id)
@@ -89,7 +91,7 @@ class ReportJobExecutor(JobExecutor):
         job_age = utils.dates_helper.utc_now() - self.job.created_dt
         if job_age > datetime.timedelta(hours=1):
             logger.info('Running too old report job: %s' % job_age)
-            self._fail('too_old', 'Too old')
+            self._fail('too_old', 'Service Timeout: Please try again later.')
             return
 
         try:
@@ -102,18 +104,25 @@ class ReportJobExecutor(JobExecutor):
             self.job.status = constants.ReportJobStatus.DONE
             influx.incr('dash.reports', 1, status='success')
             self.job.save()
-        except SoftTimeLimitExceeded:
-            self._fail('timeout', 'Timeout')
+        except utils.exc.BaseError as e:
+            self._fail('user_error', str(e), e)
+        except SoftTimeLimitExceeded as e:
+            self._fail('timeout', 'Job Timeout: Requested report probably too large. Report job ID is {id}.', e)
         except Exception as e:
-            self._fail('failed', str(e))
+            self._fail('failed', 'Internal Error: Please contact support. Report job ID is {id}.', e)
             logger.exception('Exception when processing API report job %s' % self.job.id)
 
-    def _fail(self, status, result):
+    def _fail(self, status, result, exception=None):
         self.job.status = constants.ReportJobStatus.FAILED
-        self.job.result = result
+        self.job.result = result.format(id=self.job.id)
+        if exception is not None:
+            self.job.exception = traceback.format_exc()
         influx.incr('dash.reports', 1, status=status)
         self.job.save()
-        self._send_fail()
+        try:
+            self._send_fail()
+        except Exception:
+            logger.exception('Exception when sending fail notification for report job %s' % self.job.id)
 
     def _send_fail(self):
         if len(self.job.query['options']['recipients']) <= 0:
@@ -182,7 +191,11 @@ class ReportJobExecutor(JobExecutor):
 
         order = cls._get_order(job, column_to_field_name_map)
         column_names = cls._extract_column_names(job.query['fields'])
-        columns = [column_to_field_name_map[column_name] for column_name in column_names]
+
+        try:
+            columns = [column_to_field_name_map[column_name] for column_name in column_names]
+        except KeyError as e:
+            raise utils.exc.ValidationError('Invalid field "%s".' % e.args[0])
 
         output = io.StringIO()
         dashapi_cache = {}

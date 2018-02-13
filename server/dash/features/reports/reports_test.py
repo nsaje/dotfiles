@@ -24,34 +24,38 @@ class ReportsExecuteTest(TestCase):
         self.mock_influx_incr = influx_incr_patcher.start()
         self.addCleanup(influx_incr_patcher.stop)
 
-    def assertJobFailed(self, status, result):
+    def assertJobFailed(self, status, result, exception=None):
         self.mock_influx_incr.assert_called_once_with('dash.reports', 1, status=status)
 
         self.reportJob.refresh_from_db()
         self.assertEqual(constants.ReportJobStatus.FAILED, self.reportJob.status)
         self.assertEqual(result, self.reportJob.result)
+        if exception is not None:
+            self.assertIn(str(exception), self.reportJob.exception)
 
     @mock.patch('dash.features.reports.reports.ReportJobExecutor._send_fail')
     @mock.patch('dash.features.reports.reports.ReportJobExecutor.get_report')
     def test_handle_exception(self, mock_get_report, mock_send_fail):
-        mock_get_report.side_effect = Exception('test-error')
+        e = Exception('test-error')
+        mock_get_report.side_effect = e
 
         reports.execute(self.reportJob.id)
 
         mock_get_report.assert_called_once_with(self.reportJob)
         mock_send_fail.assert_called_once_with()
-        self.assertJobFailed('failed', 'test-error')
+        self.assertJobFailed('failed', 'Internal Error: Please contact support. Report job ID is %d.' % self.reportJob.id, e)
 
     @mock.patch('dash.features.reports.reports.ReportJobExecutor._send_fail')
     @mock.patch('dash.features.reports.reports.ReportJobExecutor.get_report')
     def test_handle_soft_time_limit(self, mock_get_report, mock_send_fail):
-        mock_get_report.side_effect = SoftTimeLimitExceeded()
+        e = SoftTimeLimitExceeded()
+        mock_get_report.side_effect = e
 
         reports.execute(self.reportJob.id)
 
         mock_get_report.assert_called_once_with(self.reportJob)
         mock_send_fail.assert_called_once_with()
-        self.assertJobFailed('timeout', 'Timeout')
+        self.assertJobFailed('timeout', 'Job Timeout: Requested report probably too large. Report job ID is %d.' % self.reportJob.id)
 
     @mock.patch('utils.dates_helper.utc_now')
     @mock.patch('dash.features.reports.reports.ReportJobExecutor._send_fail')
@@ -67,7 +71,7 @@ class ReportsExecuteTest(TestCase):
 
         mock_get_report.assert_not_called()
         mock_send_fail.assert_called_once_with()
-        self.assertJobFailed('too_old', 'Too old')
+        self.assertJobFailed('too_old', 'Service Timeout: Please try again later.')
 
     @mock.patch('dash.features.reports.reports.ReportJobExecutor.get_report')
     def test_incorrect_state(self, mock_get_report):

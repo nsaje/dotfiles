@@ -49,5 +49,6 @@
     <span ng-show="$ctrl.reportSent">Requested report will be sent to your inbox shortly.</span>
     <span ng-if="$ctrl.reportUrl">Requested report can be downloaded here: <a href="{{ $ctrl.reportUrl }}" target="_blank">Download Report</a></span>
     <span class="message message--error" ng-repeat="error in $ctrl.errors.nonFieldErrors">{{ error }}</span>
-    <span class="message message--error" ng-if="$ctrl.hasError && !$ctrl.errors">An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.</span>
+    <span class="message message--error" ng-if="$ctrl.hasError && !$ctrl.errors && !$ctrl.errorMsg">An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.</span>
+    <span class="message message--error" ng-if="$ctrl.hasError && $ctrl.errorMsg">{{ $ctrl.errorMsg }}</span>
 </div>
