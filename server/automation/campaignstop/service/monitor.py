@@ -7,7 +7,7 @@ from utils import dates_helper
 
 
 def audit_stopped_campaigns(date):
-    local_midnight = dates_helper.utc_to_local(datetime.datetime(date.year, date.month, date.day))
+    local_midnight = dates_helper.local_to_utc_time(datetime.datetime(date.year, date.month, date.day))
     logs = RealTimeCampaignStopLog.objects.filter(
         created_dt__gte=local_midnight,
         created_dt__lt=dates_helper.day_after(local_midnight),
