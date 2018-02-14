@@ -4,6 +4,9 @@ import datetime
 from django.conf import settings
 
 
+DEFAULT_TIME_ZONE = pytz.timezone(settings.DEFAULT_TIME_ZONE)
+
+
 # NOTE: this function can be mocked in tests to also change the return value
 # of every other function in this module that uses current time
 def utc_now():
@@ -11,18 +14,17 @@ def utc_now():
 
 
 def local_to_utc_time(dt):
-    tz = pytz.timezone(settings.DEFAULT_TIME_ZONE)
-    dt = tz.localize(dt)
+    dt = DEFAULT_TIME_ZONE.localize(dt)
     return dt.astimezone(pytz.utc)
+
+
+def utc_to_local(dt):
+    return utc_to_tz_datetime(dt, DEFAULT_TIME_ZONE)
 
 
 def utc_to_tz_datetime(dt, tz):
     dt = dt.replace(tzinfo=pytz.utc)
     return dt.astimezone(tz)
-
-
-def utc_to_local(dt):
-    return utc_to_tz_datetime(dt, pytz.timezone(settings.DEFAULT_TIME_ZONE))
 
 
 def utc_datetime_to_local_date(dt):

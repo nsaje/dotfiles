@@ -1,4 +1,5 @@
 import datetime
+import sys
 
 import automation.campaignstop
 
@@ -14,6 +15,8 @@ class Command(ExceptionCommand):
                             help='Date checked (default yesterday)')
         parser.add_argument('--slack', dest='slack', action='store_true',
                             help='Notify via slack')
+        parser.add_argument('--verbose', dest='verbose', action='store_true',
+                            help='Display output')
 
     def handle(self, *args, **options):
         self._init_options(options)
@@ -21,6 +24,7 @@ class Command(ExceptionCommand):
 
     def _init_options(self, options):
         self.slack = options['slack']
+        self.verbose = options['verbose']
 
         self.date = dates_helper.local_yesterday()
         if options['date']:
@@ -31,13 +35,25 @@ class Command(ExceptionCommand):
         if not campaigns:
             return
 
-        message = 'Campaigns stopped yesterday:\n'
-        for campaign in campaigns:
-            message += '- {}\n'.format(slack.campaign_url(campaign))
-
         if self.slack:
             slack.publish(
-                message,
+                self._get_slack_message(campaigns),
                 msg_type=slack.MESSAGE_TYPE_INFO,
                 username='Real-time campaign stop monitor'
             )
+
+        if self.verbose:
+            sys.stdout.write(self._get_verbose_message(campaigns))
+            sys.stdout.flush()
+
+    def _get_slack_message(self, campaigns):
+        message = 'Campaigns stopped yesterday:\n'
+        for campaign in campaigns:
+            message += '- {}\n'.format(slack.campaign_url(campaign))
+        return message
+
+    def _get_verbose_message(self, campaigns):
+        message = 'Campaigns stopped yesterday:\n'
+        for campaign in campaigns:
+            message += '- {} ({})\n'.format(campaign.name, campaign.id)
+        return message
