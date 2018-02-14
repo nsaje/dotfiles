@@ -476,6 +476,10 @@ class AdGroupsView(K1APIView):
 
         ad_groups = []
         for ad_group_settings in ad_groups_settings:
+            if ad_group_settings is None:
+                logger.error('K1API - ad group settings are None')
+                continue
+
             campaign_settings = campaigns_settings_map[ad_group_settings.ad_group.campaign_id]
             account_settings = accounts_settings_map[ad_group_settings.ad_group.campaign.account_id]
             agency_settings = agencies_settings_map.get(ad_group_settings.ad_group.campaign.account.agency_id)  # FIXME(nsaje): settings should exist
