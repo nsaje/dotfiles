@@ -56,6 +56,7 @@
         allowed_sources: [1, 2]
         agency: 1
         settings: 1
+        currency: 'USD'
     model: dash.account
     pk: 1
 
@@ -67,6 +68,7 @@
         allowed_sources: [1, 2]
         agency: 1
         settings: 2
+        currency: 'EUR'
     model: dash.account
     pk: 2
 
@@ -270,4 +272,3 @@
         name: 'test adgroup 4'
     model: dash.adgroup
     pk: 4
-

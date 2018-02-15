@@ -29,6 +29,7 @@ MATERIALIZED_VIEWS = [
     materialize_views.MVHelpersSource,
     materialize_views.MVHelpersAdGroupStructure,
     materialize_views.MVHelpersCampaignFactors,
+    materialize_views.MVHelpersCurrencyExchangeRates,
     materialize_views.MVHelpersNormalizedStats,
 
     # Must be done before master, it is used there to generate empty rows for conversions

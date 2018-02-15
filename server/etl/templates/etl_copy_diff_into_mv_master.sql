@@ -71,18 +71,38 @@ INSERT INTO mv_master (
       NULL AS video_complete,
       NULL AS video_progress_3s,
 
-      NULL AS local_cost_nano,                 -- TODO (jurebajt): Calculate using mvh_currency_exchange_rates
-      NULL AS local_data_cost_nano,            -- TODO (jurebajt): Calculate using mvh_currency_exchange_rates
-      NULL AS local_effective_cost_nano,       -- TODO (jurebajt): Calculate using mvh_currency_exchange_rates
-      NULL AS local_effective_data_cost_nano,  -- TODO (jurebajt): Calculate using mvh_currency_exchange_rates
-      NULL AS local_license_fee_nano,          -- TODO (jurebajt): Calculate using mvh_currency_exchange_rates
-      NULL AS local_margin_nano                -- TODO (jurebajt): Calculate using mvh_currency_exchange_rates
+      round(a.cost_nano * cer.exchange_rate::decimal(10, 4)) as local_cost_nano,
+      round(a.data_cost_nano * cer.exchange_rate::decimal(10, 4)) as local_data_cost_nano,
+      -- casting intermediate values to bigint (decimal(19, 0)) because of max precision of 38 in DB
+      round(round(a.cost_nano * cf.pct_actual_spend::decimal(10, 8))::bigint * cer.exchange_rate::decimal(10, 4)) as local_effective_cost_nano,
+      round(round(a.data_cost_nano * cf.pct_actual_spend::decimal(10, 8))::bigint * cer.exchange_rate::decimal(10, 4)) as local_effective_data_cost_nano,
+      round(
+          round(
+              (
+                  (nvl(a.cost_nano, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                  (nvl(a.data_cost_nano, 0) * cf.pct_actual_spend::decimal(10, 8))
+              ) * pct_license_fee::decimal(10, 8)
+          )::bigint * cer.exchange_rate::decimal(10, 4)
+      ) as local_license_fee_nano,
+      round(
+          round(
+              (
+                  (nvl(a.cost_nano, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                  (nvl(a.data_cost_nano, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                  (
+                      (nvl(a.cost_nano, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                      (nvl(a.data_cost_nano, 0) * cf.pct_actual_spend::decimal(10, 8))
+                  ) * cf.pct_license_fee::decimal(10, 8)
+              ) * cf.pct_margin::decimal(10, 8)
+          )::bigint * cer.exchange_rate::decimal(10, 4)
+      ) as local_margin_nano
   FROM
     (
       mv_master_diff a
       join mvh_adgroup_structure c on a.ad_group_id=c.ad_group_id
     )
     join mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and a.date=cf.date
+    join mvh_currency_exchange_rates cer on c.account_id=cer.account_id and a.date=cer.date
   WHERE
     a.date=%(date)s
     {% if account_id %}

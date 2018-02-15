@@ -18,6 +18,7 @@ from utils import threads
 
 import dash.models
 import dash.constants
+import core.multicurrency
 
 from redshiftapi import db
 
@@ -333,6 +334,41 @@ class MVHelpersCampaignFactors(Materialize):
             if dt not in campaign_factors:
                 raise Exception('Campaign factors missing for the date %s within date range %s - %s, job %s',
                                 dt, self.date_from, self.date_to, self.job_id)
+
+
+class MVHelpersCurrencyExchangeRates(Materialize):
+
+    TABLE_NAME = 'mvh_currency_exchange_rates'
+    IS_TEMPORARY_TABLE = True
+
+    def generate(self, **kwargs):
+        s3_path = upload_csv(
+            self.TABLE_NAME,
+            self.date_to,
+            self.job_id,
+            self.generate_rows
+        )
+
+        with db.get_write_stats_transaction():
+            with db.get_write_stats_cursor() as c:
+                sql = backtosql.generate_sql('etl_create_temp_table_mvh_currency_exchange_rates.sql', None)
+                c.execute(sql)
+
+                logger.info('Copying CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
+                sql, params = prepare_copy_csv_query(s3_path, self.TABLE_NAME)
+                c.execute(sql, params)
+                logger.info('Copied CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
+
+    def generate_rows(self):
+        accounts = dash.models.Account.objects.all()
+
+        for account in accounts:
+            for date in rrule.rrule(rrule.DAILY, dtstart=self.date_from, until=self.date_to):
+                yield (
+                    date.date(),
+                    account.id,
+                    core.multicurrency.get_exchange_rate(date, account.currency)
+                )
 
 
 class MVHelpersAdGroupStructure(Materialize):
