@@ -33,7 +33,7 @@ class Command(ExceptionCommand):
         date_from = dates_helper.days_before(today, 7)
         s3 = s3helpers.S3Helper(bucket)
         with redshiftapi.db.get_stats_cursor() as cur:
-            subquery = cur.mogrify(select_query, (date_from,))
+            subquery = cur.mogrify(select_query, (date_from,)).decode('utf-8')
             cur.execute(unload_query, (
                 subquery,
                 's3://%s/tmp.csv' % bucket,
