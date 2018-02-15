@@ -38,10 +38,10 @@ class CampaignManager(core.common.QuerySetManager):
             name=name,
             account=account
         )
-        if account.agency_id in AGENCIES_WITHOUT_REAL_TIME_CAMPAIGN_STOP:
-            campaign.real_time_campaign_stop = False
         if account.real_time_campaign_stop:
             campaign.real_time_campaign_stop = True
+        if account.agency_id in AGENCIES_WITHOUT_REAL_TIME_CAMPAIGN_STOP:
+            campaign.real_time_campaign_stop = False
 
         campaign.save(request=request)
 
