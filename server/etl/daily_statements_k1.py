@@ -6,8 +6,8 @@ import logging
 
 from dateutil import rrule
 from django.db import transaction
-from django.db.models import Sum
-from django.db import connections
+from django.db.models import Sum, Max
+from django.db import connection, connections
 from django.conf import settings
 
 import dash.models
@@ -169,56 +169,85 @@ def _handle_overspend(date, campaign, media_nano, data_nano):
     daily_statement.save()
 
 
-def _get_dates(date_since, campaign):
-    budgets = dash.models.BudgetLineItem.objects.filter(campaign_id=campaign.id)
-    existing_statements = dash.models.BudgetDailyStatement.objects.filter(budget__campaign_id=campaign.id)
+def _get_first_unprocessed_dates(campaigns):
+    campaign_ids = [campaign.id for campaign in campaigns]
+    # for each budget associate daily statement for each date from start to end
+    # return first date for which daily statement does not exist for each campaign
+    query = '''
+        SELECT
+            campaign_id, MIN(b.date)
+        FROM (
+            SELECT
+                id, campaign_id,
+                generate_series(start_date, end_date, '1 day'::interval) date
+            FROM dash_budgetlineitem
+            WHERE campaign_id = ANY(%s)
+        ) b
+        LEFT OUTER JOIN dash_budgetdailystatement s
+        ON s.budget_id=b.id AND b.date=s.date
+        WHERE s.id IS NULL
+        GROUP BY campaign_id
+    '''
+    data = {}
+    with connection.cursor() as c:
+        c.execute(query, [campaign_ids])
 
-    if budgets.count() == 0:
+        for campaign_id, first_unprocessed_date in c:
+            data[campaign_id] = first_unprocessed_date.date()
+    return data
+
+
+def _get_dates(date_since, campaign, first_unprocessed_date):
+    if campaign.max_budget_end_date is None:
         return []
 
-    by_date = defaultdict(dict)
-    for existing_statement in existing_statements:
-        by_date[existing_statement.date][existing_statement.budget_id] = existing_statement
-
     today = dates_helper.local_today()
-    to_date = min(max(budget.end_date for budget in budgets), today)
-    from_date = min(date_since, *(budget.start_date for budget in budgets))
-    if from_date < date_since:
-        logger.debug('Found unprocessed budgets older than requested reprocess period for campaign %s,'
-                     'unprocessed range %s - %s, requested since %s',
-                     campaign.id, from_date, to_date, date_since)
-
-    while from_date <= to_date and from_date < date_since:
-        found = False
-        for budget in budgets:
-            if budget.start_date <= from_date <= budget.end_date and budget.id not in by_date[from_date]:
-                found = True
-
-        if found:
-            break
-
-        from_date += datetime.timedelta(days=1)
+    # start processing from requested date or sooner if unprocessed
+    from_date = min(date_since, first_unprocessed_date) if first_unprocessed_date else date_since
+    # finish processing when last campaign budget ends or today
+    to_date = min(campaign.max_budget_end_date, today)
 
     return [dt.date() for dt in rrule.rrule(rrule.DAILY, dtstart=from_date, until=to_date)]
 
 
-def _get_effective_spend_pcts(date, campaign, campaign_spend):
-    if campaign_spend is None:
-        return 0, 0, 0
+def _get_effective_spend(account_id, all_dates, total_spend):
+    effective_spend = defaultdict(dict)
 
-    attributed_spends = dash.models.BudgetDailyStatement.objects.\
-        filter(budget__campaign=campaign, date=date).\
-        aggregate(
+    campaigns = dash.models.Campaign.objects.all()
+    if account_id:
+        campaigns = campaigns.filter(account_id=account_id)
+
+    all_attributed_spends = (
+        dash.models.BudgetDailyStatement.objects.
+        filter(budget__campaign__in=campaigns, date__in=all_dates).
+        values('budget__campaign__id', 'date').
+        annotate(
             media_nano=Sum('media_spend_nano'),
             data_nano=Sum('data_spend_nano'),
             license_fee_nano=Sum('license_fee_nano'),
             margin_nano=Sum('margin_nano'),
-        )
+        ))
+
+    attributed_spends = defaultdict(dict)
+    for spend in all_attributed_spends:
+        attributed_spends[spend['budget__campaign__id']][spend['date']] = spend
+
+    for campaign in campaigns:
+        for date in all_dates:
+            spend = total_spend[date].get(campaign.id)
+            effective_spend[date][campaign] = _get_effective_spend_pcts(date, campaign, spend, attributed_spends[campaign.id].get(date, {}))
+
+    return effective_spend
+
+
+def _get_effective_spend_pcts(date, campaign, campaign_spend, attributed_spends):
+    if campaign_spend is None:
+        return 0, 0, 0
 
     actual_spend_nano = campaign_spend['media_nano'] + campaign_spend['data_nano']
-    attributed_spend_nano = (attributed_spends['media_nano'] or 0) + (attributed_spends['data_nano'] or 0)
-    license_fee_nano = attributed_spends['license_fee_nano'] or 0
-    margin_nano = attributed_spends['margin_nano'] or 0
+    attributed_spend_nano = (attributed_spends.get('media_nano') or 0) + (attributed_spends.get('data_nano') or 0)
+    license_fee_nano = attributed_spends.get('license_fee_nano') or 0
+    margin_nano = attributed_spends.get('margin_nano') or 0
 
     pct_actual_spend = 0
     if actual_spend_nano > 0:
@@ -271,16 +300,16 @@ def _get_campaign_spend(date, all_campaigns, account_id):
         c.execute(query)
 
         for ad_group_id, media_spend, data_spend in c:
+            if media_spend is None:
+                media_spend = 0
+            if data_spend is None:
+                data_spend = 0
+
             campaign_id = ad_group_campaign.get(ad_group_id)
             if campaign_id is None:
                 if media_spend > 0 or data_spend > 0:
                     logger.info("Got spend for invalid adgroup: %s", ad_group_id)
                 continue
-
-            if media_spend is None:
-                media_spend = 0
-            if data_spend is None:
-                data_spend = 0
 
             campaign_spend[campaign_id]['media_nano'] += media_spend * converters.MICRO_TO_NANO
             campaign_spend[campaign_id]['data_nano'] += data_spend * converters.MICRO_TO_NANO
@@ -343,16 +372,19 @@ def reprocess_daily_statements(date_since, account_id=None):
     if account_id:
         campaigns = campaigns.filter(account_id=account_id)
 
+    campaigns = campaigns.annotate(max_budget_end_date=Max('budgets__end_date'))
+    first_unprocessed_dates = _get_first_unprocessed_dates(campaigns)
+
     for campaign in campaigns:
         # extracts dates where we have budgets but are not linked to daily statements
 
         # get dates for a single campaign
-        dates = _get_dates(date_since, campaign)
-        for dt in dates:
-            all_dates.add(dt)
-            if dt not in total_spend:
+        dates = _get_dates(date_since, campaign, first_unprocessed_dates.get(campaign.id))
+        for date in dates:
+            all_dates.add(date)
+            if date not in total_spend:
                 # do it for all campaigns at once for a single date
-                total_spend[dt] = _get_campaign_spend(dt, campaigns, account_id)
+                total_spend[date] = _get_campaign_spend(date, campaigns, account_id)
 
         # generate daily statements for the date for the campaign
         _reprocess_campaign_statements(campaign, dates, total_spend)
@@ -362,21 +394,11 @@ def reprocess_daily_statements(date_since, account_id=None):
     # We need to assure that we provide campaign factors for all the dates within the range we
     # are processing. The following statements add campaign spend for the missing dates:
     for dt in rrule.rrule(rrule.DAILY, dtstart=min(all_dates), until=max(all_dates)):
-        dt = dt.date()
-        all_dates.add(dt)
-        if dt not in total_spend:
-            logger.info("Fetching spend for the date %s that wasn't reprocessed", dt)
-            total_spend[dt] = _get_campaign_spend(dt, campaigns, account_id)
+        date = dt.date()
+        all_dates.add(date)
+        if date not in total_spend:
+            logger.info("Fetching spend for the date %s that wasn't reprocessed", date)
+            total_spend[date] = _get_campaign_spend(date, campaigns, account_id)
 
-    effective_spend = defaultdict(lambda: {})
-
-    campaigns = dash.models.Campaign.objects.all()
-    if account_id:
-        campaigns = campaigns.filter(account_id=account_id)
-
-    for campaign in campaigns:
-        for dt in all_dates:
-            spend = total_spend[dt].get(campaign.id)
-            effective_spend[dt][campaign] = _get_effective_spend_pcts(dt, campaign, spend)
-
+    effective_spend = _get_effective_spend(account_id, all_dates, total_spend)
     return dict(effective_spend)

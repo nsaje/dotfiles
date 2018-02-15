@@ -10,12 +10,14 @@ from utils import dates_helper
 def get_local_date_query(date):
     context = get_local_date_context(date)
 
+    # query only date first so redshift can use sort key
     query = """
-    (date = '{date}' and hour is null) or (
-        hour is not null and (
+    date >= '{tzdate_from}' and date <= '{tzdate_to}' and (
+        (date = '{date}' and hour is null) or
+        (hour is not null and (
             (date = '{tzdate_from}' and hour >= {tzhour_from}) or
             (date = '{tzdate_to}' and hour < {tzhour_to})
-        )
+        ))
     )
     """.format(**context)
     return query

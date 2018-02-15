@@ -73,12 +73,13 @@ class HelpersTest(TestCase, backtosql.TestSQLMixin):
         query = helpers.get_local_date_query(datetime.date(2016, 5, 1))
 
         self.assertSQLEquals(query, """\
+        date >= '2016-05-01' and date <= '2016-05-02' and (
         (date = '2016-05-01' and hour is null) or (
             hour is not null and (
                 (date = '2016-05-01' and hour >= 4) or
                 (date = '2016-05-02' and hour < 4)
             )
-        )""")
+        ))""")
 
     def test_calculate_effective_cost(self):
         factors = (0.2, 0.1, 0.15)
