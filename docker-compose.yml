@@ -11,6 +11,8 @@ services:
     #    volumes:
     #      - "./fixtures/:/docker-entrypoint-initdb.d/"
 
+    statspostgres:
+        extends: postgres
 
     # this is fake telegraf that only prints stats on stdout
     telegraf:

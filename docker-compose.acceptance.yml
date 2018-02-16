@@ -23,6 +23,7 @@ services:
           - "8124"  # for testing
         links:
           - "postgres:db"
+          - "statspostgres:statsdb"
           - "memcached:memcached"
           - "telegraf"
         volumes:

@@ -21,6 +21,9 @@ run_devenv:     ## run only development environment (i.e. services that are need
 reset_local_database:
 	./scripts/reset_local_database.sh
 
+reset_local_stats_database:
+	docker-compose run --rm eins ./manage.py reset_stats_postgres
+
 stop:	## stops the whole stack
 	docker-compose stop
 

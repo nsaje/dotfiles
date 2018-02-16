@@ -833,12 +833,14 @@ class MasterDerivedView(Materialize):
                     sql, params = self.prepare_insert_query(self.date_from, self.date_to)
                     c.execute(sql, params)
 
+    @classmethod
     def prepare_create_table(cls):
         with open(cls.TEMPLATE) as rs:
             sql = derived_views.generate_table_definition(
                 cls.TABLE_NAME, rs, cls.BREAKDOWN, cls.SORTKEY, distkey=cls.DISTKEY, diststyle=cls.DISTSTYLE)
         return sql
 
+    @classmethod
     def prepare_create_table_postgres(cls):
         template = cls.TEMPLATE.replace('/redshift/', '/postgres/')
         with open(template) as rs:

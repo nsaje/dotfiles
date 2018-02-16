@@ -37,6 +37,7 @@ services:
           - "8000:8000"
         links:
           - "postgres:db"
+          - "statspostgres:statsdb"
           - "memcached:memcached"
           - "einsstatic"
           - "telegraf"

@@ -13,9 +13,9 @@ SECRET_KEY = '=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l'
 
 STATS_DB_NAME = 'stats'
 STATS_DB_WRITE_REPLICAS = []
-STATS_DB_WRITE_REPLICAS_POSTGRES = []
+STATS_DB_WRITE_REPLICAS_POSTGRES = ['stats-postgres']
 STATS_DB_READ_REPLICAS = []
-STATS_DB_READ_REPLICAS_POSTGRES = []
+STATS_DB_READ_REPLICAS_POSTGRES = ['stats-postgres']
 
 _REDSHIFT_PASSWORD = ''
 _PG01_PASSWORD = ''
@@ -47,6 +47,14 @@ DATABASES = {
         'PASSWORD': _REDSHIFT_PASSWORD,
         'HOST': 'development-cluster.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
         'PORT': 5439,
+    },
+    'stats-postgres': {
+       'ENGINE': 'django.db.backends.postgresql_psycopg2',
+       'NAME': os.environ.get('DB_ENV_POSTGRES_DB', 'one-dev'),
+       'USER': os.environ.get('DB_ENV_POSTGRES_USER', 'eins'),
+       'PASSWORD': os.environ.get('DB_ENV_POSTGRES_PASSWORD', 'devpwd'),
+       'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'statsdb'),
+       'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', 5432)),
     },
 }
 

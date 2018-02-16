@@ -114,9 +114,9 @@ class S3Helper(object):
         else:
             return FakeMultiPartUpload(key)
 
-    def list(self, prefix):
+    def list(self, prefix, delimiter=''):
         if self.use_s3:
-            return self.bucket.list(prefix=prefix)
+            return self.bucket.list(prefix=prefix, delimiter=delimiter)
         elif settings.FILE_STORAGE_DIR:
             try:
                 return [name for name in os.listdir(prefix) if os.path.isdir(os.path.join(prefix, name))]

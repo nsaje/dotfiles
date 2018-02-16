@@ -25,6 +25,7 @@ services:
           - "./server/static/:/app/z1/static/"
         links:
           - "postgres:db"
+          - "statspostgres:statsdb"
           - "memcached:memcached"
           - "einsstatic"
           - "telegraf"
