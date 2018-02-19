@@ -24,9 +24,31 @@ def handle_updates():
         if daily_cap_campaigns:
             _handle_daily_cap_updates(daily_cap_campaigns)
 
+        initalize_campaigns = _extract_campaigns(_filter_messages(constants.CampaignUpdateType.INITIALIZATION, messages))
+        if initalize_campaigns:
+            _handle_initialize(initalize_campaigns)
+
+
+def _filter_messages(type_, messages):
+    return [message for message in messages if message['type'] == type_]
+
+
+def _extract_campaigns(messages):
+    campaign_ids = [message['campaign_id'] for message in messages]
+    return core.entity.Campaign.objects.filter(id__in=campaign_ids)
+
+
+def _handle_initialize(campaigns):
+    logger.info('Handle initialize campaign: campaigns=%s', [campaign.id for campaign in campaigns])
+    _full_check(campaigns)
+
 
 def _handle_budget_updates(campaigns):
     logger.info('Handle campaign budget update: campaigns=%s', [campaign.id for campaign in campaigns])
+    _full_check(campaigns)
+
+
+def _full_check(campaigns):
     update_campaigns_end_date(campaigns)
 
     refresh_realtime_data(campaigns)
@@ -38,12 +60,3 @@ def _handle_daily_cap_updates(campaigns):
     logger.info('Handle campaign daily cap update: campaigns=%s', [campaign.id for campaign in campaigns])
     refresh_realtime_data(campaigns)
     mark_almost_depleted_campaigns(campaigns)
-
-
-def _filter_messages(type_, messages):
-    return [message for message in messages if message['type'] == type_]
-
-
-def _extract_campaigns(messages):
-    campaign_ids = [message['campaign_id'] for message in messages]
-    return core.entity.Campaign.objects.filter(id__in=campaign_ids)

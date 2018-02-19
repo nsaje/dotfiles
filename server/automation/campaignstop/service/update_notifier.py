@@ -9,6 +9,10 @@ from .. import constants
 logger = logging.getLogger(__name__)
 
 
+def notify_initialize(campaign):
+    _notify(campaign.id, constants.CampaignUpdateType.INITIALIZATION)
+
+
 def notify_ad_group_settings_change(ad_group_settings, changes):
     if 'state' in changes or\
        'b1_sources_group_state' in changes or\

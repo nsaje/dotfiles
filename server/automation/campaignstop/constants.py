@@ -28,8 +28,10 @@ class CampaignStopEvent(ConstantBase):
 class CampaignUpdateType(ConstantBase):
     BUDGET = 'budget'
     DAILY_CAP = 'daily_cap'
+    INITIALIZATION = 'initialization'
 
     _VALUES = {
         BUDGET: 'Campaign budget update',
         DAILY_CAP: 'Campaign total daily cap update',
+        INITIALIZATION: 'Real time campaign stop initialization',
     }
