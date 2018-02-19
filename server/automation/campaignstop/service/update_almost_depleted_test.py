@@ -19,10 +19,12 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.setup_initial_state()
 
     def mocked_afternoon_est_now():
-        return datetime(2020, 1, 1, 23, 10, 10)
+        today = datetime.today()
+        return datetime(today.year, today.month, today.day, 20)
 
     def mocked_morning_est_now():
-        return datetime(2020, 1, 1, 7, 10, 10)
+        today = datetime.today()
+        return datetime(today.year, today.month, today.day, 8)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
     @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
@@ -31,6 +33,31 @@ class UpdateAlmostDepletedTestCase(TestCase):
         campaign_stop_count = CampaignStopState.objects.count()
         self.assertEqual(campaign_stop_count, 0)
         campaignstop.service.update_almost_depleted.mark_almost_depleted_campaigns()
+
+    @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
+    def test_no_mark(self):
+        RealTimeDataHistory.objects.create(
+            ad_group=self.ad_group,
+            source=self.source,
+            date=dates_helper.local_today(),
+            etfm_spend=50,
+        )
+        campaignstop.service.update_almost_depleted.mark_almost_depleted_campaigns()
+        self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
+
+    @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
+    def test_mark_if_budget_over_end_date(self):
+        now = dates_helper.utc_now()
+        RealTimeDataHistory.objects.create(
+            ad_group=self.ad_group,
+            source=self.source,
+            date=dates_helper.local_today(),
+            etfm_spend=50,
+        )
+        with mock.patch('utils.dates_helper.utc_now') as mock_utc_now:
+            mock_utc_now.return_value = dates_helper.day_after(now.replace(hour=8))
+            campaignstop.service.update_almost_depleted.mark_almost_depleted_campaigns()
+            self.assertTrue(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
     @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
@@ -254,7 +281,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         today = dates_helper.local_today()
         adg_sources = [self.ad_group_source]
         adg_source_spends = {(self.ad_group.id, self.source.id, today): 900.000}
-        returned_spend = campaignstop.service.update_almost_depleted._get_spend(adg_sources, adg_source_spends)
+        returned_spend = campaignstop.service.update_almost_depleted._get_max_spend(adg_sources, adg_source_spends)
         self.assertEqual(returned_spend, 900.000)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
@@ -264,7 +291,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.ad_group_source.settings.update(None, daily_budget_cc=900.0000)
         adg_sources = [self.ad_group_source]
         adg_source_spends = {(self.ad_group.id, self.source.id, today): 800.000}
-        returned_spend = campaignstop.service.update_almost_depleted._get_spend(adg_sources, adg_source_spends)
+        returned_spend = campaignstop.service.update_almost_depleted._get_max_spend(adg_sources, adg_source_spends)
         self.assertEqual(returned_spend, 900.000)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
@@ -284,7 +311,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
             (self.ad_group.id, self.source.id, today): 900.000,
             (ad_group2.id, source2.id, today): 100.000,
         }
-        returned_spend = campaignstop.service.update_almost_depleted._get_spend(adg_sources, adg_source_spends)
+        returned_spend = campaignstop.service.update_almost_depleted._get_max_spend(adg_sources, adg_source_spends)
         self.assertEqual(returned_spend, 1000.000)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
@@ -307,7 +334,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
             (self.ad_group.id, self.source.id, today): 900.000,
             (ad_group2.id, source2.id, today): 100.000,
         }
-        returned_spend = campaignstop.service.update_almost_depleted._get_spend(adg_sources, adg_source_spends)
+        returned_spend = campaignstop.service.update_almost_depleted._get_max_spend(adg_sources, adg_source_spends)
         self.assertEqual(returned_spend, 1000.000)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_morning_est_now)
@@ -332,7 +359,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
             (self.ad_group.id, self.source.id, yesterday): 500.000,
             (ad_group2.id, source2.id, today): 100.000,
         }
-        returned_spend = campaignstop.service.update_almost_depleted._get_spend(adg_sources, adg_source_spends)
+        returned_spend = campaignstop.service.update_almost_depleted._get_max_spend(adg_sources, adg_source_spends)
         self.assertEqual(returned_spend, 1500.000)
 
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)

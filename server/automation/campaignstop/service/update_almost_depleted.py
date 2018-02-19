@@ -19,34 +19,32 @@ def mark_almost_depleted_campaigns(campaigns=None):
 
 
 def _mark_almost_depleted_campaigns(campaigns):
-    budget_line_items = _get_all_budget_line_items(campaigns)
-    campaign_budget_line_items = _get_campaign_budget_line_items(budget_line_items)
-    campaign_available_amount = _get_campaign_available_amount(campaign_budget_line_items)
-    campaign_spends = _get_campaign_spends(campaigns)
+    available_campaign_budgets = _get_available_campaign_budgets(campaigns)
+    max_campaign_spends = _get_max_campaign_spends(campaigns)
 
-    _update_campaign_budgets(campaign_spends, campaign_available_amount)
+    _update_campaign_budgets(max_campaign_spends, available_campaign_budgets)
+
+
+def _get_available_campaign_budgets(campaigns):
+    campaign_available_amount = {}
+    date_to_digest = _get_date_to_digest()
+    budget_line_items = _get_all_budget_line_items(campaigns)
+    for budget_line_item in budget_line_items:
+        campaign = budget_line_item.campaign
+        campaign_available_amount.setdefault(campaign, 0)
+        campaign_available_amount[campaign] = budget_line_item.get_available_etfm_amount(
+            date=date_to_digest
+        )
+    return campaign_available_amount
 
 
 def _get_all_budget_line_items(campaigns):
+    today = dates_helper.local_today()
     return core.bcm.BudgetLineItem.objects.filter(
-        campaign__in=campaigns
+        campaign__in=campaigns,
+        start_date__lte=today,
+        end_date__gte=today,
     ).select_related('campaign')
-
-
-def _get_campaign_budget_line_items(budget_line_items):
-    campaign_budget_line_items = {}
-    for bli in budget_line_items:
-        campaign_budget_line_items.setdefault(bli.campaign, [])
-        campaign_budget_line_items[bli.campaign].append(bli)
-    return campaign_budget_line_items
-
-
-def _get_campaign_available_amount(campaign_budget_line_items):
-    campaign_available_amount = {}
-    date_to_digest = _get_date_to_digest()
-    for campaign, budget_line_items in campaign_budget_line_items.items():
-        campaign_available_amount[campaign] = sum(bli.get_available_etfm_amount(date=date_to_digest) for bli in budget_line_items)
-    return campaign_available_amount
 
 
 def _get_date_to_digest():
@@ -60,18 +58,18 @@ def _in_critical_hours():
         return 0 <= dates_helper.local_now().hour < HOURS_DELAY
 
 
-def _get_campaign_spends(campaigns):
-    campaign_spends = {}
+def _get_max_campaign_spends(campaigns):
+    max_campaign_spends = {}
     for campaign in campaigns:
-        campaign_spends[campaign] = _calculate_campaign_spend(campaign)
-    return campaign_spends
+        max_campaign_spends[campaign] = _calculate_max_campaign_spend(campaign)
+    return max_campaign_spends
 
 
-def _calculate_campaign_spend(campaign):
+def _calculate_max_campaign_spend(campaign):
     rt_data = _get_latest_real_time_data(campaign)
     adg_source_spends = _etfm_spends(rt_data)
     adg_sources = _get_adgroup_sources(campaign)
-    return _get_spend(adg_sources, adg_source_spends)
+    return _get_max_spend(adg_sources, adg_source_spends)
 
 
 def _get_latest_real_time_data(campaign):
@@ -110,7 +108,7 @@ def _update_almost_depleted(campaign, is_almost_depleted):
     campaignstop_state.update_almost_depleted(is_almost_depleted)
 
 
-def _get_spend(adg_sources, adg_source_spends):
+def _get_max_spend(adg_sources, adg_source_spends):
     b1_sources_group_spends = {}
     spend = 0
     today = dates_helper.local_today()
