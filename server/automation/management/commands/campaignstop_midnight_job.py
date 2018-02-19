@@ -1,4 +1,5 @@
 import automation.campaignstop
+import core.entity
 
 from utils.command_helpers import ExceptionCommand
 from utils import dates_helper
@@ -14,3 +15,8 @@ class Command(ExceptionCommand):
         if options.get('check_time') and not dates_helper.local_now().hour == 0:
             return
         automation.campaignstop.update_campaigns_end_date()
+
+        campaigns_today = core.entity.Campaign.objects.filter(
+            campaignstopstate__max_allowed_end_date__gte=dates_helper.local_today()
+        )
+        automation.campaignstop.update_campaigns_state(campaigns_today)
