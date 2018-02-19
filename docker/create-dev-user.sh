@@ -8,7 +8,7 @@ else
 	  DIR=/app/z1
 fi
 
-DB_NAME=$(echo 'from django.conf import settings; print settings.DATABASES["default"]["NAME"]' | $DIR/manage.py shell 2>/dev/null)
+DB_NAME=$(echo 'from django.conf import settings; print(settings.DATABASES["default"]["NAME"])' | $DIR/manage.py shell 2>/dev/null)
 
 if [[ "$DB_NAME" != "one-dev" ]]; then
     echo "ERROR: Running create-dev-user in non-dev environment! Exiting."

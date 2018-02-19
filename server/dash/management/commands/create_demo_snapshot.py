@@ -32,8 +32,10 @@ demo_anonymizer.set_fake_factory(faker.Faker())
 
 TIMEOUT = 30 * 60
 
+# due to cyclical foreign key dependency, we want to ignore some fields
 IGNORE_FIELDS = {
-    dash.models.PublisherGroup: {'account'},  # due to cyclical foreign key dependency, we want to ignore the account field
+    dash.models.PublisherGroup: {'account', 'agency'},
+    dash.models.AgencySettings: {'agency'},
     dash.models.AccountSettings: {'account'},
     dash.models.CampaignSettings: {'campaign'},
     dash.models.AdGroupSettings: {'ad_group'},
@@ -324,8 +326,10 @@ def _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymiz
                 setattr(obj, field.name, anonymize[field.name]())
                 anonymized_objects.add(obj)
             if (field.name not in ignore_fields) and isinstance(field, models.ForeignKey):
+                logger.debug('adding child %s of %s' % (field.name, obj))
                 _add_to_serialize_list(serialize_list, [obj.__getattribute__(field.name)])
         for field in _get_many_to_many_fields(obj):
+            logger.debug('adding all children of %s' % obj)
             _add_to_serialize_list(serialize_list, obj.__getattribute__(field.name).all())
 
 
