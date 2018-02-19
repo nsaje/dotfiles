@@ -11,4 +11,5 @@ from .service import (
     mark_almost_depleted_campaigns,
     handle_updates,
     audit_stopped_campaigns,
+    notify_initialize
 )

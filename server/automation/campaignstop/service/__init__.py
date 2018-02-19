@@ -6,3 +6,4 @@ from .validation import validate_minimum_budget_amount
 from .update_almost_depleted import mark_almost_depleted_campaigns
 from .update_handler import handle_updates
 from .monitor import audit_stopped_campaigns
+from .update_notifier import notify_initialize
