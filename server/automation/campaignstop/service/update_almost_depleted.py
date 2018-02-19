@@ -32,7 +32,7 @@ def _get_available_campaign_budgets(campaigns):
     for budget_line_item in budget_line_items:
         campaign = budget_line_item.campaign
         campaign_available_amount.setdefault(campaign, 0)
-        campaign_available_amount[campaign] = budget_line_item.get_available_etfm_amount(
+        campaign_available_amount[campaign] += budget_line_item.get_available_etfm_amount(
             date=date_to_digest
         )
     return campaign_available_amount
