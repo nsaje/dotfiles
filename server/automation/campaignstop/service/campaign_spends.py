@@ -25,14 +25,15 @@ def get_predicted_remaining_budget(log, campaign):
         remaining = available_amount - _sum_rt_spends(current_rt_spends)
 
     spend_rate = _calculate_spend_rate(current_rt_spends, prev_rt_spends)
+    predicted_sped_increase = spend_rate * CHECK_FREQUENCY_MINUTES * 60
     log.add_context({
         'budget_spends_until_date': budget_spends_until_date,
         'available_budget': available_amount,
         'current_rt_spend': _sum_rt_spends(current_rt_spends),
         'prev_rt_spend': _sum_rt_spends(prev_rt_spends),
-        'spend_rate': spend_rate,
+        'spend_rate': predicted_sped_increase,
     })
-    return remaining - spend_rate
+    return remaining - predicted_sped_increase
 
 
 def get_budget_spend_estimates(log, campaign):
@@ -73,8 +74,7 @@ def _calculate_spend_rate(current_rt_spends, prev_rt_spends):
     current_rt_spend = _sum_rt_spends(current_rt_spends)
     prev_rt_spend = _sum_rt_spends(prev_rt_spends)
     rate = (current_rt_spend - prev_rt_spend) / Decimal(seconds_since)
-    rate = numbers.round_decimal_half_down(rate, places=4)
-    return rate * CHECK_FREQUENCY_MINUTES * 60
+    return numbers.round_decimal_half_down(rate, places=4)
 
 
 def _get_until_date_for_budget_spends(campaign):

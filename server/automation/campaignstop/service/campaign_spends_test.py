@@ -190,7 +190,7 @@ class GetPredictionTest(TestCase):
                 )
 
             prediction = campaign_spends.get_predicted_remaining_budget(LogMock(), self.campaign)
-            self.assertEqual(200, prediction)
+            self.assertAlmostEqual(200, prediction, places=1)
 
 
 class GetBudgetSpendEstimateTest(TestCase):
