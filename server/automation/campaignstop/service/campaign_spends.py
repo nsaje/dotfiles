@@ -1,26 +1,34 @@
+from decimal import Decimal
+import logging
+
 from utils import dates_helper
 
 from .. import RealTimeCampaignDataHistory
 
+
+logger = logging.getLogger(__name__)
+
 HOURS_DELAY = 6
+MAX_RT_DATA_AGE_MINUTES = 15
+CHECK_FREQUENCY_MINUTES = 5
 
 
 def get_predicted_remaining_budget(log, campaign):
     budget_spends_until_date = _get_until_date_for_budget_spends(campaign)
-    current_rt_spend, prev_rt_spend = _get_realtime_spends(
+    current_rt_spends, prev_rt_spends = _get_realtime_spends(
         log, campaign, dates_helper.day_after(budget_spends_until_date))
     available_amount = _get_available_campaign_budget(campaign, budget_spends_until_date)
 
     remaining = available_amount
-    if current_rt_spend:
-        remaining = available_amount - current_rt_spend
+    if current_rt_spends:
+        remaining = available_amount - _sum_rt_spends(current_rt_spends)
 
-    spend_rate = _calculate_spend_rate(current_rt_spend, prev_rt_spend)
+    spend_rate = _calculate_spend_rate(current_rt_spends, prev_rt_spends)
     log.add_context({
         'budget_spends_until_date': budget_spends_until_date,
         'available_budget': available_amount,
-        'current_rt_spend': current_rt_spend,
-        'prev_rt_spend': prev_rt_spend,
+        'current_rt_spend': _sum_rt_spends(current_rt_spends),
+        'prev_rt_spend': _sum_rt_spends(prev_rt_spends),
         'spend_rate': spend_rate,
     })
     return remaining - spend_rate
@@ -45,15 +53,26 @@ def get_budget_spend_estimates(log, campaign):
 
 
 def _get_current_realtime_spend(log, campaign, start):
-    current_rt_spend, _ = _get_realtime_spends(log, campaign, start)
-    return current_rt_spend
+    current_rt_spends, _ = _get_realtime_spends(log, campaign, start)
+    return _sum_rt_spends(current_rt_spends)
 
 
-def _calculate_spend_rate(current_rt_spend, prev_rt_spend):
-    if current_rt_spend is None or prev_rt_spend is None:
+def _sum_rt_spends(rt_spends):
+    return sum(s.etfm_spend for s in rt_spends)
+
+
+def _calculate_spend_rate(current_rt_spends, prev_rt_spends):
+    if not current_rt_spends or not prev_rt_spends:
         return 0
 
-    return current_rt_spend - prev_rt_spend
+    # NOTE: for simplicity only compare first element (today's data)
+    # because yesterday's data is more likely to be accurate
+    seconds_since = ((current_rt_spends[0].created_dt) - (prev_rt_spends[0].created_dt)).total_seconds()
+
+    current_rt_spend = _sum_rt_spends(current_rt_spends)
+    prev_rt_spend = _sum_rt_spends(prev_rt_spends)
+    rate = (current_rt_spend - prev_rt_spend) / Decimal(seconds_since)
+    return rate * CHECK_FREQUENCY_MINUTES * 60
 
 
 def _get_until_date_for_budget_spends(campaign):
@@ -83,20 +102,19 @@ def _get_budgets_active_today(campaign):
 
 def _get_realtime_spends(log, campaign, start):
     tomorrow = dates_helper.day_after(dates_helper.local_today())
-    current_spend, prev_spend = None, None
-    current_spends_per_date = []
-    prev_spends_per_date = []
+    curr_spends, prev_spends = [], []
     for date in dates_helper.date_range(start, tomorrow):
         curr, prev = _get_realtime_spends_for_date(campaign, date)
-        current_spends_per_date.append((date, curr))
-        prev_spends_per_date.append((date, prev))
-        current_spend = current_spend + curr if current_spend else curr
-        prev_spend = prev_spend + prev if prev_spend else prev
+        if curr:
+            curr_spends.append(curr)
+        if prev:
+            prev_spends.append(prev)
+
     log.add_context({
-        'current_rt_spends_per_date': current_spends_per_date,
-        'prev_rt_spends_per_date': prev_spends_per_date
+        'current_rt_spends_per_date': [(s.date, s.etfm_spend) for s in curr_spends],
+        'prev_rt_spends_per_date': [(s.date, s.etfm_spend) for s in prev_spends]
     })
-    return current_spend, prev_spend
+    return curr_spends, prev_spends
 
 
 def _get_realtime_spends_for_date(campaign, date):
@@ -109,8 +127,19 @@ def _get_realtime_spends_for_date(campaign, date):
 
     current_spend, prev_spend = None, None
     if len(spends) > 0:
-        current_spend = spends[0].etfm_spend
-    if len(spends) > 1:
-        prev_spend = spends[1].etfm_spend
+        if not _is_recent(spends[0]):
+            logger.warning(
+                'Real time data is stale. campaign=%s, date=%s',
+                campaign,
+                date.isoformat()
+            )
+        current_spend = spends[0]
+    if len(spends) > 1 and _is_recent(spends[1]):
+        prev_spend = spends[1]
 
     return current_spend, prev_spend
+
+
+def _is_recent(rt_spend):
+    td = dates_helper.utc_now() - rt_spend.created_dt
+    return (td.total_seconds() / 60) < MAX_RT_DATA_AGE_MINUTES

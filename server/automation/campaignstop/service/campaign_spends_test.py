@@ -9,6 +9,7 @@ import core.entity
 import dash.constants
 from utils.magic_mixer import magic_mixer
 from utils import dates_helper
+from utils.test_helper import disable_auto_now_add
 
 from .. import RealTimeCampaignDataHistory
 from . import update_campaignstop_state
@@ -109,18 +110,22 @@ class GetPredictionTest(TestCase):
         self.assertEqual(120, prediction)
 
     def test_get_prediction_with_estimation(self):
-        magic_mixer.blend(
-            RealTimeCampaignDataHistory,
-            campaign=self.campaign,
-            date=dates_helper.local_today(),
-            etfm_spend=decimal.Decimal('50.0'),
-        )
-        magic_mixer.blend(
-            RealTimeCampaignDataHistory,
-            campaign=self.campaign,
-            date=dates_helper.local_today(),
-            etfm_spend=decimal.Decimal('200.0'),
-        )
+        now = dates_helper.utc_now()
+        with disable_auto_now_add(RealTimeCampaignDataHistory, 'created_dt'):
+            magic_mixer.blend(
+                RealTimeCampaignDataHistory,
+                campaign=self.campaign,
+                date=dates_helper.local_today(),
+                etfm_spend=decimal.Decimal('50.0'),
+                created_dt=now-datetime.timedelta(seconds=300),
+            )
+            magic_mixer.blend(
+                RealTimeCampaignDataHistory,
+                campaign=self.campaign,
+                date=dates_helper.local_today(),
+                etfm_spend=decimal.Decimal('200.0'),
+                created_dt=now,
+            )
 
         prediction = campaign_spends.get_predicted_remaining_budget(LogMock(), self.campaign)
         self.assertEqual(150, prediction)
@@ -153,30 +158,36 @@ class GetPredictionTest(TestCase):
             midnight = datetime.datetime(today.year, today.month, today.day)
             mock_utc_now.return_value = midnight + datetime.timedelta(
                 hours=update_campaignstop_state.HOURS_DELAY-1)
-            magic_mixer.blend(
-                RealTimeCampaignDataHistory,
-                campaign=self.campaign,
-                date=dates_helper.local_yesterday(),
-                etfm_spend=decimal.Decimal('200.0'),
-            )
-            magic_mixer.blend(
-                RealTimeCampaignDataHistory,
-                campaign=self.campaign,
-                date=dates_helper.local_yesterday(),
-                etfm_spend=decimal.Decimal('200.0'),
-            )
-            magic_mixer.blend(
-                RealTimeCampaignDataHistory,
-                campaign=self.campaign,
-                date=dates_helper.local_today(),
-                etfm_spend=decimal.Decimal('0.0'),
-            )
-            magic_mixer.blend(
-                RealTimeCampaignDataHistory,
-                campaign=self.campaign,
-                date=dates_helper.local_today(),
-                etfm_spend=decimal.Decimal('50.0'),
-            )
+            with disable_auto_now_add(RealTimeCampaignDataHistory, 'created_dt'):
+                now = dates_helper.utc_now()
+                magic_mixer.blend(
+                    RealTimeCampaignDataHistory,
+                    campaign=self.campaign,
+                    date=dates_helper.local_yesterday(),
+                    etfm_spend=decimal.Decimal('200.0'),
+                    created_dt=now-datetime.timedelta(seconds=300),
+                )
+                magic_mixer.blend(
+                    RealTimeCampaignDataHistory,
+                    campaign=self.campaign,
+                    date=dates_helper.local_yesterday(),
+                    etfm_spend=decimal.Decimal('200.0'),
+                    created_dt=now,
+                )
+                magic_mixer.blend(
+                    RealTimeCampaignDataHistory,
+                    campaign=self.campaign,
+                    date=dates_helper.local_today(),
+                    etfm_spend=decimal.Decimal('0.0'),
+                    created_dt=now-datetime.timedelta(seconds=300),
+                )
+                magic_mixer.blend(
+                    RealTimeCampaignDataHistory,
+                    campaign=self.campaign,
+                    date=dates_helper.local_today(),
+                    etfm_spend=decimal.Decimal('50.0'),
+                    created_dt=now,
+                )
 
             prediction = campaign_spends.get_predicted_remaining_budget(LogMock(), self.campaign)
             self.assertEqual(200, prediction)
