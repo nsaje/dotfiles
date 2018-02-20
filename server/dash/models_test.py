@@ -347,6 +347,7 @@ class CampaignSettingsTest(TestCase):
             'goal_quantity': Decimal('10.00'),
             'automatic_campaign_stop': True,
             'landing_mode': False,
+            'autopilot': False,
             'enable_ga_tracking': True,
             'ga_property_id': '',
             'ga_tracking_type': 1,

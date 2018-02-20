@@ -51,6 +51,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin,
         'exclusion_target_regions',
         'automatic_campaign_stop',
         'landing_mode',
+        'autopilot',
         'enable_ga_tracking',
         'ga_tracking_type',
         'ga_property_id',
@@ -115,6 +116,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin,
 
     automatic_campaign_stop = models.BooleanField(default=True)
     landing_mode = models.BooleanField(default=False)
+    autopilot = models.BooleanField(default=False)
 
     enable_ga_tracking = models.BooleanField(default=True)
     ga_tracking_type = models.IntegerField(
@@ -173,6 +175,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin,
             'exclusion_target_regions': 'Excluded Locations',
             'automatic_campaign_stop': 'Automatic Campaign Stop',
             'landing_mode': 'Landing Mode',
+            'autopilot': 'Budget Optimization Autopilot',
             'enable_ga_tracking': 'Enable GA tracking',
             'ga_tracking_type': 'GA tracking type (via API or e-mail).',
             'ga_property_id': 'GA web property ID',
@@ -223,6 +226,8 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin,
         elif prop_name == 'automatic_campaign_stop':
             value = str(value)
         elif prop_name == 'landing_mode':
+            value = str(value)
+        elif prop_name == 'autopilot':
             value = str(value)
         elif prop_name == 'archived':
             value = str(value)
