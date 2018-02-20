@@ -16,12 +16,14 @@ class CampaignStopEvent(ConstantBase):
     SELECTION_CHECK = 2
     MAX_ALLOWED_END_DATE_UPDATE = 3
     BUDGET_AMOUNT_VALIDATION = 4
+    SIMPLE_CAMPAIGN_STOP = 5
 
     _VALUES = {
         BUDGET_DEPLETION_CHECK: 'Budget depletion check',
         SELECTION_CHECK: 'Selection check',
         MAX_ALLOWED_END_DATE_UPDATE: 'Max allowed end date update',
         BUDGET_AMOUNT_VALIDATION: 'Budget amount validation',
+        SIMPLE_CAMPAIGN_STOP: 'Simple campaign stop',
     }
 
 

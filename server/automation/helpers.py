@@ -3,6 +3,8 @@ import pytz
 
 from django.conf import settings
 
+import automation.campaignstop
+
 import dash
 import dash.constants
 import decimal
@@ -115,6 +117,22 @@ def get_total_daily_budget_amount(campaign):
 
 
 def stop_campaign(campaign):
+    if campaign.real_time_campaign_stop:
+        _stop_real_time(campaign)
+    else:
+        _stop_all_ad_groups(campaign)
+
+
+def _stop_real_time(campaign):
+    campaign_state = automation.campaignstop.CampaignStopState.objects.get_or_create(campaign=campaign)
+    campaign_state.set_allowed_to_run(False)
+    automation.campaignstop.RealTimeCampaignStopLog(
+        campaign=campaign,
+        event=automation.campaignstop.constants.CampaignStopEvent.SIMPLE_CAMPAIGN_STOP,
+    )
+
+
+def _stop_all_ad_groups(campaign):
     for ad_group in get_active_ad_groups(campaign):
         current_settings = ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
