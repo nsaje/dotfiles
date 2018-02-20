@@ -2,6 +2,7 @@ from decimal import Decimal
 import logging
 
 from utils import dates_helper
+from utils import numbers
 
 from .. import RealTimeCampaignDataHistory
 
@@ -72,6 +73,7 @@ def _calculate_spend_rate(current_rt_spends, prev_rt_spends):
     current_rt_spend = _sum_rt_spends(current_rt_spends)
     prev_rt_spend = _sum_rt_spends(prev_rt_spends)
     rate = (current_rt_spend - prev_rt_spend) / Decimal(seconds_since)
+    rate = numbers.round_decimal_half_down(rate, places=4)
     return rate * CHECK_FREQUENCY_MINUTES * 60
 
 
@@ -134,7 +136,7 @@ def _get_realtime_spends_for_date(campaign, date):
                 date.isoformat()
             )
         current_spend = spends[0]
-    if len(spends) > 1 and _is_recent(spends[1]):
+    if len(spends) > 1:
         prev_spend = spends[1]
 
     return current_spend, prev_spend
