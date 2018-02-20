@@ -35,6 +35,9 @@ logger = logging.getLogger(__name__)
 
 CONVERSION_PIXEL_INACTIVE_DAYS = 7
 CONTENT_INSIGHTS_TABLE_ROW_COUNT = 10
+SUBAGENCY_MAP = {
+    198: (196, 198),
+}
 
 
 class AdGroupSettings(api_common.BaseApiView):
@@ -817,9 +820,9 @@ class AccountSettings(api_common.BaseApiView):
             response['account_managers'] = self.get_account_managers(request, account, account_settings)
 
         if request.user.has_perm('zemauth.can_set_account_sales_representative'):
-            response['sales_reps'] = self.get_sales_representatives()
+            response['sales_reps'] = self.get_sales_representatives(account)
         if request.user.has_perm('zemauth.can_set_account_cs_representative'):
-            response['cs_reps'] = self.get_cs_representatives()
+            response['cs_reps'] = self.get_cs_representatives(account)
         if request.user.has_perm('zemauth.can_see_backend_hacks'):
             response['hacks'] = models.CustomHack.objects.all().filter_applied(
                 account=account
@@ -1165,12 +1168,18 @@ class AccountSettings(api_common.BaseApiView):
         users = helpers.get_users_for_manager(request.user, account, settings.default_account_manager)
         return self.format_user_list(users)
 
-    def get_sales_representatives(self):
+    def get_sales_representatives(self, account):
         users = ZemUser.objects.get_users_with_perm('campaign_settings_sales_rep').filter(is_active=True)
+        if account.agency_id in SUBAGENCY_MAP:
+            subagencies = models.Agency.objects.filter(pk__in=SUBAGENCY_MAP[account.agency_id])
+            users &= ZemUser.objects.filter(agency__in=subagencies).distinct()
         return self.format_user_list(users)
 
-    def get_cs_representatives(self):
+    def get_cs_representatives(self, account):
         users = ZemUser.objects.get_users_with_perm('campaign_settings_cs_rep').filter(is_active=True)
+        if account.agency_id in SUBAGENCY_MAP:
+            subagencies = models.Agency.objects.filter(pk__in=SUBAGENCY_MAP[account.agency_id])
+            users &= ZemUser.objects.filter(agency__in=subagencies).distinct()
         return self.format_user_list(users)
 
     def format_user_list(self, users):
