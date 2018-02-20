@@ -51,13 +51,11 @@ class CampaignStopState(models.Model):
         self.almost_depleted = is_depleted
         self.save()
 
-    def __unicode__(self):
-        return '{} (state: {}, almost_depleted: {}, max_allowed_end_date: {})'.format(
-            self.campaign,
+    def __str__(self):
+        return '{} ({}) (state: {}, almost_depleted: {}, max_allowed_end_date: {})'.format(
+            self.campaign.name,
+            self.campaign.id,
             self.state,
             self.almost_depleted,
             self.max_allowed_end_date
         )
-
-    def __str__(self):
-        return str(self).encode('ascii', 'ignore')
