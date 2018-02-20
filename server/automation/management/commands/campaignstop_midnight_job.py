@@ -17,6 +17,7 @@ class Command(ExceptionCommand):
         automation.campaignstop.update_campaigns_end_date()
 
         campaigns_today = core.entity.Campaign.objects.filter(
+            campaignstopstate__state=automation.campaignstop.constants.CampaignStopState.STOPPED,
             campaignstopstate__max_allowed_end_date__gte=dates_helper.local_today()
         )
         automation.campaignstop.update_campaigns_state(campaigns_today)
