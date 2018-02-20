@@ -51,6 +51,19 @@ class EmailAPITestCase(TestCase):
         self.assertEqual(mail.outbox[0].extra_headers, {'X-Mailgun-Tag': ['tag1', 'tag2']})
         mock_render.assert_called_with('email.html', {'content': '<p>Zemanta Body</p>', 'subject': 'Zemanta Subject'})
 
+    @override_settings(TESTING=False)
+    @patch('utils.email_helper.render_to_string')
+    def test_basic_development(self, mock_render):
+        email_helper.send_official_email(
+            recipient_list=['test@test.com'],
+            subject='Zemanta Subject',
+            body='Zemanta Body',
+            additional_recipients=['additional@test.com'],
+            tags=['tag1', 'tag2'],
+            agency_or_user=self.agency
+        )
+        self.assertEqual(len(mail.outbox), 0)
+
     @patch('utils.email_helper.render_to_string')
     def test_whitelabel(self, mock_render):
         email_helper.send_official_email(

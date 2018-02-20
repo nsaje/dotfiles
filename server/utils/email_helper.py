@@ -61,7 +61,7 @@ def send_official_email(agency_or_user,
         additional_recipients=additional_recipients,
         tags=tags,
         from_email=from_email)
-    email.send()
+    _send_email(email)
 
 
 def create_official_email(agency_or_user,
@@ -101,7 +101,7 @@ def send_internal_email(recipient_list=None,
         tags=tags,
         from_email=from_email,
         custom_html=custom_html)
-    email.send()
+    _send_email(email)
 
 
 def create_internal_email(recipient_list=None,
@@ -151,6 +151,12 @@ def _create_email(whitelabel=None,
     else:
         email.attach_alternative(_format_template(subject, body, whitelabel), "text/html")
     return email
+
+
+def _send_email(email):
+    if not settings.EMAIL_HOST and not settings.TESTING:
+        return
+    email.send()
 
 
 def params_from_template(template_type, **kwargs):
@@ -436,7 +442,7 @@ def send_supply_report_email(email, date, impressions, cost, custom_subject=None
         if publisher_report:
             email.attach('publisher_report.csv', publisher_report, 'text/csv')
 
-        email.send()
+        _send_email(email)
     except Exception:
         logger.error(
             'Supply report e-mail to %s was not sent because an exception was raised: %s',
@@ -698,7 +704,7 @@ def send_oen_postclickkpi_cpa_factors_email(factors):
             **params_from_template(dash.constants.EmailTemplateType.OEN_POSTCLICKKPI_CPA_FACTORS)
         )
         email.attach('cpa_optimization_factors.csv', factors, 'text/csv')
-        email.send()
+        _send_email(email)
     except Exception:
         logger.error(
             'OEN CPA Optimization factors e-mail was not sent because an exception was raised: %s',
