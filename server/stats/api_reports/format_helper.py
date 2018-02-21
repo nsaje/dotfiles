@@ -1,7 +1,6 @@
 import datetime
 from decimal import Decimal
 
-import dash.constants
 from stats import constants
 
 FORMAT_1_DECIMAL = []
@@ -40,12 +39,6 @@ FORMAT_HASH = ['image_hash']
 
 
 formatters = {}
-
-
-def get_dash_constant_formatter(constant_class):
-    def format_(value):
-        return constant_class.get_name(value)
-    return format_
 
 
 def format_values(rows, columns):
@@ -112,16 +105,6 @@ def format_percentages(value):
 formatters[constants.TimeDimension.DAY] = format_date
 formatters[constants.TimeDimension.WEEK] = format_week
 formatters[constants.TimeDimension.MONTH] = format_month
-
-formatters[constants.DeliveryDimension.DEVICE] = get_dash_constant_formatter(dash.constants.DeviceType)
-formatters[constants.DeliveryDimension.DEVICE_OS] = get_dash_constant_formatter(dash.constants.OperatingSystem)
-formatters[constants.DeliveryDimension.DEVICE_OS_VERSION] = get_dash_constant_formatter(dash.constants.OperatingSystemVersion)
-formatters[constants.DeliveryDimension.PLACEMENT_MEDIUM] = get_dash_constant_formatter(dash.constants.PlacementMedium)
-formatters[constants.DeliveryDimension.PLACEMENT_TYPE] = get_dash_constant_formatter(dash.constants.PlacementType)
-formatters[constants.DeliveryDimension.VIDEO_PLAYBACK_METHOD] = get_dash_constant_formatter(dash.constants.VideoPlaybackMethod)
-formatters[constants.DeliveryDimension.AGE] = get_dash_constant_formatter(dash.constants.Age)
-formatters[constants.DeliveryDimension.GENDER] = get_dash_constant_formatter(dash.constants.Gender)
-formatters[constants.DeliveryDimension.AGE_GENDER] = get_dash_constant_formatter(dash.constants.AgeGender)
 
 for column in FORMAT_DIVIDE_100:
     formatters[column] = format_percentages
