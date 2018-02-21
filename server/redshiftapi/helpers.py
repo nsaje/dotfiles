@@ -3,6 +3,8 @@ import collections
 import copy
 import datetime
 import dateutil
+import re
+
 from dash import publisher_helpers
 
 from utils import dates_helper
@@ -10,6 +12,10 @@ from utils import sort_helper
 
 import stats.helpers
 from stats import constants
+
+
+PIXEL_METRIC_REGEX = re.compile(r'avg_(et_|etfm_)?cost_per_pixel')
+CONVERSION_GOAL_REGEX = re.compile(r'avg_(et_|etfm_)?cost_per_conversion_goal')
 
 
 def create_parents(rows, breakdown):
@@ -190,12 +196,12 @@ def get_query_name(breakdown, extra_name=''):
 def is_pixel_metric(metric):
     return (
         metric.startswith('pixel_') or
-        metric.startswith('avg_cost_per_pixel_')
+        PIXEL_METRIC_REGEX.match(metric)
     )
 
 
 def is_conversion_goal_metric(metric):
     return (
         metric.startswith('conversion_goal_') or
-        metric.startswith('avg_cost_per_conversion_goal_')
+        CONVERSION_GOAL_REGEX.match(metric)
     )
