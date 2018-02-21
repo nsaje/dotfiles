@@ -25,6 +25,11 @@ describe('InventoryPlanningFilterComponent', () => {
         name: 'Option 4',
         auctionCount: 40000,
     };
+    const testOption5 = {
+        value: '5',
+        name: 'Option 5',
+        auctionCount: 50000,
+    };
 
     let fixture: ComponentFixture<InventoryPlanningFilterComponent>;
     let component: InventoryPlanningFilterComponent;
@@ -42,8 +47,8 @@ describe('InventoryPlanningFilterComponent', () => {
 
     it('should correctly generate categorizedOptions and categorizedSelectedOptions on inputs changes', () => {
         let changes: SimpleChanges;
-        component.availableFilters = {countries: [], publishers: [], devices: []};
-        component.selectedFilters = {countries: [], publishers: [], devices: []};
+        component.availableFilters = {countries: [], publishers: [], devices: [], sources: []};
+        component.selectedFilters = {countries: [], publishers: [], devices: [], sources: []};
         changes = {
             availableFilters: new SimpleChange(null, component.availableFilters, false),
             selectedFilters: new SimpleChange(null, component.selectedFilters, false),
@@ -53,6 +58,7 @@ describe('InventoryPlanningFilterComponent', () => {
             {name: 'Countries', key: 'countries', items: []},
             {name: 'Publishers', key: 'publishers', items: []},
             {name: 'Devices', key: 'devices', items: []},
+            {name: 'Media Sources', key: 'sources', items: []},
         ]);
         expect(component.categorizedSelectedOptions).toEqual([]);
 
@@ -60,8 +66,9 @@ describe('InventoryPlanningFilterComponent', () => {
             countries: [testOption1, testOption2],
             publishers: [testOption3],
             devices: [testOption4],
+            sources: [testOption5],
         };
-        component.selectedFilters = {countries: [testOption2], publishers: [testOption3], devices: []};
+        component.selectedFilters = {countries: [testOption2], publishers: [testOption3], devices: [], sources: []};
         changes = {
             availableFilters: new SimpleChange(null, component.availableFilters, false),
             selectedFilters: new SimpleChange(null, component.selectedFilters, false),
@@ -86,6 +93,11 @@ describe('InventoryPlanningFilterComponent', () => {
                 name: 'Devices',
                 key: 'devices',
                 items: [{name: 'Option 4', value: '4', description: '40 K', selected: false}],
+            },
+            {
+                name: 'Media Sources',
+                key: 'sources',
+                items: [{name: 'Option 5', value: '5', description: '50 K', selected: false}],
             },
         ]);
         expect(component.categorizedSelectedOptions).toEqual([

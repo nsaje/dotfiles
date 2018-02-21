@@ -26,6 +26,7 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
             countries: [],
             publishers: [],
             devices: [],
+            sources: [],
         };
         preselectedOptions.forEach(preselectedOption => {
             if (!placeholderSelectedFilters.hasOwnProperty(preselectedOption.key)) {
@@ -82,6 +83,9 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
             devices: {
                 inProgress: true,
             },
+            sources: {
+                inProgress: true,
+            },
         };
 
         if (this.state.requests.summary.subscription) {
@@ -111,6 +115,13 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
         requests.devices.subscription = this.endpoint
             .loadDevices(selectedFilters)
             .subscribe(breakdown => { this.handleBreakdownResponse('devices', breakdown); });
+
+        if (this.state.requests.sources.subscription) {
+            this.state.requests.sources.subscription.unsubscribe();
+        }
+        requests.sources.subscription = this.endpoint
+            .loadSources(selectedFilters)
+            .subscribe(breakdown => { this.handleBreakdownResponse('sources', breakdown); });
 
         this.setState({
             ...this.state,
@@ -161,6 +172,7 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
             countries: [],
             publishers: [],
             devices: [],
+            sources: [],
         };
 
         selectedOptions.forEach(selectedOption => {

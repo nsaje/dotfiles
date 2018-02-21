@@ -14,6 +14,7 @@ interface FilterPayload {
     c: string[];
     p: string[];
     d: string[];
+    s: string[];
 }
 
 interface RequestProperties {
@@ -77,6 +78,19 @@ export class InventoryPlanningEndpoint {
             );
     }
 
+    loadSources (selectedFilters: Filters): Observable<FilterOption[]> {
+        const {method, params, body} = this.buildRequestProperties(selectedFilters);
+        return this.http.request<RestApiResponse>(
+                method,
+                '/rest/internal/inventory-planning/media-sources',
+                {params: params, body: body}
+            )
+            .pipe(
+                map(res => res.data),
+                map(this.convertOptionsValueToSting)
+            );
+    }
+
     private buildRequestProperties (selectedFilters: Filters): RequestProperties {
         const filterPayload = this.buildFilterPayload(selectedFilters);
         let params = new HttpParams();
@@ -97,6 +111,7 @@ export class InventoryPlanningEndpoint {
             c: selectedFilters.countries.map((x: FilterOption) => x.value),
             p: selectedFilters.publishers.map((x: FilterOption) => x.value),
             d: selectedFilters.devices.map((x: FilterOption) => x.value),
+            s: selectedFilters.sources.map((x: FilterOption) => x.value),
         };
     }
 

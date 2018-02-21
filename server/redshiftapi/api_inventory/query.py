@@ -7,7 +7,8 @@ from . import model
 COUNTRY = 'country'
 PUBLISHER = 'publisher'
 DEVICE_TYPE = 'device_type'
-VALID_BREAKDOWNS = (None, COUNTRY, PUBLISHER, DEVICE_TYPE)
+SOURCE_ID = 'source_id'
+VALID_BREAKDOWNS = (None, COUNTRY, PUBLISHER, DEVICE_TYPE, SOURCE_ID)
 
 
 def query(breakdown=None, constraints=None):

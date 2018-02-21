@@ -5,4 +5,5 @@ export interface Requests {
     countries: Request;
     publishers: Request;
     devices: Request;
+    sources: Request;
 }

@@ -21,6 +21,12 @@ INSERT INTO mv_inventory (
           WHEN device_type = 7 THEN 3  -- when settopbox then tv
           ELSE device_type
         END as device_type,
+        CASE
+          {% for source_slug, source_id in source_slug_to_id.items %}
+          WHEN exchange = '{{ source_slug }}' THEN {{ source_id }}
+          {% endfor %}
+          ELSE NULL
+        END as source_id,
         SUM(bid_reqs),
         SUM(bids),
         SUM(win_notices),
@@ -32,10 +38,11 @@ INSERT INTO mv_inventory (
           AND country <> ''
           AND publisher <> ''
           AND device_type > 0
+          AND exchange <> ''
 
-    GROUP BY 1, 2, 3
+    GROUP BY 1, 2, 3, 4
 
-    ORDER BY 1, 2, 3
+    ORDER BY 1, 2, 3, 4
 );
 
 {% endautoescape %}

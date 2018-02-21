@@ -121,3 +121,53 @@ class TestService(TestCase):
                 'win_notices': 0
             }
         ])
+
+    @mock.patch.object(service, '_get_sources_map')
+    def test_get_by_media_source(self, mock_sources_map):
+        mock_sources_map.return_value = {
+            1: 'Source A',
+            2: 'Source B',
+            3: 'Source C',
+        }
+        self.mock_query.return_value = [
+            {
+                'source_id': 1,
+                'bids': 1,
+                'bid_reqs': 10000,
+                'win_notices': 5,
+                'total_win_price': 10.0,
+            },
+            {
+                'source_id': 2,
+                'bids': 2,
+                'bid_reqs': 10000,
+                'win_notices': 5,
+                'total_win_price': 10.0,
+            },
+        ]
+        self.assertEqual(service.get_by_media_source(None), [
+            {
+                'source_id': 1,
+                'name': 'Source A',
+                'bids': 1,
+                'bid_reqs': 10000,
+                'win_notices': 5,
+                'total_win_price': 10.0,
+            },
+            {
+                'source_id': 2,
+                'name': 'Source B',
+                'bids': 2,
+                'bid_reqs': 10000,
+                'win_notices': 5,
+                'total_win_price': 10.0,
+            },
+            {
+                'source_id': 3,
+                'name': 'Source C',
+                'bid_reqs': 0,
+                'bids': 0,
+                'total_win_price': 0,
+                'win_notices': 0
+            },
+        ])

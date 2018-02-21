@@ -47,6 +47,18 @@ describe('InventoryPlanningStore', () => {
             auctionCount: 20000,
         },
     ];
+    const availableSources = [
+        {
+            value: 'test source 1',
+            name: 'Test source 1',
+            auctionCount: 100000,
+        },
+        {
+            value: 'test source 2',
+            name: 'Test source 2',
+            auctionCount: 200000,
+        },
+    ];
 
     beforeEach(() => {
         TestBed.configureTestingModule({
@@ -65,6 +77,7 @@ describe('InventoryPlanningStore', () => {
             spyOn(endpoint, 'loadCountries').and.returnValue(Observable.of(availableCountries).pipe(delay(0)));
             spyOn(endpoint, 'loadPublishers').and.returnValue(Observable.of(availablePublishers).pipe(delay(0)));
             spyOn(endpoint, 'loadDevices').and.returnValue(Observable.of(availableDevices).pipe(delay(0)));
+            spyOn(endpoint, 'loadSources').and.returnValue(Observable.of(availableSources).pipe(delay(0)));
 
             store = new InventoryPlanningStore(endpoint);
         }));
@@ -90,17 +103,23 @@ describe('InventoryPlanningStore', () => {
                             inProgress: false,
                             subscription: null,
                         },
+                        sources: {
+                            inProgress: false,
+                            subscription: null,
+                        },
                     },
                     inventory: {auctionCount: 100000, avgCpm: 2, winRatio: 0.5},
                     availableFilters: {
                         countries: availableCountries,
                         publishers: availablePublishers,
                         devices: availableDevices,
+                        sources: availableSources,
                     },
                     selectedFilters: {
                         countries: [],
                         publishers: [],
                         devices: [],
+                        sources: [],
                     },
                 });
                 done();
@@ -116,6 +135,7 @@ describe('InventoryPlanningStore', () => {
             spyOn(_endpoint, 'loadCountries').and.returnValue(Observable.of(availableCountries));
             spyOn(_endpoint, 'loadPublishers').and.returnValue(Observable.of(availablePublishers));
             spyOn(_endpoint, 'loadDevices').and.returnValue(Observable.of(availableDevices));
+            spyOn(_endpoint, 'loadSources').and.returnValue(Observable.of(availableSources));
 
             endpoint = _endpoint;
             store = new InventoryPlanningStore(_endpoint);
@@ -126,11 +146,13 @@ describe('InventoryPlanningStore', () => {
                 {key: 'countries', value: 'country 1'},
                 {key: 'publishers', value: 'publisher 1'},
                 {key: 'devices', value: 'device 1'},
+                {key: 'sources', value: 'test source 1'},
             ]);
             expect(endpoint.loadCountries).toHaveBeenCalledWith({
                 countries: [{name: '', value: 'country 1', auctionCount: -1}],
                 publishers: [{name: '', value: 'publisher 1', auctionCount: -1}],
                 devices: [{name: '', value: 'device 1', auctionCount: -1}],
+                sources: [{name: '', value: 'test source 1', auctionCount: -1}],
             });
         });
 
@@ -141,6 +163,7 @@ describe('InventoryPlanningStore', () => {
                     countries: availableCountries,
                     publishers: availablePublishers,
                     devices: availableDevices,
+                    sources: availableSources,
                 },
             });
             expect(store.state.selectedFilters.countries).toEqual([
@@ -155,6 +178,10 @@ describe('InventoryPlanningStore', () => {
                 {value: 'test device 1', name: 'Test device 1', auctionCount: 10000},
                 {value: 'test device 2', name: 'Test device 2', auctionCount: 20000},
             ]);
+            expect(store.state.selectedFilters.sources).toEqual([
+                {value: 'test source 1', name: 'Test source 1', auctionCount: 100000},
+                {value: 'test source 2', name: 'Test source 2', auctionCount: 200000},
+            ]);
 
             store.toggleOption({key: 'countries', value: 'test country 1'});
             expect(store.state.selectedFilters.countries).toEqual([
@@ -169,6 +196,11 @@ describe('InventoryPlanningStore', () => {
             store.toggleOption({key: 'devices', value: 'test device 1'});
             expect(store.state.selectedFilters.devices).toEqual([
                 {value: 'test device 2', name: 'Test device 2', auctionCount: 20000},
+            ]);
+
+            store.toggleOption({key: 'sources', value: 'test source 1'});
+            expect(store.state.selectedFilters.sources).toEqual([
+                {value: 'test source 2', name: 'Test source 2', auctionCount: 200000},
             ]);
 
             store.toggleOption({key: 'countries', value: 'test country 1'});
@@ -187,6 +219,12 @@ describe('InventoryPlanningStore', () => {
             expect(store.state.selectedFilters.devices).toEqual([
                 {value: 'test device 2', name: 'Test device 2', auctionCount: 20000},
                 {value: 'test device 1', name: 'Test device 1', auctionCount: 10000},
+            ]);
+
+            store.toggleOption({key: 'sources', value: 'test source 1'});
+            expect(store.state.selectedFilters.sources).toEqual([
+                {value: 'test source 2', name: 'Test source 2', auctionCount: 200000},
+                {value: 'test source 1', name: 'Test source 1', auctionCount: 100000},
             ]);
         });
 
@@ -204,6 +242,7 @@ describe('InventoryPlanningStore', () => {
                     countries: [],
                     publishers: [availablePublishers[0]],
                     devices: availableDevices,
+                    sources: availableSources,
                 },
             });
             expect(store.state.selectedFilters.countries).toEqual([]);
@@ -240,6 +279,7 @@ describe('InventoryPlanningStore', () => {
                 countries: [],
                 publishers: [],
                 devices: [],
+                sources: [],
             });
         });
 
@@ -254,6 +294,7 @@ describe('InventoryPlanningStore', () => {
                 countries: [availableCountries[0]],
                 publishers: [],
                 devices: [],
+                sources: [],
             });
         });
     });

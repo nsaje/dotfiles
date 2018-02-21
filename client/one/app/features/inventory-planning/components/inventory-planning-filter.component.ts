@@ -73,6 +73,11 @@ export class InventoryPlanningFilterComponent implements OnChanges {
             key: 'devices',
             items: this.getFilterCategoryItems(availableFilters.devices, selectedFilters.devices),
         });
+        categories.push({
+            name: 'Media Sources',
+            key: 'sources',
+            items: this.getFilterCategoryItems(availableFilters.sources, selectedFilters.sources),
+        });
         return categories;
     }
 

@@ -4,4 +4,5 @@ export interface Filters {
     countries: FilterOption[];
     publishers: FilterOption[];
     devices: FilterOption[];
+    sources: FilterOption[];
 }

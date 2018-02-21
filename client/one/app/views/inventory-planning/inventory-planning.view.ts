@@ -4,7 +4,7 @@ import {downgradeComponent} from '@angular/upgrade/static';
 import {Filters} from '../../features/inventory-planning/types/filters';
 import {FilterOption} from '../../features/inventory-planning/types/filter-option';
 
-const FILTER_URL_PARAMS = ['countries', 'publishers', 'devices'];
+const FILTER_URL_PARAMS = ['countries', 'publishers', 'devices', 'sources'];
 
 @Component({
     selector: 'zem-inventory-planning-view',

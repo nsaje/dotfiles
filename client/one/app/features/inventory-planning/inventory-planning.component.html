@@ -36,6 +36,13 @@
                                       [isLoading]="(store.state$ | async).requests.devices.inProgress"
                                       (onToggle)="store.toggleOption({key: 'devices', value: $event})">
     </zem-inventory-planning-breakdown>
+    <zem-inventory-planning-breakdown class="zem-inventory-planning-breakdown"
+                                      breakdownName="Media Source"
+                                      [options]="(store.state$ | async).availableFilters.sources"
+                                      [selected]="(store.state$ | async).selectedFilters.sources"
+                                      [isLoading]="(store.state$ | async).requests.sources.inProgress"
+                                      (onToggle)="store.toggleOption({key: 'sources', value: $event})">
+    </zem-inventory-planning-breakdown>
 </div>
 
 <div class="message message--info message--with-icon block m-b">

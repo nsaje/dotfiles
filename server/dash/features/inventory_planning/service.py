@@ -1,6 +1,7 @@
 import redshiftapi.api_inventory
 
 import dash.features.geolocation
+import core.source
 
 from . import constants
 
@@ -9,6 +10,7 @@ ZERO_ROW = {'bids': 0, 'bid_reqs': 0, 'win_notices': 0, 'total_win_price': 0}
 MIN_AUCTIONS = 1000
 
 _countries_map = None
+_sources_map = None
 
 
 def _get_countries_map():
@@ -20,6 +22,17 @@ def _get_countries_map():
             dash.features.geolocation.Geolocation.objects.filter(type=dash.constants.LocationType.COUNTRY)
         }
     return _countries_map
+
+
+def _get_sources_map():
+    global _sources_map
+    if _sources_map is None:
+        _sources_map = {
+            source.id: source.name
+            for source in
+            core.source.Source.objects.filter(deprecated=False, released=True)
+        }
+    return _sources_map
 
 
 def get_summary(filters):
@@ -54,6 +67,16 @@ def get_by_device_type(filters):
     _add_zero_rows(data, 'device_type', sorted(device_types_map.keys()))
     for item in data:
         item['name'] = device_types_map.get(item['device_type'])
+    return data
+
+
+def get_by_media_source(filters):
+    data = redshiftapi.api_inventory.query(breakdown='source_id', constraints=filters)
+    data = list(filter(_min_auctions_filter, data))
+    sources_map = _get_sources_map()
+    _add_zero_rows(data, 'source_id', sorted(sources_map.keys()))
+    for item in data:
+        item['name'] = sources_map.get(item['source_id'], 'Other')
     return data
 
 

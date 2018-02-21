@@ -7,6 +7,7 @@ from redshiftapi import db
 from etl import maintenance
 import dash.features.geolocation
 import dash.constants
+import core.source
 
 
 logger = logging.getLogger(__name__)
@@ -20,10 +21,14 @@ def refresh_inventory_data(date_from, date_to, skip_vacuum=False):
     valid_country_codes = list(dash.features.geolocation.Geolocation.objects.filter(
         type=dash.constants.LocationType.COUNTRY
     ).values_list('key', flat=True))
+    source_slug_to_id = {s.bidder_slug: s.id for s in core.source.Source.objects.filter(deprecated=False, released=True)}
 
     sql = backtosql.generate_sql(
         'etl_aggregate_inventory_data.sql',
-        {'valid_country_codes': valid_country_codes}
+        {
+            'valid_country_codes': valid_country_codes,
+            'source_slug_to_id': source_slug_to_id,
+        }
     )
 
     with db.get_stats_cursor() as c:
@@ -33,7 +38,6 @@ def refresh_inventory_data(date_from, date_to, skip_vacuum=False):
         c.execute(sql, {
             'date_from': date_from,
             'date_to': date_to,
-            'valid_country_codes': valid_country_codes,
         })
         logger.info('Finished materialization of table %s', TABLE_NAME)
 

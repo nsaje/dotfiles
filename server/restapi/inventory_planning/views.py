@@ -14,7 +14,8 @@ SUMMARY = 'summary'
 COUNTRIES = 'countries'
 PUBLISHERS = 'publishers'
 DEVICE_TYPES = 'device-types'
-VALID_BREAKDOWNS = (SUMMARY, COUNTRIES, PUBLISHERS, DEVICE_TYPES)
+MEDIA_SOURCES = 'media-sources'
+VALID_BREAKDOWNS = (SUMMARY, COUNTRIES, PUBLISHERS, DEVICE_TYPES, MEDIA_SOURCES)
 
 
 class InventoryPlanningView(RESTAPIBaseView):
@@ -47,6 +48,10 @@ class InventoryPlanningView(RESTAPIBaseView):
         elif breakdown == PUBLISHERS:
             data = dash.features.inventory_planning.get_by_publisher(filters)
             data = self._remap_breakdown(data, value_field='publisher')
+
+        elif breakdown == MEDIA_SOURCES:
+            data = dash.features.inventory_planning.get_by_media_source(filters)
+            data = self._remap_breakdown(data, value_field='source_id')
 
         else:
             raise django.http.Http404
