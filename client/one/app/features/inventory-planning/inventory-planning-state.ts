@@ -25,6 +25,7 @@ export class InventoryPlanningState {
     inventory: Inventory = {
         auctionCount: null,
         avgCpm: null,
+        avgCpc: null,
         winRatio: null,
     };
 }

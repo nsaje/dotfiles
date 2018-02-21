@@ -5,6 +5,8 @@ from django.core.urlresolvers import reverse
 import restapi.views_test
 import dash.features.inventory_planning
 
+from . import views
+
 
 class InventoryPlanningViewTest(restapi.views_test.RESTAPITest):
 
@@ -22,6 +24,7 @@ class InventoryPlanningViewTest(restapi.views_test.RESTAPITest):
         self.assertEqual(r['data'], {
             'auctionCount': 5,
             'avgCpm': 5.0,
+            'avgCpc': 5.0 / 1000 / views.AVG_CTR,
             'winRatio': 0.5,
         })
 

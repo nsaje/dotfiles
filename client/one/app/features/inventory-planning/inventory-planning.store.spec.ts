@@ -72,7 +72,7 @@ describe('InventoryPlanningStore', () => {
     describe('with delayed mocked http requests', () => {
         beforeEach(inject([InventoryPlanningEndpoint], (endpoint: InventoryPlanningEndpoint) => {
             spyOn(endpoint, 'loadSummary').and.returnValue(
-                Observable.of({auctionCount: 100000, avgCpm: 2, winRatio: 0.5}).pipe(delay(0))
+                Observable.of({auctionCount: 100000, avgCpm: 2, avgCpc: 0.8, winRatio: 0.5}).pipe(delay(0))
             );
             spyOn(endpoint, 'loadCountries').and.returnValue(Observable.of(availableCountries).pipe(delay(0)));
             spyOn(endpoint, 'loadPublishers').and.returnValue(Observable.of(availablePublishers).pipe(delay(0)));
@@ -108,7 +108,7 @@ describe('InventoryPlanningStore', () => {
                             subscription: null,
                         },
                     },
-                    inventory: {auctionCount: 100000, avgCpm: 2, winRatio: 0.5},
+                    inventory: {auctionCount: 100000, avgCpm: 2, avgCpc: 0.8, winRatio: 0.5},
                     availableFilters: {
                         countries: availableCountries,
                         publishers: availablePublishers,
@@ -130,7 +130,7 @@ describe('InventoryPlanningStore', () => {
     describe('without delayed mocked http requests', () => {
         beforeEach(inject([InventoryPlanningEndpoint], (_endpoint: InventoryPlanningEndpoint) => {
             spyOn(_endpoint, 'loadSummary').and.returnValue(
-                Observable.of({auctionCount: 100000, avgCpm: 2, winRatio: 0.5})
+                Observable.of({auctionCount: 100000, avgCpm: 2, avgCpc: 0.8, winRatio: 0.5})
             );
             spyOn(_endpoint, 'loadCountries').and.returnValue(Observable.of(availableCountries));
             spyOn(_endpoint, 'loadPublishers').and.returnValue(Observable.of(availablePublishers));

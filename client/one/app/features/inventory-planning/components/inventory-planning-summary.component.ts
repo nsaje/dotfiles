@@ -12,6 +12,7 @@ import {CHART_X_AXIS_STEP, MAX_PLOTTED_CPM, CHART_CONFIG} from './inventory-plan
 export class InventoryPlanningSummaryComponent implements OnChanges {
     @Input() auctionCount: number;
     @Input() avgCpm: number;
+    @Input() avgCpc: number;
     @Input() winRatio: number;
     @Input() isLoading: boolean;
 

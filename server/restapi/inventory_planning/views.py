@@ -10,6 +10,8 @@ from . import serializers
 
 CLIENT_SIDE_CACHE_TIME = 60 * 60 * 24  # cache for 1 day
 
+AVG_CTR = 0.0044
+
 SUMMARY = 'summary'
 COUNTRIES = 'countries'
 PUBLISHERS = 'publishers'
@@ -69,6 +71,7 @@ class InventoryPlanningView(RESTAPIBaseView):
         return {
             'auction_count': data['bid_reqs'],
             'avg_cpm': (data['total_win_price'] / float(data['win_notices'])) if data['win_notices'] else None,
+            'avg_cpc': (data['total_win_price'] / float(data['win_notices']) / 1000 / AVG_CTR) if data['win_notices'] else None,
             'win_ratio': (data['win_notices'] / float(data['bids'])) if data['bids'] else None
         }
 
