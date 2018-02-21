@@ -1594,9 +1594,9 @@ class DeviceType(ConstantBase):
 
     UNKNOWN = None
     # MOBILE = 1  # legacy
-    PC = 2
+    DESKTOP = 2
     TV = 3
-    PHONE = 4
+    MOBILE = 4
     TABLET = 5
     # CONNECTED = 6  # joined with TV
     # SET_TOP_BOX = 7  # joined with TV
@@ -1604,9 +1604,9 @@ class DeviceType(ConstantBase):
     _VALUES = {
         UNKNOWN: 'Not reported',
         # MOBILE: 'Mobile',
-        PC: 'Desktop',
+        DESKTOP: 'Desktop',
         TV: 'TV & SetTop Box',
-        PHONE: 'Mobile',
+        MOBILE: 'Mobile',
         TABLET: 'Tablet',
         # CONNECTED: 'Connected',
         # SET_TOP_BOX: 'SetTop Box',
