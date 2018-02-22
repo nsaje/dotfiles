@@ -204,40 +204,6 @@ def clean_non_relevant_fields(rows):
                 row.pop(key, None)
 
 
-def get_report_currency(user, accounts):
-    if len(accounts) == 0 or not user.has_perm('zemauth.can_see_stats_in_local_currency'):
-        return constants.Currency.USD
-
-    currency = accounts[0].currency
-    for account in accounts[1:]:
-        if account.currency != currency:
-            return constants.Currency.USD
-
-    return currency
-
-
-def update_rows_to_contain_values_in_currency(rows, currency):
-    if currency == constants.Currency.USD:
-        _strip_local_values_from_rows(rows)
-        return
-    _update_rows_to_contain_local_values(rows)
-
-
-def _strip_local_values_from_rows(rows):
-    for row in rows:
-        for key in list(row.keys()):
-            if key.startswith('local_'):
-                row.pop(key, None)
-
-
-def _update_rows_to_contain_local_values(rows):
-    for row in rows:
-        for key in list(row.keys()):
-            if key.startswith('local_'):
-                non_local_key = key.replace('local_', '', 1)
-                row[non_local_key] = row.pop(key, None)
-
-
 def get_upload_batches_response_list(upload_batches):
     upload_batches = upload_batches.order_by('-created_dt')
     return list(upload_batches.values('id', 'name'))

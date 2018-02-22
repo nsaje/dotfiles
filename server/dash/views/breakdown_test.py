@@ -966,60 +966,7 @@ class LimitOffsetToPageTest(TestCase):
 
 
 class BreakdownHelperTest(TestCase):
-    fixtures = ['test_augmenter.yaml', 'test_non_superuser.yaml']
-
-    def setUp(self):
-        self.user = User.objects.get(pk=1)
-
-    def test_get_report_currency_no_accounts(self):
-        test_helper.add_permissions(self.user, ['can_see_stats_in_local_currency'])
-        self.assertEqual(breakdown_helpers.get_report_currency(self.user, []), constants.Currency.USD)
-
-    def test_get_report_currency_no_permission(self):
-        self.assertEqual(breakdown_helpers.get_report_currency(self.user, [{}]), constants.Currency.USD)
-
-    def test_get_report_currency_single_account(self):
-        test_helper.add_permissions(self.user, ['can_see_stats_in_local_currency'])
-        account = models.Account.objects.get(pk=2)
-        self.assertEqual(breakdown_helpers.get_report_currency(self.user, [account]), constants.Currency.EUR)
-
-    def test_get_report_currency_multiple_accounts_different_currency(self):
-        test_helper.add_permissions(self.user, ['can_see_stats_in_local_currency'])
-        accounts = models.Account.objects.all()
-        self.assertEqual(breakdown_helpers.get_report_currency(self.user, accounts), constants.Currency.USD)
-
-    def test_get_report_currency_multiple_accounts_same_currency(self):
-        test_helper.add_permissions(self.user, ['can_see_stats_in_local_currency'])
-        account = models.Account.objects.get(pk=2)
-        self.assertEqual(breakdown_helpers.get_report_currency(self.user, [account, account]), constants.Currency.EUR)
-
-    def test_update_rows_to_contain_values_in_currency_usd_currency(self):
-        rows = [
-            {'test_value_one': 1, 'local_test_value_one': 10, 'test_value_two': 2, 'local_test_value_two': 20},
-            {'test_value_one': 3, 'local_test_value_one': 30, 'test_value_two': 4, 'local_test_value_two': 40},
-        ]
-        breakdown_helpers.update_rows_to_contain_values_in_currency(rows, constants.Currency.USD),
-        self.assertEqual(
-            rows,
-            [
-                {'test_value_one': 1, 'test_value_two': 2},
-                {'test_value_one': 3, 'test_value_two': 4},
-            ]
-        )
-
-    def test_update_rows_to_contain_values_in_currency_local_currency(self):
-        rows = [
-            {'test_value_one': 1, 'local_test_value_one': 10, 'test_value_two': 2, 'local_test_value_two': 20},
-            {'test_value_one': 3, 'local_test_value_one': 30, 'test_value_two': 4, 'local_test_value_two': 40},
-        ]
-        breakdown_helpers.update_rows_to_contain_values_in_currency(rows, constants.Currency.EUR),
-        self.assertEqual(
-            rows,
-            [
-                {'test_value_one': 10, 'test_value_two': 20},
-                {'test_value_one': 30, 'test_value_two': 40},
-            ]
-        )
+    fixtures = ['test_augmenter.yaml']
 
     def test_add_performance_indicators(self):
         rows = [

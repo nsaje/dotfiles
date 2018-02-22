@@ -9,7 +9,7 @@ from utils import sort_helper
 from utils import exc
 
 import dash.models
-from dash.constants import PublisherBlacklistFilter
+import dash.constants
 
 from stats import constants
 from stats import fields
@@ -100,14 +100,14 @@ def extract_stats_constraints(constraints, breakdown):
             constraints['allowed_content_ads'].values_list('pk', flat=True).order_by('pk'))
 
     if 'publisher_id' in breakdown and \
-       constraints['publisher_blacklist_filter'] != PublisherBlacklistFilter.SHOW_ALL:
-        if constraints['publisher_blacklist_filter'] == PublisherBlacklistFilter.SHOW_ACTIVE:
+       constraints['publisher_blacklist_filter'] != dash.constants.PublisherBlacklistFilter.SHOW_ALL:
+        if constraints['publisher_blacklist_filter'] == dash.constants.PublisherBlacklistFilter.SHOW_ACTIVE:
             new_constraints['publisher_id__neq'] = list(
                 constraints['publisher_blacklist'].annotate_publisher_id().values_list('publisher_id', flat=True))
-        elif constraints['publisher_blacklist_filter'] == PublisherBlacklistFilter.SHOW_BLACKLISTED:
+        elif constraints['publisher_blacklist_filter'] == dash.constants.PublisherBlacklistFilter.SHOW_BLACKLISTED:
             new_constraints['publisher_id'] = list(
                 constraints['publisher_blacklist'].annotate_publisher_id().values_list('publisher_id', flat=True))
-        elif constraints['publisher_blacklist_filter'] == PublisherBlacklistFilter.SHOW_WHITELISTED:
+        elif constraints['publisher_blacklist_filter'] == dash.constants.PublisherBlacklistFilter.SHOW_WHITELISTED:
             new_constraints['publisher_id'] = list(
                 constraints['publisher_whitelist'].annotate_publisher_id().values_list('publisher_id', flat=True))
 
@@ -278,6 +278,40 @@ def extract_rs_order_field(order, target_dimension):
             order_field = 'clicks'
 
     return prefix + order_field
+
+
+def get_report_currency(user, accounts):
+    if len(accounts) == 0 or not user.has_perm('zemauth.can_see_stats_in_local_currency'):
+        return dash.constants.Currency.USD
+
+    currency = accounts[0].currency
+    for account in accounts[1:]:
+        if account.currency != currency:
+            return dash.constants.Currency.USD
+
+    return currency
+
+
+def update_rows_to_contain_values_in_currency(rows, currency):
+    if currency == dash.constants.Currency.USD:
+        _strip_local_values_from_rows(rows)
+        return
+    _update_rows_to_contain_local_values(rows)
+
+
+def _strip_local_values_from_rows(rows):
+    for row in rows:
+        for key in list(row.keys()):
+            if key.startswith('local_'):
+                row.pop(key, None)
+
+
+def _update_rows_to_contain_local_values(rows):
+    for row in rows:
+        for key in list(row.keys()):
+            if key.startswith('local_'):
+                non_local_key = key.replace('local_', '', 1)
+                row[non_local_key] = row.pop(key, None)
 
 
 def should_query_dashapi_first(order, target_dimension):

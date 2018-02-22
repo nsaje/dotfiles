@@ -192,6 +192,8 @@ class ReportJobExecutor(JobExecutor):
         order = cls._get_order(job, column_to_field_name_map)
         column_names = cls._extract_column_names(job.query['fields'])
 
+        currency = stats.helpers.get_report_currency(user, constraints['allowed_accounts'])
+
         try:
             columns = [column_to_field_name_map[column_name] for column_name in column_names]
         except KeyError as e:
@@ -216,6 +218,8 @@ class ReportJobExecutor(JobExecutor):
                 dashapi_cache=dashapi_cache,
             )
 
+            stats.helpers.update_rows_to_contain_values_in_currency(rows, currency)
+
             cls.convert_to_csv(job, rows, column_to_field_name_map, output, header=offset == 0)
 
             if len(rows) < BATCH_ROWS:
@@ -236,6 +240,8 @@ class ReportJobExecutor(JobExecutor):
             totals = stats.api_reports.totals(
                 user, helpers.limit_breakdown_to_level(breakdown, level),
                 totals_constraints, goals, level, columns)
+
+            stats.helpers.update_rows_to_contain_values_in_currency([totals], currency)
 
             cls.convert_to_csv(job, [totals], column_to_field_name_map, output, header=False)
 

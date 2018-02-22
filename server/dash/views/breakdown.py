@@ -172,13 +172,13 @@ class AllAccountsBreakdown(api_common.BaseApiView):
             totals_thread.join()
             totals = totals_thread.get_result()
 
-        currency = breakdown_helpers.get_report_currency(request.user, constraints['allowed_accounts'])
+        currency = stats.helpers.get_report_currency(request.user, constraints['allowed_accounts'])
         extras = {
             'currency': currency
         }
-        breakdown_helpers.update_rows_to_contain_values_in_currency(rows, currency)
+        stats.helpers.update_rows_to_contain_values_in_currency(rows, currency)
         if totals:
-            breakdown_helpers.update_rows_to_contain_values_in_currency([totals], currency)
+            stats.helpers.update_rows_to_contain_values_in_currency([totals], currency)
 
         report = format_breakdown_response(rows, offset, parents, totals, goals=goals, **extras)
         report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
@@ -253,11 +253,11 @@ class AccountBreakdown(api_common.BaseApiView):
         if stats.constants.get_target_dimension(breakdown) == 'publisher_id':
             extras['ob_blacklisted_count'] = publisher_group_helpers.get_ob_blacklisted_publishers_count(account)
 
-        currency = breakdown_helpers.get_report_currency(request.user, [account])
+        currency = stats.helpers.get_report_currency(request.user, [account])
         extras['currency'] = currency
-        breakdown_helpers.update_rows_to_contain_values_in_currency(rows, currency)
+        stats.helpers.update_rows_to_contain_values_in_currency(rows, currency)
         if totals:
-            breakdown_helpers.update_rows_to_contain_values_in_currency([totals], currency)
+            stats.helpers.update_rows_to_contain_values_in_currency([totals], currency)
 
         report = format_breakdown_response(rows, offset, parents, totals, goals=goals, **extras)
         report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
@@ -334,11 +334,11 @@ class CampaignBreakdown(api_common.BaseApiView):
             extras['ob_blacklisted_count'] = publisher_group_helpers.get_ob_blacklisted_publishers_count(
                 campaign.account)
 
-        currency = breakdown_helpers.get_report_currency(request.user, [constraints['account']])
+        currency = stats.helpers.get_report_currency(request.user, [constraints['account']])
         extras['currency'] = currency
-        breakdown_helpers.update_rows_to_contain_values_in_currency(rows, currency)
+        stats.helpers.update_rows_to_contain_values_in_currency(rows, currency)
         if totals:
-            breakdown_helpers.update_rows_to_contain_values_in_currency([totals], currency)
+            stats.helpers.update_rows_to_contain_values_in_currency([totals], currency)
 
         report = format_breakdown_response(rows, offset, parents, totals, goals=goals, **extras)
         if len(breakdown) == 1 and request.user.has_perm('zemauth.campaign_goal_optimization'):
@@ -426,11 +426,11 @@ class AdGroupBreakdown(api_common.BaseApiView):
             extras['ob_blacklisted_count'] = publisher_group_helpers.get_ob_blacklisted_publishers_count(
                 ad_group.campaign.account)
 
-        currency = breakdown_helpers.get_report_currency(request.user, [constraints['account']])
+        currency = stats.helpers.get_report_currency(request.user, [constraints['account']])
         extras['currency'] = currency
-        breakdown_helpers.update_rows_to_contain_values_in_currency(rows, currency)
+        stats.helpers.update_rows_to_contain_values_in_currency(rows, currency)
         if totals:
-            breakdown_helpers.update_rows_to_contain_values_in_currency([totals], currency)
+            stats.helpers.update_rows_to_contain_values_in_currency([totals], currency)
 
         report = format_breakdown_response(rows, offset, parents, totals, goals, **extras)
         if len(breakdown) == 1 and request.user.has_perm('zemauth.campaign_goal_optimization'):

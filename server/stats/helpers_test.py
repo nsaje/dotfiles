@@ -2,8 +2,9 @@ import copy
 import datetime
 from django.test import TestCase
 
+import dash.constants
+import zemauth.models
 from dash import models
-from dash.constants import AccountType
 from utils import test_helper
 from utils import exc
 
@@ -334,7 +335,7 @@ class CheckConstraintsSupportedTest(TestCase):
             'date__lte': datetime.date(2016, 2, 3),
             'filtered_sources': models.Source.objects.filter(pk__in=[1, 2]),
             'filtered_agencies': models.Agency.objects.all(),
-            'filtered_account_types': AccountType.get_all(),
+            'filtered_account_types': dash.constants.AccountType.get_all(),
             'allowed_accounts': models.Account.objects.all(),
             'allowed_campaigns': models.Campaign.objects.all(),
             'account': models.Account.objects.get(pk=1),
@@ -350,3 +351,60 @@ class CheckConstraintsSupportedTest(TestCase):
                 'source': [1, 2],  # should be source_id
                 'show_archived': True,
             })
+
+
+class MulticurrencyHelpersTest(TestCase):
+    fixtures = ['test_augmenter.yaml', 'test_non_superuser.yaml']
+
+    def setUp(self):
+        self.user = zemauth.models.User.objects.get(pk=1)
+
+    def test_get_report_currency_no_accounts(self):
+        test_helper.add_permissions(self.user, ['can_see_stats_in_local_currency'])
+        self.assertEqual(helpers.get_report_currency(self.user, []), dash.constants.Currency.USD)
+
+    def test_get_report_currency_no_permission(self):
+        self.assertEqual(helpers.get_report_currency(self.user, [{}]), dash.constants.Currency.USD)
+
+    def test_get_report_currency_single_account(self):
+        test_helper.add_permissions(self.user, ['can_see_stats_in_local_currency'])
+        account = models.Account.objects.get(pk=2)
+        self.assertEqual(helpers.get_report_currency(self.user, [account]), dash.constants.Currency.EUR)
+
+    def test_get_report_currency_multiple_accounts_different_currency(self):
+        test_helper.add_permissions(self.user, ['can_see_stats_in_local_currency'])
+        accounts = models.Account.objects.all()
+        self.assertEqual(helpers.get_report_currency(self.user, accounts), dash.constants.Currency.USD)
+
+    def test_get_report_currency_multiple_accounts_same_currency(self):
+        test_helper.add_permissions(self.user, ['can_see_stats_in_local_currency'])
+        account = models.Account.objects.get(pk=2)
+        self.assertEqual(helpers.get_report_currency(self.user, [account, account]), dash.constants.Currency.EUR)
+
+    def test_update_rows_to_contain_values_in_currency_usd_currency(self):
+        rows = [
+            {'test_value_one': 1, 'local_test_value_one': 10, 'test_value_two': 2, 'local_test_value_two': 20},
+            {'test_value_one': 3, 'local_test_value_one': 30, 'test_value_two': 4, 'local_test_value_two': 40},
+        ]
+        helpers.update_rows_to_contain_values_in_currency(rows, dash.constants.Currency.USD),
+        self.assertEqual(
+            rows,
+            [
+                {'test_value_one': 1, 'test_value_two': 2},
+                {'test_value_one': 3, 'test_value_two': 4},
+            ]
+        )
+
+    def test_update_rows_to_contain_values_in_currency_local_currency(self):
+        rows = [
+            {'test_value_one': 1, 'local_test_value_one': 10, 'test_value_two': 2, 'local_test_value_two': 20},
+            {'test_value_one': 3, 'local_test_value_one': 30, 'test_value_two': 4, 'local_test_value_two': 40},
+        ]
+        helpers.update_rows_to_contain_values_in_currency(rows, dash.constants.Currency.EUR),
+        self.assertEqual(
+            rows,
+            [
+                {'test_value_one': 10, 'test_value_two': 20},
+                {'test_value_one': 30, 'test_value_two': 40},
+            ]
+        )
