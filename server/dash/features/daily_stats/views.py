@@ -69,6 +69,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
             'day',
             should_use_publishers_view=should_use_publishers_view
         )
+        # TODO (jurebajt): Filter query_results (rows) by currency
         return helpers.format_metrics(
             query_results,
             metrics,
@@ -104,6 +105,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
             should_use_publishers_view=should_use_publishers_view
         )
 
+        # TODO (jurebajt): Filter query_results (rows) by currency
         if join_selected:
             return helpers.format_metrics(
                 query_results,

@@ -126,6 +126,11 @@ angular.module('one.widgets').factory('zemGridEndpointService', function ($http,
             delete breakdown.batches;
         }
 
+        if (breakdown.currency) {
+            metaData.ext.currency = breakdown.currency;
+            delete breakdown.currency;
+        }
+
         if (breakdown.obBlacklistedCount) {
             metaData.ext.obBlacklistedCount = breakdown.obBlacklistedCount;
             delete breakdown.obBlacklistedCount;

@@ -284,6 +284,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             editable: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             defaultValue: '',
+            localCurrencyDisabled: true,
         },
         dailyBudgetSetting: {
             name: 'Daily Spend Cap',
@@ -297,6 +298,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             editable: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             defaultValue: '',
+            localCurrencyDisabled: true,
         },
 
         // Content Ad

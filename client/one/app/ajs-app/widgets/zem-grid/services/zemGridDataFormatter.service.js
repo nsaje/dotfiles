@@ -80,7 +80,7 @@ angular.module('one.widgets').factory('zemGridDataFormatter', function ($filter,
         } else {
             fractionSize = options.fractionSize;
         }
-        return $filter('decimalCurrency')(value, '$', fractionSize);
+        return $filter('decimalCurrency')(value, getCurrencySymbol(options), fractionSize);
     }
 
     function roundNumber (value, options, defaultFractionSize) {
@@ -97,5 +97,12 @@ angular.module('one.widgets').factory('zemGridDataFormatter', function ($filter,
         if (!isNaN(number)) {
             return number.toFixed(fractionSize);
         }
+    }
+
+    function getCurrencySymbol (options) {
+        if (!options.currency || options.localCurrencyDisabled) {
+            return constants.currencySymbol[constants.currency.USD];
+        }
+        return constants.currencySymbol[options.currency];
     }
 });

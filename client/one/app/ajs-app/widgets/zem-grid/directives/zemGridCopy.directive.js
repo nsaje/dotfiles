@@ -108,7 +108,9 @@ angular.module('one.widgets').directive('zemGridCopy', function ($timeout, zemGr
             function exportStat (stat, column) {
                 if (!stat) return 'N/A';
                 if (zemGridConstants.gridColumnTypes.BASE_TYPES.indexOf(column.type) >= 0) {
-                    return zemGridDataFormatter.formatValue(stat.value, column);
+                    var formatterOptions = angular.copy(column.data);
+                    formatterOptions.currency = grid.meta.data.ext.currency;
+                    return zemGridDataFormatter.formatValue(stat.value, formatterOptions);
                 }
                 return (stat.value || stat.url || ' ');
             }

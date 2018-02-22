@@ -28,7 +28,9 @@ angular.module('one.widgets').directive('zemGridCellBaseField', function () {
                 var value = vm.data ? vm.data.value : undefined;
                 vm.formattedValue = '';
                 if (vm.row.type === zemGridConstants.gridRowType.STATS) {
-                    vm.formattedValue = zemGridDataFormatter.formatValue(value, vm.column.data);
+                    var formatterOptions = angular.copy(vm.column.data);
+                    formatterOptions.currency = vm.grid.meta.data.ext.currency;
+                    vm.formattedValue = zemGridDataFormatter.formatValue(value, formatterOptions);
                 }
 
                 vm.class = vm.column.type + '-field';

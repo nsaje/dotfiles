@@ -113,12 +113,18 @@ describe('zemGridDataFormatter', function () {
             {value: 1234.5678, expectedResult: '$1,234.57'},
             {value: 1234.56, fractionSize: 3, expectedResult: '$1,234.560'},
             {value: 1234.56, fractionSize: 0, expectedResult: '$1,235'},
+            {value: undefined, currency: constants.currency.EUR, expectedResult: 'N/A'},
+            {value: 0, fractionSize: 2, currency: constants.currency.EUR, expectedResult: '€0.00'},
+            {value: 1234.5678, currency: constants.currency.EUR, expectedResult: '€1,234.57'},
+            {value: 1234.56, fractionSize: 3, currency: constants.currency.EUR, expectedResult: '€1,234.560'},
+            {value: 1234.56, fractionSize: 0, currency: constants.currency.EUR, expectedResult: '€1,235'},
         ];
 
         tests.forEach(function (test) {
             options = {
                 type: 'currency',
                 fractionSize: test.fractionSize,
+                currency: test.currency,
             };
             expect(zemGridDataFormatter.formatValue(test.value, options)).toEqual(test.expectedResult);
         });

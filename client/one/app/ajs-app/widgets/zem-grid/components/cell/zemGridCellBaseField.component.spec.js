@@ -18,7 +18,13 @@ describe('zemGridCellBaseField', function () {
         scope.ctrl.row.data = {};
         scope.ctrl.col = {};
         scope.ctrl.col.data = {};
-        scope.ctrl.grid = {};
+        scope.ctrl.grid = {
+            meta: {
+                data: {
+                    ext: {},
+                },
+            },
+        };
 
         element = $compile(template)(scope);
     }));
@@ -173,6 +179,10 @@ describe('zemGridCellBaseField', function () {
             {value: 1234.5, fractionSize: 2, expectedResult: '$1,234.50'},
             {value: 0.1234, fractionSize: 3, expectedResult: '$0.123'},
             {value: 0.10000, expectedResult: '$0.10'},
+            {value: undefined, currency: constants.currency.EUR, expectedResult: 'N/A'},
+            {value: 1234.5, fractionSize: 2, currency: constants.currency.EUR, expectedResult: '€1,234.50'},
+            {value: 0.1234, fractionSize: 3, currency: constants.currency.EUR, expectedResult: '€0.123'},
+            {value: 0.10000, currency: constants.currency.EUR, expectedResult: '€0.10'},
         ];
 
         scope.ctrl.col.data = {
@@ -184,6 +194,7 @@ describe('zemGridCellBaseField', function () {
             scope.ctrl.data = {
                 value: test.value,
             };
+            scope.ctrl.grid.meta.data.ext.currency = test.currency;
             scope.$digest();
             expect(element.text().trim()).toEqual(test.expectedResult);
         });

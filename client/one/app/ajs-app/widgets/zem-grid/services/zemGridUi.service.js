@@ -88,7 +88,9 @@ angular.module('one.widgets').factory('zemGridUIService', function ($timeout, $s
             if (!data) return;
 
             // Format data to string and predict width based on it
-            var formattedValue = zemGridDataFormatter.formatValue(data.value || data.text, column);
+            var formatterOptions = angular.copy(column.data);
+            formatterOptions.currency = grid.meta.data.ext.currency;
+            var formattedValue = zemGridDataFormatter.formatValue(data.value || data.text, formatterOptions);
             var valueWidth = getTextWidth(formattedValue, font);
             if (column.type === zemGridConstants.gridColumnTypes.BREAKDOWN) {
                 // Special case for breakdown column - add padding based on row level
@@ -107,7 +109,9 @@ angular.module('one.widgets').factory('zemGridUIService', function ($timeout, $s
         if (grid.footer.row) {
             var data = grid.footer.row.data.stats[column.field];
             if (data) {
-                var formattedValue = zemGridDataFormatter.formatValue(data.value, column);
+                var formatterOptions = angular.copy(column.data);
+                formatterOptions.currency = grid.meta.data.ext.currency;
+                var formattedValue = zemGridDataFormatter.formatValue(data.value, formatterOptions);
                 var valueWidth = getTextWidth(formattedValue, font);
                 width = Math.max(width, valueWidth);
             }

@@ -1251,6 +1251,10 @@ constants.entityTypeToLevelMap[constants.entityType.ACCOUNT] = constants.level.A
 constants.entityTypeToLevelMap[constants.entityType.CAMPAIGN] = constants.level.CAMPAIGNS;
 constants.entityTypeToLevelMap[constants.entityType.AD_GROUP] = constants.level.AD_GROUPS;
 
+constants.currencySymbol = {};
+constants.currencySymbol[constants.currency.USD] = '$';
+constants.currencySymbol[constants.currency.EUR] = '€';
+
 var options = {
     // used for converting options lists values into REST API flavoured constant values
     convertToRestApiCompliantOptions: function (optionsList, constantsObj) {

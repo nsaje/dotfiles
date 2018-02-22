@@ -223,6 +223,7 @@ angular.module('one.widgets').service('zemChartParser', function ($window, zemCh
             fractionSize = format.fractionSize;
 
             if (format.type === 'currency') {
+                // TODO (jurebajt): Use correct currency symbol
                 valuePrefix = '$';
             } else if (format.type === 'percent') {
                 valueSuffix = '%';
