@@ -2,7 +2,7 @@
     <h2 class="custom-panel__title" ng-if="$ctrl.isDefault()">Default device targeting</h2>
     <h2 class="custom-panel__title" ng-if="!$ctrl.isDefault()">
         Device targeting
-        <div class="zem-settings__different-than-default" ng-if="!$ctrl.isEqualToDefault()">Different than campaign default</div>
+        <div class="zem-settings__different-than-default" ng-if="$ctrl.hasPermission('settings_defaults_on_campaign_level') && !$ctrl.isEqualToDefault()">Different than campaign default</div>
     </h2>
     <div class="custom-panel__description">The devices on which your content ads will be shown. <span ng-if="$ctrl.isDefault()">Used for all newly created ad groups.</span></div>
     <!-- TODO: Device classes should be calculated in controler -->

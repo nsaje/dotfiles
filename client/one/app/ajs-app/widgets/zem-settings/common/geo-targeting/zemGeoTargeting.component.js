@@ -5,8 +5,9 @@ angular.module('one.widgets').component('zemGeoTargeting', {
         api: '<?',
     },
     template: require('./zemGeoTargeting.component.html'),
-    controller: function ($scope, zemGeoTargetingStateService) {
+    controller: function ($scope, zemGeoTargetingStateService, zemPermissions) {
         var $ctrl = this;
+        $ctrl.hasPermission = zemPermissions.hasPermission;
 
         var TEXTS = {
             selectedIncludedTitle: 'Included Locations',

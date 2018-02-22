@@ -17,12 +17,14 @@
                 entity="$container.entity"
                 errors="$container.errors"
                 api="$container.childApi"
+                ng-if="$ctrl.hasPermission('zemauth.settings_defaults_on_campaign_level')"
         ></zem-device-targeting-settings>
         <zem-geo-targeting
                 class="zem-settings-component"
                 entity="$container.entity"
                 errors="$container.errors"
                 api="$container.childApi"
+                ng-if="$ctrl.hasPermission('zemauth.settings_defaults_on_campaign_level')"
         ></zem-geo-targeting>
         <zem-campaign-targeting-settings
                 class="zem-settings-component"
