@@ -64,7 +64,8 @@ def format_values(rows, columns):
 
         for row in rows:
             try:
-                if not row[column]:
+                # delivery dimension should have UNKNOWNs instead of empty_value
+                if not row[column] and column not in constants.DeliveryDimension._ALL:
                     row[column] = empty_value
                 elif formatter is not None:
                     row[column] = formatter(row[column])

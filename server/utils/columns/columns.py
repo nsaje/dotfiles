@@ -69,6 +69,8 @@ _FIELD_MAPPING = {
     'state': ('State',),
     'dma': ('DMA',),
     'device_type': ('Device',),
+    'device_os': ('Operating System',),
+    'placement_medium': ('Placement',),
     'placement_type': ('Placement Type',),
     'video_playback_method': ('Video Playback Method',),
 

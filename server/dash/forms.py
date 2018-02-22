@@ -178,8 +178,8 @@ class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
         <b>Operating system codes:</b> {}<br />
         <b>Operating system version codes:</b> {}<br />
         '''.format(
-            ", ".join(sorted(x[0] for x in constants.OperatingSystem.get_choices())),
-            ", ".join(sorted(x[0] for x in constants.OperatingSystemVersion.get_choices())),
+            ", ".join(sorted(str(x[0]) for x in constants.OperatingSystem.get_choices())),
+            ", ".join(sorted(str(x[0]) for x in constants.OperatingSystemVersion.get_choices())),
         )
     )
     click_capping_daily_ad_group_max_clicks = forms.IntegerField(

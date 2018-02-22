@@ -2048,6 +2048,7 @@ class Placement(ConstantBase):
 
 
 class OperatingSystem(ConstantBase):
+    UNKNOWN = None
     ANDROID = 'android'
     IOS = 'ios'
     WINPHONE = 'winphone'
@@ -2057,6 +2058,7 @@ class OperatingSystem(ConstantBase):
     CHROMEOS = 'chromeos'
 
     _VALUES = {
+        UNKNOWN: 'Not Reported',
         ANDROID: 'Android',
         IOS: 'iOS',
         WINPHONE: 'Windows Phone',
