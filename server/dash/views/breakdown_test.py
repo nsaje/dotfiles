@@ -655,8 +655,8 @@ class AdGroupBreakdownTestCase(TestCase):
                 "breakdown_id": None,
                 "totals": {"clicks": 123},
                 "batches": [
-                    {"id": 1, "name": "batch 1"},
                     {"id": 4, "name": "batch 4"},
+                    {"id": 1, "name": "batch 1"},
                 ],
                 "conversion_goals": [
                     {"id": "conversion_goal_2", "name": "test conversion goal 2"},
