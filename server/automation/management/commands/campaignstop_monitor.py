@@ -47,13 +47,20 @@ class Command(ExceptionCommand):
             sys.stdout.flush()
 
     def _get_slack_message(self, campaigns):
-        message = 'Campaigns stopped yesterday:\n'
-        for campaign in campaigns:
-            message += '- {}\n'.format(slack.campaign_url(campaign))
+        message = self._get_message_title()
+        for campaign, remaining_budget in campaigns.items():
+            message += '- {}: ${} remaining\n'.format(slack.campaign_url(campaign), remaining_budget)
         return message
 
     def _get_verbose_message(self, campaigns):
-        message = 'Campaigns stopped yesterday:\n'
-        for campaign in campaigns:
-            message += '- {} ({})\n'.format(campaign.name, campaign.id)
+        message = self._get_message_title()
+        for campaign, remaining_budget in campaigns.items():
+            message += '- {} ({}): ${} remaining\n'.format(campaign.name, campaign.id, remaining_budget)
         return message
+
+    def _get_message_title(self):
+        if self.date == dates_helper.local_yesterday():
+            date_str = 'yesterday'
+        else:
+            date_str = 'on ' + self.date.isoformat()
+        return 'Campaigns stopped {}:\n'.format(date_str)
