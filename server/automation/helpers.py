@@ -1,7 +1,6 @@
 import datetime
-import pytz
 
-from django.conf import settings
+from django.db.models import Q
 
 import automation.campaignstop
 
@@ -11,6 +10,7 @@ import decimal
 import dash.views.helpers
 import utils.dates_helper
 import utils.k1_helper
+import utils.dates_helper
 
 
 def get_yesterdays_spends(campaigns):
@@ -60,42 +60,26 @@ def get_active_campaigns():
 
 
 def _get_active_campaigns_subset(campaigns):
-    for campaign in campaigns:
-        adgroups = dash.models.AdGroup.objects.filter(campaign=campaign)
-        is_active = False
-        for adgroup in adgroups:
-            if _is_ad_group_active(adgroup):
-                is_active = True
-                break
-        if not is_active:
-            campaigns = campaigns.exclude(pk=campaign.pk)
-    return campaigns
+    ad_groups = dash.models.AdGroup.objects.filter(campaign__in=campaigns)
+    return list(set(ad_group.campaign for ad_group
+                    in _filter_active_ad_groups(ad_groups).select_related('campaign')))
 
 
 def get_active_ad_groups(campaign):
-    active_ad_groups = []
-    for adg in campaign.adgroup_set.all():
-        if _is_ad_group_active(adg):
-            active_ad_groups.append(adg)
-    return active_ad_groups
+    return list(_filter_active_ad_groups(campaign.adgroup_set.all()))
 
 
 def get_all_active_ad_groups():
-    active_ad_groups = []
-    for adg in dash.models.AdGroup.objects.all():
-        if _is_ad_group_active(adg):
-            active_ad_groups.append(adg)
-    return active_ad_groups
+    return list(_filter_active_ad_groups(dash.models.AdGroup.objects.all()))
 
 
-def _is_ad_group_active(adgroup):
-    today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
-    today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None).date()
-    adgroup_settings = adgroup.get_current_settings()
-    return (adgroup_settings.state == dash.constants.AdGroupSettingsState.ACTIVE and
-            not adgroup_settings.archived and
-            (adgroup_settings.end_date is None or
-                adgroup_settings.end_date >= today))
+def _filter_active_ad_groups(ad_groups_qs):
+    today = utils.dates_helper.local_today()
+    return ad_groups_qs.filter(
+        Q(settings__state=dash.constants.AdGroupSettingsState.ACTIVE) &
+        Q(settings__archived=False) &
+        (Q(settings__end_date=None) | Q(settings__end_date__gt=today))
+    )
 
 
 def get_active_ad_group_sources_settings(adgroup):

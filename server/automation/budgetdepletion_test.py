@@ -29,13 +29,13 @@ class BudgetDepletionTestCase(test.TestCase):
 
     def test_get_active_campaigns(self):
         campaigns = helpers.get_active_campaigns()
-        self.assertEqual(campaigns.filter(pk=1).count(), 1)
+        self.assertEqual(len([c for c in campaigns if c.pk == 1]), 1)
 
     def test_get_active_campaigns_subset(self):
         campaigns = models.Campaign.objects.all()
         actives = helpers._get_active_campaigns_subset(campaigns)
-        self.assertEqual(actives.filter(pk=1).count(), 1)
-        self.assertEqual(actives.filter(pk=2).count(), 0)
+        self.assertEqual(len([c for c in actives if c.pk == 1]), 1)
+        self.assertEqual(len([c for c in actives if c.pk == 2]), 0)
 
     @patch("automation.settings.DEPLETING_AVAILABLE_BUDGET_SCALAR", 1.0)
     def test_budget_is_depleting(self):
