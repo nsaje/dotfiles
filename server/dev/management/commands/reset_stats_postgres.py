@@ -94,7 +94,7 @@ class Command(ExceptionCommand):
         else:
             migration_file = os.path.join(
                 os.path.dirname(__file__),
-                '../../migrations/postgres/',
+                '../../../etl/migrations/postgres/',
                 mv_class.TABLE_NAME + '.sql',
             )
             with open(migration_file) as f:
