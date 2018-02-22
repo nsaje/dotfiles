@@ -28,7 +28,7 @@ class Command(ExceptionCommand):
 
         self.date = dates_helper.local_yesterday()
         if options['date']:
-            self.date = datetime.datetime.strptime(options['date'], "%Y-%m-%d")
+            self.date = datetime.datetime.strptime(options['date'], "%Y-%m-%d").date()
 
     def _audit_stopped_campaigns(self):
         campaigns = automation.campaignstop.audit_stopped_campaigns(self.date)
@@ -49,13 +49,13 @@ class Command(ExceptionCommand):
     def _get_slack_message(self, campaigns):
         message = self._get_message_title()
         for campaign, remaining_budget in campaigns.items():
-            message += '- {}: ${} remaining\n'.format(slack.campaign_url(campaign), remaining_budget)
+            message += '- {}: ${} remaining budget\n'.format(slack.campaign_url(campaign), remaining_budget)
         return message
 
     def _get_verbose_message(self, campaigns):
         message = self._get_message_title()
         for campaign, remaining_budget in campaigns.items():
-            message += '- {} ({}): ${} remaining\n'.format(campaign.name, campaign.id, remaining_budget)
+            message += '- {} ({}): ${} remaining budget\n'.format(campaign.name, campaign.id, remaining_budget)
         return message
 
     def _get_message_title(self):
