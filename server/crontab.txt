@@ -22,7 +22,7 @@
 0 * * * *        /home/ubuntu/docker-manage-py.sh monitor_content_ad_upload
 15 9 * * 1       /home/ubuntu/docker-manage-py.sh audit_credits --send-emails
 15 7 * * *       /home/ubuntu/docker-manage-py.sh audit_spend_patterns
-20 7,11 * * *    /home/ubuntu/docker-manage-py.sh audit_spend_integrity --slack
+#20 7,11 * * *    /home/ubuntu/docker-manage-py.sh audit_spend_integrity --slack
 20 11 * * *      /home/ubuntu/docker-manage-py.sh audit_hacks --slack
 0 10 5,15,25 * * /home/ubuntu/docker-manage-py.sh audit_pacing --send-emails
 20 10 * * *      /home/ubuntu/docker-manage-py.sh daily_audit --send-emails
