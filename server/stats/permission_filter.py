@@ -34,82 +34,119 @@ def has_perms_bcm_v2(user, permissions, uses_bcm_v2=False):
 
 
 BCM2_DEPRECATED_FIELDS = {
-    'agency_cost', 'billing_cost', 'total_cost',
-    'cpc', 'cpm', 'video_cpv', 'video_cpcv',
-    'avg_cost_per_minute', 'avg_cost_per_non_bounced_visit', 'avg_cost_per_pageview',
-    'avg_cost_for_new_visitor', 'avg_cost_per_visit',
-    'yesterday_cost', 'e_yesterday_cost'
+    'agency_cost', 'local_agency_cost', 'billing_cost', 'local_billing_cost', 'total_cost', 'local_total_cost',
+    'cpc', 'local_cpc', 'cpm', 'local_cpm', 'video_cpv', 'local_video_cpv', 'video_cpcv', 'local_video_cpcv',
+    'avg_cost_per_minute', 'local_avg_cost_per_minute',
+    'avg_cost_per_non_bounced_visit', 'local_avg_cost_per_non_bounced_visit',
+    'avg_cost_per_pageview', 'local_avg_cost_per_pageview',
+    'avg_cost_for_new_visitor', 'local_avg_cost_for_new_visitor',
+    'avg_cost_per_visit', 'local_avg_cost_per_visit',
+    'yesterday_cost', 'local_yesterday_cost', 'e_yesterday_cost', 'local_e_yesterday_cost'
 }
 
 FIELD_PERMISSION_MAPPING = {
-    'media_cost':          ('zemauth.can_view_actual_costs',),
-    'e_media_cost':        ('zemauth.can_view_platform_cost_breakdown',),
+    'media_cost':                                ('zemauth.can_view_actual_costs',),
+    'local_media_cost':                          ('zemauth.can_view_actual_costs',),
+    'e_media_cost':                              ('zemauth.can_view_platform_cost_breakdown',),
+    'local_e_media_cost':                        ('zemauth.can_view_platform_cost_breakdown',),
 
-    'data_cost':           ('zemauth.can_view_actual_costs',),
-    'e_data_cost':         ('zemauth.can_view_platform_cost_breakdown',),
+    'data_cost':                                 ('zemauth.can_view_actual_costs',),
+    'local_data_cost':                           ('zemauth.can_view_actual_costs',),
+    'e_data_cost':                               ('zemauth.can_view_platform_cost_breakdown',),
+    'local_e_data_cost':                         ('zemauth.can_view_platform_cost_breakdown',),
 
-    'at_cost':             ('zemauth.can_view_actual_costs',),
-    'et_cost':             ('zemauth.can_view_platform_cost_breakdown_derived',),
-    'etf_cost':            ('zemauth.can_view_agency_cost_breakdown',),
-    'etfm_cost':           ('zemauth.can_view_end_user_cost_breakdown',),
+    'at_cost':                                   ('zemauth.can_view_actual_costs',),
+    'local_at_cost':                             ('zemauth.can_view_actual_costs',),
+    'et_cost':                                   ('zemauth.can_view_platform_cost_breakdown_derived',),
+    'local_et_cost':                             ('zemauth.can_view_platform_cost_breakdown_derived',),
+    'etf_cost':                                  ('zemauth.can_view_agency_cost_breakdown',),
+    'local_etf_cost':                            ('zemauth.can_view_agency_cost_breakdown',),
+    'etfm_cost':                                 ('zemauth.can_view_end_user_cost_breakdown',),
+    'local_etfm_cost':                           ('zemauth.can_view_end_user_cost_breakdown',),
 
-    'license_fee':         ('zemauth.can_view_platform_cost_breakdown',),
-    'margin':              ('zemauth.can_view_agency_margin',),
+    'license_fee':                               ('zemauth.can_view_platform_cost_breakdown',),
+    'local_license_fee':                         ('zemauth.can_view_platform_cost_breakdown',),
+    'margin':                                    ('zemauth.can_view_agency_margin',),
+    'local_margin':                              ('zemauth.can_view_agency_margin',),
 
-    'yesterday_at_cost':   ('zemauth.can_view_actual_costs',),
-    'yesterday_et_cost':   ('zemauth.can_view_platform_cost_breakdown_derived',),
-    'yesterday_etfm_cost': ('zemauth.can_view_end_user_cost_breakdown',),
+    'yesterday_at_cost':                         ('zemauth.can_view_actual_costs',),
+    'local_yesterday_at_cost':                   ('zemauth.can_view_actual_costs',),
+    'yesterday_et_cost':                         ('zemauth.can_view_platform_cost_breakdown_derived',),
+    'local_yesterday_et_cost':                   ('zemauth.can_view_platform_cost_breakdown_derived',),
+    'yesterday_etfm_cost':                       ('zemauth.can_view_end_user_cost_breakdown',),
+    'local_yesterday_etfm_cost':                 ('zemauth.can_view_end_user_cost_breakdown',),
 
-    'et_cpc':              ('zemauth.can_view_platform_cost_breakdown_derived',),
-    'et_cpm':              ('zemauth.can_view_platform_cost_breakdown_derived',),
-    'video_et_cpv':        ('zemauth.can_view_platform_cost_breakdown_derived',),
-    'video_et_cpcv':       ('zemauth.can_view_platform_cost_breakdown_derived',),
+    'et_cpc':                                    ('zemauth.can_view_platform_cost_breakdown_derived',),
+    'local_et_cpc':                              ('zemauth.can_view_platform_cost_breakdown_derived',),
+    'et_cpm':                                    ('zemauth.can_view_platform_cost_breakdown_derived',),
+    'local_et_cpm':                              ('zemauth.can_view_platform_cost_breakdown_derived',),
+    'video_et_cpv':                              ('zemauth.can_view_platform_cost_breakdown_derived',),
+    'local_video_et_cpv':                        ('zemauth.can_view_platform_cost_breakdown_derived',),
+    'video_et_cpcv':                             ('zemauth.can_view_platform_cost_breakdown_derived',),
+    'local_video_et_cpcv':                       ('zemauth.can_view_platform_cost_breakdown_derived',),
 
-    'etfm_cpc':            ('zemauth.can_view_end_user_cost_breakdown',),
-    'etfm_cpm':            ('zemauth.can_view_end_user_cost_breakdown',),
-    'video_etfm_cpv':      ('zemauth.can_view_end_user_cost_breakdown',),
-    'video_etfm_cpcv':     ('zemauth.can_view_end_user_cost_breakdown',),
+    'etfm_cpc':                                  ('zemauth.can_view_end_user_cost_breakdown',),
+    'local_etfm_cpc':                            ('zemauth.can_view_end_user_cost_breakdown',),
+    'etfm_cpm':                                  ('zemauth.can_view_end_user_cost_breakdown',),
+    'local_etfm_cpm':                            ('zemauth.can_view_end_user_cost_breakdown',),
+    'video_etfm_cpv':                            ('zemauth.can_view_end_user_cost_breakdown',),
+    'local_video_etfm_cpv':                      ('zemauth.can_view_end_user_cost_breakdown',),
+    'video_etfm_cpcv':                           ('zemauth.can_view_end_user_cost_breakdown',),
+    'local_video_etfm_cpcv':                     ('zemauth.can_view_end_user_cost_breakdown',),
 
     # legacy
-    'agency_cost':         ('zemauth.can_view_agency_margin',),
-    'yesterday_cost':      ('zemauth.can_view_actual_costs',),
-    'e_yesterday_cost':    ('zemauth.can_view_platform_cost_breakdown',),
+    'agency_cost':                               ('zemauth.can_view_agency_margin',),
+    'local_agency_cost':                         ('zemauth.can_view_agency_margin',),
+    'yesterday_cost':                            ('zemauth.can_view_actual_costs',),
+    'local_yesterday_cost':                      ('zemauth.can_view_actual_costs',),
+    'e_yesterday_cost':                          ('zemauth.can_view_platform_cost_breakdown',),
+    'local_e_yesterday_cost':                    ('zemauth.can_view_platform_cost_breakdown',),
 
-    'avg_et_cost_per_minute':              ('zemauth.can_view_platform_cost_breakdown',),
-    'avg_et_cost_per_non_bounced_visit':   ('zemauth.can_view_platform_cost_breakdown',),
-    'avg_et_cost_per_pageview':            ('zemauth.can_view_platform_cost_breakdown',),
-    'avg_et_cost_for_new_visitor':         ('zemauth.can_view_platform_cost_breakdown',),
-    'avg_et_cost_per_visit':               ('zemauth.can_view_platform_cost_breakdown',),
+    'avg_et_cost_per_minute':                    ('zemauth.can_view_platform_cost_breakdown',),
+    'local_avg_et_cost_per_minute':              ('zemauth.can_view_platform_cost_breakdown',),
+    'avg_et_cost_per_non_bounced_visit':         ('zemauth.can_view_platform_cost_breakdown',),
+    'local_avg_et_cost_per_non_bounced_visit':   ('zemauth.can_view_platform_cost_breakdown',),
+    'avg_et_cost_per_pageview':                  ('zemauth.can_view_platform_cost_breakdown',),
+    'local_avg_et_cost_per_pageview':            ('zemauth.can_view_platform_cost_breakdown',),
+    'avg_et_cost_for_new_visitor':               ('zemauth.can_view_platform_cost_breakdown',),
+    'local_avg_et_cost_for_new_visitor':         ('zemauth.can_view_platform_cost_breakdown',),
+    'avg_et_cost_per_visit':                     ('zemauth.can_view_platform_cost_breakdown',),
+    'local_avg_et_cost_per_visit':               ('zemauth.can_view_platform_cost_breakdown',),
 
-    'avg_etfm_cost_per_minute':            ('zemauth.can_view_end_user_cost_breakdown',),
-    'avg_etfm_cost_per_non_bounced_visit': ('zemauth.can_view_end_user_cost_breakdown',),
-    'avg_etfm_cost_per_pageview':          ('zemauth.can_view_end_user_cost_breakdown',),
-    'avg_etfm_cost_for_new_visitor':       ('zemauth.can_view_end_user_cost_breakdown',),
-    'avg_etfm_cost_per_visit':             ('zemauth.can_view_end_user_cost_breakdown',),
+    'avg_etfm_cost_per_minute':                  ('zemauth.can_view_end_user_cost_breakdown',),
+    'local_avg_etfm_cost_per_minute':            ('zemauth.can_view_end_user_cost_breakdown',),
+    'avg_etfm_cost_per_non_bounced_visit':       ('zemauth.can_view_end_user_cost_breakdown',),
+    'local_avg_etfm_cost_per_non_bounced_visit': ('zemauth.can_view_end_user_cost_breakdown',),
+    'avg_etfm_cost_per_pageview':                ('zemauth.can_view_end_user_cost_breakdown',),
+    'local_avg_etfm_cost_per_pageview':          ('zemauth.can_view_end_user_cost_breakdown',),
+    'avg_etfm_cost_for_new_visitor':             ('zemauth.can_view_end_user_cost_breakdown',),
+    'local_avg_etfm_cost_for_new_visitor':       ('zemauth.can_view_end_user_cost_breakdown',),
+    'avg_etfm_cost_per_visit':                   ('zemauth.can_view_end_user_cost_breakdown',),
+    'local_avg_etfm_cost_per_visit':             ('zemauth.can_view_end_user_cost_breakdown',),
 
     # projections
-    'pacing':                 ('zemauth.can_view_platform_cost_breakdown',),
-    'allocated_budgets':      ('zemauth.can_see_projections',),
-    'spend_projection':       ('zemauth.can_view_platform_cost_breakdown',),
-    'license_fee_projection': ('zemauth.can_view_platform_cost_breakdown',),
-    'total_fee':              ('zemauth.can_view_flat_fees',),
-    'flat_fee':               ('zemauth.can_view_flat_fees',),
+    'pacing':                                    ('zemauth.can_view_platform_cost_breakdown',),
+    'allocated_budgets':                         ('zemauth.can_see_projections',),
+    'spend_projection':                          ('zemauth.can_view_platform_cost_breakdown',),
+    'license_fee_projection':                    ('zemauth.can_view_platform_cost_breakdown',),
+    'total_fee':                                 ('zemauth.can_view_flat_fees',),
+    'flat_fee':                                  ('zemauth.can_view_flat_fees',),
 
-    'total_fee_projection':   ('zemauth.can_view_flat_fees',),
+    'total_fee_projection':                      ('zemauth.can_view_flat_fees',),
 
-    'default_account_manager':      ('zemauth.can_see_managers_in_accounts_table',),
-    'default_sales_representative': ('zemauth.can_see_managers_in_accounts_table',),
-    'default_cs_representative':    ('zemauth.can_see_managers_in_accounts_table',),
+    'default_account_manager':                   ('zemauth.can_see_managers_in_accounts_table',),
+    'default_sales_representative':              ('zemauth.can_see_managers_in_accounts_table',),
+    'default_cs_representative':                 ('zemauth.can_see_managers_in_accounts_table',),
 
-    'campaign_manager':      ('zemauth.can_see_managers_in_campaigns_table',),
-    'account_type':          ('zemauth.can_see_account_type',),
-    'salesforce_url':        ('zemauth.can_see_salesforce_url',),
-    'agency':                ('zemauth.can_view_account_agency_information',),
-    'agency_id':             ('zemauth.can_view_account_agency_information',),
+    'campaign_manager':                          ('zemauth.can_see_managers_in_campaigns_table',),
+    'account_type':                              ('zemauth.can_see_account_type',),
+    'salesforce_url':                            ('zemauth.can_see_salesforce_url',),
+    'agency':                                    ('zemauth.can_view_account_agency_information',),
+    'agency_id':                                 ('zemauth.can_view_account_agency_information',),
 
-    'performance':           ('zemauth.campaign_goal_performance',),
-    'etfm_performance':      ('zemauth.campaign_goal_performance', 'zemauth.can_view_end_user_cost_breakdown'),
-    'styles':                ('zemauth.campaign_goal_performance',),
+    'performance':                               ('zemauth.campaign_goal_performance',),
+    'etfm_performance':                          ('zemauth.campaign_goal_performance', 'zemauth.can_view_end_user_cost_breakdown'),
+    'styles':                                    ('zemauth.campaign_goal_performance',),
 }
 
 
@@ -196,14 +233,20 @@ def _get_allowed_campaign_goals_fields(user, campaign_goals, campaign_goal_value
         if not uses_bcm_v2:
             allowed_fields |= set(
                 'avg_cost_per_{}'.format(cg.get_view_key(conversion_goals)) for cg in conversion_goals)
+            allowed_fields |= set(
+                'local_avg_cost_per_{}'.format(cg.get_view_key(conversion_goals)) for cg in conversion_goals)
 
         if can_add_et_fields:
             allowed_fields |= set(
                 'avg_et_cost_per_{}'.format(cg.get_view_key(conversion_goals)) for cg in conversion_goals)
+            allowed_fields |= set(
+                'local_avg_et_cost_per_{}'.format(cg.get_view_key(conversion_goals)) for cg in conversion_goals)
 
         if can_add_etfm_fields:
             allowed_fields |= set(
                 'avg_etfm_cost_per_{}'.format(cg.get_view_key(conversion_goals)) for cg in conversion_goals)
+            allowed_fields |= set(
+                'local_avg_etfm_cost_per_{}'.format(cg.get_view_key(conversion_goals)) for cg in conversion_goals)
 
     if user.has_perm('zemauth.campaign_goal_performance'):
         allowed_fields |= set('performance_' + x.get_view_key() for x in campaign_goals)
@@ -242,14 +285,17 @@ def _get_allowed_pixels_fields(user, pixels, uses_bcm_v2):
 
             if not uses_bcm_v2:
                 allowed.add('avg_cost_per_' + view_key)
+                allowed.add('local_avg_cost_per_' + view_key)
                 allowed.add('roas_' + view_key)
 
             if can_add_et_fields:
                 allowed.add('avg_et_cost_per_' + view_key)
+                allowed.add('local_avg_et_cost_per_' + view_key)
                 allowed.add('et_roas_' + view_key)
 
             if can_add_etfm_fields:
                 allowed.add('avg_etfm_cost_per_' + view_key)
+                allowed.add('local_avg_etfm_cost_per_' + view_key)
                 allowed.add('etfm_roas_' + view_key)
 
     return allowed

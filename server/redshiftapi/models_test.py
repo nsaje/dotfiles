@@ -12,24 +12,25 @@ from redshiftapi import models
 
 ALL_AGGREGATES = [
     'clicks', 'impressions',
-    'license_fee', 'margin',
-    'media_cost', 'e_media_cost', 'data_cost', 'e_data_cost',
-    'at_cost', 'et_cost', 'etf_cost', 'etfm_cost',
-    'total_cost', 'billing_cost', 'agency_cost',  # legacy
+    'license_fee', 'local_license_fee', 'margin', 'local_margin',
+    'media_cost', 'local_media_cost', 'e_media_cost', 'local_e_media_cost',
+    'data_cost', 'local_data_cost', 'e_data_cost', 'local_e_data_cost',
+    'at_cost', 'local_at_cost', 'et_cost', 'local_et_cost', 'etf_cost', 'local_etf_cost', 'etfm_cost', 'local_etfm_cost',  # noqa
+    'total_cost', 'local_total_cost', 'billing_cost', 'local_billing_cost', 'agency_cost', 'local_agency_cost',  # legacy
     'ctr',
-    'cpc', 'et_cpc', 'etfm_cpc',
-    'cpm', 'et_cpm', 'etfm_cpm',
+    'cpc', 'local_cpc', 'et_cpc', 'local_et_cpc', 'etfm_cpc', 'local_etfm_cpc',
+    'cpm', 'local_cpm', 'et_cpm', 'local_et_cpm', 'etfm_cpm', 'local_etfm_cpm',
     'visits', 'pageviews', 'click_discrepancy',
     'new_visits', 'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos', 'returning_users', 'unique_users',
     'new_users', 'bounced_visits', 'total_seconds', 'non_bounced_visits', 'total_pageviews',
-    'avg_cost_per_minute', 'avg_et_cost_per_minute', 'avg_etfm_cost_per_minute',
-    'avg_cost_per_non_bounced_visit', 'avg_et_cost_per_non_bounced_visit', 'avg_etfm_cost_per_non_bounced_visit',
-    'avg_cost_per_pageview', 'avg_et_cost_per_pageview', 'avg_etfm_cost_per_pageview',
-    'avg_cost_for_new_visitor', 'avg_et_cost_for_new_visitor', 'avg_etfm_cost_for_new_visitor',
-    'avg_cost_per_visit', 'avg_et_cost_per_visit', 'avg_etfm_cost_per_visit',
-    'video_start', 'video_first_quartile', 'video_midpoint', 'video_third_quartile', 'video_complete', 'video_progress_3s',
-    'video_cpv', 'video_et_cpv', 'video_etfm_cpv',
-    'video_cpcv', 'video_et_cpcv', 'video_etfm_cpcv',
+    'avg_cost_per_minute', 'local_avg_cost_per_minute', 'avg_et_cost_per_minute', 'local_avg_et_cost_per_minute', 'avg_etfm_cost_per_minute', 'local_avg_etfm_cost_per_minute',  # noqa
+    'avg_cost_per_non_bounced_visit', 'local_avg_cost_per_non_bounced_visit', 'avg_et_cost_per_non_bounced_visit', 'local_avg_et_cost_per_non_bounced_visit', 'avg_etfm_cost_per_non_bounced_visit', 'local_avg_etfm_cost_per_non_bounced_visit',  # noqa
+    'avg_cost_per_pageview', 'local_avg_cost_per_pageview', 'avg_et_cost_per_pageview', 'local_avg_et_cost_per_pageview', 'avg_etfm_cost_per_pageview', 'local_avg_etfm_cost_per_pageview',  # noqa
+    'avg_cost_for_new_visitor', 'local_avg_cost_for_new_visitor', 'avg_et_cost_for_new_visitor', 'local_avg_et_cost_for_new_visitor', 'avg_etfm_cost_for_new_visitor', 'local_avg_etfm_cost_for_new_visitor',  # noqa
+    'avg_cost_per_visit', 'local_avg_cost_per_visit', 'avg_et_cost_per_visit', 'local_avg_et_cost_per_visit', 'avg_etfm_cost_per_visit', 'local_avg_etfm_cost_per_visit',  # noqa
+    'video_start', 'video_first_quartile', 'video_midpoint', 'video_third_quartile', 'video_complete', 'video_progress_3s',  # noqa
+    'video_cpv', 'local_video_cpv', 'video_et_cpv', 'local_video_et_cpv', 'video_etfm_cpv', 'local_video_etfm_cpv',
+    'video_cpcv', 'local_video_cpcv', 'video_et_cpcv', 'local_video_et_cpcv', 'video_etfm_cpcv', 'local_video_etfm_cpcv',  # noqa
 ]
 
 
@@ -139,7 +140,12 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
         self.assertEqual(context['constraints'].get_params(), [datetime.date(2016, 10, 2)])
 
         self.assertCountEqual(context['aggregates'], self.model.select_columns([
-            'yesterday_cost', 'e_yesterday_cost', 'yesterday_et_cost', 'yesterday_at_cost', 'yesterday_etfm_cost']))
+            'yesterday_cost', 'local_yesterday_cost',
+            'e_yesterday_cost', 'local_e_yesterday_cost',
+            'yesterday_et_cost', 'local_yesterday_et_cost',
+            'yesterday_at_cost', 'local_yesterday_at_cost',
+            'yesterday_etfm_cost', 'local_yesterday_etfm_cost'
+        ]))
         self.assertEqual(context['view'], 'mv_account')
         self.assertSQLEquals(context['orders'][0].only_alias(), 'yesterday_cost DESC NULLS LAST')
 
@@ -312,48 +318,72 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
         # prefixes should be added afterwards
         self.assertEqual([x.column_as_alias('a') for x in after_join_columns], [
             backtosql.SQLMatcher('e_media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2'),
+            backtosql.SQLMatcher('local_e_media_cost / NULLIF(conversion_goal_2, 0) local_avg_cost_per_conversion_goal_2'),  # noqa
             backtosql.SQLMatcher('et_cost / NULLIF(conversion_goal_2, 0) avg_et_cost_per_conversion_goal_2'),
+            backtosql.SQLMatcher('local_et_cost / NULLIF(conversion_goal_2, 0) local_avg_et_cost_per_conversion_goal_2'),  # noqa
             backtosql.SQLMatcher('etfm_cost / NULLIF(conversion_goal_2, 0) avg_etfm_cost_per_conversion_goal_2'),
+            backtosql.SQLMatcher('local_etfm_cost / NULLIF(conversion_goal_2, 0) local_avg_etfm_cost_per_conversion_goal_2'),  # noqa
 
             backtosql.SQLMatcher('e_media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3'),
+            backtosql.SQLMatcher('local_e_media_cost / NULLIF(conversion_goal_3, 0) local_avg_cost_per_conversion_goal_3'),  # noqa
             backtosql.SQLMatcher('et_cost / NULLIF(conversion_goal_3, 0) avg_et_cost_per_conversion_goal_3'),
+            backtosql.SQLMatcher('local_et_cost / NULLIF(conversion_goal_3, 0) local_avg_et_cost_per_conversion_goal_3'),  # noqa
             backtosql.SQLMatcher('etfm_cost / NULLIF(conversion_goal_3, 0) avg_etfm_cost_per_conversion_goal_3'),
+            backtosql.SQLMatcher('local_etfm_cost / NULLIF(conversion_goal_3, 0) local_avg_etfm_cost_per_conversion_goal_3'),  # noqa
 
             backtosql.SQLMatcher('e_media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4'),
+            backtosql.SQLMatcher('local_e_media_cost / NULLIF(conversion_goal_4, 0) local_avg_cost_per_conversion_goal_4'),  # noqa
             backtosql.SQLMatcher('et_cost / NULLIF(conversion_goal_4, 0) avg_et_cost_per_conversion_goal_4'),
+            backtosql.SQLMatcher('local_et_cost / NULLIF(conversion_goal_4, 0) local_avg_et_cost_per_conversion_goal_4'),  # noqa
             backtosql.SQLMatcher('etfm_cost / NULLIF(conversion_goal_4, 0) avg_etfm_cost_per_conversion_goal_4'),
+            backtosql.SQLMatcher('local_etfm_cost / NULLIF(conversion_goal_4, 0) local_avg_etfm_cost_per_conversion_goal_4'),  # noqa
 
             backtosql.SQLMatcher('e_media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5'),
+            backtosql.SQLMatcher('local_e_media_cost / NULLIF(conversion_goal_5, 0) local_avg_cost_per_conversion_goal_5'),  # noqa
             backtosql.SQLMatcher('et_cost / NULLIF(conversion_goal_5, 0) avg_et_cost_per_conversion_goal_5'),
+            backtosql.SQLMatcher('local_et_cost / NULLIF(conversion_goal_5, 0) local_avg_et_cost_per_conversion_goal_5'),  # noqa
             backtosql.SQLMatcher('etfm_cost / NULLIF(conversion_goal_5, 0) avg_etfm_cost_per_conversion_goal_5'),
+            backtosql.SQLMatcher('local_etfm_cost / NULLIF(conversion_goal_5, 0) local_avg_etfm_cost_per_conversion_goal_5'),  # noqa
 
             backtosql.SQLMatcher('e_media_cost / NULLIF(pixel_1_24, 0) avg_cost_per_pixel_1_24'),
+            backtosql.SQLMatcher('local_e_media_cost / NULLIF(pixel_1_24, 0) local_avg_cost_per_pixel_1_24'),
             backtosql.SQLMatcher('et_cost / NULLIF(pixel_1_24, 0) avg_et_cost_per_pixel_1_24'),
+            backtosql.SQLMatcher('local_et_cost / NULLIF(pixel_1_24, 0) local_avg_et_cost_per_pixel_1_24'),
             backtosql.SQLMatcher('etfm_cost / NULLIF(pixel_1_24, 0) avg_etfm_cost_per_pixel_1_24'),
-            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_24, 0) - COALESCE(e_media_cost, 0) roas_pixel_1_24'),
-            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_24, 0) - COALESCE(et_cost, 0) et_roas_pixel_1_24'),
-            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_24, 0) - COALESCE(etfm_cost, 0) etfm_roas_pixel_1_24'),
+            backtosql.SQLMatcher('local_etfm_cost / NULLIF(pixel_1_24, 0) local_avg_etfm_cost_per_pixel_1_24'),
+            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_24, 0) - COALESCE(local_e_media_cost, 0) roas_pixel_1_24'),  # noqa
+            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_24, 0) - COALESCE(local_et_cost, 0) et_roas_pixel_1_24'),  # noqa
+            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_24, 0) - COALESCE(local_etfm_cost, 0) etfm_roas_pixel_1_24'),  # noqa
 
             backtosql.SQLMatcher('e_media_cost / NULLIF(pixel_1_168, 0) avg_cost_per_pixel_1_168'),
+            backtosql.SQLMatcher('local_e_media_cost / NULLIF(pixel_1_168, 0) local_avg_cost_per_pixel_1_168'),
             backtosql.SQLMatcher('et_cost / NULLIF(pixel_1_168, 0) avg_et_cost_per_pixel_1_168'),
+            backtosql.SQLMatcher('local_et_cost / NULLIF(pixel_1_168, 0) local_avg_et_cost_per_pixel_1_168'),
             backtosql.SQLMatcher('etfm_cost / NULLIF(pixel_1_168, 0) avg_etfm_cost_per_pixel_1_168'),
-            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_168, 0) - COALESCE(e_media_cost, 0) roas_pixel_1_168'),
-            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_168, 0) - COALESCE(et_cost, 0) et_roas_pixel_1_168'),
-            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_168, 0) - COALESCE(etfm_cost, 0) etfm_roas_pixel_1_168'),  # noqa
+            backtosql.SQLMatcher('local_etfm_cost / NULLIF(pixel_1_168, 0) local_avg_etfm_cost_per_pixel_1_168'),
+            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_168, 0) - COALESCE(local_e_media_cost, 0) roas_pixel_1_168'),  # noqa
+            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_168, 0) - COALESCE(local_et_cost, 0) et_roas_pixel_1_168'),  # noqa
+            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_168, 0) - COALESCE(local_etfm_cost, 0) etfm_roas_pixel_1_168'),  # noqa
 
             backtosql.SQLMatcher('e_media_cost / NULLIF(pixel_1_720, 0) avg_cost_per_pixel_1_720'),
+            backtosql.SQLMatcher('local_e_media_cost / NULLIF(pixel_1_720, 0) local_avg_cost_per_pixel_1_720'),
             backtosql.SQLMatcher('et_cost / NULLIF(pixel_1_720, 0) avg_et_cost_per_pixel_1_720'),
+            backtosql.SQLMatcher('local_et_cost / NULLIF(pixel_1_720, 0) local_avg_et_cost_per_pixel_1_720'),
             backtosql.SQLMatcher('etfm_cost / NULLIF(pixel_1_720, 0) avg_etfm_cost_per_pixel_1_720'),
-            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_720, 0) - COALESCE(e_media_cost, 0) roas_pixel_1_720'),
-            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_720, 0) - COALESCE(et_cost, 0) et_roas_pixel_1_720'),
-            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_720, 0) - COALESCE(etfm_cost, 0) etfm_roas_pixel_1_720'),  # noqa
+            backtosql.SQLMatcher('local_etfm_cost / NULLIF(pixel_1_720, 0) local_avg_etfm_cost_per_pixel_1_720'),
+            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_720, 0) - COALESCE(local_e_media_cost, 0) roas_pixel_1_720'),  # noqa
+            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_720, 0) - COALESCE(local_et_cost, 0) et_roas_pixel_1_720'),  # noqa
+            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_720, 0) - COALESCE(local_etfm_cost, 0) etfm_roas_pixel_1_720'),  # noqa
 
             backtosql.SQLMatcher('e_media_cost / NULLIF(pixel_1_2160, 0) avg_cost_per_pixel_1_2160'),
+            backtosql.SQLMatcher('local_e_media_cost / NULLIF(pixel_1_2160, 0) local_avg_cost_per_pixel_1_2160'),
             backtosql.SQLMatcher('et_cost / NULLIF(pixel_1_2160, 0) avg_et_cost_per_pixel_1_2160'),
+            backtosql.SQLMatcher('local_et_cost / NULLIF(pixel_1_2160, 0) local_avg_et_cost_per_pixel_1_2160'),
             backtosql.SQLMatcher('etfm_cost / NULLIF(pixel_1_2160, 0) avg_etfm_cost_per_pixel_1_2160'),
-            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_2160, 0) - COALESCE(e_media_cost, 0) roas_pixel_1_2160'),  # noqa
-            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_2160, 0) - COALESCE(et_cost, 0) et_roas_pixel_1_2160'),
-            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_2160, 0) - COALESCE(etfm_cost, 0) etfm_roas_pixel_1_2160'),  # noqa
+            backtosql.SQLMatcher('local_etfm_cost / NULLIF(pixel_1_2160, 0) local_avg_etfm_cost_per_pixel_1_2160'),
+            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_2160, 0) - COALESCE(local_e_media_cost, 0) roas_pixel_1_2160'),  # noqa
+            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_2160, 0) - COALESCE(local_et_cost, 0) et_roas_pixel_1_2160'),  # noqa
+            backtosql.SQLMatcher('COALESCE(total_conversion_value_pixel_1_2160, 0) - COALESCE(local_etfm_cost, 0) etfm_roas_pixel_1_2160'),  # noqa
         ])
 
     def test_get_query_joint_context(self):
@@ -408,17 +438,33 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
         ]))
 
         self.assertListEqual(context['after_join_aggregates'], m.select_columns([
-            'avg_cost_per_conversion_goal_2', 'avg_et_cost_per_conversion_goal_2', 'avg_etfm_cost_per_conversion_goal_2',  # noqa
-            'avg_cost_per_conversion_goal_3', 'avg_et_cost_per_conversion_goal_3', 'avg_etfm_cost_per_conversion_goal_3',  # noqa
-            'avg_cost_per_conversion_goal_4', 'avg_et_cost_per_conversion_goal_4', 'avg_etfm_cost_per_conversion_goal_4',  # noqa
-            'avg_cost_per_conversion_goal_5', 'avg_et_cost_per_conversion_goal_5', 'avg_etfm_cost_per_conversion_goal_5',  # noqa
-            'avg_cost_per_pixel_1_24', 'avg_et_cost_per_pixel_1_24', 'avg_etfm_cost_per_pixel_1_24',
+            'avg_cost_per_conversion_goal_2', 'local_avg_cost_per_conversion_goal_2',
+            'avg_et_cost_per_conversion_goal_2', 'local_avg_et_cost_per_conversion_goal_2',
+            'avg_etfm_cost_per_conversion_goal_2', 'local_avg_etfm_cost_per_conversion_goal_2',
+            'avg_cost_per_conversion_goal_3', 'local_avg_cost_per_conversion_goal_3',
+            'avg_et_cost_per_conversion_goal_3', 'local_avg_et_cost_per_conversion_goal_3',
+            'avg_etfm_cost_per_conversion_goal_3', 'local_avg_etfm_cost_per_conversion_goal_3',
+            'avg_cost_per_conversion_goal_4', 'local_avg_cost_per_conversion_goal_4',
+            'avg_et_cost_per_conversion_goal_4', 'local_avg_et_cost_per_conversion_goal_4',
+            'avg_etfm_cost_per_conversion_goal_4', 'local_avg_etfm_cost_per_conversion_goal_4',
+            'avg_cost_per_conversion_goal_5', 'local_avg_cost_per_conversion_goal_5',
+            'avg_et_cost_per_conversion_goal_5', 'local_avg_et_cost_per_conversion_goal_5',
+            'avg_etfm_cost_per_conversion_goal_5', 'local_avg_etfm_cost_per_conversion_goal_5',
+            'avg_cost_per_pixel_1_24', 'local_avg_cost_per_pixel_1_24',
+            'avg_et_cost_per_pixel_1_24', 'local_avg_et_cost_per_pixel_1_24',
+            'avg_etfm_cost_per_pixel_1_24', 'local_avg_etfm_cost_per_pixel_1_24',
             'roas_pixel_1_24', 'et_roas_pixel_1_24', 'etfm_roas_pixel_1_24',
-            'avg_cost_per_pixel_1_168', 'avg_et_cost_per_pixel_1_168', 'avg_etfm_cost_per_pixel_1_168',
+            'avg_cost_per_pixel_1_168', 'local_avg_cost_per_pixel_1_168',
+            'avg_et_cost_per_pixel_1_168', 'local_avg_et_cost_per_pixel_1_168',
+            'avg_etfm_cost_per_pixel_1_168', 'local_avg_etfm_cost_per_pixel_1_168',
             'roas_pixel_1_168', 'et_roas_pixel_1_168', 'etfm_roas_pixel_1_168',
-            'avg_cost_per_pixel_1_720', 'avg_et_cost_per_pixel_1_720', 'avg_etfm_cost_per_pixel_1_720',
+            'avg_cost_per_pixel_1_720', 'local_avg_cost_per_pixel_1_720',
+            'avg_et_cost_per_pixel_1_720', 'local_avg_et_cost_per_pixel_1_720',
+            'avg_etfm_cost_per_pixel_1_720', 'local_avg_etfm_cost_per_pixel_1_720',
             'roas_pixel_1_720', 'et_roas_pixel_1_720', 'etfm_roas_pixel_1_720',
-            'avg_cost_per_pixel_1_2160', 'avg_et_cost_per_pixel_1_2160', 'avg_etfm_cost_per_pixel_1_2160',
+            'avg_cost_per_pixel_1_2160', 'local_avg_cost_per_pixel_1_2160',
+            'avg_et_cost_per_pixel_1_2160', 'local_avg_et_cost_per_pixel_1_2160',
+            'avg_etfm_cost_per_pixel_1_2160', 'local_avg_etfm_cost_per_pixel_1_2160',
             'roas_pixel_1_2160', 'et_roas_pixel_1_2160', 'etfm_roas_pixel_1_2160',
         ]))
 

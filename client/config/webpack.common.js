@@ -2,7 +2,6 @@ var path = require('path');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var webpack = require('webpack');
 
-// FIXME (jurebajt): Create APP_CONFIG to push to app
 var BUILD_CONFIG = null;
 var THEMES = {
     one: {name: 'one'},

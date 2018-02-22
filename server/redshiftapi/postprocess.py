@@ -159,8 +159,12 @@ def merge_rows(breakdown, base_rows, yesterday_rows, touchpoint_rows, conversion
     for row in rows:
         if row.get('yesterday_cost') is None:
             row['yesterday_cost'] = 0
+        if row.get('local_yesterday_cost') is None:
+            row['local_yesterday_cost'] = 0
         if row.get('e_yesterday_cost') is None:
             row['e_yesterday_cost'] = 0
+        if row.get('local_e_yesterday_cost') is None:
+            row['local_e_yesterday_cost'] = 0
 
     if goals:
         if goals.conversion_goals:
@@ -195,20 +199,29 @@ def apply_conversion_goal_columns(breakdown, rows, conversion_goals, conversion_
             if conversion_row:
                 count = conversion_row['count'] if conversion_row else None
                 avg_cost = (float(row['e_media_cost'] or 0) / count) if count else None
+                local_avg_cost = (float(row['local_e_media_cost'] or 0) / count) if count else None
 
                 avg_et_cost = (float(row['et_cost'] or 0) / count) if count else None
+                local_avg_et_cost = (float(row['local_et_cost'] or 0) / count) if count else None
                 avg_etfm_cost = (float(row['etfm_cost'] or 0) / count) if count else None
+                local_avg_etfm_cost = (float(row['local_etfm_cost'] or 0) / count) if count else None
             else:
                 count = None
                 avg_cost = None
+                local_avg_cost = None
                 avg_et_cost = None
+                local_avg_et_cost = None
                 avg_etfm_cost = None
+                local_avg_etfm_cost = None
 
             row.update({
                 conversion_key: count,
                 'avg_cost_per_' + conversion_key: avg_cost,
+                'local_avg_cost_per_' + conversion_key: local_avg_cost,
                 'avg_et_cost_per_' + conversion_key: avg_et_cost,
+                'local_avg_et_cost_per_' + conversion_key: local_avg_et_cost,
                 'avg_etfm_cost_per_' + conversion_key: avg_etfm_cost,
+                'local_avg_etfm_cost_per_' + conversion_key: local_avg_etfm_cost,
             })
 
 
@@ -223,8 +236,11 @@ def apply_pixel_columns(breakdown, rows, pixels, touchpoint_rows):
 
     for row in rows:
         cost = row['e_media_cost'] or 0
+        local_cost = row['local_e_media_cost'] or 0
         et_cost = row['et_cost'] or 0
+        local_et_cost = row['local_et_cost'] or 0
         etfm_cost = row['etfm_cost'] or 0
+        local_etfm_cost = row['local_etfm_cost'] or 0
 
         breakdown_key = sort_helper.get_breakdown_key(row, breakdown)
 
@@ -237,17 +253,23 @@ def apply_pixel_columns(breakdown, rows, pixels, touchpoint_rows):
                     count = sum(x['count'] for x in pixel_rows if x['window'] <= conversion_window)
 
                     avg_cost = float(cost) / count if count else None
+                    local_avg_cost = float(local_cost) / count if count else None
                     avg_et_cost = float(et_cost) / count if count else None
+                    local_avg_et_cost = float(local_et_cost) / count if count else None
                     avg_etfm_cost = float(etfm_cost) / count if count else None
+                    local_avg_etfm_cost = float(local_etfm_cost) / count if count else None
 
                     value = sum(x['conversion_value'] for x in pixel_rows if x['window'] <= conversion_window if x['conversion_value'])
-                    roas = value - cost
-                    etfm_roas = value - etfm_cost
+                    roas = value - local_cost
+                    etfm_roas = value - local_etfm_cost
                 else:
                     count = None
                     avg_cost = None
+                    local_avg_cost = None
                     avg_et_cost = None
+                    local_avg_et_cost = None
                     avg_etfm_cost = None
+                    local_avg_etfm_cost = None
                     roas = None
                     etfm_roas = None
 
@@ -256,8 +278,11 @@ def apply_pixel_columns(breakdown, rows, pixels, touchpoint_rows):
                 row.update({
                     pixel_key: count,
                     'avg_cost_per_' + pixel_key: avg_cost,
+                    'local_avg_cost_per_' + pixel_key: local_avg_cost,
                     'avg_et_cost_per_' + pixel_key: avg_et_cost,
+                    'local_avg_et_cost_per_' + pixel_key: local_avg_et_cost,
                     'avg_etfm_cost_per_' + pixel_key: avg_etfm_cost,
+                    'local_avg_etfm_cost_per_' + pixel_key: local_avg_etfm_cost,
                     'roas_' + pixel_key: roas,
                     'etfm_roas_' + pixel_key: etfm_roas,
                 })

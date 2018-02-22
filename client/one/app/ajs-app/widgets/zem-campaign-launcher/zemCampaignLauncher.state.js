@@ -121,7 +121,6 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
         }
 
         function initLauncherWithObjective (objective) {
-            // TODO (jurebajt): Should we preserve fields' values after user changes objective?
             if (!state.campaignObjective || state.campaignObjective !== objective) {
                 state.campaignObjective = objective || null;
                 state.steps = angular.copy(LAUNCHER_STEPS);

@@ -39,25 +39,35 @@ PROJECTION_FIELDS = {
 DIMENSION_FIELDS |= set(CONTENT_ADS_FIELDS)
 
 DEFAULT_STATS = set([
-    'ctr', 'cpc', 'etfm_cpc', 'clicks', 'impressions', 'billing_cost', 'cpm', 'etfm_cpm',
+    'ctr', 'cpc', 'local_cpc', 'etfm_cpc', 'local_etfm_cpc',
+    'clicks', 'impressions',
+    'billing_cost', 'local_billing_cost',
+    'cpm', 'local_cpm', 'etfm_cpm', 'local_etfm_cpm',
     'video_start', 'video_first_quartile', 'video_midpoint',
     'video_third_quartile', 'video_complete', 'video_progress_3s',
-    'video_cpv', 'video_etfm_cpv', 'video_cpcv', 'video_etfm_cpcv',
-    'avg_cost_per_minute', 'avg_cost_per_non_bounced_visit', 'avg_cost_per_pageview',
-    'avg_cost_for_new_visitor', 'avg_cost_per_visit',
+    'video_cpv', 'local_video_cpv', 'video_etfm_cpv', 'local_video_etfm_cpv',
+    'video_cpcv', 'local_video_cpcv', 'video_etfm_cpcv', 'local_video_etfm_cpcv',
+    'avg_cost_per_minute', 'local_avg_cost_per_minute', 'avg_cost_per_non_bounced_visit', 'local_avg_cost_per_non_bounced_visit',
+    'avg_cost_per_pageview', 'local_avg_cost_per_pageview', 'avg_cost_for_new_visitor', 'local_avg_cost_for_new_visitor',
+    'avg_cost_per_visit', 'local_avg_cost_per_visit',
 ])
 
 HELPER_FIELDS = set(['campaign_stop_inactive', 'campaign_has_available_budget', 'status_per_source'])
 
 TRAFFIC_FIELDS = [
-    'clicks', 'impressions', 'data_cost',
-    'cpc', 'ctr', 'title', 'url',
-    'media_cost', 'e_media_cost', 'e_data_cost',
-    'license_fee', 'billing_cost',
-    'margin', 'agency_cost', 'cpm',
+    'clicks', 'impressions',
+    'data_cost', 'local_data_cost',
+    'cpc', 'local_cpc',
+    'ctr', 'title', 'url',
+    'media_cost', 'local_media_cost', 'e_media_cost', 'local_e_media_cost', 'e_data_cost', 'local_e_data_cost',
+    'license_fee', 'local_license_fee',
+    'billing_cost', 'local_billing_cost',
+    'margin', 'local_margin',
+    'agency_cost', 'local_agency_cost',
+    'cpm', 'local_cpm',
     'video_start', 'video_first_quartile', 'video_midpoint',
     'video_third_quartile', 'video_complete', 'video_progress_3s',
-    'video_cpv', 'video_cpcv',
+    'video_cpv', 'local_video_cpv', 'video_cpcv', 'local_video_cpcv',
 ]
 POSTCLICK_ACQUISITION_FIELDS = {'click_discrepancy', }
 POSTCLICK_ENGAGEMENT_FIELDS = {

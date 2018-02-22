@@ -24,10 +24,6 @@ angular.module('one.widgets').service('zemCampaignLauncherEndpoint', function ($
                 deferred.resolve();
             })
             .catch(function (response) {
-                // FIXME (jurebajt): Remove
-                if (response && response.data && !response.data.details) {
-                    Raven.captureMessage('Campaign launcher validation failed', {level: 'warning', extra: { response: response }}); // eslint-disable-line
-                }
                 deferred.reject(response.data);
             });
         return deferred.promise;
