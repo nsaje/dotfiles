@@ -40,7 +40,7 @@ def _update_campaign(campaign):
 def _is_allowed_to_run(log, campaign, campaign_state):
     allowed_to_run = (
         not _is_max_end_date_past(log, campaign, campaign_state) and
-        not _is_below_threshold(log, campaign)
+        not _is_below_threshold(log, campaign, campaign_state)
     )
     log.add_context({'allowed_to_run': allowed_to_run})
     return allowed_to_run
@@ -58,12 +58,20 @@ def _is_max_end_date_past(log, campaign, campaign_state):
     return is_past
 
 
-def _is_below_threshold(log, campaign):
+def _is_below_threshold(log, campaign, campaign_state):
     predicted = campaign_spends.get_predicted_remaining_budget(log, campaign)
-    is_below = predicted < THRESHOLD
+    threshold = _get_threshold(campaign_state)
+    is_below = predicted < threshold
     log.add_context({
         'predicted': predicted,
         'is_below_threshold': is_below,
-        'threshold': THRESHOLD,
+        'threshold': threshold,
     })
     return is_below
+
+
+def _get_threshold(campaign_state):
+    if campaign_state.state == constants.CampaignStopState.STOPPED:
+        # NOTE: avoid restarting when a stopped campaign only slightly above threshold is checked
+        return THRESHOLD * decimal.Decimal('1.5')
+    return THRESHOLD

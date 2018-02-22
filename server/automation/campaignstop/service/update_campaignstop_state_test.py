@@ -1,3 +1,4 @@
+import decimal
 import mock
 
 from django.test import TestCase
@@ -17,7 +18,7 @@ class UpdateCampaignStopStateTest(TestCase):
 
     @mock.patch('automation.campaignstop.service.campaign_spends.get_predicted_remaining_budget')
     def test_create_campaign_state(self, mock_get_prediction):
-        mock_get_prediction.return_value = 500
+        mock_get_prediction.return_value = update_campaignstop_state.THRESHOLD * 2
         self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).exists())
 
         update_campaignstop_state.update_campaigns_state(
@@ -25,6 +26,15 @@ class UpdateCampaignStopStateTest(TestCase):
 
         campaign_stop_state = CampaignStopState.objects.get(campaign=self.campaign)
         self.assertEqual(constants.CampaignStopState.ACTIVE, campaign_stop_state.state)
+
+    @mock.patch('automation.campaignstop.service.campaign_spends.get_predicted_remaining_budget')
+    def test_dont_start_campaign_slightly_above_threshold(self, mock_get_prediction):
+        mock_get_prediction.return_value = update_campaignstop_state.THRESHOLD * decimal.Decimal('1.2')
+        update_campaignstop_state.update_campaigns_state(
+            campaigns=[self.campaign])
+
+        campaign_stop_state = CampaignStopState.objects.get(campaign=self.campaign)
+        self.assertEqual(constants.CampaignStopState.STOPPED, campaign_stop_state.state)
 
     @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     @mock.patch('automation.campaignstop.service.campaign_spends.get_predicted_remaining_budget')
