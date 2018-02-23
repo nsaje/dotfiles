@@ -6,6 +6,8 @@ else
 	DIR=/app/z1
 fi
 
+DB_HOST=${DB_PORT_5432_TCP_ADDR:-postgres}
+DB_PORT=${DB_PORT_5432_TCP_PORT:-5432}
 DB_NAME=$(echo 'from django.conf import settings; print(settings.DATABASES["default"]["NAME"])' | $DIR/manage.py shell 2>/dev/null)
 if [[ "$DB_NAME" != "demo-one" && "$DB_NAME" != "one-dev" ]]; then
     echo "ERROR: Running prepare-demo in non-demo environment, which would drop the DB! Exiting."
@@ -16,7 +18,7 @@ echo "Wait for PostgreSQL"
 sleep 5
 retval=0
 while [[ "$retval" != "52" ]]; do
-    curl -q http://${DB_PORT_5432_TCP_ADDR}:${DB_PORT_5432_TCP_PORT}/ 2> /dev/null
+    curl -q http://${DB_HOST}:${DB_PORT}/ 2> /dev/null
     retval=$?
     echo -n "."
     sleep 1
