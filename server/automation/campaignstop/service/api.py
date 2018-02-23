@@ -20,16 +20,20 @@ def _get_states_map(campaigns):
 
 
 def _get_campaign_stop_state(campaign, states_map):
+    max_allowed_end_date = _get_max_allowed_end_date(campaign, states_map)
     return {
-        'allowed_to_run': _is_allowed_to_run(campaign, states_map),
-        'max_allowed_end_date': _get_max_allowed_end_date(campaign, states_map),
+        'allowed_to_run': _is_allowed_to_run(campaign, states_map, max_allowed_end_date),
+        'max_allowed_end_date': max_allowed_end_date,
         'almost_depleted': _is_almost_depleted(campaign, states_map),
     }
 
 
-def _is_allowed_to_run(campaign, states_map):
+def _is_allowed_to_run(campaign, states_map, max_allowed_end_date):
     if not campaign.real_time_campaign_stop:
         return True
+
+    if max_allowed_end_date < dates_helper.local_today():
+        return False
 
     campaignstop_state = states_map.get(campaign.id)
     if not campaignstop_state:
