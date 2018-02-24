@@ -18,7 +18,7 @@ def validate_minimum_budget_amount(budget_line_item, amount):
         return
 
     log = RealTimeCampaignStopLog(
-        campaign=budget_line_item.campaign, event=CampaignStopEvent.BUDGET_DEPLETION_CHECK)
+        campaign=budget_line_item.campaign, event=CampaignStopEvent.BUDGET_AMOUNT_VALIDATION)
 
     min_amount = _calculate_minimum_budget_amount(log, budget_line_item)
     if amount < min_amount:
