@@ -54,7 +54,6 @@ def _group_seen_users(date, active_account_ids):
     for user in user_ids:
         accounts = dash.models.Account.objects.filter(
             models.Q(users__in=[user]) |
-            models.Q(groups__user__in=[user]) |
             models.Q(agency__users__in=[user])
         )
         for acc in accounts:
