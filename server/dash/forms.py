@@ -64,6 +64,18 @@ class PlainCharField(forms.CharField):
         return super(PlainCharField, self).clean(value)
 
 
+class DaypartingWidget(forms.Textarea):
+    class Media:
+        js = (
+            'libs/jquery/jquery-2.1.1.min.js',
+            'js/admin/timezones.js',
+            'js/admin/dayparting.js',
+        )
+        css = {
+            'all': ('css/admin/dayparting.css',),
+        }
+
+
 REDIRECT_JS_HELP_TEXT = '''!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
 n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
@@ -127,6 +139,7 @@ class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
         'target_placements',
         'target_os',
         'click_capping_daily_ad_group_max_clicks',
+        'dayparting',
     ]
     notes = PlainCharField(required=False, widget=forms.Textarea,
                            help_text='Describe what kind of additional targeting was setup on the backend.')
@@ -184,6 +197,11 @@ class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
     )
     click_capping_daily_ad_group_max_clicks = forms.IntegerField(
         required=False,
+    )
+    dayparting = postgres_forms.JSONField(
+        required=False,
+        widget=DaypartingWidget,
+        help_text='Choosing an hour of "0" means the ad group will be active between 00:00 and 01:00.'
     )
 
     def __init__(self, *args, **kwargs):

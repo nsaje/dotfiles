@@ -1,0 +1,23 @@
+#daypartingWidget td {
+    width: 20px;
+    height: 40px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+#daypartingWidget td:first-child {
+    width: 100px;
+}
+
+#daypartingWidget .daypartingHour {
+    background-color: #ccc;
+    border: 1px solid #fff;
+}
+
+#daypartingWidget td.highlighted {
+    background-color: #999;
+}
+
+#daypartingWidget button {
+    margin: 1em;
+}
