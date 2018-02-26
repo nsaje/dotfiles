@@ -23,6 +23,7 @@ class AccountManager(core.common.QuerySetManager):
         else:
             account.uses_bcm_v2 = True  # TODO: when all agencies are migrated, this can be moved into a db field default
 
+        # FIXME(nsaje): remove when multicurrency finished
         if agency is not None and agency.id in EUR_AGENCIES:
             account.currency = constants.Currency.EUR
 
