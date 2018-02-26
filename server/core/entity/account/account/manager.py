@@ -6,6 +6,9 @@ import core.common
 from . import model
 
 
+EUR_AGENCIES = [196]
+
+
 class AccountManager(core.common.QuerySetManager):
 
     @transaction.atomic()
@@ -19,6 +22,10 @@ class AccountManager(core.common.QuerySetManager):
             account.uses_bcm_v2 = agency.new_accounts_use_bcm_v2
         else:
             account.uses_bcm_v2 = True  # TODO: when all agencies are migrated, this can be moved into a db field default
+
+        if agency is not None and agency.id in EUR_AGENCIES:
+            account.currency = constants.Currency.EUR
+
         account.save(request)
         account.write_history(
             'Created account',
