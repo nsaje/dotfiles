@@ -756,6 +756,7 @@
         title: 'Test Article 1'
         ad_group: 1
         created_dt: '2015-02-23T00:00:00'
+        label: 'Label_123'
     model: dash.contentad
     pk: 1
 
