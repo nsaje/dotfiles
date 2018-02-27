@@ -2,7 +2,7 @@ import logging
 
 import influx
 
-import automation.autopilot_plus
+import automation.autopilot
 from utils.command_helpers import ExceptionCommand
 import utils.slack
 
@@ -27,7 +27,7 @@ class Command(ExceptionCommand):
         dry_run = options.get('dry_run', False)
         daily_run = options.get('daily_run', False)
         try:
-            automation.autopilot_plus.run_autopilot(
+            automation.autopilot.run_autopilot(
                 send_mail=not dry_run,
                 report_to_influx=not dry_run,
                 dry_run=dry_run,

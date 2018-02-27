@@ -240,11 +240,11 @@ class AdGroupSource(models.Model):
             updates['system_user'] = system_user
         self.settings.update(request, **updates)
 
-        from automation import autopilot_plus
+        from automation import autopilot
         if not skip_automation and\
                 ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
                 'state' in updates:
-            changed_sources = autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False)
+            changed_sources = autopilot.initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False)
             result['autopilot_changed_sources_text'] = ', '.join(
                 [s.source.name if s != constants.SourceAllRTB else constants.SourceAllRTB.NAME
                     for s in changed_sources])

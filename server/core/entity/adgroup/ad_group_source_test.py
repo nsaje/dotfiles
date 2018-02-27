@@ -150,9 +150,9 @@ class AdGroupSourceUpdate(TestCase):
             ad_group=self.ad_group,
         )
 
-        autopilot_plus_patcher = patch('automation.autopilot_plus')
-        self.autopilot_mock = autopilot_plus_patcher.start()
-        self.addCleanup(autopilot_plus_patcher.stop)
+        autopilot_patcher = patch('automation.autopilot.initialize_budget_autopilot_on_ad_group')
+        self.initialize_autopilot_mock = autopilot_patcher.start()
+        self.addCleanup(autopilot_patcher.stop)
 
         k1_update_patcher = patch('utils.k1_helper.update_ad_group')
         self.k1_update_mock = k1_update_patcher.start()
@@ -178,7 +178,7 @@ class AdGroupSourceUpdate(TestCase):
         self.assertEqual(decimal.Decimal('8.2'), settings.daily_budget_cc)
         self.assertEqual(constants.AdGroupSourceSettingsState.ACTIVE, settings.state)
 
-        self.assertTrue(self.autopilot_mock.initialize_budget_autopilot_on_ad_group.called)
+        self.assertTrue(self.initialize_autopilot_mock.called)
         self.k1_update_mock.assert_called_once_with(self.ad_group.id, 'AdGroupSource.update')
         self.assertTrue(self.email_send_notification_mock.called)
 
@@ -187,7 +187,7 @@ class AdGroupSourceUpdate(TestCase):
 
         self.assertIn('autopilot_changed_sources_text', response)
 
-        self.assertFalse(self.autopilot_mock.initialize_budget_autopilot_on_ad_group.called)
+        self.assertFalse(self.initialize_autopilot_mock.called)
         self.k1_update_mock.assert_not_called()
         self.assertFalse(self.email_send_notification_mock.called)
 
@@ -199,7 +199,7 @@ class AdGroupSourceUpdate(TestCase):
             state=constants.AdGroupSourceSettingsState.ACTIVE,
         )
 
-        self.assertFalse(self.autopilot_mock.initialize_budget_autopilot_on_ad_group.called)
+        self.assertFalse(self.initialize_autopilot_mock.called)
 
     def test_update_no_request(self):
         self.ad_group_source.update(

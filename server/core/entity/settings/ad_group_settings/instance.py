@@ -30,7 +30,7 @@ class AdGroupSettingsMixin(object):
     @transaction.atomic
     def update(self, request, skip_validation=False, **kwargs):
         import dash.views.helpers
-        from automation import autopilot_plus
+        from automation import autopilot
         ad_group = self.ad_group
 
         current_settings = self
@@ -95,7 +95,7 @@ class AdGroupSettingsMixin(object):
             k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
 
             if self._should_initialize_budget_autopilot(changes, new_settings):
-                autopilot_plus.initialize_budget_autopilot_on_ad_group(new_settings, send_mail=True)
+                autopilot.initialize_budget_autopilot_on_ad_group(new_settings, send_mail=True)
 
             if request is not None:
                 email_helper.send_ad_group_notification_email(ad_group, request, changes_text)

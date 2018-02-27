@@ -3,7 +3,7 @@ from mock import patch, MagicMock, ANY
 
 from django import test
 
-from automation import autopilot_helpers
+from . import helpers
 import dash.models
 from dash.constants import AdGroupSettingsAutopilotState, AdGroupRunningStatus, AdGroupSettingsState
 
@@ -16,9 +16,9 @@ class AutopilotHelpersTestCase(test.TestCase):
     def test_get_active_ad_groups_on_autopilot(self, mock_running_status, mock_running_status_by_sources):
         mock_running_status.return_value = AdGroupRunningStatus.ACTIVE
         mock_running_status_by_sources.return_value = AdGroupRunningStatus.ACTIVE
-        all_ap_adgs, all_ap_adgs_settings = autopilot_helpers.get_active_ad_groups_on_autopilot()
-        cpc_ap_adgs, cpc_ap_adgs_settings = autopilot_helpers.get_active_ad_groups_on_autopilot(autopilot_state=3)
-        budget_ap_adgs, budget_ap_adgs_settings = autopilot_helpers.get_active_ad_groups_on_autopilot(autopilot_state=1)
+        all_ap_adgs, all_ap_adgs_settings = helpers.get_active_ad_groups_on_autopilot()
+        cpc_ap_adgs, cpc_ap_adgs_settings = helpers.get_active_ad_groups_on_autopilot(autopilot_state=3)
+        budget_ap_adgs, budget_ap_adgs_settings = helpers.get_active_ad_groups_on_autopilot(autopilot_state=1)
         self.assertEqual(len(all_ap_adgs), 3)
         self.assertTrue(adg in all_ap_adgs for adg in cpc_ap_adgs + budget_ap_adgs)
         for adg_settings in all_ap_adgs_settings:
@@ -40,7 +40,7 @@ class AutopilotHelpersTestCase(test.TestCase):
         old_daily_budget = ag_source_settings.daily_budget_cc
         old_cpc = ag_source_settings.cpc_cc
         old_count = dash.models.AdGroupSourceSettings.objects.count()
-        autopilot_helpers.update_ad_group_source_values(ag_source, {
+        helpers.update_ad_group_source_values(ag_source, {
             'daily_budget_cc': old_daily_budget + Decimal('10'),
             'cpc_cc': old_cpc + Decimal('0.5')})
         new_count = dash.models.AdGroupSourceSettings.objects.count()
@@ -51,7 +51,7 @@ class AutopilotHelpersTestCase(test.TestCase):
     def test_get_autopilot_active_sources_settings(self):
         adgroups = dash.models.AdGroup.objects.filter(id__in=[1, 2, 3])
         ad_groups_and_settings = {adg: adg.get_current_settings() for adg in adgroups}
-        active_enabled_sources = autopilot_helpers.get_autopilot_active_sources_settings(ad_groups_and_settings)
+        active_enabled_sources = helpers.get_autopilot_active_sources_settings(ad_groups_and_settings)
         for ag_source_setting in active_enabled_sources:
             self.assertTrue(ag_source_setting.state == AdGroupSettingsState.ACTIVE)
             self.assertTrue(ag_source_setting.ad_group_source.ad_group in adgroups)
@@ -61,7 +61,7 @@ class AutopilotHelpersTestCase(test.TestCase):
         source.update(k1_sync=False, skip_automation=True, state=AdGroupSettingsState.INACTIVE)
         self.assertEqual(source.get_current_settings().state, AdGroupSettingsState.INACTIVE)
         self.assertFalse(source in [setting.ad_group_source for setting in
-                                    autopilot_helpers.get_autopilot_active_sources_settings(ad_groups_and_settings)])
+                                    helpers.get_autopilot_active_sources_settings(ad_groups_and_settings)])
 
     @patch('utils.k1_helper.update_ad_group')
     @patch('dash.models.AdGroupSettings.copy_settings')
@@ -79,7 +79,7 @@ class AutopilotHelpersTestCase(test.TestCase):
             'daily_budget_cc': Decimal('123')
         }
         ap = dash.constants.SystemUserType.AUTOPILOT
-        autopilot_helpers.update_ad_group_b1_sources_group_values(ag, changes, system_user=ap)
+        helpers.update_ad_group_b1_sources_group_values(ag, changes, system_user=ap)
 
         mock_copy_settings.assert_called_once()
 

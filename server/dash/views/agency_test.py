@@ -482,7 +482,7 @@ class AdGroupSettingsTest(TestCase):
             mock_redirector_insert_adgroup.assert_called_with(ad_group)
 
     @patch('utils.redirector_helper.insert_adgroup')
-    @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
+    @patch('automation.autopilot.initialize_budget_autopilot_on_ad_group')
     @patch('automation.campaign_stop.get_max_settable_autopilot_budget', autospec=True)
     def test_put_set_budget_autopilot_triggers_budget_reallocation(
             self, mock_get_max_budget, mock_redirector_insert_adgroup, mock_init_autopilot):

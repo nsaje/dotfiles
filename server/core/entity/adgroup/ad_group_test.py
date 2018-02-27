@@ -11,7 +11,7 @@ import core.entity
 @patch.object(core.entity.AdGroupSource.objects, 'bulk_create_on_allowed_sources')
 @patch('utils.redirector_helper.insert_adgroup', autospec=True)
 @patch('utils.k1_helper.update_ad_group', autospec=True)
-@patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group', autospec=True)
+@patch('automation.autopilot.initialize_budget_autopilot_on_ad_group', autospec=True)
 class AdGroupCreate(TestCase):
 
     def test_create(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):
@@ -37,7 +37,7 @@ class AdGroupCreate(TestCase):
 @patch.object(core.entity.AdGroupSource.objects, 'bulk_clone_on_allowed_sources')
 @patch('utils.redirector_helper.insert_adgroup', autospec=True)
 @patch('utils.k1_helper.update_ad_group', autospec=True)
-@patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group', autospec=True)
+@patch('automation.autopilot.initialize_budget_autopilot_on_ad_group', autospec=True)
 class AdGroupClone(TestCase):
 
     def test_clone(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):

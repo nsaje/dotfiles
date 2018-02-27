@@ -11,6 +11,7 @@ from django.db import transaction
 from django.db.models import Q, Max
 
 import automation
+import automation.autopilot
 
 from dash import models
 from dash import constants
@@ -688,10 +689,10 @@ def _enabling_autopilot_sources_allowed(ad_group_settings, number_of_sources_to_
 
     required_budget = (
         number_of_sources_to_enable *
-        automation.autopilot_settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC
+        automation.autopilot.settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC
     )
     return ad_group_settings.autopilot_daily_budget - required_budget >=\
-        automation.autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group_settings.ad_group, ad_group_settings)
+        automation.autopilot.get_adgroup_minimum_daily_budget(ad_group_settings.ad_group, ad_group_settings)
 
 
 def get_adjusted_ad_group_sources_cpcs(ad_group, ad_group_settings):

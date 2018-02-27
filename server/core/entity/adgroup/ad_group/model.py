@@ -38,8 +38,8 @@ class AdGroupManager(core.common.QuerySetManager):
 
     def _post_create(self, ad_group):
         if ad_group.settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-            from automation import autopilot_plus
-            autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group.settings, send_mail=False)
+            from automation import autopilot
+            autopilot.initialize_budget_autopilot_on_ad_group(ad_group.settings, send_mail=False)
 
         k1_helper.update_ad_group(ad_group.pk, msg='CampaignAdGroups.put')
         redirector_helper.insert_adgroup(ad_group)

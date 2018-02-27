@@ -1,8 +1,8 @@
 import decimal
 import logging
 
-from automation.constants import CpcChangeComment
-from automation import autopilot_settings
+from .constants import CpcChangeComment
+from . import settings
 from dash import cpc_constraints
 import dash.constants
 
@@ -58,7 +58,7 @@ def get_autopilot_cpc_recommendations(
 
         new_cpc_cc = proposed_cpc
         cpc_change_not_allowed_comments = set(cpc_change_comments) -\
-            set(autopilot_settings.CPC_CHANGE_ALLOWED_COMMENTS)
+            set(settings.CPC_CHANGE_ALLOWED_COMMENTS)
         if cpc_change_not_allowed_comments:
             cpc_change_comments = cpc_change_not_allowed_comments
             new_cpc_cc = old_cpc_cc
@@ -76,7 +76,7 @@ def get_autopilot_cpc_recommendations(
     return recommended_changes
 
 
-def _round_cpc(num, decimal_places=autopilot_settings.AUTOPILOT_CPC_MAX_DEC_PLACES, rounding=decimal.ROUND_HALF_UP):
+def _round_cpc(num, decimal_places=settings.AUTOPILOT_CPC_MAX_DEC_PLACES, rounding=decimal.ROUND_HALF_UP):
     return num.quantize(
         pow(10, decimal.Decimal(-decimal_places)),
         rounding=rounding)
@@ -88,7 +88,7 @@ def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_sp
     if cpc_change_comments:
         return (current_cpc, cpc_change_comments)
     new_cpc = current_cpc
-    for change_interval in autopilot_settings.AUTOPILOT_CPC_CHANGE_TABLE:
+    for change_interval in settings.AUTOPILOT_CPC_CHANGE_TABLE:
         if change_interval['underspend_upper_limit'] <= underspend_perc <= change_interval['underspend_lower_limit']:
             budget_fulfillment_factor = change_interval['bid_cpc_proc_increase']
             new_cpc += current_cpc * budget_fulfillment_factor
@@ -107,13 +107,13 @@ def calculate_new_autopilot_cpc_automatic_mode_rtb(current_cpc, rtb_daily_budget
         return (current_cpc, cpc_change_comments)
 
     budget_fulfillment_factor = decimal.Decimal('0.0')
-    for change_interval in autopilot_settings.AUTOPILOT_CPC_CHANGE_TABLE:
+    for change_interval in settings.AUTOPILOT_CPC_CHANGE_TABLE:
         if change_interval['underspend_upper_limit'] <= underspend_perc <= change_interval['underspend_lower_limit']:
             budget_fulfillment_factor = change_interval['bid_cpc_proc_increase']
             break
 
     performance_factor = decimal.Decimal('1.0')
-    for change_interval in autopilot_settings.AUTOPILOT_CPC_CHANGE_PERFORMANCE_FACTOR_TABLE:
+    for change_interval in settings.AUTOPILOT_CPC_CHANGE_PERFORMANCE_FACTOR_TABLE:
         if change_interval['performance_upper_limit'] >= performance >= change_interval['performance_lower_limit']:
             performance_factor = change_interval['performance_factor']
             break
@@ -130,30 +130,30 @@ def _get_calculate_cpc_comments(current_cpc, current_daily_budget, yesterdays_sp
         cpc_change_comments.append(CpcChangeComment.BUDGET_NOT_SET)
     if not current_cpc or current_cpc <= 0:
         cpc_change_comments.append(CpcChangeComment.CPC_NOT_SET)
-    if current_cpc > autopilot_settings.AUTOPILOT_MAX_CPC:
-        current_cpc = autopilot_settings.AUTOPILOT_MAX_CPC
+    if current_cpc > settings.AUTOPILOT_MAX_CPC:
+        current_cpc = settings.AUTOPILOT_MAX_CPC
         cpc_change_comments.append(CpcChangeComment.CURRENT_CPC_TOO_HIGH)
-    if current_cpc < autopilot_settings.AUTOPILOT_MIN_CPC:
-        current_cpc = autopilot_settings.AUTOPILOT_MIN_CPC
+    if current_cpc < settings.AUTOPILOT_MIN_CPC:
+        current_cpc = settings.AUTOPILOT_MIN_CPC
         cpc_change_comments.append(CpcChangeComment.CURRENT_CPC_TOO_LOW)
     return current_cpc, cpc_change_comments
 
 
 def _threshold_reducing_cpc(current_cpc, new_cpc):
     cpc_change = abs(current_cpc - new_cpc)
-    if cpc_change < autopilot_settings.AUTOPILOT_MIN_REDUCING_CPC_CHANGE:
-        return current_cpc - autopilot_settings.AUTOPILOT_MIN_REDUCING_CPC_CHANGE
-    if cpc_change > autopilot_settings.AUTOPILOT_MAX_REDUCING_CPC_CHANGE:
-        return current_cpc - autopilot_settings.AUTOPILOT_MAX_REDUCING_CPC_CHANGE
+    if cpc_change < settings.AUTOPILOT_MIN_REDUCING_CPC_CHANGE:
+        return current_cpc - settings.AUTOPILOT_MIN_REDUCING_CPC_CHANGE
+    if cpc_change > settings.AUTOPILOT_MAX_REDUCING_CPC_CHANGE:
+        return current_cpc - settings.AUTOPILOT_MAX_REDUCING_CPC_CHANGE
     return new_cpc
 
 
 def _threshold_increasing_cpc(current_cpc, new_cpc):
     cpc_change = abs(current_cpc - new_cpc)
-    if cpc_change < autopilot_settings.AUTOPILOT_MIN_INCREASING_CPC_CHANGE:
-        return current_cpc + autopilot_settings.AUTOPILOT_MIN_INCREASING_CPC_CHANGE
-    if cpc_change > autopilot_settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE:
-        return current_cpc + autopilot_settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE
+    if cpc_change < settings.AUTOPILOT_MIN_INCREASING_CPC_CHANGE:
+        return current_cpc + settings.AUTOPILOT_MIN_INCREASING_CPC_CHANGE
+    if cpc_change > settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE:
+        return current_cpc + settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE
     return new_cpc
 
 
@@ -197,8 +197,8 @@ def _threshold_source_constraints(proposed_cpc, source_type, adgroup_settings, c
 
 
 def _get_cpc_max_decimal_places(source_dec_places):
-    return min(source_dec_places, autopilot_settings.AUTOPILOT_CPC_MAX_DEC_PLACES) if source_dec_places else\
-        autopilot_settings.AUTOPILOT_CPC_MAX_DEC_PLACES
+    return min(source_dec_places, settings.AUTOPILOT_CPC_MAX_DEC_PLACES) if source_dec_places else\
+        settings.AUTOPILOT_CPC_MAX_DEC_PLACES
 
 
 def _get_source_type_min_max_cpc(source_type, adgroup_settings, bcm_modifiers):
@@ -224,11 +224,11 @@ def _threshold_cpc_min_change(reducing, current_cpc, new_cpc):
 
 
 def _threshold_autopilot_min_max_cpc(cpc, cpc_change_comments):
-    if autopilot_settings.AUTOPILOT_MIN_CPC > cpc:
-        return (autopilot_settings.AUTOPILOT_MIN_CPC, cpc_change_comments +
+    if settings.AUTOPILOT_MIN_CPC > cpc:
+        return (settings.AUTOPILOT_MIN_CPC, cpc_change_comments +
                 [CpcChangeComment.UNDER_AUTOPILOT_MIN_CPC])
-    if autopilot_settings.AUTOPILOT_MAX_CPC < cpc:
-        return (autopilot_settings.AUTOPILOT_MAX_CPC, cpc_change_comments +
+    if settings.AUTOPILOT_MAX_CPC < cpc:
+        return (settings.AUTOPILOT_MAX_CPC, cpc_change_comments +
                 [CpcChangeComment.OVER_AUTOPILOT_MAX_CPC])
     return (cpc, cpc_change_comments)
 

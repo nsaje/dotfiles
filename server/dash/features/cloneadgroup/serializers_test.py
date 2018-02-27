@@ -8,7 +8,7 @@ from . import serializers
 
 
 @patch.object(core.entity.ContentAd.objects, 'insert_redirects', autospec=True)
-@patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group', autospec=True)
+@patch('automation.autopilot.initialize_budget_autopilot_on_ad_group', autospec=True)
 @patch('utils.redirector_helper.insert_adgroup', autospec=True)
 class CloneForm(TestCase):
 

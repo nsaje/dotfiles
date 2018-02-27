@@ -9,7 +9,7 @@ from django.conf import settings
 from django.contrib.auth import models as authmodels
 from django.http import Http404
 
-from automation import autopilot_budgets
+from automation import autopilot
 from dash.views import helpers
 from dash import forms
 from dash import models
@@ -192,7 +192,7 @@ class AdGroupSettings(api_common.BaseApiView):
         # This two properties are very expensive to calculate and are never used by the REST api.
         if not self.rest_proxy:
             primary_campaign_goal = campaign_goals.get_primary_campaign_goal(ad_group.campaign)
-            result['autopilot_min_budget'] = autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group, settings)
+            result['autopilot_min_budget'] = autopilot.get_adgroup_minimum_daily_budget(ad_group, settings)
             result['autopilot_optimization_goal'] = primary_campaign_goal.type if primary_campaign_goal else None
 
         if request.user.has_perm('zemauth.can_set_click_capping'):

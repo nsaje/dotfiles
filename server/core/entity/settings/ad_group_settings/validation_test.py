@@ -17,7 +17,7 @@ class ValidationTest(TestCase):
     def setUp(self):
         self.request = magic_mixer.blend_request_user()
 
-    @mock.patch('automation.autopilot_budgets.get_adgroup_minimum_daily_budget', autospec=True)
+    @mock.patch('automation.autopilot.get_adgroup_minimum_daily_budget', autospec=True)
     def test_validate_autopilot_settings_to_full_ap_wo_all_rtb_enabled(self, mock_get_min_budget):
         mock_get_min_budget.return_value = 0
         current_settings = model.AdGroupSettings()
@@ -37,7 +37,7 @@ class ValidationTest(TestCase):
         with self.assertRaises(exc.ValidationError):
             validation.AdGroupSettingsValidatorMixin._validate_autopilot_settings(self.request, None, current_settings, new_settings)
 
-    @mock.patch('automation.autopilot_budgets.get_adgroup_minimum_daily_budget', autospec=True)
+    @mock.patch('automation.autopilot.get_adgroup_minimum_daily_budget', autospec=True)
     def test_validate_autopilot_settings_all_rtb_cpc(self, mock_get_min_budget):
         mock_get_min_budget.return_value = 0
         current_settings = model.AdGroupSettings()
@@ -64,7 +64,7 @@ class ValidationTest(TestCase):
         with self.assertRaises(exc.ValidationError):
             validation.AdGroupSettingsValidatorMixin._validate_autopilot_settings(self.request, None, current_settings, new_settings)
 
-    @mock.patch('automation.autopilot_budgets.get_adgroup_minimum_daily_budget', autospec=True)
+    @mock.patch('automation.autopilot.get_adgroup_minimum_daily_budget', autospec=True)
     def test_validate_autopilot_settings_all_rtb_daily_budget(self, mock_get_min_budget):
         mock_get_min_budget.return_value = 0
         current_settings = model.AdGroupSettings()
@@ -88,7 +88,7 @@ class ValidationTest(TestCase):
         with self.assertRaises(exc.ValidationError):
             validation.AdGroupSettingsValidatorMixin._validate_autopilot_settings(self.request, None, current_settings, new_settings)
 
-    @mock.patch('automation.autopilot_budgets.get_adgroup_minimum_daily_budget', autospec=True)
+    @mock.patch('automation.autopilot.get_adgroup_minimum_daily_budget', autospec=True)
     def test_validate_autopilot_settings_autopilot_daily_budget(self, mock_get_min_budget):
         current_settings = model.AdGroupSettings()
         new_settings = model.AdGroupSettings()

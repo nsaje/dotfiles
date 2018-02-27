@@ -4,9 +4,8 @@ import logging
 import dash
 import dash.constants
 import dash.models
-from automation import autopilot_settings
-import automation.helpers
-from automation.constants import DailyBudgetChangeComment, CpcChangeComment
+from .constants import DailyBudgetChangeComment, CpcChangeComment
+from . import settings
 from utils import url_helper, k1_helper, email_helper
 
 logger = logging.getLogger(__name__)
@@ -76,7 +75,7 @@ def get_autopilot_active_sources_settings(ad_groups_and_settings,
 
 def ad_group_source_is_synced(ad_group_source):
     min_sync_date = datetime.datetime.utcnow() - datetime.timedelta(
-        hours=autopilot_settings.SYNC_IS_RECENT_HOURS
+        hours=settings.SYNC_IS_RECENT_HOURS
     )
     last_sync = ad_group_source.last_successful_sync_dt
     if last_sync is None:
@@ -120,7 +119,7 @@ def update_ad_group_b1_sources_group_values(ad_group, changes, system_user=None)
 
 def get_ad_group_sources_minimum_cpc(ad_group_source, bcm_modifiers):
     return max(
-        autopilot_settings.AUTOPILOT_MIN_CPC,
+        settings.AUTOPILOT_MIN_CPC,
         ad_group_source.source.source_type.get_etfm_min_cpc(bcm_modifiers)
     )
 
@@ -130,12 +129,12 @@ def get_ad_group_sources_minimum_daily_budget(ad_group_source, bcm_modifiers):
         source_min_daily_budget = dash.constants.SourceAllRTB.get_etfm_min_daily_budget(bcm_modifiers)
     else:
         source_min_daily_budget = ad_group_source.source.source_type.get_etfm_min_daily_budget(bcm_modifiers)
-    return max(autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET, source_min_daily_budget)
+    return max(settings.BUDGET_AP_MIN_SOURCE_BUDGET, source_min_daily_budget)
 
 
 def get_campaign_goal_column(campaign_goal, uses_bcm_v2=False):
     if campaign_goal:
-        column_definition = autopilot_settings.GOALS_COLUMNS[campaign_goal.type]
+        column_definition = settings.GOALS_COLUMNS[campaign_goal.type]
         if uses_bcm_v2 and 'col_bcm_v2' in column_definition:
             return column_definition['col_bcm_v2']
         return column_definition['col']
@@ -143,13 +142,13 @@ def get_campaign_goal_column(campaign_goal, uses_bcm_v2=False):
 
 def get_campaign_goal_column_importance(campaign_goal):
     if campaign_goal:
-        return autopilot_settings.GOALS_COLUMNS[campaign_goal.type]['importance']
+        return settings.GOALS_COLUMNS[campaign_goal.type]['importance']
 
 
 def send_autopilot_changes_emails(email_changes_data, bcm_modifiers_map, initialization):
     for camp, changes_data in email_changes_data.items():
         emails = email_helper.email_manager_list(camp)
-        emails.append(autopilot_settings.AUTOPILOT_EMAIL_FOR_COPIES)
+        emails.append(settings.AUTOPILOT_EMAIL_FOR_COPIES)
         if initialization:
             send_budget_autopilot_initialisation_email(camp, emails, changes_data)
         else:
@@ -178,7 +177,7 @@ def send_autopilot_changes_email(campaign, emails, changes_data, bcm_modifiers):
         email_helper.send_official_email(
             recipient_list=emails,
             agency_or_user=campaign.account.agency,
-            from_email=automation.autopilot_settings.AUTOPILOT_EMAIL,
+            from_email=settings.AUTOPILOT_EMAIL,
             **email_helper.params_from_template(
                 dash.constants.EmailTemplateType.AUTOPILOT_AD_GROUP_CHANGE, **args
             )
@@ -211,7 +210,7 @@ def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
         email_helper.send_official_email(
             recipient_list=emails,
             agency_or_user=campaign.account.agency,
-            from_email=automation.autopilot_settings.AUTOPILOT_EMAIL,
+            from_email=settings.AUTOPILOT_EMAIL,
             **email_helper.params_from_template(
                 dash.constants.EmailTemplateType.AUTOPILOT_AD_GROUP_BUDGET_INIT, **args
             )

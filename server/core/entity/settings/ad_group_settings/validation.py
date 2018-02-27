@@ -21,7 +21,7 @@ class AdGroupSettingsValidatorMixin(object):
 
     @staticmethod
     def _validate_autopilot_settings(request, ad_group, settings, new_settings):
-        from automation import autopilot_budgets, autopilot_settings
+        from automation import autopilot
         if new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
             if not new_settings.b1_sources_group_enabled:
                 msg = 'To enable Daily Cap Autopilot, RTB Sources have to be managed as a group.'
@@ -45,7 +45,7 @@ class AdGroupSettingsValidatorMixin(object):
                     'b1_sources_group_daily_budget': msg,
                 })
 
-        min_autopilot_daily_budget = autopilot_budgets.get_adgroup_minimum_daily_budget(
+        min_autopilot_daily_budget = autopilot.get_adgroup_minimum_daily_budget(
             ad_group, new_settings
         )
         if new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
@@ -55,7 +55,7 @@ class AdGroupSettingsValidatorMixin(object):
             raise exc.ValidationError(errors={
                 'autopilot_daily_budget': msg.format(
                     min_budget=min_autopilot_daily_budget,
-                    min_per_source=autopilot_settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC,
+                    min_per_source=autopilot.settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC,
                 )
             })
 

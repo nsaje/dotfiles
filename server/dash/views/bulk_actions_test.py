@@ -37,7 +37,7 @@ class AdGroupSourceStateTest(TestCase):
 
     @patch('dash.legacy.get_updated_ad_group_sources_changes')
     @patch('dash.views.bulk_actions.AdGroupSourceState._check_can_set_state')
-    @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
+    @patch('automation.autopilot.initialize_budget_autopilot_on_ad_group')
     @patch('utils.k1_helper.update_ad_group')
     def test_post(self, mock_k1_ping, mock_autopilot_initialize, mock_check, mock_table_update):
         ad_group_id = 1

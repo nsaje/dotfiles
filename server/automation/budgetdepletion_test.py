@@ -1,6 +1,5 @@
 import decimal
 from datetime import datetime
-import operator
 from mock import patch
 
 from django.core import mail
@@ -11,8 +10,6 @@ from automation import budgetdepletion, helpers
 from automation import models as automationmodels
 from dash import models
 import automation.settings
-import automation.constants
-import automation.autopilot_budgets
 
 from zemauth.models import User
 
@@ -169,23 +166,3 @@ class BCMDepletionTestCase(test.TestCase):
                 4: decimal.Decimal('49923.0000')
             },
         )
-
-
-class BetaBanditTestCase(test.TestCase):
-    fixtures = ['test_automation.yaml']
-
-    def test_naiive(self):
-        ags = models.AdGroupSource.objects.filter(ad_group=4)
-        self.assertEqual(ags.count(), 4)
-
-        bandit = automation.autopilot_budgets.BetaBandit([a for a in ags])
-
-        for i in range(100):
-            bandit.add_result(ags[0], True)
-
-        recommendations = {s: 0 for s in ags}
-        for i in range(100):
-            recommendations[bandit.get_recommendation()] += 1
-
-        most_recommended = max(iter(recommendations.items()), key=operator.itemgetter(1))[0]
-        self.assertEqual(most_recommended, ags[0])

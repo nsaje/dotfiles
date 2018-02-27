@@ -6,7 +6,7 @@ from django.db import transaction
 
 import influx
 
-from automation import autopilot_plus
+from automation import autopilot
 from automation import campaign_stop
 
 from dash import api
@@ -86,7 +86,7 @@ class AdGroupSourceState(BaseBulkActionView):
                 )
 
         if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-            autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False)
+            autopilot.initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False)
 
         k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSourceState.post')
 

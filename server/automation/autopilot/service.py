@@ -10,11 +10,11 @@ import dash
 import dash.campaign_goals
 import dash.constants
 from automation import models
-from automation import autopilot_budgets
-from automation import autopilot_cpc
-from automation import autopilot_helpers
-from automation import autopilot_settings
-import automation.constants
+from . import budgets
+from . import constants
+from . import cpc
+from . import helpers
+from . import settings
 from stats.api_breakdowns import Goals
 import redshiftapi.api_breakdowns
 from utils import pagerduty_helper
@@ -29,7 +29,7 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
                   send_mail=False, initialization=False, report_to_influx=False, dry_run=False,
                   daily_run=False):
     if not ad_groups:
-        ad_groups_on_ap, ad_group_settings_on_ap = autopilot_helpers.get_active_ad_groups_on_autopilot()
+        ad_groups_on_ap, ad_group_settings_on_ap = helpers.get_active_ad_groups_on_autopilot()
     else:
         ad_groups_on_ap = dash.models.AdGroup.objects.filter(id__in=ad_groups)
         ad_group_settings_on_ap = dash.models.AdGroupSettings.objects.filter(ad_group__in=ad_groups_on_ap).\
@@ -65,7 +65,7 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
         except Exception as e:
             _report_autopilot_exception(adg, e)
     if send_mail:
-        autopilot_helpers.send_autopilot_changes_emails(changes_data, bcm_modifiers_map, initialization)
+        helpers.send_autopilot_changes_emails(changes_data, bcm_modifiers_map, initialization)
     if report_to_influx:
         _report_adgroups_data_to_influx(ad_group_settings_on_ap)
         _report_new_budgets_on_ap_to_influx(ad_group_settings_on_ap)
@@ -81,13 +81,12 @@ def _get_autopilot_predictions(
     active_cpc_budget = dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
     is_budget_ap_enabled = adgroup_settings.autopilot_state == active_cpc_budget
     if adjust_budgets and is_budget_ap_enabled:
-        budget_changes = autopilot_budgets.\
-            get_autopilot_daily_budget_recommendations(
-                adgroup, adgroup_settings.autopilot_daily_budget, data, bcm_modifiers,
-                campaign_goal=campaign_goal['goal'] if campaign_goal else None, rtb_as_one=rtb_as_one)
+        budget_changes = budgets.get_autopilot_daily_budget_recommendations(
+            adgroup, adgroup_settings.autopilot_daily_budget, data, bcm_modifiers,
+            campaign_goal=campaign_goal['goal'] if campaign_goal else None, rtb_as_one=rtb_as_one)
     if adjust_cpcs:
         adjust_rtb_sources = not rtb_as_one or (is_budget_ap_enabled and rtb_as_one)
-        cpc_changes = autopilot_cpc.get_autopilot_cpc_recommendations(
+        cpc_changes = cpc.get_autopilot_cpc_recommendations(
             adgroup, adgroup_settings, data, bcm_modifiers,
             budget_changes=budget_changes, adjust_rtb_sources=adjust_rtb_sources)
     return cpc_changes, budget_changes
@@ -112,7 +111,7 @@ def initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False):
 
 def _set_paused_ad_group_sources_to_minimum_values(ad_group_settings, bcm_modifiers):
     ad_group = ad_group_settings.ad_group
-    ags_settings = autopilot_helpers.get_autopilot_active_sources_settings(
+    ags_settings = helpers.get_autopilot_active_sources_settings(
         {ad_group: ad_group_settings}, dash.constants.AdGroupSettingsState.INACTIVE)
     if (ad_group_settings.b1_sources_group_enabled and
             ad_group_settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.INACTIVE):
@@ -128,11 +127,11 @@ def _set_paused_ad_group_sources_to_minimum_values(ad_group_settings, bcm_modifi
         old_budget = ad_group_settings.b1_sources_group_daily_budget
         if ag_source != dash.constants.SourceAllRTB:
             old_budget = ag_source_setting.daily_budget_cc if ag_source_setting.daily_budget_cc else\
-                autopilot_helpers.get_ad_group_sources_minimum_cpc(ag_source, bcm_modifiers)
+                helpers.get_ad_group_sources_minimum_cpc(ag_source, bcm_modifiers)
         new_budgets[ag_source] = {
             'old_budget': old_budget,
-            'new_budget': autopilot_helpers.get_ad_group_sources_minimum_daily_budget(ag_source, bcm_modifiers),
-            'budget_comments': [automation.constants.DailyBudgetChangeComment.INITIALIZE_PILOT_PAUSED_SOURCE]
+            'new_budget': helpers.get_ad_group_sources_minimum_daily_budget(ag_source, bcm_modifiers),
+            'budget_comments': [constants.DailyBudgetChangeComment.INITIALIZE_PILOT_PAUSED_SOURCE]
         }
     try:
         with transaction.atomic():
@@ -166,7 +165,7 @@ def persist_autopilot_changes_to_log(ad_group_settings, cpc_changes, budget_chan
         goal_c = None
         if campaign_goal_data:
             uses_bcm_v2 = ad_group_settings.ad_group.campaign.account.uses_bcm_v2
-            goal_c = autopilot_helpers.get_campaign_goal_column(campaign_goal_data['goal'], uses_bcm_v2)
+            goal_c = helpers.get_campaign_goal_column(campaign_goal_data['goal'], uses_bcm_v2)
         goal_value = data[ag_source][goal_c] if goal_c and goal_c in data[ag_source] else 0.0
         new_cpc_cc = data[ag_source].get('old_cpc_cc', None)
         if cpc_changes:
@@ -199,8 +198,8 @@ def persist_autopilot_changes_to_log(ad_group_settings, cpc_changes, budget_chan
             yesterdays_spend_cc=data[ag_source].get('yesterdays_spend_cc', None),
             yesterdays_clicks=data[ag_source].get('yesterdays_clicks', None),
             goal_value=goal_value,
-            cpc_comments=', '.join(automation.constants.CpcChangeComment.get_text(c) for c in cpc_comments),
-            budget_comments=', '.join(automation.constants.DailyBudgetChangeComment.get_text(b)
+            cpc_comments=', '.join(constants.CpcChangeComment.get_text(c) for c in cpc_comments),
+            budget_comments=', '.join(constants.DailyBudgetChangeComment.get_text(b)
                                       for b in budget_comments),
             campaign_goal=campaign_goal_data['goal'].type if campaign_goal_data else None,
             campaign_goal_optimal_value=campaign_goal_data['value'] if campaign_goal_data else None,
@@ -222,13 +221,13 @@ def set_autopilot_changes(cpc_changes={}, budget_changes={}, ad_group=None,
             changes['daily_budget_cc'] = budget_changes[ag_source]['new_budget']
         if changes and not dry_run:
             if ag_source == dash.constants.SourceAllRTB:
-                autopilot_helpers.update_ad_group_b1_sources_group_values(ad_group, changes, system_user)
+                helpers.update_ad_group_b1_sources_group_values(ad_group, changes, system_user)
             else:
-                autopilot_helpers.update_ad_group_source_values(ag_source, changes, system_user, landing_mode)
+                helpers.update_ad_group_source_values(ag_source, changes, system_user, landing_mode)
 
 
 def prefetch_autopilot_data(ad_groups_and_settings):
-    enabled_ag_sources_settings = autopilot_helpers.get_autopilot_active_sources_settings(ad_groups_and_settings)
+    enabled_ag_sources_settings = helpers.get_autopilot_active_sources_settings(ad_groups_and_settings)
     sources = set(s.ad_group_source.source.id for s in enabled_ag_sources_settings)
     yesterday_data, days_ago_data, conv_days_ago_data, campaign_goals, conv_goals, bcm_modifiers_map = _fetch_data(
         list(ad_groups_and_settings.keys()), sources)
@@ -246,7 +245,7 @@ def prefetch_autopilot_data(ad_groups_and_settings):
         campaign_goal_data = campaign_goals.get(adg.campaign)
         goal_col, goal_optimal = None, None
         if campaign_goal_data:
-            goal_col = autopilot_helpers.get_campaign_goal_column(
+            goal_col = helpers.get_campaign_goal_column(
                 campaign_goal_data['goal'],
                 adg.campaign.account.uses_bcm_v2,
             )
@@ -254,7 +253,7 @@ def prefetch_autopilot_data(ad_groups_and_settings):
         if campaign_goal_data:
             data[adg][ag_source].update(_populate_prefetch_adgroup_source_goal_data(
                 goal_col, goal_optimal, campaign_goal_data, ag_source, conv_days_ago_data, conv_goals, row,
-                autopilot_settings.GOALS_CALC_COLS[campaign_goal_data['goal'].type]['high_is_good']))
+                settings.GOALS_CALC_COLS[campaign_goal_data['goal'].type]['high_is_good']))
 
         if (adg_settings.b1_sources_group_enabled and
                 adg_settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.ACTIVE):
@@ -263,7 +262,7 @@ def prefetch_autopilot_data(ad_groups_and_settings):
             if ag_source.source.source_type.type == dash.constants.SourceType.B1:
                 data[adg][dash.constants.SourceAllRTB] = _populate_b1_sources_data(
                     data[adg][ag_source], data[adg][dash.constants.SourceAllRTB], goal_col, goal_optimal,
-                    autopilot_settings.GOALS_CALC_COLS[campaign_goal_data['goal'].type]['high_is_good']
+                    settings.GOALS_CALC_COLS[campaign_goal_data['goal'].type]['high_is_good']
                     if campaign_goal_data else None)
 
     return data, campaign_goals, bcm_modifiers_map
@@ -271,7 +270,7 @@ def prefetch_autopilot_data(ad_groups_and_settings):
 
 def _populate_prefetch_adgroup_source_goal_data(
         goal_col, goal_optimal, campaign_goal_data, ags, conv_days_ago_data, conv_goals, row, goal_high_is_good):
-    goal_value = autopilot_settings.GOALS_WORST_VALUE.get(goal_col)
+    goal_value = settings.GOALS_WORST_VALUE.get(goal_col)
     dividend = None
     divisor = None
     goal_performance = 0.0
@@ -320,7 +319,7 @@ def _populate_b1_sources_data(row, current_b1_data, goal_col, goal_optimal, goal
         current_b1_data['divisor'] = row['divisor'] + (current_b1_data['divisor'] or 0.0)
     current_b1_data[goal_col] = current_b1_data['dividend'] / current_b1_data['divisor'] if\
         current_b1_data['dividend'] and current_b1_data['divisor'] and current_b1_data['divisor'] > 0.0 else\
-        autopilot_settings.GOALS_WORST_VALUE.get(goal_col)
+        settings.GOALS_WORST_VALUE.get(goal_col)
     current_b1_data['goal_optimal'] = goal_optimal
 
     if (current_b1_data['goal_optimal'] and current_b1_data[goal_col] and
@@ -349,7 +348,7 @@ def _get_conversions_per_cost_value(ag_source, data, conversion_goal, conversion
 
 
 def _get_other_goal_cost_value(ags, row, goal, goal_col):
-    goal_calculation_definition = autopilot_settings.GOALS_CALC_COLS[goal.type]
+    goal_calculation_definition = settings.GOALS_CALC_COLS[goal.type]
     dividend_column = goal_calculation_definition['dividend']
     if ags.ad_group.campaign.account.uses_bcm_v2 and\
        'dividend_bcm_v2' in goal_calculation_definition:
@@ -383,9 +382,9 @@ def _populate_prefetch_adgroup_source_data(
 def _fetch_data(ad_groups, sources):
     today = dates_helper.local_today()
     yesterday = today - datetime.timedelta(days=1)
-    days_ago = yesterday - datetime.timedelta(days=autopilot_settings.AUTOPILOT_DATA_LOOKBACK_DAYS)
+    days_ago = yesterday - datetime.timedelta(days=settings.AUTOPILOT_DATA_LOOKBACK_DAYS)
     conversion_data_days_ago = yesterday - datetime.timedelta(
-        days=autopilot_settings.AUTOPILOT_CONVERSION_DATA_LOOKBACK_DAYS)
+        days=settings.AUTOPILOT_CONVERSION_DATA_LOOKBACK_DAYS)
     campaign_goals, conversion_goals, pixels = _get_autopilot_goals(ad_groups)
 
     yesterday_data = redshiftapi.api_breakdowns.query(
@@ -576,7 +575,7 @@ def _report_new_budgets_on_ap_to_influx(ad_group_settings):
     ad_groups_and_settings = {adgs.ad_group: adgs for adgs in ad_group_settings}
     active = dash.constants.AdGroupSourceSettingsState.ACTIVE
     rtb_as_one_budget_counted_adgroups = []
-    for ag_source_setting in autopilot_helpers.get_autopilot_active_sources_settings(ad_groups_and_settings):
+    for ag_source_setting in helpers.get_autopilot_active_sources_settings(ad_groups_and_settings):
         ad_group = ag_source_setting.ad_group_source.ad_group
         ag_settings = ad_groups_and_settings.get(ad_group)
         daily_budget = ag_source_setting.daily_budget_cc or Decimal('0')

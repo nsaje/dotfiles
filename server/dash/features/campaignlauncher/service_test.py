@@ -15,7 +15,7 @@ class TestService(TestCase):
 
     @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2017, 1, 1))
     @mock.patch('dash.features.contentupload.upload.persist_batch', autospec=True)
-    @mock.patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group', autospec=True)
+    @mock.patch('automation.autopilot.initialize_budget_autopilot_on_ad_group', autospec=True)
     @mock.patch('utils.redirector_helper.insert_adgroup', autospec=True)
     @mock.patch('utils.k1_helper.update_ad_group', autospec=True)
     def test_launch(self, mock_k1_update, mock_redirector_insert, mock_autopilot, mock_persist_batch, mock_local_today):

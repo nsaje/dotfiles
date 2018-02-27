@@ -9,7 +9,7 @@ import dash.constants
 import automation.models
 import analytics.projections
 import etl.refresh_k1
-from automation import autopilot_helpers
+from automation import autopilot
 from utils import converters
 import redshiftapi.db
 import analytics.helpers
@@ -148,7 +148,7 @@ def audit_autopilot_ad_groups():
         is_autopilot_job_run=True
     )
     ad_groups_in_logs = set(log.ad_group for log in ap_logs)
-    ad_groups_ap_running = set(autopilot_helpers.get_active_ad_groups_on_autopilot()[0])
+    ad_groups_ap_running = set(autopilot.helpers.get_active_ad_groups_on_autopilot()[0])
     return ad_groups_ap_running - ad_groups_in_logs
 
 
@@ -186,8 +186,8 @@ def audit_autopilot_budget_totals(date=None, error=Decimal('0.001')):
         date = datetime.date.today()
     alarms = {}
     state = dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-    ad_groups, ad_groups_settings = autopilot_helpers.get_active_ad_groups_on_autopilot(state)
-    ad_group_sources_settings = autopilot_helpers.get_autopilot_active_sources_settings({
+    ad_groups, ad_groups_settings = autopilot.helpers.get_active_ad_groups_on_autopilot(state)
+    ad_group_sources_settings = autopilot.helpers.get_autopilot_active_sources_settings({
         ags.ad_group: ags for ags in ad_groups_settings
     })
     for settings in ad_groups_settings:

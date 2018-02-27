@@ -10,7 +10,7 @@ from django.db.models import Min, Max, Q
 
 import pytz
 
-from automation import autopilot_settings, models
+from automation import autopilot, models
 
 import dash.constants
 import dash.models
@@ -967,7 +967,7 @@ def _calculate_daily_source_caps(
         if ags in sources_to_stop:
             continue
 
-        min_source_cap = autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET
+        min_source_cap = autopilot.settings.BUDGET_AP_MIN_SOURCE_BUDGET
         source_type_min_daily_budget = ags.source.source_type.get_etfm_min_daily_budget(bcm_modifiers)
         if source_type_min_daily_budget:
             min_source_cap = max(min_source_cap, source_type_min_daily_budget)
@@ -1241,7 +1241,7 @@ def _get_active_ad_group_sources(campaign):
 def _get_min_ap_budget(ad_group_sources, bcm_modifiers):
     min_daily_budgets = []
     for ags in ad_group_sources:
-        min_source_budget = autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET
+        min_source_budget = autopilot.settings.BUDGET_AP_MIN_SOURCE_BUDGET
         source_type_min_daily_budget = ags.source.source_type.get_etfm_min_daily_budget(bcm_modifiers)
         if source_type_min_daily_budget:
             min_source_budget = max(min_source_budget, source_type_min_daily_budget)
