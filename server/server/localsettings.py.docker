@@ -30,16 +30,17 @@ except:
 
 _DOCKER_POSTGRES = {
     'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    'NAME': os.environ.get('DB_ENV_POSTGRES_DB', 'one-dev'),
-    'USER': os.environ.get('DB_ENV_POSTGRES_USER', 'eins'),
-    'PASSWORD': os.environ.get('DB_ENV_POSTGRES_PASSWORD', 'devpwd'),
-    'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'postgres'),
-    'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', 5432)),
+    'NAME': 'one-dev',
+    'USER': 'eins',
+    'PASSWORD': 'devpwd',
+    'HOST': 'postgres',
+    'PORT': 5432,
+    'TEST': {'NAME': 'onetestdb'},
 }
 
 DATABASES = {
     'default': _DOCKER_POSTGRES,
-    # 'testing_default': _DOCKER_POSTGRES,
+    'testing_default': _DOCKER_POSTGRES,
     STATS_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'dev',
@@ -49,12 +50,12 @@ DATABASES = {
         'PORT': 5439,
     },
     'stats-postgres': {
-       'ENGINE': 'django.db.backends.postgresql_psycopg2',
-       'NAME': os.environ.get('DB_ENV_POSTGRES_DB', 'one-dev'),
-       'USER': os.environ.get('DB_ENV_POSTGRES_USER', 'eins'),
-       'PASSWORD': os.environ.get('DB_ENV_POSTGRES_PASSWORD', 'devpwd'),
-       'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'statsdb'),
-       'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', 5432)),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'one-dev',
+        'USER': 'eins',
+        'PASSWORD': 'devpwd',
+        'HOST': 'statsdb',
+        'PORT': 5432
     },
 }
 

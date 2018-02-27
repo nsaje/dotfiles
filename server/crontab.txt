@@ -13,7 +13,7 @@
 30 16 * * *      /home/ubuntu/docker-manage-py.sh send_supply_report_emails
 0 12 * * *       /home/ubuntu/docker-manage-py.sh free_inactive_allocated_assets
 */20 * * * *     /home/ubuntu/docker-manage-py.sh notify_depleted_budget_campaigns
-#0 8 * * *        /home/ubuntu/docker-manage-py.sh create_demo_snapshot
+0 8 * * *        /home/ubuntu/docker-manage-py.sh create_demo_snapshot
 */5 * * * *      /home/ubuntu/docker-manage-py.sh check_facebook_page_approval
 0 * * * *        /home/ubuntu/docker-manage-py.sh monitor_selfmanaged
 */15 * * * *     /home/ubuntu/docker-manage-py.sh monitor_demo

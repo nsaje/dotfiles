@@ -50,7 +50,7 @@ def _get(key):
 def set(key, rows, args, kwargs):
     if not settings.USE_REDSHIFT_BACKGROUND_CACHE:
         return
-    _set(key, rows, pickle.dumps((args, kwargs), protocol=2))  # FIXME(nsaje): remove protocol after py3 migration complete
+    _set(key, rows, pickle.dumps((args, kwargs)))
 
 
 def _set(key, rows, pickled_args):

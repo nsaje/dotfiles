@@ -47,7 +47,6 @@ class UniqueOrderedList(object):
         else:
             item = self.Item(value)
             self._map[value] = item
-        item.value = value
         self._add_item_to_end(item)
 
     def __iter__(self):

@@ -8,11 +8,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/dev/ref/settings/
 """
 
-# pickle py2 compatibility, FIXME(nsaje): remove after migration to py3 complete
-import pickle
-pickle.HIGHEST_PROTOCOL = 2
-pickle.DEFAULT_PROTOCOL = 2
-
 import copy
 from secretcrypt import Secret
 
@@ -408,6 +403,7 @@ if TESTING:
         if testing_db_replacement in DATABASES:
             # make a copy to avoid issues when using --parallel
             DATABASES[database_name] = copy.copy(DATABASES[testing_db_replacement])
+            del DATABASES[testing_db_replacement]
             print(('Using {testdbname} instead of {dbname} for testing...'.format(
                 testdbname=testing_db_replacement,
                 dbname=database_name
