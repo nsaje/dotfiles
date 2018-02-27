@@ -504,7 +504,7 @@ def _apply_content_ad_edit(request, candidate):
         tracker_urls.append(secondary_tracker_url)
 
     updates = {k: v for k, v in list(f.cleaned_data.items()) if k in VALID_UPDATE_FIELDS}
-    if tracker_urls:
+    if tracker_urls != content_ad.tracker_urls:
         updates['tracker_urls'] = tracker_urls
     content_ad.update(request, write_history=False, **updates)
 
