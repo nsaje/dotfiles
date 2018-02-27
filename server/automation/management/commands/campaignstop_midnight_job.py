@@ -22,3 +22,4 @@ class Command(ExceptionCommand):
         )
         automation.campaignstop.refresh_realtime_data(campaigns_today)
         automation.campaignstop.update_campaigns_state(campaigns_today)
+        automation.campaignstop.mark_almost_depleted_campaigns(campaigns_today)
