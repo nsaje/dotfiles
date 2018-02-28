@@ -91,7 +91,7 @@ def _update_campaign_budgets(campaign_daily_budgets, campaign_available_amount):
         remaining_current_budget = campaign_available_amount.get(campaign, 0)
         min_remaining_budget = remaining_current_budget - campaign_daily_budget
         log = RealTimeCampaignStopLog(campaign=campaign, event=CampaignStopEvent.SELECTION_CHECK)
-        is_almost_depleted = min_remaining_budget < 0
+        is_almost_depleted = min_remaining_budget <= 0
 
         _update_almost_depleted(campaign, is_almost_depleted)
 
