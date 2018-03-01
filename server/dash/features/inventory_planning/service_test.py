@@ -144,6 +144,13 @@ class TestService(TestCase):
                 'win_notices': 5,
                 'total_win_price': 10.0,
             },
+            {
+                'source_id': 4,  # not in sources map
+                'bids': 2,
+                'bid_reqs': 10000,
+                'win_notices': 5,
+                'total_win_price': 10.0,
+            },
         ]
         self.assertEqual(service.get_by_media_source(None), [
             {

@@ -75,8 +75,9 @@ def get_by_media_source(filters):
     data = list(filter(_min_auctions_filter, data))
     sources_map = _get_sources_map()
     _add_zero_rows(data, 'source_id', sorted(sources_map.keys()))
+    data = list(filter(lambda item: item['source_id'] in sources_map, data))
     for item in data:
-        item['name'] = sources_map.get(item['source_id'], 'Other')
+        item['name'] = sources_map.get(item['source_id'])
     return data
 
 

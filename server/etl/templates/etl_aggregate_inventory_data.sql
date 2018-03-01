@@ -38,7 +38,15 @@ INSERT INTO mv_inventory (
           AND country <> ''
           AND publisher <> ''
           AND device_type > 0
-          AND exchange <> ''
+          AND exchange IN (
+            {% for source_slug in source_slug_to_id.keys %}
+              {% if forloop.last %}
+                '{{ source_slug }}'
+              {% else %}
+                '{{ source_slug }}',
+              {% endif %}
+            {% endfor %}
+          )
 
     GROUP BY 1, 2, 3, 4
 
