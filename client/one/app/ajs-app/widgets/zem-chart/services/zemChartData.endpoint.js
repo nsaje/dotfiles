@@ -75,8 +75,9 @@ angular.module('one.widgets').service('zemChartEndpoint', function ($q, $http, z
             converted.not_selected_ids = config.selection.unselectedIds ? config.selection.unselectedIds : undefined;
 
             converted.filtered_sources = config.filteredSources ? config.filteredSources.join(',') : undefined;
-            converted.filtered_agencies = config.filteredAgencies;
-            converted.filtered_account_types = config.filteredAccountTypes;
+            converted.filtered_agencies = config.filteredAgencies ? config.filteredAgencies.join(',') : undefined;
+            converted.filtered_account_types = config.filteredAccountTypes ?
+                config.filteredAccountTypes.join(',') : undefined;
             converted.show_blacklisted_publishers = config.filteredPublisherStatus;
             converted.show_archived = config.showArchived;
 
