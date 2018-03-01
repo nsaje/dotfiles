@@ -6,7 +6,7 @@ import core.common
 from . import model
 
 
-EUR_AGENCIES = [196]
+EUR_AGENCIES = [196, 175]
 
 
 class AccountManager(core.common.QuerySetManager):
