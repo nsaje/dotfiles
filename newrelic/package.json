@@ -1,0 +1,21 @@
+{
+  "name": "newrelic-syntetic",
+  "version": "1.0.0",
+  "description": "",
+  "main": "newrelic-syntetic_test-demo.js",
+  "dependencies": {
+    "assert": "^1.4.1",
+    "chromedriver": "^2.35.0",
+    "geckodriver": "^1.10.0",
+    "package.json": "^2.0.1",
+    "selenium": "^2.20.0",
+    "selenium-webdriver": "^3.5.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 0"
+  },
+  "keywords": [],
+  "author": "Marko Celan",
+  "license": "ISC"
+}
