@@ -36,7 +36,7 @@ DEFAULT_ACCOUNT_TYPES = (
     dash.constants.AccountType.MANAGED,
 )
 
-UNBILLABLE_SEGMENT_PARTS = ('outbrain', 'lr-', 'lotame', 'obs', 'obi', )
+UNBILLABLE_SEGMENT_PARTS = ('outbrain', 'lr-', 'lotame', 'obs', 'obi', 'obl', )
 HIGH_PACING_THRESHOLD = Decimal('200.0')
 LOW_PACING_THRESHOLD = Decimal('50.0')
 MIN_B1_ACTIVE_SOURCES_FOR_INTEREST_TARGETING = 5
