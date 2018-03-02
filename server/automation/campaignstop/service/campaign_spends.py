@@ -18,7 +18,7 @@ def get_predicted_remaining_budget(log, campaign):
     budget_spends_until_date = _get_until_date_for_budget_spends(campaign)
     current_rt_spends, prev_rt_spends = _get_realtime_spends(
         log, campaign, dates_helper.day_after(budget_spends_until_date))
-    available_amount = _get_available_campaign_budget(campaign, budget_spends_until_date)
+    available_amount = _get_available_campaign_budget(log, campaign, budget_spends_until_date)
 
     remaining = available_amount
     if current_rt_spends:
@@ -89,8 +89,9 @@ def _should_query_realtime_stats_for_yesterday(campaign, date):
     return in_critical_hours
 
 
-def _get_available_campaign_budget(campaign, until):
+def _get_available_campaign_budget(log, campaign, until):
     budgets_active_today = _get_budgets_active_today(campaign)
+    log.add_context({'active_budget_line_items': bli.id for bli in budgets_active_today})
     return sum(max(bli.get_available_etfm_amount(date=until), 0) for bli in budgets_active_today)
 
 
