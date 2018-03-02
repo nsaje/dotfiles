@@ -2,6 +2,7 @@
 
 from django.db import models
 from django.db.models import Q, Case, When
+from django.db.models.expressions import RawSQL
 
 from dash import constants
 
@@ -14,7 +15,15 @@ class GeolocationQuerySet(models.QuerySet):
         return self.filter(type__in=types)
 
     def name_contains(self, query):
-        return self.filter(name__icontains=query)
+        return (
+            self.filter(name__icontains=query)
+            .annotate(
+                name_match_count=RawSQL(
+                    'select count(*) from regexp_matches(lower(name), %s, \'g\')',
+                    (query.lower(),),
+                ),
+            )
+        )
 
 
 class GeolocationManager(models.Manager):
@@ -24,7 +33,7 @@ class GeolocationManager(models.Manager):
                 Case(When(~Q(woeid=''), then=1), default=0, output_field=models.IntegerField()) +
                 Case(When(~Q(outbrain_id=''), then=1), default=0, output_field=models.IntegerField()) +
                 Case(When(~Q(facebook_key=''), then=1), default=0, output_field=models.IntegerField())
-            )
+            ),
         ).order_by('-num_external', 'name')
         if keys:
             locations = locations.key_in(keys)
@@ -32,6 +41,11 @@ class GeolocationManager(models.Manager):
             locations = locations.of_type(types)
         if name_contains:
             locations = locations.name_contains(name_contains)
+            locations = locations.order_by(
+                '-num_external',
+                '-name_match_count',
+                'name',
+            )
 
         return locations[:limit]
 
