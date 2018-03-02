@@ -2,14 +2,14 @@
 # -- This is plain crontab formatted file. Please note you should be careful with syntax
 
 0 9,12,15 * * *  /home/ubuntu/docker-manage-py.sh monitor_blacklists
-15 9 * * *       /home/ubuntu/docker-manage-py.sh run_autopilot --daily-run
+#15 9 * * *       /home/ubuntu/docker-manage-py.sh run_autopilot --daily-run
 15 10 * * *      /home/ubuntu/docker-manage-py.sh audit_autopilot --slack
-0 12 * * *       /home/ubuntu/docker-manage-py.sh run_campaign_stop
+#0 12 * * *       /home/ubuntu/docker-manage-py.sh run_campaign_stop
 0 12 * * *       /home/ubuntu/docker-manage-py.sh audit_overspend --slack --influx
 */5 * * * *      /home/ubuntu/docker-manage-py.sh refresh_k1 3
 0 12 * * *       /home/ubuntu/docker-manage-py.sh send_outbrain_manual_actions_email
 40 * * * *       /home/ubuntu/docker-manage-py.sh monitor_adgroup_propagation
-10 9-20 * * *    /home/ubuntu/docker-manage-py.sh send_scheduled_reports
+#10 9-20 * * *    /home/ubuntu/docker-manage-py.sh send_scheduled_reports
 30 16 * * *      /home/ubuntu/docker-manage-py.sh send_supply_report_emails
 0 12 * * *       /home/ubuntu/docker-manage-py.sh free_inactive_allocated_assets
 */20 * * * *     /home/ubuntu/docker-manage-py.sh notify_depleted_budget_campaigns
