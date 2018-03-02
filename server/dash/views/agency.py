@@ -945,6 +945,7 @@ class AccountSettings(api_common.BaseApiView):
             return data
 
         data['allowed_sources'] = self.get_allowed_sources(
+            account,
             request.user.has_perm('zemauth.can_see_all_available_sources'),
             [source.id for source in account.allowed_sources.all()]
         )
