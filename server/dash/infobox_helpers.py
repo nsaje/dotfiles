@@ -625,10 +625,9 @@ def get_adgroup_running_status_class(
         return dash.constants.InfoboxStatus.INACTIVE
 
     if real_time_campaign_stop and campaignstop_state:
-        if not campaignstop_state['allowed_to_run']:
-            return dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED
-        if campaignstop_state['almost_depleted']:
-            return dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET
+        campaignstop_state_status = _get_campaignstop_state_status(campaignstop_state)
+        if campaignstop_state_status:
+            return campaignstop_state_status
 
     if autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
         return dash.constants.InfoboxStatus.AUTOPILOT
@@ -644,10 +643,9 @@ def get_campaign_running_status(campaign, campaign_settings):
 
     if campaign.real_time_campaign_stop:
         campaignstop_state = automation.campaignstop.get_campaignstop_state(campaign)
-        if not campaignstop_state['allowed_to_run']:
-            return dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED
-        if campaignstop_state['almost_depleted']:
-            return dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET
+        campaignstop_state_status = _get_campaignstop_state_status(campaignstop_state)
+        if campaignstop_state_status:
+            return campaignstop_state_status
 
     running_exists = dash.models.AdGroup.objects.filter(
         campaign=campaign
@@ -659,6 +657,16 @@ def get_campaign_running_status(campaign, campaign_settings):
         campaign=campaign
     ).filter_active().exists()
     return dash.constants.InfoboxStatus.INACTIVE if active_exists else dash.constants.InfoboxStatus.STOPPED
+
+
+def _get_campaignstop_state_status(campaignstop_state):
+        if not campaignstop_state['allowed_to_run']:
+            if campaignstop_state['pending_budget_updates']:
+                return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET
+            return dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED
+        if campaignstop_state['almost_depleted']:
+            return dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET
+        return None
 
 
 def get_account_running_status(account):
@@ -689,6 +697,8 @@ def get_entity_delivery_text(status):
         return 'Inactive'
     if status == dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED:
         return 'Stopped - Out of budget (add budget to resume)'
+    if status == dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET:
+        return 'Stopped - Out of budget (pending budget allocations)'
     if status == dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET:
         return 'Active - Running out of budget'
 

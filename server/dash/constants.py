@@ -223,6 +223,7 @@ class InfoboxStatus(ConstantBase):
     AUTOPILOT = 'autopilot'
     CAMPAIGNSTOP_STOPPED = 'campaignstop-stopped'
     CAMPAIGNSTOP_LOW_BUDGET = 'campaignstop-low-budget'
+    CAMPAIGNSTOP_PENDING_BUDGET = 'campaignstop-pending-budget-updates'
 
     _VALUES = {
         ACTIVE: 'Active',
@@ -233,6 +234,7 @@ class InfoboxStatus(ConstantBase):
         AUTOPILOT: 'Autopilot',
         CAMPAIGNSTOP_STOPPED: 'Stopped - Out of budget',
         CAMPAIGNSTOP_LOW_BUDGET: 'Active - Running out of budget',
+        CAMPAIGNSTOP_PENDING_BUDGET: 'Stopped - Pending budget allocations',
     }
 
 

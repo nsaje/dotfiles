@@ -5,6 +5,7 @@ import core.entity.settings
 from core.signals import settings_change
 
 from .service import update_notifier
+from . import CampaignStopState
 
 
 def connect_notify_budgets():
@@ -13,6 +14,12 @@ def connect_notify_budgets():
 
 def disconnect_notify_budgets():
     post_save.disconnect(_notify_budget_line_item_change, sender=core.bcm.BudgetLineItem)
+
+
+def _handle_budget_line_item_change(sender, instance, **kwargs):
+    _notify_budget_line_item_change(sender, instance, **kwargs)
+    campaignstop_state, _ = CampaignStopState.objects.get_or_create(campaign=instance.campaign)
+    campaignstop_state.update_pending_budget_updates(True)
 
 
 def _notify_budget_line_item_change(sender, instance, **kwargs):

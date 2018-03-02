@@ -713,9 +713,39 @@ class InfoBoxAccountHelpersTest(TestCase):
             ad_group_settings.ad_group.campaign.set_real_time_campaign_stop(None, True)
 
             ad_group_settings.refresh_from_db()
-            mock_get_campaignstop_state.return_value = {'allowed_to_run': False}
+            mock_get_campaignstop_state.return_value = {'allowed_to_run': False, 'pending_budget_updates': False}
             self.assertEqual(
                 dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED,
+                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
+            )
+
+            mock_get_campaignstop_state.return_value = {'allowed_to_run': False, 'pending_budget_updates': True}
+            self.assertEqual(
+                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET,
+                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
+            )
+
+            mock_get_campaignstop_state.return_value = {'allowed_to_run': True, 'pending_budget_updates': False, 'almost_depleted': False}
+            self.assertEqual(
+                dash.constants.InfoboxStatus.ACTIVE,
+                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
+            )
+
+            mock_get_campaignstop_state.return_value = {'allowed_to_run': False, 'pending_budget_updates': True, 'almost_depleted': False}
+            self.assertEqual(
+                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET,
+                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
+            )
+
+            mock_get_campaignstop_state.return_value = {'allowed_to_run': True, 'pending_budget_updates': True, 'almost_depleted': False}
+            self.assertEqual(
+                dash.constants.InfoboxStatus.ACTIVE,
+                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
+            )
+
+            mock_get_campaignstop_state.return_value = {'allowed_to_run': True, 'pending_budget_updates': False, 'almost_depleted': True}
+            self.assertEqual(
+                dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET,
                 dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
             )
 
@@ -841,9 +871,33 @@ class InfoBoxAccountHelpersTest(TestCase):
             old_value = campaign.real_time_campaign_stop
             campaign.set_real_time_campaign_stop(None, True)
 
-            mock_get_campaignstop_state.return_value = {'allowed_to_run': False}
+            mock_get_campaignstop_state.return_value = {'allowed_to_run': False, 'pending_budget_updates': False}
             self.assertEqual(
                 dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED,
+                dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
+            )
+
+            mock_get_campaignstop_state.return_value = {'allowed_to_run': False, 'pending_budget_updates': True}
+            self.assertEqual(
+                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET,
+                dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
+            )
+
+            mock_get_campaignstop_state.return_value = {'allowed_to_run': True, 'pending_budget_updates': False, 'almost_depleted': False}
+            self.assertEqual(
+                dash.constants.InfoboxStatus.ACTIVE,
+                dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
+            )
+
+            mock_get_campaignstop_state.return_value = {'allowed_to_run': True, 'pending_budget_updates': False, 'almost_depleted': True}
+            self.assertEqual(
+                dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET,
+                dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
+            )
+
+            mock_get_campaignstop_state.return_value = {'allowed_to_run': True, 'pending_budget_updates': True, 'almost_depleted': False}
+            self.assertEqual(
+                dash.constants.InfoboxStatus.ACTIVE,
                 dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
             )
 

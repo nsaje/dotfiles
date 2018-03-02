@@ -8,6 +8,7 @@ from . import update_campaigns_state
 from . import refresh_realtime_data
 from . import update_campaigns_end_date
 from .. import constants
+from .. import CampaignStopState
 
 from utils import sqs_helper
 
@@ -46,6 +47,13 @@ def _handle_initialize(campaigns):
 def _handle_budget_updates(campaigns):
     logger.info('Handle campaign budget update: campaigns=%s', [campaign.id for campaign in campaigns])
     _full_check(campaigns)
+    _unset_pending_updates(campaigns)
+
+
+def _unset_pending_updates(campaigns):
+    for campaign in campaigns:
+        campaignstop_state, _ = CampaignStopState.objects.get_or_create(campaign=campaign)
+        campaignstop_state.update_pending_budget_updates(False)
 
 
 def _full_check(campaigns):

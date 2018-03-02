@@ -14,6 +14,7 @@ class CampaignStopState(models.Model):
         default=constants.CampaignStopState.STOPPED,
     )
     max_allowed_end_date = models.DateField(null=True, blank=True, default=None)
+    pending_budget_updates = models.BooleanField(default=False)
 
     def set_allowed_to_run(self, is_allowed):
         previous = self.state
@@ -49,6 +50,10 @@ class CampaignStopState(models.Model):
 
     def update_almost_depleted(self, is_depleted):
         self.almost_depleted = is_depleted
+        self.save()
+
+    def update_pending_budget_updates(self, pending_updates):
+        self.pending_budget_updates = pending_updates
         self.save()
 
     def __str__(self):

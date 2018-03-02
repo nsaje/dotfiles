@@ -59,6 +59,7 @@ var constants = {
         AUTOPILOT: 'autopilot',
         CAMPAIGNSTOP_STOPPED: 'campaignstop-stopped',
         CAMPAIGNSTOP_LOW_BUDGET: 'campaignstop-low-budget',
+        CAMPAIGNSTOP_PENDING_BUDGET: 'campaignstop-pending-budget-updates',
     },
     publisherStatus: {
         ENABLED: 1,
