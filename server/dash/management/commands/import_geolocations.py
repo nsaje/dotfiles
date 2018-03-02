@@ -1,7 +1,6 @@
 import csv
 import logging
 
-import unicodecsv
 from django.db import transaction
 
 from utils.command_helpers import ExceptionCommand
@@ -104,7 +103,7 @@ class Command(ExceptionCommand):
     def get_mapping(csv_path, column_name):
         mapping = {}
         with open(csv_path, 'r') as csvfile:
-            reader = unicodecsv.DictReader(csvfile, delimiter=',', quotechar='"')
+            reader = csv.DictReader(csvfile, delimiter=',', quotechar='"')
             for row in reader:
                 mapping[row['key']] = row[column_name]
         return mapping

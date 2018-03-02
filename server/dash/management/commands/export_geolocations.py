@@ -1,6 +1,6 @@
 import logging
 
-import unicodecsv
+import csv
 
 from utils.command_helpers import ExceptionCommand
 import dash.regions
@@ -21,5 +21,5 @@ class Command(ExceptionCommand):
         locs = dash.features.geolocation.Geolocation.objects.all().exclude(type='zip').order_by('type', 'key', 'name').values('key', 'name', 'type')
 
         with open(options['output'], 'w') as f:
-            csv_writer = unicodecsv.DictWriter(f, fieldnames=['key', 'type', 'name'])
+            csv_writer = csv.DictWriter(f, fieldnames=['key', 'type', 'name'])
             csv_writer.writerows(locs)
