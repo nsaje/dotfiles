@@ -13,21 +13,25 @@ def audit_stopped_campaigns(date):
         created_dt__lt=dates_helper.day_after(local_midnight),
         context__previous_state=constants.CampaignStopState.ACTIVE,
         context__new_state=constants.CampaignStopState.STOPPED,
-    )
-    campaigns = set(log.campaign for log in logs)
+    ).order_by('-created_dt', 'campaign_id').distinct('campaign_id')
     return {
-        campaign: _get_available_campaign_budget(campaign) for campaign in campaigns
+        log.campaign: _get_available_campaign_budget(log) for log in logs
     }
 
 
-def _get_available_campaign_budget(campaign):
-    budgets_active_today = _get_budgets_active_today(campaign)
+def _get_available_campaign_budget(log):
+    budgets_active_today = _get_budgets_active_today(log)
     return sum(bli.get_available_etfm_amount() for bli in budgets_active_today)
 
 
-def _get_budgets_active_today(campaign):
+def _get_budgets_active_today(log):
     today = dates_helper.local_today()
-    return campaign.budgets.filter(
+    budgets = log.campaign.budgets.filter(
         start_date__lte=today,
         end_date__gte=today,
     ).order_by('created_dt')
+    if 'active_budget_line_items' in log.contex:
+        budgets = budgets.filter(
+            id__in=log.context['active_budget_line_items'],
+        )
+    return budgets
