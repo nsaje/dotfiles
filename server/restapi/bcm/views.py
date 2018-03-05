@@ -519,7 +519,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             try:
                 automation.campaignstop.validate_minimum_budget_amount(item.instance, amount)
             except automation.campaignstop.CampaignStopValidationError as e:
-                item.errors.setdefaut('amount', []).append(
+                item.errors.setdefault('amount', []).append(
                     'Budget amount has to be at least ${}'.format(e.min_amount),
                 )
         else:
