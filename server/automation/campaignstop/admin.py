@@ -33,7 +33,7 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
             return self._get_max_allowed_end_date_update_description(obj)
         elif obj.event == constants.CampaignStopEvent.BUDGET_AMOUNT_VALIDATION:
             pass
-        return 'Event type unknown. Captured context:\n{}'.format(pprint.pformat(obj.context))
+        return 'Event type unknown. Captured context:<br /><pre>{}</pre>'.format(pprint.pformat(obj.context))
     event_description.allow_tags = True
 
     def _get_depletion_check_description(self, obj):
