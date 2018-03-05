@@ -207,5 +207,5 @@ def _send_missing_clicks_email_alert(missing_clicks):
     subject = '[BIZWIRE] Missing yesterday clicks'
     body = '''Hi,
 
-Missing {} on content ads yesterday.'''.format(missing_clicks)
+Missing {} clicks on content ads yesterday.'''.format(missing_clicks)
     email_helper.send_internal_email(recipient_list=emails, subject=subject, body=body)
