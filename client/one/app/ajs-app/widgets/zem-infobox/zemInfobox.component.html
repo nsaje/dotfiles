@@ -7,7 +7,7 @@
             'zem-infobox__delivery--active': $ctrl.delivery.status === 'active' || $ctrl.delivery.status === 'active-price-discovery' || $ctrl.delivery.status === 'campaignstop-low-budget',
             'zem-infobox__delivery--autopilot': $ctrl.delivery.status === 'autopilot',
             'zem-infobox__delivery--inactive': $ctrl.delivery.status === 'inactive',
-            'zem-infobox__delivery--paused': $ctrl.delivery.status === 'stopped' || $ctrl.delivery.status === 'campaignstop-stopped',
+            'zem-infobox__delivery--paused': $ctrl.delivery.status === 'stopped' || $ctrl.delivery.status === 'campaignstop-stopped' || $ctrl.deliver.status === 'campaignstop-pending-budget-updates',
             'zem-infobox__delivery--landing-mode': $ctrl.delivery.status === 'landing-mode',
         }">
         <div class="zem-infobox-data-row__value-label">Delivery:</div>
