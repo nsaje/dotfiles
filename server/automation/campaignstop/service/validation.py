@@ -37,9 +37,9 @@ def _calculate_minimum_budget_amount(log, budget_line_item):
 
 def _round(number):
     if number < 100:
-        return _round_to_nearest(number, 10)
-    return _round_to_nearest(number, 100)
+        return _round_up_to_nearest(number, 10)
+    return _round_up_to_nearest(number, 100)
 
 
-def _round_to_nearest(number, multiple):
+def _round_up_to_nearest(number, multiple):
     return (int(number / multiple) + 1) * multiple
