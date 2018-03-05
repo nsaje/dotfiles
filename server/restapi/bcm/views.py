@@ -516,7 +516,12 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         if item.instance.campaign.get_current_settings().automatic_campaign_stop:
             self._validate_automatic_campaign_stop(item, amount)
         elif item.instance.campaign.real_time_campaign_stop:
-            automation.campaignstop.validate_minimum_budget_amount(item.instance, amount)
+            try:
+                automation.campaignstop.validate_minimum_budget_amount(item.instance, amount)
+            except automation.campaignstop.CampaignStopValidationError as e:
+                item.errors.setdefaut('amount', []).append(
+                    'Budget amount has to be at least ${}'.format(e.min_amount),
+                )
         else:
             acc_id = item.instance.campaign.account_id
             if amount < prev_amount and acc_id not in EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK:

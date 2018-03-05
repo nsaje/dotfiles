@@ -10,7 +10,9 @@ RESERVED_PROPORTION = decimal.Decimal('0.1')
 
 
 class CampaignStopValidationError(ValidationError):
-    pass
+    def __init__(self, message, min_amount):
+        super(ValidationError, self).__init__(message)
+        self.min_amount = min_amount
 
 
 def validate_minimum_budget_amount(budget_line_item, amount):
@@ -23,7 +25,7 @@ def validate_minimum_budget_amount(budget_line_item, amount):
     min_amount = _calculate_minimum_budget_amount(log, budget_line_item)
     if amount < min_amount:
         raise CampaignStopValidationError(
-            'Budget amount has to be at least ${}'.format(min_amount))
+            'Budget amount has to be at least ${}'.format(min_amount), min_amount)
 
 
 def _calculate_minimum_budget_amount(log, budget_line_item):
