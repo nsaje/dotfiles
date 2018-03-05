@@ -144,5 +144,7 @@ def _get_realtime_spends_for_date(campaign, date):
 
 
 def _is_recent(rt_spend):
+    if rt_spend.date != dates_helper.local_today():
+        return True
     td = dates_helper.utc_now() - rt_spend.created_dt
     return (td.total_seconds() / 60) < MAX_RT_DATA_AGE_MINUTES
