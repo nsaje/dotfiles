@@ -6,6 +6,7 @@ import core.bcm
 from utils import dates_helper
 from ..constants import CampaignStopEvent
 from .. import CampaignStopState, RealTimeDataHistory, RealTimeCampaignStopLog
+from . import refresh_realtime_data
 
 HOURS_DELAY = 6
 
@@ -22,7 +23,7 @@ def _mark_almost_depleted_campaigns(campaigns):
     available_campaign_budgets = _get_available_campaign_budgets(campaigns)
     max_campaign_spends = _get_max_campaign_spends(campaigns)
 
-    _update_campaign_budgets(max_campaign_spends, available_campaign_budgets)
+    _mark_campaigns(max_campaign_spends, available_campaign_budgets)
 
 
 def _get_available_campaign_budgets(campaigns):
@@ -86,8 +87,9 @@ def _get_adgroup_sources(campaign):
 
 
 @transaction.atomic
-def _update_campaign_budgets(campaign_daily_budgets, campaign_available_amount):
+def _mark_campaigns(campaign_daily_budgets, campaign_available_amount):
     for campaign, campaign_daily_budget in campaign_daily_budgets.items():
+        refresh_realtime_data([campaign])
         remaining_current_budget = campaign_available_amount.get(campaign, 0)
         min_remaining_budget = remaining_current_budget - campaign_daily_budget
         log = RealTimeCampaignStopLog(campaign=campaign, event=CampaignStopEvent.SELECTION_CHECK)

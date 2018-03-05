@@ -1,3 +1,5 @@
+import influx
+
 import automation.campaignstop
 import core.entity
 
@@ -11,6 +13,7 @@ class Command(ExceptionCommand):
         parser.add_argument('--check-time', dest='check_time', action='store_true',
                             help="Check if it's local midnight.")
 
+    @influx.timer('campaignstop.midnight_job')
     def handle(self, *args, **options):
         if options.get('check_time') and not dates_helper.local_now().hour == 0:
             return
@@ -20,6 +23,5 @@ class Command(ExceptionCommand):
             campaignstopstate__state=automation.campaignstop.constants.CampaignStopState.STOPPED,
             campaignstopstate__max_allowed_end_date__gte=dates_helper.local_today()
         )
-        automation.campaignstop.refresh_realtime_data(campaigns_today)
         automation.campaignstop.update_campaigns_state(campaigns_today)
         automation.campaignstop.mark_almost_depleted_campaigns(campaigns_today)

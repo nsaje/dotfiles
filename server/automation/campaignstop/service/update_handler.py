@@ -5,7 +5,6 @@ from django.conf import settings
 import core.entity
 from . import mark_almost_depleted_campaigns
 from . import update_campaigns_state
-from . import refresh_realtime_data
 from . import update_campaigns_end_date
 from .. import constants
 from .. import CampaignStopState
@@ -59,12 +58,10 @@ def _unset_pending_updates(campaigns):
 def _full_check(campaigns):
     update_campaigns_end_date(campaigns)
 
-    refresh_realtime_data(campaigns)
     mark_almost_depleted_campaigns(campaigns)
     update_campaigns_state(campaigns)
 
 
 def _handle_daily_cap_updates(campaigns):
     logger.info('Handle campaign daily cap update: campaigns=%s', [campaign.id for campaign in campaigns])
-    refresh_realtime_data(campaigns)
     mark_almost_depleted_campaigns(campaigns)

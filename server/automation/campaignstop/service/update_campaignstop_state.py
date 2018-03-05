@@ -6,6 +6,7 @@ import core.entity
 from utils import dates_helper
 
 from . import campaign_spends
+from . import refresh_realtime_data
 from .. import CampaignStopState
 from .. import constants
 from .. import RealTimeCampaignStopLog
@@ -22,6 +23,7 @@ def update_campaigns_state(campaigns=None):
 
 def _update_campaigns(campaigns):
     for campaign in campaigns:
+        refresh_realtime_data([campaign])
         _update_campaign(campaign)
 
 

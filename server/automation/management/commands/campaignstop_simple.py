@@ -1,4 +1,5 @@
 import logging
+import influx
 
 
 from automation import budgetdepletion
@@ -8,6 +9,8 @@ logger = logging.getLogger(__name__)
 
 
 class Command(ExceptionCommand):
+
+    @influx.timer('campaignstop.simple_job')
     def handle(self, *args, **options):
         logger.info('Start: Stopping and notifying depleted budget campaigns.')
         budgetdepletion.stop_and_notify_depleted_budget_campaigns()
