@@ -13,7 +13,7 @@ def audit_stopped_campaigns(date):
         created_dt__lt=dates_helper.day_after(local_midnight),
         context__previous_state=constants.CampaignStopState.ACTIVE,
         context__new_state=constants.CampaignStopState.STOPPED,
-    ).order_by('-created_dt', 'campaign_id').distinct('campaign_id')
+    ).order_by('campaign_id', '-created_dt').distinct('campaign')
     return {
         log.campaign: _get_available_campaign_budget(log) for log in logs
     }
