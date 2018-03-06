@@ -1,6 +1,7 @@
 from mock import patch
 import datetime
 import json
+import copy
 from decimal import Decimal
 
 from django.contrib.auth import models as authmodels
@@ -33,11 +34,13 @@ class BaseDailyStatsTest(TestCase):
         mock_stats1 = [{
             'day': self.date.isoformat(),
             'cpc': '0.0100',
+            'local_cpc': '0.0200',
             'clicks': 1000
         }]
         mock_stats2 = [{
             'day': self.date.isoformat(),
             'cpc': '0.0200',
+            'local_cpc': '0.0400',
             'clicks': 1500,
             group_key: group_id
         }]
@@ -66,7 +69,8 @@ class BaseDailyStatsTest(TestCase):
 
         return params
 
-    def _assert_response(self, response, selected_id, selected_name, with_conversion_goals=True, with_pixels=True):
+    def _assert_response(self, response, selected_id, selected_name, with_conversion_goals=True, with_pixels=True,
+                         conversion_goals=None, currency=constants.Currency.USD):
         json_blob = json.loads(response.content)
         self.maxDiff = None
         expected_response = {
@@ -79,7 +83,7 @@ class BaseDailyStatsTest(TestCase):
                             [self.date.isoformat(), 1000]
                         ],
                         'cpc': [
-                            [self.date.isoformat(), '0.0100']
+                            [self.date.isoformat(), '0.0100' if currency == constants.Currency.USD else '0.0200']
                         ]
                     }
                 }, {
@@ -90,21 +94,25 @@ class BaseDailyStatsTest(TestCase):
                             [self.date.isoformat(), 1500]
                         ],
                         'cpc': [
-                            [self.date.isoformat(), '0.0200']
+                            [self.date.isoformat(), '0.0200' if currency == constants.Currency.USD else '0.0400']
                         ]
                     }
                 }],
+                'currency': currency,
             },
             'success': True
         }
 
         if with_conversion_goals:
-            expected_response['data']['conversion_goals'] = [
-                {'id': 'conversion_goal_2', 'name': 'test conversion goal 2'},
-                {'id': 'conversion_goal_3', 'name': 'test conversion goal 3'},
-                {'id': 'conversion_goal_4', 'name': 'test conversion goal 4'},
-                {'id': 'conversion_goal_5', 'name': 'test conversion goal 5'},
-            ]
+            if conversion_goals is not None:
+                expected_response['data']['conversion_goals'] = conversion_goals
+            else:
+                expected_response['data']['conversion_goals'] = [
+                    {'id': 'conversion_goal_2', 'name': 'test conversion goal 2'},
+                    {'id': 'conversion_goal_3', 'name': 'test conversion goal 3'},
+                    {'id': 'conversion_goal_4', 'name': 'test conversion goal 4'},
+                    {'id': 'conversion_goal_5', 'name': 'test conversion goal 5'},
+                ]
 
         if with_pixels:
             expected_response['data']['pixels'] = [
@@ -251,6 +259,25 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
         source = models.Source.objects.get(pk=source_id)
         self._assert_response(response, source_id, source.name, with_conversion_goals=False)
 
+    def test_get_by_source_local_currency(self):
+        perm = authmodels.Permission.objects.get(codename='can_see_stats_in_local_currency')
+        self.user.user_permissions.add(perm)
+        source_id = 3
+
+        self._prepare_mock('source_id', source_id)
+
+        response = self.client.get(
+            reverse('account_sources_daily_stats', kwargs={'account_id': 2}),
+            self._get_params(selected_ids=[source_id]),
+            follow=True
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        source = models.Source.objects.get(pk=source_id)
+        self._assert_response(response, source_id, source.name, with_conversion_goals=False, with_pixels=False,
+                              currency=constants.Currency.EUR)
+
     def test_get_by_campaign(self):
         campaign_id = 1
 
@@ -266,6 +293,25 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
 
         campaign = models.Campaign.objects.get(pk=campaign_id)
         self._assert_response(response, campaign_id, campaign.name, with_conversion_goals=False)
+
+    def test_get_by_campaign_local_currency(self):
+        perm = authmodels.Permission.objects.get(codename='can_see_stats_in_local_currency')
+        self.user.user_permissions.add(perm)
+        campaign_id = 87
+
+        self._prepare_mock('campaign_id', campaign_id)
+
+        response = self.client.get(
+            reverse('account_campaigns_daily_stats', kwargs={'account_id': 2}),
+            self._get_params(selected_ids=[campaign_id]),
+            follow=True
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        campaign = models.Campaign.objects.get(pk=campaign_id)
+        self._assert_response(response, campaign_id, campaign.name, with_conversion_goals=False, with_pixels=False,
+                              currency=constants.Currency.EUR)
 
 
 class CampaignDailyStatsTest(BaseDailyStatsTest):
@@ -285,6 +331,25 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
         source = models.Source.objects.get(pk=source_id)
         self._assert_response(response, source_id, source.name)
 
+    def test_get_by_source_local_currency(self):
+        perm = authmodels.Permission.objects.get(codename='can_see_stats_in_local_currency')
+        self.user.user_permissions.add(perm)
+        source_id = 3
+
+        self._prepare_mock('source_id', source_id)
+
+        response = self.client.get(
+            reverse('campaign_sources_daily_stats', kwargs={'campaign_id': 87}),
+            self._get_params(selected_ids=[source_id]),
+            follow=True
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        source = models.Source.objects.get(pk=source_id)
+        self._assert_response(response, source_id, source.name, with_pixels=False, conversion_goals=[],
+                              currency=constants.Currency.EUR)
+
     def test_get_by_ad_group(self):
         ad_group_id = 1
 
@@ -300,6 +365,25 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
 
         ad_group = models.AdGroup.objects.get(pk=ad_group_id)
         self._assert_response(response, ad_group_id, ad_group.name)
+
+    def test_get_by_ad_group_local_currency(self):
+        perm = authmodels.Permission.objects.get(codename='can_see_stats_in_local_currency')
+        self.user.user_permissions.add(perm)
+        ad_group_id = 876
+
+        self._prepare_mock('ad_group_id', ad_group_id)
+
+        response = self.client.get(
+            reverse('campaign_ad_groups_daily_stats', kwargs={'campaign_id': 87}),
+            self._get_params(selected_ids=[ad_group_id]),
+            follow=True
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        ad_group = models.AdGroup.objects.get(pk=ad_group_id)
+        self._assert_response(response, ad_group_id, ad_group.name, with_pixels=False, conversion_goals=[],
+                              currency=constants.Currency.EUR)
 
     def test_get_campaign_goals(self):
         ad_group_id = 1
@@ -349,6 +433,25 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
         source = models.Source.objects.get(pk=source_id)
         self._assert_response(response, source_id, source.name)
 
+    def test_get_by_source_local_currency(self):
+        perm = authmodels.Permission.objects.get(codename='can_see_stats_in_local_currency')
+        self.user.user_permissions.add(perm)
+        source_id = 3
+
+        self._prepare_mock('source_id', source_id)
+
+        response = self.client.get(
+            reverse('ad_group_sources_daily_stats', kwargs={'ad_group_id': 876}),
+            self._get_params(selected_ids=[source_id]),
+            follow=True
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        source = models.Source.objects.get(pk=source_id)
+        self._assert_response(response, source_id, source.name, with_pixels=False, conversion_goals=[],
+                              currency=constants.Currency.EUR)
+
     def test_get_campaign_goals(self):
         source_id = 3
         self._prepare_mock('source_id', source_id)
@@ -395,6 +498,25 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
 
         content_ad = models.ContentAd.objects.get(pk=content_ad_id)
         self._assert_response(response, content_ad_id, content_ad.title)
+
+    def test_get_content_ads_local_currency(self):
+        perm = authmodels.Permission.objects.get(codename='can_see_stats_in_local_currency')
+        self.user.user_permissions.add(perm)
+        content_ad_id = 8765
+
+        self._prepare_mock('content_ad_id', content_ad_id)
+
+        response = self.client.get(
+            reverse('ad_group_content_ads_daily_stats', kwargs={'ad_group_id': 876}),
+            self._get_params(selected_ids=[content_ad_id]),
+            follow=True
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        content_ad = models.ContentAd.objects.get(pk=content_ad_id)
+        self._assert_response(response, content_ad_id, content_ad.title, with_pixels=False, conversion_goals=[],
+                              currency=constants.Currency.EUR)
 
     def test_get_content_ads_select_all(self):
         content_ad_id = 2
@@ -600,6 +722,7 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
                         ],
                     }
                 }],
+                'currency': constants.Currency.USD,
                 'conversion_goals': [
                     {'id': 'conversion_goal_2', 'name': 'test conversion goal 2'},
                     {'id': 'conversion_goal_3', 'name': 'test conversion goal 3'},
@@ -632,13 +755,16 @@ class AdGroupPublishersDailyStatsTest(TestCase):
         mock_stats = [{
             'day': start_date.isoformat(),
             'cpc': '0.0100',
+            'local_cpc': '0.0200',
             'clicks': 1000,
         }, {
             'day': end_date.isoformat(),
             'cpc': '0.0200',
+            'local_cpc': '0.0400',
             'clicks': 1500,
         }]
-        mock_query.return_value = mock_stats
+
+        mock_query.return_value = copy.deepcopy(mock_stats)
 
         params = {
             'metrics': ['cpc', 'clicks'],
@@ -731,6 +857,7 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                         ]
                     },
                 }],
+                'currency': constants.Currency.USD,
                 'conversion_goals': [
                     {
                         'id': 'conversion_goal_2',
@@ -757,6 +884,79 @@ class AdGroupPublishersDailyStatsTest(TestCase):
             'success': True
         })
 
+        mock_query.return_value = copy.deepcopy(mock_stats)
+
+        response = self.client.get(
+            reverse('ad_group_publishers_daily_stats', kwargs={'ad_group_id': 876}),
+            params,
+            follow=True
+        )
+
+        self.assertJSONEqual(response.content, {
+            'data': {
+                'goal_fields': {
+                    'avg_tos': {
+                        'id': 'Time on Site - Seconds',
+                        'name': 'Time on Site - Seconds'
+                    },
+                    'cpc': {
+                        'id': 'CPC',
+                        'name': 'CPC'
+                    },
+                    'pv_per_visit': {
+                        'id': 'Pageviews per Visit',
+                        'name': 'Pageviews per Visit'
+                    },
+                    'bounce_rate': {
+                        'id': 'Max Bounce Rate',
+                        'name': 'Max Bounce Rate'
+                    },
+                    'percent_new_users': {
+                        'id': 'New Unique Visitors',
+                        'name': 'New Unique Visitors'
+                    },
+                    'avg_cost_per_visit': {
+                        'id': 'Cost per Visit',
+                        'name': 'Cost per Visit'
+                    },
+                    'avg_cost_per_non_bounced_visit': {
+                        'id': 'Cost per Non-Bounced Visit',
+                        'name': 'Cost per Non-Bounced Visit'
+                    },
+                    'avg_cost_for_new_visitor': {
+                        'id': 'Cost per New Visitor',
+                        'name': 'Cost per New Visitor'
+                    },
+                    'avg_cost_per_pageview': {
+                        'id': 'Cost per Pageview',
+                        'name': 'Cost per Pageview'
+                    },
+                    'video_cpcv': {
+                        'id': 'Cost per Completed Video View',
+                        'name': 'Cost per Completed Video View'
+                    },
+                },
+                'chart_data': [{
+                    'id': 'totals',
+                    'name': 'Totals',
+                    'series_data': {
+                        'clicks': [
+                            [start_date.isoformat(), 1000],
+                            [end_date.isoformat(), 1500]
+                        ],
+                        'cpc': [
+                            [start_date.isoformat(), '0.0200'],
+                            [end_date.isoformat(), '0.0400']
+                        ]
+                    },
+                }],
+                'currency': constants.Currency.EUR,
+                'conversion_goals': [],
+                'campaign_goals': {},
+            },
+            'success': True
+        })
+
 
 @patch('stats.api_dailystats.query')
 class CampaignPublishersDailyStatsTest(TestCase):
@@ -775,13 +975,16 @@ class CampaignPublishersDailyStatsTest(TestCase):
         mock_stats = [{
             'day': start_date.isoformat(),
             'cpc': '0.0100',
+            'local_cpc': '0.0200',
             'clicks': 1000,
         }, {
             'day': end_date.isoformat(),
             'cpc': '0.0200',
+            'local_cpc': '0.0400',
             'clicks': 1500,
         }]
-        mock_query.return_value = mock_stats
+
+        mock_query.return_value = copy.deepcopy(mock_stats)
 
         params = {
             'metrics': ['cpc', 'clicks'],
@@ -874,6 +1077,7 @@ class CampaignPublishersDailyStatsTest(TestCase):
                         ]
                     },
                 }],
+                'currency': constants.Currency.USD,
                 'conversion_goals': [
                     {
                         'id': 'conversion_goal_2',
@@ -900,6 +1104,79 @@ class CampaignPublishersDailyStatsTest(TestCase):
             'success': True
         })
 
+        mock_query.return_value = copy.deepcopy(mock_stats)
+
+        response = self.client.get(
+            reverse('campaign_publishers_daily_stats', kwargs={'campaign_id': 87}),
+            params,
+            follow=True
+        )
+
+        self.assertJSONEqual(response.content, {
+            'data': {
+                'goal_fields': {
+                    'avg_tos': {
+                        'id': 'Time on Site - Seconds',
+                        'name': 'Time on Site - Seconds'
+                    },
+                    'cpc': {
+                        'id': 'CPC',
+                        'name': 'CPC'
+                    },
+                    'pv_per_visit': {
+                        'id': 'Pageviews per Visit',
+                        'name': 'Pageviews per Visit'
+                    },
+                    'bounce_rate': {
+                        'id': 'Max Bounce Rate',
+                        'name': 'Max Bounce Rate'
+                    },
+                    'percent_new_users': {
+                        'id': 'New Unique Visitors',
+                        'name': 'New Unique Visitors'
+                    },
+                    'avg_cost_per_visit': {
+                        'id': 'Cost per Visit',
+                        'name': 'Cost per Visit'
+                    },
+                    'avg_cost_per_non_bounced_visit': {
+                        'id': 'Cost per Non-Bounced Visit',
+                        'name': 'Cost per Non-Bounced Visit'
+                    },
+                    'avg_cost_for_new_visitor': {
+                        'id': 'Cost per New Visitor',
+                        'name': 'Cost per New Visitor'
+                    },
+                    'avg_cost_per_pageview': {
+                        'id': 'Cost per Pageview',
+                        'name': 'Cost per Pageview'
+                    },
+                    'video_cpcv': {
+                        'id': 'Cost per Completed Video View',
+                        'name': 'Cost per Completed Video View'
+                    },
+                },
+                'chart_data': [{
+                    'id': 'totals',
+                    'name': 'Totals',
+                    'series_data': {
+                        'clicks': [
+                            [start_date.isoformat(), 1000],
+                            [end_date.isoformat(), 1500]
+                        ],
+                        'cpc': [
+                            [start_date.isoformat(), '0.0200'],
+                            [end_date.isoformat(), '0.0400']
+                        ]
+                    },
+                }],
+                'currency': constants.Currency.EUR,
+                'campaign_goals': {},
+                'conversion_goals': [],
+            },
+            'success': True
+        })
+
 
 @patch('stats.api_dailystats.query')
 class AccountPublishersDailyStatsTest(TestCase):
@@ -918,13 +1195,14 @@ class AccountPublishersDailyStatsTest(TestCase):
         mock_stats = [{
             'day': start_date.isoformat(),
             'cpc': '0.0100',
+            'local_cpc': '0.0200',
             'clicks': 1000,
         }, {
             'day': end_date.isoformat(),
             'cpc': '0.0200',
+            'local_cpc': '0.0400',
             'clicks': 1500,
         }]
-        mock_query.return_value = mock_stats
 
         params = {
             'metrics': ['cpc', 'clicks'],
@@ -933,6 +1211,7 @@ class AccountPublishersDailyStatsTest(TestCase):
             'totals': 'true'
         }
 
+        mock_query.return_value = copy.deepcopy(mock_stats)
         response = self.client.get(
             reverse('account_publishers_daily_stats', kwargs={'account_id': 1}),
             params,
@@ -955,9 +1234,38 @@ class AccountPublishersDailyStatsTest(TestCase):
                         ]
                     },
                 }],
+                'currency': constants.Currency.USD,
                 'pixels': [
                     {'prefix': 'pixel_1', 'name': 'test'},
                 ],
+            },
+            'success': True
+        })
+
+        mock_query.return_value = copy.deepcopy(mock_stats)
+        response = self.client.get(
+            reverse('account_publishers_daily_stats', kwargs={'account_id': 2}),
+            params,
+            follow=True
+        )
+
+        self.assertJSONEqual(response.content, {
+            'data': {
+                'chart_data': [{
+                    'id': 'totals',
+                    'name': 'Totals',
+                    'series_data': {
+                        'clicks': [
+                            [start_date.isoformat(), 1000],
+                            [end_date.isoformat(), 1500]
+                        ],
+                        'cpc': [
+                            [start_date.isoformat(), '0.0200'],
+                            [end_date.isoformat(), '0.0400']
+                        ]
+                    },
+                }],
+                'currency': constants.Currency.EUR,
             },
             'success': True
         })
@@ -980,12 +1288,15 @@ class AllAccountsPublishersDailyStatsTest(TestCase):
         mock_stats = [{
             'day': start_date.isoformat(),
             'cpc': '0.0100',
+            'local_cpc': '0.0200',
             'clicks': 1000,
         }, {
             'day': end_date.isoformat(),
             'cpc': '0.0200',
+            'local_cpc': '0.0400',
             'clicks': 1500,
         }]
+
         mock_query.return_value = mock_stats
 
         params = {
@@ -1017,6 +1328,7 @@ class AllAccountsPublishersDailyStatsTest(TestCase):
                         ]
                     },
                 }],
+                'currency': constants.Currency.USD,
             },
             'success': True
         })

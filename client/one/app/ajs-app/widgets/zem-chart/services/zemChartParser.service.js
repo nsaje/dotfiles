@@ -124,13 +124,15 @@ angular.module('one.widgets').service('zemChartParser', function ($window, zemCh
                 }
                 var name = 'Goal (' + goalField.name + ')';
                 var yAxis = commonYAxis ? 0 : goal.index;
-                var pointFormat = getPointFormat(metric);
+                // TODO (jurebajt): Use correct currency when goals support multi-currency
+                var pointFormat = getPointFormat(metric, constants.currency.USD);
                 addGoalSeries(chart, name, data, COLORS.GOALS[goal.index], yAxis, pointFormat);
             });
         });
     }
 
     function updateSeries (chart, group, metricIds) {
+        var currency = chart.metrics.metaData.currency;
         var color = getColor(chart, group),
             commonYAxis = null;
         addLegendItem(chart, color, group, true);
@@ -151,7 +153,7 @@ angular.module('one.widgets').service('zemChartParser', function ($window, zemCh
 
             var name = group.name + ' (' + metric.name + ')';
             var yAxis = commonYAxis ? 0 : index;
-            var pointFormat = getPointFormat(metric);
+            var pointFormat = getPointFormat(metric, currency);
             addSeries(chart, name, data, color[index], yAxis, pointFormat);
         });
     }
@@ -213,7 +215,7 @@ angular.module('one.widgets').service('zemChartParser', function ($window, zemCh
         return {type: metric.type, fractionSize: metric.fractionSize};
     };
 
-    var getPointFormat = function (metric) {
+    var getPointFormat = function (metric, currency) {
         var format = getMetricFormat(metric);
         var valueSuffix = '';
         var valuePrefix = '';
@@ -223,8 +225,7 @@ angular.module('one.widgets').service('zemChartParser', function ($window, zemCh
             fractionSize = format.fractionSize;
 
             if (format.type === 'currency') {
-                // TODO (jurebajt): Use correct currency symbol
-                valuePrefix = '$';
+                valuePrefix = constants.currencySymbol[currency];
             } else if (format.type === 'percent') {
                 valueSuffix = '%';
             } else if (format.type === 'time') {
@@ -238,6 +239,7 @@ angular.module('one.widgets').service('zemChartParser', function ($window, zemCh
     function updateAxisFormats (chart, metricIds) {
         var format = null;
         var axisFormat = null;
+        var currencySymbol = constants.currencySymbol[chart.metrics.metaData.currency];
 
         metricIds.forEach(function (metricId, index) {
             var metric = zemChartMetricsService.findMetricByValue(chart.metrics.options, metricId);
@@ -247,7 +249,7 @@ angular.module('one.widgets').service('zemChartParser', function ($window, zemCh
             axisFormat = null;
             if (format !== undefined) {
                 if (format.type === 'currency') {
-                    axisFormat = '${value}';
+                    axisFormat = currencySymbol + '{value}';
                 } else if (format.type === 'percent') {
                     axisFormat = '{value}%';
                 } else if (format.type === 'time') {

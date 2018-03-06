@@ -30,14 +30,19 @@ class BaseDailyStatsView(api_common.BaseApiView):
         }
 
     def get_stats(self, request, group_key, should_use_publishers_view=False):
+        # FIXME (jurebajt): Totals are always requested because 'false' is truthy
         totals = request.GET.get('totals')
         metrics = request.GET.getlist('metrics')
+
+        constraints = self.prepare_constraints(request, ['day'])
+        currency = self._get_currency_from_constraints(request.user, constraints)
 
         result = []
         if totals:
             result += self.get_stats_totals(
                 request,
                 metrics,
+                currency,
                 should_use_publishers_view=should_use_publishers_view,
             )
 
@@ -45,6 +50,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
             result += self.get_stats_selected(
                 request,
                 metrics,
+                currency,
                 group_key,
                 [obj.id for obj in self.selected_objects],
                 should_use_publishers_view=should_use_publishers_view,
@@ -52,9 +58,10 @@ class BaseDailyStatsView(api_common.BaseApiView):
 
         return {
             'chart_data': result,
+            'currency': currency,
         }
 
-    def get_stats_totals(self, request, metrics, should_use_publishers_view):
+    def get_stats_totals(self, request, metrics, currency, should_use_publishers_view):
         breakdown = ['day']
 
         constraints = self.prepare_constraints(request, breakdown)
@@ -69,7 +76,9 @@ class BaseDailyStatsView(api_common.BaseApiView):
             'day',
             should_use_publishers_view=should_use_publishers_view
         )
-        # TODO (jurebajt): Filter query_results (rows) by currency
+
+        stats.helpers.update_rows_to_contain_values_in_currency(query_results, currency)
+
         return helpers.format_metrics(
             query_results,
             metrics,
@@ -83,6 +92,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
             self,
             request,
             metrics,
+            currency,
             group_key,
             selected_ids,
             should_use_publishers_view
@@ -105,7 +115,8 @@ class BaseDailyStatsView(api_common.BaseApiView):
             should_use_publishers_view=should_use_publishers_view
         )
 
-        # TODO (jurebajt): Filter query_results (rows) by currency
+        stats.helpers.update_rows_to_contain_values_in_currency(query_results, currency)
+
         if join_selected:
             return helpers.format_metrics(
                 query_results,
@@ -169,6 +180,12 @@ class BaseDailyStatsView(api_common.BaseApiView):
                     )
                 )
         return result
+
+    def _get_currency_from_constraints(self, user, constraints):
+        if constraints.get('allowed_accounts'):
+            return stats.helpers.get_report_currency(user, constraints['allowed_accounts'])
+        elif constraints.get('account'):
+            return stats.helpers.get_report_currency(user, [constraints['account']])
 
 
 class AllAccountsDailyStatsView(BaseDailyStatsView):

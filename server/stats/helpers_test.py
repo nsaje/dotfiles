@@ -86,7 +86,7 @@ class HelpersTest(TestCase):
                 'date__lte': datetime.date(2016, 2, 3),
                 'source_id': test_helper.ListMatcher([1, 3, 4]),
                 'account_id': test_helper.ListMatcher([1, 2, 3, 4]),
-                'campaign_id': test_helper.ListMatcher([1, 2, 3, 4, 5, 6]),
+                'campaign_id': test_helper.ListMatcher([1, 2, 3, 4, 5, 6, 87]),
             },
         )
 

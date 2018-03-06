@@ -36,6 +36,7 @@ angular.module('one.widgets').service('zemChartEndpoint', function ($q, $http, z
                                 chartData.groups.shift();
                             }
                         }
+                        metaData.setCurrency(data.currency);
                         metaData.insertDynamicMetrics(metaData.metrics, data.pixels, data.conversion_goals);
                     }
                     deferred.resolve({

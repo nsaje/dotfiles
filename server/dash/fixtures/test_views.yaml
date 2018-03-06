@@ -78,6 +78,7 @@
         name: 'test account 1'
         outbrain_marketer_id: 'omid_1'
         users: [1, 2, 3]
+        currency: 'USD'
         settings: 1
     model: dash.account
     pk: 1
@@ -89,6 +90,7 @@
         name: 'test account 2'
         outbrain_marketer_id: 'omid_10'
         users: [1, 2, 3]
+        currency: 'EUR'
         settings: 2
     model: dash.account
     pk: 2
@@ -110,6 +112,15 @@
     model: dash.campaignsettings
     pk: 1
 
+-   fields:
+        campaign: 87
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 2
+        archived: False
+        campaign_manager: 2
+    model: dash.campaignsettings
+    pk: 87
+
 # test campaign
 
 -   fields:
@@ -122,6 +133,16 @@
     model: dash.campaign
     pk: 1
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 2
+        account: 2 # test account 2
+        settings: 87
+        name: 'test campaign 2'
+    model: dash.campaign
+    pk: 87
+
 # test adgroupsettings
 
 -   fields:
@@ -129,6 +150,12 @@
         created_dt: '2014-06-04T09:58:21'
     model: dash.adgroupsettings
     pk: 987
+
+-   fields:
+        ad_group: 876
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.adgroupsettings
+    pk: 876
 
 # test adgroup
 
@@ -141,6 +168,16 @@
         name: 'test adgroup 1'
     model: dash.adgroup
     pk: 987
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 2
+        campaign: 87
+        settings: 876
+        name: 'test adgroup 2'
+    model: dash.adgroup
+    pk: 876
 
 # test source types
 
@@ -292,6 +329,32 @@
     model: dash.uploadbatch
     pk: 2
 
+-   fields:
+        name: 'batch 3'
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.uploadbatch
+    pk: 3
+
+# test contentads
+
+-   fields:
+        image_id: '123456789'
+        image_hash: '987654321'
+        image_width: 200
+        image_height: 300
+        batch: 3
+        archived: False
+        url: 'http://testurl.com'
+        title: 'Test Article'
+        ad_group: 876
+        created_dt: '2015-02-21T00:00:00'
+        state: 2
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
+    model: dash.contentad
+    pk: 8765
 
 # test audiences
 

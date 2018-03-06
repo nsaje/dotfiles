@@ -302,14 +302,14 @@ def update_rows_to_contain_values_in_currency(rows, currency):
 def _strip_local_values_from_rows(rows):
     for row in rows:
         for key in list(row.keys()):
-            if key.startswith('local_'):
+            if key and key.startswith('local_'):
                 row.pop(key, None)
 
 
 def _update_rows_to_contain_local_values(rows):
     for row in rows:
         for key in list(row.keys()):
-            if key.startswith('local_'):
+            if key and key.startswith('local_'):
                 non_local_key = key.replace('local_', '', 1)
                 row[non_local_key] = row.pop(key, None)
 

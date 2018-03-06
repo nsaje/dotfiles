@@ -11,6 +11,7 @@ angular.module('one.widgets').factory('zemChartMetaDataService', function (zemCh
         this.metrics = zemChartMetricsService.getChartMetrics(level);
 
         this.insertDynamicMetrics = insertDynamicMetrics;
+        this.setCurrency = setCurrency;
 
         // Listeners - pubsub rewiring
         this.onMetricsUpdated = onMetricsUpdated;
@@ -22,6 +23,10 @@ angular.module('one.widgets').factory('zemChartMetaDataService', function (zemCh
         function insertDynamicMetrics (categories, pixels, conversionGoals) {
             zemChartMetricsService.insertDynamicMetrics(categories, pixels, conversionGoals);
             pubsub.notify(METRICS_UPDATED);
+        }
+
+        function setCurrency (currency) {
+            this.currency = currency;
         }
     }
 
