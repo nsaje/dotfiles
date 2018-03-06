@@ -30,7 +30,7 @@ def _get_budgets_active_today(log):
         start_date__lte=today,
         end_date__gte=today,
     ).order_by('created_dt')
-    if 'active_budget_line_items' in log.contex:
+    if 'active_budget_line_items' in log.context:
         budgets = budgets.filter(
             id__in=log.context['active_budget_line_items'],
         )
