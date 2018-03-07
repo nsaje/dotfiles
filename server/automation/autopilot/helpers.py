@@ -1,5 +1,8 @@
+from collections import defaultdict
 import datetime
 import logging
+
+from django.db.models import Q
 
 import dash
 import dash.constants
@@ -39,6 +42,55 @@ def get_active_ad_groups_on_autopilot(autopilot_state=None):
                 ad_groups_on_autopilot.append(ad_group)
                 ad_group_settings_on_autopilot.append(ags)
     return ad_groups_on_autopilot, ad_group_settings_on_autopilot
+
+
+def get_autopilot_entities(ad_group=None, campaign=None):
+    states = [dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+              dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC]
+    ad_groups = (
+        dash.models.AdGroup.objects.all()
+        .filter_active()
+        .filter(Q(settings__autopilot_state__in=states) | Q(campaign__settings__autopilot=True))
+        .select_related('settings', 'campaign__settings', 'campaign__account')
+        .distinct()
+    )
+    if ad_group is not None:
+        ad_groups = ad_groups.filter(id=ad_group.id)
+    if campaign is not None:
+        ad_groups = ad_groups.filter(campaign=campaign)
+
+    ad_group_sources = (
+        dash.models.AdGroupSource.objects.all()
+        .filter(settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
+        .filter(ad_group_id__in=[ag.id for ag in ad_groups])
+        .select_related('source__source_type')
+        .select_related('settings')
+    )
+    ags_per_ag_id = defaultdict(list)
+    for ags in ad_group_sources:
+        ags_per_ag_id[ags.ad_group_id].append(ags)
+
+    data = defaultdict(dict)
+    for ad_group in ad_groups:
+        if (not ad_group.settings.landing_mode and
+           ad_group.get_running_status(ad_group.settings) != dash.constants.AdGroupRunningStatus.ACTIVE):
+            continue
+
+        ags = ags_per_ag_id[ad_group.id]
+        if (ad_group.settings.b1_sources_group_enabled and
+           ad_group.settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.INACTIVE):
+            ags = _exclude_b1_ad_group_sources(ags)
+
+        if len(ags) == 0:
+            continue
+
+        data[ad_group.campaign][ad_group] = ags
+
+    return data
+
+
+def _exclude_b1_ad_group_sources(ad_group_sources):
+    return [ags for ags in ad_group_sources if ags.source.source_type.type != dash.constants.SourceType.B1]
 
 
 def get_autopilot_active_sources_settings(ad_groups_and_settings,
