@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class Command(ExceptionCommand):
 
-    @influx.timer('campaignstop.simple_job')
+    @influx.timer('campaignstop.job_run', job='simple')
     def handle(self, *args, **options):
         logger.info('Start: Stopping and notifying depleted budget campaigns.')
         budgetdepletion.stop_and_notify_depleted_budget_campaigns()

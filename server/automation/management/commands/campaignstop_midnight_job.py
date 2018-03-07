@@ -13,7 +13,7 @@ class Command(ExceptionCommand):
         parser.add_argument('--check-time', dest='check_time', action='store_true',
                             help="Check if it's local midnight.")
 
-    @influx.timer('campaignstop.midnight_job')
+    @influx.timer('campaignstop.job_run', job='midnight')
     def handle(self, *args, **options):
         if options.get('check_time') and not dates_helper.local_now().hour == 0:
             return

@@ -10,7 +10,7 @@ from utils import dates_helper
 
 class Command(ExceptionCommand):
 
-    @influx.timer('campaignstop.main_job')
+    @influx.timer('campaignstop.job_run', job='main')
     def handle(self, *args, **options):
         campaigns = core.entity.Campaign.objects.filter(
             real_time_campaign_stop=True,
