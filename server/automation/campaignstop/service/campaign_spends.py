@@ -91,7 +91,7 @@ def _should_query_realtime_stats_for_yesterday(campaign, date):
 
 def _get_available_campaign_budget(log, campaign, until):
     budgets_active_today = _get_budgets_active_today(campaign)
-    log.add_context({'active_budget_line_items': bli.id for bli in budgets_active_today})
+    log.add_context({'active_budget_line_items': [bli.id for bli in budgets_active_today]})
     return sum(max(bli.get_available_etfm_amount(date=until), 0) for bli in budgets_active_today)
 
 
