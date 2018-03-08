@@ -31,7 +31,10 @@ def _get_budgets_active_today(log):
         end_date__gte=today,
     ).order_by('created_dt')
     if 'active_budget_line_items' in log.context:
+        active_items = log.context['active_budget_line_items']
+        if not isinstance(active_items, list):
+            active_items = [active_items]
         budgets = budgets.filter(
-            id__in=log.context['active_budget_line_items'],
+            id__in=active_items,
         )
     return budgets
