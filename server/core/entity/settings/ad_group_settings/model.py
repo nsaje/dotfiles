@@ -55,6 +55,7 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         'start_date',
         'end_date',
         'cpc_cc',
+        'local_cpc_cc',
         'daily_budget_cc',
         'target_devices',
         'target_os',
@@ -82,13 +83,17 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         'ad_group_name',
         'autopilot_state',
         'autopilot_daily_budget',
+        'local_autopilot_daily_budget',
         'landing_mode',
         'b1_sources_group_enabled',
         'b1_sources_group_daily_budget',
+        'local_b1_sources_group_daily_budget',
         'b1_sources_group_cpc_cc',
+        'local_b1_sources_group_cpc_cc',
         'b1_sources_group_state',
         'dayparting',
         'max_cpm',
+        'local_max_cpm',
         'delivery_type',
         'click_capping_daily_ad_group_max_clicks',
         'click_capping_daily_click_budget',
@@ -97,6 +102,7 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         'click_capping_daily_ad_group_max_clicks': 'zemauth.can_set_click_capping',
         'click_capping_daily_click_budget': 'zemauth.can_set_click_capping',
         'max_cpm': 'zemauth.can_set_ad_group_max_cpm',
+        'local_max_cpm': 'zemauth.can_set_ad_group_max_cpm',
     }
     history_fields = list(_settings_fields)
 
@@ -112,6 +118,13 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     cpc_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Maximum CPC'
+    )
+    local_cpc_cc = models.DecimalField(
         max_digits=10,
         decimal_places=4,
         blank=True,
@@ -169,6 +182,13 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         verbose_name='Autopilot\'s Daily Spend Cap',
         default=0
     )
+    local_autopilot_daily_budget = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Autopilot\'s Daily Spend Cap',
+    )
     landing_mode = models.BooleanField(default=False)
 
     changes_text = models.TextField(blank=True, null=True)
@@ -181,11 +201,25 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         verbose_name='Bidder\'s Daily Cap',
         default=0
     )
+    local_b1_sources_group_daily_budget = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        verbose_name='Bidder\'s Daily Cap',
+        blank=True,
+        null=True,
+    )
     b1_sources_group_cpc_cc = models.DecimalField(
         max_digits=10,
         decimal_places=4,
         default=constants.SourceAllRTB.MIN_CPC,
         verbose_name='Bidder\'s Bid CPC'
+    )
+    local_b1_sources_group_cpc_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        verbose_name='Bidder\'s Bid CPC',
+        blank=True,
+        null=True,
     )
     b1_sources_group_state = models.IntegerField(
         default=constants.AdGroupSourceSettingsState.INACTIVE,
@@ -195,6 +229,13 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
     dayparting = jsonfield.JSONField(blank=True, default=dict)
 
     max_cpm = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Maximum CPM'
+    )
+    local_max_cpm = models.DecimalField(
         max_digits=10,
         decimal_places=4,
         blank=True,
@@ -241,6 +282,7 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
             'start_date': 'Start date',
             'end_date': 'End date',
             'cpc_cc': 'Max CPC bid',
+            'local_cpc_cc': 'Max CPC bid',
             'daily_budget_cc': 'Daily spend cap',
             'target_devices': 'Device targeting',
             'target_placements': 'Placement',
@@ -269,12 +311,16 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
             'ad_group_name': 'Ad group name',
             'autopilot_state': 'Autopilot',
             'autopilot_daily_budget': 'Autopilot\'s Daily Spend Cap',
+            'local_autopilot_daily_budget': 'Autopilot\'s Daily Spend Cap',
             'landing_mode': 'Landing Mode',
             'dayparting': 'Dayparting',
             'max_cpm': 'Max CPM',
+            'local_max_cpm': 'Max CPM',
             'b1_sources_group_enabled': 'Group all RTB sources',
             'b1_sources_group_daily_budget': 'Daily budget for all RTB sources',
+            'local_b1_sources_group_daily_budget': 'Daily budget for all RTB sources',
             'b1_sources_group_cpc_cc': 'Bid CPC for all RTB sources',
+            'local_b1_sources_group_cpc_cc': 'Bid CPC for all RTB sources',
             'b1_sources_group_state': 'State of all RTB sources',
             'delivery_type': 'Delivery type',
             'click_capping_daily_ad_group_max_clicks': 'Daily maximum number of clicks for ad group',
@@ -294,6 +340,8 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         elif prop_name == 'end_date' and value is None:
             value = 'I\'ll stop it myself'
         elif prop_name == 'cpc_cc' and value is not None:
+            value = lc_helper.default_currency(Decimal(value), places=3)
+        elif prop_name == 'local_cpc_cc' and value is not None:
             value = lc_helper.default_currency(Decimal(value), places=3)
         elif prop_name == 'daily_budget_cc' and value is not None:
             value = lc_helper.default_currency(Decimal(value))
@@ -322,11 +370,17 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
             value = cls._get_dayparting_human_value(value)
         elif prop_name == 'max_cpm' and value is not None:
             value = lc_helper.default_currency(Decimal(value))
+        elif prop_name == 'local_max_cpm' and value is not None:
+            value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'b1_sources_group_state':
             value = constants.AdGroupSourceSettingsState.get_text(value)
         elif prop_name == 'b1_sources_group_daily_budget' and value is not None:
             value = lc_helper.default_currency(Decimal(value))
+        elif prop_name == 'local_b1_sources_group_daily_budget' and value is not None:
+            value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'b1_sources_group_cpc_cc' and value is not None:
+            value = lc_helper.default_currency(Decimal(value), places=3)
+        elif prop_name == 'local_b1_sources_group_cpc_cc' and value is not None:
             value = lc_helper.default_currency(Decimal(value), places=3)
         elif prop_name == 'click_capping_daily_click_budget' and value is not None:
             value = lc_helper.default_currency(Decimal(value))

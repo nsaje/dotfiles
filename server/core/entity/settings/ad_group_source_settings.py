@@ -59,7 +59,21 @@ class AdGroupSourceSettings(SettingsBase):
         null=True,
         verbose_name='CPC'
     )
+    local_cpc_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='CPC'
+    )
     daily_budget_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Daily spend cap'
+    )
+    local_daily_budget_cc = models.DecimalField(
         max_digits=10,
         decimal_places=4,
         blank=True,
@@ -76,7 +90,9 @@ class AdGroupSourceSettings(SettingsBase):
         NAMES = {
             'state': 'State',
             'cpc_cc': 'CPC',
+            'local_cpc_cc': 'CPC',
             'daily_budget_cc': 'Daily Spend Cap',
+            'local_daily_budget_cc': 'Daily Spend Cap',
             'landing_mode': 'Landing Mode',
         }
         return NAMES.get(prop_name)
@@ -87,7 +103,11 @@ class AdGroupSourceSettings(SettingsBase):
             value = constants.AdGroupSourceSettingsState.get_text(value)
         elif prop_name == 'cpc_cc' and value is not None:
             value = lc_helper.default_currency(Decimal(value), places=3)
+        elif prop_name == 'local_cpc_cc' and value is not None:
+            value = lc_helper.default_currency(Decimal(value), places=3)
         elif prop_name == 'daily_budget_cc' and value is not None:
+            value = lc_helper.default_currency(Decimal(value))
+        elif prop_name == 'local_daily_budget_cc' and value is not None:
             value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'landing_mode':
             value = str(value)
