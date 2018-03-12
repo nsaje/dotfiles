@@ -18,11 +18,11 @@ class RealtimestatsServiceTest(TestCase):
         ad_group_sources = [{
             'type': 'outbrain',
             'source_campaign_key': {'campaign_id': 'test_outbrain_1'},
-            'budgets_tz': 'America/New_York',
+            'budgets_tz': pytz.timezone('America/New_York'),
         }, {
             'type': 'yahoo',
             'source_campaign_key': 'test_yahoo_1',
-            'budgets_tz': 'America/Los_Angeles',
+            'budgets_tz': pytz.timezone('America/Los_Angeles'),
         }]
         self.account = magic_mixer.blend(core.entity.Account, uses_bcm_v2=True)
         self.campaign = magic_mixer.blend(core.entity.Campaign, account=self.account)
@@ -114,12 +114,12 @@ class RealtimestatsServiceTest(TestCase):
         budgets_tz = self.ad_group_sources[1].source.source_type.budgets_tz
         utc_today = dates_helper.utc_today()
         with mock.patch('utils.dates_helper.utc_now') as mock_utc_now:
-            mock_utc_now.return_value = datetime.datetime(
-                utc_today.year, utc_today.month, utc_today.day, 0, tzinfo=budgets_tz).astimezone(pytz.utc)
+            tz_now = budgets_tz.localize(datetime.datetime(utc_today.year, utc_today.month, utc_today.day, 0))
+            mock_utc_now.return_value = tz_now.astimezone(pytz.utc)
             service.get_ad_group_sources_stats(self.ad_group, use_source_tz=True)
 
             expected_params = dict(self.expected_params)
-            expected_params['yahoo_date'] = dates_helper.day_before(utc_today).isoformat()
+            expected_params['yahoo_date'] = utc_today.isoformat()
             mock_k1_get.assert_called_once_with(self.ad_group.id, expected_params)
 
     @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
@@ -127,13 +127,15 @@ class RealtimestatsServiceTest(TestCase):
         mock_k1_get.return_value = []
         budgets_tz = self.ad_group_sources[1].source.source_type.budgets_tz
         utc_today = dates_helper.utc_today()
+        utc_yesterday = dates_helper.day_before(utc_today)
         with mock.patch('utils.dates_helper.utc_now') as mock_utc_now:
-            mock_utc_now.return_value = datetime.datetime(
-                utc_today.year, utc_today.month, utc_today.day, 23, tzinfo=budgets_tz).astimezone(pytz.utc)
+            tz_now = budgets_tz.localize(
+                datetime.datetime(utc_yesterday.year, utc_yesterday.month, utc_yesterday.day, 23))
+            mock_utc_now.return_value = tz_now.astimezone(pytz.utc)
             service.get_ad_group_sources_stats(self.ad_group, use_source_tz=True)
 
             expected_params = dict(self.expected_params)
-            expected_params['yahoo_date'] = utc_today.isoformat()
+            expected_params['yahoo_date'] = utc_yesterday.isoformat()
             mock_k1_get.assert_called_once_with(self.ad_group.id, expected_params)
 
     @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
