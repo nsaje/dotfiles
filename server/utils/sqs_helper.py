@@ -49,7 +49,7 @@ def get_all_messages(queue_name, num=NUM_MESSAGES_DEFAULT):
         num_to_fetch = min(MAX_MESSAGES_PER_BATCH, remaining)
         rs = queue.get_messages(num_to_fetch)
         messages.extend(rs)
-        if len(rs) < num_to_fetch:
+        if len(rs) == 0:
             break
     return messages
 
