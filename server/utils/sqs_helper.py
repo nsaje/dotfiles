@@ -30,8 +30,8 @@ def write_message_json(queue_name, body):
 
 
 @contextlib.contextmanager
-def process_all_json_messages(queue_name):
-    messages = get_all_messages(queue_name)
+def process_messages_json(queue_name, num=50):
+    messages = get_all_messages(queue_name, num)
     yield _get_json_content(messages)
     delete_messages(queue_name, messages)
 
@@ -40,13 +40,16 @@ def _get_json_content(messages):
     return [json.loads(message.get_body()) for message in messages]
 
 
-def get_all_messages(queue_name):
+def get_all_messages(queue_name, num):
     queue = _get_queue(_get_connection(), queue_name)
-    rs = queue.get_messages(MAX_MESSAGES_PER_BATCH)
     messages = []
-    while len(rs) > 0:
+    while len(messages) < num:
+        remaining = num - len(messages)
+        num_to_fetch = min(MAX_MESSAGES_PER_BATCH, remaining)
+        rs = queue.get_messages(num_to_fetch)
         messages.extend(rs)
-        rs = queue.get_messages(MAX_MESSAGES_PER_BATCH)
+        if len(rs) < num_to_fetch:
+            break
     return messages
 
 

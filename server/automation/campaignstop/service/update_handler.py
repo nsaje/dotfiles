@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def handle_updates():
-    with sqs_helper.process_all_json_messages(settings.CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE) as messages:
+    with sqs_helper.process_messages_json(settings.CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE) as messages:
         budget_campaigns = _extract_campaigns(_filter_messages(constants.CampaignUpdateType.BUDGET, messages))
         if budget_campaigns:
             _handle_budget_updates(budget_campaigns)
