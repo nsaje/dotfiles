@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 def get_ad_group_stats(ad_group):
     stats = _get_etfm_source_stats(ad_group)
-    spend = sum(stat['spend'] for stat in stats)
+    spend = sum(stat['spend'] for stat in stats['stats'])
     stats = {
         'spend': spend,
         'clicks': redirector_helper.get_adgroup_realtimestats(ad_group.id)['clicks'],
@@ -28,7 +28,7 @@ def get_ad_group_stats(ad_group):
 
 def get_ad_group_sources_stats(ad_group, use_source_tz=False):
     stats = _get_ad_group_sources_stats(ad_group, use_source_tz=use_source_tz)
-    return stats
+    return stats['stats']
 
 
 def get_ad_group_sources_stats_without_caching(ad_group, use_source_tz=False):
@@ -40,9 +40,9 @@ def _get_ad_group_sources_stats(ad_group, no_cache=False, use_source_tz=False):
 
     sources = models.Source.objects.all().select_related('source_type')
     sources_by_slug = {source.bidder_slug: source for source in sources}
-    _augment_source(stats, sources_by_slug)
+    _augment_source(stats['stats'], sources_by_slug)
 
-    stats = sorted(stats, key=itemgetter('spend'), reverse=True)
+    stats['stats'] = sorted(stats['stats'], key=itemgetter('spend'), reverse=True)
     return stats
 
 
@@ -55,7 +55,7 @@ def _augment_source(stats, sources_by_slug):
 
 def _get_etfm_source_stats(ad_group, no_cache=False, use_source_tz=False):
     stats = _get_k1_source_stats(ad_group, no_cache=no_cache, use_source_tz=use_source_tz)
-    _add_fee_and_margin(ad_group, stats)
+    _add_fee_and_margin(ad_group, stats['stats'])
     return stats
 
 
@@ -81,23 +81,17 @@ def _get_k1_source_stats_with_error_handling(ad_group, use_source_tz=False):
         return _try_get_k1_source_stats(ad_group, use_source_tz=use_source_tz)
     except urllib.error.HTTPError as e:
         influx.incr('dash.realtimestats.error', 1, type='http', status=str(e.code))
-        return []
     except IOError:
         influx.incr('dash.realtimestats.error', 1, type='ioerror')
-        return []
     except Exception as e:
         influx.incr('dash.realtimestats.error', 1, type='exception')
         logger.exception(e)
-        return []
+    return {'stats': []}
 
 
 def _try_get_k1_source_stats(ad_group, no_cache=False, use_source_tz=False):
     params = _get_params(ad_group, no_cache, use_source_tz=use_source_tz)
-    stats = k1_helper.get_adgroup_realtimestats(ad_group.id, params)
-
-    if 'stats' in stats:  # NOTE: support for k1 api change
-        stats = stats['stats']
-    return stats
+    return k1_helper.get_adgroup_realtimestats(ad_group.id, params)
 
 
 def _get_params(ad_group, no_cache, use_source_tz=False):

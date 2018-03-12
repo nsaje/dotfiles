@@ -66,11 +66,14 @@ class RealtimestatsServiceTest(TestCase):
     @mock.patch('utils.redirector_helper.get_adgroup_realtimestats')
     @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
     def test_get_ad_group_stats(self, mock_k1_get, mock_redirector_get):
-        mock_k1_get.return_value = [{
-            'spend': 3.0,
-        }, {
-            'spend': 1.1,
-        }]
+        mock_k1_get.return_value = {
+            'stats': [{
+                'spend': 3.0,
+            }, {
+                'spend': 1.1,
+            }],
+            'errors': {}
+        }
         mock_redirector_get.return_value = {
             'clicks': 13,
         }
@@ -84,13 +87,16 @@ class RealtimestatsServiceTest(TestCase):
     @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
     def test_get_ad_group_sources_stats(self, mock_k1_get):
         sources = magic_mixer.cycle(2).blend(core.source.Source, bidder_slug=magic_mixer.RANDOM)
-        mock_k1_get.return_value = [{
-            'source_slug': sources[0].bidder_slug,
-            'spend': 1.1,
-        }, {
-            'source_slug': sources[1].bidder_slug,
-            'spend': 3.0,
-        }]
+        mock_k1_get.return_value = {
+            'stats': [{
+                'source_slug': sources[0].bidder_slug,
+                'spend': 1.1,
+            }, {
+                'source_slug': sources[1].bidder_slug,
+                'spend': 3.0,
+            }],
+            'errors': {},
+        }
 
         result = service.get_ad_group_sources_stats(self.ad_group)
         self.assertEqual(result, [
@@ -110,7 +116,7 @@ class RealtimestatsServiceTest(TestCase):
 
     @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
     def test_get_ad_group_sources_stats_with_source_tz_today(self, mock_k1_get):
-        mock_k1_get.return_value = []
+        mock_k1_get.return_value = {'stats': [], 'errors': {}}
         budgets_tz = self.ad_group_sources[1].source.source_type.budgets_tz
         utc_today = dates_helper.utc_today()
         with mock.patch('utils.dates_helper.utc_now') as mock_utc_now:
@@ -124,7 +130,7 @@ class RealtimestatsServiceTest(TestCase):
 
     @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
     def test_get_ad_group_sources_stats_with_source_tz_yesterday(self, mock_k1_get):
-        mock_k1_get.return_value = []
+        mock_k1_get.return_value = {'stats': [], 'errors': {}}
         budgets_tz = self.ad_group_sources[1].source.source_type.budgets_tz
         utc_today = dates_helper.utc_today()
         utc_yesterday = dates_helper.day_before(utc_today)
@@ -141,27 +147,30 @@ class RealtimestatsServiceTest(TestCase):
     @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
     def test_get_ad_group_sources_stats_without_cache(self, mock_k1_get):
         sources = magic_mixer.cycle(2).blend(core.source.Source, bidder_slug=magic_mixer.RANDOM)
-        mock_k1_get.return_value = [{
-            'source_slug': sources[0].bidder_slug,
-            'spend': 1.1,
-        }, {
-            'source_slug': sources[1].bidder_slug,
-            'spend': 3.0,
-        }]
+        mock_k1_get.return_value = {
+            'stats': [{
+                'source_slug': sources[0].bidder_slug,
+                'spend': 1.1,
+            }, {
+                'source_slug': sources[1].bidder_slug,
+                'spend': 3.0,
+            }],
+            'errors': {},
+        }
 
         result = service.get_ad_group_sources_stats_without_caching(self.ad_group)
-        self.assertEqual(result, [
-            {
+        self.assertEqual(result, {
+            'stats': [{
                 'source_slug': sources[1].bidder_slug,
                 'source': sources[1],
                 'spend': test_helper.AlmostMatcher(decimal.Decimal('5.7689')),
-            },
-            {
+            }, {
                 'source_slug': sources[0].bidder_slug,
                 'source': sources[0],
                 'spend': test_helper.AlmostMatcher(decimal.Decimal('2.1153')),
-            },
-        ])
+            }],
+            'errors': {},
+        })
 
         expected_params = dict(self.expected_params, **{'no_cache': True})
         mock_k1_get.assert_called_once_with(self.ad_group.id, expected_params)

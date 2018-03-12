@@ -1,9 +1,15 @@
+import logging
+import influx
+
 import core.entity
 import core.source
 from .. import RealTimeDataHistory, RealTimeCampaignDataHistory
 import dash.features.realtimestats
 
 from utils import dates_helper
+
+
+logger = logging.getLogger(__name__)
 
 
 def refresh_realtime_data(campaigns=None):
@@ -21,18 +27,30 @@ def _refresh_campaigns_realtime_data(campaigns):
 def _refresh_ad_groups_realtime_data(campaign):
     for ad_group in campaign.adgroup_set.all().exclude_archived():
         try:
-            stats = dash.features.realtimestats.get_ad_group_sources_stats(
+            stats = dash.features.realtimestats.get_ad_group_sources_stats_without_caching(
                 ad_group, use_source_tz=True)
         except Exception:
-            # TODO: handle failure to fetch data
+            logger.exception('Failed refreshing realtime data for ad group: %s', ad_group.id)
+            influx.incr('campaignstop.refresh.error', 1, level='adgroup')
             continue
+
         _add_ad_group_history_stats(ad_group, stats)
 
 
 def _add_ad_group_history_stats(ad_group, stats):
-    for stat in stats:
+    for stat in stats['stats']:
         source, spend = stat['source'], stat['spend']
         _add_source_stat(ad_group, source, spend)
+    _log_source_errors(stats)
+
+
+def _log_source_errors(stats):
+    errors = stats.get('errors')
+    if not errors:
+        return
+
+    for source, error in errors.items():
+        influx.incr('campaignstop.refresh.error', 1, level='source', source=source)
 
 
 def _add_source_stat(ad_group, source, spend):
