@@ -4,6 +4,7 @@ import core.entity
 from . import constants
 
 from utils import k1_helper
+from utils import dates_helper
 
 
 class CampaignStopState(models.Model):
@@ -15,6 +16,7 @@ class CampaignStopState(models.Model):
     )
     max_allowed_end_date = models.DateField(null=True, blank=True, default=None)
     pending_budget_updates = models.BooleanField(default=False)
+    almost_depleted_marked_dt = models.DateTimeField(null=True, blank=True)
 
     def set_allowed_to_run(self, is_allowed):
         previous = self.state
@@ -49,6 +51,8 @@ class CampaignStopState(models.Model):
             )
 
     def update_almost_depleted(self, is_depleted):
+        if is_depleted and not self.almost_depleted:
+            self.almost_depleted_marked_dt = dates_helper.utc_now()
         self.almost_depleted = is_depleted
         self.save()
 
