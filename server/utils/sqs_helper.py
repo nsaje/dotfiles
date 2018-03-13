@@ -6,7 +6,6 @@ from boto.sqs.message import Message
 from django.conf import settings
 
 MAX_MESSAGES_PER_BATCH = 10
-NUM_MESSAGES_DEFAULT = 50
 
 
 def _get_connection():
@@ -31,7 +30,7 @@ def write_message_json(queue_name, body):
 
 
 @contextlib.contextmanager
-def process_messages_json(queue_name, num=NUM_MESSAGES_DEFAULT):
+def process_messages_json(queue_name, num=50):
     messages = get_all_messages(queue_name, num)
     yield _get_json_content(messages)
     delete_messages(queue_name, messages)
@@ -41,7 +40,7 @@ def _get_json_content(messages):
     return [json.loads(message.get_body()) for message in messages]
 
 
-def get_all_messages(queue_name, num=NUM_MESSAGES_DEFAULT):
+def get_all_messages(queue_name, num):
     queue = _get_queue(_get_connection(), queue_name)
     messages = []
     while len(messages) < num:
@@ -49,7 +48,7 @@ def get_all_messages(queue_name, num=NUM_MESSAGES_DEFAULT):
         num_to_fetch = min(MAX_MESSAGES_PER_BATCH, remaining)
         rs = queue.get_messages(num_to_fetch)
         messages.extend(rs)
-        if len(rs) == 0:
+        if len(rs) < num_to_fetch:
             break
     return messages
 
