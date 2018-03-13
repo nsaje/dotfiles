@@ -31,4 +31,8 @@ class Command(ExceptionCommand):
             if not campaign.campaignstopstate.almost_depleted_marked_dt:
                 continue
             timedelta_since_marked = (dates_helper.utc_now() - campaign.campaignstopstate.almost_depleted_marked_dt)
-            influx.gauge('campaignstop.main_job_campaign_time', timedelta_since_marked.total_seconds(), campaign_id=campaign.id)
+            influx.gauge(
+                'campaignstop.main_job_campaign_time',
+                timedelta_since_marked.total_seconds(),
+                campaign_id=str(campaign.id)
+            )
