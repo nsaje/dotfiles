@@ -1314,6 +1314,7 @@ class HistoryTest(TestCase):
             , Campaign Manager set to "luka.silovinac@zemanta.com"
             , Device targeting set to "Desktop, Tablet, Mobile"
             , Locations set to "United States"
+            , Automatic Campaign Stop set from "True" to "False"
             ''').replace('\n', ''), hist.changes_text)
 
     @patch('dash.models.AdGroup.objects._post_create', lambda ag: None)

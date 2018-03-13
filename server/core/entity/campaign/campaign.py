@@ -22,7 +22,6 @@ from . import bcm_mixin
 # (for example Outbrain)
 AGENCIES_WITHOUT_CAMPAIGN_STOP = {55}
 ACCOUNTS_WITHOUT_CAMPAIGN_STOP = {490, 512, 513}  # inPowered
-AGENCIES_WITHOUT_REAL_TIME_CAMPAIGN_STOP = {55}
 
 
 class CampaignManager(core.common.QuerySetManager):
@@ -38,9 +37,10 @@ class CampaignManager(core.common.QuerySetManager):
             name=name,
             account=account
         )
-        if account.real_time_campaign_stop:
-            campaign.real_time_campaign_stop = True
-        if account.agency_id in AGENCIES_WITHOUT_REAL_TIME_CAMPAIGN_STOP:
+
+        campaign.real_time_campaign_stop = True
+        if account.id in ACCOUNTS_WITHOUT_CAMPAIGN_STOP or\
+           account.agency_id in AGENCIES_WITHOUT_CAMPAIGN_STOP:
             campaign.real_time_campaign_stop = False
 
         campaign.save(request=request)
@@ -49,13 +49,10 @@ class CampaignManager(core.common.QuerySetManager):
         settings_updates['name'] = name
         settings_updates['iab_category'] = iab_category
         settings_updates['language'] = language
+        settings_updates['automatic_campaign_stop'] = False
+
         if request:
             settings_updates['campaign_manager'] = request.user
-
-        if campaign.real_time_campaign_stop or\
-           account.id in ACCOUNTS_WITHOUT_CAMPAIGN_STOP or\
-           account.agency_id in AGENCIES_WITHOUT_CAMPAIGN_STOP:
-            settings_updates['automatic_campaign_stop'] = False
 
         campaign.settings = core.entity.settings.CampaignSettings(campaign=campaign)
         campaign.settings.update(
