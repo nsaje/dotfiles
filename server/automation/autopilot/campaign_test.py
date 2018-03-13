@@ -22,6 +22,7 @@ class AutopilotCalculateCampaignDailyBudgetTestCase(TestCase):
             start_date=dates_helper.days_before(self.today, 10),
             end_date=dates_helper.days_after(self.today, 10),
             status=constants.CreditLineItemStatus.SIGNED,
+            amount=1000,
         )
 
         utc_now_patcher = patch('utils.dates_helper.utc_now')
