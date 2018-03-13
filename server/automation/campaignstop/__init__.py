@@ -12,5 +12,5 @@ from .service import (
     handle_updates,
     audit_stopped_campaigns,
     notify_initialize,
-    CampaignStopValidationError,
+    CampaignStopValidationException,
 )

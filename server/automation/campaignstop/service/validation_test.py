@@ -72,7 +72,7 @@ class ValidateMinimumBudgetAmountTest(TestCase):
         pm = datetime.datetime(self.today.year, self.today.month, self.today.day, 16)
         mock_utc_now.return_value = pm
 
-        with self.assertRaises(validation.CampaignStopValidationError):
+        with self.assertRaises(validation.CampaignStopValidationException):
             validation.validate_minimum_budget_amount(self.budget, 399)
 
     @mock.patch('utils.dates_helper.utc_now')
@@ -80,7 +80,7 @@ class ValidateMinimumBudgetAmountTest(TestCase):
         am = datetime.datetime(self.today.year, self.today.month, self.today.day, 6)
         mock_utc_now.return_value = am
 
-        with self.assertRaises(validation.CampaignStopValidationError):
+        with self.assertRaises(validation.CampaignStopValidationException):
             validation.validate_minimum_budget_amount(self.budget, 399)
 
     def test_validate_without_real_time_campaign_stop(self):
