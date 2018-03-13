@@ -1,3 +1,4 @@
+import datetime
 from decimal import Decimal
 import logging
 
@@ -113,6 +114,7 @@ def _get_realtime_spends(log, campaign, start):
         if prev:
             prev_spends.append(prev)
 
+    curr_spends, prev_spends = list(reversed(curr_spends)), list(reversed(prev_spends))
     log.add_context({
         'current_rt_spends_per_date': [(s.date, s.etfm_spend) for s in curr_spends],
         'prev_rt_spends_per_date': [(s.date, s.etfm_spend) for s in prev_spends]
@@ -121,26 +123,40 @@ def _get_realtime_spends(log, campaign, start):
 
 
 def _get_realtime_spends_for_date(campaign, date):
-    spends = list(
-        RealTimeCampaignDataHistory.objects.filter(
+    current_spend = _get_current_spend(campaign, date)
+    prev_spend = _get_prev_spend(campaign, date, current_spend)
+    if current_spend and not _is_recent(current_spend):
+        logger.warning(
+            'Real time data is stale. campaign=%s, date=%s',
+            campaign,
+            date.isoformat()
+        )
+    return current_spend, prev_spend
+
+
+def _get_current_spend(campaign, date):
+    try:
+        return RealTimeCampaignDataHistory.objects.filter(
             date=date,
             campaign=campaign,
-        ).order_by('-created_dt')[:2]
-    )
+        ).latest('created_dt')
+    except RealTimeCampaignDataHistory.DoesNotExist:
+        return None
 
-    current_spend, prev_spend = None, None
-    if len(spends) > 0:
-        if not _is_recent(spends[0]):
-            logger.warning(
-                'Real time data is stale. campaign=%s, date=%s',
-                campaign,
-                date.isoformat()
-            )
-        current_spend = spends[0]
-    if len(spends) > 1:
-        prev_spend = spends[1]
 
-    return current_spend, prev_spend
+def _get_prev_spend(campaign, date, current_spend):
+    if not current_spend:
+        return None
+
+    max_created_dt = current_spend.created_dt - datetime.timedelta(seconds=120)
+    try:
+        return RealTimeCampaignDataHistory.objects.filter(
+            date=date,
+            campaign=campaign,
+            created_dt__lte=max_created_dt,
+        ).exclude(id=current_spend.id).latest('created_dt')
+    except RealTimeCampaignDataHistory.DoesNotExist:
+        return None
 
 
 def _is_recent(rt_spend):
