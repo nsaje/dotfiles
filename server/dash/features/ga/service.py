@@ -68,7 +68,7 @@ def _get_service(zem_ga_account_email):
 
     assert zem_ga_account_email in settings.GA_CREDENTIALS
 
-    key_buffer = io.BytesIO(settings.GA_CREDENTIALS[zem_ga_account_email])
+    key_buffer = io.BytesIO(settings.GA_CREDENTIALS[zem_ga_account_email].encode())
     credentials = ServiceAccountCredentials.from_p12_keyfile_buffer(zem_ga_account_email, key_buffer, scopes=GA_SCOPE)
     http = credentials.authorize(httplib2.Http())
     # Build the GA service object.
