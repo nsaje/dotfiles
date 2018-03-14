@@ -16,7 +16,6 @@ class Command(ExceptionCommand):
             real_time_campaign_stop=True,
             campaignstopstate__almost_depleted=True,
             campaignstopstate__state=automation.campaignstop.constants.CampaignStopState.ACTIVE,
-            campaignstopstate__max_allowed_end_date__gte=dates_helper.local_today(),
         ).select_related('campaignstopstate')
 
         automation.campaignstop.refresh_realtime_data(campaigns)
