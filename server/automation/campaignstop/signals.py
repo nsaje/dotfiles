@@ -9,11 +9,11 @@ from . import CampaignStopState
 
 
 def connect_notify_budgets():
-    post_save.connect(_notify_budget_line_item_change, sender=core.bcm.BudgetLineItem)
+    post_save.connect(_handle_budget_line_item_change, sender=core.bcm.BudgetLineItem)
 
 
 def disconnect_notify_budgets():
-    post_save.disconnect(_notify_budget_line_item_change, sender=core.bcm.BudgetLineItem)
+    post_save.disconnect(_handle_budget_line_item_change, sender=core.bcm.BudgetLineItem)
 
 
 def _handle_budget_line_item_change(sender, instance, **kwargs):
