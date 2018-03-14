@@ -86,23 +86,27 @@ def _get_adgroup_sources(campaign):
     )
 
 
-@transaction.atomic
 def _mark_campaigns(campaign_daily_budgets, campaign_available_amount):
     for campaign, campaign_daily_budget in campaign_daily_budgets.items():
-        refresh_realtime_data([campaign])
-        remaining_current_budget = campaign_available_amount.get(campaign, 0)
-        min_remaining_budget = remaining_current_budget - campaign_daily_budget
-        log = RealTimeCampaignStopLog(campaign=campaign, event=CampaignStopEvent.SELECTION_CHECK)
-        is_almost_depleted = min_remaining_budget < 0
+        available_amount = campaign_available_amount.get(campaign, 0)
+        _mark_campaign(campaign, campaign_daily_budget, available_amount)
 
-        _update_almost_depleted(campaign, is_almost_depleted)
 
-        log.add_context(
-            {'min_remaining_budget': min_remaining_budget,
-             'campaign_daily_budget': campaign_daily_budget,
-             'remaining_current_budget': remaining_current_budget,
-             'is_almost_depleted': is_almost_depleted}
-        )
+@transaction.atomic
+def _mark_campaign(campaign, max_spend_today, available_budget_amount):
+    refresh_realtime_data([campaign])
+    min_remaining_budget = available_budget_amount - max_spend_today
+    is_almost_depleted = min_remaining_budget < 0
+
+    _update_almost_depleted(campaign, is_almost_depleted)
+
+    log = RealTimeCampaignStopLog(campaign=campaign, event=CampaignStopEvent.SELECTION_CHECK)
+    log.add_context({
+        'min_remaining_budget': min_remaining_budget,
+        'campaign_daily_budget': max_spend_today,
+        'remaining_current_budget': available_budget_amount,
+        'is_almost_depleted': is_almost_depleted
+    })
 
 
 def _update_almost_depleted(campaign, is_almost_depleted):
