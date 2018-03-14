@@ -26,10 +26,7 @@ def _get_available_campaign_budget(log):
 
 def _get_budgets_active_today(log):
     today = dates_helper.local_today()
-    budgets = log.campaign.budgets.filter(
-        start_date__lte=today,
-        end_date__gte=today,
-    ).order_by('created_dt')
+    budgets = log.campaign.budgets.all()
     if 'active_budget_line_items' in log.context:
         active_items = log.context['active_budget_line_items']
         if not isinstance(active_items, list):
@@ -37,4 +34,9 @@ def _get_budgets_active_today(log):
         budgets = budgets.filter(
             id__in=active_items,
         )
-    return budgets
+    else:
+        budgets = budgets.filter(
+            start_date__lte=today,
+            end_date__gte=today
+        )
+    return budgets.order_by('created_dt')
