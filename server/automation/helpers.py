@@ -110,7 +110,7 @@ def stop_campaign(campaign):
 def _stop_real_time(campaign):
     campaign_state, _ = automation.campaignstop.CampaignStopState.objects.get_or_create(campaign=campaign)
     campaign_state.set_allowed_to_run(False)
-    automation.campaignstop.RealTimeCampaignStopLog(
+    automation.campaignstop.RealTimeCampaignStopLog.objects.create(
         campaign=campaign,
         event=automation.campaignstop.constants.CampaignStopEvent.SIMPLE_CAMPAIGN_STOP,
     )
