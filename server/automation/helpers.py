@@ -113,6 +113,7 @@ def _stop_real_time(campaign):
     automation.campaignstop.RealTimeCampaignStopLog.objects.create(
         campaign=campaign,
         event=automation.campaignstop.constants.CampaignStopEvent.SIMPLE_CAMPAIGN_STOP,
+        context={},
     )
 
 
