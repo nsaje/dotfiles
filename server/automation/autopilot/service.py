@@ -6,16 +6,14 @@ import traceback
 
 import influx
 
-import dash
-import dash.campaign_goals
+import dash.models
 import dash.constants
 from automation import models
 from . import budgets
 from . import constants
 from . import cpc
 from . import helpers
-from . import settings
-from stats.api_breakdowns import Goals
+from . import prefetch
 import redshiftapi.api_breakdowns
 from utils import pagerduty_helper
 from utils import dates_helper
@@ -25,17 +23,22 @@ logger = logging.getLogger(__name__)
 
 
 @influx.timer('automation.autopilot_plus.run_autopilot')
-def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
+def run_autopilot(ad_group=None, campaign=None, adjust_cpcs=True, adjust_budgets=True,
                   send_mail=False, initialization=False, report_to_influx=False, dry_run=False,
                   daily_run=False):
+    ad_groups = None
+    if ad_group is not None:
+        ad_groups = [ad_group.id]
     if not ad_groups:
         ad_groups_on_ap, ad_group_settings_on_ap = helpers.get_active_ad_groups_on_autopilot()
     else:
         ad_groups_on_ap = dash.models.AdGroup.objects.filter(id__in=ad_groups)
         ad_group_settings_on_ap = dash.models.AdGroupSettings.objects.filter(ad_group__in=ad_groups_on_ap).\
             group_current_settings().select_related('ad_group__campaign__account')
-    ad_groups_and_settings = {ags.ad_group: ags for ags in ad_group_settings_on_ap}
-    data, campaign_goals, bcm_modifiers_map = prefetch_autopilot_data(ad_groups_and_settings)
+
+    entities = helpers.get_autopilot_entities(ad_group=ad_group, campaign=campaign)
+
+    data, campaign_goals, bcm_modifiers_map = prefetch.prefetch_autopilot_data(entities)
     if not data:
         return {}
     changes_data = {}
@@ -96,7 +99,7 @@ def initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False):
     ad_group = ad_group_settings.ad_group
     bcm_modifiers = ad_group.campaign.get_bcm_modifiers()
     paused_sources_changes = _set_paused_ad_group_sources_to_minimum_values(ad_group_settings, bcm_modifiers)
-    autopilot_changes_data = run_autopilot(ad_groups=[ad_group.id], adjust_cpcs=False,
+    autopilot_changes_data = run_autopilot(ad_group=ad_group, adjust_cpcs=False,
                                            adjust_budgets=True, initialization=True, send_mail=send_mail)
     changed_sources = set()
     for source, changes in paused_sources_changes.items():
@@ -224,283 +227,6 @@ def set_autopilot_changes(cpc_changes={}, budget_changes={}, ad_group=None,
                 helpers.update_ad_group_b1_sources_group_values(ad_group, changes, system_user)
             else:
                 helpers.update_ad_group_source_values(ag_source, changes, system_user, landing_mode)
-
-
-def prefetch_autopilot_data(ad_groups_and_settings):
-    enabled_ag_sources_settings = helpers.get_autopilot_active_sources_settings(ad_groups_and_settings)
-    sources = set(s.ad_group_source.source.id for s in enabled_ag_sources_settings)
-    yesterday_data, days_ago_data, conv_days_ago_data, campaign_goals, conv_goals, bcm_modifiers_map = _fetch_data(
-        list(ad_groups_and_settings.keys()), sources)
-    data = {}
-    for source_setting in enabled_ag_sources_settings:
-        ag_source = source_setting.ad_group_source
-        adg = ag_source.ad_group
-        adg_settings = ad_groups_and_settings.get(adg)
-        row, yesterdays_spend_cc, yesterdays_clicks = _find_corresponding_source_data(
-            ag_source, days_ago_data, yesterday_data)
-        if adg not in data:
-            data[adg] = {}
-        data[adg][ag_source] = _populate_prefetch_adgroup_source_data(
-            ag_source, source_setting, yesterdays_spend_cc, yesterdays_clicks, bcm_modifiers_map.get(adg.campaign))
-        campaign_goal_data = campaign_goals.get(adg.campaign)
-        goal_col, goal_optimal = None, None
-        if campaign_goal_data:
-            goal_col = helpers.get_campaign_goal_column(
-                campaign_goal_data['goal'],
-                adg.campaign.account.uses_bcm_v2,
-            )
-            goal_optimal = campaign_goal_data['value']
-        if campaign_goal_data:
-            data[adg][ag_source].update(_populate_prefetch_adgroup_source_goal_data(
-                goal_col, goal_optimal, campaign_goal_data, ag_source, conv_days_ago_data, conv_goals, row,
-                settings.GOALS_CALC_COLS[campaign_goal_data['goal'].type]['high_is_good']))
-
-        if (adg_settings.b1_sources_group_enabled and
-                adg_settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.ACTIVE):
-            if dash.constants.SourceAllRTB not in data[adg]:
-                data[adg][dash.constants.SourceAllRTB] = _init_b1_sources_data(adg_settings, goal_col, goal_optimal)
-            if ag_source.source.source_type.type == dash.constants.SourceType.B1:
-                data[adg][dash.constants.SourceAllRTB] = _populate_b1_sources_data(
-                    data[adg][ag_source], data[adg][dash.constants.SourceAllRTB], goal_col, goal_optimal,
-                    settings.GOALS_CALC_COLS[campaign_goal_data['goal'].type]['high_is_good']
-                    if campaign_goal_data else None)
-
-    return data, campaign_goals, bcm_modifiers_map
-
-
-def _populate_prefetch_adgroup_source_goal_data(
-        goal_col, goal_optimal, campaign_goal_data, ags, conv_days_ago_data, conv_goals, row, goal_high_is_good):
-    goal_value = settings.GOALS_WORST_VALUE.get(goal_col)
-    dividend = None
-    divisor = None
-    goal_performance = 0.0
-    if campaign_goal_data['goal'].type == dash.constants.CampaignGoalKPI.CPA:
-        dividend, divisor, goal_value = _get_conversions_per_cost_value(
-            ags, conv_days_ago_data, campaign_goal_data['goal'].conversion_goal, conv_goals)
-    elif goal_col in row and row[goal_col]:
-        dividend, divisor, goal_value = _get_other_goal_cost_value(
-            ags, row, campaign_goal_data['goal'], goal_col)
-
-    if goal_optimal and goal_value and goal_optimal > 0.0 and goal_value > 0.0:
-        goal_performance = (min(float(goal_value) / float(goal_optimal), 1.0) if goal_high_is_good else
-                            min(float(goal_optimal) / float(goal_value), 1.0))
-
-    return {
-        goal_col: goal_value,
-        'dividend': dividend,
-        'divisor': divisor,
-        'goal_optimal': goal_optimal,
-        'goal_performance': goal_performance,
-    }
-
-
-def _init_b1_sources_data(adg_settings, goal_col, goal_optimal):
-    return {
-        goal_col: None,
-        'yesterdays_clicks': 0,
-        'old_budget': adg_settings.b1_sources_group_daily_budget,
-        'old_cpc_cc': adg_settings.b1_sources_group_cpc_cc,
-        'yesterdays_spend_cc': Decimal('0.0'),
-        'spend_perc': Decimal('0.0'),
-        'dividend': None,
-        'divisor': None,
-        'goal_optimal': goal_optimal,
-        'goal_performance': 0.0,
-    }
-
-
-def _populate_b1_sources_data(row, current_b1_data, goal_col, goal_optimal, goal_high_is_good):
-    current_b1_data['yesterdays_clicks'] += row['yesterdays_clicks']
-    current_b1_data['yesterdays_spend_cc'] += row['yesterdays_spend_cc']
-    current_b1_data['spend_perc'] = current_b1_data['yesterdays_spend_cc'] / current_b1_data['old_budget']
-    if row['dividend']:
-        current_b1_data['dividend'] = row['dividend'] + (current_b1_data['dividend'] or 0.0)
-    if row['divisor']:
-        current_b1_data['divisor'] = row['divisor'] + (current_b1_data['divisor'] or 0.0)
-    current_b1_data[goal_col] = current_b1_data['dividend'] / current_b1_data['divisor'] if\
-        current_b1_data['dividend'] and current_b1_data['divisor'] and current_b1_data['divisor'] > 0.0 else\
-        settings.GOALS_WORST_VALUE.get(goal_col)
-    current_b1_data['goal_optimal'] = goal_optimal
-
-    if (current_b1_data['goal_optimal'] and current_b1_data[goal_col] and
-            current_b1_data['goal_optimal'] > 0.0 and current_b1_data[goal_col] > 0.0):
-        if goal_high_is_good:
-            current_b1_data['goal_performance'] = min(float(current_b1_data[goal_col]) /
-                                                      float(current_b1_data['goal_optimal']), 1.0)
-        else:
-            current_b1_data['goal_performance'] = min(float(current_b1_data['goal_optimal']) /
-                                                      float(current_b1_data[goal_col]), 1.0)
-
-    return current_b1_data
-
-
-def _get_conversions_per_cost_value(ag_source, data, conversion_goal, conversion_goals):
-    view_key = conversion_goal.get_view_key(conversion_goals)
-    for r in data:
-        if r['ad_group_id'] == ag_source.ad_group.id and r['source_id'] == ag_source.source.id:
-            if ag_source.ad_group.campaign.account.uses_bcm_v2:
-                spend = float(r.get('etfm_cost') or 0)
-            else:
-                spend = float(r.get('et_cost') or 0)
-            conv = r.get(view_key)
-            return conv, spend, ((conv or 0.0) / spend) if spend > 0 else 0.0
-    return None, None, 0.0
-
-
-def _get_other_goal_cost_value(ags, row, goal, goal_col):
-    goal_calculation_definition = settings.GOALS_CALC_COLS[goal.type]
-    dividend_column = goal_calculation_definition['dividend']
-    if ags.ad_group.campaign.account.uses_bcm_v2 and\
-       'dividend_bcm_v2' in goal_calculation_definition:
-        dividend_column = goal_calculation_definition['dividend_bcm_v2']
-
-    divisor_column = goal_calculation_definition['divisor']
-    if ags.ad_group.campaign.account.uses_bcm_v2 and\
-       'divisor_bcm_v2' in goal_calculation_definition:
-        divisor_column = goal_calculation_definition['divisor_bcm_v2']
-
-    dividend = float(row[dividend_column])
-    divisor = float(row[divisor_column])
-    goal_value = row[goal_col]
-    return dividend, divisor, goal_value
-
-
-def _populate_prefetch_adgroup_source_data(
-        ag_source, ag_source_setting, yesterdays_spend_cc, yesterdays_clicks, bcm_modifiers):
-    data = {}
-    budget = ag_source_setting.daily_budget_cc if ag_source_setting.daily_budget_cc else\
-        ag_source.source.source_type.get_etfm_min_daily_budget(bcm_modifiers)
-    data['yesterdays_spend_cc'] = yesterdays_spend_cc or 0
-    data['yesterdays_clicks'] = yesterdays_clicks or 0
-    data['old_budget'] = budget or 0
-    data['old_cpc_cc'] = ag_source_setting.cpc_cc if ag_source_setting.cpc_cc else\
-        ag_source.source.default_cpc_cc
-    data['spend_perc'] = yesterdays_spend_cc / budget
-    return data
-
-
-def _fetch_data(ad_groups, sources):
-    today = dates_helper.local_today()
-    yesterday = today - datetime.timedelta(days=1)
-    days_ago = yesterday - datetime.timedelta(days=settings.AUTOPILOT_DATA_LOOKBACK_DAYS)
-    conversion_data_days_ago = yesterday - datetime.timedelta(
-        days=settings.AUTOPILOT_CONVERSION_DATA_LOOKBACK_DAYS)
-    campaign_goals, conversion_goals, pixels = _get_autopilot_goals(ad_groups)
-
-    yesterday_data = redshiftapi.api_breakdowns.query(
-        ['ad_group_id', 'source_id'],
-        {
-            'date__gte': yesterday,
-            'date__lte': yesterday,
-            'ad_group_id': [ad_group.id for ad_group in ad_groups],
-            'source_id': list(sources),
-        },
-        parents=None,
-        goals=None,
-        use_publishers_view=False,
-    )
-
-    days_ago_data = redshiftapi.api_breakdowns.query(
-        ['ad_group_id', 'source_id'],
-        {
-            'date__gte': days_ago,
-            'date__lte': yesterday,
-            'ad_group_id': [ad_group.id for ad_group in ad_groups],
-            'source_id': list(sources),
-        },
-        parents=None,
-        goals=None,
-        use_publishers_view=False,
-    )
-
-    stats_goals = Goals(
-        conversion_goals=conversion_goals,
-        pixels=pixels,
-        # NOTE: campaign goals are handled separately
-        campaign_goals=[],
-        campaign_goal_values=[],
-        primary_goals=[]
-    )
-    conversions_days_ago_data = redshiftapi.api_breakdowns.query(
-        ['ad_group_id', 'source_id'],
-        {
-            'date__gte': conversion_data_days_ago,
-            'date__lte': yesterday,
-            'ad_group_id': [ad_group.id for ad_group in ad_groups],
-            'source_id': list(sources),
-        },
-        parents=None,
-        goals=stats_goals,
-        use_publishers_view=False,
-    )
-
-    bcm_modifiers_map = _get_bcm_modifiers(ad_groups)
-    return yesterday_data, days_ago_data, conversions_days_ago_data, campaign_goals, conversion_goals, bcm_modifiers_map
-
-
-def _find_corresponding_source_data(ag_source, days_ago_data, yesterday_data):
-    row = []
-    yesterdays_spend_cc = Decimal(0)
-    yesterdays_clicks = 0
-    for r in days_ago_data:
-        if r['ad_group_id'] == ag_source.ad_group.id and r['source_id'] == ag_source.source.id:
-            row = r
-            break
-    for r in yesterday_data:
-        if r['ad_group_id'] == ag_source.ad_group.id and r['source_id'] == ag_source.source.id:
-            if ag_source.ad_group.campaign.account.uses_bcm_v2:
-                yesterdays_spend_cc = Decimal(r['etfm_cost'] or 0)
-            else:
-                yesterdays_spend_cc = Decimal(r['et_cost'] or 0)
-            yesterdays_clicks = r.get('clicks')
-            break
-    return row, yesterdays_spend_cc, yesterdays_clicks
-
-
-def _get_autopilot_goals(ad_groups):
-    campaign_goals = {}
-    conversion_goals = []
-    pixels = []
-    for adg in ad_groups:
-        camp = adg.campaign
-        if camp not in campaign_goals:
-            primary_goal = dash.campaign_goals.get_primary_campaign_goal(camp)
-            if not primary_goal:
-                continue
-            primary_goal_value = primary_goal.values.all().order_by('-created_dt').first()
-            if not primary_goal_value:
-                continue
-            value = primary_goal_value.value
-            if primary_goal.type == dash.constants.CampaignGoalKPI.CPA and value:
-                value = Decimal('1.0') / value
-            campaign_goals[camp] = {'goal': primary_goal, 'value': value}
-            if primary_goal and primary_goal.type == dash.constants.CampaignGoalKPI.CPA:
-                conversion_goals.append(primary_goal.conversion_goal)
-                if primary_goal.conversion_goal.type == dash.constants.ConversionGoalType.PIXEL:
-                    pixels.append(primary_goal.conversion_goal.pixel)
-    return campaign_goals, conversion_goals, pixels
-
-
-def _get_bcm_modifiers(ad_groups):
-    # NOTE: Modifiers are only fetched for ad groups' campaigns that have
-    # budgets assuming ad groups without budgets aren't running and aren't
-    # handled by autopilot because of that.
-    campaign_budgets = {
-        budget.campaign_id: budget for budget in dash.models.BudgetLineItem.objects.filter(
-            campaign__adgroup__in=ad_groups,
-        ).filter_today().distinct('campaign_id').select_related('credit')
-    }
-
-    bcm_modifiers = {}
-    for ad_group in ad_groups:
-        if ad_group.campaign.account.uses_bcm_v2 and\
-           ad_group.campaign_id in campaign_budgets:
-            budget = campaign_budgets[ad_group.campaign_id]
-            bcm_modifiers[ad_group.campaign] = {
-                'fee': budget.credit.license_fee,
-                'margin': budget.margin,
-            }
-    return bcm_modifiers
 
 
 def _report_autopilot_exception(element, e):

@@ -1,16 +1,15 @@
 from decimal import Decimal
+import json
 from mock import patch
 import mock
-import json
 import traceback
 
 from django import test
 
+import dash.models
+
 from . import constants
 from . import service
-import dash.models
-import dash.views.helpers
-import dash.api
 
 
 class AutopilotPlusTestCase(test.TestCase):
@@ -44,7 +43,8 @@ class AutopilotPlusTestCase(test.TestCase):
             })
         )
 
-    @patch('automation.autopilot.service.prefetch_autopilot_data')
+    @patch('automation.autopilot.prefetch.prefetch_autopilot_data')
+    @patch('automation.autopilot.helpers.get_autopilot_entities')
     @patch('automation.autopilot.helpers.get_active_ad_groups_on_autopilot')
     @patch('automation.autopilot.service._get_autopilot_predictions')
     @patch('automation.autopilot.service.set_autopilot_changes')
@@ -53,7 +53,7 @@ class AutopilotPlusTestCase(test.TestCase):
     @patch('automation.autopilot.service._report_autopilot_exception')
     @patch('utils.k1_helper.update_ad_group')
     def test_dry_run(self, mock_k1, mock_exc, mock_get_changes, mock_log, mock_set,
-                     mock_predict, mock_active, mock_prefetch):
+                     mock_predict, mock_active, mock_entities, mock_prefetch):
         ad_groups = list(dash.models.AdGroup.objects.all())
         mock_prefetch.return_value = (
             {
@@ -187,26 +187,6 @@ class AutopilotPlusTestCase(test.TestCase):
         mock_update_rtb.assert_called_with(
             ag, {'cpc_cc': Decimal('0.22'), 'daily_budget_cc': Decimal('20')}, ap)
         mock_update_rtb.assert_called_once()
-
-    def test_find_corresponding_source_data(self):
-        source1 = dash.models.AdGroupSource.objects.get(id=1)
-        source2 = dash.models.AdGroupSource.objects.get(id=2)
-        days_ago_data = (
-            {'ad_group_id': 1, 'source_id': 1, 'rand': 1},
-            {'ad_group_id': 1, 'source_id': 2, 'rand': 0},
-            {'ad_group_id': 2, 'source_id': 2, 'rand': 0},
-            {'ad_group_id': 2, 'source_id': 1, 'rand': 2}
-        )
-        yesterday_data = (
-            {'ad_group_id': 1, 'source_id': 1, 'et_cost': 1, 'clicks': 1, 'etfm_cost': 1},
-            {'ad_group_id': 1, 'source_id': 2, 'et_cost': 0, 'clicks': 0, 'etfm_cost': 0},
-            {'ad_group_id': 2, 'source_id': 2, 'et_cost': 0, 'clicks': 0, 'etfm_cost': 0},
-            {'ad_group_id': 2, 'source_id': 1, 'et_cost': 2, 'clicks': 2, 'etfm_cost': 2}
-        )
-        self.assertEqual(service._find_corresponding_source_data(source1, days_ago_data, yesterday_data),
-                         (days_ago_data[0], 1, 1))
-        self.assertEqual(service._find_corresponding_source_data(source2, days_ago_data, yesterday_data),
-                         (days_ago_data[3], 2, 2))
 
     @patch('automation.autopilot.settings.BUDGET_AP_MIN_SOURCE_BUDGET', Decimal('0.3'))
     def test_set_paused_ad_group_sources_to_minimum_values(self):
