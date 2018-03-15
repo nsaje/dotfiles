@@ -132,6 +132,17 @@ class AutopilotGetEntitiesTestCase(test.TestCase):
         self.assertIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
         self.assertIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
 
+    @patch('automation.campaignstop.get_campaignstop_states')
+    def test_campaign_stopped(self, mock_get_campaignstop_states):
+        mock_get_campaignstop_states.return_value = {
+            self.ad_group_source.ad_group.campaign_id: {'allowed_to_run': False},
+            self.b1_ad_group_source.ad_group.campaign_id: {'allowed_to_run': False},
+        }
+
+        result = helpers.get_autopilot_entities()
+        self.assertNotIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
+        self.assertNotIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
+
     def test_adgroup_cpc(self):
         self.ad_group_source.ad_group.settings.update_unsafe(
             None, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC)

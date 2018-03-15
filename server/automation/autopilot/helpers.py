@@ -4,6 +4,8 @@ import logging
 
 from django.db.models import Q
 
+from automation import campaignstop
+
 import dash
 import dash.constants
 import dash.models
@@ -23,7 +25,8 @@ def get_active_ad_groups_on_autopilot(autopilot_state=None):
     ad_groups_on_autopilot = []
     ad_group_settings_on_autopilot = []
     ad_group_settings = dash.models.AdGroupSettings.objects.all().group_current_settings()\
-        .select_related('ad_group')
+        .select_related('ad_group__campaign')
+    campaignstop_states = campaignstop.get_campaignstop_states(dash.models.Campaign.objects.all())
 
     for ags in ad_group_settings:
         if ags.autopilot_state in states:
@@ -37,7 +40,8 @@ def get_active_ad_groups_on_autopilot(autopilot_state=None):
                 ags,
                 ad_groups_sources_settings
             ) == dash.constants.AdGroupRunningStatus.ACTIVE
-            if ((ad_group_running and sources_running) or
+            campaign_active = campaignstop_states[ad_group.campaign.id]['allowed_to_run']
+            if ((campaign_active and ad_group_running and sources_running) or
                     (ags.landing_mode and ad_group_active and sources_running)):
                 ad_groups_on_autopilot.append(ad_group)
                 ad_group_settings_on_autopilot.append(ags)
@@ -59,6 +63,9 @@ def get_autopilot_entities(ad_group=None, campaign=None):
     if campaign is not None:
         ad_groups = ad_groups.filter(campaign=campaign)
 
+    campaignstop_states = campaignstop.get_campaignstop_states(
+        dash.models.Campaign.objects.filter(adgroup__in=ad_groups)
+    )
     ad_group_sources = (
         dash.models.AdGroupSource.objects.all()
         .filter(settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
@@ -72,6 +79,9 @@ def get_autopilot_entities(ad_group=None, campaign=None):
 
     data = defaultdict(dict)
     for ad_group in ad_groups:
+        if not campaignstop_states[ad_group.campaign.id]['allowed_to_run']:
+            continue
+
         if (not ad_group.settings.landing_mode and
            ad_group.get_running_status(ad_group.settings) != dash.constants.AdGroupRunningStatus.ACTIVE):
             continue
