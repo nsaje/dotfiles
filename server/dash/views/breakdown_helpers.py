@@ -2,6 +2,7 @@ import collections
 
 from automation import campaign_stop
 
+from core import source
 import dash.campaign_goals
 from dash import constants
 from dash.views import helpers
@@ -273,8 +274,8 @@ def create_all_rtb_source_row_data(ad_group, ad_group_settings, show_rtb_group_c
         cpc_edit_enabled = False
 
     return {
-        'breakdown_name': constants.SourceAllRTB.NAME,
-        'breakdown_id': constants.SourceAllRTB.ID,
+        'breakdown_name': source.AllRTBSource.name,
+        'breakdown_id': source.AllRTBSource.id,
         'state': {'value': ad_group_settings.b1_sources_group_state},
         'status': status,
         'daily_budget': ad_group_settings.b1_sources_group_daily_budget,

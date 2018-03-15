@@ -211,7 +211,7 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
     b1_sources_group_cpc_cc = models.DecimalField(
         max_digits=10,
         decimal_places=4,
-        default=constants.SourceAllRTB.MIN_CPC,
+        default=core.source.AllRTBSourceType.min_cpc,
         verbose_name='Bidder\'s Bid CPC'
     )
     local_b1_sources_group_cpc_cc = models.DecimalField(

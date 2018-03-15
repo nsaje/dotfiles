@@ -990,7 +990,7 @@ def _calculate_daily_source_caps(
 
     b1_group_new_cap = None
     if _is_b1_group_enabled(ad_group_settings) and not b1_group_stop:
-        min_group_cap = dash.constants.SourceAllRTB.get_etfm_min_daily_budget(bcm_modifiers)
+        min_group_cap = dash.models.AllRTBSourceType.get_etfm_min_daily_budget(bcm_modifiers)
 
         user_group_daily_budget = user_group_daily_budget_per_ag.get(ad_group_settings.ad_group_id, DECIMAL_ZERO)
         if total_yesterday_spend:

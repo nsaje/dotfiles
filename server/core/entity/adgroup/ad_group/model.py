@@ -19,7 +19,6 @@ from utils import redirector_helper
 import core.bcm
 import core.common
 import core.history
-import core.source
 import core.entity
 
 from . import bcm_mixin
@@ -108,7 +107,7 @@ class AdGroup(models.Model, bcm_mixin.AdGroupBCMMixin):
         null=False
     )
     campaign = models.ForeignKey('Campaign', on_delete=models.PROTECT)
-    sources = models.ManyToManyField(core.source.Source, through='AdGroupSource')
+    sources = models.ManyToManyField('Source', through='AdGroupSource')
     created_dt = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(

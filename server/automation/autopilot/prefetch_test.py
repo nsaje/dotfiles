@@ -4,6 +4,7 @@ from mock import patch
 
 from django.test import TestCase
 
+from core import source
 from dash import constants
 from dash import models
 from utils import dates_helper
@@ -31,6 +32,7 @@ class AutopilotPrefetchTestCase(TestCase):
                 ],
             },
         }
+        cls.all_rtb_ad_group_source = source.AllRTBAdGroupSource(cls.ad_group_source.ad_group)
 
         cls.conversion_goal = magic_mixer.blend(
             models.ConversionGoal,
@@ -111,7 +113,7 @@ class AutopilotPrefetchTestCase(TestCase):
                     'yesterdays_clicks': 13,
                     'yesterdays_spend_cc': Decimal('25'),
                 },
-                constants.SourceAllRTB: {
+                self.all_rtb_ad_group_source: {
                     'avg_tos': 16.0,
                     'dividend': 32.0,
                     'divisor': 2.0,
@@ -162,7 +164,7 @@ class AutopilotPrefetchTestCase(TestCase):
                     'yesterdays_clicks': 13,
                     'yesterdays_spend_cc': Decimal('25'),
                 },
-                constants.SourceAllRTB: {
+                self.all_rtb_ad_group_source: {
                     'conversions': 0.12,
                     'dividend': 3.0,
                     'divisor': 25.0,
@@ -198,7 +200,7 @@ class AutopilotPrefetchTestCase(TestCase):
             b1_sources_group_enabled=False,
         )
         data, campaign_goals, bcm_modifiers_map = prefetch.prefetch_autopilot_data(self.entities)
-        self.assertNotIn(constants.SourceAllRTB, data[self.ad_group_source.ad_group])
+        self.assertNotIn(self.all_rtb_ad_group_source, data[self.ad_group_source.ad_group])
 
         self.ad_group_source.ad_group.settings.update_unsafe(
             None,
@@ -206,7 +208,7 @@ class AutopilotPrefetchTestCase(TestCase):
             b1_sources_group_state=constants.AdGroupSourceSettingsState.INACTIVE,
         )
         data, campaign_goals, bcm_modifiers_map = prefetch.prefetch_autopilot_data(self.entities)
-        self.assertNotIn(constants.SourceAllRTB, data[self.ad_group_source.ad_group])
+        self.assertNotIn(self.all_rtb_ad_group_source, data[self.ad_group_source.ad_group])
 
         self.ad_group_source.ad_group.settings.update_unsafe(
             None,
@@ -214,4 +216,32 @@ class AutopilotPrefetchTestCase(TestCase):
             b1_sources_group_state=constants.AdGroupSourceSettingsState.ACTIVE,
         )
         data, campaign_goals, bcm_modifiers_map = prefetch.prefetch_autopilot_data(self.entities)
-        self.assertIn(constants.SourceAllRTB, data[self.ad_group_source.ad_group])
+        self.assertIn(self.all_rtb_ad_group_source, data[self.ad_group_source.ad_group])
+
+    def test_multiple_allrtb(self):
+        ad_group_source2 = magic_mixer.blend(
+            models.AdGroupSource,
+            source=self.ad_group_source.source,
+            ad_group__campaign__account__uses_bcm_v2=True,
+        )
+        ad_group_source2.settings.update_unsafe(None, daily_budget_cc=1000)
+        entities = {
+            self.ad_group_source.ad_group.campaign: {
+                self.ad_group_source.ad_group: [
+                    self.ad_group_source,
+                ],
+            },
+            ad_group_source2.ad_group.campaign: {
+                ad_group_source2.ad_group: [
+                    ad_group_source2,
+                ],
+            },
+        }
+        all_rtb_ad_group_source2 = source.AllRTBAdGroupSource(ad_group_source2.ad_group)
+
+        data, campaign_goals, bcm_modifiers_map = prefetch.prefetch_autopilot_data(entities)
+
+        self.assertIn(self.all_rtb_ad_group_source, data[self.ad_group_source.ad_group])
+        self.assertNotIn(all_rtb_ad_group_source2, data[self.ad_group_source.ad_group])
+        self.assertNotIn(self.all_rtb_ad_group_source, data[ad_group_source2.ad_group])
+        self.assertIn(all_rtb_ad_group_source2, data[ad_group_source2.ad_group])

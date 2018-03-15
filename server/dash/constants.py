@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from decimal import Decimal
 
 from dash import regions
 from utils.constant_base import ConstantBase
@@ -1934,39 +1933,6 @@ class AlertType(object):
     SUCCESS = 'success'
     WARNING = 'warning'
     DANGER = 'danger'
-
-
-# MVP for all-RTB-sources-as-one
-class SourceAllRTB(object):
-    ID = '0123456789'
-    NAME = 'RTB Sources'
-    MAX_CPC = Decimal('7.0')
-    MIN_CPC = Decimal('0.01')
-    DECIMAL_PLACES = 4
-    DEFAULT_DAILY_BUDGET = Decimal('50.00')
-    DEFAULT_CPC_CC = Decimal('0.4500')
-    MIN_DAILY_BUDGET = Decimal('1.00')
-    MAX_DAILY_BUDGET = Decimal('10000.00')
-
-    @classmethod
-    def get_etfm_min_cpc(cls, bcm_modifiers=None):
-        import core.bcm
-        return core.bcm.calculations.calculate_min_cpc(cls.MIN_CPC, bcm_modifiers)
-
-    @classmethod
-    def get_etfm_max_cpc(cls, bcm_modifiers=None):
-        import core.bcm
-        return core.bcm.calculations.calculate_max_cpc(cls.MAX_CPC, bcm_modifiers)
-
-    @classmethod
-    def get_etfm_min_daily_budget(cls, bcm_modifiers=None):
-        import core.bcm
-        return core.bcm.calculations.calculate_min_daily_budget(cls.MIN_DAILY_BUDGET, bcm_modifiers)
-
-    @classmethod
-    def get_etfm_max_daily_budget(cls, bcm_modifiers=None):
-        import core.bcm
-        return core.bcm.calculations.calculate_max_daily_budget(cls.MAX_DAILY_BUDGET, bcm_modifiers)
 
 
 class CpcConstraintType(ConstantBase):

@@ -181,7 +181,7 @@ class AdGroupSettingsMixin(object):
         if 'b1_sources_group_enabled' in changes and changes['b1_sources_group_enabled']:
             new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.ACTIVE
 
-            new_b1_sources_group_cpc = constants.SourceAllRTB.DEFAULT_CPC_CC
+            new_b1_sources_group_cpc = core.source.AllRTBSource.default_cpc_cc
             if changes.get('b1_sources_group_cpc_cc'):
                 new_b1_sources_group_cpc = changes['b1_sources_group_cpc_cc']
             new_settings.b1_sources_group_cpc_cc = new_b1_sources_group_cpc
@@ -189,7 +189,7 @@ class AdGroupSettingsMixin(object):
             if changes.get('b1_sources_group_daily_budget'):
                 new_settings.b1_sources_group_daily_budget = changes.get('b1_sources_group_daily_budget')
             else:
-                new_settings.b1_sources_group_daily_budget = constants.SourceAllRTB.DEFAULT_DAILY_BUDGET
+                new_settings.b1_sources_group_daily_budget = core.source.AllRTBSource.default_daily_budget_cc
 
         # Changing adgroup max cpc
         if changes.get('cpc_cc') and new_settings.b1_sources_group_enabled:

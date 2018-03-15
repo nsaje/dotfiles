@@ -114,21 +114,22 @@ def initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False):
 
 def _set_paused_ad_group_sources_to_minimum_values(ad_group_settings, bcm_modifiers):
     ad_group = ad_group_settings.ad_group
+    all_rtb_ad_group_source = dash.models.AllRTBAdGroupSource(ad_group)
     ags_settings = helpers.get_autopilot_active_sources_settings(
         {ad_group: ad_group_settings}, dash.constants.AdGroupSettingsState.INACTIVE)
     if (ad_group_settings.b1_sources_group_enabled and
             ad_group_settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.INACTIVE):
-        ags_settings.append(dash.constants.SourceAllRTB)
+        ags_settings.append(all_rtb_ad_group_source)
 
     new_budgets = {}
     for ag_source_setting in ags_settings:
-        if (ad_group_settings.b1_sources_group_enabled and ag_source_setting != dash.constants.SourceAllRTB and
+        if (ad_group_settings.b1_sources_group_enabled and ag_source_setting != all_rtb_ad_group_source and
                 ag_source_setting.ad_group_source.source.source_type.type == dash.constants.SourceType.B1):
             continue
-        ag_source = ag_source_setting.ad_group_source if ag_source_setting != dash.constants.SourceAllRTB else\
-            dash.constants.SourceAllRTB
+        ag_source = ag_source_setting.ad_group_source if ag_source_setting != all_rtb_ad_group_source else\
+            all_rtb_ad_group_source
         old_budget = ad_group_settings.b1_sources_group_daily_budget
-        if ag_source != dash.constants.SourceAllRTB:
+        if ag_source != all_rtb_ad_group_source:
             old_budget = ag_source_setting.daily_budget_cc if ag_source_setting.daily_budget_cc else\
                 helpers.get_ad_group_sources_minimum_cpc(ag_source, bcm_modifiers)
         new_budgets[ag_source] = {
@@ -163,6 +164,7 @@ def _get_autopilot_campaign_changes_data(ad_group, email_changes_data, cpc_chang
 def persist_autopilot_changes_to_log(ad_group_settings, cpc_changes, budget_changes, data, autopilot_state,
                                      campaign_goal_data=None, is_autopilot_job_run=False):
     rtb_as_one = ad_group_settings.b1_sources_group_enabled
+    all_rtb_ad_group_source = dash.models.AllRTBAdGroupSource(ad_group_settings.ad_group)
     for ag_source in list(data.keys()):
         old_budget = data[ag_source]['old_budget']
         goal_c = None
@@ -174,26 +176,26 @@ def persist_autopilot_changes_to_log(ad_group_settings, cpc_changes, budget_chan
         if cpc_changes:
             if ag_source in cpc_changes:
                 new_cpc_cc = cpc_changes[ag_source]['new_cpc_cc']
-            elif rtb_as_one and dash.constants.SourceAllRTB in cpc_changes:
-                new_cpc_cc = cpc_changes[dash.constants.SourceAllRTB]['new_cpc_cc']
+            elif rtb_as_one and all_rtb_ad_group_source in cpc_changes:
+                new_cpc_cc = cpc_changes[all_rtb_ad_group_source]['new_cpc_cc']
         new_daily_budget = old_budget
         if budget_changes:
             if ag_source in budget_changes:
                 new_daily_budget = budget_changes[ag_source]['new_budget']
-            elif dash.constants.SourceAllRTB in budget_changes:
+            elif all_rtb_ad_group_source in budget_changes:
                 new_daily_budget = None
         cpc_comments = []
         if ag_source in cpc_changes:
             cpc_comments = cpc_changes[ag_source]['cpc_comments']
-        elif rtb_as_one and dash.constants.SourceAllRTB in cpc_changes:
-            cpc_comments = cpc_changes[dash.constants.SourceAllRTB]['cpc_comments']
+        elif rtb_as_one and all_rtb_ad_group_source in cpc_changes:
+            cpc_comments = cpc_changes[all_rtb_ad_group_source]['cpc_comments']
         budget_comments = budget_changes[ag_source]['budget_comments'] if\
             budget_changes and ag_source in budget_changes else []
 
         models.AutopilotLog(
             ad_group=ad_group_settings.ad_group,
             autopilot_type=autopilot_state,
-            ad_group_source=ag_source if ag_source != dash.constants.SourceAllRTB else None,
+            ad_group_source=ag_source if ag_source != all_rtb_ad_group_source else None,
             previous_cpc_cc=data[ag_source].get('old_cpc_cc', None),
             new_cpc_cc=new_cpc_cc,
             previous_daily_budget=old_budget,
@@ -223,7 +225,7 @@ def set_autopilot_changes(cpc_changes={}, budget_changes={}, ad_group=None,
                 budget_changes[ag_source]['old_budget'] != budget_changes[ag_source]['new_budget']):
             changes['daily_budget_cc'] = budget_changes[ag_source]['new_budget']
         if changes and not dry_run:
-            if ag_source == dash.constants.SourceAllRTB:
+            if ag_source.source == dash.models.AllRTBSource:
                 helpers.update_ad_group_b1_sources_group_values(ad_group, changes, system_user)
             else:
                 helpers.update_ad_group_source_values(ag_source, changes, system_user, landing_mode)

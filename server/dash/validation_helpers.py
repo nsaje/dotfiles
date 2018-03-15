@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django import forms
 
-from dash import constants
+from core import source
 
 import utils.string_helper
 
@@ -52,13 +52,7 @@ def validate_b1_sources_group_cpc_cc(cpc_cc, ad_group_settings, bcm_modifiers=No
     if cpc_cc < 0:
         raise forms.ValidationError('RTB Sources\' bid CPC must be positive')
 
-    _validate_cpc_decimal_places(cpc_cc, constants.SourceAllRTB.DECIMAL_PLACES, constants.SourceAllRTB.NAME)
-
-    min_cpc = constants.SourceAllRTB.get_etfm_min_cpc(bcm_modifiers)
-    _validate_min_cpc(cpc_cc, min_cpc, constants.SourceAllRTB.NAME)
-
-    max_cpc = constants.SourceAllRTB.get_etfm_max_cpc(bcm_modifiers)
-    _validate_max_cpc(cpc_cc, max_cpc, constants.SourceAllRTB.NAME)
+    validate_source_cpc_cc(cpc_cc, source.AllRTBSource, source.AllRTBSourceType, bcm_modifiers)
 
     ad_group_max_cpc = ad_group_settings.cpc_cc  # NOTE: no need to apply bcm_modifiers, not an external setting
     _validate_max_cpc(cpc_cc, ad_group_max_cpc, 'ad group')
@@ -68,14 +62,7 @@ def validate_b1_sources_group_daily_budget(daily_budget, ad_group_settings, bcm_
     if not ad_group_settings.b1_sources_group_enabled:
         return
 
-    if daily_budget < 0:
-        raise forms.ValidationError('This value must be positive')
-
-    min_daily_budget = constants.SourceAllRTB.get_etfm_min_daily_budget(bcm_modifiers)
-    _validate_min_daily_budget(daily_budget, min_daily_budget)
-
-    max_daily_budget = constants.SourceAllRTB.get_etfm_max_daily_budget(bcm_modifiers)
-    _validate_max_daily_budget(daily_budget, max_daily_budget)
+    validate_daily_budget_cc(daily_budget, source.AllRTBSourceType, bcm_modifiers)
 
 
 def _validate_cpc_decimal_places(cpc_cc, decimal_places, source_name):

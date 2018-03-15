@@ -104,7 +104,7 @@ class AutopilotPlusTestCase(test.TestCase):
     @patch('automation.autopilot.helpers.update_ad_group_b1_sources_group_values')
     def test_set_autopilot_changes_only_cpc_rtb_as_one(self, mock_update_values):
         ag = dash.models.AdGroup.objects.get(id=1)
-        ag_source = dash.constants.SourceAllRTB
+        ag_source = dash.models.AllRTBAdGroupSource(ag)
         cpc_changes = {ag_source: {
             'old_cpc_cc': Decimal('0.1'),
             'new_cpc_cc': Decimal('0.2')
@@ -161,8 +161,8 @@ class AutopilotPlusTestCase(test.TestCase):
     @patch('automation.autopilot.helpers.update_ad_group_source_values')
     def test_set_autopilot_changes_budget_and_cpc_rtb_as_one(self, mock_update_values, mock_update_rtb):
         ag_source = dash.models.AdGroupSource.objects.get(id=1)
-        ag_source_rtb = dash.constants.SourceAllRTB
         ag = dash.models.AdGroup.objects.get(id=1)
+        ag_source_rtb = dash.models.AllRTBAdGroupSource(ag)
         budget_changes = {
             ag_source: {
                 'old_budget': Decimal('100'),
@@ -232,15 +232,16 @@ class AutopilotPlusTestCase(test.TestCase):
         active_ad_group_source = dash.models.AdGroupSource.objects.get(id=6)
 
         active_ad_group_source_old_budget = active_ad_group_source.get_current_settings().daily_budget_cc
+        all_rtb_ad_group_source = dash.models.AllRTBAdGroupSource(adg)
         new_budgets = service._set_paused_ad_group_sources_to_minimum_values(
             adg.get_current_settings(), {'fee': Decimal('0.15'), 'margin': Decimal('0.3')})
 
         adg.settings.refresh_from_db()
         self.assertTrue(paused_ad_group_source not in new_budgets)
         self.assertTrue(active_ad_group_source not in new_budgets)
-        self.assertEqual(new_budgets.get(dash.constants.SourceAllRTB)['old_budget'], Decimal('30.'))
-        self.assertEqual(new_budgets.get(dash.constants.SourceAllRTB)['new_budget'], Decimal('10.0'))
-        self.assertEqual(new_budgets.get(dash.constants.SourceAllRTB)['budget_comments'],
+        self.assertEqual(new_budgets.get(all_rtb_ad_group_source)['old_budget'], Decimal('30.'))
+        self.assertEqual(new_budgets.get(all_rtb_ad_group_source)['new_budget'], Decimal('10.0'))
+        self.assertEqual(new_budgets.get(all_rtb_ad_group_source)['budget_comments'],
                          [constants.DailyBudgetChangeComment.INITIALIZE_PILOT_PAUSED_SOURCE])
         self.assertEqual(paused_ad_group_source.get_current_settings().daily_budget_cc, Decimal('100.0'))
         self.assertEqual(active_ad_group_source.get_current_settings().daily_budget_cc,

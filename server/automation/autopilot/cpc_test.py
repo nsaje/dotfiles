@@ -186,16 +186,15 @@ class AutopilotCpcTestCase(test.TestCase):
                 Decimal(test_case[1]))
             self.assertEqual(comments, test_case[2])
 
-    @patch('dash.models.SourceType.get_min_cpc')
-    def test_get_source_type_min_max_cpc(self, mock_get_min_cpc):
-        mock_get_min_cpc.return_value = Decimal('0.123')
+    def test_get_source_type_min_max_cpc(self):
         ags_type = dash.models.AdGroupSource.objects.get(id=1).source.source_type
         ags_type.max_cpc = Decimal('5.123')
+        ags_type.min_cpc = Decimal('0.123')
         ags_type.save()
         ag_settings = dash.models.AdGroup.objects.get(id=1).get_current_settings()
         test_cases = (
-            (ags_type, '0.123', '8.610'),
-            (dash.constants.SourceAllRTB, '0.017', '11.764'),
+            (ags_type, '0.207', '8.610'),
+            (dash.models.AllRTBSourceType, '0.017', '11.764'),
         )
 
         bcm_modifiers = {'fee': Decimal('0.15'), 'margin': Decimal('0.3')}
@@ -211,7 +210,7 @@ class AutopilotCpcTestCase(test.TestCase):
         s1.save()
         s2.source_type = b1
         s2.save()
-        rtb = dash.constants.SourceAllRTB
+        rtb = dash.models.AllRTBSource
         dash.models.CpcConstraint.objects.create(
             ad_group_id=3,
             max_cpc=Decimal('1.5'),

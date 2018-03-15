@@ -177,10 +177,7 @@ def get_ad_group_sources_minimum_cpc(ad_group_source, bcm_modifiers):
 
 
 def get_ad_group_sources_minimum_daily_budget(ad_group_source, bcm_modifiers):
-    if ad_group_source == dash.constants.SourceAllRTB:
-        source_min_daily_budget = dash.constants.SourceAllRTB.get_etfm_min_daily_budget(bcm_modifiers)
-    else:
-        source_min_daily_budget = ad_group_source.source.source_type.get_etfm_min_daily_budget(bcm_modifiers)
+    source_min_daily_budget = ad_group_source.source.source_type.get_etfm_min_daily_budget(bcm_modifiers)
     return max(settings.BUDGET_AP_MIN_SOURCE_BUDGET, source_min_daily_budget)
 
 
@@ -211,10 +208,6 @@ def send_autopilot_changes_email(campaign, emails, changes_data, bcm_modifiers):
     changes_text = []
     for adgroup, adgroup_changes in changes_data.items():
         changes_text.append(_get_email_adgroup_text(adgroup))
-        if dash.constants.SourceAllRTB in adgroup_changes:
-            changes_text.append(_get_email_source_changes_text(dash.constants.SourceAllRTB.NAME,
-                                                               adgroup_changes[dash.constants.SourceAllRTB]))
-            adgroup_changes.pop(dash.constants.SourceAllRTB, None)
         for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name.lower()):
             changes_text.append(_get_email_source_changes_text(ag_source.source.name, adgroup_changes[ag_source]))
         changes_text.append(_get_email_adgroup_pausing_suggestions_text(adgroup_changes, bcm_modifiers))
@@ -245,10 +238,6 @@ def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
     changes_text = []
     for adgroup, adgroup_changes in changes_data.items():
         changes_text.append(_get_email_adgroup_text(adgroup))
-        if dash.constants.SourceAllRTB in adgroup_changes:
-            changes_text.append(_get_email_source_changes_text(dash.constants.SourceAllRTB.NAME,
-                                                               adgroup_changes[dash.constants.SourceAllRTB]))
-            adgroup_changes.pop(dash.constants.SourceAllRTB, None)
         for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name.lower()):
             changes_text.append(_get_email_source_changes_text(ag_source.source.name, adgroup_changes[ag_source]))
 
@@ -304,8 +293,7 @@ def _get_email_adgroup_pausing_suggestions_text(adgroup_changes, bcm_modifiers):
         changes = adgroup_changes[ag_source]
         if all(b in changes for b in ['new_budget', 'old_budget']) and\
                 changes['new_budget'] == get_ad_group_sources_minimum_daily_budget(ag_source, bcm_modifiers):
-            suggested_sources.append(ag_source.source.name if
-                                     ag_source != dash.constants.SourceAllRTB else dash.constants.SourceAllRTB.NAME)
+            suggested_sources.append(ag_source.source.name)
     if suggested_sources:
         return '\n\nTo improve ad group\'s performance, please consider pausing the following media sources: ' +\
                ", ".join(suggested_sources) + '.\n'

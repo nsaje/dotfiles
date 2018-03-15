@@ -9,6 +9,7 @@ from rest_framework.test import APIClient
 from zemauth.models import User
 from django.core.urlresolvers import reverse
 
+from core import source
 import dash.models
 from . import fields
 from . import views as restapi_views
@@ -762,9 +763,9 @@ class AdGroupSourcesRTBTest(RESTAPITest):
     def adgroupsourcertb_repr(
         cls,
         group_enabled=True,
-        daily_budget=constants.SourceAllRTB.DEFAULT_DAILY_BUDGET,
+        daily_budget=source.AllRTBSource.default_daily_budget_cc,
         state=constants.AdGroupSourceSettingsState.ACTIVE,
-        cpc=constants.SourceAllRTB.DEFAULT_CPC_CC
+        cpc=source.AllRTBSource.default_cpc_cc,
     ):
         representation = {
             'groupEnabled': group_enabled,

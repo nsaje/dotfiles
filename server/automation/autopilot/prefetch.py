@@ -2,6 +2,7 @@ from collections import defaultdict
 import datetime
 from decimal import Decimal
 
+from core import source
 import dash.campaign_goals
 import dash.constants
 import dash.models
@@ -38,9 +39,10 @@ def prefetch_autopilot_data(entities):
                 ad_group.settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.ACTIVE)
 
             data[ad_group] = {}
-            # TODO: change constant for something per ad_group different
             if source_all_rtb_active:
-                data[ad_group][dash.constants.SourceAllRTB] = _init_b1_sources_data(ad_group.settings, goal_col, goal_optimal)
+                all_rtb_ad_group_source = source.AllRTBAdGroupSource(ad_group)
+                data[ad_group][all_rtb_ad_group_source] = _init_b1_sources_data(
+                    ad_group.settings, goal_col, goal_optimal)
 
             for ad_group_source in ad_group_sources:
 
@@ -62,9 +64,9 @@ def prefetch_autopilot_data(entities):
                     ))
 
                 if source_all_rtb_active and ad_group_source.source.source_type.type == dash.constants.SourceType.B1:
-                    data[ad_group][dash.constants.SourceAllRTB] = _populate_b1_sources_data(
+                    data[ad_group][all_rtb_ad_group_source] = _populate_b1_sources_data(
                         data[ad_group][ad_group_source],
-                        data[ad_group][dash.constants.SourceAllRTB],
+                        data[ad_group][all_rtb_ad_group_source],
                         goal_col, goal_optimal,
                         settings.GOALS_CALC_COLS[campaign_goal_data['goal'].type]['high_is_good'] if campaign_goal_data else None,
                     )

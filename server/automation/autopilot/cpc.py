@@ -5,6 +5,7 @@ from .constants import CpcChangeComment
 from . import settings
 from dash import cpc_constraints
 import dash.constants
+import dash.models
 
 logger = logging.getLogger(__name__)
 
@@ -14,16 +15,16 @@ def get_autopilot_cpc_recommendations(
         budget_changes=None, adjust_rtb_sources=True):
     recommended_changes = {}
     ag_sources = list(data.keys())
-    SourceAllRTB = dash.constants.SourceAllRTB
-    adjust_automatic_mode_rtb_cpcs = adjust_rtb_sources and SourceAllRTB in data
+    all_rtb_ad_group_source = _find_all_rtb_ad_group_source(ag_sources)
+    adjust_automatic_mode_rtb_cpcs = adjust_rtb_sources and all_rtb_ad_group_source is not None
     for ag_source in ag_sources:
-        source_type = ag_source.source.source_type if ag_source != SourceAllRTB else SourceAllRTB
+        source_type = ag_source.source.source_type
         if not adjust_rtb_sources:
-            if source_type != SourceAllRTB and source_type.type == dash.constants.SourceType.B1:
+            if source_type.type == dash.constants.SourceType.B1:
                 continue
-            if source_type == SourceAllRTB and not _has_b1_sources(list(data.keys())):
+            if source_type == dash.models.AllRTBSourceType and not _has_b1_sources(list(data.keys())):
                 continue
-        if adjust_rtb_sources and source_type == SourceAllRTB:
+        if adjust_rtb_sources and source_type == dash.models.AllRTBSourceType:
             continue
 
         recommended_changes[ag_source] = {}
@@ -38,20 +39,20 @@ def get_autopilot_cpc_recommendations(
         else:
             proposed_cpc, calculation_comments = calculate_new_autopilot_cpc_automatic_mode_rtb(
                 old_cpc_cc,
-                budget_changes[SourceAllRTB]['new_budget'] if budget_changes else data[SourceAllRTB]['old_budget'],
-                data[SourceAllRTB]['yesterdays_spend_cc'],
+                budget_changes[all_rtb_ad_group_source]['new_budget'] if budget_changes else data[all_rtb_ad_group_source]['old_budget'],
+                data[all_rtb_ad_group_source]['yesterdays_spend_cc'],
                 data[ag_source]['goal_performance'])
 
         cpc_change_comments += calculation_comments
-        max_decimal_places = _get_cpc_max_decimal_places(ag_source.source.source_type.cpc_decimal_places if
-                                                         ag_source != SourceAllRTB else SourceAllRTB.DECIMAL_PLACES)
+        max_decimal_places = _get_cpc_max_decimal_places(ag_source.source.source_type.cpc_decimal_places)
         proposed_cpc = _round_cpc(proposed_cpc, decimal_places=max_decimal_places)
         proposed_cpc = _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments,
                                                        max_decimal_places)
         proposed_cpc = _threshold_cpc_constraints(
-            ad_group, ag_source.source if ag_source != SourceAllRTB else SourceAllRTB,
+            ad_group,
+            ag_source.source,
             old_cpc_cc, proposed_cpc, cpc_change_comments,
-            [s.source if s != SourceAllRTB else SourceAllRTB for s in ag_sources],
+            [s.source for s in ag_sources],
             bcm_modifiers)
         proposed_cpc = _threshold_source_constraints(
             proposed_cpc, source_type, adgroup_settings, cpc_change_comments, bcm_modifiers)
@@ -161,10 +162,10 @@ def _threshold_cpc_constraints(
         ad_group, source, old_cpc, proposed_cpc,
         cpc_change_comments, sources, bcm_modifiers):
     new_cpc = proposed_cpc
-    if source == dash.constants.SourceAllRTB:
+    if source == dash.models.AllRTBSource:
         constrained_cpcs = set()
         for s in sources:
-            if s != dash.constants.SourceAllRTB and s.source_type.type == dash.constants.SourceType.B1:
+            if s != dash.models.AllRTBSource and s.source_type.type == dash.constants.SourceType.B1:
                 constrained_cpcs.add(
                     cpc_constraints.adjust_cpc(
                         proposed_cpc,
@@ -202,9 +203,6 @@ def _get_cpc_max_decimal_places(source_dec_places):
 
 
 def _get_source_type_min_max_cpc(source_type, adgroup_settings, bcm_modifiers):
-    if source_type == dash.constants.SourceAllRTB:
-        return dash.constants.SourceAllRTB.get_etfm_min_cpc(bcm_modifiers),\
-            dash.constants.SourceAllRTB.get_etfm_max_cpc(bcm_modifiers)
     return source_type.get_min_cpc(adgroup_settings, bcm_modifiers),\
         source_type.get_etfm_max_cpc(bcm_modifiers)
 
@@ -233,10 +231,15 @@ def _threshold_autopilot_min_max_cpc(cpc, cpc_change_comments):
     return (cpc, cpc_change_comments)
 
 
+def _find_all_rtb_ad_group_source(ad_group_sources):
+    for ags in ad_group_sources:
+        if ags.source == dash.models.AllRTBSource:
+            return ags
+    return None
+
+
 def _has_b1_sources(ad_group_sources):
     for ags in ad_group_sources:
-        if ags == dash.constants.SourceAllRTB:
-            continue
         if ags.source.source_type.type == dash.constants.SourceType.B1:
             return True
     return False

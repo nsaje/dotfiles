@@ -246,8 +246,7 @@ class AdGroupSource(models.Model):
                 'state' in updates:
             changed_sources = autopilot.initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False)
             result['autopilot_changed_sources_text'] = ', '.join(
-                [s.source.name if s != constants.SourceAllRTB else constants.SourceAllRTB.NAME
-                    for s in changed_sources])
+                [s.source.name for s in changed_sources])
 
         if not skip_notification:
             self._notify_ad_group_source_settings_changed(request, changes, old_settings)

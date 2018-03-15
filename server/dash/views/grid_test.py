@@ -4,8 +4,8 @@ from mock import patch
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
+from core import source
 from dash import models
-from dash import constants
 
 from zemauth.models import User
 from utils.test_helper import add_permissions
@@ -42,7 +42,7 @@ class RTBSourceSettingsTest(TestCase):
         response = self.client.post(
             reverse('grid_ad_group_source_settings', kwargs={
                 'ad_group_id': self.ad_group.id,
-                'source_id': constants.SourceAllRTB.ID
+                'source_id': source.AllRTBSource.id
             }),
             json.dumps({'settings': {'cpc_cc': '0.15'}}),
             content_type='application/json',
@@ -71,7 +71,7 @@ class RTBSourceSettingsTest(TestCase):
         response = self.client.post(
             reverse('grid_ad_group_source_settings', kwargs={
                 'ad_group_id': self.ad_group.id,
-                'source_id': constants.SourceAllRTB.ID
+                'source_id': source.AllRTBSource.id
             }),
             json.dumps({'settings': {'cpc_cc': '0.15'}}),
             content_type='application/json',

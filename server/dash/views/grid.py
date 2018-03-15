@@ -9,6 +9,7 @@ TODO when we move base level:
 import datetime
 import json
 
+from core import source
 from dash import forms
 from dash import views
 from dash import constants
@@ -96,7 +97,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'filtered_sources' in config:
             filtered_sources = config['filtered_sources']
 
-        if source_id == constants.SourceAllRTB.ID:
+        if source_id == source.AllRTBSource.id:
             # MVP for all-RTB-sources-as-one
             return self.post_all_rtb_source(request, ad_group_id, filtered_sources, settings)
 

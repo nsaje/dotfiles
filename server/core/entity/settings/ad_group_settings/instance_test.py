@@ -5,6 +5,7 @@ from django.test import TestCase
 from utils.magic_mixer import magic_mixer
 
 import core.entity
+import core.source
 from dash import constants
 
 from . import instance
@@ -37,8 +38,8 @@ class InstanceTest(TestCase):
 
         self.assertDictEqual(changes_new, {
             'b1_sources_group_enabled': True,
-            'b1_sources_group_cpc_cc': min(ns2.cpc_cc, constants.SourceAllRTB.DEFAULT_CPC_CC),
-            'b1_sources_group_daily_budget': constants.SourceAllRTB.DEFAULT_DAILY_BUDGET,
+            'b1_sources_group_cpc_cc': min(ns2.cpc_cc, core.source.AllRTBSource.default_cpc_cc),
+            'b1_sources_group_daily_budget': core.source.AllRTBSource.default_daily_budget_cc,
         })
 
     def test_b1_sources_group_adjustments_sets_new_cpc_daily_budget(self):
@@ -106,7 +107,7 @@ class InstanceTest(TestCase):
         self.assertDictEqual(changes_new, {
             'b1_sources_group_enabled': True,
             'b1_sources_group_cpc_cc': Decimal('0.05'),
-            'b1_sources_group_daily_budget': constants.SourceAllRTB.DEFAULT_DAILY_BUDGET,
+            'b1_sources_group_daily_budget': core.source.AllRTBSource.default_daily_budget_cc,
             'cpc_cc': Decimal('0.05')
         })
 
