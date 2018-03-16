@@ -167,4 +167,4 @@ class InstanceTest(TestCase):
                 bluekai_targeting=['outbrain:4321']
             )
             save_mock.assert_called_once_with(
-                None, update_fields=['bluekai_targeting'], bluekai_targeting=['outbrain:4321'])
+                None, system_user=None, update_fields=['bluekai_targeting'], bluekai_targeting=['outbrain:4321'])

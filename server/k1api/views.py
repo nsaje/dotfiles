@@ -960,8 +960,7 @@ class AdGroupSourcesView(K1APIView):
                 return self.response_error("Invalid setting!", status=400)
 
         if settings_changed:
-            new_settings.system_user = dash.constants.SystemUserType.K1_USER
-            new_settings.save(None)
+            new_settings.save(None, system_user=dash.constants.SystemUserType.K1_USER)
         return self.response_ok([])
 
 

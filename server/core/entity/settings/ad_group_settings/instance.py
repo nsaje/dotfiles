@@ -23,11 +23,11 @@ class AdGroupSettingsMixin(object):
         updates = self._filter_and_remap_input(request, updates)
         if updates:
             new_settings = self.copy_settings()
-            self._apply_updates(new_settings, updates, system_user)
+            self._apply_updates(new_settings, updates)
             if not skip_validation:
                 self.clean(new_settings)
             self._handle_and_set_change_consequences(new_settings)
-            self._save_and_propagate(request, new_settings)
+            self._save_and_propagate(request, new_settings, system_user)
 
     def _update_ad_group(self, request, updates):
         if 'name' in updates:
@@ -75,10 +75,9 @@ class AdGroupSettingsMixin(object):
         return new_updates
 
     @staticmethod
-    def _apply_updates(new_settings, updates, system_user=None):
+    def _apply_updates(new_settings, updates):
         for key, value in updates.items():
             setattr(new_settings, key, value)
-        new_settings.system_user = system_user
 
     def _handle_and_set_change_consequences(self, new_settings):
         self._handle_b1_sources_group_adjustments(new_settings)
@@ -166,9 +165,9 @@ class AdGroupSettingsMixin(object):
         from automation import autopilot
         autopilot.initialize_budget_autopilot_on_ad_group(new_settings, send_mail=True)
 
-    def _save_and_propagate(self, request, new_settings):
+    def _save_and_propagate(self, request, new_settings, system_user):
         changes = self.get_setting_changes(new_settings)
-        new_settings.save(request, update_fields=list(changes.keys()))
+        new_settings.save(request, update_fields=list(changes.keys()), system_user=system_user)
 
         core.signals.settings_change.send_robust(
             sender=self.__class__, request=request, instance=new_settings,
