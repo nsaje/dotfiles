@@ -40,9 +40,11 @@ def _update_campaign(campaign):
 
 
 def _is_allowed_to_run(log, campaign, campaign_state):
+    is_max_end_date_past = _is_max_end_date_past(log, campaign, campaign_state)
+    is_below_threshold = _is_below_threshold(log, campaign, campaign_state)
     allowed_to_run = (
-        not _is_max_end_date_past(log, campaign, campaign_state) and
-        not _is_below_threshold(log, campaign, campaign_state)
+        not is_max_end_date_past and
+        not is_below_threshold
     )
     log.add_context({'allowed_to_run': allowed_to_run})
     return allowed_to_run
