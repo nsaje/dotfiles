@@ -11,6 +11,8 @@ _FIELD_MAPPING = {
     'week': ('Week',),
     'month': ('Month',),
 
+    'currency': ('Currency',),
+
     'agency': ('Agency',),
     'agency_id': ('Agency Id', 'Agency ID'),
     'account_id': ('Account Id', 'Account ID'),
@@ -165,6 +167,23 @@ _FIELD_MAPPING_PUBLISHERS_OVERRIDES = {
     'domain_link': ('Link',),
 }
 
+_COST_FIELDS = (
+    'bid_cpc', 'daily_budget', 'agency_cost', 'avg_cost_for_new_visitor', 'avg_cost_per_minute',
+    'avg_cost_per_non_bounced_visit', 'avg_cost_per_pageview', 'avg_cost_per_visit', 'billing_cost', 'cpc', 'cpm',
+    'data_cost', 'e_data_cost', 'e_media_cost', 'e_yesterday_cost', 'license_fee', 'margin', 'media_cost',
+    'yesterday_cost', 'allocated_budgets', 'spend_projection', 'license_fee_projection', 'flat_fee', 'total_fee',
+    'total_fee_projection', 'video_cpv', 'video_cpcv', 'avg_etfm_cost_for_new_visitor', 'avg_etfm_cost_per_minute',
+    'avg_etfm_cost_per_non_bounced_visit', 'avg_etfm_cost_per_pageview', 'avg_etfm_cost_per_visit',
+    'avg_et_cost_for_new_visitor', 'avg_et_cost_per_minute', 'avg_et_cost_per_non_bounced_visit',
+    'avg_et_cost_per_pageview', 'avg_et_cost_per_visit', 'etfm_cost', 'etf_cost', 'et_cost', 'at_cost',
+    'yesterday_etfm_cost', 'yesterday_et_cost', 'yesterday_at_cost', 'etfm_cpc', 'et_cpc', 'etfm_cpm', 'et_cpm',
+    'video_etfm_cpv', 'video_et_cpv', 'video_etfm_cpcv', 'video_et_cpcv',
+)
+
+_DYNAMIC_COST_FIELDS_PREFIXES = (
+    'avg_etfm_cost_per_', 'avg_et_cost_per_', 'avg_cost_per_', 'roas_etfm_', 'roas_et_', 'roas_',
+)
+
 
 class FieldsMeta(type):
     # support init of a class
@@ -291,6 +310,11 @@ def get_conversion_goals_column_names_mapping(conversion_goals):
 def add_date_to_name(name):
     local_date = dates_helper.local_today()
     return '{} ({})'.format(name, local_date.strftime('%Y-%m-%d'))
+
+
+def is_cost_column(column_name, field_name_mapping):
+    field_name = get_field_name(column_name, field_name_mapping)
+    return field_name in _COST_FIELDS or field_name.startswith(_DYNAMIC_COST_FIELDS_PREFIXES)
 
 
 DEFAULT_FIELD_MAPPING = custom_field_to_column_name_mapping()
