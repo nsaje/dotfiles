@@ -104,13 +104,13 @@ class AdGroupSettings(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def _supports_max_cpm(self, latest_ad_group_source_settings):
+    def _supports_max_cpm(self, ad_group_sources):
         unsupported_sources = []
-        for ad_group_source_settings in latest_ad_group_source_settings:
-            if ad_group_source_settings.state != constants.AdGroupSourceSettingsState.ACTIVE:
+        for ad_group_source in ad_group_sources:
+            if ad_group_source.settings.state != constants.AdGroupSourceSettingsState.ACTIVE:
                 continue
 
-            source = ad_group_source_settings.ad_group_source.source
+            source = ad_group_source.source
             if not source.can_set_max_cpm():
                 unsupported_sources.append(source)
 
@@ -119,14 +119,8 @@ class AdGroupSettings(api_common.BaseApiView):
     def get_warnings(self, request, ad_group_settings):
         warnings = {}
 
-        ad_group = ad_group_settings.ad_group
-        latest_ad_group_source_settings = models.AdGroupSourceSettings.objects.all().\
-            filter(ad_group_source__ad_group=ad_group).\
-            group_current_settings().\
-            select_related('ad_group_source__source')
-
-        supports_retargeting, unsupported_sources =\
-            retargeting_helper.supports_retargeting(latest_ad_group_source_settings)
+        ad_group_sources = ad_group_settings.ad_group.adgroupsource_set.all().select_related('source', 'settings')
+        supports_retargeting, unsupported_sources = retargeting_helper.supports_retargeting(ad_group_sources)
         if not supports_retargeting:
             retargeting_warning = {
                 'sources': [s.name for s in unsupported_sources]
@@ -138,7 +132,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 'campaign_id': ad_group_settings.ad_group.campaign.id,
             }
 
-        max_cpm_unsupported_sources = self._supports_max_cpm(latest_ad_group_source_settings)
+        max_cpm_unsupported_sources = self._supports_max_cpm(ad_group_sources)
         if max_cpm_unsupported_sources:
             warnings['max_cpm'] = {'sources': [s.name for s in max_cpm_unsupported_sources]}
 

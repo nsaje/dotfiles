@@ -1,5 +1,5 @@
 from decimal import Decimal
-from mock import patch, MagicMock, ANY
+from mock import patch
 
 from django import test
 
@@ -66,15 +66,10 @@ class AutopilotHelpersTestCase(test.TestCase):
                                     helpers.get_autopilot_active_sources_settings(ad_groups_and_settings)])
 
     @patch('utils.k1_helper.update_ad_group')
-    @patch('dash.models.AdGroupSettings.copy_settings')
     @patch('dash.views.helpers.set_ad_group_sources_cpcs')
     def test_update_ad_group_b1_sources_group_values(self, mock_set_ad_group_sources_cpcs,
-                                                     mock_copy_settings, mock_k1_update_ad_group):
+                                                     mock_k1_update_ad_group):
         ag = models.AdGroup.objects.get(id=1)
-
-        current_ag_settings = MagicMock()
-        current_ag_settings.cpc_cc = Decimal('0.1')
-        mock_copy_settings.return_value = current_ag_settings
 
         changes = {
             'cpc_cc': Decimal('0.123'),
@@ -83,16 +78,13 @@ class AutopilotHelpersTestCase(test.TestCase):
         ap = constants.SystemUserType.AUTOPILOT
         helpers.update_ad_group_b1_sources_group_values(ag, changes, system_user=ap)
 
-        mock_copy_settings.assert_called_once()
+        mock_set_ad_group_sources_cpcs.assert_called()
 
-        mock_set_ad_group_sources_cpcs.assert_called_with(ANY, ag, current_ag_settings)
-        mock_set_ad_group_sources_cpcs.assert_called_once()
+        mock_k1_update_ad_group.assert_called()
 
-        mock_k1_update_ad_group.assert_called_once()
-
-        self.assertEqual(current_ag_settings.b1_sources_group_cpc_cc, Decimal('0.123'))
-        self.assertEqual(current_ag_settings.b1_sources_group_daily_budget, Decimal('123'))
-        self.assertEqual(current_ag_settings.system_user, ap)
+        self.assertEqual(ag.settings.b1_sources_group_cpc_cc, Decimal('0.123'))
+        self.assertEqual(ag.settings.b1_sources_group_daily_budget, Decimal('123'))
+        self.assertEqual(ag.settings.system_user, ap)
 
 
 class AutopilotGetEntitiesTestCase(test.TestCase):

@@ -8,8 +8,6 @@ import core.entity
 import core.source
 from dash import constants
 
-from . import instance
-
 
 class InstanceTest(TestCase):
 
@@ -33,12 +31,12 @@ class InstanceTest(TestCase):
         changes = current_settings.get_setting_changes(new_settings)
         self.assertDictEqual(changes, {'b1_sources_group_enabled': True})
 
-        changes_new, cs2, ns2 = instance.AdGroupSettingsMixin._b1_sources_group_adjustments(
-            changes, current_settings, new_settings)
+        current_settings._handle_b1_sources_group_adjustments(new_settings)
+        changes_new = current_settings.get_setting_changes(new_settings)
 
         self.assertDictEqual(changes_new, {
             'b1_sources_group_enabled': True,
-            'b1_sources_group_cpc_cc': min(ns2.cpc_cc, core.source.AllRTBSource.default_cpc_cc),
+            'b1_sources_group_cpc_cc': min(new_settings.cpc_cc, core.source.AllRTBSource.default_cpc_cc),
             'b1_sources_group_daily_budget': core.source.AllRTBSource.default_daily_budget_cc,
         })
 
@@ -68,9 +66,8 @@ class InstanceTest(TestCase):
             'b1_sources_group_daily_budget': Decimal('10.0'),
         })
 
-        changes_new, cs2, ns2 = instance.AdGroupSettingsMixin._b1_sources_group_adjustments(
-            changes, current_settings, new_settings)
-
+        current_settings._handle_b1_sources_group_adjustments(new_settings)
+        changes_new = current_settings.get_setting_changes(new_settings)
         self.assertDictEqual(changes_new, {
             'b1_sources_group_enabled': True,
             'b1_sources_group_cpc_cc': Decimal('0.211'),
@@ -101,9 +98,8 @@ class InstanceTest(TestCase):
             'cpc_cc': Decimal('0.05'),
         })
 
-        changes_new, cs2, ns2 = instance.AdGroupSettingsMixin._b1_sources_group_adjustments(
-            changes, current_settings, new_settings)
-
+        current_settings._handle_b1_sources_group_adjustments(new_settings)
+        changes_new = current_settings.get_setting_changes(new_settings)
         self.assertDictEqual(changes_new, {
             'b1_sources_group_enabled': True,
             'b1_sources_group_cpc_cc': Decimal('0.05'),

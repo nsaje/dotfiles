@@ -11,7 +11,7 @@ import dash.constants
 import dash.models
 from .constants import DailyBudgetChangeComment, CpcChangeComment
 from . import settings
-from utils import url_helper, k1_helper, email_helper
+from utils import url_helper, email_helper
 
 logger = logging.getLogger(__name__)
 
@@ -158,25 +158,18 @@ def update_ad_group_source_values(ad_group_source, changes, system_user=None, la
 
 
 def update_ad_group_b1_sources_group_values(ad_group, changes, system_user=None):
-    new_settings = ad_group.get_current_settings().copy_settings()
-    changed = False
+    kwargs = {}
 
-    if 'cpc_cc' in changes and new_settings.b1_sources_group_cpc_cc != changes['cpc_cc']:
-        changed = True
-        new_settings.b1_sources_group_cpc_cc = changes['cpc_cc']
-        ad_group_sources_cpcs = dash.views.helpers.get_adjusted_ad_group_sources_cpcs(ad_group, new_settings)
-        dash.views.helpers.set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, new_settings)
+    if 'cpc_cc' in changes:
+        kwargs['b1_sources_group_cpc_cc'] = changes['cpc_cc']
 
-    if 'daily_budget_cc' in changes and new_settings.b1_sources_group_daily_budget != changes['daily_budget_cc']:
-        changed = True
-        new_settings.b1_sources_group_daily_budget = changes['daily_budget_cc']
+    if 'daily_budget_cc' in changes:
+        kwargs['b1_sources_group_daily_budget'] = changes['daily_budget_cc']
 
-    if not changed:
+    if not kwargs:
         return
 
-    k1_helper.update_ad_group(ad_group.pk, msg='AutopilotUpdateAdGroupB1SourcesGroupValues')
-    new_settings.system_user = system_user
-    new_settings.save(None)
+    ad_group.settings.update(None, skip_validation=True, system_user=system_user, **kwargs)
 
 
 def get_ad_group_sources_minimum_cpc(ad_group_source, bcm_modifiers):

@@ -8,11 +8,11 @@ class RetargetingHelperTest(TestCase):
     fixtures = ['test_models.yaml']
 
     def test_supports_retargeting_fail(self):
-        settings = dash.models.AdGroupSourceSettings.objects.all().\
-            filter(ad_group_source__ad_group_id=1).\
-            group_current_settings().\
-            select_related('ad_group_source')
-        supports_retargeting, sources = dash.retargeting_helper.supports_retargeting(settings)
+        ad_group_sources = (
+            dash.models.AdGroup.objects.get(pk=1)
+            .adgroupsource_set.all()
+            .select_related('source', 'settings'))
+        supports_retargeting, sources = dash.retargeting_helper.supports_retargeting(ad_group_sources)
         self.assertFalse(supports_retargeting)
         self.assertEqual(1, len(sources))
         self.assertEqual(dash.constants.SourceType.ADBLADE, sources[0].source_type.type)
@@ -25,10 +25,10 @@ class RetargetingHelperTest(TestCase):
         adblade.deprecated = False
         adblade.save()
 
-        settings = dash.models.AdGroupSourceSettings.objects.all().\
-            filter(ad_group_source__ad_group_id=1).\
-            group_current_settings().\
-            select_related('ad_group_source')
-        supports_retargeting, sources = dash.retargeting_helper.supports_retargeting(settings)
+        ad_group_sources = (
+            dash.models.AdGroup.objects.get(pk=1)
+            .adgroupsource_set.all()
+            .select_related('source', 'settings'))
+        supports_retargeting, sources = dash.retargeting_helper.supports_retargeting(ad_group_sources)
         self.assertTrue(supports_retargeting)
         self.assertEqual(0, len(sources))

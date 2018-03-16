@@ -60,8 +60,7 @@ class AdGroupBCMMixin(object):
     def _validate_correct_settings_migration(self, request):
         # NOTE: We could be saving invalid settings because we skip this part of validation when
         # updating settings.
-        campaign_settings = self.campaign.get_current_settings()
-        self.settings.clean(request, self, self.settings, self.settings, campaign_settings)
+        self.settings.clean(self.settings)
 
     def _transform_whole_value(self, number, fee, margin):
         if not number:
