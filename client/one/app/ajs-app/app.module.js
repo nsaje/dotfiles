@@ -49,9 +49,30 @@ angular.module('one').config(function ($uibTooltipProvider) {
 // ui-select2 directive.
 angular.module('one').config(function ($provide) {
     $provide.decorator('uiSelect2Directive', function ($delegate) {
-        var directive;
-        directive = $delegate[0];
+        var directive = $delegate[0];
         directive.priority = 10;
+        return $delegate;
+    });
+});
+
+// HACK: Decorate uib-dropdown-toggle to add/remove no-scroll--mobile class to/from body in order to prevent  scrolling
+// of the page when dropdowns are open on mobile devices.
+angular.module('one').config(function ($provide) {
+    $provide.decorator('uibDropdownToggleDirective', function ($delegate) {
+        var directive = $delegate[0];
+        var originalLinkFn = directive.link;
+        directive.compile = function () {
+            return function newLinkFn (scope, element, attrs, dropdownCtrl) {
+                originalLinkFn.apply(directive, arguments);
+                scope.$watch(dropdownCtrl.isOpen, function (isDropdownOpen) {
+                    if (isDropdownOpen) {
+                        $('body').addClass('no-scroll--mobile');
+                    } else {
+                        $('body').removeClass('no-scroll--mobile');
+                    }
+                });
+            };
+        };
         return $delegate;
     });
 });
