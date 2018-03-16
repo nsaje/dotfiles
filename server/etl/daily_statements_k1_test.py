@@ -5,7 +5,9 @@ from mock import patch
 from django.test import TestCase
 from django.db.models import Max
 
+import core.multicurrency
 import dash.models
+import dash.constants
 from etl import daily_statements_k1 as daily_statements
 from utils import converters
 from utils import test_helper
@@ -22,6 +24,12 @@ class DailyStatementsK1TestCase(TestCase):
         self.campaign1 = dash.models.Campaign.objects.get(id=1)
         self.campaign2 = dash.models.Campaign.objects.get(id=2)
         self.campaign3 = dash.models.Campaign.objects.get(id=3)
+
+        core.multicurrency.CurrencyExchangeRate.objects.create(
+            date='1970-01-01',
+            currency=dash.constants.Currency.USD,
+            exchange_rate=1,
+        )
 
     def _configure_ad_group_stats_mock(self, mock_ad_group_stats, return_values):
         def f(date, all_campaigns, account_id):

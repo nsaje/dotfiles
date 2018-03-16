@@ -48,14 +48,14 @@ class Command(ExceptionCommand):
 
     def _get_slack_message(self, campaigns):
         message = self._get_message_title()
-        for campaign, remaining_budget in campaigns.items():
-            message += '- {}: ${} remaining budget\n'.format(slack.campaign_url(campaign), remaining_budget)
+        for campaign, data in campaigns.items():
+            message += '- {}: ${} remaining budget (${} freed)\n'.format(slack.campaign_url(campaign), data['available'], data['freed'])
         return message
 
     def _get_verbose_message(self, campaigns):
         message = self._get_message_title()
-        for campaign, remaining_budget in campaigns.items():
-            message += '- {} ({}): ${} remaining budget\n'.format(campaign.name, campaign.id, remaining_budget)
+        for campaign, data in campaigns.items():
+            message += '- {} ({}): ${} remaining budget (${} freed)\n'.format(campaign.name, campaign.id, data['available'], data['freed'])
         return message
 
     def _get_message_title(self):
