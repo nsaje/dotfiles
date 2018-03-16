@@ -13,7 +13,7 @@ from . import update_notifier
 class AdGroupSettingsNotifyTest(TestCase):
 
     def setUp(self):
-        self.ad_group = magic_mixer.blend(core.entity.AdGroup)
+        self.ad_group = magic_mixer.blend(core.entity.AdGroup, campaign__real_time_campaign_stop=True)
         self.notify_fields = {'state', 'b1_sources_group_state', 'b1_sources_group_daily_budget'}
 
     @patch('utils.sqs_helper.write_message_json')
@@ -43,7 +43,7 @@ class AdGroupSettingsNotifyTest(TestCase):
 class AdGroupSourceSettingsNotifyTest(TestCase):
 
     def setUp(self):
-        self.ad_group_source = magic_mixer.blend(core.entity.AdGroupSource)
+        self.ad_group_source = magic_mixer.blend(core.entity.AdGroupSource, ad_group__campaign__real_time_campaign_stop=True)
         self.notify_fields = {'state', 'daily_budget_cc'}
 
     @patch('utils.sqs_helper.write_message_json')
@@ -72,7 +72,7 @@ class AdGroupSourceSettingsNotifyTest(TestCase):
 class BudgetLineItemNotifyTest(TestCase):
 
     def setUp(self):
-        self.campaign = magic_mixer.blend(core.entity.Campaign)
+        self.campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
 
     @patch('utils.sqs_helper.write_message_json')
     @patch('django.conf.settings.CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE', 'test-queue')
