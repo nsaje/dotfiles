@@ -81,6 +81,12 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
     comment = models.CharField(max_length=256, blank=True, null=True)
     special_terms = models.CharField(max_length=256, blank=True, null=True)
 
+    currency = models.CharField(
+        max_length=3,
+        default=constants.Currency.USD,
+        choices=constants.Currency.get_choices(),
+    )
+
     created_dt = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(
