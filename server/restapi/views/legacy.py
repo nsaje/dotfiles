@@ -228,6 +228,7 @@ class CampaignSerializer(SettingsSerializer):
             'name': settings['name'],
             'archived': data_internal['data']['archived'],
             'iabCategory': fields.DashConstantField(constants.IABCategory).to_representation(settings['iab_category']),
+            'language': fields.DashConstantField(constants.Language).to_representation(settings['language']),
             # 'campaignManager': self._user_to_email(settings['campaign_manager']),  # TODO(nsaje): convert to email
             'tracking': {
                 'ga': {
@@ -257,6 +258,7 @@ class CampaignSerializer(SettingsSerializer):
             'id': data['id'],
             'name': data['name'],
             'iab_category': fields.DashConstantField(constants.IABCategory).to_internal_value(data['iabCategory']),
+            'language': fields.DashConstantField(constants.Language).to_internal_value(data['language']),
             'archived': data['archived'],
             # 'campaign_manager': data['campaignManager'],  # TODO(nsaje): convert from email
             'enable_ga_tracking': data['tracking']['ga']['enabled'],

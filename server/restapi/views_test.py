@@ -120,6 +120,7 @@ class CampaignsTest(RESTAPITest):
         account_id=321,
         archived=False,
         iab_category=constants.IABCategory.IAB1_1,
+        language=constants.Language.ENGLISH,
         name='My Campaign',
         enable_ga_tracking=True,
         ga_tracking_type=constants.GATrackingType.EMAIL,
@@ -137,6 +138,7 @@ class CampaignsTest(RESTAPITest):
             'accountId': str(account_id),
             'archived': archived,
             'iabCategory': constants.IABCategory.get_name(iab_category),
+            'language': constants.Language.get_name(language),
             'name': name,
             'tracking': {
                 'ga': {
@@ -169,6 +171,7 @@ class CampaignsTest(RESTAPITest):
             account_id=campaign_db.account_id,
             archived=settings_db.archived,
             iab_category=settings_db.iab_category,
+            language=settings_db.language,
             name=campaign_db.name,
             enable_ga_tracking=settings_db.enable_ga_tracking,
             ga_tracking_type=settings_db.ga_tracking_type,

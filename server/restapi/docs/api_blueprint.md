@@ -339,6 +339,7 @@ id        | string                | the campaign's id                          |
 accountId | string                | id of the account this campaign belongs to | required | read only
 name      | string                | the name of the campaign                   | required | optional
 iabCategory | [IAB category](#iab-categories) | IAB category of the campaign   | optional | optional
+language  | [Language](#languages) | Language of the ads in the campaign       | optional | read only
 archived  | bool                  | Is the Campaign archived? Set to `true` to archive a Campaign and to `false` to restore it. | optional | optional
 tracking  | [tracking](#tracking) | tracking settings                          | optional | optional
 targeting    | [targeting](#campaign-targeting)   | campaign targeting settings                                                                                                               | optional | optional
@@ -1821,6 +1822,29 @@ A string representing a decimal number. Example: `"15.48"`
 - `ACTIVE_CPC` - Optimize Bids
 - `ACTIVE_CPC_BUDGET` - Optimize Bids and Daily Budgets
 - `INACTIVE` - Disabled
+
+<a name="languages"></a>
+## Language
+- `ARABIC` - Arabic
+- `GERMAN` - German
+- `GREEK` - Greek
+- `ENGLISH` - English
+- `SPANISH` - Spanish
+- `FRENCH` - French
+- `INDONESIAN` - Indonesian
+- `ITALIAN` - Italian
+- `JAPANESE` - Japanese
+- `MALAY` - Malay
+- `DUTCH` - Dutch
+- `PORTUGUESE` - Portuguese
+- `ROMANIAN` - Romanian
+- `RUSSIAN` - Russian
+- `SWEDISH` - Swedish
+- `TURKISH` - Turkish
+- `VIETNAMESE` - Vietnamese
+- `SIMPLIFIED_CHINESE` - Simplified Chinese
+- `TRADITIONAL_CHINESE` - Traditional Chinese
+- `OTHER` - Other
 
 <a name="iab-categories"></a>
 ## IAB Category
