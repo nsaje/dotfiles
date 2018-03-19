@@ -743,7 +743,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
         data = {k: v for k, v in list(form.cleaned_data.items()) if v is not None}
 
-        response = ad_group_source.update(request, k1_sync=True, **data)
+        response = ad_group_source.settings.update(request, k1_sync=True, **data)
 
         allowed_sources = {source.id for source in ad_group.campaign.account.allowed_sources.all()}
         campaign_settings = ad_group.campaign.get_current_settings()

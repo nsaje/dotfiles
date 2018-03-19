@@ -32,7 +32,7 @@ class AdGroupSourcesViewList(RESTAPIBaseView):
                     source=item['ad_group_source']['source'],
                 )
                 item.pop('ad_group_source')
-                ad_group_source.update(request, k1_sync=True, **item)
+                ad_group_source.settings.update(request, k1_sync=True, **item)
 
         return self.get(request, ad_group.id)
 

@@ -1124,7 +1124,7 @@ def _restore_user_sources_settings(ad_group):
 
             changes[key] = getattr(user_settings, key)
 
-        ad_group_source.update(
+        ad_group_source.settings.update(
             request=None,
             system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
             k1_sync=False,
@@ -1161,7 +1161,7 @@ def _set_ad_group_end_date(ad_group, end_date):
 
 
 def _stop_ad_group_source(ad_group_source):
-    ad_group_source.update(
+    ad_group_source.settings.update(
         request=None,
         system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
         k1_sync=False,
@@ -1173,7 +1173,7 @@ def _stop_ad_group_source(ad_group_source):
 
 
 def _update_ad_group_source_cap(ad_group_source, cap):
-    ad_group_source.update(
+    ad_group_source.settings.update(
         request=None,
         system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
         k1_sync=False,

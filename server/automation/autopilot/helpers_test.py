@@ -60,7 +60,7 @@ class AutopilotHelpersTestCase(test.TestCase):
 
         source = models.AdGroupSource.objects.get(id=1)
         self.assertTrue(source in [setting.ad_group_source for setting in active_enabled_sources])
-        source.update(k1_sync=False, skip_automation=True, state=constants.AdGroupSettingsState.INACTIVE)
+        source.settings.update(k1_sync=False, skip_automation=True, state=constants.AdGroupSettingsState.INACTIVE)
         self.assertEqual(source.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
         self.assertFalse(source in [setting.ad_group_source for setting in
                                     helpers.get_autopilot_active_sources_settings(ad_groups_and_settings)])

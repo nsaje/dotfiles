@@ -728,7 +728,7 @@ def set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, ad_group_settings
         ad_group_source_settings = ad_group_source.get_current_settings()
         if ad_group_source_settings.cpc_cc == adjusted_cpc:
             continue
-        ad_group_source.update(
+        ad_group_source.settings.update(
             cpc_cc=adjusted_cpc,
             k1_sync=False,
             skip_validation=skip_validation,

@@ -19,8 +19,6 @@ import utils.exc
 import utils.k1_helper
 import utils.numbers
 
-from . import validation
-
 logger = logging.getLogger(__name__)
 
 
@@ -35,7 +33,7 @@ class AdGroupSourceManager(core.common.QuerySetManager):
         ad_group_source.save(None)
 
         ad_group_source.settings = core.entity.settings.AdGroupSourceSettings(ad_group_source=ad_group_source)
-        ad_group_source.settings.update(None)
+        ad_group_source.settings.update_unsafe(None)
         ad_group_source.settings_id = ad_group_source.settings.id
         ad_group_source.save(None)
 
@@ -201,61 +199,6 @@ class AdGroupSource(models.Model):
                 source_id__in=core.source.Source.objects.all().filter_can_manage_content_ads().values_list(
                     'id', flat=True))
 
-    @transaction.atomic
-    def update(self, request=None, k1_sync=True, system_user=None,
-               skip_automation=False, skip_validation=False, skip_notification=False,
-               **updates):
-        result = {
-            'autopilot_changed_sources_text': '',
-        }
-
-        ad_group_source_settings = self.get_current_settings()
-        ad_group_settings = self.ad_group.get_current_settings()
-        campaign_settings = self.ad_group.campaign.get_current_settings()
-
-        if not skip_validation:
-            validation.validate_ad_group_source_updates(
-                self,
-                updates,
-                ad_group_settings,
-                ad_group_source_settings,
-            )
-
-        if not skip_automation:
-            validation.validate_ad_group_source_campaign_stop(
-                self,
-                updates,
-                campaign_settings,
-                ad_group_settings,
-                ad_group_source_settings,
-            )
-
-        old_settings = self.settings.get_settings_dict()
-
-        changes = self.settings.get_changes(updates)
-        if not changes:
-            return result
-
-        if not request:
-            updates['system_user'] = system_user
-        self.settings.update(request, **updates)
-
-        from automation import autopilot
-        if not skip_automation and\
-                ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
-                'state' in updates:
-            changed_sources = autopilot.initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False)
-            result['autopilot_changed_sources_text'] = ', '.join(
-                [s.source.name for s in changed_sources])
-
-        if not skip_notification:
-            self._notify_ad_group_source_settings_changed(request, changes, old_settings)
-
-        if k1_sync:
-            utils.k1_helper.update_ad_group(self.ad_group.pk, 'AdGroupSource.update')
-
-        return result
-
     def set_initial_settings(self, request, ad_group_settings, **updates):
         from dash.views import helpers
 
@@ -284,7 +227,7 @@ class AdGroupSource(models.Model):
         if not enabling_autopilot_sources_allowed:
             updates['state'] = constants.AdGroupSourceSettingsState.INACTIVE
 
-        self.update(
+        self.settings.update(
             request,
             k1_sync=False,
             skip_automation=True,
@@ -294,7 +237,7 @@ class AdGroupSource(models.Model):
 
     def set_cloned_settings(self, request, source_ad_group_source):
         source_ad_group_source_settings = source_ad_group_source.get_current_settings()
-        self.update(
+        self.settings.update(
             request,
             k1_sync=False,
             skip_automation=True,
@@ -350,7 +293,7 @@ class AdGroupSource(models.Model):
             'cpc_cc': self._transform_cpc_cc(current_settings.cpc_cc, fee, margin),
         }
 
-        self.update(
+        self.settings.update(
             request=request,
             k1_sync=False,
             skip_automation=True,
@@ -380,25 +323,3 @@ class AdGroupSource(models.Model):
 
     def __str__(self):
         return '{} - {}'.format(self.ad_group, self.source)
-
-    def _notify_ad_group_source_settings_changed(self, request, changes, old_settings):
-        if not request:
-            return
-
-        changes_text_parts = []
-        for key, val in list(changes.items()):
-            if val is None:
-                continue
-            field = self.settings.get_human_prop_name(key)
-            val = self.settings.get_human_value(key, val)
-            source_name = self.source.name
-            old_val = old_settings[key]
-            if old_val is None:
-                text = '%s %s set to %s' % (source_name, field, val)
-            else:
-                old_val = self.settings.get_human_value(key, old_val)
-                text = '%s %s set from %s to %s' % (source_name, field, old_val, val)
-            changes_text_parts.append(text)
-
-        utils.email_helper.send_ad_group_notification_email(
-            self.ad_group, request, '\n'.join(changes_text_parts))

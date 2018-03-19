@@ -8,8 +8,6 @@ import dash.constants
 from utils.magic_mixer import magic_mixer
 from utils import dates_helper, exc
 
-from . import validation
-
 
 class ValidateAdGroupSourceUpdatesTestCase(TestCase):
 
@@ -50,7 +48,7 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
     def test_validate_ad_group_source_cpc_cc(self):
         ad_group_source = magic_mixer.blend(
             core.entity.AdGroupSource, ad_group__campaign=self.campaign, source=self.source)
-        ad_group_source.settings.update(
+        ad_group_source.settings.update_unsafe(
             None,
             state=dash.constants.AdGroupSettingsState.ACTIVE,
             cpc_cc=decimal.Decimal('0.35'),
@@ -60,12 +58,7 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
         updates = {}
         updates['cpc_cc'] = decimal.Decimal('0.05')
         with self.assertRaises(exc.ValidationError) as cm:
-            validation.validate_ad_group_source_updates(
-                ad_group_source,
-                updates,
-                ad_group_source.ad_group.get_current_settings(),
-                ad_group_source.settings,
-            )
+            ad_group_source.settings.update(None, **updates)
 
         exception = cm.exception
         self.assertEqual(1, len(exception.errors['cpc_cc']))
@@ -73,29 +66,19 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
 
         updates['cpc_cc'] = decimal.Decimal('8.404')
         with self.assertRaises(exc.ValidationError) as cm:
-            validation.validate_ad_group_source_updates(
-                ad_group_source,
-                updates,
-                ad_group_source.ad_group.get_current_settings(),
-                ad_group_source.settings,
-            )
+            ad_group_source.settings.update(None, **updates)
 
         exception = cm.exception
         self.assertEqual(1, len(exception.errors['cpc_cc']))
         self.assertTrue('$8.403' in exception.errors['cpc_cc'][0])
 
         updates['cpc_cc'] = decimal.Decimal('5')
-        validation.validate_ad_group_source_updates(
-            ad_group_source,
-            updates,
-            ad_group_source.ad_group.get_current_settings(),
-            ad_group_source.settings,
-        )
+        ad_group_source.settings.update(None, **updates)
 
     def test_validate_ad_group_source_daily_budget(self):
         ad_group_source = magic_mixer.blend(
             core.entity.AdGroupSource, ad_group__campaign=self.campaign, source=self.source)
-        ad_group_source.settings.update(
+        ad_group_source.settings.update_unsafe(
             None,
             state=dash.constants.AdGroupSettingsState.ACTIVE,
             cpc_cc=decimal.Decimal('0.35'),
@@ -105,12 +88,7 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
         updates = {}
         updates['daily_budget_cc'] = decimal.Decimal('0.5')
         with self.assertRaises(exc.ValidationError) as cm:
-            validation.validate_ad_group_source_updates(
-                ad_group_source,
-                updates,
-                ad_group_source.ad_group.get_current_settings(),
-                ad_group_source.settings,
-            )
+            ad_group_source.settings.update(None, **updates)
 
         exception = cm.exception
         self.assertEqual(1, len(exception.errors['daily_budget_cc']))
@@ -118,21 +96,11 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
 
         updates['daily_budget_cc'] = decimal.Decimal('99999')
         with self.assertRaises(exc.ValidationError) as cm:
-            validation.validate_ad_group_source_updates(
-                ad_group_source,
-                updates,
-                ad_group_source.ad_group.get_current_settings(),
-                ad_group_source.settings,
-            )
+            ad_group_source.settings.update(None, **updates)
 
         exception = cm.exception
         self.assertEqual(1, len(exception.errors['daily_budget_cc']))
         self.assertTrue('$16806' in exception.errors['daily_budget_cc'][0])
 
         updates['daily_budget_cc'] = decimal.Decimal('100')
-        validation.validate_ad_group_source_updates(
-            ad_group_source,
-            updates,
-            ad_group_source.ad_group.get_current_settings(),
-            ad_group_source.settings,
-        )
+        ad_group_source.settings.update(None, **updates)

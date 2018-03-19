@@ -125,7 +125,7 @@ class Command(ExceptionCommand):
                 continue
 
             if ad_group_source.get_current_settings().state != constants.AdGroupSourceSettingsState.INACTIVE:
-                ad_group_source.update(self.request, state=constants.AdGroupSourceSettingsState.INACTIVE)
+                ad_group_source.settings.update(self.request, state=constants.AdGroupSourceSettingsState.INACTIVE)
 
     def _get_audiences(self, campaign):
         existing_audiences = (audiences.Audience.objects

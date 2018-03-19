@@ -71,5 +71,5 @@ class NotifyAdGroupSourceSettingsChangeTest(TestCase):
     @patch('automation.campaignstop.service.update_notifier.notify_ad_group_source_settings_change')
     def test_notify_ad_group_settings_change(self, mock_notify):
         changes = {'state': 1}
-        self.ad_group_source.settings.update(None, **changes)
+        self.ad_group_source.settings.update(None, skip_automation=True, **changes)
         mock_notify.assert_called_with(self.ad_group_source.settings, changes)

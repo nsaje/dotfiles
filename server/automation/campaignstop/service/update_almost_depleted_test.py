@@ -93,7 +93,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.source.source_type.type = dash.constants.SourceType.B1
         self.source.source_type.save()
         self.ad_group.settings.update(None, b1_sources_group_enabled=True)
-        self.ad_group_source.settings.update(None, state=dash.constants.AdGroupSourceSettingsState.INACTIVE)
+        self.ad_group_source.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.INACTIVE)
         self.assertEqual(self.ad_group_source.settings.state, dash.constants.AdGroupSourceSettingsState.INACTIVE)
 
         today = dates_helper.local_today()
@@ -114,7 +114,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.source.source_type.type = dash.constants.SourceType.B1
         self.source.source_type.save()
         self.ad_group.settings.update(None, b1_sources_group_enabled=True)
-        self.ad_group_source.settings.update(None, state=dash.constants.AdGroupSourceSettingsState.INACTIVE)
+        self.ad_group_source.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.INACTIVE)
         self.assertEqual(self.ad_group_source.settings.state, dash.constants.AdGroupSourceSettingsState.INACTIVE)
 
         today = dates_helper.local_today()
@@ -154,7 +154,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         adg_source_setting_state = AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).first().state
         self.assertEqual(adg_source_setting_state, active_adg_source)
 
-        self.ad_group_source.settings.update(None, daily_budget_cc=800)
+        self.ad_group_source.settings.update_unsafe(None, daily_budget_cc=800)
         today = dates_helper.local_today()
         RealTimeDataHistory.objects.create(
             ad_group=self.ad_group,
@@ -178,7 +178,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         adg_source_setting_state = AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).first().state
         self.assertEqual(adg_source_setting_state, active_adg_source)
 
-        self.ad_group_source.settings.update(None, daily_budget_cc=901)
+        self.ad_group_source.settings.update_unsafe(None, daily_budget_cc=901)
         today = dates_helper.local_today()
         RealTimeDataHistory.objects.create(
             ad_group=self.ad_group,
@@ -202,7 +202,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         adg_source_setting_state = AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).first().state
         self.assertEqual(adg_source_setting_state, active_adg_source)
 
-        self.ad_group_source.settings.update(None, daily_budget_cc=899)
+        self.ad_group_source.settings.update_unsafe(None, daily_budget_cc=899)
         today = dates_helper.local_today()
         RealTimeDataHistory.objects.create(
             ad_group=self.ad_group,
@@ -226,7 +226,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         adg_source_setting_state = AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).first().state
         self.assertEqual(adg_source_setting_state, active_adg_source)
 
-        self.ad_group_source.settings.update(None, daily_budget_cc=901)
+        self.ad_group_source.settings.update_unsafe(None, daily_budget_cc=901)
 
         self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
         campaignstop.service.update_almost_depleted.mark_almost_depleted_campaigns()
@@ -238,7 +238,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
         inactive_adg = dash.constants.AdGroupSettingsState.INACTIVE
         inactive_adg_source = dash.constants.AdGroupSourceSettingsState.INACTIVE
         self.ad_group.settings.update(None, state=inactive_adg)
-        self.ad_group_source.settings.update(None, state=inactive_adg_source)
+        self.ad_group_source.settings.update_unsafe(None, state=inactive_adg_source)
 
         adg_setting_state = AdGroupSettings.objects.filter(ad_group=self.ad_group).first().state
         self.assertEqual(adg_setting_state, inactive_adg)
@@ -261,7 +261,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
     @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_user_turns_off_ad_group_and_ad_group_source(self, _):
         self.ad_group.settings.update(None, state=dash.constants.AdGroupSettingsState.INACTIVE)
-        self.ad_group_source.settings.update(None, state=dash.constants.AdGroupSourceSettingsState.INACTIVE)
+        self.ad_group_source.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.INACTIVE)
 
         today = dates_helper.local_today()
         RealTimeDataHistory.objects.create(
@@ -288,7 +288,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
     @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_get_spend_method_one_entry_with_settings_budget(self, _):
         today = dates_helper.local_today()
-        self.ad_group_source.settings.update(None, daily_budget_cc=900.0000)
+        self.ad_group_source.settings.update_unsafe(None, daily_budget_cc=900.0000)
         adg_sources = [self.ad_group_source]
         adg_source_spends = {(self.ad_group.id, self.source.id, today): 800.000}
         returned_spend = campaignstop.service.update_almost_depleted._get_max_spend(adg_sources, adg_source_spends)
@@ -366,7 +366,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
     @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_when_user_disables_adgroup_we_should_get_realtime_data_from_all_sources(self, _):
         self.source.source_type.save()
-        self.ad_group_source.settings.update(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
+        self.ad_group_source.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
 
         source_2 = magic_mixer.blend(core.source.Source)
         source_3 = magic_mixer.blend(core.source.Source)
@@ -455,4 +455,4 @@ class UpdateAlmostDepletedTestCase(TestCase):
             ad_group=self.ad_group,
             source=self.source,
         )
-        self.ad_group_source.settings.update(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
+        self.ad_group_source.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)

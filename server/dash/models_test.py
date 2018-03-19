@@ -1120,13 +1120,13 @@ class HistoryTest(TestCase):
         ad_group = models.AdGroup.objects.get(pk=2)
         source = models.Source.objects.get(pk=1)
         adgs = models.AdGroupSource.objects.filter(ad_group=ad_group, source=source).first()
-        adgs.settings.update(None, daily_budget_cc=10000)
-        adgs.settings.update(None, daily_budget_cc=50000)
+        adgs.settings.update(None, daily_budget_cc=Decimal(10000))
+        adgs.settings.update(None, daily_budget_cc=Decimal(50000))
 
         adgs_hist = self._latest_ad_group_history(ad_group=ad_group)
         self.assertDictEqual(
             {
-                'daily_budget_cc': 50000,
+                'daily_budget_cc': '50000',
             },
             adgs_hist.changes)
         self.assertEqual(

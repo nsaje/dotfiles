@@ -98,7 +98,7 @@ def _enforce_ags_cpc(ad_group_source, current_cpc, min_cpc, max_cpc):
     adjusted_cpc = max(min_cpc or current_cpc, current_cpc)
     adjusted_cpc = min(max_cpc or adjusted_cpc, adjusted_cpc)
     if current_cpc != adjusted_cpc:
-        ad_group_source.update(
+        ad_group_source.settings.update(
             cpc_cc=adjusted_cpc,
             skip_validation=False
         )

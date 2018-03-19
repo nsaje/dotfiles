@@ -294,6 +294,11 @@ class AdGroupSourceSettingsTest(TestCase):
         self.client = Client()
         self.client.login(username=User.objects.get(pk=1).email, password='secret')
         self.ad_group = models.AdGroup.objects.get(pk=1)
+        self._set_ad_group_sources_state(constants.AdGroupSettingsState.INACTIVE)
+
+    def _set_ad_group_sources_state(self, state):
+        for ags in self.ad_group.adgroupsource_set.all():
+            ags.settings.update_unsafe(None, state=state)
 
     def _set_autopilot_state(self, autopilot_state):
         new_settings = self.ad_group.get_current_settings().copy_settings()
@@ -398,7 +403,7 @@ class AdGroupSourceSettingsTest(TestCase):
         self._set_campaign_automatic_campaign_stop(True)
         response = self.client.put(
             reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
-            data=json.dumps({'daily_budget_cc': '600'})
+            data=json.dumps({'daily_budget_cc': '700'})
         )
         self.assertEqual(response.status_code, 400)
 

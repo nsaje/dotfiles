@@ -77,7 +77,7 @@ class AdGroupSourceState(BaseBulkActionView):
 
         with transaction.atomic():
             for ad_group_source in ad_group_sources:
-                ad_group_source.update(
+                ad_group_source.settings.update(
                     request,
                     state=state,
                     k1_sync=False,

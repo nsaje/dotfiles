@@ -15,11 +15,16 @@ import core.common
 import core.history
 import core.source
 
-from .settings_base import SettingsBase
-from .settings_query_set import SettingsQuerySet
+from ..settings_base import SettingsBase
+from ..settings_query_set import SettingsQuerySet
+
+from .instance import AdGroupSourceSettingsMixin
+from .validation import AdGroupSourceSettingsValidatorMixin
 
 
-class AdGroupSourceSettings(SettingsBase):
+class AdGroupSourceSettings(AdGroupSourceSettingsMixin,
+                            AdGroupSourceSettingsValidatorMixin,
+                            SettingsBase):
 
     class Meta:
         get_latest_by = 'created_dt'
@@ -31,6 +36,10 @@ class AdGroupSourceSettings(SettingsBase):
         'cpc_cc',
         'daily_budget_cc',
         'landing_mode'
+    ]
+    _multicurrency_fields = [
+        'cpc_cc',
+        'daily_budget_cc',
     ]
     history_fields = list(_settings_fields)
 
@@ -112,40 +121,6 @@ class AdGroupSourceSettings(SettingsBase):
         elif prop_name == 'landing_mode':
             value = str(value)
         return value
-
-    def add_to_history(self, user, action_type, changes):
-        _, changes_text = self.construct_changes(
-            'Created settings.',
-            'Source: {}.'.format(self.ad_group_source.source.name),
-            changes
-        )
-        self.ad_group_source.ad_group.write_history(
-            changes_text,
-            changes=changes,
-            user=user,
-            action_type=action_type,
-            system_user=self.system_user,
-        )
-
-    def get_external_daily_budget_cc(self, account, license_fee, margin):
-        daily_budget_cc = self.daily_budget_cc
-        if account.uses_bcm_v2:
-            daily_budget_cc = core.bcm.calculations.subtract_fee_and_margin(
-                daily_budget_cc,
-                license_fee,
-                margin,
-            )
-        return daily_budget_cc
-
-    def get_external_cpc_cc(self, account, license_fee, margin):
-        cpc_cc = self.cpc_cc
-        if account.uses_bcm_v2:
-            cpc_cc = core.bcm.calculations.subtract_fee_and_margin(
-                cpc_cc,
-                license_fee,
-                margin,
-            )
-        return cpc_cc
 
     class QuerySet(SettingsQuerySet):
 

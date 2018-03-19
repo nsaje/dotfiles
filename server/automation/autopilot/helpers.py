@@ -148,7 +148,7 @@ def ad_group_source_is_synced(ad_group_source):
 def update_ad_group_source_values(ad_group_source, changes, system_user=None, landing_mode=None):
     if landing_mode is not None:
         changes['landing_mode'] = landing_mode
-    ad_group_source.update(
+    ad_group_source.settings.update(
         system_user=system_user,
         k1_sync=False,
         skip_automation=True,
@@ -173,14 +173,17 @@ def update_ad_group_b1_sources_group_values(ad_group, changes, system_user=None)
 
 
 def get_ad_group_sources_minimum_cpc(ad_group_source, bcm_modifiers):
+    etfm_min_cpc = ad_group_source.source.source_type.get_etfm_min_cpc(bcm_modifiers)
     return max(
         settings.AUTOPILOT_MIN_CPC,
-        ad_group_source.source.source_type.get_etfm_min_cpc(bcm_modifiers)
+        etfm_min_cpc or 0
     )
 
 
 def get_ad_group_sources_minimum_daily_budget(ad_group_source, bcm_modifiers):
     source_min_daily_budget = ad_group_source.source.source_type.get_etfm_min_daily_budget(bcm_modifiers)
+    if not source_min_daily_budget:
+        return settings.BUDGET_AP_MIN_SOURCE_BUDGET
     return max(settings.BUDGET_AP_MIN_SOURCE_BUDGET, source_min_daily_budget)
 
 
