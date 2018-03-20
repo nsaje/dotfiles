@@ -43,6 +43,17 @@ class OSsSerializer(rest_framework.serializers.ListSerializer):
         super(OSsSerializer, self).__init__(*args, **kwargs)
 
 
+class BrowserSerializer(rest_framework.serializers.Serializer):
+    name = restapi.fields.DashConstantField(dash.constants.Browser)
+
+
+class BrowsersSerializer(rest_framework.serializers.ListSerializer):
+    def __init__(self, *args, **kwargs):
+        self.child = BrowserSerializer()
+        kwargs['allow_null'] = True
+        super().__init__(*args, **kwargs)
+
+
 class PlacementsSerializer(rest_framework.serializers.ListSerializer):
     def __init__(self, *args, **kwargs):
         self.child = restapi.fields.DashConstantField(dash.constants.Placement)

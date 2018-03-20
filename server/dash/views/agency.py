@@ -197,11 +197,12 @@ class AdGroupSettings(api_common.BaseApiView):
         from restapi.serializers.targeting import\
             DevicesSerializer, OSsSerializer,\
             PlacementsSerializer, AudienceSerializer,\
-            TargetRegionsSerializer
+            TargetRegionsSerializer, BrowsersSerializer
         result['target_regions'] = TargetRegionsSerializer(settings.target_regions).data
         result['exclusion_target_regions'] = TargetRegionsSerializer(settings.exclusion_target_regions).data
         result['target_devices'] = DevicesSerializer(settings.target_devices).data
         result['target_os'] = OSsSerializer(settings.target_os).data
+        result['target_browsers'] = BrowsersSerializer(settings.target_browsers).data
         result['target_placements'] = PlacementsSerializer(settings.target_placements).data
         result['bluekai_targeting'] = AudienceSerializer(settings.bluekai_targeting).data
         result['bluekai_targeting_old'] = AudienceSerializer(

@@ -272,6 +272,10 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
         restapi.serializers.targeting.OSsSerializer,
         required=False
     )
+    target_browsers = dash.compatibility.forms.RestFrameworkSerializer(
+        restapi.serializers.targeting.BrowsersSerializer,
+        required=False
+    )
     target_placements = dash.compatibility.forms.RestFrameworkSerializer(
         restapi.serializers.targeting.PlacementsSerializer,
         required=False

@@ -57,6 +57,9 @@ class AdGroupSettingsTest(TestCase):
                     'max': 'android_6_0',
                 }
             }],
+            'target_browsers': [{
+                'name': 'CHROME',
+            }],
             'target_placements': ['app'],
             'tracking_code': '',
             'target_regions': ['US'],
@@ -182,6 +185,7 @@ class AdGroupSettingsTest(TestCase):
             'Pixel retargeting tags set to "http://a.com/b.jpg, http://a.com/c.jpg"',
             'Max CPM set to "$1.60"',
             'Operating Systems set to "Android (6.0 Marshmallow)"',
+            'Browser targeting set to "Chrome"',
             'Retargeting ad groups set to "test adgroup 1, test adgroup 2"',
             'Locations set to "United States"',
             'Placement set to "In-app"',

@@ -2253,6 +2253,30 @@ OSV_MAPPING = {
 }
 
 
+class Browser(ConstantBase):
+    OTHER = None
+    CHROME = 'CHROME'
+    FIREFOX = 'FIREFOX'
+    SAFARI = 'SAFARI'
+    IE = 'IE'
+    SAMSUNG = 'SAMSUNG'
+    OPERA = 'OPERA'
+    UC_BROWSER = 'UC_BROWSER'
+    IN_APP = 'IN_APP'
+
+    _VALUES = {
+        OTHER: 'Other',
+        CHROME: 'Chrome',
+        FIREFOX: 'Firefox',
+        SAFARI: 'Safari',
+        IE: 'Internet Explorer',
+        SAMSUNG: 'Samsung',
+        OPERA: 'Opera',
+        UC_BROWSER: 'UC Browser',
+        IN_APP: 'In App',
+    }
+
+
 class PlacementMedium(ConstantBase):
     UNKNOWN = None
     APP = 'app'

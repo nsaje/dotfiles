@@ -534,6 +534,7 @@ class AdGroupsView(K1APIView):
                 'tracking_codes': ad_group_settings.get_tracking_codes(),
                 'target_devices': ad_group_settings.target_devices,
                 'target_os': ad_group_settings.target_os,
+                'target_browsers': ad_group_settings.target_browsers,
                 'target_placements': ad_group_settings.target_placements,
                 'target_regions': ad_group_settings.target_regions,
                 'exclusion_target_regions': ad_group_settings.exclusion_target_regions,

@@ -335,6 +335,7 @@ class AdGroupSerializer(SettingsSerializer):
                 },
                 'devices': settings['target_devices'],
                 'os': settings['target_os'],
+                'browsers': settings['target_browsers'],
                 'placements': settings['target_placements'],
                 'interest': {
                     'included': [fields.DashConstantField(constants.InterestCategory).to_representation(x) for x in settings['interest_targeting']],
@@ -404,6 +405,7 @@ class AdGroupSerializer(SettingsSerializer):
             'target_devices': data['targeting']['devices'],
             'target_placements': data['targeting']['placements'],
             'target_os': data['targeting']['os'],
+            'target_browsers': data['targeting']['browsers'],
             'delivery_type': fields.DashConstantField(constants.AdGroupDeliveryType).to_internal_value(data['deliveryType']),
             'click_capping_daily_ad_group_max_clicks': data['clickCappingDailyAdGroupMaxClicks'],
             'click_capping_daily_click_budget': data['clickCappingDailyClickBudget'],

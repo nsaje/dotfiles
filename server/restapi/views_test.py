@@ -474,6 +474,7 @@ class AdGroupsTest(RESTAPITest):
         target_devices=[constants.AdTargetDevice.DESKTOP],
         target_placements=[constants.Placement.APP],
         target_os=[{'name': constants.OperatingSystem.ANDROID}],
+        target_browsers=[{'name': constants.Browser.CHROME}],
         interest_targeting=['women', 'fashion'],
         exclusion_interest_targeting=['politics'],
         demographic_targeting=['and', 'bluekai:671901', ['or', 'lotame:123', 'outbrain:123']],
@@ -527,6 +528,7 @@ class AdGroupsTest(RESTAPITest):
                 'devices': restapi.serializers.targeting.DevicesSerializer(target_devices).data,
                 'placements': restapi.serializers.targeting.PlacementsSerializer(target_placements).data,
                 'os': restapi.serializers.targeting.OSsSerializer(target_os).data,
+                'browsers': restapi.serializers.targeting.BrowsersSerializer(target_browsers).data,
                 'interest': {
                     'included': [constants.InterestCategory.get_name(i) for i in interest_targeting],
                     'excluded': [constants.InterestCategory.get_name(i) for i in exclusion_interest_targeting],
@@ -612,6 +614,7 @@ class AdGroupsTest(RESTAPITest):
             target_devices=settings_db.target_devices,
             target_placements=settings_db.target_placements,
             target_os=settings_db.target_os,
+            target_browsers=settings_db.target_browsers,
             click_capping_daily_ad_group_max_clicks=settings_db.click_capping_daily_ad_group_max_clicks,
             click_capping_daily_click_budget=settings_db.click_capping_daily_click_budget,
         )

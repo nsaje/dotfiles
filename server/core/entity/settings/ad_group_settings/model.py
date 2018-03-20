@@ -61,6 +61,7 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         'daily_budget_cc',
         'target_devices',
         'target_os',
+        'target_browsers',
         'target_placements',
         'target_regions',
         'exclusion_target_regions',
@@ -152,6 +153,7 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_placements = ArrayField(models.CharField(max_length=24), null=True, blank=True, verbose_name='Placement')
     target_os = JSONField(null=True, blank=True, verbose_name='Operating System')
+    target_browsers = JSONField(null=True, blank=True, verbose_name='Browsers')
 
     target_regions = jsonfield.JSONField(blank=True, default=[])
     exclusion_target_regions = jsonfield.JSONField(blank=True, null=False, default=[])
@@ -297,6 +299,7 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
             'target_devices': 'Device targeting',
             'target_placements': 'Placement',
             'target_os': 'Operating Systems',
+            'target_browsers': 'Browser targeting',
             'target_regions': 'Locations',
             'exclusion_target_regions': 'Excluded Locations',
             'retargeting_ad_groups': 'Retargeting ad groups',
@@ -362,6 +365,9 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
             value = ', '.join(constants.Placement.get_text(x) for x in value) if value else ''
         elif prop_name == 'target_os':
             value = ', '.join(helpers.get_human_value_target_os(x) for x in value) if value else ''
+        elif prop_name == 'target_browsers':
+            value = ', '.join(constants.Browser.get_text(x['name'])
+                              for x in value if 'name' in x)
         elif prop_name in ('target_regions', 'exclusion_target_regions'):
             value = AdGroupSettings._get_human_value_for_target_regions(prop_name, value)
         elif prop_name in ('retargeting_ad_groups', 'exclusion_retargeting_ad_groups'):
