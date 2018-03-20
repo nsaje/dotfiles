@@ -1,4 +1,5 @@
 import datetime
+import decimal
 
 from .. import constants
 from .. import RealTimeCampaignStopLog
@@ -26,8 +27,8 @@ def _get_available_campaign_budget(log):
     freed = sum(bli.freed_cc for bli in budgets_active_today) * converters.CC_TO_DECIMAL_DOLAR
     available = sum(bli.get_available_etfm_amount() for bli in budgets_active_today)
     return {
-        'available': numbers.round_decimal_half_down(available, places=2),
-        'freed': numbers.round_decimal_half_down(freed, places=2),
+        'available': numbers.round_decimal_half_down(decimal.Decimal(available), places=2),
+        'freed': numbers.round_decimal_half_down(decimal.Decimal(freed), places=2),
     }
 
 
