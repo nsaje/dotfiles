@@ -26,7 +26,7 @@ def _get_available_campaign_budget(log):
     freed = sum(bli.freed_cc for bli in budgets_active_today) * converters.CC_TO_DECIMAL_DOLAR
     available = sum(bli.get_available_etfm_amount() for bli in budgets_active_today)
     return {
-        'available': numbers.round_decimal_half_down(available + freed, places=2),  # freed amount is excluded from available, add it back
+        'available': numbers.round_decimal_half_down(available, places=2),
         'freed': numbers.round_decimal_half_down(freed, places=2),
     }
 
