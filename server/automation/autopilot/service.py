@@ -28,16 +28,6 @@ logger = logging.getLogger(__name__)
 def run_autopilot(ad_group=None, campaign=None, adjust_cpcs=True, adjust_budgets=True,
                   send_mail=False, initialization=False, report_to_influx=False, dry_run=False,
                   daily_run=False):
-    ad_groups = None
-    if ad_group is not None:
-        ad_groups = [ad_group.id]
-    if not ad_groups:
-        ad_groups_on_ap, ad_group_settings_on_ap = helpers.get_active_ad_groups_on_autopilot()
-    else:
-        ad_groups_on_ap = dash.models.AdGroup.objects.filter(id__in=ad_groups)
-        ad_group_settings_on_ap = dash.models.AdGroupSettings.objects.filter(ad_group__in=ad_groups_on_ap).\
-            group_current_settings().select_related('ad_group__campaign__account')
-
     entities = helpers.get_autopilot_entities(ad_group=ad_group, campaign=campaign)
     if ad_group is None:  # do not calculate campaign budgets when run for one ad_group only
         campaign_daily_budgets = calculate_campaigns_daily_budget(campaign=campaign)
@@ -115,8 +105,10 @@ def run_autopilot(ad_group=None, campaign=None, adjust_cpcs=True, adjust_budgets
     if send_mail:
         helpers.send_autopilot_changes_emails(changes_data, bcm_modifiers_map, initialization)
     if report_to_influx:
-        _report_adgroups_data_to_influx(ad_group_settings_on_ap)
-        _report_new_budgets_on_ap_to_influx(ad_group_settings_on_ap)
+        # refresh entities from db so we report new data
+        entities = helpers.get_autopilot_entities(ad_group=ad_group, campaign=campaign)
+        _report_adgroups_data_to_influx(entities, campaign_daily_budgets)
+        _report_new_budgets_on_ap_to_influx(entities)
     return changes_data
 
 
@@ -389,84 +381,107 @@ def _report_autopilot_exception(element, e):
     )
 
 
-def _report_adgroups_data_to_influx(ad_groups_settings):
+def _report_adgroups_data_to_influx(entities, campaign_daily_budgets):
+    ad_group_ids = [ad_group.id for ad_groups_dict in entities.values() for ad_group in ad_groups_dict.keys()]
+    num_campaigns_on_campaign_ap = 0
+    num_ad_groups_on_campaign_ap = 0
+    total_budget_on_campaign_ap = Decimal(0.0)
     num_on_budget_ap = 0
     total_budget_on_budget_ap = Decimal(0.0)
     num_on_cpc_ap = 0
     yesterday_spend_on_cpc_ap = Decimal(0.0)
     yesterday_spend_on_budget_ap = Decimal(0.0)
+    yesterday_spend_on_campaign_ap = Decimal(0.0)
     yesterday = dates_helper.local_today() - datetime.timedelta(days=1)
     yesterday_data = redshiftapi.api_breakdowns.query(
         ['ad_group_id'],
         {
             'date__lte': yesterday,
             'date__gte': yesterday,
-            'ad_group_id': [ags.ad_group_id for ags in ad_groups_settings]
+            'ad_group_id': ad_group_ids,
         },
         parents=None,
         goals=None,
         use_publishers_view=False,
     )
-    for ad_group_setting in ad_groups_settings:
-        yesterday_spend = Decimal('0')
-        for row in yesterday_data:
-            if row['ad_group_id'] == ad_group_setting.ad_group.id:
-                if ad_group_setting.ad_group.campaign.account.uses_bcm_v2:
-                    yesterday_spend = Decimal(row['etfm_cost'] or 0)
-                else:
-                    yesterday_spend = Decimal(row['et_cost'] or 0)
-                break
-        if ad_group_setting.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-            num_on_budget_ap += 1
-            total_budget_on_budget_ap += ad_group_setting.autopilot_daily_budget
-            yesterday_spend_on_budget_ap += yesterday_spend
-        elif ad_group_setting.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC:
-            num_on_cpc_ap += 1
-            yesterday_spend_on_cpc_ap += yesterday_spend
+    grouped_yesterday_data = {item['ad_group_id']: item for item in yesterday_data}
+    for campaign, ad_groups in entities.items():
+        cost_key = 'etfm_cost' if campaign.account.uses_bcm_v2 else 'et_cost'
+        if campaign.settings.autopilot:
+            num_campaigns_on_campaign_ap += 1
+            num_ad_groups_on_campaign_ap += len(ad_groups)
+            yesterday_spend = Decimal(0.0)
+            for ad_group in ad_groups:
+                yesterday_spend += Decimal(grouped_yesterday_data.get(ad_group.id, {}).get(cost_key) or 0)
+            yesterday_spend_on_campaign_ap += yesterday_spend
+            total_budget_on_campaign_ap += campaign_daily_budgets[campaign]
+        else:
+            for ad_group in ad_groups:
+                yesterday_spend = Decimal(grouped_yesterday_data.get(ad_group.id, {}).get(cost_key) or 0)
+                if ad_group.settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+                    num_on_budget_ap += 1
+                    total_budget_on_budget_ap += ad_group.settings.autopilot_daily_budget
+                    yesterday_spend_on_budget_ap += yesterday_spend
+                elif ad_group.settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC:
+                    num_on_cpc_ap += 1
+                    yesterday_spend_on_cpc_ap += yesterday_spend
 
     influx.gauge('automation.autopilot_plus.adgroups_on', num_on_budget_ap, autopilot='budget_autopilot')
     influx.gauge('automation.autopilot_plus.adgroups_on', num_on_cpc_ap, autopilot='cpc_autopilot')
+    influx.gauge('automation.autopilot_plus.adgroups_on', num_ad_groups_on_campaign_ap, autopilot='campaign_autopilot')
+    influx.gauge('automation.autopilot_plus.campaigns_on', num_campaigns_on_campaign_ap, autopilot='campaign_autopilot')
 
     influx.gauge('automation.autopilot_plus.spend', total_budget_on_budget_ap,
                  autopilot='budget_autopilot', type='expected')
+    influx.gauge('automation.autopilot_plus.spend', total_budget_on_campaign_ap,
+                 autopilot='campaign_autopilot', type='expected')
 
+    influx.gauge('automation.autopilot_plus.spend', yesterday_spend_on_campaign_ap,
+                 autopilot='campaign_autopilot', type='yesterday')
     influx.gauge('automation.autopilot_plus.spend', yesterday_spend_on_budget_ap,
                  autopilot='budget_autopilot', type='yesterday')
     influx.gauge('automation.autopilot_plus.spend', yesterday_spend_on_cpc_ap,
                  autopilot='cpc_autopilot', type='yesterday')
 
 
-def _report_new_budgets_on_ap_to_influx(ad_group_settings):
+def _report_new_budgets_on_ap_to_influx(entities):
+    total_budget_on_campaign_ap = Decimal(0.0)
     total_budget_on_budget_ap = Decimal(0.0)
     total_budget_on_cpc_ap = Decimal(0.0)
     total_budget_on_all_ap = Decimal(0.0)
+    num_sources_on_campaign_ap = 0
     num_sources_on_budget_ap = 0
     num_sources_on_cpc_ap = 0
-    ad_groups_and_settings = {adgs.ad_group: adgs for adgs in ad_group_settings}
     active = dash.constants.AdGroupSourceSettingsState.ACTIVE
-    rtb_as_one_budget_counted_adgroups = []
-    for ag_source_setting in helpers.get_autopilot_active_sources_settings(ad_groups_and_settings):
-        ad_group = ag_source_setting.ad_group_source.ad_group
-        ag_settings = ad_groups_and_settings.get(ad_group)
-        daily_budget = ag_source_setting.daily_budget_cc or Decimal('0')
-        if (ag_settings.b1_sources_group_enabled and
-                ag_settings.b1_sources_group_state == active and
-                ag_source_setting.ad_group_source.source.source_type.type == dash.constants.SourceType.B1):
-            if ad_group.id in rtb_as_one_budget_counted_adgroups:
-                continue
-            daily_budget = ag_settings.b1_sources_group_daily_budget or Decimal('0')
-            rtb_as_one_budget_counted_adgroups.append(ad_group.id)
-        total_budget_on_all_ap += daily_budget
-        if ag_settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-            total_budget_on_budget_ap += daily_budget
-            num_sources_on_budget_ap += 1
-        elif ag_settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC:
-            total_budget_on_cpc_ap += daily_budget
-            num_sources_on_cpc_ap += 1
+    rtb_as_one_budget_counted_adgroups = set()
+    for campaign, ad_groups in entities.items():
+        for ad_group, ad_group_sources in ad_groups.items():
+            for ad_group_source in ad_group_sources:
+                daily_budget = ad_group_source.settings.daily_budget_cc or Decimal('0')
+                if (ad_group.settings.b1_sources_group_enabled and
+                        ad_group.settings.b1_sources_group_state == active and
+                        ad_group_source.source.source_type.type == dash.constants.SourceType.B1):
+                    if ad_group.id in rtb_as_one_budget_counted_adgroups:
+                        continue
+                    daily_budget = ad_group.settings.b1_sources_group_daily_budget or Decimal('0')
+                    rtb_as_one_budget_counted_adgroups.add(ad_group.id)
+                total_budget_on_all_ap += daily_budget
+                if campaign.settings.autopilot:
+                    total_budget_on_campaign_ap += daily_budget
+                    num_sources_on_campaign_ap += 1
+                elif ad_group.settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+                    total_budget_on_budget_ap += daily_budget
+                    num_sources_on_budget_ap += 1
+                elif ad_group.settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC:
+                    total_budget_on_cpc_ap += daily_budget
+                    num_sources_on_cpc_ap += 1
 
     influx.gauge('automation.autopilot_plus.spend', total_budget_on_cpc_ap, autopilot='cpc_autopilot', type='actual')
     influx.gauge('automation.autopilot_plus.spend', total_budget_on_budget_ap,
                  autopilot='budget_autopilot', type='actual')
+    influx.gauge('automation.autopilot_plus.spend', total_budget_on_campaign_ap,
+                 autopilot='campaign_autopilot', type='actual')
 
     influx.gauge('automation.autopilot_plus.sources_on', num_sources_on_cpc_ap, autopilot='cpc_autopilot')
     influx.gauge('automation.autopilot_plus.sources_on', num_sources_on_budget_ap, autopilot='budget_autopilot')
+    influx.gauge('automation.autopilot_plus.sources_on', num_sources_on_campaign_ap, autopilot='campaign_autopilot')

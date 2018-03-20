@@ -5,6 +5,7 @@ import traceback
 
 from django import test
 
+import dash.constants
 import dash.models
 
 from . import constants
@@ -481,11 +482,19 @@ class AutopilotPlusTestCase(test.TestCase):
     def test_report_adgroups_data_to_influx(self, mock_influx, mock_query):
         mock_query.return_value = [
             {'ad_group_id': 1, 'et_cost': Decimal('15'), 'etfm_cost': Decimal('15')},
+            {'ad_group_id': 2, 'et_cost': Decimal('12'), 'etfm_cost': Decimal('12')},
             {'ad_group_id': 3, 'et_cost': Decimal('10'), 'etfm_cost': Decimal('10')},
             {'ad_group_id': 4, 'et_cost': Decimal('20'), 'etfm_cost': Decimal('20')}]
 
-        adgroups = dash.models.AdGroup.objects.filter(id__in=[1, 2, 3, 4])
-        service._report_adgroups_data_to_influx([adg.get_current_settings() for adg in adgroups])
+        entities = {
+            campaign: {
+                ad_group: {} for ad_group in dash.models.AdGroup.objects.filter(campaign=campaign)
+            } for campaign in dash.models.Campaign.objects.all()
+        }
+        campaign_daily_budgets = {
+            dash.models.Campaign.objects.get(pk=2): Decimal('13'),
+        }
+        service._report_adgroups_data_to_influx(entities, campaign_daily_budgets)
 
         mock_influx.assert_has_calls(
             [
@@ -500,10 +509,32 @@ class AutopilotPlusTestCase(test.TestCase):
                     autopilot='cpc_autopilot'
                 ),
                 call(
+                    'automation.autopilot_plus.adgroups_on',
+                    1,
+                    autopilot='campaign_autopilot'
+                ),
+                call(
+                    'automation.autopilot_plus.campaigns_on',
+                    1,
+                    autopilot='campaign_autopilot'
+                ),
+                call(
                     'automation.autopilot_plus.spend',
                     Decimal('50'),
                     autopilot='budget_autopilot',
                     type='expected'
+                ),
+                call(
+                    'automation.autopilot_plus.spend',
+                    Decimal('13'),
+                    autopilot='campaign_autopilot',
+                    type='expected'
+                ),
+                call(
+                    'automation.autopilot_plus.spend',
+                    Decimal('12'),
+                    autopilot='campaign_autopilot',
+                    type='yesterday'
                 ),
                 call(
                     'automation.autopilot_plus.spend',
@@ -528,8 +559,17 @@ class AutopilotPlusTestCase(test.TestCase):
             {'ad_group_id': 3, 'billing_cost': Decimal('10')},
             {'ad_group_id': 4, 'billing_cost': Decimal('20')}]
 
-        adgroups = dash.models.AdGroup.objects.filter(id__in=[1, 3, 4])
-        service._report_new_budgets_on_ap_to_influx([adg.get_current_settings() for adg in adgroups])
+        entities = {
+            campaign: {
+                ad_group: [
+                    ags for ags in dash.models.AdGroupSource.objects.filter(
+                        ad_group=ad_group,
+                        settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
+                    )
+                ] for ad_group in dash.models.AdGroup.objects.filter(campaign=campaign)
+            } for campaign in dash.models.Campaign.objects.all()
+        }
+        service._report_new_budgets_on_ap_to_influx(entities)
 
         mock_influx.assert_has_calls(
             [
@@ -546,6 +586,12 @@ class AutopilotPlusTestCase(test.TestCase):
                     type='actual'
                 ),
                 call(
+                    'automation.autopilot_plus.spend',
+                    Decimal('50'),
+                    autopilot='campaign_autopilot',
+                    type='actual'
+                ),
+                call(
                     'automation.autopilot_plus.sources_on',
                     1,
                     autopilot='cpc_autopilot'
@@ -554,6 +600,11 @@ class AutopilotPlusTestCase(test.TestCase):
                     'automation.autopilot_plus.sources_on',
                     4,
                     autopilot='budget_autopilot'
-                )
+                ),
+                call(
+                    'automation.autopilot_plus.sources_on',
+                    1,
+                    autopilot='campaign_autopilot'
+                ),
             ]
         )
