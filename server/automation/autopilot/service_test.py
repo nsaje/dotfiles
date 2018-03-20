@@ -63,7 +63,37 @@ class AutopilotPlusTestCase(test.TestCase):
             changes,
             2)
 
-    def assertLogExists(self, ad_group, source):
+    def _email_changes(self, budgets=[], cpc=[]):
+        result = {}
+        for campaign in dash.models.Campaign.objects.all():
+            campaign_data = {}
+            for ad_group in dash.models.AdGroup.objects.filter(campaign=campaign):
+                ad_group_data = {}
+                for ags in (
+                        list(dash.models.AdGroupSource.objects.filter(ad_group=ad_group)) +
+                        [dash.models.AllRTBAdGroupSource(ad_group)]):
+                    ags_data = {}
+                    if ad_group.id in budgets:
+                        ags_data.update({
+                            'old_budget': Decimal('10.0'),
+                            'new_budget': Decimal('20.0'),
+                            'budget_comments': [],
+                        })
+                    if ad_group.id in cpc:
+                        ags_data.update({
+                            'old_cpc_cc': Decimal('0.1'),
+                            'new_cpc_cc': Decimal('0.2'),
+                            'cpc_comments': [],
+                        })
+                    if ags_data:
+                        ad_group_data[ags] = ags_data
+                if ad_group_data:
+                    campaign_data[ad_group] = ad_group_data
+            if campaign_data:
+                result[campaign] = campaign_data
+        return result
+
+    def assertLogExists(self, campaign=None, ad_group=None, source=None):
         ags = None
         if source is not None:
             ags = dash.models.AdGroupSource.objects.filter(
@@ -71,6 +101,7 @@ class AutopilotPlusTestCase(test.TestCase):
                 source_id=source,
             )
         models.AutopilotLog.objects.get(
+            campaign_id=campaign,
             ad_group_id=ad_group,
             ad_group_source=ags,
         )
@@ -87,17 +118,18 @@ class AutopilotPlusTestCase(test.TestCase):
             } for ad_group in dash.models.AdGroup.objects.all()
         }
 
+    @patch('automation.autopilot.helpers.send_autopilot_changes_emails')
     @patch('automation.autopilot.helpers.update_ad_group_b1_sources_group_values')
     @patch('automation.autopilot.helpers.update_ad_group_source_values')
     @patch('automation.autopilot.prefetch.prefetch_autopilot_data')
     @patch('automation.autopilot.cpc.get_autopilot_cpc_recommendations')
     @patch('automation.autopilot.budgets.get_autopilot_daily_budget_recommendations')
-    def test_run_autopilot_daily_run(self, mock_budgets, mock_cpc, mock_prefetch, mock_update, mock_update_allrtb):
+    def test_run_autopilot_daily_run(self, mock_budgets, mock_cpc, mock_prefetch, mock_update, mock_update_allrtb, mock_send):
         mock_budgets.side_effect = self.mock_budget_recommender
         mock_cpc.side_effect = self.mock_cpc_recommender
         mock_prefetch.return_value = (self.data, {}, {})
 
-        service.run_autopilot(daily_run=True)
+        service.run_autopilot(daily_run=True, send_mail=True)
 
         self.assertCountEqual(mock_update.call_args_list, [
             self._update_call(ad_group=1, source=1),
@@ -115,29 +147,31 @@ class AutopilotPlusTestCase(test.TestCase):
             self._update_allrtb_call(ad_group=4),
         ])
         self.assertLogExists(ad_group=1, source=1)
-        self.assertLogExists(ad_group=2, source=1)
+        self.assertLogExists(campaign=2, ad_group=2, source=1)
         self.assertLogExists(ad_group=3, source=1)
         self.assertLogExists(ad_group=4, source=1)
         self.assertLogExists(ad_group=4, source=2)
         self.assertLogExists(ad_group=4, source=3)
         self.assertLogExists(ad_group=4, source=4)
         self.assertLogExists(ad_group=1, source=None)
-        self.assertLogExists(ad_group=2, source=None)
+        self.assertLogExists(campaign=2, ad_group=2, source=None)
         self.assertLogExists(ad_group=3, source=None)
         self.assertLogExists(ad_group=4, source=None)
+        mock_send.assert_called_once_with(self._email_changes(budgets=(1, 2, 4), cpc=(1, 2, 3, 4)), {}, False)
 
+    @patch('automation.autopilot.helpers.send_autopilot_changes_emails')
     @patch('automation.autopilot.helpers.update_ad_group_b1_sources_group_values')
     @patch('automation.autopilot.helpers.update_ad_group_source_values')
     @patch('automation.autopilot.prefetch.prefetch_autopilot_data')
     @patch('automation.autopilot.cpc.get_autopilot_cpc_recommendations')
     @patch('automation.autopilot.budgets.get_autopilot_daily_budget_recommendations')
-    def test_run_autopilot_initialize_adgroup(self, mock_budgets, mock_cpc, mock_prefetch, mock_update, mock_update_allrtb):
+    def test_run_autopilot_initialize_adgroup(self, mock_budgets, mock_cpc, mock_prefetch, mock_update, mock_update_allrtb, mock_send):
         mock_budgets.side_effect = self.mock_budget_recommender
         mock_cpc.side_effect = self.mock_cpc_recommender
         mock_prefetch.return_value = (self.data, {}, {})
 
         ad_group = dash.models.AdGroup.objects.get(pk=4)
-        service.run_autopilot(ad_group=ad_group, initialization=True, adjust_cpcs=False)
+        service.run_autopilot(ad_group=ad_group, initialization=True, adjust_cpcs=False, send_mail=True)
 
         self.assertCountEqual(mock_update.call_args_list, [
             self._update_call(ad_group=4, source=1, cpc=False),
@@ -153,19 +187,21 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertLogExists(ad_group=4, source=3)
         self.assertLogExists(ad_group=4, source=4)
         self.assertLogExists(ad_group=4, source=None)
+        mock_send.assert_called_once_with(self._email_changes(budgets=(4,)), {}, True)
 
+    @patch('automation.autopilot.helpers.send_autopilot_changes_emails')
     @patch('automation.autopilot.helpers.update_ad_group_b1_sources_group_values')
     @patch('automation.autopilot.helpers.update_ad_group_source_values')
     @patch('automation.autopilot.prefetch.prefetch_autopilot_data')
     @patch('automation.autopilot.cpc.get_autopilot_cpc_recommendations')
     @patch('automation.autopilot.budgets.get_autopilot_daily_budget_recommendations')
-    def test_run_autopilot_intialize_campaign(self, mock_budgets, mock_cpc, mock_prefetch, mock_update, mock_update_allrtb):
+    def test_run_autopilot_intialize_campaign(self, mock_budgets, mock_cpc, mock_prefetch, mock_update, mock_update_allrtb, mock_send):
         mock_budgets.side_effect = self.mock_budget_recommender
         mock_cpc.side_effect = self.mock_cpc_recommender
         mock_prefetch.return_value = (self.data, {}, {})
 
         campaign = dash.models.Campaign.objects.get(pk=2)
-        service.run_autopilot(campaign=campaign, initialization=True, adjust_cpcs=False)
+        service.run_autopilot(campaign=campaign, initialization=True, adjust_cpcs=False, send_mail=True)
 
         self.assertCountEqual(mock_update.call_args_list, [
             self._update_call(ad_group=2, source=1, cpc=False),
@@ -173,8 +209,9 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertCountEqual(mock_update_allrtb.call_args_list, [
             self._update_allrtb_call(ad_group=2, cpc=False),
         ])
-        self.assertLogExists(ad_group=2, source=1)
-        self.assertLogExists(ad_group=2, source=None)
+        self.assertLogExists(campaign=2, ad_group=2, source=1)
+        self.assertLogExists(campaign=2, ad_group=2, source=None)
+        mock_send.assert_called_once_with(self._email_changes(budgets=(2,)), {}, True)
 
     @patch('urllib.request.urlopen')
     @test.override_settings(
@@ -250,9 +287,7 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertEqual(mock_predict1.called, True)
         self.assertEqual(mock_predict2.called, True)
         self.assertEqual(mock_get_changes.called, True)
-        mock_set.assert_called_with(
-            {}, {}, dash.models.AdGroup.objects.get(id=4), dry_run=True
-        )
+        mock_set.assert_not_called()
 
     @patch('automation.autopilot.helpers.update_ad_group_source_values')
     def test_set_autopilot_changes_only_cpc(self, mock_update_values):

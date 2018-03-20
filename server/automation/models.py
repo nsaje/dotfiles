@@ -51,73 +51,17 @@ class CampaignBudgetDepletionNotification(models.Model):
         return '{0} {1}'.format(self.account_manager_id, self.campaign_id)
 
 
-class AutopilotAdGroupSourceBidCpcLog(models.Model):
+class AutopilotLog(models.Model):
     campaign = models.ForeignKey(
         core.entity.campaign.Campaign,
         related_name='+',
-        on_delete=models.PROTECT
+        on_delete=models.PROTECT,
+        null=True,
     )
     ad_group = models.ForeignKey(
         core.entity.adgroup.AdGroup,
         related_name='+',
-        on_delete=models.PROTECT
-    )
-    ad_group_source = models.ForeignKey(
-        core.entity.adgroup.AdGroupSource,
-        related_name='+',
-        on_delete=models.PROTECT
-    )
-    created_dt = models.DateTimeField(
-        auto_now_add=True,
-        blank=True,
-        null=True,
-        verbose_name='Created at',
-        db_index=True
-    )
-    yesterdays_clicks = models.IntegerField(null=True)
-    yesterdays_spend_cc = models.DecimalField(
-        max_digits=10,
-        decimal_places=4,
-        blank=True,
-        null=True,
-        default=0,
-        verbose_name='Yesterday\'s spend'
-    )
-    previous_cpc_cc = models.DecimalField(
-        max_digits=10,
-        decimal_places=4,
-        blank=True,
-        null=True,
-        verbose_name='Previous CPC'
-    )
-    new_cpc_cc = models.DecimalField(
-        max_digits=10,
-        decimal_places=4,
-        blank=True,
-        null=True,
-        verbose_name='New CPC'
-    )
-    current_daily_budget_cc = models.DecimalField(
-        max_digits=10,
-        decimal_places=4,
-        blank=True,
-        null=True,
-        verbose_name='Daily spend cap'
-    )
-    comments = models.CharField(max_length=1024, null=True, blank=True)
-
-    def __str__(self):
-        return '{0} {1} {2}'.format(
-            self.campaign,
-            self.ad_group,
-            self.ad_group_source)
-
-
-class AutopilotLog(models.Model):
-    ad_group = models.ForeignKey(
-        core.entity.adgroup.AdGroup,
-        related_name='+',
-        on_delete=models.PROTECT
+        on_delete=models.PROTECT,
     )
     ad_group_source = models.ForeignKey(
         core.entity.adgroup.AdGroupSource,

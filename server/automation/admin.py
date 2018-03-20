@@ -29,27 +29,6 @@ class CampaignBudgetDepletionNotificationAdmin(admin.ModelAdmin):
 admin.site.register(models.CampaignBudgetDepletionNotification, CampaignBudgetDepletionNotificationAdmin)
 
 
-class AutopilotAdGroupSourceBidCpcLogAdmin(admin.ModelAdmin):
-    search_fields = ['ad_group__name', 'ad_group_id']
-    list_display = (
-        'campaign',
-        'ad_group',
-        'ad_group_source',
-        'previous_cpc_cc',
-        'new_cpc_cc',
-        'yesterdays_spend_cc',
-        'current_daily_budget_cc',
-        'yesterdays_clicks',
-        'created_dt',
-        'comments'
-    )
-    readonly_fields = ['created_dt']
-    date_hierarchy = 'created_dt'
-
-
-admin.site.register(models.AutopilotAdGroupSourceBidCpcLog, AutopilotAdGroupSourceBidCpcLogAdmin)
-
-
 class AutopilotLogAdmin(admin.ModelAdmin):
     search_fields = ['ad_group__name']
     list_display = (

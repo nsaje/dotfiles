@@ -60,17 +60,28 @@ def run_autopilot(ad_group=None, campaign=None, adjust_cpcs=True, adjust_budgets
                 campaign.account.uses_bcm_v2,
                 adjust_budgets,
             )
+            cpc_changes_map = {}
             for ad_group in ad_groups:
-                budget_changes = budget_changes_map[ad_group]
-                cpc_changes = _get_cpc_predictions(
+                cpc_changes_map[ad_group] = _get_cpc_predictions(
                     ad_group,
-                    budget_changes,
+                    budget_changes_map[ad_group],
                     data[ad_group],
                     bcm_modifiers_map.get(campaign),
                     adjust_cpcs,
                     is_budget_ap_enabled=True,
                 )
-                _save_changes(changes_data, data, campaign_goals, ad_group, budget_changes, cpc_changes, dry_run, daily_run)
+                changes_data = _get_autopilot_campaign_changes_data(
+                    ad_group, changes_data, cpc_changes_map[ad_group], budget_changes_map[ad_group])
+            _save_changes_campaign(
+                campaign,
+                ad_groups,
+                data,
+                campaign_goals,
+                budget_changes_map,
+                cpc_changes_map,
+                dry_run,
+                daily_run,
+            )
         else:
             for ad_group in ad_groups:
                 budget_changes = _get_budget_predictions_for_adgroup(
@@ -89,7 +100,17 @@ def run_autopilot(ad_group=None, campaign=None, adjust_cpcs=True, adjust_budgets
                     bcm_modifiers_map.get(campaign),
                     adjust_cpcs,
                 )
-                _save_changes(changes_data, data, campaign_goals, ad_group, budget_changes, cpc_changes, dry_run, daily_run)
+                _save_changes(
+                    data,
+                    campaign_goals,
+                    ad_group,
+                    budget_changes,
+                    cpc_changes,
+                    dry_run,
+                    daily_run,
+                )
+                changes_data = _get_autopilot_campaign_changes_data(
+                    ad_group, changes_data, cpc_changes, budget_changes)
 
     if send_mail:
         helpers.send_autopilot_changes_emails(changes_data, bcm_modifiers_map, initialization)
@@ -99,23 +120,42 @@ def run_autopilot(ad_group=None, campaign=None, adjust_cpcs=True, adjust_budgets
     return changes_data
 
 
-def _save_changes(changes_data, data, campaign_goals, ad_group, budget_changes, cpc_changes, dry_run, daily_run):
+@transaction.atomic
+def _save_changes_campaign(campaign, ad_groups, data, campaign_goals, budget_changes_map, cpc_changes_map, dry_run, daily_run):
+    if dry_run:
+        return
+    for ad_group in ad_groups:
+        _save_changes(
+            data,
+            campaign_goals,
+            ad_group,
+            budget_changes_map[ad_group],
+            cpc_changes_map[ad_group],
+            dry_run,
+            daily_run,
+            campaign=campaign,
+        )
+
+
+def _save_changes(data, campaign_goals, ad_group, budget_changes, cpc_changes, dry_run, daily_run, campaign=None):
+    if dry_run:
+        return
     try:
         with transaction.atomic():
             set_autopilot_changes(cpc_changes, budget_changes, ad_group, dry_run=dry_run)
-            if not dry_run:
-                persist_autopilot_changes_to_log(ad_group.settings, cpc_changes, budget_changes, data[ad_group],
-                                                 ad_group.settings.autopilot_state,
-                                                 campaign_goals.get(ad_group.campaign),
-                                                 is_autopilot_job_run=daily_run)
-        changes_data = _get_autopilot_campaign_changes_data(
-            ad_group, changes_data, cpc_changes, budget_changes)
-        if not dry_run:
-            k1_helper.update_ad_group(ad_group.pk, 'run_autopilot')
+            persist_autopilot_changes_to_log(
+                ad_group,
+                cpc_changes,
+                budget_changes,
+                data[ad_group],
+                ad_group.settings.autopilot_state,
+                campaign_goals.get(ad_group.campaign),
+                is_autopilot_job_run=daily_run,
+                campaign=campaign,
+            )
+        k1_helper.update_ad_group(ad_group.pk, 'run_autopilot')
     except Exception as e:
         _report_autopilot_exception(ad_group, e)
-
-    return changes_data
 
 
 def _filter_adgroups_with_data(ad_groups, data):
@@ -241,7 +281,7 @@ def _set_paused_ad_group_sources_to_minimum_values(ad_group_settings, bcm_modifi
     try:
         with transaction.atomic():
             set_autopilot_changes({}, new_budgets, ad_group)
-            persist_autopilot_changes_to_log(ad_group_settings, {}, new_budgets, new_budgets,
+            persist_autopilot_changes_to_log(ad_group, {}, new_budgets, new_budgets,
                                              dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
     except Exception as e:
         _report_autopilot_exception(ags_settings, e)
@@ -262,15 +302,15 @@ def _get_autopilot_campaign_changes_data(ad_group, email_changes_data, cpc_chang
     return email_changes_data
 
 
-def persist_autopilot_changes_to_log(ad_group_settings, cpc_changes, budget_changes, data, autopilot_state,
-                                     campaign_goal_data=None, is_autopilot_job_run=False):
-    rtb_as_one = ad_group_settings.b1_sources_group_enabled
-    all_rtb_ad_group_source = dash.models.AllRTBAdGroupSource(ad_group_settings.ad_group)
+def persist_autopilot_changes_to_log(ad_group, cpc_changes, budget_changes, data, autopilot_state,
+                                     campaign_goal_data=None, is_autopilot_job_run=False, campaign=None):
+    rtb_as_one = ad_group.settings.b1_sources_group_enabled
+    all_rtb_ad_group_source = dash.models.AllRTBAdGroupSource(ad_group)
     for ag_source in list(data.keys()):
         old_budget = data[ag_source]['old_budget']
         goal_c = None
         if campaign_goal_data:
-            uses_bcm_v2 = ad_group_settings.ad_group.campaign.account.uses_bcm_v2
+            uses_bcm_v2 = ad_group.campaign.account.uses_bcm_v2
             goal_c = helpers.get_campaign_goal_column(campaign_goal_data['goal'], uses_bcm_v2)
         goal_value = data[ag_source][goal_c] if goal_c and goal_c in data[ag_source] else 0.0
         new_cpc_cc = data[ag_source].get('old_cpc_cc', None)
@@ -294,7 +334,8 @@ def persist_autopilot_changes_to_log(ad_group_settings, cpc_changes, budget_chan
             budget_changes and ag_source in budget_changes else []
 
         models.AutopilotLog(
-            ad_group=ad_group_settings.ad_group,
+            campaign=campaign,
+            ad_group=ad_group,
             autopilot_type=autopilot_state,
             ad_group_source=ag_source if ag_source != all_rtb_ad_group_source else None,
             previous_cpc_cc=data[ag_source].get('old_cpc_cc', None),
