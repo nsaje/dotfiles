@@ -26,7 +26,7 @@ def _get_available_campaign_budget(log):
     freed = sum(bli.freed_cc for bli in budgets_active_today) * converters.CC_TO_DECIMAL_DOLAR
     available = sum(bli.get_available_etfm_amount() for bli in budgets_active_today)
     return {
-        'available': numbers.round_decimal_half_down(available + freed, places=2),
+        'available': numbers.round_decimal_half_down(available + freed, places=2),  # freed amount is excluded from available, add it back
         'freed': numbers.round_decimal_half_down(freed, places=2),
     }
 
@@ -44,6 +44,6 @@ def _get_budgets_active_today(log):
     else:
         budgets = budgets.filter(
             start_date__lte=today,
-            end_date__gte=dates_helper.local_yesterday(),
+            end_date__gte=dates_helper.days_before(today, 2),  # budgets that ended 2 days ago were stopped yesterday
         )
     return budgets.order_by('created_dt')
