@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_autopilot_cpc_recommendations(
-        ad_group, adgroup_settings, data, bcm_modifiers,
+        ad_group, data, bcm_modifiers,
         budget_changes=None, adjust_rtb_sources=True):
     recommended_changes = {}
     ag_sources = list(data.keys())
@@ -55,7 +55,7 @@ def get_autopilot_cpc_recommendations(
             [s.source for s in ag_sources],
             bcm_modifiers)
         proposed_cpc = _threshold_source_constraints(
-            proposed_cpc, source_type, adgroup_settings, cpc_change_comments, bcm_modifiers)
+            proposed_cpc, source_type, ad_group.settings, cpc_change_comments, bcm_modifiers)
 
         new_cpc_cc = proposed_cpc
         cpc_change_not_allowed_comments = set(cpc_change_comments) -\

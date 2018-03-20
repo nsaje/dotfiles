@@ -1,7 +1,6 @@
 from decimal import Decimal
 import json
-from mock import patch
-import mock
+from mock import patch, call
 import traceback
 
 from django import test
@@ -9,11 +8,173 @@ from django import test
 import dash.models
 
 from . import constants
+from automation import models
 from . import service
 
 
 class AutopilotPlusTestCase(test.TestCase):
     fixtures = ['test_automation.yaml']
+
+    def mock_budget_recommender(self, ad_group, daily_budget, data, bcm, campaign_goal, rtb_as_one):
+        result = {}
+        for ags in data:
+            result[ags] = {
+                'old_budget': Decimal('10.0'),
+                'new_budget': Decimal('20.0'),
+                'budget_comments': [],
+            }
+        return result
+
+    def mock_cpc_recommender(self, ad_group, data, bcm, budget_changes, adjust_rtb_sources):
+        result = {}
+        for ags in data:
+            if ad_group.id != 3:
+                self.assertEqual(budget_changes.get(ags), {
+                    'old_budget': Decimal('10.0'),
+                    'new_budget': Decimal('20.0'),
+                    'budget_comments': [],
+                })
+            result[ags] = {
+                'old_cpc_cc': Decimal('0.1'),
+                'new_cpc_cc': Decimal('0.2'),
+                'cpc_comments': [],
+            }
+        return result
+
+    def _update_call(self, ad_group, source, budget=True, cpc=True):
+        changes = {}
+        if budget:
+            changes['daily_budget_cc'] = Decimal('20.0')
+        if cpc:
+            changes['cpc_cc'] = Decimal('0.2')
+        return call(
+            dash.models.AdGroupSource.objects.get(ad_group_id=ad_group, source_id=source),
+            changes,
+            2, None)
+
+    def _update_allrtb_call(self, ad_group, budget=True, cpc=True):
+        changes = {}
+        if budget:
+            changes['daily_budget_cc'] = Decimal('20.0')
+        if cpc:
+            changes['cpc_cc'] = Decimal('0.2')
+        return call(
+            dash.models.AdGroup.objects.get(id=ad_group),
+            changes,
+            2)
+
+    def assertLogExists(self, ad_group, source):
+        ags = None
+        if source is not None:
+            ags = dash.models.AdGroupSource.objects.filter(
+                ad_group_id=ad_group,
+                source_id=source,
+            )
+        models.AutopilotLog.objects.get(
+            ad_group_id=ad_group,
+            ad_group_source=ags,
+        )
+
+    def setUp(self):
+        dash.models.AdGroup.objects.get(pk=2).settings.update_unsafe(None, state=1)
+        self.data = {
+            ad_group: {
+                ags: {
+                    'old_budget': Decimal('10.0'),
+                } for ags in (
+                    list(dash.models.AdGroupSource.objects.filter(ad_group=ad_group)) +
+                    [dash.models.AllRTBAdGroupSource(ad_group)])
+            } for ad_group in dash.models.AdGroup.objects.all()
+        }
+
+    @patch('automation.autopilot.helpers.update_ad_group_b1_sources_group_values')
+    @patch('automation.autopilot.helpers.update_ad_group_source_values')
+    @patch('automation.autopilot.prefetch.prefetch_autopilot_data')
+    @patch('automation.autopilot.cpc.get_autopilot_cpc_recommendations')
+    @patch('automation.autopilot.budgets.get_autopilot_daily_budget_recommendations')
+    def test_run_autopilot_daily_run(self, mock_budgets, mock_cpc, mock_prefetch, mock_update, mock_update_allrtb):
+        mock_budgets.side_effect = self.mock_budget_recommender
+        mock_cpc.side_effect = self.mock_cpc_recommender
+        mock_prefetch.return_value = (self.data, {}, {})
+
+        service.run_autopilot(daily_run=True)
+
+        self.assertCountEqual(mock_update.call_args_list, [
+            self._update_call(ad_group=1, source=1),
+            self._update_call(ad_group=2, source=1),
+            self._update_call(ad_group=3, source=1, budget=False),
+            self._update_call(ad_group=4, source=1),
+            self._update_call(ad_group=4, source=2),
+            self._update_call(ad_group=4, source=3),
+            self._update_call(ad_group=4, source=4),
+        ])
+        self.assertCountEqual(mock_update_allrtb.call_args_list, [
+            self._update_allrtb_call(ad_group=1),
+            self._update_allrtb_call(ad_group=2),
+            self._update_allrtb_call(ad_group=3, budget=False),
+            self._update_allrtb_call(ad_group=4),
+        ])
+        self.assertLogExists(ad_group=1, source=1)
+        self.assertLogExists(ad_group=2, source=1)
+        self.assertLogExists(ad_group=3, source=1)
+        self.assertLogExists(ad_group=4, source=1)
+        self.assertLogExists(ad_group=4, source=2)
+        self.assertLogExists(ad_group=4, source=3)
+        self.assertLogExists(ad_group=4, source=4)
+        self.assertLogExists(ad_group=1, source=None)
+        self.assertLogExists(ad_group=2, source=None)
+        self.assertLogExists(ad_group=3, source=None)
+        self.assertLogExists(ad_group=4, source=None)
+
+    @patch('automation.autopilot.helpers.update_ad_group_b1_sources_group_values')
+    @patch('automation.autopilot.helpers.update_ad_group_source_values')
+    @patch('automation.autopilot.prefetch.prefetch_autopilot_data')
+    @patch('automation.autopilot.cpc.get_autopilot_cpc_recommendations')
+    @patch('automation.autopilot.budgets.get_autopilot_daily_budget_recommendations')
+    def test_run_autopilot_initialize_adgroup(self, mock_budgets, mock_cpc, mock_prefetch, mock_update, mock_update_allrtb):
+        mock_budgets.side_effect = self.mock_budget_recommender
+        mock_cpc.side_effect = self.mock_cpc_recommender
+        mock_prefetch.return_value = (self.data, {}, {})
+
+        ad_group = dash.models.AdGroup.objects.get(pk=4)
+        service.run_autopilot(ad_group=ad_group, initialization=True, adjust_cpcs=False)
+
+        self.assertCountEqual(mock_update.call_args_list, [
+            self._update_call(ad_group=4, source=1, cpc=False),
+            self._update_call(ad_group=4, source=2, cpc=False),
+            self._update_call(ad_group=4, source=3, cpc=False),
+            self._update_call(ad_group=4, source=4, cpc=False),
+        ])
+        self.assertCountEqual(mock_update_allrtb.call_args_list, [
+            self._update_allrtb_call(ad_group=4, cpc=False),
+        ])
+        self.assertLogExists(ad_group=4, source=1)
+        self.assertLogExists(ad_group=4, source=2)
+        self.assertLogExists(ad_group=4, source=3)
+        self.assertLogExists(ad_group=4, source=4)
+        self.assertLogExists(ad_group=4, source=None)
+
+    @patch('automation.autopilot.helpers.update_ad_group_b1_sources_group_values')
+    @patch('automation.autopilot.helpers.update_ad_group_source_values')
+    @patch('automation.autopilot.prefetch.prefetch_autopilot_data')
+    @patch('automation.autopilot.cpc.get_autopilot_cpc_recommendations')
+    @patch('automation.autopilot.budgets.get_autopilot_daily_budget_recommendations')
+    def test_run_autopilot_intialize_campaign(self, mock_budgets, mock_cpc, mock_prefetch, mock_update, mock_update_allrtb):
+        mock_budgets.side_effect = self.mock_budget_recommender
+        mock_cpc.side_effect = self.mock_cpc_recommender
+        mock_prefetch.return_value = (self.data, {}, {})
+
+        campaign = dash.models.Campaign.objects.get(pk=2)
+        service.run_autopilot(campaign=campaign, initialization=True, adjust_cpcs=False)
+
+        self.assertCountEqual(mock_update.call_args_list, [
+            self._update_call(ad_group=2, source=1, cpc=False),
+        ])
+        self.assertCountEqual(mock_update_allrtb.call_args_list, [
+            self._update_allrtb_call(ad_group=2, cpc=False),
+        ])
+        self.assertLogExists(ad_group=2, source=1)
+        self.assertLogExists(ad_group=2, source=None)
 
     @patch('urllib.request.urlopen')
     @test.override_settings(
@@ -46,14 +207,15 @@ class AutopilotPlusTestCase(test.TestCase):
     @patch('automation.autopilot.prefetch.prefetch_autopilot_data')
     @patch('automation.autopilot.helpers.get_autopilot_entities')
     @patch('automation.autopilot.helpers.get_active_ad_groups_on_autopilot')
-    @patch('automation.autopilot.service._get_autopilot_predictions')
+    @patch('automation.autopilot.service._get_cpc_predictions')
+    @patch('automation.autopilot.service._get_budget_predictions_for_adgroup')
     @patch('automation.autopilot.service.set_autopilot_changes')
     @patch('automation.autopilot.service.persist_autopilot_changes_to_log')
     @patch('automation.autopilot.service._get_autopilot_campaign_changes_data')
     @patch('automation.autopilot.service._report_autopilot_exception')
     @patch('utils.k1_helper.update_ad_group')
     def test_dry_run(self, mock_k1, mock_exc, mock_get_changes, mock_log, mock_set,
-                     mock_predict, mock_active, mock_entities, mock_prefetch):
+                     mock_predict1, mock_predict2, mock_active, mock_entities, mock_prefetch):
         ad_groups = list(dash.models.AdGroup.objects.all())
         mock_prefetch.return_value = (
             {
@@ -67,13 +229,15 @@ class AutopilotPlusTestCase(test.TestCase):
                 } for ad_group in ad_groups
             }
         )
+        mock_entities.return_value = {
+            ad_group.campaign: {ad_group: []} for ad_group in ad_groups
+        }
         mock_active.return_value = (
             ad_groups,
             [a.get_current_settings() for a in ad_groups],
         )
-        mock_predict.return_value = (
-            {}, {}
-        )
+        mock_predict1.return_value = {}
+        mock_predict2.return_value = {}
         service.run_autopilot(
             send_mail=False,
             report_to_influx=False,
@@ -83,7 +247,8 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertEqual(mock_k1.called, False)
         self.assertEqual(mock_log.called, False)
 
-        self.assertEqual(mock_predict.called, True)
+        self.assertEqual(mock_predict1.called, True)
+        self.assertEqual(mock_predict2.called, True)
         self.assertEqual(mock_get_changes.called, True)
         mock_set.assert_called_with(
             {}, {}, dash.models.AdGroup.objects.get(id=4), dry_run=True
@@ -289,29 +454,29 @@ class AutopilotPlusTestCase(test.TestCase):
 
         mock_influx.assert_has_calls(
             [
-                mock.call(
+                call(
                     'automation.autopilot_plus.adgroups_on',
                     2,
                     autopilot='budget_autopilot'
                 ),
-                mock.call(
+                call(
                     'automation.autopilot_plus.adgroups_on',
                     1,
                     autopilot='cpc_autopilot'
                 ),
-                mock.call(
+                call(
                     'automation.autopilot_plus.spend',
                     Decimal('50'),
                     autopilot='budget_autopilot',
                     type='expected'
                 ),
-                mock.call(
+                call(
                     'automation.autopilot_plus.spend',
                     Decimal('35'),
                     autopilot='budget_autopilot',
                     type='yesterday'
                 ),
-                mock.call(
+                call(
                     'automation.autopilot_plus.spend',
                     Decimal('10'),
                     autopilot='cpc_autopilot',
@@ -333,24 +498,24 @@ class AutopilotPlusTestCase(test.TestCase):
 
         mock_influx.assert_has_calls(
             [
-                mock.call(
+                call(
                     'automation.autopilot_plus.spend',
                     Decimal('50'),
                     autopilot='cpc_autopilot',
                     type='actual'
                 ),
-                mock.call(
+                call(
                     'automation.autopilot_plus.spend',
                     Decimal('210'),
                     autopilot='budget_autopilot',
                     type='actual'
                 ),
-                mock.call(
+                call(
                     'automation.autopilot_plus.sources_on',
                     1,
                     autopilot='cpc_autopilot'
                 ),
-                mock.call(
+                call(
                     'automation.autopilot_plus.sources_on',
                     4,
                     autopilot='budget_autopilot'

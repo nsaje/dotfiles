@@ -14,10 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_autopilot_daily_budget_recommendations(
-        ad_group, daily_budget, data, bcm_modifiers, campaign_goal=None, rtb_as_one=False):
-    if rtb_as_one:
-        data = {ags: v for ags, v in data.items() if
-                ags.source == dash.models.AllRTBSource or ags.source.source_type.type != dash.constants.SourceType.B1}
+        entity, daily_budget, data, bcm_modifiers, campaign_goal=None, uses_bcm_v2=False):
     active_sources = list(data.keys())
     max_budgets, new_budgets, old_budgets = _get_autopilot_budget_constraints(data, daily_budget, bcm_modifiers)
     comments = []
@@ -26,14 +23,14 @@ def get_autopilot_daily_budget_recommendations(
     # Don't add any budget to sources with insufficient spend
     active_sources_with_spend = _get_active_sources_with_spend(active_sources, data, new_budgets)
     if len(active_sources_with_spend) < 1:
-        logger.info(str(ad_group) +
+        logger.info(str(entity) +
                     ' does not have any active sources with enough spend. Uniformly redistributed budget.')
         comments.append(constants.DailyBudgetChangeComment.NO_ACTIVE_SOURCES_WITH_SPEND)
         new_budgets = _uniformly_redistribute_remaining_budget(active_sources, budget_left, new_budgets, bcm_modifiers)
     else:
         bandit = BetaBandit(active_sources_with_spend, backup_sources=active_sources)
         min_value_of_optimization_goal, max_value_of_optimization_goal = _get_min_max_values_of_optimization_goal(
-            list(data.values()), campaign_goal, ad_group.campaign.account.uses_bcm_v2)
+            list(data.values()), campaign_goal, uses_bcm_v2)
         # Train bandit
         for s in active_sources_with_spend:
             for i in range(5):
@@ -41,14 +38,14 @@ def get_autopilot_daily_budget_recommendations(
                     s, predict_outcome_success(
                         s, data[s], campaign_goal,
                         min_value_of_optimization_goal, max_value_of_optimization_goal,
-                        uses_bcm_v2=ad_group.campaign.account.uses_bcm_v2,
+                        uses_bcm_v2=uses_bcm_v2,
                     ))
 
         # Redistribute budgets
         while budget_left >= 1:
             if len(_get_active_sources_with_spend(active_sources, data, new_budgets)) < 1:
                 new_budgets = _uniformly_redistribute_remaining_budget(active_sources, budget_left, new_budgets, bcm_modifiers)
-                logger.info(str(ad_group) +
+                logger.info(str(entity) +
                             ' used up all smart budget, now uniformly redistributed remaining $' + str(budget_left) + '.')
                 comments.append(
                     constants.DailyBudgetChangeComment.USED_UP_BUDGET_THEN_UNIFORMLY_REDISTRIBUTED)
@@ -63,7 +60,7 @@ def get_autopilot_daily_budget_recommendations(
                 predict_outcome_success(
                     s, data[s], campaign_goal, min_value_of_optimization_goal,
                     max_value_of_optimization_goal, new_budget=new_budgets[s],
-                    uses_bcm_v2=ad_group.campaign.account.uses_bcm_v2,
+                    uses_bcm_v2=uses_bcm_v2,
                 )
             )
             max_budget = s.source.source_type.get_etfm_max_daily_budget(bcm_modifiers)
@@ -72,8 +69,8 @@ def get_autopilot_daily_budget_recommendations(
 
     if sum(new_budgets.values()) != daily_budget:
         logger.warning('Budget Autopilot tried assigning wrong ammount of total daily spend caps - Expected: ' +
-                       str(daily_budget) + ' Proposed: ' + str(sum(new_budgets.values())) + ' on AdGroup: ' +
-                       str(ad_group) + ' ( ' + str(ad_group.id) + ' )')
+                       str(daily_budget) + ' Proposed: ' + str(sum(new_budgets.values())) + ' on entity: ' +
+                       str(entity) + ' ( ' + str(entity.id) + ' )')
         comments = [constants.DailyBudgetChangeComment.NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET]
         new_budgets = old_budgets
     return {s: {'old_budget': old_budgets[s], 'new_budget': new_budgets[s], 'budget_comments': comments}

@@ -94,6 +94,10 @@ def get_autopilot_entities(ad_group=None, campaign=None):
         if len(ags) == 0:
             continue
 
+        # cache optimization (loading adgroup source and adgroup settings in single query is too slow)
+        for ad_group_source in ags:
+            ad_group_source.ad_group = ad_group
+
         data[ad_group.campaign][ad_group] = ags
 
     return data

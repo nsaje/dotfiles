@@ -102,6 +102,7 @@
 -   fields:
         campaign: 2
         created_dt: '2014-06-04T09:58:21'
+        autopilot: true
     model: dash.campaignsettings
     pk: 2
 
@@ -163,6 +164,7 @@
 - fields:
     ad_group_id: 1
     created_dt: '2014-06-04T09:58:21'
+    start_date: '2014-06-04'
     created_by: 1
     state: 1
     cpc_cc: 100.00
@@ -174,6 +176,7 @@
 - fields:
     ad_group_id: 2
     created_dt: '2014-06-04T09:58:21'
+    start_date: '2014-06-04'
     created_by: 1
     state: 2
     autopilot_state: 2
@@ -184,6 +187,7 @@
 - fields:
     ad_group_id: 3
     created_dt: '2014-06-04T09:58:21'
+    start_date: '2014-06-04'
     created_by: 1
     state: 1
     autopilot_state: 3
@@ -194,6 +198,7 @@
 - fields:
     ad_group_id: 4
     created_dt: '2014-06-04T09:58:21'
+    start_date: '2014-06-04'
     created_by: 1
     state: 1
     autopilot_state: 1
