@@ -27,12 +27,15 @@ class AdGroupSourceSettingsMixin(object):
 
         if not skip_automation:
             self.validate_ad_group_source_campaign_stop(new_settings)
-            autopilot_changed_sources = self._handle_budget_autopilot(new_settings)
-            result['autopilot_changed_sources_text'] = ', '.join(autopilot_changed_sources)
 
         old_settings = self.get_settings_dict()
         changes = self.get_setting_changes(new_settings)
         new_settings.save(request, system_user=system_user, update_fields=list(changes.keys()))
+
+        if not skip_automation:
+            # autopilot reloads settings so changes have to be saved when it is called
+            autopilot_changed_sources = self._handle_budget_autopilot(changes)
+            result['autopilot_changed_sources_text'] = ', '.join(autopilot_changed_sources)
 
         if k1_sync:
             utils.k1_helper.update_ad_group(self.ad_group_source.ad_group.pk, 'AdGroupSource.update')
@@ -42,9 +45,9 @@ class AdGroupSourceSettingsMixin(object):
 
         return result
 
-    def _handle_budget_autopilot(self, new_settings):
+    def _handle_budget_autopilot(self, changes):
         ad_group_settings = self.ad_group_source.ad_group.settings
-        if (self.state != new_settings.state and
+        if ('state' in changes and
                 ad_group_settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET):
             from automation import autopilot
             changed_sources = autopilot.initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False)

@@ -27,7 +27,10 @@ class AdGroupSettingsMixin(object):
             if not skip_validation:
                 self.clean(new_settings)
             self._handle_and_set_change_consequences(new_settings)
+            changes = self.get_setting_changes(new_settings)
             self._save_and_propagate(request, new_settings, system_user)
+            # autopilot reloads settings so changes have to be saved when it is called
+            self._handle_initialize_budget_autopilot(changes)
 
     def _update_ad_group(self, request, updates):
         if 'name' in updates:
@@ -83,7 +86,6 @@ class AdGroupSettingsMixin(object):
         self._handle_b1_sources_group_adjustments(new_settings)
         self._handle_cpc_autopilot_initial_cpcs(new_settings)
         self._handle_cpc_constraints(new_settings)
-        self._handle_initialize_budget_autopilot(new_settings)
 
     def _handle_b1_sources_group_adjustments(self, new_settings):
         import dash.views.helpers
@@ -153,9 +155,8 @@ class AdGroupSettingsMixin(object):
         dash.views.helpers.set_ad_group_sources_cpcs(
             ad_group_sources_cpcs, self.ad_group, new_settings, skip_validation=True)
 
-    def _handle_initialize_budget_autopilot(self, new_settings):
-        changes = self.get_setting_changes(new_settings)
-        if new_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+    def _handle_initialize_budget_autopilot(self, changes):
+        if self.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
             return
 
         ap_budget_fields = ['autopilot_daily_budget', 'autopilot_state', 'b1_sources_group_state']
@@ -163,7 +164,7 @@ class AdGroupSettingsMixin(object):
             return
 
         from automation import autopilot
-        autopilot.initialize_budget_autopilot_on_ad_group(new_settings, send_mail=True)
+        autopilot.initialize_budget_autopilot_on_ad_group(self, send_mail=True)
 
     def _save_and_propagate(self, request, new_settings, system_user):
         changes = self.get_setting_changes(new_settings)
