@@ -5,6 +5,7 @@ from .. import RealTimeCampaignStopLog
 
 from utils import dates_helper
 from utils import converters
+from utils import numbers
 
 
 def audit_stopped_campaigns(date):
@@ -22,9 +23,11 @@ def audit_stopped_campaigns(date):
 
 def _get_available_campaign_budget(log):
     budgets_active_today = _get_budgets_active_today(log)
+    freed = sum(bli.freed_cc for bli in budgets_active_today) * converters.CC_TO_DECIMAL_DOLAR
+    available = sum(bli.get_available_etfm_amount() for bli in budgets_active_today)
     return {
-        'available': sum(bli.get_available_etfm_amount() for bli in budgets_active_today),
-        'freed': sum(bli.freed_cc for bli in budgets_active_today) * converters.CC_TO_DECIMAL_DOLAR,
+        'available': numbers.round_decimal_half_down(available + freed, places=2),
+        'freed': numbers.round_decimal_half_down(freed, places=2),
     }
 
 
@@ -41,6 +44,6 @@ def _get_budgets_active_today(log):
     else:
         budgets = budgets.filter(
             start_date__lte=today,
-            end_date__gte=today
+            end_date__gte=dates_helper.local_yesterday(),
         )
     return budgets.order_by('created_dt')
