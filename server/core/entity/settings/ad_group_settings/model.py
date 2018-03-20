@@ -23,6 +23,7 @@ import core.source
 
 
 from ..settings_base import SettingsBase
+from .. import multicurrency_mixin
 
 from . import manager
 from . import queryset
@@ -32,6 +33,7 @@ from .. import helpers
 
 
 class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
+                      multicurrency_mixin.MulticurrencySettingsMixin,
                       instance.AdGroupSettingsMixin,
                       SettingsBase):
     class Meta:
@@ -104,7 +106,15 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         'max_cpm': 'zemauth.can_set_ad_group_max_cpm',
         'local_max_cpm': 'zemauth.can_set_ad_group_max_cpm',
     }
-    history_fields = list(_settings_fields)
+    multicurrency_fields = [
+        'cpc_cc',
+        'autopilot_daily_budget',
+        'b1_sources_group_daily_budget',
+        'b1_sources_group_cpc_cc',
+        'max_cpm',
+    ]
+    # TODO(nsaje): switch from excluding local fields to excluding usd fields at multicurrency release
+    history_fields = list(set(_settings_fields) - set(['local_%s' % field for field in multicurrency_fields]))
 
     id = models.AutoField(primary_key=True)
     ad_group = models.ForeignKey(

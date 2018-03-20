@@ -118,7 +118,7 @@ class AdGroupSourceUpdate(TestCase):
             self.ad_group_source.settings.update(cpc_cc=decimal.Decimal('-1.2'))
 
     def test_update_validate_cpc_ad_group_max_cpc(self):
-        self.ad_group.settings.update_unsafe(None, cpc_cc=1.1)
+        self.ad_group.settings.update_unsafe(None, cpc_cc=decimal.Decimal('1.1'))
 
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.settings.update(cpc_cc=decimal.Decimal('1.2'))
@@ -149,13 +149,13 @@ class AdGroupSourceUpdate(TestCase):
             self.ad_group_source.settings.update(daily_budget_cc=decimal.Decimal('-1.2'))
 
     def test_update_validate_daily_budget_source_min(self):
-        self.source_type.min_daily_budget = 2.0
+        self.source_type.min_daily_budget = decimal.Decimal('2.0')
         self.source_type.save()
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.settings.update(daily_budget_cc=decimal.Decimal('1.8'))
 
     def test_update_validate_daily_budget_source_max(self):
-        self.source_type.max_daily_budget = 2.0
+        self.source_type.max_daily_budget = decimal.Decimal('2.0')
         self.source_type.save()
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.settings.update(daily_budget_cc=decimal.Decimal('2.2'))
@@ -224,3 +224,29 @@ class AdGroupSourceUpdate(TestCase):
             self.ad_group_source.settings.update(state=constants.AdGroupSourceSettingsState.ACTIVE)
 
         self.ad_group_source.settings.update(state=constants.AdGroupSourceSettingsState.INACTIVE)
+
+
+class MulticurrencyTest(TestCase):
+
+    @patch.object(core.multicurrency, 'get_exchange_rate')
+    def test_set_usd(self, mock_get_exchange_rate):
+        ad_group_source = magic_mixer.blend(core.entity.AdGroupSource)
+        mock_get_exchange_rate.return_value = decimal.Decimal('2.0')
+        ad_group_source.settings.update(None, cpc_cc=decimal.Decimal('0.50'))
+        self.assertEqual(ad_group_source.settings.local_cpc_cc, decimal.Decimal('1.00'))
+        self.assertEqual(ad_group_source.settings.cpc_cc, decimal.Decimal('0.50'))
+
+    @patch.object(core.multicurrency, 'get_exchange_rate')
+    def test_set_local(self, mock_get_exchange_rate):
+        ad_group_source = magic_mixer.blend(core.entity.AdGroupSource)
+        mock_get_exchange_rate.return_value = decimal.Decimal('2.0')
+        ad_group_source.settings.update(None, local_cpc_cc=decimal.Decimal('0.50'))
+        self.assertEqual(ad_group_source.settings.local_cpc_cc, decimal.Decimal('0.50'))
+        self.assertEqual(ad_group_source.settings.cpc_cc, decimal.Decimal('0.25'))
+
+    @patch.object(core.multicurrency, 'get_exchange_rate')
+    def test_set_none(self, mock_get_exchange_rate):
+        ad_group_source = magic_mixer.blend(core.entity.AdGroupSource)
+        mock_get_exchange_rate.return_value = decimal.Decimal('2.0')
+        ad_group_source.settings.update(None, state=2)
+        mock_get_exchange_rate.assert_not_called()

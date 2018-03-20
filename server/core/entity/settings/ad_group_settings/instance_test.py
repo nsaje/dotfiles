@@ -38,6 +38,8 @@ class InstanceTest(TestCase):
             'b1_sources_group_enabled': True,
             'b1_sources_group_cpc_cc': min(new_settings.cpc_cc, core.source.AllRTBSource.default_cpc_cc),
             'b1_sources_group_daily_budget': core.source.AllRTBSource.default_daily_budget_cc,
+            'local_b1_sources_group_cpc_cc': min(new_settings.cpc_cc, core.source.AllRTBSource.default_cpc_cc),
+            'local_b1_sources_group_daily_budget': core.source.AllRTBSource.default_daily_budget_cc,
         })
 
     def test_b1_sources_group_adjustments_sets_new_cpc_daily_budget(self):
@@ -64,6 +66,8 @@ class InstanceTest(TestCase):
             'b1_sources_group_enabled': True,
             'b1_sources_group_cpc_cc': Decimal('0.211'),
             'b1_sources_group_daily_budget': Decimal('10.0'),
+            'local_b1_sources_group_cpc_cc': Decimal('0.211'),
+            'local_b1_sources_group_daily_budget': Decimal('10.0'),
         })
 
         current_settings._handle_b1_sources_group_adjustments(new_settings)
@@ -72,6 +76,8 @@ class InstanceTest(TestCase):
             'b1_sources_group_enabled': True,
             'b1_sources_group_cpc_cc': Decimal('0.211'),
             'b1_sources_group_daily_budget': Decimal('10.0'),
+            'local_b1_sources_group_cpc_cc': Decimal('0.211'),
+            'local_b1_sources_group_daily_budget': Decimal('10.0'),
         })
 
     def test_b1_sources_group_adjustments_obeys_new_adgroup_max_cpc(self):
@@ -96,6 +102,7 @@ class InstanceTest(TestCase):
         self.assertDictEqual(changes, {
             'b1_sources_group_enabled': True,
             'cpc_cc': Decimal('0.05'),
+            'local_cpc_cc': Decimal('0.05'),
         })
 
         current_settings._handle_b1_sources_group_adjustments(new_settings)
@@ -104,7 +111,10 @@ class InstanceTest(TestCase):
             'b1_sources_group_enabled': True,
             'b1_sources_group_cpc_cc': Decimal('0.05'),
             'b1_sources_group_daily_budget': core.source.AllRTBSource.default_daily_budget_cc,
-            'cpc_cc': Decimal('0.05')
+            'cpc_cc': Decimal('0.05'),
+            'local_b1_sources_group_cpc_cc': Decimal('0.05'),
+            'local_b1_sources_group_daily_budget': core.source.AllRTBSource.default_daily_budget_cc,
+            'local_cpc_cc': Decimal('0.05')
         })
 
     @patch('utils.redirector_helper.insert_adgroup')
@@ -168,3 +178,29 @@ class InstanceTest(TestCase):
             )
             save_mock.assert_called_once_with(
                 None, system_user=None, update_fields=['bluekai_targeting'], bluekai_targeting=['outbrain:4321'])
+
+
+class MulticurrencyTest(TestCase):
+
+    @patch.object(core.multicurrency, 'get_exchange_rate')
+    def test_set_usd(self, mock_get_exchange_rate):
+        ad_group = magic_mixer.blend(core.entity.AdGroup)
+        mock_get_exchange_rate.return_value = Decimal('2.0')
+        ad_group.settings.update(None, cpc_cc=Decimal('0.50'))
+        self.assertEqual(ad_group.settings.local_cpc_cc, Decimal('1.00'))
+        self.assertEqual(ad_group.settings.cpc_cc, Decimal('0.50'))
+
+    @patch.object(core.multicurrency, 'get_exchange_rate')
+    def test_set_local(self, mock_get_exchange_rate):
+        ad_group = magic_mixer.blend(core.entity.AdGroup)
+        mock_get_exchange_rate.return_value = Decimal('2.0')
+        ad_group.settings.update(None, local_cpc_cc=Decimal('0.50'))
+        self.assertEqual(ad_group.settings.local_cpc_cc, Decimal('0.50'))
+        self.assertEqual(ad_group.settings.cpc_cc, Decimal('0.25'))
+
+    @patch.object(core.multicurrency, 'get_exchange_rate')
+    def test_set_none(self, mock_get_exchange_rate):
+        ad_group = magic_mixer.blend(core.entity.AdGroup)
+        mock_get_exchange_rate.return_value = Decimal('2.0')
+        ad_group.settings.update(None, name='test')
+        mock_get_exchange_rate.assert_not_called()

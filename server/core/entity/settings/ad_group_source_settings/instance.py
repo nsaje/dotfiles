@@ -107,3 +107,6 @@ class AdGroupSourceSettingsMixin(object):
                 margin,
             )
         return cpc_cc
+
+    def get_currency(self):
+        return self.ad_group_source.ad_group.campaign.account.currency

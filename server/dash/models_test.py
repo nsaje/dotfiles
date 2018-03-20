@@ -1093,7 +1093,7 @@ class HistoryTest(TestCase):
         self.assertEqual(4.999, hist.changes['cpc_cc'])
 
         adgss = adgss.copy_settings()
-        adgss.cpc_cc = 5.103
+        adgss.cpc_cc = Decimal('5.103')
         adgss.save(None)
 
         adg_hist = self._latest_ad_group_history(ad_group=ad_group)
@@ -1101,7 +1101,7 @@ class HistoryTest(TestCase):
         self.assertEqual(1, adg_hist.ad_group.id)
         self.assertDictEqual(
             {
-                'cpc_cc': 5.103,
+                'cpc_cc': '5.103',
             }, adg_hist.changes
         )
         self.assertEqual(

@@ -1,3 +1,4 @@
+from decimal import Decimal
 import json
 from mock import patch
 
@@ -65,7 +66,7 @@ class RTBSourceSettingsTest(TestCase):
 
     def test_validate_max_cpc(self):
         updated_ad_group_settings = self.ad_group.get_current_settings().copy_settings()
-        updated_ad_group_settings.cpc_cc = '0.10'
+        updated_ad_group_settings.cpc_cc = Decimal('0.10')
         updated_ad_group_settings.save(None)
 
         response = self.client.post(

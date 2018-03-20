@@ -1,7 +1,10 @@
-# this is used in copy_settings() to ensure backwards compatibility
 class UpdateObject(object):
+    """ An object returned by `SettingsBase.copy_settings()` that keeps track of proposed
+        changes to the settings. Ensures backward compatibility with old settings style.
+    """
     def __init__(self, settings):
         self.__dict__['settings'] = settings
+        self.__dict__['_supports_multicurrency'] = hasattr(settings, 'get_multicurrency_counterpart')
 
     def __getattr__(self, key):
         if key in self.__dict__:
@@ -13,6 +16,10 @@ class UpdateObject(object):
 
         if value != old_value:
             self.__dict__[key] = value
+            if self._supports_multicurrency:
+                counterpart_key, counterpart_value = self.settings.get_multicurrency_counterpart(key, value)
+                if counterpart_key and counterpart_value:
+                    self.__dict__[counterpart_key] = counterpart_value
 
     def get_updates(self):
         fields = (field.name for field in self.settings._meta.get_fields())

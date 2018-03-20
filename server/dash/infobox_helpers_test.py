@@ -275,7 +275,7 @@ class InfoBoxHelpersTest(TestCase):
         ags2 = dash.models.AdGroupSource.objects.get(id=1)
 
         new_settings = ags1.get_current_settings().copy_settings()
-        new_settings.daily_budget_cc = 200
+        new_settings.daily_budget_cc = Decimal('200')
         new_settings.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
         new_settings.save(None)
 

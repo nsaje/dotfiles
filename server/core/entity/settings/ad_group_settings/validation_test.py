@@ -50,16 +50,16 @@ class ValidationTest(TestCase):
         current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
         new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
 
-        current_settings.b1_sources_group_cpc_cc = '0.1'
-        new_settings.b1_sources_group_cpc_cc = '0.2'
+        current_settings.b1_sources_group_cpc_cc = Decimal('0.1')
+        new_settings.b1_sources_group_cpc_cc = Decimal('0.2')
         current_settings._validate_autopilot_settings(new_settings)
         mock_get_min_budget.assert_called_with(self.ad_group, new_settings)
 
         current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
         new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
 
-        current_settings.b1_sources_group_cpc_cc = '0.1'
-        new_settings.b1_sources_group_cpc_cc = '0.2'
+        current_settings.b1_sources_group_cpc_cc = Decimal('0.1')
+        new_settings.b1_sources_group_cpc_cc = Decimal('0.2')
 
         with self.assertRaises(exc.ValidationError):
             current_settings._validate_autopilot_settings(new_settings)
@@ -77,8 +77,8 @@ class ValidationTest(TestCase):
         current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
         new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
 
-        current_settings.b1_sources_group_cpc_cc = '100.0'
-        new_settings.b1_sources_group_cpc_cc = '200.0'
+        current_settings.b1_sources_group_cpc_cc = Decimal('100.0')
+        new_settings.b1_sources_group_cpc_cc = Decimal('200.0')
         current_settings._validate_autopilot_settings(new_settings)  # no exception
         mock_get_min_budget.assert_called_with(self.ad_group, new_settings)
 

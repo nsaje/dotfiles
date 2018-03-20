@@ -607,7 +607,7 @@ class AdGroupSettingsTest(TestCase):
             old_settings = old_settings.copy_settings()
             old_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
             old_settings.b1_sources_group_enabled = True
-            old_settings.b1_sources_group_cpc_cc = '0.25'
+            old_settings.b1_sources_group_cpc_cc = Decimal('0.25')
             old_settings.save(None)
 
             for ad_group_source in ad_group.adgroupsource_set.filter(
@@ -618,19 +618,19 @@ class AdGroupSettingsTest(TestCase):
 
             ad_group_source_1 = ad_group.adgroupsource_set.get(id=18)
             ad_group_source_1_settings = ad_group_source_1.get_current_settings().copy_settings()
-            ad_group_source_1_settings.cpc_cc = '0.3'
+            ad_group_source_1_settings.cpc_cc = Decimal('0.3')
             ad_group_source_1_settings.state = constants.AdGroupSettingsState.ACTIVE
             ad_group_source_1_settings.save(None)
 
             ad_group_source_2 = ad_group.adgroupsource_set.get(id=1)
             ad_group_source_2_settings = ad_group_source_2.get_current_settings().copy_settings()
-            ad_group_source_2_settings.cpc_cc = '0.13'
+            ad_group_source_2_settings.cpc_cc = Decimal('0.13')
             ad_group_source_2_settings.state = constants.AdGroupSettingsState.ACTIVE
             ad_group_source_2_settings.save(None)
 
             ad_group_source_3 = ad_group.adgroupsource_set.get(id=25)
             ad_group_source_3_settings = ad_group_source_3.get_current_settings().copy_settings()
-            ad_group_source_3_settings.cpc_cc = '0.001'
+            ad_group_source_3_settings.cpc_cc = Decimal('0.001')
             ad_group_source_3_settings.save(None)
 
             add_permissions(self.user, [

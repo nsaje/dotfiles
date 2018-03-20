@@ -17,6 +17,7 @@ import core.source
 
 from ..settings_base import SettingsBase
 from ..settings_query_set import SettingsQuerySet
+from .. import multicurrency_mixin
 
 from .instance import AdGroupSourceSettingsMixin
 from .validation import AdGroupSourceSettingsValidatorMixin
@@ -24,6 +25,7 @@ from .validation import AdGroupSourceSettingsValidatorMixin
 
 class AdGroupSourceSettings(AdGroupSourceSettingsMixin,
                             AdGroupSourceSettingsValidatorMixin,
+                            multicurrency_mixin.MulticurrencySettingsMixin,
                             SettingsBase):
 
     class Meta:
@@ -35,13 +37,16 @@ class AdGroupSourceSettings(AdGroupSourceSettingsMixin,
         'state',
         'cpc_cc',
         'daily_budget_cc',
+        'local_cpc_cc',
+        'local_daily_budget_cc',
         'landing_mode'
     ]
-    _multicurrency_fields = [
+    multicurrency_fields = [
         'cpc_cc',
         'daily_budget_cc',
     ]
-    history_fields = list(_settings_fields)
+    # TODO(nsaje): switch from excluding local fields to excluding usd fields at multicurrency release
+    history_fields = list(set(_settings_fields) - set(['local_%s' % field for field in multicurrency_fields]))
 
     id = models.AutoField(primary_key=True)
 
