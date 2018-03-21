@@ -60,7 +60,7 @@ class Command(ExceptionCommand):
                 message_part += ' (${} freed)'.format(data['freed'])
             message_parts.append(message_part)
 
-        message = self._get_message_title() + '\n'.join(message_parts)
+        message = self._get_message_title() + '\n'.join(message_parts + [''])
         return message
 
     def _get_verbose_message(self, campaigns):
@@ -71,7 +71,7 @@ class Command(ExceptionCommand):
                 message_part += ' (${} freed)'.format(data['freed'])
             message_parts.append(message_part)
 
-        message = self._get_message_title() + '\n'.join(message_parts)
+        message = self._get_message_title() + '\n'.join(message_parts + [''])
         return message
 
     def _get_message_title(self):
