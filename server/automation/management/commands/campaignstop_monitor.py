@@ -53,15 +53,25 @@ class Command(ExceptionCommand):
             sys.stdout.flush()
 
     def _get_slack_message(self, campaigns):
-        message = self._get_message_title()
+        message_parts = []
         for campaign, data in campaigns.items():
-            message += '- {}: ${} remaining budget (${} freed)\n'.format(slack.campaign_url(campaign), data['available'], data['freed'])
+            message_part = '- {}: ${} remaining budget'.format(slack.campaign_url(campaign), data['available'])
+            if data['freed'] > 0:
+                message_part += ' (${} freed)'.format(data['freed'])
+            message_parts.append(message_part)
+
+        message = self._get_message_title() + '\n'.join(message_parts)
         return message
 
     def _get_verbose_message(self, campaigns):
-        message = self._get_message_title()
+        message_parts = []
         for campaign, data in campaigns.items():
-            message += '- {} ({}): ${} remaining budget (${} freed)\n'.format(campaign.name, campaign.id, data['available'], data['freed'])
+            message_part = '- {} ({}): ${} remaining budget'.format(campaign.name, campaign.id, data['available'])
+            if data['freed'] > 0:
+                message_part += ' (${} freed)'.format(data['freed'])
+            message_parts.append(message_part)
+
+        message = self._get_message_title() + '\n'.join(message_parts)
         return message
 
     def _get_message_title(self):
