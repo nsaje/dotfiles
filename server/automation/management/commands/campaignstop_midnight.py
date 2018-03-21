@@ -1,5 +1,7 @@
 import influx
 
+from django.db.models import Q
+
 import automation.campaignstop
 import core.entity
 
@@ -22,10 +24,17 @@ class Command(ExceptionCommand):
     @influx.timer('campaignstop.job_run', job='midnight')
     def _run_midnight_job(self):
         automation.campaignstop.update_campaigns_end_date()
+        self._correct_states()
 
+    def _correct_states(self):
         campaigns_today = core.entity.Campaign.objects.filter(
-            campaignstopstate__state=automation.campaignstop.constants.CampaignStopState.STOPPED,
-            campaignstopstate__max_allowed_end_date__gte=dates_helper.local_today()
+            Q(
+                campaignstopstate__state=automation.campaignstop.constants.CampaignStopState.STOPPED,
+                campaignstopstate__max_allowed_end_date__gte=dates_helper.local_today()
+            ) | Q(
+                campaignstopstate__state=automation.campaignstop.constants.CampaignStopState.RUNNING,
+                campaignstopstate__max_allowed_end_date__lt=dates_helper.local_today()
+            )
         )
         automation.campaignstop.update_campaigns_state(campaigns_today)
         automation.campaignstop.mark_almost_depleted_campaigns(campaigns_today)
