@@ -32,7 +32,7 @@ class Command(ExceptionCommand):
                 campaignstopstate__state=automation.campaignstop.constants.CampaignStopState.STOPPED,
                 campaignstopstate__max_allowed_end_date__gte=dates_helper.local_today()
             ) | Q(
-                campaignstopstate__state=automation.campaignstop.constants.CampaignStopState.RUNNING,
+                campaignstopstate__state=automation.campaignstop.constants.CampaignStopState.ACTIVE,
                 campaignstopstate__max_allowed_end_date__lt=dates_helper.local_today()
             )
         )
