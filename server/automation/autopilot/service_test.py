@@ -1,3 +1,4 @@
+from collections import defaultdict
 from decimal import Decimal
 import json
 from mock import patch, call
@@ -94,6 +95,21 @@ class AutopilotPlusTestCase(test.TestCase):
                 result[campaign] = campaign_data
         return result
 
+    def _influx_input(self):
+        entities = {
+            campaign: {
+                ad_group: list(
+                    dash.models.AdGroupSource.objects.filter(ad_group=ad_group)
+                    .filter(settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
+                    .order_by('pk')
+                ) for ad_group in dash.models.AdGroup.objects.filter(campaign=campaign)
+            } for campaign in dash.models.Campaign.objects.all()
+        }
+        campaign_daily_budgets = {
+            dash.models.Campaign.objects.get(pk=2): Decimal('0'),
+        }
+        return defaultdict(dict, entities), defaultdict(Decimal, campaign_daily_budgets)
+
     def assertLogExists(self, campaign=None, ad_group=None, source=None):
         ags = None
         if source is not None:
@@ -119,18 +135,20 @@ class AutopilotPlusTestCase(test.TestCase):
             } for ad_group in dash.models.AdGroup.objects.all()
         }
 
+    @patch('automation.autopilot.service._report_new_budgets_on_ap_to_influx')
+    @patch('automation.autopilot.service._report_adgroups_data_to_influx')
     @patch('automation.autopilot.helpers.send_autopilot_changes_emails')
     @patch('automation.autopilot.helpers.update_ad_group_b1_sources_group_values')
     @patch('automation.autopilot.helpers.update_ad_group_source_values')
     @patch('automation.autopilot.prefetch.prefetch_autopilot_data')
     @patch('automation.autopilot.cpc.get_autopilot_cpc_recommendations')
     @patch('automation.autopilot.budgets.get_autopilot_daily_budget_recommendations')
-    def test_run_autopilot_daily_run(self, mock_budgets, mock_cpc, mock_prefetch, mock_update, mock_update_allrtb, mock_send):
+    def test_run_autopilot_daily_run(self, mock_budgets, mock_cpc, mock_prefetch, mock_update, mock_update_allrtb, mock_send, mock_influx_adgroups, mock_influx_budgets):
         mock_budgets.side_effect = self.mock_budget_recommender
         mock_cpc.side_effect = self.mock_cpc_recommender
         mock_prefetch.return_value = (self.data, {}, {})
 
-        service.run_autopilot(daily_run=True, send_mail=True)
+        service.run_autopilot(daily_run=True, send_mail=True, report_to_influx=True)
 
         self.assertCountEqual(mock_update.call_args_list, [
             self._update_call(ad_group=1, source=1),
@@ -159,6 +177,8 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertLogExists(ad_group=3, source=None)
         self.assertLogExists(ad_group=4, source=None)
         mock_send.assert_called_once_with(self._email_changes(budgets=(1, 2, 4), cpc=(1, 2, 3, 4)), {}, False)
+        mock_influx_adgroups.assert_called_once_with(*self._influx_input())
+        mock_influx_budgets.assert_called_once_with(self._influx_input()[0])
 
     @patch('automation.autopilot.helpers.send_autopilot_changes_emails')
     @patch('automation.autopilot.helpers.update_ad_group_b1_sources_group_values')

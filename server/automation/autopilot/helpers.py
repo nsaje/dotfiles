@@ -72,6 +72,7 @@ def get_autopilot_entities(ad_group=None, campaign=None):
         .filter(ad_group_id__in=[ag.id for ag in ad_groups])
         .select_related('source__source_type')
         .select_related('settings')
+        .order_by('pk')
     )
     ags_per_ag_id = defaultdict(list)
     for ags in ad_group_sources:

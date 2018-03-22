@@ -105,8 +105,8 @@ def run_autopilot(ad_group=None, campaign=None, adjust_cpcs=True, adjust_budgets
     if send_mail:
         helpers.send_autopilot_changes_emails(changes_data, bcm_modifiers_map, initialization)
     if report_to_influx:
-        # refresh entities from db so we report new data
-        entities = helpers.get_autopilot_entities(ad_group=ad_group, campaign=campaign)
+        # refresh entities from db so we report new data, always report data for all entities
+        entities = helpers.get_autopilot_entities()
         _report_adgroups_data_to_influx(entities, campaign_daily_budgets)
         _report_new_budgets_on_ap_to_influx(entities)
     return changes_data
