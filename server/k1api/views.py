@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 EVENT_RETARGET_ADGROUP = "redirect_adgroup"
 EVENT_CUSTOM_AUDIENCE = "aud"
 
-BLOCKED_AGENCIES = (151, 165, )
+BLOCKED_AGENCIES = (151, 165, 191)
 BLOCKED_ACCOUNTS = (523, )
 
 
