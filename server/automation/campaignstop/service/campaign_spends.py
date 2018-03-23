@@ -80,14 +80,19 @@ def _calculate_spend_rate(current_rt_spends, prev_rt_spends):
 
 def _get_until_date_for_budget_spends(campaign):
     yesterday = dates_helper.local_yesterday()
-    if _should_query_realtime_stats_for_yesterday(campaign, yesterday):
+    if _should_query_realtime_stats_for_yesterday(campaign):
         return dates_helper.day_before(yesterday)
     return yesterday
 
 
-def _should_query_realtime_stats_for_yesterday(campaign, date):
+def _should_query_realtime_stats_for_yesterday(campaign):
     in_critical_hours = 0 <= dates_helper.local_now().hour < HOURS_DELAY
-    return in_critical_hours
+    recent_rt_data_exists = RealTimeCampaignDataHistory.objects.filter(
+        campaign=campaign,
+        date=dates_helper.local_yesterday(),
+        created_dt__gte=dates_helper.utc_now() - datetime.timedelta(hours=2),
+    )  # midnight job that corrects the state for stopped campaigns doesn't have recent yesterday data
+    return in_critical_hours and recent_rt_data_exists
 
 
 def _get_available_campaign_budget(log, campaign, until):
