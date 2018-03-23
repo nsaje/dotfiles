@@ -4,7 +4,7 @@ import dash.constants
 import core.entity
 import core.bcm
 from utils import dates_helper
-from ..constants import CampaignStopEvent
+from .. import constants
 from .. import CampaignStopState, RealTimeDataHistory, RealTimeCampaignStopLog
 from . import refresh_realtime_data
 
@@ -96,22 +96,21 @@ def _mark_campaigns(campaign_daily_budgets, campaign_available_amount):
 def _mark_campaign(campaign, max_spend_today, available_budget_amount):
     refresh_realtime_data([campaign])
     min_remaining_budget = available_budget_amount - max_spend_today
-    is_almost_depleted = min_remaining_budget < 0
 
-    _update_almost_depleted(campaign, is_almost_depleted)
+    campaignstop_state, _ = CampaignStopState.objects.get_or_create(campaign=campaign)
+    is_almost_depleted = (
+        campaignstop_state.state == constants.CampaignStopState.ACTIVE and
+        min_remaining_budget < 0
+    )
+    campaignstop_state.update_almost_depleted(is_almost_depleted)
 
-    log = RealTimeCampaignStopLog(campaign=campaign, event=CampaignStopEvent.SELECTION_CHECK)
+    log = RealTimeCampaignStopLog(campaign=campaign, event=constants.CampaignStopEvent.SELECTION_CHECK)
     log.add_context({
         'min_remaining_budget': min_remaining_budget,
         'campaign_daily_budget': max_spend_today,
         'remaining_current_budget': available_budget_amount,
         'is_almost_depleted': is_almost_depleted
     })
-
-
-def _update_almost_depleted(campaign, is_almost_depleted):
-    campaignstop_state, _ = CampaignStopState.objects.get_or_create(campaign=campaign)
-    campaignstop_state.update_almost_depleted(is_almost_depleted)
 
 
 def _get_max_spend(adg_sources, adg_source_spends):
