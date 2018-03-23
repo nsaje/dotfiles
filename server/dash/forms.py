@@ -1537,6 +1537,7 @@ class ContentAdCandidateForm(forms.ModelForm):
             'call_to_action',
             'primary_tracker_url',
             'secondary_tracker_url',
+            'additional_data',
         ]
 
 

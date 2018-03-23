@@ -1,3 +1,5 @@
+import warnings
+
 from rest_framework import serializers
 from djangorestframework_camel_case.util import camel_to_underscore
 from django.http.request import QueryDict
@@ -21,3 +23,32 @@ class QueryParamsExpectations(serializers.Serializer):
                 snake_cased_data.setlist(snake_cased_key, value)
             kwargs['data'] = snake_cased_data
         super(QueryParamsExpectations, self).__init__(*args, **kwargs)
+
+
+class PermissionedFieldsMixin(object):
+    """
+    A serializer mixin that takes a `request` argument and info about permissions on Meta,
+    then controls which fields should be displayed.
+    """
+
+    @property
+    def fields(self):
+        fields = super().fields
+
+        if not hasattr(self, '_context'):
+            return fields
+
+        if not hasattr(self.Meta, 'permissioned_fields'):
+            return fields
+
+        try:
+            request = self.context['request']
+        except KeyError:
+            warnings.warn('Context does not have access to request')
+            return fields
+
+        for field, permission in self.Meta.permissioned_fields.items():
+            if not request.user.has_perm(permission):
+                fields.pop(field, None)
+
+        return fields

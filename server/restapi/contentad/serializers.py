@@ -4,15 +4,18 @@ import dash.models
 import dash.constants
 import dash.features.contentupload
 import restapi.fields
+import restapi.common.serializers
 
 
-class ContentAdSerializer(rest_framework.serializers.ModelSerializer):
+class ContentAdSerializer(restapi.common.serializers.PermissionedFieldsMixin,
+                          rest_framework.serializers.ModelSerializer):
 
     class Meta:
         model = dash.models.ContentAd
         fields = ('id', 'ad_group_id', 'state', 'url', 'title', 'image_url', 'display_url', 'brand_name',
-                  'description', 'call_to_action', 'label', 'image_crop', 'tracker_urls')
-        read_only_fields = tuple(set(fields) - set(('state', 'url', 'tracker_urls', 'label')))
+                  'description', 'call_to_action', 'label', 'image_crop', 'tracker_urls', 'additional_data')
+        read_only_fields = tuple(set(fields) - set(('state', 'url', 'tracker_urls', 'label', 'additional_data')))
+        permissioned_fields = {'additional_data': 'zemauth.can_use_ad_additional_data'}
 
     id = restapi.fields.IdField(required=False)
     ad_group_id = restapi.fields.IdField(source='ad_group', required=False)

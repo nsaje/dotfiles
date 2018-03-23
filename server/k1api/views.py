@@ -1055,6 +1055,7 @@ class ContentAdsView(K1APIView):
                 'tracker_urls': item.tracker_urls,
                 'video_asset': video_asset,
                 'label': item.label,
+                'additional_data': item.additional_data,
             }
             response.append(content_ad)
 

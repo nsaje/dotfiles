@@ -304,6 +304,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_all_accounts', 'User can see all accounts.'),
             ('can_see_campaign_language_choices', 'User can see campaign language choices'),
             ('can_see_stats_in_local_currency', 'User can see stats in local currency'),
+            ('can_use_ad_additional_data', 'User can use the additionalData field on content ad'),
         )
 
     def get_full_name(self):

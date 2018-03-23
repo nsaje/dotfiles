@@ -530,6 +530,7 @@
     image_id: 'abc12345'
     original_content_ad_id: 2
     video_asset: '12345678-abcd-1234-abcd-123abcd12345'
+    additional_data: {'a': 1}
   model: dash.contentadcandidate
   pk: 6
 

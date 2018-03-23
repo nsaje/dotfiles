@@ -649,6 +649,7 @@ class CandidateTest(TestCase):
 
     def test_get_candidate_list(self):
         batch_id = 1
+        self.maxDiff = None
 
         response = _get_client().get(
             reverse(
@@ -688,6 +689,7 @@ class CandidateTest(TestCase):
                     'primary_tracker_url': None,
                     'secondary_tracker_url': None,
                     'video_asset_id': None,
+                    'additional_data': None,
                 }]
             },
             'success': True,
@@ -732,6 +734,7 @@ class CandidateTest(TestCase):
                     'url_status': constants.AsyncUploadJobStatus.PENDING_START,
                     'hosted_image_url': None,
                     'video_asset_id': None,
+                    'additional_data': None,
                 }
             },
             'success': True,

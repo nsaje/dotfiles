@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 
 from dash import constants
@@ -50,6 +50,8 @@ class ContentAdCandidate(core.common.FootprintModel):
 
     original_content_ad = models.ForeignKey('ContentAd', null=True)
 
+    additional_data = JSONField(null=True, blank=True)
+
     created_dt = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')
 
@@ -75,6 +77,7 @@ class ContentAdCandidate(core.common.FootprintModel):
             'hosted_image_url': self.get_image_url(160, 160),
             'primary_tracker_url': self.primary_tracker_url,
             'secondary_tracker_url': self.secondary_tracker_url,
+            'additional_data': self.additional_data,
         }
 
     def get_image_url(self, width=None, height=None):

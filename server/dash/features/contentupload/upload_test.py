@@ -23,6 +23,7 @@ valid_candidate = {
     'call_to_action': 'read more',
     'primary_tracker_url': 'https://example.com/px1.png',
     'secondary_tracker_url': 'https://example.com/px2.png',
+    'additional_data': {'a': 1},
 }
 
 invalid_candidate = {
@@ -71,6 +72,7 @@ class InsertCandidatesTestCase(TestCase):
         self.assertEqual(valid_candidate['call_to_action'], candidate.call_to_action)
         self.assertEqual(valid_candidate['primary_tracker_url'], candidate.primary_tracker_url)
         self.assertEqual(valid_candidate['secondary_tracker_url'], candidate.secondary_tracker_url)
+        self.assertEqual(valid_candidate['additional_data'], candidate.additional_data)
 
     @patch('utils.lambda_helper.invoke_lambda', Mock())
     def test_empty_candidate(self):
@@ -451,6 +453,7 @@ class AddCandidateTestCase(TestCase):
             'url_status': constants.AsyncUploadJobStatus.PENDING_START,
             'hosted_image_url': None,
             'video_asset_id': None,
+            'additional_data': None,
         }, candidate.to_dict())
 
     def test_with_defaults(self):
@@ -487,6 +490,7 @@ class AddCandidateTestCase(TestCase):
             'url_status': constants.AsyncUploadJobStatus.PENDING_START,
             'hosted_image_url': None,
             'video_asset_id': None,
+            'additional_data': None,
         }, candidate.to_dict())
 
 
@@ -496,7 +500,6 @@ class GetCandidatesWithErrorsTestCase(TestCase):
     @patch('utils.lambda_helper.invoke_lambda', Mock())
     def test_valid_candidate(self):
         data = [valid_candidate]
-
         # prepare candidate
         account = models.Account.objects.get(id=1)
         ad_group = models.AdGroup.objects.get(id=1)
@@ -528,6 +531,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
             'image_status': constants.AsyncUploadJobStatus.WAITING_RESPONSE,
             'id': candidates[0].id,
             'video_asset_id': None,
+            'additional_data': {'a': 1},
         }], result)
 
     @patch('utils.lambda_helper.invoke_lambda', Mock())
@@ -575,6 +579,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
             'secondary_tracker_url': 'http://example.com/px2.png',
             'id': candidates[0].id,
             'video_asset_id': None,
+            'additional_data': None,
         }], result)
 
 

@@ -2,7 +2,7 @@
 import urllib.parse
 
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models, transaction
 
 import utils.redirector_helper
@@ -130,6 +130,8 @@ class ContentAd(models.Model, prodops_mixin.ProdopsMixin, instance.ContentAdInst
 
     archived = models.BooleanField(default=False)
     tracker_urls = ArrayField(models.CharField(max_length=2048), null=True)
+
+    additional_data = JSONField(null=True, blank=True)
 
     def get_original_image_url(self, width=None, height=None):
         if self.image_id is None:

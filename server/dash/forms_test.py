@@ -1044,6 +1044,7 @@ class ContentAdCandidateFormTestCase(TestCase):
             'call_to_action': 'Read more',
             'primary_tracker_url': 'https://zemanta.com/px1',
             'secondary_tracker_url': 'https://zemanta.com/px2',
+            'additional_data': None,
         })
 
     def test_invalid_image(self):

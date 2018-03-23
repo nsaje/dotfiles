@@ -1048,6 +1048,7 @@ class K1ApiTest(K1ApiBaseTest):
             "id": 1,
             "tracker_urls": None,
             "label": "Label_123",
+            "additional_data": None,
         }]
         self.assertEqual(data, expected)
 

@@ -20,7 +20,7 @@ class ContentAdViewList(RESTAPIBaseView):
             raise serializers.ValidationError('Must pass adGroupId parameter')
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         content_ads = dash.models.ContentAd.objects.filter(ad_group=ad_group).exclude_archived().select_related('ad_group')
-        serializer = serializers.ContentAdSerializer(content_ads, many=True)
+        serializer = serializers.ContentAdSerializer(content_ads, many=True, context={'request': request})
         return self.response_ok(serializer.data)
 
 
@@ -28,12 +28,12 @@ class ContentAdViewDetails(RESTAPIBaseView):
 
     def get(self, request, content_ad_id):
         content_ad = helpers.get_content_ad(request.user, content_ad_id)
-        serializer = serializers.ContentAdSerializer(content_ad)
+        serializer = serializers.ContentAdSerializer(content_ad, context={'request': request})
         return self.response_ok(serializer.data)
 
     def put(self, request, content_ad_id):
         content_ad = helpers.get_content_ad(request.user, content_ad_id)
-        serializer = serializers.ContentAdSerializer(data=request.data)
+        serializer = serializers.ContentAdSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
 
         state = serializer.validated_data.get('state')
@@ -48,7 +48,7 @@ class ContentAdViewDetails(RESTAPIBaseView):
 
         content_ad.update(request, **serializer.validated_data)
 
-        return self.response_ok(serializers.ContentAdSerializer(content_ad).data)
+        return self.response_ok(serializers.ContentAdSerializer(content_ad, context={'request': request}).data)
 
 
 class ContentAdBatchViewList(RESTAPIBaseView):

@@ -7,6 +7,7 @@ from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 from zemauth.models import User
 
+import utils.test_helper
 import dash.models
 from dash.features import contentupload
 from dash import constants
@@ -30,7 +31,7 @@ class ContentAdsTest(RESTAPITest):
         call_to_action='Read more...',
         label='My label',
         image_crop='center',
-        tracker_urls=[]
+        tracker_urls=[],
     ):
         representation = {
             'id': str(id),
@@ -79,6 +80,12 @@ class ContentAdsTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json['data'])
 
+    def test_contentads_get_permissioned(self):
+        utils.test_helper.add_permissions(self.user, ['can_use_ad_additional_data'])
+        r = self.client.get(reverse('contentads_details', kwargs={'content_ad_id': 16805}))
+        resp_json = self.assertResponseValid(r)
+        self.assertIn('additionalData', resp_json['data'])
+
     def test_contentads_put(self):
         r = self.client.put(
             reverse('contentads_details', kwargs={'content_ad_id': 16805}),
@@ -87,6 +94,13 @@ class ContentAdsTest(RESTAPITest):
         self.validate_against_db(resp_json['data'])
         self.assertEqual(resp_json['data']['state'], 'INACTIVE')
         self.assertEqual(resp_json['data']['label'], 'My new label')
+
+    def test_contentads_put_permissioned(self):
+        self.client.put(
+            reverse('contentads_details', kwargs={'content_ad_id': 16805}),
+            data={'additionalData': {'a': 1}}, format='json')
+        cad = dash.models.ContentAd.objects.get(pk=16805)
+        self.assertEqual(cad.additional_data, None)
 
     def test_contentads_put_url(self):
         content_ad = dash.models.ContentAd.objects.get(pk=16805)
