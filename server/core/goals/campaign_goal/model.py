@@ -8,7 +8,9 @@ from django.db import transaction
 
 from dash import constants
 import core.common
+import core.multicurrency
 import utils.exc
+import utils.lc_helper
 
 from ..campaign_goal_value import CampaignGoalValue
 from . import bcm_mixin
@@ -48,7 +50,11 @@ class CampaignGoalManager(core.common.BaseManager):
             conversion_goal=conversion_goal,
         )
 
-        goal.add_value(request, value, skip_history=True)
+        if request.user.has_perm('zemauth.can_manage_goals_in_local_currency'):
+            goal.add_local_value(request, value, skip_history=True)
+        else:
+            goal.add_value(request, value, skip_history=True)
+
         if primary:
             goal.set_primary(request)
 
@@ -113,6 +119,7 @@ class CampaignGoal(models.Model, bcm_mixin.CampaignGoalBCMMixin):
                 campaign_goal['conversion_goal'][
                     'goal_id'] = self.conversion_goal.pixel_id
 
+        # TODO (jurebajt): Return local goal values
         if with_values:
             default_rounding_format = '1.00'
             rounding_format = {
@@ -133,16 +140,46 @@ class CampaignGoal(models.Model, bcm_mixin.CampaignGoalBCMMixin):
         return 'campaign_goal_' + str(self.id)
 
     def add_value(self, request, value, skip_history=False):
+        value = Decimal(value)
+        local_value = value
+
+        import dash.campaign_goals
+        if self.type in dash.campaign_goals.COST_DEPENDANT_GOALS:
+            local_value = value * self._get_exchange_rate()
+
+        self._add_value(request, value, local_value, skip_history)
+
+    def add_local_value(self, request, local_value, skip_history=False):
+        local_value = Decimal(local_value)
+        value = local_value
+
+        import dash.campaign_goals
+        if self.type in dash.campaign_goals.COST_DEPENDANT_GOALS:
+            value = local_value / self._get_exchange_rate()
+
+        self._add_value(request, value, local_value, skip_history)
+
+    def _add_value(self, request, value, local_value, skip_history=False):
         goal_value = CampaignGoalValue(
             campaign_goal=self,
-            value=value
+            value=value,
+            local_value=local_value
         )
         goal_value.save()
 
         if not skip_history:
+            if request.user.has_perm('zemauth.can_manage_goals_in_local_currency'):
+                history_value = local_value
+            else:
+                history_value = value
+
+            import dash.campaign_goals
+            if self.type in dash.campaign_goals.COST_DEPENDANT_GOALS:
+                history_value = utils.lc_helper.format_currency(value, places=3, curr='$')
+
             self.campaign.write_history(
                 'Changed campaign goal value: "{}"'.format(
-                    CAMPAIGN_GOAL_NAME_FORMAT[self.type].format(value)
+                    CAMPAIGN_GOAL_NAME_FORMAT[self.type].format(history_value)
                 ),
                 action_type=constants.HistoryActionType.GOAL_CHANGE,
                 user=request.user
@@ -167,3 +204,8 @@ class CampaignGoal(models.Model, bcm_mixin.CampaignGoalBCMMixin):
             action_type=constants.HistoryActionType.GOAL_CHANGE,
             user=request.user
         )
+
+    def _get_exchange_rate(self):
+        today = utils.dates_helper.local_today()
+        currency = self.campaign.account.currency
+        return core.multicurrency.get_exchange_rate(today, currency)

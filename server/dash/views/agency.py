@@ -475,7 +475,11 @@ class CampaignSettings(api_common.BaseApiView):
 
         for goal_id, value in changes['modified'].items():
             goal = models.CampaignGoal.objects.get(pk=goal_id)
-            goal.add_value(request, value)
+
+            if request.user.has_perm('zemauth.can_manage_goals_in_local_currency'):
+                goal.add_local_value(request, value)
+            else:
+                goal.add_value(request, value)
 
         removed_goals = {goal['id'] for goal in changes['removed']}
         for goal_id in removed_goals:

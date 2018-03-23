@@ -1,9 +1,11 @@
 from decimal import Decimal
+from mock import patch
 from django.test import TestCase
 
 import dash.models
 import dash.history_helpers
 import dash.constants
+import core.multicurrency
 from utils.magic_mixer import magic_mixer
 
 from .model import CampaignGoal
@@ -50,23 +52,62 @@ class TestCampaignGoals(TestCase):
         self.assertEqual(dash.constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
         self.assertEqual('Campaign goal "Time on Site - Seconds" set as primary', hist.changes_text)
 
-    def test_add_value(self):
+    @patch.object(core.multicurrency, 'get_exchange_rate')
+    def test_add_value(self, mock_get_exchange_rate):
         request = magic_mixer.blend_request_user()
         campaign = magic_mixer.blend(dash.models.Campaign)
         goal = magic_mixer.blend(CampaignGoal, campaign=campaign)
+        mock_get_exchange_rate.return_value = Decimal('2.0')
         CampaignGoalValue.objects.create(
             value=Decimal('10'),
+            local_value=Decimal('10'),
             campaign_goal=goal,
         )
 
         goal.add_value(request, Decimal('15'))
+        goal.add_local_value(request, Decimal('40'))
 
         self.assertEqual(
             [val.value for val in CampaignGoalValue.objects.all()],
-            [Decimal('10'), Decimal('15')]
+            [Decimal('10'), Decimal('15'), Decimal('40')]
+        )
+
+        self.assertEqual(
+            [val.local_value for val in CampaignGoalValue.objects.all()],
+            [Decimal('10'), Decimal('15'), Decimal('40')]
         )
 
         hist = dash.history_helpers.get_campaign_history(campaign).first()
         self.assertEqual(hist.created_by, request.user)
         self.assertEqual(dash.constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
-        self.assertEqual(hist.changes_text, 'Changed campaign goal value: "15 Time on Site - Seconds"')
+        self.assertEqual(hist.changes_text, 'Changed campaign goal value: "40 Time on Site - Seconds"')
+
+    @patch.object(core.multicurrency, 'get_exchange_rate')
+    def test_add_value_cost_dependant_goal(self, mock_get_exchange_rate):
+        request = magic_mixer.blend_request_user()
+        campaign = magic_mixer.blend(dash.models.Campaign)
+        goal = magic_mixer.blend(CampaignGoal, campaign=campaign, type=dash.constants.CampaignGoalKPI.CPC)
+        mock_get_exchange_rate.return_value = Decimal('2.0')
+        CampaignGoalValue.objects.create(
+            value=Decimal('1'),
+            local_value=Decimal('2'),
+            campaign_goal=goal,
+        )
+
+        goal.add_value(request, Decimal('1.5'))
+        goal.add_local_value(request, Decimal('4'))
+
+        self.assertEqual(
+            [val.value for val in CampaignGoalValue.objects.all()],
+            [Decimal('1'), Decimal('1.5'), Decimal('2')]
+        )
+
+        self.assertEqual(
+            [val.local_value for val in CampaignGoalValue.objects.all()],
+            [Decimal('2'), Decimal('3'), Decimal('4')]
+        )
+
+        hist = dash.history_helpers.get_campaign_history(campaign).first()
+        self.assertEqual(hist.created_by, request.user)
+        self.assertEqual(dash.constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
+        self.assertEqual(hist.changes_text, 'Changed campaign goal value: "$2.000 CPC"')

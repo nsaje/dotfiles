@@ -663,7 +663,10 @@ class CampaignGoalsViewDetails(RESTAPIBaseView):
             goal = dash.models.CampaignGoal.objects.get(pk=goal_id, campaign=campaign)
             value = serializer.validated_data.get('value', None)
             if value:
-                goal.add_value(request, value)
+                if request.user.has_perm('zemauth.can_manage_goals_in_local_currency'):
+                    goal.add_local_value(request, value)
+                else:
+                    goal.add_value(request, value)
             primary = serializer.validated_data.get('primary', None)
             if primary:
                 goal.set_primary(request)
