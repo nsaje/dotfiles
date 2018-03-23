@@ -32,7 +32,7 @@ class TestCampaignGoals(TestCase):
         hist = dash.history_helpers.get_campaign_history(campaign).first()
         self.assertEqual(hist.created_by, request.user)
         self.assertEqual(dash.constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
-        self.assertEqual(hist.changes_text, 'Added campaign goal "1.0 Time on Site - Seconds"')
+        self.assertEqual(hist.changes_text, 'Added campaign goal "1 Time on Site - Seconds"')
 
     def test_set_primary(self):
         request = magic_mixer.blend_request_user()
