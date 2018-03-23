@@ -179,6 +179,15 @@ class InstanceTest(TestCase):
             save_mock.assert_called_once_with(
                 None, system_user=None, update_fields=['bluekai_targeting'], bluekai_targeting=['outbrain:4321'])
 
+    def test_remove_max_cpc(self):
+        ad_group = magic_mixer.blend(core.entity.AdGroup)
+        ad_group.settings.update_unsafe(None, cpc_cc=Decimal('0.5'))
+        ad_group.settings.update(
+            None,
+            cpc_cc=None
+        )
+        self.assertIsNone(ad_group.settings.cpc_cc)
+
 
 class MulticurrencyTest(TestCase):
 

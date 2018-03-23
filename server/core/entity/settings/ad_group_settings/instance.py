@@ -101,7 +101,7 @@ class AdGroupSettingsMixin(object):
                 new_settings.b1_sources_group_daily_budget = core.source.AllRTBSource.default_daily_budget_cc
 
         # Changing adgroup max cpc
-        if 'cpc_cc' in changes and new_settings.b1_sources_group_enabled:
+        if changes.get('cpc_cc') and new_settings.b1_sources_group_enabled:
             new_settings.b1_sources_group_cpc_cc = min(changes.get('cpc_cc'), new_settings.b1_sources_group_cpc_cc)
 
         new_settings.b1_sources_group_cpc_cc = dash.views.helpers.adjust_max_cpc(
