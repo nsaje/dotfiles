@@ -177,7 +177,6 @@ class InsertAdGroupTest(TestCase):
         new_ad_group_settings.tracking_code = 'lala=1'
         new_ad_group_settings.redirect_pixel_urls = []
         new_ad_group_settings.redirect_javascript = ''
-        new_ad_group_settings.click_capping_daily_ad_group_max_clicks = None
         new_ad_group_settings.save(None)
 
         new_campaign_settings = ad_group.campaign.get_current_settings().copy_settings()
@@ -207,13 +206,11 @@ class InsertAdGroupTest(TestCase):
             "adobetrackingparam": 'cid',
             "specialredirecttrackers": [],
             "specialredirectjavascript": '',
-            "clickcappingdailyadgroupmaxclicks": 0,
         })
 
         new_ad_group_settings = ad_group.get_current_settings().copy_settings()
         new_ad_group_settings.redirect_pixel_urls = ['http://a.com', 'http://b.com']
         new_ad_group_settings.redirect_javascript = 'alert("a");'
-        new_ad_group_settings.click_capping_daily_ad_group_max_clicks = 10
         new_ad_group_settings.save(None)
 
         redirector_helper.insert_adgroup(ad_group)
@@ -231,7 +228,6 @@ class InsertAdGroupTest(TestCase):
             "adobetrackingparam": 'cid',
             "specialredirecttrackers": ['http://a.com', 'http://b.com'],
             "specialredirectjavascript": 'alert("a");',
-            "clickcappingdailyadgroupmaxclicks": 10,
         })
 
     def test_code_error(self, mock_urlopen):
@@ -269,8 +265,7 @@ class GetAdgroupTest(TestCase):
         response = Mock()
         response.read.return_value = ('{"status":"ok","data":{"trackingcode":"xyz","enablegatracking":true,'
                                       '"enableadobetracking":false,"adobetrackingparam":"",'
-                                      '"createddt":"2015-02-01T22:00:00Z","modifieddt":"2015-11-09T15:30:24.463752Z",'
-                                      '"clickcappingdailyadgroupmaxclicks":10}}')
+                                      '"createddt":"2015-02-01T22:00:00Z","modifieddt":"2015-11-09T15:30:24.463752Z"}}')
         response.getcode = lambda: 200
         mock_urlopen.return_value = response
 
@@ -283,7 +278,6 @@ class GetAdgroupTest(TestCase):
             'enable_ga_tracking': True,
             'enable_adobe_tracking': False,
             'adobe_tracking_param': '',
-            'click_capping_daily_ad_group_max_clicks': 10,
         })
 
         call = mock_urlopen.call_args[0][0]

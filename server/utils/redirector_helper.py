@@ -97,7 +97,6 @@ def get_adgroup(ad_group_id):
             'enable_adobe_tracking': adgroup_dict.get('enableadobetracking'),
             'adobe_tracking_param': adgroup_dict.get('adobetrackingparam'),
             'tracking_code': adgroup_dict.get('trackingcode'),
-            'click_capping_daily_ad_group_max_clicks': adgroup_dict.get('clickcappingdailyadgroupmaxclicks'),
         }
     except Exception:
         logger.exception('Exception in get_adgroup')
