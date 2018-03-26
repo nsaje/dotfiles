@@ -22,7 +22,7 @@ def audit_stopped_campaigns(date):
     data = {
         log.campaign: _get_available_campaign_budget(date, log) for log in logs
     }
-    return OrderedDict(sorted(data.iteritems(), key=lambda x: not x[1]['active_budgets'] and x[1]['available']))
+    return OrderedDict(sorted(data.items(), key=lambda x: (x[1]['active_budgets'], x[1]['available']), reverse=True))
 
 
 def _get_available_campaign_budget(date, log):
@@ -42,21 +42,16 @@ def _get_available_campaign_budget(date, log):
 
 
 def _get_overspend(date, log):
-    db.execute_query(
-        'select ((sum(cost_nano) + sum(data_cost_nano)) - (sum(effective_cost_nano) + sum(effective_data_cost_nano))) / 1000000000.0 from mv_campaign where campaign_id = %s and date=%s',
-        [date, log.campaign.id],
+    return db.execute_query(
+        'select ((sum(cost_nano) + sum(data_cost_nano)) - (sum(effective_cost_nano) + sum(effective_data_cost_nano))) / 1000000000.0 from mv_campaign where campaign_id = %s and (date = %s or date = %s)',
+        [log.campaign.id, dates_helper.day_before(date), date],
         'campaignstop_monitor_overspend'
     )
 
 
 def _get_budgets_active_today(date, log):
     budgets = log.campaign.budgets.all()
-    if 'active_budget_line_items' not in log.context:
-        budgets = budgets.filter(
-            start_date__lte=date,
-            end_date__gte=dates_helper.days_before(date, 2),  # budgets that ended 2 days ago were stopped yesterday
-        )
-    elif not log.context['active_budget_line_items']:
+    if 'active_budget_line_items' not in log.context or not log.context['active_budget_line_items']:
         budgets = budgets.none()
     else:
         active_items = log.context['active_budget_line_items']

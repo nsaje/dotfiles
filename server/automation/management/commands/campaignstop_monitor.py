@@ -61,7 +61,7 @@ class Command(ExceptionCommand):
             else:
                 message_part += 'no budgets active on date - stopped by end date'
 
-            if data['overspend'] > 0:
+            if data['overspend'] and data['overspend'] >= 0.01:
                 message_part += ' (${:.2f} overspend)'.format(data['overspend'])
             message_parts.append(message_part)
 
@@ -73,11 +73,11 @@ class Command(ExceptionCommand):
         for campaign, data in campaigns.items():
             message_part = '- {} ({}): '.format(campaign.name, campaign.id)
             if data['active_budgets']:
-                message_part += '${} remaining budget'.format(slack.campaign_url(campaign), data['available'])
+                message_part += '${} remaining budget'.format(data['available'])
             else:
                 message_part += 'no budgets active on date - stopped by end date'
 
-            if data['overspend'] > 0:
+            if data['overspend'] and data['overspend'] >= 0.01:
                 message_part += ' (${:.2f} overspend)'.format(data['overspend'])
             message_parts.append(message_part)
 
