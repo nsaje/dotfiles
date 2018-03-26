@@ -55,14 +55,14 @@ class Command(ExceptionCommand):
     def _get_message_body(self, campaigns, *, output_type):
         message_parts = []
         for campaign, data in campaigns.items():
-            message_part = self._get_campaign_part(campaign, output_type)
+            message_part = self._get_campaign_part(campaign, output_type=output_type)
             if data['active_budgets']:
                 message_part += '${} remaining budget'.format(data['available'])
             else:
                 message_part += 'no budgets active on date - stopped by end date'
 
             if data['overspend'] and data['overspend'] >= 0.01:
-                message_part += ' (${:.2f} overspend)'.format(data['overspend'])
+                message_part += self._get_overspend_part(data, output_type=output_type)
             message_parts.append(message_part)
 
         message = self._get_message_title() + '\n'.join(message_parts + [''])
@@ -72,6 +72,11 @@ class Command(ExceptionCommand):
         if output_type == 'slack':
             return self._get_campaign_part_slack(campaign)
         return self._get_campaign_part_verbose(campaign)
+
+    def _get_overspend_part(self, data, *, output_type):
+        if output_type == 'slack':
+            return ' (*${:.2f} overspend*)'.format(data['overspend'])
+        return ' (${:.2f} overspend)'.format(data['overspend'])
 
     def _get_campaign_part_slack(self, campaign):
         return '- {}: '.format(slack.campaign_url(campaign))
