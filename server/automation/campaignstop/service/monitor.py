@@ -4,6 +4,8 @@ import decimal
 from .. import constants
 from .. import RealTimeCampaignStopLog
 
+from redshiftapi import db
+
 from utils import dates_helper
 from utils import converters
 from utils import numbers
@@ -18,28 +20,43 @@ def audit_stopped_campaigns(date):
         context__new_state=constants.CampaignStopState.STOPPED,
     ).order_by('campaign_id', '-created_dt').distinct('campaign')
     return {
-        log.campaign: _get_available_campaign_budget(log) for log in logs
+        log.campaign: _get_available_campaign_budget(date, log) for log in logs
     }
 
 
-def _get_available_campaign_budget(log):
-    budgets_active_today = _get_budgets_active_today(log)
-    freed = sum(bli.freed_cc for bli in budgets_active_today) * converters.CC_TO_DECIMAL_DOLAR
-    available = sum(bli.get_available_etfm_amount() for bli in budgets_active_today)
+def _get_available_campaign_budget(date, log):
+    budgets_active_today = _get_budgets_active_today(date, log)
+    available = None
+    active_budgets = False
+    if budgets_active_today:
+        available = sum(bli.get_available_etfm_amount() for bli in budgets_active_today)
+        available = numbers.round_decimal_half_down(decimal.Decimal(available), places=2)
+        active_budgets = True
+
     return {
-        'available': numbers.round_decimal_half_down(decimal.Decimal(available), places=2),
-        'freed': numbers.round_decimal_half_down(decimal.Decimal(freed), places=2),
+        'available': available,
+        'active_budgets': active_budgets,
+        'overspend': _get_overspend(date, log),
     }
 
 
-def _get_budgets_active_today(log):
-    today = dates_helper.local_today()
+def _get_overspend(date, log):
+    db.execute_query(
+        'select ((sum(cost_nano) + sum(data_cost_nano)) - (sum(effective_cost_nano) + sum(effective_data_cost_nano))) / 1000000000.0 from mv_campaign where campaign_id = %s and date=%s',
+        [date, log.campaign.id],
+        'campaignstop_monitor_overspend'
+    )
+
+
+def _get_budgets_active_today(date, log):
     budgets = log.campaign.budgets.all()
-    if 'active_budget_line_items' not in log.context or not log.context['active_budget_line_items']:
+    if 'active_budget_line_items' not in log.context:
         budgets = budgets.filter(
-            start_date__lte=today,
-            end_date__gte=dates_helper.days_before(today, 2),  # budgets that ended 2 days ago were stopped yesterday
+            start_date__lte=date,
+            end_date__gte=dates_helper.days_before(date, 2),  # budgets that ended 2 days ago were stopped yesterday
         )
+    elif not log.context['active_budget_line_items']:
+        budgets = budgets.none()
     else:
         active_items = log.context['active_budget_line_items']
         if not isinstance(active_items, list):

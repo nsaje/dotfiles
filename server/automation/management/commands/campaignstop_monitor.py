@@ -55,9 +55,14 @@ class Command(ExceptionCommand):
     def _get_slack_message(self, campaigns):
         message_parts = []
         for campaign, data in campaigns.items():
-            message_part = '- {}: ${} remaining budget'.format(slack.campaign_url(campaign), data['available'])
-            if data['freed'] > 0:
-                message_part += ' (${} freed)'.format(data['freed'])
+            message_part = '- {}: '.format(slack.campaign_url(campaign))
+            if data['active_budgets']:
+                message_part += '${} remaining budget'.format(data['available'])
+            else:
+                message_part += 'no budgets active on date - stopped by end date'
+
+            if data['overspend'] > 0:
+                message_part += ' (${} overspend)'.format(data['overspend'])
             message_parts.append(message_part)
 
         message = self._get_message_title() + '\n'.join(message_parts + [''])
@@ -66,9 +71,14 @@ class Command(ExceptionCommand):
     def _get_verbose_message(self, campaigns):
         message_parts = []
         for campaign, data in campaigns.items():
-            message_part = '- {} ({}): ${} remaining budget'.format(campaign.name, campaign.id, data['available'])
-            if data['freed'] > 0:
-                message_part += ' (${} freed)'.format(data['freed'])
+            message_part = '- {} ({}): '.format(campaign.name, campaign.id)
+            if data['active_budgets']:
+                message_part += '${} remaining budget'.format(slack.campaign_url(campaign), data['available'])
+            else:
+                message_part += 'no budgets active on date - stopped by end date'
+
+            if data['overspend'] > 0:
+                message_part += ' (${} overspend)'.format(data['overspend'])
             message_parts.append(message_part)
 
         message = self._get_message_title() + '\n'.join(message_parts + [''])
