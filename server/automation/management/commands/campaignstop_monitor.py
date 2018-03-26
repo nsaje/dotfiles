@@ -62,7 +62,7 @@ class Command(ExceptionCommand):
                 message_part += 'no budgets active on date - stopped by end date'
 
             if data['overspend'] > 0:
-                message_part += ' (${} overspend)'.format(data['overspend'])
+                message_part += ' (${:.2f} overspend)'.format(data['overspend'])
             message_parts.append(message_part)
 
         message = self._get_message_title() + '\n'.join(message_parts + [''])
@@ -78,7 +78,7 @@ class Command(ExceptionCommand):
                 message_part += 'no budgets active on date - stopped by end date'
 
             if data['overspend'] > 0:
-                message_part += ' (${} overspend)'.format(data['overspend'])
+                message_part += ' (${:.2f} overspend)'.format(data['overspend'])
             message_parts.append(message_part)
 
         message = self._get_message_title() + '\n'.join(message_parts + [''])
