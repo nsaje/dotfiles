@@ -62,6 +62,8 @@ class DashConstantField(serializers.CharField):
 class SourceIdSlugField(serializers.Field):
 
     def to_internal_value(self, data):
+        if isinstance(data, dash.models.Source):
+            return data
         try:
             if data.startswith('b1_'):
                 data = data[3:]
