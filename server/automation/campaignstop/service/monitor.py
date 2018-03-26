@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import datetime
 import decimal
 
@@ -7,7 +8,6 @@ from .. import RealTimeCampaignStopLog
 from redshiftapi import db
 
 from utils import dates_helper
-from utils import converters
 from utils import numbers
 
 
@@ -19,9 +19,10 @@ def audit_stopped_campaigns(date):
         context__previous_state=constants.CampaignStopState.ACTIVE,
         context__new_state=constants.CampaignStopState.STOPPED,
     ).order_by('campaign_id', '-created_dt').distinct('campaign')
-    return {
+    data = {
         log.campaign: _get_available_campaign_budget(date, log) for log in logs
     }
+    return OrderedDict(sorted(data.iteritems(), key=lambda x: not x[1]['active_budgets'] and x[1]['available']))
 
 
 def _get_available_campaign_budget(date, log):
