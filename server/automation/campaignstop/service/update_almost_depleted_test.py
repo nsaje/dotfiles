@@ -6,6 +6,7 @@ import core.bcm
 import core.goals
 from .. import CampaignStopState, RealTimeDataHistory, RealTimeCampaignStopLog
 from automation import campaignstop
+from automation.campaignstop.service import update_almost_depleted
 
 import dash.constants
 from core.entity.settings.ad_group_settings import AdGroupSettings
@@ -160,7 +161,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
             ad_group=self.ad_group,
             source=self.source,
             date=today,
-            etfm_spend=899.0,
+            etfm_spend=899.0 - update_almost_depleted.THRESHOLD,
         )
 
         self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)

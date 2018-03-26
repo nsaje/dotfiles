@@ -9,6 +9,7 @@ from .. import CampaignStopState, RealTimeDataHistory, RealTimeCampaignStopLog
 from . import refresh_realtime_data
 
 HOURS_DELAY = 6
+THRESHOLD = 10
 
 
 def mark_almost_depleted_campaigns(campaigns=None):
@@ -100,7 +101,7 @@ def _mark_campaign(campaign, max_spend_today, available_budget_amount):
     campaignstop_state, _ = CampaignStopState.objects.get_or_create(campaign=campaign)
     is_almost_depleted = (
         campaignstop_state.state == constants.CampaignStopState.ACTIVE and
-        min_remaining_budget < 0
+        min_remaining_budget < THRESHOLD
     )
     campaignstop_state.update_almost_depleted(is_almost_depleted)
 
