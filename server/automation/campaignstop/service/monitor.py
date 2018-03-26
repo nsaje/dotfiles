@@ -22,7 +22,7 @@ def audit_stopped_campaigns(date):
     data = {
         log.campaign: _get_available_campaign_budget(date, log) for log in logs
     }
-    return OrderedDict(sorted(data.items(), key=lambda x: (not x[1]['active_budgets'], x[1]['available']), reverse=True))
+    return OrderedDict(sorted(data.items(), key=lambda x: (x[1]['active_budgets'], x[1]['available']), reverse=True))
 
 
 def _get_available_campaign_budget(date, log):
@@ -43,10 +43,10 @@ def _get_available_campaign_budget(date, log):
 
 def _get_overspend(date, log):
     return db.execute_query(
-        'select ((sum(cost_nano) + sum(data_cost_nano)) - (sum(effective_cost_nano) + sum(effective_data_cost_nano))) / 1000000000.0 from mv_campaign where campaign_id = %s and (date = %s or date = %s)',
+        'select ((sum(cost_nano) + sum(data_cost_nano)) - (sum(effective_cost_nano) + sum(effective_data_cost_nano))) / 1000000000.0 as overspend from mv_campaign where campaign_id = %s and (date = %s or date = %s)',
         [log.campaign.id, dates_helper.day_before(date), date],
         'campaignstop_monitor_overspend'
-    )
+    )[0]['overspend']
 
 
 def _get_budgets_active_today(date, log):
