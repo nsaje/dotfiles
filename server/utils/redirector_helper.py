@@ -81,7 +81,6 @@ def insert_adgroup(ad_group):
             'adobetrackingparam': ad_group.campaign.settings.adobe_tracking_param,
             'specialredirecttrackers': ad_group.settings.redirect_pixel_urls,
             'specialredirectjavascript': ad_group.settings.redirect_javascript,
-            'clickcappingdailyadgroupmaxclicks': ad_group.settings.click_capping_daily_ad_group_max_clicks or 0,
         }
         return _call_api_retry(url, json.dumps(data), method='PUT')
     except Exception:
