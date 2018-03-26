@@ -37,25 +37,25 @@ class Command(ExceptionCommand):
 
         if self.slack:
             slack.publish(
-                self._get_slack_message(campaigns),
+                self._get_message_body(campaigns, output_type='slack'),
                 msg_type=slack.MESSAGE_TYPE_INFO,
                 username='Real-time campaign stop monitor',
             )
             slack.publish(
-                self._get_slack_message(campaigns),
+                self._get_message_body(campaigns, output_type='slack'),
                 msg_type=slack.MESSAGE_TYPE_INFO,
                 username='Real-time campaign stop monitor',
                 channel='z1-monitor-campstop',
             )
 
         if self.verbose:
-            sys.stdout.write(self._get_verbose_message(campaigns))
+            sys.stdout.write(self._get_message_body(campaigns, output_type='verbose'))
             sys.stdout.flush()
 
-    def _get_slack_message(self, campaigns):
+    def _get_message_body(self, campaigns, *, output_type):
         message_parts = []
         for campaign, data in campaigns.items():
-            message_part = '- {}: '.format(slack.campaign_url(campaign))
+            message_part = self._get_campaign_part(campaign, output_type)
             if data['active_budgets']:
                 message_part += '${} remaining budget'.format(data['available'])
             else:
@@ -68,21 +68,16 @@ class Command(ExceptionCommand):
         message = self._get_message_title() + '\n'.join(message_parts + [''])
         return message
 
-    def _get_verbose_message(self, campaigns):
-        message_parts = []
-        for campaign, data in campaigns.items():
-            message_part = '- {} ({}): '.format(campaign.name, campaign.id)
-            if data['active_budgets']:
-                message_part += '${} remaining budget'.format(data['available'])
-            else:
-                message_part += 'no budgets active on date - stopped by end date'
+    def _get_campaign_part(self, campaign, *, output_type):
+        if output_type == 'slack':
+            return self._get_campaign_part_slack(campaign)
+        return self._get_campaign_part_verbose(campaign)
 
-            if data['overspend'] and data['overspend'] >= 0.01:
-                message_part += ' (${:.2f} overspend)'.format(data['overspend'])
-            message_parts.append(message_part)
+    def _get_campaign_part_slack(self, campaign):
+        return '- {}: '.format(slack.campaign_url(campaign))
 
-        message = self._get_message_title() + '\n'.join(message_parts + [''])
-        return message
+    def _get_campaign_part_verbose(self, campaign):
+        return '- {} ({}): '.format(campaign.name, campaign.id)
 
     def _get_message_title(self):
         if self.date == dates_helper.local_yesterday():

@@ -22,7 +22,7 @@ def audit_stopped_campaigns(date):
     data = {
         log.campaign: _get_available_campaign_budget(date, log) for log in logs
     }
-    return OrderedDict(sorted(data.items(), key=lambda x: (x[1]['active_budgets'], x[1]['available']), reverse=True))
+    return OrderedDict(sorted(data.items(), key=lambda x: (not x[1]['active_budgets'], x[1]['available']), reverse=True))
 
 
 def _get_available_campaign_budget(date, log):
