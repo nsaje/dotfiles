@@ -14,7 +14,7 @@ class AdGroupSettingsNotifyTest(TestCase):
 
     def setUp(self):
         self.ad_group = magic_mixer.blend(core.entity.AdGroup, campaign__real_time_campaign_stop=True)
-        self.notify_fields = {'state', 'b1_sources_group_state', 'b1_sources_group_daily_budget'}
+        self.notify_fields = set(update_notifier.AD_GROUP_SETTINGS_FIELDS)
 
     @patch('utils.sqs_helper.write_message_json')
     def test_no_notify(self, mock_write_message):
@@ -44,7 +44,7 @@ class AdGroupSourceSettingsNotifyTest(TestCase):
 
     def setUp(self):
         self.ad_group_source = magic_mixer.blend(core.entity.AdGroupSource, ad_group__campaign__real_time_campaign_stop=True)
-        self.notify_fields = {'state', 'daily_budget_cc'}
+        self.notify_fields = set(update_notifier.AD_GROUP_SOURCE_SETTINGS_FIELDS)
 
     @patch('utils.sqs_helper.write_message_json')
     def test_no_notify(self, mock_write_message):
