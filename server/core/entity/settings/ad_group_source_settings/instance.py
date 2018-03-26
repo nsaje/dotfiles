@@ -22,6 +22,10 @@ class AdGroupSourceSettingsMixin(object):
         for key, value in updates.items():
             setattr(new_settings, key, value)
 
+        changes = self.get_setting_changes(new_settings)
+        if not changes:
+            return result
+
         if not skip_validation:
             self.clean(new_settings)
 

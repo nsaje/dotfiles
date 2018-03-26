@@ -716,53 +716,6 @@ class AdGroupsTest(RESTAPITest):
         self.assertEqual(resp_json['data'], test_adgroup)
 
 
-class AdGroupSourcesTest(RESTAPITest):
-
-    @classmethod
-    def adgroupsource_repr(
-        cls,
-        source='yahoo',
-        cpc='0.600',
-        daily_budget='50.00',
-        state=constants.AdGroupSourceSettingsState.ACTIVE
-    ):
-        representation = {
-            'source': source,
-            'cpc': cpc,
-            'dailyBudget': daily_budget,
-            'state': constants.AdGroupSourceSettingsState.get_name(state),
-        }
-        return cls.normalize(representation)
-
-    def validate_against_db(self, ad_group_id, adgroupsourcesettings):
-        slug = adgroupsourcesettings['source']
-        agss_db = dash.models.AdGroupSource.objects.get(ad_group_id=ad_group_id, source__bidder_slug=slug).get_current_settings()
-        expected = self.adgroupsource_repr(
-            source=slug,
-            cpc=agss_db.cpc_cc,
-            daily_budget=agss_db.daily_budget_cc,
-            state=agss_db.state,
-        )
-        self.assertEqual(expected, adgroupsourcesettings)
-
-    def test_adgroups_sources_list(self):
-        r = self.client.get(reverse('adgroups_sources_list', kwargs={'ad_group_id': 2040}))
-        resp_json = self.assertResponseValid(r, data_type=list)
-        for item in resp_json['data']:
-            self.validate_against_db(2040, item)
-
-    def test_adgroups_sources_put(self):
-        test_ags = self.adgroupsource_repr(
-            source='gumgum',
-            daily_budget='12.38',
-            cpc='0.612',
-            state=constants.AdGroupSourceSettingsState.INACTIVE
-        )
-        r = self.client.put(reverse('adgroups_sources_list', kwargs={'ad_group_id': 2040}), [test_ags], format='json')
-        resp_json = self.assertResponseValid(r, data_type=list)
-        self.validate_against_db(2040, resp_json['data'][0])
-
-
 class AdGroupSourcesRTBTest(RESTAPITest):
 
     @classmethod

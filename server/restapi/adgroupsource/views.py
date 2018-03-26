@@ -26,11 +26,21 @@ class AdGroupSourcesViewList(RESTAPIBaseView):
         serializer.is_valid(raise_exception=True)
 
         with transaction.atomic():
+            ad_group_sources = {}
+            sources = []
+
             for item in serializer.validated_data:
-                ad_group_source = dash.models.AdGroupSource.objects.get(
-                    ad_group=ad_group,
-                    source=item['ad_group_source']['source'],
-                )
+                sources.append(item['ad_group_source']['source'])
+
+            ad_group_sources = dash.models.AdGroupSource.objects.filter(
+                ad_group=ad_group,
+                source__in=sources,
+            ).select_related('settings', 'source')
+
+            ags_by_source = {ags.source: ags for ags in ad_group_sources}
+
+            for item in serializer.validated_data:
+                ad_group_source = ags_by_source[item['ad_group_source']['source']]
                 item.pop('ad_group_source')
                 ad_group_source.settings.update(request, k1_sync=True, **item)
 
