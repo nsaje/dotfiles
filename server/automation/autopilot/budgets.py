@@ -14,11 +14,12 @@ logger = logging.getLogger(__name__)
 
 
 def get_autopilot_daily_budget_recommendations(
-        entity, daily_budget, data, bcm_modifiers, campaign_goal=None, uses_bcm_v2=False):
+        entity, daily_budget, data, bcm_modifiers, campaign_goal=None, uses_bcm_v2=False, ignore_daily_budget_too_small=False):
     active_sources = list(data.keys())
     max_budgets, new_budgets, old_budgets = _get_autopilot_budget_constraints(data, daily_budget, bcm_modifiers)
     comments = []
-    budget_left = daily_budget - sum(new_budgets.values())
+    min_budgets_sum = sum(new_budgets.values())
+    budget_left = daily_budget - min_budgets_sum
 
     # Don't add any budget to sources with insufficient spend
     active_sources_with_spend = _get_active_sources_with_spend(active_sources, data, new_budgets)
@@ -67,12 +68,22 @@ def get_autopilot_daily_budget_recommendations(
             if new_budgets[s] >= max_budget:
                 bandit.remove_source(s)
 
-    if sum(new_budgets.values()) != daily_budget:
+    if daily_budget < min_budgets_sum:
+        if not ignore_daily_budget_too_small:
+            logger.warning(
+                'Budget Autopilot got too small daily budget - Daily budget: %s Minimum: %s on entity: %s (%s)',
+                daily_budget,
+                min_budgets_sum,
+                entity,
+                entity.id
+            )
+    elif sum(new_budgets.values()) != daily_budget:
         logger.warning('Budget Autopilot tried assigning wrong ammount of total daily spend caps - Expected: ' +
                        str(daily_budget) + ' Proposed: ' + str(sum(new_budgets.values())) + ' on entity: ' +
                        str(entity) + ' ( ' + str(entity.id) + ' )')
         comments = [constants.DailyBudgetChangeComment.NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET]
         new_budgets = old_budgets
+
     return {s: {'old_budget': old_budgets[s], 'new_budget': new_budgets[s], 'budget_comments': comments}
             for s in active_sources}
 

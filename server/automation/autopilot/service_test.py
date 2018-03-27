@@ -17,7 +17,7 @@ from . import service
 class AutopilotPlusTestCase(test.TestCase):
     fixtures = ['test_automation.yaml']
 
-    def mock_budget_recommender(self, ad_group, daily_budget, data, bcm, campaign_goal, rtb_as_one):
+    def mock_budget_recommender(self, ad_group, daily_budget, data, bcm, campaign_goal, rtb_as_one, ignore_daily_budget_too_small=False):
         result = {}
         for ags in data:
             result[ags] = {

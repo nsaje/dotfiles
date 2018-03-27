@@ -1,6 +1,7 @@
 from django.test import TestCase
 
 from dash.legacy import ad_group_source_table_updates
+from dash import constants
 from dash import models
 from dash.views import helpers
 from zemauth.models import User
@@ -40,6 +41,51 @@ class AdGroupSourcesTableUpdatesTest(TestCase):
             'totals': {
                 'current_daily_budget': Decimal('10.0000'),
                 'daily_budget': Decimal('10.0000')
+            }
+        }
+        self.assertDictEqual(expected, response)
+
+    def test_get_all_rtb_enabled(self):
+        models.AdGroup.objects.get(pk=1).settings.update_unsafe(
+            None,
+            b1_sources_group_enabled=True,
+            b1_sources_group_state=constants.AdGroupSourceSettingsState.ACTIVE,
+            b1_sources_group_daily_budget=Decimal('5.0'),
+        )
+        response = ad_group_source_table_updates.get_updated_ad_group_sources_changes(
+            User.objects.get(pk=1), None, None, 1)
+        self.maxDiff = None
+        expected = {
+            'notifications': {},
+            'in_progress': False,
+            'rows': {
+                1: {
+                    'status': 1,
+                    'status_setting': 1,
+                    'bid_cpc': Decimal('0.5010'),
+                    'current_bid_cpc': Decimal('0.5010')
+                },
+                2: {
+                    'status': 2,
+                    'status_setting': 2,
+                    'current_daily_budget': Decimal('20.0000'),
+                    'daily_budget': Decimal('20.0000'),
+                    'bid_cpc': Decimal('0.5020'),
+                    'current_bid_cpc': Decimal('0.5020')
+                },
+                '0123456789': {
+                    'status': 1,
+                    'status_setting': 1,
+                    'current_daily_budget': Decimal('5.0'),
+                    'daily_budget': Decimal('5.0'),
+                    'bid_cpc': Decimal('0.01'),
+                    'current_bid_cpc': Decimal('0.01')
+                },
+            },
+            'last_change': datetime(2014, 6, 5, 9, 58, 21),
+            'totals': {
+                'current_daily_budget': Decimal('5.0000'),
+                'daily_budget': Decimal('5.0000')
             }
         }
         self.assertDictEqual(expected, response)

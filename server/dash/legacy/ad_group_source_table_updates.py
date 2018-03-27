@@ -5,6 +5,7 @@ since it was initially written for a different use case - polling from client wh
 isn't done anymore.
 """
 
+from core import source
 from dash import constants, models
 from dash.views import helpers
 
@@ -38,6 +39,19 @@ def get_updated_ad_group_sources_changes(user, last_change_dt, filtered_sources,
         }
 
         rows = {}
+        if ad_group_settings.b1_sources_group_enabled and (
+                not last_change_dt or ad_group_settings.created_dt > last_change_dt):
+            status = ad_group_settings.state
+            if status == constants.AdGroupSettingsState.ACTIVE:
+                status = ad_group_settings.b1_sources_group_state
+            rows[source.AllRTBSource.id] = {
+                'status_setting': ad_group_settings.b1_sources_group_state,
+                'status': status,
+                'bid_cpc': ad_group_settings.b1_sources_group_cpc_cc,
+                'current_bid_cpc': ad_group_settings.b1_sources_group_cpc_cc,
+                'daily_budget': ad_group_settings.b1_sources_group_daily_budget,
+                'current_daily_budget': ad_group_settings.b1_sources_group_daily_budget,
+            }
         for ad_group_source in changed_ad_group_sources:
             ags_setting = settings_map.get(ad_group_source.id)
 

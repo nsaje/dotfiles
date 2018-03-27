@@ -195,6 +195,7 @@ def _get_budget_predictions_for_campaign(campaign, ad_groups, daily_budget, data
         bcm_modifiers,
         campaign_goal.get('goal'),
         uses_bcm_v2,
+        ignore_daily_budget_too_small=True,
     )
 
     grouped_changes = defaultdict(dict)
