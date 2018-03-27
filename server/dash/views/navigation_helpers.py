@@ -26,7 +26,7 @@ def get_ad_group_dict(
         'autopilot_state': autopilot_state,
         'active': infobox_helpers.get_adgroup_running_status_class(
             user, autopilot_state, running_status, state,
-            real_time_campaign_stop, campaignstop_state, is_in_landing),
+            real_time_campaign_stop, campaignstop_state, is_in_landing, campaign_settings.autopilot),
         'landingMode': ad_group_settings.landing_mode if ad_group_settings else False,
     }
     return ad_group_dict

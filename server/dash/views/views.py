@@ -203,7 +203,7 @@ class AdGroupOverview(api_common.BaseApiView):
     @influx.timer('dash.api')
     @db_for_reads.use_stats_read_replica()
     def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
 
         async_perf_query = threads.AsyncFunction(
             partial(
@@ -221,7 +221,7 @@ class AdGroupOverview(api_common.BaseApiView):
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
         ad_group_running_status = infobox_helpers.get_adgroup_running_status(
-            request.user, ad_group_settings, filtered_sources)
+            request.user, ad_group, filtered_sources)
 
         header = {
             'title': ad_group.name,
@@ -370,7 +370,7 @@ class CampaignOverview(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        campaign_running_status = infobox_helpers.get_campaign_running_status(campaign, campaign_settings)
+        campaign_running_status = infobox_helpers.get_campaign_running_status(campaign)
 
         header = {
             'title': campaign.name,

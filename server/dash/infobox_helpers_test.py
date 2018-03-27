@@ -677,10 +677,9 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         normal_user = zemauth.models.User.objects.get(id=2)
 
-        ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
             dash.constants.InfoboxStatus.STOPPED,
-            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
+            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
         )
 
         # adgroup is active and sources are active
@@ -702,68 +701,68 @@ class InfoBoxAccountHelpersTest(TestCase):
             new_agss.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
             new_agss.save(None)
 
-        ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
             dash.constants.InfoboxStatus.ACTIVE,
-            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
+            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
         )
 
         with mock.patch('automation.campaignstop.get_campaignstop_state') as mock_get_campaignstop_state:
-            old_value = ad_group_settings.ad_group.campaign.real_time_campaign_stop
-            ad_group_settings.ad_group.campaign.set_real_time_campaign_stop(None, True)
+            old_value = ad_group.campaign.real_time_campaign_stop
+            ad_group.campaign.set_real_time_campaign_stop(None, True)
 
-            ad_group_settings.refresh_from_db()
             mock_get_campaignstop_state.return_value = {'allowed_to_run': False, 'pending_budget_updates': False}
             self.assertEqual(
                 dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED,
-                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
+                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
             )
 
             mock_get_campaignstop_state.return_value = {'allowed_to_run': False, 'pending_budget_updates': True}
             self.assertEqual(
                 dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET,
-                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
+                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
             )
 
             mock_get_campaignstop_state.return_value = {'allowed_to_run': True, 'pending_budget_updates': False, 'almost_depleted': False}
             self.assertEqual(
                 dash.constants.InfoboxStatus.ACTIVE,
-                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
+                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
             )
 
             mock_get_campaignstop_state.return_value = {'allowed_to_run': False, 'pending_budget_updates': True, 'almost_depleted': False}
             self.assertEqual(
                 dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET,
-                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
+                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
             )
 
             mock_get_campaignstop_state.return_value = {'allowed_to_run': True, 'pending_budget_updates': True, 'almost_depleted': False}
             self.assertEqual(
                 dash.constants.InfoboxStatus.ACTIVE,
-                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
+                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
             )
 
             mock_get_campaignstop_state.return_value = {'allowed_to_run': True, 'pending_budget_updates': False, 'almost_depleted': True}
             self.assertEqual(
                 dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET,
-                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
+                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
             )
 
-            ad_group_settings.ad_group.campaign.set_real_time_campaign_stop(None, old_value)
+            ad_group.campaign.set_real_time_campaign_stop(None, old_value)
 
         # adgroup is in landing mode and active, sources are active
-        new_ad_group_settings = ad_group.get_current_settings().copy_settings()
-        new_ad_group_settings.landing_mode = True
-        new_ad_group_settings.save(None)
-
+        ad_group.settings.update_unsafe(None, landing_mode=True)
         self.assertEqual(
             dash.constants.InfoboxStatus.LANDING_MODE,
-            dash.infobox_helpers.get_adgroup_running_status(normal_user, new_ad_group_settings)
+            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
         )
+        ad_group.settings.update_unsafe(None, landing_mode=False)
 
-        new_ad_group_settings = ad_group.get_current_settings().copy_settings()
-        new_ad_group_settings.landing_mode = False
-        new_ad_group_settings.save(None)
+        # campaign is on autopilot
+        ad_group.campaign.settings.update_unsafe(None, autopilot=True)
+        self.assertEqual(
+            dash.constants.InfoboxStatus.AUTOPILOT,
+            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
+        )
+        ad_group.campaign.settings.update_unsafe(None, autopilot=False)
 
         # adgroup is active, sources are active and adgroup is on CPC autopilot
         start_date = datetime.datetime.today().date()
@@ -777,10 +776,9 @@ class InfoBoxAccountHelpersTest(TestCase):
             autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
         )
 
-        ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
             dash.constants.InfoboxStatus.ACTIVE_PRICE_DISCOVERY,
-            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
+            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
         )
 
         # adgroup is active, sources are active and adgroup is on CPC+Budget autopilot
@@ -795,10 +793,9 @@ class InfoBoxAccountHelpersTest(TestCase):
             autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
         )
 
-        ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
             dash.constants.InfoboxStatus.AUTOPILOT,
-            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
+            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
         )
 
         # adgroup is active but sources are inactive
@@ -811,10 +808,9 @@ class InfoBoxAccountHelpersTest(TestCase):
                 state=dash.constants.AdGroupSourceSettingsState.INACTIVE,
             )
 
-        ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
             dash.constants.InfoboxStatus.AUTOPILOT,
-            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
+            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
         )
 
         # adgroup is inactive but sources are active
@@ -831,10 +827,9 @@ class InfoBoxAccountHelpersTest(TestCase):
             new_agss.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
             new_agss.save(None)
 
-        ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
             dash.constants.InfoboxStatus.STOPPED,
-            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
+            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
         )
 
     def test_get_campaign_running_status(self):
@@ -842,7 +837,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         ad_group = dash.models.AdGroup.objects.get(pk=1)
         self.assertEqual(
             dash.constants.InfoboxStatus.INACTIVE,
-            dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
+            dash.infobox_helpers.get_campaign_running_status(campaign)
         )
 
         start_date = datetime.datetime.today().date()
@@ -864,8 +859,15 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         self.assertEqual(
             dash.constants.InfoboxStatus.ACTIVE,
-            dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
+            dash.infobox_helpers.get_campaign_running_status(campaign)
         )
+
+        campaign.settings.update_unsafe(None, autopilot=True)
+        self.assertEqual(
+            dash.constants.InfoboxStatus.AUTOPILOT,
+            dash.infobox_helpers.get_campaign_running_status(campaign)
+        )
+        campaign.settings.update_unsafe(None, autopilot=False)
 
         with mock.patch('automation.campaignstop.get_campaignstop_state') as mock_get_campaignstop_state:
             old_value = campaign.real_time_campaign_stop
@@ -874,31 +876,31 @@ class InfoBoxAccountHelpersTest(TestCase):
             mock_get_campaignstop_state.return_value = {'allowed_to_run': False, 'pending_budget_updates': False}
             self.assertEqual(
                 dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED,
-                dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
+                dash.infobox_helpers.get_campaign_running_status(campaign)
             )
 
             mock_get_campaignstop_state.return_value = {'allowed_to_run': False, 'pending_budget_updates': True}
             self.assertEqual(
                 dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET,
-                dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
+                dash.infobox_helpers.get_campaign_running_status(campaign)
             )
 
             mock_get_campaignstop_state.return_value = {'allowed_to_run': True, 'pending_budget_updates': False, 'almost_depleted': False}
             self.assertEqual(
                 dash.constants.InfoboxStatus.ACTIVE,
-                dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
+                dash.infobox_helpers.get_campaign_running_status(campaign)
             )
 
             mock_get_campaignstop_state.return_value = {'allowed_to_run': True, 'pending_budget_updates': False, 'almost_depleted': True}
             self.assertEqual(
                 dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET,
-                dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
+                dash.infobox_helpers.get_campaign_running_status(campaign)
             )
 
             mock_get_campaignstop_state.return_value = {'allowed_to_run': True, 'pending_budget_updates': True, 'almost_depleted': False}
             self.assertEqual(
                 dash.constants.InfoboxStatus.ACTIVE,
-                dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
+                dash.infobox_helpers.get_campaign_running_status(campaign)
             )
 
             campaign.set_real_time_campaign_stop(None, old_value)
@@ -910,7 +912,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         self.assertEqual(
             dash.constants.InfoboxStatus.STOPPED,
-            dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
+            dash.infobox_helpers.get_campaign_running_status(campaign)
         )
 
         # campaign is in landing mode
@@ -920,7 +922,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         self.assertEqual(
             dash.constants.InfoboxStatus.LANDING_MODE,
-            dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
+            dash.infobox_helpers.get_campaign_running_status(campaign)
         )
 
     def test_get_account_running_status(self):
@@ -960,7 +962,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         self.assertEqual(
             dash.constants.InfoboxStatus.STOPPED,
-            dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
+            dash.infobox_helpers.get_account_running_status(campaign.account)
         )
 
 
