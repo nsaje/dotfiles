@@ -2392,7 +2392,7 @@ A string representing a decimal number. Example: `"15.48"`
 - `UTILITY` - Software & Services
 - `OTHER` - Other
 - `FOREIGN` - International Sites
-
+- `PREMIUM` - Premium
 
 ## Geo targeting
 
