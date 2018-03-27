@@ -165,22 +165,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             initialOrder: zemGridConstants.gridColumnOrder.ASC,
             internal: 'zemauth.campaign_goal_performance',
             shown: 'zemauth.campaign_goal_performance',
-            costMode: constants.costMode.LEGACY
         },
-        etfmPerformance: {
-            nameCssClass: 'performance-icon',
-            field: 'etfm_performance',
-            type: zemGridConstants.gridColumnTypes.PERFORMANCE_INDICATOR,
-            totalRow: false,
-            help: 'Goal performance indicator',
-            order: true,
-            initialOrder: zemGridConstants.gridColumnOrder.ASC,
-            internal: 'zemauth.campaign_goal_performance',
-            shown: ['zemauth.campaign_goal_performance', 'zemauth.can_view_end_user_cost_breakdown'],
-            costMode: constants.costMode.ANY,
-            fieldGroup: 'performance'
-        },
-
         agency: {
             name: 'Agency',
             field: 'agency',
@@ -1559,7 +1544,6 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         COLUMNS.status,
         COLUMNS.submissionStatus,
         COLUMNS.performance,
-        COLUMNS.etfmPerformance,
         COLUMNS.bidCpcSetting,
         COLUMNS.dailyBudgetSetting,
     ];
