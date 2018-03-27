@@ -73,3 +73,31 @@ class AdGroupSourcesTest(RESTAPITest):
         resp_c = next(x for x in resp_json['data'] if x['source'] == 'c')
         self.assertEqual(test_ags[0], resp_a)
         self.assertEqual(test_ags[1], resp_c)
+
+    def test_adgroups_sources_put_source_not_present(self):
+        ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account__users=[self.user])
+        ad_group_sources = magic_mixer.cycle(3).blend(
+            dash.models.AdGroupSource,
+            ad_group=ad_group,
+            source__bidder_slug=(slug for slug in ['a', 'b', 'c']),
+        )
+        ad_group_source_not_present = magic_mixer.blend(
+            dash.models.AdGroupSource,
+            source__bidder_slug='d',
+        )
+        test_ags = [
+            self.adgroupsource_repr(
+                source=ad_group_sources[0].source.bidder_slug,
+                daily_budget='12.3800',
+                cpc='0.6120',
+                state=constants.AdGroupSourceSettingsState.INACTIVE
+            ),
+            self.adgroupsource_repr(
+                source=ad_group_source_not_present.source.bidder_slug,
+                daily_budget='15.3800',
+                cpc='0.5120',
+                state=constants.AdGroupSourceSettingsState.INACTIVE
+            )
+        ]
+        r = self.client.put(reverse('adgroups_sources_list', kwargs={'ad_group_id': ad_group.id}), test_ags, format='json')
+        self.assertResponseError(r, 'ValidationError')

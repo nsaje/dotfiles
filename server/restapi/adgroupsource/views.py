@@ -1,3 +1,4 @@
+import rest_framework.serializers
 from django.db import transaction
 from restapi.views import RESTAPIBaseView
 
@@ -40,7 +41,10 @@ class AdGroupSourcesViewList(RESTAPIBaseView):
             ags_by_source = {ags.source: ags for ags in ad_group_sources}
 
             for item in serializer.validated_data:
-                ad_group_source = ags_by_source[item['ad_group_source']['source']]
+                source = item['ad_group_source']['source']
+                ad_group_source = ags_by_source.get(source)
+                if not ad_group_source:
+                    raise rest_framework.serializers.ValidationError("Source %s not present on ad group!" % source.name)
                 item.pop('ad_group_source')
                 ad_group_source.settings.update(request, k1_sync=True, **item)
 
