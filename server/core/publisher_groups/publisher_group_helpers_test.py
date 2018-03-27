@@ -524,7 +524,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
             textwrap.dedent('''\
             "Publisher"\r
             "example.com"\r
-            "examplenosource.com"\r
+            "some.example.com"\r
             '''))
 
     def test_validate_entries(self):

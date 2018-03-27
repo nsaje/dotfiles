@@ -16,7 +16,7 @@ OUTBRAIN_AGENCY = 55
 EXAMPLE_CSV_CONTENT = [{
     "Publisher": "example.com",
 }, {
-    "Publisher": "examplenosource.com",
+    "Publisher": "some.example.com",
 }]
 
 

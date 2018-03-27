@@ -3,14 +3,12 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
 
     var TOOLTIP_NOT_SUPPORTED_BY_OUTBRAIN = 'Not supported by Outbrain';
     var TOOLTIP_NOT_SUPPORTED_BY_YAHOO = 'Not supported by Yahoo!';
-    var TOOLTIP_NOT_SUPPORTED_BY_FACEBOOK = 'Not supported by Facebook';
+
     var WARNING_DIFFERENT_LOCATION_LEVELS = 'You are using different geographical features (city, country, ...). Note that if for example both the country United States and the city of New York are included, the whole US will be targeted.'; // eslint-disable-line max-len
     var INFO_OUTBRAIN_EXCLUDED = 'Outbrain media source will be paused because it doesn\'t support excluded locations.'; // eslint-disable-line max-len
     var INFO_OUTBRAIN_INCLUDED = 'Outbrain media source will be paused because it doesn\'t support any of the included locations.'; // eslint-disable-line max-len
     var INFO_YAHOO_EXCLUDED = 'Yahoo media source will be paused because it doesn\'t support all the excluded locations.'; // eslint-disable-line max-len
     var INFO_YAHOO_INCLUDED = 'Yahoo media source will be paused because it doesn\'t support any of the included locations.'; // eslint-disable-line max-len
-    var INFO_FACEBOOK_EXCLUDED = 'Facebook media source will be paused because it doesn\'t support excluded locations.';
-    var INFO_FACEBOOK_INCLUDED = 'Facebook media source will be paused because it doesn\'t support any of the included locations.'; // eslint-disable-line max-len
 
     var FIELD_COUNTRY = 'countries';
     var FIELD_CITY = 'cities';
@@ -219,12 +217,6 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
                     text: TOOLTIP_NOT_SUPPORTED_BY_YAHOO,
                 });
             }
-            if (!geolocation.facebookKey) {
-                badges.push({
-                    class: 'facebook',
-                    text: TOOLTIP_NOT_SUPPORTED_BY_FACEBOOK,
-                });
-            }
             return {
                 id: geolocation.key,
                 section: constants.geolocationTypeText[geolocation.type],
@@ -295,15 +287,6 @@ angular.module('one.widgets').service('zemGeoTargetingStateService', function (z
                 infos.push(INFO_YAHOO_EXCLUDED);
             } else if (regionsWithoutZips.length > 0 && regionsWithoutZips.every(yahooNotSupported)) {
                 infos.push(INFO_YAHOO_INCLUDED);
-            }
-
-            var facebookNotSupported = function (id) {
-                return !geolocationMappings[id].facebookKey;
-            };
-            if (exclusionRegionsWithoutZips.length > 0) {
-                infos.push(INFO_FACEBOOK_EXCLUDED);
-            } else if (regionsWithoutZips.length > 0 && regionsWithoutZips.every(facebookNotSupported)) {
-                infos.push(INFO_FACEBOOK_INCLUDED);
             }
 
             state.messages.warnings = warnings;
