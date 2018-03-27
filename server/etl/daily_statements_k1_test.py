@@ -5,12 +5,176 @@ from mock import patch
 from django.test import TestCase
 from django.db.models import Max
 
+import core.bcm
+import core.entity
 import core.multicurrency
 import dash.models
 import dash.constants
 from etl import daily_statements_k1 as daily_statements
 from utils import converters
 from utils import test_helper
+from utils.magic_mixer import magic_mixer
+
+
+def _configure_ad_group_stats_mock(mock_ad_group_stats, return_values):
+    def f(date, all_campaigns, account_id):
+        return return_values.get(date, {})
+    mock_ad_group_stats.configure_mock(**{'side_effect': f})
+
+
+def _configure_datetime_utcnow_mock(mock_datetime, utcnow_value):
+    class DatetimeMock(datetime.datetime):
+        @classmethod
+        def utcnow(cls):
+            return utcnow_value
+
+    mock_datetime.datetime = DatetimeMock
+    mock_datetime.timedelta = datetime.timedelta
+
+
+class MultiCurrencyTestCase(TestCase):
+
+    def setUp(self):
+        self.mock_today = datetime.date(2018, 3, 1)
+        self.campaign = magic_mixer.blend(core.entity.Campaign)
+        self.credit = magic_mixer.blend(
+            core.bcm.CreditLineItem,
+            account=self.campaign.account,
+            start_date=self.mock_today,
+            end_date=self.mock_today,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            amount=500,
+            license_fee=Decimal('0.135'),
+            currency=dash.constants.Currency.EUR,
+        )
+        self.budget = magic_mixer.blend(
+            core.bcm.BudgetLineItem,
+            credit=self.credit,
+            campaign=self.campaign,
+            start_date=self.mock_today,
+            end_date=self.mock_today,
+            amount=500,
+            margin=Decimal('0.22'),
+        )
+
+        self.exchange_rate = Decimal('0.8187')
+        core.multicurrency.CurrencyExchangeRate.objects.create(
+            date=self.mock_today,
+            currency=dash.constants.Currency.EUR,
+            exchange_rate=self.exchange_rate,
+        )
+
+    @patch('utils.dates_helper.datetime')
+    @patch('etl.daily_statements_k1._get_campaign_spend')
+    @patch('etl.daily_statements_k1.get_campaigns_with_spend', return_value=dash.models.Campaign.objects.none())
+    def test_non_usd_currency(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
+        return_values = {
+            self.mock_today: {
+                self.campaign.id: {
+                    'media_nano': 350 * 10**9,
+                    'data_nano': 150 * 10**9,
+                },
+            },
+        }
+        _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
+        _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(self.mock_today.year, self.mock_today.month, self.mock_today.day, 12))
+
+        daily_statements.reprocess_daily_statements(self.mock_today)
+        statement = core.bcm.BudgetDailyStatement.objects.get(budget=self.budget)
+
+        self.assertEqual(Decimal('350.0') * 10**9, statement.media_spend_nano)
+        self.assertEqual(Decimal('62.055698057') * 10**9, statement.data_spend_nano)
+        self.assertEqual(Decimal('64.309270795') * 10**9, statement.license_fee_nano)
+        self.assertEqual(Decimal('134.359350189') * 10**9, statement.margin_nano)
+        self.assertAlmostEqual(
+            self.budget.amount / self.exchange_rate,
+            (statement.media_spend_nano + statement.data_spend_nano +
+             statement.license_fee_nano + statement.margin_nano) / Decimal(10**9),
+            delta=Decimal('0.0001')
+        )
+
+        self.assertEqual(Decimal('286.545') * 10**9, statement.local_media_spend_nano)
+        self.assertEqual(Decimal('50.805') * 10**9, statement.local_data_spend_nano)
+        self.assertEqual(Decimal('52.65') * 10**9, statement.local_license_fee_nano)
+        self.assertEqual(Decimal('110.0') * 10**9, statement.local_margin_nano)
+        self.assertEqual(
+            self.budget.amount * 10**9,
+            statement.local_media_spend_nano + statement.local_data_spend_nano +
+            statement.local_license_fee_nano + statement.local_margin_nano
+        )
+
+    @patch('utils.dates_helper.datetime')
+    @patch('etl.daily_statements_k1._get_campaign_spend')
+    @patch('etl.daily_statements_k1.get_campaigns_with_spend', return_value=dash.models.Campaign.objects.none())
+    def test_mixed_currencies(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
+        media_nano = 350
+        data_nano = 150
+        return_values = {
+            self.mock_today: {
+                self.campaign.id: {
+                    'media_nano': media_nano * 10**9,
+                    'data_nano': data_nano * 10**9,
+                },
+            },
+        }
+        _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
+        _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(self.mock_today.year, self.mock_today.month, self.mock_today.day, 12))
+
+        credit2 = magic_mixer.blend(
+            core.bcm.CreditLineItem,
+            account=self.campaign.account,
+            start_date=self.mock_today,
+            end_date=self.mock_today,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            amount=500,
+            license_fee=Decimal('0.10'),
+            currency=dash.constants.Currency.USD,
+        )
+        budget2 = magic_mixer.blend(
+            core.bcm.BudgetLineItem,
+            credit=credit2,
+            campaign=self.campaign,
+            start_date=self.mock_today,
+            end_date=self.mock_today,
+            amount=500,
+            margin=Decimal('0.20'),
+        )
+
+        daily_statements.reprocess_daily_statements(self.mock_today)
+        eur_statement = core.bcm.BudgetDailyStatement.objects.get(budget=self.budget)
+
+        self.assertEqual(Decimal('350.0') * 10**9, eur_statement.media_spend_nano)
+        self.assertEqual(Decimal('62.055698057') * 10**9, eur_statement.data_spend_nano)
+        self.assertEqual(Decimal('64.309270795') * 10**9, eur_statement.license_fee_nano)
+        self.assertEqual(Decimal('134.359350189') * 10**9, eur_statement.margin_nano)
+        self.assertAlmostEqual(
+            self.budget.amount / self.exchange_rate,
+            (eur_statement.media_spend_nano + eur_statement.data_spend_nano +
+             eur_statement.license_fee_nano + eur_statement.margin_nano) / Decimal(10**9),
+            delta=Decimal('0.0001')
+        )
+
+        self.assertEqual(Decimal('286.545') * 10**9, eur_statement.local_media_spend_nano)
+        self.assertEqual(Decimal('50.805') * 10**9, eur_statement.local_data_spend_nano)
+        self.assertEqual(Decimal('52.65') * 10**9, eur_statement.local_license_fee_nano)
+        self.assertEqual(Decimal('110.0') * 10**9, eur_statement.local_margin_nano)
+        self.assertEqual(
+            self.budget.amount * 10**9,
+            eur_statement.local_media_spend_nano + eur_statement.local_data_spend_nano +
+            eur_statement.local_license_fee_nano + eur_statement.local_margin_nano
+        )
+
+        usd_statement = core.bcm.BudgetDailyStatement.objects.get(budget=budget2)
+        self.assertAlmostEqual(
+            media_nano + data_nano,
+            Decimal(eur_statement.media_spend_nano + eur_statement.data_spend_nano +
+                    usd_statement.media_spend_nano + usd_statement.data_spend_nano) / 10**9,
+            delta=Decimal('0.0001'),
+        )
+        self.assertEqual(0, usd_statement.media_spend_nano)
+        self.assertEqual(Decimal('87.944301942'), usd_statement.data_spend_nano / Decimal(10**9))
+        self.assertEqual(Decimal('9.771589104'), usd_statement.license_fee_nano / Decimal(10**9))
+        self.assertEqual(Decimal('24.428972761'), usd_statement.margin_nano / Decimal(10**9))
 
 
 @patch('utils.dates_helper.datetime')
@@ -31,20 +195,6 @@ class DailyStatementsK1TestCase(TestCase):
             exchange_rate=1,
         )
 
-    def _configure_ad_group_stats_mock(self, mock_ad_group_stats, return_values):
-        def f(date, all_campaigns, account_id):
-            return return_values.get(date, {})
-        mock_ad_group_stats.configure_mock(**{'side_effect': f})
-
-    def _configure_datetime_utcnow_mock(self, mock_datetime, utcnow_value):
-        class DatetimeMock(datetime.datetime):
-            @classmethod
-            def utcnow(cls):
-                return utcnow_value
-
-        mock_datetime.datetime = DatetimeMock
-        mock_datetime.timedelta = datetime.timedelta
-
     def test_first_day_single_daily_statemnt(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
             datetime.date(2015, 11, 1): {
@@ -54,8 +204,8 @@ class DailyStatementsK1TestCase(TestCase):
                 },
             },
         }
-        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
-        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
+        _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
+        _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
 
         update_from = datetime.date(2015, 11, 1)
         daily_statements.reprocess_daily_statements(update_from)
@@ -77,8 +227,8 @@ class DailyStatementsK1TestCase(TestCase):
                 },
             },
         }
-        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
-        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2016, 7, 15, 12))
+        _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
+        _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2016, 7, 15, 12))
 
         update_from = datetime.date(2016, 7, 15)
         daily_statements.reprocess_daily_statements(update_from)
@@ -101,8 +251,8 @@ class DailyStatementsK1TestCase(TestCase):
                 },
             },
         }
-        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
-        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2017, 6, 21, 12))
+        _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
+        _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2017, 6, 21, 12))
 
         update_from = datetime.date(2017, 6, 21)
         daily_statements.reprocess_daily_statements(update_from)
@@ -112,16 +262,48 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(7, statements[0].budget_id)
         self.assertEqual(datetime.date(2017, 6, 21), statements[0].date)
 
+        statement = statements[0]
         # $1000 media + $360 data + $340 fee = $1700; $1700 == $2000 * 85% (margin pct)
-        self.assertEqual(1000000000000, statements[0].media_spend_nano)
-        self.assertEqual(360000000000, statements[0].data_spend_nano)
-        self.assertEqual(340000000000, statements[0].license_fee_nano)
-        self.assertEqual(300000000000, statements[0].margin_nano)
+        self.assertEqual(1000, statement.media_spend_nano / 10**9)
+        self.assertEqual(360, statement.data_spend_nano / 10**9)
+        self.assertEqual(340, statement.license_fee_nano / 10**9)
+        self.assertEqual(300, statement.margin_nano / 10**9)
+
+    def test_budget_with_fixed_margin_overspend(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
+        return_values = {
+            datetime.date(2017, 6, 21): {
+                self.campaign3.id: {
+                    'media_nano': 2000000000000,
+                    'data_nano': 720000000000,
+                },
+            },
+        }
+        _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
+        _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2017, 6, 21, 12))
+
+        update_from = datetime.date(2017, 6, 21)
+        daily_statements.reprocess_daily_statements(update_from)
+
+        statements = dash.models.BudgetDailyStatement.objects.filter(
+            budget__campaign=self.campaign3).order_by('-date')
+        self.assertEqual(7, statements[0].budget_id)
+        self.assertEqual(datetime.date(2017, 6, 21), statements[0].date)
+
+        statement = statements[0]
+        # $2000 media + $40 data (rest discarded - overspend) + $510 fee = $2550; $2550 == $3000 * 85% (margin pct)
+        self.assertEqual(2000, statement.media_spend_nano / 10**9)
+        self.assertEqual(40, statement.data_spend_nano / 10**9)
+        self.assertEqual(510, statement.license_fee_nano / 10**9)
+        self.assertEqual(450, statement.margin_nano / 10**9)
+        self.assertEqual(
+            statement.budget.amount,
+            (statement.media_spend_nano + statement.data_spend_nano +
+             statement.license_fee_nano + statement.margin_nano) / 10**9)
 
     def test_first_day_cost_none(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {}
-        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
-        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
+        _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
+        _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
 
         update_from = datetime.date(2015, 11, 1)
         daily_statements.reprocess_daily_statements(update_from)
@@ -143,8 +325,8 @@ class DailyStatementsK1TestCase(TestCase):
                 },
             }
         }
-        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
-        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 20, 12))
+        _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
+        _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 20, 12))
 
         update_from = datetime.date(2015, 11, 1)
         daily_statements.reprocess_daily_statements(update_from)
@@ -186,8 +368,8 @@ class DailyStatementsK1TestCase(TestCase):
                 }
             }
         }
-        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
-        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
+        _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
+        _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
 
         update_from = datetime.date(2015, 11, 1)
         daily_statements.reprocess_daily_statements(update_from)
@@ -213,8 +395,8 @@ class DailyStatementsK1TestCase(TestCase):
                 }
             }
         }
-        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
-        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
+        _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
+        _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
 
         self.campaign1.settings.update(None, automatic_campaign_stop=False)
 
@@ -242,8 +424,8 @@ class DailyStatementsK1TestCase(TestCase):
                 }
             }
         }
-        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
-        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 10, 1, 12))
+        _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
+        _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 10, 1, 12))
 
         dash.models.CreditLineItem.objects.create_unsafe(
             account_id=self.campaign1.id,
@@ -282,8 +464,8 @@ class DailyStatementsK1TestCase(TestCase):
                 }
             }
         }
-        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
-        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
+        _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
+        _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
 
         update_from = datetime.date(2015, 11, 1)
         daily_statements.reprocess_daily_statements(update_from)
@@ -320,8 +502,8 @@ class DailyStatementsK1TestCase(TestCase):
                 }
             }
         }
-        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
-        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 11, 12))
+        _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
+        _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 11, 12))
 
         update_from = datetime.date(2015, 11, 1)
         daily_statements.reprocess_daily_statements(update_from)
@@ -361,8 +543,8 @@ class DailyStatementsK1TestCase(TestCase):
     def test_max_dates_till_today(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         # check that there's no endless loop when update_from is less than all budget start dates
         return_values = {}
-        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
-        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 10, 31, 12))
+        _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
+        _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 10, 31, 12))
 
         self.assertTrue(datetime.date(2015, 11, 1),
                         min(budget.start_date for budget in dash.models.BudgetLineItem.objects.all()))
@@ -378,8 +560,8 @@ class DailyStatementsK1TestCase(TestCase):
     def test_daily_statements_already_exist(self, mock_generate_statements, mock_campaign_with_spend,
                                             mock_ad_group_stats, mock_datetime):
         return_values = {}
-        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
-        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 30, 12))
+        _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
+        _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 30, 12))
 
         campaigns = dash.models.Campaign.objects.filter(account_id=1)
 
@@ -387,7 +569,7 @@ class DailyStatementsK1TestCase(TestCase):
             for budget in dash.models.BudgetLineItem.objects.filter(campaign__in=campaigns):
                 if budget.start_date <= date and budget.end_date >= date:
                     dash.models.BudgetDailyStatement.objects.create(
-                        budget_id=budget.id,
+                        budget=budget,
                         date=date,
                         media_spend_nano=0,
                         data_spend_nano=0,
@@ -427,7 +609,7 @@ class EffectiveSpendPctsK1TestCase(TestCase):
             },
         }
         dash.models.BudgetDailyStatement.objects.create(
-            budget_id=budget.id,
+            budget=budget,
             date=date,
             media_spend_nano=campaign_spend['media_nano'],
             data_spend_nano=campaign_spend['media_nano'],
@@ -475,7 +657,7 @@ class EffectiveSpendPctsK1TestCase(TestCase):
         license_fee_nano = (attributed_media_spend_nano + attributed_data_spend_nano) * budget.credit.license_fee
 
         dash.models.BudgetDailyStatement.objects.create(
-            budget_id=budget.id,
+            budget=budget,
             date=date,
             media_spend_nano=attributed_media_spend_nano,
             data_spend_nano=attributed_data_spend_nano,
@@ -509,7 +691,7 @@ class EffectiveSpendPctsK1TestCase(TestCase):
         attributed_data_spend_nano = (campaign_spend['data_nano']) * Decimal('0.5')
 
         dash.models.BudgetDailyStatement.objects.create(
-            budget_id=budget1.id,
+            budget=budget1,
             date=date,
             media_spend_nano=attributed_media_spend_nano,
             data_spend_nano=attributed_data_spend_nano,
@@ -518,7 +700,7 @@ class EffectiveSpendPctsK1TestCase(TestCase):
         )
 
         dash.models.BudgetDailyStatement.objects.create(
-            budget_id=budget2.id,
+            budget=budget2,
             date=date,
             media_spend_nano=attributed_media_spend_nano,
             data_spend_nano=attributed_data_spend_nano,
@@ -548,7 +730,7 @@ class EffectiveSpendPctsK1TestCase(TestCase):
         }
 
         dash.models.BudgetDailyStatement.objects.create(
-            budget_id=budget.id,
+            budget=budget,
             date=date,
             media_spend_nano=40000000000,
             data_spend_nano=40000000000,

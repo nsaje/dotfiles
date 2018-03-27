@@ -493,6 +493,10 @@
     data_spend_nano: 0
     license_fee_nano: 5000000000
     margin_nano: 0
+    local_media_spend_nano: 50000000000
+    local_data_spend_nano: 0
+    local_license_fee_nano: 5000000000
+    local_margin_nano: 0
   model: dash.budgetdailystatement
   pk: 1
 
@@ -503,6 +507,10 @@
     data_spend_nano: 0
     license_fee_nano: 6000000000
     margin_nano: 0
+    local_media_spend_nano: 60000000000
+    local_data_spend_nano: 0
+    local_license_fee_nano: 6000000000
+    local_margin_nano: 0
   model: dash.budgetdailystatement
   pk: 2
 
@@ -513,6 +521,10 @@
     data_spend_nano: 0
     license_fee_nano: 7000000000
     margin_nano: 0
+    local_media_spend_nano: 70000000000
+    local_data_spend_nano: 0
+    local_license_fee_nano: 7000000000
+    local_margin_nano: 0
   model: dash.budgetdailystatement
   pk: 3
 
@@ -523,5 +535,9 @@
     data_spend_nano: 0
     license_fee_nano: 10000000000
     margin_nano: 0
+    local_media_spend_nano: 900000000000
+    local_data_spend_nano: 0
+    local_license_fee_nano: 10000000000
+    local_margin_nano: 0
   model: dash.budgetdailystatement
   pk: 4

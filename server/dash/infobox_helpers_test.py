@@ -1,4 +1,5 @@
 import datetime
+import decimal
 import calendar
 
 from decimal import Decimal
@@ -400,9 +401,9 @@ class InfoBoxAccountHelpersTest(TestCase):
         dash.models.BudgetDailyStatement.objects.create(
             budget=self.budget,
             date=yesterday,
-            media_spend_nano=10e9,
-            data_spend_nano=10e9,
-            license_fee_nano=10e9,
+            media_spend_nano=decimal.Decimal('10e9'),
+            data_spend_nano=decimal.Decimal('10e9'),
+            license_fee_nano=decimal.Decimal('10e9'),
             margin_nano=0,
         )
         self.assertEqual({
@@ -451,9 +452,9 @@ class InfoBoxAccountHelpersTest(TestCase):
         dash.models.BudgetDailyStatement.objects.create(
             budget=self.budget,
             date=today,
-            media_spend_nano=10e9,
-            data_spend_nano=10e9,
-            license_fee_nano=10e9,
+            media_spend_nano=decimal.Decimal('10e9'),
+            data_spend_nano=decimal.Decimal('10e9'),
+            license_fee_nano=decimal.Decimal('10e9'),
             margin_nano=0,
         )
         self.assertEqual({
@@ -474,9 +475,9 @@ class InfoBoxAccountHelpersTest(TestCase):
         dash.models.BudgetDailyStatement.objects.create(
             budget=self.budget,
             date=today - datetime.timedelta(1),
-            media_spend_nano=10e9,
-            data_spend_nano=10e9,
-            license_fee_nano=10e9,
+            media_spend_nano=decimal.Decimal('10e9'),
+            data_spend_nano=decimal.Decimal('10e9'),
+            license_fee_nano=decimal.Decimal('10e9'),
             margin_nano=0,
         )
         self.assertEqual({
@@ -496,9 +497,9 @@ class InfoBoxAccountHelpersTest(TestCase):
         dash.models.BudgetDailyStatement.objects.create(
             budget=self.budget,
             date=today,
-            media_spend_nano=10e9,
-            data_spend_nano=10e9,
-            license_fee_nano=10e9,
+            media_spend_nano=decimal.Decimal('10e9'),
+            data_spend_nano=decimal.Decimal('10e9'),
+            license_fee_nano=decimal.Decimal('10e9'),
             margin_nano=0,
         )
         self.assertEqual({
@@ -511,9 +512,9 @@ class InfoBoxAccountHelpersTest(TestCase):
         dash.models.BudgetDailyStatement.objects.create(
             budget=self.budget,
             date=aproximately_one_month_ago,
-            media_spend_nano=10e9,
-            data_spend_nano=10e9,
-            license_fee_nano=10e9,
+            media_spend_nano=decimal.Decimal('10e9'),
+            data_spend_nano=decimal.Decimal('10e9'),
+            license_fee_nano=decimal.Decimal('10e9'),
             margin_nano=0,
         )
         # shouldn't change because it's month to date
@@ -647,9 +648,9 @@ class InfoBoxAccountHelpersTest(TestCase):
         dash.models.BudgetDailyStatement.objects.create(
             budget=self.budget,
             date=datetime.datetime.utcnow() - datetime.timedelta(days=1),
-            media_spend_nano=10 * 10**9,
-            data_spend_nano=10 * 10**9,
-            license_fee_nano=10 * 10**9,
+            media_spend_nano=decimal.Decimal('10e9'),
+            data_spend_nano=decimal.Decimal('10e9'),
+            license_fee_nano=decimal.Decimal('10e9'),
             margin_nano=0,
         )
 
