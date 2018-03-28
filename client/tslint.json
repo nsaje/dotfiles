@@ -109,7 +109,6 @@
       }
     ],
     "no-internal-module": true,
-    "no-magic-numbers": true,
     "no-namespace": true,
     "restrict-plus-operands": true,
     "no-misused-new": true,

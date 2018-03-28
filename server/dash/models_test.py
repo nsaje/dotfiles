@@ -334,8 +334,10 @@ class CampaignSettingsTest(TestCase):
             'latest_for_entity',
         ]
 
+        deprecated_fields = ['goal_quantity']
+
         all_fields = set(models.CampaignSettings._settings_fields + meta_fields)
-        model_fields = set(f.name for f in models.CampaignSettings._meta.get_fields())
+        model_fields = set(f.name for f in models.CampaignSettings._meta.get_fields()).difference(deprecated_fields)
 
         self.assertEqual(model_fields, all_fields)
 
@@ -353,7 +355,6 @@ class CampaignSettingsTest(TestCase):
             'target_regions': ['CA', '501'],
             'exclusion_target_regions': ['US-NY'],
             'campaign_goal': 2,
-            'goal_quantity': Decimal('10.00'),
             'automatic_campaign_stop': True,
             'landing_mode': False,
             'autopilot': False,

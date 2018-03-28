@@ -1,7 +1,7 @@
 import './inventory-planning.component.less';
 
 import {
-    Component, Input, Output, EventEmitter, OnInit, OnDestroy, Inject, ChangeDetectionStrategy
+    Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectionStrategy
 } from '@angular/core';
 import {Subject} from 'rxjs/Subject';
 import {map, takeUntil, distinctUntilChanged} from 'rxjs/operators';
@@ -22,7 +22,7 @@ export class InventoryPlanningComponent implements OnInit, OnDestroy {
 
     private ngUnsubscribe$: Subject<undefined> = new Subject();
 
-    constructor (private store: InventoryPlanningStore, @Inject('zemPermissions') private zemPermissions: any) {}  // tslint:disable-line no-unused-variable max-line-length
+    constructor (private store: InventoryPlanningStore) {}
 
     ngOnInit () {
         if (this.preselectedFilters) {

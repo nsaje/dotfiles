@@ -357,9 +357,8 @@ class CampaignSettings(api_common.BaseApiView):
             'language': campaign.settings.language,
         }
         if request.user.has_perm('zemauth.can_see_campaign_goals'):
-            response['goals'] = self.get_campaign_goals(
-                campaign
-            )
+            response['goals'] = self.get_campaign_goals(request, campaign)
+
         if self.rest_proxy:
             return self.create_api_response(response)
 
@@ -419,7 +418,7 @@ class CampaignSettings(api_common.BaseApiView):
         }
 
         if request.user.has_perm('zemauth.can_see_campaign_goals'):
-            response['goals'] = self.get_campaign_goals(campaign)
+            response['goals'] = self.get_campaign_goals(request, campaign)
 
         return self.create_api_response(response)
 
@@ -495,7 +494,7 @@ class CampaignSettings(api_common.BaseApiView):
 
         return errors
 
-    def get_campaign_goals(self, campaign):
+    def get_campaign_goals(self, request, campaign):
         ret = []
         goals = models.CampaignGoal.objects.filter(
             campaign=campaign
@@ -507,9 +506,10 @@ class CampaignSettings(api_common.BaseApiView):
                 )
             )
         ).select_related('conversion_goal').order_by('id')
+        use_local_values = request.user.has_perm('zemauth.can_manage_goals_in_local_currency')
 
         for campaign_goal in goals:
-            goal_blob = campaign_goal.to_dict(with_values=True)
+            goal_blob = campaign_goal.to_dict(with_values=True, local_values=use_local_values)
             conversion_goal = campaign_goal.conversion_goal
             if conversion_goal is not None and\
                     conversion_goal.type == constants.ConversionGoalType.PIXEL:
@@ -527,7 +527,6 @@ class CampaignSettings(api_common.BaseApiView):
             'name': campaign.name,
             'campaign_goal': settings.campaign_goal,
             'language': settings.language,
-            'goal_quantity': settings.goal_quantity,
             'enable_ga_tracking': settings.enable_ga_tracking,
             'ga_property_id': settings.ga_property_id,
             'ga_tracking_type': settings.ga_tracking_type,

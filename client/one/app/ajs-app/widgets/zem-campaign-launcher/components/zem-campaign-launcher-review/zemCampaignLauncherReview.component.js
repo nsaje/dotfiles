@@ -5,7 +5,7 @@ angular.module('one').component('zemCampaignLauncherReview', {
         stateService: '=',
     },
     template: require('./zemCampaignLauncherReview.component.html'),
-    controller: function (zemDeviceTargetingConstants, zemPermissions) {
+    controller: function (zemDeviceTargetingConstants, zemPermissions, $filter) {
         var $ctrl = this;
 
         $ctrl.hasPermission = zemPermissions.hasPermission;
@@ -20,6 +20,11 @@ angular.module('one').component('zemCampaignLauncherReview', {
             $ctrl.state = $ctrl.stateService.getState();
             $ctrl.iabCategoryName = getIabCategoryName($ctrl.state.fields.iabCategory);
             $ctrl.language = getLanguageName($ctrl.state.fields.language);
+            // TODO (jurebajt): Set unit dynamically when multi-currency support is added to campaign launcher
+            $ctrl.campaignGoalText = $filter('campaignGoalText')($ctrl.state.fields.campaignGoal);
+            // HACK (jurebajt): Replace euro currency sign with dollar sign. Remove when multi-currency support is added
+            // to campaign launcher!
+            $ctrl.campaignGoalText = $ctrl.campaignGoalText.replace('€', '$');
             $ctrl.dummyCreatives = getDummyCreatives($ctrl.state.creatives.candidates || []);
 
             updateDeviceTargetingReview();

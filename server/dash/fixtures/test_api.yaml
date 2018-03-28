@@ -898,7 +898,6 @@
         campaign_manager: NULL
         iab_category: 'IAB24'
         campaign_goal: 4
-        goal_quantity: 10
         target_devices: ['mobile']
         target_regions: ['US']
         campaign: 2

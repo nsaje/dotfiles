@@ -5,6 +5,7 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
     },
     controller: function ($state, $location, zemCreateEntityActionService, zemToastsService, zemNavigationNewService, zemPermissions) { // eslint-disable-line max-len
         var $ctrl = this;
+        var activeAccount = zemNavigationNewService.getActiveAccount();
         var MAP_PARENT_TYPE = {};
         MAP_PARENT_TYPE[constants.entityType.ACCOUNT] = constants.entityType.CAMPAIGN;
         MAP_PARENT_TYPE[constants.entityType.CAMPAIGN] = constants.entityType.AD_GROUP;
@@ -17,7 +18,8 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
         MAIN_ACTIONS[constants.entityType.CONTENT_AD] = {name: 'Content Ads', callback: createEntity};
 
         var ADDITIONAL_ACTIONS = {};
-        if (zemPermissions.hasPermission('zemauth.can_create_campaign_via_campaign_launcher')) {
+        if (zemPermissions.hasPermission('zemauth.can_create_campaign_via_campaign_launcher')
+            && activeAccount && activeAccount.data.currency === constants.currency.USD) {
             ADDITIONAL_ACTIONS[constants.entityType.CAMPAIGN] = [
                 {name: 'Launch campaign', callback: openCampaignLauncher},
             ];
@@ -46,7 +48,7 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
         }
 
         function openCampaignLauncher () {
-            var url = $state.href('v2.campaignLauncher', {id: zemNavigationNewService.getActiveAccount().id});
+            var url = $state.href('v2.campaignLauncher', {id: activeAccount.id});
             $location.url(url);
         }
     },

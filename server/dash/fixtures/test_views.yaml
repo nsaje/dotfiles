@@ -104,7 +104,6 @@
         archived: False
         campaign_manager: 2
         campaign_goal: 3
-        goal_quantity: 0
         target_devices: ['mobile']
         target_regions: ['NC', '501']
         whitelist_publisher_groups: [1]

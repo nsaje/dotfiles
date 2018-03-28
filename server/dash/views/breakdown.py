@@ -342,6 +342,7 @@ class CampaignBreakdown(api_common.BaseApiView):
 
         report = format_breakdown_response(rows, offset, parents, totals, goals=goals, **extras)
         if len(breakdown) == 1 and request.user.has_perm('zemauth.campaign_goal_optimization'):
+            # TODO (jurebajt): Check if get_campaign_goals should return local values
             report[0]['campaign_goals'] = campaign_goals.get_campaign_goals(
                 campaign, report[0].get('conversion_goals', []))
 
@@ -434,6 +435,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
 
         report = format_breakdown_response(rows, offset, parents, totals, goals, **extras)
         if len(breakdown) == 1 and request.user.has_perm('zemauth.campaign_goal_optimization'):
+            # TODO (jurebajt): Check if get_campaign_goals should return local values
             report[0]['campaign_goals'] = campaign_goals.get_campaign_goals(
                 ad_group.campaign, report[0].get('conversion_goals', []))
 

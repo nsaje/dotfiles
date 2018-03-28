@@ -13,7 +13,14 @@ angular.module('one.widgets').component('zemCampaignLauncherGoal', {
 
         $ctrl.$onInit = function () {
             $ctrl.state = $ctrl.stateService.getState();
-            $ctrl.availableGoals = angular.copy(options.campaignGoalKPIs);
+            $ctrl.availableGoals = angular.copy(options.campaignGoalKPIs).map(function (goalKPI) {
+                // TODO (jurebajt): Set unit dynamically when multi-currency support is added to campaign launcher
+                if (goalKPI.unit === '__CURRENCY__') {
+                    goalKPI.unit = '$';
+                }
+                return goalKPI;
+            });
+
             $ctrl.pixels = {};
 
             if ($ctrl.state.fields.campaignGoal) {

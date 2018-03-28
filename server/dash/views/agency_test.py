@@ -1834,7 +1834,6 @@ class CampaignSettingsTest(TestCase):
         self.assertTrue(content['success'])
         self.assertEqual(content['data']['settings']['name'], 'test campaign 1')
         self.assertEqual(content['data']['settings']['campaign_goal'], 3)
-        self.assertEqual(content['data']['settings']['goal_quantity'], '0.00')
         self.assertEqual(content['data']['settings']['target_devices'], ['MOBILE'])
         self.assertEqual(content['data']['settings']['target_regions'], self._target_regions_repr(dma=['501'], countries=['NC']))
         self.assertEqual(content['data']['settings']['exclusion_target_regions'], self._target_regions_repr())
@@ -1864,7 +1863,6 @@ class CampaignSettingsTest(TestCase):
 
         settings = campaign.get_current_settings()
         self.assertEqual(campaign.name, 'test campaign 1')
-        self.assertNotEqual(settings.goal_quantity, 10)
         self.assertNotEqual(settings.campaign_goal, 2)
         self.assertNotEqual(settings.target_devices, ['desktop'])
         self.assertNotEqual(settings.target_regions, self._target_regions_repr(dma=['502'], countries=['CA']))
@@ -1885,7 +1883,6 @@ class CampaignSettingsTest(TestCase):
                     'name': 'test campaign 2',
                     'campaign_goal': 2,
                     'language': constants.Language.ENGLISH,
-                    'goal_quantity': 10,
                     'target_devices': ['DESKTOP'],
                     'target_regions': self._target_regions_repr(dma=['502'], countries=['CA']),
                     'exclusion_target_regions': self._target_regions_repr(),
@@ -1912,7 +1909,6 @@ class CampaignSettingsTest(TestCase):
 
         # Check if all fields were updated
         self.assertEqual(campaign.name, 'test campaign 1')
-        self.assertEqual(settings.goal_quantity, 10)
         self.assertEqual(settings.campaign_goal, 2)
         self.assertEqual(settings.target_devices, ['desktop'])
         self.assertEqual(settings.target_regions, ['CA', '502'])
@@ -1951,7 +1947,6 @@ class CampaignSettingsTest(TestCase):
                     'name': 'test campaign 2',
                     'campaign_goal': 2,
                     'language': constants.Language.ENGLISH,
-                    'goal_quantity': 10,
                     'target_devices': ['DESKTOP'],
                     'target_regions': self._target_regions_repr(dma=['502'], countries=['CA']),
                     'exclusion_target_regions': self._target_regions_repr(),
@@ -1991,7 +1986,6 @@ class CampaignSettingsTest(TestCase):
                     'name': 'test campaign 2',
                     'campaign_goal': 2,
                     'language': constants.Language.ENGLISH,
-                    'goal_quantity': 10,
                     'target_devices': ['DESKTOP'],
                     'target_regions': self._target_regions_repr(dma=['502'], countries=['CA']),
                     'exclusion_target_regions': self._target_regions_repr(),
@@ -2045,7 +2039,6 @@ class CampaignSettingsTest(TestCase):
                     'name': 'test campaign 2',
                     'language': constants.Language.ENGLISH,
                     'campaign_goal': 2,
-                    'goal_quantity': 10,
                     'target_devices': ['DESKTOP'],
                     'target_regions': self._target_regions_repr(dma=['502'], countries=['CA']),
                     'exclusion_target_regions': self._target_regions_repr(),
@@ -2101,7 +2094,6 @@ class CampaignSettingsTest(TestCase):
                     'name': 'test campaign 2',
                     'campaign_goal': 2,
                     'language': constants.Language.ENGLISH,
-                    'goal_quantity': 10,
                     'target_devices': ['DESKTOP'],
                     'target_regions': self._target_regions_repr(dma=['502'], countries=['CA']),
                     'exclusion_target_regions': self._target_regions_repr(),
@@ -2142,7 +2134,6 @@ class CampaignSettingsTest(TestCase):
         )
 
         content = json.loads(response.content)
-        self.assertTrue('goal_quantity' in content['data']['errors'])
         self.assertFalse(content['success'])
 
         response = self.client.put(
@@ -2152,7 +2143,6 @@ class CampaignSettingsTest(TestCase):
                     'id': 1,
                     'name': 'test campaign 2',
                     'campaign_goal': 50,
-                    'goal_quantity': 10,
                 }
             }),
             content_type='application/json',

@@ -2,6 +2,7 @@ import decimal
 
 import dash.constants
 
+from .constants import CurrencySymbol
 from .currency_exchange_rate import CurrencyExchangeRate
 
 
@@ -12,3 +13,7 @@ def get_exchange_rate(date, currency):
         date__lte=date, currency=currency
     ).latest('date')
     return exchange_rate.exchange_rate
+
+
+def get_currency_symbol(currency):
+    return CurrencySymbol.get(currency)

@@ -49,5 +49,5 @@ export class InventoryPlanningViewComponent implements OnInit {
 declare var angular: angular.IAngularStatic;
 angular.module('one.downgraded').directive(
     'zemInventoryPlanningView',
-    downgradeComponent({component: InventoryPlanningViewComponent}) as angular.IDirectiveFactory
+    downgradeComponent({component: InventoryPlanningViewComponent})
 );

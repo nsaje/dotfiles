@@ -357,7 +357,6 @@
         campaign_manager: 1
         iab_category: 1
         campaign_goal: 2
-        goal_quantity: 10
         archived: false
         target_devices: ['mobile']
         target_regions: ['CA', '501']

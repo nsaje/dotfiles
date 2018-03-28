@@ -97,6 +97,7 @@ class NavigationDataViewTest(TestCase):
                 'id': 1,
                 'name': 'test account 1',
                 'agency': 'Test Agency',
+                'currency': constants.Currency.USD,
                 'usesBCMv2': False,
             }
         })
@@ -110,6 +111,7 @@ class NavigationDataViewTest(TestCase):
                 'id': 3,
                 'name': 'test account 3',
                 'agency': None,
+                'currency': constants.Currency.USD,
                 'usesBCMv2': False,
             }
         })
@@ -138,6 +140,7 @@ class NavigationDataViewTest(TestCase):
                 'id': 1,
                 'name': 'test account 1',
                 'agency': 'Test Agency',
+                'currency': constants.Currency.USD,
                 'usesBCMv2': False,
             },
             'campaign': {
@@ -157,6 +160,7 @@ class NavigationDataViewTest(TestCase):
                 'id': 3,
                 'name': 'test account 3',
                 'agency': None,
+                'currency': constants.Currency.USD,
                 'usesBCMv2': False,
             },
             'campaign': {
@@ -192,6 +196,7 @@ class NavigationDataViewTest(TestCase):
                 'id': 1,
                 'name': 'test account 1',
                 'agency': 'Test Agency',
+                'currency': constants.Currency.USD,
                 'usesBCMv2': False,
             },
             'campaign': {
@@ -220,6 +225,7 @@ class NavigationDataViewTest(TestCase):
                 'id': 2,
                 'name': 'test account 2',
                 'agency': None,
+                'currency': constants.Currency.USD,
                 'usesBCMv2': False,
             },
             'campaign': {
@@ -263,6 +269,7 @@ class NavigationDataViewTest(TestCase):
                 'id': 1,
                 'name': 'test account 1',
                 'agency': 'Test Agency',
+                'currency': constants.Currency.USD,
                 'usesBCMv2': False,
             }
         })
@@ -276,6 +283,7 @@ class NavigationDataViewTest(TestCase):
                 'id': 3,
                 'name': 'test account 3',
                 'agency': None,
+                'currency': constants.Currency.USD,
                 'usesBCMv2': False,
             }
         })
@@ -323,6 +331,7 @@ class NavigationTreeViewTest(TestCase):
             }],
             "id": 1,
             "agency": "Test Agency",
+            "currency": constants.Currency.USD,
             "name": "test account 1",
             "usesBCMv2": False,
         }]
@@ -364,6 +373,7 @@ class NavigationTreeViewTest(TestCase):
             }],
             "id": 1,
             "agency": "Test Agency",
+            "currency": constants.Currency.USD,
             "name": "test account 1",
             "usesBCMv2": False,
         }], response['data'])
@@ -409,6 +419,7 @@ class NavigationTreeViewTest(TestCase):
             }],
             "id": 1,
             "agency": "Test Agency",
+            "currency": constants.Currency.USD,
             "name": "test account 1",
             "usesBCMv2": False,
         }]
@@ -441,6 +452,7 @@ class NavigationTreeViewTest(TestCase):
             "name": "test account 2",
             "archived": False,
             "agency": None,
+            "currency": constants.Currency.USD,
             "usesBCMv2": False,
         }]
 

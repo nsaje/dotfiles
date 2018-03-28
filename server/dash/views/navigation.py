@@ -199,7 +199,7 @@ class NavigationTreeView(api_common.BaseApiView):
             map_accounts_settings = {acs.account_id: acs for acs in accounts_settings}
 
         data_accounts = []
-        for account in accounts.values('id', 'name', 'uses_bcm_v2', 'agency__name'):
+        for account in accounts.values('id', 'name', 'uses_bcm_v2', 'agency__name', 'currency'):
             account_dict = navigation_helpers.get_account_dict(
                 account,
                 map_accounts_settings.get(account['id']),

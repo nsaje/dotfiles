@@ -309,6 +309,7 @@ def get_campaign_goals(campaign, conversion_goals):
                     dict(('avg_cost_per_{}'.format(k['id']), True)
                          for k in conversion_goals if k['name'] == conversion_goal_name))
 
+        # TODO (jurebajt): Should local_values be returned here?
         ret.append({
             'name': goal_name,
             'primary': cg_value.campaign_goal.primary,

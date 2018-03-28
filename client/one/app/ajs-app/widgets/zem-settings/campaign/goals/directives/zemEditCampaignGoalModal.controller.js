@@ -1,13 +1,15 @@
 //
 // TODO: On major update, refactor to component
 //
-angular.module('one.widgets').controller('zemEditCampaignGoalModalCtrl', function ($scope, zemConversionPixelsEndpoint, zemCampaignGoalValidationEndpoint) { // eslint-disable-line max-len
+angular.module('one.widgets').controller('zemEditCampaignGoalModalCtrl', function ($scope, zemConversionPixelsEndpoint, zemCampaignGoalValidationEndpoint, zemNavigationNewService, zemMulticurrencyService) { // eslint-disable-line max-len
     $scope.addConversionGoalInProgress = false;
     $scope.error = false;
     $scope.newCampaignGoal = false;
     $scope.pixels = {};
     $scope.newPixel = {};
     $scope.savingInProgress = false;
+
+    var activeAccount = zemNavigationNewService.getActiveAccount();
 
     var MAX_CONVERSION_GOALS = 15;
 
@@ -160,7 +162,15 @@ angular.module('one.widgets').controller('zemEditCampaignGoalModalCtrl', functio
         return $scope.campaignGoal.type === constants.campaignGoalKPI.CPA;
     };
 
-    $scope.campaignGoalKPIs = options.campaignGoalKPIs.filter(isGoalAvailable);
+    $scope.campaignGoalKPIs = angular.copy(options.campaignGoalKPIs).filter(isGoalAvailable).map(function (goalKPI) {
+        if (goalKPI.unit === '__CURRENCY__') {
+            goalKPI.unit = zemMulticurrencyService.getAppropriateCurrencySymbol(
+                activeAccount,
+                ['zemauth.can_manage_goals_in_local_currency']
+            );
+        }
+        return goalKPI;
+    });
 
     function filterPixels (pixels) {
         var availablePixels = [];

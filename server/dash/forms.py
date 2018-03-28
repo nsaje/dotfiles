@@ -897,7 +897,6 @@ class CampaignSettingsForm(PublisherGroupsFormMixin, forms.Form):
         coerce=int,
         empty_value=None
     )
-    goal_quantity = forms.DecimalField(decimal_places=4)
     target_devices = dash.compatibility.forms.RestFrameworkSerializer(
         restapi.serializers.targeting.DevicesSerializer,
         error_messages={'required': 'Please select at least one target device.'}

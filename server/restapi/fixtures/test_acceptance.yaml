@@ -135,7 +135,6 @@
         campaign_manager: NULL
         iab_category: 'IAB24'
         campaign_goal: 4
-        goal_quantity: 10
         target_devices: ['mobile']
         target_os: [{name: 'ios', version: {min: 'ios_4_0'}}]
         target_placements: ['app']

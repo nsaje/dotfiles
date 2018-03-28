@@ -14,7 +14,7 @@ angular.module('one.services').service('zemPermissions', function (zemUserServic
     this.canAccessAgencyCosts = canAccessAgencyCosts;
 
     function hasPermission (permission) {
-        // Can take string or array (legacy option), returns true if user has any of the permissions
+        // Can take string or array (legacy option), returns true if user has all of the permissions
         // TODO: remove option to pass array
         var permissions;
         if (typeof permission === 'string') permissions = [permission];

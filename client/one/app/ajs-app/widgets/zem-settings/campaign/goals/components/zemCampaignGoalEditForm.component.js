@@ -9,8 +9,9 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
         onChange: '&?',
     },
     template: require('./zemCampaignGoalEditForm.component.html'),
-    controller: function () {
+    controller: function (zemNavigationNewService, zemMulticurrencyService) {
         var $ctrl = this;
+        var activeAccount;
 
         $ctrl.updateTypeChange = updateTypeChange;
         $ctrl.propagateChange = propagateChange;
@@ -23,6 +24,7 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
         $ctrl.setAvailableConversionWindowsForPixel = setAvailableConversionWindowsForPixel;
 
         $ctrl.$onInit = function () {
+            activeAccount = zemNavigationNewService.getActiveAccount();
             $ctrl.campaignGoal = $ctrl.campaignGoal || {};
             $ctrl.goalUnit = getGoalUnit($ctrl.campaignGoal);
             $ctrl.conversionGoalTypes = options.conversionGoalTypes;
@@ -98,7 +100,14 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
             for (var i = 0; i < options.campaignGoalKPIs.length; i++) {
                 var kpiDefault = options.campaignGoalKPIs[i];
                 if (kpiDefault.value === goal.type) {
-                    return kpiDefault.unit;
+                    if (kpiDefault.unit !== '__CURRENCY__') {
+                        return kpiDefault.unit;
+                    }
+
+                    return zemMulticurrencyService.getAppropriateCurrencySymbol(
+                        activeAccount,
+                        ['zemauth.can_manage_goals_in_local_currency']
+                    );
                 }
             }
             return '';
