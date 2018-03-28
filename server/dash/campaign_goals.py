@@ -443,7 +443,7 @@ def _get_goals_performance_output(stats_goals, query_results, uses_bcm_v2):
     return performance
 
 
-def get_campaign_goal_metrics(campaign, start_date, end_date):
+def get_campaign_goal_metrics(campaign, start_date, end_date, local_values=False):
     campaign_goal_values = models.CampaignGoalValue.objects.all().\
         filter(
             campaign_goal__campaign=campaign,
@@ -466,6 +466,7 @@ def get_campaign_goal_metrics(campaign, start_date, end_date):
         start_date,
         end_date,
         uses_bcm_v2=campaign.account.uses_bcm_v2,
+        local_values=local_values,
         conversion_goals=None)
 
 
@@ -512,7 +513,8 @@ def eliminate_duplicates(campaign_goal_values):
     return sorted(ret, key=lambda x: x.created_dt)
 
 
-def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, uses_bcm_v2, conversion_goals=None):
+def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, uses_bcm_v2, local_values=False,
+                    conversion_goals=None):
     last_cg_vals = {}
     cg_series = {}
     for cg_value in campaign_goal_values:
@@ -522,7 +524,7 @@ def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, use
 
         if not cg_series.get(name):
             cg_series[name] = []
-        cg_series[name].append(campaign_goal_dp(cg_value))
+        cg_series[name].append(campaign_goal_dp(cg_value, local_values=local_values))
 
     # if starting campaign goal was defined before current range
     # or if no values are defined within current range(but exist before)
@@ -530,11 +532,11 @@ def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, use
     for pre_cg_id, pre_cg_val in pre_cg_vals.items():
         pre_cg = pre_cg_val.campaign_goal
         pre_name = goal_name(pre_cg, conversion_goals, uses_bcm_v2=uses_bcm_v2)
-        dp_to_preinsert = campaign_goal_dp(pre_cg_val, override_date=start_date)
+        dp_to_preinsert = campaign_goal_dp(pre_cg_val, override_date=start_date, local_values=local_values)
         if pre_name not in cg_series:
             # in the case that the goal was set in distant past and never
             # updated create two points in current date range
-            dp_to_postinsert = campaign_goal_dp(pre_cg_val, override_date=end_date)
+            dp_to_postinsert = campaign_goal_dp(pre_cg_val, override_date=end_date, local_values=local_values)
             cg_series[pre_name] = [dp_to_preinsert, dp_to_postinsert]
         else:
             first = cg_series[pre_name][0]
@@ -547,7 +549,7 @@ def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, use
             continue
         # duplicate last data point with date set to end date
         cg_series[name].append(
-            campaign_goal_dp(last_cg_val, override_date=end_date),
+            campaign_goal_dp(last_cg_val, override_date=end_date, local_values=local_values),
         )
     return generate_missing(create_line_series(cg_series))
 
@@ -623,11 +625,14 @@ def get_pre_campaign_goal_values(campaign, date, conversion_goals=False):
     }
 
 
-def campaign_goal_dp(campaign_goal_value, override_date=None, override_value=None):
+def campaign_goal_dp(campaign_goal_value, override_date=None, override_value=None, local_values=False):
     date = campaign_goal_value.created_dt.date()
     if override_date is not None:
         date = override_date
-    value = float(campaign_goal_value.value)
+    if local_values:
+        value = float(campaign_goal_value.local_value)
+    else:
+        value = float(campaign_goal_value.value)
     if override_value is not None:
         value = override_value
     return (date, value,)

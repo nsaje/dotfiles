@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemChartParser', function ($window, zemChartMetricsService) {
+angular.module('one.widgets').service('zemChartParser', function ($window, zemChartMetricsService, zemNavigationNewService, zemMulticurrencyService) { // eslint-disable-line max-len
     var COMMON_Y_AXIS_METRICS = ['clicks', 'visits', 'pageviews'];
     var COLORS = angular.extend({
         TOTALS: ['#3f547f', '#b2bbcc'],
@@ -109,6 +109,10 @@ angular.module('one.widgets').service('zemChartParser', function ($window, zemCh
     }
 
     function updateCampaignGoals (chart, goals, campaignGoals) {
+        var currency = zemMulticurrencyService.getAppropriateCurrency(
+            zemNavigationNewService.getActiveAccount(),
+            ['zemauth.can_manage_goals_in_local_currency']
+        );
         var commonYAxis = true;
         goals.forEach(function (goal) {
             var metric = goal.metric;
@@ -124,8 +128,7 @@ angular.module('one.widgets').service('zemChartParser', function ($window, zemCh
                 }
                 var name = 'Goal (' + goalField.name + ')';
                 var yAxis = commonYAxis ? 0 : goal.index;
-                // TODO (jurebajt): Use correct currency when goals support multi-currency
-                var pointFormat = getPointFormat(metric, constants.currency.USD);
+                var pointFormat = getPointFormat(metric, currency);
                 addGoalSeries(chart, name, data, COLORS.GOALS[goal.index], yAxis, pointFormat);
             });
         });

@@ -28,6 +28,11 @@ describe('MulticurrencyService', () => {
             expect(service.getAppropriateCurrencySymbol(USD_ACCOUNT)).toEqual('$');
             expect(service.getAppropriateCurrencySymbol(EUR_ACCOUNT)).toEqual('€');
         });
+
+        it('should return correct currency', () => {
+            expect(service.getAppropriateCurrency(USD_ACCOUNT)).toEqual(constants.currency.USD);
+            expect(service.getAppropriateCurrency(EUR_ACCOUNT)).toEqual(constants.currency.EUR);
+        });
     });
 
     describe('user doesn\'t have permissions', () => {
@@ -49,6 +54,11 @@ describe('MulticurrencyService', () => {
         it('should return correct currency symbol', () => {
             expect(service.getAppropriateCurrencySymbol(USD_ACCOUNT)).toEqual('$');
             expect(service.getAppropriateCurrencySymbol(EUR_ACCOUNT)).toEqual('$');
+        });
+
+        it('should return correct currency', () => {
+            expect(service.getAppropriateCurrency(USD_ACCOUNT)).toEqual(constants.currency.USD);
+            expect(service.getAppropriateCurrency(EUR_ACCOUNT)).toEqual(constants.currency.USD);
         });
     });
 });

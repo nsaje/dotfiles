@@ -148,6 +148,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
             campaign=None,
             pixels=None):
         user = request.user
+        use_local_values = user.has_perm('zemauth.can_manage_goals_in_local_currency')
         start_date = dash.views.helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = dash.views.helpers.get_stats_end_date(request.GET.get('end_date'))
 
@@ -167,7 +168,8 @@ class BaseDailyStatsView(api_common.BaseApiView):
                 campaign_goals.get_campaign_goal_metrics(
                     campaign,
                     start_date,
-                    end_date
+                    end_date,
+                    local_values=use_local_values
                 )
             )
             if conversion_goals:
