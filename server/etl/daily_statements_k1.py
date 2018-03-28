@@ -41,9 +41,9 @@ def _generate_statements(date, campaign, campaign_spend):
 
     local_per_budget_spend_nano = defaultdict(lambda: defaultdict(int))
     for existing_statement in existing_statements:
-        local_per_budget_spend_nano[existing_statement.budget_id]['media'] += existing_statement.media_spend_nano  # TODO: change this to local once data is backfilled
-        local_per_budget_spend_nano[existing_statement.budget_id]['data'] += existing_statement.data_spend_nano  # TODO: change this to local once data is backfilled
-        local_per_budget_spend_nano[existing_statement.budget_id]['license_fee'] += existing_statement.license_fee_nano  # TODO: change this to local once data is backfilled
+        local_per_budget_spend_nano[existing_statement.budget_id]['media'] += existing_statement.local_media_spend_nano
+        local_per_budget_spend_nano[existing_statement.budget_id]['data'] += existing_statement.local_data_spend_nano
+        local_per_budget_spend_nano[existing_statement.budget_id]['license_fee'] += existing_statement.local_license_fee_nano
 
     if campaign_spend is not None:
         total_media_nano = campaign_spend['media_nano']
