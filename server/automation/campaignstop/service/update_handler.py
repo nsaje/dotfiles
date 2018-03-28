@@ -58,8 +58,8 @@ def _unset_pending_updates(campaigns):
 def _full_check(campaigns):
     update_campaigns_end_date(campaigns)
 
-    mark_almost_depleted_campaigns(campaigns)
     update_campaigns_state(campaigns)
+    mark_almost_depleted_campaigns(campaigns)
 
 
 def _handle_daily_cap_updates(campaigns):
