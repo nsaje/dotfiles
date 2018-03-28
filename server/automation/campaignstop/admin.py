@@ -49,10 +49,13 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
             if 'prev_rt_spends_per_date' in obj.context:
                 prev_spends = ', '.join('{}: ${}'.format(*el) for el in obj.context['prev_rt_spends_per_date'])
             desc += textwrap.dedent('''
-                Prediction for next check: <b>${predicted}</b> (= ${available_budget} (available budget) - ${current_rt_spend} (real time spend) - ${spend_rate} (spend rate)) <b>{threshold_op} ${threshold}</b> (threshold)
 
                 Spend from daily statements was taken until {budget_spends_until_date}. Real time data was used for dates after that.
-                Available budget (up until {budget_spends_until_date}): ${available_budget}
+                Available budget (up until {budget_spends_until_date}): <b>${available_budget}</b>
+                Remaining amount (including real time spend): <b>${remaining_amount:.2f}</b> (= ${available_budget} (available budget) - ${current_rt_spend} (real time spend))
+
+                Prediction for next check: <b>${predicted}</b> (= ${remaining_amount:.2f} (remaining amount) - ${spend_rate} (spend rate))
+                Below threshold: <b>{is_below_threshold}</b> (= ${predicted} (prediction) {threshold_op} ${threshold} (threshold))
 
                 Real time data break down:
                 &nbsp;&nbsp;&nbsp;&nbsp;- Real time spend (current check): ${current_rt_spend}; per date - {curr_spends}
@@ -64,6 +67,7 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
             curr_spends=curr_spends,
             prev_spends=prev_spends,
             threshold_op='<' if obj.context.get('is_below_threshold') else '>',
+            remaining_amount=float(obj.context['available_budget']) - float(obj.context['current_rt_spend']),
             **obj.context
         ).replace('\n', '<br />')
 
