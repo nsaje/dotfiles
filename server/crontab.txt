@@ -42,9 +42,9 @@
 0 * * * *        /home/ubuntu/docker-manage-py.sh refresh_ga_linked_accounts
 30 7 1 * *       /home/ubuntu/docker-manage-py.sh refresh_inventory_data
 0 4 * * *        /home/ubuntu/docker-manage-py.sh oen_publishers_list
-*/5 * * * *      /home/ubuntu/docker-manage-py.sh campaignstop_main
+*/2 * * * *      /home/ubuntu/docker-manage-py.sh campaignstop_main
 0 4,5 * * *      /home/ubuntu/docker-manage-py.sh campaignstop_midnight --check-time
 0 * * * *        /home/ubuntu/docker-manage-py.sh campaignstop_selection
-*/2 * * * *      /home/ubuntu/docker-manage-py.sh campaignstop_handle_updates
+*/5 * * * *      /home/ubuntu/docker-manage-py.sh campaignstop_handle_updates
 0 10 * * *       /home/ubuntu/docker-manage-py.sh campaignstop_monitor --slack
 */20 * * * *     /home/ubuntu/docker-manage-py.sh campaignstop_simple
