@@ -345,11 +345,14 @@ REST_FRAMEWORK = {
     'UNICODE_JSON': False,
     'EXCEPTION_HANDLER': 'restapi.exceptions.custom_exception_handler',
     'DEFAULT_THROTTLE_CLASSES': (
-        'rest_framework.throttling.UserRateThrottle',
+        'restapi.throttling.UserRateOverrideThrottle',
     ),
     'DEFAULT_THROTTLE_RATES': {
-        'user': '160/second'
-    }
+        'user': '10/second'  # per compute node
+    },
+    'DEFAULT_OVERRIDE_THROTTLE_RATES': {
+        'oendev@outbrain.com': '160/second'
+    },
 }
 
 DISABLE_FACEBOOK = True
