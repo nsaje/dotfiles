@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 HOURS_DELAY = 6
 MAX_RT_DATA_AGE_MINUTES = 15
 CHECK_FREQUENCY_MINUTES = 5
+MIN_PREV_SPEND_SECONDS = 90
 
 
 def get_predicted_remaining_budget(log, campaign):
@@ -153,7 +154,7 @@ def _get_prev_spend(campaign, date, current_spend):
     if not current_spend:
         return None
 
-    max_created_dt = current_spend.created_dt - datetime.timedelta(seconds=120)
+    max_created_dt = current_spend.created_dt - datetime.timedelta(seconds=MIN_PREV_SPEND_SECONDS)
     try:
         return RealTimeCampaignDataHistory.objects.filter(
             date=date,
