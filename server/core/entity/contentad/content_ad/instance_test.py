@@ -30,7 +30,11 @@ class InstanceTest(TestCase):
         self.assertEqual(constants.ContentAdSourceState.ACTIVE, content_ad.state)
         for cas in content_ad.contentadsource_set.all():
             self.assertEqual(constants.ContentAdSourceState.ACTIVE, cas.state)
-        content_ad.ad_group.write_history.assert_called_once()
+        content_ad.ad_group.write_history.assert_called_with(
+            "Content ad %s set to Enabled." % content_ad.pk,
+            action_type=constants.HistoryActionType.CONTENT_AD_STATE_CHANGE,
+            user=None
+        )
         mock_k1_update.assert_called_with(content_ad.ad_group_id, content_ad.id, msg=mock.ANY)
         mock_email_helper.assert_called_once()
 
@@ -41,7 +45,11 @@ class InstanceTest(TestCase):
 
         content_ad.set_url(None, 'https://example.com')
         self.assertEqual('https://example.com', content_ad.url)
-        content_ad.ad_group.write_history.assert_called_once()
+        content_ad.ad_group.write_history.assert_called_with(
+            "Content ad %s url set to https://example.com." % content_ad.pk,
+            action_type=constants.HistoryActionType.CONTENT_AD_EDIT,
+            user=None
+        )
         mock_update_redirect.assert_called_with('https://example.com', content_ad.redirect_id)
 
     @mock.patch.object(k1_helper, 'update_content_ad')
@@ -56,5 +64,9 @@ class InstanceTest(TestCase):
         for field in updates:
             self.assertEqual(updates[field], getattr(content_ad, field))
 
-        content_ad.ad_group.write_history.assert_called_once()
+        content_ad.ad_group.write_history.assert_called_with(
+            "Content ad %s edited." % content_ad.pk,
+            action_type=constants.HistoryActionType.CONTENT_AD_EDIT,
+            user=None
+        )
         mock_k1_update.assert_called_with(content_ad.ad_group_id, content_ad.id, msg=mock.ANY)

@@ -18,7 +18,7 @@ class ContentAdInstanceMixin(object):
         self.save()
         self.contentadsource_set.all().update(state=state)
 
-        description = 'Content ad {{id}} set to {{state}}.'.format(id=self.pk, state=dash.constants.ContentAdSourceState.get_text(state))
+        description = 'Content ad {id} set to {state}.'.format(id=self.pk, state=dash.constants.ContentAdSourceState.get_text(state))
         self.ad_group.write_history(
             description,
             user=request and request.user or None,
@@ -36,7 +36,7 @@ class ContentAdInstanceMixin(object):
         self.url = url
         self.save()
 
-        description = 'Content ad {{id}} url set to {{url}}.'.format(id=self.pk, url=url)
+        description = 'Content ad {id} url set to {url}.'.format(id=self.pk, url=url)
         self.ad_group.write_history(
             description,
             user=request and request.user or None,
@@ -51,7 +51,7 @@ class ContentAdInstanceMixin(object):
                 setattr(self, field, value)
         self.save()
         if write_history:
-            description = 'Content ad {{id}} edited.'.format(id=self.pk)
+            description = 'Content ad {id} edited.'.format(id=self.pk)
             self.ad_group.write_history(
                 description,
                 user=request and request.user or None,
