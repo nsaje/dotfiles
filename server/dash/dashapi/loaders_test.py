@@ -582,6 +582,19 @@ class AdGroupSourcesLoaderTest(TestCase):
             }
         })
 
+    def test_settings_map_campaign_autopilot(self):
+        self.loader.campaign_settings.autopilot = True
+
+        ap_source = self.loader.settings_map[1]
+        self.assertEqual(ap_source['editable_fields']['bid_cpc'], {
+            'message': 'This value cannot be edited because the campaign is on Autopilot.',
+            'enabled': False,
+        })
+        self.assertEqual(ap_source['editable_fields']['daily_budget'], {
+            'message': 'This value cannot be edited because the campaign is on Autopilot.',
+            'enabled': False,
+        })
+
     def test_totals(self):
         # only use active ad group sources
         self.assertDictEqual(self.loader.totals, {

@@ -217,6 +217,7 @@ def get_ad_group_sources_extras(ad_group):
         'enabling_autopilot_sources_allowed': helpers.enabling_autopilot_single_source_allowed(ad_group_settings),
         'ad_group_autopilot_state': ad_group_settings.autopilot_state,
         'ad_group_landing_mode': ad_group_settings.landing_mode,
+        'campaign_autopilot': ad_group.campaign.settings.autopilot,
     }
 
 
@@ -233,9 +234,7 @@ def create_all_rtb_source_row(constraints, can_show_rtb_group_cpc):
     rtb_source_ids = list(map(str, rtb_source_ids))
 
     # Create All RTB Source row using rtb_source_ids for newly created group
-    all_rtb_source_row = create_all_rtb_source_row_data(
-        ad_group, settings, can_show_rtb_group_cpc and
-        settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
+    all_rtb_source_row = create_all_rtb_source_row_data(ad_group, settings, can_show_rtb_group_cpc)
     all_rtb_source_row['group'] = {'ids': rtb_source_ids}
     return all_rtb_source_row
 
@@ -263,6 +262,9 @@ def create_all_rtb_source_row_data(ad_group, ad_group_settings, show_rtb_group_c
     if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
         daily_budget_edit_enabled = False
         daily_budget_edit_message = 'This value cannot be edited because the ad group is on Autopilot.'
+    if campaign_settings.autopilot:
+        daily_budget_edit_enabled = False
+        daily_budget_edit_message = 'This value cannot be edited because the campaign is on Autopilot.'
     if campaign_settings.landing_mode:
         daily_budget_edit_enabled = False
         daily_budget_edit_message = 'This value cannot be edited because campaign is in landing mode.'
@@ -272,6 +274,13 @@ def create_all_rtb_source_row_data(ad_group, ad_group_settings, show_rtb_group_c
     if ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE:
         cpc_edit_message = 'This value cannot be edited because the ad group is on Autopilot.'
         cpc_edit_enabled = False
+    if campaign_settings.autopilot:
+        cpc_edit_message = 'This value cannot be edited because the campaign is on Autopilot.'
+        cpc_edit_enabled = False
+
+    if (ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or
+            campaign_settings.autopilot):
+        show_rtb_group_cpc = False
 
     return {
         'breakdown_name': source.AllRTBSource.name,

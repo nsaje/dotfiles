@@ -518,8 +518,9 @@ def get_editable_fields(ad_group, ad_group_source, ad_group_settings, ad_group_s
 def _get_editable_fields_bid_cpc(ad_group, ad_group_source, ad_group_settings, campaign_settings):
     message = None
 
-    if not ad_group_source.source.can_update_cpc() or\
-            ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE:
+    if (not ad_group_source.source.can_update_cpc() or
+            ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE or
+            campaign_settings.autopilot):
         message = _get_bid_cpc_daily_budget_disabled_message(
             ad_group, ad_group_source, ad_group_settings, campaign_settings)
 
@@ -532,10 +533,11 @@ def _get_editable_fields_bid_cpc(ad_group, ad_group_source, ad_group_settings, c
 def _get_editable_fields_daily_budget(ad_group, ad_group_source, ad_group_settings, campaign_settings):
     message = None
 
-    if not ad_group_source.source.can_update_daily_budget_automatic() and\
-       not ad_group_source.source.can_update_daily_budget_manual() or\
-       campaign_settings.landing_mode or\
-       ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+    if (not ad_group_source.source.can_update_daily_budget_automatic() and
+            not ad_group_source.source.can_update_daily_budget_manual() or
+            campaign_settings.landing_mode or
+            ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or
+            campaign_settings.autopilot):
         message = _get_daily_budget_disabled_message(
             ad_group, ad_group_source, ad_group_settings, campaign_settings)
 
@@ -659,6 +661,9 @@ def _get_daily_budget_disabled_message(ad_group, ad_group_source, ad_group_setti
 def _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_group_settings, campaign_settings):
     if ad_group_source.source.maintenance:
         return 'This value cannot be edited because the media source is currently in maintenance.'
+
+    if campaign_settings.autopilot:
+        return 'This value cannot be edited because the campaign is on Autopilot.'
 
     if ad_group_settings.autopilot_state in [constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
                                              constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET]:

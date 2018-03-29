@@ -89,6 +89,9 @@ angular.module('one.widgets').directive('zemGridCellEditableBaseField', function
                 if (vm.data && !vm.data.value) {
                     return false;
                 }
+                if (vm.grid.meta.data.campaignAutopilot) {
+                    return isRowActive();
+                }
                 if (vm.grid.meta.data.adGroupAutopilotState === constants.adGroupSettingsAutopilotState.INACTIVE) {
                     return false;
                 }
