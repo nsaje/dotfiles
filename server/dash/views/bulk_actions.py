@@ -85,8 +85,9 @@ class AdGroupSourceState(BaseBulkActionView):
                     skip_validation=False
                 )
 
-        if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-            autopilot.initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False)
+        if (ad_group.settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or
+                ad_group.campaign.settings.autopilot):
+            autopilot.recalculate_budgets_ad_group(ad_group, send_mail=False)
 
         k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSourceState.post')
 
@@ -448,9 +449,10 @@ class CampaignAdGroupState(BaseBulkActionView):
 
         with transaction.atomic():
             for ad_group in ad_groups:
-                changed = ad_group.set_state(request, state)
-                if changed:
-                    k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettingsState.post')
+                ad_group.settings.update(request, state=state, skip_automation=True)
+
+        if campaign.settings.autopilot:
+            autopilot.recalculate_budgets_campaign(campaign)
 
         can_enable_ad_group = campaign_stop.can_enable_ad_groups(campaign, campaign_settings)
         has_available_budget = data_helper.campaign_has_available_budget(campaign)

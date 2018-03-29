@@ -485,7 +485,7 @@ class AdGroupSettingsTest(TestCase):
             mock_redirector_insert_adgroup.assert_called_with(ad_group)
 
     @patch('utils.redirector_helper.insert_adgroup')
-    @patch('automation.autopilot.initialize_budget_autopilot_on_ad_group')
+    @patch('automation.autopilot.recalculate_budgets_ad_group')
     @patch('automation.campaign_stop.get_max_settable_autopilot_budget', autospec=True)
     def test_put_set_budget_autopilot_triggers_budget_reallocation(
             self, mock_get_max_budget, mock_redirector_insert_adgroup, mock_init_autopilot):
@@ -898,7 +898,7 @@ class AdGroupSettingsStateTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.ACTIVE)
-        mock_k1_ping.assert_called_with(2, msg='AdGroupSettingsState.post')
+        mock_k1_ping.assert_called_with(2, msg='AdGroupSettings.put')
 
     @patch('automation.campaign_stop.can_enable_all_ad_groups')
     @patch('dash.dashapi.data_helper.campaign_has_available_budget')
@@ -984,7 +984,7 @@ class AdGroupSettingsStateTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
-        mock_k1_ping.assert_called_with(1, msg='AdGroupSettingsState.post')
+        mock_k1_ping.assert_called_with(1, msg='AdGroupSettings.put')
 
     @patch('automation.campaign_stop.can_enable_all_ad_groups')
     def test_inactivate_already_inactivated(self, mock_campaign_stop):

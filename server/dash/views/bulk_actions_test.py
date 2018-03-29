@@ -37,9 +37,9 @@ class AdGroupSourceStateTest(TestCase):
 
     @patch('dash.legacy.get_updated_ad_group_sources_changes')
     @patch('dash.views.bulk_actions.AdGroupSourceState._check_can_set_state')
-    @patch('automation.autopilot.initialize_budget_autopilot_on_ad_group')
+    @patch('automation.autopilot.recalculate_budgets_ad_group')
     @patch('utils.k1_helper.update_ad_group')
-    def test_post(self, mock_k1_ping, mock_autopilot_initialize, mock_check, mock_table_update):
+    def test_post(self, mock_k1_ping, mock_autopilot, mock_check, mock_table_update):
         ad_group_id = 1
         source_id = 1
         maintenance_source_id = 6
@@ -97,8 +97,8 @@ class AdGroupSourceStateTest(TestCase):
         agss = models.AdGroupSource.objects.get(ad_group_id=ad_group_id, source_id=source_id).get_current_settings()
         self.assertEqual(constants.AdGroupSourceSettingsState.ACTIVE, agss.state)
 
-        adgs = models.AdGroup.objects.get(pk=ad_group_id).get_current_settings()
-        mock_autopilot_initialize.assert_called_once_with(adgs, send_mail=False)
+        adg = models.AdGroup.objects.get(pk=ad_group_id)
+        mock_autopilot.assert_called_once_with(adg, send_mail=False)
         self.assertEqual(1, mock_check.call_count)
         self.assertEqual(1, mock_table_update.call_count)
 
@@ -868,11 +868,13 @@ class CampaignAdGroupStateTest(TestCase):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
 
+    @patch('automation.autopilot.recalculate_budgets_campaign')
     @patch('dash.dashapi.data_helper.campaign_has_available_budget')
     @patch('automation.campaign_stop.can_enable_ad_groups')
     @patch('dash.views.helpers.validate_ad_groups_state')
-    def test_enable(self, mock_validate_state, mock_can_enable, mock_has_budget):
+    def test_enable(self, mock_validate_state, mock_can_enable, mock_has_budget, mock_autopilot):
         campaign = models.Campaign.objects.get(pk=1)
+        campaign.settings.update_unsafe(None, autopilot=True)
         ad_group_id = 9
         state = constants.AdGroupSettingsState.ACTIVE
 
@@ -899,6 +901,7 @@ class CampaignAdGroupStateTest(TestCase):
                 'status': {'value': state},
             },
         }])
+        mock_autopilot.assert_called_once_with(campaign)
 
     @patch('dash.dashapi.data_helper.campaign_has_available_budget')
     @patch('automation.campaign_stop.can_enable_ad_groups')

@@ -36,9 +36,10 @@ class AdGroupManager(core.common.QuerySetManager):
         return ad_group
 
     def _post_create(self, ad_group):
-        if ad_group.settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+        if (ad_group.settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or
+                ad_group.campaign.settings.autopilot):
             from automation import autopilot
-            autopilot.initialize_budget_autopilot_on_ad_group(ad_group.settings, send_mail=False)
+            autopilot.recalculate_budgets_ad_group(ad_group, send_mail=False)
 
         k1_helper.update_ad_group(ad_group.pk, msg='CampaignAdGroups.put')
         redirector_helper.insert_adgroup(ad_group)
@@ -287,19 +288,6 @@ class AdGroup(models.Model, bcm_mixin.AdGroupBCMMixin):
             new_settings.save(
                 request,
                 action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
-
-    @transaction.atomic
-    def set_state(self, request, new_state):
-        current_settings = self.get_current_settings()
-
-        if current_settings.state != new_state:
-            new_settings = current_settings.copy_settings()
-            new_settings.state = new_state
-            new_settings.save(
-                request, action_type=constants.HistoryActionType.SETTINGS_CHANGE)
-            return True
-
-        return False
 
     def get_default_blacklist_name(self):
         return "Default blacklist for ad group {}({})".format(self.name, self.id)

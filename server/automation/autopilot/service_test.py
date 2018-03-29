@@ -420,7 +420,7 @@ class AutopilotPlusTestCase(test.TestCase):
         active_ad_group_source = dash.models.AdGroupSource.objects.get(id=6)
         active_ad_group_source_old_budget = active_ad_group_source.get_current_settings().daily_budget_cc
         new_budgets = service._set_paused_ad_group_sources_to_minimum_values(
-            adg.get_current_settings(), {'fee': Decimal('0.15'), 'margin': Decimal('0.3')})
+            adg, {'fee': Decimal('0.15'), 'margin': Decimal('0.3')})
         self.assertEqual(new_budgets.get(paused_ad_group_source)['old_budget'], Decimal('100.'))
         self.assertEqual(new_budgets.get(paused_ad_group_source)['new_budget'], Decimal('9'))
         self.assertEqual(new_budgets.get(paused_ad_group_source)['budget_comments'],
@@ -455,7 +455,7 @@ class AutopilotPlusTestCase(test.TestCase):
         active_ad_group_source_old_budget = active_ad_group_source.get_current_settings().daily_budget_cc
         all_rtb_ad_group_source = dash.models.AllRTBAdGroupSource(adg)
         new_budgets = service._set_paused_ad_group_sources_to_minimum_values(
-            adg.get_current_settings(), {'fee': Decimal('0.15'), 'margin': Decimal('0.3')})
+            adg, {'fee': Decimal('0.15'), 'margin': Decimal('0.3')})
 
         adg.settings.refresh_from_db()
         self.assertTrue(paused_ad_group_source not in new_budgets)
@@ -469,16 +469,13 @@ class AutopilotPlusTestCase(test.TestCase):
                          active_ad_group_source_old_budget)
         self.assertEqual(adg.get_current_settings().b1_sources_group_daily_budget, Decimal('10.0'))
 
+    @patch('automation.autopilot.service._set_paused_ad_group_sources_to_minimum_values')
     @patch('automation.autopilot.service.run_autopilot')
-    def test_initialize_budget_autopilot_on_ad_group(self, mock_run_autopilot):
+    def test_recalculate_budget_autopilot_on_ad_group(self, mock_run_autopilot, mock_set_paused):
         adg = dash.models.AdGroup.objects.get(id=4)
-        paused_ad_group_source_setting = dash.models.AdGroupSourceSettings.objects.get(id=6).copy_settings()
-        paused_ad_group_source_setting.state = 2
-        paused_ad_group_source_setting.daily_budget_cc = Decimal('100.')
-        paused_ad_group_source_setting.save(None)
-        paused_ad_group_source = paused_ad_group_source_setting.ad_group_source
         changed_source = dash.models.AdGroupSource.objects.get(id=1)
         not_changed_source = dash.models.AdGroupSource.objects.get(id=2)
+        paused_ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
         mock_run_autopilot.return_value = {
             adg.campaign: {adg: {
                 changed_source: {
@@ -492,10 +489,62 @@ class AutopilotPlusTestCase(test.TestCase):
 
             }}
         }
-        changed_sources = service.initialize_budget_autopilot_on_ad_group(adg.get_current_settings())
+        mock_set_paused.return_value = {
+            paused_ad_group_source: {
+                'old_budget': Decimal('20'),
+                'new_budget': Decimal('5'),
+            },
+        }
+        changed_sources = service.recalculate_budgets_ad_group(adg)
+        mock_run_autopilot.assert_called_once_with(
+            ad_group=adg, adjust_cpcs=False, adjust_budgets=True, initialization=True, send_mail=False)
         self.assertTrue(paused_ad_group_source in changed_sources)
         self.assertTrue(changed_source in changed_sources)
         self.assertTrue(not_changed_source not in changed_sources)
+
+    @patch('automation.autopilot.service._set_paused_ad_group_sources_to_minimum_values')
+    @patch('automation.autopilot.service.run_autopilot')
+    def test_recalculate_budget_autopilot_on_ad_group_campaign_ap(self, mock_run_autopilot, mock_set_paused):
+        adg = dash.models.AdGroup.objects.get(id=4)
+        adg.campaign.settings.update_unsafe(None, autopilot=True)
+        changed_source = dash.models.AdGroupSource.objects.get(id=1)
+        not_changed_source = dash.models.AdGroupSource.objects.get(id=2)
+        mock_run_autopilot.return_value = {
+            adg.campaign: {adg: {
+                changed_source: {
+                    'old_budget': Decimal('20'),
+                    'new_budget': Decimal('30')
+                },
+                not_changed_source: {
+                    'old_budget': Decimal('20'),
+                    'new_budget': Decimal('20')
+                },
+            }}
+        }
+        changed_sources = service.recalculate_budgets_ad_group(adg)
+        mock_run_autopilot.assert_called_once_with(
+            campaign=adg.campaign, adjust_cpcs=False, adjust_budgets=True, initialization=True, send_mail=False)
+        self.assertEqual(set(), changed_sources)
+        self.assertFalse(mock_set_paused.called)
+
+    @patch('automation.autopilot.service._set_paused_ad_group_sources_to_minimum_values')
+    @patch('automation.autopilot.service.run_autopilot')
+    def test_recalculate_budget_autopilot_on_campaign_inactive(self, mock_run_autopilot, mock_set_paused):
+        campaign = dash.models.Campaign.objects.get(pk=4)
+        service.recalculate_budgets_campaign(campaign)
+        mock_run_autopilot.assert_called_once_with(
+            campaign=campaign, adjust_cpcs=False, adjust_budgets=True, initialization=True, send_mail=False)
+        self.assertTrue(mock_set_paused.called)
+
+    @patch('automation.autopilot.service._set_paused_ad_group_sources_to_minimum_values')
+    @patch('automation.autopilot.service.run_autopilot')
+    def test_recalculate_budget_autopilot_on_campaign_active(self, mock_run_autopilot, mock_set_paused):
+        campaign = dash.models.Campaign.objects.get(pk=4)
+        campaign.settings.update_unsafe(None, autopilot=True)
+        service.recalculate_budgets_campaign(campaign)
+        mock_run_autopilot.assert_called_once_with(
+            campaign=campaign, adjust_cpcs=False, adjust_budgets=True, initialization=True, send_mail=False)
+        self.assertFalse(mock_set_paused.called)
 
     @patch('redshiftapi.api_breakdowns.query')
     @patch('influx.gauge')

@@ -23,3 +23,9 @@ class InstanceTestCase(TestCase):
         campaign.settings.update(None, enable_ga_tracking=True)
         self.assertEqual(mock_insert_adgroup.call_count, 10)
         self.assertEqual(mock_ping_adgroups.call_count, 1)
+
+    @patch('automation.autopilot.recalculate_budgets_campaign')
+    def test_recalculate_autopilot(self, mock_autopilot):
+        campaign = magic_mixer.blend(core.entity.Campaign)
+        campaign.settings.update(None, autopilot=True)
+        mock_autopilot.assert_called_once_with(campaign)

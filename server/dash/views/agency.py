@@ -305,9 +305,7 @@ class AdGroupSettingsState(api_common.BaseApiView):
         campaign_settings = ad_group.campaign.get_current_settings()
         helpers.validate_ad_groups_state([ad_group], ad_group.campaign, campaign_settings, new_state)
 
-        changed = ad_group.set_state(request, new_state)
-        if changed:
-            k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettingsState.post')
+        ad_group.settings.update(request, state=new_state)
 
         return self.create_api_response({
             'id': str(ad_group.pk),

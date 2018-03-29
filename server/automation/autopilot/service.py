@@ -229,40 +229,63 @@ def _get_cpc_predictions(ad_group, budget_changes, data, bcm_modifiers, adjust_c
     return cpc_changes
 
 
-def initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False):
-    ad_group = ad_group_settings.ad_group
-    bcm_modifiers = ad_group.campaign.get_bcm_modifiers()
-    paused_sources_changes = _set_paused_ad_group_sources_to_minimum_values(ad_group_settings, bcm_modifiers)
-    autopilot_changes_data = run_autopilot(ad_group=ad_group, adjust_cpcs=False,
-                                           adjust_budgets=True, initialization=True, send_mail=send_mail)
+def recalculate_budgets_ad_group(ad_group, send_mail=False):
     changed_sources = set()
-    for source, changes in paused_sources_changes.items():
-        if changes['old_budget'] != changes['new_budget']:
-            changed_sources.add(source)
-    if autopilot_changes_data:
-        for source, changes in autopilot_changes_data[ad_group.campaign][ad_group].items():
+    if ad_group.campaign.settings.autopilot:
+        run_autopilot(
+            campaign=ad_group.campaign,
+            adjust_cpcs=False,
+            adjust_budgets=True,
+            initialization=True,
+            send_mail=send_mail,
+        )
+    else:
+        paused_sources_changes = _set_paused_ad_group_sources_to_minimum_values(
+            ad_group, ad_group.campaign.get_bcm_modifiers())
+        autopilot_changes_data = run_autopilot(
+            ad_group=ad_group, adjust_cpcs=False, adjust_budgets=True, initialization=True, send_mail=send_mail)
+
+        for source, changes in paused_sources_changes.items():
             if changes['old_budget'] != changes['new_budget']:
                 changed_sources.add(source)
+        if autopilot_changes_data:
+            for source, changes in autopilot_changes_data[ad_group.campaign][ad_group].items():
+                if changes['old_budget'] != changes['new_budget']:
+                    changed_sources.add(source)
+
     return changed_sources
 
 
-def _set_paused_ad_group_sources_to_minimum_values(ad_group_settings, bcm_modifiers):
-    ad_group = ad_group_settings.ad_group
+def recalculate_budgets_campaign(campaign, send_mail=False):
+    if not campaign.settings.autopilot:
+        bcm_modifiers = campaign.get_bcm_modifiers()
+        budget_autopilot_adgroups = (
+            campaign.adgroup_set.all()
+            .filter(settings__autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
+            .select_related('settings')
+        )
+        for ad_group in budget_autopilot_adgroups:
+            _set_paused_ad_group_sources_to_minimum_values(ad_group, bcm_modifiers)
+
+    run_autopilot(campaign=campaign, adjust_cpcs=False, adjust_budgets=True, initialization=True, send_mail=send_mail)
+
+
+def _set_paused_ad_group_sources_to_minimum_values(ad_group, bcm_modifiers):
     all_rtb_ad_group_source = dash.models.AllRTBAdGroupSource(ad_group)
     ags_settings = helpers.get_autopilot_active_sources_settings(
-        {ad_group: ad_group_settings}, dash.constants.AdGroupSettingsState.INACTIVE)
-    if (ad_group_settings.b1_sources_group_enabled and
-            ad_group_settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.INACTIVE):
+        {ad_group: ad_group.settings}, dash.constants.AdGroupSettingsState.INACTIVE)
+    if (ad_group.settings.b1_sources_group_enabled and
+            ad_group.settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.INACTIVE):
         ags_settings.append(all_rtb_ad_group_source)
 
     new_budgets = {}
     for ag_source_setting in ags_settings:
-        if (ad_group_settings.b1_sources_group_enabled and ag_source_setting != all_rtb_ad_group_source and
+        if (ad_group.settings.b1_sources_group_enabled and ag_source_setting != all_rtb_ad_group_source and
                 ag_source_setting.ad_group_source.source.source_type.type == dash.constants.SourceType.B1):
             continue
         ag_source = ag_source_setting.ad_group_source if ag_source_setting != all_rtb_ad_group_source else\
             all_rtb_ad_group_source
-        old_budget = ad_group_settings.b1_sources_group_daily_budget
+        old_budget = ad_group.settings.b1_sources_group_daily_budget
         if ag_source != all_rtb_ad_group_source:
             old_budget = ag_source_setting.daily_budget_cc if ag_source_setting.daily_budget_cc else\
                 helpers.get_ad_group_sources_minimum_cpc(ag_source, bcm_modifiers)

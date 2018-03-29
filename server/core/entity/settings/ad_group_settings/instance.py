@@ -18,7 +18,7 @@ import core.signals
 class AdGroupSettingsMixin(object):
 
     @transaction.atomic
-    def update(self, request, skip_validation=False, system_user=None, **updates):
+    def update(self, request, skip_validation=False, skip_automation=False, system_user=None, **updates):
         self._update_ad_group(request, updates)
         updates = self._filter_and_remap_input(request, updates)
         if updates:
@@ -28,9 +28,11 @@ class AdGroupSettingsMixin(object):
                 self.clean(new_settings)
             self._handle_and_set_change_consequences(new_settings)
             changes = self.get_setting_changes(new_settings)
-            self._save_and_propagate(request, new_settings, system_user)
-            # autopilot reloads settings so changes have to be saved when it is called
-            self._handle_initialize_budget_autopilot(changes)
+            if changes:
+                self._save_and_propagate(request, new_settings, system_user)
+                # autopilot reloads settings so changes have to be saved when it is called
+                if not skip_automation:
+                    self._handle_budget_autopilot(changes)
 
     def _update_ad_group(self, request, updates):
         if 'name' in updates:
@@ -155,16 +157,25 @@ class AdGroupSettingsMixin(object):
         dash.views.helpers.set_ad_group_sources_cpcs(
             ad_group_sources_cpcs, self.ad_group, new_settings, skip_validation=True)
 
-    def _handle_initialize_budget_autopilot(self, changes):
-        if self.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-            return
+    def _should_recalculate_budget_autopilot(self, changes):
+        ap_ad_group_budget_fields = ['autopilot_daily_budget', 'autopilot_state', 'b1_sources_group_state']
+        ap_campaign_budget_fields = ['b1_sources_group_state', 'state']
+        return (
+            (
+                self.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and
+                any(field in changes for field in ap_ad_group_budget_fields)
+            ) or (
+                self.ad_group.campaign.settings.autopilot and
+                any(field in changes for field in ap_campaign_budget_fields)
+            )
+        )
 
-        ap_budget_fields = ['autopilot_daily_budget', 'autopilot_state', 'b1_sources_group_state']
-        if not any(field in changes for field in ap_budget_fields):
+    def _handle_budget_autopilot(self, changes):
+        if not self._should_recalculate_budget_autopilot(changes):
             return
 
         from automation import autopilot
-        autopilot.initialize_budget_autopilot_on_ad_group(self, send_mail=True)
+        autopilot.recalculate_budgets_ad_group(self.ad_group, send_mail=True)
 
     def _save_and_propagate(self, request, new_settings, system_user):
         changes = self.get_setting_changes(new_settings)

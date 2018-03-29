@@ -51,10 +51,11 @@ class AdGroupSourceSettingsMixin(object):
 
     def _handle_budget_autopilot(self, changes):
         ad_group_settings = self.ad_group_source.ad_group.settings
-        if ('state' in changes and
-                ad_group_settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET):
+        if ('state' in changes and (
+                ad_group_settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or
+                self.ad_group_source.ad_group.campaign.settings.autopilot)):
             from automation import autopilot
-            changed_sources = autopilot.initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False)
+            changed_sources = autopilot.recalculate_budgets_ad_group(self.ad_group_source.ad_group, send_mail=False)
             return [s.source.name for s in changed_sources]
         return []
 

@@ -10,11 +10,11 @@ from dash import constants
 
 
 class InstanceTest(TestCase):
+    def setUp(self):
+        self.ad_group = magic_mixer.blend(core.entity.AdGroup)
 
     def test_b1_sources_group_adjustments_sets_default_cpc_and_daily_budget(self):
-        ad_group = magic_mixer.blend(core.entity.AdGroup)
-
-        current_settings = ad_group.get_current_settings()
+        current_settings = self.ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
         new_settings.b1_sources_group_enabled = False
         new_settings.b1_sources_group_cpc_cc = Decimal('0.111')
@@ -23,7 +23,7 @@ class InstanceTest(TestCase):
         new_settings.save(None)
 
         # turn on rtb as one
-        current_settings = ad_group.get_current_settings()
+        current_settings = self.ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
         new_settings.b1_sources_group_enabled = True
         new_settings.save(None)
@@ -43,9 +43,7 @@ class InstanceTest(TestCase):
         })
 
     def test_b1_sources_group_adjustments_sets_new_cpc_daily_budget(self):
-        ad_group = magic_mixer.blend(core.entity.AdGroup)
-
-        current_settings = ad_group.get_current_settings()
+        current_settings = self.ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
         new_settings.b1_sources_group_enabled = False
         new_settings.b1_sources_group_cpc_cc = Decimal('0.111')
@@ -54,7 +52,7 @@ class InstanceTest(TestCase):
         new_settings.save(None)
 
         # turn on rtb as one
-        current_settings = ad_group.get_current_settings()
+        current_settings = self.ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
         new_settings.b1_sources_group_enabled = True
         new_settings.b1_sources_group_daily_budget = Decimal('10.0')
@@ -81,9 +79,7 @@ class InstanceTest(TestCase):
         })
 
     def test_b1_sources_group_adjustments_obeys_new_adgroup_max_cpc(self):
-        ad_group = magic_mixer.blend(core.entity.AdGroup)
-
-        current_settings = ad_group.get_current_settings()
+        current_settings = self.ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
         new_settings.b1_sources_group_enabled = False
         new_settings.b1_sources_group_cpc_cc = Decimal('0.111')
@@ -92,7 +88,7 @@ class InstanceTest(TestCase):
         new_settings.save(None)
 
         # turn on rtb as one
-        current_settings = ad_group.get_current_settings()
+        current_settings = self.ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
         new_settings.b1_sources_group_enabled = True
         new_settings.cpc_cc = Decimal('0.05')
@@ -120,59 +116,55 @@ class InstanceTest(TestCase):
     @patch('utils.redirector_helper.insert_adgroup')
     def test_get_external_max_cpm(self, mock_insert_adgroup):
         account = magic_mixer.blend(core.entity.Account, uses_bcm_v2=False)
-        ad_group = magic_mixer.blend(core.entity.AdGroup)
         request = magic_mixer.blend_request_user(permissions=['can_set_ad_group_max_cpm'])
 
-        ad_group.settings.update(
+        self.ad_group.settings.update(
             request, max_cpm=None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
-        self.assertEqual(None, ad_group.settings.get_external_max_cpm(account, Decimal('0.2'), Decimal('0.1')))
+        self.assertEqual(None, self.ad_group.settings.get_external_max_cpm(account, Decimal('0.2'), Decimal('0.1')))
 
-        ad_group.settings.update(
+        self.ad_group.settings.update(
             request, max_cpm=Decimal('0.5'))
-        self.assertEqual(Decimal('0.5'), ad_group.settings.get_external_max_cpm(
+        self.assertEqual(Decimal('0.5'), self.ad_group.settings.get_external_max_cpm(
             account, Decimal('0.2'), Decimal('0.1')))
 
         account.uses_bcm_v2 = True
-        self.assertEqual(Decimal('0.36'), ad_group.settings.get_external_max_cpm(
+        self.assertEqual(Decimal('0.36'), self.ad_group.settings.get_external_max_cpm(
             account, Decimal('0.2'), Decimal('0.1')))
 
     @patch('utils.redirector_helper.insert_adgroup')
     def test_get_external_b1_sources_group_daily_budget(self, mock_insert_adgroup):
         account = magic_mixer.blend(core.entity.Account, uses_bcm_v2=False)
-        ad_group = magic_mixer.blend(core.entity.AdGroup)
         request = magic_mixer.blend_request_user(permissions=['can_set_ad_group_max_cpm'])
 
-        ad_group.settings.update(
+        self.ad_group.settings.update(
             request,
             b1_sources_group_daily_budget=Decimal('500'),
             autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
 
         self.assertEqual(
             Decimal('500'),
-            ad_group.settings.get_external_b1_sources_group_daily_budget(account, Decimal('0.2'), Decimal('0.1'))
+            self.ad_group.settings.get_external_b1_sources_group_daily_budget(account, Decimal('0.2'), Decimal('0.1'))
         )
 
         account.uses_bcm_v2 = True
         self.assertEqual(
             Decimal('360'),
-            ad_group.settings.get_external_b1_sources_group_daily_budget(account, Decimal('0.2'), Decimal('0.1'))
+            self.ad_group.settings.get_external_b1_sources_group_daily_budget(account, Decimal('0.2'), Decimal('0.1'))
         )
 
     @patch('utils.redirector_helper.insert_adgroup')
     def test_update_fields(self, mock_insert_adgroup):
-        ad_group = magic_mixer.blend(core.entity.AdGroup)
-
-        ad_group.settings.update(
+        self.ad_group.settings.update(
             None,
             bluekai_targeting=['outbrain:1234']
         )
         self.assertEqual(
             ['outbrain:1234'],
-            ad_group.settings.bluekai_targeting
+            self.ad_group.settings.bluekai_targeting
         )
 
         with patch('core.entity.settings.settings_base.SettingsBase.update_unsafe') as save_mock:
-            ad_group.settings.update(
+            self.ad_group.settings.update(
                 None,
                 bluekai_targeting=['outbrain:4321']
             )
@@ -187,6 +179,40 @@ class InstanceTest(TestCase):
             cpc_cc=None
         )
         self.assertIsNone(ad_group.settings.cpc_cc)
+
+    @patch('automation.autopilot.recalculate_budgets_ad_group')
+    def test_recalculate_autopilot_enable(self, mock_autopilot):
+        self.ad_group.settings.update(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
+        self.ad_group.settings.update(None, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
+        self.assertTrue(mock_autopilot.called)
+
+    @patch('automation.autopilot.recalculate_budgets_ad_group')
+    def test_recalculate_autopilot_change_budget(self, mock_autopilot):
+        self.ad_group.settings.update(None, autopilot_daily_budget=Decimal('10.0'))
+        self.assertTrue(mock_autopilot.called)
+
+    @patch('automation.autopilot.recalculate_budgets_ad_group')
+    def test_recalculate_autopilot_change_allrtb_state(self, mock_autopilot):
+        self.ad_group.settings.update(None, b1_sources_group_state=constants.AdGroupSourceSettingsState.INACTIVE)
+        self.assertTrue(mock_autopilot.called)
+
+    @patch('automation.autopilot.recalculate_budgets_ad_group')
+    def test_recalculate_autopilot_campaign_change_state(self, mock_autopilot):
+        self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
+        self.ad_group.settings.update_unsafe(None, state=constants.AdGroupSettingsState.ACTIVE)
+        self.ad_group.settings.update(None, state=constants.AdGroupSettingsState.INACTIVE)
+        self.assertTrue(mock_autopilot.called)
+
+    @patch('automation.autopilot.recalculate_budgets_ad_group')
+    def test_recalculate_autopilot_campaign_change_allrtb_state(self, mock_autopilot):
+        self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
+        self.ad_group.settings.update(None, b1_sources_group_state=constants.AdGroupSourceSettingsState.INACTIVE)
+        self.assertTrue(mock_autopilot.called)
+
+    @patch('automation.autopilot.recalculate_budgets_ad_group')
+    def test_recalculate_autopilot_skip_automation(self, mock_autopilot):
+        self.ad_group.settings.update(None, autopilot_daily_budget=Decimal('10.0'), skip_automation=True)
+        self.assertFalse(mock_autopilot.called)
 
 
 class MulticurrencyTest(TestCase):

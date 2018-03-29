@@ -26,8 +26,8 @@ class AdGroupSourceUpdate(TestCase):
             ad_group=self.ad_group,
         )
 
-        autopilot_patcher = patch('automation.autopilot.initialize_budget_autopilot_on_ad_group')
-        self.initialize_autopilot_mock = autopilot_patcher.start()
+        autopilot_patcher = patch('automation.autopilot.recalculate_budgets_ad_group')
+        self.recalculate_autopilot_mock = autopilot_patcher.start()
         self.addCleanup(autopilot_patcher.stop)
 
         k1_update_patcher = patch('utils.k1_helper.update_ad_group')
@@ -54,7 +54,7 @@ class AdGroupSourceUpdate(TestCase):
         self.assertEqual(decimal.Decimal('8.2'), settings.daily_budget_cc)
         self.assertEqual(constants.AdGroupSourceSettingsState.ACTIVE, settings.state)
 
-        self.assertTrue(self.initialize_autopilot_mock.called)
+        self.assertTrue(self.recalculate_autopilot_mock.called)
         self.k1_update_mock.assert_called_once_with(self.ad_group.id, 'AdGroupSource.update')
         self.assertTrue(self.email_send_notification_mock.called)
 
@@ -63,7 +63,7 @@ class AdGroupSourceUpdate(TestCase):
 
         self.assertIn('autopilot_changed_sources_text', response)
 
-        self.assertFalse(self.initialize_autopilot_mock.called)
+        self.assertFalse(self.recalculate_autopilot_mock.called)
         self.k1_update_mock.assert_not_called()
         self.assertFalse(self.email_send_notification_mock.called)
 
@@ -75,7 +75,28 @@ class AdGroupSourceUpdate(TestCase):
             state=constants.AdGroupSourceSettingsState.ACTIVE,
         )
 
-        self.assertFalse(self.initialize_autopilot_mock.called)
+        self.assertFalse(self.recalculate_autopilot_mock.called)
+
+    def test_update_no_autopilot(self):
+        self.ad_group.settings.update_unsafe(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
+        self.ad_group_source.settings.update(
+            self.request,
+            cpc_cc=decimal.Decimal('1.3'),
+            daily_budget_cc=decimal.Decimal('8.2'),
+            state=constants.AdGroupSourceSettingsState.ACTIVE,
+        )
+        self.assertFalse(self.recalculate_autopilot_mock.called)
+
+    def test_update_campaign_autopilot(self):
+        self.ad_group.settings.update_unsafe(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
+        self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
+        self.ad_group_source.settings.update(
+            self.request,
+            cpc_cc=decimal.Decimal('1.3'),
+            daily_budget_cc=decimal.Decimal('8.2'),
+            state=constants.AdGroupSourceSettingsState.ACTIVE,
+        )
+        self.assertTrue(self.recalculate_autopilot_mock.called)
 
     def test_update_no_request(self):
         self.ad_group_source.settings.update(

@@ -698,7 +698,7 @@ class AdGroupsTest(RESTAPITest):
         self.validate_against_db(resp_json['data'])
         self.assertEqual(resp_json['data']['archived'], False)
 
-    @mock.patch.object(autopilot, 'initialize_budget_autopilot_on_ad_group', autospec=True)
+    @mock.patch.object(autopilot, 'recalculate_budgets_ad_group', autospec=True)
     def test_adgroups_put_autopilot_budget(self, mock_autopilot):
         ag = dash.models.AdGroup.objects.get(pk=2040)
         new_settings = ag.get_current_settings().copy_settings()

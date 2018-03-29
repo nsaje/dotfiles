@@ -436,18 +436,18 @@ class AdGroupSourceSettingsTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     @patch('automation.campaign_stop.can_enable_media_source')
-    @patch('automation.autopilot.initialize_budget_autopilot_on_ad_group')
+    @patch('automation.autopilot.recalculate_budgets_ad_group')
     def test_adgroup_on_budget_autopilot_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap, mock_campaign_stop):
         self._set_ad_group_end_date(days_delta=3)
         response = self.client.put(
             reverse('ad_group_source_settings', kwargs={'ad_group_id': '4', 'source_id': '1'}),
             data=json.dumps({'state': '2'})
         )
-        mock_budget_ap.assert_called_with(models.AdGroup.objects.get(id=4).get_current_settings(), send_mail=False)
+        mock_budget_ap.assert_called_with(models.AdGroup.objects.get(id=4), send_mail=False)
         self.assertEqual(response.status_code, 200)
 
     @patch('automation.campaign_stop.can_enable_media_source')
-    @patch('automation.autopilot.initialize_budget_autopilot_on_ad_group')
+    @patch('automation.autopilot.recalculate_budgets_ad_group')
     def test_adgroup_not_on_budget_autopilot_not_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap, mock_campaign_stop):
         self._set_ad_group_end_date(days_delta=3)
         self._set_autopilot_state(constants.AdGroupSettingsAutopilotState.INACTIVE)
@@ -481,7 +481,7 @@ class CampaignAdGroups(TestCase):
         self.client.login(username=user.email, password='secret')
 
     @patch('utils.redirector_helper.insert_adgroup', autospec=True)
-    @patch('automation.autopilot.initialize_budget_autopilot_on_ad_group', autospec=True)
+    @patch('automation.autopilot.recalculate_budgets_ad_group', autospec=True)
     def test_put(self, mock_autopilot_init, mock_r1):
         campaign = models.Campaign.objects.get(pk=1)
         goal = magic_mixer.blend(models.CampaignGoal,

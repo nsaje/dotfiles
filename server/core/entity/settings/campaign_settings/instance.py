@@ -1,11 +1,11 @@
 from django.db import transaction
 
+from automation import autopilot
 import dash.constants
-import utils.email_helper
-
 import dash.features.ga
-import utils.redirector_helper
+import utils.email_helper
 import utils.k1_helper
+import utils.redirector_helper
 
 
 class CampaignSettingsMixin(object):
@@ -24,6 +24,7 @@ class CampaignSettingsMixin(object):
         if changes:
             self._log_and_notify_changes(request, changes)
             self._handle_ga_setup_instructions(request, changes)
+            self._handle_budget_autopilot(changes)
             self._propagate_settings(changes)
 
     @classmethod
@@ -52,6 +53,10 @@ class CampaignSettingsMixin(object):
                 is_readable = False
             if not is_readable and request and request.user:
                 utils.email_helper.send_ga_setup_instructions(request.user)
+
+    def _handle_budget_autopilot(self, changes):
+        if 'autopilot' in changes:
+            autopilot.recalculate_budgets_campaign(self.campaign)
 
     def _propagate_settings(self, changes):
         campaign_ad_groups = self.campaign.adgroup_set.all().select_related('settings', 'campaign__settings')
