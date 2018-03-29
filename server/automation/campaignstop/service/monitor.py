@@ -43,8 +43,8 @@ def _get_available_campaign_budget(date, log):
 
 def _get_overspend(date, log):
     return db.execute_query(
-        'select ((sum(coalesce(cost_nano, 0)) + sum(coalesce(data_cost_nano, 0))) - (sum(coalesce(effective_cost_nano, 0)) + sum(coalesce(effective_data_cost_nano, 0)))) / 1000000000.0 as overspend from mv_campaign where campaign_id = %s and (date = %s or date = %s)',
-        [log.campaign.id, dates_helper.day_before(date), date],
+        'select ((sum(coalesce(cost_nano, 0)) + sum(coalesce(data_cost_nano, 0))) - (sum(coalesce(effective_cost_nano, 0)) + sum(coalesce(effective_data_cost_nano, 0)))) / 1000000000.0 as overspend from mv_campaign where campaign_id = %s and date = %s',
+        [log.campaign.id, date],
         'campaignstop_monitor_overspend'
     )[0]['overspend']
 
