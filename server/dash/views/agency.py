@@ -159,6 +159,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 '{:.2f}'.format(settings.daily_budget_cc)
                 if settings.daily_budget_cc is not None else '',
             'tracking_code': settings.tracking_code,
+            'autopilot_on_campaign': ad_group.campaign.settings.autopilot,
             'autopilot_state': settings.autopilot_state,
             'autopilot_daily_budget':
                 '{:.2f}'.format(settings.autopilot_daily_budget)

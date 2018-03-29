@@ -22,6 +22,7 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
         $ctrl.config = config;
         $ctrl.options = options;
 
+        $ctrl.isCampaignAutopilot = isCampaignAutopilot;
         $ctrl.isInLanding = isInLanding;
         $ctrl.updateAutopilotSettings = updateAutopilotSettings;
 
@@ -48,11 +49,18 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
             };
 
             $ctrl.b1SourcesGroupEnabled = $ctrl.entity.settings.b1SourcesGroupEnabled;
-            $ctrl.autopilotEnabled =
-                $ctrl.entity.settings.autopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET;
+            $ctrl.autopilotEnabled = (
+                $ctrl.entity.settings.autopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET ||
+                $ctrl.entity.settings.autopilotOnCampaign
+            );
             $ctrl.priceDiscovery = $ctrl.autopilotEnabled ||
                 $ctrl.entity.settings.autopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC;
         };
+
+        function isCampaignAutopilot () {
+            if (!$ctrl.entity) return false;
+            return $ctrl.entity.settings.autopilotOnCampaign;
+        }
 
         function isInLanding () {
             if (!$ctrl.entity) return false;

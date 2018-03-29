@@ -5,17 +5,21 @@
         You can’t change Autopilot setting while the Campaign is in landing mode.
     </div>
 
+    <div class="message message--info message--with-icon m-b-s" ng-if="$ctrl.isCampaignAutopilot()">
+        Autopilot is managed on campaign level.
+    </div>
+
     <div class="form">
         <div class="form__radio">
             <label>
-                <input class="input-radio" id="autopilot-on" type="radio" ng-model="$ctrl.autopilotEnabled" ng-value="{{ true }}" ng-disabled="$ctrl.isInLanding()" ng-change="$ctrl.updateAutopilotSettings()">
+                <input class="input-radio" id="autopilot-on" type="radio" ng-model="$ctrl.autopilotEnabled" ng-value="{{ true }}" ng-disabled="$ctrl.isInLanding() || $ctrl.isCampaignAutopilot()" ng-change="$ctrl.updateAutopilotSettings()">
                 <span class="radio-text">
                     ON <span class="text-gray">- Let Zemanta One automatically optimize towards your campaign goal.</span>
                 </span>
             </label>
         </div>
 
-        <div class="form__indented" ng-show="!!$ctrl.autopilotEnabled">
+        <div class="form__indented" ng-show="!!$ctrl.autopilotEnabled && !$ctrl.isCampaignAutopilot()">
             <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.autopilotBudget}">
                 <label class="form__label" for="autopilot-budget">
                     Ad Group's Daily Spend Cap
@@ -41,7 +45,7 @@
 
         <div class="form__radio">
             <label>
-                <input class="input-radio" id="autopilot-off" type="radio" ng-model="$ctrl.autopilotEnabled" ng-value="{{ false }}" ng-disabled="$ctrl.isInLanding()" ng-change="$ctrl.updateAutopilotSettings()">
+                <input class="input-radio" id="autopilot-off" type="radio" ng-model="$ctrl.autopilotEnabled" ng-value="{{ false }}" ng-disabled="$ctrl.isInLanding() || $ctrl.isCampaignAutopilot()" ng-change="$ctrl.updateAutopilotSettings()">
                 <span class="radio-text">
                     OFF <span class="text-gray">- Manually manage Media Sources.</span>
                 </span>
