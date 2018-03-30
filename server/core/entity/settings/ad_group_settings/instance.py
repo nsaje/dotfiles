@@ -158,7 +158,7 @@ class AdGroupSettingsMixin(object):
             ad_group_sources_cpcs, self.ad_group, new_settings, skip_validation=True)
 
     def _should_recalculate_budget_autopilot(self, changes):
-        ap_ad_group_budget_fields = ['autopilot_daily_budget', 'autopilot_state', 'b1_sources_group_state']
+        ap_ad_group_budget_fields = ['autopilot_daily_budget', 'autopilot_state', 'b1_sources_group_state', 'state']
         ap_campaign_budget_fields = ['b1_sources_group_state', 'state']
         return (
             (
