@@ -238,7 +238,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
     def test_user_turns_on_ad_group_and_has_ad_group_source_off(self, _):
         inactive_adg = dash.constants.AdGroupSettingsState.INACTIVE
         inactive_adg_source = dash.constants.AdGroupSourceSettingsState.INACTIVE
-        self.ad_group.settings.update(None, state=inactive_adg)
+        self.ad_group.settings.update_unsafe(None, state=inactive_adg)
         self.ad_group_source.settings.update_unsafe(None, state=inactive_adg_source)
 
         adg_setting_state = AdGroupSettings.objects.filter(ad_group=self.ad_group).first().state
@@ -261,7 +261,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
     @mock.patch('utils.dates_helper.utc_now', side_effect=mocked_afternoon_est_now)
     @mock.patch('utils.k1_helper.update_ad_groups', mock.MagicMock())
     def test_user_turns_off_ad_group_and_ad_group_source(self, _):
-        self.ad_group.settings.update(None, state=dash.constants.AdGroupSettingsState.INACTIVE)
+        self.ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.INACTIVE)
         self.ad_group_source.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.INACTIVE)
 
         today = dates_helper.local_today()
@@ -443,7 +443,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
             core.entity.AdGroup,
             campaign=self.campaign,
         )
-        self.ad_group.settings.update(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
+        self.ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
         self.source_type = magic_mixer.blend(
             core.source.source_type.SourceType,
         )
