@@ -197,6 +197,12 @@ class InstanceTest(TestCase):
         self.assertTrue(mock_autopilot.called)
 
     @patch('automation.autopilot.recalculate_budgets_ad_group')
+    def test_recalculate_autopilot_change_state(self, mock_autopilot):
+        self.ad_group.settings.update_unsafe(None, state=constants.AdGroupSettingsState.ACTIVE)
+        self.ad_group.settings.update(None, state=constants.AdGroupSettingsState.INACTIVE)
+        self.assertTrue(mock_autopilot.called)
+
+    @patch('automation.autopilot.recalculate_budgets_ad_group')
     def test_recalculate_autopilot_campaign_change_state(self, mock_autopilot):
         self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
         self.ad_group.settings.update_unsafe(None, state=constants.AdGroupSettingsState.ACTIVE)
