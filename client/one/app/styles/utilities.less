@@ -59,6 +59,12 @@ hr {
         height: 100%;
         width: 100%;
         position: fixed;
+
+        .dropdown.open {
+            .dropdown-menu {
+                overflow: visible; // Dropdown iPhone Fix
+            }
+        }
     }
 }
 
