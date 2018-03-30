@@ -30,9 +30,11 @@ FIXED_MARGIN_START_DATE = datetime.date(2017, 6, 21)
 def _generate_statements(date, campaign, campaign_spend):
     logger.debug("Generate daily statements for %s, %s: %s", campaign.id, date, campaign_spend)
 
-    budgets = dash.models.BudgetLineItem.objects.filter(campaign_id=campaign.id,
-                                                        start_date__lte=date,
-                                                        end_date__gte=date)
+    budgets = dash.models.BudgetLineItem.objects.filter(
+        campaign_id=campaign.id,
+        start_date__lte=date,
+        end_date__gte=date
+    ).select_related('campaign__account', 'credit')
 
     existing_statements = dash.models.BudgetDailyStatement.objects.filter(
         date__lte=date,
@@ -44,6 +46,7 @@ def _generate_statements(date, campaign, campaign_spend):
         local_per_budget_spend_nano[existing_statement.budget_id]['media'] += existing_statement.local_media_spend_nano
         local_per_budget_spend_nano[existing_statement.budget_id]['data'] += existing_statement.local_data_spend_nano
         local_per_budget_spend_nano[existing_statement.budget_id]['license_fee'] += existing_statement.local_license_fee_nano
+        local_per_budget_spend_nano[existing_statement.budget_id]['margin'] += existing_statement.local_margin_nano
 
     if campaign_spend is not None:
         total_media_nano = campaign_spend['media_nano']
@@ -57,17 +60,22 @@ def _generate_statements(date, campaign, campaign_spend):
         attributed_media_nano = 0
         attributed_data_nano = 0
         license_fee_nano = 0
+        margin_nano = 0
 
         total_spend_nano = total_media_nano + total_data_nano
         local_budget_spend_total_nano = local_per_budget_spend_nano[budget.id]['media'] +\
             local_per_budget_spend_nano[budget.id]['data'] +\
             local_per_budget_spend_nano[budget.id]['license_fee']
+        if budget.start_date >= FIXED_MARGIN_START_DATE:
+            local_budget_spend_total_nano += local_per_budget_spend_nano[budget.id]['margin']
+
         if total_spend_nano > 0 and local_budget_spend_total_nano < local_budget_amount_nano:
             local_available_budget_nano = local_budget_amount_nano - local_budget_spend_total_nano
             usd_available_budget_nano = local_available_budget_nano / core.multicurrency.get_exchange_rate(date, budget.credit.currency)
             if budget.start_date >= FIXED_MARGIN_START_DATE:
                 usd_available_budget_nano = usd_available_budget_nano * (1 - budget.margin)
             usd_available_budget_nano = usd_available_budget_nano * (1 - budget.credit.license_fee)
+
             if total_media_nano + total_data_nano > usd_available_budget_nano:
                 if total_media_nano >= usd_available_budget_nano:
                     attributed_media_nano = usd_available_budget_nano
@@ -83,20 +91,21 @@ def _generate_statements(date, campaign, campaign_spend):
                 attributed_media_nano + attributed_data_nano,
                 budget.credit.license_fee
             )
+            if budget.start_date >= FIXED_MARGIN_START_DATE:
+                margin_nano = core.bcm.calculations.calculate_margin(
+                    attributed_media_nano + attributed_data_nano + license_fee_nano,
+                    budget.margin,
+                )
 
         local_per_budget_spend_nano[budget.id]['media'] += attributed_media_nano
         local_per_budget_spend_nano[budget.id]['data'] += attributed_data_nano
         local_per_budget_spend_nano[budget.id]['license_fee'] += license_fee_nano
+        local_per_budget_spend_nano[budget.id]['margin'] += margin_nano
 
         total_media_nano -= attributed_media_nano
         total_data_nano -= attributed_data_nano
 
-        if budget.start_date >= FIXED_MARGIN_START_DATE:
-            margin_nano = core.bcm.calculations.calculate_margin(
-                attributed_media_nano + attributed_data_nano + license_fee_nano,
-                budget.margin,
-            )
-        else:
+        if budget.start_date < FIXED_MARGIN_START_DATE:
             margin_nano = (attributed_media_nano + attributed_data_nano + license_fee_nano) * budget.margin
 
         dash.models.BudgetDailyStatement.objects.create(

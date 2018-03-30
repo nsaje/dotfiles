@@ -273,32 +273,54 @@ class DailyStatementsK1TestCase(TestCase):
         return_values = {
             datetime.date(2017, 6, 21): {
                 self.campaign3.id: {
-                    'media_nano': 2000000000000,
-                    'data_nano': 720000000000,
+                    'media_nano': 480 * 10**9,
+                    'data_nano': 200 * 10**9,
+                },
+            },
+            datetime.date(2017, 6, 22): {
+                self.campaign3.id: {
+                    'media_nano': 1000 * 10**9,
+                    'data_nano': 400 * 10**9,
                 },
             },
         }
         _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
-        _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2017, 6, 21, 12))
+        _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2017, 6, 22, 12))
 
         update_from = datetime.date(2017, 6, 21)
         daily_statements.reprocess_daily_statements(update_from)
 
         statements = dash.models.BudgetDailyStatement.objects.filter(
-            budget__campaign=self.campaign3).order_by('-date')
-        self.assertEqual(7, statements[0].budget_id)
+            budget_id=7).order_by('date')
         self.assertEqual(datetime.date(2017, 6, 21), statements[0].date)
 
-        statement = statements[0]
-        # $2000 media + $40 data (rest discarded - overspend) + $510 fee = $2550; $2550 == $3000 * 85% (margin pct)
-        self.assertEqual(2000, statement.media_spend_nano / 10**9)
-        self.assertEqual(40, statement.data_spend_nano / 10**9)
-        self.assertEqual(510, statement.license_fee_nano / 10**9)
-        self.assertEqual(450, statement.margin_nano / 10**9)
+        statement1 = statements[0]
+        self.assertEqual(datetime.date(2017, 6, 21), statement1.date)
+
+        # $480 media + $200 data + $170 fee = $850; $850 == $1000 * 85% (margin pct)
+        # budget spent: $1000/$3000
+        self.assertEqual(480, statement1.media_spend_nano / 10**9)
+        self.assertEqual(200, statement1.data_spend_nano / 10**9)
+        self.assertEqual(170, statement1.license_fee_nano / 10**9)
+        self.assertEqual(150, statement1.margin_nano / 10**9)
+
+        statement2 = statements[1]
+        self.assertEqual(datetime.date(2017, 6, 22), statement2.date)
+
+        # $1000 media + $360 data + $340 fee = $1700; $1700 == $2000 * 85% (margin pct)
+        # budget spent: $3000 / $3000
+        # overspend: $120
+        self.assertEqual(1000, statement2.media_spend_nano / 10**9)
+        self.assertEqual(360, statement2.data_spend_nano / 10**9)
+        self.assertEqual(340, statement2.license_fee_nano / 10**9)
+        self.assertEqual(300, statement2.margin_nano / 10**9)
+
         self.assertEqual(
-            statement.budget.amount,
-            (statement.media_spend_nano + statement.data_spend_nano +
-             statement.license_fee_nano + statement.margin_nano) / 10**9)
+            statement2.budget.amount,
+            (statement1.media_spend_nano + statement1.data_spend_nano +
+             statement1.license_fee_nano + statement1.margin_nano +
+             statement2.media_spend_nano + statement2.data_spend_nano +
+             statement2.license_fee_nano + statement2.margin_nano) / 10**9)
 
     def test_first_day_cost_none(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {}
