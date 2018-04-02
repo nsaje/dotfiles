@@ -84,7 +84,7 @@ class PublishersViewList(restapi.views.RESTAPIBaseView):
         serializer = serializers.PublisherSerializer(data=request.data, many=True)
         serializer.is_valid(raise_exception=True)
         self._put_handle_entries(request, ad_group, serializer.validated_data)
-        return self.response_ok(serializer.data)
+        return self.response_ok(serializer.initial_data)
 
     @transaction.atomic()
     def _put_handle_entries(self, request, ad_group, entries):
