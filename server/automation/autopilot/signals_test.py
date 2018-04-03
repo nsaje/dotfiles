@@ -1,0 +1,68 @@
+import decimal
+from mock import patch
+
+from django.test import TestCase
+
+import core.bcm
+import core.entity
+import dash.constants
+from utils import dates_helper
+from utils.magic_mixer import magic_mixer
+
+from . import signals
+
+
+class NotifyBudgetsTest(TestCase):
+
+    def setUp(self):
+        account = magic_mixer.blend(core.entity.Account)
+        self.campaign = magic_mixer.blend(core.entity.Campaign, account=account)
+        self.campaign.settings.update_unsafe(None, autopilot=True)
+        self.credit = magic_mixer.blend(
+            core.bcm.CreditLineItem,
+            account=account,
+            start_date=dates_helper.local_yesterday(),
+            end_date=dates_helper.local_today(),
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            amount=1000,
+            flat_fee_cc=0,
+            license_fee=decimal.Decimal('0.3333')
+        )
+        self.budget = magic_mixer.blend(
+            core.bcm.BudgetLineItem,
+            campaign=self.campaign,
+            start_date=dates_helper.local_yesterday(),
+            end_date=dates_helper.local_today(),
+            credit=self.credit,
+            amount=decimal.Decimal('200'),
+            margin=0
+        )
+
+        signals.connect_notify_budgets()
+        self.addCleanup(signals.disconnect_notify_budgets)
+
+    @patch('automation.autopilot.service.recalculate_budgets_campaign')
+    def test_recalculate_budget_change(self, mock_recalculate):
+        self.budget.amount = self.budget.amount + 1
+        self.budget.save()
+        mock_recalculate.assert_called_with(self.budget.campaign)
+
+    @patch('automation.autopilot.service.recalculate_budgets_campaign')
+    def test_recalculate_budget_create(self, mock_recalculate):
+        budget = core.bcm.BudgetLineItem(
+            campaign=self.campaign,
+            start_date=dates_helper.local_yesterday(),
+            end_date=dates_helper.local_today(),
+            credit=self.credit,
+            amount=decimal.Decimal('200'),
+            margin=0,
+        )
+        budget.save()
+        mock_recalculate.assert_called_with(self.budget.campaign)
+
+    @patch('automation.autopilot.service.recalculate_budgets_campaign')
+    def test_recalculate_budget_change_no_autopilot(self, mock_recalculate):
+        self.campaign.settings.update_unsafe(None, autopilot=False)
+        self.budget.amount = self.budget.amount + 1
+        self.budget.save()
+        mock_recalculate.assert_not_called()
