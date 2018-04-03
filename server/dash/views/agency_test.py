@@ -1846,13 +1846,15 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(content['data']['settings']['adobe_tracking_param'], '')
         self.assertEqual(content['data']['settings']['whitelist_publisher_groups'], [1])
         self.assertEqual(content['data']['settings']['blacklist_publisher_groups'], [1])
+        self.assertEqual(content['data']['settings']['autopilot'], False)
 
+    @patch('automation.autopilot.recalculate_budgets_campaign')
     @patch('dash.views.agency.ga.is_readable')
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('dash.views.agency.email_helper.send_ga_setup_instructions')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     @patch('utils.k1_helper.update_ad_group')
-    def test_put(self, mock_k1_ping, mock_send_campaign_notification_email, mock_send_ga_email, mock_r1_insert_adgroup, mock_ga_readable):
+    def test_put(self, mock_k1_ping, mock_send_campaign_notification_email, mock_send_ga_email, mock_r1_insert_adgroup, mock_ga_readable, mock_autopilot):
         mock_ga_readable.return_value = False
 
         add_permissions(self.user, [
@@ -1897,14 +1899,15 @@ class CampaignSettingsTest(TestCase):
                     'adobe_tracking_param': 'cid',
                     'whitelist_publisher_groups': [1, 3],
                     'blacklist_publisher_groups': [1, 3],
+                    'autopilot': True,
                 }
             }),
             content_type='application/json',
         )
-        self.assertEqual(mock_k1_ping.call_count, 1)
-
         content = json.loads(response.content)
         self.assertTrue(content['success'])
+
+        self.assertEqual(mock_k1_ping.call_count, 1)
 
         settings = campaign.get_current_settings()
         settings.refresh_from_db()
@@ -1924,6 +1927,7 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(settings.adobe_tracking_param, 'cid')
         self.assertEqual(settings.whitelist_publisher_groups, [1, 3])
         self.assertEqual(settings.blacklist_publisher_groups, [1, 3])
+        self.assertEqual(settings.autopilot, True)
 
         mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request, ANY)
         mock_send_ga_email.assert_called_with(self.user)

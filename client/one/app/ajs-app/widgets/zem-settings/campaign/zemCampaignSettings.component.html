@@ -46,6 +46,13 @@
                 api="$container.childApi"
                 ng-if="$ctrl.hasPermission('zemauth.can_see_new_budgets')"
         ></zem-campaign-budgets-settings>
+        <zem-campaign-budget-optimization-settings
+                class="zem-settings-component"
+                entity="$container.entity"
+                errors="$container.errors"
+                api="$container.childApi"
+                ng-if="$ctrl.hasPermission('zemauth.can_see_budget_optimization')"
+        ></zem-campaign-budget-optimization-settings>
         <zem-backend-hacks
                 class="zem-settings-component"
                 entity="$container.entity"

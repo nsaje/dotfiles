@@ -946,6 +946,8 @@ class CampaignSettingsForm(PublisherGroupsFormMixin, forms.Form):
 
     adobe_tracking_param = PlainCharField(max_length=10, required=False)
 
+    autopilot = forms.BooleanField(required=False)
+
     def __init__(self, campaign, *args, **kwargs):
         self.campaign = campaign
         self.account = campaign.account

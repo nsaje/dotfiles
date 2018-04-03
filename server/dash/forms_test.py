@@ -211,6 +211,7 @@ class CampaignSettingsFormTest(TestCase):
             'ga_property_id': 'UA-123456789-1',
             'whitelist_publisher_groups': [],
             'blacklist_publisher_groups': [],
+            'autopilot': True,
         }
 
     @patch('utils.dates_helper.local_today')
@@ -240,6 +241,7 @@ class CampaignSettingsFormTest(TestCase):
             'adobe_tracking_param': '',
             'whitelist_publisher_groups': [],
             'blacklist_publisher_groups': [],
+            'autopilot': True,
         })
 
     @patch('utils.dates_helper.local_today')

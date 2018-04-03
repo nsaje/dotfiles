@@ -533,6 +533,7 @@ class CampaignSettings(api_common.BaseApiView):
             'adobe_tracking_param': settings.adobe_tracking_param,
             'whitelist_publisher_groups': settings.whitelist_publisher_groups,
             'blacklist_publisher_groups': settings.blacklist_publisher_groups,
+            'autopilot': settings.autopilot,
         }
 
         if request.user.has_perm('zemauth.can_modify_campaign_manager'):
