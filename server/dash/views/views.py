@@ -762,7 +762,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             ),
             'autopilot_changed_sources': response['autopilot_changed_sources_text'],
             'enabling_autopilot_sources_allowed': helpers.enabling_autopilot_single_source_allowed(
-                ad_group_settings,
+                ad_group,
             )
         })
 

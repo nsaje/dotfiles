@@ -172,7 +172,7 @@ class AdGroupSourceState(BaseBulkActionView):
 
         if state == constants.AdGroupSourceSettingsState.ACTIVE:
             enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(
-                ad_group_settings,
+                ad_group,
                 ad_group_sources
             )
             if not enabling_autopilot_sources_allowed:

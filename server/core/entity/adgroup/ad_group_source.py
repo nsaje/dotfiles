@@ -41,8 +41,6 @@ class AdGroupSourceManager(core.common.QuerySetManager):
 
     @transaction.atomic
     def create(self, request, ad_group, source, write_history=True, k1_sync=True, skip_validation=False, **updates):
-        ad_group_settings = ad_group.get_current_settings()
-
         if not skip_validation and not ad_group.campaign.account.allowed_sources.filter(pk=source.id).exists():
             raise utils.exc.ValidationError(
                 '{} media source can not be added to this account.'.format(source.name)
@@ -52,7 +50,7 @@ class AdGroupSourceManager(core.common.QuerySetManager):
             raise utils.exc.ValidationError(
                 '{} media source for ad group {} already exists.'.format(source.name, ad_group.id))
 
-        if not skip_validation and not retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings):
+        if not skip_validation and not retargeting_helper.can_add_source_with_retargeting(source, ad_group.settings):
             raise utils.exc.ValidationError(
                 '{} media source can not be added because it does not support retargeting.'.format(source.name))
 
@@ -62,7 +60,7 @@ class AdGroupSourceManager(core.common.QuerySetManager):
 
         ad_group_source.set_initial_settings(
             request,
-            ad_group_settings,
+            ad_group,
             **updates
         )
 
@@ -199,19 +197,19 @@ class AdGroupSource(models.Model):
                 source_id__in=core.source.Source.objects.all().filter_can_manage_content_ads().values_list(
                     'id', flat=True))
 
-    def set_initial_settings(self, request, ad_group_settings, **updates):
+    def set_initial_settings(self, request, ad_group, **updates):
         from dash.views import helpers
 
         if 'cpc_cc' not in updates:
             updates['cpc_cc'] = self.source.default_cpc_cc
-            if ad_group_settings.is_mobile_only():
+            if ad_group.settings.is_mobile_only():
                 updates['cpc_cc'] = self.source.default_mobile_cpc_cc
-            if (ad_group_settings.b1_sources_group_enabled and
-                    ad_group_settings.b1_sources_group_cpc_cc > 0.0 and
+            if (ad_group.settings.b1_sources_group_enabled and
+                    ad_group.settings.b1_sources_group_cpc_cc > 0.0 and
                     self.source.source_type.type == constants.SourceType.B1):
-                updates['cpc_cc'] = ad_group_settings.b1_sources_group_cpc_cc
-            if ad_group_settings.cpc_cc:
-                updates['cpc_cc'] = min(ad_group_settings.cpc_cc, updates['cpc_cc'])
+                updates['cpc_cc'] = ad_group.settings.b1_sources_group_cpc_cc
+            if ad_group.settings.cpc_cc:
+                updates['cpc_cc'] = min(ad_group.settings.cpc_cc, updates['cpc_cc'])
         if 'state' not in updates:
             if helpers.get_source_initial_state(self):
                 updates['state'] = constants.AdGroupSourceSettingsState.ACTIVE
@@ -221,7 +219,7 @@ class AdGroupSource(models.Model):
             updates['daily_budget_cc'] = self.source.default_daily_budget_cc
 
         enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(
-            ad_group_settings,
+            ad_group,
             [self],
         )
         if not enabling_autopilot_sources_allowed:

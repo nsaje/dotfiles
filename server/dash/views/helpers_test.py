@@ -921,7 +921,7 @@ class SetAdGroupSourceTest(TestCase):
 
         ad_group_source.set_initial_settings(
             self.request,
-            ad_group_source.ad_group.get_current_settings(),
+            ad_group_source.ad_group,
         )
 
         ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source)
@@ -935,7 +935,7 @@ class SetAdGroupSourceTest(TestCase):
         ad_group_source, source_settings = self.prepare_ad_group_source()
         ad_group_source.set_initial_settings(
             self.request,
-            ad_group_source.ad_group.get_current_settings(),
+            ad_group_source.ad_group,
             state=constants.AdGroupSourceSettingsState.INACTIVE,
         )
 

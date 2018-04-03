@@ -155,7 +155,7 @@ class AdGroupSourceStateTest(TestCase):
         self.assertEqual(len(ad_group_sources), retargeting_mock.call_count)
         self.assertEqual(len(ad_group_sources), facebook_mock.call_count)
         autopilot_check_mock.assert_called_once_with(
-            ad_group_settings,
+            ad_group,
             ad_group_sources
         )
 

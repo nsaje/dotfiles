@@ -672,8 +672,8 @@ def _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_gro
     return 'This media source doesn\'t support setting this value through the dashboard.'
 
 
-def enabling_autopilot_sources_allowed(ad_group_settings, ad_group_sources):
-    if not ad_group_settings.b1_sources_group_enabled:
+def enabling_autopilot_sources_allowed(ad_group, ad_group_sources):
+    if not ad_group.settings.b1_sources_group_enabled:
         num_sources = len(ad_group_sources)
     else:
         num_sources = sum(
@@ -681,23 +681,25 @@ def enabling_autopilot_sources_allowed(ad_group_settings, ad_group_sources):
             if ags.source.source_type.type != constants.SourceType.B1
         )
 
-    return _enabling_autopilot_sources_allowed(ad_group_settings, num_sources)
+    return _enabling_autopilot_sources_allowed(ad_group, num_sources)
 
 
-def enabling_autopilot_single_source_allowed(ad_group_settings):
-    return _enabling_autopilot_sources_allowed(ad_group_settings, 1)
+def enabling_autopilot_single_source_allowed(ad_group):
+    return _enabling_autopilot_sources_allowed(ad_group, 1)
 
 
-def _enabling_autopilot_sources_allowed(ad_group_settings, number_of_sources_to_enable):
-    if ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+def _enabling_autopilot_sources_allowed(ad_group, number_of_sources_to_enable):
+    if ad_group.campaign.settings.autopilot:
+        return True
+    if ad_group.settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
         return True
 
     required_budget = (
         number_of_sources_to_enable *
         automation.autopilot.settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC
     )
-    return ad_group_settings.autopilot_daily_budget - required_budget >=\
-        automation.autopilot.get_adgroup_minimum_daily_budget(ad_group_settings.ad_group, ad_group_settings)
+    return ad_group.settings.autopilot_daily_budget - required_budget >=\
+        automation.autopilot.get_adgroup_minimum_daily_budget(ad_group, ad_group.settings)
 
 
 def get_adjusted_ad_group_sources_cpcs(ad_group, ad_group_settings):
