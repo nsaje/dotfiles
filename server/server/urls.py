@@ -11,7 +11,6 @@ import oauth2_provider.views
 
 from zemauth.forms import AuthenticationForm
 
-import k1api.views
 import etl.crossvalidation.views
 import zemauth.views
 
@@ -104,6 +103,11 @@ oauth2_urlpatterns += [
 ]
 urlpatterns += [
     url(r'^o/', include(oauth2_urlpatterns, namespace='oauth2_provider')),
+]
+
+# K1 API
+urlpatterns += [
+    url(r'^k1api/', include('k1api.urls')),
 ]
 
 # REST API
@@ -597,115 +601,6 @@ urlpatterns += [
         r'^api/callbacks/content-upload/$',
         dash.views.callbacks.content_upload,
         name='callbacks.content_upload',
-    ),
-]
-
-# K1 API
-urlpatterns += [
-    url(
-        r'^k1api/ad_groups$',
-        k1api.views.AdGroupsView.as_view(),
-        name='k1api.ad_groups',
-    ),
-    url(
-        r'^k1api/ad_groups/stats$',
-        k1api.views.AdGroupStatsView.as_view(),
-        name='k1api.ad_groups.stats',
-    ),
-    url(
-        r'^k1api/ad_groups/conversion_stats$',
-        k1api.views.AdGroupConversionStatsView.as_view(),
-        name='k1api.ad_groups.conversion_stats',
-    ),
-    url(
-        r'^k1api/ad_groups/content_ad_publisher_stats$',
-        k1api.views.AdGroupContentAdPublisherStatsView.as_view(),
-        name='k1api.ad_groups.content_ad_publisher_stats',
-    ),
-    url(
-        r'^k1api/ad_groups/sources$',
-        k1api.views.AdGroupSourcesView.as_view(),
-        name='k1api.ad_groups.sources',
-    ),
-    url(
-        r'^k1api/ad_groups/sources/blockers$',
-        k1api.views.AdGroupSourceBlockersView.as_view(),
-        name='k1api.ad_groups.sources.blockers',
-    ),
-    url(
-        r'^k1api/content_ads$',
-        k1api.views.ContentAdsView.as_view(),
-        name='k1api.content_ads',
-    ),
-    url(
-        r'^k1api/content_ads/sources$',
-        k1api.views.ContentAdSourcesView.as_view(),
-        name='k1api.content_ads.sources',
-    ),
-    url(
-        r'^k1api/accounts$',
-        k1api.views.AccountsView.as_view(),
-        name='k1api.accounts',
-    ),
-    url(
-        r'^k1api/sources$',
-        k1api.views.SourcesView.as_view(),
-        name='k1api.sources',
-    ),
-    url(
-        r'k1api/source_pixels$',
-        k1api.views.SourcePixelsView.as_view(),
-        name='k1api.source_pixels',
-    ),
-    url(
-        r'^k1api/ga_accounts$',
-        k1api.views.GAAccountsView.as_view(),
-        name='k1api.ga_accounts',
-    ),
-    url(
-        r'^k1api/r1_mapping$',
-        k1api.views.R1MappingView.as_view(),
-        name='k1api.r1_mapping',
-    ),
-    url(
-        r'^k1api/outbrain/publishers_blacklist$',
-        k1api.views.OutbrainPublishersBlacklistView.as_view(),
-        name='k1api.outbrain_publishers_blacklist',
-    ),
-    url(
-        r'^k1api/outbrain/marketer_id$',
-        k1api.views.OutbrainMarketerIdView.as_view(),
-        name='k1api.outbrain_marketer_id',
-    ),
-    url(
-        r'^k1api/outbrain/sync_marketer$',
-        k1api.views.OutbrainMarketerSyncView.as_view(),
-        name='k1api.outbrain_marketer_sync',
-    ),
-    url(
-        r'^k1api/facebook/accounts$',
-        k1api.views.FacebookAccountsView.as_view(),
-        name='k1api.facebook_accounts',
-    ),
-    url(
-        r'^k1api/publisher_groups$',
-        k1api.views.PublisherGroupsView.as_view(),
-        name='k1api.publisher_groups',
-    ),
-    url(
-        r'^k1api/publisher_groups_entries$',
-        k1api.views.PublisherGroupsEntriesView.as_view(),
-        name='k1api.publisher_groups_entries',
-    ),
-    url(
-        r'^k1api/geolocations$',
-        k1api.views.GeolocationsView.as_view(),
-        name='k1api.geolocations',
-    ),
-    url(
-        r'^k1api/publisherbidmodifiers$',
-        k1api.views.PublisherBidModifiersView.as_view(),
-        name='k1api.publisherbidmodifiers',
     ),
 ]
 

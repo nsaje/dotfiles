@@ -1,0 +1,117 @@
+from django.conf.urls import url
+
+from .views import accounts
+from .views import ad_groups
+from .views import ad_groups_stats
+from .views import ad_groups_sources
+from .views import content_ads
+from .views import sources
+from .views import publishers
+from .views import geolocations
+from .views import r1_mapping
+from .views import ga_accounts
+from .views import outbrain
+
+
+urlpatterns = [
+    url(
+        r'^ad_groups$',
+        ad_groups.AdGroupsView.as_view(),
+        name='k1api.ad_groups',
+    ),
+    url(
+        r'^ad_groups/stats$',
+        ad_groups_stats.AdGroupStatsView.as_view(),
+        name='k1api.ad_groups.stats',
+    ),
+    url(
+        r'^ad_groups/conversion_stats$',
+        ad_groups_stats.AdGroupConversionStatsView.as_view(),
+        name='k1api.ad_groups.conversion_stats',
+    ),
+    url(
+        r'^ad_groups/content_ad_publisher_stats$',
+        ad_groups_stats.AdGroupContentAdPublisherStatsView.as_view(),
+        name='k1api.ad_groups.content_ad_publisher_stats',
+    ),
+    url(
+        r'^ad_groups/sources$',
+        ad_groups_sources.AdGroupSourcesView.as_view(),
+        name='k1api.ad_groups.sources',
+    ),
+    url(
+        r'^ad_groups/sources/blockers$',
+        ad_groups_sources.AdGroupSourceBlockersView.as_view(),
+        name='k1api.ad_groups.sources.blockers',
+    ),
+    url(
+        r'^content_ads$',
+        content_ads.ContentAdsView.as_view(),
+        name='k1api.content_ads',
+    ),
+    url(
+        r'^content_ads/sources$',
+        content_ads.ContentAdSourcesView.as_view(),
+        name='k1api.content_ads.sources',
+    ),
+    url(
+        r'^accounts$',
+        accounts.AccountsView.as_view(),
+        name='k1api.accounts',
+    ),
+    url(
+        r'^sources$',
+        sources.SourcesView.as_view(),
+        name='k1api.sources',
+    ),
+    url(
+        r'source_pixels$',
+        sources.SourcePixelsView.as_view(),
+        name='k1api.source_pixels',
+    ),
+    url(
+        r'^ga_accounts$',
+        ga_accounts.GAAccountsView.as_view(),
+        name='k1api.ga_accounts',
+    ),
+    url(
+        r'^r1_mapping$',
+        r1_mapping.R1MappingView.as_view(),
+        name='k1api.r1_mapping',
+    ),
+    url(
+        r'^outbrain/publishers_blacklist$',
+        outbrain.OutbrainPublishersBlacklistView.as_view(),
+        name='k1api.outbrain_publishers_blacklist',
+    ),
+    url(
+        r'^outbrain/marketer_id$',
+        outbrain.OutbrainMarketerIdView.as_view(),
+        name='k1api.outbrain_marketer_id',
+    ),
+    url(
+        r'^outbrain/sync_marketer$',
+        outbrain.OutbrainMarketerSyncView.as_view(),
+        name='k1api.outbrain_marketer_sync',
+    ),
+    url(
+        r'^publisher_groups$',
+        publishers.PublisherGroupsView.as_view(),
+        name='k1api.publisher_groups',
+    ),
+    url(
+        r'^publisher_groups_entries$',
+        publishers.PublisherGroupsEntriesView.as_view(),
+        name='k1api.publisher_groups_entries',
+    ),
+    url(
+        r'^publisherbidmodifiers$',
+        publishers.PublisherBidModifiersView.as_view(),
+        name='k1api.publisherbidmodifiers',
+    ),
+    url(
+        r'^geolocations$',
+        geolocations.GeolocationsView.as_view(),
+        name='k1api.geolocations',
+    ),
+]
