@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+import datetime
+
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http.request import HttpRequest
 from django.test import TestCase, override_settings
 from mock import patch, Mock
+from utils.magic_mixer import magic_mixer
 
 import utils.s3helpers
 import zemauth.models
@@ -991,13 +994,6 @@ class UploadTest(TestCase):
 class AutoSaveTest(TestCase):
 
     @patch('dash.features.contentupload.upload.persist_batch')
-    def test_handle_auto_save_flag(self, mock_persist_batch):
-        batch = models.UploadBatch(status=constants.UploadBatchStatus.IN_PROGRESS, auto_save=False)
-        contentupload.upload._handle_auto_save(batch)
-        self.assertEqual(batch.status, constants.UploadBatchStatus.IN_PROGRESS)
-        mock_persist_batch.assert_not_called()
-
-    @patch('dash.features.contentupload.upload.persist_batch')
     def test_not_in_progress(self, mock_persist_batch):
         batch = models.UploadBatch(status=constants.UploadBatchStatus.FAILED, auto_save=True)
         contentupload.upload._handle_auto_save(batch)
@@ -1020,3 +1016,88 @@ class AutoSaveTest(TestCase):
         batch = models.UploadBatch(status=constants.UploadBatchStatus.IN_PROGRESS, auto_save=True)
         contentupload.upload._handle_auto_save(batch)
         mock_persist_batch.assert_called_with(batch)
+
+
+class InProgressTest(TestCase):
+
+    def setUp(self):
+        self.created_before = datetime.datetime(year=2018, month=1, day=1, minute=30)
+        self.time_delta = datetime.timedelta(minutes=10)
+
+    def test_not_in_progress(self):
+        batch = magic_mixer.blend(
+            models.UploadBatch,
+            status=constants.UploadBatchStatus.CANCELLED,
+            auto_save=True,
+        )
+
+        batch.created_dt = self.created_before - self.time_delta
+        batch.save()
+
+        count = contentupload.upload.clean_up_old_in_progress_batches(self.created_before)
+        batch.refresh_from_db()
+        self.assertEqual(batch.status, constants.UploadBatchStatus.CANCELLED)
+        self.assertTrue(batch.auto_save)
+        self.assertEqual(count, 0)
+
+    def test_in_progress(self):
+        batch = magic_mixer.blend(
+            models.UploadBatch,
+            status=constants.UploadBatchStatus.IN_PROGRESS,
+            auto_save=True,
+        )
+
+        batch.created_dt = self.created_before - self.time_delta
+        batch.save()
+
+        count = contentupload.upload.clean_up_old_in_progress_batches(self.created_before)
+        batch.refresh_from_db()
+        self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
+        self.assertTrue(batch.auto_save)
+        self.assertEqual(count, 1)
+
+    def test_auto_save_false(self):
+        batch = magic_mixer.blend(
+            models.UploadBatch,
+            status=constants.UploadBatchStatus.IN_PROGRESS,
+            auto_save=False,
+        )
+
+        batch.created_dt = self.created_before - self.time_delta
+        batch.save()
+
+        count = contentupload.upload.clean_up_old_in_progress_batches(self.created_before)
+        batch.refresh_from_db()
+        self.assertEqual(batch.status, constants.UploadBatchStatus.IN_PROGRESS)
+        self.assertFalse(batch.auto_save)
+        self.assertEqual(count, 0)
+
+    def test_new_batches(self):
+        batch = magic_mixer.blend(
+            models.UploadBatch,
+            status=constants.UploadBatchStatus.IN_PROGRESS,
+            auto_save=True,
+        )
+
+        batch.created_dt = self.created_before + self.time_delta
+        batch.save()
+
+        count = contentupload.upload.clean_up_old_in_progress_batches(self.created_before)
+        batch.refresh_from_db()
+        self.assertEqual(batch.status, constants.UploadBatchStatus.IN_PROGRESS)
+        self.assertTrue(batch.auto_save)
+        self.assertEqual(count, 0)
+
+    def test_old_count(self):
+        for i in range(10):
+            batch = magic_mixer.blend(
+                models.UploadBatch,
+                status=constants.UploadBatchStatus.IN_PROGRESS,
+                auto_save=True,
+            )
+
+            batch.created_dt = self.created_before - self.time_delta
+            batch.save()
+
+        count = contentupload.upload.clean_up_old_in_progress_batches(self.created_before)
+        self.assertEqual(count, 10)

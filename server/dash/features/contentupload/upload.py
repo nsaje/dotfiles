@@ -411,9 +411,6 @@ def _process_url_update(candidate, url, callback_data):
 
 
 def _handle_auto_save(batch):
-    if not batch.auto_save:
-        return
-
     if batch.status != constants.UploadBatchStatus.IN_PROGRESS:
         return
 
@@ -459,11 +456,26 @@ def process_callback(callback_data):
 def handle_auto_save_batches(created_after):
     batches = models.UploadBatch.objects.filter(
         status=constants.UploadBatchStatus.IN_PROGRESS,
+        auto_save=True,
         created_dt__gte=created_after,
     )
 
     for batch in batches:
         _handle_auto_save(batch)
+
+
+def clean_up_old_in_progress_batches(created_before):
+    batches = models.UploadBatch.objects.filter(
+        status=constants.UploadBatchStatus.IN_PROGRESS,
+        auto_save=True,
+        created_dt__lte=created_before,
+    )
+
+    for batch in batches:
+        batch.status = constants.UploadBatchStatus.FAILED
+        batch.save()
+
+    return batches.count()
 
 
 def _create_candidates(content_ads_data, ad_group, batch):
