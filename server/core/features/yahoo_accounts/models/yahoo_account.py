@@ -8,7 +8,7 @@ class YahooAccount(models.Model):
         app_label = 'dash'
 
     advertiser_id = models.CharField(blank=False, null=False, max_length=255)
-    account = models.OneToOneField(core.entity.Account)
+    account = models.OneToOneField(core.entity.Account, related_name='yahoo_account')
 
     created_dt = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')

@@ -11,6 +11,7 @@ from .views import geolocations
 from .views import r1_mapping
 from .views import ga_accounts
 from .views import outbrain
+from .views import yahoo
 
 
 urlpatterns = [
@@ -93,6 +94,11 @@ urlpatterns = [
         r'^outbrain/sync_marketer$',
         outbrain.OutbrainMarketerSyncView.as_view(),
         name='k1api.outbrain_marketer_sync',
+    ),
+    url(
+        r'^yahoo/accounts$',
+        yahoo.YahooAccountsView.as_view(),
+        name='k1api.yahoo_accounts',
     ),
     url(
         r'^publisher_groups$',
