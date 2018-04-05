@@ -13,6 +13,7 @@ from core.source import *
 from core.publisher_bid_modifiers.publisher_bid_modifier import PublisherBidModifier
 from core.publisher_groups import *
 from core.multicurrency import *
+from core.features.yahoo_accounts.models import *
 
 # Core helpers
 from core.bcm.helpers import *
