@@ -223,6 +223,10 @@ def send_autopilot_changes_email(campaign, emails, changes_data, bcm_modifiers):
             changes_text.append(_get_email_source_changes_text(ag_source.source.name, adgroup_changes[ag_source]))
         changes_text.append(_get_email_adgroup_pausing_suggestions_text(adgroup_changes, bcm_modifiers))
 
+    template = dash.constants.EmailTemplateType.AUTOPILOT_AD_GROUP_CHANGE
+    if campaign.settings.autopilot:
+        template = dash.constants.EmailTemplateType.AUTOPILOT_CAMPAIGN_CHANGE
+
     args = {
         'campaign': campaign,
         'account': campaign.account,
@@ -235,7 +239,7 @@ def send_autopilot_changes_email(campaign, emails, changes_data, bcm_modifiers):
             agency_or_user=campaign.account.agency,
             from_email=settings.AUTOPILOT_EMAIL,
             **email_helper.params_from_template(
-                dash.constants.EmailTemplateType.AUTOPILOT_AD_GROUP_CHANGE, **args
+                template, **args
             )
         )
     except Exception:
@@ -252,6 +256,10 @@ def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
         for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name.lower()):
             changes_text.append(_get_email_source_changes_text(ag_source.source.name, adgroup_changes[ag_source]))
 
+    template = dash.constants.EmailTemplateType.AUTOPILOT_AD_GROUP_BUDGET_INIT
+    if campaign.settings.autopilot:
+        template = dash.constants.EmailTemplateType.AUTOPILOT_CAMPAIGN_BUDGET_INIT
+
     args = {
         'campaign': campaign,
         'account': campaign.account,
@@ -264,7 +272,7 @@ def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
             agency_or_user=campaign.account.agency,
             from_email=settings.AUTOPILOT_EMAIL,
             **email_helper.params_from_template(
-                dash.constants.EmailTemplateType.AUTOPILOT_AD_GROUP_BUDGET_INIT, **args
+                template, **args
             )
         )
     except Exception:

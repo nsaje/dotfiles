@@ -184,41 +184,41 @@ class InstanceTest(TestCase):
     def test_recalculate_autopilot_enable(self, mock_autopilot):
         self.ad_group.settings.update(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
         self.ad_group.settings.update(None, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
-        self.assertTrue(mock_autopilot.called)
+        mock_autopilot.assert_called_once_with(self.ad_group, send_mail=True)
 
     @patch('automation.autopilot.recalculate_budgets_ad_group')
     def test_recalculate_autopilot_change_budget(self, mock_autopilot):
         self.ad_group.settings.update(None, autopilot_daily_budget=Decimal('10.0'))
-        self.assertTrue(mock_autopilot.called)
+        mock_autopilot.assert_called_once_with(self.ad_group, send_mail=True)
 
     @patch('automation.autopilot.recalculate_budgets_ad_group')
     def test_recalculate_autopilot_change_allrtb_state(self, mock_autopilot):
         self.ad_group.settings.update(None, b1_sources_group_state=constants.AdGroupSourceSettingsState.INACTIVE)
-        self.assertTrue(mock_autopilot.called)
+        mock_autopilot.assert_called_once_with(self.ad_group, send_mail=False)
 
     @patch('automation.autopilot.recalculate_budgets_ad_group')
     def test_recalculate_autopilot_change_state(self, mock_autopilot):
         self.ad_group.settings.update_unsafe(None, state=constants.AdGroupSettingsState.ACTIVE)
         self.ad_group.settings.update(None, state=constants.AdGroupSettingsState.INACTIVE)
-        self.assertTrue(mock_autopilot.called)
+        mock_autopilot.assert_called_once_with(self.ad_group, send_mail=True)
 
     @patch('automation.autopilot.recalculate_budgets_ad_group')
     def test_recalculate_autopilot_campaign_change_state(self, mock_autopilot):
         self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
         self.ad_group.settings.update_unsafe(None, state=constants.AdGroupSettingsState.ACTIVE)
         self.ad_group.settings.update(None, state=constants.AdGroupSettingsState.INACTIVE)
-        self.assertTrue(mock_autopilot.called)
+        mock_autopilot.assert_called_once_with(self.ad_group, send_mail=False)
 
     @patch('automation.autopilot.recalculate_budgets_ad_group')
     def test_recalculate_autopilot_campaign_change_allrtb_state(self, mock_autopilot):
         self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
         self.ad_group.settings.update(None, b1_sources_group_state=constants.AdGroupSourceSettingsState.INACTIVE)
-        self.assertTrue(mock_autopilot.called)
+        mock_autopilot.assert_called_once_with(self.ad_group, send_mail=False)
 
     @patch('automation.autopilot.recalculate_budgets_ad_group')
     def test_recalculate_autopilot_skip_automation(self, mock_autopilot):
         self.ad_group.settings.update(None, autopilot_daily_budget=Decimal('10.0'), skip_automation=True)
-        self.assertFalse(mock_autopilot.called)
+        mock_autopilot.assert_not_called()
 
 
 class MulticurrencyTest(TestCase):

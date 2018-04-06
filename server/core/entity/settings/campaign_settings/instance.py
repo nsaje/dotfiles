@@ -56,7 +56,7 @@ class CampaignSettingsMixin(object):
 
     def _handle_budget_autopilot(self, changes):
         if 'autopilot' in changes:
-            autopilot.recalculate_budgets_campaign(self.campaign)
+            autopilot.recalculate_budgets_campaign(self.campaign, send_mail=True)
 
     def _propagate_settings(self, changes):
         campaign_ad_groups = self.campaign.adgroup_set.all().select_related('settings', 'campaign__settings')

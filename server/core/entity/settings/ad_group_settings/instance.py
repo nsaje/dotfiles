@@ -170,12 +170,18 @@ class AdGroupSettingsMixin(object):
             )
         )
 
+    def _should_send_autopilot_mail(self, changes):
+        if self.ad_group.campaign.settings.autopilot:
+            return False
+        ap_send_mail_fields = ['autopilot_daily_budget', 'autopilot_state', 'state']
+        return any(field in changes for field in ap_send_mail_fields)
+
     def _handle_budget_autopilot(self, changes):
         if not self._should_recalculate_budget_autopilot(changes):
             return
 
         from automation import autopilot
-        autopilot.recalculate_budgets_ad_group(self.ad_group, send_mail=True)
+        autopilot.recalculate_budgets_ad_group(self.ad_group, send_mail=self._should_send_autopilot_mail(changes))
 
     def _save_and_propagate(self, request, new_settings, system_user):
         changes = self.get_setting_changes(new_settings)

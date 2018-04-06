@@ -13,6 +13,188 @@ from utils.magic_mixer import magic_mixer
 class AutopilotHelpersTestCase(test.TestCase):
     fixtures = ['test_automation.yaml']
 
+    @patch('utils.email_helper.params_from_template')
+    @patch('utils.email_helper.send_official_email')
+    def test_send_email_adgroup_change(self, mock_send, mock_template):
+        mock_template.return_value = {'test_key': 'test_value'}
+        ad_group = models.AdGroup.objects.get(pk=4)
+        data = {
+            ad_group.campaign: {
+                ad_group: {
+                    models.AdGroupSource.objects.get(pk=4): {
+                        'old_budget': Decimal('10.0'),
+                        'new_budget': Decimal('20.0'),
+                        'budget_comments': [],
+                        'old_cpc_cc': Decimal('0.1'),
+                        'new_cpc_cc': Decimal('0.2'),
+                        'cpc_comments': [],
+                    },
+                    models.AllRTBAdGroupSource(models.AdGroup.objects.get(pk=4)): {
+                        'old_budget': Decimal('10.0'),
+                        'new_budget': Decimal('20.0'),
+                        'budget_comments': [],
+                    },
+                }
+            }
+        }
+        expected_changes = '''
+
+AdGroup: Test AdGroup 4 (https://one.zemanta.com/v2/analytics/adgroup/4/sources):
+- on AdBlade daily spend cap changed from $10.00 to $20.00 and bid CPC changed from $0.1 to $0.2
+- on RTB Sources daily spend cap changed from $10.00 to $20.00'''
+
+        helpers.send_autopilot_changes_emails(data, {}, False)
+        mock_template.assert_called_once_with(
+            constants.EmailTemplateType.AUTOPILOT_AD_GROUP_CHANGE,
+            account=ad_group.campaign.account,
+            campaign=ad_group.campaign,
+            changes=expected_changes,
+            link_url='https://one.zemanta.com/v2/analytics/campaign/4',
+        )
+        mock_send.assert_called_once_with(
+            agency_or_user=None,
+            from_email='help@zemanta.com',
+            recipient_list=['autopilot@zemanta.com'],
+            test_key='test_value',
+        )
+
+    @patch('utils.email_helper.params_from_template')
+    @patch('utils.email_helper.send_official_email')
+    def test_send_email_adgroup_init(self, mock_send, mock_template):
+        mock_template.return_value = {'test_key': 'test_value'}
+        ad_group = models.AdGroup.objects.get(pk=4)
+        data = {
+            ad_group.campaign: {
+                ad_group: {
+                    models.AdGroupSource.objects.get(pk=4): {
+                        'old_budget': Decimal('10.0'),
+                        'new_budget': Decimal('20.0'),
+                        'budget_comments': [],
+                        'old_cpc_cc': Decimal('0.1'),
+                        'new_cpc_cc': Decimal('0.2'),
+                        'cpc_comments': [],
+                    },
+                    models.AllRTBAdGroupSource(models.AdGroup.objects.get(pk=4)): {
+                        'old_budget': Decimal('10.0'),
+                        'new_budget': Decimal('20.0'),
+                        'budget_comments': [],
+                    },
+                }
+            }
+        }
+        expected_changes = '''
+
+AdGroup: Test AdGroup 4 (https://one.zemanta.com/v2/analytics/adgroup/4/sources):
+- on AdBlade daily spend cap changed from $10.00 to $20.00 and bid CPC changed from $0.1 to $0.2
+- on RTB Sources daily spend cap changed from $10.00 to $20.00'''
+
+        helpers.send_autopilot_changes_emails(data, {}, True)
+        mock_template.assert_called_once_with(
+            constants.EmailTemplateType.AUTOPILOT_AD_GROUP_BUDGET_INIT,
+            account=ad_group.campaign.account,
+            campaign=ad_group.campaign,
+            changes=expected_changes,
+            link_url='https://one.zemanta.com/v2/analytics/campaign/4',
+        )
+        mock_send.assert_called_once_with(
+            agency_or_user=None,
+            from_email='help@zemanta.com',
+            recipient_list=['autopilot@zemanta.com'],
+            test_key='test_value',
+        )
+
+    @patch('utils.email_helper.params_from_template')
+    @patch('utils.email_helper.send_official_email')
+    def test_send_email_campaign_change(self, mock_send, mock_template):
+        mock_template.return_value = {'test_key': 'test_value'}
+        ad_group = models.AdGroup.objects.get(pk=4)
+        ad_group.campaign.settings.update_unsafe(None, autopilot=True)
+        data = {
+            ad_group.campaign: {
+                ad_group: {
+                    models.AdGroupSource.objects.get(pk=4): {
+                        'old_budget': Decimal('10.0'),
+                        'new_budget': Decimal('20.0'),
+                        'budget_comments': [],
+                        'old_cpc_cc': Decimal('0.1'),
+                        'new_cpc_cc': Decimal('0.2'),
+                        'cpc_comments': [],
+                    },
+                    models.AllRTBAdGroupSource(models.AdGroup.objects.get(pk=4)): {
+                        'old_budget': Decimal('10.0'),
+                        'new_budget': Decimal('20.0'),
+                        'budget_comments': [],
+                    },
+                }
+            }
+        }
+        expected_changes = '''
+
+AdGroup: Test AdGroup 4 (https://one.zemanta.com/v2/analytics/adgroup/4/sources):
+- on AdBlade daily spend cap changed from $10.00 to $20.00 and bid CPC changed from $0.1 to $0.2
+- on RTB Sources daily spend cap changed from $10.00 to $20.00'''
+
+        helpers.send_autopilot_changes_emails(data, {}, False)
+        mock_template.assert_called_once_with(
+            constants.EmailTemplateType.AUTOPILOT_CAMPAIGN_CHANGE,
+            account=ad_group.campaign.account,
+            campaign=ad_group.campaign,
+            changes=expected_changes,
+            link_url='https://one.zemanta.com/v2/analytics/campaign/4',
+        )
+        mock_send.assert_called_once_with(
+            agency_or_user=None,
+            from_email='help@zemanta.com',
+            recipient_list=['autopilot@zemanta.com'],
+            test_key='test_value',
+        )
+
+    @patch('utils.email_helper.params_from_template')
+    @patch('utils.email_helper.send_official_email')
+    def test_send_email_campaign_init(self, mock_send, mock_template):
+        mock_template.return_value = {'test_key': 'test_value'}
+        ad_group = models.AdGroup.objects.get(pk=4)
+        ad_group.campaign.settings.update_unsafe(None, autopilot=True)
+        data = {
+            ad_group.campaign: {
+                ad_group: {
+                    models.AdGroupSource.objects.get(pk=4): {
+                        'old_budget': Decimal('10.0'),
+                        'new_budget': Decimal('20.0'),
+                        'budget_comments': [],
+                        'old_cpc_cc': Decimal('0.1'),
+                        'new_cpc_cc': Decimal('0.2'),
+                        'cpc_comments': [],
+                    },
+                    models.AllRTBAdGroupSource(models.AdGroup.objects.get(pk=4)): {
+                        'old_budget': Decimal('10.0'),
+                        'new_budget': Decimal('20.0'),
+                        'budget_comments': [],
+                    },
+                }
+            }
+        }
+        expected_changes = '''
+
+AdGroup: Test AdGroup 4 (https://one.zemanta.com/v2/analytics/adgroup/4/sources):
+- on AdBlade daily spend cap changed from $10.00 to $20.00 and bid CPC changed from $0.1 to $0.2
+- on RTB Sources daily spend cap changed from $10.00 to $20.00'''
+
+        helpers.send_autopilot_changes_emails(data, {}, True)
+        mock_template.assert_called_once_with(
+            constants.EmailTemplateType.AUTOPILOT_CAMPAIGN_BUDGET_INIT,
+            account=ad_group.campaign.account,
+            campaign=ad_group.campaign,
+            changes=expected_changes,
+            link_url='https://one.zemanta.com/v2/analytics/campaign/4',
+        )
+        mock_send.assert_called_once_with(
+            agency_or_user=None,
+            from_email='help@zemanta.com',
+            recipient_list=['autopilot@zemanta.com'],
+            test_key='test_value',
+        )
+
     @patch('dash.models.AdGroup.get_running_status_by_sources_setting')
     @patch('dash.models.AdGroup.get_running_status')
     def test_get_active_ad_groups_on_autopilot(self, mock_running_status, mock_running_status_by_sources):

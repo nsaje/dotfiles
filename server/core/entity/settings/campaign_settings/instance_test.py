@@ -28,4 +28,4 @@ class InstanceTestCase(TestCase):
     def test_recalculate_autopilot(self, mock_autopilot):
         campaign = magic_mixer.blend(core.entity.Campaign)
         campaign.settings.update(None, autopilot=True)
-        mock_autopilot.assert_called_once_with(campaign)
+        mock_autopilot.assert_called_once_with(campaign, send_mail=True)

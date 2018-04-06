@@ -1735,6 +1735,8 @@ class EmailTemplateType(ConstantBase):
     ASYNC_SCHEDULED_REPORT_RESULTS = 27
     OEN_POSTCLICKKPI_CPA_FACTORS = 28
     ASYNC_REPORT_FAIL = 29
+    AUTOPILOT_CAMPAIGN_CHANGE = 30
+    AUTOPILOT_CAMPAIGN_BUDGET_INIT = 31
 
     _VALUES = {
         ADGROUP_CHANGE: 'Ad group settings change',
@@ -1765,6 +1767,8 @@ class EmailTemplateType(ConstantBase):
         ASYNC_SCHEDULED_REPORT_RESULTS: 'Scheduled report results',
         OEN_POSTCLICKKPI_CPA_FACTORS: 'Zemanta OEN CPA Optimization Factors',
         ASYNC_REPORT_FAIL: 'Report fail',
+        AUTOPILOT_CAMPAIGN_CHANGE: 'Campaign Autopilot changes notification',
+        AUTOPILOT_CAMPAIGN_BUDGET_INIT: 'Campaign Autopilot initialisation notification',
     }
 
 
