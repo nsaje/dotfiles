@@ -351,7 +351,8 @@ REST_FRAMEWORK = {
         'user': '10/second'  # per compute node
     },
     'DEFAULT_OVERRIDE_THROTTLE_RATES': {
-        'oendev@outbrain.com': '160/second'
+        'oendev@outbrain.com': '160/second',
+        'filippo.portolano@inpwrd.com': '30/second',
     },
 }
 
