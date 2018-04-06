@@ -18,10 +18,10 @@ run:	## runs whole stack with docker-compose
 run_devenv:     ## run only development environment (i.e. services that are needed by z1).
 	docker-compose -f docker-compose.yml -f docker-compose.devenv.yml up --force-recreate -d
 
-reset_local_database:
+reset_local_database:     ## loads latest demo dump to local postgres
 	./scripts/reset_local_database.sh
 
-reset_local_stats_database:
+reset_local_stats_database:     ## loads latest materialization dump to local stats postgres
 	docker-compose run --rm eins ./manage.py reset_stats_postgres
 
 stop:	## stops the whole stack
