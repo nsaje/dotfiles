@@ -532,14 +532,14 @@
 -   fields:
         audience: 1
         type: 1
-        value: "test"
+        value: "http://test.com"
     model: dash.audiencerule
     pk: 1
 
 -   fields:
         audience: 2
         type: 1
-        value: "test"
+        value: "http://test.com"
     model: dash.audiencerule
     pk: 2
 

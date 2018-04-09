@@ -1860,6 +1860,25 @@ class AudienceForm(forms.Form):
 
         return pixel_id
 
+    def clean(self):
+        if self.cleaned_data.get('rules') is None:
+            return self.cleaned_data
+
+        ttl = self.cleaned_data.get('ttl')
+        rules = [(rule['type'], rule['value']) for rule in self.cleaned_data.get('rules')]
+        pixel_id = self.cleaned_data.get('pixel_id')
+        audience_ids = models.Audience.objects.filter(ttl=ttl, pixel_id=pixel_id, archived=False).values('id')
+        audience_ids = [a['id'] for a in audience_ids]
+
+        for rule in models.AudienceRule.objects.filter(id__in=audience_ids).values('audience_id', 'value', 'type'):
+            row = (rule['type'], rule['value'])
+            if row in rules:
+                existing_audience_names = models.Audience.objects.filter(id=rule['audience_id']).values('name')
+                if len(existing_audience_names) > 0:
+                    raise forms.ValidationError('Audience rule "%s" with the same ttl and rule already exists.' % existing_audience_names[0]['name'])
+
+        return self.cleaned_data
+
 
 class AudienceUpdateForm(forms.Form):
     name = PlainCharField(

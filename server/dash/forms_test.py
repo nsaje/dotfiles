@@ -1589,6 +1589,12 @@ class AudienceFormTestCase(TestCase):
         f = forms.AudienceForm(self.account, self.user, data)
         self.assertTrue(f.is_valid())
 
+    def test_target_audience_exists(self):
+        data = self._get_valid_data()
+        data['rules'][0]['value'] = "http://test.com"
+        data['rules'][0]['type'] = constants.AudienceRuleType.STARTS_WITH
+        self._expect_error("__all__", 'Audience rule "test audience 1" with the same ttl and rule already exists.', data)
+
 
 class PublisherTargetingFormTestCase(TestCase):
     fixtures = ['test_models.yaml']
