@@ -64,7 +64,7 @@
                 <zem-help-popover content="<p class='m-b-s'>The number of days people will remain in your audience after they've visited your website. People will be removed from your audience after the set time period, unless they visit your website again.</p><p><strong>Maximum time:</strong> 365 days.</p>" placement="bottom"><span class="help-popover" zem-lazy-popover-html-unsafe="Pixel's name" zem-lazy-popover-placement="bottom" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span></zem-help-popover>
             </label>
             <div class="postfixed-field postfixed-field--narrow">
-                <input class="input-text" type="text" ng-model="$ctrl.selectedTtl" ng-change="$ctrl.clearValidationError('ttl')"/>
+                <input class="input-text" type="text" ng-model="$ctrl.selectedTtl" ng-change="$ctrl.clearValidationError('ttl')" ng-readonly="!$ctrl.isCreationMode"/>
                 <span class="postfixed-field__postfix" id="basic-addon2">days</span>
             </div>
 

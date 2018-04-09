@@ -48,14 +48,16 @@ class AccountsTest(K1APIBaseTest):
                      {'type': 2, 'values': 'dummy2', 'id': 2}],
                  'name': 'Audience 1',
                  'id': 1,
-                 'ttl': 90},
+                 'ttl': 90,
+                 'prefill_days': 180, },
                 {'pixel_id': 2,
                  'rules': [
                      {'type': 1, 'values': 'dummy3', 'id': 3},
                      {'type': 2, 'values': 'dummy4', 'id': 4}],
                  'name': 'Audience 2',
                  'id': 2,
-                 'ttl': 60}],
+                 'ttl': 60,
+                 'prefill_days': 180, }],
             'pixels': [
                 {'id': 1,
                  'name': 'Pixel 1',
@@ -125,6 +127,7 @@ class AccountsTest(K1APIBaseTest):
                  },
             ],
             'ttl': 90,
+            'prefill_days': 180,
         }, {
             'id': 2,
             'name': 'Audience 2',
@@ -140,4 +143,5 @@ class AccountsTest(K1APIBaseTest):
                  },
             ],
             'ttl': 60,
+            'prefill_days': 180,
         }])

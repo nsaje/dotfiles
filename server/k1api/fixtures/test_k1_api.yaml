@@ -982,6 +982,7 @@
         pixel_id: 1
         archived: False
         ttl: 90
+        prefill_days: 180
         created_dt: '2015-02-23T00:00:00'
         modified_dt: '2015-02-23T00:00:00'
         created_by: 1
@@ -993,6 +994,7 @@
         pixel_id: 2
         archived: False
         ttl: 60
+        prefill_days: 180
         created_dt: '2015-02-24T00:00:00'
         modified_dt: '2015-02-24T00:00:00'
         created_by: 1

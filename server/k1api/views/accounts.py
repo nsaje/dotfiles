@@ -85,6 +85,7 @@ class AccountsView(K1APIView):
                 'name': audience.name,
                 'pixel_id': audience.pixel.id,
                 'ttl': audience.ttl,
+                'prefill_days': audience.prefill_days,
                 'rules': rules,
             }
             accounts_audiences[audience.pixel.account_id].append(audience_dict)

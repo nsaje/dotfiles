@@ -79,7 +79,7 @@ angular.module('one.widgets').component('zemCustomAudiencesModal', {
                 return;
             }
 
-            var data = {name: $ctrl.selectedName, ttl: $ctrl.selectedTtl};
+            var data = {name: $ctrl.selectedName};
             $ctrl.stateService.update($ctrl.audience.id, data).then(
                 function () {
                     $ctrl.modalInstance.close();
