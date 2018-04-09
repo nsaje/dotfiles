@@ -140,6 +140,7 @@ class Command(ExceptionCommand):
             product['id'],
             pixel,
             ttl=90,
+            prefill_days=90,
             rules=[self._audience_rule(product)],
         )
 

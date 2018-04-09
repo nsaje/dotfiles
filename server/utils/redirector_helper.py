@@ -125,6 +125,7 @@ def upsert_audience(audience):
             'rules': rules,
             'pixels': source_pixels,
             'ttl': audience.ttl,
+            'prefill_days': audience.prefill_days,
             'modifieddt': audience.modified_dt.strftime('%Y-%m-%dT%H:%M:%SZ')
         }
 

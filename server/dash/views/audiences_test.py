@@ -31,6 +31,7 @@ class AudiencesTest(TestCase):
             'name': 'Test Audience',
             'pixel_id': 1,
             'ttl': 90,
+            'prefill_days': 90,
             'rules': [{
                 'type': constants.AudienceRuleType.CONTAINS,
                 'value': 'test',
@@ -134,6 +135,7 @@ class AudiencesTest(TestCase):
                     "value": "test"
                 }],
                 "ttl": 90,
+                'prefill_days': 180,
                 "id": "1",
                 "name": "test audience 1"
             }
@@ -228,6 +230,7 @@ class AudiencesTest(TestCase):
     @mock.patch('utils.redirector_helper.upsert_audience')
     def test_post(self, redirector_upsert_audience_mock, k1_update_account_mock):
         data = self._get_valid_post_data()
+        del(data["prefill_days"])
         url = reverse('accounts_audiences', kwargs={'account_id': 1})
 
         audiences = models.Audience.objects.filter(pk=6)
@@ -255,6 +258,7 @@ class AudiencesTest(TestCase):
                     "value": "test"
                 }],
                 "ttl": 90,
+                "prefill_days": 90,
                 "id": "6",
                 "name": "Test Audience"
             }
@@ -267,6 +271,7 @@ class AudiencesTest(TestCase):
         self.assertEqual(audiences[0].pixel_id, 1)
         self.assertEqual(audiences[0].archived, False)
         self.assertEqual(audiences[0].ttl, 90)
+        self.assertEqual(audiences[0].prefill_days, 90)
         self.assertEqual(audiences[0].created_by_id, 1)
 
         rules = models.AudienceRule.objects.filter(pk=6)
@@ -294,7 +299,7 @@ class AudiencesTest(TestCase):
     @mock.patch('utils.redirector_helper.upsert_audience')
     def test_put(self, redirector_upsert_audience_mock, k1_update_account_mock):
         # ttl work, but not rules
-        data = {'name': 'New name', 'ttl': 30, 'rules': [{
+        data = {'name': 'New name', 'rules': [{
             "id": "1",
             "type": 1,
             "value": "teeeeest"
@@ -316,7 +321,8 @@ class AudiencesTest(TestCase):
                     "type": 1,
                     "value": "test"
                 }],
-                "ttl": 30,
+                "ttl": 90,
+                "prefill_days": 180,
                 "id": "1",
                 "name": "New name"
             }
@@ -327,7 +333,8 @@ class AudiencesTest(TestCase):
         self.assertEqual(audiences[0].name, 'New name')
         self.assertEqual(audiences[0].pixel_id, 1)
         self.assertEqual(audiences[0].archived, False)
-        self.assertEqual(audiences[0].ttl, 30)
+        self.assertEqual(audiences[0].ttl, 90)
+        self.assertEqual(audiences[0].prefill_days, 180)
         self.assertEqual(audiences[0].created_by_id, 1)
 
         rules = audiences[0].audiencerule_set.all()

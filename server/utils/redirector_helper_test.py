@@ -335,6 +335,7 @@ class UpsertAudienceTest(TestCase):
                 {'url': 'http://www.y.com/pixelendpoint', 'type': 'yahoo'},
                 {'url': 'http://www.fb.com/pixelendpoint', 'type': 'facebook'}],
             'ttl': 90,
+            'prefill_days': 0,
             'modifieddt': '2015-02-23T00:00:00Z'
         }
         self.assertJSONEqual(call.data, expected)

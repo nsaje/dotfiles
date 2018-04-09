@@ -1830,6 +1830,13 @@ class AudienceForm(forms.Form):
             'max_value': 'Maximum number of days is 365.'
         }
     )
+    prefill_days = forms.IntegerField(
+        required=False,
+        max_value=365,
+        error_messages={
+            'max_value': 'Maximum number of days is 365.'
+        }
+    )
     rules = AudienceRulesField(
         error_messages={'required': 'Please select a rule.'}
     )
@@ -1860,13 +1867,6 @@ class AudienceUpdateForm(forms.Form):
         error_messages={
             'required': 'Please specify audience name.',
             'max_length': 'Name is too long (max %(limit_value)d characters)',
-        }
-    )
-    ttl = forms.IntegerField(
-        max_value=365,
-        error_messages={
-            'required': 'Please select days.',
-            'max_value': 'Maximum number of days is 365.'
         }
     )
 

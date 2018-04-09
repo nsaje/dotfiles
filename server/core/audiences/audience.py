@@ -13,7 +13,7 @@ from . import audience_rule
 
 
 class AudienceManager(core.common.BaseManager):
-    def create(self, request, name, pixel, ttl, rules):
+    def create(self, request, name, pixel, ttl, prefill_days, rules):
         audience = None
         refererRules = (constants.AudienceRuleType.CONTAINS, constants.AudienceRuleType.STARTS_WITH)
         with transaction.atomic():
@@ -21,6 +21,7 @@ class AudienceManager(core.common.BaseManager):
                 name=name,
                 pixel=pixel,
                 ttl=ttl,
+                prefill_days=ttl,  # use ttl value for prefill until it gets its own UI component
             )
             audience.save(
                 request,
@@ -58,6 +59,7 @@ class Audience(models.Model):
     pixel = models.ForeignKey(core.pixels.ConversionPixel, on_delete=models.PROTECT)
     archived = models.BooleanField(default=False)
     ttl = models.PositiveSmallIntegerField()
+    prefill_days = models.PositiveSmallIntegerField(default=0)
     created_dt = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(

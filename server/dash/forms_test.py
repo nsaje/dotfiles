@@ -1493,6 +1493,7 @@ class AudienceFormTestCase(TestCase):
             'name': 'Test Audience',
             'pixel_id': 1,
             'ttl': 90,
+            'prefill_days': 90,
             'rules': [{
                 'type': constants.AudienceRuleType.CONTAINS,
                 'value': 'test',
@@ -1552,6 +1553,12 @@ class AudienceFormTestCase(TestCase):
 
         data['ttl'] = 366
         self._expect_error('ttl', 'Maximum number of days is 365.', data)
+
+    def test_invalid_prefill_days(self):
+        data = self._get_valid_data()
+
+        data['prefill_days'] = 366
+        self._expect_error('prefill_days', 'Maximum number of days is 365.', data)
 
     def test_invalid_rules(self):
         data = self._get_valid_data()

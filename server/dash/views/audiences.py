@@ -51,6 +51,7 @@ class AudiencesView(api_common.BaseApiView):
             audience_form.cleaned_data['name'],
             pixel,
             audience_form.cleaned_data['ttl'],
+            audience_form.cleaned_data['prefill_days'],
             audience_form.cleaned_data['rules'],
         )
 
@@ -81,9 +82,8 @@ class AudiencesView(api_common.BaseApiView):
         data = audience_form.cleaned_data
 
         old_name = audience.name
-        if audience.name != data['name'] or audience.ttl != data['ttl']:
+        if audience.name != data['name']:
             audience.name = data['name']
-            audience.ttl = data['ttl']
 
             with transaction.atomic():
                 audience.save(
@@ -163,6 +163,7 @@ class AudiencesView(api_common.BaseApiView):
             'name': audience.name,
             'pixel_id': str(audience.pixel.pk),
             'ttl': audience.ttl,
+            'prefill_days': audience.prefill_days,
             'rules': rules_dicts,
         }
 

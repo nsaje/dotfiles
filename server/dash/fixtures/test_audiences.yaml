@@ -104,6 +104,7 @@
         pixel: 1
         archived: false
         ttl: 90
+        prefill_days: 180
         created_dt: '2015-08-25T09:58:21'
         modified_dt: '2015-08-26T09:58:21'
         created_by: 1
@@ -115,6 +116,7 @@
         pixel: 1
         archived: false
         ttl: 90
+        prefill_days: 180
         created_dt: '2015-08-25T09:58:21'
         modified_dt: '2015-08-26T09:58:21'
         created_by: 1
@@ -126,6 +128,7 @@
         pixel: 1
         archived: true
         ttl: 90
+        prefill_days: 180
         created_dt: '2015-08-25T09:58:21'
         modified_dt: '2015-08-26T09:58:21'
         created_by: 1
@@ -137,6 +140,7 @@
         pixel: 2
         archived: false
         ttl: 90
+        prefill_days: 180
         created_dt: '2015-08-25T09:58:21'
         modified_dt: '2015-08-26T09:58:21'
         created_by: 1
@@ -148,6 +152,7 @@
         pixel: 3
         archived: false
         ttl: 90
+        prefill_days: 180
         created_dt: '2015-08-25T09:58:21'
         modified_dt: '2015-08-26T09:58:21'
         created_by: 1
