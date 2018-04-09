@@ -1874,7 +1874,7 @@ class AudienceForm(forms.Form):
         audience_ids = models.Audience.objects.filter(ttl=ttl, pixel_id=pixel_id, archived=False).values('id')
         audience_ids = [a['id'] for a in audience_ids]
 
-        for rule in models.AudienceRule.objects.filter(id__in=audience_ids).values('audience_id', 'value', 'type'):
+        for rule in models.AudienceRule.objects.filter(audience_id__in=audience_ids).values('audience_id', 'value', 'type'):
             row = (rule['type'], rule['value'])
             if row in rules:
                 existing_audience_names = models.Audience.objects.filter(id=rule['audience_id']).values('name')
