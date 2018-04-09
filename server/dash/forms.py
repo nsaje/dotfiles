@@ -1847,6 +1847,10 @@ class AudienceForm(forms.Form):
         self.account = account
         self.user = user
 
+    def clean_prefill_days(self):
+        value = self.cleaned_data.get('prefill_days')
+        return value if value is not None else 0
+
     def clean_pixel_id(self):
         pixel_id = self.cleaned_data.get('pixel_id')
         pixel = models.ConversionPixel.objects.filter(
