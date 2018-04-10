@@ -56,7 +56,7 @@ def _generate_statements(date, campaign, campaign_spend):
         total_data_nano = 0
 
     for budget in budgets.order_by('created_dt'):
-        local_budget_amount_nano = budget.allocated_amount() * converters.DOLAR_TO_NANO
+        local_budget_amount_nano = budget.allocated_amount() * converters.CURRENCY_TO_NANO
         attributed_media_nano = 0
         attributed_data_nano = 0
         license_fee_nano = 0

@@ -46,6 +46,10 @@ class AutopilotCalculateCampaignDailyBudgetTestCase(TestCase):
             data_spend_nano=2.2*1e9,
             license_fee_nano=3.3*1e9,
             margin_nano=4.4*1e9,
+            local_media_spend_nano=1.1*1e9,
+            local_data_spend_nano=2.2*1e9,
+            local_license_fee_nano=3.3*1e9,
+            local_margin_nano=4.4*1e9,
         )
 
         result = calculate_campaigns_daily_budget()

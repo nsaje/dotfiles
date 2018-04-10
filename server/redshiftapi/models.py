@@ -247,7 +247,7 @@ class MVMaster(BreakdownsBase):
         'column_name': 'clicks', 'divisor': 'impressions', 'divisor_modifier': '0.01',
     }, AGGREGATE)
 
-    _context = {'divisor': 'clicks', 'divisor_modifier': converters.DOLAR_TO_NANO}
+    _context = {'divisor': 'clicks', 'divisor_modifier': converters.CURRENCY_TO_NANO}
     et_cpc = backtosql.TemplateColumn('part_2sumdiv.sql', dict_join(_context, ET_COST_COLUMNS), AGGREGATE)
     local_et_cpc = backtosql.TemplateColumn('part_2sumdiv.sql', dict_join(_context, LOCAL_ET_COST_COLUMNS), AGGREGATE)
     etfm_cpc = backtosql.TemplateColumn('part_4sumdiv.sql', dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
@@ -256,7 +256,7 @@ class MVMaster(BreakdownsBase):
     cpc = backtosql.TemplateColumn('part_sumdiv.sql', dict_join(_context, A_COST_COLUMNS), AGGREGATE)
     local_cpc = backtosql.TemplateColumn('part_sumdiv.sql', dict_join(_context, LOCAL_A_COST_COLUMNS), AGGREGATE)
 
-    _context = {'divisor': 'impressions', 'divisor_modifier': converters.DOLAR_TO_NANO * 0.001}
+    _context = {'divisor': 'impressions', 'divisor_modifier': converters.CURRENCY_TO_NANO * 0.001}
     et_cpm = backtosql.TemplateColumn('part_2sumdiv.sql', dict_join(_context, ET_COST_COLUMNS), AGGREGATE)
     local_et_cpm = backtosql.TemplateColumn('part_2sumdiv.sql', dict_join(_context, LOCAL_ET_COST_COLUMNS), AGGREGATE)
     etfm_cpm = backtosql.TemplateColumn('part_4sumdiv.sql', dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
@@ -285,7 +285,7 @@ class MVMaster(BreakdownsBase):
     total_pageviews = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'pageviews'}, group=AGGREGATE)  # TODO duplicate with 'pageviews'  # noqa
 
     # Average costs per metrics
-    _context = {'divisor': 'total_time_on_site', 'divisor_modifier': converters.DOLAR_TO_NANO / 60.0}
+    _context = {'divisor': 'total_time_on_site', 'divisor_modifier': converters.CURRENCY_TO_NANO / 60.0}
     avg_et_cost_per_minute = backtosql.TemplateColumn('part_2sumdiv.sql', dict_join(_context, ET_COST_COLUMNS), AGGREGATE)  # noqa
     local_avg_et_cost_per_minute = backtosql.TemplateColumn('part_2sumdiv.sql', dict_join(_context, LOCAL_ET_COST_COLUMNS), AGGREGATE)  # noqa
     avg_etfm_cost_per_minute = backtosql.TemplateColumn('part_4sumdiv.sql', dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)  # noqa
@@ -302,7 +302,7 @@ class MVMaster(BreakdownsBase):
     avg_cost_per_non_bounced_visit = backtosql.TemplateColumn('part_avg_a_cost_per_non_bounced_visit.sql', group=AGGREGATE)  # noqa
     local_avg_cost_per_non_bounced_visit = backtosql.TemplateColumn('part_local_avg_a_cost_per_non_bounced_visit.sql', group=AGGREGATE)  # noqa
 
-    _context = {'divisor': 'pageviews', 'divisor_modifier': converters.DOLAR_TO_NANO}
+    _context = {'divisor': 'pageviews', 'divisor_modifier': converters.CURRENCY_TO_NANO}
     avg_et_cost_per_pageview = backtosql.TemplateColumn('part_2sumdiv.sql', dict_join(_context, ET_COST_COLUMNS), AGGREGATE)  # noqa
     local_avg_et_cost_per_pageview = backtosql.TemplateColumn('part_2sumdiv.sql', dict_join(_context, LOCAL_ET_COST_COLUMNS), AGGREGATE)  # noqa
     avg_etfm_cost_per_pageview = backtosql.TemplateColumn('part_4sumdiv.sql', dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)  # noqa
@@ -311,7 +311,7 @@ class MVMaster(BreakdownsBase):
     avg_cost_per_pageview = backtosql.TemplateColumn('part_sumdiv.sql', dict_join(_context, A_COST_COLUMNS), AGGREGATE)  # noqa
     local_avg_cost_per_pageview = backtosql.TemplateColumn('part_sumdiv.sql', dict_join(_context, LOCAL_A_COST_COLUMNS), AGGREGATE)  # noqa
 
-    _context = {'divisor': 'new_visits', 'divisor_modifier': converters.DOLAR_TO_NANO}
+    _context = {'divisor': 'new_visits', 'divisor_modifier': converters.CURRENCY_TO_NANO}
     avg_et_cost_for_new_visitor = backtosql.TemplateColumn('part_2sumdiv.sql', dict_join(_context, ET_COST_COLUMNS), AGGREGATE)  # noqa
     local_avg_et_cost_for_new_visitor = backtosql.TemplateColumn('part_2sumdiv.sql', dict_join(_context, LOCAL_ET_COST_COLUMNS), AGGREGATE)  # noqa
     avg_etfm_cost_for_new_visitor = backtosql.TemplateColumn('part_4sumdiv.sql', dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)  # noqa
@@ -320,7 +320,7 @@ class MVMaster(BreakdownsBase):
     avg_cost_for_new_visitor = backtosql.TemplateColumn('part_sumdiv.sql', dict_join(_context, A_COST_COLUMNS), AGGREGATE)  # noqa
     local_avg_cost_for_new_visitor = backtosql.TemplateColumn('part_sumdiv.sql', dict_join(_context, LOCAL_A_COST_COLUMNS), AGGREGATE)  # noqa
 
-    _context = {'divisor': 'visits', 'divisor_modifier': converters.DOLAR_TO_NANO}
+    _context = {'divisor': 'visits', 'divisor_modifier': converters.CURRENCY_TO_NANO}
     avg_et_cost_per_visit = backtosql.TemplateColumn('part_2sumdiv.sql', dict_join(_context, ET_COST_COLUMNS), AGGREGATE)  # noqa
     local_avg_et_cost_per_visit = backtosql.TemplateColumn('part_2sumdiv.sql', dict_join(_context, LOCAL_ET_COST_COLUMNS), AGGREGATE)  # noqa
     avg_etfm_cost_per_visit = backtosql.TemplateColumn('part_4sumdiv.sql', dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)  # noqa
@@ -338,7 +338,7 @@ class MVMaster(BreakdownsBase):
     video_progress_3s = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'video_progress_3s'}, AGGREGATE)
 
     # Video  derivates
-    _context = {'divisor': 'video_first_quartile', 'divisor_modifier': converters.DOLAR_TO_NANO}
+    _context = {'divisor': 'video_first_quartile', 'divisor_modifier': converters.CURRENCY_TO_NANO}
     video_et_cpv = backtosql.TemplateColumn('part_2sumdiv.sql', dict_join(_context, ET_COST_COLUMNS), AGGREGATE)
     local_video_et_cpv = backtosql.TemplateColumn('part_2sumdiv.sql', dict_join(_context, LOCAL_ET_COST_COLUMNS), AGGREGATE)  # noqa
     video_etfm_cpv = backtosql.TemplateColumn('part_4sumdiv.sql', dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
@@ -347,7 +347,7 @@ class MVMaster(BreakdownsBase):
     video_cpv = backtosql.TemplateColumn('part_sumdiv.sql', dict_join(_context, A_COST_COLUMNS), AGGREGATE)
     local_video_cpv = backtosql.TemplateColumn('part_sumdiv.sql', dict_join(_context, LOCAL_A_COST_COLUMNS), AGGREGATE)
 
-    _context = {'divisor': 'video_complete', 'divisor_modifier': converters.DOLAR_TO_NANO}
+    _context = {'divisor': 'video_complete', 'divisor_modifier': converters.CURRENCY_TO_NANO}
     video_et_cpcv = backtosql.TemplateColumn('part_2sumdiv.sql', dict_join(_context, ET_COST_COLUMNS), AGGREGATE)  # noqa
     local_video_et_cpcv = backtosql.TemplateColumn('part_2sumdiv.sql', dict_join(_context, LOCAL_ET_COST_COLUMNS), AGGREGATE)  # noqa
     video_etfm_cpcv = backtosql.TemplateColumn('part_4sumdiv.sql', dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)  # noqa

@@ -115,6 +115,7 @@
         account: 186 # test account 1
         settings: 608
         name: 'My campaign'
+        real_time_campaign_stop: True
     model: dash.campaign
     pk: 608
 

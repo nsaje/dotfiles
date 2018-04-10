@@ -141,9 +141,9 @@ class TestAuditSpendPatterns(TestCase):
         _create_daily_statement(
             date,
             budget,
-            media * converters.DOLAR_TO_NANO,
-            data_nano=data * converters.DOLAR_TO_NANO,
-            margin_nano=margin * converters.DOLAR_TO_NANO,
+            media * converters.CURRENCY_TO_NANO,
+            data_nano=data * converters.CURRENCY_TO_NANO,
+            margin_nano=margin * converters.CURRENCY_TO_NANO,
         )
 
     def _create_batch_statements(self, budgets, start_date, end_date=None, media=500):

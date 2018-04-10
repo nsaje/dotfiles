@@ -172,7 +172,7 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
                 Decimal(value) * 100, 2, 3))
         elif prop_name == 'flat_fee_cc':
             value = lc_helper.default_currency(
-                Decimal(value) * converters.CC_TO_DECIMAL_DOLAR)
+                Decimal(value) * converters.CC_TO_DECIMAL_CURRENCY)
         elif prop_name == 'status':
             value = constants.CreditLineItemStatus.get_text(value)
         elif prop_name == 'comment':
@@ -240,7 +240,7 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
         return self.status == constants.CreditLineItemStatus.PENDING
 
     def flat_fee(self):
-        return Decimal(self.flat_fee_cc) * converters.CC_TO_DECIMAL_DOLAR
+        return Decimal(self.flat_fee_cc) * converters.CC_TO_DECIMAL_CURRENCY
 
     def effective_amount(self):
         return Decimal(self.amount) - self.flat_fee()

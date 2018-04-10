@@ -34,7 +34,7 @@ class Command(BaseCommand):
                 budget.free_inactive_allocated_assets()
                 if is_verbose:
                     self.stdout.write('Budget has ${} assets freed.\n'.format(
-                        budget.freed_cc * converters.CC_TO_DECIMAL_DOLAR
+                        budget.freed_cc * converters.CC_TO_DECIMAL_CURRENCY
                     ))
             except AssertionError:
                 if is_verbose:

@@ -284,7 +284,7 @@ class Command(BaseCommand):
                     obj.free_inactive_allocated_assets()
                     self._print(
                         'Released {} from budget {}'.format(
-                            obj.freed_cc * utils.converters.CC_TO_DECIMAL_DOLAR,
+                            obj.freed_cc * utils.converters.CC_TO_DECIMAL_CURRENCY,
                             str(obj)
                         )
                     )
@@ -381,7 +381,7 @@ class Command(BaseCommand):
             budget.start_date,
             budget.end_date,
             budget.amount,
-            utils.converters.CC_TO_DECIMAL_DOLAR * budget.freed_cc,
+            utils.converters.CC_TO_DECIMAL_CURRENCY * budget.freed_cc,
             budget.margin,
         ))
 
@@ -394,5 +394,5 @@ class Command(BaseCommand):
             credit.end_date,
             credit.amount,
             credit.license_fee,
-            utils.converters.CC_TO_DECIMAL_DOLAR * credit.flat_fee_cc
+            utils.converters.CC_TO_DECIMAL_CURRENCY * credit.flat_fee_cc
         ))

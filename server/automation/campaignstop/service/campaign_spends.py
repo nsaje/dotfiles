@@ -8,6 +8,9 @@ from utils import numbers
 from .. import RealTimeCampaignDataHistory
 
 
+import core.multicurrency
+
+
 logger = logging.getLogger(__name__)
 
 HOURS_DELAY = 6
@@ -46,14 +49,21 @@ def get_budget_spend_estimates(log, campaign):
 
     spend_estimates = {}
     remaining_rt_spend = current_rt_spend if current_rt_spend else 0
+    local_remaining_rt_spend = _to_local_currency(campaign, remaining_rt_spend)
     for budget in budgets_active_today:
-        past_spend = budget.get_spend_data(date=budget_spend_until_date)['etfm_total']
-        spend_estimates[budget] = min(budget.amount, past_spend + remaining_rt_spend)
+        past_spend = budget.get_local_spend_data(date=budget_spend_until_date)['etfm_total']
+        spend_estimates[budget] = min(budget.amount, past_spend + local_remaining_rt_spend)
 
         rt_added = spend_estimates[budget] - past_spend
-        remaining_rt_spend -= rt_added
+        local_remaining_rt_spend -= rt_added
 
     return spend_estimates
+
+
+def _to_local_currency(campaign, amount):
+    currency = campaign.account.currency
+    exchange_rate = core.multicurrency.get_exchange_rate(dates_helper.local_today(), currency)
+    return amount * exchange_rate
 
 
 def _get_current_realtime_spend(log, campaign, start):

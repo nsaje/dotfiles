@@ -65,10 +65,6 @@ class BudgetDailyStatement(models.Model):
 
         self.save()
 
-    @property
-    def total_spend_nano(self):
-        return self.media_spend_nano + self.data_spend_nano + self.license_fee_nano
-
     class Meta:
         get_latest_by = 'date'
         unique_together = ('budget', 'date')

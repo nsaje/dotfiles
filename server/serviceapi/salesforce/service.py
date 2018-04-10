@@ -52,11 +52,11 @@ def create_credit_line_item(request, data):
     if data['pf_schedule'] == constants.PF_SCHEDULE_FLAT_FEE:
         cli['flat_fee_start_date'] = start_date
         cli['flat_fee_end_date'] = end_date
-        cli['flat_fee_cc'] = int(utils.converters.DOLAR_TO_CC * data['calc_variable_fee'])
+        cli['flat_fee_cc'] = int(utils.converters.CURRENCY_TO_CC * data['calc_variable_fee'])
     elif data['pf_schedule'] == constants.PF_SCHEDULE_UPFRONT:
         cli['flat_fee_start_date'] = start_date
         cli['flat_fee_end_date'] = start_date
-        cli['flat_fee_cc'] = int(utils.converters.DOLAR_TO_CC * data['calc_variable_fee'])
+        cli['flat_fee_cc'] = int(utils.converters.CURRENCY_TO_CC * data['calc_variable_fee'])
     elif data['pf_schedule'] == constants.PF_SCHEDULE_PCT_FEE:
         cli['license_fee'] = data['pct_of_budget']
 

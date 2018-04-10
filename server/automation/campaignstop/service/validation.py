@@ -4,6 +4,7 @@ from .import campaign_spends
 from .. import RealTimeCampaignStopLog
 from ..constants import CampaignStopEvent
 
+
 RESERVED_PROPORTION = decimal.Decimal('0.1')
 
 
@@ -29,7 +30,8 @@ def _calculate_minimum_budget_amount(log, budget_line_item):
     spend_estimates = campaign_spends.get_budget_spend_estimates(log, budget_line_item.campaign)
     estimated_spend = spend_estimates.get(budget_line_item, 0)
     reserved_amount = estimated_spend * RESERVED_PROPORTION
-    return _round(estimated_spend + reserved_amount)
+    amount = estimated_spend + reserved_amount
+    return _round(amount)
 
 
 def _round(number):

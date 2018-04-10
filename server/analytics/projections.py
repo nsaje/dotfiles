@@ -172,7 +172,7 @@ class BudgetProjections(object):
         agency_ids = dash.models.Account.objects.filter(pk__in=self.accounts).values_list('agency_id', flat=True)
         res = dash.models.BudgetDailyStatement.objects.filter(
             budget__campaign__account__agency_id__in=agency_ids).filter(
-                media_spend_nano__gt=0
+                local_media_spend_nano__gt=0
         ).values_list('budget__campaign__account_id', 'budget__campaign__account__agency_id')
 
         m = collections.defaultdict(set)
@@ -202,7 +202,7 @@ class BudgetProjections(object):
                     statements_on_date.setdefault(statement.date, []).append(statement)
 
             num_of_positive_statements = len([x for x in [
-                s.media_spend_nano + s.data_spend_nano
+                s.local_media_spend_nano + s.local_data_spend_nano
                 for slist in list(statements_on_date.values()) for s in slist
             ] if x])
 
@@ -259,7 +259,7 @@ class BudgetProjections(object):
         row['ideal_media_spend'] = row['ideal_daily_media_spend'] * Decimal(self.past_days)
 
         row['attributed_media_spend'] = converters.nano_to_decimal(sum(
-            statement.media_spend_nano + statement.data_spend_nano
+            statement.local_media_spend_nano + statement.local_data_spend_nano
             for budget in budgets
             for statement in budget.statements.all()
             if statement.date >= self.start_date and statement.date <= self.projection_date

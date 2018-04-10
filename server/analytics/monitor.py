@@ -233,7 +233,7 @@ def audit_overspend(date, min_overspend=Decimal('0.1')):
     rows = redshiftapi.db.execute_query(
         OVERSPEND_QUERY.format(
             date=str(date),
-            threshold=str(int(min_overspend * converters.DOLAR_TO_NANO))
+            threshold=str(int(min_overspend * converters.CURRENCY_TO_NANO))
         ),
         [],
         'audit_overspend',
@@ -276,7 +276,7 @@ def audit_running_ad_groups(min_spend=Decimal('50.0'), account_types=None):
     with redshiftapi.db.get_stats_cursor() as c:
         c.execute(AD_GROUP_SPEND_QUERY.format(
             d=str(yesterday),
-            threshold=str(int(min_spend * converters.DOLAR_TO_NANO))
+            threshold=str(int(min_spend * converters.CURRENCY_TO_NANO))
         ))
         spending_ad_group_ids = set(int(row[0]) for row in c.fetchall())
     return dash.models.AdGroup.objects.filter(

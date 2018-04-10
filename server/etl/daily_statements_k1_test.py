@@ -622,8 +622,8 @@ class EffectiveSpendPctsK1TestCase(TestCase):
         date = datetime.date(2015, 2, 1)
 
         campaign_spend = {
-            'media_nano': 40 * converters.DOLAR_TO_NANO,
-            'data_nano': 40 * converters.DOLAR_TO_NANO,
+            'media_nano': 40 * converters.CURRENCY_TO_NANO,
+            'data_nano': 40 * converters.CURRENCY_TO_NANO,
         }
         total_spend = {
             date: {
@@ -636,7 +636,7 @@ class EffectiveSpendPctsK1TestCase(TestCase):
             media_spend_nano=campaign_spend['media_nano'],
             data_spend_nano=campaign_spend['media_nano'],
             license_fee_nano=(campaign_spend['media_nano'] + campaign_spend['data_nano']) * budget.credit.license_fee,
-            margin_nano=24 * converters.DOLAR_TO_NANO,)
+            margin_nano=24 * converters.CURRENCY_TO_NANO,)
 
         effective_spend = daily_statements._get_effective_spend(None, [date], total_spend)
         pct_actual_spend, pct_license_fee, pct_margin = effective_spend[date][campaign]
@@ -665,8 +665,8 @@ class EffectiveSpendPctsK1TestCase(TestCase):
         date = datetime.date(2015, 2, 1)
 
         campaign_spend = {
-            'media_nano': 40 * converters.DOLAR_TO_NANO,
-            'data_nano': 40 * converters.DOLAR_TO_NANO,
+            'media_nano': 40 * converters.CURRENCY_TO_NANO,
+            'data_nano': 40 * converters.CURRENCY_TO_NANO,
         }
         total_spend = {
             date: {
@@ -700,8 +700,8 @@ class EffectiveSpendPctsK1TestCase(TestCase):
         date = datetime.date(2015, 2, 1)
 
         campaign_spend = {
-            'media_nano': 40 * converters.DOLAR_TO_NANO,
-            'data_nano': 40 * converters.DOLAR_TO_NANO,
+            'media_nano': 40 * converters.CURRENCY_TO_NANO,
+            'data_nano': 40 * converters.CURRENCY_TO_NANO,
         }
         total_spend = {
             date: {

@@ -50,7 +50,7 @@ class Command(ExceptionCommand):
             for media_source, impressions, spend in c:
                 source_stats[sources_by_slug[media_source].pk] = {
                     'impressions': impressions,
-                    'cost': Decimal(spend) / converters.DOLAR_TO_MICRO,
+                    'cost': Decimal(spend) / converters.CURRENCY_TO_MICRO,
                 }
 
         for recipient in recipients:
@@ -94,7 +94,7 @@ class Command(ExceptionCommand):
         with connections[settings.STATS_DB_NAME].cursor() as c:
             c.execute(query, params)
             for date, domain, impressions, clicks, cost_nano in c:
-                cost_formatted = Decimal(cost_nano if cost_nano else 0) / converters.DOLAR_TO_NANO
+                cost_formatted = Decimal(cost_nano if cost_nano else 0) / converters.CURRENCY_TO_NANO
                 result.append([date, domain, impressions, clicks, cost_formatted])
 
         return result

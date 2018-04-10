@@ -14,6 +14,7 @@ from dash import models, constants
 from utils.test_helper import fake_request
 from django.test.client import RequestFactory
 
+import automation.campaignstop
 from utils import converters
 from utils import test_helper
 
@@ -31,11 +32,6 @@ class BCMViewTestCase(TestCase):
             account.users.add(self.user)
 
         self.client.login(username=self.user.email, password='secret')
-
-        campaign = models.Campaign.objects.get(id=1)
-        new_campaign_settings = campaign.get_current_settings().copy_settings()
-        new_campaign_settings.automatic_campaign_stop = True
-        new_campaign_settings.save(None)
 
 
 class AccountCreditViewTest(BCMViewTestCase):
@@ -1266,17 +1262,14 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         )  # no change
 
     @patch('automation.campaign_stop.perform_landing_mode_check')
-    @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')
-    @patch('automation.campaign_stop.get_minimum_budget_amount')
-    def test_post_lower_unactive(self, mock_min_amount, mock_valid_time, mock_lmode):
+    @patch('automation.campaignstop.validate_minimum_budget_amount')
+    def test_post_lower_unactive(self, mock_validate_min_amount, mock_lmode):
         mock_lmode.return_value = False
         credit = models.CreditLineItem.objects.get(pk=1)
         credit.status = 1
         credit.end_date = datetime.date(2015, 12, 31)
         credit.save()
 
-        mock_min_amount.return_value = Decimal('80000.0000')
-        mock_valid_time.return_value = True
         url = reverse('campaigns_budget_item', kwargs={
             'campaign_id': 1,
             'budget_id': 1,
@@ -1292,14 +1285,12 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             mock_now.return_value = datetime.date(2015, 9, 30)  # before start date
             response = self.client.post(url, json.dumps(data),
                                         content_type='application/json')
-        self.assertTrue(mock_min_amount.called)
-        self.assertTrue(mock_valid_time.called)
+        self.assertTrue(mock_validate_min_amount.called)
         self.assertEqual(response.status_code, 200)
 
     @patch('automation.campaign_stop.perform_landing_mode_check')
-    @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')
-    @patch('automation.campaign_stop.get_minimum_budget_amount')
-    def test_post_lower_campaign_stop_off(self, mock_min_amount, mock_valid_time, mock_lmode):
+    @patch('automation.campaignstop.validate_minimum_budget_amount')
+    def test_post_lower_campaign_stop_off(self, mock_validate_min_amount, mock_lmode):
         mock_lmode.return_value = False
         credit = models.CreditLineItem.objects.get(pk=1)
         credit.status = 1
@@ -1307,12 +1298,9 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         credit.save()
 
         campaign = models.Campaign.objects.get(id=1)
-        new_campaign_settings = campaign.get_current_settings().copy_settings()
-        new_campaign_settings.automatic_campaign_stop = False
-        new_campaign_settings.save(None)
+        campaign.real_time_campaign_stop = False
+        campaign.save()
 
-        mock_min_amount.return_value = Decimal('80000.0000')
-        mock_valid_time.return_value = True
         url = reverse('campaigns_budget_item', kwargs={
             'campaign_id': 1,
             'budget_id': 1,
@@ -1332,23 +1320,19 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
 
         self.assertTrue('amount' in response_data['data']['errors'])
         self.assertEqual(response_data['data']['errors']['amount'][0],
-                         'If automatic campaign stop is off amount cannot be lowered.')
-        self.assertFalse(mock_min_amount.called)
-        self.assertFalse(mock_valid_time.called)
+                         'If campaign stop is disabled amount cannot be lowered.')
+        self.assertFalse(mock_validate_min_amount.called)
         self.assertEqual(response.status_code, 400)
 
     @patch('automation.campaign_stop.perform_landing_mode_check')
-    @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')
-    @patch('automation.campaign_stop.get_minimum_budget_amount')
-    def test_post_lower_active(self, mock_min_amount, mock_valid_time, mock_lmode):
+    @patch('automation.campaignstop.validate_minimum_budget_amount')
+    def test_post_lower_active(self, mock_validate_min_amount, mock_lmode):
         mock_lmode.return_value = False
         credit = models.CreditLineItem.objects.get(pk=1)
         credit.status = 1
         credit.end_date = datetime.date(2015, 12, 31)
         credit.save()
 
-        mock_min_amount.return_value = Decimal('80000.0000')
-        mock_valid_time.return_value = True
         url = reverse('campaigns_budget_item', kwargs={
             'campaign_id': 1,
             'budget_id': 1,
@@ -1365,22 +1349,21 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             mock_now.return_value = datetime.date(2015, 10, 30)
             response = self.client.post(url, json.dumps(data),
                                         content_type='application/json')
-        self.assertTrue(mock_min_amount.called)
-        self.assertTrue(mock_valid_time.called)
+        self.assertTrue(mock_validate_min_amount.called)
         self.assertEqual(response.status_code, 200)
 
     @patch('automation.campaign_stop.perform_landing_mode_check')
-    @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')
-    @patch('automation.campaign_stop.get_minimum_budget_amount')
-    def test_post_lower_active_too_low(self, mock_min_amount, mock_valid_time, mock_lmode):
+    @patch('automation.campaignstop.validate_minimum_budget_amount')
+    def test_post_lower_active_too_low(self, mock_validate_min_amount, mock_lmode):
         mock_lmode.return_value = False
         credit = models.CreditLineItem.objects.get(pk=1)
         credit.status = 1
         credit.end_date = datetime.date(2015, 12, 31)
         credit.save()
 
-        mock_min_amount.return_value = Decimal('95000.0000')
-        mock_valid_time.return_value = True
+        mock_validate_min_amount.side_effect = automation.campaignstop.CampaignStopValidationException(
+            'msg', min_amount=95000,
+        )
         url = reverse('campaigns_budget_item', kwargs={
             'campaign_id': 1,
             'budget_id': 1,
@@ -1397,49 +1380,12 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             mock_now.return_value = datetime.date(2015, 10, 30)
             response = self.client.post(url, json.dumps(data),
                                         content_type='application/json')
-        self.assertTrue(mock_min_amount.called)
-        self.assertTrue(mock_valid_time.called)
+        self.assertTrue(mock_validate_min_amount.called)
         self.assertEqual(response.status_code, 400)
         response_data = json.loads(response.content)
         self.assertEqual(
             response_data['data']['errors']['amount'],
             ['Budget amount has to be at least $95000.00.']
-        )
-
-    @patch('automation.campaign_stop.perform_landing_mode_check')
-    @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')
-    @patch('automation.campaign_stop.get_minimum_budget_amount')
-    def test_post_lower_active_invalid_time(self, mock_min_amount, mock_valid_time, mock_lmode):
-        mock_lmode.return_value = False
-        credit = models.CreditLineItem.objects.get(pk=1)
-        credit.status = 1
-        credit.end_date = datetime.date(2015, 12, 31)
-        credit.save()
-
-        mock_min_amount.return_value = Decimal('80000.0000')
-        mock_valid_time.return_value = False
-        url = reverse('campaigns_budget_item', kwargs={
-            'campaign_id': 1,
-            'budget_id': 1,
-        })
-        data = {
-            'credit': 1,
-            'start_date': '2015-10-01',
-            'end_date': '2015-11-30',
-            'amount': '90000',
-            'comment': 'Test case test_post',
-        }
-
-        with patch('utils.dates_helper.local_today') as mock_now:
-            mock_now.return_value = datetime.date(2015, 10, 30)
-            response = self.client.post(url, json.dumps(data),
-                                        content_type='application/json')
-        self.assertTrue(mock_min_amount.called)
-        self.assertTrue(mock_valid_time.called)
-        response_data = json.loads(response.content)
-        self.assertEqual(
-            response_data['data']['errors']['amount'],
-            ['You can lower the amount on an active budget line item after 7 am EST.']
         )
 
     @patch('automation.campaign_stop.perform_landing_mode_check')
@@ -1474,10 +1420,10 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
         models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=today,
-            media_spend_nano=300 * converters.DOLAR_TO_NANO,
-            data_spend_nano=200 * converters.DOLAR_TO_NANO,
-            license_fee_nano=50 * converters.DOLAR_TO_NANO,
-            margin_nano=55 * converters.DOLAR_TO_NANO,
+            media_spend_nano=300 * converters.CURRENCY_TO_NANO,
+            data_spend_nano=200 * converters.CURRENCY_TO_NANO,
+            license_fee_nano=50 * converters.CURRENCY_TO_NANO,
+            margin_nano=55 * converters.CURRENCY_TO_NANO,
         )
 
         # Another budget with daily statement
@@ -1487,10 +1433,10 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
         models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=today,
-            media_spend_nano=100 * converters.DOLAR_TO_NANO,
-            data_spend_nano=100 * converters.DOLAR_TO_NANO,
+            media_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            data_spend_nano=100 * converters.CURRENCY_TO_NANO,
             license_fee_nano=105 * (10**8),
-            margin_nano=Decimal('21.05') * converters.DOLAR_TO_NANO,
+            margin_nano=Decimal('21.05') * converters.CURRENCY_TO_NANO,
         )
 
         url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
@@ -1595,18 +1541,18 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
         models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=today - datetime.timedelta(1),
-            media_spend_nano=500 * converters.DOLAR_TO_NANO,
+            media_spend_nano=500 * converters.CURRENCY_TO_NANO,
             data_spend_nano=0,
-            license_fee_nano=50 * converters.DOLAR_TO_NANO,
+            license_fee_nano=50 * converters.CURRENCY_TO_NANO,
             margin_nano=0,
         )
         for num in range(0, 5):
             models.BudgetDailyStatement.objects.create(
                 budget=budget,
                 date=today + datetime.timedelta(num),
-                media_spend_nano=800 * converters.DOLAR_TO_NANO,
+                media_spend_nano=800 * converters.CURRENCY_TO_NANO,
                 data_spend_nano=0,
-                license_fee_nano=80 * converters.DOLAR_TO_NANO,
+                license_fee_nano=80 * converters.CURRENCY_TO_NANO,
                 margin_nano=0,
             )
 

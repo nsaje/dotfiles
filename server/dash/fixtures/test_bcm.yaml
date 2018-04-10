@@ -141,6 +141,7 @@
         account: 1 # test account 1
         settings: 1
         name: 'test campaign 1'
+        real_time_campaign_stop: True
     model: dash.campaign
     pk: 1
 

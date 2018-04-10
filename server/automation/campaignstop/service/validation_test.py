@@ -6,6 +6,7 @@ from django.test import TestCase
 
 import core.entity
 import core.bcm
+import core.multicurrency
 import dash.constants
 
 from . import validation
@@ -55,6 +56,10 @@ class ValidateMinimumBudgetAmountTest(TestCase):
             data_spend_nano=0,
             license_fee_nano=20 * (10**9),
             margin_nano=0,
+            local_media_spend_nano=200 * (10**9),
+            local_data_spend_nano=0,
+            local_license_fee_nano=20 * (10**9),
+            local_margin_nano=0,
         )
 
         magic_mixer.blend(
@@ -72,17 +77,32 @@ class ValidateMinimumBudgetAmountTest(TestCase):
         pm = datetime.datetime(self.today.year, self.today.month, self.today.day, 16)
         mock_utc_now.return_value = pm
 
-        with self.assertRaises(validation.CampaignStopValidationException):
+        with self.assertRaises(validation.CampaignStopValidationException) as e:
             validation.validate_minimum_budget_amount(self.budget, 399)
+            self.assertEqual(400, e.min_amount)
 
     @mock.patch('utils.dates_helper.utc_now')
     def test_validate_minimum_budget_amount_invalid_real_time_data(self, mock_utc_now):
         am = datetime.datetime(self.today.year, self.today.month, self.today.day, 6)
         mock_utc_now.return_value = am
 
-        with self.assertRaises(validation.CampaignStopValidationException):
+        with self.assertRaises(validation.CampaignStopValidationException) as e:
             validation.validate_minimum_budget_amount(self.budget, 399)
+            self.assertEqual(400, e.min_amount)
 
     def test_validate_without_real_time_campaign_stop(self):
         self.campaign.set_real_time_campaign_stop(is_enabled=False)
         validation.validate_minimum_budget_amount(self.budget, 0)
+
+    def test_multicurrency(self):
+        self.credit.currency = dash.constants.Currency.EUR
+        self.credit.save()
+
+        core.multicurrency.CurrencyExchangeRate.objects.create(
+            currency=self.credit.currency,
+            date=dates_helper.local_today(),
+            exchange_rate=decimal.Decimal('1.2'),
+        )
+        with self.assertRaises(validation.CampaignStopValidationException) as e:
+            validation.validate_minimum_budget_amount(self.budget, 100)
+            self.assertEqual(500, e.min_amount)

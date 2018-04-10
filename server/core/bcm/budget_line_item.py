@@ -20,7 +20,7 @@ import core.bcm
 import core.bcm.helpers
 import core.common
 import core.history
-from .dailystatement import ET_TOTALS_FIELDS, ETF_TOTALS_FIELDS, ETFM_TOTALS_FIELDS
+from . import dailystatement
 
 from . import bcm_slack
 
@@ -132,10 +132,10 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
             value = lc_helper.default_currency(value)
         elif prop_name == 'freed_cc' and value is not None:
             value = lc_helper.default_currency(
-                Decimal(value) * converters.CC_TO_DECIMAL_DOLAR)
+                Decimal(value) * converters.CC_TO_DECIMAL_CURRENCY)
         elif prop_name == 'flat_fee_cc':
             value = lc_helper.default_currency(
-                Decimal(value) * converters.CC_TO_DECIMAL_DOLAR)
+                Decimal(value) * converters.CC_TO_DECIMAL_CURRENCY)
         elif prop_name == 'margin' and value is not None:
             value = '{}%'.format(utils.string_helper.format_decimal(
                 Decimal(value) * 100, 2, 3))
@@ -224,10 +224,10 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
         return constants.BudgetLineItemState.get_text(self.state(date=date))
 
     def allocated_amount_cc(self):
-        return self.amount * converters.DOLAR_TO_CC - self.freed_cc
+        return self.amount * converters.CURRENCY_TO_CC - self.freed_cc
 
     def allocated_amount(self):
-        return Decimal(self.allocated_amount_cc()) * converters.CC_TO_DECIMAL_DOLAR
+        return Decimal(self.allocated_amount_cc()) * converters.CC_TO_DECIMAL_CURRENCY
 
     def is_editable(self):
         return self.state() == constants.BudgetLineItemState.PENDING
@@ -238,13 +238,13 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
     def free_inactive_allocated_assets(self):
         if self.state() != constants.BudgetLineItemState.INACTIVE:
             raise AssertionError('Budget has to be inactive to be freed.')
-        amount_cc = self.amount * converters.DOLAR_TO_CC
+        amount_cc = self.amount * converters.CURRENCY_TO_CC
         spend_data = self.get_spend_data()
         if self.campaign.account.uses_bcm_v2:
             total_spend = spend_data['etfm_total']
         else:
             total_spend = spend_data['etf_total']
-        total_spend = int(total_spend * converters.DOLAR_TO_CC)
+        total_spend = int(total_spend * converters.CURRENCY_TO_CC)
 
         reserve = self.get_reserve_amount_cc()
         free_date = self.end_date + \
@@ -269,7 +269,10 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
         except IndexError:
             return None
         total_cc = converters.nano_to_cc(
-            statement.data_spend_nano + statement.media_spend_nano + statement.license_fee_nano
+            statement.local_media_spend_nano +
+            statement.local_data_spend_nano +
+            statement.local_license_fee_nano +
+            statement.local_margin_nano
         )
         return total_cc * (factor_offset + settings.BUDGET_RESERVE_FACTOR)
 
@@ -299,6 +302,24 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
                 date__lte=date,
             )
         return statements.calculate_spend_data()
+
+    def get_local_spend_data(self, date=None):
+        if (date is None or date == utils.dates_helper.local_today()) and hasattr(self, 'spend_data_media'):
+            return {
+                'media': utils.converters.nano_to_decimal(self.spend_data_local_media or 0),
+                'data': utils.converters.nano_to_decimal(self.spend_data_local_data or 0),
+                'license_fee': utils.converters.nano_to_decimal(self.spend_data_local_license_fee or 0),
+                'margin': utils.converters.nano_to_decimal(self.spend_data_local_margin or 0),
+                'et_total': utils.converters.nano_to_decimal(self.spend_data_local_et_total or 0),
+                'etf_total': utils.converters.nano_to_decimal(self.spend_data_local_etf_total or 0),
+                'etfm_total': utils.converters.nano_to_decimal(self.spend_data_local_etfm_total or 0),
+            }
+        statements = self.statements
+        if date:
+            statements = statements.filter(
+                date__lte=date,
+            )
+        return statements.calculate_local_spend_data()
 
     def get_daily_spend(self, date):
         if not date:
@@ -449,14 +470,14 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
             ).filter(
                 start_date__lte=date
             ).annotate(
-                media_spend_sum=Sum('statements__media_spend_nano'),
-                license_fee_spend_sum=Sum('statements__license_fee_nano'),
-                data_spend_sum=Sum('statements__data_spend_nano')
+                local_media_spend_sum=Sum('statements__local_media_spend_nano'),
+                local_license_fee_spend_sum=Sum('statements__local_license_fee_nano'),
+                local_data_spend_sum=Sum('statements__local_data_spend_nano')
             ).exclude(
                 amount__lte=core.bcm.helpers.Round(
-                    core.bcm.helpers.Coalesce('media_spend_sum') * 1e-9 +
-                    core.bcm.helpers.Coalesce('license_fee_spend_sum') * 1e-9 +
-                    core.bcm.helpers.Coalesce('data_spend_sum') * 1e-9
+                    core.bcm.helpers.Coalesce('local_media_spend_sum') * 1e-9 +
+                    core.bcm.helpers.Coalesce('local_license_fee_spend_sum') * 1e-9 +
+                    core.bcm.helpers.Coalesce('local_data_spend_sum') * 1e-9
                 )
             )
 
@@ -477,7 +498,14 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
                 spend_data_data=Sum('statements__data_spend_nano'),
                 spend_data_license_fee=Sum('statements__license_fee_nano'),
                 spend_data_margin=Sum('statements__margin_nano'),
-                spend_data_et_total=Sum(sum(F('statements__' + field) for field in ET_TOTALS_FIELDS)),
-                spend_data_etf_total=Sum(sum(F('statements__' + field) for field in ETF_TOTALS_FIELDS)),
-                spend_data_etfm_total=Sum(sum(F('statements__' + field) for field in ETFM_TOTALS_FIELDS)),
+                spend_data_et_total=Sum(sum(F('statements__' + field) for field in dailystatement.ET_TOTALS_FIELDS)),
+                spend_data_etf_total=Sum(sum(F('statements__' + field) for field in dailystatement.ETF_TOTALS_FIELDS)),
+                spend_data_etfm_total=Sum(sum(F('statements__' + field) for field in dailystatement.ETFM_TOTALS_FIELDS)),
+                spend_data_local_media=Sum('statements__local_media_spend_nano'),
+                spend_data_local_data=Sum('statements__local_data_spend_nano'),
+                spend_data_local_license_fee=Sum('statements__local_license_fee_nano'),
+                spend_data_local_margin=Sum('statements__local_margin_nano'),
+                spend_data_local_et_total=Sum(sum(F('statements__' + field) for field in dailystatement.LOCAL_ET_TOTALS_FIELDS)),
+                spend_data_local_etf_total=Sum(sum(F('statements__' + field) for field in dailystatement.LOCAL_ETF_TOTALS_FIELDS)),
+                spend_data_local_etfm_total=Sum(sum(F('statements__' + field) for field in dailystatement.LOCAL_ETFM_TOTALS_FIELDS)),
             )

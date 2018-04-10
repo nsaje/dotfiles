@@ -12,6 +12,7 @@ from automation import campaign_stop
 import automation.campaignstop
 import core.bcm
 import core.bcm.bcm_slack
+import core.multicurrency
 
 logger = logging.getLogger(__name__)
 
@@ -513,38 +514,23 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         amount = Decimal(data.get('amount', '0'))
         if amount >= prev_amount:
             return
-        if item.instance.campaign.get_current_settings().automatic_campaign_stop:
-            self._validate_automatic_campaign_stop(item, amount)
-        elif item.instance.campaign.real_time_campaign_stop:
+        if item.instance.campaign.real_time_campaign_stop:
             try:
                 automation.campaignstop.validate_minimum_budget_amount(item.instance, amount)
             except automation.campaignstop.CampaignStopValidationException as e:
                 item.errors.setdefault('amount', []).append(
-                    'Budget amount has to be at least ${}'.format(e.min_amount),
+                    'Budget amount has to be at least {currency_symbol}{min_amount:.2f}.'.format(
+                        currency_symbol=core.multicurrency.get_currency_symbol(item.instance.credit.currency),
+                        min_amount=e.min_amount,
+                    ),
                 )
         else:
             acc_id = item.instance.campaign.account_id
             if amount < prev_amount and acc_id not in EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK:
                 item.errors.setdefault('amount', []).append(
-                    'If automatic campaign stop is off amount cannot be lowered.'
+                    'If campaign stop is disabled amount cannot be lowered.'
                 )
                 return
-
-    def _validate_automatic_campaign_stop(self, item, amount):
-        min_amount = campaign_stop.get_minimum_budget_amount(item.instance)
-        if min_amount is None:
-            return
-
-        if min_amount > amount:
-            item.errors.setdefault('amount', []).append(
-                'Budget amount has to be at least ${}.'.format(
-                    Decimal(min_amount).quantize(Decimal('1.00'))
-                )
-            )
-        if not campaign_stop.is_current_time_valid_for_amount_editing(item.instance.campaign):
-            item.errors.setdefault('amount', []).append(
-                'You can lower the amount on an active budget line item after 7 am EST.'
-            )
 
     def _get_response(self, user, item):
         if item.campaign.account.uses_bcm_v2:

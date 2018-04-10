@@ -27,10 +27,10 @@ class ProjectionsTestCase(test.TestCase):
         dash.models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=date,
-            media_spend_nano=media * converters.DOLAR_TO_NANO,
-            data_spend_nano=data * converters.DOLAR_TO_NANO,
-            license_fee_nano=fee * converters.DOLAR_TO_NANO,
-            margin_nano=margin * converters.DOLAR_TO_NANO,
+            media_spend_nano=media * converters.CURRENCY_TO_NANO,
+            data_spend_nano=data * converters.CURRENCY_TO_NANO,
+            license_fee_nano=fee * converters.CURRENCY_TO_NANO,
+            margin_nano=margin * converters.CURRENCY_TO_NANO,
         )
 
     def _create_batch_statements(self, budgets, start_date, end_date=None):
