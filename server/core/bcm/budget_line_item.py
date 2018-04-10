@@ -146,7 +146,7 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
     def get_settings_dict(self):
         return {history_key: getattr(self, history_key) for history_key in self.history_fields}
 
-    def save(self, request=None, user=None, action_type=None, skip_history=False, *args, **kwargs):
+    def save(self, request=None, user=None, action_type=None, *args, **kwargs):
         import core.bcm
         self.full_clean()
         if user and not self.pk:
@@ -159,11 +159,9 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
             snapshot=model_to_dict(self),
             budget=self,
         )
-
-        if not skip_history:
-            self.add_to_history(
-                request and request.user or user or None,
-                action_type)
+        self.add_to_history(
+            request and request.user or user or None,
+            action_type)
 
     def add_to_history(self, user, action_type):
         changes = self.get_model_state_changes(
