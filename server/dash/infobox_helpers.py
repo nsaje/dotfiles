@@ -163,7 +163,6 @@ def get_yesterday_adgroup_spend(user, ad_group, use_local_currency):
         'yesterday_et_cost': 0,
         'yesterday_etfm_cost': 0,
     }
-
     for row in query_results:
         if use_local_currency:
             ret['e_yesterday_cost'] += row['local_e_yesterday_cost']
@@ -198,11 +197,12 @@ def get_yesterday_campaign_spend(user, campaign, use_local_currency):
         ]
     )
 
-    ret = {}
+    ret = {
+        'e_yesterday_cost': 0,
+        'yesterday_et_cost': 0,
+        'yesterday_etfm_cost': 0,
+    }
     for row in query_results:
-        ret.setdefault('e_yesterday_cost', 0)
-        ret.setdefault('yesterday_et_cost', 0)
-        ret.setdefault('yesterday_etfm_cost', 0)
         if use_local_currency:
             ret['e_yesterday_cost'] += row['local_e_yesterday_cost']
             ret['yesterday_et_cost'] += row['local_yesterday_et_cost']
