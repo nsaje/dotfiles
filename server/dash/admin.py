@@ -359,6 +359,7 @@ class AgencyAdmin(ExportMixin, admin.ModelAdmin):
         'new_accounts_use_bcm_v2',
     )
     exclude = ('users',)
+    raw_id_fields = ('default_whitelist', 'default_blacklist')
     readonly_fields = ('id', 'created_dt', 'modified_dt', 'modified_by')
     inlines = (AgencyAccountInline, AgencyUserInline)
     resource_class = AgencyResource

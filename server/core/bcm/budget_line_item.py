@@ -203,10 +203,22 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
         total_spend = self.get_spend_data(date=date)['etf_total']
         return self.allocated_amount() - total_spend
 
+    def get_local_available_amount(self, date=None):
+        if date is None:
+            date = utils.dates_helper.local_today()
+        total_spend = self.get_local_spend_data(date=date)['etf_total']
+        return self.allocated_amount() - total_spend
+
     def get_available_etfm_amount(self, date=None):
         if date is None:
             date = utils.dates_helper.local_today()
         total_spend = self.get_spend_data(date=date)['etfm_total']
+        return self.allocated_amount() - total_spend
+
+    def get_local_available_etfm_amount(self, date=None):
+        if date is None:
+            date = utils.dates_helper.local_today()
+        total_spend = self.get_local_spend_data(date=date)['etfm_total']
         return self.allocated_amount() - total_spend
 
     def state(self, date=None):
@@ -239,7 +251,7 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
         if self.state() != constants.BudgetLineItemState.INACTIVE:
             raise AssertionError('Budget has to be inactive to be freed.')
         amount_cc = self.amount * converters.CURRENCY_TO_CC
-        spend_data = self.get_spend_data()
+        spend_data = self.get_local_spend_data()
         if self.campaign.account.uses_bcm_v2:
             total_spend = spend_data['etfm_total']
         else:

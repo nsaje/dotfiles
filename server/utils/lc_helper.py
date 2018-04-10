@@ -2,7 +2,7 @@ from decimal import Decimal
 
 
 def default_currency(number, places=2):
-    return format_currency(Decimal(number), places=places, curr='$')
+    return format_currency(number, places=places, curr='$')
 
 
 def format_currency(value,
@@ -24,6 +24,7 @@ def format_currency(value,
     neg:     optional sign for negative numbers: '-', '(', space or blank
     trailneg:optional trailing minus indicator:  '-', ')', space or blank
     """
+    value = Decimal(value)
     q = Decimal(10) ** -places      # 2 places --> '0.01'
     sign, digits, exp = value.quantize(q).as_tuple()
     result = []

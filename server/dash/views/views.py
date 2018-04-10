@@ -30,12 +30,15 @@ from utils import db_for_reads
 
 from automation import campaign_stop
 
+import core.multicurrency
 import core.entity.helpers
 
 from dash import models, region_targeting_helper, retargeting_helper, campaign_goals
 from dash import constants
 from dash import forms
 from dash import infobox_helpers
+
+import stats.helpers
 
 import analytics.projections
 
@@ -205,11 +208,13 @@ class AdGroupOverview(api_common.BaseApiView):
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
 
+        use_local_currency = request.user.has_perm('zemauth.can_see_infobox_in_local_currency')
         async_perf_query = threads.AsyncFunction(
             partial(
                 infobox_helpers.get_yesterday_adgroup_spend,
                 request.user,
-                ad_group
+                ad_group,
+                use_local_currency
             )
         )
         async_perf_query.start()
@@ -235,10 +240,10 @@ class AdGroupOverview(api_common.BaseApiView):
             'text': infobox_helpers.get_entity_delivery_text(ad_group_running_status)
         }
 
-        basic_settings, daily_cap = self._basic_settings(request.user, ad_group, ad_group_settings)
+        basic_settings = self._basic_settings(request.user, ad_group, ad_group_settings)
         performance_settings = self._performance_settings(
             ad_group, request.user, ad_group_settings, start_date, end_date,
-            daily_cap, async_perf_query, filtered_sources
+            async_perf_query, filtered_sources
         )
         for setting in performance_settings[1:]:
             setting['section_start'] = True
@@ -269,19 +274,22 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(flight_time_setting.as_dict())
 
-        daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
-
-        return settings, daily_cap
+        return settings
 
     def _performance_settings(self, ad_group, user, ad_group_settings, start_date, end_date,
-                              daily_cap, async_query, filtered_sources):
+                              async_query, filtered_sources):
         settings = []
 
+        use_local_currency = user.has_perm('zemauth.can_see_infobox_in_local_currency')
+        currency = ad_group.campaign.account.currency if use_local_currency else constants.Currency.USD
+
         yesterday_costs = async_query.join_and_get_result() or 0
+        daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group, use_local_currency)
 
         settings.append(infobox_helpers.create_yesterday_spend_setting(
             yesterday_costs,
             daily_cap,
+            currency,
             uses_bcm_v2=ad_group.campaign.account.uses_bcm_v2
         ).as_dict())
 
@@ -384,14 +392,12 @@ class CampaignOverview(api_common.BaseApiView):
             'text': infobox_helpers.get_entity_delivery_text(campaign_running_status)
         }
 
-        basic_settings, daily_cap =\
-            self._basic_settings(request.user, campaign, campaign_settings)
+        basic_settings = self._basic_settings(request.user, campaign, campaign_settings)
 
         performance_settings = self._performance_settings(
             campaign,
             request.user,
             campaign_settings,
-            daily_cap,
             start_date,
             end_date,
         )
@@ -417,8 +423,6 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.append(campaign_manager_setting.as_dict())
 
-        daily_cap_value = infobox_helpers.calculate_daily_campaign_cap(campaign)
-
         start_date, end_date, never_finishes = self._calculate_flight_dates(
             campaign
         )
@@ -440,14 +444,25 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.append(flight_time_setting.as_dict())
 
-        campaign_budget_setting = infobox_helpers.create_total_campaign_budget_setting(user, campaign)
-        settings.append(campaign_budget_setting.as_dict())
+        use_local_currency = user.has_perm('zemauth.can_see_infobox_in_local_currency')
+        currency = campaign.account.currency if use_local_currency else constants.Currency.USD
+        currency_symbol = core.multicurrency.get_currency_symbol(currency)
 
-        return settings, daily_cap_value
+        total_spend = infobox_helpers.get_total_campaign_budgets_amount(user, campaign)
+        total_spend_available = infobox_helpers.calculate_available_campaign_budget(campaign, use_local_currency)
+        campaign_budget_setting = infobox_helpers.OverviewSetting(
+            'Campaign budget:',
+            lc_helper.format_currency(total_spend, curr=currency_symbol),
+            '{} remaining'.format(
+                lc_helper.format_currency(total_spend_available, curr=currency_symbol)
+            ),
+            tooltip="Campaign media budget"
+        )
+        settings.append(campaign_budget_setting.as_dict())
+        return settings
 
     @influx.timer('dash.api')
-    def _performance_settings(self, campaign, user, campaign_settings, daily_cap_cc,
-                              start_date, end_date):
+    def _performance_settings(self, campaign, user, campaign_settings, start_date, end_date):
         settings = []
 
         monthly_proj = analytics.projections.CurrentMonthBudgetProjections(
@@ -457,10 +472,16 @@ class CampaignOverview(api_common.BaseApiView):
 
         pacing = monthly_proj.total('pacing') or decimal.Decimal('0')
 
-        yesterday_costs = infobox_helpers.get_yesterday_campaign_spend(user, campaign) or 0
+        use_local_currency = user.has_perm('zemauth.can_see_infobox_in_local_currency')
+        currency = campaign.account.currency if use_local_currency else constants.Currency.USD
+        currency_symbol = core.multicurrency.get_currency_symbol(currency)
+
+        daily_cap = infobox_helpers.calculate_daily_campaign_cap(campaign, use_local_currency)
+        yesterday_costs = infobox_helpers.get_yesterday_campaign_spend(user, campaign, use_local_currency) or 0
         settings.append(infobox_helpers.create_yesterday_spend_setting(
             yesterday_costs,
-            daily_cap_cc,
+            daily_cap,
+            currency,
             uses_bcm_v2=campaign.account.uses_bcm_v2
         ).as_dict())
 
@@ -468,7 +489,7 @@ class CampaignOverview(api_common.BaseApiView):
         if attributed_media_spend is not None:
             settings.append(infobox_helpers.OverviewSetting(
                 'Campaign pacing:',
-                lc_helper.default_currency(attributed_media_spend),
+                lc_helper.format_currency(attributed_media_spend, curr=currency_symbol),
                 description='{:.2f}% on plan'.format(pacing or 0),
                 tooltip='Campaign pacing for the current month'
             ).as_dict())
@@ -574,15 +595,30 @@ class AccountOverview(api_common.BaseApiView):
         )
         settings.append(cs_manager_setting.as_dict())
 
+        use_local_currency = user.has_perm('zemauth.can_see_infobox_in_local_currency')
         allocated_credit, available_credit =\
-            infobox_helpers.calculate_allocated_and_available_credit(account)
+            infobox_helpers.calculate_allocated_and_available_credit(account, use_local_currency)
+
+        if use_local_currency:
+            currency_symbol = core.multicurrency.get_currency_symbol(account.currency)
+            allocated_credit_text = lc_helper.format_currency(
+                allocated_credit,
+                curr=currency_symbol,
+            )
+            unallocated_credit_text = lc_helper.format_currency(
+                available_credit,
+                curr=currency_symbol,
+            )
+        else:
+            allocated_credit_text = lc_helper.default_currency(allocated_credit)
+            unallocated_credit_text = lc_helper.default_currency(
+                available_credit
+            )
 
         allocated_credit_setting = infobox_helpers.OverviewSetting(
             'Allocated credit:',
-            lc_helper.default_currency(allocated_credit),
-            description='{} unallocated'.format(lc_helper.default_currency(
-                available_credit
-            )),
+            allocated_credit_text,
+            description='{} unallocated'.format(unallocated_credit_text),
             tooltip='Total allocated and unallocated credit',
         )
         settings.append(allocated_credit_setting.as_dict())
@@ -592,12 +628,15 @@ class AccountOverview(api_common.BaseApiView):
     def _performance_settings(self, account, user):
         settings = []
 
-        daily_budget = infobox_helpers.calculate_daily_account_cap(account)
-        yesterday_costs = infobox_helpers.get_yesterday_account_spend(account)
+        use_local_currency = user.has_perm('zemauth.can_see_infobox_in_local_currency')
+        currency = account.currency if use_local_currency else constants.Currency.USD
+        daily_budget = infobox_helpers.calculate_daily_account_cap(account, use_local_currency)
+        yesterday_costs = infobox_helpers.get_yesterday_account_spend(account, use_local_currency)
         settings.append(
             infobox_helpers.create_yesterday_spend_setting(
                 yesterday_costs,
                 daily_budget,
+                currency,
                 uses_bcm_v2=account.uses_bcm_v2
             ).as_dict(),
         )
@@ -887,52 +926,65 @@ class AllAccountsOverview(api_common.BaseApiView):
 
     def _append_performance_agency_settings(self, overview_settings, user):
         accounts = models.Account.objects.all().filter_by_user(user)
+        currency = stats.helpers.get_report_currency(
+            user, accounts, permission='zemauth.can_see_infobox_in_local_currency')
+
         uses_bcm_v2 = accounts.all_use_bcm_v2()
 
-        yesterday_costs = infobox_helpers.get_yesterday_agency_spend(accounts)
+        use_local_currency = currency != constants.Currency.USD
+        yesterday_costs = infobox_helpers.get_yesterday_agency_spend(accounts, use_local_currency)
         yesterday_cost = yesterday_costs['yesterday_etfm_cost'] if uses_bcm_v2 else yesterday_costs['e_yesterday_cost']
 
+        currency_symbol = core.multicurrency.get_currency_symbol(currency)
         overview_settings.append(infobox_helpers.OverviewSetting(
             'Yesterday spend:',
-            lc_helper.default_currency(yesterday_cost),
+            lc_helper.format_currency(yesterday_cost, curr=currency_symbol),
             tooltip='Yesterday spend' if uses_bcm_v2 else 'Yesterday media spend',
             section_start=True
         ))
 
-        mtd_costs = infobox_helpers.get_mtd_agency_spend(accounts)
+        mtd_costs = infobox_helpers.get_mtd_agency_spend(accounts, use_local_currency)
         mtd_cost = mtd_costs['etfm_cost'] if uses_bcm_v2 else mtd_costs['e_media_cost']
         overview_settings.append(infobox_helpers.OverviewSetting(
             'Month-to-date spend:',
-            lc_helper.default_currency(mtd_cost),
+            lc_helper.format_currency(mtd_cost, curr=currency_symbol),
             tooltip='Month-to-date spend' if uses_bcm_v2 else 'Month-to-date media spend'))
 
         return overview_settings
 
     def _append_performance_all_accounts_settings(self, overview_settings, user, view_filter):
-        # This info is seen only by administrators
-        # it does not filter by account
+        accounts = models.Account.objects\
+                                 .filter_by_user(user)\
+                                 .filter_by_agencies(view_filter.filtered_agencies)\
+                                 .filter_by_account_types(view_filter.filtered_account_types)
+        currency = stats.helpers.get_report_currency(
+            user, accounts, permission='zemauth.can_see_infobox_in_local_currency')
 
+        use_local_currency = currency != constants.Currency.USD
         yesterday_costs = infobox_helpers.get_yesterday_all_accounts_spend(
-            view_filter.filtered_agencies,
-            view_filter.filtered_account_types)
+            accounts,
+            use_local_currency,
+        )
 
         uses_bcm_v2 = settings.ALL_ACCOUNTS_USE_BCM_V2
         yesterday_cost = yesterday_costs['yesterday_etfm_cost'] if uses_bcm_v2 else yesterday_costs['e_yesterday_cost']
 
+        currency_symbol = core.multicurrency.get_currency_symbol(currency)
         overview_settings.append(infobox_helpers.OverviewSetting(
             'Yesterday spend:',
-            lc_helper.default_currency(yesterday_cost),
+            lc_helper.format_currency(yesterday_cost, curr=currency_symbol),
             tooltip='Yesterday spend' if uses_bcm_v2 else 'Yesterday media spend',
             section_start=True
         ))
 
         mtd_costs = infobox_helpers.get_mtd_all_accounts_spend(
-            view_filter.filtered_agencies,
-            view_filter.filtered_account_types)
+            accounts,
+            use_local_currency,
+        )
         mtd_cost = mtd_costs['etfm_cost'] if uses_bcm_v2 else mtd_costs['e_media_cost']
         overview_settings.append(infobox_helpers.OverviewSetting(
             'Month-to-date spend:',
-            lc_helper.default_currency(mtd_cost),
+            lc_helper.format_currency(mtd_cost, curr=currency_symbol),
             tooltip='Month-to-date spend' if uses_bcm_v2 else 'Month-to-date media spend'))
 
         return overview_settings
