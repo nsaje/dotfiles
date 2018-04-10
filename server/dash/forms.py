@@ -1879,7 +1879,8 @@ class AudienceForm(forms.Form):
             if row in rules:
                 existing_audience_names = models.Audience.objects.filter(id=rule['audience_id']).values('name')
                 if len(existing_audience_names) > 0:
-                    raise forms.ValidationError('Audience rule "%s" with the same ttl and rule already exists.' % existing_audience_names[0]['name'])
+                    self.add_error('pixel_id', 'Audience rule "%s" with the same ttl and rule already exists.' % existing_audience_names[0]['name'])
+                    break
 
         return self.cleaned_data
 
