@@ -310,6 +310,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_budget_optimization', 'User can see budget optimization settings'),
             ('can_see_infobox_in_local_currency', 'User can see infobox in local currency'),
             ('can_manage_budgets_in_local_currency', 'User can manage budgets in local currency'),
+            ('can_see_currency_setting', 'User can see currency setting'),
         )
 
     def get_full_name(self):

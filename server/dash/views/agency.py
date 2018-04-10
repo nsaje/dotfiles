@@ -952,6 +952,8 @@ class AccountSettings(api_common.BaseApiView):
     def set_account(self, request, account, resource):
         if resource['name']:
             account.name = resource['name']
+        if resource['currency']:
+            account.currency = resource['currency']
         if resource['agency']:
             if not request.user.has_perm('zemauth.can_set_agency_for_account'):
                 raise exc.AuthorizationError()
@@ -1112,6 +1114,7 @@ class AccountSettings(api_common.BaseApiView):
         result = {
             'id': str(account.pk),
             'archived': settings.archived,
+            'currency': account.currency,
         }
         if request.user.has_perm('zemauth.can_modify_account_name'):
             result['name'] = account.name

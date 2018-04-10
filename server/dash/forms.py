@@ -564,10 +564,21 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
     allowed_sources = forms.Field(required=False)
     facebook_page = PlainCharField(max_length=255, required=False)
     salesforce_url = PlainCharField(max_length=255, required=False)
+    currency = forms.TypedChoiceField(
+        choices=constants.Currency.get_choices(),
+        error_messages={'required': 'Please choose currency for account.'}
+    )
 
     def __init__(self, account, *args, **kwargs):
         self.account = account
         super(AccountSettingsForm, self).__init__(*args, **kwargs)
+
+    def clean_currency(self):
+        currency = self.cleaned_data.get('currency')
+        if self.account.currency != currency and self.account.campaign_set.count() > 0:
+            err_msg = "Cannot set currency for account with campaigns"
+            raise forms.ValidationError(err_msg)
+        return currency
 
     def clean_name(self):
         name = self.cleaned_data.get('name')

@@ -3,6 +3,7 @@ from restapi.views import RESTAPIBaseViewSet
 import restapi.access
 from . import serializers
 import core.entity
+import dash.constants
 
 
 UPDATABLE_SETTINGS_FIELDS = (
@@ -44,7 +45,8 @@ class AccountViewSet(RESTAPIBaseViewSet):
         new_account = core.entity.Account.objects.create(
             request,
             name=serializer.validated_data['settings']['name'],
-            agency=agency
+            agency=agency,
+            currency=dash.constants.Currency.USD,
         )
 
         settings_updates = serializer.validated_data.get('settings')

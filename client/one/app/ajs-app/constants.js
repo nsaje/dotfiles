@@ -2269,6 +2269,10 @@ var options = {
         {name: 'Include', value: constants.zipTargetingType.INCLUDE},
         {name: 'Exclude', value: constants.zipTargetingType.EXCLUDE},
     ],
+    currencies: [
+        {name: 'US Dollar', value: constants.currency.USD},
+        {name: 'Euro', value: constants.currency.EUR},
+    ],
 };
 
 var defaults = {

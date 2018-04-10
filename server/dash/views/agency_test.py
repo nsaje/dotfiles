@@ -24,6 +24,7 @@ from dash import history_helpers
 from dash.features import ga
 
 from utils import exc
+from utils.magic_mixer import magic_mixer
 from utils.test_helper import add_permissions, fake_request
 
 
@@ -2374,6 +2375,7 @@ class AccountSettingsTest(TestCase):
             'facebook_status': 'Empty',
             'whitelist_publisher_groups': [1],
             'blacklist_publisher_groups': [1],
+            'currency': 'USD',
         })
 
     def test_get_as_agency_manager(self):
@@ -2397,6 +2399,7 @@ class AccountSettingsTest(TestCase):
             'archived': False,
             'whitelist_publisher_groups': [],
             'blacklist_publisher_groups': [],
+            'currency': 'USD',
         })
 
         add_permissions(user, ['can_set_account_sales_representative'])
@@ -2415,6 +2418,7 @@ class AccountSettingsTest(TestCase):
             'archived': False,
             'whitelist_publisher_groups': [],
             'blacklist_publisher_groups': [],
+            'currency': 'USD',
         })
 
         add_permissions(user, ['can_set_account_cs_representative'])
@@ -2434,6 +2438,7 @@ class AccountSettingsTest(TestCase):
             'archived': False,
             'whitelist_publisher_groups': [],
             'blacklist_publisher_groups': [],
+            'currency': 'USD',
         })
 
         add_permissions(user, ['can_modify_allowed_sources'])
@@ -2457,6 +2462,7 @@ class AccountSettingsTest(TestCase):
             'archived': False,
             'whitelist_publisher_groups': [],
             'blacklist_publisher_groups': [],
+            'currency': 'USD',
         })
 
         add_permissions(user, ['can_modify_account_type'])
@@ -2481,6 +2487,7 @@ class AccountSettingsTest(TestCase):
             'archived': False,
             'whitelist_publisher_groups': [],
             'blacklist_publisher_groups': [],
+            'currency': 'USD',
         })
 
         add_permissions(user, ['can_see_salesforce_url'])
@@ -2506,6 +2513,7 @@ class AccountSettingsTest(TestCase):
             'archived': False,
             'whitelist_publisher_groups': [],
             'blacklist_publisher_groups': [],
+            'currency': 'USD',
         })
 
     def test_get_can_set_agency(self):
@@ -2532,6 +2540,7 @@ class AccountSettingsTest(TestCase):
             'agency': 'Alfa&Omega',
             'whitelist_publisher_groups': [],
             'blacklist_publisher_groups': [],
+            'currency': 'USD',
         })
         agencies = [{
             'name': 'Alfa&Omega',
@@ -2554,6 +2563,7 @@ class AccountSettingsTest(TestCase):
             'id': 1000,
             'name': 'changed name',
             'default_account_manager': '3',
+            'currency': 'USD',
         }
 
         response, content = self._put_account_agency(client, basic_settings, 1000)
@@ -2573,6 +2583,7 @@ class AccountSettingsTest(TestCase):
             'name': 'changed name',
             'default_account_manager': '3',
             'default_sales_representative': '3',
+            'currency': 'USD',
         }
 
         response, _ = self._put_account_agency(client, basic_settings, 1000)
@@ -2600,6 +2611,7 @@ class AccountSettingsTest(TestCase):
             'name': 'changed name',
             'default_account_manager': '3',
             'default_cs_representative': '3',
+            'currency': 'USD',
         }
 
         response, _ = self._put_account_agency(client, basic_settings, 1000)
@@ -2629,6 +2641,7 @@ class AccountSettingsTest(TestCase):
             'allowed_sources': {
                 '1': {'allowed': True},
             },
+            'currency': 'USD',
         }
 
         response, _ = self._put_account_agency(client, basic_settings, 1000)
@@ -2651,6 +2664,7 @@ class AccountSettingsTest(TestCase):
             'name': 'changed name',
             'default_account_manager': '3',
             'agency': 'Alfa&Omega',
+            'currency': 'USD',
         }
 
         response, _ = self._put_account_agency(client, basic_settings, 1)
@@ -2668,6 +2682,7 @@ class AccountSettingsTest(TestCase):
             'name': 'changed name',
             'default_account_manager': '3',
             'agency': 'Alfa&Omega',
+            'currency': 'USD',
         }
 
         response, _ = self._put_account_agency(client, basic_settings, 1)
@@ -2688,6 +2703,7 @@ class AccountSettingsTest(TestCase):
             'name': 'changed name',
             'default_account_manager': '3',
             'agency': 'New agency',
+            'currency': 'USD',
         }
 
         response, _ = self._put_account_agency(client, basic_settings, 1)
@@ -2783,6 +2799,7 @@ class AccountSettingsTest(TestCase):
             'archived': False,
             'whitelist_publisher_groups': [1],
             'blacklist_publisher_groups': [1],
+            'currency': 'USD',
         })
 
     @patch('requests.get')
@@ -2821,6 +2838,7 @@ class AccountSettingsTest(TestCase):
                         '1': {'allowed': True}
                     },
                     'facebook_page': 'http://www.facebook.com/dummy_page',
+                    'currency': 'USD',
                 }
             }),
             content_type='application/json',
@@ -2870,6 +2888,7 @@ class AccountSettingsTest(TestCase):
                         '1': {'allowed': True}
                     },
                     'facebook_page': 'dummy_page',
+                    'currency': 'USD',
                 }
             }),
             content_type='application/json',
@@ -2889,6 +2908,7 @@ class AccountSettingsTest(TestCase):
                     'id': '1',
                     'allowed_sources': {},
                     'facebook_page': 'dummy_page',
+                    'currency': 'USD',
                 }
             }),
             content_type='application/json',
@@ -3129,6 +3149,45 @@ class AccountSettingsTest(TestCase):
         new_ad_group_settings.save(None)
 
         self.assertEqual(view.get_non_removable_sources(account, [2]), [2])
+
+    def test_change_currency_account_has_campaigns(self):
+        client = self._get_client_with_permissions([])
+
+        response = client.put(
+            reverse('account_settings', kwargs={'account_id': 1}),
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'currency': 'EUR',
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+        self.assertFalse(content['success'])
+        self.assertIn('currency', content['data']['errors'])
+
+    def test_change_currency(self):
+        user = User.objects.get(pk=2)
+        account = magic_mixer.blend(models.Account, users=[user])
+        client = self._get_client_with_permissions([])
+
+        response = client.put(
+            reverse('account_settings', kwargs={'account_id': account.id}),
+            json.dumps({
+                'settings': {
+                    'id': account.id,
+                    'currency': 'EUR',
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        self.assertEqual(content['data']['settings']['currency'], 'EUR')
+
+        account.refresh_from_db()
+        self.assertEqual(account.currency, 'EUR')
 
 
 class AccountUsersTest(TestCase):

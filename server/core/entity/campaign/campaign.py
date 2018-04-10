@@ -33,6 +33,21 @@ class CampaignManager(core.common.QuerySetManager):
             Campaign.objects.filter(account=account).exclude_archived(),
             account.id,
         )
+        if not account.currency:
+            url = request.build_absolute_uri(
+                '/v2/analytics/account/{}?settings'.format(
+                    account.id,
+                )
+            )
+            raise exc.ValidationError(
+                data={
+                    'message': 'You are not able to add a campaign because currency is not defined.',
+                    'action': {
+                        'text': 'Configure the currency',
+                        'url': url,
+                    }
+                }
+            )
         campaign = Campaign(
             name=name,
             account=account

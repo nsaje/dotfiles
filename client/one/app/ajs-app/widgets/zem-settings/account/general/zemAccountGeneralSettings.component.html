@@ -107,6 +107,22 @@
             <div class="message message--error" ng-repeat="error in $ctrl.errors.salesforceUrl"
                  for="name-input">{{ error }}</div>
         </div>
+        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_see_currency_setting')"
+             ng-class="{'form--error': !!$ctrl.errors.currency}">
+            <label class="form__label" for="currency-select" is-internal="zemauth.can_see_currency_setting">
+                Currency:
+                <zem-help-popover content="Currency can be updated only if Account has no Campaigns yet."
+                                  placement="top"></zem-help-popover>
+            </label>
+            <select ui-select2="{minimumResultsForSearch: 5}" id="currency-select"
+                    class="button button--plain button--full-width button--dropdown-toggle-icon"
+                    ng-model="$ctrl.entity.settings.currency"
+                    >
+                <option ng-repeat="currency in $ctrl.options.currencies" value="{{currency.value}}">{{currency.name}}</option>
+            </select>
+            <div class="message message--error" ng-repeat="error in $ctrl.errors.currency"
+                 for="currency-select">{{ error }}</div>
+        </div>
     </div>
 </div>
 <div class="custom-panel zem-settings-component__container zem-media-sources-settings">

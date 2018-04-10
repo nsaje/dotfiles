@@ -12,7 +12,7 @@ EUR_AGENCIES = [196, 175, 179, 201]
 class AccountManager(core.common.QuerySetManager):
 
     @transaction.atomic()
-    def create(self, request, name, agency=None):
+    def create(self, request, name, agency=None, currency=None):
         if agency is not None:
             core.common.entity_limits.enforce(
                 model.Account.objects.filter(agency=agency).exclude_archived(),
@@ -26,6 +26,8 @@ class AccountManager(core.common.QuerySetManager):
         # FIXME(nsaje): remove when multicurrency finished
         if agency is not None and agency.id in EUR_AGENCIES:
             account.currency = constants.Currency.EUR
+        else:
+            account.currency = currency
 
         account.save(request)
         account.write_history(

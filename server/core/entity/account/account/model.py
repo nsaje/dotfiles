@@ -74,6 +74,7 @@ class Account(models.Model):
 
     currency = models.CharField(
         max_length=3,
+        null=True,
         default=constants.Currency.USD,
         choices=constants.Currency.get_choices()
     )

@@ -47,7 +47,8 @@ class AccountSettingsFormTest(TestCase):
             'name': 'Name',
             'default_account_manager': 2,
             'default_sales_representative': 3,
-            'allowed_sources': {'1': {'name': 'Source name'}}
+            'allowed_sources': {'1': {'name': 'Source name'}},
+            'currency': 'USD',
         })
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error('default_sales_representative'))
@@ -59,7 +60,8 @@ class AccountSettingsFormTest(TestCase):
             'default_account_manager': 2,
             'default_sales_representative': 2,
             'default_cs_representative': 3,
-            'allowed_sources': {'1': {'name': 'Source name'}}
+            'allowed_sources': {'1': {'name': 'Source name'}},
+            'currency': 'USD',
         })
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error('default_cs_representative'))
@@ -74,7 +76,8 @@ class AccountSettingsFormTest(TestCase):
             'name': 'Name',
             'default_account_manager': account_manager_id,
             'default_sales_representative': 2,
-            'allowed_sources': {'1': {'name': 'Source name'}}
+            'allowed_sources': {'1': {'name': 'Source name'}},
+            'currency': 'USD',
         })
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error('default_account_manager'))
@@ -94,7 +97,8 @@ class AccountSettingsFormTest(TestCase):
             'name': 'Name',
             'default_account_manager': 3,
             'default_sales_representative': 2,
-            'allowed_sources': {'1': {'name': 'Source name', 'allowed': False}}
+            'allowed_sources': {'1': {'name': 'Source name', 'allowed': False}},
+            'currency': 'USD',
         })
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data['allowed_sources'],
@@ -109,6 +113,7 @@ class AccountSettingsFormTest(TestCase):
             'default_sales_representative': 2,
             'whitelist_publisher_groups': [1],
             'blacklist_publisher_groups': [1],
+            'currency': 'USD',
         })
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data['whitelist_publisher_groups'], [1])
@@ -120,7 +125,8 @@ class AccountSettingsFormTest(TestCase):
             'name': 'Name',
             'default_account_manager': 3,
             'default_sales_representative': 2,
-            'allowed_sources': allowed_sources_dict
+            'allowed_sources': allowed_sources_dict,
+            'currency': 'USD',
         })
 
     def test_invalid_allowed_sources_list(self):
@@ -142,6 +148,38 @@ class AccountSettingsFormTest(TestCase):
         form = self._gen_allowed_sources_form({'string': {}})
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error('allowed_sources'))
+
+    def test_no_currency(self):
+        form = forms.AccountSettingsForm(self.account, {
+            'id': 1,
+            'name': 'Name',
+            'default_account_manager': 3,
+            'default_sales_representative': 2,
+        })
+        self.assertFalse(form.is_valid())
+        self.assertTrue(form.has_error('currency'))
+
+    def test_invalid_currency(self):
+        form = forms.AccountSettingsForm(self.account, {
+            'id': 1,
+            'name': 'Name',
+            'default_account_manager': 3,
+            'default_sales_representative': 2,
+            'currency': 'TEST',
+        })
+        self.assertFalse(form.is_valid())
+        self.assertTrue(form.has_error('currency'))
+
+    def test_currency_change_account_has_campaigns(self):
+        form = forms.AccountSettingsForm(self.account, {
+            'id': 1,
+            'name': 'Name',
+            'default_account_manager': 3,
+            'default_sales_representative': 2,
+            'currency': 'EUR',
+        })
+        self.assertFalse(form.is_valid())
+        self.assertTrue(form.has_error('currency'))
 
 
 class AdGroupAdminFormTest(TestCase):

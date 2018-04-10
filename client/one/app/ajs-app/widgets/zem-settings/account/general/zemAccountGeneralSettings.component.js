@@ -35,6 +35,14 @@ angular.module('one.widgets').component('zemAccountGeneralSettings', {
             });
         };
 
+        $ctrl.$onChanges = function () {
+            if ($ctrl.entity &&
+                    !zemPermissions.hasPermission('zemauth.can_see_currency_setting') &&
+                    !$ctrl.entity.settings.currency) {
+                $ctrl.entity.settings.currency = constants.currency.USD;
+            }
+        };
+
         function updateAgencyDefaults () {
             if ($ctrl.entity.settings.agency && $ctrl.entity.settings.agency.obj) {
                 if ($ctrl.entity.settings.accountType === constants.accountTypes.UNKNOWN) {
