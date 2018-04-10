@@ -719,7 +719,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
             mock_get_campaignstop_state.return_value = {'allowed_to_run': False, 'pending_budget_updates': True}
             self.assertEqual(
-                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET,
+                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE,
                 dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
             )
 
@@ -731,7 +731,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
             mock_get_campaignstop_state.return_value = {'allowed_to_run': False, 'pending_budget_updates': True, 'almost_depleted': False}
             self.assertEqual(
-                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET,
+                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE,
                 dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
             )
 
@@ -798,6 +798,47 @@ class InfoBoxAccountHelpersTest(TestCase):
             dash.constants.InfoboxStatus.AUTOPILOT,
             dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
         )
+
+        with mock.patch('automation.campaignstop.get_campaignstop_state') as mock_get_campaignstop_state:
+            old_value = ad_group.campaign.real_time_campaign_stop
+            ad_group.campaign.set_real_time_campaign_stop(None, True)
+
+            # adgroup is active and on CPC autopilot with pending budget updates
+            start_date = datetime.datetime.today().date()
+            end_date = start_date + datetime.timedelta(days=99)
+            ad_group.settings.update_unsafe(
+                None,
+                start_date=start_date,
+                end_date=end_date,
+                state=dash.constants.AdGroupSettingsState.ACTIVE,
+                created_dt=datetime.datetime.utcnow(),
+                autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,  # price_discovery
+            )
+            mock_get_campaignstop_state.return_value = {'allowed_to_run': False, 'pending_budget_updates': True}
+            self.assertEqual(
+                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY,
+                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
+            )
+
+            # adgroup is active and on CPC+Budget autopilot with pending budget updates
+            start_date = datetime.datetime.today().date()
+            end_date = start_date + datetime.timedelta(days=99)
+            ad_group.settings.update_unsafe(
+                None,
+                start_date=start_date,
+                end_date=end_date,
+                state=dash.constants.AdGroupSettingsState.ACTIVE,
+                created_dt=datetime.datetime.utcnow(),
+                autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,  # autopilot
+            )
+
+            mock_get_campaignstop_state.return_value = {'allowed_to_run': False, 'pending_budget_updates': True}
+            self.assertEqual(
+                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT,
+                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
+            )
+
+            ad_group.campaign.set_real_time_campaign_stop(None, old_value)
 
         # adgroup is active but sources are inactive
         source_settings = dash.models.AdGroupSourceSettings.objects.filter(
@@ -868,6 +909,21 @@ class InfoBoxAccountHelpersTest(TestCase):
             dash.constants.InfoboxStatus.AUTOPILOT,
             dash.infobox_helpers.get_campaign_running_status(campaign)
         )
+
+        campaign.settings.update_unsafe(None, autopilot=True)
+
+        with mock.patch('automation.campaignstop.get_campaignstop_state') as mock_get_campaignstop_state:
+            old_value = campaign.real_time_campaign_stop
+            campaign.set_real_time_campaign_stop(None, True)
+
+            mock_get_campaignstop_state.return_value = {'allowed_to_run': False, 'pending_budget_updates': True}
+            self.assertEqual(
+                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT,
+                dash.infobox_helpers.get_campaign_running_status(campaign)
+            )
+
+            campaign.set_real_time_campaign_stop(None, old_value)
+
         campaign.settings.update_unsafe(None, autopilot=False)
 
         with mock.patch('automation.campaignstop.get_campaignstop_state') as mock_get_campaignstop_state:
@@ -882,7 +938,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
             mock_get_campaignstop_state.return_value = {'allowed_to_run': False, 'pending_budget_updates': True}
             self.assertEqual(
-                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET,
+                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE,
                 dash.infobox_helpers.get_campaign_running_status(campaign)
             )
 

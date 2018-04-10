@@ -59,7 +59,9 @@ var constants = {
         AUTOPILOT: 'autopilot',
         CAMPAIGNSTOP_STOPPED: 'campaignstop-stopped',
         CAMPAIGNSTOP_LOW_BUDGET: 'campaignstop-low-budget',
-        CAMPAIGNSTOP_PENDING_BUDGET: 'campaignstop-pending-budget-updates',
+        CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT: 'campaignstop-pending-budget-autopilot',
+        CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY: 'campaignstop-pending-budget-active-price-discovery',
+        CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE: 'campaignstop-pending-budget-active',
     },
     publisherStatus: {
         ENABLED: 1,

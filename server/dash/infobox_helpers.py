@@ -622,14 +622,17 @@ def get_adgroup_running_status_class(
              state == dash.constants.AdGroupSettingsState.INACTIVE):
         return dash.constants.InfoboxStatus.INACTIVE
 
+    autopilot = autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or is_campaign_autopilot
+    price_discovery = autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
+
     if real_time_campaign_stop and campaignstop_state:
-        campaignstop_state_status = _get_campaignstop_state_status(campaignstop_state)
+        campaignstop_state_status = _get_campaignstop_state_status(campaignstop_state, autopilot=autopilot, price_discovery=price_discovery)
         if campaignstop_state_status:
             return campaignstop_state_status
 
-    if autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or is_campaign_autopilot:
+    if autopilot:
         return dash.constants.InfoboxStatus.AUTOPILOT
-    elif autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC:
+    elif price_discovery:
         return dash.constants.InfoboxStatus.ACTIVE_PRICE_DISCOVERY
 
     return dash.constants.InfoboxStatus.ACTIVE
@@ -641,7 +644,7 @@ def get_campaign_running_status(campaign):
 
     if campaign.real_time_campaign_stop:
         campaignstop_state = automation.campaignstop.get_campaignstop_state(campaign)
-        campaignstop_state_status = _get_campaignstop_state_status(campaignstop_state)
+        campaignstop_state_status = _get_campaignstop_state_status(campaignstop_state, autopilot=campaign.settings.autopilot)
         if campaignstop_state_status:
             return campaignstop_state_status
 
@@ -659,10 +662,14 @@ def get_campaign_running_status(campaign):
     return dash.constants.InfoboxStatus.INACTIVE if active_exists else dash.constants.InfoboxStatus.STOPPED
 
 
-def _get_campaignstop_state_status(campaignstop_state):
+def _get_campaignstop_state_status(campaignstop_state, autopilot=False, price_discovery=False):
         if not campaignstop_state['allowed_to_run']:
             if campaignstop_state['pending_budget_updates']:
-                return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET
+                if autopilot:
+                    return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT
+                if price_discovery:
+                    return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY
+                return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE
             return dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED
         if campaignstop_state['almost_depleted']:
             return dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET
@@ -683,13 +690,16 @@ def get_account_running_status(account):
 
 
 def get_entity_delivery_text(status):
-    if status == dash.constants.InfoboxStatus.ACTIVE:
+    if status in (dash.constants.InfoboxStatus.ACTIVE,
+                  dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE):
         return 'Active'
-    if status == dash.constants.InfoboxStatus.AUTOPILOT:
+    if status in (dash.constants.InfoboxStatus.AUTOPILOT,
+                  dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT):
         return 'Active - Autopilot mode'
     if status == dash.constants.InfoboxStatus.LANDING_MODE:
         return 'Active - Landing mode'
-    if status == dash.constants.InfoboxStatus.ACTIVE_PRICE_DISCOVERY:
+    if status in (dash.constants.InfoboxStatus.ACTIVE_PRICE_DISCOVERY,
+                  dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY):
         return 'Active - Price Discovery'
     if status == dash.constants.InfoboxStatus.STOPPED:
         return 'Paused'
@@ -697,8 +707,6 @@ def get_entity_delivery_text(status):
         return 'Inactive'
     if status == dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED:
         return 'Stopped - Out of budget (add budget to resume)'
-    if status == dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET:
-        return 'Stopped - Out of budget (pending budget allocations)'
     if status == dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET:
         return 'Active - Running out of budget'
 

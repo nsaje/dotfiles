@@ -222,7 +222,9 @@ class InfoboxStatus(ConstantBase):
     AUTOPILOT = 'autopilot'
     CAMPAIGNSTOP_STOPPED = 'campaignstop-stopped'
     CAMPAIGNSTOP_LOW_BUDGET = 'campaignstop-low-budget'
-    CAMPAIGNSTOP_PENDING_BUDGET = 'campaignstop-pending-budget-updates'
+    CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT = 'campaignstop-pending-budget-autopilot'
+    CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY = 'campaignstop-pending-budget-active-price-discovery'
+    CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE = 'campaignstop-pending-budget-active'
 
     _VALUES = {
         ACTIVE: 'Active',
@@ -233,7 +235,9 @@ class InfoboxStatus(ConstantBase):
         AUTOPILOT: 'Autopilot',
         CAMPAIGNSTOP_STOPPED: 'Stopped - Out of budget',
         CAMPAIGNSTOP_LOW_BUDGET: 'Active - Running out of budget',
-        CAMPAIGNSTOP_PENDING_BUDGET: 'Stopped - Pending budget allocations',
+        CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT: 'Active - Pending budget allocations',
+        CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY: 'Active - Pending budget allocations',
+        CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE: 'Active - Pending budget allocations',
     }
 
 

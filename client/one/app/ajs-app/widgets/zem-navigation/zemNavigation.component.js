@@ -101,17 +101,22 @@ angular.module('one.widgets').component('zemNavigation', {
         }
 
         function getItemIconClass (item) {
-            if (item.type !== constants.entityType.AD_GROUP) return 'zem-navigation__item-icon--none';
+            if (item.type !== constants.entityType.AD_GROUP)
+                return 'zem-navigation__item-icon--none';
 
             var adGroup = item.data;
-            if (adGroup.reloading) return 'zem-navigation__item-icon--reloading';
+            if (adGroup.reloading)
+                return 'zem-navigation__item-icon--reloading';
             if (adGroup.active === constants.infoboxStatus.STOPPED ||
-                adGroup.active === constants.infoboxStatus.CAMPAIGNSTOP_STOPPED ||
-                adGroup.active === constants.infoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET)
+                adGroup.active === constants.infoboxStatus.CAMPAIGNSTOP_STOPPED)
                 return 'zem-navigation__item-icon--stopped';
-            if (adGroup.active === constants.infoboxStatus.LANDING_MODE) return 'zem-navigation__item-icon--landing';
-            if (adGroup.active === constants.infoboxStatus.INACTIVE) return 'zem-navigation__item-icon--inactive';
-            if (adGroup.active === constants.infoboxStatus.AUTOPILOT) return 'zem-navigation__item-icon--autopilot';
+            if (adGroup.active === constants.infoboxStatus.LANDING_MODE)
+                return 'zem-navigation__item-icon--landing';
+            if (adGroup.active === constants.infoboxStatus.INACTIVE)
+                return 'zem-navigation__item-icon--inactive';
+            if (adGroup.active === constants.infoboxStatus.AUTOPILOT ||
+                adGroup.active === constants.infoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT)
+                return 'zem-navigation__item-icon--autopilot';
             if (adGroup.active === constants.infoboxStatus.CAMPAIGNSTOP_LOW_BUDGET)
                 return 'zem-navigation__item-icon--active';
             return 'zem-navigation__item-icon--active';

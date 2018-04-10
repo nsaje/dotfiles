@@ -74,7 +74,13 @@ describe('ZemNavigationCtrl', function () {
         item.data.active = constants.infoboxStatus.CAMPAIGNSTOP_STOPPED;
         expect(ctrl.getItemIconClass(item)).toEqual('zem-navigation__item-icon--stopped');
 
-        item.data.active = constants.infoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET;
-        expect(ctrl.getItemIconClass(item)).toEqual('zem-navigation__item-icon--stopped');
+        item.data.active = constants.infoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE;
+        expect(ctrl.getItemIconClass(item)).toEqual('zem-navigation__item-icon--active');
+
+        item.data.active = constants.infoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY;
+        expect(ctrl.getItemIconClass(item)).toEqual('zem-navigation__item-icon--active');
+
+        item.data.active = constants.infoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT;
+        expect(ctrl.getItemIconClass(item)).toEqual('zem-navigation__item-icon--autopilot');
     });
 });
