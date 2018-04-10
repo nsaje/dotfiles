@@ -1880,7 +1880,7 @@ class AudienceForm(forms.Form):
             return self.cleaned_data
 
         ttl = self.cleaned_data.get('ttl')
-        rules = [(rule['type'], rule['value']) for rule in self.cleaned_data.get('rules')]
+        rules = [(rule['type'], rule['value'] or '') for rule in self.cleaned_data.get('rules')]
         pixel_id = self.cleaned_data.get('pixel_id')
         audience_ids = models.Audience.objects.filter(ttl=ttl, pixel_id=pixel_id, archived=False).values('id')
         audience_ids = [a['id'] for a in audience_ids]
