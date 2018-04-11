@@ -2,7 +2,7 @@ angular.module('one.widgets').component('zemInfoboxRealtimestats', {
     bindings: {
     },
     template: require('./zemInfoboxRealtimestats.component.html'),
-    controller: function (zemNavigationNewService, zemRealtimestatsService, $filter, $interval, $timeout) {
+    controller: function (zemNavigationNewService, zemRealtimestatsService, zemMulticurrencyService, $filter, $interval, $timeout) {
         var $ctrl = this;
 
         var spendRow = {
@@ -51,7 +51,11 @@ angular.module('one.widgets').component('zemInfoboxRealtimestats', {
         }
 
         function formatSpend (spend) {
-            return $filter('decimalCurrency')(spend, '$', 4);
+            var currencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol(
+                zemNavigationNewService.getActiveAccount(),
+                ['zemauth.can_see_infobox_in_local_currency'],
+            );
+            return $filter('decimalCurrency')(spend, currencySymbol, 4);
         }
     },
 });
