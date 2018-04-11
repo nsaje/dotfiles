@@ -18,6 +18,7 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.core import validators
 from django.utils.html import strip_tags
 
+import core.multicurrency
 from dash import constants
 from dash import fields
 from dash import models
@@ -127,6 +128,22 @@ class PublisherGroupsFormMixin(forms.Form):
         return [x.id for x in publisher_groups]
 
 
+class MulticurrencySettingsFormMixin(forms.Form):
+    def get_exchange_rate(self):
+        today = dates_helper.local_today()
+        currency = self._get_currency()
+        return core.multicurrency.get_exchange_rate(today, currency)
+
+    def get_currency_symbol(self):
+        currency = self._get_currency()
+        return core.multicurrency.get_currency_symbol(currency)
+
+    def _get_currency(self):
+        if self.account and self.user.has_perm('zemauth.can_manage_settings_in_local_currency'):
+            return self.account.currency
+        return constants.Currency.USD
+
+
 class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
     SETTINGS_FIELDS = [
         'notes',
@@ -220,7 +237,7 @@ class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
         fields = '__all__'
 
 
-class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
+class AdGroupSettingsForm(PublisherGroupsFormMixin, MulticurrencySettingsFormMixin, forms.Form):
     name = PlainCharField(
         max_length=127,
         error_messages={'required': 'Please specify ad group name.'},
@@ -237,24 +254,12 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
     )
     end_date = forms.DateField(required=False)
     cpc_cc = forms.DecimalField(
-        min_value=decimal.Decimal('0.05'),
-        max_value=decimal.Decimal('10'),
         decimal_places=4,
         required=False,
-        error_messages={
-            'min_value': 'Maximum CPC can\'t be lower than $0.05.',
-            'max_value': 'Maximum CPC can\'t be higher than $10.00.'
-        }
     )
     max_cpm = forms.DecimalField(
-        min_value=decimal.Decimal('0.05'),
-        max_value=decimal.Decimal('10'),
         decimal_places=4,
         required=False,
-        error_messages={
-            'min_value': 'Maximum CPM can\'t be lower than $%(limit_value)s.',
-            'max_value': 'Maximum CPM can\'t be higher than $%(limit_value)s.'
-        }
     )
     daily_budget_cc = forms.DecimalField(
         min_value=10,
@@ -386,6 +391,7 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
     def __init__(self, ad_group, user, *args, **kwargs):
         self.ad_group = ad_group
         self.account = ad_group.campaign.account
+        self.user = user
 
         super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
 
@@ -402,6 +408,44 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
     def clean(self):
         cleaned_data = super(AdGroupSettingsForm, self).clean()
         return cleaned_data
+
+    def clean_cpc_cc(self):
+        cpc_cc = self.cleaned_data.get('cpc_cc')
+
+        if cpc_cc:
+            currency_symbol = self.get_currency_symbol()
+            min_cpc_cc = decimal.Decimal('0.05') * self.get_exchange_rate()
+            max_cpc_cc = decimal.Decimal('10') * self.get_exchange_rate()
+
+            if cpc_cc < min_cpc_cc:
+                raise forms.ValidationError(
+                    'Maximum CPC can\'t be lower than {}{:.2f}.'.format(currency_symbol, min_cpc_cc)
+                )
+            elif cpc_cc > max_cpc_cc:
+                raise forms.ValidationError(
+                    'Maximum CPC can\'t be higher than {}{:.2f}.'.format(currency_symbol, max_cpc_cc)
+                )
+
+        return cpc_cc
+
+    def clean_max_cpm(self):
+        max_cpm = self.cleaned_data.get('max_cpm')
+
+        if max_cpm:
+            currency_symbol = self.get_currency_symbol()
+            min_max_cpm = decimal.Decimal('0.05') * self.get_exchange_rate()
+            max_max_cpm = decimal.Decimal('10') * self.get_exchange_rate()
+
+            if max_cpm < min_max_cpm:
+                raise forms.ValidationError(
+                    'Maximum CPM can\'t be lower than {}{:.2f}.'.format(currency_symbol, min_max_cpm)
+                )
+            elif max_cpm > max_max_cpm:
+                raise forms.ValidationError(
+                    'Maximum CPM can\'t be higher than {}{:.2f}.'.format(currency_symbol, max_max_cpm)
+                )
+
+        return max_cpm
 
     def clean_retargeting_ad_groups(self):
         ad_groups = self.cleaned_data.get('retargeting_ad_groups')

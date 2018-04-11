@@ -44,13 +44,20 @@ def get_updated_ad_group_sources_changes(user, last_change_dt, filtered_sources,
             status = ad_group_settings.state
             if status == constants.AdGroupSettingsState.ACTIVE:
                 status = ad_group_settings.b1_sources_group_state
+
+            bid_cpc_value = ad_group_settings.b1_sources_group_cpc_cc
+            daily_budget_value = ad_group_settings.b1_sources_group_daily_budget
+            if user.has_perm('zemauth.can_manage_settings_in_local_currency'):
+                bid_cpc_value = ad_group_settings.local_b1_sources_group_cpc_cc
+                daily_budget_value = ad_group_settings.local_b1_sources_group_daily_budget
+
             rows[source.AllRTBSource.id] = {
                 'status_setting': ad_group_settings.b1_sources_group_state,
                 'status': status,
-                'bid_cpc': ad_group_settings.b1_sources_group_cpc_cc,
-                'current_bid_cpc': ad_group_settings.b1_sources_group_cpc_cc,
-                'daily_budget': ad_group_settings.b1_sources_group_daily_budget,
-                'current_daily_budget': ad_group_settings.b1_sources_group_daily_budget,
+                'bid_cpc': bid_cpc_value,
+                'current_bid_cpc': bid_cpc_value,
+                'daily_budget': daily_budget_value,
+                'current_daily_budget': daily_budget_value,
             }
         for ad_group_source in changed_ad_group_sources:
             ags_setting = settings_map.get(ad_group_source.id)
@@ -59,8 +66,12 @@ def get_updated_ad_group_sources_changes(user, last_change_dt, filtered_sources,
             current_daily_budget = None
             status = None
             if ags_setting and ad_group_settings:
-                current_bid_cpc = ags_setting.cpc_cc
-                current_daily_budget = ags_setting.daily_budget_cc
+                if user.has_perm('zemauth.can_manage_settings_in_local_currency'):
+                    current_bid_cpc = ags_setting.local_cpc_cc
+                    current_daily_budget = ags_setting.local_daily_budget_cc
+                else:
+                    current_bid_cpc = ags_setting.cpc_cc
+                    current_daily_budget = ags_setting.daily_budget_cc
                 status = ad_group_settings.state
                 if status == constants.AdGroupSettingsState.ACTIVE:
                     status = ags_setting.state
@@ -69,13 +80,18 @@ def get_updated_ad_group_sources_changes(user, last_change_dt, filtered_sources,
             if ags_setting and ags_setting.state:
                 status_setting = ags_setting.state
 
-            daily_budget = current_daily_budget
-            if ags_setting and ags_setting.daily_budget_cc:
-                daily_budget = ags_setting.daily_budget_cc
-
             bid_cpc = current_bid_cpc
-            if ags_setting and ags_setting.cpc_cc:
-                bid_cpc = ags_setting.cpc_cc
+            daily_budget = current_daily_budget
+            if user.has_perm('zemauth.can_manage_settings_in_local_currency'):
+                if ags_setting and ags_setting.local_cpc_cc:
+                    bid_cpc = ags_setting.local_cpc_cc
+                if ags_setting and ags_setting.local_daily_budget_cc:
+                    daily_budget = ags_setting.local_daily_budget_cc
+            else:
+                if ags_setting and ags_setting.cpc_cc:
+                    bid_cpc = ags_setting.cpc_cc
+                if ags_setting and ags_setting.daily_budget_cc:
+                    daily_budget = ags_setting.daily_budget_cc
 
             rows[ad_group_source.source_id] = {
                 'status_setting': status_setting,
@@ -91,7 +107,7 @@ def get_updated_ad_group_sources_changes(user, last_change_dt, filtered_sources,
                                        ad_group_source, rows, notifications)
 
         response['rows'] = rows
-        daily_budget = _get_daily_budget(ad_group_settings, ad_group_sources_settings)
+        daily_budget = _get_daily_budget(user, ad_group_settings, ad_group_sources_settings)
         response['totals'] = {
             'daily_budget': daily_budget,
             'current_daily_budget': daily_budget,
@@ -120,7 +136,7 @@ def _update_rtb_source_row(ad_group_settings, ad_group_source, rows, notificatio
             }
 
 
-def _get_daily_budget(ad_group_settings, ad_group_sources_settings):
+def _get_daily_budget(user, ad_group_settings, ad_group_sources_settings):
     # MVP for all-RTB-sources-as-one
     all_rtb_budget = 0
     include_rtb_sources = True
@@ -129,21 +145,31 @@ def _get_daily_budget(ad_group_settings, ad_group_sources_settings):
         all_rtb_budget = 0
         if ad_group_settings.b1_sources_group_state == \
                 constants.AdGroupSourceSettingsState.ACTIVE:
-            all_rtb_budget = ad_group_settings.b1_sources_group_daily_budget
+            if user.has_perm('zemauth.can_manage_settings_in_local_currency'):
+                all_rtb_budget = ad_group_settings.local_b1_sources_group_daily_budget
+            else:
+                all_rtb_budget = ad_group_settings.b1_sources_group_daily_budget
 
-    daily_budget = _get_daily_budget_total(ad_group_sources_settings, include_rtb_sources)
+    daily_budget = _get_daily_budget_total(user, ad_group_sources_settings, include_rtb_sources)
     if not include_rtb_sources:
         daily_budget = daily_budget + all_rtb_budget if daily_budget else all_rtb_budget
 
     return daily_budget
 
 
-def _get_daily_budget_total(ad_group_sources_settings, include_rtb_sources=True):
-    budgets = [s.daily_budget_cc for s in ad_group_sources_settings if
-               s is not None and s.daily_budget_cc is not None and
-               s.state == constants.AdGroupSourceSettingsState.ACTIVE and
-               (include_rtb_sources or s.ad_group_source.source.source_type.type != constants.SourceType.B1)
-               ]
+def _get_daily_budget_total(user, ad_group_sources_settings, include_rtb_sources=True):
+    if user.has_perm('zemauth.can_manage_settings_in_local_currency'):
+        budgets = [s.local_daily_budget_cc for s in ad_group_sources_settings if
+                   s is not None and s.local_daily_budget_cc is not None and
+                   s.state == constants.AdGroupSourceSettingsState.ACTIVE and
+                   (include_rtb_sources or s.ad_group_source.source.source_type.type != constants.SourceType.B1)
+                   ]
+    else:
+        budgets = [s.daily_budget_cc for s in ad_group_sources_settings if
+                   s is not None and s.daily_budget_cc is not None and
+                   s.state == constants.AdGroupSourceSettingsState.ACTIVE and
+                   (include_rtb_sources or s.ad_group_source.source.source_type.type != constants.SourceType.B1)
+                   ]
 
     if not budgets:
         return None

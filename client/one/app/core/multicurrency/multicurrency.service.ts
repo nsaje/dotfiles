@@ -10,19 +10,19 @@ export class MulticurrencyService {
     getValueInAppropriateCurrency (
         value: any,
         account: any,
-        permissions: Array<string> = [],
+        permissions: string[] = [],
         fractionSize?: number
     ): string {
         const currency = this.getAppropriateCurrency(account, permissions);
         return this.getValueInCurrency(value, currency, fractionSize);
     }
 
-    getAppropriateCurrencySymbol (account: any, permissions: Array<string> = []): string {
+    getAppropriateCurrencySymbol (account: any, permissions: string[] = []): string {
         const currency = this.getAppropriateCurrency(account, permissions);
         return constants.currencySymbol[currency];
     }
 
-    getAppropriateCurrency (account: any, permissions: Array<string> = []): string {
+    getAppropriateCurrency (account: any, permissions: string[] = []): string {
         // TODO (jurebajt): Remove permission check after multicurrency is released (refactor tests too!)
         if (account && this.zemPermissions.hasPermission(permissions)) {
             return account.data.currency;

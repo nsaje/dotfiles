@@ -220,6 +220,7 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         blank=True,
         null=True,
     )
+    # PRTODO (jurebajt): Handle fields' default values for local fields
     b1_sources_group_cpc_cc = models.DecimalField(
         max_digits=10,
         decimal_places=4,
@@ -271,20 +272,25 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
 
     @classmethod
     def get_defaults_dict(cls):
+        # FIXME (jurebajt): Set defaults based on currency
         return OrderedDict([
             ('state', constants.AdGroupSettingsState.INACTIVE),
             ('start_date', dates_helper.utc_today()),
             ('cpc_cc', None),
+            ('local_cpc_cc', None),
             ('daily_budget_cc', 10.0000),
             ('target_devices', constants.AdTargetDevice.get_all()),
             ('target_regions', ['US']),
             ('exclusion_target_regions', []),
             ('autopilot_state', constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET),
             ('autopilot_daily_budget', Decimal('100.00')),
+            ('local_autopilot_daily_budget', Decimal('100.00')),
             ('b1_sources_group_enabled', True),
             ('b1_sources_group_state', constants.AdGroupSourceSettingsState.ACTIVE),
             ('b1_sources_group_daily_budget', Decimal('50.00')),
+            ('local_b1_sources_group_daily_budget', Decimal('50.00')),
             ('b1_sources_group_cpc_cc', Decimal('0.45')),
+            ('local_b1_sources_group_cpc_cc', Decimal('0.45')),
             ('landing_mode', False),
         ])
 

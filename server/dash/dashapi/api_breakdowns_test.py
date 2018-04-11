@@ -119,7 +119,9 @@ CONTENT_AD_2 = {
 AD_GROUP_SOURCE_1 = {
     'source_id': 1, 'source_slug': 'adsnative', 'id': 1, 'name': 'AdsNative',
     'daily_budget': Decimal('10.0000'), 'current_daily_budget': Decimal('10.0000'),
+    'local_daily_budget': Decimal('10.0000'), 'local_current_daily_budget': Decimal('10.0000'),
     'bid_cpc': Decimal('0.5010'), 'current_bid_cpc': Decimal('0.5010'),
+    'local_bid_cpc': Decimal('0.5010'), 'local_current_bid_cpc': Decimal('0.5010'),
     'archived': False, 'maintenance': False,
     'supply_dash_url': None,
     'supply_dash_disabled_message': "This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard.",  # noqa
@@ -143,7 +145,9 @@ AD_GROUP_SOURCE_1 = {
 AD_GROUP_SOURCE_2 = {
     'source_id': 2, 'source_slug': 'gravity', 'id': 2, 'name': 'Gravity',
     'daily_budget': Decimal('20.0000'), 'current_daily_budget': Decimal('20.0000'),
+    'local_daily_budget': Decimal('20.0000'), 'local_current_daily_budget': Decimal('20.0000'),
     'bid_cpc': Decimal('0.5020'), 'current_bid_cpc': Decimal('0.5020'),
+    'local_bid_cpc': Decimal('0.5020'), 'local_current_bid_cpc': Decimal('0.5020'),
     'archived': False, 'maintenance': False,
     'supply_dash_url': None,
     'supply_dash_disabled_message': "This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard.",  # noqa

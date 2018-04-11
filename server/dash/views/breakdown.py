@@ -429,9 +429,12 @@ class AdGroupBreakdown(api_common.BaseApiView):
 
         currency = stats.helpers.get_report_currency(request.user, [constraints['account']])
         extras['currency'] = currency
-        stats.helpers.update_rows_to_contain_values_in_currency(rows, currency)
+        excluded_keys = []
+        if not request.user.has_perm('zemauth.can_manage_settings_in_local_currency'):
+            excluded_keys = ['local_daily_budget', 'local_current_daily_budget', 'local_bid_cpc', 'local_current_bid_cpc']
+        stats.helpers.update_rows_to_contain_values_in_currency(rows, currency, excluded_keys=excluded_keys)
         if totals:
-            stats.helpers.update_rows_to_contain_values_in_currency([totals], currency)
+            stats.helpers.update_rows_to_contain_values_in_currency([totals], currency, excluded_keys=excluded_keys)
 
         report = format_breakdown_response(rows, offset, parents, totals, goals, **extras)
         if len(breakdown) == 1 and request.user.has_perm('zemauth.campaign_goal_optimization'):
@@ -446,7 +449,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
         # Frontend REQ: should be present on each page to be able to merge grouped rows
         if breakdown == ['source_id']:
             all_rtb_source_row = breakdown_helpers.create_all_rtb_source_row(
-                constraints, request.user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc'))
+                request, constraints, request.user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc'))
             if all_rtb_source_row:
                 report[0]['rows'].append(all_rtb_source_row)
 

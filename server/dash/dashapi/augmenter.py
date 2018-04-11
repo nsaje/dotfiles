@@ -256,7 +256,7 @@ def augment_source(row, loader, is_base_level=False):
 
     if settings is not None:
         copy_fields_if_exists([
-            'status', 'daily_budget', 'min_bid_cpc', 'max_bid_cpc', 'state',
+            'status', 'daily_budget', 'local_daily_budget', 'min_bid_cpc', 'max_bid_cpc', 'state',
             'supply_dash_url', 'supply_dash_disabled_message', 'editable_fields',
             'notifications',
         ], settings, row)
@@ -264,8 +264,11 @@ def augment_source(row, loader, is_base_level=False):
         if 'bid_cpc' in settings:
             row.update({
                 'bid_cpc': settings['bid_cpc'],
+                'local_bid_cpc': settings['local_bid_cpc'],
                 'current_bid_cpc': settings['bid_cpc'],
+                'local_current_bid_cpc': settings['local_bid_cpc'],
                 'current_daily_budget': settings['daily_budget'],
+                'local_current_daily_budget': settings['local_daily_budget'],
             })
 
 

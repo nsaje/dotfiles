@@ -539,7 +539,9 @@ class AdGroupSourcesLoaderTest(TestCase):
                 'status': 1,
                 'supply_dash_disabled_message': "This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard.",
                 'daily_budget': Decimal('10.0000'),
+                'local_daily_budget': Decimal('10.0000'),
                 'bid_cpc': Decimal('0.5010'),
+                'local_bid_cpc': Decimal('0.5010'),
                 'editable_fields': {
                     'state': {
                         'message': 'This source must be managed manually.',
@@ -562,7 +564,9 @@ class AdGroupSourcesLoaderTest(TestCase):
                 'status': 2,
                 'supply_dash_disabled_message': "This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard.",
                 'daily_budget': Decimal('20.0000'),
+                'local_daily_budget': Decimal('20.0000'),
                 'bid_cpc': Decimal('0.5020'),
+                'local_bid_cpc': Decimal('0.5020'),
                 'editable_fields': {
                     'state': {
                         'message': 'Please add additional budget to your campaign to make changes.',
@@ -599,25 +603,33 @@ class AdGroupSourcesLoaderTest(TestCase):
         # only use active ad group sources
         self.assertDictEqual(self.loader.totals, {
             'daily_budget': Decimal('10.0000'),
+            'local_daily_budget': Decimal('10.0000'),
             'current_daily_budget': Decimal('10.0000'),
+            'local_current_daily_budget': Decimal('10.0000'),
         })
 
     def test_totals_all_rtb_enabled(self):
         self.loader.ad_group_settings.b1_sources_group_enabled = True
         self.loader.ad_group_settings.b1_sources_group_daily_budget = Decimal('100.00')
+        self.loader.ad_group_settings.local_b1_sources_group_daily_budget = Decimal('200.00')
         self.loader.ad_group_settings.b1_sources_group_state = 1
         self.assertDictEqual(self.loader.totals, {
             'daily_budget': Decimal('100.0000'),
+            'local_daily_budget': Decimal('200.0000'),
             'current_daily_budget': Decimal('100.0000'),
+            'local_current_daily_budget': Decimal('200.0000'),
         })
 
     def test_totals_all_rtb_enabled_and_inactive(self):
         self.loader.ad_group_settings.b1_sources_group_enabled = True
         self.loader.ad_group_settings.b1_sources_group_daily_budget = Decimal('100.00')
+        self.loader.ad_group_settings.local_b1_sources_group_daily_budget = Decimal('200.00')
         self.loader.ad_group_settings.b1_sources_group_state = 2
         self.assertDictEqual(self.loader.totals, {
             'daily_budget': Decimal('0'),
+            'local_daily_budget': Decimal('0'),
             'current_daily_budget': Decimal('0'),
+            'local_current_daily_budget': Decimal('0'),
         })
 
 

@@ -78,7 +78,7 @@ class FilterTestCase(TestCase):
             'source', 'source_id', 'source_name', 'source_slug', 'source_status', 'exchange', 'supply_dash_disabled_message', 'supply_dash_url',
             'age', 'age_gender', 'country', 'day', 'device_type', 'dma', 'gender', 'month', 'placement_type', 'week', 'device_os', 'device_os_version', 'placement_medium',
             'archived', 'maintenance', 'notifications', 'state', 'status', 'status_per_source', 'status_setting',
-            'daily_budget', 'bid_cpc', 'current_bid_cpc', 'current_daily_budget', 'max_bid_cpc', 'min_bid_cpc',
+            'daily_budget', 'local_daily_budget', 'bid_cpc', 'local_bid_cpc', 'current_bid_cpc', 'local_current_bid_cpc', 'current_daily_budget', 'local_current_daily_budget', 'max_bid_cpc', 'min_bid_cpc',
             'billing_cost', 'local_billing_cost',
             'clicks', 'impressions',
             'cpc', 'local_cpc', 'cpm', 'local_cpm',

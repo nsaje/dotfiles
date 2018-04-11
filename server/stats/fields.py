@@ -15,9 +15,9 @@ CONTENT_ADS_FIELDS = {
 }
 
 SOURCE_FIELDS = {
-    'min_bid_cpc', 'max_bid_cpc', 'daily_budget', 'maintenance', 'bid_cpc', 'current_bid_cpc',
-    'current_daily_budget', 'supply_dash_url', 'supply_dash_disabled_message', 'editable_fields',
-    'status_setting', 'id', 'notifications', 'source_slug',
+    'min_bid_cpc', 'max_bid_cpc', 'daily_budget', 'local_daily_budget', 'maintenance', 'bid_cpc', 'local_bid_cpc',
+    'current_bid_cpc', 'local_current_bid_cpc', 'current_daily_budget', 'local_current_daily_budget', 'supply_dash_url',
+    'supply_dash_disabled_message', 'editable_fields', 'status_setting', 'id', 'notifications', 'source_slug',
 }
 
 PUBLISHER_FIELDS = {

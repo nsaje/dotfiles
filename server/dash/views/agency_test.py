@@ -22,10 +22,12 @@ from dash.views import agency
 from dash import forms
 from dash import history_helpers
 from dash.features import ga
+import core.multicurrency
 
 from utils import exc
 from utils.magic_mixer import magic_mixer
 from utils.test_helper import add_permissions, fake_request
+from utils.magic_mixer import magic_mixer
 
 
 class AdGroupSettingsTest(TestCase):
@@ -231,6 +233,24 @@ class AdGroupSettingsTest(TestCase):
             'success': True
         })
 
+    @patch.object(core.multicurrency, 'get_exchange_rate')
+    def test_get_local(self, mock_get_exchange_rate):
+        add_permissions(self.user, ['settings_view', 'can_manage_settings_in_local_currency'])
+        mock_get_exchange_rate.return_value = Decimal('2.0')
+
+        account = magic_mixer.blend(models.Account, users=[self.user], currency=constants.Currency.EUR)
+        campaign = magic_mixer.blend(models.Campaign, account=account)
+        ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
+        ad_group.settings.update(None, cpc_cc=Decimal(5))
+
+        response = self.client.get(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            follow=True
+        )
+        json_blob = json.loads(response.content)
+        settings = json_blob.get('data').get('settings')
+        self.assertEqual(settings.get('cpc_cc'), '10.000')
+
     def test_get_not_retargetable(self):
         ad_group = models.AdGroup.objects.get(pk=1)
         source = models.Source.objects.get(pk=5)
@@ -409,6 +429,38 @@ class AdGroupSettingsTest(TestCase):
 
             hist = history_helpers.get_ad_group_history(ad_group).first()
             self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
+
+    @patch.object(core.multicurrency, 'get_exchange_rate')
+    @patch.object(models.AdGroupSettings, 'update')
+    def test_put_local(self, mock_ad_group_settings_update, mock_get_exchange_rate):
+        add_permissions(self.user, ['settings_view', 'can_manage_settings_in_local_currency'])
+        mock_get_exchange_rate.return_value = Decimal('2.0')
+
+        account = magic_mixer.blend(models.Account, users=[self.user], currency=constants.Currency.EUR)
+        campaign = magic_mixer.blend(models.Campaign, account=account)
+        ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
+
+        self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps({
+                'settings': {
+                    'cpc_cc': '0.5000',
+                    'name': 'test local put',
+                    'state': constants.AdGroupRunningStatus.INACTIVE,
+                    'start_date': '2015-05-01',
+                    'target_devices': ['DESKTOP'],
+                    'target_regions': self._target_regions_repr(),
+                    'exclusion_target_regions': self._target_regions_repr(),
+                    'bluekai_targeting': {},
+                    'delivery_type': 2,
+                }
+            }),
+            follow=True
+        )
+
+        args, kwargs = mock_ad_group_settings_update.call_args
+        self.assertIsNone(kwargs.get('cpc_cc'))
+        self.assertEqual(kwargs.get('local_cpc_cc'), Decimal('0.5'))
 
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('utils.k1_helper.update_ad_group')

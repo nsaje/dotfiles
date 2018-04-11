@@ -594,7 +594,9 @@ class AdGroupSourcesLoader(Loader):
                 'state': state,
                 'status': data_helper.get_source_status(ad_group_source, state, self.ad_group_settings.state),
                 'bid_cpc': source_settings.cpc_cc if source_settings else None,
+                'local_bid_cpc': source_settings.local_cpc_cc if source_settings else None,
                 'daily_budget': source_settings.daily_budget_cc if source_settings else None,
+                'local_daily_budget': source_settings.local_daily_budget_cc if source_settings else None,
 
                 'supply_dash_url': ad_group_source.get_supply_dash_url(),
                 'supply_dash_disabled_message': view_helpers.get_source_supply_dash_disabled_message(
@@ -616,6 +618,7 @@ class AdGroupSourcesLoader(Loader):
                 elif not can_edit_cpc:
                     cpc_message = 'Please edit RTB Sources\' Bid CPC.'
                 result[source_id]['daily_budget'] = None
+                result[source_id]['local_daily_budget'] = None
                 result[source_id]['editable_fields']['daily_budget']['enabled'] = False
                 result[source_id]['editable_fields']['daily_budget']['message'] = None
                 result[source_id]['editable_fields']['bid_cpc']['enabled'] = can_edit_cpc
@@ -666,14 +669,21 @@ class AdGroupSourcesLoader(Loader):
             v['daily_budget'] for v in list(self.settings_map.values())
             if v['daily_budget'] and v['state'] == constants.AdGroupSourceSettingsState.ACTIVE])
 
+        local_daily_budget = sum([
+            v['local_daily_budget'] for v in list(self.settings_map.values())
+            if v['local_daily_budget'] and v['state'] == constants.AdGroupSourceSettingsState.ACTIVE])
+
         # MVP for all-RTB-sources-as-one
         if self.ad_group_settings.b1_sources_group_enabled \
            and self.ad_group_settings.b1_sources_group_state == constants.AdGroupSourceSettingsState.ACTIVE:
             daily_budget += self.ad_group_settings.b1_sources_group_daily_budget
+            local_daily_budget += self.ad_group_settings.local_b1_sources_group_daily_budget
 
         totals = {
             'daily_budget': daily_budget,
+            'local_daily_budget': local_daily_budget,
             'current_daily_budget': daily_budget,
+            'local_current_daily_budget': local_daily_budget,
         }
 
         return totals

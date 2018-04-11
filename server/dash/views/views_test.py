@@ -324,6 +324,17 @@ class AdGroupSourceSettingsTest(TestCase):
         request.user = User.objects.get(id=1)
         new_settings.save(request)
 
+    @patch.object(models.AdGroupSourceSettings, 'update')
+    def test_put_local(self, mock_ad_group_source_settings_update):
+        self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'cpc_cc': '0.5'})
+        )
+
+        args, kwargs = mock_ad_group_source_settings_update.call_args
+        self.assertIsNone(kwargs.get('cpc_cc'))
+        self.assertEqual(kwargs.get('local_cpc_cc'), decimal.Decimal('0.5'))
+
     @patch('utils.k1_helper.update_ad_group')
     def test_cpc_bigger_than_max(self, mock_k1_ping):
         current_settings = self.ad_group.get_current_settings()

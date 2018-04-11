@@ -21,6 +21,7 @@ def filter_active_source_settings(ad_group_source_settings, ad_group_status_map)
     return settings
 
 
+# PRTODO (jurebajt): Is this deprecated?
 def get_source_settings_stats(source_settings):
     cpcs = [x['cpc_cc'] for x in source_settings if x['cpc_cc'] is not None]
     caps = [x['daily_budget_cc'] for x in source_settings if x['daily_budget_cc'] is not None]

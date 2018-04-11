@@ -220,7 +220,7 @@ def get_ad_group_sources_extras(ad_group):
 
 
 # MVP for all-RTB-sources-as-one
-def create_all_rtb_source_row(constraints, can_show_rtb_group_cpc):
+def create_all_rtb_source_row(request, constraints, can_show_rtb_group_cpc):
     ad_group = constraints['ad_group']
     settings = ad_group.get_current_settings()
     if not settings.b1_sources_group_enabled:
@@ -232,12 +232,12 @@ def create_all_rtb_source_row(constraints, can_show_rtb_group_cpc):
     rtb_source_ids = list(map(str, rtb_source_ids))
 
     # Create All RTB Source row using rtb_source_ids for newly created group
-    all_rtb_source_row = create_all_rtb_source_row_data(ad_group, settings, can_show_rtb_group_cpc)
+    all_rtb_source_row = create_all_rtb_source_row_data(request, ad_group, settings, can_show_rtb_group_cpc)
     all_rtb_source_row['group'] = {'ids': rtb_source_ids}
     return all_rtb_source_row
 
 
-def create_all_rtb_source_row_data(ad_group, ad_group_settings, show_rtb_group_cpc):
+def create_all_rtb_source_row_data(request, ad_group, ad_group_settings, show_rtb_group_cpc):
     status = {'value': ad_group_settings.b1_sources_group_state}
     notifications = {}
     if ad_group_settings.state == constants.AdGroupSettingsState.INACTIVE and \
@@ -280,13 +280,20 @@ def create_all_rtb_source_row_data(ad_group, ad_group_settings, show_rtb_group_c
             campaign_settings.autopilot):
         show_rtb_group_cpc = False
 
+    if request.user.has_perm('zemauth.can_manage_settings_in_local_currency'):
+        daily_budget_value = ad_group_settings.local_b1_sources_group_daily_budget
+        bid_cpc_value = ad_group_settings.local_b1_sources_group_cpc_cc if show_rtb_group_cpc else ''
+    else:
+        daily_budget_value = ad_group_settings.b1_sources_group_daily_budget
+        bid_cpc_value = ad_group_settings.b1_sources_group_cpc_cc if show_rtb_group_cpc else ''
+
     return {
         'breakdown_name': source.AllRTBSource.name,
         'breakdown_id': source.AllRTBSource.id,
         'state': {'value': ad_group_settings.b1_sources_group_state},
         'status': status,
-        'daily_budget': ad_group_settings.b1_sources_group_daily_budget,
-        'bid_cpc': ad_group_settings.b1_sources_group_cpc_cc if show_rtb_group_cpc else '',
+        'daily_budget': daily_budget_value,
+        'bid_cpc': bid_cpc_value,
         'notifications': notifications,
         'editable_fields': {
             'state': {'message': state_edit_message, 'enabled': state_edit_enabled},

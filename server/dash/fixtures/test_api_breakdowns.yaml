@@ -404,7 +404,9 @@
         created_dt: '2014-06-04T09:58:21'
         ad_group_source: 1
         cpc_cc: '0.501'
+        local_cpc_cc: '0.501'
         daily_budget_cc: '10.'
+        local_daily_budget_cc: '10.'
         state: 1
     model: dash.adgroupsourcesettings
     pk: 1
@@ -413,7 +415,9 @@
         created_dt: '2014-06-05T09:58:21'
         ad_group_source: 2
         cpc_cc: '0.502'
+        local_cpc_cc: '0.502'
         daily_budget_cc: '20.'
+        local_daily_budget_cc: '20.'
         state: 2
     model: dash.adgroupsourcesettings
     pk: 2
@@ -422,7 +426,9 @@
         created_dt: '2014-06-05T09:58:21'
         ad_group_source: 3
         cpc_cc: '0.503'
+        local_cpc_cc: '0.503'
         daily_budget_cc: '30.'
+        local_daily_budget_cc: '30.'
         state: 1
     model: dash.adgroupsourcesettings
     pk: 3
@@ -431,7 +437,9 @@
         created_dt: '2014-06-05T09:58:21'
         ad_group_source: 4
         cpc_cc: '0.504'
+        local_cpc_cc: '0.504'
         daily_budget_cc: '40.'
+        local_daily_budget_cc: '40.'
         state: 2
     model: dash.adgroupsourcesettings
     pk: 4
@@ -440,7 +448,9 @@
         created_dt: '2014-06-05T09:58:21'
         ad_group_source: 5
         cpc_cc: '0.505'
+        local_cpc_cc: '0.505'
         daily_budget_cc: '50.'
+        local_daily_budget_cc: '50.'
         state: 2
     model: dash.adgroupsourcesettings
     pk: 5

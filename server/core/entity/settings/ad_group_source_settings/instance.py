@@ -26,9 +26,11 @@ class AdGroupSourceSettingsMixin(object):
         if not changes:
             return result
 
+        # PRTODO (jurebajt): Handle multiple currencies in clean method correctly
         if not skip_validation:
             self.clean(new_settings)
 
+        # PRTODO (jurebajt): Handle multiple currencies in validate_ad_group_source_campaign_stop method correctly
         if not skip_automation:
             self.validate_ad_group_source_campaign_stop(new_settings)
 
