@@ -4,8 +4,6 @@ from utils import numbers
 
 ZERO = Decimal('0.0000')
 
-# PRTODO (jurebajt): Return local min/max values
-
 
 def calculate_min_cpc(min_cpc, bcm_modifiers):
     if not bcm_modifiers or not min_cpc:

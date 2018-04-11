@@ -23,7 +23,7 @@ export class MulticurrencyService {
     }
 
     getAppropriateCurrency (account: any, permissions: string[] = []): string {
-        // TODO (jurebajt): Remove permission check after multicurrency is released (refactor tests too!)
+        // TODO (multicurrency): Remove permission check after multicurrency is released (refactor tests too!)
         if (account && this.zemPermissions.hasPermission(permissions)) {
             return account.data.currency;
         }

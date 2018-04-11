@@ -18,7 +18,7 @@ class AdGroupSourcesViewList(RESTAPIBaseView):
             ad_group_source__ad_group=ad_group
         ).group_current_settings().select_related('ad_group_source__source')
         serializer = serializers.AdGroupSourceSerializer(settings, many=True)
-        # TODO (jurebajt): Remap values into local values if user has permission
+        # TODO (multicurrency): Remap values into local values if user has permission
         return self.response_ok(serializer.data)
 
     def put(self, request, ad_group_id):
@@ -47,7 +47,7 @@ class AdGroupSourcesViewList(RESTAPIBaseView):
                 if not ad_group_source:
                     raise rest_framework.serializers.ValidationError("Source %s not present on ad group!" % source.name)
                 item.pop('ad_group_source')
-                # TODO (jurebajt): Remap values into local_values if user has permission to manage settings in local
+                # TODO (multicurrency): Remap values into local_values if user has permission to manage settings in local
                 # currency
                 ad_group_source.settings.update(request, k1_sync=True, **item)
 

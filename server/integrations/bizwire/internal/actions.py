@@ -248,7 +248,6 @@ def _set_source_daily_budget(ad_group_id, source, daily_budget):
     return _make_restapi_fake_put_request(restapi.adgroupsource.views.AdGroupSourcesViewList, url, data, view_args=[ad_group_id])
 
 
-# PRTODO (jurebajt): Is is ok for this to eventually work with local values?
 def _set_rtb_daily_budget(ad_group_id, daily_budget):
     data = {
         'groupEnabled': True,

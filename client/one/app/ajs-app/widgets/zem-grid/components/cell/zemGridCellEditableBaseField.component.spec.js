@@ -31,7 +31,9 @@ describe('zemGridCellEditableBaseField', function () {
         scope.ctrl.col.data = {};
         scope.ctrl.grid = {
             meta: {
-                data: {},
+                data: {
+                    ext: {},
+                },
                 service: {},
                 dataService: {
                     isSaveRequestInProgress: function () {},
@@ -108,6 +110,7 @@ describe('zemGridCellEditableBaseField', function () {
             level: 'ad_groups',
             breakdown: 'source',
             adGroupAutopilotState: 1,
+            ext: {},
         };
         scope.ctrl.row.data = {
             stats: {
@@ -129,6 +132,7 @@ describe('zemGridCellEditableBaseField', function () {
             level: 'ad_groups',
             breakdown: 'source',
             adGroupAutopilotState: 2,
+            ext: {},
         };
         scope.ctrl.row.data = {
             stats: {
@@ -150,6 +154,7 @@ describe('zemGridCellEditableBaseField', function () {
             level: 'ad_groups',
             breakdown: 'source',
             adGroupAutopilotState: 2,
+            ext: {},
         };
         scope.ctrl.row.archived = true;
         scope.ctrl.row.data = {
@@ -172,6 +177,7 @@ describe('zemGridCellEditableBaseField', function () {
             level: 'ad_groups',
             breakdown: 'source',
             adGroupAutopilotState: 2,
+            ext: {},
         };
         scope.ctrl.row.data = {
             stats: {

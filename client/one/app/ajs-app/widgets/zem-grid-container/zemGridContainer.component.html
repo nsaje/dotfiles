@@ -145,7 +145,7 @@
         </div>
         <div ng-if="!ctrl.isSaveRequestInProgress() || ctrl.showLoader" class="edit-form">
             <div class="prefixed-field">
-                <span class="prefixed-field__prefix">$</span>
+                <span class="prefixed-field__prefix">{{ctrl.currencySymbol}}</span>
                 <input class="input-text" type="text" ng-model="ctrl.editFormInputValue" ng-trim="false" ng-change="ctrl.filterInput()" focus ng-keydown="ctrl.onKeyDown($event)">
             </div>
             <button ng-show="ctrl.showLoader" class="button button--highlight button--disabled"><span class="loader loader--white"></span></button>

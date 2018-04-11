@@ -220,7 +220,7 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         blank=True,
         null=True,
     )
-    # PRTODO (jurebajt): Handle fields' default values for local fields
+    # TODO (multicurrency): Handle fields' default values for local fields
     b1_sources_group_cpc_cc = models.DecimalField(
         max_digits=10,
         decimal_places=4,
@@ -272,7 +272,7 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
 
     @classmethod
     def get_defaults_dict(cls):
-        # FIXME (jurebajt): Set defaults based on currency
+        # TODO (multicurrency): Set defaults based on currency
         return OrderedDict([
             ('state', constants.AdGroupSettingsState.INACTIVE),
             ('start_date', dates_helper.utc_today()),

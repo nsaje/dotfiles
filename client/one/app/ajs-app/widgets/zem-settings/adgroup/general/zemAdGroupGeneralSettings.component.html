@@ -58,7 +58,7 @@
                 <zem-help-popover content="Maximum allowed CPC in this ad group." placement="top"></zem-help-popover>
             </label>
             <div class="prefixed-field prefixed-field--narrow">
-                <span class="prefixed-field__prefix">$</span>
+                <span class="prefixed-field__prefix">{{$ctrl.currencySymbol}}</span>
                 <input class="input-text" id="cpc-input" type="text" ng-model="$ctrl.entity.settings.cpc"
                        zem-currency-input fraction-size="3" empty-text="No limit">
             </div>
@@ -73,7 +73,7 @@
                 <zem-help-popover content="Maximum allowed CPM in this ad group." placement="top"></zem-help-popover>
             </label>
             <div class="prefixed-field prefixed-field--narrow">
-                <span class="prefixed-field__prefix">$</span>
+                <span class="prefixed-field__prefix">{{$ctrl.currencySymbol}}</span>
                 <input id="cpm-input"
                        class="input-text"
                        ng-model="$ctrl.entity.settings.maxCpm"

@@ -41,7 +41,10 @@ angular.module('one.widgets').directive('zemGridCellEditableBaseField', function
                 }
 
                 var value = vm.data ? vm.data.value : undefined;
-                vm.formattedValue = zemGridDataFormatter.formatValue(value, vm.column.data);
+                var formatterOptions = angular.copy(vm.column.data);
+                formatterOptions.currency = vm.grid.meta.data.ext.currency;
+                vm.formattedValue = zemGridDataFormatter.formatValue(value, formatterOptions);
+                vm.currencySymbol = zemGridDataFormatter.getCurrencySymbol(formatterOptions);
 
                 if (vm.data) {
                     vm.isEditable = vm.data.isEditable;

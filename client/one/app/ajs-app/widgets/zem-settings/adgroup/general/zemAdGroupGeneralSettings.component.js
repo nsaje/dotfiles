@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
         api: '<',
     },
     template: require('./zemAdGroupGeneralSettings.component.html'),
-    controller: function ($scope, $state, zemPermissions, zemNavigationNewService) {
+    controller: function ($scope, $state, zemPermissions, zemNavigationNewService, zemMulticurrencyService) {
         var $ctrl = this;
         $ctrl.options = options;
         $ctrl.hasPermission = zemPermissions.hasPermission;
@@ -32,6 +32,11 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
             $ctrl.api.register({
                 // Not needed (placeholder)
             });
+
+            $ctrl.currencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol(
+                zemNavigationNewService.getActiveAccount(),
+                ['zemauth.can_manage_settings_in_local_currency']
+            );
         };
 
         $ctrl.$onChanges = function () {

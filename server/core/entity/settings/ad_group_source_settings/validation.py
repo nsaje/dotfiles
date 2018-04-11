@@ -10,7 +10,7 @@ LANDING_MODE_PREVENT_UPDATE = ['daily_budget_cc', 'state']
 
 class AdGroupSourceSettingsValidatorMixin(object):
 
-    # PRTODO (jurebajt): Modify validation to work with multiple currencies
+    # TODO (multicurrency): Modify validation to work with multiple currencies
     def clean(self, new_settings):
         bcm_modifiers = self.ad_group_source.ad_group.campaign.get_bcm_modifiers()
         self._validate_ad_group_source_cpc(new_settings, bcm_modifiers)
@@ -95,7 +95,7 @@ class AdGroupSourceSettingsValidatorMixin(object):
                     self.ad_group_source.ad_group.settings,
                     campaign.settings
                 )
-                # PRTODO (jurebajt): Add multi-currency support for error handling
+                # TODO (multicurrency): Add multi-currency support for error handling
                 if max_daily_budget is not None and new_daily_budget > max_daily_budget:
                     raise utils.exc.ValidationError(errors={
                         'daily_budget_cc': [

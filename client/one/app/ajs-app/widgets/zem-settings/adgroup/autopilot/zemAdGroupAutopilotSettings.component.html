@@ -27,7 +27,7 @@
                 </label>
 
                 <div class="prefixed-field prefixed-field--narrow">
-                    <span class="prefixed-field__prefix">$</span>
+                    <span class="prefixed-field__prefix">{{$ctrl.currencySymbol}}</span>
                     <input class="input-text" id="autopilot-budget" type="text" ng-model="$ctrl.entity.settings.autopilotBudget" fraction-size="0"
                            zem-currency-input ng-disabled="$ctrl.isInLanding()">
                 </div>

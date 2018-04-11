@@ -79,7 +79,7 @@ def _has_too_many_decimal_places(num, decimal_places):
     return rounded_num != num
 
 
-# PRTODO (jurebajt): Add dynamic currency sign
+# TODO (multicurrency): Add dynamic currency sign
 def _validate_min_cpc(cpc_cc, min_cpc, name):
     if min_cpc is not None and cpc_cc < min_cpc:
         raise forms.ValidationError(
@@ -90,7 +90,7 @@ def _validate_min_cpc(cpc_cc, min_cpc, name):
         )
 
 
-# PRTODO (jurebajt): Add dynamic currency sign
+# TODO (multicurrency): Add dynamic currency sign
 def _validate_max_cpc(cpc_cc, max_cpc, name):
     if max_cpc is not None and cpc_cc > max_cpc:
         raise forms.ValidationError(
@@ -101,7 +101,7 @@ def _validate_max_cpc(cpc_cc, max_cpc, name):
         )
 
 
-# PRTODO (jurebajt): Add dynamic currency sign
+# TODO (multicurrency): Add dynamic currency sign
 def _validate_min_daily_budget(daily_budget, min_daily_budget):
     if min_daily_budget is not None and daily_budget < min_daily_budget:
         raise forms.ValidationError(
@@ -109,7 +109,7 @@ def _validate_min_daily_budget(daily_budget, min_daily_budget):
                 utils.string_helper.format_decimal(min_daily_budget, 0, 0)))
 
 
-# PRTODO (jurebajt): Add dynamic currency sign
+# TODO (multicurrency): Add dynamic currency sign
 def _validate_max_daily_budget(daily_budget, max_daily_budget):
     if max_daily_budget is not None and daily_budget > max_daily_budget:
         raise forms.ValidationError(
