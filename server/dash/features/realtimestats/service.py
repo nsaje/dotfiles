@@ -16,8 +16,8 @@ import core.bcm.calculations
 logger = logging.getLogger(__name__)
 
 
-def get_ad_group_stats(ad_group):
-    stats = _get_etfm_source_stats(ad_group)
+def get_ad_group_stats(ad_group, use_local_currency=False):
+    stats = _get_etfm_source_stats(ad_group, use_local_currency=use_local_currency)
     spend = sum(stat['spend'] for stat in stats['stats'])
     stats = {
         'spend': spend,
@@ -26,17 +26,31 @@ def get_ad_group_stats(ad_group):
     return stats
 
 
-def get_ad_group_sources_stats(ad_group, use_source_tz=False):
-    stats = _get_ad_group_sources_stats(ad_group, use_source_tz=use_source_tz)
+def get_ad_group_sources_stats(ad_group, use_source_tz=False, use_local_currency=False):
+    stats = _get_ad_group_sources_stats(
+        ad_group,
+        use_source_tz=use_source_tz,
+        use_local_currency=use_local_currency
+    )
     return stats['stats']
 
 
-def get_ad_group_sources_stats_without_caching(ad_group, use_source_tz=False):
-    return _get_ad_group_sources_stats(ad_group, no_cache=True, use_source_tz=use_source_tz)
+def get_ad_group_sources_stats_without_caching(ad_group, use_source_tz=False, use_local_currency=False):
+    return _get_ad_group_sources_stats(
+        ad_group,
+        no_cache=True,
+        use_source_tz=use_source_tz,
+        use_local_currency=use_local_currency,
+    )
 
 
-def _get_ad_group_sources_stats(ad_group, no_cache=False, use_source_tz=False):
-    stats = _get_etfm_source_stats(ad_group, no_cache=no_cache, use_source_tz=use_source_tz)
+def _get_ad_group_sources_stats(ad_group, *, use_local_currency, no_cache=False, use_source_tz=False):
+    stats = _get_etfm_source_stats(
+        ad_group,
+        no_cache=no_cache,
+        use_source_tz=use_source_tz,
+        use_local_currency=use_local_currency,
+    )
 
     sources = models.Source.objects.all().select_related('source_type')
     sources_by_slug = {source.bidder_slug: source for source in sources}
@@ -53,9 +67,11 @@ def _augment_source(stats, sources_by_slug):
             stat['source'] = source
 
 
-def _get_etfm_source_stats(ad_group, no_cache=False, use_source_tz=False):
+def _get_etfm_source_stats(ad_group, *, use_local_currency, no_cache=False, use_source_tz=False):
     stats = _get_k1_source_stats(ad_group, no_cache=no_cache, use_source_tz=use_source_tz)
     _add_fee_and_margin(ad_group, stats['stats'])
+    if use_local_currency:
+        _to_local_currency(ad_group, stats['stats'])
     return stats
 
 
@@ -68,6 +84,14 @@ def _add_fee_and_margin(ad_group, k1_stats):
                 fee,
                 margin,
             )
+
+
+def _to_local_currency(ad_group, stats):
+    currency = ad_group.campaign.account.currency
+    today = dates_helper.local_today()
+    exchange_rate = core.multicurrency.get_exchange_rate(today, currency)
+    for stat in stats:
+        stat['spend'] = stat['spend'] * exchange_rate
 
 
 def _get_k1_source_stats(ad_group, no_cache=False, use_source_tz=False):

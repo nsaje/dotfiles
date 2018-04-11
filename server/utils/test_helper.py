@@ -55,6 +55,9 @@ class AlmostMatcher():
     def __eq__(self, other):
         return round(self.obj, self.ndigits) == round(other, self.ndigits)
 
+    def __repr__(self):
+        return repr(self.obj)
+
 
 class QuerySetMatcher():
     def __init__(self, obj):

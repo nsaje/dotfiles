@@ -115,6 +115,55 @@ class RealtimestatsServiceTest(TestCase):
         mock_k1_get.assert_called_once_with(self.ad_group.id, self.expected_params)
 
     @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
+    def test_get_ad_group_sources_stats_multicurrency(self, mock_k1_get):
+        sources = magic_mixer.cycle(2).blend(core.source.Source, bidder_slug=magic_mixer.RANDOM)
+        mock_k1_get.return_value = {
+            'stats': [{
+                'source_slug': sources[0].bidder_slug,
+                'spend': decimal.Decimal('1.1'),
+            }, {
+                'source_slug': sources[1].bidder_slug,
+                'spend': decimal.Decimal('3.0'),
+            }],
+            'errors': {},
+        }
+
+        ad_group = magic_mixer.blend(core.entity.AdGroup, campaign__account__currency=dash.constants.Currency.EUR)
+        core.multicurrency.CurrencyExchangeRate.objects.create(
+            date=dates_helper.local_today(),
+            currency=dash.constants.Currency.EUR,
+            exchange_rate=decimal.Decimal('1.2'),
+        )
+        result = service.get_ad_group_sources_stats(ad_group)
+        self.assertEqual(result, [
+            {
+                'source_slug': sources[1].bidder_slug,
+                'source': sources[1],
+                'spend': test_helper.AlmostMatcher(decimal.Decimal('3.0')),
+            },
+            {
+                'source_slug': sources[0].bidder_slug,
+                'source': sources[0],
+                'spend': test_helper.AlmostMatcher(decimal.Decimal('1.1')),
+            },
+        ])
+        mock_k1_get.assert_called_once_with(ad_group.id, {})
+
+        result_local = service.get_ad_group_sources_stats(ad_group, use_local_currency=True)
+        self.assertEqual(result_local, [
+            {
+                'source_slug': sources[1].bidder_slug,
+                'source': sources[1],
+                'spend': test_helper.AlmostMatcher(decimal.Decimal('3.6')),
+            },
+            {
+                'source_slug': sources[0].bidder_slug,
+                'source': sources[0],
+                'spend': test_helper.AlmostMatcher(decimal.Decimal('1.32')),
+            },
+        ])
+
+    @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
     def test_get_ad_group_sources_stats_with_source_tz_today(self, mock_k1_get):
         mock_k1_get.return_value = {'stats': [], 'errors': {}}
         budgets_tz = self.ad_group_sources[1].source.source_type.budgets_tz
