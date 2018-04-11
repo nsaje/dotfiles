@@ -197,91 +197,6 @@ class AccountCreditViewList(RESTAPIBaseView):
         return self.response_ok(serializer.data)
 
 
-class CampaignSerializer(SettingsSerializer):
-
-    def update(self, data_internal, validated_data):
-        """ Handle archived update separately, since it's on a separate endpoint """
-        id_ = data_internal['data']['settings']['id']
-
-        old_archived = data_internal['data']['archived']
-        new_archived = validated_data['settings'].get('archived')
-
-        with transaction.atomic():
-            data_internal_new = super(CampaignSerializer, self).update(data_internal, validated_data)
-
-            if new_archived is not None and new_archived != old_archived:
-                entity_id = int(id_)
-                self.request.body = ''
-                internal_view = views.CampaignArchive(
-                    rest_proxy=True
-                ) if new_archived else views.CampaignRestore(rest_proxy=True)
-                data_internal_archived, _ = internal_view.post(self.request, entity_id)
-                data_internal_new['data']['archived'] = new_archived
-
-            return data_internal_new
-
-    def to_representation(self, data_internal):
-        settings = data_internal['data']['settings']
-        return {
-            'id': settings['id'],
-            'accountId': settings['account_id'],
-            'name': settings['name'],
-            'archived': data_internal['data']['archived'],
-            'iabCategory': fields.DashConstantField(constants.IABCategory).to_representation(settings['iab_category']),
-            'language': fields.DashConstantField(constants.Language).to_representation(settings['language']),
-            # 'campaignManager': self._user_to_email(settings['campaign_manager']),  # TODO(nsaje): convert to email
-            'tracking': {
-                'ga': {
-                    'enabled': settings['enable_ga_tracking'],
-                    'type': fields.DashConstantField(constants.GATrackingType).to_representation(settings['ga_tracking_type']),
-                    'webPropertyId': settings['ga_property_id'],
-                },
-                'adobe': {
-                    'enabled': settings['enable_adobe_tracking'],
-                    'trackingParameter': settings['adobe_tracking_param'],
-                },
-            },
-            'targeting': {
-                'devices': settings['target_devices'],
-                'placements': settings['target_placements'],
-                'os': settings['target_os'],
-                'publisherGroups': {
-                    'included': settings['whitelist_publisher_groups'],
-                    'excluded': settings['blacklist_publisher_groups'],
-                }
-            }
-        }
-
-    def to_internal_value(self, external_data):
-        data = self._allow_not_provided(external_data)
-        settings = {
-            'id': data['id'],
-            'name': data['name'],
-            'iab_category': fields.DashConstantField(constants.IABCategory).to_internal_value(data['iabCategory']),
-            'language': fields.DashConstantField(constants.Language).to_internal_value(data['language']),
-            'archived': data['archived'],
-            # 'campaign_manager': data['campaignManager'],  # TODO(nsaje): convert from email
-            'enable_ga_tracking': data['tracking']['ga']['enabled'],
-            'ga_tracking_type': fields.DashConstantField(constants.GATrackingType).to_internal_value(data['tracking']['ga']['type']),
-            'ga_property_id': data['tracking']['ga']['webPropertyId'],
-            'enable_adobe_tracking': data['tracking']['adobe']['enabled'],
-            'adobe_tracking_param': data['tracking']['adobe']['trackingParameter'],
-            'whitelist_publisher_groups': data['targeting']['publisherGroups']['included'],
-            'blacklist_publisher_groups': data['targeting']['publisherGroups']['excluded'],
-
-            # TODO (refactor-workaround) Deserialization done in Django View
-            'target_devices': data['targeting']['devices'],
-            'target_placements': data['targeting']['placements'],
-            'target_os': data['targeting']['os'],
-        }
-        if (settings['iab_category'] != fields.NOT_PROVIDED and
-                settings['iab_category'] != dash.constants.IABCategory.IAB24 and
-                '-' not in settings['iab_category']):
-            raise serializers.ValidationError(
-                {'iabCategory': 'Tier 1 IAB categories not allowed, please use Tier 2 IAB categories.'})
-        return {'settings': {k: v for k, v in list(settings.items()) if v != fields.NOT_PROVIDED}}
-
-
 class AdGroupSerializer(SettingsSerializer):
 
     def update(self, data_internal, validated_data):
@@ -519,31 +434,6 @@ class SettingsViewList(RESTAPIBaseView):
                 transaction.set_rollback(True)
             response.status_code = 201
             return response
-
-
-class CampaignViewDetails(SettingsViewDetails):
-    internal_view_cls = agency.CampaignSettings
-    serializer_cls = CampaignSerializer
-
-
-class CampaignViewList(SettingsViewList):
-    internal_view_cls = agency.CampaignSettings
-    internal_create_view_cls = views.AccountCampaigns
-    serializer_cls = CampaignSerializer
-    details_view_cls = CampaignViewDetails
-    parent_id_field = 'accountId'
-
-    def _get_entities_list(self, request):
-        account_id = request.query_params.get('accountId', None)
-
-        if account_id:
-            account = helpers.get_account(request.user, account_id)
-            campaigns = dash.models.Campaign.objects.filter(account=account)
-        else:
-            campaigns = dash.models.Campaign.objects.all().filter_by_user(request.user)
-
-        campaigns = campaigns.select_related('settings__campaign_manager')
-        return campaigns
 
 
 class AdGroupViewDetails(SettingsViewDetails):

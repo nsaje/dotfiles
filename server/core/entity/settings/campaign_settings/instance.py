@@ -6,6 +6,7 @@ import dash.features.ga
 import utils.email_helper
 import utils.k1_helper
 import utils.redirector_helper
+import utils.exc
 
 
 class CampaignSettingsMixin(object):
@@ -17,6 +18,7 @@ class CampaignSettingsMixin(object):
 
         # FIXME clean method should be called automatically from CampaignSettings model
         self.clean(changes)
+        self._validate_changes(changes)
 
         super(CampaignSettingsMixin, self).update(request, **changes)
         self._update_campaign(kwargs)
@@ -25,6 +27,7 @@ class CampaignSettingsMixin(object):
             self._log_and_notify_changes(request, changes)
             self._handle_ga_setup_instructions(request, changes)
             self._handle_budget_autopilot(changes)
+            self._handle_archived(request, changes)
             self._propagate_settings(changes)
 
     @classmethod
@@ -57,6 +60,24 @@ class CampaignSettingsMixin(object):
     def _handle_budget_autopilot(self, changes):
         if 'autopilot' in changes:
             autopilot.recalculate_budgets_campaign(self.campaign, send_mail=True)
+
+    def _validate_changes(self, changes):
+        if 'archived' in changes:
+            if changes['archived']:
+                if not self.campaign.can_archive():
+                    raise utils.exc.ForbiddenError(
+                        'Campaign can\'t be archived.'
+                    )
+            else:
+                if not self.campaign.can_restore():
+                    raise utils.exc.ForbiddenError(
+                        'Campaign can\'t be restored.'
+                    )
+
+    def _handle_archived(self, request, changes):
+        if changes.get('archived'):
+            for ad_group in self.campaign.adgroup_set.all():
+                ad_group.archive(request)
 
     def _propagate_settings(self, changes):
         campaign_ad_groups = self.campaign.adgroup_set.all().select_related('settings', 'campaign__settings')

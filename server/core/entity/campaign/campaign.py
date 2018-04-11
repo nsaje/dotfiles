@@ -7,8 +7,8 @@ from django.db import models, transaction
 
 import utils.demo_anonymizer
 import utils.string_helper
+import utils.exc
 from dash import constants
-from utils import exc
 from utils import json_helper
 
 import core.common
@@ -39,7 +39,7 @@ class CampaignManager(core.common.QuerySetManager):
                     account.id,
                 )
             )
-            raise exc.ValidationError(
+            raise utils.exc.ValidationError(
                 data={
                     'message': 'You are not able to add a campaign because currency is not defined.',
                     'action': {
@@ -169,36 +169,11 @@ class Campaign(models.Model, core.common.PermissionMixin, bcm_mixin.CampaignBCMM
 
     @transaction.atomic
     def archive(self, request):
-        if not self.can_archive():
-            raise exc.ForbiddenError(
-                'Campaign can\'t be archived.'
-            )
-
-        if not self.is_archived():
-            current_settings = self.get_current_settings()
-            for ad_group in self.adgroup_set.all():
-                ad_group.archive(request)
-
-            new_settings = current_settings.copy_settings()
-            new_settings.archived = True
-            new_settings.save(
-                request,
-                action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
+        self.settings.update(request, archived=True)
 
     @transaction.atomic
     def restore(self, request):
-        if not self.can_restore():
-            raise exc.ForbiddenError(
-                'Campaign can\'t be restored.'
-            )
-
-        if self.is_archived():
-            current_settings = self.get_current_settings()
-            new_settings = current_settings.copy_settings()
-            new_settings.archived = False
-            new_settings.save(
-                request,
-                action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
+        self.settings.update(request, archived=False)
 
     def is_in_landing(self):
         current_settings = self.get_current_settings()

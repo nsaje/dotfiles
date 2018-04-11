@@ -13,6 +13,7 @@ import restapi.campaignlauncher.urls
 import restapi.bcm.urls
 import restapi.inventory_planning.urls
 import restapi.account.urls
+import restapi.campaign.urls
 import restapi.contentad.urls
 
 urlpatterns = [
@@ -20,16 +21,6 @@ urlpatterns = [
         r'^v1/accounts/(?P<account_id>\d+)/credits/$',
         views.AccountCreditViewList.as_view(),
         name='accounts_credits_list'
-    ),
-    url(
-        r'^v1/campaigns/(?P<entity_id>\d+)$',
-        views.CampaignViewDetails.as_view(),
-        name='campaigns_details'
-    ),
-    url(
-        r'^v1/campaigns/$',
-        views.CampaignViewList.as_view(),
-        name='campaigns_list'
     ),
     url(
         r'^v1/campaigns/(?P<campaign_id>\d+)/stats/$',
@@ -131,6 +122,7 @@ urlpatterns = [
 ]
 
 urlpatterns += restapi.account.urls.urlpatterns
+urlpatterns += restapi.campaign.urls.urlpatterns
 urlpatterns += restapi.contentad.urls.urlpatterns
 urlpatterns += clonecontent.urls.urlpatterns
 urlpatterns += cloneadgroup.urls.urlpatterns
