@@ -70,7 +70,7 @@ node('master') {
                         -w /data \
                         -e CHROME_BIN=/run-chrome.sh \
                         zemanta/z1-static \
-                        bash -c "npm prune && npm install && bower install && npm run tests && npm run prod --build-number=${BUILD_NUMBER}"
+                        bash -c "npm prune && npm install && bower install && npm run tests && npm run prod --build-number=${BUILD_NUMBER} --branch-name=${BRANCH_NAME}"
                         """
                     sh """[ "\$(wc -c <client/dist/one/zemanta-one.js)" -ge 800000 ]"""
                 } finally {

@@ -172,6 +172,7 @@ function generateBuildConfig (env) {
             prod: env.NODE_ENV === 'production',
         },
         buildNumber: env.npm_config_build_number,
+        branchName: env.npm_config_branch_name,
         theme: env.npm_config_theme,
     };
 
@@ -186,7 +187,11 @@ function getStaticUrl (config) {
     }
 
     if (config.env.prod) {
-        return 'https://one-static.zemanta.com/build-' + config.buildNumber + '/client';
+        var branchName = config.branchName.substring(0, 20);
+        if (branchName === 'master') {
+            branchName = '';
+        }
+        return 'https://one-static.zemanta.com/build-' + branchName + config.buildNumber + '/client';
     }
 
     return 'http://localhost:9999';

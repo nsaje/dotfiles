@@ -222,15 +222,11 @@ The following script enables you to test run your backend changes from a pull re
 builds are not yet supported as builds that are not from master branch do not get uploaded to s3.
 
 1. Use `runssh` to get a container with the build of you pull request `runssh z1 ANY {your build number}`.
-2. Ssh into the container and set the following settings in `server/localsettings.py`:
+2. Ssh into the container and set the following settings in `server/localsettings.py.prod`:
    ```
    SECURE_SSL_REDIRECT = False
    SESSION_COOKIE_SECURE = False
    CSRF_COOKIE_SECURE = False
-
-   # put here the current build of the master branch (its used to get static files from s3 which were not uploaded for your pull request)
-   # this line should be located before the `if BUILD_NUMBER:` statement
-   BUILD_NUMBER = '123245'
    ```
 3. Save and run server `./manage.py runserver`.
 4. Go to your local terminal and tunnel the connection to your localhost:
@@ -239,7 +235,7 @@ builds are not yet supported as builds that are not from master branch do not ge
 
    ssh -p 37076 root@ec2-54-152-214-179.compute-1.amazonaws.com -L 9871:localhost:8000 -N
    ```
-5. Visit `localhost:{your local port}` and you should be running your PR backend on production data.
+5. Visit `localhost:{your local port}` and you should be running your PR backend and frontend on production data.
 
 
 
