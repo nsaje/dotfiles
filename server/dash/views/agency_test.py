@@ -27,7 +27,6 @@ import core.multicurrency
 from utils import exc
 from utils.magic_mixer import magic_mixer
 from utils.test_helper import add_permissions, fake_request
-from utils.magic_mixer import magic_mixer
 
 
 class AdGroupSettingsTest(TestCase):
