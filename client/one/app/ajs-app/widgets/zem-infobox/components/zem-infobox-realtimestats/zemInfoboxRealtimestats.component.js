@@ -2,7 +2,7 @@ angular.module('one.widgets').component('zemInfoboxRealtimestats', {
     bindings: {
     },
     template: require('./zemInfoboxRealtimestats.component.html'),
-    controller: function (zemNavigationNewService, zemRealtimestatsService, zemMulticurrencyService, $filter, $interval, $timeout) {
+    controller: function (zemNavigationNewService, zemRealtimestatsService, zemMulticurrencyService, $filter, $interval, $timeout) { // eslint-disable-line max-len
         var $ctrl = this;
 
         var spendRow = {
