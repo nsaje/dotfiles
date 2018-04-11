@@ -53,7 +53,7 @@ angular.module('one.widgets').component('zemInfoboxRealtimestats', {
         function formatSpend (spend) {
             var currencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol(
                 zemNavigationNewService.getActiveAccount(),
-                ['zemauth.can_see_infobox_in_local_currency'],
+                ['zemauth.can_see_infobox_in_local_currency']
             );
             return $filter('decimalCurrency')(spend, currencySymbol, 4);
         }
