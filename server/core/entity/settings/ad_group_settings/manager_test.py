@@ -1,3 +1,5 @@
+from mock import patch
+from decimal import Decimal
 import datetime
 from django.test import TestCase
 
@@ -22,6 +24,18 @@ class AdGroupSettingsCreate(TestCase):
         self.assertEqual(ad_group_settings.target_regions, ad_group.campaign.settings.target_regions)
         self.assertEqual(ad_group_settings.exclusion_target_regions, ad_group.campaign.settings.exclusion_target_regions)
         self.assertTrue(ad_group_settings.b1_sources_group_enabled)
+
+    @patch.object(core.multicurrency, 'get_exchange_rate')
+    def test_create_multicurrency(self, mock_exchange_rate):
+        mock_exchange_rate.return_value = Decimal('2.0')
+        ad_group = magic_mixer.blend(core.entity.AdGroup, campaign__account__currency='XYZ')
+        ad_group_settings = model.AdGroupSettings.objects.create_default(ad_group, 'test')
+
+        self.assertEqual(ad_group_settings.ad_group, ad_group)
+        for field in core.entity.settings.AdGroupSettings.multicurrency_fields:
+            if not getattr(ad_group_settings, field):
+                continue
+            self.assertEqual(getattr(ad_group_settings, 'local_%s' % field), 2 * getattr(ad_group_settings, field))
 
     def test_create_restapi_default(self):
         ad_group = magic_mixer.blend(core.entity.AdGroup)

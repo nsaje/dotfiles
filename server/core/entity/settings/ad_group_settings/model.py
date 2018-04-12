@@ -20,6 +20,7 @@ import core.common
 import core.entity
 import core.history
 import core.source
+import core.multicurrency
 
 
 from ..settings_base import SettingsBase
@@ -271,28 +272,33 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
     )
 
     @classmethod
-    def get_defaults_dict(cls):
-        # TODO (multicurrency): Set defaults based on currency
-        return OrderedDict([
+    def get_defaults_dict(cls, currency=None):
+        defaults = OrderedDict([
             ('state', constants.AdGroupSettingsState.INACTIVE),
             ('start_date', dates_helper.utc_today()),
             ('cpc_cc', None),
-            ('local_cpc_cc', None),
             ('daily_budget_cc', 10.0000),
             ('target_devices', constants.AdTargetDevice.get_all()),
             ('target_regions', ['US']),
             ('exclusion_target_regions', []),
             ('autopilot_state', constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET),
             ('autopilot_daily_budget', Decimal('100.00')),
-            ('local_autopilot_daily_budget', Decimal('100.00')),
             ('b1_sources_group_enabled', True),
             ('b1_sources_group_state', constants.AdGroupSourceSettingsState.ACTIVE),
             ('b1_sources_group_daily_budget', Decimal('50.00')),
-            ('local_b1_sources_group_daily_budget', Decimal('50.00')),
             ('b1_sources_group_cpc_cc', Decimal('0.45')),
-            ('local_b1_sources_group_cpc_cc', Decimal('0.45')),
             ('landing_mode', False),
         ])
+
+        exchange_rate = Decimal('1.0')
+        if currency:
+            exchange_rate = core.multicurrency.get_exchange_rate(dates_helper.local_today(), currency)
+        for field in cls.multicurrency_fields:
+            if not defaults.get(field):
+                continue
+            defaults['local_%s' % field] = defaults[field] * exchange_rate
+
+        return defaults
 
     @classmethod
     def get_human_prop_name(cls, prop_name):
