@@ -5,6 +5,7 @@ from functools import partial
 from django.db import transaction
 from django.db.models import Prefetch
 
+import core.multicurrency
 from dash import models, constants
 import dash.history_helpers
 
@@ -45,37 +46,37 @@ NR_DECIMALS = {
 
 CAMPAIGN_GOAL_VALUE_FORMAT = {
     constants.CampaignGoalKPI.TIME_ON_SITE:
-    lambda x: ('{:.' + str(NR_DECIMALS[constants.CampaignGoalKPI.TIME_ON_SITE]) + 'f}').format(x),
+    lambda x, curr: ('{:.' + str(NR_DECIMALS[constants.CampaignGoalKPI.TIME_ON_SITE]) + 'f}').format(x),
 
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE:
-    lambda x: ('{:.' + str(NR_DECIMALS[constants.CampaignGoalKPI.MAX_BOUNCE_RATE]) + 'f}').format(x),
+    lambda x, curr: ('{:.' + str(NR_DECIMALS[constants.CampaignGoalKPI.MAX_BOUNCE_RATE]) + 'f}').format(x),
 
     constants.CampaignGoalKPI.PAGES_PER_SESSION:
-    lambda x: ('{:.' + str(NR_DECIMALS[constants.CampaignGoalKPI.PAGES_PER_SESSION]) + 'f}').format(x),
+    lambda x, curr: ('{:.' + str(NR_DECIMALS[constants.CampaignGoalKPI.PAGES_PER_SESSION]) + 'f}').format(x),
 
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS:
-    lambda x: ('{:.' + str(NR_DECIMALS[constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS]) + 'f}').format(x),
+    lambda x, curr: ('{:.' + str(NR_DECIMALS[constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS]) + 'f}').format(x),
 
     constants.CampaignGoalKPI.CPA:
-    partial(utils.lc_helper.default_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CPA]),
+    partial(utils.lc_helper.format_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CPA]),
 
     constants.CampaignGoalKPI.CPC:
-    partial(utils.lc_helper.default_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CPC]),
+    partial(utils.lc_helper.format_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CPC]),
 
     constants.CampaignGoalKPI.CPV:
-    partial(utils.lc_helper.default_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CPV]),
+    partial(utils.lc_helper.format_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CPV]),
 
     constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT:
-    partial(utils.lc_helper.default_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT]),
+    partial(utils.lc_helper.format_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT]),
 
     constants.CampaignGoalKPI.CP_NEW_VISITOR:
-    partial(utils.lc_helper.default_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CP_NEW_VISITOR]),
+    partial(utils.lc_helper.format_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CP_NEW_VISITOR]),
 
     constants.CampaignGoalKPI.CP_PAGE_VIEW:
-    partial(utils.lc_helper.default_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CP_PAGE_VIEW]),
+    partial(utils.lc_helper.format_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CP_PAGE_VIEW]),
 
     constants.CampaignGoalKPI.CPCV:
-    partial(utils.lc_helper.default_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CPCV]),
+    partial(utils.lc_helper.format_currency, places=NR_DECIMALS[constants.CampaignGoalKPI.CPCV]),
 
 }
 
@@ -144,8 +145,24 @@ _CAMPAIGN_GOAL_PRIMARY_ETFM_METRIC = {
 }
 
 
-def get_goal_to_primary_metric_map(uses_bcm_v2):
+_CAMPAIGN_GOAL_PRIMARY_LOCAL_METRIC = {
+    constants.CampaignGoalKPI.MAX_BOUNCE_RATE: 'bounce_rate',
+    constants.CampaignGoalKPI.PAGES_PER_SESSION: 'pv_per_visit',
+    constants.CampaignGoalKPI.TIME_ON_SITE: 'avg_tos',
+    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: 'percent_new_users',
+    constants.CampaignGoalKPI.CPC: 'local_etfm_cpc',
+    constants.CampaignGoalKPI.CPV: 'local_avg_etfm_cost_per_visit',
+    constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: 'local_avg_etfm_cost_per_non_bounced_visit',
+    constants.CampaignGoalKPI.CP_NEW_VISITOR: 'local_avg_etfm_cost_for_new_visitor',
+    constants.CampaignGoalKPI.CP_PAGE_VIEW: 'local_avg_etfm_cost_per_pageview',
+    constants.CampaignGoalKPI.CPCV: 'local_video_etfm_cpcv',
+}
+
+
+def get_goal_to_primary_metric_map(uses_bcm_v2, local_values=False):
     if uses_bcm_v2:
+        if local_values:
+            return _CAMPAIGN_GOAL_PRIMARY_LOCAL_METRIC
         return _CAMPAIGN_GOAL_PRIMARY_ETFM_METRIC
     return _CAMPAIGN_GOAL_PRIMARY_METRIC
 
@@ -190,14 +207,14 @@ def _get_performance_value(goal_type, metric_value, target_value):
     return max(Decimal('0'), min(performance, Decimal('2')))
 
 
-def format_value(goal_type, value):
-    return value and CAMPAIGN_GOAL_VALUE_FORMAT[goal_type](value) \
+def format_value(goal_type, value, currency=constants.Currency.USD):
+    return value and CAMPAIGN_GOAL_VALUE_FORMAT[goal_type](value, curr=core.multicurrency.get_currency_symbol(currency)) \
         or 'N/A'
 
 
-def format_campaign_goal(goal_type, value, conversion_goal):
+def format_campaign_goal(goal_type, value, conversion_goal, currency=constants.Currency.USD):
     description = CAMPAIGN_GOAL_NAME_FORMAT[goal_type].format(
-        format_value(goal_type, value)
+        format_value(goal_type, value, currency)
     )
     if conversion_goal is not None:
         description += ' - ' + conversion_goal.name
@@ -374,13 +391,23 @@ def fetch_goals(campaign_ids, end_date):
     ).select_related('conversion_goal').order_by('campaign_id', '-primary', 'created_dt')
 
 
-def _prepare_performance_output(campaign_goal, stats, conversion_goals, uses_bcm_v2):
+def _prepare_performance_output(campaign_goal, stats, conversion_goals, uses_bcm_v2, local_values=False):
     goal_values = campaign_goal.values.all().order_by('-created_dt')
     last_goal_value = goal_values and goal_values[0]
-    planned_value = last_goal_value and last_goal_value.value or None
+    if local_values:
+        planned_value = last_goal_value and last_goal_value.local_value or None
+    else:
+        planned_value = last_goal_value and last_goal_value.value or None
 
     cost = stats.get('etfm_cost') if uses_bcm_v2 else stats.get('e_media_cost')
-    primary_metric_map = get_goal_to_primary_metric_map(uses_bcm_v2)
+    if uses_bcm_v2:
+        if local_values:
+            cost = stats.get('local_etfm_cost')
+        else:
+            cost = stats.get('etfm_cost')
+    else:
+        cost = stats.get('e_media_cost')
+    primary_metric_map = get_goal_to_primary_metric_map(uses_bcm_v2, local_values)
 
     if campaign_goal.type == constants.CampaignGoalKPI.CPA:
         conversion_column = campaign_goal.conversion_goal.get_view_key(conversion_goals)
@@ -408,7 +435,7 @@ def get_goal_performance_metric(campaign_goal, conversion_goals, uses_bcm_v2):
     return primary_metric_map[campaign_goal.type]
 
 
-def get_goals_performance_campaign(user, campaign, start_date, end_date):
+def get_goals_performance_campaign(user, campaign, start_date, end_date, local_values=False):
     stats_constraints = stats.constraints_helper.prepare_campaign_constraints(
         user, campaign, [], start_date, end_date,
         models.Source.objects.all())
@@ -416,10 +443,10 @@ def get_goals_performance_campaign(user, campaign, start_date, end_date):
     query_results = stats.api_breakdowns.totals(
         user, constants.Level.CAMPAIGNS, [], stats_constraints, stats_goals)
 
-    return _get_goals_performance_output(stats_goals, query_results, campaign.account.uses_bcm_v2)
+    return _get_goals_performance_output(stats_goals, query_results, campaign.account.uses_bcm_v2, local_values)
 
 
-def get_goals_performance_ad_group(user, ad_group, start_date, end_date):
+def get_goals_performance_ad_group(user, ad_group, start_date, end_date, local_values=False):
     stats_constraints = stats.constraints_helper.prepare_ad_group_constraints(
         user, ad_group, [], start_date, end_date,
         models.Source.objects.all())
@@ -427,17 +454,18 @@ def get_goals_performance_ad_group(user, ad_group, start_date, end_date):
     query_results = stats.api_breakdowns.totals(
         user, constants.Level.AD_GROUPS, [], stats_constraints, stats_goals)
 
-    return _get_goals_performance_output(stats_goals, query_results, ad_group.campaign.account.uses_bcm_v2)
+    return _get_goals_performance_output(stats_goals, query_results, ad_group.campaign.account.uses_bcm_v2, local_values)
 
 
-def _get_goals_performance_output(stats_goals, query_results, uses_bcm_v2):
+def _get_goals_performance_output(stats_goals, query_results, uses_bcm_v2, local_values=False):
     performance = []
     for campaign_goal in stats_goals.campaign_goals:
         performance.append(_prepare_performance_output(
             campaign_goal,
             query_results,
             stats_goals.conversion_goals,
-            uses_bcm_v2=uses_bcm_v2
+            uses_bcm_v2=uses_bcm_v2,
+            local_values=local_values,
         ))
 
     return performance

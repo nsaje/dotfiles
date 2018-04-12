@@ -299,6 +299,8 @@ class AdGroupOverview(api_common.BaseApiView):
                 ad_group,
                 start_date,
                 end_date,
+                currency,
+                use_local_currency,
             ))
 
         return settings
@@ -499,7 +501,9 @@ class CampaignOverview(api_common.BaseApiView):
                 user,
                 campaign,
                 start_date,
-                end_date
+                end_date,
+                currency,
+                use_local_currency,
             ))
 
         return settings
