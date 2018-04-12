@@ -20,6 +20,7 @@ import core.bcm
 import core.bcm.helpers
 import core.common
 import core.history
+import core.multicurrency
 from . import dailystatement
 
 from . import bcm_slack
@@ -203,8 +204,9 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
     def get_available_amount(self, date=None):
         if date is None:
             date = utils.dates_helper.local_today()
-        total_spend = self.get_spend_data(date=date)['etf_total']
-        return self.allocated_amount() - total_spend
+        local_available = self.get_local_available_amount(date)
+        exchange_rate = core.multicurrency.get_exchange_rate(date, self.credit.currency)
+        return local_available / exchange_rate
 
     def get_local_available_amount(self, date=None):
         if date is None:
@@ -215,8 +217,9 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
     def get_available_etfm_amount(self, date=None):
         if date is None:
             date = utils.dates_helper.local_today()
-        total_spend = self.get_spend_data(date=date)['etfm_total']
-        return self.allocated_amount() - total_spend
+        local_available_etfm = self.get_local_available_etfm_amount(date)
+        exchange_rate = core.multicurrency.get_exchange_rate(date, self.credit.currency)
+        return local_available_etfm / exchange_rate
 
     def get_local_available_etfm_amount(self, date=None):
         if date is None:
