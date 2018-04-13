@@ -91,7 +91,7 @@ def _to_local_currency(ad_group, stats):
     today = dates_helper.local_today()
     exchange_rate = core.multicurrency.get_exchange_rate(today, currency)
     for stat in stats:
-        stat['spend'] = stat['spend'] * exchange_rate
+        stat['spend'] = decimal.Decimal(stat['spend']) * exchange_rate
 
 
 def _get_k1_source_stats(ad_group, no_cache=False, use_source_tz=False):
