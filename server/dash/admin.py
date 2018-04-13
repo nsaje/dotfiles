@@ -453,6 +453,10 @@ class CampaignInline(admin.TabularInline):
     raw_id_fields = ('default_whitelist', 'default_blacklist', 'account', 'settings')
 
 
+class YahooAccountInline(admin.TabularInline):
+    model = models.YahooAccount
+
+
 class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     form = dash_forms.AccountAdminForm
     search_fields = ['name']
@@ -466,7 +470,7 @@ class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'uses_bcm_v2')
     exclude = ('users', 'settings')
     raw_id_fields = ('default_whitelist', 'default_blacklist', 'agency', 'settings')
-    inlines = (AccountUserInline, CampaignInline)
+    inlines = (AccountUserInline, CampaignInline, YahooAccountInline)
 
     @transaction.atomic
     def migrate_to_bcm_v2(self, request, queryset):
