@@ -310,7 +310,7 @@ def _refresh_k1_reports(update_since, views, account_id=None, skip_vacuum=False)
                 logger.exception("Vacuum and analyze skipped due to error")
 
     # save processed data to S3 to for potential read replication
-    _handle_replicas(views, job_id, date_from, date_to, account_id=account_id)
+    _handle_replicas(views, job_id, date_from, date_to, account_id=account_id, skip_vacuum=skip_vacuum)
 
     # while everything is being updated data is not consistent among tables
     # so might as well leave cache until refresh finishes
@@ -319,20 +319,22 @@ def _refresh_k1_reports(update_since, views, account_id=None, skip_vacuum=False)
     influx.incr('etl.refresh_k1.refresh_k1_reports_finished', 1)
 
 
-def _handle_replicas(views, job_id, date_from, date_to, account_id=None):
+def _handle_replicas(views, job_id, date_from, date_to, account_id=None, skip_vacuum=False):
     for mv_class in views:
         if not mv_class.IS_TEMPORARY_TABLE:
             s3_path = materialize_views.unload_table(job_id, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
             for db_name in settings.STATS_DB_WRITE_REPLICAS:
                 materialize_views.update_table_from_s3(db_name, s3_path, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
-                maintenance.vacuum(mv_class.TABLE_NAME, db_name=db_name)
+                if not skip_vacuum:
+                    maintenance.vacuum(mv_class.TABLE_NAME, db_name=db_name)
                 maintenance.analyze(mv_class.TABLE_NAME, db_name=db_name)
             if mv_class in (materialize_views.MasterView, materialize_views.MasterPublishersView):
                 # do not copy mv_master and mv_master_pubs into postgres, too large
                 continue
             for db_name in settings.STATS_DB_WRITE_REPLICAS_POSTGRES:
                 materialize_views.update_table_from_s3_postgres(db_name, s3_path, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
-                maintenance.vacuum(mv_class.TABLE_NAME, db_name=db_name)
+                if not skip_vacuum:
+                    maintenance.vacuum(mv_class.TABLE_NAME, db_name=db_name)
                 maintenance.analyze(mv_class.TABLE_NAME, db_name=db_name)
 
 
