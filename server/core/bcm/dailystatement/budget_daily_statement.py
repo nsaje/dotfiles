@@ -5,16 +5,13 @@ from . import queryset
 import core.common
 import core.multicurrency
 
-from utils import dates_helper
-
 
 class BudgetDailyStatementManager(core.common.BaseManager):
 
-    def create(self, *, budget, media_spend_nano, data_spend_nano, license_fee_nano, margin_nano, **kwargs):
+    def create(self, *, date, budget, media_spend_nano, data_spend_nano, license_fee_nano, margin_nano, **kwargs):
         assert not any(arg_name.startswith('local_') for arg_name in kwargs.keys()), 'Provide values in USD'
 
-        today = dates_helper.local_today()
-        currency_exchange_rate = core.multicurrency.get_exchange_rate(today, budget.credit.currency)
+        currency_exchange_rate = core.multicurrency.get_exchange_rate(date, budget.credit.currency)
 
         local_media_spend_nano = media_spend_nano * currency_exchange_rate
         local_data_spend_nano = data_spend_nano * currency_exchange_rate
@@ -23,6 +20,7 @@ class BudgetDailyStatementManager(core.common.BaseManager):
 
         return super().create(
             budget=budget,
+            date=date,
             media_spend_nano=media_spend_nano,
             data_spend_nano=data_spend_nano,
             license_fee_nano=license_fee_nano,
