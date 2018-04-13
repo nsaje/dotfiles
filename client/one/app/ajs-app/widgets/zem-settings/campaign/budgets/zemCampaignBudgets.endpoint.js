@@ -22,6 +22,7 @@ angular.module('one.services').service('zemCampaignBudgetsEndpoint', function ($
                     lifetimeDataSpend: data.totals.lifetime.data_spend,
                     lifetimeLicenseFee: data.totals.lifetime.license_fee,
                     lifetimeMargin: data.totals.lifetime.margin,
+                    currencySymbol: constants.currencySymbol[data.totals.currency],
                 },
                 credits: data.credits.map(function (obj) {
                     return {
@@ -30,6 +31,7 @@ angular.module('one.services').service('zemCampaignBudgetsEndpoint', function ($
                         available: obj.available,
                         startDate: moment(obj.start_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
                         endDate: moment(obj.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
+                        currencySymbol: constants.currencySymbol[obj.currency],
                         id: obj.id,
                         comment: obj.comment,
                         isAvailable: obj.is_available,
@@ -71,6 +73,7 @@ angular.module('one.services').service('zemCampaignBudgetsEndpoint', function ($
             amount: obj.amount,
             startDate: moment(obj.start_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
             endDate: moment(obj.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
+            currencySymbol: constants.currencySymbol[obj.currency],
             total: obj.total || obj.amount,
             licenseFee: obj.license_fee,
             createdBy: obj.created_by,

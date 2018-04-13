@@ -232,9 +232,14 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
 
     def __str__(self):
         parent = self.agency or self.account
-        return '{} - {} - ${} - from {} to {}'.format(
-            parent.id, str(parent), self.amount,
-            self.start_date, self.end_date)
+        return '{id} - {parent} - {currency_symbol}{amount} - from {start_date} to {end_date}'.format(
+            id=parent.id,
+            parent=str(parent),
+            currency_symbol=core.multicurrency.get_currency_symbol(self.currency),
+            amount=self.amount,
+            start_date=self.start_date,
+            end_date=self.end_date
+        )
 
     def is_editable(self):
         return self.status == constants.CreditLineItemStatus.PENDING

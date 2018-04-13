@@ -52,17 +52,17 @@ class CampaignGoalManager(core.common.BaseManager):
 
         if request.user.has_perm('zemauth.can_manage_goals_in_local_currency'):
             history_value = goal.add_local_value(request, value, skip_history=True)
-            currency_sign = core.multicurrency.get_currency_symbol(goal.campaign.account.currency)
+            currency_symbol = core.multicurrency.get_currency_symbol(goal.campaign.account.currency)
         else:
             history_value = goal.add_value(request, value, skip_history=True)
-            currency_sign = core.multicurrency.get_currency_symbol(constants.Currency.USD)
+            currency_symbol = core.multicurrency.get_currency_symbol(constants.Currency.USD)
 
         if primary:
             goal.set_primary(request)
 
         import dash.campaign_goals
         if goal.type in dash.campaign_goals.COST_DEPENDANT_GOALS:
-            history_value = utils.lc_helper.format_currency(history_value, places=3, curr=currency_sign)
+            history_value = utils.lc_helper.format_currency(history_value, places=3, curr=currency_symbol)
 
         campaign.write_history(
             'Added campaign goal "{}{}"'.format(
@@ -183,14 +183,14 @@ class CampaignGoal(models.Model, bcm_mixin.CampaignGoalBCMMixin):
         if not skip_history:
             if request.user.has_perm('zemauth.can_manage_goals_in_local_currency'):
                 history_value = local_value
-                currency_sign = core.multicurrency.get_currency_symbol(self.campaign.account.currency)
+                currency_symbol = core.multicurrency.get_currency_symbol(self.campaign.account.currency)
             else:
                 history_value = value
-                currency_sign = core.multicurrency.get_currency_symbol(constants.Currency.USD)
+                currency_symbol = core.multicurrency.get_currency_symbol(constants.Currency.USD)
 
             import dash.campaign_goals
             if self.type in dash.campaign_goals.COST_DEPENDANT_GOALS:
-                history_value = utils.lc_helper.format_currency(history_value, places=3, curr=currency_sign)
+                history_value = utils.lc_helper.format_currency(history_value, places=3, curr=currency_symbol)
 
             self.campaign.write_history(
                 'Changed campaign goal value: "{}"'.format(

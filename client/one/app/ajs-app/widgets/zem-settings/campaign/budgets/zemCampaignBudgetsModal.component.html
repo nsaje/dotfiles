@@ -31,8 +31,8 @@
                             <span class="radio-text"></span>
                         </label>
                     </td>
-                    <td>{{ credit.available | decimalCurrency:"$":2  }}</td>
-                    <td>{{ credit.total | decimalCurrency:"$":2  }}</td>
+                    <td>{{ credit.available | decimalCurrency:credit.currencySymbol:2  }}</td>
+                    <td>{{ credit.total | decimalCurrency:credit.currencySymbol:2  }}</td>
                     <td ng-if="$ctrl.canAccessPlatformCosts()">{{ credit.licenseFee }}%</td>
                     <td>{{ credit.startDate }}</td>
                     <td>{{ credit.endDate }}</td>
@@ -64,7 +64,8 @@
         <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.amount}">
             <label class="form__label" for="amount-input">Total Budget</label>
             <div class="prefixed-field postfixed-field prefixed-field--narrow postfixed-field--narrow">
-                <span class="prefixed-field__prefix">$</span>
+                <span class="prefixed-field__prefix" ng-if="$ctrl.isNew">{{ $ctrl.budgetItem.credit.currencySymbol }}</span>
+                <span class="prefixed-field__prefix" ng-if="!$ctrl.isNew">{{ $ctrl.budgetItem.currencySymbol }}</span>
                 <input id="amount-input" ng-disabled="!$ctrl.budgetItem.credit || !($ctrl.budgetItem.isEditable || $ctrl.budgetItem.isUpdatable)" type="text" class="input-text" ng-model="$ctrl.budgetItem.amount" zem-currency-input fraction-size="0" />
                 <span class="postfixed-field__postfix">.00</span>
             </div>

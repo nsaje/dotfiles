@@ -628,6 +628,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "is_editable": False,
                     "is_updatable": True,
                     "state": 1,
+                    "currency": constants.Currency.USD,
                     "end_date": "2015-11-30",
                     "license_fee": "20%",
                     "total": "100000.0000",
@@ -642,6 +643,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                 {
                     "available": "0.0000",
                     "end_date": "2015-11-30",
+                    "currency": constants.Currency.USD,
                     "id": 1,
                     "is_available": False,
                     "comment": "Test case",
@@ -663,7 +665,8 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "campaign_spend": "0.0000",
                     "media_spend": "0.0000",
                     "license_fee": "0.0000",
-                }
+                },
+                "currency": constants.Currency.USD,
             }
         })
 
@@ -680,6 +683,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "is_editable": True,
                     "is_updatable": False,
                     "state": 2,
+                    "currency": constants.Currency.USD,
                     "end_date": "2015-11-30",
                     "license_fee": "20%",
                     "total": "100000.0000",
@@ -694,6 +698,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                 {
                     "available": "0.0000",
                     "end_date": "2015-11-30",
+                    "currency": constants.Currency.USD,
                     "id": 1,
                     "is_available": False,
                     "comment": "Test case",
@@ -715,7 +720,8 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "campaign_spend": "0.0000",
                     "media_spend": "0.0000",
                     "license_fee": "0.0000",
-                }
+                },
+                "currency": constants.Currency.USD,
             }
         })
 
@@ -740,6 +746,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "is_editable": False,
                     "is_updatable": True,
                     "state": 1,
+                    "currency": constants.Currency.USD,
                     "end_date": "2015-11-30",
                     "total": "100000.0000",
                     "spend": "0.0000",
@@ -753,6 +760,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                 {
                     "available": "0.0000",
                     "end_date": "2015-11-30",
+                    "currency": constants.Currency.USD,
                     "id": 1,
                     "is_available": False,
                     "comment": "Test case",
@@ -770,7 +778,8 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                 },
                 "lifetime": {
                     "campaign_spend": "0.0000",
-                }
+                },
+                "currency": constants.Currency.USD,
             }
         })
 
@@ -791,6 +800,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "is_editable": False,
                     "is_updatable": True,
                     "state": 1,
+                    "currency": constants.Currency.USD,
                     "end_date": "2015-11-30",
                     "license_fee": "20%",
                     "margin": "15%",
@@ -806,6 +816,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                 {
                     "available": "0.0000",
                     "end_date": "2015-11-30",
+                    "currency": constants.Currency.USD,
                     "id": 1,
                     "is_available": False,
                     "comment": "Test case",
@@ -828,7 +839,8 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "media_spend": "0.0000",
                     "license_fee": "0.0000",
                     "margin": "0.0000",
-                }
+                },
+                "currency": constants.Currency.USD,
             }
         })
 
@@ -849,6 +861,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "is_editable": True,
                     "is_updatable": False,
                     "state": 2,
+                    "currency": constants.Currency.USD,
                     "end_date": "2015-11-30",
                     "license_fee": "20%",
                     "margin": "15%",
@@ -864,6 +877,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                 {
                     "available": "0.0000",
                     "end_date": "2015-11-30",
+                    "currency": constants.Currency.USD,
                     "id": 1,
                     "is_available": False,
                     "comment": "Test case",
@@ -886,7 +900,8 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "media_spend": "0.0000",
                     "license_fee": "0.0000",
                     "margin": "0.0000",
-                }
+                },
+                "currency": constants.Currency.USD,
             }
         })
 
@@ -902,6 +917,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertCountEqual(data['credits'], [{
             "available": "0.0000",
             "end_date": "2015-11-30",
+            "currency": constants.Currency.USD,
             "id": 1,
             "is_available": False,
             "comment": "Test case",
@@ -927,6 +943,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertCountEqual(data['credits'], [{
             "available": "0.0000",
             "end_date": "2015-11-30",
+            "currency": constants.Currency.USD,
             "id": 1,
             "is_available": False,
             "comment": "Test case",
@@ -939,6 +956,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             'comment': 'Agency credit',
             'end_date': '2015-11-30',
             'start_date': '2015-10-01',
+            'currency': constants.Currency.USD,
             'is_available': True,
             'license_fee': '20',
             'total': '99900.0000',
@@ -1098,6 +1116,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
                 "amount": 100000,
                 "end_date": "2015-11-30",
                 "state": 1,
+                "currency": constants.Currency.USD,
                 "created_at": "2014-06-04T05:58:21",
                 "credit": {
                     "license_fee": "0.2000",
@@ -1145,6 +1164,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
                 "end_date": "2015-11-30",
                 "margin": "15%",
                 "state": 1,
+                "currency": constants.Currency.USD,
                 "created_at": "2014-06-04T05:58:21",
                 "credit": {
                     "license_fee": "0.2000",
@@ -1456,6 +1476,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
                     "is_editable": False,
                     "is_updatable": True,
                     "state": 1,
+                    "currency": constants.Currency.USD,
                     "end_date": "2015-11-30",
                     "license_fee": "20%",
                     "margin": "15%",
@@ -1471,6 +1492,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
                     "is_editable": False,
                     "is_updatable": True,
                     "state": 1,
+                    "currency": constants.Currency.USD,
                     "end_date": "2015-11-30",
                     "license_fee": "20%",
                     "margin": "15%",
@@ -1487,6 +1509,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
                 {
                     "available": "50000.0000",
                     "end_date": "2015-11-30",
+                    "currency": constants.Currency.USD,
                     "id": 1,
                     "is_available": True,
                     "license_fee": "20",
@@ -1508,7 +1531,8 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
                     "media_spend": "400.0000",
                     "license_fee": "60.5000",
                     "margin": "76.0500",
-                }
+                },
+                "currency": constants.Currency.USD,
             }
         })
 

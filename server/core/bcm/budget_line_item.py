@@ -106,12 +106,13 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
     objects = BudgetLineItemManager()
 
     def __str__(self):
-        return '${} - from {} to {} (id: {}, campaign: {})'.format(
-            self.amount,
-            self.start_date,
-            self.end_date,
-            self.id,
-            str(self.campaign),
+        return '{currency_symbol}{amount} - from {start_date} to {end_date} (id: {id}, campaign: {campaign})'.format(
+            currency_symbol=core.multicurrency.get_currency_symbol(self.credit.currency),
+            amount=self.amount,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            id=self.id,
+            campaign=str(self.campaign),
         )
 
     @classmethod
@@ -126,16 +127,18 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
         }
         return NAMES.get(prop_name)
 
-    @classmethod
-    def get_human_value(cls, prop_name, value):
+    def get_human_value(self, prop_name, value):
+        currency_symbol = core.multicurrency.get_currency_symbol(self.credit.currency)
         if prop_name == 'amount' and value is not None:
-            value = lc_helper.default_currency(value)
+            value = lc_helper.format_currency(value, places=2, curr=currency_symbol)
         elif prop_name == 'freed_cc' and value is not None:
-            value = lc_helper.default_currency(
-                Decimal(value) * converters.CC_TO_DECIMAL_CURRENCY)
+            value = lc_helper.format_currency(
+                Decimal(value) * converters.CC_TO_DECIMAL_CURRENCY, places=2, curr=currency_symbol
+            )
         elif prop_name == 'flat_fee_cc':
-            value = lc_helper.default_currency(
-                Decimal(value) * converters.CC_TO_DECIMAL_CURRENCY)
+            value = lc_helper.format_currency(
+                Decimal(value) * converters.CC_TO_DECIMAL_CURRENCY, places=2, curr=currency_symbol
+            )
         elif prop_name == 'margin' and value is not None:
             value = '{}%'.format(utils.string_helper.format_decimal(
                 Decimal(value) * 100, 2, 3))
@@ -402,6 +405,9 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
         if self.credit.status == constants.CreditLineItemStatus.PENDING:
             raise ValidationError(
                 'Cannot allocate budget from an unsigned credit.')
+        if self.credit.currency != self.campaign.account.currency:
+            raise ValidationError(
+                'Cannot allocate budget from a credit in currency different from account\'s currency.')
 
         self.validate_license_fee()
 
@@ -458,8 +464,9 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
                                                      for b in budgets) - self.allocated_amount()
         if delta < 0:
             raise ValidationError(
-                'Budget exceeds the total credit amount by ${}.'.format(
-                    -delta.quantize(Decimal('1.00'))
+                'Budget exceeds the total credit amount by {currency_symbol}{delta}.'.format(
+                    currency_symbol=core.multicurrency.get_currency_symbol(self.credit.currency),
+                    delta=-delta.quantize(Decimal('1.00'))
                 )
             )
 

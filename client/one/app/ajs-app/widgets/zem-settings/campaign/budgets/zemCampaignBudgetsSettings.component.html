@@ -4,32 +4,32 @@
     <div class="zem-campaign-budgets-settings__budget-overview">
         <div class="zem-campaign-budgets-settings__budget-overview-box">
             <span class="zem-campaign-budgets-settings__budget-overview-name">Campaign Spend</span>
-            <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.lifetimeCampaignSpend | decimalCurrency:"$":2 }}</span>
+            <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.lifetimeCampaignSpend | decimalCurrency:$ctrl.budgets.totals.currencySymbol:2 }}</span>
         </div>
         <div class="zem-campaign-budgets-settings__budget-overview-box" ng-if="$ctrl.canAccessPlatformCosts()">
             <span class="zem-campaign-budgets-settings__budget-overview-name">Media Spend</span>
-            <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.lifetimeMediaSpend | decimalCurrency:"$":2 }}</span>
+            <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.lifetimeMediaSpend | decimalCurrency:$ctrl.budgets.totals.currencySymbol:2 }}</span>
         </div>
         <div class="zem-campaign-budgets-settings__budget-overview-box" ng-if="$ctrl.canAccessPlatformCosts()">
             <span class="zem-campaign-budgets-settings__budget-overview-name">Data Spend</span>
-            <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.lifetimeDataSpend | decimalCurrency:"$":2 }}</span>
+            <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.lifetimeDataSpend | decimalCurrency:$ctrl.budgets.totals.currencySymbol:2 }}</span>
         </div>
         <div class="zem-campaign-budgets-settings__budget-overview-box" ng-if="$ctrl.canAccessPlatformCosts()">
             <span class="zem-campaign-budgets-settings__budget-overview-name">License Fee</span>
-            <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.lifetimeLicenseFee | decimalCurrency:"$":2 }}</span>
+            <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.lifetimeLicenseFee | decimalCurrency:$ctrl.budgets.totals.currencySymbol:2 }}</span>
         </div>
         <div class="zem-campaign-budgets-settings__budget-overview-box" ng-if="$ctrl.canAccessAgencyCosts()">
             <span class="zem-campaign-budgets-settings__budget-overview-name">Margin</span>
-            <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.lifetimeMargin | decimalCurrency:"$":2 }}</span>
+            <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.lifetimeMargin | decimalCurrency:$ctrl.budgets.totals.currencySymbol:2 }}</span>
         </div>
         <div class="zem-campaign-budgets-settings__budget-overview-box zem-campaign-budgets-settings__budget-overview-box--exposed">
             <span class="zem-campaign-budgets-settings__budget-overview-name">Available Budget</span>
-            <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.currentAvailable | decimalCurrency:"$":2 }}</span>
+            <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.currentAvailable | decimalCurrency:$ctrl.budgets.totals.currencySymbol:2 }}</span>
         </div>
         <div class="zem-campaign-budgets-settings__budget-overview-box zem-campaign-budgets-settings__budget-overview-box--exposed">
             <span class="zem-campaign-budgets-settings__budget-overview-name">Unallocated Credit</span>
             <span class="zem-campaign-budgets-settings__budget-overview-value">
-                {{ $ctrl.budgets.totals.currentUnallocated | decimalCurrency:"$":2 }}
+                {{ $ctrl.budgets.totals.currentUnallocated | decimalCurrency:$ctrl.budgets.totals.currencySymbol:2 }}
             </span>
         </div>
     </div>
@@ -58,13 +58,13 @@
                     <td>{{ item.id }}</td>
                     <td>{{ item.startDate }}</td>
                     <td>{{ item.endDate }}</td>
-                    <td>{{ item.total | decimalCurrency:"$":2 }}</td>
+                    <td>{{ item.total | decimalCurrency:item.currencySymbol:2 }}</td>
                     <td ng-if="$ctrl.canAccessPlatformCosts()">{{ item.licenseFee }}</td>
                     <td ng-if="$ctrl.canAccessAgencyCosts()">
                         {{ item.margin }}
                     </td>
-                    <td>{{ item.spend | decimalCurrency:"$":2 }}</td>
-                    <td>{{ item.available | decimalCurrency:"$":2 }}</td>
+                    <td>{{ item.spend | decimalCurrency:item.currencySymbol:2 }}</td>
+                    <td>{{ item.available | decimalCurrency:item.currencySymbol:2 }}</td>
                     <td class="custom-table__notes">
                         <zem-note-popover content="{{ item.comment }}" placement="top" ng-if="item.comment.length > 0"
                                           class="note-popover"></zem-note-popover>
@@ -117,13 +117,13 @@
                     <td>{{ item.startDate }}</td>
                     <td>{{ item.endDate }}</td>
 
-                    <td>{{ item.total | decimalCurrency:"$":2 }}</td>
+                    <td>{{ item.total | decimalCurrency:item.currencySymbol:2 }}</td>
                     <td ng-if="$ctrl.canAccessPlatformCosts()">{{ item.licenseFee }}</td>
                     <td ng-if="$ctrl.canAccessAgencyCosts()">
                         {{ item.margin }}
                     </td>
-                    <td>{{ item.spend | decimalCurrency:"$":2 }}</td>
-                    <td>{{ item.available | decimalCurrency:"$":2 }}</td>
+                    <td>{{ item.spend | decimalCurrency:item.currencySymbol:2 }}</td>
+                    <td>{{ item.available | decimalCurrency:item.currencySymbol:2 }}</td>
 
                     <td class="custom-table__notes">
                         <zem-note-popover content="{{ item.comment }}" placement="top" ng-if="item.comment.length > 0"
