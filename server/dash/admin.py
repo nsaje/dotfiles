@@ -1103,6 +1103,7 @@ class CreditLineItemAdmin(ExportMixin, SaveWithRequestMixin, admin.ModelAdmin):
         'agency',
         'start_date',
         'end_date',
+        'currency',
         'amount',
         'flat_fee_cc',
         'status',
@@ -1112,7 +1113,7 @@ class CreditLineItemAdmin(ExportMixin, SaveWithRequestMixin, admin.ModelAdmin):
         'created_by',
     )
     date_hierarchy = 'start_date'
-    list_filter = ('status', 'refund', 'license_fee', 'created_by')
+    list_filter = ('status', 'refund', 'currency', 'license_fee', 'created_by')
     readonly_fields = ('contract_id', 'contract_number', 'created_dt', 'created_by',)
     search_fields = ('account__name', 'agency__name', 'amount')
     form = dash_forms.CreditLineItemAdminForm
