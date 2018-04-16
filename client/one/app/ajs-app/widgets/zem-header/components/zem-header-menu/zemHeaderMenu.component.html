@@ -5,7 +5,12 @@
     <div class="zem-header__dropdown-menu zem-header__dropdown-menu--header-menu" uib-dropdown-menu>
         <div class="zem-header-menu__logged-in-user">
             <div class="zem-header-menu__logged-in-user-title">Logged in as:</div>
-            {{$ctrl.userEmail}}
+            <div class="zem-header-menu__logged-in-user-name">
+                {{$ctrl.userName}}
+            </div>
+            <div class="zem-header-menu__logged-in-user-email">
+                {{$ctrl.userEmail}}
+            </div>
         </div>
         <ul class="zem-header-menu__group" ng-if="$ctrl.getActions('account').length">
             <li class="zem-header-menu__group-title">Account settings:</li>

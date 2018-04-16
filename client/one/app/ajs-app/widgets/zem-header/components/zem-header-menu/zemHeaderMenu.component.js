@@ -9,17 +9,18 @@ angular.module('one.widgets').component('zemHeaderMenu', {
         var currentUserUpdateHandler;
 
         $ctrl.$onInit = function () {
-            setUserEmail();
+            setUserInfo();
 
-            currentUserUpdateHandler = zemUserService.onCurrentUserUpdated(setUserEmail);
+            currentUserUpdateHandler = zemUserService.onCurrentUserUpdated(setUserInfo);
         };
 
         $ctrl.$onDestroy = function () {
             if (currentUserUpdateHandler) currentUserUpdateHandler();
         };
 
-        function setUserEmail () {
+        function setUserInfo () {
             var user = zemUserService.current();
+            $ctrl.userName = user ? user.name : null;
             $ctrl.userEmail = user ? user.email : null;
         }
 
