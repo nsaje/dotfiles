@@ -1,6 +1,5 @@
 import copy
 import datetime
-import influx
 
 from django.db import models
 from django.db.models import Sum
@@ -417,8 +416,26 @@ def count_active_campaigns(account):
     return len(active_campaign_ids)
 
 
+def count_active_agency_accounts(user):
+    return (
+        dash.models.AdGroup.objects.all()
+        .filter_running()
+        .filter_by_user(user)
+        .order_by()  # disable default adgroup order
+        .values('campaign__account')
+        .distinct()
+        .count()
+    )
+
+
 def _active_account_ids():
-    return set(
+    cache = caches['dash_db_cache']
+    cache_key = 'active_account_ids'
+    active_account_ids = cache.get(cache_key, None)
+    if active_account_ids is not None:
+        return active_account_ids
+
+    active_account_ids = set(
         dash.models.AdGroup.objects.all()
         .filter_running()
         .order_by()  # disable default adgroup order
@@ -428,11 +445,8 @@ def _active_account_ids():
         ).distinct()
     )
 
-
-def count_active_agency_accounts(user):
-    return dash.models.Account.objects.all().filter_by_user(user).filter(
-        id__in=_active_account_ids()
-    ).count()
+    cache.set(cache_key, active_account_ids)
+    return active_account_ids
 
 
 def count_active_accounts(filtered_agencies, filtered_account_types):
@@ -483,34 +497,40 @@ def count_weekly_logged_in_users(filtered_agencies, filtered_account_types):
         filtered_account_types).count()
 
 
+def _active_user_ids():
+    cache = caches['dash_db_cache']
+    cache_key = 'active_user_ids'
+    active_user_ids = cache.get(cache_key, None)
+    if active_user_ids is not None:
+        return active_user_ids
+
+    active_user_ids = set(
+        dash.models.History.objects.all()
+        .filter(
+            created_dt__gte=_one_week_ago(),
+            created_dt__lte=_until_today(),
+        )
+        .filter_selfmanaged()
+        .values_list('created_by_id', flat=True)
+        .distinct()
+    )
+
+    cache.set(cache_key, active_user_ids)
+    return active_user_ids
+
+
 def get_weekly_active_users(filtered_agencies, filtered_account_types):
     # NOTE: data returned by this function might be a bit old, because cache is invalidated after
     # a certain time and not when data actually changes. This behaviour is by design - currently
     # it is ok if this data is a bit dated - confirmed by product
 
-    cache = caches['dash_db_cache']
-    cache_key = utils.cache_helper.get_cache_key(
-        'active_users_ids', filtered_agencies, filtered_account_types)
-    active_users_ids = cache.get(cache_key, None)
-    if active_users_ids is not None:
-        influx.incr('infobox.cache', 1, method='get_weekly_active_users', outcome='hit')
-        return zemauth.models.User.objects.filter(pk__in=active_users_ids)
-
-    influx.incr('infobox.cache', 1, method='get_weekly_active_users', outcome='miss')
-    actions = dash.models.History.objects\
-        .filter(
-            created_dt__gte=_one_week_ago(),
-            created_dt__lte=_until_today())\
-        .filter_selfmanaged().distinct('created_by_id')
-
     users = zemauth.models.User.objects.all().filter(
-        pk__in=actions.values_list('created_by_id', flat=True)
+        pk__in=_active_user_ids()
     ).filter_by_agencies(filtered_agencies)
 
     users = _filter_user_by_account_type(
         users,
         filtered_account_types)
-    cache.set(cache_key, [x.pk for x in users])
     return users
 
 
