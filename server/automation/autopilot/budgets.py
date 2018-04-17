@@ -1,6 +1,6 @@
 import logging
 import operator
-from decimal import Decimal, ROUND_CEILING
+from decimal import Decimal, ROUND_CEILING, ROUND_DOWN
 from random import betavariate, random
 
 import dash
@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 def get_autopilot_daily_budget_recommendations(
         entity, daily_budget, data, bcm_modifiers, campaign_goal=None, uses_bcm_v2=False, ignore_daily_budget_too_small=False):
+    daily_budget = daily_budget.quantize(Decimal('1.'), rounding=ROUND_DOWN)
     active_sources = list(data.keys())
     max_budgets, new_budgets, old_budgets = _get_autopilot_budget_constraints(data, daily_budget, bcm_modifiers)
     comments = []
@@ -78,9 +79,9 @@ def get_autopilot_daily_budget_recommendations(
                 entity.id
             )
     elif sum(new_budgets.values()) != daily_budget:
-        logger.warning('Budget Autopilot tried assigning wrong ammount of total daily spend caps - Expected: ' +
-                       str(daily_budget) + ' Proposed: ' + str(sum(new_budgets.values())) + ' on entity: ' +
-                       str(entity) + ' ( ' + str(entity.id) + ' )')
+        logger.error('Budget Autopilot tried assigning wrong ammount of total daily spend caps - Expected: ' +
+                     str(daily_budget) + ' Proposed: ' + str(sum(new_budgets.values())) + ' on entity: ' +
+                     str(entity) + ' ( ' + str(entity.id) + ' )')
         comments = [constants.DailyBudgetChangeComment.NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET]
         new_budgets = old_budgets
 
