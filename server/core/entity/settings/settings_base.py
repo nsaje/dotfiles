@@ -2,6 +2,7 @@
 import datetime
 
 from django.conf import settings
+from django.core.exceptions import FieldDoesNotExist
 from django.db import models
 from django.db import transaction
 
@@ -64,26 +65,31 @@ class SettingsBase(models.Model, core.history.HistoryMixin):
 
     # Unsafe update without validation and notification of other systems
     @transaction.atomic()
-    def update_unsafe(self, request, update_fields=None, system_user=None, **kwargs):
+    def update_unsafe(self, request, system_user=None, **kwargs):
         user = request.user if request else None
         changes = self.get_changes(kwargs)
 
+        update_fields = None
         if self.pk is not None:
             if not changes:
                 return
+            update_fields = list(changes.keys())
             self._create_copy()
 
         self.created_by = user
         self.created_dt = datetime.datetime.utcnow()
-        self.system_user = system_user
+        if update_fields is not None:
+            update_fields.extend(['created_by', 'created_dt'])
+        if self.has_field('system_user'):
+            self.system_user = system_user
+            if update_fields is not None:
+                update_fields.append('system_user')
 
         history_changes = self.get_model_state_changes(kwargs)
         self.add_to_history(user, constants.HistoryActionType.SETTINGS_CHANGE, history_changes)
 
         for k, v in changes.items():
             setattr(self, k, v)
-        if update_fields is not None:
-            update_fields.extend(['created_by', 'created_dt', 'system_user'])
         super(SettingsBase, self).save(update_fields=update_fields)
         core.signals.settings_change.send_robust(
             sender=self.__class__, request=request,
@@ -126,3 +132,11 @@ class SettingsBase(models.Model, core.history.HistoryMixin):
     @classmethod
     def get_defaults_dict(cls):
         return {}
+
+    @classmethod
+    def has_field(cls, name):
+        try:
+            cls._meta.get_field(name)
+            return True
+        except FieldDoesNotExist:
+            return False

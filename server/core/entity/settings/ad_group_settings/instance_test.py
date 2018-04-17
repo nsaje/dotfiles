@@ -8,6 +8,8 @@ import core.entity
 import core.source
 from dash import constants
 
+from . import model
+
 
 class InstanceTest(TestCase):
     def setUp(self):
@@ -163,13 +165,18 @@ class InstanceTest(TestCase):
             self.ad_group.settings.bluekai_targeting
         )
 
-        with patch('core.entity.settings.settings_base.SettingsBase.update_unsafe') as save_mock:
+        with patch('django.db.models.Model.save') as save_mock:
             self.ad_group.settings.update(
                 None,
                 bluekai_targeting=['outbrain:4321']
             )
-            save_mock.assert_called_once_with(
-                None, system_user=None, update_fields=['bluekai_targeting'], bluekai_targeting=['outbrain:4321'])
+            save_mock.assert_any_call(
+                update_fields=['bluekai_targeting', 'created_by', 'created_dt', 'system_user'])
+
+    @patch('django.db.models.Model.save')
+    def test_update_fields_create(self, mock_save):
+        model.AdGroupSettings.objects.create_default(self.ad_group, 'test-name')
+        mock_save.assert_any_call(update_fields=None)
 
     def test_remove_max_cpc(self):
         ad_group = magic_mixer.blend(core.entity.AdGroup)

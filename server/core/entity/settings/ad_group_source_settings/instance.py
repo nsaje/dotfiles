@@ -36,7 +36,7 @@ class AdGroupSourceSettingsMixin(object):
 
         old_settings = self.get_settings_dict()
         changes = self.get_setting_changes(new_settings)
-        new_settings.save(request, system_user=system_user, update_fields=list(changes.keys()))
+        new_settings.save(request, system_user=system_user)
 
         if not skip_automation:
             # autopilot reloads settings so changes have to be saved when it is called

@@ -185,7 +185,7 @@ class AdGroupSettingsMixin(object):
 
     def _save_and_propagate(self, request, new_settings, system_user):
         changes = self.get_setting_changes(new_settings)
-        new_settings.save(request, update_fields=list(changes.keys()), system_user=system_user)
+        new_settings.save(request, system_user=system_user)
 
         core.signals.settings_change.send_robust(
             sender=self.__class__, request=request, instance=new_settings,
