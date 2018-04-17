@@ -9,7 +9,7 @@ from . import model
 EUR_AGENCIES = [196, 175, 179, 201]
 
 
-class AccountManager(core.common.QuerySetManager):
+class AccountManager(core.common.BaseManager):
 
     @transaction.atomic()
     def create(self, request, name, agency=None, currency=None):

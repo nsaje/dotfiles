@@ -4,7 +4,7 @@ import dash
 from utils import exc
 from utils.magic_mixer import magic_mixer
 
-from .campaign import Campaign
+from .model import Campaign
 
 
 class TestCampaignManager(TestCase):

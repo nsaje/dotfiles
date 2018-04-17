@@ -1,1 +1,1 @@
-from .campaign import Campaign
+from .model import Campaign
