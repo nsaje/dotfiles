@@ -19,9 +19,10 @@ ACCOUNT_EXCEPTIONS = defaultdict(dict, {
         305: 100000,  # OEN
     },
     'AdGroup': {
-        490: 1000,  # inPowered
-        512: 1000,  # inPowered
-        513: 1000,  # inPowered
+        490: 1000,   # inPowered
+        512: 1000,   # inPowered
+        513: 1000,   # inPowered
+        293: 10000,  # Businesswire
     },
     'ContentAd': {
         63:  10000,   # Allstate
