@@ -69,7 +69,7 @@ class ContentAdsView(K1APIView):
                 'image_height': item.image_height,
                 'image_hash': item.image_hash,
                 'image_crop': item.image_crop,
-                'description': item.description,
+                'description': '' if item.ad_group_id == 156382 else item.description,
                 'brand_name': item.brand_name,
                 'display_url': item.display_url,
                 'call_to_action': item.call_to_action,
