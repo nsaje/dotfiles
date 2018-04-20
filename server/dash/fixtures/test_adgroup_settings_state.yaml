@@ -37,6 +37,8 @@
         daily_budget_cc: '50.'
         tracking_code: ''
         archived: false
+        b1_sources_group_cpc_cc: '0.1'
+        local_b1_sources_group_cpc_cc: '0.1'
     model: dash.adgroupsettings
     pk: 1
 

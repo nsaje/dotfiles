@@ -8,6 +8,7 @@ from dash import constants
 class CurrencyExchangeRate(models.Model):
     class Meta:
         app_label = 'dash'
+        unique_together = ('date', 'currency')
 
     date = models.DateField()
     currency = models.CharField(

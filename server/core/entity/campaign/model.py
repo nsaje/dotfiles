@@ -53,6 +53,3 @@ class Campaign(instance.CampaignInstanceMixin,
     USERS_FIELD = 'users'
 
     objects = manager.CampaignManager.from_queryset(queryset.CampaignQuerySet)()
-
-    def __str__(self):
-        return self.name

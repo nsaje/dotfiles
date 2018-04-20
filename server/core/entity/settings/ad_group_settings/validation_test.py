@@ -97,7 +97,7 @@ class ValidationTest(TestCase):
         mock_get_min_budget.return_value = 0
         new_settings.b1_sources_group_enabled = True
         new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-        new_settings.autopilot_daily_budget = 100
+        new_settings.autopilot_daily_budget = Decimal(100)
         current_settings._validate_autopilot_settings(new_settings)
         mock_get_min_budget.assert_called_with(self.ad_group, new_settings)
 

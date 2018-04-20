@@ -12,6 +12,9 @@ from utils import json_helper
 
 class AccountInstanceMixin:
 
+    def __str__(self):
+        return self.name
+
     def get_long_name(self):
         agency = ''
         if self.agency:

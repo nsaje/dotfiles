@@ -21,7 +21,7 @@ class MulticurrencySettingsMixin(object):
         if not value or not (field in self.multicurrency_fields or to_usd_field in self.multicurrency_fields):
             return None, None
 
-        assert isinstance(value, decimal.Decimal)
+        value = decimal.Decimal(value)
 
         if to_local_field:
             new_local = value * self._get_exchange_rate()

@@ -6,7 +6,7 @@ from django.test import TestCase
 import dash.constants
 from utils.magic_mixer import magic_mixer
 
-from .currency_exchange_rate import CurrencyExchangeRate
+from ..currency_exchange_rate import CurrencyExchangeRate
 from . import service
 
 

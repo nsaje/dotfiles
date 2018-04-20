@@ -13,7 +13,8 @@ from . import manager
 from . import queryset
 
 
-class Account(instance.AccountInstanceMixin, models.Model):
+class Account(instance.AccountInstanceMixin,
+              models.Model):
 
     class Meta:
         ordering = ('-created_dt',)
@@ -75,6 +76,3 @@ class Account(instance.AccountInstanceMixin, models.Model):
     settings = models.OneToOneField('AccountSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_entity')
 
     objects = manager.AccountManager.from_queryset(queryset.AccountQuerySet)()
-
-    def __str__(self):
-        return self.name

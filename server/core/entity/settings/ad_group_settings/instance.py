@@ -18,9 +18,10 @@ import core.signals
 class AdGroupSettingsMixin(object):
 
     @transaction.atomic
-    def update(self, request, skip_validation=False, skip_automation=False, system_user=None, **updates):
+    def update(self, request, skip_validation=False, skip_automation=False,
+               skip_permission_check=False, system_user=None, **updates):
         self._update_ad_group(request, updates)
-        updates = self._filter_and_remap_input(request, updates)
+        updates = self._filter_and_remap_input(request, updates, skip_permission_check)
         if updates:
             new_settings = self.copy_settings()
             self._apply_updates(new_settings, updates)
@@ -39,10 +40,10 @@ class AdGroupSettingsMixin(object):
             self.ad_group.name = updates['name']
         self.ad_group.save(request)
 
-    def _filter_and_remap_input(self, request, updates):
+    def _filter_and_remap_input(self, request, updates, skip_permission_check):
         updates = self._remove_unsupported_fields(updates)
         updates = self._remap_fields_for_compatibility(updates)
-        updates = self._remove_disallowed_fields(request, updates)
+        updates = self._remove_disallowed_fields(request, updates, skip_permission_check)
         return updates
 
     def _remove_unsupported_fields(self, updates):
@@ -60,7 +61,7 @@ class AdGroupSettingsMixin(object):
             updates['ad_group_name'] = updates['name']
         return updates
 
-    def _remove_disallowed_fields(self, request, updates):
+    def _remove_disallowed_fields(self, request, updates, skip_permission_check):
         user = request.user if request else None
         special_case_fields = {'autopilot_state'}
         valid_fields = set(self._settings_fields) - special_case_fields
@@ -68,8 +69,8 @@ class AdGroupSettingsMixin(object):
         new_updates = {}
 
         for field, value in list(updates.items()):
-            required_permission = self._permissioned_fields.get(field)
-            if required_permission and not user.has_perm(required_permission):
+            required_permission = not skip_permission_check and self._permissioned_fields.get(field)
+            if required_permission and not (user and user.has_perm(required_permission)):
                 continue
             if field in valid_fields:
                 new_updates[field] = value
@@ -106,10 +107,12 @@ class AdGroupSettingsMixin(object):
         if changes.get('cpc_cc') and new_settings.b1_sources_group_enabled:
             new_settings.b1_sources_group_cpc_cc = min(changes.get('cpc_cc'), new_settings.b1_sources_group_cpc_cc)
 
-        new_settings.b1_sources_group_cpc_cc = dash.views.helpers.adjust_max_cpc(
+        adjusted_b1_sources_group_cpc_cc = dash.views.helpers.adjust_max_cpc(
             new_settings.b1_sources_group_cpc_cc,
             new_settings
         )
+        if new_settings.b1_sources_group_cpc_cc != adjusted_b1_sources_group_cpc_cc:
+            new_settings.b1_sources_group_cpc_cc = adjusted_b1_sources_group_cpc_cc
 
     def _handle_cpc_autopilot_initial_cpcs(self, new_settings):
         import dash.views.helpers

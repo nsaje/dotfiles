@@ -9,6 +9,9 @@ from utils import json_helper
 
 class CampaignInstanceMixin:
 
+    def __str__(self):
+        return self.name
+
     def admin_link(self):
         if self.id:
             return '<a href="/admin/dash/campaign/%d/">Edit</a>' % self.id

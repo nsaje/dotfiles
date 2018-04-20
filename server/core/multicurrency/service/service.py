@@ -2,8 +2,8 @@ import decimal
 
 import dash.constants
 
-from .constants import CurrencySymbol
-from .currency_exchange_rate import CurrencyExchangeRate
+from ..constants import CurrencySymbol
+from ..currency_exchange_rate import CurrencyExchangeRate
 
 
 def get_exchange_rate(date, currency):

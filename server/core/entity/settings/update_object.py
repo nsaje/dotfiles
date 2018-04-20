@@ -12,14 +12,23 @@ class UpdateObject(object):
         return getattr(self.settings, key)
 
     def __setattr__(self, key, value):
-        old_value = key in self.__dict__ and self.__dict__[key] or getattr(self.settings, key)
-
+        old_value = self._get_value(key)
         if value != old_value:
             self.__dict__[key] = value
-            if self._supports_multicurrency:
-                counterpart_key, counterpart_value = self.settings.get_multicurrency_counterpart(key, value)
-                if counterpart_key and counterpart_value:
-                    self.__dict__[counterpart_key] = counterpart_value
+        if self._supports_multicurrency:
+            self._handle_multicurrency(key, value)
+
+    def _handle_multicurrency(self, key, value):
+        counterpart_key, counterpart_value = self.settings.get_multicurrency_counterpart(key, value)
+        if not counterpart_key or not counterpart_value:
+            return
+
+        old_counterpart_value = self._get_value(counterpart_key)
+        if old_counterpart_value != counterpart_value:
+            self.__dict__[counterpart_key] = counterpart_value
+
+    def _get_value(self, key):
+        return key in self.__dict__ and self.__dict__[key] or getattr(self.settings, key)
 
     def get_updates(self):
         fields = (field.name for field in self.settings._meta.get_fields())

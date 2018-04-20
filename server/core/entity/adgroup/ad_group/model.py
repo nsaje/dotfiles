@@ -91,7 +91,8 @@ class AdGroupManager(core.common.QuerySetManager):
         return ad_group
 
 
-class AdGroup(models.Model, bcm_mixin.AdGroupBCMMixin):
+class AdGroup(models.Model,
+              bcm_mixin.AdGroupBCMMixin):
     _current_settings = None
 
     class Meta:
