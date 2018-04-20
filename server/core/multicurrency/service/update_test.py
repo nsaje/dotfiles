@@ -48,6 +48,10 @@ class UpdateExchangeRatesTestCase(TestCase):
             skip_notification=True, local_cpc_cc='0.62', local_daily_budget_cc=28)
 
     def test_initial_settings(self):
+        self.ad_group.settings.refresh_from_db()
+        self.ad_group_source.settings.refresh_from_db()
+
+        self._test_initial_local_settings()
         self.assertEqual(decimal.Decimal('1'), self.ad_group.settings.cpc_cc)
         self.assertEqual(decimal.Decimal('125'), self.ad_group.settings.autopilot_daily_budget)
         self.assertEqual(decimal.Decimal('90'), self.ad_group.settings.b1_sources_group_daily_budget)
@@ -64,6 +68,8 @@ class UpdateExchangeRatesTestCase(TestCase):
         update.update_exchange_rates(currencies=[dash.constants.Currency.EUR])
         self.ad_group.settings.refresh_from_db()
         self.ad_group_source.settings.refresh_from_db()
+
+        self._test_initial_local_settings()
         self.assertEqual(decimal.Decimal('1.0667'), self.ad_group.settings.cpc_cc)
         self.assertEqual(decimal.Decimal('133.3333'), self.ad_group.settings.autopilot_daily_budget)
         self.assertEqual(decimal.Decimal('96'), self.ad_group.settings.b1_sources_group_daily_budget)
@@ -73,3 +79,14 @@ class UpdateExchangeRatesTestCase(TestCase):
         self.assertEqual(decimal.Decimal('0.8267'), self.ad_group_source.settings.cpc_cc)
         self.assertEqual(decimal.Decimal('0.2'), self.goal1.get_current_value().value)
         self.assertEqual(20, self.goal2.get_current_value().value)
+
+    def _test_initial_local_settings(self):
+        self.assertEqual(decimal.Decimal('0.8'), self.ad_group.settings.local_cpc_cc)
+        self.assertEqual(decimal.Decimal('100'), self.ad_group.settings.local_autopilot_daily_budget)
+        self.assertEqual(decimal.Decimal('72'), self.ad_group.settings.local_b1_sources_group_daily_budget)
+        self.assertEqual(decimal.Decimal('0.35'), self.ad_group.settings.local_b1_sources_group_cpc_cc)
+        self.assertEqual(decimal.Decimal('1.3'), self.ad_group.settings.local_max_cpm)
+        self.assertEqual(decimal.Decimal('28'), self.ad_group_source.settings.local_daily_budget_cc)
+        self.assertEqual(decimal.Decimal('0.62'), self.ad_group_source.settings.local_cpc_cc)
+        self.assertEqual(decimal.Decimal('0.15'), self.goal1.get_current_value().local_value)
+        self.assertEqual(20, self.goal2.get_current_value().local_value)
