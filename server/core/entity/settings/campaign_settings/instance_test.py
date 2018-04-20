@@ -18,11 +18,18 @@ class InstanceTestCase(TestCase):
 
         campaign.settings.update(None, name='abc')
         self.assertEqual(mock_insert_adgroup.call_count, 0)
-        self.assertEqual(mock_ping_adgroups.call_count, 1)
+        self.assertEqual(mock_ping_adgroups.call_count, 0)
 
+        mock_insert_adgroup.reset_mock()
         mock_ping_adgroups.reset_mock()
         campaign.settings.update(None, enable_ga_tracking=True)
         self.assertEqual(mock_insert_adgroup.call_count, 10)
+        self.assertEqual(mock_ping_adgroups.call_count, 0)
+
+        mock_insert_adgroup.reset_mock()
+        mock_ping_adgroups.reset_mock()
+        campaign.settings.update(None, iab_category='IAB2')
+        self.assertEqual(mock_insert_adgroup.call_count, 0)
         self.assertEqual(mock_ping_adgroups.call_count, 1)
 
     @patch('automation.autopilot.recalculate_budgets_campaign')
