@@ -55,7 +55,7 @@ class ContentAdsTest(K1APIBaseTest):
         self.assertGreater(len(data), 0)
         for content_ad_source in data:
             db_cas = dash.models.ContentAdSource.objects.get(
-                id=content_ad_source['id'])
+                content_ad_id=content_ad_source['content_ad_id'], source__bidder_slug=content_ad_source['source_slug'])
             self.assertEqual(content_ad_source['source_content_ad_id'], db_cas.source_content_ad_id)
             self.assertEqual(content_ad_source['content_ad_id'], db_cas.content_ad_id)
             self.assertEqual(content_ad_source['ad_group_id'], db_cas.content_ad.ad_group_id)
@@ -90,7 +90,6 @@ class ContentAdsTest(K1APIBaseTest):
         data = data['response']
 
         required_fields = {
-            'id',
             'content_ad_id',
             'ad_group_id',
             'source_content_ad_id',
@@ -231,7 +230,6 @@ class ContentAdsTest(K1APIBaseTest):
 
         expected = [
             {
-                "id": 1,
                 "content_ad_id": 1,
                 "ad_group_id": 1,
                 "submission_status": 1,
