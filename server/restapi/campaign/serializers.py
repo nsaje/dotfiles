@@ -36,12 +36,13 @@ class AdobeTrackingSerializer(rest_framework.serializers.Serializer):
         source='adobe_tracking_param',
         required=False,
         max_length=10,
+        allow_blank=True,
     )
 
 
 class CampaignTrackingSerializer(rest_framework.serializers.Serializer):
-    ga = GATrackingSerializer(source='*')
-    adobe = AdobeTrackingSerializer(source='*')
+    ga = GATrackingSerializer(source='*', required=False)
+    adobe = AdobeTrackingSerializer(source='*', required=False)
 
 
 class PublisherGroupsSerializer(rest_framework.serializers.Serializer):
@@ -70,7 +71,7 @@ class CampaignTargetingSerializer(restapi.serializers.base.RESTAPIBaseSerializer
         source='target_os',
         required=False,
     )
-    publisher_groups = PublisherGroupsSerializer(source='*')
+    publisher_groups = PublisherGroupsSerializer(source='*', required=False)
 
 
 class CampaignSerializer(restapi.serializers.base.RESTAPIBaseSerializer):

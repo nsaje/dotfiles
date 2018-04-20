@@ -238,3 +238,18 @@ class CampaignsTest(RESTAPITest):
             format='json'
         )
         self.assertResponseError(r, 'ValidationError')
+
+    def test_adobe_tracking_parameter_blank(self):
+        test_campaign = self.campaign_repr(
+            id=608,
+            account_id=186,
+            name="Adobe tracking campaign",
+            adobe_tracking_param='',
+        )
+        r = self.client.put(
+            reverse('campaigns_details', kwargs={'campaign_id': 608}),
+            data=test_campaign,
+            format='json'
+        )
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json['data'])
