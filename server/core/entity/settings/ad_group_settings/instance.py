@@ -20,12 +20,13 @@ class AdGroupSettingsMixin(object):
     @transaction.atomic
     def update(self, request, skip_validation=False, skip_automation=False,
                skip_permission_check=False, system_user=None, **updates):
-        self._update_ad_group(request, updates)
         updates = self._filter_and_remap_input(request, updates, skip_permission_check)
+        self._update_ad_group(request, updates)
         if updates:
             new_settings = self.copy_settings()
             self._apply_updates(new_settings, updates)
             if not skip_validation:
+                self._validate_changes(new_settings)
                 self.clean(new_settings)
             self._handle_and_set_change_consequences(new_settings)
             changes = self.get_setting_changes(new_settings)
@@ -36,8 +37,8 @@ class AdGroupSettingsMixin(object):
                     self._handle_budget_autopilot(changes)
 
     def _update_ad_group(self, request, updates):
-        if 'name' in updates:
-            self.ad_group.name = updates['name']
+        if 'ad_group_name' in updates:
+            self.ad_group.name = updates['ad_group_name']
         self.ad_group.save(request)
 
     def _filter_and_remap_input(self, request, updates, skip_permission_check):
@@ -84,6 +85,19 @@ class AdGroupSettingsMixin(object):
     def _apply_updates(new_settings, updates):
         for key, value in updates.items():
             setattr(new_settings, key, value)
+
+    def _validate_changes(self, new_settings):
+        if 'archived' in new_settings.get_updates():
+            if new_settings.archived:
+                if not self.ad_group.can_archive():
+                    raise exc.ForbiddenError(
+                        'An ad group has to be paused for 3 days in order to archive it.'
+                    )
+            else:
+                if not self.ad_group.can_restore():
+                    raise exc.ForbiddenError(
+                        'Account and campaign have to not be archived in order to restore an ad group.'
+                    )
 
     def _handle_and_set_change_consequences(self, new_settings):
         self._handle_b1_sources_group_adjustments(new_settings)
