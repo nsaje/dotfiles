@@ -165,7 +165,7 @@ class CampaignsTest(RESTAPITest):
     def test_campaigns_post(self):
         new_campaign = self.campaign_repr(
             account_id=186,
-            name='All About Testing',
+            name='All About Burek',
             whitelist_publisher_groups=[153, 154],
             blacklist_publisher_groups=[]
         )
@@ -216,7 +216,7 @@ class CampaignsTest(RESTAPITest):
             id=608,
             account_id=186,
             name="My test campaign!",
-            ga_property_id='PID',
+            ga_property_id='BUREK',
         )
         r = self.client.put(
             reverse('campaigns_details', kwargs={'campaign_id': 608}),

@@ -291,7 +291,6 @@
         whitelist_publisher_groups: [1]
         blacklist_publisher_groups: [2]
         autopilot_state: 1
-        autopilot_daily_budget: 30
         click_capping_daily_ad_group_max_clicks: 10
         click_capping_daily_click_budget: '5.0000'
     model: dash.adgroupsettings

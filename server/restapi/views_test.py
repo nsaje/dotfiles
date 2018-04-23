@@ -1,4 +1,5 @@
 from decimal import Decimal
+import string
 import datetime
 import json
 import mock
@@ -14,10 +15,13 @@ from . import fields
 from . import views as restapi_views
 from dash import constants
 import redshiftapi.api_quickstats
+from automation import autopilot
 
 from utils import json_helper
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
+
+import restapi.serializers.targeting
 
 
 TODAY = datetime.datetime(2016, 1, 15).date()
@@ -271,6 +275,268 @@ class BudgetsTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
         self.validate_budget(resp_json['data'])
         self.assertEqual(resp_json['data']['amount'], '900')
+
+
+class AdGroupsTest(RESTAPITest):
+
+    def adgroup_repr(
+        cls,
+        id=1,
+        campaign_id=1,
+        name='My test ad group',
+        state=constants.AdGroupSettingsState.INACTIVE,
+        archived=False,
+        start_date=datetime.date.today(),
+        end_date=None,
+        max_cpc='0.600',
+        max_cpm='1.700',
+        daily_budget='15.00',
+        tracking_code='a=b',
+        target_regions={'countries': ['US'], 'postalCodes': ['CA:12345']},
+        exclusion_target_regions={},
+        target_devices=[constants.AdTargetDevice.DESKTOP],
+        target_placements=[constants.Placement.APP],
+        target_os=[{'name': constants.OperatingSystem.ANDROID}],
+        target_browsers=[{'family': constants.BrowserFamily.CHROME}],
+        interest_targeting=['women', 'fashion'],
+        exclusion_interest_targeting=['politics'],
+        demographic_targeting=['and', 'bluekai:671901', ['or', 'lotame:123', 'outbrain:123']],
+        autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE,
+        autopilot_daily_budget='50.00',
+        dayparting={},
+        whitelist_publisher_groups=[153],
+        blacklist_publisher_groups=[154],
+        audience_targeting=[123],
+        exclusion_audience_targeting=[124],
+        retargeting_ad_groups=[2050],
+        exclusion_retargeting_ad_groups=[2051],
+        delivery_type=constants.AdGroupDeliveryType.STANDARD,
+        click_capping_daily_ad_group_max_clicks=120,
+        click_capping_daily_click_budget='12.0000',
+    ):
+        final_target_regions = {
+            'countries': [],
+            'regions': [],
+            'dma': [],
+            'cities': [],
+            'postalCodes': []
+        }
+        final_target_regions.update(target_regions)
+        final_exclusion_target_regions = {
+            'countries': [],
+            'regions': [],
+            'dma': [],
+            'cities': [],
+            'postalCodes': []
+        }
+        final_exclusion_target_regions.update(exclusion_target_regions)
+
+        representation = {
+            'id': str(id),
+            'campaignId': str(campaign_id),
+            'name': name,
+            'state': constants.AdGroupSettingsState.get_name(state),
+            'archived': archived,
+            'startDate': start_date,
+            'endDate': end_date,
+            'maxCpc': max_cpc,
+            'maxCpm': max_cpm,
+            'dailyBudget': daily_budget,
+            'trackingCode': tracking_code,
+            'targeting': {
+                'geo': {
+                    'included': final_target_regions,
+                    'excluded': final_exclusion_target_regions,
+                },
+                'devices': restapi.serializers.targeting.DevicesSerializer(target_devices).data,
+                'placements': restapi.serializers.targeting.PlacementsSerializer(target_placements).data,
+                'os': restapi.serializers.targeting.OSsSerializer(target_os).data,
+                'browsers': restapi.serializers.targeting.BrowsersSerializer(target_browsers).data,
+                'interest': {
+                    'included': [constants.InterestCategory.get_name(i) for i in interest_targeting],
+                    'excluded': [constants.InterestCategory.get_name(i) for i in exclusion_interest_targeting],
+                },
+                'audience': restapi.serializers.targeting.AudienceSerializer(demographic_targeting).data,
+                'demographic': demographic_targeting,
+                'publisherGroups': {
+                    'included': whitelist_publisher_groups,
+                    'excluded': blacklist_publisher_groups,
+                },
+                'customAudiences': {
+                    'included': audience_targeting,
+                    'excluded': exclusion_audience_targeting,
+                },
+                'retargetingAdGroups': {
+                    'included': retargeting_ad_groups,
+                    'excluded': exclusion_retargeting_ad_groups,
+                }
+            },
+            'autopilot': {
+                'state': constants.AdGroupSettingsAutopilotState.get_name(autopilot_state),
+                'dailyBudget': autopilot_daily_budget,
+            },
+            'dayparting': dayparting,
+            'deliveryType': constants.AdGroupDeliveryType.get_name(delivery_type),
+            'clickCappingDailyAdGroupMaxClicks': click_capping_daily_ad_group_max_clicks,
+            'clickCappingDailyClickBudget': click_capping_daily_click_budget,
+        }
+
+        return cls.normalize(representation)
+
+    @staticmethod
+    def _partition_regions(target_regions):
+        """ non-exact heuristics in order to not reimplement functionality in tests """
+        geo = {
+            'countries': [],
+            'regions': [],
+            'dma': [],
+            'cities': [],
+            'postalCodes': []
+        }
+        for tr in target_regions:
+            if len(tr) == 2 and all(char in string.ascii_uppercase for char in tr):
+                geo['countries'].append(tr)
+            elif 5 <= len(tr) <= 6 and '-' in tr:
+                geo['regions'].append(tr)
+            elif ':' in tr:
+                geo['postalCodes'].append(tr)
+            elif len(tr) == 3:
+                geo['dma'].append(tr)
+            else:
+                geo['cities'].append(int(tr))
+        return geo
+
+    def validate_against_db(self, adgroup):
+        adgroup_db = dash.models.AdGroup.objects.get(pk=adgroup['id'])
+        settings_db = adgroup_db.get_current_settings()
+        expected = self.adgroup_repr(
+            id=adgroup_db.id,
+            campaign_id=adgroup_db.campaign_id,
+            name=settings_db.ad_group_name,
+            state=settings_db.state,
+            archived=settings_db.archived,
+            start_date=settings_db.start_date,
+            end_date=settings_db.end_date,
+            max_cpc=settings_db.cpc_cc.quantize(Decimal('1.000')) if settings_db.cpc_cc else '',
+            max_cpm=settings_db.max_cpm.quantize(Decimal('1.000')) if settings_db.max_cpm else '',
+            daily_budget=settings_db.daily_budget_cc.quantize(Decimal('1.00')),
+            tracking_code=settings_db.tracking_code,
+            target_regions=self._partition_regions(settings_db.target_regions),
+            interest_targeting=settings_db.interest_targeting,
+            exclusion_interest_targeting=settings_db.exclusion_interest_targeting,
+            demographic_targeting=settings_db.bluekai_targeting,
+            autopilot_state=settings_db.autopilot_state,
+            autopilot_daily_budget=settings_db.autopilot_daily_budget.quantize(Decimal('1.00')),
+            dayparting=settings_db.dayparting,
+            whitelist_publisher_groups=settings_db.whitelist_publisher_groups,
+            blacklist_publisher_groups=settings_db.blacklist_publisher_groups,
+            audience_targeting=settings_db.audience_targeting,
+            exclusion_audience_targeting=settings_db.exclusion_audience_targeting,
+            retargeting_ad_groups=settings_db.retargeting_ad_groups,
+            exclusion_retargeting_ad_groups=settings_db.exclusion_retargeting_ad_groups,
+            target_devices=settings_db.target_devices,
+            target_placements=settings_db.target_placements,
+            target_os=settings_db.target_os,
+            target_browsers=settings_db.target_browsers,
+            click_capping_daily_ad_group_max_clicks=settings_db.click_capping_daily_ad_group_max_clicks,
+            click_capping_daily_click_budget=settings_db.click_capping_daily_click_budget,
+        )
+        self.assertEqual(expected, adgroup)
+
+    def test_adgroups_list(self):
+        r = self.client.get(reverse('adgroups_list'))
+        resp_json = self.assertResponseValid(r, data_type=list)
+        for item in resp_json['data']:
+            self.validate_against_db(item)
+
+    def test_adgroups_list_pagination(self):
+        campaign = magic_mixer.blend(dash.models.Campaign, account__users=[self.user])
+        magic_mixer.cycle(10).blend(dash.models.AdGroup, campaign=campaign)
+        r = self.client.get(reverse('adgroups_list'), {'campaignId': campaign.id})
+        r_paginated = self.client.get(reverse('adgroups_list'), {'campaignId': campaign.id, 'limit': 2, 'offset': 5})
+        resp_json = self.assertResponseValid(r, data_type=list)
+        resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
+        self.assertEqual(resp_json['data'][5:7], resp_json_paginated['data'])
+
+    def test_adgroups_list_campaign_filter(self):
+        # TODO(nsaje): create a prettier test, this one is urgent and hackish
+        account1 = magic_mixer.blend(dash.models.Account, users=[self.user])
+        adgroup1_account1 = magic_mixer.blend(dash.models.AdGroup, campaign__account=account1)
+        adgroup1_account1.get_current_settings().copy_settings().save(None)
+        adgroup2_account1 = magic_mixer.blend(dash.models.AdGroup, campaign__account=account1)
+        adgroup2_account1.get_current_settings().copy_settings().save(None)
+        account2 = magic_mixer.blend(dash.models.Account)
+        adgroup1_account2 = magic_mixer.blend(dash.models.AdGroup, campaign__account=account2)
+        adgroup1_account2.get_current_settings().copy_settings().save(None)
+
+        r = self.client.get(reverse('adgroups_list'), {'campaignId': adgroup1_account1.campaign_id})
+        resp_json = self.assertResponseValid(r, data_type=list)
+        for item in resp_json['data']:
+            self.validate_against_db(item)
+        self.assertEqual(len(resp_json['data']), 1)
+        self.assertEqual(resp_json['data'][0]['id'], str(adgroup1_account1.id))
+
+    def test_adgroups_post(self):
+        r = self.client.post(
+            reverse('adgroups_list'),
+            data={'campaignId': 608, 'name': 'test adgroup'}, format='json')
+        resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
+        self.validate_against_db(resp_json['data'])
+        self.assertEqual(resp_json['data']['name'], 'test adgroup')
+
+    def test_adgroups_get(self):
+        r = self.client.get(reverse('adgroups_details', kwargs={'entity_id': 2040}))
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json['data'])
+
+    def test_adgroups_put(self):
+        test_adgroup = self.adgroup_repr(id=2040, campaign_id=608)
+        r = self.client.put(
+            reverse('adgroups_details', kwargs={'entity_id': 2040}),
+            data=test_adgroup, format='json')
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json['data'])
+        self.assertEqual(resp_json['data'], test_adgroup)
+
+    def test_adgroups_put_state(self):
+        r = self.client.put(
+            reverse('adgroups_details', kwargs={'entity_id': 2040}),
+            data={'state': 'INACTIVE'}, format='json')
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json['data'])
+        self.assertEqual(resp_json['data']['state'], 'INACTIVE')
+
+    def test_adgroups_put_archive_restore(self):
+        r = self.client.put(
+            reverse('adgroups_details', kwargs={'entity_id': 2040}),
+            data={'archived': True}, format='json')
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json['data'])
+        self.assertEqual(resp_json['data']['archived'], True)
+
+        r = self.client.put(
+            reverse('adgroups_details', kwargs={'entity_id': 2040}),
+            data={'archived': False}, format='json')
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json['data'])
+        self.assertEqual(resp_json['data']['archived'], False)
+
+    @mock.patch.object(autopilot, 'recalculate_budgets_ad_group', autospec=True)
+    def test_adgroups_put_autopilot_budget(self, mock_autopilot):
+        ag = dash.models.AdGroup.objects.get(pk=2040)
+        new_settings = ag.get_current_settings().copy_settings()
+        new_settings.b1_sources_group_enabled = True
+        new_settings.save(None)
+        test_adgroup = self.adgroup_repr(
+            id=2040, campaign_id=608,
+            autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+            autopilot_daily_budget='20.00')
+        r = self.client.put(
+            reverse('adgroups_details', kwargs={'entity_id': 2040}),
+            data=test_adgroup, format='json')
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json['data'])
+        self.assertEqual(resp_json['data'], test_adgroup)
 
 
 class AdGroupSourcesRTBTest(RESTAPITest):
