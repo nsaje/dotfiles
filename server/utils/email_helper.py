@@ -237,8 +237,8 @@ def email_manager_list(campaign):
     '''
     Fetch campaign manager and account manager emails if they exist
     '''
-    campaign_manager = campaign.get_current_settings().campaign_manager
-    account_manager = campaign.account.get_current_settings().default_account_manager
+    campaign_manager = campaign.settings.campaign_manager
+    account_manager = campaign.account.settings.default_account_manager
     ret = set([])
     if account_manager is not None:
         ret.add(account_manager.email)

@@ -17,7 +17,7 @@ from utils import dates_helper
 
 class UpdateAlmostDepletedTestCase(TestCase):
     def setUp(self):
-        self.setup_initial_state()
+        self._setup_initial_state()
 
     def mocked_afternoon_est_now():
         today = datetime.today()
@@ -403,13 +403,14 @@ class UpdateAlmostDepletedTestCase(TestCase):
         campaignstop.service.update_almost_depleted.mark_almost_depleted_campaigns()
         self.assertTrue(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
 
-    def setup_initial_state(self):
+    def _setup_initial_state(self):
         self.today = dates_helper.local_today()
         self.campaign = magic_mixer.blend(
             core.entity.Campaign,
             real_time_campaign_stop=True,
         )
-        self.campaign.settings.update(None, automatic_campaign_stop=False)
+        user = magic_mixer.blend_user()
+        self.campaign.settings.update(None, automatic_campaign_stop=False, campaign_manager=user)
         self.campaign_goal = magic_mixer.blend(
             core.goals.CampaignGoal,
             campaign=self.campaign,

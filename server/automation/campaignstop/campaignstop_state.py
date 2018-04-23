@@ -1,10 +1,18 @@
+import logging
+
 from django.db import models
 
 import core.entity
 from . import constants
+import dash.constants
 
 from utils import k1_helper
 from utils import dates_helper
+from utils import email_helper
+from utils import url_helper
+
+
+logger = logging.getLogger(__name__)
 
 
 class CampaignStopState(models.Model):
@@ -53,8 +61,33 @@ class CampaignStopState(models.Model):
     def update_almost_depleted(self, is_depleted):
         if is_depleted and not self.almost_depleted:
             self.almost_depleted_marked_dt = dates_helper.utc_now()
+            self._send_budget_almost_depleted_email()
         self.almost_depleted = is_depleted
         self.save()
+
+    def _send_budget_almost_depleted_email(self):
+        manager_list = email_helper.email_manager_list(self.campaign)
+        if not manager_list:
+            return
+
+        args = {
+            'campaign': self.campaign,
+            'account': self.campaign.account,
+            'link_url': url_helper.get_full_z1_url(
+                '/v2/analytics/campaign/{}?settings&settingsScrollTo=zemCampaignBudgetsSettings'.format(self.campaign.pk)
+            ),
+        }
+        try:
+            email_helper.send_official_email(
+                recipient_list=manager_list,
+                agency_or_user=manager_list[0],
+                **email_helper.params_from_template(
+                    dash.constants.EmailTemplateType.CAMPAIGNSTOP_DEPLETING,
+                    **args
+                )
+            )
+        except Exception:
+            logger.exception('Exception while sending campaign stop email')
 
     def update_pending_budget_updates(self, pending_updates):
         self.pending_budget_updates = pending_updates
