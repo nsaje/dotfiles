@@ -44,7 +44,7 @@ class OSsSerializer(rest_framework.serializers.ListSerializer):
 
 
 class BrowserSerializer(rest_framework.serializers.Serializer):
-    name = restapi.fields.DashConstantField(dash.constants.Browser)
+    family = restapi.fields.DashConstantField(dash.constants.BrowserFamily)
 
 
 class BrowsersSerializer(rest_framework.serializers.ListSerializer):

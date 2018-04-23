@@ -58,7 +58,7 @@ class AdGroupSettingsTest(TestCase):
                 }
             }],
             'target_browsers': [{
-                'name': 'CHROME',
+                'family': 'CHROME',
             }],
             'target_placements': ['app'],
             'tracking_code': '',

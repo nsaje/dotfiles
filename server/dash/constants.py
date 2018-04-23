@@ -2261,7 +2261,7 @@ OSV_MAPPING = {
 }
 
 
-class Browser(ConstantBase):
+class BrowserFamily(ConstantBase):
     OTHER = None
     CHROME = 'CHROME'
     FIREFOX = 'FIREFOX'

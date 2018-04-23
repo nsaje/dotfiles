@@ -340,7 +340,7 @@ class AdGroupsTest(RESTAPITest):
         target_devices=[constants.AdTargetDevice.DESKTOP],
         target_placements=[constants.Placement.APP],
         target_os=[{'name': constants.OperatingSystem.ANDROID}],
-        target_browsers=[{'name': constants.Browser.CHROME}],
+        target_browsers=[{'family': constants.BrowserFamily.CHROME}],
         interest_targeting=['women', 'fashion'],
         exclusion_interest_targeting=['politics'],
         demographic_targeting=['and', 'bluekai:671901', ['or', 'lotame:123', 'outbrain:123']],

@@ -378,8 +378,8 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         elif prop_name == 'target_os':
             value = ', '.join(helpers.get_human_value_target_os(x) for x in value) if value else ''
         elif prop_name == 'target_browsers':
-            value = ', '.join(constants.Browser.get_text(x['name'])
-                              for x in value if 'name' in x)
+            value = ', '.join(constants.BrowserFamily.get_text(x['family'])
+                              for x in value if 'family' in x)
         elif prop_name in ('target_regions', 'exclusion_target_regions'):
             value = AdGroupSettings._get_human_value_for_target_regions(prop_name, value)
         elif prop_name in ('retargeting_ad_groups', 'exclusion_retargeting_ad_groups'):
