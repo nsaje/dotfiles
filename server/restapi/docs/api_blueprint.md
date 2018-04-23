@@ -304,6 +304,27 @@ allocated | [money](#money) | amount already allocated to campaign budgets
 available | [money](#money) | amount still available for allocation
 
 
+### Get credit item for account [GET /rest/v1/accounts/{accountId}/credits/{creditId}]
+
++ Parameters
+    + accountId: 186 (required)
+    + creditId: 861 (required)
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id":"861",
+                "startDate": "2016-01-01",
+                "endDate": "2016-11-05",
+                "createdOn": "2014-06-04",
+                "total": "1000.0000",
+                "allocated": "400.0000",
+                "available": "600.0000"
+            }
+        }
+
+
 ### Get active credit items for account [GET /rest/v1/accounts/{accountId}/credits/]
 
 + Parameters

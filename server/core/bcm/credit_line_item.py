@@ -106,6 +106,9 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
             date = dates_helper.local_today()
         return self.end_date < date
 
+    def get_creation_date(self):
+        return self.created_dt.date()
+
     def get_allocated_amount(self):
         return Decimal(sum(b.allocated_amount() for b in self.budgets.all()))
 
@@ -249,6 +252,9 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
 
     def effective_amount(self):
         return Decimal(self.amount) - self.flat_fee()
+
+    def get_available_amount(self):
+        return self.effective_amount() - self.get_allocated_amount()
 
     def is_available(self):
         return not self.is_past() and self.status == constants.CreditLineItemStatus.SIGNED\

@@ -68,49 +68,6 @@ class RESTAPITest(TestCase):
         return json.loads(json.dumps(d, cls=json_helper.JSONEncoder))
 
 
-class AccountCreditsTest(RESTAPITest):
-
-    @classmethod
-    def credit_repr(
-        cls,
-        id=123,
-        createdOn=datetime.datetime.now(),
-        startDate=datetime.date.today(),
-        endDate=datetime.date.today(),
-        total='500',
-        allocated='200.0',
-        available='300.0',
-    ):
-        return cls.normalize({
-            'id': id,
-            'createdOn': createdOn,
-            'startDate': startDate,
-            'endDate': endDate,
-            'total': total,
-            'allocated': allocated,
-            'available': available,
-        })
-
-    def validate_credit(self, credit):
-        credit_db = dash.models.CreditLineItem.objects.get(pk=credit['id'])
-        expected = self.credit_repr(
-            id=str(credit_db.id),
-            createdOn=credit_db.created_dt.date(),
-            startDate=credit_db.start_date,
-            endDate=credit_db.end_date,
-            total=credit_db.effective_amount(),
-            allocated=credit_db.get_allocated_amount(),
-            available=credit_db.effective_amount() - credit_db.get_allocated_amount(),
-        )
-        self.assertEqual(expected, credit)
-
-    def test_account_credits_list(self):
-        r = self.client.get(reverse('accounts_credits_list', kwargs={'account_id': 186}))
-        resp_json = self.assertResponseValid(r, data_type=list)
-        for item in resp_json['data']:
-            self.validate_credit(item)
-
-
 class CampaignStatsTest(RESTAPITest):
 
     @mock.patch.object(redshiftapi.api_quickstats, 'query_campaign', autospec=True)

@@ -174,29 +174,6 @@ class SettingsSerializer(serializers.BaseSerializer):
         return new_dict
 
 
-class AccountCreditSerializer(serializers.Serializer):
-
-    def to_representation(self, internal_data):
-        return {
-            'id': str(internal_data['id']),
-            'createdOn': internal_data['created_on'],
-            'startDate': internal_data['start_date'],
-            'endDate': internal_data['end_date'],
-            'total': internal_data['total'],
-            'allocated': internal_data['allocated'],
-            'available': internal_data['available'],
-        }
-
-
-class AccountCreditViewList(RESTAPIBaseView):
-
-    def get(self, request, account_id):
-        internal_view = restapi.bcm.views.AccountCreditView(rest_proxy=True)
-        data_internal, _ = internal_view.get(self.request, account_id)
-        serializer = AccountCreditSerializer(data_internal['data']['active'], many=True)
-        return self.response_ok(serializer.data)
-
-
 class AdGroupSerializer(SettingsSerializer):
 
     def update(self, data_internal, validated_data):
