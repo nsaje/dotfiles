@@ -63,9 +63,9 @@ if os.environ.get('DB') == 'pg01':
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'one',
-        'USER': 'admin',
+        'USER': 'zemadmin',
         'PASSWORD': _PG01_PASSWORD,
-        'HOST': '192.168.110.51',
+        'HOST': 'pg01.cmkkg7ghktp5.us-east-1.rds.amazonaws.com',
         'PORT': 5432,
     }
 
