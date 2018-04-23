@@ -10,19 +10,19 @@ class AccountCreditSerializer(rest_framework.serializers.Serializer):
     end_date = rest_framework.serializers.DateField(read_only=True, allow_null=True)
     total = rest_framework.serializers.DecimalField(
         source='effective_amount',
-        max_digits=10,
+        max_digits=20,
         decimal_places=4,
         read_only=True,
     )
     allocated = rest_framework.serializers.DecimalField(
         source='get_allocated_amount',
-        max_digits=10,
+        max_digits=20,
         decimal_places=4,
         read_only=True,
     )
     available = rest_framework.serializers.DecimalField(
         source='get_available_amount',
-        max_digits=10,
+        max_digits=20,
         decimal_places=4,
         read_only=True,
     )
