@@ -61,12 +61,8 @@ def _update_accounts(currency):
 @transaction.atomic
 def _update_account(account):
     for campaign in account.campaign_set.all():
-        _update_campaign(campaign)
-
-
-def _update_campaign(campaign):
-    _recalculate_goals(campaign)
-    _recalculate_ad_group_amounts(campaign)
+        _recalculate_goals(campaign)
+        _recalculate_ad_group_amounts(campaign)
 
 
 def _recalculate_goals(campaign):
@@ -80,12 +76,8 @@ def _recalculate_goals(campaign):
 
 def _recalculate_ad_group_amounts(campaign):
     for ad_group in campaign.adgroup_set.all():
-        _update_ad_group(ad_group)
-
-
-def _update_ad_group(ad_group):
-    _recalculate_ad_group_settings_amounts(ad_group)
-    _recalculate_ad_group_sources_amounts(ad_group)
+        _recalculate_ad_group_settings_amounts(ad_group)
+        _recalculate_ad_group_sources_amounts(ad_group)
 
 
 def _recalculate_ad_group_settings_amounts(ad_group):
@@ -102,11 +94,7 @@ def _recalculate_ad_group_settings_amounts(ad_group):
 
 def _recalculate_ad_group_sources_amounts(ad_group):
     for ad_group_source in ad_group.adgroupsource_set.all():
-        _update_ad_group_source(ad_group_source)
-
-
-def _update_ad_group_source(ad_group_source):
-    _recalculate_ad_group_source_settings_amounts(ad_group_source)
+        _recalculate_ad_group_source_settings_amounts(ad_group_source)
 
 
 def _recalculate_ad_group_source_settings_amounts(ad_group_source):
