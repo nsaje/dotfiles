@@ -11,6 +11,7 @@ from utils import dates_helper
 from utils import email_helper
 from utils import url_helper
 
+import zemauth.models
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +81,7 @@ class CampaignStopState(models.Model):
         try:
             email_helper.send_official_email(
                 recipient_list=manager_list,
-                agency_or_user=manager_list[0],
+                agency_or_user=zemauth.models.User.objects.get(email=manager_list[0]),
                 **email_helper.params_from_template(
                     dash.constants.EmailTemplateType.CAMPAIGNSTOP_DEPLETING,
                     **args
