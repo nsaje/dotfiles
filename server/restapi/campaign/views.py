@@ -2,6 +2,8 @@ from restapi.views import RESTAPIBaseViewSet
 from restapi.common.pagination import StandardPagination
 import restapi.access
 
+from django.db import transaction
+
 import core.entity
 import utils.exc
 from . import serializers
@@ -46,10 +48,13 @@ class CampaignViewSet(RESTAPIBaseViewSet):
         serializer.is_valid(raise_exception=True)
         settings = serializer.validated_data
         account = restapi.access.get_account(request.user, settings['campaign']['account_id'])
-        new_campaign = core.entity.Campaign.objects.create(
-            request,
-            account=account,
-            name=settings['name'],
-        )
-        new_campaign.settings.update(request, **settings)
+
+        with transaction.atomic():
+            new_campaign = core.entity.Campaign.objects.create(
+                request,
+                account=account,
+                name=settings['name'],
+            )
+            new_campaign.settings.update(request, **settings)
+
         return self.response_ok(serializers.CampaignSerializer(new_campaign.settings).data, status=201)
