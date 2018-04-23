@@ -1,6 +1,7 @@
 import decimal
 
 import utils.dates_helper
+import utils.numbers
 import core.multicurrency
 
 
@@ -24,13 +25,16 @@ class MulticurrencySettingsMixin(object):
         value = decimal.Decimal(value)
 
         if to_local_field:
-            new_local = value * self._get_exchange_rate()
+            new_local = self._round(value * self._get_exchange_rate())
             return to_local_field, new_local
         else:
-            new_usd = value / self._get_exchange_rate()
+            new_usd = self._round(value / self._get_exchange_rate())
             return to_usd_field, new_usd
 
     def _get_exchange_rate(self):
         today = utils.dates_helper.local_today()
         currency = self.get_currency()
         return core.multicurrency.get_exchange_rate(today, currency)
+
+    def _round(self, number):
+        return number.quantize(decimal.Decimal('10') ** -4)
