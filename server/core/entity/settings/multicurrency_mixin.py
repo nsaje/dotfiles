@@ -1,5 +1,7 @@
 import decimal
 
+import django.db.models
+
 import utils.dates_helper
 import utils.numbers
 import core.multicurrency
@@ -25,10 +27,10 @@ class MulticurrencySettingsMixin(object):
         value = decimal.Decimal(value)
 
         if to_local_field:
-            new_local = self._round(value * self._get_exchange_rate())
+            new_local = self._round(to_local_field, value * self._get_exchange_rate())
             return to_local_field, new_local
         else:
-            new_usd = self._round(value / self._get_exchange_rate())
+            new_usd = self._round(to_usd_field, value / self._get_exchange_rate())
             return to_usd_field, new_usd
 
     def _get_exchange_rate(self):
@@ -36,5 +38,7 @@ class MulticurrencySettingsMixin(object):
         currency = self.get_currency()
         return core.multicurrency.get_exchange_rate(today, currency)
 
-    def _round(self, number):
-        return number.quantize(decimal.Decimal('10') ** -4)
+    def _round(self, field_name, number):
+        field = self._meta.get_field(field_name)
+        assert isinstance(field, django.db.models.DecimalField)
+        return number.quantize(decimal.Decimal('10') ** -field.decimal_places)

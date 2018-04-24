@@ -1,6 +1,7 @@
 from decimal import Decimal
 from mock import patch
 
+import django.db.models
 from django.test import TestCase
 
 import core.multicurrency
@@ -10,12 +11,16 @@ from .multicurrency_mixin import MulticurrencySettingsMixin
 from .update_object import UpdateObject
 
 
-class TestSettings(MulticurrencySettingsMixin):
-    a = None
-    b = None
-    c = None
-    local_a = None
-    local_b = None
+class TestSettings(MulticurrencySettingsMixin, django.db.models.Model):
+    class Meta:
+        app_label = 'dash'
+        abstract = True
+
+    a = django.db.models.DecimalField(max_digits=10, decimal_places=2)
+    b = django.db.models.DecimalField(max_digits=10, decimal_places=6)
+    c = django.db.models.DecimalField(max_digits=10, decimal_places=4)
+    local_a = django.db.models.DecimalField(max_digits=10, decimal_places=2)
+    local_b = django.db.models.DecimalField(max_digits=10, decimal_places=6)
 
     multicurrency_fields = ['a', 'b']
 
