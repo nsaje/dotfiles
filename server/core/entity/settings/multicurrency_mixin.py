@@ -21,8 +21,11 @@ class MulticurrencySettingsMixin(object):
         else:
             to_local_field = MULTICURRENCY_FIELD_PREFIX + field
 
-        if not value or not (field in self.multicurrency_fields or to_usd_field in self.multicurrency_fields):
+        if field not in self.multicurrency_fields and to_usd_field not in self.multicurrency_fields:
             return None, None
+
+        if not value:
+            return to_usd_field or to_local_field, None
 
         value = decimal.Decimal(value)
 
