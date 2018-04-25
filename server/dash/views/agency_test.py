@@ -905,6 +905,15 @@ class AdGroupSettingsStateTest(TestCase):
 
         self.client.login(username=self.user.email, password='secret')
 
+    def test_permissions(self):
+        url = reverse('ad_group_settings_state', kwargs={'ad_group_id': 0})
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 401)
+
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 401)
+
     def test_get(self):
         ad_group = models.AdGroup.objects.get(pk=1)
 

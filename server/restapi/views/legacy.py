@@ -21,7 +21,7 @@ import djangorestframework_camel_case.util
 
 from utils import json_helper, exc
 
-from dash.views import agency, helpers
+from dash.views import agency, views, helpers
 from dash import campaign_goals
 from dash import constants
 from dash.features.reports import reportjob
@@ -174,6 +174,181 @@ class SettingsSerializer(serializers.BaseSerializer):
         return new_dict
 
 
+class AdGroupSerializer(SettingsSerializer):
+
+    def update(self, data_internal, validated_data):
+        """ Handle state and archived update separately, since they're on separate endpoints """
+        id_ = data_internal['data']['settings']['id']
+
+        old_state = data_internal['data']['settings']['state']
+        new_state = validated_data['settings'].get('state')
+
+        old_archived = data_internal['data']['archived']
+        new_archived = validated_data['settings'].get('archived')
+
+        with transaction.atomic():
+            data_internal_new = super(AdGroupSerializer, self).update(data_internal, validated_data)
+
+            if new_state and new_state != old_state:
+                entity_id = int(id_)
+                self.request.body = json.dumps({'state': new_state}, cls=json_helper.JSONEncoder)
+                internal_view = agency.AdGroupSettingsState(rest_proxy=True)
+                data_internal_state, _ = internal_view.post(self.request, entity_id)
+                data_internal_new['data'].update(data_internal_state['data'])
+
+            if new_archived is not None and new_archived != old_archived:
+                entity_id = int(id_)
+                self.request.body = ''
+                internal_view = views.AdGroupArchive(
+                    rest_proxy=True) if new_archived else views.AdGroupRestore(rest_proxy=True)
+                data_internal_archived, _ = internal_view.post(self.request, entity_id)
+                data_internal_new['data']['archived'] = new_archived
+
+            return data_internal_new
+
+    def to_representation(self, data_internal):
+        settings = data_internal['data']['settings']
+        ret = {
+            'id': settings['id'],
+            'archived': data_internal['data']['archived'],
+            'campaignId': settings['campaign_id'],
+            'name': settings['name'],
+            'state': constants.AdGroupSettingsState.get_name(settings['state']),
+            'startDate': settings['start_date'],
+            'endDate': settings['end_date'],
+            'maxCpc': settings['cpc_cc'],
+            'maxCpm': settings['max_cpm'],
+            'dailyBudget': settings['daily_budget_cc'],
+            'trackingCode': settings['tracking_code'],
+            'targeting': {
+                'geo': {
+                    'included': settings['target_regions'],
+                    'excluded': settings['exclusion_target_regions'],
+                },
+                'devices': settings['target_devices'],
+                'os': settings['target_os'],
+                'browsers': settings['target_browsers'],
+                'placements': settings['target_placements'],
+                'interest': {
+                    'included': [fields.DashConstantField(constants.InterestCategory).to_representation(x) for x in settings['interest_targeting']],
+                    'excluded': [fields.DashConstantField(constants.InterestCategory).to_representation(x) for x in settings['exclusion_interest_targeting']],
+                },
+                'demographic': settings['bluekai_targeting_old'],
+                'audience': settings['bluekai_targeting'],
+                'publisherGroups': {
+                    'included': settings['whitelist_publisher_groups'],
+                    'excluded': settings['blacklist_publisher_groups'],
+                },
+                'customAudiences': {
+                    'included': settings['audience_targeting'],
+                    'excluded': settings['exclusion_audience_targeting'],
+                },
+                'retargetingAdGroups': {
+                    'included': settings['retargeting_ad_groups'],
+                    'excluded': settings['exclusion_retargeting_ad_groups'],
+                }
+            },
+            'autopilot': {
+                'state': constants.AdGroupSettingsAutopilotState.get_name(settings['autopilot_state']),
+                'dailyBudget': settings['autopilot_daily_budget'],
+            },
+            'dayparting': settings['dayparting'],
+            'deliveryType': constants.AdGroupDeliveryType.get_name(settings['delivery_type']),
+        }
+        if 'click_capping_daily_ad_group_max_clicks' in settings:
+            ret['clickCappingDailyAdGroupMaxClicks'] = settings['click_capping_daily_ad_group_max_clicks']
+            ret['clickCappingDailyClickBudget'] = settings['click_capping_daily_click_budget']
+
+        return ret
+
+    def to_internal_value(self, external_data):
+        if external_data.get('targeting', {}).get('geo', {}).get('included', {}).get('postalCodes', None):
+            external_data['targeting']['geo']['included']['postal_codes'] = external_data['targeting']['geo']['included'].pop('postalCodes')
+        if external_data.get('targeting', {}).get('geo', {}).get('excluded', {}).get('postalCodes', None):
+            external_data['targeting']['geo']['excluded']['postal_codes'] = external_data['targeting']['geo']['excluded'].pop('postalCodes')
+        data = self._allow_not_provided(external_data)
+        settings = {
+            'id': data['id'],
+            'name': data['name'],
+            'state': fields.DashConstantField(constants.AdGroupSettingsState).to_internal_value(data['state']),
+            'archived': data['archived'],
+            'start_date': data['startDate'],
+            'end_date': data['endDate'],
+            'cpc_cc': data['maxCpc'],
+            'max_cpm': data['maxCpm'],
+            'daily_budget_cc': data['dailyBudget'],
+            'tracking_code': data['trackingCode'],
+            'interest_targeting': fields.DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['included']),
+            'exclusion_interest_targeting': fields.DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['excluded']),
+            'bluekai_targeting': self._handle_audience_targeting(data),
+            'autopilot_state': fields.DashConstantField(constants.AdGroupSettingsAutopilotState).to_internal_value(data['autopilot']['state']),
+            'autopilot_daily_budget': data['autopilot']['dailyBudget'],
+            'dayparting': data['dayparting'],
+            'whitelist_publisher_groups': data['targeting']['publisherGroups']['included'],
+            'blacklist_publisher_groups': data['targeting']['publisherGroups']['excluded'],
+            'audience_targeting': data['targeting']['customAudiences']['included'],
+            'exclusion_audience_targeting': data['targeting']['customAudiences']['excluded'],
+            'retargeting_ad_groups': data['targeting']['retargetingAdGroups']['included'],
+            'exclusion_retargeting_ad_groups': data['targeting']['retargetingAdGroups']['excluded'],
+
+            # TODO (refactor-workaround) Deserialization done in Django Views
+            'target_regions': data['targeting']['geo']['included'],
+            'exclusion_target_regions': data['targeting']['geo']['excluded'],
+            'target_devices': data['targeting']['devices'],
+            'target_placements': data['targeting']['placements'],
+            'target_os': data['targeting']['os'],
+            'target_browsers': data['targeting']['browsers'],
+            'delivery_type': fields.DashConstantField(constants.AdGroupDeliveryType).to_internal_value(data['deliveryType']),
+            'click_capping_daily_ad_group_max_clicks': data['clickCappingDailyAdGroupMaxClicks'],
+            'click_capping_daily_click_budget': data['clickCappingDailyClickBudget'],
+        }
+        return {'settings': {k: v for k, v in list(settings.items()) if v != fields.NOT_PROVIDED}}
+
+    @staticmethod
+    def _partition_regions(target_regions):
+        geo = {
+            'countries': [],
+            'regions': [],
+            'dma': [],
+            'cities': [],
+            'postalCodes': [],
+        }
+        non_zips = {loc.key: loc for loc in dash.features.geolocation.Geolocation.objects.filter(
+            key__in=target_regions)}
+        zips = set(target_regions) - set(non_zips.keys())
+        for location in target_regions:
+            if location in non_zips:
+                if non_zips[location].type == constants.LocationType.COUNTRY:
+                    geo['countries'].append(location)
+                if non_zips[location].type == constants.LocationType.REGION:
+                    geo['regions'].append(location)
+                if non_zips[location].type == constants.LocationType.DMA:
+                    geo['dma'].append(location)
+                if non_zips[location].type == constants.LocationType.CITY:
+                    geo['cities'].append(location)
+            if location in zips:
+                geo['postalCodes'].append(location)
+        return geo
+
+    @staticmethod
+    def _unpartition_regions(geo):
+        if geo == fields.NOT_PROVIDED:
+            return fields.NOT_PROVIDED
+        target_regions = []
+        target_regions.extend(geo['countries'])
+        target_regions.extend(geo['regions'])
+        target_regions.extend(geo['dma'])
+        target_regions.extend(geo['cities'])
+        target_regions.extend(geo['postalCodes'])
+        return target_regions
+
+    @staticmethod
+    def _handle_audience_targeting(data):
+        if data['targeting']['audience'] != fields.NOT_PROVIDED:
+            return data['targeting']['audience']
+        return data['targeting']['demographic']
+
+
 class SettingsViewDetails(RESTAPIBaseView):
 
     parser_classes = (rest_framework.parsers.JSONParser,)
@@ -236,6 +411,31 @@ class SettingsViewList(RESTAPIBaseView):
                 transaction.set_rollback(True)
             response.status_code = 201
             return response
+
+
+class AdGroupViewDetails(SettingsViewDetails):
+    internal_view_cls = agency.AdGroupSettings
+    serializer_cls = AdGroupSerializer
+
+
+class AdGroupViewList(SettingsViewList):
+    internal_view_cls = agency.AdGroupSettings
+    internal_create_view_cls = views.CampaignAdGroups
+    serializer_cls = AdGroupSerializer
+    details_view_cls = AdGroupViewDetails
+    parent_id_field = 'campaignId'
+
+    def _get_entities_list(self, request):
+        campaign_id = request.query_params.get('campaignId', None)
+
+        if campaign_id:
+            campaign = helpers.get_campaign(request.user, campaign_id)
+            ad_groups = dash.models.AdGroup.objects.filter(campaign=campaign)
+        else:
+            ad_groups = dash.models.AdGroup.objects.all().filter_by_user(request.user)
+
+        ad_groups = ad_groups.select_related('settings')
+        return ad_groups
 
 
 class CampaignGoalsSerializer(serializers.BaseSerializer):

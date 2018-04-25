@@ -20,19 +20,6 @@ class NotProvided(object):
 NOT_PROVIDED = NotProvided()
 
 
-class BlankFieldMixin:
-    def run_validation(self, value):
-        if value == '':
-            value = None
-        return super().run_validation(value)
-
-    def get_initial(self):
-        initial = super().get_initial()
-        if initial is None:
-            return ''
-        return initial
-
-
 class IdField(serializers.Field):
     def to_representation(self, data):
         if isinstance(data, django.db.models.Model):
@@ -93,15 +80,3 @@ class PlainCharField(serializers.CharField):
     def to_internal_value(self, data):
         validation_helper.validate_plain_text(data)
         return super(PlainCharField, self).to_internal_value(data)
-
-
-class BlankIntegerField(BlankFieldMixin, serializers.IntegerField):
-    pass
-
-
-class BlankDateField(BlankFieldMixin, serializers.DateField):
-    pass
-
-
-class BlankDecimalField(BlankFieldMixin, serializers.DecimalField):
-    pass

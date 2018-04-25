@@ -74,10 +74,6 @@ class UnknownFieldBreakdownError(BaseError):
     pass
 
 
-class MultipleValidationError(ValidationError):
-    pass
-
-
 custom_errors = (
     AuthError,
     AuthorizationError,

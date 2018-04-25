@@ -262,11 +262,33 @@ class AdGroup(models.Model,
 
     @transaction.atomic
     def archive(self, request):
-        self.settings.update(request, archived=True)
+        if not self.can_archive():
+            raise exc.ForbiddenError(
+                'An ad group has to be paused for 3 days in order to archive it.'
+            )
+
+        if not self.is_archived():
+            current_settings = self.get_current_settings()
+            new_settings = current_settings.copy_settings()
+            new_settings.archived = True
+            new_settings.save(
+                request,
+                action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
 
     @transaction.atomic
     def restore(self, request):
-        self.settings.update(request, archived=False)
+        if not self.can_restore():
+            raise exc.ForbiddenError(
+                'Account and campaign have to not be archived in order to restore an ad group.'
+            )
+
+        if self.is_archived():
+            current_settings = self.get_current_settings()
+            new_settings = current_settings.copy_settings()
+            new_settings.archived = False
+            new_settings.save(
+                request,
+                action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
 
     def get_default_blacklist_name(self):
         return "Default blacklist for ad group {}({})".format(self.name, self.id)
