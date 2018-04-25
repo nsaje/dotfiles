@@ -13,6 +13,7 @@ from django.db import transaction
 from integrations.bizwire import config, models
 from integrations.bizwire.internal import helpers, reprocess
 
+import restapi.adgroup.views
 import restapi.views
 import restapi.adgroupsource.views
 
@@ -175,7 +176,13 @@ def _create_ad_group(name, start_date):
         }
     }
     url = 'rest/v1/adgroups/'
-    ad_group_id = int(_make_restapi_fake_post_request(restapi.views.AdGroupViewList, url, data)['id'])
+    r = _make_restapi_fake_post_request(
+        restapi.adgroup.views.AdGroupViewSet,
+        url,
+        data,
+        legacy=False,
+    )
+    ad_group_id = int(r['id'])
     _set_initial_sources_settings(ad_group_id)
     _set_initial_rtb_settings(ad_group_id)
     _set_ad_group(ad_group_id, 'ACTIVE')
@@ -191,7 +198,13 @@ def _set_ad_group(ad_group_id, state):
         'state': state,
     }
     url = 'rest/v1/adgroups/{}/'.format(ad_group_id)
-    return _make_restapi_fake_put_request(restapi.views.AdGroupViewDetails, url, data, view_args=[ad_group_id])
+    return _make_restapi_fake_put_request(
+        restapi.adgroup.views.AdGroupViewSet,
+        url,
+        data,
+        view_args=[ad_group_id],
+        legacy=False,
+    )
 
 
 def _set_custom_cpcs(ad_group_id):
@@ -276,21 +289,23 @@ def _make_restapi_fake_get_request(viewcls, url, view_args=[]):
     return _make_restapi_fake_request(viewcls, view_args, request)
 
 
-def _make_restapi_fake_post_request(viewcls, url, data, view_args=[]):
+def _make_restapi_fake_post_request(viewcls, url, data, view_args=[], legacy=True):
     factory = APIRequestFactory()
     request = factory.post(url, data, format='json')
-    return _make_restapi_fake_request(viewcls, view_args, request)
+    view_dict = {'post': 'create'} if not legacy else None
+    return _make_restapi_fake_request(viewcls, view_args, request, view_dict)
 
 
-def _make_restapi_fake_put_request(viewcls, url, data, view_args=[]):
+def _make_restapi_fake_put_request(viewcls, url, data, view_args=[], legacy=True):
     factory = APIRequestFactory()
     request = factory.put(url, data, format='json')
-    return _make_restapi_fake_request(viewcls, view_args, request)
+    view_dict = {'put': 'put'} if not legacy else None
+    return _make_restapi_fake_request(viewcls, view_args, request, view_dict=view_dict)
 
 
-def _make_restapi_fake_request(viewcls, view_args, request):
+def _make_restapi_fake_request(viewcls, view_args, request, view_dict=None):
     force_authenticate(request, user=User.objects.get(email=config.AUTOMATION_USER_EMAIL))
-    view = viewcls.as_view()
+    view = viewcls.as_view(view_dict) if view_dict else viewcls.as_view()
     response = view(request, *view_args)
     response.render()
     if response.status_code >= 300:

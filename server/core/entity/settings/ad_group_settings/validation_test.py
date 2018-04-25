@@ -6,9 +6,9 @@ from utils.magic_mixer import magic_mixer
 
 import core.entity
 from dash import constants
-from utils import exc
 
 from . import model
+from . import exceptions
 
 
 class ValidationTest(TestCase):
@@ -30,11 +30,11 @@ class ValidationTest(TestCase):
         current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
         new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
 
-        with self.assertRaises(exc.ValidationError):
+        with self.assertRaises(exceptions.AutopilotB1SourcesNotEnabled):
             current_settings._validate_autopilot_settings(new_settings)
 
         new_settings.state = constants.AdGroupSettingsState.INACTIVE
-        with self.assertRaises(exc.ValidationError):
+        with self.assertRaises(exceptions.AutopilotB1SourcesNotEnabled):
             current_settings._validate_autopilot_settings(new_settings)
 
     @mock.patch('automation.autopilot.get_adgroup_minimum_daily_budget', autospec=True)
@@ -61,7 +61,7 @@ class ValidationTest(TestCase):
         current_settings.b1_sources_group_cpc_cc = Decimal('0.1')
         new_settings.b1_sources_group_cpc_cc = Decimal('0.2')
 
-        with self.assertRaises(exc.ValidationError):
+        with self.assertRaises(exceptions.CPCAutopilotNotDisabled):
             current_settings._validate_autopilot_settings(new_settings)
 
     @mock.patch('automation.autopilot.get_adgroup_minimum_daily_budget', autospec=True)
@@ -85,7 +85,7 @@ class ValidationTest(TestCase):
         current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
         new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
 
-        with self.assertRaises(exc.ValidationError):
+        with self.assertRaises(exceptions.CPCAutopilotNotDisabled):
             current_settings._validate_autopilot_settings(new_settings)
 
     @mock.patch('automation.autopilot.get_adgroup_minimum_daily_budget', autospec=True)
@@ -102,7 +102,7 @@ class ValidationTest(TestCase):
         mock_get_min_budget.assert_called_with(self.ad_group, new_settings)
 
         mock_get_min_budget.return_value = 1000000
-        with self.assertRaises(exc.ValidationError):
+        with self.assertRaises(exceptions.AutopilotDailyBudgetTooLow):
             current_settings._validate_autopilot_settings(new_settings)
 
     def test_validate_all_rtb_state_adgroup_inactive(self):
@@ -130,12 +130,12 @@ class ValidationTest(TestCase):
 
         current_settings.b1_sources_group_enabled = True
         new_settings.b1_sources_group_enabled = False
-        with self.assertRaises(exc.ValidationError):
+        with self.assertRaises(exceptions.AdGroupNotPaused):
             current_settings._validate_all_rtb_state(new_settings)
 
         current_settings.b1_sources_group_enabled = False
         new_settings.b1_sources_group_enabled = True
-        with self.assertRaises(exc.ValidationError):
+        with self.assertRaises(exceptions.AdGroupNotPaused):
             current_settings._validate_all_rtb_state(new_settings)
 
         current_settings.b1_sources_group_enabled = True
@@ -157,7 +157,7 @@ class ValidationTest(TestCase):
         current_settings._validate_all_rtb_campaign_stop(new_settings)  # no exception should be raised
 
         mock_get_max_settable_budget.return_value = Decimal('99')
-        with self.assertRaises(exc.ValidationError):
+        with self.assertRaises(exceptions.B1DailyBudgetTooHigh):
             current_settings._validate_all_rtb_campaign_stop(new_settings)
 
     @mock.patch('automation.campaign_stop.can_enable_b1_sources_group')
@@ -175,7 +175,7 @@ class ValidationTest(TestCase):
         current_settings._validate_all_rtb_campaign_stop(new_settings)  # no exception should be raised
 
         mock_can_enable.return_value = False
-        with self.assertRaises(exc.ValidationError):
+        with self.assertRaises(exceptions.CantEnableB1SourcesGroup):
             current_settings._validate_all_rtb_campaign_stop(new_settings)
 
     @mock.patch('automation.campaign_stop.get_max_settable_autopilot_budget')
@@ -198,5 +198,5 @@ class ValidationTest(TestCase):
         current_settings._validate_autopilot_campaign_stop(new_settings)  # no exception should be raised
 
         mock_get_max_settable_budget.return_value = Decimal('399')
-        with self.assertRaises(exc.ValidationError):
+        with self.assertRaises(exceptions.AutopilotDailyBudgetTooHigh):
             current_settings._validate_autopilot_campaign_stop(new_settings)

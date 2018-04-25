@@ -209,6 +209,8 @@
         bidder_slug: 'gumgum'
         supports_retargeting: True
         maintenance: False
+        default_cpc_cc: '0.45'
+        default_mobile_cpc_cc: '0.45'
     model: dash.source
     pk: 1
 
@@ -221,6 +223,8 @@
         bidder_slug: 'triplelift'
         supports_retargeting: True
         maintenance: False
+        default_cpc_cc: '0.45'
+        default_mobile_cpc_cc: '0.45'
     model: dash.source
     pk: 2
 
@@ -233,6 +237,8 @@
         bidder_slug: 'yahoo'
         supports_retargeting: True
         maintenance: False
+        default_cpc_cc: '0.45'
+        default_mobile_cpc_cc: '0.45'
     model: dash.source
     pk: 3
 
@@ -245,6 +251,8 @@
         bidder_slug: 'adiant'
         supports_retargeting: True
         maintenance: False
+        default_cpc_cc: '0.45'
+        default_mobile_cpc_cc: '0.45'
     model: dash.source
     pk: 4
 
@@ -341,8 +349,12 @@
         daily_budget_cc: 100
         ad_group_name: 'My ad group'
         start_date: '2015-03-02'
+        end_date: '2015-03-03'
+        local_cpc_cc: '0.2500'
+        local_max_cpm: '1.2000'
         autopilot_state: 2
         autopilot_daily_budget: '50.0000'
+        local_autopilot_daily_budget: '50.0000'
         interest_targeting: ["fun", "games"]
         exclusion_interest_targeting: ["religion", "weather"]
         redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
@@ -547,6 +559,19 @@
     model: dash.bluekaicategory
     pk: 601
 
+-   fields:
+        category_id: 21230
+        parent_category_id: 671901
+        name: "Child category name"
+        description: "Child category description"
+        navigation_only: False
+        status: 1
+        price: 1.2
+        reach: 1000000000
+        created_dt: '2014-06-04T00:00:00'
+    model: dash.bluekaicategory
+    pk: 602
+
 # test adgroupsettings
 
 -   fields:
@@ -568,6 +593,7 @@
         start_date: '2015-03-02'
         autopilot_state: 2
         autopilot_daily_budget: '50.0000'
+        local_autopilot_daily_budget: '50.0000'
         interest_targeting: ["fun", "games"]
         exclusion_interest_targeting: ["religion", "weather"]
         redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
@@ -596,6 +622,7 @@
         start_date: '2015-03-02'
         autopilot_state: 2
         autopilot_daily_budget: '50.0000'
+        local_autopilot_daily_budget: '50.0000'
         interest_targeting: ["fun", "games"]
         exclusion_interest_targeting: ["religion", "weather"]
         redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]

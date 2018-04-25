@@ -78,7 +78,7 @@ class SourceType(models.Model, bcm_mixin.SourceTypeBCMMixin):
             Encode these special cases here. """
         min_cpc = self.get_etfm_min_cpc(bcm_modifiers)
         if self.type == constants.SourceType.YAHOO and ad_group_settings.target_devices == [constants.AdTargetDevice.DESKTOP]:
-            min_cpc = max(min_cpc, Decimal(0.25))
+            min_cpc = max(min_cpc, Decimal('0.25')) if min_cpc else Decimal('0.25')
         return min_cpc
 
     def can_update_state(self):

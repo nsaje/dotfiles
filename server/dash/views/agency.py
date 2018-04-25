@@ -28,6 +28,9 @@ from utils import redirector_helper
 from utils import dates_helper
 from utils import db_for_reads
 
+import utils.exc
+from core.entity.settings.ad_group_settings import exceptions
+
 from zemauth.models import User as ZemUser
 
 
@@ -97,7 +100,70 @@ class AdGroupSettings(api_common.BaseApiView):
             for field in ad_group.settings.multicurrency_fields:
                 form.cleaned_data['local_{}'.format(field)] = form.cleaned_data.pop(field, None)
 
-        ad_group.settings.update(request, **form.cleaned_data)
+        try:
+            ad_group.settings.update(request, **form.cleaned_data)
+
+        except utils.exc.MultipleValidationError as err:
+            errors = {}
+            for e in err.errors:
+                if isinstance(e, exceptions.MaxCPCTooLow):
+                    errors['cpc_cc'] = str(e)
+
+                elif isinstance(e, exceptions.MaxCPCTooHigh):
+                    errors['cpc_cc'] = str(e)
+
+                elif isinstance(e, exceptions.MaxCPMTooLow):
+                    errors['max_cpm'] = str(e)
+
+                elif isinstance(e, exceptions.MaxCPMTooHigh):
+                    errors['max_cpm'] = str(e)
+
+                elif isinstance(e, exceptions.EndDateBeforeStartDate):
+                    errors['end_date'] = str(e)
+
+                elif isinstance(e, exceptions.EndDateInThePast):
+                    errors['end_date'] = str(e)
+
+                elif isinstance(e, exceptions.TrackingCodeInvalid):
+                    errors['tracking_code'] = str(e)
+
+                elif isinstance(e, exceptions.ValidationError):  # legacy
+                    errors['end_date'] = str(e)
+
+            raise utils.exc.ValidationError(errors)
+
+        except exceptions.CannotChangeAdGroupState as err:
+            raise utils.exc.ValidationError({'state': str(err)})
+
+        except exceptions.AutopilotB1SourcesNotEnabled as err:
+            raise utils.exc.ValidationError({'autopilot_state': str(err)})
+
+        except exceptions.DailyBudgetAutopilotNotDisabled as err:
+            raise utils.exc.ValidationError({'b1_sources_group_daily_budget': str(err)})
+
+        except exceptions.CPCAutopilotNotDisabled as err:
+            raise utils.exc.ValidationError({'b1_sources_group_daily_budget': str(err)})
+
+        except exceptions.AutopilotDailyBudgetTooLow as err:
+            raise utils.exc.ValidationError({'autopilot_daily_budget': str(err)})
+
+        except exceptions.AutopilotDailyBudgetTooHigh as err:
+            raise utils.exc.ValidationError({'autopilot_daily_budget': str(err)})
+
+        except exceptions.AdGroupNotPaused as err:
+            raise utils.exc.ValidationError({'b1_sources_group_enabled': str(err)})
+
+        except exceptions.B1DailyBudgetTooHigh as err:
+            raise utils.exc.ValidationError({'daily_budget_cc': str(err)})
+
+        except exceptions.CantEnableB1SourcesGroup as err:
+            raise utils.exc.ValidationError({'state': str(err)})
+
+        except exceptions.BluekaiCategoryInvalid as err:
+            raise utils.exc.ValidationError(str(err))
+
+        except exceptions.YahooDesktopCPCTooLow as err:
+            raise utils.exc.ValidationError({'target_devices': str(err)})
 
         response = {
             'settings': self.get_dict(request, ad_group.settings, ad_group),
@@ -295,9 +361,6 @@ class AdGroupSettings(api_common.BaseApiView):
 class AdGroupSettingsState(api_common.BaseApiView):
 
     def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.can_control_ad_group_state_in_table'):
-            raise exc.AuthorizationError()
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         current_settings = ad_group.get_current_settings()
         return self.create_api_response({
@@ -306,9 +369,6 @@ class AdGroupSettingsState(api_common.BaseApiView):
         })
 
     def post(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.can_control_ad_group_state_in_table'):
-            raise exc.AuthorizationError()
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
         data = json.loads(request.body)
         new_state = data.get('state')
