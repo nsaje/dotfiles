@@ -25,7 +25,7 @@ class MulticurrencySettingsMixin(object):
             return None, None
 
         if not value:
-            return to_usd_field or to_local_field, None
+            return to_usd_field or to_local_field, value
 
         value = decimal.Decimal(value)
 
