@@ -20,7 +20,7 @@ class UpdateObject(object):
 
     def _handle_multicurrency(self, key, value):
         counterpart_key, counterpart_value = self.settings.get_multicurrency_counterpart(key, value)
-        if not counterpart_key or not counterpart_value:
+        if not counterpart_key:
             return
 
         old_counterpart_value = self._get_value(counterpart_key)
