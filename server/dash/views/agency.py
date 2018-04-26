@@ -972,12 +972,12 @@ class AccountSettings(api_common.BaseApiView):
                 agency = models.Agency.objects.get(name=resource['agency'])
                 account.agency = agency
             except models.Agency.DoesNotExist:
-                agency = models.Agency(
+                agency = models.Agency.objects.create(
+                    request,
                     name=resource['agency'],
                     sales_representative=resource['default_sales_representative'],
                     cs_representative=resource['default_cs_representative'],
                 )
-                agency.save(request)
                 account.agency = agency
 
     def get_non_removable_sources(self, account, sources_to_be_removed):
