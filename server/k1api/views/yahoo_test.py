@@ -22,6 +22,18 @@ class YahooTest(K1APIBaseTest):
         yahoo_account_2 = magic_mixer.blend(
             core.features.yahoo_accounts.YahooAccount,
         )
+        account = magic_mixer.blend(
+            core.entity.Account,
+            yahoo_account=yahoo_account,
+        )
+        account_2 = magic_mixer.blend(
+            core.entity.Account,
+            yahoo_account=yahoo_account_2,
+        )
+        account_3 = magic_mixer.blend(
+            core.entity.Account,
+            yahoo_account=yahoo_account_2,
+        )
         response = self.client.get(
             reverse('k1api.yahoo_accounts'),
         )
@@ -30,24 +42,27 @@ class YahooTest(K1APIBaseTest):
         self.assert_response_ok(response, data)
 
         expected = [{
-            'account_id': yahoo_account.account_id,
+            'account_id': account.id,
             'advertiser_id': yahoo_account.advertiser_id
         }, {
-            'account_id': yahoo_account_2.account_id,
+            'account_id': account_2.id,
+            'advertiser_id': yahoo_account_2.advertiser_id
+        }, {
+            'account_id': account_3.id,
             'advertiser_id': yahoo_account_2.advertiser_id
         }]
         self.assertCountEqual(expected, data['response'])
 
     def test_get_filtered_ad_group(self):
-        account = magic_mixer.blend(core.entity.Account)
         yahoo_account = magic_mixer.blend(
             core.features.yahoo_accounts.YahooAccount,
-            account=account
         )
+        account = magic_mixer.blend(core.entity.Account, yahoo_account=yahoo_account)
         # second, filtered out
-        magic_mixer.blend(
+        yahoo_account_2 = magic_mixer.blend(
             core.features.yahoo_accounts.YahooAccount,
         )
+        magic_mixer.blend(core.entity.Account, yahoo_account=yahoo_account_2)
         response = self.client.get(
             reverse('k1api.yahoo_accounts'),
             {'account_ids': account.id}
@@ -57,7 +72,7 @@ class YahooTest(K1APIBaseTest):
         self.assert_response_ok(response, data)
 
         expected = [{
-            'account_id': yahoo_account.account_id,
+            'account_id': account.id,
             'advertiser_id': yahoo_account.advertiser_id
         }]
         self.assertEqual(expected, data['response'])

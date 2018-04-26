@@ -7,6 +7,7 @@ import utils.demo_anonymizer
 import utils.string_helper
 from dash import constants
 
+import core.features.yahoo_accounts
 
 from . import instance
 from . import manager
@@ -50,6 +51,8 @@ class Account(instance.AccountInstanceMixin,
 
     outbrain_marketer_id = models.CharField(
         null=True, blank=True, max_length=255)
+    yahoo_account = models.ForeignKey(
+        core.features.yahoo_accounts.YahooAccount, on_delete=models.PROTECT, null=True, blank=True)
 
     salesforce_url = models.URLField(null=True, blank=True, max_length=255)
 
