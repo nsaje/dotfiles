@@ -62,6 +62,13 @@ def _parse_date(string):
         raise serializers.ValidationError("Invalid date format")
 
 
+def _parse_id(string):
+    try:
+        return int(string)
+    except ValueError:
+        raise serializers.ValidationError("Invalid ID")
+
+
 def get_filter_constraints(filters):
     filter_constraints = {}
     for f in filters:
@@ -69,9 +76,9 @@ def get_filter_constraints(filters):
 
         if field_name in constants.STRUCTURE_CONSTRAINTS_FIELDS:
             if f['operator'] == constants.EQUALS:
-                filter_constraints[field_name] = int(f['value'])
+                filter_constraints[field_name] = _parse_id(f['value'])
             elif f['operator'] == constants.IN:
-                filter_constraints[field_name + '_list'] = [int(v) for v in f['values']]
+                filter_constraints[field_name + '_list'] = [_parse_id(v) for v in f['values']]
         if field_name == utils.columns.FieldNames.date and f['operator'] == constants.BETWEEN:
             filter_constraints['start_date'] = _parse_date(f['from'])
             filter_constraints['end_date'] = _parse_date(f['to'])
