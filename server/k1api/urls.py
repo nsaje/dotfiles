@@ -12,6 +12,7 @@ from .views import r1_mapping
 from .views import ga_accounts
 from .views import outbrain
 from .views import yahoo
+from .views import currency_exchange_rates
 
 
 urlpatterns = [
@@ -120,4 +121,9 @@ urlpatterns = [
         geolocations.GeolocationsView.as_view(),
         name='k1api.geolocations',
     ),
+    url(
+        '^currency_exchange_rates$',
+        currency_exchange_rates.CurrencyExchangeRateView.as_view(),
+        name='k1api.currency_exchange_rates'
+    )
 ]
