@@ -67,6 +67,7 @@ class AccountCreditViewTest(BCMViewTestCase):
                     "available": "0.0000",
                     "end_date":
                     "2015-11-30",
+                    "currency": constants.Currency.USD,
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
@@ -91,6 +92,7 @@ class AccountCreditViewTest(BCMViewTestCase):
                 "allocated": "100000.0000",
                 "total": "100000.0000",
                 "past": "0",
+                "currency": constants.Currency.USD,
             }
         })
 
@@ -105,8 +107,8 @@ class AccountCreditViewTest(BCMViewTestCase):
             "past": [
                 {
                     "available": "0.0000",
-                    "end_date":
-                    "2015-11-30",
+                    "end_date": "2015-11-30",
+                    "currency": constants.Currency.USD,
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
@@ -129,7 +131,8 @@ class AccountCreditViewTest(BCMViewTestCase):
                 "available": "0.0000",
                 "allocated": "0",
                 "past": "100000.0000",
-                "total": "100000.0000"
+                "total": "100000.0000",
+                "currency": constants.Currency.USD,
             }
         })
 
@@ -146,6 +149,7 @@ class AccountCreditViewTest(BCMViewTestCase):
                 {
                     "available": "99900.0000",
                     "end_date": "2015-11-30",
+                    "currency": constants.Currency.USD,
                     "created_on": "2014-06-04",
                     "created_by": "agency-master@test.com",
                     "license_fee": "20%",
@@ -168,6 +172,7 @@ class AccountCreditViewTest(BCMViewTestCase):
                 "allocated": "0",
                 "total": "99900.0000",
                 "past": "0",
+                "currency": constants.Currency.USD,
             }
         })
 
@@ -395,6 +400,7 @@ class AccountCreditItemViewTest(BCMViewTestCase):
             "account_id": 1,
             "start_date": "2015-10-01",
             "end_date": "2015-11-30",
+            "currency": constants.Currency.USD,
             "created_on": "2014-06-04",
             "created_by": "ziga.stopinsek@zemanta.com",
             "license_fee": "20%",
@@ -407,6 +413,7 @@ class AccountCreditItemViewTest(BCMViewTestCase):
                 {
                     "campaign": "test campaign 1",
                     "end_date": "2015-11-30",
+                    "currency": constants.Currency.USD,
                     "spend": "0.0000",
                     "id": 1,
                     "total": "100000.0000",
@@ -458,6 +465,7 @@ class AccountCreditItemViewTest(BCMViewTestCase):
             'end_date': '2015-12-01',
             'amount': '1000',
             'license_fee': '30%',
+            'currency': constants.Currency.EUR,
             'comment': 'no comment',
             'account': 3,
         }
@@ -468,6 +476,7 @@ class AccountCreditItemViewTest(BCMViewTestCase):
         item = models.CreditLineItem.objects.get(pk=2)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(item.amount, 1000)
+        self.assertEqual(item.currency, constants.Currency.EUR)
         self.assertEqual(json.loads(response.content)['data'], "2")
         self.assertEqual(item.account_id, 3)
 
@@ -506,6 +515,7 @@ class AccountCreditItemViewTest(BCMViewTestCase):
             "account_id": 1,
             "start_date": "2015-10-01",
             "end_date": "2015-11-30",
+            "currency": constants.Currency.USD,
             "created_on": "2014-06-04",
             "created_by": "ziga.stopinsek@zemanta.com",
             "license_fee": "20%",
@@ -518,6 +528,7 @@ class AccountCreditItemViewTest(BCMViewTestCase):
                 {
                     "campaign": "test campaign 1",
                     "end_date": "2015-11-30",
+                    "currency": constants.Currency.USD,
                     "spend": "0.0000",
                     "id": 1,
                     "total": "100000.0000",
@@ -579,6 +590,7 @@ class AccountCreditItemViewTest(BCMViewTestCase):
             'end_date': str(item.end_date),
             'amount': '2000000',
             'license_fee': '20%',
+            'currency': constants.Currency.EUR,
             'comment': 'no comment',
             'account': 1000,
             'is_agency': True,
@@ -591,6 +603,7 @@ class AccountCreditItemViewTest(BCMViewTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(item.amount, 2000000)
+        self.assertEqual(item.currency, constants.Currency.EUR)
         self.assertEqual(json.loads(response.content)['data'], "1000")
         self.assertEqual(item.agency_id, 1)
 
@@ -1590,6 +1603,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                 {
                     "available": "0.0000",
                     "end_date": "2015-11-30",
+                    "currency": constants.Currency.USD,
                     "created_on": str(budget.created_dt.date()),
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
@@ -1610,6 +1624,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                 {
                     "available": "0.0000",
                     "end_date": "2015-11-30",
+                    "currency": constants.Currency.USD,
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
@@ -1634,6 +1649,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                 "allocated": "10000.0000",
                 "total": "10000.0000",
                 "past": "0",
+                "currency": constants.Currency.USD,
             }
         })
 
@@ -1642,6 +1658,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                 {
                     "available": "5006.0000",
                     "end_date": "2015-11-30",
+                    "currency": constants.Currency.USD,
                     "created_on": str(budget.created_dt.date()),
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
@@ -1662,6 +1679,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                 {
                     "available": "0.0000",
                     "end_date": "2015-11-30",
+                    "currency": constants.Currency.USD,
                     "comment": "Test case",
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
@@ -1682,13 +1700,19 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
             ],
             "past": [],
             "totals":  {
-                'past': '0', 'available': '5006.0000', 'allocated': '4994.0000', 'total': '10000.0000'}
+                'past': '0',
+                'available': '5006.0000',
+                'allocated': '4994.0000',
+                'total': '10000.0000',
+                'currency': constants.Currency.USD,
+            }
         }
         on_freed_data = {
             "active": [
                 {
                     "available": "5050.0000",
                     "end_date": "2015-11-30",
+                    "currency": constants.Currency.USD,
                     "created_on": str(budget.created_dt.date()),
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
@@ -1708,8 +1732,8 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                 },
                 {
                     "available": "0.0000",
-                    "end_date":
-                    "2015-11-30",
+                    "end_date": "2015-11-30",
+                    "currency": constants.Currency.USD,
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
@@ -1729,7 +1753,13 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                 }
             ],
             "past": [],
-            'totals': {'past': '0', 'available': '5050.0000', 'allocated': '4950.0000', 'total': '10000.0000'}
+            'totals': {
+                'past': '0',
+                'available': '5050.0000',
+                'allocated': '4950.0000',
+                'total': '10000.0000',
+                'currency': constants.Currency.USD,
+            }
         }
 
         with patch('utils.dates_helper.local_today') as mock_now:

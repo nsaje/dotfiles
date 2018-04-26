@@ -40,7 +40,8 @@
         <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.amount}">
             <label class="form__label" for="amount-input">Credit</label>
             <div class="prefixed-field postfixed-field prefixed-field--narrow postfixed-field--narrow">
-                <span class="prefixed-field__prefix">$</span>
+                <span class="prefixed-field__prefix" ng-if="!$ctrl.createMode">{{$ctrl.state.creditItem.currencySymbol}}</span>
+                <span class="prefixed-field__prefix" ng-if="$ctrl.createMode">{{$ctrl.newCreditCurrencySymbol}}</span>
                 <input class="input-text" id="amount-input" type="text" ng-model="$ctrl.state.creditItem.amount" zem-currency-input fraction-size="0">
                 <span class="postfixed-field__postfix">.00</span>
             </div>
@@ -88,8 +89,8 @@
             <tbody>
                 <tr ng-repeat="budget in $ctrl.state.creditItem.budgets">
                     <td>{{ budget.campaign }}</td>
-                    <td>{{ budget.total | decimalCurrency:"$":2  }}</td>
-                    <td>{{ budget.spend | decimalCurrency:"$":2  }}</td>
+                    <td>{{ budget.total | decimalCurrency:budget.currencySymbol:2 }}</td>
+                    <td>{{ budget.spend | decimalCurrency:budget.currencySymbol:2 }}</td>
                     <td>{{ budget.startDate }} - {{ budget.endDate }}</td>
                     <td><zem-note-popover content="{{ budget.comment }}" placement="top" class="note-popover"></zem-note-popover></td>
                 </tr>

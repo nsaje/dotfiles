@@ -84,7 +84,7 @@ angular.module('one.widgets').service('zemAccountCreditEndpoint', function ($q, 
         return {
             active: (data.active || []).map(convertCreditItemFromApi),
             past: (data.past || []).map(convertCreditItemFromApi),
-            totals: data.totals
+            totals: convertCreditTotalsFromApi(data.totals),
         };
     }
 
@@ -92,15 +92,22 @@ angular.module('one.widgets').service('zemAccountCreditEndpoint', function ($q, 
         item.createdOn = item.createdOn ? moment(item.createdOn, 'YYYY-MM-DD').format('MM/DD/YYYY') : null;
         item.startDate = item.startDate ? moment(item.startDate, 'YYYY-MM-DD').format('MM/DD/YYYY') : null;
         item.endDate = item.endDate ? moment(item.endDate, 'YYYY-MM-DD').format('MM/DD/YYYY') : null;
+        item.currencySymbol = constants.currencySymbol[item.currency];
 
         item.budgets = (item.budgets || []).map(function (budget) {
             budget.startDate = budget.startDate ? moment(budget.startDate, 'YYYY-MM-DD').format('MM/DD/YYYY') : null;
             budget.endDate = budget.endDate ? moment(budget.endDate, 'YYYY-MM-DD').format('MM/DD/YYYY') : null;
+            budget.currencySymbol = constants.currencySymbol[budget.currency];
             return budget;
         });
         item.numOfBudgets = (item.budgets || []).length;
 
         return item;
+    }
+
+    function convertCreditTotalsFromApi (totals) {
+        totals.currencySymbol = constants.currencySymbol[totals.currency];
+        return totals;
     }
 
     function convertCreditItemToApi (item) {

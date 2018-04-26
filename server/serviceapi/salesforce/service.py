@@ -5,6 +5,7 @@ from rest_framework.serializers import ValidationError
 import core.bcm.credit_line_item
 import core.entity.account
 import core.bcm.bcm_slack
+import core.multicurrency
 
 import dash.constants
 import zemauth.models
@@ -69,6 +70,7 @@ def create_credit_line_item(request, data):
             account_id=item.account.pk,
             account_name=item.account.get_long_name(),
             amount=item.amount,
+            currency_symbol=core.multicurrency.get_currency_symbol(item.currency),
             end_date=item.end_date
         ))
     elif item.agency:
@@ -76,6 +78,7 @@ def create_credit_line_item(request, data):
             credit_id=item.pk,
             agency=item.agency.name,
             amount=item.amount,
+            currency_symbol=core.multicurrency.get_currency_symbol(item.currency),
             end_date=item.end_date
         ))
 

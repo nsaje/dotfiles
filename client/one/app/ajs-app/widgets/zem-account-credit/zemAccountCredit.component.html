@@ -8,19 +8,19 @@
     <div class="zem-account-credit__credit-overview">
         <div class="zem-account-credit__credit-overview-box">
             <span class="zem-account-credit__credit-overview-name">Total Account Value</span>
-            <span class="zem-account-credit__credit-overview-value">{{ $ctrl.state.credit.totals.total | decimalCurrency:"$":2 }}</span>
+            <span class="zem-account-credit__credit-overview-value">{{ $ctrl.state.credit.totals.total | decimalCurrency:$ctrl.state.credit.totals.currencySymbol:2 }}</span>
         </div>
         <div class="zem-account-credit__credit-overview-box">
             <span class="zem-account-credit__credit-overview-name">Allocated To Budget Items</span>
-            <span class="zem-account-credit__credit-overview-value">{{ $ctrl.state.credit.totals.allocated | decimalCurrency:"$":2  }}</span>
+            <span class="zem-account-credit__credit-overview-value">{{ $ctrl.state.credit.totals.allocated | decimalCurrency:$ctrl.state.credit.totals.currencySymbol:2 }}</span>
         </div>
         <div class="zem-account-credit__credit-overview-box">
             <span class="zem-account-credit__credit-overview-name">Past Credit</span>
-            <span class="zem-account-credit__credit-overview-value">{{ $ctrl.state.credit.totals.past | decimalCurrency:"$":2  }}</span>
+            <span class="zem-account-credit__credit-overview-value">{{ $ctrl.state.credit.totals.past | decimalCurrency:$ctrl.state.credit.totals.currencySymbol:2 }}</span>
         </div>
         <div class="zem-account-credit__credit-overview-box zem-account-credit__credit-overview-box--exposed">
             <span class="zem-account-credit__credit-overview-name">Available Account Credit</span>
-            <span class="zem-account-credit__credit-overview-value">{{ $ctrl.state.credit.totals.available | decimalCurrency:"$":2  }}</span>
+            <span class="zem-account-credit__credit-overview-value">{{ $ctrl.state.credit.totals.available | decimalCurrency:$ctrl.state.credit.totals.currencySymbol:2 }}</span>
         </div>
     </div>
 </div>
@@ -58,14 +58,14 @@
                         <span ng-show="!item.isSigned && !item.isCanceled" class="text-red">No</span>
                         <span ng-show="item.isCanceled" class="text-gray">Canceled</span>
                     </td>
-                    <td>{{ item.licenseFee  }}</td>
-                    <td>{{ item.flatFee | decimalCurrency:"$":2 }}</td>
-                    <td>{{ item.total | decimalCurrency:"$":2  }}</td>
+                    <td>{{ item.licenseFee }}</td>
+                    <td>{{ item.flatFee | decimalCurrency:item.currencySymbol:2 }}</td>
+                    <td>{{ item.total | decimalCurrency:item.currencySymbol:2 }}</td>
                     <td>
-                        {{ item.allocated | decimalCurrency:"$":2  }}<br>
+                        {{ item.allocated | decimalCurrency:item.currencySymbol:2 }}<br>
                         <span class="text-gray">({{ item.numOfBudgets }} budget <ng-pluralize count="item.numOfBudgets" when="{'0': 'items', '1': 'item', 'other': 'items'}"></ng-pluralize>)</span>
                     </td>
-                    <td>{{ item.available | decimalCurrency:"$":2  }}</td>
+                    <td>{{ item.available | decimalCurrency:item.currencySymbol:2 }}</td>
                     <td ng-if="$ctrl.account.data.agency">
                         <span ng-show="item.isAgency" class="text-green">Yes</span>
                         <span ng-show="!item.isAgency" class="text-red">No</span>
@@ -127,13 +127,13 @@
                         <span ng-show="item.isCanceled" class="text-gray">Canceled</span>
                     </td>
                     <td>{{ item.licenseFee }}</td>
-                    <td>{{ item.flatFee | decimalCurrency:"$":2 }}</td>
-                    <td>{{ item.total | decimalCurrency:"$":2  }}</td>
+                    <td>{{ item.flatFee | decimalCurrency:item.currencySymbol:2 }}</td>
+                    <td>{{ item.total | decimalCurrency:item.currencySymbol:2 }}</td>
                     <td>
-                        {{ item.allocated | decimalCurrency:"$":2  }}<br>
+                        {{ item.allocated | decimalCurrency:item.currencySymbol:2 }}<br>
                         <span class="text-gray">({{ item.numOfBudgets }} budget <ng-pluralize count="item.numOfBudgets" when="{'0': 'items', '1': 'item', 'other': 'items'}"></ng-pluralize>)</span>
                     </td>
-                    <td>{{ item.available | decimalCurrency:"$":2  }}</td>
+                    <td>{{ item.available | decimalCurrency:item.currencySymbol:2 }}</td>
                     <td ng-if="$ctrl.account.data.agency">
                         <span ng-show="item.isAgency" class="text-green">Yes</span>
                         <span ng-show="!item.isAgency" class="text-red">No</span>

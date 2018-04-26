@@ -80,6 +80,8 @@ class AccountCreditView(api_common.BaseApiView):
         if 'license_fee' in data:
             data['license_fee'] = helpers.format_percent_to_decimal(data['license_fee'])
 
+        data['currency'] = account.currency
+
         item = forms.CreditLineItemForm(data)
 
         if item.errors:
@@ -93,6 +95,7 @@ class AccountCreditView(api_common.BaseApiView):
             account_id=account_id,
             account_name=account.get_long_name(),
             amount=item.instance.amount,
+            currency_symbol=core.multicurrency.get_currency_symbol(item.instance.currency),
             end_date=item.instance.end_date
         ))
         return self.create_api_response(item.instance.pk)
@@ -106,6 +109,7 @@ class AccountCreditView(api_common.BaseApiView):
             'created_on': credit.created_dt.date(),
             'start_date': credit.start_date,
             'end_date': credit.end_date,
+            'currency': credit.currency,
             'is_signed': credit.status == constants.CreditLineItemStatus.SIGNED,
             'is_canceled': credit.status == constants.CreditLineItemStatus.CANCELED,
             'license_fee': helpers.format_decimal_to_percent(credit.license_fee) + '%',
@@ -128,7 +132,7 @@ class AccountCreditView(api_common.BaseApiView):
         return self.create_api_response({
             'active': self._get_active_credit(credit_items),
             'past': self._get_past_credit(credit_items),
-            'totals': self._get_credit_totals(credit_items),
+            'totals': self._get_credit_totals(credit_items, account),
         })
 
     def _get_active_credit(self, credit_items):
@@ -143,7 +147,7 @@ class AccountCreditView(api_common.BaseApiView):
             for item in credit_items if item.is_past()
         ]
 
-    def _get_credit_totals(self, credit_items):
+    def _get_credit_totals(self, credit_items, account):
         valid_credit_items = [credit for credit in credit_items if credit.status !=
                               constants.CreditLineItemStatus.PENDING]
         total = sum(credit.effective_amount() for credit in valid_credit_items)
@@ -156,6 +160,7 @@ class AccountCreditView(api_common.BaseApiView):
             'allocated': str(allocated),
             'past': str(past),
             'available': str(total - allocated - past),
+            'currency': account.currency,
         }
 
 
@@ -232,6 +237,7 @@ class AccountCreditItemView(api_common.BaseApiView):
             'created_on': item.created_dt.date(),
             'start_date': item.start_date,
             'end_date': item.end_date,
+            'currency': item.currency,
             'is_signed': item.status == constants.CreditLineItemStatus.SIGNED,
             'is_canceled': item.status == constants.CreditLineItemStatus.CANCELED,
             'license_fee': helpers.format_decimal_to_percent(item.license_fee) + '%',
@@ -251,6 +257,7 @@ class AccountCreditItemView(api_common.BaseApiView):
                     ),
                     'start_date': b.start_date,
                     'end_date': b.end_date,
+                    'currency': item.currency,
                     'comment': b.comment
                 }
                 for b in item.budgets.all().order_by('-created_dt')[:100]

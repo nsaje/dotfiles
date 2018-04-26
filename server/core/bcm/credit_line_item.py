@@ -17,6 +17,7 @@ from utils import lc_helper
 
 import core.common
 import core.history
+import core.multicurrency
 
 
 class CreditLineItemManager(core.common.QuerySetManager):
@@ -166,16 +167,16 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
         }
         return NAMES.get(prop_name)
 
-    @classmethod
-    def get_human_value(cls, prop_name, value):
+    def get_human_value(self, prop_name, value):
+        currency_symbol = core.multicurrency.get_currency_symbol(self.currency)
         if prop_name == 'amount' and value is not None:
-            value = lc_helper.default_currency(Decimal(value))
+            value = lc_helper.format_currency(value, places=2, curr=currency_symbol)
         elif prop_name == 'license_fee' and value is not None:
             value = '{}%'.format(utils.string_helper.format_decimal(
                 Decimal(value) * 100, 2, 3))
         elif prop_name == 'flat_fee_cc':
-            value = lc_helper.default_currency(
-                Decimal(value) * converters.CC_TO_DECIMAL_CURRENCY)
+            value = lc_helper.format_currency(Decimal(value) * converters.CC_TO_DECIMAL_CURRENCY,
+                                              places=2, curr=currency_symbol)
         elif prop_name == 'status':
             value = constants.CreditLineItemStatus.get_text(value)
         elif prop_name == 'comment':
@@ -314,8 +315,9 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
         delta = self.effective_amount() - self.get_allocated_amount()
         if delta < 0:
             raise ValidationError(
-                'Flat fee exceeds the available credit amount by ${}.'.format(
-                    -delta.quantize(Decimal('1.00'))
+                'Flat fee exceeds the available credit amount by {currency_symbol}{amount}.'.format(
+                    currency_symbol=core.multicurrency.get_currency_symbol(self.currency),
+                    amount=-delta.quantize(Decimal('1.00'))
                 )
             )
 

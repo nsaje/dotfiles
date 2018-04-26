@@ -636,6 +636,7 @@ class CreditsTestCase(TestCase):
             'amount': 100000,
             'license_fee': 0.2,
             'status': 1,
+            'currency': constants.Currency.USD,
             'comment': 'Test case',
         })
         self.assertFalse(credit_form.is_valid())
@@ -648,6 +649,7 @@ class CreditsTestCase(TestCase):
             'amount': 100000,
             'license_fee': 0.2,
             'status': 1,
+            'currency': constants.Currency.USD,
             'comment': 'Test case',
         })
         self.assertTrue(credit_form.is_valid())
@@ -660,6 +662,7 @@ class CreditsTestCase(TestCase):
             'amount': -1000,
             'license_fee': 0.2,
             'status': 1,
+            'currency': constants.Currency.USD,
             'comment': 'Test case',
         })
         self.assertFalse(credit_form.is_valid())
@@ -673,6 +676,7 @@ class CreditsTestCase(TestCase):
             'amount': 1000,
             'license_fee': 1.2,
             'status': 1,
+            'currency': constants.Currency.USD,
             'comment': 'Test case',
         })
         self.assertFalse(credit_form.is_valid())
