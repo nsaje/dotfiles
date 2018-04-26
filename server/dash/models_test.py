@@ -150,24 +150,22 @@ class AdGroupSettingsTest(TestCase):
         user = User.objects.get(pk=1)
 
         self.assertEqual(
-            models.AdGroupSettings.get_changes_text(old_settings, new_settings, user),
+            new_settings.get_changes_text(old_settings, new_settings, user),
             'Ad group name set to "\u010c\u010d\u0161\u0107\u017e\u0111 name"')
 
     def test_get_changes_text(self):
         old_settings = models.AdGroupSettings(ad_group_id=1)
-        new_settings = models.AdGroupSettings.objects.get(id=1)
+        new_settings = models.AdGroupSettings.objects.get(id=6)
         new_settings.changes_text = None
         user = User.objects.get(pk=1)
 
-        actual = models.AdGroupSettings.get_changes_text(old_settings, new_settings, user, separator='@@@')
+        actual = new_settings.get_changes_text(old_settings, new_settings, user, separator='@@@')
         actual = actual.split('@@@')
         expected = [
             'Daily spend cap set to "$50.00"',
             'Whitelist publisher groups set to "pg 1"',
             'Brand name set to "Example"',
             'Bid CPC for all RTB sources set to "$0.100"',
-            'Bid CPC for all RTB sources set to "$0.100"',
-            'Daily budget for all RTB sources set to "$500.00"',
             'Daily budget for all RTB sources set to "$500.00"',
             'Max CPC bid set to "$1.000"',
             'Interest targeting set to "A, B"',
@@ -386,7 +384,7 @@ class CampaignSettingsTest(TestCase):
         changes = settings.get_changes(dict(name=new_name, campaign_manager=new_campaign_manager))
 
         self.assertEqual(
-            models.CampaignSettings.get_changes_text(changes), 'Campaign Manager set to "Tadej Pavli\u010d", Name set to "\u010c\u010d\u0161\u0107\u017e\u0111 name"')
+            settings.get_changes_text(changes), 'Campaign Manager set to "Tadej Pavli\u010d", Name set to "\u010c\u010d\u0161\u0107\u017e\u0111 name"')
 
     def test_get_changes_text_nonunicode(self):
         settings = models.CampaignSettings.objects.get(id=1)
@@ -400,7 +398,7 @@ class CampaignSettingsTest(TestCase):
         changes = settings.get_changes(dict(name=new_name, campaign_manager=new_campaign_manager))
 
         self.assertEqual(
-            models.CampaignSettings.get_changes_text(changes), 'Campaign Manager set to "Tadej Pavlic", Name set to "name"')
+            settings.get_changes_text(changes), 'Campaign Manager set to "Tadej Pavlic", Name set to "name"')
 
 
 class AdGroupSourceTest(TestCase):
@@ -1089,7 +1087,7 @@ class HistoryTest(TestCase):
     def test_create_ad_group_history(self):
         ad_group = models.AdGroup.objects.get(pk=1)
 
-        ad_group.settings.update_unsafe(None, cpc_cc=4.999)
+        ad_group.settings.update_unsafe(None, local_cpc_cc=4.999)
         adgss = ad_group.settings
 
         hist = ad_group.write_history(
@@ -1097,10 +1095,10 @@ class HistoryTest(TestCase):
             changes=model_to_dict(adgss))
 
         self.assertEqual(ad_group, hist.ad_group)
-        self.assertEqual(4.999, hist.changes['cpc_cc'])
+        self.assertEqual(4.999, hist.changes['local_cpc_cc'])
 
         adgss = adgss.copy_settings()
-        adgss.cpc_cc = Decimal('5.103')
+        adgss.local_cpc_cc = Decimal('5.103')
         adgss.save(None)
 
         adg_hist = self._latest_ad_group_history(ad_group=ad_group)
@@ -1108,7 +1106,7 @@ class HistoryTest(TestCase):
         self.assertEqual(1, adg_hist.ad_group.id)
         self.assertDictEqual(
             {
-                'cpc_cc': '5.103',
+                'local_cpc_cc': '5.103',
             }, adg_hist.changes
         )
         self.assertEqual(
@@ -1118,22 +1116,22 @@ class HistoryTest(TestCase):
 
         hist = ad_group.write_history(
             '',
-            changes={'cpc_cc': 5.101})
+            changes={'local_cpc_cc': 5.101})
 
         self.assertEqual(ad_group, hist.ad_group)
-        self.assertEqual({'cpc_cc': 5.101}, hist.changes)
+        self.assertEqual({'local_cpc_cc': 5.101}, hist.changes)
 
     def test_create_ad_group_source_history(self):
         ad_group = models.AdGroup.objects.get(pk=2)
         source = models.Source.objects.get(pk=1)
         adgs = models.AdGroupSource.objects.filter(ad_group=ad_group, source=source).first()
-        adgs.settings.update(None, daily_budget_cc=Decimal(10000))
-        adgs.settings.update(None, daily_budget_cc=Decimal(50000))
+        adgs.settings.update(None, local_daily_budget_cc=Decimal(10000))
+        adgs.settings.update(None, local_daily_budget_cc=Decimal(50000))
 
         adgs_hist = self._latest_ad_group_history(ad_group=ad_group)
         self.assertDictEqual(
             {
-                'daily_budget_cc': '50000',
+                'local_daily_budget_cc': '50000',
             },
             adgs_hist.changes)
         self.assertEqual(

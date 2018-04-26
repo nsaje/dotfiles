@@ -788,7 +788,7 @@ class AdGroupAdmin(admin.ModelAdmin):
             new_settings.save(request)
             if 'redirect_pixel_urls' in changes or 'redirect_javascript' in changes:
                 utils.redirector_helper.insert_adgroup(ad_group)
-            changes_text = models.AdGroupSettings.get_changes_text(
+            changes_text = new_settings.get_changes_text(
                 current_settings, new_settings, request.user, separator='\n')
             utils.email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
         ad_group.save(request)

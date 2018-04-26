@@ -12,6 +12,7 @@ import core.entity
 import core.entity.helpers
 import core.audiences
 import core.common
+import core.multicurrency
 import core.history
 import core.source
 
@@ -45,8 +46,7 @@ class AdGroupSourceSettings(AdGroupSourceSettingsMixin,
         'cpc_cc',
         'daily_budget_cc',
     ]
-    # TODO(nsaje): switch from excluding local fields to excluding usd fields at multicurrency release
-    history_fields = list(set(_settings_fields) - set(['local_%s' % field for field in multicurrency_fields]))
+    history_fields = list(set(_settings_fields) - set(multicurrency_fields))
 
     id = models.AutoField(primary_key=True)
 
@@ -111,18 +111,14 @@ class AdGroupSourceSettings(AdGroupSourceSettingsMixin,
         }
         return NAMES.get(prop_name)
 
-    @classmethod
-    def get_human_value(cls, prop_name, value):
+    def get_human_value(self, prop_name, value):
+        currency_symbol = core.multicurrency.get_currency_symbol(self.get_currency())
         if prop_name == 'state':
             value = constants.AdGroupSourceSettingsState.get_text(value)
-        elif prop_name == 'cpc_cc' and value is not None:
-            value = lc_helper.default_currency(Decimal(value), places=3)
         elif prop_name == 'local_cpc_cc' and value is not None:
-            value = lc_helper.default_currency(Decimal(value), places=3)
-        elif prop_name == 'daily_budget_cc' and value is not None:
-            value = lc_helper.default_currency(Decimal(value))
+            value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
         elif prop_name == 'local_daily_budget_cc' and value is not None:
-            value = lc_helper.default_currency(Decimal(value))
+            value = lc_helper.format_currency(Decimal(value), places=2, curr=currency_symbol)
         elif prop_name == 'landing_mode':
             value = str(value)
         return value

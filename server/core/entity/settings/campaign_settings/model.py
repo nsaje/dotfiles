@@ -142,9 +142,8 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin,
             system_user=self.system_user
         )
 
-    @classmethod
-    def get_changes_text(cls, changes, separator=', '):
-        return core.history.helpers.get_changes_text_from_dict(cls, changes, separator=separator)
+    def get_changes_text(self, changes, separator=', '):
+        return core.history.helpers.get_changes_text_from_dict(self, changes, separator=separator)
 
     class QuerySet(SettingsQuerySet):
         pass

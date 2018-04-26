@@ -347,6 +347,51 @@
     model: dash.adgroupsettings
     pk: 5
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        ad_group: 1
+        state: 1
+        start_date: '2014-06-04'
+        end_date: '2014-06-05'
+        local_cpc_cc: '1.00'
+        daily_budget_cc: '50.'
+        tracking_code: ''
+        archived: false
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
+        ad_group_name: 'AdGroup name'
+        target_devices: ['mobile']
+        target_os: [{'name': 'android', 'version': {'min': 'android_6_0', 'max': 'android_6_0'}}]
+        target_browsers: [{'family': 'CHROME'}]
+        target_placements: ['app']
+        target_regions: ['US']
+        exclusion_target_regions: ['US-NY']
+        retargeting_ad_groups: [1, 2]
+        exclusion_retargeting_ad_groups: [3, 4]
+        notes: 'Some note'
+        bluekai_targeting: ["or", 3, 4]
+        interest_targeting: ["a", "b"]
+        exclusion_interest_targeting: ["c", "d"]
+        audience_targeting: [1, 2]
+        exclusion_audience_targeting: [3, 4]
+        redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
+        redirect_javascript: "alert('a')"
+        dayparting: {"monday": [1,2,5], "tuesday": [10, 12], "timezone": "CET"}
+        local_max_cpm: '1.6'
+        b1_sources_group_enabled: true
+        b1_sources_group_state: 1
+        local_b1_sources_group_daily_budget: '500.0000'
+        local_b1_sources_group_cpc_cc: '0.1'
+        whitelist_publisher_groups: [1]
+        blacklist_publisher_groups: [2]
+        autopilot_state: 1
+        click_capping_daily_ad_group_max_clicks: 10
+        click_capping_daily_click_budget: '5.0000'
+    model: dash.adgroupsettings
+    pk: 6
 
 # test campaignsettings
 

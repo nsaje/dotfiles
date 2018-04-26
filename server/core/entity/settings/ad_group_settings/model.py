@@ -115,8 +115,7 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         'b1_sources_group_cpc_cc',
         'max_cpm',
     ]
-    # TODO(nsaje): switch from excluding local fields to excluding usd fields at multicurrency release
-    history_fields = list(set(_settings_fields) - set(['local_%s' % field for field in multicurrency_fields]))
+    history_fields = list(set(_settings_fields) - set(multicurrency_fields))
 
     id = models.AutoField(primary_key=True)
     ad_group = models.ForeignKey(
@@ -354,22 +353,20 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
 
         return NAMES[prop_name]
 
-    @classmethod
-    def get_human_value(cls, prop_name, value):
+    def get_human_value(self, prop_name, value):
+        currency_symbol = core.multicurrency.get_currency_symbol(self.get_currency())
         if prop_name == 'state':
             value = constants.AdGroupSourceSettingsState.get_text(value)
         elif prop_name == 'autopilot_state':
             value = constants.AdGroupSettingsAutopilotState.get_text(value)
-        elif prop_name == 'autopilot_daily_budget' and value is not None:
-            value = lc_helper.default_currency(Decimal(value))
+        elif prop_name == 'local_autopilot_daily_budget' and value is not None:
+            value = lc_helper.format_currency(Decimal(value), places=2, curr=currency_symbol)
         elif prop_name == 'end_date' and value is None:
             value = 'I\'ll stop it myself'
-        elif prop_name == 'cpc_cc' and value is not None:
-            value = lc_helper.default_currency(Decimal(value), places=3)
         elif prop_name == 'local_cpc_cc' and value is not None:
-            value = lc_helper.default_currency(Decimal(value), places=3)
+            value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
         elif prop_name == 'daily_budget_cc' and value is not None:
-            value = lc_helper.default_currency(Decimal(value))
+            value = lc_helper.format_currency(Decimal(value), places=2, curr=currency_symbol)
         elif prop_name == 'target_devices':
             value = ', '.join(constants.AdTargetDevice.get_text(x)
                               for x in value)
@@ -395,21 +392,15 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         elif prop_name == 'redirect_pixel_urls':
             value = ', '.join(value)
         elif prop_name == 'dayparting':
-            value = cls._get_dayparting_human_value(value)
-        elif prop_name == 'max_cpm' and value is not None:
-            value = lc_helper.default_currency(Decimal(value))
+            value = AdGroupSettings._get_dayparting_human_value(value)
         elif prop_name == 'local_max_cpm' and value is not None:
-            value = lc_helper.default_currency(Decimal(value))
+            value = lc_helper.format_currency(Decimal(value), places=2, curr=currency_symbol)
         elif prop_name == 'b1_sources_group_state':
             value = constants.AdGroupSourceSettingsState.get_text(value)
-        elif prop_name == 'b1_sources_group_daily_budget' and value is not None:
-            value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'local_b1_sources_group_daily_budget' and value is not None:
-            value = lc_helper.default_currency(Decimal(value))
-        elif prop_name == 'b1_sources_group_cpc_cc' and value is not None:
-            value = lc_helper.default_currency(Decimal(value), places=3)
+            value = lc_helper.format_currency(Decimal(value), places=2, curr=currency_symbol)
         elif prop_name == 'local_b1_sources_group_cpc_cc' and value is not None:
-            value = lc_helper.default_currency(Decimal(value), places=3)
+            value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
         elif prop_name == 'click_capping_daily_click_budget' and value is not None:
             value = lc_helper.default_currency(Decimal(value))
 
@@ -482,8 +473,7 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         value = '; '.join(joined)
         return value
 
-    @classmethod
-    def get_changes_text(cls, old_settings, new_settings, user, separator=', '):
+    def get_changes_text(self, old_settings, new_settings, user, separator=', '):
         changes = old_settings.get_setting_changes(
             new_settings) if old_settings is not None else None
         if changes is None:
@@ -503,7 +493,7 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
             key: value for key, value in changes.items()
             if key not in excluded_keys
         }
-        return core.history.helpers.get_changes_text_from_dict(cls, valid_changes, separator=separator)
+        return core.history.helpers.get_changes_text_from_dict(self, valid_changes, separator=separator)
 
     def get_settings_dict(self):
         # ad group settings form expects 'name' instead of 'ad_group_name'
