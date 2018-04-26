@@ -11,6 +11,7 @@ from utils import redirector_helper
 from utils import dates_helper
 
 import core.bcm.calculations
+import core.features.yahoo_accounts
 
 
 logger = logging.getLogger(__name__)
@@ -144,7 +145,11 @@ def _get_source_params(ad_group, use_source_tz=False):
                 and ad_group_source.source_campaign_key:
             params['yahoo_campaign_id'] = ad_group_source.source_campaign_key
             if use_source_tz:
-                params['yahoo_date'] = dates_helper.tz_today(
-                    ad_group_source.source.source_type.budgets_tz).isoformat()
+                yahoo_account = ad_group.campaign.account.yahoo_account
+                if yahoo_account:
+                    budgets_tz = yahoo_account.budgets_tz
+                else:
+                    budgets_tz = core.features.yahoo_accounts.get_default_timezone()
+                params['yahoo_date'] = dates_helper.tz_today(budgets_tz).isoformat()
 
     return params

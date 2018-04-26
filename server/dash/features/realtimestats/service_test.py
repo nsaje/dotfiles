@@ -7,6 +7,7 @@ import pytz
 from django.test import TestCase
 
 import core.entity
+import core.features.yahoo_accounts
 import dash.constants
 from dash.features.realtimestats import service
 from utils.magic_mixer import magic_mixer
@@ -18,13 +19,14 @@ class RealtimestatsServiceTest(TestCase):
         ad_group_sources = [{
             'type': 'outbrain',
             'source_campaign_key': {'campaign_id': 'test_outbrain_1'},
-            'budgets_tz': pytz.timezone('America/New_York'),
         }, {
             'type': 'yahoo',
             'source_campaign_key': 'test_yahoo_1',
-            'budgets_tz': pytz.timezone('America/Los_Angeles'),
         }]
-        self.account = magic_mixer.blend(core.entity.Account, uses_bcm_v2=True)
+        self.yahoo_account = magic_mixer.blend(
+            core.features.yahoo_accounts.YahooAccount, budgets_tz='America/Los_Angeles')
+        self.account = magic_mixer.blend(
+            core.entity.Account, uses_bcm_v2=True, yahoo_account=self.yahoo_account)
         self.campaign = magic_mixer.blend(core.entity.Campaign, account=self.account)
         self.ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=self.campaign)
         self.ad_group_sources = magic_mixer.cycle(len(ad_group_sources)).blend(
@@ -32,7 +34,6 @@ class RealtimestatsServiceTest(TestCase):
             ad_group=self.ad_group,
             source__source_type__type=(ags['type'] for ags in ad_group_sources),
             source_campaign_key=(ags['source_campaign_key'] for ags in ad_group_sources),
-            source__source_type__budgets_tz=(ags['budgets_tz'] for ags in ad_group_sources),
         )
         self.expected_params = {
             'outbrain_campaign_id': 'test_outbrain_1',
@@ -166,7 +167,7 @@ class RealtimestatsServiceTest(TestCase):
     @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
     def test_get_ad_group_sources_stats_with_source_tz_today(self, mock_k1_get):
         mock_k1_get.return_value = {'stats': [], 'errors': {}}
-        budgets_tz = self.ad_group_sources[1].source.source_type.budgets_tz
+        budgets_tz = self.yahoo_account.budgets_tz
         utc_today = dates_helper.utc_today()
         with mock.patch('utils.dates_helper.utc_now') as mock_utc_now:
             tz_now = budgets_tz.localize(datetime.datetime(utc_today.year, utc_today.month, utc_today.day, 0))
@@ -180,7 +181,7 @@ class RealtimestatsServiceTest(TestCase):
     @mock.patch('utils.k1_helper.get_adgroup_realtimestats')
     def test_get_ad_group_sources_stats_with_source_tz_yesterday(self, mock_k1_get):
         mock_k1_get.return_value = {'stats': [], 'errors': {}}
-        budgets_tz = self.ad_group_sources[1].source.source_type.budgets_tz
+        budgets_tz = self.yahoo_account.budgets_tz
         utc_today = dates_helper.utc_today()
         utc_yesterday = dates_helper.day_before(utc_today)
         with mock.patch('utils.dates_helper.utc_now') as mock_utc_now:

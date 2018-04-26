@@ -2,9 +2,11 @@ import logging
 import influx
 
 import core.entity
+import core.features.yahoo_accounts
 import core.source
 from .. import RealTimeDataHistory, RealTimeCampaignDataHistory
 import dash.features.realtimestats
+import dash.constants
 
 from utils import dates_helper
 
@@ -25,7 +27,8 @@ def _refresh_campaigns_realtime_data(campaigns):
 
 
 def _refresh_ad_groups_realtime_data(campaign):
-    for ad_group in campaign.adgroup_set.all().exclude_archived():
+    ad_groups = campaign.adgroup_set.all().select_related('campaign__account__yahoo_account').exclude_archived()
+    for ad_group in ad_groups:
         try:
             stats = dash.features.realtimestats.get_ad_group_sources_stats_without_caching(
                 ad_group, use_source_tz=True)
@@ -54,8 +57,12 @@ def _log_source_errors(stats):
 
 
 def _add_source_stat(ad_group, source, spend):
-    tz_today = dates_helper.utc_to_tz_datetime(
-        dates_helper.utc_now(), source.source_type.budgets_tz).date()
+    yahoo_account = ad_group.campaign.account.yahoo_account
+    if yahoo_account:
+        budgets_tz = yahoo_account.budgets_tz
+    else:
+        budgets_tz = core.features.yahoo_accounts.get_default_timezone()
+    tz_today = dates_helper.tz_today(budgets_tz)
 
     RealTimeDataHistory.objects.create(
         ad_group=ad_group,
@@ -73,10 +80,11 @@ def _refresh_campaign_realtime_data(campaign):
 
 def _should_refresh_campaign_realtime_data_for_yesterday(campaign):
     local_today = dates_helper.local_today()
-    any_source_tz_date_behind = any(
-        dates_helper.tz_today(source_type.budgets_tz) < local_today
-        for source_type in core.source.SourceType.objects.all())
-    return any_source_tz_date_behind
+    yahoo_source_type = core.source.SourceType.objects.filter(
+        source__adgroup__campaign_id=campaign.id, type=dash.constants.SourceType.YAHOO)
+    if not yahoo_source_type.exists() or not campaign.account.yahoo_account:
+        return False
+    return dates_helper.tz_today(campaign.account.yahoo_account.budgets_tz) < local_today
 
 
 def _refresh_realtime_campaign_data_for_date(campaign, date):

@@ -7,8 +7,10 @@ from django.conf import settings
 from django.test import TestCase
 import pytz
 
+import core.features.yahoo_accounts
 import core.entity
 import core.source
+import dash.constants
 from utils.magic_mixer import magic_mixer
 from utils import dates_helper
 
@@ -19,7 +21,8 @@ from . import refresh_realtime_data
 class RefreshRealtimeDataTest(TestCase):
 
     def setUp(self):
-        self.campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
+        self.account = magic_mixer.blend(core.entity.Account, yahoo_account__budgets_tz='America/Los_Angeles')
+        self.campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True, account=self.account)
         self.ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=self.campaign)
         self.source_type = magic_mixer.blend(core.source.SourceType, budgets_tz=pytz.utc)
         self.source = magic_mixer.blend(core.source.Source, source_type=self.source_type)
@@ -147,14 +150,18 @@ class RefreshRealtimeDataTest(TestCase):
 
     @mock.patch('dash.features.realtimestats.get_ad_group_sources_stats_without_caching')
     def test_refresh_budgets_tz_behind_source(self, mock_get_realtime_data):
-        pt_source_type = magic_mixer.blend(
-            core.source.SourceType, budgets_tz=pytz.timezone('America/Los_Angeles'))
-        pt_source = magic_mixer.blend(core.source.Source, source_type=pt_source_type)
-        magic_mixer.blend(core.entity.AdGroupSource, ad_group=self.ad_group, source=pt_source)
+        yahoo_source_type = magic_mixer.blend(
+            core.source.SourceType, type=dash.constants.SourceType.YAHOO)
+        yahoo_source = magic_mixer.blend(core.source.Source, source_type=yahoo_source_type)
+        magic_mixer.blend(
+            core.entity.AdGroupSource,
+            ad_group=self.ad_group,
+            source=yahoo_source,
+        )
 
         data = {
             'stats': [{
-                'source': pt_source,
+                'source': yahoo_source,
                 'spend': decimal.Decimal('10.0')
             }]
         }
@@ -170,7 +177,7 @@ class RefreshRealtimeDataTest(TestCase):
 
         history = RealTimeDataHistory.objects.get()
         self.assertEqual(self.ad_group.id, history.ad_group_id)
-        self.assertEqual(pt_source.id, history.source_id)
+        self.assertEqual(yahoo_source.id, history.source_id)
         self.assertEqual(dates_helper.local_yesterday(), history.date)
         self.assertEqual(data['stats'][0]['spend'], history.etfm_spend)
 
