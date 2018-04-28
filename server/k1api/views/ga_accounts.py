@@ -66,7 +66,6 @@ class GAAccountsView(K1APIView):
         cache.set(cache_key, response, timeout=60*60)
         return self.response_ok(response)
 
-
     def _extract_ga_settings(self, ga_accounts, campaign_settings):
         if not (campaign_settings.enable_ga_tracking and
                 campaign_settings.ga_tracking_type == dash.constants.GATrackingType.API and
