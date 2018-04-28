@@ -1,10 +1,12 @@
 import logging
 import datetime
 
+from django.core.cache import caches
 
 import dash.constants
 import dash.models
 from utils import db_for_reads
+from utils import cache_helper
 import dash.features.ga
 
 from .base import K1APIView
@@ -17,6 +19,12 @@ class GAAccountsView(K1APIView):
     @db_for_reads.use_read_replica()
     def get(self, request):
         date_since = request.GET.get('date_since')
+
+        cache = caches['dash_db_cache']
+        cache_key = cache_helper.get_cache_key('ga-accounts', date_since)
+        response = cache.get(cache_key, None)
+        if response is not None:
+            return self.response_ok(response)
 
         all_active_campaign_ids = set(dash.models.Campaign.objects.all(
         ).exclude_archived().values_list('id', flat=True))
@@ -51,10 +59,13 @@ class GAAccountsView(K1APIView):
         ]
         ga_account_ids = set(ga_account_id for _, ga_account_id, _ in ga_accounts)
 
-        return self.response_ok({
+        response = {
             'ga_accounts': list(ga_accounts_dicts),
             'service_email_mapping': self._get_service_email_mapping(ga_account_ids)
-        })
+        }
+        cache.set(cache_key, response, timeout=60*60)
+        return self.response_ok(response)
+
 
     def _extract_ga_settings(self, ga_accounts, campaign_settings):
         if not (campaign_settings.enable_ga_tracking and
