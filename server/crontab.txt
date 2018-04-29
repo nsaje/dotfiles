@@ -50,3 +50,5 @@
 */20 * * * *     /home/ubuntu/docker-manage-py.sh campaignstop_simple
 */15 * * * *     /home/ubuntu/docker-manage-py.sh clean_up_old_in_progress_batches
 0 0 1 * *        /home/ubuntu/docker-manage-py.sh multicurrency_update
+
+30 * * * *       /home/ubuntu/docker-manage-py.sh hack_cache_k1api_ga_accounts
