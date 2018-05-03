@@ -27,7 +27,7 @@ class AdGroupSettingsValidatorMixin(object):
                     'autopilot_state': msg
                 })
 
-            if self.b1_sources_group_daily_budget != new_settings.b1_sources_group_daily_budget:
+            if self.local_b1_sources_group_daily_budget != new_settings.local_b1_sources_group_daily_budget:
                 msg = 'Autopilot has to be disabled in order to manage Daily Cap of RTB Sources'
                 raise exc.ValidationError(errors={
                     'b1_sources_group_daily_budget': msg,
@@ -37,7 +37,7 @@ class AdGroupSettingsValidatorMixin(object):
                 constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
                 constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
         ):
-            if self.b1_sources_group_cpc_cc != new_settings.b1_sources_group_cpc_cc:
+            if self.local_b1_sources_group_cpc_cc != new_settings.local_b1_sources_group_cpc_cc:
                 msg = 'Autopilot has to be disabled in order to manage Daily Cap of RTB Sources'
                 raise exc.ValidationError(errors={
                     'b1_sources_group_daily_budget': msg,

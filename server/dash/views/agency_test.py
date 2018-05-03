@@ -556,8 +556,8 @@ class AdGroupSettingsTest(TestCase):
 
             self.assertIsNotNone(old_settings.pk)
             # in order to not change it
-            self.settings_dict['settings']['b1_sources_group_cpc_cc'] = str(new_settings.b1_sources_group_cpc_cc)
-            self.settings_dict['settings']['b1_sources_group_daily_budget'] = str(new_settings.b1_sources_group_daily_budget)
+            self.settings_dict['settings']['b1_sources_group_cpc_cc'] = str(new_settings.local_b1_sources_group_cpc_cc)
+            self.settings_dict['settings']['b1_sources_group_daily_budget'] = str(new_settings.local_b1_sources_group_daily_budget)
 
             self.settings_dict['settings']['autopilot_state'] = 1
             self.settings_dict['settings']['autopilot_daily_budget'] = '200.00'
