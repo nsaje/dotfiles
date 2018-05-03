@@ -93,8 +93,6 @@ class AdGroupSettings(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        if not self.rest_proxy:
-            self._remove_rtb_sources_settings(form)
         if (request.user.has_perm('zemauth.can_manage_settings_in_local_currency')):
             for field in ad_group.settings.multicurrency_fields:
                 form.cleaned_data['local_{}'.format(field)] = form.cleaned_data.pop(field, None)
@@ -109,11 +107,6 @@ class AdGroupSettings(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
-
-    def _remove_rtb_sources_settings(self, form):
-        # not set in ui through this view
-        del form.cleaned_data['b1_sources_group_cpc_cc']
-        del form.cleaned_data['b1_sources_group_daily_budget']
 
     def _supports_max_cpm(self, ad_group_sources):
         unsupported_sources = []
