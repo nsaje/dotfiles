@@ -122,30 +122,16 @@ _CAMPAIGN_GOAL_PRIMARY_METRIC = {
     constants.CampaignGoalKPI.PAGES_PER_SESSION: 'pv_per_visit',
     constants.CampaignGoalKPI.TIME_ON_SITE: 'avg_tos',
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: 'percent_new_users',
-    constants.CampaignGoalKPI.CPC: 'cpc',
-    constants.CampaignGoalKPI.CPV: 'avg_cost_per_visit',
-    constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: 'avg_cost_per_non_bounced_visit',
-    constants.CampaignGoalKPI.CP_NEW_VISITOR: 'avg_cost_for_new_visitor',
-    constants.CampaignGoalKPI.CP_PAGE_VIEW: 'avg_cost_per_pageview',
-    constants.CampaignGoalKPI.CPCV: 'video_cpcv',
+    constants.CampaignGoalKPI.CPC: 'local_cpc',
+    constants.CampaignGoalKPI.CPV: 'local_avg_cost_per_visit',
+    constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: 'local_avg_cost_per_non_bounced_visit',
+    constants.CampaignGoalKPI.CP_NEW_VISITOR: 'local_avg_cost_for_new_visitor',
+    constants.CampaignGoalKPI.CP_PAGE_VIEW: 'local_avg_cost_per_pageview',
+    constants.CampaignGoalKPI.CPCV: 'local_video_cpcv',
 }
 
 
 _CAMPAIGN_GOAL_PRIMARY_ETFM_METRIC = {
-    constants.CampaignGoalKPI.MAX_BOUNCE_RATE: 'bounce_rate',
-    constants.CampaignGoalKPI.PAGES_PER_SESSION: 'pv_per_visit',
-    constants.CampaignGoalKPI.TIME_ON_SITE: 'avg_tos',
-    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: 'percent_new_users',
-    constants.CampaignGoalKPI.CPC: 'etfm_cpc',
-    constants.CampaignGoalKPI.CPV: 'avg_etfm_cost_per_visit',
-    constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: 'avg_etfm_cost_per_non_bounced_visit',
-    constants.CampaignGoalKPI.CP_NEW_VISITOR: 'avg_etfm_cost_for_new_visitor',
-    constants.CampaignGoalKPI.CP_PAGE_VIEW: 'avg_etfm_cost_per_pageview',
-    constants.CampaignGoalKPI.CPCV: 'video_etfm_cpcv',
-}
-
-
-_CAMPAIGN_GOAL_PRIMARY_LOCAL_METRIC = {
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE: 'bounce_rate',
     constants.CampaignGoalKPI.PAGES_PER_SESSION: 'pv_per_visit',
     constants.CampaignGoalKPI.TIME_ON_SITE: 'avg_tos',
@@ -159,12 +145,22 @@ _CAMPAIGN_GOAL_PRIMARY_LOCAL_METRIC = {
 }
 
 
-def get_goal_to_primary_metric_map(uses_bcm_v2, local_values=False):
+def get_goal_to_primary_metric_map(uses_bcm_v2, with_local_prefix=False):
+    campaign_goal_primary_metric = _CAMPAIGN_GOAL_PRIMARY_METRIC
+
     if uses_bcm_v2:
-        if local_values:
-            return _CAMPAIGN_GOAL_PRIMARY_LOCAL_METRIC
-        return _CAMPAIGN_GOAL_PRIMARY_ETFM_METRIC
-    return _CAMPAIGN_GOAL_PRIMARY_METRIC
+        campaign_goal_primary_metric = _CAMPAIGN_GOAL_PRIMARY_ETFM_METRIC
+
+    if with_local_prefix:
+        return campaign_goal_primary_metric
+
+    return {k: _strip_local_prefix(v) for k, v in campaign_goal_primary_metric.items()}
+
+
+def _strip_local_prefix(value):
+    if value.startswith('local_'):
+        return value[len('local_'):]
+    return value
 
 
 INVERSE_PERFORMANCE_CAMPAIGN_GOALS = (
@@ -212,7 +208,7 @@ def format_value(goal_type, value, currency=constants.Currency.USD):
         or 'N/A'
 
 
-def format_campaign_goal(goal_type, value, conversion_goal, currency=constants.Currency.USD):
+def format_campaign_goal(goal_type, value, conversion_goal, currency):
     description = CAMPAIGN_GOAL_NAME_FORMAT[goal_type].format(
         format_value(goal_type, value, currency)
     )
@@ -326,12 +322,11 @@ def get_campaign_goals(campaign, conversion_goals):
                     dict(('avg_cost_per_{}'.format(k['id']), True)
                          for k in conversion_goals if k['name'] == conversion_goal_name))
 
-        # TODO (multicurrency): Should local_values be returned here?
         ret.append({
             'name': goal_name,
             'primary': cg_value.campaign_goal.primary,
             'conversion': conversion_goal_name,
-            'value': float(cg_value.value),
+            'value': float(cg_value.local_value),
             'fields': fields,
         })
 
@@ -407,7 +402,7 @@ def _prepare_performance_output(campaign_goal, stats, conversion_goals, uses_bcm
             cost = stats.get('etfm_cost')
     else:
         cost = stats.get('e_media_cost')
-    primary_metric_map = get_goal_to_primary_metric_map(uses_bcm_v2, local_values)
+    primary_metric_map = get_goal_to_primary_metric_map(uses_bcm_v2, with_local_prefix=local_values)
 
     if campaign_goal.type == constants.CampaignGoalKPI.CPA:
         conversion_column = campaign_goal.conversion_goal.get_view_key(conversion_goals)
@@ -427,11 +422,11 @@ def get_goal_performance_metric(campaign_goal, conversion_goals, uses_bcm_v2):
     if campaign_goal.type == constants.CampaignGoalKPI.CPA:
         conversion_column = campaign_goal.conversion_goal.get_view_key(conversion_goals)
         if uses_bcm_v2:
-            return 'avg_etfm_cost_per_' + conversion_column
+            return 'local_avg_etfm_cost_per_' + conversion_column
         else:
-            return 'avg_cost_per_' + conversion_column
+            return 'local_avg_cost_per_' + conversion_column
 
-    primary_metric_map = get_goal_to_primary_metric_map(uses_bcm_v2)
+    primary_metric_map = get_goal_to_primary_metric_map(uses_bcm_v2, with_local_prefix=True)
     return primary_metric_map[campaign_goal.type]
 
 
@@ -670,7 +665,8 @@ def inverted_campaign_goal_map(conversion_goals, uses_bcm_v2):
     # map from particular fields to goals
     ret = {}
 
-    primary_metric_map = get_goal_to_primary_metric_map(uses_bcm_v2)
+    # with_local_prefix=False because client expects fields to not have local_ prefix
+    primary_metric_map = get_goal_to_primary_metric_map(uses_bcm_v2, with_local_prefix=False)
 
     for goal_type in list(primary_metric_map.keys()):
         field = primary_metric_map[goal_type]

@@ -53,6 +53,7 @@ class CampaignGoalsTestCase(TestCase):
         models.CampaignGoalValue.objects.create(
             campaign_goal=goal,
             value=Decimal(value),
+            local_value=Decimal(value),
             created_by=self.user
         )
         return goal

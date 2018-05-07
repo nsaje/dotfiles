@@ -195,6 +195,7 @@ class AccountBreakdown(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
+        currency = stats.helpers.get_report_currency(request.user, [account])
 
         request_body = json.loads(request.body).get('params')
         form = forms.BreakdownForm(request.user, breakdown, request_body)
@@ -241,7 +242,7 @@ class AccountBreakdown(api_common.BaseApiView):
         )
 
         breakdown_helpers.format_report_rows_state_fields(rows)
-        breakdown_helpers.format_report_rows_performance_fields(rows, goals)
+        breakdown_helpers.format_report_rows_performance_fields(rows, goals, currency)
         breakdown_helpers.clean_non_relevant_fields(rows)
 
         totals = None
@@ -253,7 +254,6 @@ class AccountBreakdown(api_common.BaseApiView):
         if stats.constants.get_target_dimension(breakdown) == 'publisher_id':
             extras['ob_blacklisted_count'] = publisher_group_helpers.get_ob_blacklisted_publishers_count(account)
 
-        currency = stats.helpers.get_report_currency(request.user, [account])
         extras['currency'] = currency
         stats.helpers.update_rows_to_contain_values_in_currency(rows, currency)
         if totals:
@@ -292,6 +292,7 @@ class CampaignBreakdown(api_common.BaseApiView):
         constraints = stats.constraints_helper.prepare_campaign_constraints(
             request.user, campaign, breakdown, only_used_sources=target_dim == 'source_id',
             **get_constraints_kwargs(form.cleaned_data))
+        currency = stats.helpers.get_report_currency(request.user, [constraints['account']])
         goals = stats.api_breakdowns.get_goals(constraints, breakdown)
 
         totals_thread = None
@@ -321,7 +322,7 @@ class CampaignBreakdown(api_common.BaseApiView):
             breakdown_helpers.format_report_rows_ad_group_editable_fields(rows)
 
         breakdown_helpers.format_report_rows_state_fields(rows)
-        breakdown_helpers.format_report_rows_performance_fields(rows, goals)
+        breakdown_helpers.format_report_rows_performance_fields(rows, goals, currency)
         breakdown_helpers.clean_non_relevant_fields(rows)
 
         totals = None
@@ -334,7 +335,6 @@ class CampaignBreakdown(api_common.BaseApiView):
             extras['ob_blacklisted_count'] = publisher_group_helpers.get_ob_blacklisted_publishers_count(
                 campaign.account)
 
-        currency = stats.helpers.get_report_currency(request.user, [constraints['account']])
         extras['currency'] = currency
         stats.helpers.update_rows_to_contain_values_in_currency(rows, currency)
         if totals:
@@ -342,7 +342,6 @@ class CampaignBreakdown(api_common.BaseApiView):
 
         report = format_breakdown_response(rows, offset, parents, totals, goals=goals, **extras)
         if len(breakdown) == 1 and request.user.has_perm('zemauth.campaign_goal_optimization'):
-            # TODO (multicurrency): Check if get_campaign_goals should return local values
             report[0]['campaign_goals'] = campaign_goals.get_campaign_goals(
                 campaign, report[0].get('conversion_goals', []))
 
@@ -378,6 +377,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
             request.user, ad_group, breakdown,
             only_used_sources=target_dim == 'source_id',
             **get_constraints_kwargs(form.cleaned_data))
+        currency = stats.helpers.get_report_currency(request.user, [constraints['account']])
         goals = stats.api_breakdowns.get_goals(constraints, breakdown)
 
         totals_thread = None
@@ -407,7 +407,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
             breakdown_helpers.format_report_rows_content_ad_editable_fields(rows)
 
         breakdown_helpers.format_report_rows_state_fields(rows)
-        breakdown_helpers.format_report_rows_performance_fields(rows, goals)
+        breakdown_helpers.format_report_rows_performance_fields(rows, goals, currency)
         breakdown_helpers.clean_non_relevant_fields(rows)
 
         totals = None
@@ -427,7 +427,6 @@ class AdGroupBreakdown(api_common.BaseApiView):
             extras['ob_blacklisted_count'] = publisher_group_helpers.get_ob_blacklisted_publishers_count(
                 ad_group.campaign.account)
 
-        currency = stats.helpers.get_report_currency(request.user, [constraints['account']])
         extras['currency'] = currency
         excluded_keys = []
         if not request.user.has_perm('zemauth.can_manage_settings_in_local_currency'):
@@ -438,7 +437,6 @@ class AdGroupBreakdown(api_common.BaseApiView):
 
         report = format_breakdown_response(rows, offset, parents, totals, goals, **extras)
         if len(breakdown) == 1 and request.user.has_perm('zemauth.campaign_goal_optimization'):
-            # TODO (multicurrency): Check if get_campaign_goals should return local values
             report[0]['campaign_goals'] = campaign_goals.get_campaign_goals(
                 ad_group.campaign, report[0].get('conversion_goals', []))
 

@@ -27,7 +27,7 @@ def format_report_rows_state_fields(rows):
             row['state'] = {'value': row['state']}
 
 
-def format_report_rows_performance_fields(rows, goals):
+def format_report_rows_performance_fields(rows, goals, currency):
     map_values = {x.campaign_goal_id: x for x in (goals.campaign_goal_values or [])}
 
     campaign_goals_by_campaign_id = collections.defaultdict(list)
@@ -90,12 +90,12 @@ def format_report_rows_performance_fields(rows, goals):
                     goals_performances.append((
                         row.get(performance_prefix + goal.get_view_key()),
                         metric_value,
-                        map_values.get(goal.id) and map_values[goal.id].value,
+                        map_values.get(goal.id) and map_values[goal.id].local_value,
                         goal,
                         uses_bcm_v2
                     ))
 
-                set_row_goal_performance_meta(row, goals_performances, goals.conversion_goals)
+                set_row_goal_performance_meta(row, goals_performances, goals.conversion_goals, currency)
 
 
 def format_report_rows_ad_group_editable_fields(rows):
@@ -142,25 +142,27 @@ def format_report_rows_content_ad_editable_fields(rows):
         })
 
 
-def set_row_goal_performance_meta(row, goals_performances, conversion_goals):
+def set_row_goal_performance_meta(row, goals_performances, conversion_goals, currency):
     for goal_status, goal_metric, goal_value, goal, uses_bcm_v2 in goals_performances:
         performance_item = {
             'emoticon': dash.campaign_goals.STATUS_TO_EMOTICON_MAP.get(goal_status, constants.Emoticon.NEUTRAL),
             'text': dash.campaign_goals.format_campaign_goal(
                 goal.type,
                 goal_metric,
-                goal.conversion_goal
+                goal.conversion_goal,
+                currency
             )
         }
 
         if goal_value:
             performance_item['text'] += ' (planned {})'.format(
-                dash.campaign_goals.format_value(goal.type, goal_value)
+                dash.campaign_goals.format_value(goal.type, goal_value, currency)
             )
 
         row['performance']['list'].append(performance_item)
 
-        primary_metric_map = dash.campaign_goals.get_goal_to_primary_metric_map(uses_bcm_v2)
+        # with_local_prefix=False because client expects colored_column to not have local_ prefix
+        primary_metric_map = dash.campaign_goals.get_goal_to_primary_metric_map(uses_bcm_v2, with_local_prefix=False)
         colored_column = primary_metric_map.get(goal.type)
         if goal.type == constants.CampaignGoalKPI.CPA:
             if uses_bcm_v2:

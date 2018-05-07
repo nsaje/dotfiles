@@ -976,27 +976,31 @@ class BreakdownHelperTest(TestCase):
                 'performance_campaign_goal_2': constants.CampaignGoalPerformance.AVERAGE,
                 'ad_group_id': 1,
                 'cpc': 0.2,
+                'local_cpc': 0.4,
             },
             {
                 'performance_campaign_goal_1': constants.CampaignGoalPerformance.SUPERPERFORMING,
                 'performance_campaign_goal_2': constants.CampaignGoalPerformance.UNDERPERFORMING,
                 'ad_group_id': 2,
                 'cpc': 0.2,
+                'local_cpc': 0.4,
                 'avg_cost_per_pixel_1_168': 5.0,
+                'local_avg_cost_per_pixel_1_168': 10.0,
             },
         ]
 
         campaign_goals = models.CampaignGoal.objects.filter(pk__in=[1, 2])
         breakdown_helpers.format_report_rows_performance_fields(
-            rows, Goals(campaign_goals, [], [], [], [campaign_goals[0]]))
+            rows, Goals(campaign_goals, [], [], [], [campaign_goals[0]]), constants.Currency.USD)
 
         self.maxDiff = None
         self.assertEqual(rows, [{
             'ad_group_id': 1,
             'cpc': 0.2,
+            'local_cpc': 0.4,
             'performance': {
                 'list': [
-                    {'emoticon': constants.Emoticon.NEUTRAL, 'text': '$0.200 CPC'},
+                    {'emoticon': constants.Emoticon.NEUTRAL, 'text': '$0.400 CPC'},
                     {'emoticon': constants.Emoticon.NEUTRAL, 'text': 'N/A CPA - test conversion goal'},
                 ],
                 'overall': constants.Emoticon.NEUTRAL,
@@ -1007,14 +1011,16 @@ class BreakdownHelperTest(TestCase):
         }, {
             'ad_group_id': 2,
             'cpc': 0.2,
+            'local_cpc': 0.4,
             'performance': {
                 'list': [
-                    {'emoticon': constants.Emoticon.HAPPY, 'text': '$0.200 CPC'},
-                    {'emoticon': constants.Emoticon.SAD, 'text': '$5.00 CPA - test conversion goal'},
+                    {'emoticon': constants.Emoticon.HAPPY, 'text': '$0.400 CPC'},
+                    {'emoticon': constants.Emoticon.SAD, 'text': '$10.00 CPA - test conversion goal'},
                 ],
                 'overall': constants.Emoticon.HAPPY,
             },
             'avg_cost_per_pixel_1_168': 5.0,
+            'local_avg_cost_per_pixel_1_168': 10.0,
             'performance_campaign_goal_1': constants.CampaignGoalPerformance.SUPERPERFORMING,
             'performance_campaign_goal_2': constants.CampaignGoalPerformance.UNDERPERFORMING,
             'styles': {'avg_cost_per_pixel_1_168': 3, 'cpc': 1}
@@ -1026,7 +1032,7 @@ class BreakdownHelperTest(TestCase):
             {'ad_group_id': 2},
         ]
 
-        breakdown_helpers.format_report_rows_performance_fields(rows, Goals([], [], [], [], []))
+        breakdown_helpers.format_report_rows_performance_fields(rows, Goals([], [], [], [], []), constants.Currency.USD)
 
         self.assertEqual(rows, [
             {'ad_group_id': 1},

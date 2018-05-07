@@ -515,8 +515,9 @@ class MVJointMaster(MVMaster):
                 conversion_key = conversion_goal.get_view_key(conversion_goals)
                 column_group = AFTER_JOIN_AGGREGATES
             else:
+                # with_local_prefix=False because USD metric values should be used to calculate performance
                 primary_metric_map = dash.campaign_goals.get_goal_to_primary_metric_map(
-                    campaign_goal.campaign.account.uses_bcm_v2)
+                    campaign_goal.campaign.account.uses_bcm_v2, with_local_prefix=False)
                 metric_column = primary_metric_map[campaign_goal.type]
                 column_group = AFTER_JOIN_AGGREGATES
 
