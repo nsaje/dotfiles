@@ -1146,10 +1146,17 @@ class AccountOverviewTest(TestCase):
     def _get_setting(self, settings, name):
         return [s for s in settings if name in s['name'].lower()][0]
 
+    @patch('dash.infobox_helpers.get_yesterday_account_spend')
     @patch('dash.models.Account.get_current_settings')
-    def test_run_empty(self, mock_current_settings):
+    def test_run_empty(self, mock_current_settings, mock_query):
         req = RequestFactory().get('/')
         req.user = self.user
+
+        mock_query.return_value = {
+            'e_yesterday_cost': 10,
+            'yesterday_et_cost': 20,
+            'yesterday_etfm_cost': 30,
+        }
 
         # make all adgroups active
         for adgs in models.AdGroupSettings.objects.all():
@@ -1176,10 +1183,17 @@ class AccountOverviewTest(TestCase):
         response = self._get_account_overview(1)
         settings = response['data']['basic_settings']
 
+    @patch('dash.infobox_helpers.get_yesterday_account_spend')
     @patch('dash.models.Account.get_current_settings')
-    def test_run_empty_non_archived(self, mock_current_settings):
+    def test_run_empty_non_archived(self, mock_current_settings, mock_query):
         req = RequestFactory().get('/')
         req.user = self.user
+
+        mock_query.return_value = {
+            'e_yesterday_cost': 10,
+            'yesterday_et_cost': 20,
+            'yesterday_etfm_cost': 30,
+        }
 
         # make all adgroups active
         for adgs in models.AdGroupSettings.objects.all():
@@ -1234,7 +1248,19 @@ class AllAccountsOverviewTest(TestCase):
         )
         return json.loads(response.content)
 
-    def test_run_empty(self):
+    @patch('dash.infobox_helpers.get_mtd_accounts_spend')
+    @patch('dash.infobox_helpers.get_yesterday_accounts_spend')
+    def test_run_empty(self, mock_query_yd, mock_query_mtd):
+        mock_query_yd.return_value = {
+            'e_yesterday_cost': 10,
+            'yesterday_et_cost': 20,
+            'yesterday_etfm_cost': 30,
+        }
+        mock_query_mtd.return_value = {
+            'e_media_cost': 10,
+            'et_cost': 20,
+            'etfm_cost': 30,
+        }
         permission_2 = Permission.objects.get(codename='can_access_all_accounts_infobox')
         user = zemauth.models.User.objects.get(pk=2)
         user.user_permissions.add(permission_2)
@@ -1243,7 +1269,19 @@ class AllAccountsOverviewTest(TestCase):
         response = self._get_all_accounts_overview(1)
         self.assertTrue(response['success'])
 
-    def test_agency_permission(self):
+    @patch('dash.infobox_helpers.get_mtd_accounts_spend')
+    @patch('dash.infobox_helpers.get_yesterday_accounts_spend')
+    def test_agency_permission(self, mock_query_yd, mock_query_mtd):
+        mock_query_yd.return_value = {
+            'e_yesterday_cost': 10,
+            'yesterday_et_cost': 20,
+            'yesterday_etfm_cost': 30,
+        }
+        mock_query_mtd.return_value = {
+            'e_media_cost': 10,
+            'et_cost': 20,
+            'etfm_cost': 30,
+        }
         response = self._get_all_accounts_overview(1)
         self.assertFalse(response['success'])
 

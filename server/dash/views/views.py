@@ -940,7 +940,7 @@ class AllAccountsOverview(api_common.BaseApiView):
         uses_bcm_v2 = accounts.all_use_bcm_v2()
 
         use_local_currency = currency != constants.Currency.USD
-        yesterday_costs = infobox_helpers.get_yesterday_agency_spend(accounts, use_local_currency)
+        yesterday_costs = infobox_helpers.get_yesterday_accounts_spend(accounts, use_local_currency)
         yesterday_cost = yesterday_costs['yesterday_etfm_cost'] if uses_bcm_v2 else yesterday_costs['e_yesterday_cost']
 
         currency_symbol = core.multicurrency.get_currency_symbol(currency)
@@ -951,7 +951,7 @@ class AllAccountsOverview(api_common.BaseApiView):
             section_start=True
         ))
 
-        mtd_costs = infobox_helpers.get_mtd_agency_spend(accounts, use_local_currency)
+        mtd_costs = infobox_helpers.get_mtd_accounts_spend(accounts, use_local_currency)
         mtd_cost = mtd_costs['etfm_cost'] if uses_bcm_v2 else mtd_costs['e_media_cost']
         overview_settings.append(infobox_helpers.OverviewSetting(
             'Month-to-date spend:',
@@ -969,7 +969,7 @@ class AllAccountsOverview(api_common.BaseApiView):
             user, accounts, permission='zemauth.can_see_infobox_in_local_currency')
 
         use_local_currency = currency != constants.Currency.USD
-        yesterday_costs = infobox_helpers.get_yesterday_all_accounts_spend(
+        yesterday_costs = infobox_helpers.get_yesterday_accounts_spend(
             accounts,
             use_local_currency,
         )
@@ -985,7 +985,7 @@ class AllAccountsOverview(api_common.BaseApiView):
             section_start=True
         ))
 
-        mtd_costs = infobox_helpers.get_mtd_all_accounts_spend(
+        mtd_costs = infobox_helpers.get_mtd_accounts_spend(
             accounts,
             use_local_currency,
         )
