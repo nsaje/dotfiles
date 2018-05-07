@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 
 import core.entity
 import core.features.yahoo_accounts
+import dash.constants
 
 from utils.magic_mixer import magic_mixer
 
@@ -21,6 +22,7 @@ class YahooTest(K1APIBaseTest):
         )
         yahoo_account_2 = magic_mixer.blend(
             core.features.yahoo_accounts.YahooAccount,
+            currency=dash.constants.Currency.EUR,
         )
         account = magic_mixer.blend(
             core.entity.Account,
@@ -43,13 +45,16 @@ class YahooTest(K1APIBaseTest):
 
         expected = [{
             'account_id': account.id,
-            'advertiser_id': yahoo_account.advertiser_id
+            'advertiser_id': yahoo_account.advertiser_id,
+            'currency': 'USD',
         }, {
             'account_id': account_2.id,
-            'advertiser_id': yahoo_account_2.advertiser_id
+            'advertiser_id': yahoo_account_2.advertiser_id,
+            'currency': 'EUR',
         }, {
             'account_id': account_3.id,
-            'advertiser_id': yahoo_account_2.advertiser_id
+            'advertiser_id': yahoo_account_2.advertiser_id,
+            'currency': 'EUR',
         }]
         self.assertCountEqual(expected, data['response'])
 
@@ -73,6 +78,7 @@ class YahooTest(K1APIBaseTest):
 
         expected = [{
             'account_id': account.id,
-            'advertiser_id': yahoo_account.advertiser_id
+            'advertiser_id': yahoo_account.advertiser_id,
+            'currency': 'USD',
         }]
         self.assertEqual(expected, data['response'])

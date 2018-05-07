@@ -1,7 +1,5 @@
 import logging
 
-from django.db.models import F
-
 import core.entity
 import core.features.yahoo_accounts
 
@@ -18,16 +16,19 @@ class YahooAccountsView(base.K1APIView):
         if account_ids:
             account_ids = account_ids.split(',')
 
-        accounts = core.entity.Account.objects.filter(yahoo_account__isnull=False)
+        accounts = core.entity.Account.objects.filter(
+            yahoo_account__isnull=False
+        ).select_related('yahoo_account')
 
         if account_ids:
             accounts = accounts.filter(id__in=account_ids)
 
-        return self.response_ok(
-            list(
-                accounts.annotate(
-                    account_id=F('id'),
-                    advertiser_id=F('yahoo_account__advertiser_id')
-                ).values('account_id', 'advertiser_id')
-            )
-        )
+        response = []
+        for account in accounts:
+            response.append({
+                'account_id': account.id,
+                'advertiser_id': account.yahoo_account.advertiser_id,
+                'currency': account.yahoo_account.currency,
+            })
+
+        return self.response_ok(response)
