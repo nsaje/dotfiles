@@ -1,5 +1,6 @@
 import datetime
 import decimal
+import calendar
 
 from decimal import Decimal
 from django.test import TestCase, mock
@@ -13,6 +14,7 @@ import dash.infobox_helpers
 
 from utils import dates_helper
 from utils.magic_mixer import magic_mixer
+from utils.test_helper import fake_request
 from django.test.client import RequestFactory
 
 
@@ -362,125 +364,327 @@ class InfoBoxHelpersTest(TestCase):
 class InfoBoxAccountHelpersTest(TestCase):
     fixtures = ['test_models.yaml']
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.accounts = magic_mixer.cycle(2).blend(dash.models.Account, currency=dash.constants.Currency.EUR)
-        cls.mock_stats_yesterday = [{
-            'account_id': cls.accounts[0].id,
-            'e_yesterday_cost': 50,
-            'yesterday_et_cost': 60,
-            'yesterday_etfm_cost': 70,
-            'local_e_yesterday_cost': 10,
-            'local_yesterday_et_cost': 20,
-            'local_yesterday_etfm_cost': 30,
-        }, {
-            'account_id': cls.accounts[1].id,
-            'e_yesterday_cost': 50,
-            'yesterday_et_cost': 60,
-            'yesterday_etfm_cost': 70,
-            'local_e_yesterday_cost': 10,
-            'local_yesterday_et_cost': 20,
-            'local_yesterday_etfm_cost': 30,
-        }]
-        cls.mock_stats_mtd = [{
-            'account_id': cls.accounts[0].id,
-            'e_media_cost': 50,
-            'et_cost': 60,
-            'etfm_cost': 70,
-            'local_e_media_cost': 10,
-            'local_et_cost': 20,
-            'local_etfm_cost': 30,
-        }, {
-            'account_id': cls.accounts[1].id,
-            'e_media_cost': 50,
-            'et_cost': 60,
-            'etfm_cost': 70,
-            'local_e_media_cost': 10,
-            'local_et_cost': 20,
-            'local_etfm_cost': 30,
-        }]
+    def setUp(self):
+        account = dash.models.Account.objects.get(pk=1)
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        user = zemauth.models.User.objects.get(pk=1)
 
-    @mock.patch('redshiftapi.api_breakdowns.query')
-    def test_get_yesterday_accounts_spend(self, mock_query):
-        mock_query.return_value = self.mock_stats_yesterday
+        self.user = user
+        self.agency = dash.models.Agency(name='test')
+        self.agency.save(fake_request(user))
+
+        today = datetime.datetime.today().date()
+
+        _, days_of_month = calendar.monthrange(today.year, today.month)
+
+        start_date = today - datetime.timedelta(days=days_of_month - 1)
+        end_date = today + datetime.timedelta(days=days_of_month - 1)
+
+        self.credit = dash.models.CreditLineItem.objects.create_unsafe(
+            account=account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=300,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+
+        self.budget = dash.models.BudgetLineItem.objects.create_unsafe(
+            campaign=campaign,
+            credit=self.credit,
+            amount=100,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=user,
+        )
+
+        self._set_up_local_currency_bcm()
+
+    def _set_up_local_currency_bcm(self):
+        self.agency_local = magic_mixer.blend(dash.models.Agency)
+        self.account_local = magic_mixer.blend(
+            dash.models.Account,
+            currency=dash.constants.Currency.EUR,
+            agency=self.agency_local,
+        )
+        self.credit_local = magic_mixer.blend(
+            dash.models.CreditLineItem,
+            account=self.account_local,
+            currency=self.account_local.currency,
+            start_date=dates_helper.local_yesterday(),
+            end_date=dates_helper.local_today(),
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            amount=decimal.Decimal('1000.0'),
+            flat_fee_cc=0,
+            license_fee=decimal.Decimal('0.2'))
+
+        self.campaign_local = magic_mixer.blend(
+            dash.models.Campaign, account=self.account_local)
+        self.budget_local = magic_mixer.blend(
+            dash.models.BudgetLineItem,
+            campaign=self.campaign_local,
+            start_date=dates_helper.local_yesterday(),
+            end_date=dates_helper.local_today(),
+            credit=self.credit_local,
+            amount=decimal.Decimal('200'),
+            margin=decimal.Decimal('0'))
+
+    def _set_up_local_currency_daily_statement(self):
+        dash.models.BudgetDailyStatement.objects.create(
+            budget=self.budget_local,
+            date=dates_helper.local_yesterday(),
+            media_spend_nano=decimal.Decimal('10e9'),
+            data_spend_nano=decimal.Decimal('10e9'),
+            license_fee_nano=decimal.Decimal('10e9'),
+            margin_nano=0,
+        )
+
+    def test_get_yesterday_all_accounts_spend(self):
         self.assertEqual({
-            'e_yesterday_cost': 100,
-            'yesterday_et_cost': 120,
-            'yesterday_etfm_cost': 140,
-        }, dash.infobox_helpers.get_yesterday_accounts_spend(self.accounts, False))
-
-        # local
+            'e_yesterday_cost': 0,
+            'yesterday_et_cost': 0,
+            'yesterday_etfm_cost': 0,
+        }, dash.infobox_helpers.get_yesterday_all_accounts_spend(
+            dash.models.Account.objects.all(), False))
+        yesterday = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+        dash.models.BudgetDailyStatement.objects.create(
+            budget=self.budget,
+            date=yesterday,
+            media_spend_nano=decimal.Decimal('10e9'),
+            data_spend_nano=decimal.Decimal('10e9'),
+            license_fee_nano=decimal.Decimal('10e9'),
+            margin_nano=0,
+        )
         self.assertEqual({
             'e_yesterday_cost': 20,
-            'yesterday_et_cost': 40,
-            'yesterday_etfm_cost': 60,
-        }, dash.infobox_helpers.get_yesterday_accounts_spend(self.accounts, True))
-
-        yesterday = datetime.date.today() - datetime.timedelta(days=1)
-        constraints = {
-            'account_id': [account.id for account in self.accounts],
-            'date__gte': yesterday,
-            'date__lte': yesterday,
-        }
-        self.assertEqual(
-            mock_query.call_args[0],
-            (['account_id'], constraints)
-        )
-
-    @mock.patch('redshiftapi.api_breakdowns.query')
-    def test_get_mtd_accounts_spend(self, mock_query):
-        mock_query.return_value = self.mock_stats_mtd
-        self.assertEqual({
-            'e_media_cost': 100,
-            'et_cost': 120,
-            'etfm_cost': 140,
-        }, dash.infobox_helpers.get_mtd_accounts_spend(self.accounts, False))
-
-        # local
-        self.assertEqual({
-            'e_media_cost': 20,
-            'et_cost': 40,
-            'etfm_cost': 60,
-        }, dash.infobox_helpers.get_mtd_accounts_spend(self.accounts, True))
-
-        month_start = datetime.date.today().replace(day=1)
-        constraints = {
-            'account_id': [account.id for account in self.accounts],
-            'date__gte': month_start,
-        }
-        self.assertEqual(
-            mock_query.call_args[0],
-            (['account_id'], constraints)
-        )
-
-    @mock.patch('redshiftapi.api_breakdowns.query')
-    def test_get_yesterday_account_spend(self, mock_query):
-        mock_query.return_value = [self.mock_stats_yesterday[0]]
-        account = self.accounts[0]
-        self.assertEqual({
-            'e_yesterday_cost': 50,
-            'yesterday_et_cost': 60,
-            'yesterday_etfm_cost': 70,
-        }, dash.infobox_helpers.get_yesterday_account_spend(account, False))
-
-        # local
-        self.assertEqual({
-            'e_yesterday_cost': 10,
             'yesterday_et_cost': 20,
             'yesterday_etfm_cost': 30,
-        }, dash.infobox_helpers.get_yesterday_account_spend(account, True))
+        }, dash.infobox_helpers.get_yesterday_all_accounts_spend(
+            dash.models.Account.objects.all(), False))
 
-        yesterday = datetime.date.today() - datetime.timedelta(days=1)
-        constraints = {
-            'account_id': [account.id],
-            'date__gte': yesterday,
-            'date__lte': yesterday,
-        }
-        self.assertEqual(
-            mock_query.call_args[0],
-            (['account_id'], constraints)
+        account = dash.models.Account.objects.get(pk=1)
+        account.agency = self.agency
+        account.save(fake_request(self.user))
+
+        self.assertEqual({
+            'e_yesterday_cost': 20,
+            'yesterday_et_cost': 20,
+            'yesterday_etfm_cost': 30,
+        }, dash.infobox_helpers.get_yesterday_all_accounts_spend(
+            dash.models.Account.objects.filter(agency=self.agency), False))
+
+        res = dash.infobox_helpers.get_yesterday_all_accounts_spend(
+            dash.models.Account.objects.filter(settings__account_type=dash.constants.AccountType.PILOT), False)
+        self.assertEqual({
+            'e_yesterday_cost': 0,
+            'yesterday_et_cost': 0,
+            'yesterday_etfm_cost': 0,
+        }, res)
+
+        new_acs = account.get_current_settings().copy_settings()
+        new_acs.account_type = dash.constants.AccountType.PILOT
+        new_acs.save(fake_request(self.user))
+
+        res = dash.infobox_helpers.get_yesterday_all_accounts_spend(
+            dash.models.Account.objects.filter(settings__account_type=dash.constants.AccountType.PILOT), False)
+        self.assertEqual({
+            'e_yesterday_cost': 20,
+            'yesterday_et_cost': 20,
+            'yesterday_etfm_cost': 30,
+        }, res)
+
+    def test_get_yesterday_all_accounts_spend_local_currency(self):
+        self._set_up_local_currency_daily_statement()
+        self.assertEqual({
+            'e_yesterday_cost': 20,
+            'yesterday_et_cost': 20,
+            'yesterday_etfm_cost': 30,
+        }, dash.infobox_helpers.get_yesterday_all_accounts_spend(
+            dash.models.Account.objects.filter(id=self.account_local.id), False))
+        self.assertEqual({
+            'e_yesterday_cost': 24,
+            'yesterday_et_cost': 24,
+            'yesterday_etfm_cost': 36,
+        }, dash.infobox_helpers.get_yesterday_all_accounts_spend(
+            dash.models.Account.objects.filter(id=self.account_local.id), True))
+
+    def test_get_mtd_agency_spend(self):
+        accounts = dash.models.Account.objects.all().filter_by_user(self.user)
+        self.assertEqual({
+            'e_media_cost': 0,
+            'et_cost': 0,
+            'etfm_cost': 0,
+        }, dash.infobox_helpers.get_mtd_agency_spend(
+            accounts, False))
+
+        today = datetime.datetime.utcnow()
+        dash.models.BudgetDailyStatement.objects.create(
+            budget=self.budget,
+            date=today,
+            media_spend_nano=decimal.Decimal('10e9'),
+            data_spend_nano=decimal.Decimal('10e9'),
+            license_fee_nano=decimal.Decimal('10e9'),
+            margin_nano=0,
         )
+        self.assertEqual({
+            'e_media_cost': 10,
+            'et_cost': 20,
+            'etfm_cost': 30,
+        }, dash.infobox_helpers.get_mtd_agency_spend(
+            accounts, False))
+
+    def test_get_mtd_agency_spend_local_currency(self):
+        self._set_up_local_currency_daily_statement()
+        accounts = dash.models.Account.objects.filter(
+            agency=self.agency_local,
+        ).filter_by_user(self.user)
+        self.assertEqual({
+            'e_media_cost': 10,
+            'et_cost': 20,
+            'etfm_cost': 30,
+        }, dash.infobox_helpers.get_mtd_agency_spend(
+            accounts, False))
+        self.assertEqual({
+            'e_media_cost': 12,
+            'et_cost': 24,
+            'etfm_cost': 36,
+        }, dash.infobox_helpers.get_mtd_agency_spend(
+            accounts, True))
+
+    def test_yesterday_agency_spend(self):
+        accounts = dash.models.Account.objects.all().filter_by_user(self.user)
+        self.assertEqual({
+            'e_yesterday_cost': 0,
+            'yesterday_et_cost': 0,
+            'yesterday_etfm_cost': 0,
+        }, dash.infobox_helpers.get_yesterday_agency_spend(
+            accounts, False))
+
+        today = datetime.datetime.utcnow()
+        dash.models.BudgetDailyStatement.objects.create(
+            budget=self.budget,
+            date=today - datetime.timedelta(1),
+            media_spend_nano=decimal.Decimal('10e9'),
+            data_spend_nano=decimal.Decimal('10e9'),
+            license_fee_nano=decimal.Decimal('10e9'),
+            margin_nano=0,
+        )
+        self.assertEqual({
+            'e_yesterday_cost': 20,
+            'yesterday_et_cost': 20,
+            'yesterday_etfm_cost': 30,
+        }, dash.infobox_helpers.get_yesterday_agency_spend(
+            accounts, False))
+
+    def test_yesterday_agency_spend_local_currency(self):
+        self._set_up_local_currency_daily_statement()
+        accounts = dash.models.Account.objects.filter(
+            agency=self.agency_local
+        ).filter_by_user(self.user)
+        self.assertEqual({
+            'e_yesterday_cost': 20,
+            'yesterday_et_cost': 20,
+            'yesterday_etfm_cost': 30,
+        }, dash.infobox_helpers.get_yesterday_agency_spend(
+            accounts, False))
+        self.assertEqual({
+            'e_yesterday_cost': 24,
+            'yesterday_et_cost': 24,
+            'yesterday_etfm_cost': 36,
+        }, dash.infobox_helpers.get_yesterday_agency_spend(
+            accounts, True))
+
+    def test_get_mtd_all_accounts_spend(self):
+        self.assertEqual({
+            'e_media_cost': 0,
+            'et_cost': 0,
+            'etfm_cost': 0,
+        }, dash.infobox_helpers.get_mtd_all_accounts_spend(
+            dash.models.Account.objects.all(), False))
+
+        today = datetime.datetime.utcnow()
+        dash.models.BudgetDailyStatement.objects.create(
+            budget=self.budget,
+            date=today,
+            media_spend_nano=decimal.Decimal('10e9'),
+            data_spend_nano=decimal.Decimal('10e9'),
+            license_fee_nano=decimal.Decimal('10e9'),
+            margin_nano=0,
+        )
+        self.assertEqual({
+            'e_media_cost': 10,
+            'et_cost': 20,
+            'etfm_cost': 30,
+        }, dash.infobox_helpers.get_mtd_all_accounts_spend(
+            dash.models.Account.objects.all(), False))
+
+        aproximately_one_month_ago = datetime.datetime.utcnow() - datetime.timedelta(days=31)
+        dash.models.BudgetDailyStatement.objects.create(
+            budget=self.budget,
+            date=aproximately_one_month_ago,
+            media_spend_nano=decimal.Decimal('10e9'),
+            data_spend_nano=decimal.Decimal('10e9'),
+            license_fee_nano=decimal.Decimal('10e9'),
+            margin_nano=0,
+        )
+        # shouldn't change because it's month to date
+        self.assertEqual({
+            'e_media_cost': 10,
+            'et_cost': 20,
+            'etfm_cost': 30,
+        }, dash.infobox_helpers.get_mtd_all_accounts_spend(dash.models.Account.objects.all(), False))
+
+        self.assertEqual({
+            'e_media_cost': 0,
+            'et_cost': 0,
+            'etfm_cost': 0,
+        }, dash.infobox_helpers.get_mtd_all_accounts_spend(
+            dash.models.Account.objects.filter(agency=self.agency), False))
+
+        account = dash.models.Account.objects.get(pk=1)
+        account.agency = self.agency
+        account.save(fake_request(self.user))
+
+        self.assertEqual({
+            'e_media_cost': 10,
+            'et_cost': 20,
+            'etfm_cost': 30,
+        }, dash.infobox_helpers.get_mtd_all_accounts_spend(
+            dash.models.Account.objects.filter(agency=self.agency), False))
+
+        self.assertEqual({
+            'e_media_cost': 0,
+            'et_cost': 0,
+            'etfm_cost': 0,
+        }, dash.infobox_helpers.get_mtd_all_accounts_spend(
+            dash.models.Account.objects.filter(settings__account_type=dash.constants.AccountType.PILOT), False))
+
+        new_acs = account.get_current_settings().copy_settings()
+        new_acs.account_type = dash.constants.AccountType.PILOT
+        new_acs.save(fake_request(self.user))
+
+        self.assertEqual({
+            'e_media_cost': 10,
+            'et_cost': 20,
+            'etfm_cost': 30,
+        }, dash.infobox_helpers.get_mtd_all_accounts_spend(
+            dash.models.Account.objects.filter(settings__account_type=dash.constants.AccountType.PILOT), False))
+
+    def test_get_mtd_all_accounts_spend_local_currency(self):
+        self._set_up_local_currency_daily_statement()
+        accounts = dash.models.Account.objects.filter(
+            agency=self.agency_local
+        ).filter_by_user(self.user)
+        self.assertEqual({
+            'e_media_cost': 10,
+            'et_cost': 20,
+            'etfm_cost': 30,
+        }, dash.infobox_helpers.get_mtd_all_accounts_spend(accounts, False))
+        self.assertEqual({
+            'e_media_cost': 12,
+            'et_cost': 24,
+            'etfm_cost': 36,
+        }, dash.infobox_helpers.get_mtd_all_accounts_spend(accounts, True))
 
     def test_count_active_accounts(self):
         today = datetime.datetime.utcnow()
@@ -557,6 +761,51 @@ class InfoBoxAccountHelpersTest(TestCase):
         john.last_login = datetime.datetime.utcnow() - datetime.timedelta(days=1)
         john.save()
         self.assertEqual(1, dash.infobox_helpers.count_weekly_logged_in_users(None, None))
+
+    def test_get_yesterday_account_spend(self):
+        account = dash.models.Account.objects.get(pk=1)
+        available_credit = dash.infobox_helpers.get_yesterday_account_spend(
+            account, False)
+        self.assertEqual({
+            'e_yesterday_cost': 0,
+            'yesterday_et_cost': 0,
+            'yesterday_etfm_cost': 0,
+        }, available_credit)
+
+        dash.models.BudgetDailyStatement.objects.create(
+            budget=self.budget,
+            date=datetime.datetime.utcnow() - datetime.timedelta(days=1),
+            media_spend_nano=decimal.Decimal('10e9'),
+            data_spend_nano=decimal.Decimal('10e9'),
+            license_fee_nano=decimal.Decimal('10e9'),
+            margin_nano=0,
+        )
+
+        account = dash.models.Account.objects.get(pk=1)
+        available_credit = dash.infobox_helpers.get_yesterday_account_spend(
+            account, False)
+        self.assertEqual({
+            'e_yesterday_cost': 20,
+            'yesterday_et_cost': 20,
+            'yesterday_etfm_cost': 30,
+        }, available_credit)
+
+    def test_get_yesterday_account_spend_local_currency(self):
+        self._set_up_local_currency_daily_statement()
+        available_credit = dash.infobox_helpers.get_yesterday_account_spend(
+            self.account_local, False)
+        self.assertEqual({
+            'e_yesterday_cost': 20,
+            'yesterday_et_cost': 20,
+            'yesterday_etfm_cost': 30,
+        }, available_credit)
+        available_credit = dash.infobox_helpers.get_yesterday_account_spend(
+            self.account_local, True)
+        self.assertEqual({
+            'e_yesterday_cost': 24,
+            'yesterday_et_cost': 24,
+            'yesterday_etfm_cost': 36,
+        }, available_credit)
 
     def test_get_adgroup_running_status(self):
         # adgroup is inactive and no active sources
