@@ -137,6 +137,34 @@ class EmailAPITestCase(TestCase):
             'tags': ['OUTBRAIN_ACCOUNTS_RUNNING_OUT']
         })
 
+    @patch('dash.constants.EmailTemplateType.get_name', return_value='')
+    @patch('dash.models.EmailTemplate.objects.get')
+    def test_params_from_template_arguments(self, mock_template, mock_type):
+        mock_template.return_value = mock_template
+        mock_template.subject = 'Testing'
+        mock_template.recipients = 'test@test.com,'
+        mock_template.body = """
+Test e-mail from {{ user }}.
+{% if campaigns %}
+{% for name in campaigns %}
+{{ name }}
+{% endfor %}
+{% else %}
+No campaigns to list.
+{% endif %}
+"""
+        params = email_helper.params_from_template(
+            None,
+            user='Admin',
+            campaigns=['C1', 'C2', 'C3'],
+        )
+        self.assertEqual(params, {
+            'subject': 'Testing',
+            'body': '\nTest e-mail from Admin.\n\n\nC1\n\nC2\n\nC3\n\n\n',
+            'additional_recipients': ['test@test.com'],
+            'tags': [''],
+        })
+
 
 @override_settings(
     SEND_NOTIFICATION_MAIL=True

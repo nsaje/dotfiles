@@ -10,6 +10,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.core.mail.message import EmailMultiAlternatives
 from django.template.loader import render_to_string
+from django.template import Context, Template
 
 import dash.constants
 import dash.models
@@ -161,9 +162,10 @@ def _send_email(email):
 
 def params_from_template(template_type, **kwargs):
     template = dash.models.EmailTemplate.objects.get(template_type=template_type)
+    context = Context(kwargs)
     return dict(
-        subject=template.subject.format(**kwargs),
-        body=template.body.format(**kwargs),
+        subject=Template(template.subject).render(context),
+        body=Template(template.body).render(context),
         additional_recipients=_prepare_recipients(template.recipients),
         tags=[dash.constants.EmailTemplateType.get_name(template_type)]
     )
