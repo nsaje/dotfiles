@@ -1,20 +1,20 @@
 import {NgModule} from '@angular/core';
 
 import {InventoryPlanningModule} from '../features/inventory-planning/inventory-planning.module';
-import {InventoryPlanningViewComponent} from './inventory-planning/inventory-planning.view';
+import {InventoryPlanningView} from './inventory-planning/inventory-planning.view';
 
 @NgModule({
     imports: [
         InventoryPlanningModule,
     ],
     declarations: [
-        InventoryPlanningViewComponent,
+        InventoryPlanningView,
     ],
     exports: [
-        InventoryPlanningViewComponent,
+        InventoryPlanningView,
     ],
     entryComponents: [
-        InventoryPlanningViewComponent,
+        InventoryPlanningView,
     ],
 })
 export class ViewsModule {}

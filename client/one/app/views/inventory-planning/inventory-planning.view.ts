@@ -10,7 +10,7 @@ const FILTER_URL_PARAMS = ['countries', 'publishers', 'devices', 'sources'];
     selector: 'zem-inventory-planning-view',
     templateUrl: './inventory-planning.view.html',
 })
-export class InventoryPlanningViewComponent implements OnInit {
+export class InventoryPlanningView implements OnInit {
     preselectedFilters: {key: string, value: string}[];
 
     constructor (@Inject('ajs$location') private ajs$location: any) {}
@@ -49,5 +49,5 @@ export class InventoryPlanningViewComponent implements OnInit {
 declare var angular: angular.IAngularStatic;
 angular.module('one.downgraded').directive(
     'zemInventoryPlanningView',
-    downgradeComponent({component: InventoryPlanningViewComponent})
+    downgradeComponent({component: InventoryPlanningView})
 );

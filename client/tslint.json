@@ -206,7 +206,8 @@
     "use-pipe-transform-interface": true,
     "component-class-suffix": [
       true,
-      "Component"
+      "Component",
+      "View"
     ],
     "directive-class-suffix": [
       true,
