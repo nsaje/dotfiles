@@ -57,13 +57,13 @@ def _log_source_errors(stats):
 
 
 def _add_source_stat(ad_group, source, spend):
-    yahoo_account = ad_group.campaign.account.yahoo_account
-    if yahoo_account:
-        budgets_tz = yahoo_account.budgets_tz
-    else:
-        budgets_tz = core.features.yahoo_accounts.get_default_timezone()
-    tz_today = dates_helper.tz_today(budgets_tz)
+    budgets_tz = dates_helper.DEFAULT_TIME_ZONE
+    if source.source_type.type == dash.constants.SourceType.YAHOO:
+        yahoo_account = ad_group.campaign.account.yahoo_account
+        if yahoo_account:
+            budgets_tz = yahoo_account.budgets_tz
 
+    tz_today = dates_helper.tz_today(budgets_tz)
     RealTimeDataHistory.objects.create(
         ad_group=ad_group,
         source=source,
