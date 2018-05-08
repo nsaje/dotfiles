@@ -14,7 +14,7 @@ def get(ad_group):
         'publisher': item.publisher,
         'source': item.source,
         'modifier': item.modifier,
-    } for item in PublisherBidModifier.objects.filter(ad_group=ad_group).order_by('pk')]
+    } for item in PublisherBidModifier.objects.filter(ad_group=ad_group).select_related('source').order_by('pk')]
 
 
 @transaction.atomic

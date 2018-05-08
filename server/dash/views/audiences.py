@@ -110,7 +110,12 @@ class AudiencesView(api_common.BaseApiView):
         return self.create_api_response(self._get_response_dict(audience, rules))
 
     def _get_audiences(self, request, account):
-        audiences = models.Audience.objects.filter(pixel__account=account).order_by('name')
+        audiences = (
+            models.Audience.objects.filter(pixel__account=account)
+            .prefetch_related('audiencerule_set')
+            .select_related('pixel__account')
+            .order_by('name')
+        )
 
         if request.GET.get('include_archived', '') != '1':
             audiences = audiences.filter(archived=False)

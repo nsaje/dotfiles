@@ -1432,7 +1432,7 @@ class CreditLineItemAdminForm(forms.ModelForm):
         # archived state is stored in settings, we need to have a more stupid
         # query
         not_archived = [
-            a.pk for a in models.Account.objects.all() if not a.is_archived()
+            a.pk for a in models.Account.objects.all().select_related('settings') if not a.is_archived()
         ]
         # workaround to not change model __unicode__ methods
         self.fields[
