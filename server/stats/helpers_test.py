@@ -360,24 +360,17 @@ class MulticurrencyHelpersTest(TestCase):
         self.user = zemauth.models.User.objects.get(pk=1)
 
     def test_get_report_currency_no_accounts(self):
-        test_helper.add_permissions(self.user, ['can_see_stats_in_local_currency'])
         self.assertEqual(helpers.get_report_currency(self.user, []), dash.constants.Currency.USD)
 
-    def test_get_report_currency_no_permission(self):
-        self.assertEqual(helpers.get_report_currency(self.user, [{}]), dash.constants.Currency.USD)
-
     def test_get_report_currency_single_account(self):
-        test_helper.add_permissions(self.user, ['can_see_stats_in_local_currency'])
         account = models.Account.objects.get(pk=2)
         self.assertEqual(helpers.get_report_currency(self.user, [account]), dash.constants.Currency.EUR)
 
     def test_get_report_currency_multiple_accounts_different_currency(self):
-        test_helper.add_permissions(self.user, ['can_see_stats_in_local_currency'])
         accounts = models.Account.objects.all()
         self.assertEqual(helpers.get_report_currency(self.user, accounts), dash.constants.Currency.USD)
 
     def test_get_report_currency_multiple_accounts_same_currency(self):
-        test_helper.add_permissions(self.user, ['can_see_stats_in_local_currency'])
         account = models.Account.objects.get(pk=2)
         self.assertEqual(helpers.get_report_currency(self.user, [account, account]), dash.constants.Currency.EUR)
 

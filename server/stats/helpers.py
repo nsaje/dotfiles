@@ -280,8 +280,8 @@ def extract_rs_order_field(order, target_dimension):
     return prefix + order_field
 
 
-def get_report_currency(user, accounts, permission='zemauth.can_see_stats_in_local_currency'):
-    if len(accounts) == 0 or not user.has_perm(permission):
+def get_report_currency(user, accounts, permission=None):
+    if len(accounts) == 0 or (permission and not user.has_perm(permission)):
         return dash.constants.Currency.USD
 
     currency = accounts[0].currency

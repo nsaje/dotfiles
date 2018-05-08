@@ -260,8 +260,6 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
         self._assert_response(response, source_id, source.name, with_conversion_goals=False)
 
     def test_get_by_source_local_currency(self):
-        perm = authmodels.Permission.objects.get(codename='can_see_stats_in_local_currency')
-        self.user.user_permissions.add(perm)
         source_id = 3
 
         self._prepare_mock('source_id', source_id)
@@ -295,8 +293,6 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
         self._assert_response(response, campaign_id, campaign.name, with_conversion_goals=False)
 
     def test_get_by_campaign_local_currency(self):
-        perm = authmodels.Permission.objects.get(codename='can_see_stats_in_local_currency')
-        self.user.user_permissions.add(perm)
         campaign_id = 87
 
         self._prepare_mock('campaign_id', campaign_id)
@@ -332,8 +328,6 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
         self._assert_response(response, source_id, source.name)
 
     def test_get_by_source_local_currency(self):
-        perm = authmodels.Permission.objects.get(codename='can_see_stats_in_local_currency')
-        self.user.user_permissions.add(perm)
         source_id = 3
 
         self._prepare_mock('source_id', source_id)
@@ -367,8 +361,6 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
         self._assert_response(response, ad_group_id, ad_group.name)
 
     def test_get_by_ad_group_local_currency(self):
-        perm = authmodels.Permission.objects.get(codename='can_see_stats_in_local_currency')
-        self.user.user_permissions.add(perm)
         ad_group_id = 876
 
         self._prepare_mock('ad_group_id', ad_group_id)
@@ -434,8 +426,6 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
         self._assert_response(response, source_id, source.name)
 
     def test_get_by_source_local_currency(self):
-        perm = authmodels.Permission.objects.get(codename='can_see_stats_in_local_currency')
-        self.user.user_permissions.add(perm)
         source_id = 3
 
         self._prepare_mock('source_id', source_id)
@@ -500,8 +490,6 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
         self._assert_response(response, content_ad_id, content_ad.title)
 
     def test_get_content_ads_local_currency(self):
-        perm = authmodels.Permission.objects.get(codename='can_see_stats_in_local_currency')
-        self.user.user_permissions.add(perm)
         content_ad_id = 8765
 
         self._prepare_mock('content_ad_id', content_ad_id)
