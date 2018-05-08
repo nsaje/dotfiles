@@ -192,13 +192,13 @@ def _get_yesterday_spend(breakdown, constraints, use_local_currency):
     }
     for row in query_results:
         if use_local_currency:
-            ret['e_yesterday_cost'] += row.get('local_e_yesterday_cost', 0)
-            ret['yesterday_et_cost'] += row.get('local_yesterday_et_cost', 0)
-            ret['yesterday_etfm_cost'] += row.get('local_yesterday_etfm_cost', 0)
+            ret['e_yesterday_cost'] += row['local_e_yesterday_cost'] or 0
+            ret['yesterday_et_cost'] += row['local_yesterday_et_cost'] or 0
+            ret['yesterday_etfm_cost'] += row['local_yesterday_etfm_cost'] or 0
         else:
-            ret['e_yesterday_cost'] += row.get('e_yesterday_cost', 0)
-            ret['yesterday_et_cost'] += row.get('yesterday_et_cost', 0)
-            ret['yesterday_etfm_cost'] += row.get('yesterday_etfm_cost', 0)
+            ret['e_yesterday_cost'] += row['e_yesterday_cost'] or 0
+            ret['yesterday_et_cost'] += row['yesterday_et_cost'] or 0
+            ret['yesterday_etfm_cost'] += row['yesterday_etfm_cost'] or 0
     return ret
 
 
@@ -237,13 +237,13 @@ def _get_mtd_spend(breakdown, constraints, use_local_currency):
     }
     for row in query_results:
         if use_local_currency:
-            ret['e_media_cost'] += row.get('local_e_media_cost', 0)
-            ret['et_cost'] += row.get('local_et_cost', 0)
-            ret['etfm_cost'] += row.get('local_etfm_cost', 0)
+            ret['e_media_cost'] += row['local_e_media_cost'] or 0
+            ret['et_cost'] += row['local_et_cost'] or 0
+            ret['etfm_cost'] += row['local_etfm_cost'] or 0
         else:
-            ret['e_media_cost'] += row.get('e_media_cost', 0)
-            ret['et_cost'] += row.get('et_cost', 0)
-            ret['etfm_cost'] += row.get('etfm_cost', 0)
+            ret['e_media_cost'] += row['e_media_cost'] or 0
+            ret['et_cost'] += row['et_cost'] or 0
+            ret['etfm_cost'] += row['etfm_cost'] or 0
     return ret
 
 
