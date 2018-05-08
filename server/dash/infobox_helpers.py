@@ -136,53 +136,42 @@ def get_total_campaign_budgets_amount(user, campaign, until_date=None):
 
 
 def get_yesterday_adgroup_spend(user, ad_group, use_local_currency):
-    yesterday = utils.dates_helper.local_yesterday()
-    query_results = redshiftapi.api_breakdowns.query_with_background_cache(
-        ['ad_group_id'],
-        constraints={
-            'date__gte': yesterday,
-            'date__lte': yesterday,
-            'ad_group_id': [ad_group.id],
-        },
-        parents=None,
-        goals=None,
-        use_publishers_view=False,
-        metrics=[
-            'e_yesterday_cost',
-            'yesterday_et_cost',
-            'yesterday_etfm_cost',
-            'local_e_yesterday_cost',
-            'local_yesterday_et_cost',
-            'local_yesterday_etfm_cost',
-        ]
-    )
-
-    ret = {
-        'e_yesterday_cost': 0,
-        'yesterday_et_cost': 0,
-        'yesterday_etfm_cost': 0,
+    constraints = {
+        'ad_group_id': [ad_group.id]
     }
-    for row in query_results:
-        if use_local_currency:
-            ret['e_yesterday_cost'] += row['local_e_yesterday_cost']
-            ret['yesterday_et_cost'] += row['local_yesterday_et_cost']
-            ret['yesterday_etfm_cost'] += row['local_yesterday_etfm_cost']
-        else:
-            ret['e_yesterday_cost'] += row['e_yesterday_cost']
-            ret['yesterday_et_cost'] += row['yesterday_et_cost']
-            ret['yesterday_etfm_cost'] += row['yesterday_etfm_cost']
-    return ret
+    return _get_yesterday_spend('ad_group_id', constraints, use_local_currency)
 
 
 def get_yesterday_campaign_spend(user, campaign, use_local_currency):
+    constraints = {
+        'campaign_id': [campaign.id]
+    }
+    return _get_yesterday_spend('campaign_id', constraints, use_local_currency)
+
+
+def get_yesterday_account_spend(account, use_local_currency):
+    constraints = {
+        'account_id': [account.id]
+    }
+    return _get_yesterday_spend('account_id', constraints, use_local_currency)
+
+
+def get_yesterday_accounts_spend(accounts, use_local_currency):
+    constraints = {
+        'account_id': [account.id for account in accounts]
+    }
+    return _get_yesterday_spend('account_id', constraints, use_local_currency)
+
+
+def _get_yesterday_spend(breakdown, constraints, use_local_currency):
     yesterday = utils.dates_helper.local_yesterday()
+    constraints.update({
+        'date__gte': yesterday,
+        'date__lte': yesterday,
+    })
     query_results = redshiftapi.api_breakdowns.query_with_background_cache(
-        ['campaign_id'],
-        constraints={
-            'date__gte': yesterday,
-            'date__lte': yesterday,
-            'campaign_id': [campaign.id],
-        },
+        [breakdown],
+        constraints,
         parents=None,
         goals=None,
         use_publishers_view=False,
@@ -203,109 +192,59 @@ def get_yesterday_campaign_spend(user, campaign, use_local_currency):
     }
     for row in query_results:
         if use_local_currency:
-            ret['e_yesterday_cost'] += row['local_e_yesterday_cost']
-            ret['yesterday_et_cost'] += row['local_yesterday_et_cost']
-            ret['yesterday_etfm_cost'] += row['local_yesterday_etfm_cost']
+            ret['e_yesterday_cost'] += row.get('local_e_yesterday_cost', 0)
+            ret['yesterday_et_cost'] += row.get('local_yesterday_et_cost', 0)
+            ret['yesterday_etfm_cost'] += row.get('local_yesterday_etfm_cost', 0)
         else:
-            ret['e_yesterday_cost'] += row['e_yesterday_cost']
-            ret['yesterday_et_cost'] += row['yesterday_et_cost']
-            ret['yesterday_etfm_cost'] += row['yesterday_etfm_cost']
+            ret['e_yesterday_cost'] += row.get('e_yesterday_cost', 0)
+            ret['yesterday_et_cost'] += row.get('yesterday_et_cost', 0)
+            ret['yesterday_etfm_cost'] += row.get('yesterday_etfm_cost', 0)
     return ret
 
 
-def get_yesterday_account_spend(account, use_local_currency):
-    yesterday = utils.dates_helper.local_yesterday()
-
-    daily_statements = dash.models.BudgetDailyStatement.objects.filter(
-        budget__campaign__account=account,
-        date=yesterday,
-    )
-
-    if use_local_currency:
-        spend_data = daily_statements.calculate_local_spend_data()
-    else:
-        spend_data = daily_statements.calculate_spend_data()
-    return dict(
-        e_yesterday_cost=spend_data.get('et_total', Decimal(0)),
-        yesterday_et_cost=spend_data.get('et_total', Decimal(0)),
-        yesterday_etfm_cost=spend_data.get('etfm_total', Decimal(0)),
-    )
+def get_mtd_accounts_spend(accounts, use_local_currency):
+    constraints = {
+        'account_id': [account.id for account in accounts]
+    }
+    return _get_mtd_spend('account_id', constraints, use_local_currency)
 
 
-def get_yesterday_all_accounts_spend(accounts, use_local_currency):
-    yesterday = utils.dates_helper.local_yesterday()
-    daily_statements = dash.models.BudgetDailyStatement.objects.filter(
-        date=yesterday,
-        budget__campaign__account__in=accounts,
-    )
-
-    if use_local_currency:
-        spend_data = daily_statements.calculate_local_spend_data()
-    else:
-        spend_data = daily_statements.calculate_spend_data()
-
-    return dict(
-        e_yesterday_cost=spend_data.get('et_total', Decimal(0)),
-        yesterday_et_cost=spend_data.get('et_total', Decimal(0)),
-        yesterday_etfm_cost=spend_data.get('etfm_total', Decimal(0)),
-    )
-
-
-def get_yesterday_agency_spend(accounts, use_local_currency):
-    yesterday = utils.dates_helper.local_yesterday()
-
-    daily_statements = dash.models.BudgetDailyStatement.objects.filter(
-        date=yesterday,
-        budget__campaign__account__in=accounts
-    )
-
-    if use_local_currency:
-        spend_data = daily_statements.calculate_local_spend_data()
-    else:
-        spend_data = daily_statements.calculate_spend_data()
-
-    return dict(
-        e_yesterday_cost=spend_data.get('et_total', Decimal(0)),
-        yesterday_et_cost=spend_data.get('et_total', Decimal(0)),
-        yesterday_etfm_cost=spend_data.get('etfm_total', Decimal(0)),
-    )
-
-
-def get_mtd_all_accounts_spend(accounts, use_local_currency):
+def _get_mtd_spend(breakdown, constraints, use_local_currency):
     start_date = utils.dates_helper.local_today().replace(day=1)
-    daily_statements = dash.models.BudgetDailyStatement.objects.all().filter(
-        date__gte=start_date,
-        budget__campaign__account__in=accounts,
+    constraints.update({
+        'date__gte': start_date,
+    })
+    query_results = redshiftapi.api_breakdowns.query_with_background_cache(
+        [breakdown],
+        constraints,
+        parents=None,
+        goals=None,
+        use_publishers_view=False,
+        metrics=[
+            'e_media_cost',
+            'et_cost',
+            'etfm_cost',
+            'local_e_media_cost',
+            'local_et_cost',
+            'local_etfm_cost',
+        ]
     )
 
-    if use_local_currency:
-        spend_data = daily_statements.calculate_local_spend_data()
-    else:
-        spend_data = daily_statements.calculate_spend_data()
-
-    return dict(
-        e_media_cost=spend_data.get('media', Decimal(0)),
-        et_cost=spend_data.get('et_total', Decimal(0)),
-        etfm_cost=spend_data.get('etfm_total', Decimal(0)),
-    )
-
-
-def get_mtd_agency_spend(accounts, use_local_currency):
-    start_date = utils.dates_helper.local_today().replace(day=1)
-
-    daily_statements = dash.models.BudgetDailyStatement.objects.filter(
-        budget__campaign__account__in=accounts
-    ).filter(date__gte=start_date)
-
-    if use_local_currency:
-        spend_data = daily_statements.calculate_local_spend_data()
-    else:
-        spend_data = daily_statements.calculate_spend_data()
-    return dict(
-        e_media_cost=spend_data.get('media', Decimal(0)),
-        et_cost=spend_data.get('et_total', Decimal(0)),
-        etfm_cost=spend_data.get('etfm_total', Decimal(0)),
-    )
+    ret = {
+        'e_media_cost': 0,
+        'et_cost': 0,
+        'etfm_cost': 0,
+    }
+    for row in query_results:
+        if use_local_currency:
+            ret['e_media_cost'] += row.get('local_e_media_cost', 0)
+            ret['et_cost'] += row.get('local_et_cost', 0)
+            ret['etfm_cost'] += row.get('local_etfm_cost', 0)
+        else:
+            ret['e_media_cost'] += row.get('e_media_cost', 0)
+            ret['et_cost'] += row.get('et_cost', 0)
+            ret['etfm_cost'] += row.get('etfm_cost', 0)
+    return ret
 
 
 def calculate_daily_ad_group_cap(ad_group, use_local_currency):
