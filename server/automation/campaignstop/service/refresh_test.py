@@ -1,7 +1,7 @@
 import datetime
 import decimal
 import mock
-import itertools
+# import itertools
 
 from django.conf import settings
 from django.test import TestCase
