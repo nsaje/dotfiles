@@ -306,10 +306,7 @@ class CampaignBudgetView(api_common.BaseApiView):
         return self.create_api_response(item.pk)
 
     def _prepare_item(self, user, campaign, item):
-        if user.has_perm('zemauth.can_manage_budgets_in_local_currency'):
-            spend_data = item.get_local_spend_data()
-        else:
-            spend_data = item.get_spend_data()
+        spend_data = item.get_local_spend_data()
 
         if campaign.account.uses_bcm_v2:
             spend = spend_data['etfm_total']
@@ -323,7 +320,7 @@ class CampaignBudgetView(api_common.BaseApiView):
             'credit': item.credit.id,  # FIXME(nsaje) hack to return credit id in REST API
             'end_date': item.end_date,
             'state': item.state(),
-            'currency': item.credit.currency if user.has_perm('zemauth.can_manage_budgets_in_local_currency') else constants.Currency.USD,
+            'currency': item.credit.currency,
             'total': allocated,
             'spend': spend,
             'available': allocated - spend,
@@ -341,16 +338,12 @@ class CampaignBudgetView(api_common.BaseApiView):
         return result
 
     def _get_response(self, user, campaign):
-        currency = constants.Currency.USD
-        if user.has_perm('zemauth.can_manage_budgets_in_local_currency'):
-            currency = campaign.account.currency
-
         budget_items = models.BudgetLineItem.objects.filter(
             campaign_id=campaign.id,
         ).select_related('credit').order_by('-created_dt').annotate_spend_data()
         credit_items = (models.CreditLineItem.objects
                         .filter_by_account(campaign.account)
-                        .filter(currency=currency)
+                        .filter(currency=campaign.account.currency)
                         .prefetch_related('budgets'))
 
         active_budget = self._get_active_budget(user, campaign, budget_items)
@@ -373,7 +366,7 @@ class CampaignBudgetView(api_common.BaseApiView):
                 'available': credit.effective_amount() - credit.get_allocated_amount(),
                 'start_date': credit.start_date,
                 'end_date': credit.end_date,
-                'currency': credit.currency if user.has_perm('zemauth.can_manage_budgets_in_local_currency') else constants.Currency.USD,
+                'currency': credit.currency,
                 'comment': credit.comment,
                 'is_available': credit.is_available(),
                 'is_agency': credit.is_agency(),
@@ -407,7 +400,7 @@ class CampaignBudgetView(api_common.BaseApiView):
             'lifetime': {
                 'campaign_spend': Decimal('0.0000'),
             },
-            'currency': campaign.account.currency if user.has_perm('zemauth.can_manage_budgets_in_local_currency') else constants.Currency.USD,
+            'currency': campaign.account.currency,
         }
 
         if _should_add_platform_costs(user, campaign):
@@ -427,10 +420,7 @@ class CampaignBudgetView(api_common.BaseApiView):
             if item.state() == constants.BudgetLineItemState.PENDING:
                 continue
 
-            if user.has_perm('zemauth.can_manage_budgets_in_local_currency'):
-                spend_data = item.get_local_spend_data()
-            else:
-                spend_data = item.get_spend_data()
+            spend_data = item.get_local_spend_data()
 
             if campaign.account.uses_bcm_v2:
                 data['lifetime']['campaign_spend'] += spend_data['etfm_total']
