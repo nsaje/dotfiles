@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.core import urlresolvers
 
+import utils.admin_common
 from .reportjob import ReportJob
 
 
@@ -23,6 +24,8 @@ class IsScheduledListFilter(admin.SimpleListFilter):
 
 class ReportJobAdmin(admin.ModelAdmin):
     model = ReportJob
+    paginator = utils.admin_common.LargeTablePaginator
+    show_full_result_count = False
     list_display = (
         'id',
         'created_dt',
@@ -48,8 +51,6 @@ class ReportJobAdmin(admin.ModelAdmin):
     )
 
     search_fields = ('user__email', )
-
-    ordering = ('-created_dt', )
 
     def get_queryset(self, request):
         qs = super(ReportJobAdmin, self).get_queryset(request)
