@@ -164,10 +164,7 @@ angular.module('one.widgets').controller('zemEditCampaignGoalModalCtrl', functio
 
     $scope.campaignGoalKPIs = angular.copy(options.campaignGoalKPIs).filter(isGoalAvailable).map(function (goalKPI) {
         if (goalKPI.unit === '__CURRENCY__') {
-            goalKPI.unit = zemMulticurrencyService.getAppropriateCurrencySymbol(
-                activeAccount,
-                ['zemauth.can_manage_goals_in_local_currency']
-            );
+            goalKPI.unit = zemMulticurrencyService.getAppropriateCurrencySymbol(activeAccount);
         }
         return goalKPI;
     });

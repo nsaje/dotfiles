@@ -22,7 +22,7 @@ angular.module('one.common').filter('campaignGoalText', function ($filter, zemNa
             var formattedValue = zemMulticurrencyService.getValueInAppropriateCurrency(
                 goal.value,
                 account,
-                ['zemauth.can_manage_goals_in_local_currency'],
+                [],
                 fractionSize
             );
             return formattedValue + ' ' + constants.campaignGoalValueText[goal.type];

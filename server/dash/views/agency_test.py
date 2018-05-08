@@ -2072,17 +2072,20 @@ class CampaignSettingsTest(TestCase):
         self.assertTrue(content['success'])
         self.assertEqual(models.ConversionGoal.objects.all()[0].name, 'test')
 
+    @patch.object(core.multicurrency, 'get_exchange_rate')
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
-    def test_put_goals_modified(self, p1, p3):
+    def test_put_goals_modified(self, p1, p3, mock_get_exchange_rate):
+        mock_get_exchange_rate.return_value = Decimal('2.0')
         goal = models.CampaignGoal.objects.create_unsafe(
-            type=1,
+            type=constants.CampaignGoalKPI.CPC,
             primary=True,
             campaign_id=1,
         )
         models.CampaignGoalValue.objects.create(
             campaign_goal=goal,
-            value=Decimal('0.1')
+            value=Decimal('0.1'),
+            local_value=Decimal('0.2')
         )
 
         add_permissions(self.user, [
@@ -2109,7 +2112,7 @@ class CampaignSettingsTest(TestCase):
                 'goals': {
                     'added': [],
                     'removed': [],
-                    'modified': {goal.pk: '0.2'},
+                    'modified': {goal.pk: '0.4'},
                     'primary': goal.pk
                 }
             }),
@@ -2123,7 +2126,9 @@ class CampaignSettingsTest(TestCase):
             campaign_goal__campaign_id=1
         ).order_by('created_dt')
         self.assertEqual(values[0].value, Decimal('0.1000'))
+        self.assertEqual(values[0].local_value, Decimal('0.2000'))
         self.assertEqual(values[1].value, Decimal('0.2000'))
+        self.assertEqual(values[1].local_value, Decimal('0.4000'))
 
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')

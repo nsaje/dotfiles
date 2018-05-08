@@ -109,10 +109,7 @@ angular.module('one.widgets').service('zemChartParser', function ($window, zemCh
     }
 
     function updateCampaignGoals (chart, goals, campaignGoals) {
-        var currency = zemMulticurrencyService.getAppropriateCurrency(
-            zemNavigationNewService.getActiveAccount(),
-            ['zemauth.can_manage_goals_in_local_currency']
-        );
+        var currency = zemMulticurrencyService.getAppropriateCurrency(zemNavigationNewService.getActiveAccount());
         var commonYAxis = true;
         goals.forEach(function (goal) {
             var metric = goal.metric;

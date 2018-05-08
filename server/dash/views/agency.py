@@ -483,11 +483,7 @@ class CampaignSettings(api_common.BaseApiView):
 
         for goal_id, value in changes['modified'].items():
             goal = models.CampaignGoal.objects.get(pk=goal_id)
-
-            if request.user.has_perm('zemauth.can_manage_goals_in_local_currency'):
-                goal.add_local_value(request, value)
-            else:
-                goal.add_value(request, value)
+            goal.add_local_value(request, value)
 
         removed_goals = {goal['id'] for goal in changes['removed']}
         for goal_id in removed_goals:
@@ -515,10 +511,9 @@ class CampaignSettings(api_common.BaseApiView):
                 )
             )
         ).select_related('conversion_goal').order_by('id')
-        use_local_values = request.user.has_perm('zemauth.can_manage_goals_in_local_currency')
 
         for campaign_goal in goals:
-            goal_blob = campaign_goal.to_dict(with_values=True, local_values=use_local_values)
+            goal_blob = campaign_goal.to_dict(with_values=True, local_values=True)
             conversion_goal = campaign_goal.conversion_goal
             if conversion_goal is not None and\
                     conversion_goal.type == constants.ConversionGoalType.PIXEL:

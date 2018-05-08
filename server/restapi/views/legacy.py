@@ -520,30 +520,25 @@ class CampaignGoalsViewDetails(RESTAPIBaseView):
     def get(self, request, campaign_id, goal_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         goal = dash.models.CampaignGoal.objects.get(pk=goal_id, campaign=campaign)
-        use_local_values = request.user.has_perm('zemauth.can_manage_goals_in_local_currency')
         return self.response_ok(
-            CampaignGoalsSerializer(goal.to_dict(with_values=True, local_values=use_local_values)).data
+            CampaignGoalsSerializer(goal.to_dict(with_values=True, local_values=True)).data
         )
 
     def put(self, request, campaign_id, goal_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
-        use_local_values = request.user.has_perm('zemauth.can_manage_goals_in_local_currency')
         serializer = CampaignGoalPutSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         with transaction.atomic():
             goal = dash.models.CampaignGoal.objects.get(pk=goal_id, campaign=campaign)
             value = serializer.validated_data.get('value', None)
             if value:
-                if use_local_values:
-                    goal.add_local_value(request, value)
-                else:
-                    goal.add_value(request, value)
+                goal.add_local_value(request, value)
             primary = serializer.validated_data.get('primary', None)
             if primary:
                 goal.set_primary(request)
             goal.refresh_from_db()
             return self.response_ok(
-                CampaignGoalsSerializer(goal.to_dict(with_values=True, local_values=use_local_values)).data
+                CampaignGoalsSerializer(goal.to_dict(with_values=True, local_values=True)).data
             )
 
     def delete(self, request, campaign_id, goal_id):

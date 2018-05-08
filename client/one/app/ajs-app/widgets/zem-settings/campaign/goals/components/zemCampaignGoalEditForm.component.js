@@ -104,10 +104,7 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
                         return kpiDefault.unit;
                     }
 
-                    return zemMulticurrencyService.getAppropriateCurrencySymbol(
-                        activeAccount,
-                        ['zemauth.can_manage_goals_in_local_currency']
-                    );
+                    return zemMulticurrencyService.getAppropriateCurrencySymbol(activeAccount);
                 }
             }
             return '';

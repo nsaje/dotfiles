@@ -110,4 +110,4 @@ class TestCampaignGoals(TestCase):
         hist = dash.history_helpers.get_campaign_history(campaign).first()
         self.assertEqual(hist.created_by, request.user)
         self.assertEqual(dash.constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
-        self.assertEqual(hist.changes_text, 'Changed campaign goal value: "$2.000 CPC"')
+        self.assertEqual(hist.changes_text, 'Changed campaign goal value: "$4.000 CPC"')

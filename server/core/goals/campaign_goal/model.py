@@ -50,12 +50,8 @@ class CampaignGoalManager(core.common.BaseManager):
             conversion_goal=conversion_goal,
         )
 
-        if request.user.has_perm('zemauth.can_manage_goals_in_local_currency'):
-            history_value = goal.add_local_value(request, value, skip_history=True)
-            currency_symbol = core.multicurrency.get_currency_symbol(goal.campaign.account.currency)
-        else:
-            history_value = goal.add_value(request, value, skip_history=True)
-            currency_symbol = core.multicurrency.get_currency_symbol(constants.Currency.USD)
+        history_value = goal.add_local_value(request, value, skip_history=True)
+        currency_symbol = core.multicurrency.get_currency_symbol(goal.campaign.account.currency)
 
         if primary:
             goal.set_primary(request)
@@ -181,12 +177,8 @@ class CampaignGoal(models.Model, bcm_mixin.CampaignGoalBCMMixin):
         goal_value.save()
 
         if not skip_history:
-            if request.user.has_perm('zemauth.can_manage_goals_in_local_currency'):
-                history_value = local_value
-                currency_symbol = core.multicurrency.get_currency_symbol(self.campaign.account.currency)
-            else:
-                history_value = value
-                currency_symbol = core.multicurrency.get_currency_symbol(constants.Currency.USD)
+            history_value = local_value
+            currency_symbol = core.multicurrency.get_currency_symbol(self.campaign.account.currency)
 
             import dash.campaign_goals
             if self.type in dash.campaign_goals.COST_DEPENDANT_GOALS:
