@@ -42,8 +42,7 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
             });
 
             $ctrl.currencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol(
-                zemNavigationNewService.getActiveAccount(),
-                ['zemauth.can_manage_settings_in_local_currency']
+                zemNavigationNewService.getActiveAccount()
             );
         };
 

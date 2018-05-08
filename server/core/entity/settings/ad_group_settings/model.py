@@ -200,6 +200,7 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         blank=True,
         null=True,
         verbose_name='Autopilot\'s Daily Spend Cap',
+        default=0
     )
     landing_mode = models.BooleanField(default=False)
 
@@ -219,6 +220,7 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         verbose_name='Bidder\'s Daily Cap',
         blank=True,
         null=True,
+        default=0
     )
     # TODO (multicurrency): Handle fields' default values for local fields
     b1_sources_group_cpc_cc = models.DecimalField(

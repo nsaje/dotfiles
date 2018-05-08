@@ -93,9 +93,8 @@ class AdGroupSettings(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        if (request.user.has_perm('zemauth.can_manage_settings_in_local_currency')):
-            for field in ad_group.settings.multicurrency_fields:
-                form.cleaned_data['local_{}'.format(field)] = form.cleaned_data.pop(field, None)
+        for field in ad_group.settings.multicurrency_fields:
+            form.cleaned_data['local_{}'.format(field)] = form.cleaned_data.pop(field, None)
 
         ad_group.settings.update(request, **form.cleaned_data)
 
@@ -146,52 +145,46 @@ class AdGroupSettings(api_common.BaseApiView):
         if not settings:
             return {}
 
-        settings_dict = settings.get_settings_dict()
-
-        if (request.user.has_perm('zemauth.can_manage_settings_in_local_currency')):
-            for field in settings.multicurrency_fields:
-                settings_dict[field] = settings_dict.get('local_{}'.format(field))
-
         result = {
             'id': str(ad_group.pk),
             'campaign_id': str(ad_group.campaign_id),
-            'name': settings_dict.get('ad_group_name'),
-            'state': settings_dict.get('state'),
-            'start_date': settings_dict.get('start_date'),
-            'end_date': settings_dict.get('end_date'),
+            'name': settings.ad_group_name,
+            'state': settings.state,
+            'start_date': settings.start_date,
+            'end_date': settings.end_date,
             'cpc_cc':
-                '{:.3f}'.format(settings_dict.get('cpc_cc'))
-                if settings_dict.get('cpc_cc') is not None else '',
+                '{:.3f}'.format(settings.local_cpc_cc)
+                if settings.local_cpc_cc is not None else '',
             'max_cpm':
-                '{:.3f}'.format(settings_dict.get('max_cpm'))
-                if settings_dict.get('max_cpm') is not None else '',
+                '{:.3f}'.format(settings.local_max_cpm)
+                if settings.local_max_cpm is not None else '',
             'daily_budget_cc':
-                '{:.2f}'.format(settings_dict.get('daily_budget_cc'))
-                if settings_dict.get('daily_budget_cc') is not None else '',
-            'tracking_code': settings_dict.get('tracking_code'),
+                '{:.2f}'.format(settings.daily_budget_cc)
+                if settings.daily_budget_cc is not None else '',
+            'tracking_code': settings.tracking_code,
             'autopilot_on_campaign': ad_group.campaign.settings.autopilot,
-            'autopilot_state': settings_dict.get('autopilot_state'),
+            'autopilot_state': settings.autopilot_state,
             'autopilot_daily_budget':
-                '{:.2f}'.format(settings_dict.get('autopilot_daily_budget'))
-                if settings_dict.get('autopilot_daily_budget') is not None else '',
-            'retargeting_ad_groups': settings_dict.get('retargeting_ad_groups'),
-            'exclusion_retargeting_ad_groups': settings_dict.get('exclusion_retargeting_ad_groups'),
-            'notes': settings_dict.get('notes'),
-            'interest_targeting': settings_dict.get('interest_targeting'),
-            'exclusion_interest_targeting': settings_dict.get('exclusion_interest_targeting'),
-            'audience_targeting': settings_dict.get('audience_targeting'),
-            'exclusion_audience_targeting': settings_dict.get('exclusion_audience_targeting'),
-            'redirect_pixel_urls': settings_dict.get('redirect_pixel_urls'),
-            'redirect_javascript': settings_dict.get('redirect_javascript'),
-            'dayparting': settings_dict.get('dayparting'),
-            'b1_sources_group_enabled': settings_dict.get('b1_sources_group_enabled'),
-            'b1_sources_group_daily_budget': settings_dict.get('b1_sources_group_daily_budget'),
-            'b1_sources_group_cpc_cc': settings_dict.get('b1_sources_group_cpc_cc'),
-            'b1_sources_group_state': settings_dict.get('b1_sources_group_state'),
-            'whitelist_publisher_groups': settings_dict.get('whitelist_publisher_groups'),
-            'blacklist_publisher_groups': settings_dict.get('blacklist_publisher_groups'),
-            'landing_mode': settings_dict.get('landing_mode'),
-            'delivery_type': settings_dict.get('delivery_type'),
+                '{:.2f}'.format(settings.local_autopilot_daily_budget)
+                if settings.local_autopilot_daily_budget is not None else '',
+            'retargeting_ad_groups': settings.retargeting_ad_groups,
+            'exclusion_retargeting_ad_groups': settings.exclusion_retargeting_ad_groups,
+            'notes': settings.notes,
+            'interest_targeting': settings.interest_targeting,
+            'exclusion_interest_targeting': settings.exclusion_interest_targeting,
+            'audience_targeting': settings.audience_targeting,
+            'exclusion_audience_targeting': settings.exclusion_audience_targeting,
+            'redirect_pixel_urls': settings.redirect_pixel_urls,
+            'redirect_javascript': settings.redirect_javascript,
+            'dayparting': settings.dayparting,
+            'b1_sources_group_enabled': settings.b1_sources_group_enabled,
+            'b1_sources_group_daily_budget': settings.local_b1_sources_group_daily_budget,
+            'b1_sources_group_cpc_cc': settings.local_b1_sources_group_cpc_cc,
+            'b1_sources_group_state': settings.b1_sources_group_state,
+            'whitelist_publisher_groups': settings.whitelist_publisher_groups,
+            'blacklist_publisher_groups': settings.blacklist_publisher_groups,
+            'landing_mode': settings.landing_mode,
+            'delivery_type': settings.delivery_type,
         }
 
         # This two properties are very expensive to calculate and are never used by the REST api.
@@ -201,23 +194,22 @@ class AdGroupSettings(api_common.BaseApiView):
             result['autopilot_optimization_goal'] = primary_campaign_goal.type if primary_campaign_goal else None
 
         if request.user.has_perm('zemauth.can_set_click_capping'):
-            result['click_capping_daily_ad_group_max_clicks'] = settings_dict.get('click_capping_daily_ad_group_max_clicks')
-            result['click_capping_daily_click_budget'] = settings_dict.get('click_capping_daily_click_budget')
+            result['click_capping_daily_ad_group_max_clicks'] = settings.click_capping_daily_ad_group_max_clicks
+            result['click_capping_daily_click_budget'] = settings.click_capping_daily_click_budget
 
         # TODO (refactor-workaround) Re-use restapi serializers
         from restapi.serializers.targeting import\
             DevicesSerializer, OSsSerializer,\
             PlacementsSerializer, AudienceSerializer,\
             TargetRegionsSerializer, BrowsersSerializer
-        result['target_regions'] = TargetRegionsSerializer(settings_dict.get('target_regions')).data
-        result['exclusion_target_regions'] = TargetRegionsSerializer(settings_dict.get('exclusion_target_regions')).data
-        result['target_devices'] = DevicesSerializer(settings_dict.get('target_devices')).data
-        result['target_os'] = OSsSerializer(settings_dict.get('target_os')).data
-        result['target_browsers'] = BrowsersSerializer(settings_dict.get('target_browsers')).data
-        result['target_placements'] = PlacementsSerializer(settings_dict.get('target_placements')).data
-        result['bluekai_targeting'] = AudienceSerializer(settings_dict.get('bluekai_targeting')).data
-        result['bluekai_targeting_old'] = AudienceSerializer(
-            settings_dict.get('bluekai_targeting'), use_list_repr=True).data
+        result['target_regions'] = TargetRegionsSerializer(settings.target_regions).data
+        result['exclusion_target_regions'] = TargetRegionsSerializer(settings.exclusion_target_regions).data
+        result['target_devices'] = DevicesSerializer(settings.target_devices).data
+        result['target_os'] = OSsSerializer(settings.target_os).data
+        result['target_browsers'] = BrowsersSerializer(settings.target_browsers).data
+        result['target_placements'] = PlacementsSerializer(settings.target_placements).data
+        result['bluekai_targeting'] = AudienceSerializer(settings.bluekai_targeting).data
+        result['bluekai_targeting_old'] = AudienceSerializer(settings.bluekai_targeting, use_list_repr=True).data
 
         return result
 

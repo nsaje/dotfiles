@@ -292,11 +292,11 @@ def get_report_currency(user, accounts, permission=None):
     return currency
 
 
-def update_rows_to_contain_values_in_currency(rows, currency, excluded_keys=[]):
+def update_rows_to_contain_values_in_currency(rows, currency):
     if currency == dash.constants.Currency.USD:
         _strip_local_values_from_rows(rows)
         return
-    _update_rows_to_contain_local_values(rows, excluded_keys)
+    _update_rows_to_contain_local_values(rows)
 
 
 def _strip_local_values_from_rows(rows):
@@ -306,12 +306,9 @@ def _strip_local_values_from_rows(rows):
                 row.pop(key, None)
 
 
-def _update_rows_to_contain_local_values(rows, excluded_keys):
+def _update_rows_to_contain_local_values(rows):
     for row in rows:
         for key in list(row.keys()):
-            if key in excluded_keys:
-                row.pop(key, None)
-                continue
             if key and key.startswith('local_'):
                 non_local_key = key.replace('local_', '', 1)
                 row[non_local_key] = row.pop(key, None)

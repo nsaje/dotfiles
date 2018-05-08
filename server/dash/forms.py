@@ -139,7 +139,7 @@ class MulticurrencySettingsFormMixin(forms.Form):
         return core.multicurrency.get_currency_symbol(currency)
 
     def _get_currency(self):
-        if self.account and self.user.has_perm('zemauth.can_manage_settings_in_local_currency'):
+        if self.account:
             return self.account.currency
         return constants.Currency.USD
 

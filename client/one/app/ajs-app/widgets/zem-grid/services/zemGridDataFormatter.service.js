@@ -1,4 +1,4 @@
-angular.module('one.widgets').factory('zemGridDataFormatter', function ($filter, zemGridConstants, zemPermissions) {
+angular.module('one.widgets').factory('zemGridDataFormatter', function ($filter, zemGridConstants) {
     return {
         formatValue: formatValue,
         parseInputValue: parseInputValue,
@@ -101,8 +101,7 @@ angular.module('one.widgets').factory('zemGridDataFormatter', function ($filter,
     }
 
     function getCurrencySymbol (options) {
-        if (!options.currency
-            || (options.localCurrencyPermissions && !zemPermissions.hasPermission(options.localCurrencyPermissions))) {
+        if (!options.currency) {
             return constants.currencySymbol[constants.currency.USD];
         }
         return constants.currencySymbol[options.currency];

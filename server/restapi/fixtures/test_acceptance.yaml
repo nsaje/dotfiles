@@ -344,6 +344,7 @@
         start_date: '2015-03-02'
         autopilot_state: 2
         autopilot_daily_budget: '50.0000'
+        local_autopilot_daily_budget: '50.0000'
         interest_targeting: ["fun", "games"]
         exclusion_interest_targeting: ["religion", "weather"]
         redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
@@ -572,6 +573,7 @@
         start_date: '2015-03-02'
         autopilot_state: 2
         autopilot_daily_budget: '50.0000'
+        local_autopilot_daily_budget: '50.0000'
         interest_targeting: ["fun", "games"]
         exclusion_interest_targeting: ["religion", "weather"]
         redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
@@ -600,6 +602,7 @@
         start_date: '2015-03-02'
         autopilot_state: 2
         autopilot_daily_budget: '50.0000'
+        local_autopilot_daily_budget: '50.0000'
         interest_targeting: ["fun", "games"]
         exclusion_interest_targeting: ["religion", "weather"]
         redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]

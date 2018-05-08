@@ -784,9 +784,8 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        if (request.user.has_perm('zemauth.can_manage_settings_in_local_currency')):
-            for field in ad_group_source.settings.multicurrency_fields:
-                form.cleaned_data['local_{}'.format(field)] = form.cleaned_data.pop(field, None)
+        for field in ad_group_source.settings.multicurrency_fields:
+            form.cleaned_data['local_{}'.format(field)] = form.cleaned_data.pop(field, None)
 
         data = {k: v for k, v in list(form.cleaned_data.items()) if v is not None}
 

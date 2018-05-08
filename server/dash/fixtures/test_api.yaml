@@ -387,6 +387,7 @@
         end_date: '2015-04-02'
         autopilot_state: 1
         autopilot_daily_budget: '50.0000'
+        local_autopilot_daily_budget: '50.0000'
         retargeting_ad_groups: [3]
         exclusion_retargeting_ad_groups: [4]
         notes: 'Some note'
@@ -399,8 +400,10 @@
         redirect_javascript: "alert('a')"
         b1_sources_group_enabled: True
         b1_sources_group_daily_budget: '500.0000'
+        local_b1_sources_group_daily_budget: '500.0000'
         b1_sources_group_state: 1
         b1_sources_group_cpc_cc: '0.0100'
+        local_b1_sources_group_cpc_cc: '0.0100'
         dayparting: {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 23], "timezone": "America/New_York"}
         click_capping_daily_ad_group_max_clicks: 10
         click_capping_daily_click_budget: '5.0000'

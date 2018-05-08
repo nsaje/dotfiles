@@ -428,12 +428,9 @@ class AdGroupBreakdown(api_common.BaseApiView):
                 ad_group.campaign.account)
 
         extras['currency'] = currency
-        excluded_keys = []
-        if not request.user.has_perm('zemauth.can_manage_settings_in_local_currency'):
-            excluded_keys = ['local_daily_budget', 'local_current_daily_budget', 'local_bid_cpc', 'local_current_bid_cpc']
-        stats.helpers.update_rows_to_contain_values_in_currency(rows, currency, excluded_keys=excluded_keys)
+        stats.helpers.update_rows_to_contain_values_in_currency(rows, currency)
         if totals:
-            stats.helpers.update_rows_to_contain_values_in_currency([totals], currency, excluded_keys=excluded_keys)
+            stats.helpers.update_rows_to_contain_values_in_currency([totals], currency)
 
         report = format_breakdown_response(rows, offset, parents, totals, goals, **extras)
         if len(breakdown) == 1 and request.user.has_perm('zemauth.campaign_goal_optimization'):

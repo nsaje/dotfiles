@@ -94,7 +94,7 @@ class AdGroupSettingsTest(TestCase):
             'delivery_type': 1,
             'click_capping_daily_ad_group_max_clicks': 10,
             'click_capping_daily_click_budget': Decimal('5.0000'),
-            'local_autopilot_daily_budget': None,
+            'local_autopilot_daily_budget': Decimal('0.0000'),
             'local_b1_sources_group_cpc_cc': Decimal('0.1'),
             'local_b1_sources_group_daily_budget': Decimal('500'),
             'local_cpc_cc': None,
