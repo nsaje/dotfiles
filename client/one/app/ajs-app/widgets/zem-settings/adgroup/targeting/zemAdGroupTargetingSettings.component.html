@@ -5,6 +5,7 @@
         errors="$ctrl.errors"
         api="$ctrl.api"
         class="zem-audience-targeting"
+        ng-if="!$ctrl.hasPermission('zemauth.disable_public_rcs')"
     ></zem-audience-targeting>
     <!-- additional targeting -->
     <div ng-if="$ctrl.hasPermission('zemauth.can_view_additional_targeting')">
@@ -13,6 +14,7 @@
             errors="$ctrl.errors"
             api="$ctrl.api"
             class="zem-interest-targeting"
+            ng-if="!$ctrl.hasPermission('zemauth.disable_public_rcs')"
         ></zem-interest-targeting>
         <zem-publisher-group-targeting
             entity="$ctrl.entity"
