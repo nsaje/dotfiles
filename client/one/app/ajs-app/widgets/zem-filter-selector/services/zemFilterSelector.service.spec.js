@@ -37,7 +37,8 @@ describe('zemFilterSelectorService', function () {
         zemPermissions.setMockedPermissions([
             'zemauth.can_filter_by_agency',
             'zemauth.can_filter_by_account_type',
-            'zemauth.can_see_publisher_blacklist_status'
+            'zemauth.can_see_publisher_blacklist_status',
+            'zemauth.can_filter_by_media_source',
         ]);
 
         spyOn(zemMediaSourcesService, 'getAvailableSources').and.callFake(
@@ -59,7 +60,7 @@ describe('zemFilterSelectorService', function () {
         zemPermissions.setMockedPermissions([]);
 
         var visibleConditions = getVisibleConditions();
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.sources.name) !== -1).toBe(true);
+        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.sources.name) !== -1).toBe(false);
         expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.agencies.name) !== -1).toBe(false);
         expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.accountTypes.name) !== -1).toBe(false);
         expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.statuses.name) !== -1).toBe(true);

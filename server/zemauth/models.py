@@ -130,6 +130,11 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
+    SUPERUSER_EXCLUDED_PERMISSIONS = (
+        'disable_public_rcs',
+        'disable_budget_management',
+        'can_see_projections',
+    )
 
     class Meta:
         verbose_name = _('user')
@@ -219,9 +224,12 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_filter_by_account_type', 'Can filter by account type'),
             ('can_access_agency_infobox', 'Can access info box on all accounts agency level'),
             ('can_manage_agency_margin', 'User can define margin in budget line item.'),
-            ('can_view_agency_margin', '[IGNORED if not BCMv2] User can view margin in budget tab and view margin columns in tables and reports.'),
-            ('can_view_platform_cost_breakdown', '[IGNORED if not BCMv2] User can view platform costs broken down into media, data and fee.'),
-            ('can_view_platform_cost_breakdown_derived', '[IGNORED if not BCMv2] User can view columns derived from platform costs.'),
+            ('can_view_agency_margin',
+             '[IGNORED if not BCMv2] User can view margin in budget tab and view margin columns in tables and reports.'),
+            ('can_view_platform_cost_breakdown',
+             '[IGNORED if not BCMv2] User can view platform costs broken down into media, data and fee.'),
+            ('can_view_platform_cost_breakdown_derived',
+             '[IGNORED if not BCMv2] User can view columns derived from platform costs.'),
             ('can_view_agency_cost_breakdown', 'User can view agency costs broken down into margin.'),
             ('can_view_end_user_cost_breakdown', 'User can view only total costs without margin, data and fee.'),
             ('can_switch_between_cost_breakdowns', 'User can switch between stats that include fee and margin and stats that don\'t.'),
@@ -311,6 +319,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_infobox_in_local_currency', 'User can see infobox in local currency'),
             ('can_manage_budgets_in_local_currency', 'User can manage budgets in local currency'),
             ('can_see_currency_setting', 'User can see currency setting'),
+            ('disable_public_rcs', 'Disable some public features for RCS.'),
+            ('can_filter_by_media_source', 'Can filter by media source'),
         )
 
     def get_full_name(self):
@@ -338,7 +348,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
         perm_cache_name = '_zemauth_permission_cache'
         if not hasattr(self, perm_cache_name):
             if self.is_superuser:
-                perms = auth_models.Permission.objects.all()
+                perms = auth_models.Permission.objects.all().exclude(codename__in=User.SUPERUSER_EXCLUDED_PERMISSIONS)
             else:
                 perms = auth_models.Permission.objects.\
                     filter(models.Q(id__in=self.user_permissions.all()) | models.Q(group__in=self.groups.all())).\

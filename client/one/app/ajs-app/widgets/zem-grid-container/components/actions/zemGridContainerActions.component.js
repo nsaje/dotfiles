@@ -44,6 +44,9 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         }
 
         function isCreateAdGroupSourceActionVisible () {
+            if (zemPermissions.hasPermission('zemauth.disable_public_rcs')) {
+                return false;
+            }
             return $ctrl.breakdown === constants.breakdown.MEDIA_SOURCE
                 && $ctrl.entity && $ctrl.entity.type === constants.entityType.AD_GROUP;
         }

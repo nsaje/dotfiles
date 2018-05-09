@@ -26,6 +26,7 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
             condition: zemDataFilterService.CONDITIONS.sources,
             title: 'Filter by Media source',
             appliedConditionName: 'Media source',
+            permissions: ['zemauth.can_filter_by_media_source'],
             cssClass: 'sources',
             getOptions: getSourcesOptions,
         },

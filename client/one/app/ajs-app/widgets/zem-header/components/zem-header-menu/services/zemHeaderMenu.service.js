@@ -125,7 +125,8 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
     }
 
     function isAllowLivestreamActionAvailable () {
-        return !zemFullStoryService.isLivestreamAllowed();
+        return !zemFullStoryService.isLivestreamAllowed() &&
+            !zemPermissions.hasPermission('zemauth.disable_public_rcs');
     }
 
     function requestDemoAction () {

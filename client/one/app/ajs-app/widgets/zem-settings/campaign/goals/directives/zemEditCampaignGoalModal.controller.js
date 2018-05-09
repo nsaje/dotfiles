@@ -1,7 +1,7 @@
 //
 // TODO: On major update, refactor to component
 //
-angular.module('one.widgets').controller('zemEditCampaignGoalModalCtrl', function ($scope, zemConversionPixelsEndpoint, zemCampaignGoalValidationEndpoint, zemNavigationNewService, zemMulticurrencyService) { // eslint-disable-line max-len
+angular.module('one.widgets').controller('zemEditCampaignGoalModalCtrl', function ($scope, zemConversionPixelsEndpoint, zemCampaignGoalValidationEndpoint, zemNavigationNewService, zemMulticurrencyService, zemPermissions) { // eslint-disable-line max-len
     $scope.addConversionGoalInProgress = false;
     $scope.error = false;
     $scope.newCampaignGoal = false;
@@ -40,10 +40,15 @@ angular.module('one.widgets').controller('zemEditCampaignGoalModalCtrl', functio
     function isGoalAvailable (option) {
         var isAvailable = true,
             goal = $scope.campaignGoal,
+            isCpcGoal = option.value !== constants.campaignGoalKPI.CPC,
             countConversionGoals = 0;
         if (!goal || goal && goal.type === option.value) {
             return true;
         }
+        if (zemPermissions.hasPermission('zemauth.disable_public_rcs') && !isCpcGoal) {
+            return false;
+        }
+
         $scope.campaignGoals.forEach(function (goal) {
             if (goal.type === option.value) {
                 isAvailable = false;
