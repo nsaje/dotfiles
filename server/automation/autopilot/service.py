@@ -23,6 +23,8 @@ from utils import k1_helper
 
 logger = logging.getLogger(__name__)
 
+SKIP_CAMPAIGN_CPC_AUTOPILOT_AGENCIES = (220, )
+
 
 @influx.timer('automation.autopilot_plus.run_autopilot')
 def run_autopilot(ad_group=None, campaign=None, adjust_cpcs=True, adjust_budgets=True,
@@ -110,6 +112,12 @@ def run_autopilot(ad_group=None, campaign=None, adjust_cpcs=True, adjust_budgets
         _report_adgroups_data_to_influx(entities, campaign_daily_budgets)
         _report_new_budgets_on_ap_to_influx(entities)
     return changes_data
+
+
+def _can_run_cpc_autopilot(campaign):
+    if campaign.account.agency_id in SKIP_CAMPAIGN_CPC_AUTOPILOT_AGENCIES:
+        return False
+    return True
 
 
 @transaction.atomic
@@ -213,6 +221,8 @@ def _filter_data_budget_ap_allrtb(data, ad_group):
 
 
 def _get_cpc_predictions(ad_group, budget_changes, data, bcm_modifiers, adjust_cpcs, is_budget_ap_enabled=False):
+    if not _can_run_cpc_autopilot(ad_group.campaign):
+        return {}
     cpc_changes = {}
     rtb_as_one = ad_group.settings.b1_sources_group_enabled
     active_cpc_budget = dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET

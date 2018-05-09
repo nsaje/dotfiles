@@ -37,6 +37,7 @@ from dash import models, region_targeting_helper, retargeting_helper, campaign_g
 from dash import constants
 from dash import forms
 from dash import infobox_helpers
+from dash.features import native_server
 
 import stats.helpers
 
@@ -338,6 +339,7 @@ class CampaignAdGroups(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         self._validate_campaign_ready(request, campaign)
         ad_group = core.entity.AdGroup.objects.create(request, campaign, is_restapi=self.rest_proxy)
+        native_server.apply_ad_group_create_hacks(request, ad_group)
         return self.create_api_response({'name': ad_group.name, 'id': ad_group.id})
 
     @staticmethod
@@ -759,6 +761,7 @@ class AccountCampaigns(api_common.BaseApiView):
 
         language = constants.Language.ENGLISH if self.rest_proxy else None
         campaign = models.Campaign.objects.create(request, account, name, language=language)
+        native_server.apply_campaign_create_hacks(request, campaign)
 
         response = {
             'name': campaign.name,
@@ -788,6 +791,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             form.cleaned_data['local_{}'.format(field)] = form.cleaned_data.pop(field, None)
 
         data = {k: v for k, v in list(form.cleaned_data.items()) if v is not None}
+        data = native_server.transform_ad_group_source_settings(ad_group, data)
 
         response = ad_group_source.settings.update(request, k1_sync=True, **data)
 

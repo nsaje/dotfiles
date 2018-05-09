@@ -36,7 +36,7 @@ def get_agency(user, agency_id):
 
 def get_account(user, account_id, sources=None, select_related_users=False):
     try:
-        account = core.entity.Account.objects.all().filter_by_user(user).select_related('settings')
+        account = core.entity.Account.objects.all().filter_by_user(user).select_related('settings', 'agency')
 
         if sources:
             account = account.filter_by_sources(sources)
@@ -54,7 +54,8 @@ def get_account(user, account_id, sources=None, select_related_users=False):
 def get_ad_group(user, ad_group_id, select_related=False, sources=None):
     try:
         ad_group = core.entity.AdGroup.objects.all()\
-                                              .select_related('settings')\
+                                              .select_related('settings',
+                                                              'campaign__account__agency')\
                                               .filter_by_user(user)\
                                               .filter(id=int(ad_group_id))
 
@@ -85,7 +86,7 @@ def get_content_ad(user, content_ad_id, select_related=False):
 def get_campaign(user, campaign_id, sources=None, select_related=False):
     try:
         campaign = core.entity.Campaign.objects.all()\
-                                               .select_related('settings')\
+                                               .select_related('settings', 'account__agency')\
                                                .filter_by_user(user)\
                                                .filter(id=int(campaign_id))
         if sources:

@@ -17,6 +17,7 @@ from dash import constants
 from dash import retargeting_helper
 from dash import campaign_goals
 from dash import facebook_helper
+from dash.features import native_server
 from dash.features import ga, custom_flags
 from dash import content_insights_helper
 
@@ -96,7 +97,8 @@ class AdGroupSettings(api_common.BaseApiView):
         for field in ad_group.settings.multicurrency_fields:
             form.cleaned_data['local_{}'.format(field)] = form.cleaned_data.pop(field, None)
 
-        ad_group.settings.update(request, **form.cleaned_data)
+        form_data = native_server.transform_ad_group_settings(ad_group, form.cleaned_data)
+        ad_group.settings.update(request, **form_data)
 
         response = {
             'settings': self.get_dict(request, ad_group.settings, ad_group),
@@ -394,6 +396,7 @@ class CampaignSettings(api_common.BaseApiView):
             'primary': None,
             'modified': {}
         })
+        changes = native_server.apply_set_goals_hacks(campaign, changes)
 
         # If the view is used via a REST API proxy, don't require goals to be already defined,
         # since that produces a chicken-and-egg problem. REST API combines POST and PUT calls into one
@@ -402,7 +405,8 @@ class CampaignSettings(api_common.BaseApiView):
             errors['no_goals'] = 'At least one goal must be defined'
             raise exc.ValidationError(errors=errors)
 
-        campaign.settings.update(request, **settings_form.cleaned_data)
+        form_data = native_server.transform_campaign_settings(campaign, settings_form.cleaned_data)
+        campaign.settings.update(request, **form_data)
 
         with transaction.atomic():
             goal_errors = self.set_goals(request, campaign, changes)
@@ -412,6 +416,8 @@ class CampaignSettings(api_common.BaseApiView):
 
         if errors:
             raise exc.ValidationError(errors=errors)
+
+        native_server.apply_campaign_change_hacks(request, campaign, changes)
 
         response = {
             'settings': self.get_dict(request, campaign.settings, campaign),
@@ -1246,6 +1252,7 @@ class AccountUsers(api_common.BaseApiView):
 
             user = ZemUser.objects.create_user(email, first_name=first_name, last_name=last_name)
             self._add_user_to_groups(user)
+            native_server.apply_create_user_hacks(user, account)
             email_helper.send_email_to_new_user(user, request, agency=account.agency)
 
             created = True
