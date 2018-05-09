@@ -37,12 +37,12 @@ class AutopilotHelpersTestCase(test.TestCase):
                 }
             }
         }
-        expected_changes = '''
-
-AdGroup: Test AdGroup 4 (https://one.zemanta.com/v2/analytics/adgroup/4/sources):
-- on AdBlade daily spend cap changed from $10.00 to $20.00 and bid CPC changed from $0.1 to $0.2
-- on RTB Sources daily spend cap changed from $10.00 to $20.00'''
-
+        expected_changes = [{
+            'adgroup': ad_group,
+            'history_url': 'https://one.zemanta.com/v2/analytics/adgroup/4?history',
+            'media_sources': [],
+            'media_sources_url': 'https://one.zemanta.com/v2/analytics/adgroup/4/sources',
+        }]
         helpers.send_autopilot_changes_emails(data, {}, False)
         mock_template.assert_called_once_with(
             constants.EmailTemplateType.AUTOPILOT_AD_GROUP_CHANGE,
@@ -82,12 +82,10 @@ AdGroup: Test AdGroup 4 (https://one.zemanta.com/v2/analytics/adgroup/4/sources)
                 }
             }
         }
-        expected_changes = '''
-
-AdGroup: Test AdGroup 4 (https://one.zemanta.com/v2/analytics/adgroup/4/sources):
-- on AdBlade daily spend cap changed from $10.00 to $20.00 and bid CPC changed from $0.1 to $0.2
-- on RTB Sources daily spend cap changed from $10.00 to $20.00'''
-
+        expected_changes = [{
+            'adgroup': ad_group,
+            'history_url': 'https://one.zemanta.com/v2/analytics/adgroup/4?history',
+        }]
         helpers.send_autopilot_changes_emails(data, {}, True)
         mock_template.assert_called_once_with(
             constants.EmailTemplateType.AUTOPILOT_AD_GROUP_BUDGET_INIT,
@@ -128,12 +126,12 @@ AdGroup: Test AdGroup 4 (https://one.zemanta.com/v2/analytics/adgroup/4/sources)
                 }
             }
         }
-        expected_changes = '''
-
-AdGroup: Test AdGroup 4 (https://one.zemanta.com/v2/analytics/adgroup/4/sources):
-- on AdBlade daily spend cap changed from $10.00 to $20.00 and bid CPC changed from $0.1 to $0.2
-- on RTB Sources daily spend cap changed from $10.00 to $20.00'''
-
+        expected_changes = [{
+            'adgroup': ad_group,
+            'history_url': 'https://one.zemanta.com/v2/analytics/adgroup/4?history',
+            'media_sources': [],
+            'media_sources_url': 'https://one.zemanta.com/v2/analytics/adgroup/4/sources',
+        }]
         helpers.send_autopilot_changes_emails(data, {}, False)
         mock_template.assert_called_once_with(
             constants.EmailTemplateType.AUTOPILOT_CAMPAIGN_CHANGE,
@@ -174,12 +172,10 @@ AdGroup: Test AdGroup 4 (https://one.zemanta.com/v2/analytics/adgroup/4/sources)
                 }
             }
         }
-        expected_changes = '''
-
-AdGroup: Test AdGroup 4 (https://one.zemanta.com/v2/analytics/adgroup/4/sources):
-- on AdBlade daily spend cap changed from $10.00 to $20.00 and bid CPC changed from $0.1 to $0.2
-- on RTB Sources daily spend cap changed from $10.00 to $20.00'''
-
+        expected_changes = [{
+            'adgroup': ad_group,
+            'history_url': 'https://one.zemanta.com/v2/analytics/adgroup/4?history',
+        }]
         helpers.send_autopilot_changes_emails(data, {}, True)
         mock_template.assert_called_once_with(
             constants.EmailTemplateType.AUTOPILOT_CAMPAIGN_BUDGET_INIT,

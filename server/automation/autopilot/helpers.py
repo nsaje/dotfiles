@@ -216,12 +216,15 @@ def send_autopilot_changes_emails(email_changes_data, bcm_modifiers_map, initial
 
 
 def send_autopilot_changes_email(campaign, emails, changes_data, bcm_modifiers):
-    changes_text = []
+    changes = []
     for adgroup, adgroup_changes in changes_data.items():
-        changes_text.append(_get_email_adgroup_text(adgroup))
-        for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name.lower()):
-            changes_text.append(_get_email_source_changes_text(ag_source.source.name, adgroup_changes[ag_source]))
-        changes_text.append(_get_email_adgroup_pausing_suggestions_text(adgroup_changes, bcm_modifiers))
+        media_sources, media_sources_url = _get_email_adgroup_pausing_suggestions(adgroup, adgroup_changes, bcm_modifiers)
+        changes.append({
+            'adgroup': adgroup,
+            'history_url': url_helper.get_full_z1_url('/v2/analytics/adgroup/{}?history'.format(adgroup.id)),
+            'media_sources': media_sources,
+            'media_sources_url': media_sources_url,
+        })
 
     template = dash.constants.EmailTemplateType.AUTOPILOT_AD_GROUP_CHANGE
     if campaign.settings.autopilot:
@@ -231,7 +234,7 @@ def send_autopilot_changes_email(campaign, emails, changes_data, bcm_modifiers):
         'campaign': campaign,
         'account': campaign.account,
         'link_url': url_helper.get_full_z1_url('/v2/analytics/campaign/{}'.format(campaign.id)),
-        'changes': ''.join(changes_text)
+        'changes': changes,
     }
     try:
         email_helper.send_official_email(
@@ -250,11 +253,12 @@ def send_autopilot_changes_email(campaign, emails, changes_data, bcm_modifiers):
 
 
 def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
-    changes_text = []
+    changes = []
     for adgroup, adgroup_changes in changes_data.items():
-        changes_text.append(_get_email_adgroup_text(adgroup))
-        for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name.lower()):
-            changes_text.append(_get_email_source_changes_text(ag_source.source.name, adgroup_changes[ag_source]))
+        changes.append({
+            'adgroup': adgroup,
+            'history_url': url_helper.get_full_z1_url('/v2/analytics/adgroup/{}?history'.format(adgroup.id)),
+        })
 
     template = dash.constants.EmailTemplateType.AUTOPILOT_AD_GROUP_BUDGET_INIT
     if campaign.settings.autopilot:
@@ -264,7 +268,7 @@ def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
         'campaign': campaign,
         'account': campaign.account,
         'link_url': url_helper.get_full_z1_url('/v2/analytics/campaign/{}'.format(campaign.id)),
-        'changes': ''.join(changes_text)
+        'changes': changes,
     }
     try:
         email_helper.send_official_email(
@@ -282,15 +286,6 @@ def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
                          ', '.join(emails))
 
 
-def _get_email_adgroup_text(adgroup):
-    return '''
-
-AdGroup: {adg_name} ({adg_url}):'''.format(
-        adg_name=adgroup.name,
-        adg_url=url_helper.get_full_z1_url('/v2/analytics/adgroup/{}/sources'.format(adgroup.id)),
-    )
-
-
 def _get_email_source_changes_text(source_name, changes):
     cpc_pilot_on = all(c in changes for c in ['old_cpc_cc', 'new_cpc_cc'])
     cpc_changed = cpc_pilot_on and changes['old_cpc_cc'] != changes['new_cpc_cc']
@@ -306,17 +301,14 @@ def _get_email_source_changes_text(source_name, changes):
     return text
 
 
-def _get_email_adgroup_pausing_suggestions_text(adgroup_changes, bcm_modifiers):
+def _get_email_adgroup_pausing_suggestions(adgroup, adgroup_changes, bcm_modifiers):
     suggested_sources = []
     for ag_source in adgroup_changes:
         changes = adgroup_changes[ag_source]
         if all(b in changes for b in ['new_budget', 'old_budget']) and\
                 changes['new_budget'] == get_ad_group_sources_minimum_daily_budget(ag_source, bcm_modifiers):
             suggested_sources.append(ag_source.source.name)
-    if suggested_sources:
-        return '\n\nTo improve ad group\'s performance, please consider pausing the following media sources: ' +\
-               ", ".join(suggested_sources) + '.\n'
-    return ''
+    return suggested_sources, url_helper.get_full_z1_url('/v2/analytics/adgroup/{}/sources'.format(adgroup.id))
 
 
 def _get_budget_changes_text(budget_changed, changes):
