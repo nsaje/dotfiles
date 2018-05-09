@@ -23,7 +23,7 @@
             ng-if="$ctrl.hasPermission('zemauth.can_set_white_blacklist_publisher_groups') && $ctrl.hasPermission('zemauth.can_see_publisher_groups_ui')"
             class="zem-publisher-group-targeting"
         ></zem-publisher-group-targeting>
-        <div class="form form--border-top" ng-if="!$ctrl.hasPermission('zemauth.can_use_bluekai_targeting')">
+        <div class="form form--border-top" ng-if="!$ctrl.hasPermission('zemauth.can_use_bluekai_targeting') && !$ctrl.hasPermission('zemauth.disable_public_rcs')">
             <div class="form__title">BlueKai & LiveRamp audience targeting</div>
             <div class="form__text">This is a read-only section. Please contact your Zemanta Account Manager if you want to set up or change BlueKai and LiveRamp audience targeting.</div>
             <div class="message message--success message--with-icon m-t" ng-if="$ctrl.entity.settings.bluekaiTargeting.length">Audience targeting set up.</div>

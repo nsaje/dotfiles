@@ -40,7 +40,7 @@ angular.module('one.widgets').controller('zemEditCampaignGoalModalCtrl', functio
     function isGoalAvailable (option) {
         var isAvailable = true,
             goal = $scope.campaignGoal,
-            isCpcGoal = option.value !== constants.campaignGoalKPI.CPC,
+            isCpcGoal = option.value === constants.campaignGoalKPI.CPC,
             countConversionGoals = 0;
         if (!goal || goal && goal.type === option.value) {
             return true;
