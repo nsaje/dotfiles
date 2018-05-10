@@ -6,6 +6,15 @@
     model: dash.accountsettings
     pk: 201001
 
+# test yahoo account
+
+-   fields:
+        advertiser_id: '953699'
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+    model: dash.yahooaccount
+    pk: 1
+
 # Accounts
 
 - fields:
@@ -14,6 +23,7 @@
     modified_by: 1
     settings: 201001
     name: 'Test Autopilot Account'
+    yahoo_account: 1
   model: dash.account
   pk: 201001
 

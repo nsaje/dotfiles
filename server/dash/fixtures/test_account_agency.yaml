@@ -39,6 +39,15 @@
     model: dash.accountsettings
     pk: 111
 
+# test yahoo account
+
+-   fields:
+        advertiser_id: '953699'
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+    model: dash.yahooaccount
+    pk: 1
+
 # test for AccountAgencyView.are_sources_removable
 
 -   fields:
@@ -48,6 +57,7 @@
         modified_by: 1
         allowed_sources: [2,3]
         settings: 111
+        yahoo_account: 1
     model: dash.account
     pk: 111
 
@@ -287,6 +297,7 @@
         modified_dt: '2015-09-23T09:57:22'
         modified_by: 1
         settings: 205
+        yahoo_account: 1
     model: dash.account
     pk: 200
 
@@ -296,6 +307,7 @@
         modified_dt: '2015-09-23T09:57:22'
         modified_by: 1
         settings: 210
+        yahoo_account: 1
     model: dash.account
     pk: 201
 
@@ -305,5 +317,6 @@
         modified_dt: '2015-09-23T09:57:22'
         modified_by: 1
         settings: 220
+        yahoo_account: 1
     model: dash.account
     pk: 202

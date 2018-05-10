@@ -40,6 +40,15 @@
     model: dash.accountsettings
     pk: 2
 
+# test yahoo account
+
+-   fields:
+        advertiser_id: '953699'
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+    model: dash.yahooaccount
+    pk: 1
+
 # test accounts
 
 -   fields:
@@ -52,6 +61,7 @@
         users: [1]
         settings: 1
         currency: 'USD'
+        yahoo_account: 1
     model: dash.account
     pk: 1
 
@@ -64,6 +74,7 @@
         agency: 1
         settings: 2
         currency: 'EUR'
+        yahoo_account: 1
     model: dash.account
     pk: 2
 

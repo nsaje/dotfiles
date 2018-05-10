@@ -67,6 +67,15 @@
     model: dash.accountsettings
     pk: 3
 
+# test yahoo account
+
+-   fields:
+        advertiser_id: '953699'
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+    model: dash.yahooaccount
+    pk: 1
+
 # test account
 
 -   fields:
@@ -78,6 +87,7 @@
         agency: 20
         custom_flags: {'flag_3': True, 'flag_2': True}
         settings: 1
+        yahoo_account: 1
     model: dash.account
     pk: 1
 
@@ -88,6 +98,7 @@
         name: 'test account 2'
         agency: 20
         settings: 2
+        yahoo_account: 1
     model: dash.account
     pk: 2
 
@@ -99,6 +110,7 @@
         name: 'test account 3'
         agency: 20
         settings: 3
+        yahoo_account: 1
     model: dash.account
     pk: 3
 

@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 
 class YahooTest(K1APIBaseTest):
 
+    fixtures = []  # override base
+
     def test_get_all(self):
         yahoo_account = magic_mixer.blend(
             core.features.yahoo_accounts.YahooAccount,

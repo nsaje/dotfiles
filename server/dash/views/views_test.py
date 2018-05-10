@@ -604,10 +604,7 @@ class AdGroupSourcesTest(TestCase):
         request = HttpRequest()
         request.user = User(id=1)
 
-        account = models.Account(
-            name='Account š name that is toooooooo long',
-        )
-        account.save(request)
+        account = magic_mixer.blend(models.Account, name='Account š name that is toooooooo long')
 
         campaign = models.Campaign(
             name='Campaign š name that is toooooooo long',
@@ -637,10 +634,7 @@ class AdGroupSourcesTest(TestCase):
         request = HttpRequest()
         request.user = User(id=1)
 
-        account = models.Account(
-            name='Accountšnamethatistoooooooolong',
-        )
-        account.save(request)
+        account = magic_mixer.blend(models.Account, name='Accountšnamethatistoooooooolong')
 
         campaign = models.Campaign(
             name='Campaignšnamethatistoooooooolong',
@@ -670,10 +664,7 @@ class AdGroupSourcesTest(TestCase):
         request = HttpRequest()
         request.user = User(id=1)
 
-        account = models.Account(
-            name='',
-        )
-        account.save(request)
+        account = magic_mixer.blend(models.Account, name='')
 
         campaign = models.Campaign(
             name='',

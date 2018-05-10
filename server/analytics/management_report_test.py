@@ -6,6 +6,7 @@ import analytics.management_report
 import dash.models
 import zemauth.models
 from utils.html_helpers import TableCell, TableRow
+from utils.magic_mixer import magic_mixer
 
 
 class FakeContext(object):
@@ -117,10 +118,7 @@ class ManagementReportTestCase(test.TestCase):
         r.user = zemauth.models.User.objects.get(pk=1)
 
         today = datetime.date.today()
-        acc = dash.models.Account(
-            name='Account 2'
-        )
-        acc.save(r)
+        acc = magic_mixer.blend(dash.models.Account, name='Account 2')
         dash.models.Campaign(
             account=acc,
             name='Campaign 2'

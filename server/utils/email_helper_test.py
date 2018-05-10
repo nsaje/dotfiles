@@ -256,9 +256,7 @@ class EmailHelperTestCase(TestCase):
     def test_send_async_report_email(self):
         user = User.objects.create_user('manager@user.com')
 
-        account = dash_models.Account(name='Account 1')
-        account.save(self.request)
-
+        account = magic_mixer.blend(dash_models.Account, name='Account 1')
         campaign = dash_models.Campaign(account=account, name='Campaign 1')
         campaign.save(self.request)
 
@@ -312,8 +310,7 @@ Zemanta
                                               'ziga.stopinsek@zemanta.com'])
 
     def test_send_pacing_email_low(self):
-        account = dash_models.Account(name='Test account')
-        account.save(self.request)
+        account = magic_mixer.blend(dash_models.Account, name='Test account')
 
         campaign = dash_models.Campaign(name='Test campaign', account=account, id=55)
         campaign.save(self.request)
@@ -341,8 +338,7 @@ Zemanta''')
         self.assertEqual(mail.outbox[0].to, ['prodops@zemanta.com'])
 
     def test_send_pacing_email_high(self):
-        account = dash_models.Account(name='Test account')
-        account.save(self.request)
+        account = magic_mixer.blend(dash_models.Account, name='Test account')
 
         campaign = dash_models.Campaign(name='Test campaign', account=account, id=55)
         campaign.save(self.request)
@@ -396,7 +392,8 @@ Zemanta''')
 
     @patch('utils.email_helper.send_account_notification_email')
     def test_send_obj_notification_email_account(self, mock_email):
-        email_helper.send_obj_changes_notification_email(dash_models.Account(), self.request, "")
+        account = magic_mixer.blend(dash_models.Account, name='Test account')
+        email_helper.send_obj_changes_notification_email(account, self.request, "")
         self.assertTrue(mock_email.called)
 
     @patch('utils.email_helper.send_campaign_notification_email')

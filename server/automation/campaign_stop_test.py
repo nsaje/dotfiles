@@ -2055,8 +2055,7 @@ class GetMatchingPairsTestCase(TestCase):
         request = HttpRequest()
         request.user = User.objects.get(id=1)
 
-        account = dash.models.Account()
-        account.save(request)
+        account = magic_mixer.blend(dash.models.Account)
 
         campaign = dash.models.Campaign()
         campaign.account = account

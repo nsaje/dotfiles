@@ -1,6 +1,7 @@
 from django.db import transaction
 
 from dash import constants
+import core.features.yahoo_accounts
 import core.common
 
 from . import model
@@ -29,6 +30,7 @@ class AccountManager(core.common.BaseManager):
         else:
             account.currency = currency
 
+        account.yahoo_account = core.features.yahoo_accounts.get_default_account()
         account.save(request)
         account.write_history(
             'Created account',

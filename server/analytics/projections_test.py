@@ -14,6 +14,7 @@ from django.test.client import RequestFactory
 from zemauth.models import User
 
 from utils import converters
+from utils.magic_mixer import magic_mixer
 
 
 class ProjectionsTestCase(test.TestCase):
@@ -220,13 +221,11 @@ class ProjectionsTestCase(test.TestCase):
         account.save(r)
 
         # make up for additional accounts to add to agency
-        for i in range(4):
-            a = dash.models.Account(
-                name='YATA - Yet Another Test Account {}'.format(i),
-                agency=agency
-            )
-            a.save(r)
-            accounts[i] = a
+        accounts = magic_mixer.cycle(4).blend(
+            dash.models.Account,
+            name=('YATA - Yet Another Test Account {}'.format(str(i)) for i in range(4)),
+            agency=agency
+        )
 
         self._create_batch_statements(
             dash.models.BudgetLineItem.objects.all(),
