@@ -555,7 +555,7 @@ class CampaignAdmin(admin.ModelAdmin):
 
 class SourceAdmin(admin.ModelAdmin):
     form = SourceForm
-    search_fields = ['name']
+    search_fields = ('name', 'bidder_slug')
     list_display = (
         'name',
         'source_type',
@@ -563,11 +563,13 @@ class SourceAdmin(admin.ModelAdmin):
         'bidder_slug',
         'maintenance',
         'deprecated',
+        'released',
         'impression_trackers_count',
         'created_dt',
         'modified_dt',
     )
-    readonly_fields = ('created_dt', 'modified_dt', 'deprecated')
+    readonly_fields = ('created_dt', 'modified_dt', 'deprecated',)
+    list_filter = ('maintenance', 'deprecated', 'released',)
 
     def get_queryset(self, request):
         qs = super(SourceAdmin, self).get_queryset(request)
