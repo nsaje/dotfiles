@@ -9,7 +9,7 @@ class YahooAccount(models.Model):
         app_label = 'dash'
 
     advertiser_id = models.CharField(blank=False, null=False, max_length=255, unique=True)
-    budgets_tz = TimeZoneField(default='America/Los_Angeles')
+    budgets_tz = TimeZoneField(default='America/New_York')
     currency = models.CharField(
         max_length=3,
         default=dash.constants.Currency.USD,
