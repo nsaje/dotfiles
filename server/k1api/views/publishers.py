@@ -18,7 +18,7 @@ class PublisherGroupsView(K1APIView):
     def get(self, request):
         account_id = request.GET.get('account_id')
 
-        publisher_groups = dash.models.PublisherGroup.objects.all()
+        publisher_groups = dash.models.PublisherGroup.objects.all().filter_by_active_adgroups()
         if account_id:
             publisher_groups = publisher_groups.filter_by_account(
                 dash.models.Account.objects.get(pk=account_id))
@@ -35,6 +35,7 @@ class PublisherGroupsEntriesView(K1APIView):
     def get(self, request):
         account_id = request.GET.get('account_id')
         source_slug = request.GET.get('source_slug')
+        publisher_group_ids = request.GET.get('publisher_group_ids')
         offset = request.GET.get('offset') or 0
         limit = request.GET.get('limit')
 
@@ -49,6 +50,10 @@ class PublisherGroupsEntriesView(K1APIView):
             publisher_groups = dash.models.PublisherGroup.objects.all().filter_by_account(
                 dash.models.Account.objects.get(pk=account_id))
             entries = entries.filter(publisher_group__in=publisher_groups)
+
+        if publisher_group_ids:
+            publisher_group_ids = publisher_group_ids.split(',')
+            entries = entries.filter(publisher_group_id__in=publisher_group_ids)
 
         if source_slug:
             entries = entries.filter(source__bidder_slug=source_slug)

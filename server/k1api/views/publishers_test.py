@@ -2,10 +2,6 @@ import json
 
 from django.core.urlresolvers import reverse
 
-import dash.features.geolocation
-import dash.features.ga
-import dash.constants
-import dash.models
 import core.publisher_bid_modifiers
 
 import logging
@@ -32,10 +28,10 @@ class PublishersTest(K1APIBaseTest):
         self.assert_response_ok(response, data)
         data = data['response']
 
-        pubgroups = dash.models.PublisherGroup.objects.filter(account_id=account_id)
-
         self.assertEqual(data, [
-            {'id': pubgroup.id, 'account_id': 1} for pubgroup in pubgroups
+            {'id': 1, 'account_id': 1},
+            {'id': 11, 'account_id': 1},
+            {'id': 12, 'account_id': 1},
         ])
 
     def test_get_publisher_groups_entries(self):
@@ -59,6 +55,29 @@ class PublishersTest(K1APIBaseTest):
              'outbrain_engage_publisher_id': 'df164', 'outbrain_publisher_id': 'asd123',
              'publisher': 'pub2', 'include_subdomains': True,
              'publisher_group_id': 1, 'source_slug': None, 'account_id': 1},
+        ])
+
+    def test_get_publisher_groups_entries_publisher_group_filter(self):
+        account_id = 1
+
+        response = self.client.get(
+            reverse('k1api.publisher_groups_entries'),
+            {'account_id': account_id, 'publisher_group_ids': '11,12', 'offset': 0, 'limit': 2}
+        )
+
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(data, [
+            {'outbrain_section_id': '', 'outbrain_amplify_publisher_id': '',
+             'outbrain_engage_publisher_id': '', 'outbrain_publisher_id': '',
+             'publisher': 'pub6', 'include_subdomains': True,
+             'publisher_group_id': 11, 'source_slug': 'outbrain', 'account_id': 1},
+            {'outbrain_section_id': '', 'outbrain_amplify_publisher_id': '',
+             'outbrain_engage_publisher_id': '', 'outbrain_publisher_id': '',
+             'publisher': 'pub7', 'include_subdomains': True,
+             'publisher_group_id': 12, 'source_slug': 'outbrain', 'account_id': 1},
         ])
 
     def test_get_publisher_groups_entries_source_slug(self):

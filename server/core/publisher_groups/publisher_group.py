@@ -76,6 +76,50 @@ class PublisherGroup(models.Model):
         def filter_by_agency(self, agency):
             return self.filter(models.Q(agency=agency))
 
+        def filter_by_active_adgroups(self):
+            data = (
+                core.entity.AdGroup.objects.all()
+                .filter_running()
+                .values_list(
+                    'default_blacklist_id',
+                    'default_whitelist_id',
+                    'settings__whitelist_publisher_groups',
+                    'settings__blacklist_publisher_groups',
+                    'campaign__default_blacklist_id',
+                    'campaign__default_whitelist_id',
+                    'campaign__settings__whitelist_publisher_groups',
+                    'campaign__settings__blacklist_publisher_groups',
+                    'campaign__account__default_blacklist_id',
+                    'campaign__account__default_whitelist_id',
+                    'campaign__account__settings__whitelist_publisher_groups',
+                    'campaign__account__settings__blacklist_publisher_groups',
+                    'campaign__account__agency__default_blacklist_id',
+                    'campaign__account__agency__default_whitelist_id',
+                    'campaign__account__agency__settings__whitelist_publisher_groups',
+                    'campaign__account__agency__settings__blacklist_publisher_groups',
+                )
+            )
+
+            ids = set()
+            ids.add(settings.GLOBAL_BLACKLIST_ID)
+
+            self._all_ids_from_values_list_to_set(data, ids)
+
+            return self.filter(id__in=ids)
+
+        def _all_ids_from_values_list_to_set(self, data, ids):
+            for line in data:
+                for item in line:
+                    if not item:
+                        continue
+                    try:
+                        for value in item:
+                            if not value:
+                                continue
+                            ids.add(value)
+                    except TypeError:
+                        ids.add(item)
+
     def can_delete(self):
         # Check all ad group settings of the corresponding account/agency if they reference the publisher group
         if self.agency:
