@@ -10,6 +10,8 @@ import core.entity
 import core.entity.settings
 import core.history
 
+ANNOTATION_QUALIFIED_PUBLISHER_GROUPS = set([16922])
+
 
 class PublisherGroupManager(core.common.QuerySetManager):
 
@@ -102,6 +104,7 @@ class PublisherGroup(models.Model):
 
             ids = set()
             ids.add(settings.GLOBAL_BLACKLIST_ID)
+            ids.update(ANNOTATION_QUALIFIED_PUBLISHER_GROUPS)
 
             self._all_ids_from_values_list_to_set(data, ids)
 
