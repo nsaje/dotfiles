@@ -14,7 +14,7 @@ AD_GROUP_SOURCE_SETTINGS_FIELDS = ['daily_budget_cc', 'state']
 
 
 def notify_initialize(campaign):
-    _notify(campaign.id, constants.CampaignUpdateType.INITIALIZATION)
+    _notify(campaign, constants.CampaignUpdateType.INITIALIZATION)
 
 
 def notify_ad_group_settings_change(ad_group_settings, changes):
