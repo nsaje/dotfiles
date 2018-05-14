@@ -2725,7 +2725,7 @@ Examples:
 - `geo` (geo)
 - `interest` (interest)
 - `publisherGroups` (publisherGroups)
-- `audiences` (AudienceTargetingExpression)
+- `audience` (AudienceTargetingExpression)
 - `customAudiences` (customAudiences)
 - `retargetingAdGroups` (retargetingAdGroups)
 

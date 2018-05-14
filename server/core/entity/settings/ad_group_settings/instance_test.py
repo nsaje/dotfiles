@@ -7,6 +7,7 @@ from utils.magic_mixer import magic_mixer
 import core.entity
 import core.source
 from dash import constants
+import utils.exc
 
 from . import model
 
@@ -252,3 +253,28 @@ class MulticurrencyTest(TestCase):
         mock_get_exchange_rate.return_value = Decimal('2.0')
         ad_group.settings.update(None, name='test')
         mock_get_exchange_rate.assert_not_called()
+
+
+class AdGroupArchiveRestoreTest(TestCase):
+
+    def test_archiving(self):
+        ad_group = magic_mixer.blend(core.entity.AdGroup)
+        ad_group.settings.update(None, archived=True)
+        self.assertTrue(ad_group.is_archived())
+        ad_group.settings.update(None, archived=False)
+        self.assertFalse(ad_group.is_archived())
+
+    @patch.object(core.entity.AdGroup, 'is_ad_group_active', return_value=True)
+    def test_cant_archive_paused_fail(self, mock_adgroup_is_active):
+        ad_group = magic_mixer.blend(core.entity.AdGroup)
+        with self.assertRaises(utils.exc.ForbiddenError):
+            ad_group.settings.update(None, archived=True)
+        self.assertFalse(ad_group.settings.archived)
+
+    @patch.object(core.entity.Campaign, 'is_archived', return_value=True)
+    def test_cant_restore_campaign_fail(self, mock_campaign_is_archived):
+        campaign = magic_mixer.blend(core.entity.Campaign)
+        ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=campaign)
+        ad_group.settings.update(None, archived=True)
+        with self.assertRaises(utils.exc.ForbiddenError):
+            ad_group.settings.update(None, archived=False)

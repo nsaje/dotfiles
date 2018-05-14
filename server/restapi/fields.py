@@ -20,6 +20,27 @@ class NotProvided(object):
 NOT_PROVIDED = NotProvided()
 
 
+class BlankToNoneFieldMixin:
+    def run_validation(self, value):
+        if value == '':
+            value = None
+        return super().run_validation(value)
+
+
+class NoneToBlankFieldMixin:
+    def run_validation(self, value):
+        if value is None:
+            value = ''
+        return super().run_validation(value)
+
+
+class NoneToListFieldMixin:
+    def run_validation(self, value):
+        if value is None:
+            value = []
+        return super().run_validation(value)
+
+
 class IdField(serializers.Field):
     def to_representation(self, data):
         if isinstance(data, django.db.models.Model):
@@ -80,3 +101,42 @@ class PlainCharField(serializers.CharField):
     def to_internal_value(self, data):
         validation_helper.validate_plain_text(data)
         return super(PlainCharField, self).to_internal_value(data)
+
+
+class BlankIntegerField(BlankToNoneFieldMixin, serializers.IntegerField):
+    pass
+
+
+class BlankDateField(BlankToNoneFieldMixin, serializers.DateField):
+    pass
+
+
+class BlankDecimalField(BlankToNoneFieldMixin, serializers.DecimalField):
+    pass
+
+
+class TwoWayBlankDecimalField(BlankToNoneFieldMixin, serializers.DecimalField):
+    def __init__(self, output_precision=None, *args, **kwargs):
+        self.output_precision = output_precision or self.decimal_places
+        super().__init__(*args, **kwargs)
+
+    def to_representation(self, value):
+        input_precision = self.decimal_places
+        self.decimal_places = self.output_precision
+        value = super().to_representation(value)
+        self.decimal_places = input_precision
+        return value
+
+    def get_initial(self):
+        initial = super().get_initial()
+        if initial is None:
+            return ''
+        return initial
+
+
+class NullPlainCharField(NoneToBlankFieldMixin, PlainCharField):
+    pass
+
+
+class NullListField(NoneToListFieldMixin, serializers.ListField):
+    pass

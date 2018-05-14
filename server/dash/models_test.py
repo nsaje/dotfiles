@@ -45,7 +45,7 @@ class AdGroupSettingsTest(TestCase):
         settings_dict = {
             'archived': False,
             'state': 1,
-            'cpc_cc': Decimal('1.00'),
+            'cpc_cc': Decimal('1.0000'),
             'daily_budget_cc': Decimal('50.0000'),
             'start_date': datetime.date(2014, 6, 4),
             'end_date': datetime.date(2014, 6, 5),
@@ -80,15 +80,15 @@ class AdGroupSettingsTest(TestCase):
             'call_to_action': 'Call to action',
             'ad_group_name': 'AdGroup name',
             'name': 'AdGroup name',
-            'autopilot_daily_budget': Decimal('0.0000'),
+            'autopilot_daily_budget': Decimal('30.0000'),
             'autopilot_state': 1,
             'landing_mode': False,
             'dayparting': {"monday": [1, 2, 5], "tuesday": [10, 12], "timezone": "CET"},
-            'max_cpm': Decimal('1.6'),
+            'max_cpm': Decimal('1.6000'),
             'b1_sources_group_enabled': True,
             'b1_sources_group_daily_budget': Decimal('500.0000'),
             'b1_sources_group_state': constants.AdGroupSourceSettingsState.ACTIVE,
-            'b1_sources_group_cpc_cc': Decimal('0.1'),
+            'b1_sources_group_cpc_cc': Decimal('0.1000'),
             'whitelist_publisher_groups': [1],
             'blacklist_publisher_groups': [2],
             'delivery_type': 1,
@@ -199,6 +199,7 @@ class AdGroupSettingsTest(TestCase):
             'Data targeting set to "["or", 3, 4]"',
             'Daily maximum number of clicks for ad group set to "10"',
             'Daily click budget for ad group set to "$5.00"',
+            'Autopilot\'s Daily Spend Cap set to "30.0000"',
         ]
         self.assertCountEqual(expected, actual)
 
