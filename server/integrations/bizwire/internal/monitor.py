@@ -197,7 +197,7 @@ Yesterday's expected spend was {} and actual spend was {}.'''.format(expected_sp
 
 
 def _send_missing_clicks_email_alert(missing_clicks):
-    if dates_helper.utc_now().hour != 14:
+    if dates_helper.utc_now().hour != 5:
         return
 
     if missing_clicks < MISSING_CLICKS_THRESHOLD:
