@@ -20,7 +20,7 @@ SIGNATURE_KEY_MIN_LEN = 16
 MAX_TS_SKEW = 60 * 15  # disallow requests with clock skew of more than 15 minutes
 CA_CERT_FILE = os.path.join(os.path.dirname(__file__), 'zemanta_ca_cert.pem')
 
-LOCAL_HOSTS = ['localhost', '127.0.0.1']
+LOCAL_HOSTS = ['localhost', '127.0.0.1', '172.17.0.1']
 
 
 class SignatureError(Exception):

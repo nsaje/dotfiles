@@ -103,3 +103,23 @@ def get_adgroup_realtimestats(ad_group_id, params={}):
     if params:
         url += '?' + urllib.parse.urlencode(params)
     return _call_api(url)
+
+
+def get_yahoo_migration(account_id):
+    url = settings.K1_YAHOO_MIGRATION_URL.format(account_id=account_id)
+    return _call_api(url)
+
+
+def update_yahoo_migration(account_id, **data):
+    url = settings.K1_YAHOO_MIGRATION_URL.format(account_id=account_id)
+    return _call_api(url, json.dumps(data), method='PUT')
+
+
+def get_yahoo_migration_campaign_mappings(account_id):
+    url = settings.K1_YAHOO_MIGRATION_CAMPAIGN_MAPPINGS_URL.format(account_id=account_id)
+    return _call_api(url)
+
+
+def get_yahoo_migration_content_ad_mappings(account_id):
+    url = settings.K1_YAHOO_MIGRATION_CONTENT_AD_MAPPINGS_URL.format(account_id=account_id)
+    return _call_api(url)

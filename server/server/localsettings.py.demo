@@ -98,6 +98,9 @@ if os.environ.get('BRANCH'):
 # K1 API
 K1_API_SIGN_KEY = [Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAzCxAayWHRR/pHcGJECARCAU8Egv3f+Em+DqDgaMe66NowOSRJMqgsSQxdSHxd9MdIAuPiQdysR0hQo23uR9gBWdhRUTtBFBN04q4oLn3EPgkQN51XG0ndzWV0wmfEgYS3w/dHg').get()]
 K1_REALTIMESTATS_ADGROUP_URL = 'https://k1.zemanta.com/realtimestats/adgroups/{ad_group_id}/'
+K1_YAHOO_MIGRATION_URL = ''
+K1_YAHOO_MIGRATION_CAMPAIGN_MAPPINGS_URL = ''
+K1_YAHOO_MIGRATION_CONTENT_AD_MAPPINGS_URL = ''
 
 # Source credentials encryption key
 CREDENTIALS_ENCRYPTION_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()  # has to be 32 bytes
