@@ -125,8 +125,7 @@ def _generate_statements(date, campaign, campaign_spend):
 
 
 def _handle_overspend(date, campaign, media_nano, data_nano):
-    if campaign.real_time_campaign_stop or\
-       campaign.get_current_settings().automatic_campaign_stop:
+    if campaign.real_time_campaign_stop:
         return
 
     try:

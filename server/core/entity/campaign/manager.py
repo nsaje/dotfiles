@@ -54,7 +54,6 @@ class CampaignManager(core.common.BaseManager):
         settings_updates['name'] = name
         settings_updates['iab_category'] = iab_category
         settings_updates['language'] = language
-        settings_updates['automatic_campaign_stop'] = False
 
         if request:
             settings_updates['campaign_manager'] = request.user
