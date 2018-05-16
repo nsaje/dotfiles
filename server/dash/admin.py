@@ -29,7 +29,6 @@ import utils.k1_helper
 import utils.email_helper
 import utils.redirector_helper
 
-from automation import campaign_stop
 from automation import campaignstop
 from utils.admin_common import SaveWithRequestMixin
 
@@ -524,13 +523,6 @@ class CampaignAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         old_obj = models.Campaign.objects.get(id=obj.id)
-        automatic_campaign_stop = form.cleaned_data.get('automatic_campaign_stop', None)
-        new_settings = obj.get_current_settings().copy_settings()
-        if new_settings.automatic_campaign_stop != automatic_campaign_stop:
-            new_settings.automatic_campaign_stop = automatic_campaign_stop
-            new_settings.save(request)
-        obj.save(request)
-        campaign_stop.perform_landing_mode_check(obj, new_settings)
         if obj.real_time_campaign_stop and not old_obj.real_time_campaign_stop:
             campaignstop.notify_initialize(obj)
         utils.k1_helper.update_ad_groups(

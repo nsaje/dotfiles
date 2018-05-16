@@ -977,8 +977,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             "is_agency": True,
         }])
 
-    @patch('automation.campaign_stop.perform_landing_mode_check')
-    def test_put(self, mock_lmode):
+    def test_put(self):
         c = models.CreditLineItem.objects.create_unsafe(
             account_id=10,
             start_date=datetime.date(2015, 10, 1),
@@ -989,7 +988,6 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             created_by_id=1,
         )
 
-        mock_lmode.return_value = False
         data = {
             'credit': c.pk,
             'amount': '1000',
@@ -1020,7 +1018,6 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             mock_now.return_value = datetime.date(2015, 10, 11)
             response = self.client.put(url, json.dumps(data), content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(mock_lmode.called)
 
         hist = history_helpers.get_campaign_history(
             models.Campaign.objects.get(pk=10)).first()
@@ -1035,8 +1032,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         ).order_by('-created_dt').first()
         self.assertEqual(self.user, hist.created_by)
 
-    @patch('automation.campaign_stop.perform_landing_mode_check')
-    def test_put_margin_no_permission(self, mock_lmode):
+    def test_put_margin_no_permission(self):
         c = models.CreditLineItem.objects.create_unsafe(
             account_id=10,
             start_date=datetime.date(2017, 10, 1),
@@ -1047,7 +1043,6 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             created_by_id=1,
         )
 
-        mock_lmode.return_value = False
         data = {
             'credit': c.pk,
             'amount': '1000',
@@ -1073,8 +1068,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             models.BudgetLineItem.objects.get(pk=insert_id).margin,
             models.BudgetLineItem._meta.get_field('margin').default)
 
-    @patch('automation.campaign_stop.perform_landing_mode_check')
-    def test_put_margin(self, mock_lmode):
+    def test_put_margin(self):
         c = models.CreditLineItem.objects.create_unsafe(
             account_id=10,
             start_date=datetime.date(2015, 10, 1),
@@ -1085,7 +1079,6 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             created_by_id=1,
         )
 
-        mock_lmode.return_value = False
         data = {
             'credit': c.pk,
             'amount': '1000',
@@ -1191,10 +1184,8 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             }
         )
 
-    @patch('automation.campaign_stop.perform_landing_mode_check')
-    def test_post(self, mock_lmode):
+    def test_post(self):
         data = {}
-        mock_lmode.return_value = False
         url = reverse('campaigns_budget_item', kwargs={
             'campaign_id': 1,
             'budget_id': 1,
@@ -1231,9 +1222,8 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             json.loads(response.content)['data'],
-            {'id': 1, 'state_changed': False}
+            {'id': 1}
         )
-        self.assertTrue(mock_lmode.called)
         self.assertEqual(models.BudgetLineItem.objects.get(pk=1).comment, 'Test case test_post')
 
         hist = history_helpers.get_campaign_history(
@@ -1241,7 +1231,6 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         self.assertIsNotNone(hist.created_by)
         self.assertEqual(constants.HistoryActionType.BUDGET_CHANGE, hist.action_type)
 
-        mock_lmode.return_value = True
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 9, 30)
             response = self.client.post(url, json.dumps(data),
@@ -1249,7 +1238,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             json.loads(response.content)['data'],
-            {'id': 1, 'state_changed': True}
+            {'id': 1}
         )
 
         hist = models.History.objects.filter(
@@ -1257,10 +1246,8 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         ).order_by('-created_dt').first()
         self.assertEqual(self.user, hist.created_by)
 
-    @patch('automation.campaign_stop.perform_landing_mode_check')
-    def test_post_margin(self, mock_lmode):
+    def test_post_margin(self):
         data = {}
-        mock_lmode.return_value = False
         url = reverse('campaigns_budget_item', kwargs={
             'campaign_id': 1,
             'budget_id': 1,
@@ -1287,17 +1274,15 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             json.loads(response.content)['data'],
-            {'id': 1, 'state_changed': False}
+            {'id': 1}
         )
         self.assertEqual(
             models.BudgetLineItem.objects.get(id=1).margin,
             Decimal('0.15'),
         )  # no change
 
-    @patch('automation.campaign_stop.perform_landing_mode_check')
     @patch('automation.campaignstop.validate_minimum_budget_amount')
-    def test_post_lower_unactive(self, mock_validate_min_amount, mock_lmode):
-        mock_lmode.return_value = False
+    def test_post_lower_unactive(self, mock_validate_min_amount):
         credit = models.CreditLineItem.objects.get(pk=1)
         credit.status = 1
         credit.end_date = datetime.date(2015, 12, 31)
@@ -1321,10 +1306,8 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         self.assertTrue(mock_validate_min_amount.called)
         self.assertEqual(response.status_code, 200)
 
-    @patch('automation.campaign_stop.perform_landing_mode_check')
     @patch('automation.campaignstop.validate_minimum_budget_amount')
-    def test_post_lower_campaign_stop_off(self, mock_validate_min_amount, mock_lmode):
-        mock_lmode.return_value = False
+    def test_post_lower_campaign_stop_off(self, mock_validate_min_amount):
         credit = models.CreditLineItem.objects.get(pk=1)
         credit.status = 1
         credit.end_date = datetime.date(2015, 12, 31)
@@ -1357,10 +1340,8 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         self.assertFalse(mock_validate_min_amount.called)
         self.assertEqual(response.status_code, 400)
 
-    @patch('automation.campaign_stop.perform_landing_mode_check')
     @patch('automation.campaignstop.validate_minimum_budget_amount')
-    def test_post_lower_active(self, mock_validate_min_amount, mock_lmode):
-        mock_lmode.return_value = False
+    def test_post_lower_active(self, mock_validate_min_amount):
         credit = models.CreditLineItem.objects.get(pk=1)
         credit.status = 1
         credit.end_date = datetime.date(2015, 12, 31)
@@ -1385,10 +1366,8 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         self.assertTrue(mock_validate_min_amount.called)
         self.assertEqual(response.status_code, 200)
 
-    @patch('automation.campaign_stop.perform_landing_mode_check')
     @patch('automation.campaignstop.validate_minimum_budget_amount')
-    def test_post_lower_active_too_low(self, mock_validate_min_amount, mock_lmode):
-        mock_lmode.return_value = False
+    def test_post_lower_active_too_low(self, mock_validate_min_amount):
         credit = models.CreditLineItem.objects.get(pk=1)
         credit.status = 1
         credit.end_date = datetime.date(2015, 12, 31)
@@ -1421,9 +1400,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             ['Budget amount has to be at least $95000.00.']
         )
 
-    @patch('automation.campaign_stop.perform_landing_mode_check')
-    def test_delete(self, mock_lmode):
-        mock_lmode.return_value = False
+    def test_delete(self):
         url = reverse('campaigns_budget_item', kwargs={
             'campaign_id': 1,
             'budget_id': 1,
@@ -1438,7 +1415,6 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             mock_now.return_value = datetime.date(2015, 9, 30)
             response = self.client.delete(url)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(mock_lmode.called)
 
 
 class BudgetSpendInViewsTestCase(BCMViewTestCase):

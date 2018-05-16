@@ -29,8 +29,6 @@ class AdGroupSettingsValidatorMixin(object):
         self._validate_autopilot_settings(new_settings)
         self._validate_all_rtb_state(new_settings)
         self._validate_yahoo_desktop_targeting(new_settings)
-        self._validate_all_rtb_campaign_stop(new_settings)
-        self._validate_autopilot_campaign_stop(new_settings)
         self._validate_bluekai_targeting_change(new_settings)
 
     def _get_currency_symbol(self):
@@ -161,24 +159,6 @@ class AdGroupSettingsValidatorMixin(object):
                 )
             )
 
-    def _validate_autopilot_campaign_stop(self, new_settings):
-        from automation import campaign_stop
-        if new_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-            return
-
-        if self.autopilot_daily_budget >= new_settings.autopilot_daily_budget:
-            return
-
-        max_settable = campaign_stop.get_max_settable_autopilot_budget(
-            self.ad_group,
-            self.ad_group.campaign,
-            new_settings,
-            self.ad_group.campaign.settings,
-        )
-        if max_settable is not None and new_settings.autopilot_daily_budget > max_settable:
-            msg = 'Total Daily Spend Cap is too high. Maximum daily spend can be up to ${}'.format(max_settable)
-            raise exceptions.AutopilotDailyBudgetTooHigh(msg)
-
     def _validate_all_rtb_state(self, new_settings):
         # MVP for all-RTB-sources-as-one
         # Ensure that AdGroup is paused when enabling/disabling All RTB functionality
@@ -191,36 +171,6 @@ class AdGroupSettingsValidatorMixin(object):
             if not new_settings.b1_sources_group_enabled:
                 'To disable managing Daily Spend Cap for All RTB as one, ad group must be paused first.'
             raise exceptions.AdGroupNotPaused(msg)
-
-    def _validate_all_rtb_campaign_stop(self, new_settings):
-        from automation import campaign_stop
-        changes = self.get_setting_changes(new_settings)
-        if 'b1_sources_group_daily_budget' in changes:
-            new_daily_budget = decimal.Decimal(changes['b1_sources_group_daily_budget'])
-            max_daily_budget = campaign_stop.get_max_settable_b1_sources_group_budget(
-                self.ad_group,
-                self.ad_group.campaign,
-                new_settings,
-                self.ad_group.campaign.settings,
-            )
-            if max_daily_budget is not None and new_daily_budget > max_daily_budget:
-                raise exceptions.B1DailyBudgetTooHigh(
-                    'Daily Spend Cap is too high. Maximum daily spend '
-                    'cap can be up to ${max_daily_budget}.'.format(
-                        max_daily_budget=max_daily_budget)
-                )
-
-        if 'b1_sources_group_state' in changes:
-            can_enable_b1_sources_group = campaign_stop.can_enable_b1_sources_group(
-                self.ad_group,
-                self.ad_group.campaign,
-                new_settings,
-                self.ad_group.campaign.settings,
-            )
-            if not can_enable_b1_sources_group:
-                raise exceptions.CantEnableB1SourcesGroup(
-                    'Please add additional budget to your campaign to make changes.'
-                )
 
     @classmethod
     def _validate_bluekai_tageting(cls, bluekai_targeting):

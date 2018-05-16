@@ -487,7 +487,7 @@ def copy_stats_to_row(stat, row):
 
 
 def get_editable_fields(ad_group, ad_group_source, ad_group_settings, ad_group_source_settings,
-                        campaign_settings, allowed_sources, can_enable_source):
+                        campaign_settings, allowed_sources):
     editable_fields = {}
     editable_fields['status_setting'] = _get_editable_fields_status_setting(
         ad_group,
@@ -495,7 +495,6 @@ def get_editable_fields(ad_group, ad_group_source, ad_group_settings, ad_group_s
         ad_group_settings,
         ad_group_source_settings,
         allowed_sources,
-        can_enable_source,
     )
 
     editable_fields['bid_cpc'] = _get_editable_fields_bid_cpc(
@@ -548,14 +547,11 @@ def _get_editable_fields_daily_budget(ad_group, ad_group_source, ad_group_settin
 
 
 def _get_editable_fields_status_setting(ad_group, ad_group_source, ad_group_settings,
-                                        ad_group_source_settings, allowed_sources,
-                                        can_enable_source):
+                                        ad_group_source_settings, allowed_sources):
     message = None
 
     if ad_group_source.source_id not in allowed_sources:
         message = 'Please contact support to enable this source.'
-    elif not can_enable_source:
-        message = 'Please add additional budget to your campaign to make changes.'
     elif not ad_group_source.source.can_update_state() or\
             not ad_group_source.can_manage_content_ads:
         message = _get_status_setting_disabled_message(ad_group_source)
@@ -787,9 +783,6 @@ def get_users_for_manager(user, account, current_manager=None):
 def validate_ad_groups_state(ad_groups, campaign, campaign_settings, state):
     if state is None or state not in constants.AdGroupSettingsState.get_all():
         raise exc.ValidationError()
-
-    if not automation.campaign_stop.can_enable_all_ad_groups(campaign, campaign_settings, ad_groups):
-        raise exc.ValidationError('Please add additional budget to your campaign to make changes.')
 
     if state == constants.AdGroupSettingsState.ACTIVE:
         if not data_helper.campaign_has_available_budget(campaign):

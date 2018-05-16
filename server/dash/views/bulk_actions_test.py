@@ -115,34 +115,10 @@ class AdGroupSourceStateTest(TestCase):
         with self.assertRaises(exc.ValidationError):
             view._check_can_set_state(campaign_settings, ad_group_settings, ad_group, ad_group_sources, state)
 
-    @patch('automation.campaign_stop.can_enable_all_media_sources')
-    def test_check_can_set_state_campaign_stop(self, campaign_stop_mock):
-        campaign_stop_mock.return_value = False
-
-        view = bulk_actions.AdGroupSourceState()
-        campaign_settings = models.CampaignSettings(automatic_campaign_stop=True)
-        ad_group = models.AdGroup.objects.get(pk=1)
-        ad_group_settings = ad_group.get_current_settings()
-        ad_group_sources = []
-        state = None
-
-        with self.assertRaises(exc.ValidationError):
-            view._check_can_set_state(campaign_settings, ad_group_settings, ad_group, ad_group_sources, state)
-
-        campaign_stop_mock.assert_called_once_with(
-            ad_group.campaign,
-            campaign_settings,
-            [],
-            ad_group_settings,
-        )
-
     @patch('dash.views.helpers.enabling_autopilot_sources_allowed')
     @patch('dash.views.helpers.check_facebook_source')
     @patch('dash.retargeting_helper.can_add_source_with_retargeting')
-    @patch('automation.campaign_stop.can_enable_all_media_sources')
-    def test_check_can_set_state(self, campaign_stop_mock, retargeting_mock, facebook_mock, autopilot_check_mock):
-        campaign_stop_mock.return_value = True
-
+    def test_check_can_set_state(self, retargeting_mock, facebook_mock, autopilot_check_mock):
         view = bulk_actions.AdGroupSourceState()
         campaign_settings = models.CampaignSettings()
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -870,9 +846,8 @@ class CampaignAdGroupStateTest(TestCase):
 
     @patch('automation.autopilot.recalculate_budgets_campaign')
     @patch('dash.dashapi.data_helper.campaign_has_available_budget')
-    @patch('automation.campaign_stop.can_enable_ad_groups')
     @patch('dash.views.helpers.validate_ad_groups_state')
-    def test_enable(self, mock_validate_state, mock_can_enable, mock_has_budget, mock_autopilot):
+    def test_enable(self, mock_validate_state, mock_has_budget, mock_autopilot):
         campaign = models.Campaign.objects.get(pk=1)
         campaign.settings.update_unsafe(None, autopilot=True)
         ad_group_id = 9
@@ -904,9 +879,8 @@ class CampaignAdGroupStateTest(TestCase):
         mock_autopilot.assert_called_once_with(campaign)
 
     @patch('dash.dashapi.data_helper.campaign_has_available_budget')
-    @patch('automation.campaign_stop.can_enable_ad_groups')
     @patch('dash.views.helpers.validate_ad_groups_state')
-    def test_pause(self, mock_validate_state, mock_can_enable, mock_has_budget):
+    def test_pause(self, mock_validate_state, mock_has_budget):
         campaign = models.Campaign.objects.get(pk=1)
         ad_group_id = 9
         state = constants.AdGroupSettingsState.INACTIVE

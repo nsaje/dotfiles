@@ -7,7 +7,6 @@ from django.forms.models import model_to_dict
 from dash import models, constants, forms
 from utils import api_common, exc
 from dash.views import helpers
-from automation import campaign_stop
 
 import automation.campaignstop
 import core.bcm
@@ -347,14 +346,12 @@ class CampaignBudgetView(api_common.BaseApiView):
                         .prefetch_related('budgets'))
 
         active_budget = self._get_active_budget(user, campaign, budget_items)
-        automatic_campaign_stop = campaign.get_current_settings().automatic_campaign_stop
         return self.create_api_response({
             'active': active_budget,
             'past': self._get_past_budget(user, campaign, budget_items),
             'totals': self._get_budget_totals(user, campaign, active_budget, budget_items, credit_items),
             'credits': self._get_available_credit_items(user, campaign, credit_items),
-            'min_amount': (automatic_campaign_stop and
-                           campaign_stop.get_min_budget_increase(campaign) or "0"),
+            'min_amount': '0',
         })
 
     def _get_available_credit_items(self, user, campaign, available_credits):
@@ -480,10 +477,6 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             raise exc.ValidationError(errors=item.errors)
 
         item.save(request=request, action_type=constants.HistoryActionType.BUDGET_CHANGE)
-        state_changed = campaign_stop.perform_landing_mode_check(
-            campaign,
-            campaign.get_current_settings()
-        )
 
         changes = item.instance.get_model_state_changes(model_to_dict(item.instance))
         core.bcm.bcm_slack.log_to_slack(campaign.account_id, core.bcm.bcm_slack.SLACK_UPDATED_BUDGET_MSG.format(
@@ -495,7 +488,6 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         ))
         return self.create_api_response({
             'id': item.instance.pk,
-            'state_changed': state_changed,
         })
 
     def delete(self, request, campaign_id, budget_id):
@@ -508,7 +500,6 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             item.delete()
         except AssertionError:
             raise exc.ValidationError('Budget item is not pending')
-        campaign_stop.perform_landing_mode_check(campaign, campaign.get_current_settings())
         campaign.write_history(
             'Deleted budget',
             action_type=constants.HistoryActionType.BUDGET_CHANGE,

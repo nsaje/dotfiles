@@ -70,7 +70,7 @@ class FilterTestCase(TestCase):
         self.public_fields = {
             'id', 'breakdown_id', 'breakdown_name', 'name', 'parent_breakdown_id',
             'account', 'account_id', 'account_status',
-            'campaign', 'campaign_has_available_budget', 'campaign_id', 'campaign_status', 'campaign_stop_inactive',
+            'campaign', 'campaign_has_available_budget', 'campaign_id', 'campaign_status',
             'ad_group', 'ad_group_id', 'ad_group_status',
             'content_ad', 'content_ad_id', 'content_ad_status', 'call_to_action', 'brand_name', 'description', 'display_url',
             'domain', 'domain_link', 'editable_fields', 'batch_id', 'batch_name', 'image_hash', 'image_url', 'image_urls', 'label', 'redirector_url', 'title', 'tracker_urls', 'upload_time', 'url',

@@ -10,7 +10,6 @@ from django.core.urlresolvers import reverse
 import dash.models
 from dash import constants
 from automation import autopilot
-from automation import campaign_stop
 from utils.magic_mixer import magic_mixer
 import utils.test_helper
 
@@ -343,16 +342,6 @@ class AdGroupsTest(RESTAPITest):
         r = self.client.put(
             reverse('adgroups_details', kwargs={'ad_group_id': 2040}),
             data={'state': 'NOTVALID'},
-            format='json',
-        )
-        self.assertResponseError(r, 'ValidationError')
-
-    @mock.patch.object(campaign_stop, 'can_enable_all_ad_groups', return_value=False)
-    def test_adgroups_put_invalid_budget(self, mock_campaign_stop):
-        adgroup = self.adgroup_repr(state=constants.AdGroupSettingsState.ACTIVE)
-        r = self.client.put(
-            reverse('adgroups_details', kwargs={'ad_group_id': 2040}),
-            data=adgroup,
             format='json',
         )
         self.assertResponseError(r, 'ValidationError')

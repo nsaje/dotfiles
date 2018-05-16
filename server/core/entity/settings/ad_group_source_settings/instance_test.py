@@ -215,26 +215,6 @@ class AdGroupSourceUpdate(TestCase):
 
         self.ad_group_source.settings.update(cpc_cc=decimal.Decimal('0.1'))
 
-    @patch('automation.campaign_stop.get_max_settable_source_budget')
-    def test_update_campaign_stop_budget(self, get_budget_mock):
-        self.ad_group.campaign.settings.update(None, automatic_campaign_stop=True)
-
-        get_budget_mock.return_value = decimal.Decimal('1.0')
-
-        with self.assertRaises(utils.exc.ValidationError):
-            self.ad_group_source.settings.update(daily_budget_cc=decimal.Decimal('1.1'))
-
-        self.ad_group_source.settings.update(daily_budget_cc=decimal.Decimal('1.0'))
-
-    @patch('automation.campaign_stop.can_enable_media_source')
-    def test_update_campaign_stop_state(self, can_enable_mock):
-        self.ad_group.campaign.settings.update(None, automatic_campaign_stop=True)
-
-        can_enable_mock.return_value = False
-
-        with self.assertRaises(utils.exc.ValidationError):
-            self.ad_group_source.settings.update(state=constants.AdGroupSourceSettingsState.ACTIVE)
-
     @patch('dash.views.helpers.enabling_autopilot_sources_allowed')
     def test_update_autopilot_state(self, enabling_allowed_mock):
         self.ad_group.campaign.settings.update(None, automatic_campaign_stop=True)

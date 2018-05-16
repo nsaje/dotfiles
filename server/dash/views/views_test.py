@@ -316,14 +316,6 @@ class AdGroupSourceSettingsTest(TestCase):
         new_campaign_settings.landing_mode = True
         new_campaign_settings.save(None)
 
-    def _set_campaign_automatic_campaign_stop(self, automatic_campaign_stop):
-        current_settings = self.ad_group.campaign.get_current_settings()
-        new_settings = current_settings.copy_settings()
-        new_settings.automatic_campaign_stop = automatic_campaign_stop
-        request = HttpRequest()
-        request.user = User.objects.get(id=1)
-        new_settings.save(request)
-
     @patch.object(models.AdGroupSourceSettings, 'update')
     def test_put_local(self, mock_ad_group_source_settings_update):
         self.client.put(
@@ -400,36 +392,6 @@ class AdGroupSourceSettingsTest(TestCase):
         hist = history_helpers.get_ad_group_history(models.AdGroup.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
 
-    @patch('automation.campaign_stop.get_max_settable_source_budget')
-    def test_daily_budget_over_max_settable(self, mock_max_settable_budget):
-        mock_max_settable_budget.return_value = decimal.Decimal('500')
-        self._set_ad_group_end_date(days_delta=3)
-        self._set_campaign_automatic_campaign_stop(False)
-        response = self.client.put(
-            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
-            data=json.dumps({'daily_budget_cc': '600'})
-        )
-        self.assertEqual(response.status_code, 200)
-
-        self._set_campaign_automatic_campaign_stop(True)
-        response = self.client.put(
-            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
-            data=json.dumps({'daily_budget_cc': '700'})
-        )
-        self.assertEqual(response.status_code, 400)
-
-        response = self.client.put(
-            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
-            data=json.dumps({'daily_budget_cc': '500'})
-        )
-        self.assertEqual(response.status_code, 200)
-
-        response = self.client.put(
-            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
-            data=json.dumps({'daily_budget_cc': '400'})
-        )
-        self.assertEqual(response.status_code, 200)
-
     def test_source_cpc_over_ad_group_maximum(self):
         self._set_ad_group_end_date(days_delta=3)
         response = self.client.put(
@@ -446,9 +408,8 @@ class AdGroupSourceSettingsTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-    @patch('automation.campaign_stop.can_enable_media_source')
     @patch('automation.autopilot.recalculate_budgets_ad_group')
-    def test_adgroup_on_budget_autopilot_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap, mock_campaign_stop):
+    def test_adgroup_on_budget_autopilot_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap):
         self._set_ad_group_end_date(days_delta=3)
         response = self.client.put(
             reverse('ad_group_source_settings', kwargs={'ad_group_id': '4', 'source_id': '1'}),
@@ -457,9 +418,8 @@ class AdGroupSourceSettingsTest(TestCase):
         mock_budget_ap.assert_called_with(models.AdGroup.objects.get(id=4), send_mail=False)
         self.assertEqual(response.status_code, 200)
 
-    @patch('automation.campaign_stop.can_enable_media_source')
     @patch('automation.autopilot.recalculate_budgets_ad_group')
-    def test_adgroup_not_on_budget_autopilot_not_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap, mock_campaign_stop):
+    def test_adgroup_not_on_budget_autopilot_not_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap):
         self._set_ad_group_end_date(days_delta=3)
         self._set_autopilot_state(constants.AdGroupSettingsAutopilotState.INACTIVE)
         response = self.client.put(

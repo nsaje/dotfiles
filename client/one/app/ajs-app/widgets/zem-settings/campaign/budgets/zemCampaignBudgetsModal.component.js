@@ -72,9 +72,7 @@ angular.module('one.widgets').component('zemCampaignBudgetsModal', {
             endpoint($ctrl.campaign.id, $ctrl.budgetItem).then(function (data) {
                 $ctrl.saved = true;
                 closeModal(data);
-                if (data.stateChanged) {
-                    zemNavigationService.reload();
-                }
+                zemNavigationService.reload();
             }, function (errors) {
                 $ctrl.errors = errors;
                 $ctrl.saved = false;

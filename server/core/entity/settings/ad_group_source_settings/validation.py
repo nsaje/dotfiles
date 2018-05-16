@@ -75,7 +75,6 @@ class AdGroupSourceSettingsValidatorMixin(object):
                 })
 
     def validate_ad_group_source_campaign_stop(self, new_settings):
-        from automation import campaign_stop
         from dash.views import helpers
 
         campaign = self.ad_group_source.ad_group.campaign
@@ -86,33 +85,7 @@ class AdGroupSourceSettingsValidatorMixin(object):
                     continue
                 raise utils.exc.ValidationError(errors={key: 'Not allowed'})
         elif campaign.settings.automatic_campaign_stop:
-            if 'daily_budget_cc' in changes:
-                new_daily_budget = decimal.Decimal(new_settings.daily_budget_cc)
-                max_daily_budget = campaign_stop.get_max_settable_source_budget(
-                    self.ad_group_source,
-                    campaign,
-                    self,
-                    self.ad_group_source.ad_group.settings,
-                    campaign.settings
-                )
-                # TODO (multicurrency): Add multi-currency support for error handling
-                if max_daily_budget is not None and new_daily_budget > max_daily_budget:
-                    raise utils.exc.ValidationError(errors={
-                        'daily_budget_cc': [
-                            'Daily Spend Cap is too high. Maximum daily spend cap can be up to ${max_daily_budget}.'.format(
-                                max_daily_budget=max_daily_budget
-                            )
-                        ]
-                    })
-
             if 'state' in changes:
-                can_enable_media_source = campaign_stop.can_enable_media_source(
-                    self.ad_group_source, campaign, campaign.settings, self.ad_group_source.ad_group.settings)
-                if not can_enable_media_source:
-                    raise utils.exc.ValidationError(errors={
-                        'state': ['Please add additional budget to your campaign to make changes.']
-                    })
-
                 if new_settings.state == constants.AdGroupSourceSettingsState.ACTIVE:
                     enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(
                         self.ad_group_source.ad_group,

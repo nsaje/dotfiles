@@ -225,15 +225,12 @@ class AdGroupsLoaderTest(TestCase):
         self.assertDictEqual(self.loader.base_level_settings_map, {
             1: {
                 'campaign_has_available_budget': False,
-                'campaign_stop_inactive': True,
             },
             2: {
                 'campaign_has_available_budget': False,
-                'campaign_stop_inactive': False,
             },
             3: {
                 'campaign_has_available_budget': False,
-                'campaign_stop_inactive': None,
             },
         })
 
@@ -533,6 +530,7 @@ class AdGroupSourcesLoaderTest(TestCase):
         self.assertEqual(rtb_source['editable_fields']['daily_budget']['enabled'], False)
 
     def test_settings_map(self):
+        self.maxDiff = None
         self.assertDictEqual(self.loader.settings_map, {
             1: {
                 'state': 1,
@@ -569,8 +567,8 @@ class AdGroupSourcesLoaderTest(TestCase):
                 'local_bid_cpc': Decimal('0.5020'),
                 'editable_fields': {
                     'state': {
-                        'message': 'Please add additional budget to your campaign to make changes.',
-                        'enabled': False
+                        'message': None,
+                        'enabled': True
                     },
                     'bid_cpc': {
                         'message': 'This value cannot be edited because the ad group is on Autopilot.',

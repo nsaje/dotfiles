@@ -323,10 +323,9 @@ class AdGroupSettingsTest(TestCase):
             }
         )
 
-    @patch('core.entity.settings.AdGroupSettings._validate_all_rtb_campaign_stop')
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('utils.k1_helper.update_ad_group')
-    def test_put(self, mock_k1_ping, mock_redirector_insert_adgroup, mock_validate_all_rtb_campaign_stop):
+    def test_put(self, mock_k1_ping, mock_redirector_insert_adgroup):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
@@ -540,13 +539,11 @@ class AdGroupSettingsTest(TestCase):
 
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('automation.autopilot.recalculate_budgets_ad_group')
-    @patch('automation.campaign_stop.get_max_settable_autopilot_budget', autospec=True)
     def test_put_set_budget_autopilot_triggers_budget_reallocation(
-            self, mock_get_max_budget, mock_redirector_insert_adgroup, mock_init_autopilot):
+            self, mock_redirector_insert_adgroup, mock_init_autopilot):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
-            mock_get_max_budget.return_value = 1000
 
             ad_group = models.AdGroup.objects.get(pk=987)
             old_settings = ad_group.get_current_settings()
@@ -922,13 +919,11 @@ class AdGroupSettingsStateTest(TestCase):
             'success': True
         })
 
-    @patch('automation.campaign_stop.can_enable_all_ad_groups')
     @patch('dash.dashapi.data_helper.campaign_has_available_budget')
     @patch('utils.k1_helper.update_ad_group')
-    def test_activate(self, mock_k1_ping, mock_budget_check, mock_campaign_stop):
+    def test_activate(self, mock_k1_ping, mock_budget_check):
         ad_group = models.AdGroup.objects.get(pk=2)
         mock_budget_check.return_value = True
-        mock_campaign_stop.return_value = True
 
         # ensure this campaign has a goal
         models.CampaignGoal.objects.create_unsafe(campaign_id=ad_group.campaign_id)
@@ -945,13 +940,11 @@ class AdGroupSettingsStateTest(TestCase):
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.ACTIVE)
         mock_k1_ping.assert_called_with(2, msg='AdGroupSettings.put')
 
-    @patch('automation.campaign_stop.can_enable_all_ad_groups')
     @patch('dash.dashapi.data_helper.campaign_has_available_budget')
     @patch('utils.k1_helper.update_ad_group')
-    def test_activate_already_activated(self, mock_k1_ping, mock_budget_check, mock_campaign_stop):
+    def test_activate_already_activated(self, mock_k1_ping, mock_budget_check):
         ad_group = models.AdGroup.objects.get(pk=1)
         mock_budget_check.return_value = True
-        mock_campaign_stop.return_value = True
 
         # ensure this campaign has a goal
         models.CampaignGoal.objects.create_unsafe(campaign_id=ad_group.campaign_id)
@@ -1031,11 +1024,8 @@ class AdGroupSettingsStateTest(TestCase):
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
         mock_k1_ping.assert_called_with(1, msg='AdGroupSettings.put')
 
-    @patch('automation.campaign_stop.can_enable_all_ad_groups')
-    def test_inactivate_already_inactivated(self, mock_campaign_stop):
+    def test_inactivate_already_inactivated(self):
         ad_group = models.AdGroup.objects.get(pk=2)
-        mock_campaign_stop.return_value = True
-
         add_permissions(self.user, ['can_control_ad_group_state_in_table'])
         response = self.client.post(
             reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),

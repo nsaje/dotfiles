@@ -50,9 +50,6 @@ class BudgetLineItemManager(core.common.QuerySetManager):
             item.comment = comment
         item.save(request=request, action_type=constants.HistoryActionType.CREATE)
 
-        import automation.campaign_stop
-        automation.campaign_stop.perform_landing_mode_check(campaign, campaign.get_current_settings())
-
         bcm_slack.log_to_slack(campaign.account_id, bcm_slack.SLACK_NEW_BUDGET_MSG.format(
             budget_id=item.pk,
             url=bcm_slack.CAMPAIGN_URL.format(campaign.id),

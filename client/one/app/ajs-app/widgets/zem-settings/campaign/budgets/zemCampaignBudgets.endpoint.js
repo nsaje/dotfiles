@@ -56,7 +56,6 @@ angular.module('one.services').service('zemCampaignBudgetsEndpoint', function ($
         ).then(processResponse, processError).then(function (data) {
             return {
                 id: data.id,
-                stateChanged: data.state_changed,
             };
         });
     }

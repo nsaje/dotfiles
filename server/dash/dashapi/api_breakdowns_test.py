@@ -61,8 +61,8 @@ AD_GROUP_2 = {
     'archived': False, 'name': 'test adgroup 2', 'status': 2, 'state': 2,
 }
 
-AD_GROUP_BASE_1 = dict_join(AD_GROUP_1, {'campaign_has_available_budget': False, 'campaign_stop_inactive': True})
-AD_GROUP_BASE_2 = dict_join(AD_GROUP_2, {'campaign_has_available_budget': False, 'campaign_stop_inactive': False})
+AD_GROUP_BASE_1 = dict_join(AD_GROUP_1, {'campaign_has_available_budget': False})
+AD_GROUP_BASE_2 = dict_join(AD_GROUP_2, {'campaign_has_available_budget': False})
 
 CONTENT_AD_1 = {
     'content_ad_id': 1, 'ad_group_id': 1, 'campaign_id': 1, 'account_id': 1, 'agency_id': None,
@@ -153,8 +153,8 @@ AD_GROUP_SOURCE_2 = {
     'supply_dash_disabled_message': "This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard.",  # noqa
     'state': 2, 'status': 2, 'editable_fields': {
         'state': {
-            'message': 'Please add additional budget to your campaign to make changes.',
-            'enabled': False
+            'message': None,
+            'enabled': True
         },
         'bid_cpc': {
             'message': 'This value cannot be edited because the ad group is on Autopilot.',

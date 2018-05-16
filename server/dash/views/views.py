@@ -28,8 +28,6 @@ from utils import request_signer
 from utils import threads
 from utils import db_for_reads
 
-from automation import campaign_stop
-
 import core.multicurrency
 import core.entity.helpers
 
@@ -807,8 +805,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 ad_group_source.get_current_settings(),
                 campaign_settings,
                 allowed_sources,
-                campaign_stop.can_enable_media_source(
-                    ad_group_source, ad_group.campaign, campaign_settings, ad_group_settings)
             ),
             'autopilot_changed_sources': response['autopilot_changed_sources_text'],
             'enabling_autopilot_sources_allowed': helpers.enabling_autopilot_single_source_allowed(

@@ -52,7 +52,7 @@ DEFAULT_STATS = set([
     'avg_cost_per_visit', 'local_avg_cost_per_visit',
 ])
 
-HELPER_FIELDS = set(['campaign_stop_inactive', 'campaign_has_available_budget', 'status_per_source'])
+HELPER_FIELDS = set(['campaign_has_available_budget', 'status_per_source'])
 
 TRAFFIC_FIELDS = [
     'clicks', 'impressions',

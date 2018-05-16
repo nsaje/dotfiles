@@ -1,7 +1,5 @@
 import collections
 
-from automation import campaign_stop
-
 from core import source
 import dash.campaign_goals
 from dash import constants
@@ -101,7 +99,7 @@ def format_report_rows_performance_fields(rows, goals, currency):
 def format_report_rows_ad_group_editable_fields(rows):
     for row in rows:
         row['editable_fields'] = get_ad_group_editable_fields(
-            row, row['campaign_stop_inactive'], row['campaign_has_available_budget']
+            row, row['campaign_has_available_budget']
         )
 
 
@@ -179,15 +177,12 @@ def set_row_goal_performance_meta(row, goals_performances, conversion_goals, cur
             row['styles'][colored_column] = constants.Emoticon.SAD
 
 
-def get_ad_group_editable_fields(row, can_enable_ad_group, has_available_budget):
+def get_ad_group_editable_fields(row, has_available_budget):
     state = {
         'enabled': True,
         'message': None
     }
-    if not can_enable_ad_group:
-        state['enabled'] = False
-        state['message'] = 'Please add additional budget to your campaign to make changes.'
-    elif row['state'] == constants.AdGroupSettingsState.INACTIVE \
+    if row['state'] == constants.AdGroupSettingsState.INACTIVE \
             and not has_available_budget:
         state['enabled'] = False
         state['message'] = 'Cannot enable ad group without available budget.'
@@ -197,7 +192,6 @@ def get_ad_group_editable_fields(row, can_enable_ad_group, has_available_budget)
 
 def clean_non_relevant_fields(rows):
     for row in rows:
-        row.pop('campaign_stop_inactive', None)
         row.pop('campaign_has_available_budget', None)
         row.pop('status_per_source', None)
         row.pop('notifications', None)
@@ -253,9 +247,6 @@ def create_all_rtb_source_row_data(request, ad_group, ad_group_settings, show_rt
 
     state_edit_enabled = True
     state_edit_message = None
-    if not campaign_stop.can_enable_b1_sources_group(ad_group, ad_group.campaign, ad_group_settings, campaign_settings):
-        state_edit_enabled = False
-        state_edit_message = 'Please add additional budget to your campaign to make changes.'
 
     daily_budget_edit_enabled = True
     daily_budget_edit_message = None
@@ -265,9 +256,6 @@ def create_all_rtb_source_row_data(request, ad_group, ad_group_settings, show_rt
     if campaign_settings.autopilot:
         daily_budget_edit_enabled = False
         daily_budget_edit_message = 'This value cannot be edited because the campaign is on Autopilot.'
-    if campaign_settings.landing_mode:
-        daily_budget_edit_enabled = False
-        daily_budget_edit_message = 'This value cannot be edited because campaign is in landing mode.'
 
     cpc_edit_message = None
     cpc_edit_enabled = True

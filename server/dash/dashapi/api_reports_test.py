@@ -147,8 +147,8 @@ AD_GROUP_SOURCE_2 = {
     'supply_dash_disabled_message': "This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard.",  # noqa
     'state': 2, 'status': 'PAUSED', 'source_status': 'PAUSED', 'editable_fields': {
         'state': {
-            'message': 'Please add additional budget to your campaign to make changes.',
-            'enabled': False
+            'message': None,
+            'enabled': True
         },
         'bid_cpc': {
             'message': 'This value cannot be edited because the ad group is on Autopilot.',

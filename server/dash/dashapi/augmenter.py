@@ -163,7 +163,7 @@ def augment_ad_group(row, loader, is_base_level=False):
 
         if is_base_level:
             base_level_settings = loader.base_level_settings_map[ad_group_id]
-            copy_fields_if_exists(['campaign_stop_inactive', 'campaign_has_available_budget'], base_level_settings, row)
+            copy_fields_if_exists(['campaign_has_available_budget'], base_level_settings, row)
 
 
 def augment_ad_group_for_report(row, loader, is_base_level=False):

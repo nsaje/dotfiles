@@ -2,7 +2,6 @@ import collections
 from django.utils.functional import cached_property
 from django.db.models.query import QuerySet
 
-from automation import campaign_stop
 import automation.campaignstop
 from zemauth.models import User as ZemUser
 
@@ -318,12 +317,10 @@ class AdGroupsLoader(Loader):
 
         settings_map = {}
         for campaign, ad_groups in list(campaign_ad_groups.items()):
-            campaign_stop_check_map = campaign_stop.can_enable_ad_groups(campaign, campaign.get_current_settings())
             campaign_has_available_budget = data_helper.campaign_has_available_budget(campaign)
 
             for ad_group in ad_groups:
                 settings_map[ad_group.id] = {
-                    'campaign_stop_inactive': campaign_stop_check_map.get(ad_group.id),
                     'campaign_has_available_budget': campaign_has_available_budget,
                 }
 
@@ -583,7 +580,6 @@ class AdGroupSourcesLoader(Loader):
             editable_fields = view_helpers.get_editable_fields(
                 ad_group_source.ad_group, ad_group_source, self.ad_group_settings, source_settings,
                 self.campaign_settings, self._allowed_sources,
-                self._campaign_stop_can_enable_source_map.get(ad_group_source.id, True),
             )
 
             if editable_fields.get('status_setting'):
@@ -636,15 +632,6 @@ class AdGroupSourcesLoader(Loader):
     @cached_property
     def _allowed_sources(self):
         return self.ad_group.campaign.account.allowed_sources.all().values_list('pk', flat=True)
-
-    @cached_property
-    def _campaign_stop_can_enable_source_map(self):
-        # by ad_group_source_id
-        return campaign_stop.can_enable_media_sources(
-            self.ad_group,
-            self.ad_group.campaign,
-            self.campaign_settings,
-            self.ad_group_settings)
 
     @cached_property
     def _active_ad_groups_sources_qs(self):

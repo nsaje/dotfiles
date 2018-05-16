@@ -7,7 +7,6 @@ from django.db import transaction
 import influx
 
 from automation import autopilot
-from automation import campaign_stop
 
 from dash import api
 from dash import constants
@@ -112,7 +111,6 @@ class AdGroupSourceState(BaseBulkActionView):
         return self.create_api_response(response)
 
     def _get_editable_fields(self, ad_group, ad_group_settings, campaign_settings, ad_group_sources):
-        can_enable_source = campaign_stop.can_enable_media_sources(ad_group, ad_group.campaign, campaign_settings, ad_group_settings)
         allowed_sources = ad_group.campaign.account.allowed_sources.all().values_list('pk', flat=True)
         ad_group_source_settings = {
             agss.ad_group_source_id: agss
@@ -126,7 +124,6 @@ class AdGroupSourceState(BaseBulkActionView):
                 ad_group_source_settings.get(ad_group_source.id),
                 campaign_settings,
                 allowed_sources,
-                can_enable_source[ad_group_source.id],
             ) for ad_group_source in ad_group_sources
         }
 
@@ -167,8 +164,6 @@ class AdGroupSourceState(BaseBulkActionView):
     def _check_can_set_state(self, campaign_settings, ad_group_settings, ad_group, ad_group_sources, state):
         if campaign_settings.landing_mode:
             raise exc.ValidationError('Not allowed')
-        if not campaign_stop.can_enable_all_media_sources(ad_group.campaign, campaign_settings, ad_group_sources, ad_group_settings):
-            raise exc.ValidationError('Please add additional budget to your campaign to make changes.')
 
         if state == constants.AdGroupSourceSettingsState.ACTIVE:
             enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(
@@ -454,12 +449,10 @@ class CampaignAdGroupState(BaseBulkActionView):
         if campaign.settings.autopilot:
             autopilot.recalculate_budgets_campaign(campaign)
 
-        can_enable_ad_group = campaign_stop.can_enable_ad_groups(campaign, campaign_settings)
         has_available_budget = data_helper.campaign_has_available_budget(campaign)
         editable_fields = {
             ad_group.id: breakdown_helpers.get_ad_group_editable_fields(
                 {'state': state},
-                can_enable_ad_group[ad_group.id],
                 has_available_budget,
             ) for ad_group in ad_groups
         }
