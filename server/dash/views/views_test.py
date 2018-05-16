@@ -311,6 +311,11 @@ class AdGroupSourceSettingsTest(TestCase):
         new_settings.end_date = datetime.datetime.utcnow().date() + datetime.timedelta(days=days_delta)
         new_settings.save(None)
 
+    def _set_campaign_landing_mode(self):
+        new_campaign_settings = self.ad_group.campaign.get_current_settings().copy_settings()
+        new_campaign_settings.landing_mode = True
+        new_campaign_settings.save(None)
+
     @patch.object(models.AdGroupSourceSettings, 'update')
     def test_put_local(self, mock_ad_group_source_settings_update):
         self.client.put(
@@ -355,6 +360,24 @@ class AdGroupSourceSettingsTest(TestCase):
             response_content['data']['errors']['cpc_cc'],
             ["Bid CPC is violating some constraints: "
              "CPC constraint on source AdBlade with min. CPC $0.65"])
+
+    @patch('utils.k1_helper.update_ad_group')
+    def test_set_state_landing_mode(self, mock_k1_ping):
+        self._set_campaign_landing_mode()
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'state': 1})
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(mock_k1_ping.called)
+
+    def test_set_daily_budget_landing_mode(self):
+        self._set_campaign_landing_mode()
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'daily_budget_cc': '15.00'})
+        )
+        self.assertEqual(response.status_code, 400)
 
     @patch('utils.k1_helper.update_ad_group')
     def test_logs_user_action(self, mock_k1_ping):

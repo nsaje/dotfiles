@@ -162,6 +162,9 @@ class AdGroupSourceState(BaseBulkActionView):
         return new_row
 
     def _check_can_set_state(self, campaign_settings, ad_group_settings, ad_group, ad_group_sources, state):
+        if campaign_settings.landing_mode:
+            raise exc.ValidationError('Not allowed')
+
         if state == constants.AdGroupSourceSettingsState.ACTIVE:
             enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(
                 ad_group,

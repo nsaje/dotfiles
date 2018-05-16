@@ -173,6 +173,8 @@ def _get_budget_predictions_for_adgroup(ad_group, data, bcm_modifiers, campaign_
         return {}
     if not adjust_budgets:
         return {}
+    if not (daily_run or not ad_group.settings.landing_mode):
+        return {}
 
     return budgets.get_autopilot_daily_budget_recommendations(
         ad_group,
@@ -381,7 +383,7 @@ def persist_autopilot_changes_to_log(ad_group, cpc_changes, budget_changes, data
 
 def set_autopilot_changes(cpc_changes={}, budget_changes={}, ad_group=None,
                           system_user=dash.constants.SystemUserType.AUTOPILOT,
-                          dry_run=False):
+                          dry_run=False, landing_mode=None):
     for ag_source in set(list(cpc_changes.keys()) + list(budget_changes.keys())):
         changes = {}
         if (cpc_changes and ag_source in cpc_changes and
@@ -394,7 +396,7 @@ def set_autopilot_changes(cpc_changes={}, budget_changes={}, ad_group=None,
             if ag_source.source == dash.models.AllRTBSource:
                 helpers.update_ad_group_b1_sources_group_values(ad_group, changes, system_user)
             else:
-                helpers.update_ad_group_source_values(ag_source, changes, system_user)
+                helpers.update_ad_group_source_values(ag_source, changes, system_user, landing_mode)
 
 
 def _report_autopilot_exception(element, e):

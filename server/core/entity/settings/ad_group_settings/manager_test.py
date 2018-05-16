@@ -62,8 +62,9 @@ class AdGroupSettingsCreate(TestCase):
         self.assertEqual(ad_group_settings.state, constants.AdGroupSettingsState.INACTIVE)
         self.assertEqual(ad_group_settings.archived, False)
         self.assertEqual(ad_group_settings.ad_group_name, 'AAAA')
+        self.assertFalse(ad_group_settings.landing_mode)
 
-        for field in set(model.AdGroupSettings._settings_fields) - {'archived', 'state', 'ad_group_name'}:
+        for field in set(model.AdGroupSettings._settings_fields) - {'archived', 'state', 'ad_group_name', 'landing_mode'}:
             self.assertEqual(getattr(ad_group_settings, field), getattr(source_ad_group.settings, field))
 
     def test_clone_ends_in_past(self):

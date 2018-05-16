@@ -12,8 +12,9 @@ import analytics.projections
 import analytics.constants
 import dash.infobox_helpers
 
-CAMPAIGN_REPORT_HEADER = ('Campaign', 'Campaign ID', 'URL', 'CS Rep', 'Yesterday spend', 'Daily Spend Cap', 'Delivery')
-AD_GROUP_REPORT_HEADER = ('Ad group', 'Ad group ID', 'URL', 'CS Rep', 'End date', 'Yesterday spend',
+CAMPAIGN_REPORT_HEADER = ('Campaign', 'Campaign ID', 'URL', 'CS Rep', 'Campaign stop', 'Landing mode',
+                          'Yesterday spend', 'Daily Spend Cap', 'Delivery')
+AD_GROUP_REPORT_HEADER = ('Ad group', 'Ad group ID', 'URL', 'CS Rep', 'End date', 'Landing mode', 'Yesterday spend',
                           'Daily Spend Cap', 'Delivery')
 CAMPAIGN_URL = 'https://one.zemanta.com/v2/analytics/campaign/{}'
 AD_GROUP_URL = 'https://one.zemanta.com/v2/analytics/adgroup/{}'
@@ -201,6 +202,8 @@ def _prepare_campaign_data(running_campaigns, campaign_settings_map, account_set
             campaign.pk,
             CAMPAIGN_URL.format(campaign.pk),
             account_settings_map[campaign.account_id].default_cs_representative,
+            campaign_settings.automatic_campaign_stop and 'on' or 'off',
+            campaign_settings.landing_mode and 'on' or 'off',
             spend,
             cap,
             delivery,
@@ -224,6 +227,7 @@ def _prepare_ad_group_data(running_ad_groups, ad_group_settings_map, ad_group_st
             AD_GROUP_URL.format(ad_group.pk),
             account_settings_map[ad_group.campaign.account_id].default_cs_representative,
             ad_group_settings.end_date or 'none',
+            ad_group_settings.landing_mode and 'on' or 'off',
             spend,
             cap,
             delivery,

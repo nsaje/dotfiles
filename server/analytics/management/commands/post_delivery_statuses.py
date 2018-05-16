@@ -31,7 +31,7 @@ class Command(utils.command_helpers.ExceptionCommand):
     def handle(*args, **kwargs):
         reports = analytics.delivery.generate_delivery_reports(skip_ok=True, check_pacing=False, generate_csv=False)
 
-        for name, camp_id, url, cs, spend, cap, issue in reports['campaign']:
+        for name, camp_id, url, cs, campaign_stop, landing_mode, spend, cap, issue in reports['campaign']:
             influx.gauge(
                 'campaign_delivery',
                 int(spend * 100 / cap) if cap else 0,
@@ -47,7 +47,7 @@ class Command(utils.command_helpers.ExceptionCommand):
                     name=name,
                 ), msg_type=utils.slack.MESSAGE_TYPE_CRITICAL, username='Delivery')
 
-        for name, adgroup_id, url, cs, end_date, spend, cap, issue in reports['ad_group']:
+        for name, adgroup_id, url, cs, campaign_stop, landing_mode, spend, cap, issue in reports['ad_group']:
             influx.gauge(
                 'adgroup_delivery',
                 int(spend * 100 / cap) if cap else 0,

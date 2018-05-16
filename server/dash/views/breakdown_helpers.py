@@ -210,6 +210,7 @@ def get_ad_group_sources_extras(ad_group):
     return {
         'enabling_autopilot_sources_allowed': helpers.enabling_autopilot_single_source_allowed(ad_group),
         'ad_group_autopilot_state': ad_group.settings.autopilot_state,
+        'ad_group_landing_mode': ad_group.settings.landing_mode,
         'campaign_autopilot': ad_group.campaign.settings.autopilot,
     }
 

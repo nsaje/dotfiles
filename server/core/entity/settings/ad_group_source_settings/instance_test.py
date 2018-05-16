@@ -204,11 +204,20 @@ class AdGroupSourceUpdate(TestCase):
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.settings.update(state=constants.AdGroupSourceSettingsState.ACTIVE)
 
+    def test_update_landing_mode(self):
+        self.ad_group.campaign.settings.update(None, landing_mode=True)
+
+        with self.assertRaises(utils.exc.ValidationError):
+            self.ad_group_source.settings.update(state=constants.AdGroupSourceSettingsState.ACTIVE)
+
+        with self.assertRaises(utils.exc.ValidationError):
+            self.ad_group_source.settings.update(daily_budget_cc=decimal.Decimal('0.1'))
+
+        self.ad_group_source.settings.update(cpc_cc=decimal.Decimal('0.1'))
+
     @patch('dash.views.helpers.enabling_autopilot_sources_allowed')
     def test_update_autopilot_state(self, enabling_allowed_mock):
-        campaign = self.ad_group.campaign
-        campaign.real_time_campaign_stop = True
-        campaign.save()
+        self.ad_group.campaign.settings.update(None, automatic_campaign_stop=True)
 
         enabling_allowed_mock.return_value = False
 

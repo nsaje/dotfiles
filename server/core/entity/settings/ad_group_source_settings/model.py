@@ -40,6 +40,7 @@ class AdGroupSourceSettings(AdGroupSourceSettingsMixin,
         'daily_budget_cc',
         'local_cpc_cc',
         'local_daily_budget_cc',
+        'landing_mode'
     ]
     multicurrency_fields = [
         'cpc_cc',
@@ -94,6 +95,8 @@ class AdGroupSourceSettings(AdGroupSourceSettingsMixin,
         verbose_name='Daily spend cap'
     )
 
+    landing_mode = models.BooleanField(default=False)
+
     objects = core.common.QuerySetManager()
 
     @classmethod
@@ -104,6 +107,7 @@ class AdGroupSourceSettings(AdGroupSourceSettingsMixin,
             'local_cpc_cc': 'CPC',
             'daily_budget_cc': 'Daily Spend Cap',
             'local_daily_budget_cc': 'Daily Spend Cap',
+            'landing_mode': 'Landing Mode',
         }
         return NAMES.get(prop_name)
 
@@ -115,6 +119,8 @@ class AdGroupSourceSettings(AdGroupSourceSettingsMixin,
             value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
         elif prop_name == 'local_daily_budget_cc' and value is not None:
             value = lc_helper.format_currency(Decimal(value), places=2, curr=currency_symbol)
+        elif prop_name == 'landing_mode':
+            value = str(value)
         return value
 
     class QuerySet(SettingsQuerySet):

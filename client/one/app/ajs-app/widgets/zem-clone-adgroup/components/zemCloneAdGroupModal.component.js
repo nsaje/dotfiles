@@ -69,7 +69,7 @@ angular.module('one.widgets').component('zemCloneAdGroupModal', {
         function getDataStoreItems () {
             var item, campaigns = [], top = [];
             angular.forEach(zemNavigationNewService.getNavigationHierarchy().ids.campaigns, function (value) {
-                if (value.data.archived) {
+                if (value.data.archived || value.data.landingMode) {
                     return;
                 }
                 item = {

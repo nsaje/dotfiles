@@ -110,6 +110,8 @@ angular.module('one.widgets').component('zemNavigation', {
             if (adGroup.active === constants.infoboxStatus.STOPPED ||
                 adGroup.active === constants.infoboxStatus.CAMPAIGNSTOP_STOPPED)
                 return 'zem-navigation__item-icon--stopped';
+            if (adGroup.active === constants.infoboxStatus.LANDING_MODE)
+                return 'zem-navigation__item-icon--landing';
             if (adGroup.active === constants.infoboxStatus.INACTIVE)
                 return 'zem-navigation__item-icon--inactive';
             if (adGroup.active === constants.infoboxStatus.AUTOPILOT ||

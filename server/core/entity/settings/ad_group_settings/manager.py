@@ -42,6 +42,7 @@ class AdGroupSettingsManager(core.common.QuerySetManager):
 
         new_settings.state = state
         new_settings.archived = False
+        new_settings.landing_mode = False
         if (source_ad_group_settings.end_date is not None and
            source_ad_group_settings.end_date <= dates_helper.local_today()):
             new_settings.start_date = dates_helper.local_today()

@@ -30,9 +30,9 @@ class AdGroupSourceSettingsMixin(object):
         if not skip_validation:
             self.clean(new_settings)
 
-        # TODO (multicurrency): Handle multiple currencies in validate_ad_group_source_autopilot method correctly
+        # TODO (multicurrency): Handle multiple currencies in validate_ad_group_source_campaign_stop method correctly
         if not skip_automation:
-            self.validate_ad_group_source_autopilot(new_settings)
+            self.validate_ad_group_source_campaign_stop(new_settings)
 
         old_settings = self.get_settings_dict()
         changes = self.get_setting_changes(new_settings)

@@ -35,12 +35,14 @@ def get_active_ad_groups_on_autopilot(autopilot_state=None):
                 filter(ad_group_source__ad_group=ad_group).group_current_settings()
 
             ad_group_running = ad_group.get_running_status(ags) == dash.constants.AdGroupRunningStatus.ACTIVE
+            ad_group_active = ags.state == dash.constants.AdGroupRunningStatus.ACTIVE
             sources_running = ad_group.get_running_status_by_sources_setting(
                 ags,
                 ad_groups_sources_settings
             ) == dash.constants.AdGroupRunningStatus.ACTIVE
             campaign_active = campaignstop_states[ad_group.campaign.id]['allowed_to_run']
-            if campaign_active and ad_group_running and sources_running:
+            if ((campaign_active and ad_group_running and sources_running) or
+                    (ags.landing_mode and ad_group_active and sources_running)):
                 ad_groups_on_autopilot.append(ad_group)
                 ad_group_settings_on_autopilot.append(ags)
     return ad_groups_on_autopilot, ad_group_settings_on_autopilot
@@ -81,7 +83,8 @@ def get_autopilot_entities(ad_group=None, campaign=None):
         if not campaignstop_states[ad_group.campaign.id]['allowed_to_run']:
             continue
 
-        if ad_group.get_running_status(ad_group.settings) != dash.constants.AdGroupRunningStatus.ACTIVE:
+        if (not ad_group.settings.landing_mode and
+           ad_group.get_running_status(ad_group.settings) != dash.constants.AdGroupRunningStatus.ACTIVE):
             continue
 
         ags = ags_per_ag_id[ad_group.id]
@@ -147,7 +150,9 @@ def ad_group_source_is_synced(ad_group_source):
     return last_sync >= min_sync_date
 
 
-def update_ad_group_source_values(ad_group_source, changes, system_user=None):
+def update_ad_group_source_values(ad_group_source, changes, system_user=None, landing_mode=None):
+    if landing_mode is not None:
+        changes['landing_mode'] = landing_mode
     ad_group_source.settings.update(
         system_user=system_user,
         k1_sync=False,
