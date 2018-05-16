@@ -3,8 +3,6 @@ from dash import models
 
 
 def campaign_has_available_budget(campaign):
-    if campaign.real_time_campaign_stop:
-        return True
     return campaign.budgets.all().filter_active().exists()
 
 
