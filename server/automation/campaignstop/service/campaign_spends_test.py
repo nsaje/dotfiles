@@ -13,8 +13,8 @@ from utils import dates_helper
 from utils.test_helper import disable_auto_now_add
 
 from .. import RealTimeCampaignDataHistory
-from . import main
-from . import spends_helper
+from . import update_campaignstop_state
+from . import campaign_spends
 
 
 class LogMock(object):
@@ -48,13 +48,13 @@ class GetPredictionTest(TestCase):
         )
 
     def test_get_prediction(self):
-        prediction = spends_helper.get_predicted_remaining_budget(LogMock(), self.campaign)
+        prediction = campaign_spends.get_predicted_remaining_budget(LogMock(), self.campaign)
         self.assertEqual(500, prediction)
 
     def test_get_prediction_no_budget(self):
         campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
 
-        prediction = spends_helper.get_predicted_remaining_budget(LogMock(), campaign)
+        prediction = campaign_spends.get_predicted_remaining_budget(LogMock(), campaign)
         self.assertEqual(0, prediction)
 
     def test_get_prediction_with_realtime_spend(self):
@@ -65,7 +65,7 @@ class GetPredictionTest(TestCase):
             etfm_spend=decimal.Decimal('300.0'),
         )
 
-        prediction = spends_helper.get_predicted_remaining_budget(LogMock(), self.campaign)
+        prediction = campaign_spends.get_predicted_remaining_budget(LogMock(), self.campaign)
         self.assertEqual(200, prediction)
 
     def test_get_prediction_with_another_budget_overspent(self):
@@ -91,14 +91,14 @@ class GetPredictionTest(TestCase):
             local_license_fee_nano=50 * (10**9),
             local_margin_nano=0,
         )
-        prediction = spends_helper.get_predicted_remaining_budget(LogMock(), self.campaign)
+        prediction = campaign_spends.get_predicted_remaining_budget(LogMock(), self.campaign)
         self.assertEqual(500, prediction)
 
     @mock.patch.object(core.bcm.BudgetLineItem, 'get_available_etfm_amount')
     def test_get_prediction_with_spent_budget(self, mock_available_amount):
         mock_available_amount.return_value = 0
 
-        prediction = spends_helper.get_predicted_remaining_budget(LogMock(), self.campaign)
+        prediction = campaign_spends.get_predicted_remaining_budget(LogMock(), self.campaign)
         self.assertEqual(0, prediction)
 
     @mock.patch.object(core.bcm.BudgetLineItem, 'get_available_etfm_amount')
@@ -111,7 +111,7 @@ class GetPredictionTest(TestCase):
             etfm_spend=decimal.Decimal('80.0'),
         )
 
-        prediction = spends_helper.get_predicted_remaining_budget(LogMock(), self.campaign)
+        prediction = campaign_spends.get_predicted_remaining_budget(LogMock(), self.campaign)
         self.assertEqual(120, prediction)
 
     def test_get_prediction_with_estimation(self):
@@ -132,7 +132,7 @@ class GetPredictionTest(TestCase):
                 created_dt=now,
             )
 
-        prediction = spends_helper.get_predicted_remaining_budget(LogMock(), self.campaign)
+        prediction = campaign_spends.get_predicted_remaining_budget(LogMock(), self.campaign)
         self.assertEqual(150, prediction)
 
     def test_get_prediction_with_yesterday_realtime_data(self):
@@ -140,7 +140,7 @@ class GetPredictionTest(TestCase):
         with mock.patch('utils.dates_helper.utc_now') as mock_utc_now:
             midnight = datetime.datetime(today.year, today.month, today.day)
             mock_utc_now.return_value = midnight + datetime.timedelta(
-                hours=main.HOURS_DELAY-1)
+                hours=update_campaignstop_state.HOURS_DELAY-1)
             magic_mixer.blend(
                 RealTimeCampaignDataHistory,
                 campaign=self.campaign,
@@ -154,7 +154,7 @@ class GetPredictionTest(TestCase):
                 etfm_spend=decimal.Decimal('50.0'),
             )
 
-            prediction = spends_helper.get_predicted_remaining_budget(LogMock(), self.campaign)
+            prediction = campaign_spends.get_predicted_remaining_budget(LogMock(), self.campaign)
             self.assertEqual(150, prediction)
 
     def test_get_prediction_with_stale_yesterday_realtime_data(self):
@@ -175,7 +175,7 @@ class GetPredictionTest(TestCase):
 
         with mock.patch('utils.dates_helper.utc_now') as mock_utc_now:
             midnight = datetime.datetime(today.year, today.month, today.day)
-            utc_now = midnight + datetime.timedelta(hours=main.HOURS_DELAY-1)
+            utc_now = midnight + datetime.timedelta(hours=update_campaignstop_state.HOURS_DELAY-1)
             mock_utc_now.return_value = utc_now
             with disable_auto_now_add(RealTimeCampaignDataHistory, 'created_dt'):
                 magic_mixer.blend(
@@ -193,7 +193,7 @@ class GetPredictionTest(TestCase):
                     created_dt=utc_now,
                 )
 
-            prediction = spends_helper.get_predicted_remaining_budget(LogMock(), self.campaign)
+            prediction = campaign_spends.get_predicted_remaining_budget(LogMock(), self.campaign)
             self.assertEqual(150, prediction)
 
     def test_get_prediction_with_yesterday_realtime_data_and_spend_rate(self):
@@ -201,7 +201,7 @@ class GetPredictionTest(TestCase):
         with mock.patch('utils.dates_helper.utc_now') as mock_utc_now:
             midnight = datetime.datetime(today.year, today.month, today.day)
             mock_utc_now.return_value = midnight + datetime.timedelta(
-                hours=main.HOURS_DELAY-1)
+                hours=update_campaignstop_state.HOURS_DELAY-1)
             with disable_auto_now_add(RealTimeCampaignDataHistory, 'created_dt'):
                 now = dates_helper.utc_now()
                 magic_mixer.blend(
@@ -233,7 +233,7 @@ class GetPredictionTest(TestCase):
                     created_dt=now,
                 )
 
-            prediction = spends_helper.get_predicted_remaining_budget(LogMock(), self.campaign)
+            prediction = campaign_spends.get_predicted_remaining_budget(LogMock(), self.campaign)
             self.assertAlmostEqual(200, prediction, places=1)
 
     def test_realtime_spends_too_close(self):
@@ -241,7 +241,7 @@ class GetPredictionTest(TestCase):
         with mock.patch('utils.dates_helper.utc_now') as mock_utc_now:
             midnight = datetime.datetime(today.year, today.month, today.day)
             mock_utc_now.return_value = midnight + datetime.timedelta(
-                hours=main.HOURS_DELAY-1)
+                hours=update_campaignstop_state.HOURS_DELAY-1)
             with disable_auto_now_add(RealTimeCampaignDataHistory, 'created_dt'):
                 now = dates_helper.utc_now()
                 magic_mixer.blend(
@@ -266,7 +266,7 @@ class GetPredictionTest(TestCase):
                     created_dt=now,
                 )  # current spend
 
-            prediction = spends_helper.get_predicted_remaining_budget(LogMock(), self.campaign)
+            prediction = campaign_spends.get_predicted_remaining_budget(LogMock(), self.campaign)
             self.assertAlmostEqual(400, prediction, places=1)
 
     def test_realtime_spends_stale_data(self):
@@ -274,7 +274,7 @@ class GetPredictionTest(TestCase):
         with mock.patch('utils.dates_helper.utc_now') as mock_utc_now:
             midnight = datetime.datetime(today.year, today.month, today.day)
             mock_utc_now.return_value = midnight + datetime.timedelta(
-                hours=main.HOURS_DELAY-1)
+                hours=update_campaignstop_state.HOURS_DELAY-1)
             with disable_auto_now_add(RealTimeCampaignDataHistory, 'created_dt'):
                 now = dates_helper.utc_now()
                 magic_mixer.blend(
@@ -292,7 +292,7 @@ class GetPredictionTest(TestCase):
                     created_dt=now-datetime.timedelta(seconds=600),
                 )
 
-            prediction = spends_helper.get_predicted_remaining_budget(LogMock(), self.campaign)
+            prediction = campaign_spends.get_predicted_remaining_budget(LogMock(), self.campaign)
             self.assertAlmostEqual(400, prediction, places=1)
 
 
@@ -321,7 +321,7 @@ class GetBudgetSpendEstimateTest(TestCase):
         )
 
     def test_no_spend(self):
-        estimate = spends_helper.get_budget_spend_estimates(LogMock(), self.campaign)
+        estimate = campaign_spends.get_budget_spend_estimates(LogMock(), self.campaign)
         self.assertEqual({
             self.budget: 0
         }, estimate)
@@ -346,7 +346,7 @@ class GetBudgetSpendEstimateTest(TestCase):
             noon = datetime.datetime(today.year, today.month, today.day, 12)
             mock_utc_now.return_value = noon
 
-            estimate = spends_helper.get_budget_spend_estimates(LogMock(), self.campaign)
+            estimate = campaign_spends.get_budget_spend_estimates(LogMock(), self.campaign)
             self.assertEqual({
                 self.budget: 200
             }, estimate)
@@ -370,14 +370,14 @@ class GetBudgetSpendEstimateTest(TestCase):
             midnight = datetime.datetime(today.year, today.month, today.day)
             mock_utc_now.return_value = midnight + datetime.timedelta(hours=12)
 
-            estimate = spends_helper.get_budget_spend_estimates(LogMock(), self.campaign)
+            estimate = campaign_spends.get_budget_spend_estimates(LogMock(), self.campaign)
             self.assertEqual({
                 self.budget: 100
             }, estimate)
 
-            mock_utc_now.return_value = midnight + datetime.timedelta(hours=spends_helper.HOURS_DELAY-1)
+            mock_utc_now.return_value = midnight + datetime.timedelta(hours=campaign_spends.HOURS_DELAY-1)
 
-            estimate = spends_helper.get_budget_spend_estimates(LogMock(), self.campaign)
+            estimate = campaign_spends.get_budget_spend_estimates(LogMock(), self.campaign)
             self.assertEqual({
                 self.budget: 150
             }, estimate)
@@ -417,7 +417,7 @@ class GetBudgetSpendEstimateTest(TestCase):
             midnight = datetime.datetime(today.year, today.month, today.day)
             mock_utc_now.return_value = midnight + datetime.timedelta(hours=12)
 
-            estimate = spends_helper.get_budget_spend_estimates(LogMock(), self.campaign)
+            estimate = campaign_spends.get_budget_spend_estimates(LogMock(), self.campaign)
             self.assertEqual({
                 self.budget: 500,
                 new_budget: 300,
@@ -467,7 +467,7 @@ class GetBudgetSpendEstimateTest(TestCase):
             midnight = datetime.datetime(today.year, today.month, today.day)
             mock_utc_now.return_value = midnight + datetime.timedelta(hours=12)
 
-            estimate = spends_helper.get_budget_spend_estimates(LogMock(), self.campaign)
+            estimate = campaign_spends.get_budget_spend_estimates(LogMock(), self.campaign)
             self.assertEqual({
                 self.budget: 500,
                 new_budget: 0,

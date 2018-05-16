@@ -1,6 +1,6 @@
 import decimal
 
-from .import spends_helper
+from .import campaign_spends
 from .. import RealTimeCampaignStopLog
 from ..constants import CampaignStopEvent
 
@@ -27,7 +27,7 @@ def validate_minimum_budget_amount(budget_line_item, amount):
 
 
 def _calculate_minimum_budget_amount(log, budget_line_item):
-    spend_estimates = spends_helper.get_budget_spend_estimates(log, budget_line_item.campaign)
+    spend_estimates = campaign_spends.get_budget_spend_estimates(log, budget_line_item.campaign)
     estimated_spend = spend_estimates.get(budget_line_item, 0)
     reserved_amount = estimated_spend * RESERVED_PROPORTION
     amount = estimated_spend + reserved_amount
