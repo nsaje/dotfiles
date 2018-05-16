@@ -1722,6 +1722,8 @@ class EmailTemplateType(ConstantBase):
     CAMPAIGN_STOPPED = 10
     AUTOPILOT_AD_GROUP_CHANGE = 11
     AUTOPILOT_AD_GROUP_BUDGET_INIT = 12
+    CAMPAIGN_LANDING_MODE_SWITCH = 13
+    CAMPAIGN_BUDGET_LOW = 14
     DEMO_RUNNING = 15
     LIVESTREAM_SESSION = 16
     DAILY_MANAGEMENT_REPORT = 17
@@ -1754,6 +1756,8 @@ class EmailTemplateType(ConstantBase):
         CAMPAIGN_STOPPED: 'Campaign stopped notification',
         AUTOPILOT_AD_GROUP_CHANGE: 'Autopilot changes notification',
         AUTOPILOT_AD_GROUP_BUDGET_INIT: 'Autopilot initialisation notification',
+        CAMPAIGN_LANDING_MODE_SWITCH: 'Campaign switched to landing mode notification',
+        CAMPAIGN_BUDGET_LOW: 'Campaign is running out of budget notification',
         DEMO_RUNNING: 'Demo is running',
         LIVESTREAM_SESSION: 'Livestream sesion id',
         DAILY_MANAGEMENT_REPORT: 'Daily management report',
