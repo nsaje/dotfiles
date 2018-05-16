@@ -34,15 +34,3 @@ class CampaignQuerySet(models.QuerySet):
         if show_archived:
             return self
         return self.exclude(settings__archived=True)
-
-    def exclude_landing(self):
-        return self.exclude(
-            models.Q(settings__automatic_campaign_stop=False) |
-            models.Q(settings__landing_mode=True)
-        )
-
-    def filter_landing(self):
-        return self.filter(
-            settings__automatic_campaign_stop=True,
-            settings__landing_mode=True,
-        )

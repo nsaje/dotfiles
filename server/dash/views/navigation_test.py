@@ -147,7 +147,6 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test campaign 1',
-                'landingMode': False,
             }
         })
 
@@ -167,7 +166,6 @@ class NavigationDataViewTest(TestCase):
                 'archived': True,
                 'id': 3,
                 'name': 'test campaign 3',
-                'landingMode': False,
             }
         })
 
@@ -203,7 +201,6 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test campaign 1',
-                'landingMode': False,
             },
             'ad_group': {
                 'archived': False,
@@ -213,7 +210,6 @@ class NavigationDataViewTest(TestCase):
                 'status': 1,
                 'autopilot_state': 2,
                 'active': 'active',
-                'landingMode': False,
             }
         })
 
@@ -232,7 +228,6 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 2,
                 'name': 'test campaign 2',
-                'landingMode': False,
             },
             'ad_group': {
                 'archived': True,
@@ -242,7 +237,6 @@ class NavigationDataViewTest(TestCase):
                 'status': 2,
                 'autopilot_state': 2,
                 'active': 'stopped',
-                'landingMode': False,
             }
         })
 
@@ -304,7 +298,6 @@ class NavigationTreeViewTest(TestCase):
                     "status": 1,
                     "autopilot_state": 2,
                     "active": "active",
-                    "landingMode": False,
                 }, {
                     "archived": False,
                     "id": 2,
@@ -313,7 +306,6 @@ class NavigationTreeViewTest(TestCase):
                     "status": 2,  # past dates
                     "autopilot_state": 2,
                     "active": "inactive",
-                    "landingMode": False,
                 }, {
                     "archived": False,
                     "id": 3,
@@ -322,12 +314,10 @@ class NavigationTreeViewTest(TestCase):
                     "status": 2,
                     "autopilot_state": 2,
                     "active": "stopped",
-                    "landingMode": False,
                 }],
                 "archived": False,
                 "id": 1,
                 "name": "test campaign 1",
-                "landingMode": False,
             }],
             "id": 1,
             "agency": "Test Agency",
@@ -392,7 +382,6 @@ class NavigationTreeViewTest(TestCase):
                     "status": 1,
                     "autopilot_state": 2,
                     "active": "active",
-                    "landingMode": False,
                 }, {
                     "archived": False,
                     "id": 2,
@@ -401,7 +390,6 @@ class NavigationTreeViewTest(TestCase):
                     "status": 2,
                     "autopilot_state": 2,
                     "active": "inactive",
-                    "landingMode": False,
                 }, {
                     "archived": False,
                     "id": 3,
@@ -410,9 +398,7 @@ class NavigationTreeViewTest(TestCase):
                     "status": 2,
                     "autopilot_state": 2,
                     "active": "stopped",
-                    "landingMode": False,
                 }],
-                "landingMode": False,
                 "archived": False,
                 "id": 1,
                 "name": "test campaign 1"
@@ -440,13 +426,11 @@ class NavigationTreeViewTest(TestCase):
                         "status": 2,
                         "autopilot_state": 2,
                         "active": "stopped",
-                        "landingMode": False,
                     }
                 ],
                 "id": 2,
                 "name": "test campaign 2",
                 "archived": False,
-                "landingMode": False,
             }],
             "id": 2,
             "name": "test account 2",

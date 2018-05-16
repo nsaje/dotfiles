@@ -11,9 +11,6 @@ angular.module('one.widgets').component('zemCampaignBudgetsModal', {
         $ctrl.selectedBudgetId = $ctrl.resolve.selectedBudgetId;
         $ctrl.budgets = $ctrl.resolve.budgets;
 
-        // FIXME: This information needs to be retrieved through budgets or resolved entity
-        $ctrl.isInLandingMode = zemNavigationNewService.getActiveEntity().data.landingMode;
-
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
 

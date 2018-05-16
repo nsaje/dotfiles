@@ -88,7 +88,6 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         'autopilot_state',
         'autopilot_daily_budget',
         'local_autopilot_daily_budget',
-        'landing_mode',
         'b1_sources_group_enabled',
         'b1_sources_group_daily_budget',
         'local_b1_sources_group_daily_budget',
@@ -202,7 +201,6 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         verbose_name='Autopilot\'s Daily Spend Cap',
         default=0
     )
-    landing_mode = models.BooleanField(default=False)
 
     changes_text = models.TextField(blank=True, null=True)
 
@@ -288,7 +286,6 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
             ('b1_sources_group_state', constants.AdGroupSourceSettingsState.ACTIVE),
             ('b1_sources_group_daily_budget', Decimal('50.00')),
             ('b1_sources_group_cpc_cc', Decimal('0.45')),
-            ('landing_mode', False),
         ])
 
         exchange_rate = Decimal('1.0')
@@ -338,7 +335,6 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
             'autopilot_state': 'Autopilot',
             'autopilot_daily_budget': 'Autopilot\'s Daily Spend Cap',
             'local_autopilot_daily_budget': 'Autopilot\'s Daily Spend Cap',
-            'landing_mode': 'Landing Mode',
             'dayparting': 'Dayparting',
             'max_cpm': 'Max CPM',
             'local_max_cpm': 'Max CPM',

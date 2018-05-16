@@ -22,7 +22,6 @@ angular.module('one.widgets').directive('zemGridCellEditableBaseField', function
 
             vm.isSaveRequestInProgress = vm.grid.meta.dataService.isSaveRequestInProgress;
             vm.isAutopilotIconShown = isAutopilotIconShown;
-            vm.isLandingModeIconShown = isLandingModeIconShown;
             vm.filterInput = filterInput;
             vm.onKeyDown = onKeyDown;
             vm.save = save;
@@ -66,26 +65,6 @@ angular.module('one.widgets').directive('zemGridCellEditableBaseField', function
                     return false;
                 }
                 return true;
-            }
-
-            function isLandingModeIconShown () {
-                if (vm.data && !vm.data.value) {
-                    return false;
-                }
-
-                if (isAutopilotIconShown()) {
-                    return false;
-                }
-
-                if (vm.column.field === zemGridEndpointColumns.COLUMNS.bidCpcSetting.field) {
-                    return false;
-                }
-
-                if (!vm.grid.meta.data.adGroupLandingMode) {
-                    return false;
-                }
-
-                return isRowActive();
             }
 
             function isAutopilotIconShown () {

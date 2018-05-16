@@ -52,7 +52,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             c.pk: c
             for c in dash.models.Campaign.objects.filter(
                 id__in=set(adg.campaign_id for adg in flying_ad_groups)
-            ).exclude_landing().select_related('account')
+            ).select_related('account')
             if c.account.get_current_settings().account_type in VALID_PACING_ACCOUNT_TYPES
         }
         alarms = analytics.monitor.audit_pacing(

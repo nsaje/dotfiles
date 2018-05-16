@@ -534,10 +534,9 @@ def _get_editable_fields_daily_budget(ad_group, ad_group_source, ad_group_settin
 
     if (not ad_group_source.source.can_update_daily_budget_automatic() and
             not ad_group_source.source.can_update_daily_budget_manual() or
-            campaign_settings.landing_mode or
             ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or
             campaign_settings.autopilot):
-        message = _get_daily_budget_disabled_message(
+        message = _get_bid_cpc_daily_budget_disabled_message(
             ad_group, ad_group_source, ad_group_settings, campaign_settings)
 
     return {
@@ -645,13 +644,6 @@ def _get_status_setting_disabled_message_for_target_regions(
 
     if unsupported_targets:
         return 'This source can not be enabled because it does not support {} targeting.'.format(" and ".join(sorted(unsupported_targets)))
-
-
-def _get_daily_budget_disabled_message(ad_group, ad_group_source, ad_group_settings, campaign_settings):
-    if campaign_settings.landing_mode:
-        return 'This value cannot be edited because campaign is in landing mode.'
-
-    return _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_group_settings, campaign_settings)
 
 
 def _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_group_settings, campaign_settings):

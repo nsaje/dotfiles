@@ -222,7 +222,6 @@ class AdGroupSettingsTest(TestCase):
                     'b1_sources_group_cpc_cc': '0.0100',
                     'whitelist_publisher_groups': [],
                     'blacklist_publisher_groups': [],
-                    'landing_mode': False,
                     'delivery_type': 1,
                     'click_capping_daily_ad_group_max_clicks': 10,
                     'click_capping_daily_click_budget': '5.0000',
@@ -296,30 +295,6 @@ class AdGroupSettingsTest(TestCase):
                 'sources': [
                     'Yahoo',
                 ],
-            }
-        )
-
-    def test_get_landing(self):
-        ad_group = models.AdGroup.objects.get(pk=1)
-
-        req = RequestFactory().get('/')
-        req.user = User(id=1)
-
-        new_settings = ad_group.get_current_settings().copy_settings()
-        new_settings.landing_mode = True
-        new_settings.save(req)
-
-        add_permissions(self.user, ['settings_view'])
-        response = self.client.get(
-            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
-            follow=True
-        )
-
-        self.assertDictEqual(
-            json.loads(response.content)['data']['warnings'], {
-                'end_date': {
-                    'campaign_id': 1,
-                }
             }
         )
 
@@ -405,7 +380,6 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_cpc_cc': '0.25',
                         'whitelist_publisher_groups': [1],
                         'blacklist_publisher_groups': [1],
-                        'landing_mode': False,
                         'delivery_type': 2,
                         'click_capping_daily_ad_group_max_clicks': 15,
                         'click_capping_daily_click_budget': '7.5000',
@@ -991,22 +965,6 @@ class AdGroupSettingsStateTest(TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
-
-    def test_campaign_in_landing_mode(self):
-        ad_group = models.AdGroup.objects.get(pk=2)
-        new_campaign_settings = ad_group.campaign.get_current_settings().copy_settings()
-        new_campaign_settings.landing_mode = True
-        new_campaign_settings.save(None)
-
-        add_permissions(self.user, ['can_control_ad_group_state_in_table'])
-        response = self.client.post(
-            reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
-            json.dumps({'state': 1}),
-            content_type='application/json',
-            follow=True,
-        )
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
 
     @patch('utils.k1_helper.update_ad_group')
     def test_inactivate(self, mock_k1_ping):

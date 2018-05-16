@@ -11,8 +11,6 @@ from dash import history_helpers
 from dash import models
 from dash.views import bulk_actions
 
-from utils import exc
-
 from zemauth.models import User
 
 
@@ -103,17 +101,6 @@ class AdGroupSourceStateTest(TestCase):
         self.assertEqual(1, mock_table_update.call_count)
 
         mock_k1_ping.assert_called_once_with(1, msg='AdGroupSourceState.post')
-
-    def test_check_can_set_state_landing_mode(self):
-        view = bulk_actions.AdGroupSourceState()
-        campaign_settings = models.CampaignSettings(landing_mode=True)
-        ad_group_settings = None
-        ad_group = None
-        ad_group_sources = []
-        state = None
-
-        with self.assertRaises(exc.ValidationError):
-            view._check_can_set_state(campaign_settings, ad_group_settings, ad_group, ad_group_sources, state)
 
     @patch('dash.views.helpers.enabling_autopilot_sources_allowed')
     @patch('dash.views.helpers.check_facebook_source')

@@ -1,10 +1,6 @@
 <div class="custom-panel zem-settings-component__container zem-adgroup-autopilot-settings">
     <h2 class="custom-panel__title">Autopilot</h2>
 
-    <div class="message message--warning message--with-icon m-b-s" ng-if="$ctrl.isInLanding()">
-        You can’t change Autopilot setting while the Campaign is in landing mode.
-    </div>
-
     <div class="message message--info message--with-icon m-b-s" ng-if="$ctrl.isCampaignAutopilot()">
         Autopilot is managed on campaign level.
     </div>
@@ -12,7 +8,7 @@
     <div class="form">
         <div class="form__radio">
             <label>
-                <input class="input-radio" id="autopilot-on" type="radio" ng-model="$ctrl.autopilotEnabled" ng-value="{{ true }}" ng-disabled="$ctrl.isInLanding() || $ctrl.isCampaignAutopilot()" ng-change="$ctrl.updateAutopilotSettings()">
+                <input class="input-radio" id="autopilot-on" type="radio" ng-model="$ctrl.autopilotEnabled" ng-value="{{ true }}" ng-disabled="$ctrl.isCampaignAutopilot()" ng-change="$ctrl.updateAutopilotSettings()">
                 <span class="radio-text">
                     ON <span class="text-gray">- Let Zemanta One automatically optimize towards your campaign goal.</span>
                 </span>
@@ -29,7 +25,7 @@
                 <div class="prefixed-field prefixed-field--narrow">
                     <span class="prefixed-field__prefix">{{$ctrl.currencySymbol}}</span>
                     <input class="input-text" id="autopilot-budget" type="text" ng-model="$ctrl.entity.settings.autopilotBudget" fraction-size="0"
-                           zem-currency-input ng-disabled="$ctrl.isInLanding()">
+                           zem-currency-input>
                 </div>
 
                 <div class="message message--error" for="autopilot-budget">{{ $ctrl.errors.autopilotBudget }}</div>
@@ -45,7 +41,7 @@
 
         <div class="form__radio">
             <label>
-                <input class="input-radio" id="autopilot-off" type="radio" ng-model="$ctrl.autopilotEnabled" ng-value="{{ false }}" ng-disabled="$ctrl.isInLanding() || $ctrl.isCampaignAutopilot()" ng-change="$ctrl.updateAutopilotSettings()">
+                <input class="input-radio" id="autopilot-off" type="radio" ng-model="$ctrl.autopilotEnabled" ng-value="{{ false }}" ng-disabled="$ctrl.isCampaignAutopilot()" ng-change="$ctrl.updateAutopilotSettings()">
                 <span class="radio-text">
                     OFF <span class="text-gray">- Manually manage Media Sources.</span>
                 </span>
@@ -62,7 +58,7 @@
                 <div class="form__radio">
                     <label>
                         <input class="input-radio" type="radio" id="rtb-sources-as-group"
-                               ng-model="$ctrl.b1SourcesGroupEnabled" ng-value="true" ng-disabled="$ctrl.isInLanding()" ng-change="$ctrl.updateAutopilotSettings()">
+                               ng-model="$ctrl.b1SourcesGroupEnabled" ng-value="true" ng-change="$ctrl.updateAutopilotSettings()">
                         <span class="radio-text">
                             As a group <span class="text-gray">- Set one Bid CPC and Daily Spend Cap for all RTB sources together.</span>
                         </span>
@@ -72,7 +68,7 @@
                 <div class="form__radio">
                     <label>
                         <input class="input-radio" type="radio" id="rtb-sources-separately"
-                               ng-model="$ctrl.b1SourcesGroupEnabled" ng-value="false" ng-disabled="$ctrl.isInLanding()" ng-change="$ctrl.updateAutopilotSettings()">
+                               ng-model="$ctrl.b1SourcesGroupEnabled" ng-value="false" ng-change="$ctrl.updateAutopilotSettings()">
                         <span class="radio-text">
                             Separately <span class="text-gray">- Set Bid CPC and Daily Spend Cap for each of the RTB sources.</span>
                         </span>
@@ -92,7 +88,7 @@
                 <div class="form__radio">
                     <label>
                         <input class="input-radio" type="radio" id="price-discovery-automatic"
-                            ng-model="$ctrl.priceDiscovery" ng-value="{{ true }}" ng-disabled="$ctrl.isInLanding()" ng-change="$ctrl.updateAutopilotSettings()">
+                            ng-model="$ctrl.priceDiscovery" ng-value="{{ true }}" ng-change="$ctrl.updateAutopilotSettings()">
                         <span class="radio-text">
                             Automatic <span class="text-gray">- Let Zemanta One discover the Bid CPCs in order to hit Daily Spend Caps of Media Sources.</span>
                         </span>
@@ -102,7 +98,7 @@
                 <div class="form__radio">
                     <label>
                         <input class="input-radio" type="radio" id="price-discovery-manual"
-                            ng-model="$ctrl.priceDiscovery" ng-value="{{  false }}" ng-disabled="$ctrl.isInLanding()" ng-change="$ctrl.updateAutopilotSettings()">
+                            ng-model="$ctrl.priceDiscovery" ng-value="{{  false }}" ng-change="$ctrl.updateAutopilotSettings()">
                         <span class="radio-text">
                             Manual <span class="text-gray">- Take full control of bid CPCs.</span>
                         </span>

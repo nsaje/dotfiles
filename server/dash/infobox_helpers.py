@@ -536,17 +536,13 @@ def get_adgroup_running_status(user, ad_group, filtered_sources=None):
         ad_group.settings.state,
         ad_group.settings.ad_group.campaign.real_time_campaign_stop,
         automation.campaignstop.get_campaignstop_state(ad_group.campaign),
-        ad_group.settings.landing_mode,
         ad_group.campaign.settings.autopilot,
     )
 
 
 def get_adgroup_running_status_class(
         user, autopilot_state, running_status, state,
-        real_time_campaign_stop, campaignstop_state, is_in_landing, is_campaign_autopilot):
-    if is_in_landing:
-        return dash.constants.InfoboxStatus.LANDING_MODE
-
+        real_time_campaign_stop, campaignstop_state, is_campaign_autopilot):
     if state == dash.constants.AdGroupSettingsState.INACTIVE and\
        running_status == dash.constants.AdGroupRunningStatus.INACTIVE:
         return dash.constants.InfoboxStatus.STOPPED
@@ -574,9 +570,6 @@ def get_adgroup_running_status_class(
 
 
 def get_campaign_running_status(campaign):
-    if campaign.settings.landing_mode:
-        return dash.constants.InfoboxStatus.LANDING_MODE
-
     if campaign.real_time_campaign_stop:
         campaignstop_state = automation.campaignstop.get_campaignstop_state(campaign)
         campaignstop_state_status = _get_campaignstop_state_status(campaignstop_state, autopilot=campaign.settings.autopilot)
@@ -631,8 +624,6 @@ def get_entity_delivery_text(status):
     if status in (dash.constants.InfoboxStatus.AUTOPILOT,
                   dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT):
         return 'Active - Autopilot mode'
-    if status == dash.constants.InfoboxStatus.LANDING_MODE:
-        return 'Active - Landing mode'
     if status in (dash.constants.InfoboxStatus.ACTIVE_PRICE_DISCOVERY,
                   dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY):
         return 'Active - Price Discovery'

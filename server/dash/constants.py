@@ -218,7 +218,6 @@ class InfoboxStatus(ConstantBase):
     ACTIVE_PRICE_DISCOVERY = 'active-price-discovery'
     INACTIVE = 'inactive'
     STOPPED = 'stopped'
-    LANDING_MODE = 'landing-mode'
     AUTOPILOT = 'autopilot'
     CAMPAIGNSTOP_STOPPED = 'campaignstop-stopped'
     CAMPAIGNSTOP_LOW_BUDGET = 'campaignstop-low-budget'
@@ -231,7 +230,6 @@ class InfoboxStatus(ConstantBase):
         ACTIVE_PRICE_DISCOVERY: 'Active - Price Discovery',
         INACTIVE: 'Inactive',
         STOPPED: 'Stopped',
-        LANDING_MODE: 'Landing Mode',
         AUTOPILOT: 'Autopilot',
         CAMPAIGNSTOP_STOPPED: 'Stopped - Out of budget',
         CAMPAIGNSTOP_LOW_BUDGET: 'Active - Running out of budget',

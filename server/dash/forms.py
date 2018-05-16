@@ -477,10 +477,6 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, MulticurrencySettingsFormMix
                 raise forms.ValidationError(
                     'End date cannot be set in the past.')
 
-        if self.current_settings.landing_mode:
-            raise forms.ValidationError(
-                'End date cannot be set when campaign is in landing mode.')
-
         return end_date
 
     def clean_tracking_code(self):
