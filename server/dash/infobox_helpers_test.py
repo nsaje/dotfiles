@@ -941,6 +941,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
 
         self.campaign_local.settings.update(
             None,
+            automatic_campaign_stop=False,
         )
         self.ad_group_local = magic_mixer.blend(
             dash.models.AdGroup,

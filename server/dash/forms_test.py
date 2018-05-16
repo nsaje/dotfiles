@@ -994,6 +994,41 @@ class AdGroupAdsUploadFormTest(TestCase):
         return io.BytesIO(csv_string.getvalue().encode(encoding))
 
 
+class CampaignAdminFormTest(TestCase):
+    fixtures = ['test_models.yaml']
+
+    def test_empty_form(self):
+        form = forms.CampaignAdminForm()
+        self.assertTrue(form.initial['automatic_campaign_stop'])
+
+    def test_instance_witout_settings(self):
+        campaign = magic_mixer.blend(models.Campaign)
+        form = forms.CampaignAdminForm(
+            instance=campaign
+        )
+        self.assertTrue(form.initial['automatic_campaign_stop'])
+
+    def test_instance_with_settings(self):
+        campaign = magic_mixer.blend(models.Campaign)
+        settings = campaign.get_current_settings().copy_settings()
+        settings.automatic_campaign_stop = True
+        settings.save(None)
+
+        form = forms.CampaignAdminForm(
+            instance=campaign
+        )
+        self.assertTrue(form.initial['automatic_campaign_stop'])
+
+        settings = campaign.get_current_settings().copy_settings()
+        settings.automatic_campaign_stop = False
+        settings.save(None)
+
+        form = forms.CampaignAdminForm(
+            instance=campaign
+        )
+        self.assertFalse(form.initial['automatic_campaign_stop'])
+
+
 class ContentAdCandidateFormTestCase(TestCase):
 
     def _get_valid_data(self):

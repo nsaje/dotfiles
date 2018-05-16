@@ -75,7 +75,6 @@
         account: 1 # test account 1
         settings: 1
         name: 'test campaign 1'
-        real_time_campaign_stop: True
     model: dash.campaign
     pk: 1
 
@@ -86,7 +85,6 @@
         account: 1 # test account 1
         settings: 2
         name: 'test campaign 2'
-        real_time_campaign_stop: True
     model: dash.campaign
     pk: 2
 
@@ -97,7 +95,6 @@
         account: 1 # test account 1
         settings: 3
         name: 'test campaign 3'
-        real_time_campaign_stop: True
     model: dash.campaign
     pk: 3
 

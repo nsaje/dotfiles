@@ -355,6 +355,7 @@ class CampaignSettingsTest(TestCase):
             'target_regions': ['CA', '501'],
             'exclusion_target_regions': ['US-NY'],
             'campaign_goal': 2,
+            'automatic_campaign_stop': True,
             'autopilot': False,
             'enable_ga_tracking': True,
             'ga_property_id': '',

@@ -104,6 +104,7 @@
     name: 'Campaign Settings 1'
     campaign_manager: 1
     campaign: 1
+    automatic_campaign_stop: False
   model: dash.campaignsettings
   pk: 1
 

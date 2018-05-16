@@ -863,6 +863,18 @@ class CampaignGoalForm(forms.Form):
 
 
 class CampaignAdminForm(forms.ModelForm, CustomFlagsFormMixin):
+    automatic_campaign_stop = forms.BooleanField(required=False,
+                                                 label='Automatic campaign stop on low budget')
+
+    def __init__(self, *args, **kwargs):
+        initial = {
+            'automatic_campaign_stop': True,
+        }
+        if 'instance' in kwargs:
+            settings = kwargs['instance'].get_current_settings()
+            initial['automatic_campaign_stop'] = settings.automatic_campaign_stop
+        super(CampaignAdminForm, self).__init__(
+            initial=initial, *args, **kwargs)
 
     class Meta:
         model = models.Campaign

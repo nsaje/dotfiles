@@ -48,6 +48,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin,
         'target_placements',
         'target_regions',
         'exclusion_target_regions',
+        'automatic_campaign_stop',
         'autopilot',
         'enable_ga_tracking',
         'ga_tracking_type',
@@ -111,6 +112,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin,
     whitelist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
     blacklist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
 
+    automatic_campaign_stop = models.BooleanField(default=True)
     autopilot = models.BooleanField(default=False)
 
     enable_ga_tracking = models.BooleanField(default=True)
@@ -166,6 +168,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin,
             'target_os': 'Operating Systems',
             'target_regions': 'Locations',
             'exclusion_target_regions': 'Excluded Locations',
+            'automatic_campaign_stop': None,
             'autopilot': 'Budget Optimization Autopilot',
             'enable_ga_tracking': 'Enable GA tracking',
             'ga_tracking_type': 'GA tracking type (via API or e-mail).',
@@ -214,6 +217,8 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin,
                     value = 'worldwide'
                 elif prop_name == 'exclusion_target_regions':
                     value = 'none'
+        elif prop_name == 'automatic_campaign_stop':
+            value = str(value)
         elif prop_name == 'autopilot':
             value = str(value)
         elif prop_name == 'archived':
