@@ -38,6 +38,7 @@ angular.module('one.services').service('zemCampaignBudgetsEndpoint', function ($
                         isAgency: obj.is_agency,
                     };
                 }),
+                minAmount: data.min_amount,
             };
         });
     }

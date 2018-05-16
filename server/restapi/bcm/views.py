@@ -351,6 +351,7 @@ class CampaignBudgetView(api_common.BaseApiView):
             'past': self._get_past_budget(user, campaign, budget_items),
             'totals': self._get_budget_totals(user, campaign, active_budget, budget_items, credit_items),
             'credits': self._get_available_credit_items(user, campaign, credit_items),
+            'min_amount': '0',
         })
 
     def _get_available_credit_items(self, user, campaign, available_credits):

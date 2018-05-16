@@ -666,6 +666,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "is_agency": False,
                 }
             ],
+            "min_amount": "0",
             "totals": {
                 "current": {
                     "available": "100000.0000",
@@ -720,6 +721,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "is_agency": False,
                 }
             ],
+            "min_amount": "0",
             "totals": {
                 "current": {
                     "available": "100000.0000",
@@ -780,6 +782,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "is_agency": False,
                 }
             ],
+            "min_amount": "0",
             "totals": {
                 "current": {
                     "available": "100000.0000",
@@ -836,6 +839,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "is_agency": False,
                 }
             ],
+            "min_amount": "0",
             "totals": {
                 "current": {
                     "available": "100000.0000",
@@ -896,6 +900,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "is_agency": False,
                 }
             ],
+            "min_amount": "0",
             "totals": {
                 "current": {
                     "available": "100000.0000",
@@ -1487,6 +1492,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
                     "start_date": "2015-10-01",
                 }
             ],
+            "min_amount": "0",
             "past": [],
             "credits": [
                 {
