@@ -34,6 +34,7 @@ class AdGroupSettingsTest(TestCase):
             'changes_text',
             'system_user',
             'latest_for_entity',
+            'landing_mode',
         ]
 
         all_fields = set(models.AdGroupSettings._settings_fields + meta_fields)
@@ -332,6 +333,8 @@ class CampaignSettingsTest(TestCase):
             'changes_text',
             'system_user',
             'latest_for_entity',
+            'landing_mode',
+            'automatic_campaign_stop',
         ]
 
         deprecated_fields = ['goal_quantity']
