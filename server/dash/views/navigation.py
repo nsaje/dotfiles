@@ -137,7 +137,7 @@ class NavigationTreeView(api_common.BaseApiView):
         if load_settings:
             ad_groups_settings = models.AdGroupSettings.objects.filter(
                 ad_group__in=ad_groups).group_current_settings().only(
-                    'id', 'ad_group_id', 'state', 'autopilot_state', 'archived', 'landing_mode', 'start_date', 'end_date')
+                    'id', 'ad_group_id', 'state', 'autopilot_state', 'archived', 'start_date', 'end_date')
             map_ad_groups_settings = {ags.ad_group_id: ags for ags in ad_groups_settings}
 
         data_ad_groups = {}

@@ -23,7 +23,6 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
         $ctrl.options = options;
 
         $ctrl.isCampaignAutopilot = isCampaignAutopilot;
-        $ctrl.isInLanding = isInLanding;
         $ctrl.updateAutopilotSettings = updateAutopilotSettings;
 
         $ctrl.getBudgetAutopilotOptimizationGoalText = getBudgetAutopilotOptimizationGoalText;
@@ -64,11 +63,6 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
         function isCampaignAutopilot () {
             if (!$ctrl.entity) return false;
             return $ctrl.entity.settings.autopilotOnCampaign;
-        }
-
-        function isInLanding () {
-            if (!$ctrl.entity) return false;
-            return $ctrl.entity.settings.landingMode;
         }
 
         function updateAutopilotSettings () {

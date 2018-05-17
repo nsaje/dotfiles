@@ -11,7 +11,6 @@ import utils.demo_anonymizer
 import utils.string_helper
 from dash import constants
 from utils import dates_helper
-from utils import exc
 from utils import json_helper
 from utils import k1_helper
 from utils import redirector_helper
@@ -73,8 +72,6 @@ class AdGroupManager(core.common.QuerySetManager):
             AdGroup.objects.filter(campaign=campaign).exclude_archived(),
             campaign.account_id,
         )
-        if campaign.get_current_settings().landing_mode:
-            raise exc.ValidationError('Please select a destination campaign that is not in landing mode')
 
         with transaction.atomic():
             ad_group = self._create(request, campaign, name=new_name)
@@ -416,6 +413,3 @@ class AdGroup(models.Model,
             Returns only ad groups that have settings set to active.
             """
             return self.filter(settings__state=constants.AdGroupSettingsState.ACTIVE)
-
-        def filter_landing(self):
-            return self.filter(settings__landing_mode=True)

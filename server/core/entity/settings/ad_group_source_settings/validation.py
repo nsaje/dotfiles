@@ -5,8 +5,6 @@ import django.forms
 from dash import constants, retargeting_helper, validation_helpers, cpc_constraints
 import utils.exc
 
-LANDING_MODE_PREVENT_UPDATE = ['daily_budget_cc', 'state']
-
 
 class AdGroupSourceSettingsValidatorMixin(object):
 
@@ -74,24 +72,25 @@ class AdGroupSourceSettingsValidatorMixin(object):
                     'state': 'Cannot enable Yahoo media source with the current settings - CPC too low',
                 })
 
-    def validate_ad_group_source_campaign_stop(self, new_settings):
+    def validate_ad_group_source_autopilot(self, new_settings):
         from dash.views import helpers
 
         campaign = self.ad_group_source.ad_group.campaign
+        if not campaign.real_time_campaign_stop:
+            return
+
         changes = self.get_setting_changes(new_settings)
-        if campaign.settings.landing_mode:
-            for key in list(changes.keys()):
-                if key not in LANDING_MODE_PREVENT_UPDATE:
-                    continue
-                raise utils.exc.ValidationError(errors={key: 'Not allowed'})
-        elif campaign.settings.automatic_campaign_stop:
-            if 'state' in changes:
-                if new_settings.state == constants.AdGroupSourceSettingsState.ACTIVE:
-                    enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(
-                        self.ad_group_source.ad_group,
-                        [self.ad_group_source],
-                    )
-                    if not enabling_autopilot_sources_allowed:
-                        raise utils.exc.ValidationError(errors={
-                            'state': ['Please increase Autopilot Daily Spend Cap to enable this source.']
-                        })
+        if 'state' not in changes:
+            return
+
+        if new_settings.state != constants.AdGroupSourceSettingsState.ACTIVE:
+            return
+
+        enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(
+            self.ad_group_source.ad_group,
+            [self.ad_group_source],
+        )
+        if not enabling_autopilot_sources_allowed:
+            raise utils.exc.ValidationError(errors={
+                'state': ['Please increase Autopilot Daily Spend Cap to enable this source.']
+            })

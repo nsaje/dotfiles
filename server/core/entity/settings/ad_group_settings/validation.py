@@ -87,11 +87,6 @@ class AdGroupSettingsValidatorMixin(object):
                     'End date cannot be set in the past.'
                 )
 
-            if self.landing_mode:  # legacy; no custom exception
-                raise exceptions.ValidationError(
-                    'End date cannot be set when campaign is in landing mode.'
-                )
-
     def _validate_tracking_code(self, changes):
         tracking_code = changes.get('tracking_code')
         if tracking_code:

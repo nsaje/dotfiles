@@ -211,7 +211,7 @@ def audit_autopilot_budget_changes(date=None, error=Decimal('0.001')):
         ad_group_source__source__maintenance=False,
         autopilot_type=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
     ).exclude(
-        ad_group__in=dash.models.AdGroup.objects.all().filter_landing(),
+        ad_group__in=dash.models.AdGroup.objects.all()
     )
     total_changes = {}
     for log in ap_logs:

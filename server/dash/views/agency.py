@@ -199,11 +199,6 @@ class AdGroupSettings(api_common.BaseApiView):
             }
             warnings['retargeting'] = retargeting_warning
 
-        if ad_group_settings.landing_mode:
-            warnings['end_date'] = {
-                'campaign_id': ad_group_settings.ad_group.campaign.id,
-            }
-
         max_cpm_unsupported_sources = self._supports_max_cpm(ad_group_sources)
         if max_cpm_unsupported_sources:
             warnings['max_cpm'] = {'sources': [s.name for s in max_cpm_unsupported_sources]}
@@ -252,7 +247,6 @@ class AdGroupSettings(api_common.BaseApiView):
             'b1_sources_group_state': settings.b1_sources_group_state,
             'whitelist_publisher_groups': settings.whitelist_publisher_groups,
             'blacklist_publisher_groups': settings.blacklist_publisher_groups,
-            'landing_mode': settings.landing_mode,
             'delivery_type': settings.delivery_type,
         }
 

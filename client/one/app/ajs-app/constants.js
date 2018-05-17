@@ -55,7 +55,6 @@ var constants = {
         ACTIVE_PRICE_DISCOVERY: 'active-price-discovery',
         INACTIVE: 'inactive',
         STOPPED: 'stopped',
-        LANDING_MODE: 'landing-mode',
         AUTOPILOT: 'autopilot',
         CAMPAIGNSTOP_STOPPED: 'campaignstop-stopped',
         CAMPAIGNSTOP_LOW_BUDGET: 'campaignstop-low-budget',

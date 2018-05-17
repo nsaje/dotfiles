@@ -645,14 +645,6 @@ class InfoBoxAccountHelpersTest(TestCase):
 
             ad_group.campaign.set_real_time_campaign_stop(None, old_value)
 
-        # adgroup is in landing mode and active, sources are active
-        ad_group.settings.update_unsafe(None, landing_mode=True)
-        self.assertEqual(
-            dash.constants.InfoboxStatus.LANDING_MODE,
-            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
-        )
-        ad_group.settings.update_unsafe(None, landing_mode=False)
-
         # campaign is on autopilot
         ad_group.campaign.settings.update_unsafe(None, autopilot=True)
         self.assertEqual(
@@ -865,16 +857,6 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         self.assertEqual(
             dash.constants.InfoboxStatus.STOPPED,
-            dash.infobox_helpers.get_campaign_running_status(campaign)
-        )
-
-        # campaign is in landing mode
-        new_campaign_settings = campaign.get_current_settings().copy_settings()
-        new_campaign_settings.landing_mode = True
-        new_campaign_settings.save(None)
-
-        self.assertEqual(
-            dash.constants.InfoboxStatus.LANDING_MODE,
             dash.infobox_helpers.get_campaign_running_status(campaign)
         )
 

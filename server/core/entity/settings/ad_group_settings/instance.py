@@ -64,8 +64,6 @@ class AdGroupSettingsMixin(object):
 
     def _remove_disallowed_fields(self, request, updates, skip_permission_check):
         user = request.user if request else None
-        special_case_fields = {'autopilot_state'}
-        valid_fields = set(self._settings_fields) - special_case_fields
 
         new_updates = {}
 
@@ -73,11 +71,8 @@ class AdGroupSettingsMixin(object):
             required_permission = not skip_permission_check and self._permissioned_fields.get(field)
             if required_permission and not (user and user.has_perm(required_permission)):
                 continue
-            if field in valid_fields:
+            if field in set(self._settings_fields):
                 new_updates[field] = value
-
-        if 'autopilot_state' in updates and not self.landing_mode:
-            new_updates['autopilot_state'] = updates['autopilot_state']
 
         return new_updates
 

@@ -70,10 +70,6 @@ class CampaignInstanceMixin:
     def restore(self, request):
         self.settings.update(request, archived=False)
 
-    def is_in_landing(self):
-        current_settings = self.get_current_settings()
-        return current_settings.landing_mode
-
     def write_history(self, changes_text, changes=None,
                       user=None, system_user=None, action_type=None):
         if not changes and not changes_text:

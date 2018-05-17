@@ -49,10 +49,8 @@ class AutopilotPlusTestCase(test.TestCase):
             changes['daily_budget_cc'] = Decimal('20.0')
         if cpc:
             changes['cpc_cc'] = Decimal('0.2')
-        return call(
-            dash.models.AdGroupSource.objects.get(ad_group_id=ad_group, source_id=source),
-            changes,
-            2, None)
+        ad_group_source = dash.models.AdGroupSource.objects.get(ad_group_id=ad_group, source_id=source)
+        return call(ad_group_source, changes, 2)
 
     def _update_allrtb_call(self, ad_group, budget=True, cpc=True):
         changes = {}
@@ -150,6 +148,7 @@ class AutopilotPlusTestCase(test.TestCase):
 
         service.run_autopilot(daily_run=True, send_mail=True, report_to_influx=True)
 
+        self.maxDiff = None
         self.assertCountEqual(mock_update.call_args_list, [
             self._update_call(ad_group=1, source=1),
             self._update_call(ad_group=2, source=1),
@@ -319,7 +318,7 @@ class AutopilotPlusTestCase(test.TestCase):
         }}
         service.set_autopilot_changes(cpc_changes=cpc_changes)
         mock_update_values.assert_called_with(ag_source, {'cpc_cc': Decimal('0.2')},
-                                              dash.constants.SystemUserType.AUTOPILOT, None)
+                                              dash.constants.SystemUserType.AUTOPILOT)
         mock_update_values.assert_called_once()
 
     @patch('automation.autopilot.helpers.update_ad_group_b1_sources_group_values')
@@ -344,7 +343,7 @@ class AutopilotPlusTestCase(test.TestCase):
         }}
         service.set_autopilot_changes(budget_changes=budget_changes)
         mock_update_values.assert_called_with(ag_source, {'daily_budget_cc': Decimal('200')},
-                                              dash.constants.SystemUserType.AUTOPILOT, None)
+                                              dash.constants.SystemUserType.AUTOPILOT)
         mock_update_values.assert_called_once()
 
     @patch('automation.autopilot.helpers.update_ad_group_source_values')
@@ -361,7 +360,7 @@ class AutopilotPlusTestCase(test.TestCase):
         service.set_autopilot_changes(cpc_changes=cpc_changes, budget_changes=budget_changes)
         mock_update_values.assert_called_with(
             ag_source, {'cpc_cc': Decimal('0.2'), 'daily_budget_cc': Decimal('200')},
-            dash.constants.SystemUserType.AUTOPILOT, None)
+            dash.constants.SystemUserType.AUTOPILOT)
         mock_update_values.assert_called_once()
 
     @patch('automation.autopilot.helpers.update_ad_group_source_values')
@@ -403,7 +402,7 @@ class AutopilotPlusTestCase(test.TestCase):
         ap = dash.constants.SystemUserType.AUTOPILOT
         service.set_autopilot_changes(cpc_changes=cpc_changes, budget_changes=budget_changes, ad_group=ag)
         mock_update_values.assert_called_with(
-            ag_source, {'cpc_cc': Decimal('0.2'), 'daily_budget_cc': Decimal('200')}, ap, None)
+            ag_source, {'cpc_cc': Decimal('0.2'), 'daily_budget_cc': Decimal('200')}, ap)
         mock_update_values.assert_called_once()
         mock_update_rtb.assert_called_with(
             ag, {'cpc_cc': Decimal('0.22'), 'daily_budget_cc': Decimal('20')}, ap)
