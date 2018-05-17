@@ -52,10 +52,22 @@
     </ul>
 </script>
 <script id="zemGridThumbnailPreviewPopover.html" type="text/ng-template">
-    <div class="zem-grid-thumbnail-preview-popover">
-        <!-- width and height are hardcoded in html to correctly resize popover immediately on html load -->
-        <img width="128" height="80" ng-src="{{ctrl.data.landscape}}"/>
-        <img width="80" height="80" ng-src="{{ctrl.data.square}}"/>
+    <div class="zem-grid-ad-preview">
+        <div class="ad-preview__container">
+            <div class="ad-preview__item ad-preview__item--desktop">
+                <img ng-src="{{ctrl.data.landscape}}" class="ad-preview__image"/>
+                <div class="ad-preview__title">{{ctrl.row.data.stats.breakdown_name.text}}</div>
+                <div class="ad-preview__brand-name">{{ctrl.row.data.stats.brand_name.value}}</div>
+                <div class="ad-preview__description">{{ctrl.row.data.stats.description.value}}</div>
+                <div class="ad-preview__url">{{ctrl.row.data.stats.display_url.value}}</div>
+            </div>
+            <div class="ad-preview__item ad-preview__item--mobile">
+                <img ng-src="{{ctrl.data.square}}" class="ad-preview__image"/>
+                <div class="ad-preview__title">{{ctrl.row.data.stats.breakdown_name.text}}</div>
+                <div class="ad-preview__brand-name">{{ctrl.row.data.stats.brand_name.value}}</div>
+                <div class="ad-preview__url">{{ctrl.row.data.stats.display_url.value}}</div>
+            </div>
+        </div>
     </div>
 </script>
 <script id="zemGridSubmissionStatusPopover.html" type="text/ng-template">

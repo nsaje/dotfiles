@@ -3475,3 +3475,99 @@ h4 {
         color: @secondary-color;
     }
 }
+
+////////////////////////////
+// Ad preview //
+////////////////////////////
+
+.ad-preview__container {
+    padding: @default-spacing @default-spacing 0 0;
+}
+
+.ad-preview__item {
+    margin-bottom: @default-spacing;
+    padding-bottom: @default-spacing;
+    border-bottom: 1px solid @light-gray;
+    max-width: 360px;
+}
+
+.ad-preview__item--mobile {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+    position: relative;
+    min-height: 150px;
+
+    .ad-preview__image-link {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 150px;
+        height: 150px;
+    }
+
+    .ad-preview__title,
+    .ad-preview__brand-name,
+    .ad-preview__url {
+        padding-left: 170px;
+    }
+
+    .clearfix();
+}
+
+.ad-preview__image-link {
+    display: block;
+    margin-bottom: 5px;
+    background-color: tint(@secondary-color, 90%);
+    border: 1px solid tint(@secondary-color, 80%);
+    position: relative;
+
+    &::before,
+    &::after {
+        content: " ";
+        display: block;
+        position: absolute;
+        height: 1px;
+        width: 100%;
+        left: 0;
+        right: 0;
+        top: 50%;
+        transform: rotate(45deg) translateY(-50%);
+        background-color: tint(@secondary-color, 80%);
+        z-index: 1;
+    }
+
+    &::after {
+        transform: rotate(-45deg);
+    }
+}
+
+.ad-preview__image {
+    display: block;
+    width: 100%;
+    z-index: 2;
+    position: relative;
+}
+
+.ad-preview__title {
+    color: @secondary-color;
+    font-size: 18px;
+    line-height: 22px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.ad-preview__brand-name {
+    font-weight: 400;
+    margin-bottom: 5px;
+}
+
+.ad-preview__description {
+    font-weight: 300;
+    margin-bottom: 5px;
+}
+
+.ad-preview__url {
+    font-weight: 300;
+}

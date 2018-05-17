@@ -745,9 +745,62 @@ zem-grid {
     }
 }
 
-.zem-grid-thumbnail-preview-popover {
-    img {
-        height: 80px;
+.zem-grid-thumbnail-popover {
+    max-width: 360px;
+
+    .popover-content {
+        max-height: initial;
+    }
+}
+
+.zem-grid-ad-preview {
+    .ad-preview__container {
+        padding: 0;
+    }
+
+    .ad-preview__item--mobile {
+        min-height: 100px;
+
+        .ad-preview__image {
+            width: 100px;
+            height: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        .ad-preview__title,
+        .ad-preview__brand-name,
+        .ad-preview__url {
+            padding-left: 110px;
+        }
+    }
+
+    .ad-preview__image {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .ad-preview__title {
+        font-size: 14px;
+        line-height: 18px;
+        font-weight: 500;
+        margin-bottom: 2px;
+    }
+
+    .ad-preview__brand-name,
+    .ad-preview__description,
+    .ad-preview__url {
+        font-size: 12px;
+        line-height: 16px;
+    }
+
+    .ad-preview__brand-name {
+        margin-bottom: 2px;
+    }
+
+    .ad-preview__description {
+        margin-bottom: 2px;
     }
 }
 

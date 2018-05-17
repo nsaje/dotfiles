@@ -56,6 +56,34 @@
             display: none;
         }
     }
+
+    .content-upload__edit-form-container {
+        left: 0;
+        width: auto;
+
+        .content-upload__edit-form-title-container {
+            display: none;
+        }
+    }
+
+    .content-upload__edit-form-container--ad-preview {
+        width: auto;
+        left: auto;
+        right: -100%;
+        background: tint(@secondary-color,96%);
+    }
+
+    .content-upload__edit-form-title-container--tabs {
+        display: block;
+        padding-left: 0;
+    }
+
+    .content-upload__edit-form--preview-open {
+        .content-upload__edit-form-container--ad-preview {
+            right: 0;
+            left: 0;
+        }
+    }
 }
 
 .zem-campaign-launcher-creatives__ad-picker-container {
