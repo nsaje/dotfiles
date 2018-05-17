@@ -80,9 +80,6 @@
             <zem-help-popover ng-if="!$ctrl.isNew" content="To change the margin, first update this budget’s end date to today and then create a new budget with a start date from tomorrow on. You’ll be able to change the margin in this newly setup budget." placement="top"></zem-help-popover>
             <div class="message message--error" ng-repeat="error in $ctrl.errors.margin" for="margin-input">{{ error }}</div>
         </div>
-        <div class="message message--info message--with-icon" ng-if="$ctrl.isInLandingMode">
-            Add at least ${{ $ctrl.budgets.minAmount | number:2 }} to an active budget to adjust media sources by your needs.
-        </div>
         <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.comment}">
             <label class="form__label" for="comment-input">Notes</label>
             <textarea class="textarea" id="comment-input" type="text" ng-model="$ctrl.budgetItem.comment" maxlength="256"></textarea>
