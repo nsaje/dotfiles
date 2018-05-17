@@ -288,6 +288,8 @@ def _get_campaign_spend(date, all_campaigns, account_id):
             'media_nano': 0,
             'data_nano': 0,
         }
+        spend_diff = daily_statements_diff.SPEND_DIFF_NANO.get(date, {}).get(campaign.id, 0)
+        campaign_spend[campaign.id]['media_nano'] += spend_diff
         for ad_group in campaign.adgroup_set.all():
             ad_group_campaign[ad_group.id] = campaign.id
 
@@ -327,9 +329,6 @@ def _get_campaign_spend(date, all_campaigns, account_id):
 
             campaign_spend[campaign_id]['media_nano'] += media_spend * converters.MICRO_TO_NANO
             campaign_spend[campaign_id]['data_nano'] += data_spend * converters.MICRO_TO_NANO
-
-    spend_diff = daily_statements_diff.SPEND_DIFF_NANO.get(date, {}).get(campaign_id, 0)
-    campaign_spend[campaign_id]['media_nano'] += spend_diff
 
     return campaign_spend
 
