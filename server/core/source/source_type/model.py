@@ -4,7 +4,6 @@ from decimal import Decimal
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from timezone_field import TimeZoneField
 
 from dash import constants
 
@@ -70,8 +69,6 @@ class SourceType(models.Model, bcm_mixin.SourceTypeBCMMixin):
         verbose_name='Max clicks allowed to delete per daily report',
         help_text='When we receive an empty report, we don\'t override existing data but we mark report aggregation as failed. But for smaller changes (as defined by this parameter), we do override existing data since they are not material. Zero value means no reports will get deleted.',
     )
-
-    budgets_tz = TimeZoneField(default='America/New_York')
 
     def get_min_cpc(self, ad_group_settings, bcm_modifiers=None):
         """ Some source types have different minimal CPCs depending on the settings.
