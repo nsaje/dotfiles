@@ -5,7 +5,7 @@ from django.db import transaction
 import core.entity
 from utils import dates_helper
 
-from . import campaign_spends
+from . import spends_helper
 from . import refresh_realtime_data
 from .. import CampaignStopState
 from .. import constants
@@ -64,7 +64,7 @@ def _is_max_end_date_past(log, campaign, campaign_state):
 
 
 def _is_below_threshold(log, campaign, campaign_state):
-    predicted = campaign_spends.get_predicted_remaining_budget(log, campaign)
+    predicted = spends_helper.get_predicted_remaining_budget(log, campaign)
     threshold = _get_threshold(campaign_state)
     is_below = predicted < threshold
     log.add_context({
