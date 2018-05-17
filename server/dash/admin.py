@@ -306,7 +306,7 @@ class AgencyAccountInline(admin.TabularInline):
     )
 
     ordering = ('-created_dt',)
-    readonly_fields = ('admin_link', 'uses_bcm_v2')
+    readonly_fields = ('admin_link', 'uses_bcm_v2', 'yahoo_account')
     raw_id_fields = ('default_whitelist', 'default_blacklist')
 
 
@@ -409,6 +409,11 @@ class AgencyAdmin(ExportMixin, admin.ModelAdmin):
         if changes:
             new_settings.save(request)
         obj.save(request)
+        if 'yahoo_account' in form.changed_data:
+            for account in obj.account_set.all():
+                if not account.yahoo_account:
+                    account.yahoo_account = obj.yahoo_account
+                    account.save(request)
         utils.k1_helper.update_ad_groups(
             models.AdGroup.objects.filter(campaign__account__agency_id=obj.id).values_list('id', flat=True),
             'AgencyAdmin.save_model'

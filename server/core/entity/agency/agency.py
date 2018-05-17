@@ -10,6 +10,7 @@ from utils import exc
 
 import core.common
 import core.entity
+import core.features.yahoo_accounts
 import core.history
 import core.source
 
@@ -101,6 +102,9 @@ class Agency(models.Model):
                                              on_delete=models.PROTECT, null=True, blank=True)
     default_blacklist = models.OneToOneField('PublisherGroup', related_name='blacklisted_agencies',
                                              on_delete=models.PROTECT, null=True, blank=True)
+
+    yahoo_account = models.ForeignKey(
+        core.features.yahoo_accounts.YahooAccount, on_delete=models.PROTECT, null=True)
 
     settings = models.OneToOneField('AgencySettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_entity')
 

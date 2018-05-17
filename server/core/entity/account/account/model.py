@@ -52,7 +52,7 @@ class Account(instance.AccountInstanceMixin,
     outbrain_marketer_id = models.CharField(
         null=True, blank=True, max_length=255)
     yahoo_account = models.ForeignKey(
-        core.features.yahoo_accounts.YahooAccount, on_delete=models.PROTECT)
+        core.features.yahoo_accounts.YahooAccount, on_delete=models.PROTECT, null=True)
 
     salesforce_url = models.URLField(null=True, blank=True, max_length=255)
 

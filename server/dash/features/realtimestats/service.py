@@ -146,6 +146,7 @@ def _get_source_params(ad_group, use_source_tz=False):
             params['yahoo_campaign_id'] = ad_group_source.source_campaign_key
             if use_source_tz:
                 yahoo_account = ad_group.campaign.account.yahoo_account
-                params['yahoo_date'] = dates_helper.tz_today(yahoo_account.budgets_tz).isoformat()
+                if yahoo_account:
+                    params['yahoo_date'] = dates_helper.tz_today(yahoo_account.budgets_tz).isoformat()
 
     return params

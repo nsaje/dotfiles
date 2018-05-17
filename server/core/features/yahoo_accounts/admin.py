@@ -3,6 +3,10 @@ from django.contrib import admin
 from . import models
 
 
+class YahooAccountAdmin(admin.ModelAdmin):
+    model = models.YahooAccount
+
+
 class YahooMigrationAdGroupHistoryAdmin(admin.ModelAdmin):
     model = models.YahooMigrationAdGroupHistory
     list_display = ('ad_group_id', 'source_campaign_key')
@@ -17,5 +21,6 @@ class YahooMigrationContentAdHistoryAdmin(admin.ModelAdmin):
     readonly_fields = ('content_ad', 'source_content_ad_id')
 
 
+admin.site.register(models.YahooAccount, YahooAccountAdmin)
 admin.site.register(models.YahooMigrationAdGroupHistory, YahooMigrationAdGroupHistoryAdmin)
 admin.site.register(models.YahooMigrationContentAdHistory, YahooMigrationContentAdHistoryAdmin)

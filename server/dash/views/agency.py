@@ -1019,6 +1019,8 @@ class AccountSettings(api_common.BaseApiView):
             try:
                 agency = models.Agency.objects.get(name=resource['agency'])
                 account.agency = agency
+                if not account.yahoo_account:
+                    account.yahoo_account = agency.yahoo_account
             except models.Agency.DoesNotExist:
                 agency = models.Agency.objects.create(
                     request,
