@@ -30,7 +30,7 @@ def notify_depleting_budget_campaigns():
     for camp in campaigns:
         budgets = available_budgets.get(camp.id)
         spends = yesterdays_spends.get(camp.id)
-        if _is_automatic_campaign_stop_disabled(camp) and _budget_is_depleting(budgets, spends) and not _manager_has_been_notified(camp):
+        if not camp.real_time_campaign_stop and _budget_is_depleting(budgets, spends) and not _manager_has_been_notified(camp):
             _notify_campaign_with_depleting_budget(
                 camp,
                 available_budgets.get(camp.id),
@@ -184,10 +184,6 @@ def _send_campaign_stopped_notification_email(
         logger.exception('Campaign stop because of budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:',
                          campaign.name,
                          ', '.join(emails))
-
-
-def _is_automatic_campaign_stop_disabled(camp):
-    return not camp.real_time_campaign_stop
 
 
 def _get_yesterdays_spends(campaigns):

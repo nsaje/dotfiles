@@ -37,7 +37,7 @@ class MultiCurrencyTestCase(TestCase):
     def setUp(self):
         self.mock_today = datetime.date(2018, 3, 1)
         account = magic_mixer.blend(core.entity.Account, currency=dash.constants.Currency.EUR)
-        self.campaign = magic_mixer.blend(core.entity.Campaign, account=account)
+        self.campaign = magic_mixer.blend(core.entity.Campaign, account=account, real_time_campaign_stop=True)
         self.credit = magic_mixer.blend(
             core.bcm.CreditLineItem,
             account=self.campaign.account,
@@ -423,7 +423,8 @@ class DailyStatementsK1TestCase(TestCase):
         _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
 
-        self.campaign1.settings.update(None, automatic_campaign_stop=False)
+        self.campaign1.real_time_campaign_stop = False
+        self.campaign1.save()
 
         update_from = datetime.date(2015, 11, 1)
         daily_statements.reprocess_daily_statements(update_from)
@@ -461,7 +462,8 @@ class DailyStatementsK1TestCase(TestCase):
             status=dash.constants.CreditLineItemStatus.SIGNED,
         )
 
-        self.campaign1.settings.update(None, automatic_campaign_stop=False)
+        self.campaign1.real_time_campaign_stop = False
+        self.campaign1.save()
 
         update_from = datetime.date(2015, 10, 1)
         daily_statements.reprocess_daily_statements(update_from)

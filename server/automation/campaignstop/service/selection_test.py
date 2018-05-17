@@ -410,7 +410,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
             real_time_campaign_stop=True,
         )
         user = magic_mixer.blend_user()
-        self.campaign.settings.update(None, automatic_campaign_stop=False, campaign_manager=user)
+        self.campaign.settings.update(None, campaign_manager=user)
         self.campaign_goal = magic_mixer.blend(
             core.goals.CampaignGoal,
             campaign=self.campaign,
