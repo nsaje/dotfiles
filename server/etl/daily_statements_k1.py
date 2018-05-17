@@ -21,6 +21,7 @@ import core.bcm.calculations
 
 from etl import helpers
 from etl import materialize_views
+from etl import daily_statements_diff
 
 logger = logging.getLogger(__name__)
 
@@ -326,6 +327,9 @@ def _get_campaign_spend(date, all_campaigns, account_id):
 
             campaign_spend[campaign_id]['media_nano'] += media_spend * converters.MICRO_TO_NANO
             campaign_spend[campaign_id]['data_nano'] += data_spend * converters.MICRO_TO_NANO
+
+    spend_diff = daily_statements_diff.SPEND_DIFF_NANO.get(date, {}).get(campaign_id, 0)
+    campaign_spend[campaign_id]['media_nano'] += spend_diff
 
     return campaign_spend
 
