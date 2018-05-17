@@ -202,7 +202,7 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
         verbose_name='Autopilot\'s Daily Spend Cap',
         default=0
     )
-    landing_mode = models.BooleanField(default=False)
+    landing_mode = models.NullBooleanField(default=False, blank=True, null=True)
 
     changes_text = models.TextField(blank=True, null=True)
 

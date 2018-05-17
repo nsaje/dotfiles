@@ -113,8 +113,8 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin,
     whitelist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
     blacklist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
 
-    automatic_campaign_stop = models.BooleanField(default=True)
-    landing_mode = models.BooleanField(default=False)
+    automatic_campaign_stop = models.NullBooleanField(default=True, blank=True, null=True)
+    landing_mode = models.NullBooleanField(default=False, blank=True, null=True)
     autopilot = models.BooleanField(default=False)
 
     enable_ga_tracking = models.BooleanField(default=True)

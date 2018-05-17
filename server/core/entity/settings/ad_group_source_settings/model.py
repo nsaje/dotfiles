@@ -95,7 +95,7 @@ class AdGroupSourceSettings(AdGroupSourceSettingsMixin,
         verbose_name='Daily spend cap'
     )
 
-    landing_mode = models.BooleanField(default=False)
+    landing_mode = models.NullBooleanField(default=False, blank=True, null=True)
 
     objects = core.common.QuerySetManager()
 
