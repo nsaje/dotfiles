@@ -8,6 +8,7 @@ angular.module('one.widgets').directive('zemCampaignGoals', function ($filter) {
             campaign: '=campaign',
             account: '=account',
             campaignGoals: '=goals',
+            goalsDefaults: '=',
         },
         template: require('./zemCampaignGoals.directive.html'),
         controller: function ($uibModal, $scope) {
@@ -76,6 +77,7 @@ angular.module('one.widgets').directive('zemCampaignGoals', function ($filter) {
                 var scope = $scope.$new(true);
 
                 scope.campaignGoals = $scope.campaignGoals;
+                scope.goalsDefaults = $scope.goalsDefaults;
                 scope.campaign = $scope.campaign;
                 scope.account = $scope.account;
 

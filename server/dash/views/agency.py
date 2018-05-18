@@ -21,6 +21,8 @@ from dash.features import native_server
 from dash.features import ga, custom_flags
 from dash import content_insights_helper
 
+import core.goals
+
 from utils import api_common
 from utils import exc
 from utils import email_helper
@@ -415,7 +417,10 @@ class CampaignSettings(api_common.BaseApiView):
             'language': campaign.settings.language,
         }
         if request.user.has_perm('zemauth.can_see_campaign_goals'):
+            # TODO (refactor-workaround) Re-use restapi serializers
+            from restapi.campaignlauncher.serializers import CampaignGoalsDefaultsSerializer
             response['goals'] = self.get_campaign_goals(request, campaign)
+            response['goals_defaults'] = CampaignGoalsDefaultsSerializer(core.goals.get_campaign_goals_defaults(campaign.account)).data
 
         if self.rest_proxy:
             return self.create_api_response(response)

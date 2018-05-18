@@ -2316,19 +2316,6 @@ var defaults = {
         {id: 'Vote Now', text: 'Vote Now'},
         {id: 'Watch Now', text: 'Watch Now'},
     ],
-    campaignGoalKPI: [
-        {id: constants.campaignGoalKPI.TIME_ON_SITE, value: 30},
-        {id: constants.campaignGoalKPI.MAX_BOUNCE_RATE, value: 75},
-        {id: constants.campaignGoalKPI.PAGES_PER_SESSION, value: 1.2},
-        {id: constants.campaignGoalKPI.CPC, value: 0.35},
-        {id: constants.campaignGoalKPI.CPA, value: 50},
-        {id: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, value: 85},
-        {id: constants.campaignGoalKPI.CPV, value: 0.50},
-        {id: constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT, value: 2.75},
-        {id: constants.campaignGoalKPI.CP_NEW_VISITOR, value: 2.75},
-        {id: constants.campaignGoalKPI.CP_PAGE_VIEW, value: 0.45},
-        {id: constants.campaignGoalKPI.CPCV, value: 0.6},
-    ],
 };
 
 constants.campaignGoalValueText = {};

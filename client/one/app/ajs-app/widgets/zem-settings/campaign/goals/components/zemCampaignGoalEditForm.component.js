@@ -2,6 +2,7 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
     bindings: {
         campaignGoal: '=',
         availableGoals: '=',
+        goalsDefaults: '<',
         pixels: '=',
         newPixel: '=',
         errors: '=',
@@ -111,14 +112,10 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
         }
 
         function setDefaultValue () {
-            if ($ctrl.isEdit) return;
+            if ($ctrl.isEdit || !$ctrl.goalsDefaults) return;
 
-            $ctrl.campaignGoal.value = null;
-            defaults.campaignGoalKPI.forEach(function (kpiDefault) {
-                if (kpiDefault.id === $ctrl.campaignGoal.type) {
-                    $ctrl.campaignGoal.value = kpiDefault.value;
-                }
-            });
+            var kpiName = constants.convertToName($ctrl.campaignGoal.type, constants.campaignGoalKPI);
+            $ctrl.campaignGoal.value = $ctrl.goalsDefaults[kpiName] || null;
         }
 
         function areRequiredFieldsEmpty () {

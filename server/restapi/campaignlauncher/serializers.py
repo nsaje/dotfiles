@@ -25,6 +25,11 @@ class CampaignGoalSerializer(serializers.Serializer):
     conversion_goal = ConversionGoalSerializer(required=False, allow_null=True)
 
 
+class CampaignGoalsDefaultsSerializer(serializers.BaseSerializer):
+    def to_representation(self, obj):
+        return {dash.constants.CampaignGoalKPI.get_name(k): v for k, v in obj.items()}
+
+
 class CampaignLauncherSerializer(serializers.Serializer):
     campaign_name = restapi.fields.PlainCharField(
         max_length=127,

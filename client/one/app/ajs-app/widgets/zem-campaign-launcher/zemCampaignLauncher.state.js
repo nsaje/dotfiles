@@ -87,6 +87,7 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
         this.areStepFieldsValid = areStepFieldsValid;
         this.areAllStepsValid = areAllStepsValid;
         this.launchCampaign = launchCampaign;
+        this.getCampaignGoalsDefaults = getCampaignGoalsDefaults;
 
         function initialize () {
             state.requests.getDefaults = {
@@ -223,6 +224,10 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
                 .finally(function () {
                     state.requests.launchCampaign.inProgress = false;
                 });
+        }
+
+        function getCampaignGoalsDefaults () {
+            return defaults.goalsDefaults;
         }
 
         function getOrderedSteps (steps) {

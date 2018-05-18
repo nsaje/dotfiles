@@ -20,6 +20,7 @@ angular.module('one.widgets').component('zemCampaignLauncherGoal', {
                 }
                 return goalKPI;
             });
+            $ctrl.goalsDefaults = $ctrl.stateService.getCampaignGoalsDefaults();
 
             $ctrl.pixels = {};
 
