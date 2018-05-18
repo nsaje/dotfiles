@@ -19,3 +19,4 @@ class Command(ExceptionCommand):
             campaignstopstate__max_allowed_end_date__gte=dates_helper.local_today(),
         )
         automation.campaignstop.mark_almost_depleted_campaigns(campaigns)
+        influx.gauge('campaignstop.selection_job_campaigns', len(campaigns))
