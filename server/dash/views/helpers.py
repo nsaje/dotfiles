@@ -694,7 +694,7 @@ def get_adjusted_ad_group_sources_cpcs(ad_group, ad_group_settings):
     adjusted_cpcs = {}
     for ad_group_source in ad_group.adgroupsource_set.all().select_related('source__source_type', 'settings', 'ad_group__settings', 'ad_group__campaign__settings', 'ad_group__campaign__account__agency'):
         proposed_cpc = ad_group_source.get_current_settings().cpc_cc
-        adjusted_cpc = _get_adjusted_ad_group_source_cpc(proposed_cpc, ad_group_source, ad_group_settings)
+        adjusted_cpc = _get_adjusted_ad_group_source_cpc(proposed_cpc, ad_group_source, ad_group_settings, ad_group.campaign.settings)
         if ad_group_source.source.source_type.type != constants.SourceType.B1\
            and ad_group_source.get_current_settings().state == constants.AdGroupSourceSettingsState.INACTIVE:
             continue
@@ -716,7 +716,7 @@ def validate_ad_group_sources_cpc_constraints(bcm_modifiers, ad_group_sources_cp
 def set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, ad_group_settings, skip_validation=False):
     rules_per_source = cpc_constraints.get_rules_per_source(ad_group)
     for ad_group_source, proposed_cpc in list(ad_group_sources_cpcs.items()):
-        adjusted_cpc = _get_adjusted_ad_group_source_cpc(proposed_cpc, ad_group_source, ad_group_settings)
+        adjusted_cpc = _get_adjusted_ad_group_source_cpc(proposed_cpc, ad_group_source, ad_group_settings, ad_group.campaign.settings)
         if adjusted_cpc:
             adjusted_cpc = cpc_constraints.adjust_cpc(adjusted_cpc, rules=rules_per_source[ad_group_source.source])
 
@@ -730,11 +730,12 @@ def set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, ad_group_settings
         )
 
 
-def _get_adjusted_ad_group_source_cpc(proposed_cpc, ad_group_source, ad_group_settings):
+def _get_adjusted_ad_group_source_cpc(proposed_cpc, ad_group_source, ad_group_settings, campaign_settings):
     if (
             ad_group_settings.b1_sources_group_enabled and
             ad_group_source.source.source_type.type == constants.SourceType.B1 and
-            ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+            ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and
+            not campaign_settings.autopilot
     ):
         proposed_cpc = ad_group_settings.b1_sources_group_cpc_cc
     return adjust_max_cpc(proposed_cpc, ad_group_settings)
