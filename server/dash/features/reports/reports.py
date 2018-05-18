@@ -222,7 +222,7 @@ class ReportJobExecutor(JobExecutor):
 
             cls.convert_to_csv(job, rows, currency, column_to_field_name_map, output, header=offset == 0)
 
-            if len(rows) < BATCH_ROWS:
+            if len(rows) < BATCH_ROWS or job.query['options']['include_items_with_no_spend']:
                 break
 
             offset += BATCH_ROWS
