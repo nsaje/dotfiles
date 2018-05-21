@@ -91,7 +91,7 @@ class AdGroupSettings(api_common.BaseApiView):
         if not request.user.has_perm('dash.settings_view'):
             raise exc.AuthorizationError()
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         resource = json.loads(request.body)
 
@@ -130,9 +130,6 @@ class AdGroupSettings(api_common.BaseApiView):
 
                 elif isinstance(e, exceptions.TrackingCodeInvalid):
                     errors['tracking_code'] = str(e)
-
-                elif isinstance(e, exceptions.ValidationError):  # legacy
-                    errors['end_date'] = str(e)
 
             raise utils.exc.ValidationError(errors)
 
@@ -360,7 +357,7 @@ class AdGroupSettingsState(api_common.BaseApiView):
         })
 
     def post(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
         data = json.loads(request.body)
         new_state = data.get('state')
 

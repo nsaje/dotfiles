@@ -458,44 +458,6 @@ class CampaignStatsView(RESTAPIBaseView):
         return self.response_ok(StatsSerializer(stats).data)
 
 
-class AdGroupSourcesRTBSerializer(serializers.Serializer):
-    group_enabled = serializers.BooleanField(source='b1_sources_group_enabled')
-    daily_budget = serializers.DecimalField(max_digits=10, decimal_places=2, source='b1_sources_group_daily_budget')
-    state = fields.DashConstantField(constants.AdGroupSourceSettingsState, source='b1_sources_group_state')
-    cpc = serializers.DecimalField(max_digits=10, decimal_places=4, source='b1_sources_group_cpc_cc')
-
-    def update(self, data_internal, validated_data):
-        request = validated_data['request']
-        del validated_data['request']
-        settings = data_internal
-        entity_id = int(settings['id'])
-        settings.update(validated_data)
-        request.body = json.dumps({'settings': settings}, cls=json_helper.JSONEncoder)
-        data_internal_new, _ = agency.AdGroupSettings(rest_proxy=True).put(request, entity_id)
-        return data_internal_new['data']['settings']
-
-
-class AdGroupSourcesRTBViewDetails(RESTAPIBaseView):
-
-    def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        settings = ad_group.get_current_settings()
-
-        view_internal = agency.AdGroupSettings(rest_proxy=True)
-        settings_dict = view_internal.get_dict(request, settings, ad_group)
-
-        serializer = AdGroupSourcesRTBSerializer(settings_dict)
-        return self.response_ok(serializer.data)
-
-    def put(self, request, ad_group_id):
-        view_internal = agency.AdGroupSettings(rest_proxy=True)
-        data_internal, status_code = view_internal.get(request, ad_group_id)
-        serializer = AdGroupSourcesRTBSerializer(data_internal['data']['settings'], request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(request=request)
-        return self.response_ok(serializer.data)
-
-
 class ReportsViewList(RESTAPIBaseView):
     permission_classes = (permissions.IsAuthenticated,)
 

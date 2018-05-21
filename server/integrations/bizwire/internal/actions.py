@@ -14,8 +14,8 @@ from integrations.bizwire import config, models
 from integrations.bizwire.internal import helpers, reprocess
 
 import restapi.adgroup.views
-import restapi.views
 import restapi.adgroupsource.views
+import restapi.adgroupsourcesrtb.views
 
 from utils import dates_helper
 from utils import k1_helper
@@ -270,7 +270,12 @@ def _set_rtb_daily_budget(ad_group_id, daily_budget):
     }
     url = 'rest/v1/adgroups/{}/sources/rtb/'.format(ad_group_id)
     return _make_restapi_fake_put_request(
-        restapi.views.AdGroupSourcesRTBViewDetails, url, data, view_args=[ad_group_id])
+        restapi.adgroupsourcesrtb.views.AdGroupSourcesRTBViewSet,
+        url,
+        data,
+        view_args=[ad_group_id],
+        legacy=False,
+    )
 
 
 def _persist_ad_group_rotation(start_date, ad_group_id):

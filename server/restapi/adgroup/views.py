@@ -19,16 +19,14 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
         )
 
     def put(self, request, ad_group_id):
-        ad_group = restapi.access.get_ad_group(request.user, ad_group_id, select_related=True)
+        ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
         serializer = serializers.AdGroupSerializer(
             data=request.data,
             partial=True,
             context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
-        settings_updates = serializer.validated_data
-        if settings_updates:
-            self.update_settings(request, ad_group, settings_updates)
+        self.update_settings(request, ad_group, serializer.validated_data)
         return self.response_ok(
             serializers.AdGroupSerializer(ad_group.settings, context={'request': request}).data
         )
@@ -55,7 +53,10 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
         serializer = serializers.AdGroupSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         settings = serializer.validated_data
-        campaign = restapi.access.get_campaign(request.user, settings['ad_group']['campaign']['id'])
+        campaign = restapi.access.get_campaign(
+            request.user,
+            settings.get('ad_group', {}).get('campaign', {}).get('id')
+        )
 
         with transaction.atomic():
             new_ad_group = core.entity.AdGroup.objects.create(
@@ -98,9 +99,6 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
 
                 elif isinstance(e, exceptions.TrackingCodeInvalid):
                     errors['tracking_code'] = str(e)
-
-                elif isinstance(e, exceptions.ValidationError):  # legacy
-                    errors['end_date'] = str(e)
 
             raise utils.exc.ValidationError(errors)
 

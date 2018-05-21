@@ -52,7 +52,7 @@ class AdGroupSourceState(BaseBulkActionView):
     def post(self, request, ad_group_id):
         last_change_dt = datetime.datetime.now()
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         data = json.loads(request.body)
 

@@ -357,7 +357,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature_on_ad_group_level'):
             raise exc.AuthorizationError()
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         request_body = json.loads(request.body).get('params')
         form = forms.BreakdownForm(request.user, breakdown, request_body)

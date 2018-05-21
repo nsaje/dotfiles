@@ -51,7 +51,7 @@ def get_account(user, account_id, sources=None, select_related_users=False):
         raise utils.exc.MissingDataError('Account does not exist')
 
 
-def get_ad_group(user, ad_group_id, select_related=False, sources=None):
+def get_ad_group(user, ad_group_id, sources=None):
     try:
         ad_group = core.entity.AdGroup.objects.all()\
                                               .select_related('settings',
@@ -61,9 +61,6 @@ def get_ad_group(user, ad_group_id, select_related=False, sources=None):
 
         if sources:
             ad_group = ad_group.filter_by_sources(sources)
-
-        if select_related:
-            ad_group = ad_group.select_related('campaign__account')
 
         return ad_group.get()
     except core.entity.AdGroup.DoesNotExist:

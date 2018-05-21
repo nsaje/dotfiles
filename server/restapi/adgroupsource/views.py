@@ -54,7 +54,7 @@ class AdGroupSourcesViewList(RESTAPIBaseView):
         return self.get(request, ad_group.id)
 
     def post(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         serializer = serializers.AdGroupSourceSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

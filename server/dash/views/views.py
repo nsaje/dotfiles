@@ -205,7 +205,7 @@ class AdGroupOverview(api_common.BaseApiView):
     @influx.timer('dash.api')
     @db_for_reads.use_stats_read_replica()
     def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         use_local_currency = request.user.has_perm('zemauth.can_see_infobox_in_local_currency')
         async_perf_query = threads.AsyncFunction(
@@ -711,7 +711,7 @@ class AdGroupSources(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.ad_group_sources_add_source'):
             raise exc.MissingDataError()
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         source_id = json.loads(request.body)['source_id']
         source = models.Source.objects.get(id=source_id)
@@ -774,7 +774,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
     @influx.timer('dash.api')
     def put(self, request, ad_group_id, source_id):
         resource = json.loads(request.body)
-        ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         try:
             ad_group_source = models.AdGroupSource.objects.get(ad_group=ad_group, source_id=source_id)

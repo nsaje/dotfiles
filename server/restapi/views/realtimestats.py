@@ -19,7 +19,7 @@ class AdGroupRealtimeStatsView(RESTAPIBaseView):
     """ Outbrain only """
 
     def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         # agency check
         if ad_group.campaign.account.agency_id not in REALTIME_STATS_AGENCIES:
@@ -33,7 +33,7 @@ class AdGroupSourcesRealtimeStatsView(RESTAPIBaseView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         stats = dash.features.realtimestats.get_ad_group_sources_stats(
             ad_group,

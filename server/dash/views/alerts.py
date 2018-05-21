@@ -32,7 +32,7 @@ class CampaignAlerts(api_common.BaseApiView):
 class AdGroupAlerts(api_common.BaseApiView):
 
     def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
         return self.create_api_response({
             'alerts': alerts.get_campaign_landing_mode_alerts(request, ad_group.campaign),
         })

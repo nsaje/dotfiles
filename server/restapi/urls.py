@@ -16,7 +16,9 @@ import restapi.account.urls
 import restapi.accountcredit.urls
 import restapi.campaign.urls
 import restapi.adgroup.urls
+import restapi.adgroupsourcesrtb.urls
 import restapi.contentad.urls
+
 
 urlpatterns = [
     url(
@@ -48,11 +50,6 @@ urlpatterns = [
         r'^v1/adgroups/(?P<ad_group_id>\d+)/sources/$',
         restapi.adgroupsource.views.AdGroupSourcesViewList.as_view(),
         name='adgroups_sources_list'
-    ),
-    url(
-        r'^v1/adgroups/(?P<ad_group_id>\d+)/sources/rtb/$',
-        views.AdGroupSourcesRTBViewDetails.as_view(),
-        name='adgroups_sources_rtb_details'
     ),
     url(
         r'^v1/adgroups/(?P<ad_group_id>\d+)/publishers/$',
@@ -112,6 +109,7 @@ urlpatterns += restapi.account.urls.urlpatterns
 urlpatterns += restapi.accountcredit.urls.urlpatterns
 urlpatterns += restapi.campaign.urls.urlpatterns
 urlpatterns += restapi.adgroup.urls.urlpatterns
+urlpatterns += restapi.adgroupsourcesrtb.urls.urlpatterns
 urlpatterns += restapi.contentad.urls.urlpatterns
 urlpatterns += clonecontent.urls.urlpatterns
 urlpatterns += cloneadgroup.urls.urlpatterns
