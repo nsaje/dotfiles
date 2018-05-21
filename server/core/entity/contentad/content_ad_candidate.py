@@ -74,7 +74,7 @@ class ContentAdCandidate(core.common.FootprintModel):
             'call_to_action': self.call_to_action,
             'image_status': self.image_status,
             'url_status': self.url_status,
-            'hosted_image_url': self.get_image_url(160, 160),
+            'hosted_image_url': self.get_image_url(360, 360),
             'primary_tracker_url': self.primary_tracker_url,
             'secondary_tracker_url': self.secondary_tracker_url,
             'additional_data': self.additional_data,
