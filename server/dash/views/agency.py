@@ -32,7 +32,9 @@ from utils import dates_helper
 from utils import db_for_reads
 
 import utils.exc
-from core.entity.settings.ad_group_settings import exceptions
+import core.entity.settings.ad_group_settings.exceptions
+import core.goals.conversion_goal.exceptions
+import core.goals.campaign_goal.exceptions
 
 from zemauth.models import User as ZemUser
 
@@ -110,60 +112,60 @@ class AdGroupSettings(api_common.BaseApiView):
         except utils.exc.MultipleValidationError as err:
             errors = {}
             for e in err.errors:
-                if isinstance(e, exceptions.MaxCPCTooLow):
+                if isinstance(e, core.entity.settings.ad_group_settings.exceptions.MaxCPCTooLow):
                     errors['cpc_cc'] = str(e)
 
-                elif isinstance(e, exceptions.MaxCPCTooHigh):
+                elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.MaxCPCTooHigh):
                     errors['cpc_cc'] = str(e)
 
-                elif isinstance(e, exceptions.MaxCPMTooLow):
+                elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.MaxCPMTooLow):
                     errors['max_cpm'] = str(e)
 
-                elif isinstance(e, exceptions.MaxCPMTooHigh):
+                elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.MaxCPMTooHigh):
                     errors['max_cpm'] = str(e)
 
-                elif isinstance(e, exceptions.EndDateBeforeStartDate):
+                elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.EndDateBeforeStartDate):
                     errors['end_date'] = str(e)
 
-                elif isinstance(e, exceptions.EndDateInThePast):
+                elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.EndDateInThePast):
                     errors['end_date'] = str(e)
 
-                elif isinstance(e, exceptions.TrackingCodeInvalid):
+                elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.TrackingCodeInvalid):
                     errors['tracking_code'] = str(e)
 
             raise utils.exc.ValidationError(errors)
 
-        except exceptions.CannotChangeAdGroupState as err:
+        except core.entity.settings.ad_group_settings.exceptions.CannotChangeAdGroupState as err:
             raise utils.exc.ValidationError({'state': str(err)})
 
-        except exceptions.AutopilotB1SourcesNotEnabled as err:
+        except core.entity.settings.ad_group_settings.exceptions.AutopilotB1SourcesNotEnabled as err:
             raise utils.exc.ValidationError({'autopilot_state': str(err)})
 
-        except exceptions.DailyBudgetAutopilotNotDisabled as err:
+        except core.entity.settings.ad_group_settings.exceptions.DailyBudgetAutopilotNotDisabled as err:
             raise utils.exc.ValidationError({'b1_sources_group_daily_budget': str(err)})
 
-        except exceptions.CPCAutopilotNotDisabled as err:
+        except core.entity.settings.ad_group_settings.exceptions.CPCAutopilotNotDisabled as err:
             raise utils.exc.ValidationError({'b1_sources_group_daily_budget': str(err)})
 
-        except exceptions.AutopilotDailyBudgetTooLow as err:
+        except core.entity.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooLow as err:
             raise utils.exc.ValidationError({'autopilot_daily_budget': str(err)})
 
-        except exceptions.AutopilotDailyBudgetTooHigh as err:
+        except core.entity.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooHigh as err:
             raise utils.exc.ValidationError({'autopilot_daily_budget': str(err)})
 
-        except exceptions.AdGroupNotPaused as err:
+        except core.entity.settings.ad_group_settings.exceptions.AdGroupNotPaused as err:
             raise utils.exc.ValidationError({'b1_sources_group_enabled': str(err)})
 
-        except exceptions.B1DailyBudgetTooHigh as err:
+        except core.entity.settings.ad_group_settings.exceptions.B1DailyBudgetTooHigh as err:
             raise utils.exc.ValidationError({'daily_budget_cc': str(err)})
 
-        except exceptions.CantEnableB1SourcesGroup as err:
+        except core.entity.settings.ad_group_settings.exceptions.CantEnableB1SourcesGroup as err:
             raise utils.exc.ValidationError({'state': str(err)})
 
-        except exceptions.BluekaiCategoryInvalid as err:
+        except core.entity.settings.ad_group_settings.exceptions.BluekaiCategoryInvalid as err:
             raise utils.exc.ValidationError(str(err))
 
-        except exceptions.YahooDesktopCPCTooLow as err:
+        except core.entity.settings.ad_group_settings.exceptions.YahooDesktopCPCTooLow as err:
             raise utils.exc.ValidationError({'target_devices': str(err)})
 
         response = {
@@ -497,41 +499,66 @@ class CampaignSettings(api_common.BaseApiView):
 
             goal['primary'] = False
 
-            if goal.get('conversion_goal'):
-                conversion_form = forms.ConversionGoalForm(
-                    {
-                        'type': goal['conversion_goal'].get('type'),
-                        'conversion_window': goal['conversion_goal'].get('conversion_window'),
-                        'goal_id': goal['conversion_goal'].get('goal_id'),
-                    },
-                    campaign_id=campaign.pk,
-                )
-                if not conversion_form.is_valid():
-                    raise exc.ValidationError(errors=conversion_form.errors)
-                errors.append(dict(conversion_form.errors))
-
-                with transaction.atomic():
-                    conversion_goal = models.ConversionGoal.objects.create(
-                        request, campaign,
-                        conversion_goal_type=conversion_form.cleaned_data['type'],
-                        goal_id=conversion_form.cleaned_data['goal_id'],
-                        conversion_window=conversion_form.cleaned_data['conversion_window'],
+            with transaction.atomic():
+                conversion_goal = goal.get('conversion_goal')
+                if conversion_goal:
+                    conversion_form = forms.ConversionGoalForm(
+                        {
+                            'type': conversion_goal.get('type'),
+                            'conversion_window': conversion_goal.get('conversion_window'),
+                            'goal_id': conversion_goal.get('goal_id'),
+                        },
+                        campaign_id=campaign.pk,
                     )
+                    if not conversion_form.is_valid():
+                        raise exc.ValidationError(errors=conversion_form.errors)
+                    errors.append(dict(conversion_form.errors))
 
+                    try:
+                        new_conversion_goal = models.ConversionGoal.objects.create(
+                            request,
+                            campaign,
+                            conversion_goal_type=conversion_form.cleaned_data['type'],
+                            goal_id=conversion_form.cleaned_data['goal_id'],
+                            conversion_window=conversion_form.cleaned_data['conversion_window'],
+                        )
+
+                    except core.goals.conversion_goal.exceptions.ConversionGoalLimitExceeded as err:
+                        raise utils.exc.ValidationError(str(err))
+
+                    except core.goals.conversion_goal.exceptions.ConversionWindowRequired as err:
+                        raise utils.exc.ValidationError(str(err))
+
+                    except core.goals.conversion_goal.exceptions.ConversionPixelInvalid as err:
+                        raise utils.exc.ValidationError(message=str(err))
+
+                    except core.goals.conversion_goal.exceptions.ConversionGoalNotUnique as err:
+                        raise utils.exc.ValidationError(str(err))
+
+                    except core.goals.conversion_goal.exceptions.GoalIDInvalid as err:
+                        raise utils.exc.ValidationError({'goal_id': str(err)})
+
+                else:
+                    goal_form = forms.CampaignGoalForm(goal, campaign_id=campaign.pk)
+                    errors.append(dict(goal_form.errors))
+                    if not goal_form.is_valid():
+                        raise exc.ValidationError(errors=goal_form.errors)
+
+                try:
                     goal_added = models.CampaignGoal.objects.create(
-                        request, campaign,
-                        goal_type=constants.CampaignGoalKPI.CPA, primary=False,
-                        value=goal['value'], conversion_goal=conversion_goal
+                        request,
+                        campaign,
+                        goal_type=constants.CampaignGoalKPI.CPA if conversion_goal else goal_form.cleaned_data['type'],
+                        value=goal['value'],
+                        primary=False if conversion_goal else goal_form.cleaned_data['primary'],
+                        conversion_goal=new_conversion_goal if conversion_goal else None
                     )
 
-            else:
-                goal_form = forms.CampaignGoalForm(goal, campaign_id=campaign.pk)
-                errors.append(dict(goal_form.errors))
-                if not goal_form.is_valid():
-                    raise exc.ValidationError(errors=goal_form.errors)
-                goal_added = models.CampaignGoal.objects.create(
-                    request, campaign, goal_form.cleaned_data['type'], value=goal['value'], primary=goal_form.cleaned_data['primary']
-                )
+                except core.goals.campaign_goal.exceptions.ConversionGoalLimitExceeded as err:
+                    raise utils.exc.ValidationError(str(err))
+
+                except core.goals.campaign_goal.exceptions.MultipleSameTypeGoals as err:
+                    raise utils.exc.ValidationError(str(err))
 
             if is_primary:
                 new_primary_id = goal_added.pk

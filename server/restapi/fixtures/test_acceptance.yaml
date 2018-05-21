@@ -184,6 +184,7 @@
 
 -   fields:
         campaign_goal: 1238
+        local_value: '30.000'
         value: '30.000'
         local_value: '30.000'
         created_dt: '2014-06-04T09:58:21'

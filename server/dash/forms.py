@@ -847,7 +847,7 @@ class CampaignGoalForm(forms.Form):
                 campaign_id=self.campaign_id, type=goal_type)
             if self.id:
                 goals.exclude(pk=self.id)
-            if goals.count() > constants.MAX_CONVERSION_GOALS_PER_CAMPAIGN:
+            if goals.count() >= constants.MAX_CONVERSION_GOALS_PER_CAMPAIGN:
                 raise forms.ValidationError(
                     'Max conversion goals per campaign exceeded')
             return goal_type
@@ -856,7 +856,7 @@ class CampaignGoalForm(forms.Form):
             campaign_id=self.campaign_id, type=goal_type)
         if self.id:
             goals.exclude(pk=self.id)
-        if goals.count():
+        if goals.exists():
             raise forms.ValidationError(
                 'Multiple goals of the same type not allowed')
         return goal_type

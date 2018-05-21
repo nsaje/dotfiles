@@ -21,9 +21,7 @@ import djangorestframework_camel_case.util
 
 from utils import json_helper, exc
 
-from dash.views import agency, helpers
-from dash import campaign_goals
-from dash import constants
+from dash.views import helpers
 from dash.features.reports import reportjob
 from dash.features.reports import serializers as reports_serializers
 from dash.features.reports import reports
@@ -234,119 +232,6 @@ class SettingsViewList(RESTAPIBaseView):
                 transaction.set_rollback(True)
             response.status_code = 201
             return response
-
-
-class CampaignGoalsSerializer(serializers.BaseSerializer):
-
-    def to_representation(self, data_internal):
-        return {
-            'id': data_internal['id'],
-            'primary': data_internal['primary'],
-            'type': constants.CampaignGoalKPI.get_name(data_internal['type']),
-            'conversionGoal': self._conversion_goal_to_representation(data_internal['conversion_goal']),
-            'value': data_internal['values'][-1]['value']
-        }
-
-    def _conversion_goal_to_representation(self, conversion_goal):
-        if not conversion_goal:
-            return conversion_goal
-        return {
-            'goalId': conversion_goal['goal_id'],
-            'name': conversion_goal['name'],
-            'pixelUrl': conversion_goal['pixel_url'],
-            'conversionWindow': fields.DashConstantField(constants.ConversionWindows).to_representation(conversion_goal['conversion_window']),
-            'type': constants.ConversionGoalType.get_name(conversion_goal['type']),
-        }
-
-    def to_internal_value(self, data_external):
-        try:
-            return {
-                'primary': data_external['primary'],
-                'type': fields.DashConstantField(constants.CampaignGoalKPI).to_internal_value(data_external['type']),
-                'conversion_goal': self._conversion_goal_to_internal_value(data_external.get('conversionGoal')),
-                'value': data_external['value']
-            }
-        except KeyError as e:
-            raise serializers.ValidationError({str(e): 'missing'})
-
-    def _conversion_goal_to_internal_value(self, conversion_goal):
-        if not conversion_goal:
-            return conversion_goal
-        return {
-            'goal_id': conversion_goal['goalId'],
-            'conversion_window': fields.DashConstantField(constants.ConversionWindows).to_internal_value(conversion_goal['conversionWindow']),
-            'type': fields.DashConstantField(constants.ConversionGoalType).to_internal_value(conversion_goal['type']),
-        }
-
-
-class CampaignGoalsViewList(RESTAPIBaseView):
-    parser_classes = (rest_framework.parsers.JSONParser,)
-
-    def get(self, request, campaign_id):
-        view_internal = agency.CampaignSettings(rest_proxy=True)
-        data_internal, status_code = view_internal.get(request, campaign_id)
-        serializer = CampaignGoalsSerializer(data_internal['data']['goals'], many=True)
-        return self.response_ok(serializer.data)
-
-    def post(self, request, campaign_id):
-        serializer = CampaignGoalsSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        view_internal = agency.CampaignSettings(rest_proxy=True)
-        current_settings, _ = view_internal.get(request, int(campaign_id))
-        put_data = {
-            'settings': current_settings['data']['settings'],
-            'goals': {
-                'added': [serializer.validated_data],
-                'removed': [],
-                'primary': None,
-                'modified': {}
-            }
-        }
-        self.request.body = json.dumps(put_data, cls=json_helper.JSONEncoder)
-        data_internal, status_code = view_internal.put(request, int(campaign_id))
-        return self.response_ok(CampaignGoalsSerializer(data_internal['data']['goals'][-1]).data, status=201)
-
-
-class CampaignGoalPutSerializer(serializers.Serializer):
-    value = serializers.DecimalField(max_digits=15, decimal_places=5)
-    primary = serializers.BooleanField()
-
-
-class CampaignGoalsViewDetails(RESTAPIBaseView):
-    parser_classes = (rest_framework.parsers.JSONParser,)
-
-    def get(self, request, campaign_id, goal_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
-        goal = dash.models.CampaignGoal.objects.get(pk=goal_id, campaign=campaign)
-        return self.response_ok(
-            CampaignGoalsSerializer(goal.to_dict(with_values=True, local_values=True)).data
-        )
-
-    def put(self, request, campaign_id, goal_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
-        serializer = CampaignGoalPutSerializer(data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        with transaction.atomic():
-            goal = dash.models.CampaignGoal.objects.get(pk=goal_id, campaign=campaign)
-            value = serializer.validated_data.get('value', None)
-            if value:
-                goal.add_local_value(request, value)
-            primary = serializer.validated_data.get('primary', None)
-            if primary:
-                goal.set_primary(request)
-            goal.refresh_from_db()
-            return self.response_ok(
-                CampaignGoalsSerializer(goal.to_dict(with_values=True, local_values=True)).data
-            )
-
-    def delete(self, request, campaign_id, goal_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
-        try:
-            goal = dash.models.CampaignGoal.objects.get(pk=goal_id)
-        except dash.models.CampaignGoal.DoesNotExist:
-            raise exc.MissingDataError('Goal does not exist')
-        campaign_goals.delete_campaign_goal(request, goal.id, campaign)
-        return Response(None, status=204)
 
 
 class StatsSerializer(serializers.Serializer):

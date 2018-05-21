@@ -9,11 +9,12 @@ from django.db import transaction
 from dash import constants
 import core.common
 import core.multicurrency
-import utils.exc
 import utils.lc_helper
 
 from ..campaign_goal_value import CampaignGoalValue
 from . import bcm_mixin
+from . import exceptions
+
 
 # FIXME: the same dict is in dash/campaign_goals
 CAMPAIGN_GOAL_NAME_FORMAT = {
@@ -73,8 +74,11 @@ class CampaignGoalManager(core.common.BaseManager):
 
     def _validate_goal_count(self, campaign, goal_type):
         goals = CampaignGoal.objects.filter(campaign=campaign, type=goal_type)
-        if goal_type != constants.CampaignGoalKPI.CPA and goals.count() > 1:
-            raise utils.exc.ValidationError('Multiple goals of the same type not allowed')
+        if goal_type == constants.CampaignGoalKPI.CPA:
+            if goals.count() >= constants.MAX_CONVERSION_GOALS_PER_CAMPAIGN:
+                raise exceptions.ConversionGoalLimitExceeded('Max conversion goals per campaign exceeded')
+        elif goals.exists():
+            raise exceptions.MultipleSameTypeGoals('Multiple goals of the same type not allowed')
 
 
 class CampaignGoal(models.Model, bcm_mixin.CampaignGoalBCMMixin):
@@ -142,6 +146,15 @@ class CampaignGoal(models.Model, bcm_mixin.CampaignGoalBCMMixin):
                 })
 
         return campaign_goal
+
+    @transaction.atomic
+    def update(self, request, **updates):
+        value = updates.get('value')
+        if value:
+            self.add_local_value(request, value)
+        primary = updates.get('primary')
+        if primary:
+            self.set_primary(request)
 
     def get_view_key(self):
         return 'campaign_goal_' + str(self.id)

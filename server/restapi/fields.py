@@ -41,6 +41,11 @@ class NoneToListFieldMixin:
         return super().run_validation(value)
 
 
+class OutNoneFieldMixin:
+    def get_initial(self):
+        return super().get_initial() or None
+
+
 class IdField(serializers.Field):
     def to_representation(self, data):
         if isinstance(data, django.db.models.Model):
@@ -143,3 +148,18 @@ class NullPlainCharField(NoneToBlankFieldMixin, PlainCharField):
 
 class NullListField(NoneToListFieldMixin, serializers.ListField):
     pass
+
+
+class OutNullDashConstantField(OutNoneFieldMixin, DashConstantField):
+    pass
+
+
+class OutNullURLField(OutNoneFieldMixin, serializers.URLField):
+    pass
+
+
+class OutIntIdField(IdField):
+    def to_representation(self, data):
+        if isinstance(data, django.db.models.Model):
+            return int(data.id)
+        return int(data)

@@ -1,4 +1,3 @@
-from decimal import Decimal
 import datetime
 import json
 import mock
@@ -11,12 +10,10 @@ from django.core.urlresolvers import reverse
 import dash.models
 from . import fields
 from . import views as restapi_views
-from dash import constants
 import redshiftapi.api_quickstats
 
 from utils import json_helper
 from utils import test_helper
-from utils.magic_mixer import magic_mixer
 
 
 TODAY = datetime.datetime(2016, 1, 15).date()
@@ -85,110 +82,6 @@ class CampaignStatsTest(RESTAPITest):
             'impressions': 1234567,
             'clicks': 1234,
         })
-
-
-class CampaignGoalsTest(RESTAPITest):
-
-    @classmethod
-    def campaigngoal_repr(
-        cls,
-        id=1,
-        primary=True,
-        type=constants.CampaignGoalKPI.TIME_ON_SITE,
-        conversionGoal=None,
-        value='30.00'
-    ):
-        representation = {
-            'id': id,
-            'primary': primary,
-            'type': constants.CampaignGoalKPI.get_name(type),
-            'conversionGoal': conversionGoal,
-            'value': value,
-        }
-        return cls.normalize(representation)
-
-    def validate_campaigngoal(self, campaigngoal):
-        campaigngoal_db = dash.models.CampaignGoal.objects.get(pk=campaigngoal['id'])
-        conversiongoal_db = campaigngoal_db.conversion_goal
-        expected_conversiongoal = None
-        if conversiongoal_db:
-            pixel_url = conversiongoal_db.pixel.get_url() if conversiongoal_db.pixel else None
-            expected_conversiongoal = dict(
-                goalId=conversiongoal_db.goal_id or conversiongoal_db.pixel.id,
-                name=conversiongoal_db.name,
-                pixelUrl=pixel_url,
-                conversionWindow=constants.ConversionWindows.get_name(conversiongoal_db.conversion_window),
-                type=constants.ConversionGoalType.get_name(conversiongoal_db.type),
-            )
-
-        rounding_format = '1.000' if campaigngoal_db.type == constants.CampaignGoalKPI.CPC else '1.00'
-        expected = self.campaigngoal_repr(
-            id=campaigngoal_db.id,
-            primary=campaigngoal_db.primary,
-            type=campaigngoal_db.type,
-            conversionGoal=expected_conversiongoal,
-            value=campaigngoal_db.values.last().value.quantize(Decimal(rounding_format)),
-        )
-        self.assertEqual(expected, campaigngoal)
-
-    def test_campaigngoals_list(self):
-        r = self.client.get(reverse('campaigngoals_list', kwargs={'campaign_id': 608}))
-        resp_json = self.assertResponseValid(r, data_type=list)
-        for item in resp_json['data']:
-            self.validate_campaigngoal(item)
-
-    def test_campaigngoals_post(self):
-        test_campaigngoal = self.campaigngoal_repr(
-            type=constants.CampaignGoalKPI.CPC,
-            value='0.33',
-            primary=True,
-            conversionGoal=None
-        )
-        post_data = test_campaigngoal.copy()
-        del post_data['id']
-        del post_data['conversionGoal']
-        r = self.client.post(
-            reverse('campaigngoals_list', kwargs={'campaign_id': 608}),
-            data=post_data, format='json')
-        resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
-        self.validate_campaigngoal(resp_json['data'])
-
-    def test_campaigngoals_get(self):
-        r = self.client.get(reverse('campaigngoals_details', kwargs={'campaign_id': 608, 'goal_id': 1238}))
-        resp_json = self.assertResponseValid(r)
-        self.validate_campaigngoal(resp_json['data'])
-
-    def test_campaigngoals_put(self):
-        test_campaigngoal = self.campaigngoal_repr(
-            id=1238,
-            value='0.39',
-            primary=True
-        )
-        r = self.client.put(reverse('campaigngoals_details', kwargs={'campaign_id': 608, 'goal_id': 1238}), test_campaigngoal, format='json')
-        resp_json = self.assertResponseValid(r)
-        self.validate_campaigngoal(resp_json['data'])
-        self.assertEqual(resp_json['data']['value'], test_campaigngoal['value'])
-
-    def test_campaigngoals_cpa_post(self):
-        account = dash.models.Account.objects.get(pk=186)
-        pixel = magic_mixer.blend(dash.models.ConversionPixel, account=account)
-        test_campaigngoal = self.campaigngoal_repr(
-            type=constants.CampaignGoalKPI.CPA,
-            value='0.33',
-            primary=True,
-            conversionGoal=dict(
-                type='PIXEL',
-                conversionWindow='LEQ_7_DAYS',
-                goalId=pixel.id
-            )
-        )
-        post_data = test_campaigngoal.copy()
-        del post_data['id']
-        r = self.client.post(
-            reverse('campaigngoals_list', kwargs={'campaign_id': 608}),
-            data=post_data, format='json')
-        resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
-        self.validate_campaigngoal(resp_json['data'])
 
 
 class PublisherGroupTest(RESTAPITest):
