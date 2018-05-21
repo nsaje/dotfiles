@@ -15,6 +15,7 @@ import restapi.inventory_planning.urls
 import restapi.account.urls
 import restapi.accountcredit.urls
 import restapi.campaign.urls
+import restapi.campaignbudget.urls
 import restapi.adgroup.urls
 import restapi.adgroupsourcesrtb.urls
 import restapi.contentad.urls
@@ -35,16 +36,6 @@ urlpatterns = [
         r'^v1/campaigns/(?P<campaign_id>\d+)/goals/$',
         views.CampaignGoalsViewList.as_view(),
         name='campaigngoals_list'
-    ),
-    url(
-        r'^v1/campaigns/(?P<campaign_id>\d+)/budgets/$',
-        views.CampaignBudgetViewList.as_view(),
-        name='campaigns_budget_list'
-    ),
-    url(
-        r'^v1/campaigns/(?P<campaign_id>\d+)/budgets/(?P<budget_id>\d+)$',
-        views.CampaignBudgetViewDetails.as_view(),
-        name='campaigns_budget_details'
     ),
     url(
         r'^v1/adgroups/(?P<ad_group_id>\d+)/sources/$',
@@ -108,6 +99,7 @@ urlpatterns = [
 urlpatterns += restapi.account.urls.urlpatterns
 urlpatterns += restapi.accountcredit.urls.urlpatterns
 urlpatterns += restapi.campaign.urls.urlpatterns
+urlpatterns += restapi.campaignbudget.urls.urlpatterns
 urlpatterns += restapi.adgroup.urls.urlpatterns
 urlpatterns += restapi.adgroupsourcesrtb.urls.urlpatterns
 urlpatterns += restapi.contentad.urls.urlpatterns

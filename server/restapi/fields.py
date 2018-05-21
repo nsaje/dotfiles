@@ -117,8 +117,11 @@ class BlankDecimalField(BlankToNoneFieldMixin, serializers.DecimalField):
 
 class TwoWayBlankDecimalField(BlankToNoneFieldMixin, serializers.DecimalField):
     def __init__(self, output_precision=None, *args, **kwargs):
-        self.output_precision = output_precision or self.decimal_places
         super().__init__(*args, **kwargs)
+        if output_precision is None:
+            self.output_precision = self.decimal_places
+        else:
+            self.output_precision = output_precision
 
     def to_representation(self, value):
         input_precision = self.decimal_places

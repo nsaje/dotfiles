@@ -8,6 +8,8 @@ from django.core.exceptions import ValidationError
 from django.core.management import call_command
 
 from utils import converters
+import utils.exc
+import core.bcm.exceptions
 
 from dash import models, constants, forms
 from zemauth.models import User
@@ -391,7 +393,7 @@ class CreditsTestCase(TestCase):
             created_by_id=1,
         )
 
-        with self.assertRaises(ValidationError) as err:
+        with self.assertRaises(utils.exc.ValidationError) as err:
             create_budget(
                 credit=c1,
                 amount=10,
@@ -399,8 +401,8 @@ class CreditsTestCase(TestCase):
                 end_date=TODAY + datetime.timedelta(2),
                 campaign_id=10,
             )
-        self.assertTrue('campaign' in err.exception.error_dict)
-        with self.assertRaises(ValidationError) as err:
+        self.assertTrue('Campaign' in str(err.exception.errors[0]))
+        with self.assertRaises(utils.exc.ValidationError) as err:
             create_budget(
                 credit=c2,
                 amount=10,
@@ -408,8 +410,8 @@ class CreditsTestCase(TestCase):
                 end_date=TODAY + datetime.timedelta(2),
                 campaign_id=1,
             )
-        self.assertTrue('campaign' in err.exception.error_dict)
-        with self.assertRaises(ValidationError) as err:
+        self.assertTrue('Campaign' in str(err.exception.errors[0]))
+        with self.assertRaises(utils.exc.ValidationError) as err:
             create_budget(
                 credit=c2,
                 amount=10,
@@ -417,7 +419,7 @@ class CreditsTestCase(TestCase):
                 end_date=TODAY + datetime.timedelta(2),
                 campaign_id=1,
             )
-        self.assertTrue('campaign' in err.exception.error_dict)
+        self.assertTrue('Campaign' in str(err.exception.errors[0]))
 
         create_budget(
             credit=c1,
@@ -496,7 +498,7 @@ class CreditsTestCase(TestCase):
         with self.assertRaises(AssertionError):
             models.CreditLineItem.objects.filter(pk__in=(c1.pk, c2.pk, c3.pk)).delete()
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(utils.exc.ValidationError):
             create_budget(
                 credit=c1,
                 amount=500,
@@ -730,7 +732,8 @@ class BudgetsTestCase(TestCase):
             license_fee=Decimal('0.456'),
             created_by_id=1,
         )
-        with self.assertRaises(ValidationError) as err:
+
+        with self.assertRaises(utils.exc.MultipleValidationError) as err:
             create_budget(
                 credit=c,
                 amount=10000,
@@ -738,12 +741,17 @@ class BudgetsTestCase(TestCase):
                 end_date=TODAY + datetime.timedelta(11),
                 campaign_id=2,
             )
-        self.assertTrue('amount' in err.exception.error_dict)
-        self.assertTrue('start_date' in err.exception.error_dict)
-        self.assertTrue('end_date' in err.exception.error_dict)
-        self.assertTrue('credit' in err.exception.error_dict)
+        error_classes = (
+            core.bcm.exceptions.StartDateInvalid,
+            core.bcm.exceptions.EndDateInvalid,
+            core.bcm.exceptions.BudgetAmountExceededCreditAmount,
+            core.bcm.exceptions.CreditPending,
+        )
+        self.assertTrue(
+            all([isinstance(e, error_classes) for e in err.exception.errors])
+        )
 
-        with self.assertRaises(ValidationError) as err:
+        with self.assertRaises(utils.exc.MultipleValidationError) as err:
             create_budget(
                 credit=c,
                 amount=-10000,
@@ -751,12 +759,18 @@ class BudgetsTestCase(TestCase):
                 end_date=TODAY + datetime.timedelta(11),
                 campaign_id=2,
             )
-        self.assertTrue('amount' in err.exception.error_dict)
-        self.assertTrue('start_date' in err.exception.error_dict)
-        self.assertTrue('end_date' in err.exception.error_dict)
-        self.assertTrue('credit' in err.exception.error_dict)
+        error_classes = (
+            core.bcm.exceptions.StartDateInvalid,
+            core.bcm.exceptions.EndDateInvalid,
+            core.bcm.exceptions.BudgetAmountNegative,
+            core.bcm.exceptions.CreditPending,
+        )
+        self.assertTrue(len(err.exception.errors), 4)
+        self.assertTrue(
+            all([isinstance(e, error_classes) for e in err.exception.errors])
+        )
 
-        with self.assertRaises(ValidationError) as err:
+        with self.assertRaises(utils.exc.MultipleValidationError) as err:
             create_budget(
                 credit=c,
                 amount=800,
@@ -764,12 +778,17 @@ class BudgetsTestCase(TestCase):
                 end_date=TODAY + datetime.timedelta(11),
                 campaign_id=2,
             )
-        self.assertFalse('amount' in err.exception.error_dict)
-        self.assertTrue('start_date' in err.exception.error_dict)
-        self.assertTrue('end_date' in err.exception.error_dict)
-        self.assertTrue('credit' in err.exception.error_dict)
+        error_classes = (
+            core.bcm.exceptions.StartDateInvalid,
+            core.bcm.exceptions.EndDateInvalid,
+            core.bcm.exceptions.CreditPending,
+        )
+        self.assertTrue(len(err.exception.errors), 3)
+        self.assertTrue(
+            all([isinstance(e, error_classes) for e in err.exception.errors])
+        )
 
-        with self.assertRaises(ValidationError) as err:
+        with self.assertRaises(utils.exc.MultipleValidationError) as err:
             create_budget(
                 credit=c,
                 amount=800,
@@ -777,12 +796,16 @@ class BudgetsTestCase(TestCase):
                 end_date=TODAY + datetime.timedelta(4),
                 campaign_id=2,
             )
-        self.assertFalse('amount' in err.exception.error_dict)
-        self.assertFalse('start_date' in err.exception.error_dict)
-        self.assertTrue('end_date' in err.exception.error_dict)
-        self.assertTrue('credit' in err.exception.error_dict)
+        error_classes = (
+            core.bcm.exceptions.StartDateBiggerThanEndDate,
+            core.bcm.exceptions.CreditPending,
+        )
+        self.assertTrue(len(err.exception.errors), 2)
+        self.assertTrue(
+            all([isinstance(e, error_classes) for e in err.exception.errors])
+        )
 
-        with self.assertRaises(ValidationError) as err:
+        with self.assertRaises(utils.exc.MultipleValidationError) as err:
             create_budget(
                 credit=c,
                 amount=800,
@@ -790,7 +813,10 @@ class BudgetsTestCase(TestCase):
                 end_date=TODAY + datetime.timedelta(8),
                 campaign_id=2,
             )
-        self.assertTrue('credit' in err.exception.error_dict)
+        self.assertTrue(isinstance(
+            err.exception.errors[0],
+            core.bcm.exceptions.CreditPending,
+        ))
 
         c.status = constants.CreditLineItemStatus.SIGNED
         c.save()
@@ -804,9 +830,12 @@ class BudgetsTestCase(TestCase):
         )
 
         b.amount = 100000
-        with self.assertRaises(ValidationError) as err:
+        with self.assertRaises(utils.exc.MultipleValidationError) as err:
             b.save()
-        self.assertTrue('amount' in err.exception.error_dict)
+        self.assertTrue(isinstance(
+            err.exception.errors[0],
+            core.bcm.exceptions.BudgetAmountExceededCreditAmount,
+        ))
         b.amount = 800  # rollback
         b.save()
 
@@ -853,7 +882,7 @@ class BudgetsTestCase(TestCase):
 
         self.assertEqual(c.get_allocated_amount(), 900)
 
-        with self.assertRaises(ValidationError) as err:
+        with self.assertRaises(utils.exc.MultipleValidationError) as err:
             create_budget(
                 credit=c,
                 amount=101,
@@ -861,7 +890,7 @@ class BudgetsTestCase(TestCase):
                 end_date=TODAY + datetime.timedelta(8),
                 campaign_id=2,
             )
-        self.assertEqual(err.exception.error_dict['amount'][0].args[0],
+        self.assertEqual(str(err.exception.errors[0]),
                          'Budget exceeds the total credit amount by $1.00.')
 
         create_budget(
@@ -882,9 +911,8 @@ class BudgetsTestCase(TestCase):
         b = models.BudgetLineItem.objects.get(pk=1)
 
         b.start_date = TODAY  # cannot change inactive budgets
-        with self.assertRaises(ValidationError) as err:
+        with self.assertRaises(core.bcm.exceptions.CanNotChangeStartDate):
             b.save()
-        self.assertTrue('__all__' in err.exception.error_dict)
         self.assertNotEqual(b.start_date, models.BudgetLineItem.objects.get(pk=1).start_date)
 
     def test_history(self):
@@ -939,7 +967,7 @@ class BudgetsTestCase(TestCase):
             status=constants.CreditLineItemStatus.PENDING,
             created_by_id=1,
         )
-        with self.assertRaises(ValidationError) as err:
+        with self.assertRaises(utils.exc.ValidationError) as err:
             create_budget(
                 credit=c,
                 amount=800,
@@ -947,7 +975,7 @@ class BudgetsTestCase(TestCase):
                 end_date=TODAY + datetime.timedelta(8),
                 campaign_id=2,
             )
-        self.assertTrue('credit' in err.exception.error_dict)
+        self.assertTrue('credit' in str(err.exception.errors[0]))
 
         c.status = constants.CreditLineItemStatus.SIGNED
         c.save()
@@ -1044,8 +1072,8 @@ class BudgetsTestCase(TestCase):
             'campaign': 2,
             'comment': 'Test case',
         })
-        self.assertFalse(budget_form.is_valid())
-        self.assertTrue(budget_form.errors)
+        with self.assertRaises(utils.exc.ValidationError):
+            budget_form.is_valid()
 
         budget_form = forms.BudgetLineItemForm({
             'credit': c.id,
@@ -1056,8 +1084,8 @@ class BudgetsTestCase(TestCase):
             'campaign': 1,
             'comment': 'Test case',
         })
-        self.assertFalse(budget_form.is_valid())
-        self.assertTrue(budget_form.errors)
+        with self.assertRaises(utils.exc.ValidationError):
+            budget_form.is_valid()
 
         # Check if model validation is triggered
         budget_form = forms.BudgetLineItemForm({
@@ -1069,8 +1097,8 @@ class BudgetsTestCase(TestCase):
             'campaign': 2,
             'comment': 'Test case',
         })
-        self.assertFalse(budget_form.is_valid())
-        self.assertTrue(budget_form.errors)
+        with self.assertRaises(utils.exc.MultipleValidationError):
+            budget_form.is_valid()
 
     def test_budget_status(self):
         c = create_credit(
@@ -1098,7 +1126,7 @@ class BudgetsTestCase(TestCase):
         self.assertEqual(b.state(), constants.BudgetLineItemState.ACTIVE)
 
         b.start_date = TODAY - datetime.timedelta(2)
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(core.bcm.exceptions.CanNotChangeStartDate):
             b.save()  # status prevents editing more
         b.start_date = TODAY - datetime.timedelta(1)  # rollback
 
@@ -1146,12 +1174,20 @@ class BudgetsTestCase(TestCase):
         self.assertEqual(b1.state(),
                          constants.BudgetLineItemState.INACTIVE)
 
-        with self.assertRaises(ValidationError) as err:
+        with self.assertRaises(utils.exc.MultipleValidationError) as err:
             b2.amount = b2.amount + 1
             b2.save()
-        self.assertTrue('amount' in err.exception.error_dict)  # canceled credit cannot change amount
 
-        with self.assertRaises(ValidationError) as err:
+        self.assertTrue(isinstance(
+            err.exception.errors[0],
+            core.bcm.exceptions.BudgetAmountCannotChange,
+        ))
+        self.assertEqual(
+            str(err.exception.errors[0]),
+            'Canceled credit\'s budget amounts cannot change.',
+        )
+
+        with self.assertRaises(core.bcm.exceptions.CreditCanceled) as err:
             create_budget(
                 credit=c,
                 amount=300,
@@ -1159,7 +1195,7 @@ class BudgetsTestCase(TestCase):
                 end_date=TODAY + datetime.timedelta(1),
                 campaign_id=2,
             )
-        self.assertTrue('credit' in err.exception.error_dict)
+        self.assertEqual(str(err.exception), 'Canceled credits cannot have new budget items.')
 
 
 @patch('dash.forms.dates_helper.local_today', lambda: TODAY)
@@ -1398,13 +1434,13 @@ class BudgetSpendTestCase(TestCase):
         )
 
 
-@patch('dash.forms.dates_helper.local_today', lambda: TODAY)
+@patch('utils.dates_helper.local_today', return_value=TODAY)
 class BudgetReserveTestCase(TestCase):
     fixtures = ['test_bcm.yaml']
 
     def setUp(self):
-        self.start_date = TODAY - datetime.timedelta(10)
-        self.end_date = TODAY + datetime.timedelta(10)
+        self.start_date = TODAY + datetime.timedelta(10)
+        self.end_date = TODAY + datetime.timedelta(20)
         self.c = create_credit(
             account_id=2,
             start_date=self.start_date,
@@ -1415,15 +1451,17 @@ class BudgetReserveTestCase(TestCase):
             created_by_id=1,
         )
 
-        self.b = create_budget(
-            credit=self.c,
-            amount=800,
-            start_date=self.start_date,
-            end_date=self.end_date,
-            campaign_id=2,
-        )
+        with patch('dash.forms.dates_helper.local_today', return_value=TODAY):
+            self.b = create_budget(
+                credit=self.c,
+                amount=800,
+                start_date=self.start_date,
+                end_date=self.end_date,
+                campaign_id=2,
+            )
 
-    def test_editing_budget_amount(self):
+    def test_editing_budget_amount(self, mock_local_today):
+        mock_local_today.return_value = TODAY
         models.BudgetDailyStatement.objects.create(
             budget=self.b,
             date=self.start_date - datetime.timedelta(1),
@@ -1445,11 +1483,12 @@ class BudgetReserveTestCase(TestCase):
         self.b.save()
         self.assertEqual(self.b.amount, models.BudgetLineItem.objects.get(pk=self.b.pk).amount)
 
+        self.b.campaign.real_time_campaign_stop = True
         self.b.amount = 500  # can be lower, we check this in views
         self.b.save()
         self.assertEqual(self.b.amount, models.BudgetLineItem.objects.get(pk=self.b.pk).amount)
 
-    def test_reserve_calculation(self):
+    def test_reserve_calculation(self, mock_local_today):
         models.BudgetDailyStatement.objects.create(
             budget=self.b,
             date=self.start_date + datetime.timedelta(0),
@@ -1517,7 +1556,7 @@ class BudgetReserveTestCase(TestCase):
             })
             self.assertEqual(self.b.get_reserve_amount_cc(), 55000)
 
-    def test_asset_return(self):
+    def test_asset_return(self, mock_local_today):
         today = datetime.date(2015, 11, 11)
         credit = create_credit(
             account_id=1,
@@ -1580,7 +1619,7 @@ class BudgetReserveTestCase(TestCase):
 
         self.assertEqual(budget.freed_cc, 280 * converters.CURRENCY_TO_CC)
 
-    def test_asset_return_overlaping_budgets(self):
+    def test_asset_return_overlaping_budgets(self, mock_local_today):
         today = datetime.date(2015, 11, 11)
         credit = create_credit(
             account_id=1,
@@ -1622,7 +1661,7 @@ class BudgetReserveTestCase(TestCase):
 
         self.assertEqual(budget1.freed_cc, 200 * converters.CURRENCY_TO_CC)
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(utils.exc.MultipleValidationError) as err:
             create_budget(
                 credit=credit,
                 amount=200,
@@ -1630,8 +1669,16 @@ class BudgetReserveTestCase(TestCase):
                 end_date=datetime.date(2015, 11, 10),
                 campaign_id=1,
             )
+        self.assertTrue(isinstance(
+            err.exception.errors[0],
+            core.bcm.exceptions.BudgetAmountExceededCreditAmount,
+        ))
+        self.assertEqual(
+            str(err.exception.errors[0]),
+            'Budget exceeds the total credit amount by $100.00.',  # isn't really testing overlapping?
+        )
 
-    def test_mayfly_budget(self):
+    def test_mayfly_budget(self, mock_local_today):
         c = create_credit(
             account_id=2,
             start_date=TODAY - datetime.timedelta(1),
@@ -1665,7 +1712,7 @@ class BudgetReserveTestCase(TestCase):
             b.free_inactive_allocated_assets()
         self.assertEqual(b.freed_cc, 120 * converters.CURRENCY_TO_CC)
 
-    def test_freed_budget_validation(self):
+    def test_freed_budget_validation(self, mock_local_today):
         c = create_credit(
             account_id=2,
             start_date=TODAY - datetime.timedelta(1),
@@ -1683,7 +1730,7 @@ class BudgetReserveTestCase(TestCase):
             campaign_id=2,
         )
         self.assertEqual(len(c.budgets.all()), 1)
-        with self.assertRaises(ValidationError) as err:
+        with self.assertRaises(utils.exc.MultipleValidationError) as err:
             create_budget(
                 credit=c,
                 amount=500,
@@ -1691,14 +1738,20 @@ class BudgetReserveTestCase(TestCase):
                 end_date=TODAY - datetime.timedelta(1),
                 campaign_id=2,
             )
-        self.assertEqual(err.exception.error_dict['amount'][0].args[0],
-                         'Budget exceeds the total credit amount by $500.00.')
+        self.assertTrue(isinstance(
+            err.exception.errors[0],
+            core.bcm.exceptions.BudgetAmountExceededCreditAmount,
+        ))
+        self.assertEqual(
+            str(err.exception.errors[0]),
+            'Budget exceeds the total credit amount by $500.00.',
+        )
         self.assertEqual(len(c.budgets.all()), 1)
 
         b.freed_cc = 200 * converters.CURRENCY_TO_CC
         b.save()
 
-        with self.assertRaises(ValidationError) as err:
+        with self.assertRaises(utils.exc.MultipleValidationError) as err:
             create_budget(
                 credit=c,
                 amount=201,
@@ -1706,8 +1759,14 @@ class BudgetReserveTestCase(TestCase):
                 end_date=TODAY - datetime.timedelta(1),
                 campaign_id=2,
             )
-        self.assertEqual(err.exception.error_dict['amount'][0].args[0],
-                         'Budget exceeds the total credit amount by $1.00.')
+        self.assertTrue(isinstance(
+            err.exception.errors[0],
+            core.bcm.exceptions.BudgetAmountExceededCreditAmount,
+        ))
+        self.assertEqual(
+            str(err.exception.errors[0]),
+            'Budget exceeds the total credit amount by $1.00.',
+        )
         self.assertEqual(len(c.budgets.all()), 1)
 
         create_budget(

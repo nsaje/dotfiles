@@ -6,6 +6,7 @@ from django.db import connection, transaction, DatabaseError
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 
+import utils.exc
 import utils.converters
 import utils.command_helpers
 import dash.models
@@ -243,6 +244,8 @@ class Command(BaseCommand):
         try:
             with transaction.atomic():
                 self._handle_action(action, model, object_list, options)
+        except utils.exc.ValidationError:
+            raise CommandError('Validation failed.')
         except ValidationError:
             raise CommandError('Validation failed.')
         except DatabaseError:

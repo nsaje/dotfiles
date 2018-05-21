@@ -1330,7 +1330,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         response_data = json.loads(response.content)
 
         self.assertTrue('amount' in response_data['data']['errors'])
-        self.assertEqual(response_data['data']['errors']['amount'][0],
+        self.assertEqual(response_data['data']['errors']['amount'],
                          'If campaign stop is disabled amount cannot be lowered.')
         self.assertFalse(mock_validate_min_amount.called)
         self.assertEqual(response.status_code, 400)
@@ -1392,7 +1392,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         response_data = json.loads(response.content)
         self.assertEqual(
             response_data['data']['errors']['amount'],
-            ['Budget amount has to be at least $95000.00.']
+            'Budget amount has to be at least $95000.00.'
         )
 
     def test_delete(self):
@@ -1669,7 +1669,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                 }
             ],
             "past": [],
-            "totals":  {
+            "totals": {
                 'past': '0',
                 'available': '5006.0000',
                 'allocated': '4994.0000',

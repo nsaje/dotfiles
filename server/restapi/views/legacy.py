@@ -32,8 +32,6 @@ import redshiftapi.api_quickstats
 
 import utils.rest_common.authentication
 from restapi import fields
-import restapi.bcm.views
-import core.bcm
 
 import dash.features.geolocation
 
@@ -349,94 +347,6 @@ class CampaignGoalsViewDetails(RESTAPIBaseView):
             raise exc.MissingDataError('Goal does not exist')
         campaign_goals.delete_campaign_goal(request, goal.id, campaign)
         return Response(None, status=204)
-
-
-class CampaignBudgetSerializer(serializers.Serializer):
-    id = fields.IdField(read_only=True)
-    credit_id = fields.IdField(source='credit')
-    amount = serializers.DecimalField(max_digits=20, decimal_places=0)
-    start_date = serializers.DateField()
-    end_date = serializers.DateField()
-    state = fields.DashConstantField(constants.BudgetLineItemState, read_only=True)
-    spend = serializers.DecimalField(max_digits=20, decimal_places=4, read_only=True)
-    available = serializers.DecimalField(max_digits=20, decimal_places=4, read_only=True)
-
-
-class CampaignBudgetViewList(RESTAPIBaseView):
-
-    def get(self, request, campaign_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
-        active_budget = self._get_active_budget(request.user, campaign)
-        serializer = CampaignBudgetSerializer(active_budget, many=True)
-        return self.response_ok(serializer.data)
-
-    def _get_active_budget(self, user, campaign):
-        budget_items = core.bcm.BudgetLineItem.objects.filter(
-            campaign_id=campaign.id,
-        ).select_related('credit', 'campaign__account').order_by('-created_dt')
-
-        return [self._prepare_budget_get_item(user, b) for b in budget_items if b.state() in (
-            constants.BudgetLineItemState.ACTIVE,
-            constants.BudgetLineItemState.PENDING,
-        )]
-
-    def _prepare_budget_get_item(self, user, item):
-        if item.campaign.account.uses_bcm_v2:
-            spend = item.get_spend_data()['etfm_total']
-        else:
-            spend = item.get_spend_data()['etf_total']
-
-        allocated = item.allocated_amount()
-        result = {
-            'id': item.pk,
-            'start_date': item.start_date,
-            'credit': item.credit_id,
-            'end_date': item.end_date,
-            'state': item.state(),
-            'amount': allocated,
-            'spend': spend,
-            'available': allocated - spend,
-        }
-        return result
-
-    def post(self, request, campaign_id):
-        serializer = CampaignBudgetSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        internal_view = restapi.bcm.views.CampaignBudgetView(rest_proxy=True)
-        post_data = serializer.validated_data
-
-        self.request.body = json.dumps(post_data, cls=json_helper.JSONEncoder)
-        data_internal, _ = internal_view.put(self.request, campaign_id)
-        budget_id = int(data_internal['data'])
-        response = CampaignBudgetViewDetails().get(self.request, campaign_id, budget_id)
-        if response.status_code == 200:
-            response.status_code = 201
-        return response
-
-
-class CampaignBudgetViewDetails(RESTAPIBaseView):
-
-    def get(self, request, campaign_id, budget_id):
-        internal_view = restapi.bcm.views.CampaignBudgetItemView(rest_proxy=True)
-        data_internal, _ = internal_view.get(request, campaign_id, budget_id)
-        data_internal['data']['credit'] = data_internal['data']['credit']['id']
-        serializer = CampaignBudgetSerializer(data_internal['data'])
-        return self.response_ok(serializer.data)
-
-    def put(self, request, campaign_id, budget_id):
-        internal_view = restapi.bcm.views.CampaignBudgetItemView(rest_proxy=True)
-
-        data_internal_get, _ = internal_view.get(request, campaign_id, budget_id)
-        serializer = CampaignBudgetSerializer(instance=data_internal_get['data'], data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-
-        put_data = {k: data_internal_get['data'][k] for k in ['credit', 'amount', 'start_date', 'end_date', 'comment']}
-        put_data['credit'] = put_data['credit']['id']
-        put_data.update(serializer.validated_data)
-        self.request.body = json.dumps(put_data, cls=json_helper.JSONEncoder)
-        internal_view.post(self.request, campaign_id, budget_id)
-        return CampaignBudgetViewDetails().get(self.request, campaign_id, budget_id)
 
 
 class StatsSerializer(serializers.Serializer):

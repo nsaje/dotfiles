@@ -19,11 +19,11 @@ class AdGroupSettingsValidatorMixin(object):
 
     def clean(self, new_settings):
         utils.validation_helper.validate_multiple(
-            self.get_setting_changes(new_settings),
             self._validate_cpc_cc,
             self._validate_max_cpm,
             self._validate_end_date,
             self._validate_tracking_code,
+            changes=self.get_setting_changes(new_settings),
         )
         self._validate_state_change(new_settings)
         self._validate_autopilot_settings(new_settings)

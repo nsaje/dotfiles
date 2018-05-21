@@ -3,7 +3,6 @@ import datetime
 from decimal import Decimal
 
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.db import transaction
 from django.db.models import Sum, Q, F
@@ -15,6 +14,7 @@ import utils.dates_helper
 from dash import constants
 from utils import converters
 from utils import lc_helper
+from utils import validation_helper
 
 import core.bcm
 import core.bcm.helpers
@@ -22,9 +22,15 @@ import core.common
 import core.history
 import core.multicurrency
 from . import dailystatement
-
+from . import exceptions
 from . import bcm_slack
 
+import automation.campaignstop
+
+
+EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK = (
+    431, 305
+)
 
 SKIP_AMOUNT_VALIDATION_CREDIT_IDS = [1251]
 
@@ -48,6 +54,9 @@ class BudgetLineItemManager(core.common.QuerySetManager):
             item.margin = margin
         if comment is not None:
             item.comment = comment
+
+        item.clean_start_date()
+        item.clean_end_date()
         item.save(request=request, action_type=constants.HistoryActionType.CREATE)
 
         bcm_slack.log_to_slack(campaign.account_id, bcm_slack.SLACK_NEW_BUDGET_MSG.format(
@@ -148,6 +157,22 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
     def get_settings_dict(self):
         return {history_key: getattr(self, history_key) for history_key in self.history_fields}
 
+    @transaction.atomic
+    def update(self, request, **updates):
+        start_date = updates.get('start_date')
+        if start_date:
+            self.start_date = start_date
+            self.clean_start_date()
+        end_date = updates.get('end_date')
+        if end_date:
+            self.end_date = end_date
+            self.clean_end_date()
+        amount = updates.get('amount')
+        if amount:
+            self.amount = amount
+        self.save(request=request, action_type=constants.HistoryActionType.BUDGET_CHANGE)
+
+    @transaction.atomic
     def save(self, request=None, user=None, action_type=None, *args, **kwargs):
         import core.bcm
         self.full_clean()
@@ -224,6 +249,18 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
             date = utils.dates_helper.local_today()
         total_spend = self.get_local_spend_data(date=date)['etfm_total']
         return self.allocated_amount() - total_spend
+
+    def get_local_spend_data_bcm(self):
+        if self.campaign.account.uses_bcm_v2:
+            return self.get_local_spend_data()['etfm_total']
+        else:
+            return self.get_local_spend_data()['etf_total']
+
+    def get_local_available_data_bcm(self):
+        if self.campaign.account.uses_bcm_v2:
+            return self.get_local_available_etfm_amount()
+        else:
+            return self.get_local_available_amount()
 
     def state(self, date=None):
         if date is None:
@@ -361,11 +398,11 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
         if self.pk:
             db_state = self.db_state()
             if self.has_changed('margin'):
-                raise ValidationError({
-                    'margin': 'Margin can only be set on newly created budget items.',
-                })
+                raise exceptions.CanNotSetMargin(
+                    'Margin can only be set on newly created budget items.',
+                )
             if self.has_changed('start_date') and not db_state == constants.BudgetLineItemState.PENDING:
-                raise ValidationError(
+                raise exceptions.CanNotChangeStartDate(
                     'Only pending budgets can change start date and amount.')
             is_reserve_update = all([
                 not self.has_changed('start_date'),
@@ -375,14 +412,14 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
             ])
             if not is_reserve_update and db_state not in (constants.BudgetLineItemState.PENDING,
                                                           constants.BudgetLineItemState.ACTIVE,):
-                raise ValidationError(
+                raise exceptions.CanNotChangeBudget(
                     'Only pending and active budgets can change.')
         elif self.credit.status == constants.CreditLineItemStatus.CANCELED:
-            raise ValidationError({
-                'credit': 'Canceled credits cannot have new budget items.'
-            })
+            raise exceptions.CreditCanceled(
+                'Canceled credits cannot have new budget items.'
+            )
 
-        core.bcm.helpers.validate(
+        validation_helper.validate_multiple(
             self.validate_start_date,
             self.validate_end_date,
             self.validate_amount,
@@ -398,46 +435,61 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
         is_valid_account_credit = self.credit.account_id and self.campaign.account_id == self.credit.account_id
         is_valid_agency_credit = self.credit.agency_id and self.campaign.account.agency_id == self.credit.agency_id
         if not (is_valid_account_credit or is_valid_agency_credit):
-            raise ValidationError('Campaign has no credit.')
+            raise exceptions.CampaignHasNoCredit('Campaign has no credit.')
 
     def validate_credit(self):
         if self.has_changed('credit'):
-            raise ValidationError('Credit cannot change.')
+            raise exceptions.CanNotChangeCredit('Credit cannot change.')
         if self.credit.status == constants.CreditLineItemStatus.PENDING:
-            raise ValidationError(
+            raise exceptions.CreditPending(
                 'Cannot allocate budget from an unsigned credit.')
         if self.credit.currency != self.campaign.account.currency:
-            raise ValidationError(
+            raise exceptions.CurrencyInconsistent(
                 'Cannot allocate budget from a credit in currency different from account\'s currency.')
 
         self.validate_license_fee()
+
+    def clean_start_date(self):
+        """
+        Due to testing and manual adjustments budgets sometimes need
+        to be created in the past. 'Date in the past' checks therefore
+        aren't called automatically like 'clean_' methods usually are.
+        """
+        if not self.pk or self.has_changed('start_date'):
+            if self.start_date < utils.dates_helper.local_today():
+                raise exceptions.StartDateInThePast('Start date has to be in the future.')
+
+    def clean_end_date(self):
+        if not self.pk or self.has_changed('end_date'):
+            if self.end_date < utils.dates_helper.local_today():
+                raise exceptions.EndDateInThePast('End date has to be in the future.')
 
     def validate_start_date(self):
         if not self.start_date:
             return
         if self.start_date < self.credit.start_date:
-            raise ValidationError(
+            raise exceptions.StartDateInvalid(
                 'Start date cannot be smaller than the credit\'s start date.')
 
     def validate_end_date(self):
         if not self.end_date:
             return
         if self.end_date > self.credit.end_date:
-            raise ValidationError(
+            raise exceptions.EndDateInvalid(
                 'End date cannot be bigger than the credit\'s end date.')
         if self.start_date and self.start_date > self.end_date:
-            raise ValidationError(
+            raise exceptions.StartDateBiggerThanEndDate(
                 'Start date cannot be bigger than the end date.')
 
     def validate_margin(self):
         if not (0 <= self.margin < 1):
-            raise ValidationError('Margin must be between 0 and 100%.')
+            raise exceptions.MarginRangeInvalid('Margin must be between 0 and 100%.')
         if self.campaign.account.uses_bcm_v2:
             overlapping_budget_line_items = BudgetLineItem.objects.filter(campaign=self.campaign).exclude(
                 margin=self.margin,
             ).filter_overlapping(self.start_date, self.end_date)
             if overlapping_budget_line_items.exists():
-                raise ValidationError('Margin must be the same on overlapping budget line items.')
+                raise exceptions.OverlappingBudgetMarginInvalid('Margin must be the same on overlapping budget line items.')
 
     def validate_license_fee(self):
         if self.campaign.account.uses_bcm_v2:
@@ -445,31 +497,58 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
                 credit__license_fee=self.credit.license_fee,
             ).filter_overlapping(self.start_date, self.end_date)
             if overlapping_budget_line_items.exists():
-                raise ValidationError('Unable to add budget with chosen credit. Choose another credit.')
+                raise exceptions.OverlappingBudgets('Unable to add budget with chosen credit. Choose another credit.')
 
     def validate_amount(self):
         if self.has_changed('amount') and \
            self.credit.status == constants.CreditLineItemStatus.CANCELED:
-            raise ValidationError(
+            raise exceptions.BudgetAmountCannotChange(
                 'Canceled credit\'s budget amounts cannot change.')
         if not self.amount:
             return
         if self.amount < 0:
-            raise ValidationError('Amount cannot be negative.')
+            raise exceptions.BudgetAmountNegative('Amount cannot be negative.')
 
         if self.credit_id in SKIP_AMOUNT_VALIDATION_CREDIT_IDS:
             return
+
+        self._validate_amount_campaign_stop()
 
         budgets = self.credit.budgets.exclude(pk=self.pk)
         delta = self.credit.effective_amount() - sum(b.allocated_amount()
                                                      for b in budgets) - self.allocated_amount()
         if delta < 0:
-            raise ValidationError(
+            raise exceptions.BudgetAmountExceededCreditAmount(
                 'Budget exceeds the total credit amount by {currency_symbol}{delta}.'.format(
                     currency_symbol=core.multicurrency.get_currency_symbol(self.credit.currency),
                     delta=-delta.quantize(Decimal('1.00'))
                 )
             )
+
+    def _validate_amount_campaign_stop(self):
+        prev_amount = self.previous_value('amount')
+        if prev_amount is None:
+            return
+
+        if self.amount >= prev_amount:
+            return
+        if self.campaign.real_time_campaign_stop:
+            try:
+                automation.campaignstop.validate_minimum_budget_amount(self, self.amount)
+            except automation.campaignstop.CampaignStopValidationException as e:
+                raise exceptions.BudgetAmountTooLow(
+                    'Budget amount has to be at least {currency_symbol}{min_amount:.2f}.'.format(
+                        currency_symbol=core.multicurrency.get_currency_symbol(self.credit.currency),
+                        min_amount=e.min_amount,
+                    ),
+                )
+        else:
+            acc_id = self.campaign.account_id
+            if self.amount < prev_amount and acc_id not in EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK:
+                raise exceptions.CampaignStopDisabled(
+                    'If campaign stop is disabled amount cannot be lowered.'
+                )
+                return
 
     @classmethod
     def get_defaults_dict(cls):

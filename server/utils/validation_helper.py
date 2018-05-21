@@ -13,11 +13,14 @@ def validate_plain_text(value):
         raise ValidationError('HTML tags are not allowed')
 
 
-def validate_multiple(changes, *validators):
+def validate_multiple(*validators, changes=None):
     errors = []
     for v in validators:
         try:
-            v(changes)
+            if changes is not None:
+                v(changes)
+            else:
+                v()
         except Exception as e:
             errors.append(e)
     if errors:

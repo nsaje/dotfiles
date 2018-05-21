@@ -8,10 +8,11 @@ from dash import models, constants, forms
 from utils import api_common, exc
 from dash.views import helpers
 
-import automation.campaignstop
 import core.bcm
 import core.bcm.bcm_slack
 import core.multicurrency
+
+from core.bcm import exceptions
 
 logger = logging.getLogger(__name__)
 
@@ -288,19 +289,42 @@ class CampaignBudgetView(api_common.BaseApiView):
                 data['margin'] = helpers.format_percent_to_decimal(data['margin'] or '0')
 
         form = forms.BudgetLineItemForm(data)
-        if form.errors:
-            raise exc.ValidationError(errors=form.errors)
 
-        item = core.bcm.BudgetLineItem.objects.create(
-            request=request,
-            campaign=campaign,
-            credit=form.cleaned_data['credit'],
-            start_date=form.cleaned_data['start_date'],
-            end_date=form.cleaned_data['end_date'],
-            amount=form.cleaned_data['amount'],
-            margin=form.cleaned_data['margin'],
-            comment=form.cleaned_data['comment']
-        )
+        try:
+            if form.errors:
+                raise exc.ValidationError(errors=form.errors)
+
+            item = core.bcm.BudgetLineItem.objects.create(
+                request=request,
+                campaign=campaign,
+                credit=form.cleaned_data['credit'],
+                start_date=form.cleaned_data['start_date'],
+                end_date=form.cleaned_data['end_date'],
+                amount=form.cleaned_data['amount'],
+                margin=form.cleaned_data['margin'],
+                comment=form.cleaned_data['comment']
+            )
+
+        except exc.MultipleValidationError as err:
+            _handle_multiple_errors(err)
+
+        except exceptions.CanNotSetMargin as err:
+            raise exc.ValidationError({'margin': str(err)})
+
+        except exceptions.CanNotChangeStartDate as err:
+            raise exc.ValidationError({'start_date': str(err)})
+
+        except exceptions.CanNotChangeBudget as err:
+            raise exc.ValidationError(str(err))
+
+        except exceptions.CreditCanceled as err:
+            raise exc.ValidationError({'credit': str(err)})
+
+        except exceptions.StartDateInThePast as err:
+            raise exc.ValidationError({'start_date': str(err)})
+
+        except exceptions.EndDateInThePast as err:
+            raise exc.ValidationError({'end_date': str(err)})
 
         return self.create_api_response(item.pk)
 
@@ -469,13 +493,32 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             data,
             instance=instance
         )
+        try:
+            if item.errors:
+                raise exc.ValidationError(errors=item.errors)
+            # TODO: call update instead of explicitly save
+            item.save(request=request, action_type=constants.HistoryActionType.BUDGET_CHANGE)
 
-        self._validate_amount(data, item)
+        except exc.MultipleValidationError as err:
+            _handle_multiple_errors(err)
 
-        if item.errors:
-            raise exc.ValidationError(errors=item.errors)
+        except exceptions.CanNotSetMargin as err:
+            raise exc.ValidationError({'margin': str(err)})
 
-        item.save(request=request, action_type=constants.HistoryActionType.BUDGET_CHANGE)
+        except exceptions.CanNotChangeStartDate as err:
+            raise exc.ValidationError({'start_date': str(err)})
+
+        except exceptions.CanNotChangeBudget as err:
+            raise exc.ValidationError(str(err))
+
+        except exceptions.CreditCanceled as err:
+            raise exc.ValidationError({'credit': str(err)})
+
+        except exceptions.StartDateInThePast as err:
+            raise exc.ValidationError({'start_date': str(err)})
+
+        except exceptions.EndDateInThePast as err:
+            raise exc.ValidationError({'end_date': str(err)})
 
         changes = item.instance.get_model_state_changes(model_to_dict(item.instance))
         core.bcm.bcm_slack.log_to_slack(campaign.account_id, core.bcm.bcm_slack.SLACK_UPDATED_BUDGET_MSG.format(
@@ -504,37 +547,6 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             action_type=constants.HistoryActionType.BUDGET_CHANGE,
             user=request.user)
         return self.create_api_response(True)
-
-    def _validate_amount(self, data, item):
-        """
-        Even if we run the campaign stop script every time the budget amount is lowered
-        and stop the campaign 'immediately', overspend is still possible because the campaign
-        will actually stop on external sources at the end of their local day.
-
-        Because of this we define a 'budget minimum':
-        budget_minimum = budget_spend + sum(daily_budgets) - overall_available_campaign_budget
-        """
-        prev_amount = item.instance.amount
-        amount = Decimal(data.get('amount', '0'))
-        if amount >= prev_amount:
-            return
-        if item.instance.campaign.real_time_campaign_stop:
-            try:
-                automation.campaignstop.validate_minimum_budget_amount(item.instance, amount)
-            except automation.campaignstop.CampaignStopValidationException as e:
-                item.errors.setdefault('amount', []).append(
-                    'Budget amount has to be at least {currency_symbol}{min_amount:.2f}.'.format(
-                        currency_symbol=core.multicurrency.get_currency_symbol(item.instance.credit.currency),
-                        min_amount=e.min_amount,
-                    ),
-                )
-        else:
-            acc_id = item.instance.campaign.account_id
-            if amount < prev_amount and acc_id not in EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK:
-                item.errors.setdefault('amount', []).append(
-                    'If campaign stop is disabled amount cannot be lowered.'
-                )
-                return
 
     def _get_response(self, user, item):
         if user.has_perm('zemauth.can_manage_budgets_in_local_currency'):
@@ -570,3 +582,54 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         if user.has_perm('zemauth.can_view_agency_margin'):
             response['margin'] = helpers.format_decimal_to_percent(item.margin) + '%'
         return self.create_api_response(response)
+
+
+def _handle_multiple_errors(err):
+    errors = {}
+    for e in err.errors:
+        if isinstance(e, exceptions.StartDateInvalid):
+            errors['start_date'] = str(e)
+
+        elif isinstance(e, exceptions.EndDateInvalid):
+            errors['end_date'] = str(e)
+
+        elif isinstance(e, exceptions.StartDateBiggerThanEndDate):
+            errors['end_date'] = str(e)
+
+        elif isinstance(e, exceptions.BudgetAmountCannotChange):
+            errors['amount'] = str(e)
+
+        elif isinstance(e, exceptions.BudgetAmountNegative):
+            errors['amount'] = str(e)
+
+        elif isinstance(e, exceptions.BudgetAmountExceededCreditAmount):
+            errors['amount'] = str(e)
+
+        elif isinstance(e, exceptions.BudgetAmountTooLow):
+            errors['amount'] = str(e)
+
+        elif isinstance(e, exceptions.CampaignStopDisabled):
+            errors['amount'] = str(e)
+
+        elif isinstance(e, exceptions.CanNotChangeCredit):
+            errors['credit'] = str(e)
+
+        elif isinstance(e, exceptions.CreditPending):
+            errors['credit'] = str(e)
+
+        elif isinstance(e, exceptions.CurrencyInconsistent):
+            errors['credit'] = str(e)
+
+        elif isinstance(e, exceptions.OverlappingBudgets):
+            errors['credit'] = str(e)
+
+        elif isinstance(e, exceptions.CampaignHasNoCredit):
+            errors['campaign'] = str(e)
+
+        elif isinstance(e, exceptions.MarginRangeInvalid):
+            errors['margin'] = str(e)
+
+        elif isinstance(e, exceptions.OverlappingBudgetMarginInvalid):
+            errors['margin'] = str(e)
+
+    raise exc.ValidationError(errors=errors)
