@@ -90,9 +90,10 @@ class CampaignBudgetViewSet(RESTAPIBaseViewSet):
     @staticmethod
     def _get_credit(campaign, credit_id):
         try:
-            credit = core.bcm.CreditLineItem.objects.get(
-                account=campaign.account,
-                id=credit_id,
+            credit = core.bcm.CreditLineItem.objects.filter_by_account(
+                account=campaign.account
+            ).get(
+                id=credit_id
             )
         except core.bcm.CreditLineItem.DoesNotExist:
             raise utils.exc.MissingDataError('Credit does not exist!')
