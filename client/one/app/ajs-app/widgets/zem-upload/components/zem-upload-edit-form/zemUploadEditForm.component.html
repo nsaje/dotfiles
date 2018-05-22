@@ -246,7 +246,9 @@
                             Remove
                         </a>
                     </div>
-                    <div class="form__text--small">Paste your impression tracker link to track impressions.</div>
+                    <div class="form__text--small">
+                        Paste your impression tracker link to track impressions. Note: not all media sources support impression trackers. Please see the list of supported media sources <a href="http://help.zemanta.com/article/show/24879-media-sources-overview" target="_blank" tabindex="-1">here</a>.
+                    </div>
                     <div class="message message--error" for="primary-tracker-input" ng-if="ctrl.fieldsApiErrors['primaryTrackerUrl']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'primaryTrackerUrl')" tabindex="-1">Try again</a></div>
                     <div class="message message--error" for="primary-tracker-input" ng-repeat="error in ctrl.selectedCandidate.errors.primaryTrackerUrl">{{ error }}</div>
                 </div>
@@ -265,7 +267,9 @@
                             Remove
                         </a>
                     </div>
-                    <div class="form__text--small">Paste your impression tracker link to track impressions.</div>
+                    <div class="form__text--small">
+                        Paste your impression tracker link to track impressions. Note: not all media sources support impression trackers. Please see the list of supported media sources <a href="http://help.zemanta.com/article/show/24879-media-sources-overview" target="_blank" tabindex="-1">here</a>.
+                    </div>
                     <div class="message message--error" for="secondary-tracker-input" ng-if="ctrl.fieldsApiErrors['secondaryTrackerUrl']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'secondaryTrackerUrl')" tabindex="-1">Try again</a></div>
                     <div class="message message--error" for="secondary-tracker-input" ng-repeat="error in ctrl.selectedCandidate.errors.secondaryTrackerUrl">{{ error }}</div>
                 </div>
