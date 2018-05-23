@@ -7,7 +7,7 @@ import dash.constants
 
 
 VALID_UPDATE_FIELDS = set(['url', 'brand_name', 'display_url', 'description', 'image_crop', 'label',
-                           'tracker_urls', 'call_to_action'])
+                           'tracker_urls', 'call_to_action', 'additional_data'])
 
 
 class ContentAdInstanceMixin(object):
