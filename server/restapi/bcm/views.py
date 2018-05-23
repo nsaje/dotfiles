@@ -309,22 +309,22 @@ class CampaignBudgetView(api_common.BaseApiView):
             _handle_multiple_errors(err)
 
         except exceptions.CanNotSetMargin as err:
-            raise exc.ValidationError({'margin': str(err)})
+            raise exc.ValidationError({'margin': [str(err)]})
 
         except exceptions.CanNotChangeStartDate as err:
-            raise exc.ValidationError({'start_date': str(err)})
+            raise exc.ValidationError({'start_date': [str(err)]})
 
         except exceptions.CanNotChangeBudget as err:
             raise exc.ValidationError(str(err))
 
         except exceptions.CreditCanceled as err:
-            raise exc.ValidationError({'credit': str(err)})
+            raise exc.ValidationError({'credit': [str(err)]})
 
         except exceptions.StartDateInThePast as err:
-            raise exc.ValidationError({'start_date': str(err)})
+            raise exc.ValidationError({'start_date': [str(err)]})
 
         except exceptions.EndDateInThePast as err:
-            raise exc.ValidationError({'end_date': str(err)})
+            raise exc.ValidationError({'end_date': [str(err)]})
 
         return self.create_api_response(item.pk)
 
@@ -503,22 +503,22 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             _handle_multiple_errors(err)
 
         except exceptions.CanNotSetMargin as err:
-            raise exc.ValidationError({'margin': str(err)})
+            raise exc.ValidationError({'margin': [str(err)]})
 
         except exceptions.CanNotChangeStartDate as err:
-            raise exc.ValidationError({'start_date': str(err)})
+            raise exc.ValidationError({'start_date': [str(err)]})
 
         except exceptions.CanNotChangeBudget as err:
             raise exc.ValidationError(str(err))
 
         except exceptions.CreditCanceled as err:
-            raise exc.ValidationError({'credit': str(err)})
+            raise exc.ValidationError({'credit': [str(err)]})
 
         except exceptions.StartDateInThePast as err:
-            raise exc.ValidationError({'start_date': str(err)})
+            raise exc.ValidationError({'start_date': [str(err)]})
 
         except exceptions.EndDateInThePast as err:
-            raise exc.ValidationError({'end_date': str(err)})
+            raise exc.ValidationError({'end_date': [str(err)]})
 
         changes = item.instance.get_model_state_changes(model_to_dict(item.instance))
         core.bcm.bcm_slack.log_to_slack(campaign.account_id, core.bcm.bcm_slack.SLACK_UPDATED_BUDGET_MSG.format(
@@ -588,48 +588,48 @@ def _handle_multiple_errors(err):
     errors = {}
     for e in err.errors:
         if isinstance(e, exceptions.StartDateInvalid):
-            errors['start_date'] = str(e)
+            errors.setdefault('start_date', []).append(str(e))
 
         elif isinstance(e, exceptions.EndDateInvalid):
-            errors['end_date'] = str(e)
+            errors.setdefault('end_date', []).append(str(e))
 
         elif isinstance(e, exceptions.StartDateBiggerThanEndDate):
-            errors['end_date'] = str(e)
+            errors.setdefault('end_date', []).append(str(e))
 
         elif isinstance(e, exceptions.BudgetAmountCannotChange):
-            errors['amount'] = str(e)
+            errors.setdefault('amount', []).append(str(e))
 
         elif isinstance(e, exceptions.BudgetAmountNegative):
-            errors['amount'] = str(e)
+            errors.setdefault('amount', []).append(str(e))
 
         elif isinstance(e, exceptions.BudgetAmountExceededCreditAmount):
-            errors['amount'] = str(e)
+            errors.setdefault('amount', []).append(str(e))
 
         elif isinstance(e, exceptions.BudgetAmountTooLow):
-            errors['amount'] = str(e)
+            errors.setdefault('amount', []).append(str(e))
 
         elif isinstance(e, exceptions.CampaignStopDisabled):
-            errors['amount'] = str(e)
+            errors.setdefault('amount', []).append(str(e))
 
         elif isinstance(e, exceptions.CanNotChangeCredit):
-            errors['credit'] = str(e)
+            errors.setdefault('credit', []).append(str(e))
 
         elif isinstance(e, exceptions.CreditPending):
-            errors['credit'] = str(e)
+            errors.setdefault('credit', []).append(str(e))
 
         elif isinstance(e, exceptions.CurrencyInconsistent):
-            errors['credit'] = str(e)
+            errors.setdefault('credit', []).append(str(e))
 
         elif isinstance(e, exceptions.OverlappingBudgets):
-            errors['credit'] = str(e)
+            errors.setdefault('credit', []).append(str(e))
 
         elif isinstance(e, exceptions.CampaignHasNoCredit):
-            errors['campaign'] = str(e)
+            errors.setdefault('credit', []).append(str(e))
 
         elif isinstance(e, exceptions.MarginRangeInvalid):
-            errors['margin'] = str(e)
+            errors.setdefault('margin', []).append(str(e))
 
         elif isinstance(e, exceptions.OverlappingBudgetMarginInvalid):
-            errors['margin'] = str(e)
+            errors.setdefault('margin', []).append(str(e))
 
     raise exc.ValidationError(errors=errors)

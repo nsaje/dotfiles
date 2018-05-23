@@ -80,42 +80,42 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
             errors = {}
             for e in err.errors:
                 if isinstance(e, exceptions.MaxCPCTooLow):
-                    errors['max_cpc'] = str(e)
+                    errors.setdefault('max_cpc', []).append(str(e))
 
                 elif isinstance(e, exceptions.MaxCPCTooHigh):
-                    errors['max_cpc'] = str(e)
+                    errors.setdefault('max_cpc', []).append(str(e))
 
                 elif isinstance(e, exceptions.MaxCPMTooLow):
-                    errors['max_cpm'] = str(e)
+                    errors.setdefault('max_cpm', []).append(str(e))
 
                 elif isinstance(e, exceptions.MaxCPMTooHigh):
-                    errors['max_cpm'] = str(e)
+                    errors.setdefault('max_cpm', []).append(str(e))
 
                 elif isinstance(e, exceptions.EndDateBeforeStartDate):
-                    errors['end_date'] = str(e)
+                    errors.setdefault('end_date', []).append(str(e))
 
                 elif isinstance(e, exceptions.EndDateInThePast):
-                    errors['end_date'] = str(e)
+                    errors.setdefault('end_date', []).append(str(e))
 
                 elif isinstance(e, exceptions.TrackingCodeInvalid):
-                    errors['tracking_code'] = str(e)
+                    errors.setdefault('tracking_code', []).append(str(e))
 
             raise utils.exc.ValidationError(errors)
 
         except exceptions.CannotChangeAdGroupState as err:
-            raise utils.exc.ValidationError({'state': str(err)})
+            raise utils.exc.ValidationError({'state': [str(err)]})
 
         except exceptions.AutopilotB1SourcesNotEnabled as err:
-            raise utils.exc.ValidationError({'autopilot': {'state': str(err)}})
+            raise utils.exc.ValidationError({'autopilot': {'state': [str(err)]}})
 
         except exceptions.AutopilotDailyBudgetTooLow as err:
-            raise utils.exc.ValidationError({'autopilot': {'daily_budget': str(err)}})
+            raise utils.exc.ValidationError({'autopilot': {'daily_budget': [str(err)]}})
 
         except exceptions.AutopilotDailyBudgetTooHigh as err:
-            raise utils.exc.ValidationError({'autopilot': {'daily_budget': str(err)}})
+            raise utils.exc.ValidationError({'autopilot': {'daily_budget': [str(err)]}})
 
         except exceptions.BluekaiCategoryInvalid as err:
-            raise utils.exc.ValidationError({'targeting': {'audience': str(err)}})
+            raise utils.exc.ValidationError({'targeting': {'audience': [str(err)]}})
 
         except exceptions.YahooDesktopCPCTooLow as err:
-            raise utils.exc.ValidationError({'targeting': {'devices': str(err)}})
+            raise utils.exc.ValidationError({'targeting': {'devices': [str(err)]}})

@@ -32,6 +32,7 @@ from utils import dates_helper
 from utils import db_for_reads
 
 import utils.exc
+import core.entity.settings.campaign_settings.exceptions
 import core.entity.settings.ad_group_settings.exceptions
 import core.goals.conversion_goal.exceptions
 import core.goals.campaign_goal.exceptions
@@ -113,60 +114,60 @@ class AdGroupSettings(api_common.BaseApiView):
             errors = {}
             for e in err.errors:
                 if isinstance(e, core.entity.settings.ad_group_settings.exceptions.MaxCPCTooLow):
-                    errors['cpc_cc'] = str(e)
+                    errors.setdefault('cpc_cc', []).append(str(e))
 
                 elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.MaxCPCTooHigh):
-                    errors['cpc_cc'] = str(e)
+                    errors.setdefault('cpc_cc', []).append(str(e))
 
                 elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.MaxCPMTooLow):
-                    errors['max_cpm'] = str(e)
+                    errors.setdefault('max_cpm', []).append(str(e))
 
                 elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.MaxCPMTooHigh):
-                    errors['max_cpm'] = str(e)
+                    errors.setdefault('max_cpm', []).append(str(e))
 
                 elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.EndDateBeforeStartDate):
-                    errors['end_date'] = str(e)
+                    errors.setdefault('end_date', []).append(str(e))
 
                 elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.EndDateInThePast):
-                    errors['end_date'] = str(e)
+                    errors.setdefault('end_date', []).append(str(e))
 
                 elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.TrackingCodeInvalid):
-                    errors['tracking_code'] = str(e)
+                    errors.setdefault('tracking_code', []).append(str(e))
 
             raise utils.exc.ValidationError(errors)
 
         except core.entity.settings.ad_group_settings.exceptions.CannotChangeAdGroupState as err:
-            raise utils.exc.ValidationError({'state': str(err)})
+            raise utils.exc.ValidationError({'state': [str(err)]})
 
         except core.entity.settings.ad_group_settings.exceptions.AutopilotB1SourcesNotEnabled as err:
-            raise utils.exc.ValidationError({'autopilot_state': str(err)})
+            raise utils.exc.ValidationError({'autopilot_state': [str(err)]})
 
         except core.entity.settings.ad_group_settings.exceptions.DailyBudgetAutopilotNotDisabled as err:
-            raise utils.exc.ValidationError({'b1_sources_group_daily_budget': str(err)})
+            raise utils.exc.ValidationError({'b1_sources_group_daily_budget': [str(err)]})
 
         except core.entity.settings.ad_group_settings.exceptions.CPCAutopilotNotDisabled as err:
-            raise utils.exc.ValidationError({'b1_sources_group_daily_budget': str(err)})
+            raise utils.exc.ValidationError({'b1_sources_group_daily_budget': [str(err)]})
 
         except core.entity.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooLow as err:
-            raise utils.exc.ValidationError({'autopilot_daily_budget': str(err)})
+            raise utils.exc.ValidationError({'autopilot_daily_budget': [str(err)]})
 
         except core.entity.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooHigh as err:
-            raise utils.exc.ValidationError({'autopilot_daily_budget': str(err)})
+            raise utils.exc.ValidationError({'autopilot_daily_budget': [str(err)]})
 
         except core.entity.settings.ad_group_settings.exceptions.AdGroupNotPaused as err:
-            raise utils.exc.ValidationError({'b1_sources_group_enabled': str(err)})
+            raise utils.exc.ValidationError({'b1_sources_group_enabled': [str(err)]})
 
         except core.entity.settings.ad_group_settings.exceptions.B1DailyBudgetTooHigh as err:
-            raise utils.exc.ValidationError({'daily_budget_cc': str(err)})
+            raise utils.exc.ValidationError({'daily_budget_cc': [str(err)]})
 
         except core.entity.settings.ad_group_settings.exceptions.CantEnableB1SourcesGroup as err:
-            raise utils.exc.ValidationError({'state': str(err)})
+            raise utils.exc.ValidationError({'state': [str(err)]})
 
         except core.entity.settings.ad_group_settings.exceptions.BluekaiCategoryInvalid as err:
             raise utils.exc.ValidationError(str(err))
 
         except core.entity.settings.ad_group_settings.exceptions.YahooDesktopCPCTooLow as err:
-            raise utils.exc.ValidationError({'target_devices': str(err)})
+            raise utils.exc.ValidationError({'target_devices': [str(err)]})
 
         response = {
             'settings': self.get_dict(request, ad_group.settings, ad_group),
@@ -465,7 +466,13 @@ class CampaignSettings(api_common.BaseApiView):
             raise exc.ValidationError(errors=errors)
 
         form_data = native_server.transform_campaign_settings(campaign, settings_form.cleaned_data)
-        campaign.settings.update(request, **form_data)
+        try:
+            campaign.settings.update(request, **form_data)
+
+        except core.entity.settings.campaign_settings.exceptions.CannotChangeLanguage as err:
+                raise utils.exc.ValidationError(errors={
+                    'language': str(err)
+                })
 
         with transaction.atomic():
             goal_errors = self.set_goals(request, campaign, changes)
