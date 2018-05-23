@@ -3,6 +3,7 @@ from rest_framework import permissions
 from django.db import transaction
 
 from restapi.common.views_base import RESTAPIBaseViewSet
+from restapi.campaigngoal.serializers import CampaignGoalsDefaultsSerializer
 import restapi.serializers.targeting
 import restapi.access
 import dash.features.campaignlauncher
@@ -26,7 +27,7 @@ class CampaignLauncherViewSet(RESTAPIBaseViewSet):
             'target_regions': restapi.serializers.targeting.TargetRegionsSerializer(default_settings['target_regions']).data,
             'exclusion_target_regions': restapi.serializers.targeting.TargetRegionsSerializer(default_settings['exclusion_target_regions']).data,
             'target_devices': restapi.serializers.targeting.DevicesSerializer(default_settings['target_devices']).data,
-            'goals_defaults': serializers.CampaignGoalsDefaultsSerializer(core.goals.get_campaign_goals_defaults(account)).data,
+            'goals_defaults': CampaignGoalsDefaultsSerializer(core.goals.get_campaign_goals_defaults(account)).data,
         })
 
     def validate(self, request, account_id):
