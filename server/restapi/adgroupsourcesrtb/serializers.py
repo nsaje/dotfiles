@@ -16,13 +16,13 @@ class AdGroupSourcesRTBSerializer(restapi.serializers.base.RESTAPIBaseSerializer
         source='b1_sources_group_state'
     )
     daily_budget = restapi.serializers.fields.TwoWayBlankDecimalField(
-        source='b1_sources_group_daily_budget',
+        source='local_b1_sources_group_daily_budget',
         max_digits=10,
         decimal_places=4,
         output_precision=2,
     )
     cpc = rest_framework.serializers.DecimalField(
-        source='b1_sources_group_cpc_cc',
+        source='local_b1_sources_group_cpc_cc',
         max_digits=10,
         decimal_places=4,
     )

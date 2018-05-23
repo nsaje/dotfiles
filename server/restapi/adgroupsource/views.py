@@ -16,7 +16,6 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
             ad_group_source__ad_group=ad_group
         ).group_current_settings().select_related('ad_group_source__source')
         serializer = serializers.AdGroupSourceSerializer(settings, many=True)
-        # TODO (multicurrency): Remap values into local values if user has permission
         return self.response_ok(serializer.data)
 
     def put(self, request, ad_group_id):
@@ -45,8 +44,6 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
                 if not ad_group_source:
                     raise utils.exc.ValidationError("Source %s not present on ad group!" % source.name)
                 item.pop('ad_group_source')
-                # TODO (multicurrency): Remap values into local_values if user has permission to manage settings in local
-                # currency
                 ad_group_source.settings.update(request, k1_sync=True, **item)
 
         return self.list(request, ad_group.id)
