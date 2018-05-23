@@ -1,4 +1,4 @@
-from restapi.views_test import RESTAPITest
+from restapi.common.views_base_test import RESTAPITest
 from django.core.urlresolvers import reverse
 
 import dash.models

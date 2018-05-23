@@ -2,7 +2,7 @@ from django.test import TestCase
 import rest_framework.serializers
 import rest_framework.exceptions
 
-from restapi.exceptions import custom_exception_handler
+from restapi.common.exceptions import custom_exception_handler
 from utils import exc
 
 

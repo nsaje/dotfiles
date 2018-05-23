@@ -1,7 +1,6 @@
 import rest_framework.serializers
 
-import restapi.fields
-import restapi.serializers
+import restapi.serializers.fields
 import restapi.serializers.base
 
 from dash import constants
@@ -12,7 +11,7 @@ class GATrackingSerializer(rest_framework.serializers.Serializer):
         source='enable_ga_tracking',
         required=False,
     )
-    type = restapi.fields.DashConstantField(
+    type = restapi.serializers.fields.DashConstantField(
         constants.GATrackingType,
         source='ga_tracking_type',
         required=False,
@@ -32,7 +31,7 @@ class AdobeTrackingSerializer(rest_framework.serializers.Serializer):
         source='enable_adobe_tracking',
         required=False,
     )
-    tracking_parameter = restapi.fields.PlainCharField(
+    tracking_parameter = restapi.serializers.fields.PlainCharField(
         source='adobe_tracking_param',
         required=False,
         max_length=10,
@@ -75,17 +74,17 @@ class CampaignTargetingSerializer(restapi.serializers.base.RESTAPIBaseSerializer
 
 
 class CampaignSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-    id = restapi.fields.IdField(read_only=True, source='campaign.id')
-    account_id = restapi.fields.IdField(source='campaign.account_id')
-    name = restapi.fields.PlainCharField(
+    id = restapi.serializers.fields.IdField(read_only=True, source='campaign.id')
+    account_id = restapi.serializers.fields.IdField(source='campaign.account_id')
+    name = restapi.serializers.fields.PlainCharField(
         max_length=127,
         error_messages={'required': 'Please specify campaign name.'},
     )
-    iab_category = restapi.fields.DashConstantField(
+    iab_category = restapi.serializers.fields.DashConstantField(
         constants.IABCategory,
         required=False,
     )
-    language = restapi.fields.DashConstantField(
+    language = restapi.serializers.fields.DashConstantField(
         constants.Language,
         required=False,
     )

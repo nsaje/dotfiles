@@ -1,104 +1,50 @@
-from django.conf.urls import url
-
-from . import views
-import restapi.views.realtimestats
-import restapi.adgroupsource.views
-import restapi.publishers.views
-from . import geolocation
-import dash.features.videoassets.urls
-import dash.features.bluekai.urls
-from dash.features.bulkactions import clonecontent
-from dash.features import cloneadgroup
-import restapi.campaignlauncher.urls
 import restapi.bcm.urls
-import restapi.inventory_planning.urls
 import restapi.account.urls
 import restapi.accountcredit.urls
 import restapi.campaign.urls
+import restapi.campaignstats.urls
+import restapi.campaignlauncher.urls
 import restapi.campaigngoal.urls
 import restapi.campaignbudget.urls
 import restapi.adgroup.urls
+import restapi.adgroupstats.urls
+import restapi.adgroupsource.urls
+import restapi.adgroupsourcestats.urls
 import restapi.adgroupsourcesrtb.urls
 import restapi.contentad.urls
+import restapi.report.urls
+import restapi.geolocation.urls
+import restapi.publishers.urls
+import restapi.publishergroup.urls
+import restapi.publishergroupentry.urls
+import restapi.inventory_planning.urls
+from dash.features import cloneadgroup
+from dash.features.bulkactions import clonecontent
+import dash.features.bluekai.urls
+import dash.features.videoassets.urls
 
-
-urlpatterns = [
-    url(
-        r'^v1/campaigns/(?P<campaign_id>\d+)/stats/$',
-        views.CampaignStatsView.as_view(),
-        name='campaignstats'
-    ),
-    url(
-        r'^v1/adgroups/(?P<ad_group_id>\d+)/sources/$',
-        restapi.adgroupsource.views.AdGroupSourcesViewList.as_view(),
-        name='adgroups_sources_list'
-    ),
-    url(
-        r'^v1/adgroups/(?P<ad_group_id>\d+)/publishers/$',
-        restapi.publishers.views.PublishersViewList.as_view(),
-        name='publishers_list'
-    ),
-    url(
-        r'^v1/reports/$',
-        views.ReportsViewList.as_view(),
-        name='reports_list'
-    ),
-    url(
-        r'^v1/reports/(?P<job_id>\d+)$',
-        views.ReportsViewDetails.as_view(),
-        name='reports_details'
-    ),
-    url(
-        r'^v1/accounts/(?P<account_id>\d+)/publishergroups/$',
-        views.PublisherGroupViewSet.as_view(actions={'get': 'list', 'post': 'create'}),
-        name='publisher_group_list'
-    ),
-    url(
-        r'^v1/accounts/(?P<account_id>\d+)/publishergroups/(?P<publisher_group_id>\d+)$',
-        views.PublisherGroupViewSet.as_view(actions={
-            'get': 'retrieve', 'put': 'partial_update', 'delete': 'destroy'}),
-        name='publisher_group_details'
-    ),
-    url(
-        r'^v1/publishergroups/(?P<publisher_group_id>\d+)/entries/$',
-        views.PublisherGroupEntryViewSet.as_view(actions={'get': 'list', 'post': 'create'}),
-        name='publisher_group_entry_list'
-    ),
-    url(
-        r'^v1/publishergroups/(?P<publisher_group_id>\d+)/entries/(?P<entry_id>\d+)$',
-        views.PublisherGroupEntryViewSet.as_view(actions={
-            'get': 'retrieve', 'delete': 'destroy', 'put': 'partial_update'}),
-        name='publisher_group_entry_details'
-    ),
-    url(
-        r'^v1/geolocations/$',
-        geolocation.GeolocationListView.as_view(),
-        name='geolocation_list'
-    ),
-    url(
-        r'^v1/adgroups/(?P<ad_group_id>\d+)/realtimestats/$',
-        restapi.views.realtimestats.AdGroupRealtimeStatsView.as_view(),
-        name='adgroups_realtimestats'
-    ),
-    url(
-        r'^v1/adgroups/(?P<ad_group_id>\d+)/realtimestats/sources/$',
-        restapi.views.realtimestats.AdGroupSourcesRealtimeStatsView.as_view(),
-        name='adgroups_realtimestats_sources'
-    ),
-]
-
+urlpatterns = []
+urlpatterns += restapi.bcm.urls.urlpatterns
 urlpatterns += restapi.account.urls.urlpatterns
 urlpatterns += restapi.accountcredit.urls.urlpatterns
 urlpatterns += restapi.campaign.urls.urlpatterns
+urlpatterns += restapi.campaignstats.urls.urlpatterns
+urlpatterns += restapi.campaignlauncher.urls.urlpatterns
 urlpatterns += restapi.campaigngoal.urls.urlpatterns
 urlpatterns += restapi.campaignbudget.urls.urlpatterns
 urlpatterns += restapi.adgroup.urls.urlpatterns
+urlpatterns += restapi.adgroupstats.urls.urlpatterns
+urlpatterns += restapi.adgroupsource.urls.urlpatterns
+urlpatterns += restapi.adgroupsourcestats.urls.urlpatterns
 urlpatterns += restapi.adgroupsourcesrtb.urls.urlpatterns
 urlpatterns += restapi.contentad.urls.urlpatterns
-urlpatterns += clonecontent.urls.urlpatterns
-urlpatterns += cloneadgroup.urls.urlpatterns
-urlpatterns += dash.features.videoassets.urls.urlpatterns
-urlpatterns += dash.features.bluekai.urls.urlpatterns
-urlpatterns += restapi.campaignlauncher.urls.urlpatterns
-urlpatterns += restapi.bcm.urls.urlpatterns
+urlpatterns += restapi.report.urls.urlpatterns
+urlpatterns += restapi.geolocation.urls.urlpatterns
+urlpatterns += restapi.publishers.urls.urlpatterns
+urlpatterns += restapi.publishergroup.urls.urlpatterns
+urlpatterns += restapi.publishergroupentry.urls.urlpatterns
 urlpatterns += restapi.inventory_planning.urls.urlpatterns
+urlpatterns += cloneadgroup.urls.urlpatterns
+urlpatterns += clonecontent.urls.urlpatterns
+urlpatterns += dash.features.bluekai.urls.urlpatterns
+urlpatterns += dash.features.videoassets.urls.urlpatterns

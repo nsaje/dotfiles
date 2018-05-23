@@ -346,7 +346,7 @@ BLUEKAI_API_SECRET_KEY = Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/
 
 REST_FRAMEWORK = {
     'UNICODE_JSON': False,
-    'EXCEPTION_HANDLER': 'restapi.exceptions.custom_exception_handler',
+    'EXCEPTION_HANDLER': 'restapi.common.exceptions.custom_exception_handler',
     'DEFAULT_THROTTLE_CLASSES': (
         'restapi.throttling.UserRateOverrideThrottle',
     ),

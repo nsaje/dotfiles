@@ -4,7 +4,7 @@ import dash.models
 from dash import constants
 from utils.magic_mixer import magic_mixer
 
-from ..views_test import RESTAPITest
+from restapi.common.views_base_test import RESTAPITest
 
 
 class AdGroupSourcesTest(RESTAPITest):

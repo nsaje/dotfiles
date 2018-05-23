@@ -180,7 +180,6 @@ def _create_ad_group(name, start_date):
         restapi.adgroup.views.AdGroupViewSet,
         url,
         data,
-        legacy=False,
     )
     ad_group_id = int(r['id'])
     _set_initial_sources_settings(ad_group_id)
@@ -203,7 +202,6 @@ def _set_ad_group(ad_group_id, state):
         url,
         data,
         view_args=[ad_group_id],
-        legacy=False,
     )
 
 
@@ -232,7 +230,7 @@ def _set_all_rtb_default_cpc(ad_group_id):
 
 def _list_ad_group_sources(ad_group_id):
     url = 'rest/v1/adgroups/{}/sources/'.format(ad_group_id)
-    return _make_restapi_fake_get_request(restapi.adgroupsource.views.AdGroupSourcesViewList, url, view_args=[ad_group_id])
+    return _make_restapi_fake_get_request(restapi.adgroupsource.views.AdGroupSourceViewSet, url, view_args=[ad_group_id])
 
 
 def _set_initial_rtb_settings(ad_group_id):
@@ -248,7 +246,12 @@ def _set_initial_sources_settings(ad_group_id):
         'state': 'ACTIVE',
     } for source in sources]
     url = 'rest/v1/adgroups/{}/sources/'.format(ad_group_id)
-    return _make_restapi_fake_put_request(restapi.adgroupsource.views.AdGroupSourcesViewList, url, data, view_args=[ad_group_id])
+    return _make_restapi_fake_put_request(
+        restapi.adgroupsource.views.AdGroupSourceViewSet,
+        url,
+        data,
+        view_args=[ad_group_id],
+    )
 
 
 def _set_source_daily_budget(ad_group_id, source, daily_budget):
@@ -258,7 +261,12 @@ def _set_source_daily_budget(ad_group_id, source, daily_budget):
         'state': 'ACTIVE',
     }]
     url = 'rest/v1/adgroups/{}/sources/'.format(ad_group_id)
-    return _make_restapi_fake_put_request(restapi.adgroupsource.views.AdGroupSourcesViewList, url, data, view_args=[ad_group_id])
+    return _make_restapi_fake_put_request(
+        restapi.adgroupsource.views.AdGroupSourceViewSet,
+        url,
+        data,
+        view_args=[ad_group_id],
+    )
 
 
 def _set_rtb_daily_budget(ad_group_id, daily_budget):
@@ -274,7 +282,6 @@ def _set_rtb_daily_budget(ad_group_id, daily_budget):
         url,
         data,
         view_args=[ad_group_id],
-        legacy=False,
     )
 
 
@@ -291,26 +298,27 @@ def _persist_ad_group_rotation(start_date, ad_group_id):
 def _make_restapi_fake_get_request(viewcls, url, view_args=[]):
     factory = APIRequestFactory()
     request = factory.get(url)
-    return _make_restapi_fake_request(viewcls, view_args, request)
-
-
-def _make_restapi_fake_post_request(viewcls, url, data, view_args=[], legacy=True):
-    factory = APIRequestFactory()
-    request = factory.post(url, data, format='json')
-    view_dict = {'post': 'create'} if not legacy else None
+    view_dict = {'get': 'list'}
     return _make_restapi_fake_request(viewcls, view_args, request, view_dict)
 
 
-def _make_restapi_fake_put_request(viewcls, url, data, view_args=[], legacy=True):
+def _make_restapi_fake_post_request(viewcls, url, data, view_args=[]):
+    factory = APIRequestFactory()
+    request = factory.post(url, data, format='json')
+    view_dict = {'post': 'create'}
+    return _make_restapi_fake_request(viewcls, view_args, request, view_dict)
+
+
+def _make_restapi_fake_put_request(viewcls, url, data, view_args=[]):
     factory = APIRequestFactory()
     request = factory.put(url, data, format='json')
-    view_dict = {'put': 'put'} if not legacy else None
-    return _make_restapi_fake_request(viewcls, view_args, request, view_dict=view_dict)
+    view_dict = {'put': 'put'}
+    return _make_restapi_fake_request(viewcls, view_args, request, view_dict)
 
 
-def _make_restapi_fake_request(viewcls, view_args, request, view_dict=None):
+def _make_restapi_fake_request(viewcls, view_args, request, view_dict):
     force_authenticate(request, user=User.objects.get(email=config.AUTOMATION_USER_EMAIL))
-    view = viewcls.as_view(view_dict) if view_dict else viewcls.as_view()
+    view = viewcls.as_view(view_dict)
     response = view(request, *view_args)
     response.render()
     if response.status_code >= 300:

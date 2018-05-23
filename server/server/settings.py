@@ -195,7 +195,7 @@ GLOBAL_BLACKLIST_ID = 1
 
 REST_FRAMEWORK = {
     'UNICODE_JSON': False,
-    'EXCEPTION_HANDLER': 'restapi.exceptions.custom_exception_handler',
+    'EXCEPTION_HANDLER': 'restapi.common.exceptions.custom_exception_handler',
 }
 
 ALL_ACCOUNTS_USE_BCM_V2 = False

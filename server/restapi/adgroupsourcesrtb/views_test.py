@@ -1,7 +1,7 @@
 from decimal import Decimal
 from django.core.urlresolvers import reverse
 
-from restapi.views_test import RESTAPITest
+from restapi.common.views_base_test import RESTAPITest
 from dash import constants
 from core import source
 import core.entity.adgroup

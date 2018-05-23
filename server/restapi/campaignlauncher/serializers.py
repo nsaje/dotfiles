@@ -3,14 +3,14 @@ from rest_framework import serializers
 from rest_framework import fields
 
 import dash.constants
-import restapi.fields
+import restapi.serializers.fields
 from restapi.serializers import targeting
 
 
 class ConversionGoalSerializer(serializers.Serializer):
-    type = restapi.fields.DashConstantField(dash.constants.ConversionGoalType)
-    conversion_window = restapi.fields.DashConstantField(dash.constants.ConversionWindows, required=False)
-    goal_id = restapi.fields.PlainCharField(
+    type = restapi.serializers.fields.DashConstantField(dash.constants.ConversionGoalType)
+    conversion_window = restapi.serializers.fields.DashConstantField(dash.constants.ConversionWindows, required=False)
+    goal_id = restapi.serializers.fields.PlainCharField(
         required=True,
         max_length=100,
         error_messages={
@@ -20,26 +20,21 @@ class ConversionGoalSerializer(serializers.Serializer):
 
 
 class CampaignGoalSerializer(serializers.Serializer):
-    type = restapi.fields.DashConstantField(dash.constants.CampaignGoalKPI)
+    type = restapi.serializers.fields.DashConstantField(dash.constants.CampaignGoalKPI)
     value = fields.DecimalField(max_digits=15, decimal_places=5)
     conversion_goal = ConversionGoalSerializer(required=False, allow_null=True)
 
 
-class CampaignGoalsDefaultsSerializer(serializers.BaseSerializer):
-    def to_representation(self, obj):
-        return {dash.constants.CampaignGoalKPI.get_name(k): v for k, v in obj.items()}
-
-
 class CampaignLauncherSerializer(serializers.Serializer):
-    campaign_name = restapi.fields.PlainCharField(
+    campaign_name = restapi.serializers.fields.PlainCharField(
         max_length=127,
         error_messages={'required': 'Please specify campaign name.'}
     )
-    iab_category = restapi.fields.DashConstantField(
+    iab_category = restapi.serializers.fields.DashConstantField(
         dash.constants.IABCategory,
         error_messages={'required': 'Please specify the IAB category.'}
     )
-    language = restapi.fields.DashConstantField(
+    language = restapi.serializers.fields.DashConstantField(
         dash.constants.Language,
         error_messages={'required': 'Please specify the language of the campaign\'s ads.'}
     )
@@ -57,7 +52,7 @@ class CampaignLauncherSerializer(serializers.Serializer):
         }
     )
     daily_budget = fields.DecimalField(max_digits=10, decimal_places=4)
-    upload_batch = restapi.fields.IdField()
+    upload_batch = restapi.serializers.fields.IdField()
     campaign_goal = CampaignGoalSerializer()
     target_regions = targeting.TargetRegionsSerializer()
     exclusion_target_regions = targeting.TargetRegionsSerializer()

@@ -1,11 +1,15 @@
 import rest_framework.serializers
 
-import restapi.fields
-import restapi.serializers
+import restapi.serializers.fields
+import restapi.serializers.base
 
 from dash import constants
-
 from decimal import Decimal
+
+
+class CampaignGoalsDefaultsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    def to_representation(self, obj):
+        return {constants.CampaignGoalKPI.get_name(k): v for k, v in obj.items()}
 
 
 class ConversionGoalSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
@@ -19,36 +23,36 @@ class ConversionGoalSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
         if goal.conversion_goal is None:
             return None
         if goal.conversion_goal.pixel_id:
-            self.fields['goal_id'] = restapi.fields.PlainCharField(
+            self.fields['goal_id'] = restapi.serializers.fields.PlainCharField(
                 source='conversion_goal.pixel_id',
                 allow_blank=True,
                 allow_null=True,
             )
         return super().to_representation(goal)
 
-    goal_id = restapi.fields.PlainCharField(
+    goal_id = restapi.serializers.fields.PlainCharField(
         source='conversion_goal.goal_id',
         max_length=100,
         allow_blank=True,
         allow_null=True,
         error_messages={'max_length': 'Conversion goal id is too long.'},
     )
-    name = restapi.fields.PlainCharField(
+    name = restapi.serializers.fields.PlainCharField(
         source='conversion_goal.name',
         max_length=100,
         allow_blank=True,
         allow_null=True,
         required=False,
     )
-    type = restapi.fields.DashConstantField(
+    type = restapi.serializers.fields.DashConstantField(
         constants.ConversionGoalType,
         source='conversion_goal.type',
     )
-    conversion_window = restapi.fields.OutNullDashConstantField(
+    conversion_window = restapi.serializers.fields.OutNullDashConstantField(
         constants.ConversionWindows,
         source='conversion_goal.conversion_window',
     )
-    pixel_url = restapi.fields.OutNullURLField(
+    pixel_url = restapi.serializers.fields.OutNullURLField(
         source='conversion_goal.pixel.get_url',
         max_length=2048,
         allow_blank=True,
@@ -66,8 +70,8 @@ class CampaignGoalSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
             fields['value'] = rest_framework.serializers.SerializerMethodField()
         return fields
 
-    id = restapi.fields.OutIntIdField(read_only=True)
-    type = restapi.fields.DashConstantField(constants.CampaignGoalKPI)
+    id = restapi.serializers.fields.OutIntIdField(read_only=True)
+    type = restapi.serializers.fields.DashConstantField(constants.CampaignGoalKPI)
     primary = rest_framework.serializers.BooleanField()
     value = rest_framework.serializers.DecimalField(
         max_digits=20,

@@ -1,9 +1,9 @@
 from django.core.urlresolvers import reverse
 
-import restapi.views_test
+import restapi.common.views_base_test
 
 
-class GeolocationListViewTest(restapi.views_test.RESTAPITest):
+class GeolocationListViewTest(restapi.common.views_base_test.RESTAPITest):
     def test_get_with_no_filter(self):
         r = self.client.get(reverse('geolocation_list'))
         r = self.assertResponseValid(r, data_type=list)

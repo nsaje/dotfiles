@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-import restapi.fields
+import restapi.serializers.fields
 import dash.constants
 import dash.views.publishers
 
@@ -26,8 +26,8 @@ class PublisherSerializer(serializers.Serializer):
     class Meta:
         list_serializer_class = PublisherListSerializer
 
-    name = restapi.fields.PlainCharField(max_length=127)
-    source = restapi.fields.SourceIdSlugField(required=False, allow_null=True)
-    status = restapi.fields.DashConstantField(dash.constants.PublisherStatus)
-    level = restapi.fields.DashConstantField(dash.constants.PublisherBlacklistLevel, label='level')
+    name = restapi.serializers.fields.PlainCharField(max_length=127)
+    source = restapi.serializers.fields.SourceIdSlugField(required=False, allow_null=True)
+    status = restapi.serializers.fields.DashConstantField(dash.constants.PublisherStatus)
+    level = restapi.serializers.fields.DashConstantField(dash.constants.PublisherBlacklistLevel, label='level')
     modifier = serializers.FloatField(min_value=0.01, max_value=11.0, required=False, allow_null=True)

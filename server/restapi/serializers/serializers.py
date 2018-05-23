@@ -52,3 +52,24 @@ class PermissionedFieldsMixin(object):
                 fields.pop(field, None)
 
         return fields
+
+
+class DataNodeSerializerMixin(object):
+
+    @property
+    def data(self):
+        return {
+            'data': super(DataNodeSerializerMixin, self).data,
+        }
+
+
+class DataNodeListSerializer(DataNodeSerializerMixin, serializers.ListSerializer):
+    pass
+
+
+class NoneToDictSerializerMixin(serializers.Serializer):
+
+    def run_validation(self, data):
+        if data is None:
+            data = {}
+        return super().run_validation(data)

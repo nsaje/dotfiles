@@ -1,25 +1,25 @@
 from rest_framework import serializers
 
-import restapi.fields
+import restapi.serializers.fields
 
 from . import constants
 
 
 class ClientSerializer(serializers.Serializer):
-    salesforce_account_id = restapi.fields.PlainCharField()
-    name = restapi.fields.PlainCharField()
+    salesforce_account_id = restapi.serializers.fields.PlainCharField()
+    name = restapi.serializers.fields.PlainCharField()
     type = serializers.ChoiceField([constants.CLIENT_TYPE_AGENCY, constants.CLIENT_TYPE_CLIENT_DIRECT])
 
 
 class CreditLineSerializer(serializers.Serializer):
-    salesforce_contract_id = restapi.fields.PlainCharField()
-    salesforce_account_id = restapi.fields.PlainCharField()
-    z1_account_id = restapi.fields.PlainCharField()
-    contract_number = restapi.fields.PlainCharField()
+    salesforce_contract_id = restapi.serializers.fields.PlainCharField()
+    salesforce_account_id = restapi.serializers.fields.PlainCharField()
+    z1_account_id = restapi.serializers.fields.PlainCharField()
+    contract_number = restapi.serializers.fields.PlainCharField()
     start_date = serializers.DateField()
     end_date = serializers.DateField()
-    description = restapi.fields.PlainCharField()
-    special_terms = restapi.fields.PlainCharField(required=False, default='')
+    description = restapi.serializers.fields.PlainCharField()
+    special_terms = restapi.serializers.fields.PlainCharField(required=False, default='')
     pf_schedule = serializers.ChoiceField(
         [constants.PF_SCHEDULE_FLAT_FEE, constants.PF_SCHEDULE_PCT_FEE, constants.PF_SCHEDULE_UPFRONT])
     amount_at_signing = serializers.DecimalField(max_digits=8, decimal_places=2)
@@ -43,7 +43,7 @@ class CreditLineSerializer(serializers.Serializer):
 
 
 class AgencyAccountsSerializer(serializers.Serializer):
-    z1_account_id = restapi.fields.PlainCharField()
+    z1_account_id = restapi.serializers.fields.PlainCharField()
 
     def validate_z1_account_id(self, value):
         if value[0] != constants.ACCOUNT_ID_PREFIX_AGENCY:

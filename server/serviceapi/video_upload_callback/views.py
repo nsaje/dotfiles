@@ -2,7 +2,7 @@ from django.conf import settings
 from rest_framework import serializers
 
 import dash.features.videoassets.models
-import restapi.fields
+import restapi.serializers.fields
 
 from .. import base
 from .. import authentication
@@ -15,8 +15,8 @@ class FormatSerializer(serializers.Serializer):
     width = serializers.IntegerField()
     height = serializers.IntegerField()
     bitrate = serializers.IntegerField()
-    mime = restapi.fields.PlainCharField()
-    filename = restapi.fields.PlainCharField()
+    mime = restapi.serializers.fields.PlainCharField()
+    filename = restapi.serializers.fields.PlainCharField()
 
 
 class PutSerializer(serializers.ModelSerializer):
@@ -24,7 +24,7 @@ class PutSerializer(serializers.ModelSerializer):
         model = dash.features.videoassets.models.VideoAsset
         fields = ('status', 'error_code', 'duration', 'formats')
 
-    status = restapi.fields.DashConstantField(dash.features.videoassets.constants.VideoAssetStatus)
+    status = restapi.serializers.fields.DashConstantField(dash.features.videoassets.constants.VideoAssetStatus)
     formats = FormatSerializer(many=True, required=False)
 
 

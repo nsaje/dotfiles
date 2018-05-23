@@ -2,13 +2,13 @@ import mock
 
 from django.core.urlresolvers import reverse
 
-import restapi.views_test
+import restapi.common.views_base_test
 import dash.features.inventory_planning
 
 from . import views
 
 
-class InventoryPlanningViewTest(restapi.views_test.RESTAPITest):
+class InventoryPlanningViewTest(restapi.common.views_base_test.RESTAPITest):
 
     @mock.patch.object(dash.features.inventory_planning, 'get_summary', autospec=True)
     def test_summary(self, mock_func):

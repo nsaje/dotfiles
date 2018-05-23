@@ -1,6 +1,6 @@
 import rest_framework.serializers
 
-from restapi.views import RESTAPIBaseView
+from restapi.common.views_base import RESTAPIBaseView
 from utils import exc, dates_helper
 from dash.views import helpers
 import dash.models

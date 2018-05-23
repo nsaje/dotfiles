@@ -5,12 +5,12 @@ from rest_framework.test import APIClient
 from utils.magic_mixer import magic_mixer
 
 import core.entity
-import restapi.views_test
+import restapi.common.views_base_test
 
 from . import service
 
 
-class CloneContentViewTest(restapi.views_test.RESTAPITest):
+class CloneContentViewTest(restapi.common.views_base_test.RESTAPITest):
     def setUp(self):
         self.user = magic_mixer.blend_user(permissions=['can_clone_contentads'])
         self.account = magic_mixer.blend(core.entity.Account, users=[self.user])

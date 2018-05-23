@@ -1,9 +1,7 @@
 from rest_framework import serializers
 from rest_framework import fields
 
-import restapi.fields
-import restapi.serializers
-import restapi.common.serializers
+import restapi.serializers.fields
 
 from . import models
 from . import constants
@@ -15,7 +13,7 @@ UPLOAD_TYPES = [DIRECT_UPLOAD]
 
 class UploadInfoSerializer(serializers.Serializer):
     type = fields.ChoiceField(choices=UPLOAD_TYPES)
-    url = restapi.fields.PlainCharField(required=False)
+    url = restapi.serializers.fields.PlainCharField(required=False)
 
 
 class VideoAssetSerializer(serializers.ModelSerializer):
@@ -26,15 +24,15 @@ class VideoAssetSerializer(serializers.ModelSerializer):
                   'error_message', 'name', 'upload', 'preview_url')
         read_only_fields = ('id', 'account', 'status',)
 
-    account = restapi.fields.IdField()
-    status = restapi.fields.DashConstantField(constants.VideoAssetStatus)
+    account = restapi.serializers.fields.IdField()
+    status = restapi.serializers.fields.DashConstantField(constants.VideoAssetStatus)
     status_message = fields.CharField(read_only=True, source='get_status_message')
     error_message = fields.CharField(read_only=True, source='get_error_message')
     preview_url = fields.CharField(read_only=True, source='get_preview_url')
-    name = restapi.fields.PlainCharField()
+    name = restapi.serializers.fields.PlainCharField()
     upload = UploadInfoSerializer(required=False)
 
 
 class VideoAssetPostSerializer(serializers.Serializer):
-    name = restapi.fields.PlainCharField()
+    name = restapi.serializers.fields.PlainCharField()
     upload = UploadInfoSerializer()

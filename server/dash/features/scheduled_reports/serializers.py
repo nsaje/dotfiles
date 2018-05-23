@@ -4,20 +4,20 @@ from dash import constants
 from dash.features.reports import helpers as reports_helpers
 from dash.features.reports import serializers as reports_serializers
 from dash.views import helpers
-import restapi.fields
+import restapi.serializers.fields
 import stats.constants
 
 
 class ScheduledReportSerializer(serializers.Serializer):
-    id = restapi.fields.IdField(read_only=True)
-    name = restapi.fields.PlainCharField(max_length=100)
+    id = restapi.serializers.fields.IdField(read_only=True)
+    name = restapi.serializers.fields.PlainCharField(max_length=100)
 
     query = reports_serializers.ReportQuerySerializer(write_only=True)
 
-    frequency = restapi.fields.DashConstantField(
+    frequency = restapi.serializers.fields.DashConstantField(
         constants.ScheduledReportSendingFrequency, source='sending_frequency')
-    day_of_week = restapi.fields.DashConstantField(constants.ScheduledReportDayOfWeek)
-    time_period = restapi.fields.DashConstantField(constants.ScheduledReportTimePeriod)
+    day_of_week = restapi.serializers.fields.DashConstantField(constants.ScheduledReportDayOfWeek)
+    time_period = restapi.serializers.fields.DashConstantField(constants.ScheduledReportTimePeriod)
 
     level = serializers.SerializerMethodField()
     breakdown = serializers.SerializerMethodField()

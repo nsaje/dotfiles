@@ -1,4 +1,4 @@
-from restapi.views import RESTAPIBaseViewSet
+from restapi.common.views_base import RESTAPIBaseViewSet
 import restapi.access
 
 from core.entity.settings.ad_group_settings import exceptions

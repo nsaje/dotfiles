@@ -1,13 +1,13 @@
 import rest_framework.serializers
 import rest_framework.permissions
 
-import restapi.views
+import restapi.common.views_base
 from . import serializers
 from . import models
 from . import service
 
 
-class VideoAssetBaseView(restapi.views.RESTAPIBaseView):
+class VideoAssetBaseView(restapi.common.views_base.RESTAPIBaseView):
 
     permission_classes = (rest_framework.permissions.IsAuthenticated,
                           restapi.access.HasAccountAccess,

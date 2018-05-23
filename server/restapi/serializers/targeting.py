@@ -5,12 +5,12 @@ import rest_framework.serializers
 
 import dash.constants
 import dash.regions
-import restapi.fields
+import restapi.serializers.fields
 
 
 class VersionSerializer(rest_framework.serializers.Serializer):
-    min = restapi.fields.DashConstantField(dash.constants.OperatingSystemVersion, required=False)
-    max = restapi.fields.DashConstantField(dash.constants.OperatingSystemVersion, required=False)
+    min = restapi.serializers.fields.DashConstantField(dash.constants.OperatingSystemVersion, required=False)
+    max = restapi.serializers.fields.DashConstantField(dash.constants.OperatingSystemVersion, required=False)
 
     def validate(self, data):
         # Validation done in OSSerializer
@@ -18,7 +18,7 @@ class VersionSerializer(rest_framework.serializers.Serializer):
 
 
 class OSSerializer(rest_framework.serializers.Serializer):
-    name = restapi.fields.DashConstantField(dash.constants.OperatingSystem)
+    name = restapi.serializers.fields.DashConstantField(dash.constants.OperatingSystem)
     version = VersionSerializer(required=False)
 
     def validate(self, data):
@@ -44,7 +44,7 @@ class OSsSerializer(rest_framework.serializers.ListSerializer):
 
 
 class BrowserSerializer(rest_framework.serializers.Serializer):
-    family = restapi.fields.DashConstantField(dash.constants.BrowserFamily)
+    family = restapi.serializers.fields.DashConstantField(dash.constants.BrowserFamily)
 
 
 class BrowsersSerializer(rest_framework.serializers.ListSerializer):
@@ -56,7 +56,7 @@ class BrowsersSerializer(rest_framework.serializers.ListSerializer):
 
 class PlacementsSerializer(rest_framework.serializers.ListSerializer):
     def __init__(self, *args, **kwargs):
-        self.child = restapi.fields.DashConstantField(dash.constants.Placement)
+        self.child = restapi.serializers.fields.DashConstantField(dash.constants.Placement)
         kwargs['allow_null'] = True
         super(PlacementsSerializer, self).__init__(*args, **kwargs)
 
@@ -64,7 +64,7 @@ class PlacementsSerializer(rest_framework.serializers.ListSerializer):
 class DevicesSerializer(rest_framework.serializers.ListSerializer):
     def __init__(self, *args, **kwargs):
         kwargs['allow_null'] = True
-        self.child = restapi.fields.DashConstantField(dash.constants.AdTargetDevice)
+        self.child = restapi.serializers.fields.DashConstantField(dash.constants.AdTargetDevice)
         super(DevicesSerializer, self).__init__(*args, **kwargs)
 
 
@@ -163,11 +163,11 @@ _geo_type_cache = {}
 
 
 class TargetRegionsSerializer(rest_framework.serializers.Serializer):
-    countries = rest_framework.serializers.ListField(child=restapi.fields.PlainCharField(), required=False)
-    regions = rest_framework.serializers.ListField(child=restapi.fields.PlainCharField(), required=False)
-    dma = rest_framework.serializers.ListField(child=restapi.fields.PlainCharField(), required=False)
-    cities = rest_framework.serializers.ListField(child=restapi.fields.PlainCharField(), required=False)
-    postal_codes = rest_framework.serializers.ListField(child=restapi.fields.PlainCharField(), required=False)
+    countries = rest_framework.serializers.ListField(child=restapi.serializers.fields.PlainCharField(), required=False)
+    regions = rest_framework.serializers.ListField(child=restapi.serializers.fields.PlainCharField(), required=False)
+    dma = rest_framework.serializers.ListField(child=restapi.serializers.fields.PlainCharField(), required=False)
+    cities = rest_framework.serializers.ListField(child=restapi.serializers.fields.PlainCharField(), required=False)
+    postal_codes = rest_framework.serializers.ListField(child=restapi.serializers.fields.PlainCharField(), required=False)
 
     default_error_messages = {
         'invalid_choice': '"{input}" is not a valid location.'

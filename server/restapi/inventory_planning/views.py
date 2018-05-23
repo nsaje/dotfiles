@@ -2,7 +2,7 @@ from rest_framework import permissions
 import django.http
 import django.utils.cache
 
-from restapi.views import RESTAPIBaseView
+from restapi.common.views_base import RESTAPIBaseView
 import dash.features.inventory_planning
 
 from . import serializers

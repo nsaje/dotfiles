@@ -1,13 +1,13 @@
 from rest_framework import permissions
 
-import restapi.views
+import restapi.common.views_base
 from restapi.serializers.targeting import AudienceSerializer
 
 from . import service
 from . import serializers
 
 
-class TaxonomyTreeInternalView(restapi.views.RESTAPIBaseView):
+class TaxonomyTreeInternalView(restapi.common.views_base.RESTAPIBaseView):
     permission_classes = (
         permissions.IsAuthenticated,
         restapi.access.gen_permission_class('zemauth.can_use_bluekai_targeting')
@@ -18,7 +18,7 @@ class TaxonomyTreeInternalView(restapi.views.RESTAPIBaseView):
         return self.response_ok(serializers.BlueKaiCategoryInternalSerializer(tree).data)
 
 
-class TaxonomyTreeView(restapi.views.RESTAPIBaseView):
+class TaxonomyTreeView(restapi.common.views_base.RESTAPIBaseView):
     permission_classes = (
         permissions.IsAuthenticated,
         restapi.access.gen_permission_class('zemauth.can_use_bluekai_targeting')
@@ -29,7 +29,7 @@ class TaxonomyTreeView(restapi.views.RESTAPIBaseView):
         return self.response_ok(serializers.BlueKaiCategorySerializer(tree).data)
 
 
-class SegmentReachView(restapi.views.RESTAPIBaseView):
+class SegmentReachView(restapi.common.views_base.RESTAPIBaseView):
     permission_classes = (
         permissions.IsAuthenticated,
         restapi.access.gen_permission_class('zemauth.can_use_bluekai_targeting')

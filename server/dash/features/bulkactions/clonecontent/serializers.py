@@ -7,24 +7,24 @@ from dash import constants
 import core.entity
 
 import restapi.access
-import restapi.fields
+import restapi.serializers.fields
 
 
 class CloneContentAdsSerializer(serializers.Serializer):
-    ad_group_id = restapi.fields.IdField()
-    batch_id = restapi.fields.IdField(required=False, allow_null=True)
-    content_ad_ids = fields.ListField(child=restapi.fields.IdField(), required=False)
-    deselected_content_ad_ids = fields.ListField(child=restapi.fields.IdField(), required=False)
+    ad_group_id = restapi.serializers.fields.IdField()
+    batch_id = restapi.serializers.fields.IdField(required=False, allow_null=True)
+    content_ad_ids = fields.ListField(child=restapi.serializers.fields.IdField(), required=False)
+    deselected_content_ad_ids = fields.ListField(child=restapi.serializers.fields.IdField(), required=False)
 
-    destination_ad_group_id = restapi.fields.IdField(error_messages={
+    destination_ad_group_id = restapi.serializers.fields.IdField(error_messages={
         'required': 'Please select destination ad group',
         'null': 'Please select destination ad group',
     })
-    destination_batch_name = restapi.fields.PlainCharField(required=True, error_messages={
+    destination_batch_name = restapi.serializers.fields.PlainCharField(required=True, error_messages={
         'required': 'Please provide a name for destination upload batch',
         'blank': 'Please provide a name for destination upload batch'
     })
-    state = restapi.fields.DashConstantField(constants.ContentAdSourceState, required=False, allow_null=True)
+    state = restapi.serializers.fields.DashConstantField(constants.ContentAdSourceState, required=False, allow_null=True)
 
 
 class AdGroupSerializer(serializers.ModelSerializer):
@@ -32,8 +32,8 @@ class AdGroupSerializer(serializers.ModelSerializer):
         model = core.entity.UploadBatch
         fields = ('id', 'name')
 
-    id = restapi.fields.IdField()
-    name = restapi.fields.PlainCharField(max_length=1024)
+    id = restapi.serializers.fields.IdField()
+    name = restapi.serializers.fields.PlainCharField(max_length=1024)
 
 
 class UploadBatchSerializer(serializers.ModelSerializer):
@@ -41,8 +41,8 @@ class UploadBatchSerializer(serializers.ModelSerializer):
         model = core.entity.UploadBatch
         fields = ('id', 'name', 'ad_group')
 
-    id = restapi.fields.IdField()
-    name = restapi.fields.PlainCharField(max_length=1024)
+    id = restapi.serializers.fields.IdField()
+    name = restapi.serializers.fields.PlainCharField(max_length=1024)
     ad_group = AdGroupSerializer()
 
 

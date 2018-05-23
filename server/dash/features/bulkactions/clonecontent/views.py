@@ -2,13 +2,13 @@ from rest_framework import permissions
 
 import core.entity
 import restapi.access
-import restapi.views
+import restapi.common.views_base
 
 from . import serializers
 from . import service
 
 
-class CloneContentAds(restapi.views.RESTAPIBaseView):
+class CloneContentAds(restapi.common.views_base.RESTAPIBaseView):
     permission_classes = (permissions.IsAuthenticated,
                           restapi.access.gen_permission_class('zemauth.can_clone_contentads'))
 

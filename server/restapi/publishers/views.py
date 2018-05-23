@@ -1,6 +1,6 @@
 from django.db import transaction
 
-import restapi.views
+import restapi.common.views_base
 import restapi.access
 import dash.views.helpers
 import core.publisher_groups.publisher_group_helpers
@@ -11,9 +11,9 @@ import dash.constants
 from . import serializers
 
 
-class PublishersViewList(restapi.views.RESTAPIBaseView):
+class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
 
-    def get(self, request, ad_group_id):
+    def list(self, request, ad_group_id):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
         items = self._get_publisher_group_items(ad_group)
         items = self._augment_with_bid_modifiers(items, ad_group)

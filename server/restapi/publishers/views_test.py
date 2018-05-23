@@ -5,11 +5,11 @@ from django.core.urlresolvers import reverse
 import core.entity
 from core.publisher_groups import publisher_group_helpers
 import core.publisher_bid_modifiers
-import restapi.views_test
+import restapi.common.views_base_test
 from utils.magic_mixer import magic_mixer, get_request_mock
 
 
-class PublisherBlacklistTest(restapi.views_test.RESTAPITest):
+class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
 
     def setUp(self):
         super(PublisherBlacklistTest, self).setUp()

@@ -30,11 +30,3 @@ class RESTAPIBaseSerializer(rest_framework.serializers.Serializer):
                 ret[field.field_name] = field.to_representation(attribute)
 
         return ret
-
-
-class NoneToDictSerializerMixin(rest_framework.serializers.Serializer):
-
-    def run_validation(self, data):
-        if data is None:
-            data = {}
-        return super().run_validation(data)

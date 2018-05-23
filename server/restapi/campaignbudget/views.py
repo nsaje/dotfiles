@@ -1,4 +1,4 @@
-from restapi.views import RESTAPIBaseViewSet
+from restapi.common.views_base import RESTAPIBaseViewSet
 from restapi.common.pagination import StandardPagination
 import restapi.access
 

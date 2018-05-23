@@ -1,7 +1,7 @@
 from rest_framework import permissions
 
 import automation.campaignstop
-from restapi.views import RESTAPIBaseView
+from restapi.common.views_base import RESTAPIBaseView
 import restapi.access
 import dash.views.navigation_helpers
 

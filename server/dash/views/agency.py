@@ -417,7 +417,7 @@ class CampaignSettings(api_common.BaseApiView):
         }
         if request.user.has_perm('zemauth.can_see_campaign_goals'):
             # TODO (refactor-workaround) Re-use restapi serializers
-            from restapi.campaignlauncher.serializers import CampaignGoalsDefaultsSerializer
+            from restapi.campaigngoal.serializers import CampaignGoalsDefaultsSerializer
             response['goals'] = self.get_campaign_goals(request, campaign)
             response['goals_defaults'] = CampaignGoalsDefaultsSerializer(core.goals.get_campaign_goals_defaults(campaign.account)).data
 

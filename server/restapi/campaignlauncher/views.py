@@ -2,7 +2,7 @@ import rest_framework.serializers
 from rest_framework import permissions
 from django.db import transaction
 
-from ..views import RESTAPIBaseViewSet
+from restapi.common.views_base import RESTAPIBaseViewSet
 import restapi.serializers.targeting
 import restapi.access
 import dash.features.campaignlauncher

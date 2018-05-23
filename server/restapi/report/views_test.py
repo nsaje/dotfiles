@@ -100,7 +100,7 @@ class ReportViewsTest(TestCase):
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
     def test_raw_new_report_batch(self, mock_prepare_constraints, mock_query, mock_totals, mock_filename):
-        mock_query.side_effect = [[{}]*10000, [{}]*100]
+        mock_query.side_effect = [[{}] * 10000, [{}] * 100]
         query = {
             'fields': [{'field': 'Publisher'}],
             'filters': [

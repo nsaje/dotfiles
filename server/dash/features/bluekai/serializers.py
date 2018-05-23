@@ -1,13 +1,13 @@
 from rest_framework import serializers
 from rest_framework_recursive.fields import RecursiveField
 
-import restapi.fields
+import restapi.serializers.fields
 
 
 class BlueKaiCategorySerializer(serializers.Serializer):
     category_id = serializers.IntegerField()
-    name = restapi.fields.PlainCharField()
-    description = restapi.fields.PlainCharField()
+    name = restapi.serializers.fields.PlainCharField()
+    description = restapi.serializers.fields.PlainCharField()
     navigation_only = serializers.BooleanField()
     child_nodes = serializers.ListField(child=RecursiveField())
     reach = serializers.SerializerMethodField()

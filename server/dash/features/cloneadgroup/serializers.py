@@ -1,16 +1,16 @@
 from rest_framework import serializers
-import restapi.fields
+import restapi.serializers.fields
 
 from dash import constants
 
 
 class CloneAdGroupSerializer(serializers.Serializer):
-    ad_group_id = restapi.fields.IdField(required=True)
-    destination_campaign_id = restapi.fields.IdField(required=True, error_messages={
+    ad_group_id = restapi.serializers.fields.IdField(required=True)
+    destination_campaign_id = restapi.serializers.fields.IdField(required=True, error_messages={
         'required': 'Please select destination campaign',
         'null': 'Please select destination campaign',
     })
-    destination_ad_group_name = restapi.fields.PlainCharField(required=True, error_messages={
+    destination_ad_group_name = restapi.serializers.fields.PlainCharField(required=True, error_messages={
         'required': 'Please provide a name for destination ad group',
         'blank': 'Please provide a name for destination ad group',
     })
@@ -18,10 +18,10 @@ class CloneAdGroupSerializer(serializers.Serializer):
 
 
 class AdGroupSerializer(serializers.Serializer):
-    id = restapi.fields.IdField()
-    campaign_id = restapi.fields.IdField()
+    id = restapi.serializers.fields.IdField()
+    campaign_id = restapi.serializers.fields.IdField()
     name = serializers.ReadOnlyField()
 
-    state = restapi.fields.DashConstantField(constants.AdGroupSettingsState)
-    status = restapi.fields.DashConstantField(constants.AdGroupRunningStatus)
-    active = restapi.fields.DashConstantField(constants.InfoboxStatus)
+    state = restapi.serializers.fields.DashConstantField(constants.AdGroupSettingsState)
+    status = restapi.serializers.fields.DashConstantField(constants.AdGroupRunningStatus)
+    active = restapi.serializers.fields.DashConstantField(constants.InfoboxStatus)

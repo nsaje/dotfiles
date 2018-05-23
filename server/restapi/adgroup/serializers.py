@@ -1,9 +1,8 @@
 import rest_framework.serializers
 
-import restapi.fields
-import restapi.serializers
+import restapi.serializers.fields
 import restapi.serializers.base
-import restapi.common.serializers
+import restapi.serializers.serializers
 
 from dash import constants
 import pytz
@@ -24,13 +23,13 @@ class AdGroupGeoSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 
 class AdGroupInterestSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     included = rest_framework.serializers.ListField(
-        child=restapi.fields.DashConstantField(constants.InterestCategory),
+        child=restapi.serializers.fields.DashConstantField(constants.InterestCategory),
         source='interest_targeting',
         allow_null=True,
         required=False,
     )
     excluded = rest_framework.serializers.ListField(
-        child=restapi.fields.DashConstantField(constants.InterestCategory),
+        child=restapi.serializers.fields.DashConstantField(constants.InterestCategory),
         source='exclusion_interest_targeting',
         allow_null=True,
         required=False,
@@ -38,12 +37,12 @@ class AdGroupInterestSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 
 
 class AdGroupPublisherGroupsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-    included = restapi.fields.NullListField(
+    included = restapi.serializers.fields.NullListField(
         child=rest_framework.serializers.IntegerField(),
         source='whitelist_publisher_groups',
         required=False,
     )
-    excluded = restapi.fields.NullListField(
+    excluded = restapi.serializers.fields.NullListField(
         child=rest_framework.serializers.IntegerField(),
         source='blacklist_publisher_groups',
         required=False,
@@ -51,12 +50,12 @@ class AdGroupPublisherGroupsSerializer(restapi.serializers.base.RESTAPIBaseSeria
 
 
 class AdGroupCustomAudiencesSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-    included = restapi.fields.NullListField(
+    included = restapi.serializers.fields.NullListField(
         child=rest_framework.serializers.IntegerField(),
         source='audience_targeting',
         required=False,
     )
-    excluded = restapi.fields.NullListField(
+    excluded = restapi.serializers.fields.NullListField(
         child=rest_framework.serializers.IntegerField(),
         source='exclusion_audience_targeting',
         required=False,
@@ -64,19 +63,19 @@ class AdGroupCustomAudiencesSerializer(restapi.serializers.base.RESTAPIBaseSeria
 
 
 class AdGroupRetargetingSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-    included = restapi.fields.NullListField(
+    included = restapi.serializers.fields.NullListField(
         child=rest_framework.serializers.IntegerField(),
         source='retargeting_ad_groups',
         required=False,
     )
-    excluded = restapi.fields.NullListField(
+    excluded = restapi.serializers.fields.NullListField(
         child=rest_framework.serializers.IntegerField(),
         source='exclusion_retargeting_ad_groups',
         required=False,
     )
 
 
-class AdGroupDaypartingSerializer(restapi.serializers.base.NoneToDictSerializerMixin,
+class AdGroupDaypartingSerializer(restapi.serializers.serializers.NoneToDictSerializerMixin,
                                   restapi.serializers.base.RESTAPIBaseSerializer):
     sunday = rest_framework.serializers.ListField(
         child=rest_framework.serializers.IntegerField(),
@@ -106,7 +105,7 @@ class AdGroupDaypartingSerializer(restapi.serializers.base.NoneToDictSerializerM
         child=rest_framework.serializers.IntegerField(),
         required=False,
     )
-    timezone = restapi.fields.NullPlainCharField(required=False, allow_blank=True)
+    timezone = restapi.serializers.fields.NullPlainCharField(required=False, allow_blank=True)
 
     def validate(self, data):
         for key, value in data.items():
@@ -156,12 +155,12 @@ class AdGroupTargetingSerializer(restapi.serializers.base.RESTAPIBaseSerializer)
 
 
 class AdGroupAutopilotSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-    state = restapi.fields.DashConstantField(
+    state = restapi.serializers.fields.DashConstantField(
         constants.AdGroupSettingsAutopilotState,
         source='autopilot_state',
         required=False,
     )
-    daily_budget = restapi.fields.TwoWayBlankDecimalField(
+    daily_budget = restapi.serializers.fields.TwoWayBlankDecimalField(
         source='local_autopilot_daily_budget',
         max_digits=10,
         decimal_places=4,
@@ -171,20 +170,20 @@ class AdGroupAutopilotSerializer(restapi.serializers.base.RESTAPIBaseSerializer)
     )
 
 
-class AdGroupSerializer(restapi.common.serializers.PermissionedFieldsMixin,
+class AdGroupSerializer(restapi.serializers.serializers.PermissionedFieldsMixin,
                         restapi.serializers.base.RESTAPIBaseSerializer):
     class Meta:
         permissioned_fields = {'click_capping_daily_ad_group_max_clicks': 'zemauth.can_set_click_capping',
                                'click_capping_daily_click_budget': 'zemauth.can_set_click_capping'}
 
-    id = restapi.fields.IdField(read_only=True, source='ad_group.id')
-    campaign_id = restapi.fields.IdField(source='ad_group.campaign.id')
-    name = restapi.fields.PlainCharField(
+    id = restapi.serializers.fields.IdField(read_only=True, source='ad_group.id')
+    campaign_id = restapi.serializers.fields.IdField(source='ad_group.campaign.id')
+    name = restapi.serializers.fields.PlainCharField(
         source='ad_group_name',
         max_length=127,
         error_messages={'required': 'Please specify ad group name.'},
     )
-    state = restapi.fields.DashConstantField(
+    state = restapi.serializers.fields.DashConstantField(
         constants.AdGroupSettingsState,
         default=constants.AdGroupSettingsState.INACTIVE,
     )
@@ -193,9 +192,9 @@ class AdGroupSerializer(restapi.common.serializers.PermissionedFieldsMixin,
         required=False,
     )
     start_date = rest_framework.serializers.DateField(required=False)
-    end_date = restapi.fields.BlankDateField(required=False, allow_null=True)
-    tracking_code = restapi.fields.NullPlainCharField(required=False, allow_blank=True)
-    max_cpc = restapi.fields.TwoWayBlankDecimalField(
+    end_date = restapi.serializers.fields.BlankDateField(required=False, allow_null=True)
+    tracking_code = restapi.serializers.fields.NullPlainCharField(required=False, allow_blank=True)
+    max_cpc = restapi.serializers.fields.TwoWayBlankDecimalField(
         source='local_cpc_cc',
         max_digits=10,
         decimal_places=4,
@@ -203,7 +202,7 @@ class AdGroupSerializer(restapi.common.serializers.PermissionedFieldsMixin,
         allow_null=True,
         required=False,
     )
-    max_cpm = restapi.fields.TwoWayBlankDecimalField(
+    max_cpm = restapi.serializers.fields.TwoWayBlankDecimalField(
         source='local_max_cpm',
         max_digits=10,
         decimal_places=4,
@@ -211,7 +210,7 @@ class AdGroupSerializer(restapi.common.serializers.PermissionedFieldsMixin,
         allow_null=True,
         required=False,
     )
-    daily_budget = restapi.fields.TwoWayBlankDecimalField(
+    daily_budget = restapi.serializers.fields.TwoWayBlankDecimalField(
         source='daily_budget_cc',
         max_digits=10,
         decimal_places=4,
@@ -219,15 +218,15 @@ class AdGroupSerializer(restapi.common.serializers.PermissionedFieldsMixin,
         allow_null=True,
         required=False,
     )
-    delivery_type = restapi.fields.DashConstantField(
+    delivery_type = restapi.serializers.fields.DashConstantField(
         constants.AdGroupDeliveryType,
         required=False,
     )
-    click_capping_daily_ad_group_max_clicks = restapi.fields.BlankIntegerField(
+    click_capping_daily_ad_group_max_clicks = restapi.serializers.fields.BlankIntegerField(
         allow_null=True,
         required=False,
     )
-    click_capping_daily_click_budget = restapi.fields.BlankDecimalField(
+    click_capping_daily_click_budget = restapi.serializers.fields.BlankDecimalField(
         max_digits=10,
         decimal_places=4,
         allow_null=True,
