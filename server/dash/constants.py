@@ -192,10 +192,12 @@ class Language(ConstantBase):
 class Currency(ConstantBase):
     USD = 'USD'
     EUR = 'EUR'
+    GBP = 'GBP'
 
     _VALUES = {
         USD: 'US Dollar',
         EUR: 'Euro',
+        GBP: 'British Pound',
     }
 
 

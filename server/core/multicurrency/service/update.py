@@ -8,7 +8,7 @@ import dash.constants
 from utils import dates_helper
 
 from ..currency_exchange_rate import CurrencyExchangeRate
-from . import eur
+from . import eur, gbp
 
 
 logger = logging.getLogger(__name__)
@@ -38,6 +38,8 @@ def update_exchange_rates(currencies=None):
 def _get_exchange_rate(currency):
     if currency == dash.constants.Currency.EUR:
         return eur.get_exchange_rate()
+    if currency == dash.constants.Currency.GBP:
+        return gbp.get_exchange_rate()
     else:
         raise MissingExchangeRateMappingException()
 

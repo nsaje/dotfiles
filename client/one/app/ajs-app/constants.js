@@ -49,6 +49,7 @@ var constants = {
     currency: {
         USD: 'USD',
         EUR: 'EUR',
+        GBP: 'GBP',
     },
     infoboxStatus: {
         ACTIVE: 'active',
@@ -1256,6 +1257,7 @@ constants.entityTypeToLevelMap[constants.entityType.AD_GROUP] = constants.level.
 constants.currencySymbol = {};
 constants.currencySymbol[constants.currency.USD] = '$';
 constants.currencySymbol[constants.currency.EUR] = '€';
+constants.currencySymbol[constants.currency.GBP] = '£';
 
 var options = {
     // used for converting options lists values into REST API flavoured constant values
@@ -2271,6 +2273,7 @@ var options = {
     currencies: [
         {name: 'US Dollar', value: constants.currency.USD},
         {name: 'Euro', value: constants.currency.EUR},
+        {name: 'British Pound', value: constants.currency.GBP},
     ],
 };
 
