@@ -55,7 +55,7 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
         settings = serializer.validated_data
         campaign = restapi.access.get_campaign(
             request.user,
-            settings.get('ad_group', {}).get('campaign', {}).get('id')
+            settings.get('ad_group', {}).get('campaign_id')
         )
 
         with transaction.atomic():
