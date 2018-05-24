@@ -177,7 +177,7 @@ class AdGroupSerializer(restapi.serializers.serializers.PermissionedFieldsMixin,
                                'click_capping_daily_click_budget': 'zemauth.can_set_click_capping'}
 
     id = restapi.serializers.fields.IdField(read_only=True, source='ad_group.id')
-    campaign_id = restapi.serializers.fields.IdField(source='ad_group.campaign.id')
+    campaign_id = restapi.serializers.fields.IdField(source='ad_group.campaign_id')
     name = restapi.serializers.fields.PlainCharField(
         source='ad_group_name',
         max_length=127,
