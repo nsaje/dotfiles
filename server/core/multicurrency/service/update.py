@@ -26,6 +26,7 @@ def update_exchange_rates(currencies=None):
         if currency == dash.constants.Currency.USD:
             continue
 
+        logger.info('Updating for currency: %s', currency)
         try:
             rate = _get_exchange_rate(currency)
         except MissingExchangeRateMappingException:
