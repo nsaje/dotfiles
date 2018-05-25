@@ -1,8 +1,10 @@
 import datetime
 
+from django.conf import settings
 from django.test import TestCase
 
 from utils import test_helper
+from utils.magic_mixer import magic_mixer
 from zemauth.models import User
 
 import dash.models
@@ -309,3 +311,71 @@ class PrepareConstraints(TestCase):
                 },
             }
         )
+
+
+class NarrowFilteredSourcesTest(TestCase):
+
+    def setUp(self):
+        self.source_credentials = magic_mixer.cycle(2).blend(dash.models.SourceCredentials)
+        self.sources = dash.models.Source.objects.all()
+
+        self.ad_group = magic_mixer.blend(dash.models.AdGroup)
+        self.ad_group_sources = magic_mixer.cycle(2).blend(
+            dash.models.AdGroupSource,
+            ad_group=self.ad_group,
+            source=(sc.source for sc in self.source_credentials),
+            source_credentials=(sc for sc in self.source_credentials),
+        )
+        magic_mixer.blend(dash.models.PublisherGroup, pk=settings.GLOBAL_BLACKLIST_ID)
+
+        self.start_date = datetime.date(2018, 5, 1)
+        self.end_date = datetime.date(2018, 6, 1)
+        self.user = magic_mixer.blend_user(is_superuser=True)
+
+    def test_prepare_all_accounts_constraints(self):
+        constraints = constraints_helper.prepare_all_accounts_constraints(
+            self.user, ['account_id'], self.start_date, self.end_date,
+            dash.models.Source.objects.all(), only_used_sources=True)
+        self.assertEqual(constraints['filtered_sources'], test_helper.QuerySetMatcher(dash.models.Source.objects.all()))
+
+        dash.models.AdGroupSource.objects.filter(source=self.sources[1]).update(ad_review_only=True)
+        constraints = constraints_helper.prepare_all_accounts_constraints(
+            self.user, ['account_id'], self.start_date, self.end_date,
+            dash.models.Source.objects.all(), only_used_sources=True)
+        self.assertEqual(constraints['filtered_sources'], test_helper.QuerySetMatcher([self.sources[0]]))
+
+    def test_prepare_account_constraints(self):
+        constraints = constraints_helper.prepare_account_constraints(
+            self.user, self.ad_group.campaign.account, ['account_id', 'campaign_id'], self.start_date, self.end_date,
+            dash.models.Source.objects.all(), only_used_sources=True)
+        self.assertEqual(constraints['filtered_sources'], test_helper.QuerySetMatcher(dash.models.Source.objects.all()))
+
+        dash.models.AdGroupSource.objects.filter(source=self.sources[1]).update(ad_review_only=True)
+        constraints = constraints_helper.prepare_account_constraints(
+            self.user, self.ad_group.campaign.account, ['account_id', 'campaign_id'], self.start_date, self.end_date,
+            dash.models.Source.objects.all(), only_used_sources=True)
+        self.assertEqual(constraints['filtered_sources'], test_helper.QuerySetMatcher([self.sources[0]]))
+
+    def test_prepare_campaign_constraints(self):
+        constraints = constraints_helper.prepare_campaign_constraints(
+            self.user, self.ad_group.campaign, ['campaign_id', 'ad_group_id'], self.start_date, self.end_date,
+            dash.models.Source.objects.all(), only_used_sources=True)
+        self.assertEqual(constraints['filtered_sources'], test_helper.QuerySetMatcher(dash.models.Source.objects.all()))
+
+        dash.models.AdGroupSource.objects.filter(source=self.sources[1]).update(ad_review_only=True)
+        constraints = constraints_helper.prepare_campaign_constraints(
+            self.user, self.ad_group.campaign, ['ad_group_id', 'content_ad_id'], self.start_date, self.end_date,
+            dash.models.Source.objects.all(), only_used_sources=True)
+        self.assertEqual(constraints['filtered_sources'], test_helper.QuerySetMatcher([self.sources[0]]))
+
+    def test_prepare_ad_group_constraints(self):
+        constraints = constraints_helper.prepare_ad_group_constraints(
+            self.user, self.ad_group, ['ad_group_id', 'content_ad_id'], self.start_date, self.end_date,
+            dash.models.Source.objects.all(), only_used_sources=True)
+        self.assertEqual(constraints['filtered_sources'], test_helper.QuerySetMatcher(dash.models.Source.objects.all()))
+
+        dash.models.AdGroupSource.objects.filter(source=self.sources[1]).update(ad_review_only=True)
+        constraints = constraints_helper.prepare_ad_group_constraints(
+            self.user, self.ad_group, ['ad_group_id', 'content_ad_id'], self.start_date, self.end_date,
+            dash.models.Source.objects.all(), only_used_sources=True)
+        self.assertEqual(constraints['filtered_sources'], test_helper.QuerySetMatcher([self.sources[0]]))

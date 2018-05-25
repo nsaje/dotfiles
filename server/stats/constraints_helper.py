@@ -10,6 +10,7 @@ import dash.constants
 
 
 def narrow_filtered_sources(sources, ad_group_sources):
+    ad_group_sources = ad_group_sources.exclude(ad_review_only=True)
     sources = sources.filter(
         pk__in=list(ad_group_sources.distinct('source_id').values_list('source_id', flat=True)))
     return simplify_query(sources)

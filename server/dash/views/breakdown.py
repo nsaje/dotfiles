@@ -375,7 +375,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
 
         constraints = stats.constraints_helper.prepare_ad_group_constraints(
             request.user, ad_group, breakdown,
-            only_used_sources=target_dim == 'source_id',
+            only_used_sources=True,
             **get_constraints_kwargs(form.cleaned_data))
         currency = stats.helpers.get_report_currency(request.user, [constraints['account']])
         goals = stats.api_breakdowns.get_goals(constraints, breakdown)
