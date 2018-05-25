@@ -174,6 +174,7 @@ class AdGroupSource(models.Model):
     blockers = jsonfield.JSONField(blank=True, default={})
 
     settings = models.OneToOneField('AdGroupSourceSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_entity')
+    ad_review_only = models.NullBooleanField(default=None)
 
     objects = AdGroupSourceManager()
 
