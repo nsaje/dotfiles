@@ -149,7 +149,7 @@ class NavigationTreeView(api_common.BaseApiView):
                 ad_group,
                 ad_group_settings,
                 map_campaign_settings.get(ad_group['campaign_id']),
-                map_campaignstop_states[ad_group['campaign_id']],
+                map_campaignstop_states.get(ad_group['campaign_id']),
                 real_time_campaign_stop=ad_group['campaign__real_time_campaign_stop'],
                 with_settings=load_settings,
             )
@@ -165,12 +165,14 @@ class NavigationTreeView(api_common.BaseApiView):
             .order_by('name')
 
         map_campaigns_settings = {}
+        map_campaignstop_states = {}
         if load_settings:
             campaigns_settings = models.CampaignSettings.objects.filter(
                 campaign__in=campaigns).group_current_settings()
             map_campaigns_settings = {cs.campaign_id: cs for cs in campaigns_settings}
 
-        map_campaignstop_states = automation.campaignstop.get_campaignstop_states(campaigns)
+            map_campaignstop_states = automation.campaignstop.get_campaignstop_states(campaigns)
+
         return campaigns, map_campaigns_settings, map_campaignstop_states
 
     def _load_campaigns_data(self, ad_groups_data,
