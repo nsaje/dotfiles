@@ -151,6 +151,7 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
                         if (validationPromise !== state.requests.validate.promise) {
                             return; // There's a more recent request
                         }
+                        state.fieldsErrors = {};
                         angular.forEach(fields, function (value, name) {
                             state.fieldsErrors[name] = null;
                         });
