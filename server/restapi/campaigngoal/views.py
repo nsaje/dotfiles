@@ -98,19 +98,19 @@ class CampaignGoalViewSet(RESTAPIBaseViewSet):
                 )
 
             except core.goals.conversion_goal.exceptions.ConversionGoalLimitExceeded as err:
-                raise utils.exc.ValidationError({'conversionGoal': str(err)})
+                raise utils.exc.ValidationError(errors={'conversionGoal': [str(err)]})
 
             except core.goals.conversion_goal.exceptions.ConversionWindowRequired as err:
-                raise utils.exc.ValidationError({'conversionGoal': {'conversionWindow': str(err)}})
+                raise utils.exc.ValidationError(errors={'conversionGoal': {'conversionWindow': [str(err)]}})
 
             except core.goals.conversion_goal.exceptions.ConversionPixelInvalid as err:
-                raise utils.exc.ValidationError({'conversionGoal': {'goalId': str(err)}})
+                raise utils.exc.ValidationError(errors={'conversionGoal': {'goalId': [str(err)]}})
 
             except core.goals.conversion_goal.exceptions.ConversionGoalNotUnique as err:
-                raise utils.exc.ValidationError({'conversionGoal': str(err)})
+                raise utils.exc.ValidationError(errors={'conversionGoal': [str(err)]})
 
             except core.goals.conversion_goal.exceptions.GoalIDInvalid as err:
-                raise utils.exc.ValidationError({'conversionGoal': {'goalId': str(err)}})
+                raise utils.exc.ValidationError(errors={'conversionGoal': {'goalId': [str(err)]}})
 
         try:
             new_goal = core.goals.CampaignGoal.objects.create(
@@ -126,6 +126,6 @@ class CampaignGoalViewSet(RESTAPIBaseViewSet):
             raise utils.exc.ValidationError(str(err))
 
         except core.goals.campaign_goal.exceptions.MultipleSameTypeGoals as err:
-            raise utils.exc.ValidationError({'type': str(err)})
+            raise utils.exc.ValidationError(errors={'type': [str(err)]})
 
         return new_goal

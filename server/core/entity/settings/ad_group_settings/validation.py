@@ -9,8 +9,9 @@ import dash.features.bluekai
 
 import utils.validation_helper
 import utils.dates_helper
-
 import utils.exc
+
+import core.entity.settings.ad_group_source_settings.validation_helpers
 
 
 # should inherit from core.common.BaseValidator so that full_clean is called on save,
@@ -30,6 +31,8 @@ class AdGroupSettingsValidatorMixin(object):
         self._validate_all_rtb_state(new_settings)
         self._validate_yahoo_desktop_targeting(new_settings)
         self._validate_bluekai_targeting_change(new_settings)
+        self._validate_b1_sources_group_cpc_cc(new_settings)
+        self._validate_b1_sources_group_daily_budget(new_settings)
 
     def _get_currency_symbol(self):
         currency = self.ad_group.campaign.account.currency
@@ -208,3 +211,23 @@ class AdGroupSettingsValidatorMixin(object):
             if min_cpc and curr_ags_settings.cpc_cc < min_cpc:
                 msg = 'CPC on Yahoo is too low for desktop-only targeting. Please set it to at least $0.25.'
                 raise exceptions.YahooDesktopCPCTooLow(msg)
+
+    def _validate_b1_sources_group_cpc_cc(self, new_settings):
+        if self.local_b1_sources_group_cpc_cc == new_settings.local_b1_sources_group_cpc_cc:
+            return
+        assert isinstance(new_settings.local_b1_sources_group_cpc_cc, decimal.Decimal)
+        core.entity.settings.ad_group_source_settings.validation_helpers.validate_b1_sources_group_cpc_cc(
+            new_settings.local_b1_sources_group_cpc_cc,
+            self,
+            self.ad_group.campaign.get_bcm_modifiers(),
+        )
+
+    def _validate_b1_sources_group_daily_budget(self, new_settings):
+        if self.local_b1_sources_group_daily_budget == new_settings.local_b1_sources_group_daily_budget:
+            return
+        assert isinstance(new_settings.local_b1_sources_group_daily_budget, decimal.Decimal)
+        core.entity.settings.ad_group_source_settings.validation_helpers.validate_b1_sources_group_daily_budget(
+            new_settings.local_b1_sources_group_daily_budget,
+            self,
+            self.ad_group.campaign.get_bcm_modifiers(),
+        )

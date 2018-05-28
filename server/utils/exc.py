@@ -78,6 +78,12 @@ class MultipleValidationError(ValidationError):
     pass
 
 
+class MulticurrencyValidationError(ValidationError):
+    '''
+    Holds default error message, and {'source_name': source_name, 'value': dollar_value} dict in data.
+    '''
+
+
 custom_errors = (
     AuthError,
     AuthorizationError,

@@ -31,10 +31,10 @@ class AdGroupSourcesRTBViewSet(RESTAPIBaseViewSet):
             ad_group.settings.update(request, **settings)
 
         except exceptions.AdGroupNotPaused as err:
-            raise utils.exc.ValidationError({'group_enabled': str(err)})
+            raise utils.exc.ValidationError(errors={'group_enabled': [str(err)]})
 
         except exceptions.DailyBudgetAutopilotNotDisabled as err:
-            raise utils.exc.ValidationError({'daily_budget': str(err)})
+            raise utils.exc.ValidationError(errors={'daily_budget': [str(err)]})
 
         except exceptions.CPCAutopilotNotDisabled as err:
-            raise utils.exc.ValidationError({'daily_budget': str(err)})
+            raise utils.exc.ValidationError(errors={'daily_budget': [str(err)]})

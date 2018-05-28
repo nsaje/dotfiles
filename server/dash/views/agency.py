@@ -32,10 +32,13 @@ from utils import dates_helper
 from utils import db_for_reads
 
 import utils.exc
+
 import core.entity.settings.campaign_settings.exceptions
 import core.entity.settings.ad_group_settings.exceptions
-import core.goals.conversion_goal.exceptions
+import core.entity.settings.ad_group_source_settings.exceptions
 import core.goals.campaign_goal.exceptions
+import core.goals.conversion_goal.exceptions
+import core.multicurrency
 
 from zemauth.models import User as ZemUser
 
@@ -95,20 +98,29 @@ class AdGroupSettings(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
         resource = json.loads(request.body)
-
         form = forms.AdGroupSettingsForm(ad_group, request.user, resource.get('settings', {}))
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
         for field in ad_group.settings.multicurrency_fields:
             form.cleaned_data['local_{}'.format(field)] = form.cleaned_data.pop(field, None)
-
         form_data = native_server.transform_ad_group_settings(ad_group, form.cleaned_data)
 
+        self._update_adgroup(request, ad_group, form_data)
+
+        response = {
+            'settings': self.get_dict(request, ad_group.settings, ad_group),
+            'default_settings': self.get_default_settings_dict(ad_group),
+            'action_is_waiting': False,
+            'archived': ad_group.settings.archived,
+        }
+
+        return self.create_api_response(response)
+
+    def _update_adgroup(self, request, ad_group, data):
         try:
-            ad_group.settings.update(request, **form_data)
+            ad_group.settings.update(request, **data)
 
         except utils.exc.MultipleValidationError as err:
             errors = {}
@@ -134,49 +146,96 @@ class AdGroupSettings(api_common.BaseApiView):
                 elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.TrackingCodeInvalid):
                     errors.setdefault('tracking_code', []).append(str(e))
 
-            raise utils.exc.ValidationError(errors)
+            raise utils.exc.ValidationError(errors=errors)
 
         except core.entity.settings.ad_group_settings.exceptions.CannotChangeAdGroupState as err:
-            raise utils.exc.ValidationError({'state': [str(err)]})
+            raise utils.exc.ValidationError(errors={'state': [str(err)]})
 
         except core.entity.settings.ad_group_settings.exceptions.AutopilotB1SourcesNotEnabled as err:
-            raise utils.exc.ValidationError({'autopilot_state': [str(err)]})
+            raise utils.exc.ValidationError(errors={'autopilot_state': [str(err)]})
 
         except core.entity.settings.ad_group_settings.exceptions.DailyBudgetAutopilotNotDisabled as err:
-            raise utils.exc.ValidationError({'b1_sources_group_daily_budget': [str(err)]})
+            raise utils.exc.ValidationError(errors={'b1_sources_group_daily_budget': [str(err)]})
 
         except core.entity.settings.ad_group_settings.exceptions.CPCAutopilotNotDisabled as err:
-            raise utils.exc.ValidationError({'b1_sources_group_daily_budget': [str(err)]})
+            raise utils.exc.ValidationError(errors={'b1_sources_group_daily_budget': [str(err)]})
 
         except core.entity.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooLow as err:
-            raise utils.exc.ValidationError({'autopilot_daily_budget': [str(err)]})
+            raise utils.exc.ValidationError(errors={'autopilot_daily_budget': [str(err)]})
 
         except core.entity.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooHigh as err:
-            raise utils.exc.ValidationError({'autopilot_daily_budget': [str(err)]})
+            raise utils.exc.ValidationError(errors={'autopilot_daily_budget': [str(err)]})
 
         except core.entity.settings.ad_group_settings.exceptions.AdGroupNotPaused as err:
-            raise utils.exc.ValidationError({'b1_sources_group_enabled': [str(err)]})
+            raise utils.exc.ValidationError(errors={'b1_sources_group_enabled': [str(err)]})
 
         except core.entity.settings.ad_group_settings.exceptions.B1DailyBudgetTooHigh as err:
-            raise utils.exc.ValidationError({'daily_budget_cc': [str(err)]})
+            raise utils.exc.ValidationError(errors={'daily_budget_cc': [str(err)]})
 
         except core.entity.settings.ad_group_settings.exceptions.CantEnableB1SourcesGroup as err:
-            raise utils.exc.ValidationError({'state': [str(err)]})
+            raise utils.exc.ValidationError(errors={'state': [str(err)]})
 
         except core.entity.settings.ad_group_settings.exceptions.BluekaiCategoryInvalid as err:
             raise utils.exc.ValidationError(str(err))
 
         except core.entity.settings.ad_group_settings.exceptions.YahooDesktopCPCTooLow as err:
-            raise utils.exc.ValidationError({'target_devices': [str(err)]})
+            raise utils.exc.ValidationError(errors={'target_devices': [str(err)]})
 
-        response = {
-            'settings': self.get_dict(request, ad_group.settings, ad_group),
-            'default_settings': self.get_default_settings_dict(ad_group),
-            'action_is_waiting': False,
-            'archived': ad_group.settings.archived,
-        }
+        except core.entity.settings.ad_group_source_settings.exceptions.RTBSourcesCPCNegative as err:
+            raise utils.exc.ValidationError(errors={'b1_sources_group_cpc_cc': [str(err)]})
 
-        return self.create_api_response(response)
+        except core.entity.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:
+            raise exc.ValidationError(errors={
+                'b1_sources_group_cpc_cc': ['CPC on {} cannot exceed {} decimal place{}.'.format(
+                    err.data.get('source_name'),
+                    err.data.get('value'),
+                    's' if err.data.get('value') != 1 else '',
+                )]
+            })
+
+        except core.entity.settings.ad_group_source_settings.exceptions.MinimalCPCTooLow as err:
+            raise exc.ValidationError(errors={
+                'b1_sources_group_cpc_cc': ['Minimum CPC on {} is {}.'.format(
+                    err.data.get('source_name'),
+                    core.multicurrency.format_value_in_currency(
+                        err.data.get('value'), 2, ad_group.settings.get_currency(),
+                    ),
+                )]
+            })
+
+        except core.entity.settings.ad_group_source_settings.exceptions.MaximalCPCTooHigh as err:
+            raise exc.ValidationError(errors={
+                'b1_sources_group_cpc_cc': ['Maximum CPC on {} is {}.'.format(
+                    err.data.get('source_name'),
+                    core.multicurrency.format_value_in_currency(
+                        err.data.get('value'), 2, ad_group.settings.get_currency(),
+                    ),
+                )]
+            })
+
+        except core.entity.settings.ad_group_source_settings.exceptions.DailyBudgetNegative as err:
+            raise utils.exc.ValidationError(errors={'b1_sources_group_daily_budget': [str(err)]})
+
+        except core.entity.settings.ad_group_source_settings.exceptions.MinimalDailyBudgetTooLow as err:
+            raise exc.ValidationError(errors={
+                'b1_sources_group_daily_budget': ['Please provide daily spend cap of at least {}.'.format(
+                    core.multicurrency.format_value_in_currency(
+                        err.data.get('value'), 0, ad_group.settings.get_currency(),
+                    ),
+                )]
+            })
+
+        except core.entity.settings.ad_group_source_settings.exceptions.MaximalDailyBudgetTooHigh as err:
+            raise exc.ValidationError(errors={
+                'b1_sources_group_daily_budget': [
+                    'Maximum allowed daily spend cap is {}. '
+                    'If you want use a higher daily spend cap, please contact support.'.format(
+                        core.multicurrency.format_value_in_currency(
+                            err.data.get('value'), 0, ad_group.settings.get_currency(),
+                        ),
+                    )
+                ]
+            })
 
     def _supports_max_cpm(self, ad_group_sources):
         unsupported_sources = []
@@ -367,7 +426,11 @@ class AdGroupSettingsState(api_common.BaseApiView):
         campaign_settings = ad_group.campaign.get_current_settings()
         helpers.validate_ad_groups_state([ad_group], ad_group.campaign, campaign_settings, new_state)
 
-        ad_group.settings.update(request, state=new_state)
+        try:
+            ad_group.settings.update(request, state=new_state)
+
+        except core.entity.settings.ad_group_settings.exceptions.CannotChangeAdGroupState as err:
+            raise utils.exc.ValidationError(error={'state': [str(err)]})
 
         return self.create_api_response({
             'id': str(ad_group.pk),
@@ -534,16 +597,16 @@ class CampaignSettings(api_common.BaseApiView):
                         raise utils.exc.ValidationError(str(err))
 
                     except core.goals.conversion_goal.exceptions.ConversionWindowRequired as err:
-                        raise utils.exc.ValidationError(str(err))
+                        raise utils.exc.ValidationError(errors={'conversion_window': [str(err)]})
 
                     except core.goals.conversion_goal.exceptions.ConversionPixelInvalid as err:
-                        raise utils.exc.ValidationError(message=str(err))
+                        raise utils.exc.ValidationError(errors={'goal_id': [str(err)]})
 
                     except core.goals.conversion_goal.exceptions.ConversionGoalNotUnique as err:
                         raise utils.exc.ValidationError(str(err))
 
                     except core.goals.conversion_goal.exceptions.GoalIDInvalid as err:
-                        raise utils.exc.ValidationError({'goal_id': str(err)})
+                        raise utils.exc.ValidationError(errors={'goal_id': [str(err)]})
 
                 else:
                     goal_form = forms.CampaignGoalForm(goal, campaign_id=campaign.pk)

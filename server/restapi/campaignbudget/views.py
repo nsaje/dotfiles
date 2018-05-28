@@ -153,21 +153,21 @@ class CampaignBudgetViewSet(RESTAPIBaseViewSet):
                 elif isinstance(e, exceptions.OverlappingBudgetMarginInvalid):
                     errors.setdefault('margin', []).append(str(e))
 
-            raise utils.exc.ValidationError(errors)
+            raise utils.exc.ValidationError(errors=errors)
 
         except exceptions.CanNotChangeStartDate as err:
-            raise utils.exc.ValidationError({'start_date': [str(err)]})
+            raise utils.exc.ValidationError(errors={'start_date': [str(err)]})
 
         except exceptions.CanNotChangeBudget as err:
             raise utils.exc.ValidationError(str(err))
 
         except exceptions.CreditCanceled as err:
-            raise utils.exc.ValidationError({'credit_id': [str(err)]})
+            raise utils.exc.ValidationError(errors={'credit_id': [str(err)]})
 
         except exceptions.StartDateInThePast as err:
-            raise utils.exc.ValidationError({'start_date': [str(err)]})
+            raise utils.exc.ValidationError(errors={'start_date': [str(err)]})
 
         except exceptions.EndDateInThePast as err:
-            raise utils.exc.ValidationError({'end_date': [str(err)]})
+            raise utils.exc.ValidationError(errors={'end_date': [str(err)]})
 
         return new_budget

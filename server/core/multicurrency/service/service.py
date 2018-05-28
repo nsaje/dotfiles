@@ -1,6 +1,7 @@
-import decimal
+from decimal import Decimal
 
 import dash.constants
+import utils.lc_helper
 import utils.dates_helper
 
 from ..constants import CurrencySymbol
@@ -13,7 +14,7 @@ def get_current_exchange_rate(currency):
 
 def get_exchange_rate(date, currency):
     if currency == dash.constants.Currency.USD:
-        return decimal.Decimal('1.0000')
+        return Decimal('1.0000')
     exchange_rate = CurrencyExchangeRate.objects.filter(
         date__lte=date, currency=currency
     ).latest('date')
@@ -22,3 +23,11 @@ def get_exchange_rate(date, currency):
 
 def get_currency_symbol(currency):
     return CurrencySymbol.get(currency)
+
+
+def format_value_in_currency(value, places, currency):
+    return utils.lc_helper.format_currency(
+        Decimal(value) * get_current_exchange_rate(currency),
+        places=places,
+        curr=get_currency_symbol(currency)
+    )

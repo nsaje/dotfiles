@@ -100,22 +100,22 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
                 elif isinstance(e, exceptions.TrackingCodeInvalid):
                     errors.setdefault('tracking_code', []).append(str(e))
 
-            raise utils.exc.ValidationError(errors)
+            raise utils.exc.ValidationError(errors=errors)
 
         except exceptions.CannotChangeAdGroupState as err:
-            raise utils.exc.ValidationError({'state': [str(err)]})
+            raise utils.exc.ValidationError(errors={'state': [str(err)]})
 
         except exceptions.AutopilotB1SourcesNotEnabled as err:
-            raise utils.exc.ValidationError({'autopilot': {'state': [str(err)]}})
+            raise utils.exc.ValidationError(errors={'autopilot': {'state': [str(err)]}})
 
         except exceptions.AutopilotDailyBudgetTooLow as err:
-            raise utils.exc.ValidationError({'autopilot': {'daily_budget': [str(err)]}})
+            raise utils.exc.ValidationError(errors={'autopilot': {'daily_budget': [str(err)]}})
 
         except exceptions.AutopilotDailyBudgetTooHigh as err:
-            raise utils.exc.ValidationError({'autopilot': {'daily_budget': [str(err)]}})
+            raise utils.exc.ValidationError(errors={'autopilot': {'daily_budget': [str(err)]}})
 
         except exceptions.BluekaiCategoryInvalid as err:
-            raise utils.exc.ValidationError({'targeting': {'audience': [str(err)]}})
+            raise utils.exc.ValidationError(errors={'targeting': {'audience': [str(err)]}})
 
         except exceptions.YahooDesktopCPCTooLow as err:
-            raise utils.exc.ValidationError({'targeting': {'devices': [str(err)]}})
+            raise utils.exc.ValidationError(errors={'targeting': {'devices': [str(err)]}})

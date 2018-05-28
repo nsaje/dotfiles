@@ -1,9 +1,16 @@
 from restapi.common.views_base import RESTAPIBaseViewSet
+import restapi.access
+
 from django.db import transaction
 
-import core
-import restapi.access
+import core.entity.adgroup.ad_group_source
+from core.entity.settings.ad_group_source_settings import exceptions
+
 import utils.exc
+import utils.lc_helper
+import utils.string_helper
+
+import core.multicurrency
 
 from . import serializers
 
@@ -44,7 +51,7 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
                 if not ad_group_source:
                     raise utils.exc.ValidationError("Source %s not present on ad group!" % source.name)
                 item.pop('ad_group_source')
-                ad_group_source.settings.update(request, k1_sync=True, **item)
+                self._update_ad_group_source(request, ad_group_source, item)
 
         return self.list(request, ad_group.id)
 
@@ -65,3 +72,81 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
 
         serializer = serializers.AdGroupSourceSerializer(ad_group_source.get_current_settings())
         return self.response_ok(serializer.data)
+
+    def _update_ad_group_source(self, request, ad_group_source, data):
+        try:
+            ad_group_source.settings.update(request, k1_sync=True, **data)
+
+        except exceptions.DailyBudgetNegative as err:
+            raise utils.exc.ValidationError(errors={'daily_budget': [str(err)]})
+
+        except exceptions.MinimalDailyBudgetTooLow as err:
+            raise utils.exc.ValidationError(errors={
+                'daily_budget': ['Please provide daily spend cap of at least {}.'.format(
+                    core.multicurrency.format_value_in_currency(
+                        err.data.get('value'), 0, ad_group_source.settings.get_currency(),
+                    ),
+                )]
+            })
+
+        except exceptions.MaximalDailyBudgetTooHigh as err:
+            raise utils.exc.ValidationError(errors={
+                'daily_budget': [
+                    'Maximum allowed daily spend cap is {}. '
+                    'If you want use a higher daily spend cap, please contact support.'.format(
+                        core.multicurrency.format_value_in_currency(
+                            err.data.get('value'), 0, ad_group_source.settings.get_currency(),
+                        ),
+                    )
+                ]
+            })
+
+        except exceptions.CPCNegative as err:
+            raise utils.exc.ValidationError(errors={'cpc': [str(err)]})
+
+        except exceptions.CPCPrecisionExceeded as err:
+            raise utils.exc.ValidationError(errors={
+                'cpc': ['CPC on {} cannot exceed {} decimal place{}.'.format(
+                    err.data.get('source_name'),
+                    err.data.get('value'),
+                    's' if err.data.get('value') != 1 else '',
+                )]
+            })
+
+        except exceptions.MinimalCPCTooLow as err:
+            raise utils.exc.ValidationError(errors={
+                'cpc': ['Minimum CPC on {} is {}.'.format(
+                    err.data.get('source_name'),
+                    core.multicurrency.format_value_in_currency(
+                        err.data.get('value'), 2, ad_group_source.settings.get_currency(),
+                    ),
+                )]
+            })
+
+        except exceptions.MaximalCPCTooHigh as err:
+            raise utils.exc.ValidationError(errors={
+                'cpc': ['Maximum CPC on {} is {}.'.format(
+                    err.data.get('source_name'),
+                    core.multicurrency.format_value_in_currency(
+                        err.data.get('value'), 2, ad_group_source.settings.get_currency(),
+                    ),
+                )]
+            })
+
+        except exceptions.RTBSourcesCPCNegative as err:
+            raise utils.exc.ValidationError(errors={'cpc': [str(err)]})
+
+        except exceptions.CPCInvalid as err:
+            raise utils.exc.ValidationError(errors={'cpc': [str(err)]})
+
+        except exceptions.RetargetingNotSupported as err:
+            raise utils.exc.ValidationError(errors={'state': [str(err)]})
+
+        except exceptions.MediaSourceNotConnectedToFacebook as err:
+            raise utils.exc.ValidationError(errors={'state': [str(err)]})
+
+        except exceptions.YahooCPCTooLow as err:
+            raise utils.exc.ValidationError(errors={'state': [str(err)]})
+
+        except exceptions.AutopilotDailySpendCapTooLow as err:
+            raise utils.exc.ValidationError(errors={'state': [str(err)]})

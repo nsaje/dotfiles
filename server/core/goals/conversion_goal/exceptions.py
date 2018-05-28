@@ -1,4 +1,4 @@
-from rest_framework.serializers import ValidationError
+from utils.exc import ValidationError
 
 
 class ConversionGoalLimitExceeded(ValidationError):

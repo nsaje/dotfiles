@@ -1,15 +1,13 @@
 from decimal import Decimal
 
-from django import forms
-
 from core import source
 
-import utils.string_helper
+from . import exceptions
 
 
 def validate_daily_budget_cc(daily_budget_cc, source_type, bcm_modifiers=None):
     if daily_budget_cc < 0:
-        raise forms.ValidationError('This value must be positive')
+        raise exceptions.DailyBudgetNegative('Daily budget must be positive.')
 
     min_daily_budget = source_type.get_etfm_min_daily_budget(bcm_modifiers)
     _validate_min_daily_budget(daily_budget_cc, min_daily_budget)
@@ -20,7 +18,7 @@ def validate_daily_budget_cc(daily_budget_cc, source_type, bcm_modifiers=None):
 
 def validate_source_cpc_cc(cpc_cc, source, source_type, bcm_modifiers=None):
     if cpc_cc < 0:
-        raise forms.ValidationError('This value must be positive')
+        raise exceptions.CPCNegative('CPC must be positive.')
 
     decimal_places = source_type.cpc_decimal_places
     _validate_cpc_decimal_places(cpc_cc, decimal_places, source.name)
@@ -50,7 +48,7 @@ def validate_b1_sources_group_cpc_cc(cpc_cc, ad_group_settings, bcm_modifiers=No
         return
 
     if cpc_cc < 0:
-        raise forms.ValidationError('RTB Sources\' bid CPC must be positive')
+        raise exceptions.RTBSourcesCPCNegative('RTB Sources\' bid CPC must be positive.')
 
     validate_source_cpc_cc(cpc_cc, source.AllRTBSource, source.AllRTBSourceType, bcm_modifiers)
 
@@ -67,11 +65,10 @@ def validate_b1_sources_group_daily_budget(daily_budget, ad_group_settings, bcm_
 
 def _validate_cpc_decimal_places(cpc_cc, decimal_places, source_name):
     if decimal_places is not None and _has_too_many_decimal_places(cpc_cc, decimal_places):
-        raise forms.ValidationError(
-            'CPC on {} cannot exceed {} decimal place{}.'.format(
-                source_name,
-                decimal_places,
-                's' if decimal_places != 1 else ''))
+        raise exceptions.CPCPrecisionExceeded(
+            'CPC precision exceeded.',
+            data={'source_name': source_name, 'value': decimal_places}
+        )
 
 
 def _has_too_many_decimal_places(num, decimal_places):
@@ -79,40 +76,33 @@ def _has_too_many_decimal_places(num, decimal_places):
     return rounded_num != num
 
 
-# TODO (multicurrency): Add dynamic currency sign
-def _validate_min_cpc(cpc_cc, min_cpc, name):
+def _validate_min_cpc(cpc_cc, min_cpc, source_name):
     if min_cpc is not None and cpc_cc < min_cpc:
-        raise forms.ValidationError(
-            'Minimum CPC on {} is ${}.'.format(
-                name,
-                utils.string_helper.format_decimal(min_cpc, 2, 3)
-            )
+        raise exceptions.MinimalCPCTooLow(
+            'Minimum CPC is too low.',
+            data={'source_name': source_name, 'value': min_cpc}
         )
 
 
-# TODO (multicurrency): Add dynamic currency sign
-def _validate_max_cpc(cpc_cc, max_cpc, name):
+def _validate_max_cpc(cpc_cc, max_cpc, source_name):
     if max_cpc is not None and cpc_cc > max_cpc:
-        raise forms.ValidationError(
-            'Maximum CPC on {} is ${}.'.format(
-                name,
-                utils.string_helper.format_decimal(max_cpc, 2, 3)
-            )
+        raise exceptions.MaximalCPCTooHigh(
+            'Maximum CPC too high.',
+            data={'source_name': source_name, 'value': max_cpc}
         )
 
 
-# TODO (multicurrency): Add dynamic currency sign
 def _validate_min_daily_budget(daily_budget, min_daily_budget):
     if min_daily_budget is not None and daily_budget < min_daily_budget:
-        raise forms.ValidationError(
-            'Please provide daily spend cap of at least ${}.'.format(
-                utils.string_helper.format_decimal(min_daily_budget, 0, 0)))
+        raise exceptions.MinimalDailyBudgetTooLow(
+            'Daily spend cap too low.',
+            data={'value': min_daily_budget},
+        )
 
 
-# TODO (multicurrency): Add dynamic currency sign
 def _validate_max_daily_budget(daily_budget, max_daily_budget):
     if max_daily_budget is not None and daily_budget > max_daily_budget:
-        raise forms.ValidationError(
-            'Maximum allowed daily spend cap is ${}. '
-            'If you want use a higher daily spend cap, please contact support.'.format(
-                utils.string_helper.format_decimal(max_daily_budget, 0, 0)))
+        raise exceptions.MaximalDailyBudgetTooHigh(
+            'Daily spend cap too high.',
+            data={'value': max_daily_budget},
+        )

@@ -22,7 +22,6 @@ import core.multicurrency
 from dash import constants
 from dash import fields
 from dash import models
-from dash import validation_helpers
 from dash.views import helpers
 from dash.features.custom_flags.forms import CustomFlagsFormMixin
 from utils import dates_helper
@@ -539,24 +538,6 @@ class B1SourcesGroupSettingsForm(forms.Form):
         self.ad_group_settings = ad_group_settings
         self.bcm_modifiers = self.ad_group_settings.ad_group.campaign.get_bcm_modifiers()
         super(B1SourcesGroupSettingsForm, self).__init__(*args, **kwargs)
-
-    def clean_b1_sources_group_cpc_cc(self):
-        cpc_cc = self.cleaned_data.get('b1_sources_group_cpc_cc')
-        if cpc_cc is None:
-            return cpc_cc
-
-        validation_helpers.validate_b1_sources_group_cpc_cc(
-            cpc_cc, self.ad_group_settings, self.bcm_modifiers)
-        return cpc_cc
-
-    def clean_b1_sources_group_daily_budget(self):
-        daily_budget_cc = self.cleaned_data.get('b1_sources_group_daily_budget_cc')
-        if daily_budget_cc is None:
-            return daily_budget_cc
-
-        validation_helpers.validate_b1_sources_group_daily_budget_cc(
-            daily_budget_cc, self.ad_group_settings, self.bcm_modifiers)
-        return daily_budget_cc
 
 
 class AdGroupSourceSettingsForm(forms.Form):

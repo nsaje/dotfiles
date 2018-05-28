@@ -19,14 +19,7 @@ class CampaignViewSet(RESTAPIBaseViewSet):
         campaign = restapi.access.get_campaign(request.user, campaign_id)
         serializer = serializers.CampaignSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        settings_updates = serializer.validated_data
-        if settings_updates:
-            try:
-                campaign.settings.update(request, **settings_updates)
-            except core.entity.settings.campaign_settings.exceptions.CannotChangeLanguage as err:
-                raise utils.exc.ValidationError(errors={
-                    'language': str(err)
-                })
+        self._update_campaign(request, campaign, serializer.validated_data)
         return self.response_ok(serializers.CampaignSerializer(campaign.settings).data)
 
     def list(self, request):
@@ -58,3 +51,11 @@ class CampaignViewSet(RESTAPIBaseViewSet):
             new_campaign.settings.update(request, **settings)
 
         return self.response_ok(serializers.CampaignSerializer(new_campaign.settings).data, status=201)
+
+    def _update_campaign(self, request, campaign, data):
+        try:
+            campaign.settings.update(request, **data)
+        except core.entity.settings.campaign_settings.exceptions.CannotChangeLanguage as err:
+            raise utils.exc.ValidationError(errors={
+                'language': str(err)
+            })

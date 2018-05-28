@@ -6,7 +6,8 @@ import core.entity
 import core.source
 import dash.constants
 from utils.magic_mixer import magic_mixer
-from utils import dates_helper, exc
+from utils import dates_helper
+from core.entity.settings.ad_group_source_settings import exceptions
 
 
 class ValidateAdGroupSourceUpdatesTestCase(TestCase):
@@ -57,20 +58,18 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
 
         updates = {}
         updates['cpc_cc'] = decimal.Decimal('0.05')
-        with self.assertRaises(exc.ValidationError) as cm:
+        with self.assertRaises(exceptions.MinimalCPCTooLow) as cm:
             ad_group_source.settings.update(None, **updates)
 
         exception = cm.exception
-        self.assertEqual(1, len(exception.errors['cpc_cc']))
-        self.assertTrue('$0.051' in exception.errors['cpc_cc'][0])
+        self.assertEqual(decimal.Decimal('0.051'), exception.data['value'])
 
         updates['cpc_cc'] = decimal.Decimal('8.404')
-        with self.assertRaises(exc.ValidationError) as cm:
+        with self.assertRaises(exceptions.MaximalCPCTooHigh) as cm:
             ad_group_source.settings.update(None, **updates)
 
         exception = cm.exception
-        self.assertEqual(1, len(exception.errors['cpc_cc']))
-        self.assertTrue('$8.403' in exception.errors['cpc_cc'][0])
+        self.assertEqual(decimal.Decimal('8.403'), exception.data['value'])
 
         updates['cpc_cc'] = decimal.Decimal('5')
         ad_group_source.settings.update(None, **updates)
@@ -87,20 +86,18 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
 
         updates = {}
         updates['daily_budget_cc'] = decimal.Decimal('0.5')
-        with self.assertRaises(exc.ValidationError) as cm:
+        with self.assertRaises(exceptions.MinimalDailyBudgetTooLow) as cm:
             ad_group_source.settings.update(None, **updates)
 
         exception = cm.exception
-        self.assertEqual(1, len(exception.errors['daily_budget_cc']))
-        self.assertTrue('$17' in exception.errors['daily_budget_cc'][0])
+        self.assertTrue(decimal.Decimal('17'), exception.data)
 
         updates['daily_budget_cc'] = decimal.Decimal('99999')
-        with self.assertRaises(exc.ValidationError) as cm:
+        with self.assertRaises(exceptions.MaximalDailyBudgetTooHigh) as cm:
             ad_group_source.settings.update(None, **updates)
 
         exception = cm.exception
-        self.assertEqual(1, len(exception.errors['daily_budget_cc']))
-        self.assertTrue('$16806' in exception.errors['daily_budget_cc'][0])
+        self.assertTrue(decimal.Decimal('16806'), exception.data)
 
         updates['daily_budget_cc'] = decimal.Decimal('100')
         ad_group_source.settings.update(None, **updates)

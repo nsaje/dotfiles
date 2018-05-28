@@ -1,14 +1,14 @@
 import decimal
-
 import django.forms
 
-from dash import constants, retargeting_helper, validation_helpers, cpc_constraints
-import utils.exc
+from dash import constants, retargeting_helper, cpc_constraints
+
+from . import validation_helpers
+from . import exceptions
 
 
 class AdGroupSourceSettingsValidatorMixin(object):
 
-    # TODO (multicurrency): Modify validation to work with multiple currencies
     def clean(self, new_settings):
         bcm_modifiers = self.ad_group_source.ad_group.campaign.get_bcm_modifiers()
         self._validate_ad_group_source_cpc(new_settings, bcm_modifiers)
@@ -19,12 +19,12 @@ class AdGroupSourceSettingsValidatorMixin(object):
         if not new_settings.cpc_cc:
             return
         assert isinstance(new_settings.cpc_cc, decimal.Decimal)
+        validation_helpers.validate_ad_group_source_cpc_cc(
+            new_settings.cpc_cc,
+            self.ad_group_source,
+            bcm_modifiers,
+        )
         try:
-            validation_helpers.validate_ad_group_source_cpc_cc(
-                new_settings.cpc_cc,
-                self.ad_group_source,
-                bcm_modifiers,
-            )
             cpc_constraints.validate_cpc(
                 new_settings.cpc_cc,
                 bcm_modifiers,
@@ -32,24 +32,17 @@ class AdGroupSourceSettingsValidatorMixin(object):
                 source=self.ad_group_source.source,
             )
         except django.forms.ValidationError as e:
-            raise utils.exc.ValidationError(errors={
-                'cpc_cc': [e.message],
-            })
+            raise exceptions.CPCInvalid(e.message)
 
     def _validate_ad_group_source_daily_budget(self, new_settings, bcm_modifiers):
         if not new_settings.daily_budget_cc:
             return
         assert isinstance(new_settings.daily_budget_cc, decimal.Decimal)
-        try:
-            validation_helpers.validate_daily_budget_cc(
-                new_settings.daily_budget_cc,
-                self.ad_group_source.source.source_type,
-                bcm_modifiers,
-            )
-        except django.forms.ValidationError as e:
-            raise utils.exc.ValidationError(errors={
-                'daily_budget_cc': [e.message],
-            })
+        validation_helpers.validate_daily_budget_cc(
+            new_settings.daily_budget_cc,
+            self.ad_group_source.source.source_type,
+            bcm_modifiers,
+        )
 
     def _validate_ad_group_source_state(self, new_settings):
         from dash.views import helpers
@@ -59,18 +52,18 @@ class AdGroupSourceSettingsValidatorMixin(object):
                     self.ad_group_source.source,
                     self.ad_group_source.ad_group.settings
             ):
-                raise utils.exc.ValidationError(errors={
-                    'state': 'Cannot enable media source that does not support'
+                raise exceptions.RetargetingNotSupported(
+                    'Cannot enable media source that does not support'
                     'retargeting on adgroup with retargeting enabled.'
-                })
+                )
             elif not helpers.check_facebook_source(self.ad_group_source):
-                raise utils.exc.ValidationError(errors={
-                    'state': 'Cannot enable Facebook media source that isn\'t connected to a Facebook page.',
-                })
+                raise exceptions.MediaSourceNotConnectedToFacebook(
+                    'Cannot enable Facebook media source that isn\'t connected to a Facebook page.',
+                )
             elif not helpers.check_yahoo_min_cpc(ad_group_settings, self.ad_group_source, self):
-                raise utils.exc.ValidationError(errors={
-                    'state': 'Cannot enable Yahoo media source with the current settings - CPC too low',
-                })
+                raise exceptions.YahooCPCTooLow(
+                    'Cannot enable Yahoo media source with the current settings - CPC too low',
+                )
 
     def validate_ad_group_source_autopilot(self, new_settings):
         from dash.views import helpers
@@ -91,6 +84,6 @@ class AdGroupSourceSettingsValidatorMixin(object):
             [self.ad_group_source],
         )
         if not enabling_autopilot_sources_allowed:
-            raise utils.exc.ValidationError(errors={
-                'state': ['Please increase Autopilot Daily Spend Cap to enable this source.']
-            })
+            raise exceptions.AutopilotDailySpendCapTooLow(
+                'Please increase Autopilot Daily Spend Cap to enable this source.'
+            )

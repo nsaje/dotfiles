@@ -46,7 +46,7 @@ class ConversionGoalValidator(core.common.BaseValidator):
             return pixel
 
         except ValueError:
-            raise exceptions.GoalIDInvalid('Goal ID may not be blank.')
+            raise exceptions.GoalIDInvalid('Goal ID must be a number.')
 
         except dash.models.ConversionPixel.DoesNotExist:
             raise exceptions.ConversionPixelInvalid('Conversion pixel does not exist.')

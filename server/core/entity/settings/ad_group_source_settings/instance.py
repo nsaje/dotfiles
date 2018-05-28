@@ -26,11 +26,9 @@ class AdGroupSourceSettingsMixin(object):
         if not changes:
             return result
 
-        # TODO (multicurrency): Handle multiple currencies in clean method correctly
         if not skip_validation:
             self.clean(new_settings)
 
-        # TODO (multicurrency): Handle multiple currencies in validate_ad_group_source_autopilot method correctly
         if not skip_automation:
             self.validate_ad_group_source_autopilot(new_settings)
 

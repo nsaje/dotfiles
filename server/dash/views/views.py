@@ -37,6 +37,8 @@ from dash import forms
 from dash import infobox_helpers
 from dash.features import native_server
 
+import core.entity.settings.ad_group_source_settings.exceptions as ad_group_source_exceptions
+
 import stats.helpers
 
 import analytics.projections
@@ -791,7 +793,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         data = {k: v for k, v in list(form.cleaned_data.items()) if v is not None}
         data = native_server.transform_ad_group_source_settings(ad_group, data)
 
-        response = ad_group_source.settings.update(request, k1_sync=True, **data)
+        response = self._update_ad_group_source(request, ad_group_source, data)
 
         allowed_sources = {source.id for source in ad_group.campaign.account.allowed_sources.all()}
         campaign_settings = ad_group.campaign.get_current_settings()
@@ -811,6 +813,84 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 ad_group,
             )
         })
+
+    def _update_ad_group_source(self, request, ad_group_source, data):
+        try:
+            return ad_group_source.settings.update(request, k1_sync=True, **data)
+
+        except ad_group_source_exceptions.DailyBudgetNegative as err:
+            raise exc.ValidationError(errors={'daily_budget_cc': [str(err)]})
+
+        except ad_group_source_exceptions.MinimalDailyBudgetTooLow as err:
+            raise exc.ValidationError(errors={
+                'daily_budget_cc': ['Please provide daily spend cap of at least {}.'.format(
+                    core.multicurrency.format_value_in_currency(
+                        err.data.get('value'), 0, ad_group_source.settings.get_currency(),
+                    ),
+                )]
+            })
+
+        except ad_group_source_exceptions.MaximalDailyBudgetTooHigh as err:
+            raise exc.ValidationError(errors={
+                'daily_budget_cc': [
+                    'Maximum allowed daily spend cap is {}. '
+                    'If you want use a higher daily spend cap, please contact support.'.format(
+                        core.multicurrency.format_value_in_currency(
+                            err.data.get('value'), 0, ad_group_source.settings.get_currency(),
+                        ),
+                    )
+                ]
+            })
+
+        except ad_group_source_exceptions.CPCNegative as err:
+            raise exc.ValidationError(errors={'cpc_cc': [str(err)]})
+
+        except ad_group_source_exceptions.CPCPrecisionExceeded as err:
+            raise exc.ValidationError(errors={
+                'cpc_cc': ['CPC on {} cannot exceed {} decimal place{}.'.format(
+                    err.data.get('source_name'),
+                    err.data.get('value'),
+                    's' if err.data.get('value') != 1 else '',
+                )]
+            })
+
+        except ad_group_source_exceptions.MinimalCPCTooLow as err:
+            raise exc.ValidationError(errors={
+                'cpc_cc': ['Minimum CPC on {} is {}.'.format(
+                    err.data.get('source_name'),
+                    core.multicurrency.format_value_in_currency(
+                        err.data.get('value'), 2, ad_group_source.settings.get_currency(),
+                    ),
+                )]
+            })
+
+        except ad_group_source_exceptions.MaximalCPCTooHigh as err:
+            raise exc.ValidationError(errors={
+                'cpc_cc': ['Maximum CPC on {} is {}.'.format(
+                    err.data.get('source_name'),
+                    core.multicurrency.format_value_in_currency(
+                        err.data.get('value'), 2, ad_group_source.settings.get_currency(),
+                    ),
+                )]
+            })
+
+        except ad_group_source_exceptions.RTBSourcesCPCNegative as err:
+            raise exc.ValidationError(errors={'cpc_cc': [str(err)]})
+
+        except ad_group_source_exceptions.CPCInvalid as err:
+            raise exc.ValidationError(errors={'cpc_cc': [str(err)]})
+
+        except ad_group_source_exceptions.RetargetingNotSupported as err:
+            raise exc.ValidationError(errors={'state': [str(err)]})
+
+        except ad_group_source_exceptions.MediaSourceNotConnectedToFacebook as err:
+            raise exc.ValidationError(errors={'state': [str(err)]})
+
+        except ad_group_source_exceptions.YahooCPCTooLow as err:
+            raise exc.ValidationError(errors={'state': [str(err)]})
+
+        except ad_group_source_exceptions.AutopilotDailySpendCapTooLow as err:
+            raise exc.ValidationError(errors={'state': [str(err)]})
 
 
 class AllAccountsOverview(api_common.BaseApiView):

@@ -309,22 +309,22 @@ class CampaignBudgetView(api_common.BaseApiView):
             _handle_multiple_errors(err)
 
         except exceptions.CanNotSetMargin as err:
-            raise exc.ValidationError({'margin': [str(err)]})
+            raise exc.ValidationError(errors={'margin': [str(err)]})
 
         except exceptions.CanNotChangeStartDate as err:
-            raise exc.ValidationError({'start_date': [str(err)]})
+            raise exc.ValidationError(errors={'start_date': [str(err)]})
 
         except exceptions.CanNotChangeBudget as err:
             raise exc.ValidationError(str(err))
 
         except exceptions.CreditCanceled as err:
-            raise exc.ValidationError({'credit': [str(err)]})
+            raise exc.ValidationError(errors={'credit': [str(err)]})
 
         except exceptions.StartDateInThePast as err:
-            raise exc.ValidationError({'start_date': [str(err)]})
+            raise exc.ValidationError(errors={'start_date': [str(err)]})
 
         except exceptions.EndDateInThePast as err:
-            raise exc.ValidationError({'end_date': [str(err)]})
+            raise exc.ValidationError(errors={'end_date': [str(err)]})
 
         return self.create_api_response(item.pk)
 
@@ -503,22 +503,22 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             _handle_multiple_errors(err)
 
         except exceptions.CanNotSetMargin as err:
-            raise exc.ValidationError({'margin': [str(err)]})
+            raise exc.ValidationError(errors={'margin': [str(err)]})
 
         except exceptions.CanNotChangeStartDate as err:
-            raise exc.ValidationError({'start_date': [str(err)]})
+            raise exc.ValidationError(errors={'start_date': [str(err)]})
 
         except exceptions.CanNotChangeBudget as err:
             raise exc.ValidationError(str(err))
 
         except exceptions.CreditCanceled as err:
-            raise exc.ValidationError({'credit': [str(err)]})
+            raise exc.ValidationError(errors={'credit': [str(err)]})
 
         except exceptions.StartDateInThePast as err:
-            raise exc.ValidationError({'start_date': [str(err)]})
+            raise exc.ValidationError(errors={'start_date': [str(err)]})
 
         except exceptions.EndDateInThePast as err:
-            raise exc.ValidationError({'end_date': [str(err)]})
+            raise exc.ValidationError(errors={'end_date': [str(err)]})
 
         changes = item.instance.get_model_state_changes(model_to_dict(item.instance))
         core.bcm.bcm_slack.log_to_slack(campaign.account_id, core.bcm.bcm_slack.SLACK_UPDATED_BUDGET_MSG.format(
