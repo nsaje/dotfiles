@@ -12,6 +12,7 @@ MANDATORY_COLUMNS = {
     'publisher'
 }
 
+
 class Command(utils.command_helpers.ExceptionCommand):
     help = "Apply diff for mv_master"
 
