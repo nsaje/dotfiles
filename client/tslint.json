@@ -4,7 +4,8 @@
     "node_modules/tslint-jasmine-rules/dist"
   ],
   "extends": [
-    "tslint-eslint-rules"
+    "tslint-eslint-rules",
+    "rxjs-tslint-rules"
   ],
   "rules": {
     "align": [
@@ -188,6 +189,7 @@
     ],
     "radix": true,
     "restrict-plus-operands": true,
+    "rxjs-no-unsafe-takeuntil": true,
     "semicolon": [
       true,
       "always"

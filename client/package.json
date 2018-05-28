@@ -52,6 +52,7 @@
     "null-loader": "0.1.1",
     "phantomjs-prebuilt": "2.1.16",
     "postcss-loader": "2.0.9",
+    "rxjs-tslint-rules": "4.3.0",
     "style-loader": "0.19.0",
     "tslint": "5.8.0",
     "tslint-eslint-rules": "4.1.1",
