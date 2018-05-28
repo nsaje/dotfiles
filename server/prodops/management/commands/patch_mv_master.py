@@ -31,11 +31,11 @@ class Command(utils.command_helpers.ExceptionCommand):
         missing = MANDATORY_COLUMNS - set(header)
         if missing:
             raise('Missing columns: {}'.format(', '.join(missing)))
-        query = 'INSERT INTO mv_master_diff ({columns}) VALUES ({values})'.format(
+        query = 'INSERT INTO mv_master_diff ({columns}) VALUES {values};'.format(
             columns=', '.join(header),
             values=', '.join(['({})'.format(', '.join(
                 '\'{}\''.format(cell) for cell in row
-            )) for row in data[:10]]),
+            )) for row in data]),
         )
         with redshiftapi.db.get_write_stats_cursor() as cur:
             cur.execute(query)

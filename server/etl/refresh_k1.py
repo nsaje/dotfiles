@@ -254,7 +254,7 @@ MATERIALIZED_VIEWS = [
 ]
 
 
-SLACK_MIN_DAYS_TO_PROCESS = 10
+SLACK_MIN_DAYS_TO_PROCESS = 7
 
 
 def _post_to_slack(status, update_since, account_id=None):
@@ -266,10 +266,10 @@ def _post_to_slack(status, update_since, account_id=None):
 @influx.timer('etl.refresh_k1.refresh_k1_timer', type='all')
 def refresh_k1_reports(update_since, account_id=None, skip_vacuum=False):
     do_post_to_slack = (datetime.datetime.today() - update_since).days > SLACK_MIN_DAYS_TO_PROCESS
-    if do_post_to_slack:
+    if do_post_to_slack or account_id:
         _post_to_slack('started', update_since, account_id)
     _refresh_k1_reports(update_since, MATERIALIZED_VIEWS, account_id, skip_vacuum=skip_vacuum)
-    if do_post_to_slack:
+    if do_post_to_slack or account_id:
         _post_to_slack('finished', update_since, account_id)
     materialization_run.create_done()
 
@@ -322,9 +322,11 @@ def _refresh_k1_reports(update_since, views, account_id=None, skip_vacuum=False)
 def _handle_replicas(views, job_id, date_from, date_to, account_id=None, skip_vacuum=False):
     for mv_class in views:
         if not mv_class.IS_TEMPORARY_TABLE:
-            s3_path = materialize_views.unload_table(job_id, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
+            s3_path = materialize_views.unload_table(
+                job_id, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
             for db_name in settings.STATS_DB_WRITE_REPLICAS:
-                materialize_views.update_table_from_s3(db_name, s3_path, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
+                materialize_views.update_table_from_s3(
+                    db_name, s3_path, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
                 if not skip_vacuum:
                     maintenance.vacuum(mv_class.TABLE_NAME, db_name=db_name)
                 maintenance.analyze(mv_class.TABLE_NAME, db_name=db_name)
@@ -332,7 +334,8 @@ def _handle_replicas(views, job_id, date_from, date_to, account_id=None, skip_va
                 # do not copy mv_master and mv_master_pubs into postgres, too large
                 continue
             for db_name in settings.STATS_DB_WRITE_REPLICAS_POSTGRES:
-                materialize_views.update_table_from_s3_postgres(db_name, s3_path, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
+                materialize_views.update_table_from_s3_postgres(
+                    db_name, s3_path, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
                 if not skip_vacuum:
                     maintenance.vacuum(mv_class.TABLE_NAME, db_name=db_name)
                 maintenance.analyze(mv_class.TABLE_NAME, db_name=db_name)
@@ -353,7 +356,8 @@ def refresh_derived_views(refresh_days=3):
         if not mv_class.IS_DERIVED_VIEW:
             continue
 
-        mv = mv_class('temp', datetime.date.today() - datetime.timedelta(days=refresh_days), datetime.date.today(), account_id=None)
+        mv = mv_class('temp', datetime.date.today() - datetime.timedelta(days=refresh_days),
+                      datetime.date.today(), account_id=None)
         mv.generate()
 
 
