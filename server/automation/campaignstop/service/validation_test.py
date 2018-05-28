@@ -73,6 +73,7 @@ class ValidateMinimumBudgetAmountTest(TestCase):
         validation.validate_minimum_budget_amount(self.budget, 400)
 
     @mock.patch('utils.dates_helper.utc_now')
+    @mock.patch('automation.campaignstop.service.refresh.refresh_if_stale', mock.MagicMock())
     def test_validate_minimum_budget_amount_invalid_daily_statements(self, mock_utc_now):
         pm = datetime.datetime(self.today.year, self.today.month, self.today.day, 16)
         mock_utc_now.return_value = pm

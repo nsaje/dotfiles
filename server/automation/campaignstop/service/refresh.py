@@ -14,6 +14,29 @@ from utils import dates_helper
 logger = logging.getLogger(__name__)
 
 
+CURRENT_DATA_LIMIT_SECONDS = 120
+
+
+def refresh_if_stale(campaigns=None):
+    if not campaigns:
+        campaigns = core.entity.Campaign.objects.filter(real_time_campaign_stop=True)
+    rt_data = dict(
+        RealTimeCampaignDataHistory.objects.filter(
+            campaign__in=campaigns,
+        ).order_by('campaign_id', '-created_dt').distinct('campaign_id').values_list('campaign_id', 'created_dt')
+    )
+    refresh_realtime_data(
+        campaign for campaign in campaigns if campaign.real_time_campaign_stop and _is_stale(rt_data.get(campaign.id)))
+
+
+def _is_stale(last_created_dt):
+    if not last_created_dt:
+        return True
+
+    delta = dates_helper.utc_now() - last_created_dt
+    return delta.total_seconds() > CURRENT_DATA_LIMIT_SECONDS
+
+
 def refresh_realtime_data(campaigns=None):
     if not campaigns:
         campaigns = core.entity.Campaign.objects.filter(real_time_campaign_stop=True)

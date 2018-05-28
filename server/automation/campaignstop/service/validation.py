@@ -1,6 +1,7 @@
 import decimal
 
-from .import spends_helper
+from . import refresh
+from . import spends_helper
 from .. import RealTimeCampaignStopLog
 from ..constants import CampaignStopEvent
 
@@ -21,6 +22,7 @@ def validate_minimum_budget_amount(budget_line_item, amount):
     log = RealTimeCampaignStopLog(
         campaign=budget_line_item.campaign, event=CampaignStopEvent.BUDGET_AMOUNT_VALIDATION)
 
+    refresh.refresh_if_stale([budget_line_item.campaign])
     min_amount = _calculate_minimum_budget_amount(log, budget_line_item)
     if amount < min_amount:
         raise CampaignStopValidationException('Budget amount has to be at least ${}'.format(min_amount), min_amount)

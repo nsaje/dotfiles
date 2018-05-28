@@ -504,8 +504,6 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
            self.credit.status == constants.CreditLineItemStatus.CANCELED:
             raise exceptions.BudgetAmountCannotChange(
                 'Canceled credit\'s budget amounts cannot change.')
-        if not self.amount:
-            return
         if self.amount < 0:
             raise exceptions.BudgetAmountNegative('Amount cannot be negative.')
 
