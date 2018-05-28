@@ -1,7 +1,8 @@
 from restapi.common.views_base import RESTAPIBaseViewSet
 import restapi.access
 
-from core.entity.settings.ad_group_settings import exceptions
+import core.entity.settings.ad_group_settings.exceptions
+import core.entity.settings.ad_group_source_settings.exceptions
 from . import serializers
 import utils.exc
 
@@ -30,11 +31,67 @@ class AdGroupSourcesRTBViewSet(RESTAPIBaseViewSet):
         try:
             ad_group.settings.update(request, **settings)
 
-        except exceptions.AdGroupNotPaused as err:
+        except core.entity.settings.ad_group_settings.exceptions.AdGroupNotPaused as err:
             raise utils.exc.ValidationError(errors={'group_enabled': [str(err)]})
 
-        except exceptions.DailyBudgetAutopilotNotDisabled as err:
+        except core.entity.settings.ad_group_settings.exceptions.DailyBudgetAutopilotNotDisabled as err:
             raise utils.exc.ValidationError(errors={'daily_budget': [str(err)]})
 
-        except exceptions.CPCAutopilotNotDisabled as err:
+        except core.entity.settings.ad_group_settings.exceptions.CPCAutopilotNotDisabled as err:
             raise utils.exc.ValidationError(errors={'daily_budget': [str(err)]})
+
+        except core.entity.settings.ad_group_source_settings.exceptions.RTBSourcesCPCNegative as err:
+            raise utils.exc.ValidationError(errors={'cpc': [str(err)]})
+
+        except core.entity.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:
+            raise utils.exc.ValidationError(errors={
+                'cpc': ['CPC on {} cannot exceed {} decimal place{}.'.format(
+                    err.data.get('source_name'),
+                    err.data.get('value'),
+                    's' if err.data.get('value') != 1 else '',
+                )]
+            })
+
+        except core.entity.settings.ad_group_source_settings.exceptions.MinimalCPCTooLow as err:
+            raise utils.exc.ValidationError(errors={
+                'cpc': ['Minimum CPC on {} is {}.'.format(
+                    err.data.get('source_name'),
+                    core.multicurrency.format_value_in_currency(
+                        err.data.get('value'), 2, ad_group.settings.get_currency(),
+                    ),
+                )]
+            })
+
+        except core.entity.settings.ad_group_source_settings.exceptions.MaximalCPCTooHigh as err:
+            raise utils.exc.ValidationError(errors={
+                'cpc': ['Maximum CPC on {} is {}.'.format(
+                    err.data.get('source_name'),
+                    core.multicurrency.format_value_in_currency(
+                        err.data.get('value'), 2, ad_group.settings.get_currency(),
+                    ),
+                )]
+            })
+
+        except core.entity.settings.ad_group_source_settings.exceptions.DailyBudgetNegative as err:
+            raise utils.exc.ValidationError(errors={'daily_budget': [str(err)]})
+
+        except core.entity.settings.ad_group_source_settings.exceptions.MinimalDailyBudgetTooLow as err:
+            raise utils.exc.ValidationError(errors={
+                'daily_budget': ['Please provide daily spend cap of at least {}.'.format(
+                    core.multicurrency.format_value_in_currency(
+                        err.data.get('value'), 0, ad_group.settings.get_currency(),
+                    ),
+                )]
+            })
+
+        except core.entity.settings.ad_group_source_settings.exceptions.MaximalDailyBudgetTooHigh as err:
+            raise utils.exc.ValidationError(errors={
+                'daily_budget': [
+                    'Maximum allowed daily spend cap is {}. '
+                    'If you want use a higher daily spend cap, please contact support.'.format(
+                        core.multicurrency.format_value_in_currency(
+                            err.data.get('value'), 0, ad_group.settings.get_currency(),
+                        ),
+                    )
+                ]
+            })
