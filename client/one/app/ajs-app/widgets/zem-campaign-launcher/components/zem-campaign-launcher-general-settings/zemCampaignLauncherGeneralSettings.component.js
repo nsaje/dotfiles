@@ -5,8 +5,8 @@ angular.module('one').component('zemCampaignLauncherGeneralSettings', {
         stateService: '<',
         account: '<',
     },
-    template: require('./zemCampaignLauncherGeneralSettings.component.html'), // eslint-disable-line max-len
-    controller: function (zemPermissions) {
+    template: require('./zemCampaignLauncherGeneralSettings.component.html'),
+    controller: function (zemPermissions, zemMulticurrencyService) {
         var $ctrl = this;
 
         $ctrl.onFieldChange = onFieldChange;
@@ -19,6 +19,7 @@ angular.module('one').component('zemCampaignLauncherGeneralSettings', {
             if (!zemPermissions.hasPermission('zemauth.can_see_campaign_language_choices')) {
                 $ctrl.state.fields.language = constants.convertToName(constants.language.ENGLISH, constants.language);
             }
+            $ctrl.currencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol($ctrl.account);
         };
 
         function onFieldChange () {

@@ -36,9 +36,8 @@ class AdGroupSettingsValidatorMixin(object):
         return core.multicurrency.get_currency_symbol(currency)
 
     def _get_exchange_rate(self):
-        today = utils.dates_helper.local_today()
         currency = self.ad_group.campaign.account.currency
-        return core.multicurrency.get_exchange_rate(today, currency)
+        return core.multicurrency.get_current_exchange_rate(currency)
 
     def _validate_cpc_cc(self, changes):
         cpc_cc = changes.get('local_cpc_cc', None)

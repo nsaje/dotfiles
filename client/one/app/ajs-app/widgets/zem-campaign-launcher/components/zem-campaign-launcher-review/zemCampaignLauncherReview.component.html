@@ -23,16 +23,16 @@
         </div>
         <div class="form__group form__group--informative"  ng-class="{'form--error': !!$ctrl.state.fieldsErrors.budgetAmount}">
             <label class="form__label">Total budget:</label>
-            <div class="form__information">{{ $ctrl.state.fields.budgetAmount | decimalCurrency:"$":2 }}</div>
+            <div class="form__information">{{ $ctrl.state.fields.budgetAmount | decimalCurrency:$ctrl.currencySymbol:2 }}</div>
         </div>
         <div class="form__group form__group--informative"  ng-class="{'form--error': !!$ctrl.state.fieldsErrors.maxCpc}">
             <label class="form__label">Maximum bid CPC:</label>
-            <div class="form__information" ng-if="$ctrl.state.fields.maxCpc">{{ $ctrl.state.fields.maxCpc | decimalCurrency:"$":2 }}</div>
+            <div class="form__information" ng-if="$ctrl.state.fields.maxCpc">{{ $ctrl.state.fields.maxCpc | decimalCurrency:$ctrl.currencySymbol:2 }}</div>
             <div class="form__information" ng-if="!$ctrl.state.fields.maxCpc">No limit</div>
         </div>
         <div class="form__group form__group--informative"  ng-class="{'form--error': !!$ctrl.state.fieldsErrors.dailyBudget}">
             <label class="form__label">Daily spend cap:</label>
-            <div class="form__information">{{ $ctrl.state.fields.dailyBudget | decimalCurrency:"$":2 }}</div>
+            <div class="form__information">{{ $ctrl.state.fields.dailyBudget | decimalCurrency:$ctrl.currencySymbol:2 }}</div>
         </div>
         <div class="form__group form__group--informative"  ng-class="{'form--error': !!$ctrl.state.fieldsErrors.campaignGoal}">
             <label class="form__label">Campaign goal:</label>

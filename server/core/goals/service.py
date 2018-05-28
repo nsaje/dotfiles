@@ -2,7 +2,6 @@ import decimal
 
 import dash.constants
 import core.multicurrency
-import utils
 
 import dash.campaign_goals
 
@@ -22,7 +21,7 @@ _CAMPAIGN_GOAL_DEFAULT_VALUE = {
 
 
 def get_campaign_goals_defaults(account):
-    exchange_rate = core.multicurrency.get_exchange_rate(utils.dates_helper.local_today(), account.currency)
+    exchange_rate = core.multicurrency.get_current_exchange_rate(account.currency)
     return {kpi: _convert_to_local_value(kpi, value, exchange_rate) for kpi, value in _CAMPAIGN_GOAL_DEFAULT_VALUE.items()}
 
 

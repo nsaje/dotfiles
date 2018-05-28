@@ -3,9 +3,10 @@ require('./zemCampaignLauncherReview.component.less');
 angular.module('one').component('zemCampaignLauncherReview', {
     bindings: {
         stateService: '=',
+        account: '<',
     },
     template: require('./zemCampaignLauncherReview.component.html'),
-    controller: function (zemDeviceTargetingConstants, zemPermissions, $filter) {
+    controller: function (zemDeviceTargetingConstants, zemPermissions, zemMulticurrencyService, $filter) {
         var $ctrl = this;
 
         $ctrl.hasPermission = zemPermissions.hasPermission;
@@ -20,11 +21,8 @@ angular.module('one').component('zemCampaignLauncherReview', {
             $ctrl.state = $ctrl.stateService.getState();
             $ctrl.iabCategoryName = getIabCategoryName($ctrl.state.fields.iabCategory);
             $ctrl.language = getLanguageName($ctrl.state.fields.language);
-            // TODO (multicurrency): Set unit dynamically when multi-currency support is added to campaign launcher
+            $ctrl.currencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol($ctrl.account);
             $ctrl.campaignGoalText = $filter('campaignGoalText')($ctrl.state.fields.campaignGoal);
-            // HACK (multicurrency): Replace euro currency sign with dollar sign. Remove when multi-currency support is
-            // added to campaign launcher!
-            $ctrl.campaignGoalText = $ctrl.campaignGoalText.replace('€', '$');
             $ctrl.dummyCreatives = getDummyCreatives($ctrl.state.creatives.candidates || []);
 
             updateDeviceTargetingReview();

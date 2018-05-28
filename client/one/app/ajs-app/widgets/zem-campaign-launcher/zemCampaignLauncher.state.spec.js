@@ -228,21 +228,29 @@ describe('zemCampaignLauncherStateService', function () {
 
     it('should correctly launch campaign', function () {
         var account = {};
-        var fields = {
+        var expectedFields = {
             field1: 'value',
             field2: 'value',
             field3: 'value',
+            field4: null,
+            field5: null,
         };
         var mockedAsyncFunction = zemSpecsHelper.getMockedAsyncFunction($injector);
         var stateService = zemCampaignLauncherStateService.createInstance(account);
         var state = stateService.getState();
 
-        state.fields = fields;
+        state.fields = {
+            field1: 'value',
+            field2: 'value',
+            field3: 'value',
+            field4: null,
+            field5: '',
+        };
 
         spyOn(zemCampaignLauncherEndpoint, 'launchCampaign').and.callFake(mockedAsyncFunction);
         stateService.launchCampaign();
         $rootScope.$digest();
-        expect(zemCampaignLauncherEndpoint.launchCampaign).toHaveBeenCalledWith(account, fields);
+        expect(zemCampaignLauncherEndpoint.launchCampaign).toHaveBeenCalledWith(account, expectedFields);
         expect(state.requests.launchCampaign.success).toBe(true);
     });
 

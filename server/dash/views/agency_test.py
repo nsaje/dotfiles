@@ -231,7 +231,7 @@ class AdGroupSettingsTest(TestCase):
             'success': True
         })
 
-    @patch.object(core.multicurrency, 'get_exchange_rate')
+    @patch.object(core.multicurrency, 'get_current_exchange_rate')
     def test_get_local(self, mock_get_exchange_rate):
         add_permissions(self.user, ['settings_view', 'can_manage_settings_in_local_currency'])
         mock_get_exchange_rate.return_value = Decimal('2.0')
@@ -402,7 +402,7 @@ class AdGroupSettingsTest(TestCase):
             hist = history_helpers.get_ad_group_history(ad_group).first()
             self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
 
-    @patch.object(core.multicurrency, 'get_exchange_rate')
+    @patch.object(core.multicurrency, 'get_current_exchange_rate')
     @patch.object(models.AdGroupSettings, 'update')
     def test_put_local(self, mock_ad_group_settings_update, mock_get_exchange_rate):
         add_permissions(self.user, ['settings_view', 'can_manage_settings_in_local_currency'])
@@ -2011,7 +2011,7 @@ class CampaignSettingsTest(TestCase):
         self.assertTrue(content['success'])
         self.assertEqual(models.ConversionGoal.objects.all()[0].name, 'test')
 
-    @patch.object(core.multicurrency, 'get_exchange_rate')
+    @patch.object(core.multicurrency, 'get_current_exchange_rate')
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     def test_put_goals_modified(self, p1, p3, mock_get_exchange_rate):

@@ -130,9 +130,8 @@ class PublisherGroupsFormMixin(forms.Form):
 
 class MulticurrencySettingsFormMixin(forms.Form):
     def get_exchange_rate(self):
-        today = dates_helper.local_today()
         currency = self._get_currency()
-        return core.multicurrency.get_exchange_rate(today, currency)
+        return core.multicurrency.get_current_exchange_rate(currency)
 
     def get_currency_symbol(self):
         currency = self._get_currency()

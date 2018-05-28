@@ -61,8 +61,7 @@ def get_budget_spend_estimates(log, campaign):
 
 
 def _to_local_currency(campaign, amount):
-    currency = campaign.account.currency
-    exchange_rate = core.multicurrency.get_exchange_rate(dates_helper.local_today(), currency)
+    exchange_rate = core.multicurrency.get_current_exchange_rate(campaign.account.currency)
     return amount * exchange_rate
 
 

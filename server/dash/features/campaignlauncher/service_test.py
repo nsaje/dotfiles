@@ -73,7 +73,6 @@ class TestService(TestCase):
         self.assertEqual(ad_group.settings.start_date, datetime.date(2017, 1, 1))
         self.assertEqual(ad_group.settings.end_date, None)
         self.assertEqual(ad_group.settings.cpc_cc, Decimal('0.5'))
-        self.assertEqual(ad_group.settings.daily_budget_cc, Decimal('15.2'))
         self.assertEqual(ad_group.settings.autopilot_daily_budget, Decimal('15.2'))
         self.assertEqual(ad_group.settings.target_regions, ['US'])
         self.assertEqual(ad_group.settings.exclusion_target_regions, ['US-NY'])

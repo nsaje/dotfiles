@@ -291,7 +291,7 @@ class AdGroupSettings(validation.AdGroupSettingsValidatorMixin,
 
         exchange_rate = Decimal('1.0')
         if currency:
-            exchange_rate = core.multicurrency.get_exchange_rate(dates_helper.local_today(), currency)
+            exchange_rate = core.multicurrency.get_current_exchange_rate(currency)
         for field in cls.multicurrency_fields:
             if not defaults.get(field):
                 continue

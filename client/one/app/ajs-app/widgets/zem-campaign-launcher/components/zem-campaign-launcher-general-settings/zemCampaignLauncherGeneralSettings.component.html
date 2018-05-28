@@ -67,7 +67,7 @@
         <div class="form__group" ng-class="{'form--error': !!$ctrl.state.fieldsErrors.budgetAmount}">
             <label class="form__label" for="budget-amount-input">Total budget:</label>
             <div class="prefixed-field postfixed-field prefixed-field--narrow postfixed-field--narrow">
-                <span class="prefixed-field__prefix">$</span>
+                <span class="prefixed-field__prefix">{{ $ctrl.currencySymbol }}</span>
                 <input class="input-text"
                        id="budget-amount-input"
                        type="text"
@@ -89,7 +89,7 @@
                 <zem-help-popover content="Maximum allowed CPC in this ad group." placement="top"></zem-help-popover>
             </label>
             <div class="prefixed-field prefixed-field--narrow">
-                <span class="prefixed-field__prefix">$</span>
+                <span class="prefixed-field__prefix">{{ $ctrl.currencySymbol }}</span>
                 <input class="input-text"
                        id="cpc-input"
                        type="text"
@@ -111,7 +111,7 @@
                 <zem-help-popover content="Amount of budget Autopilot can operate with on this Ad Group every day." placement="top"></zem-help-popover>
             </label>
             <div class="prefixed-field prefixed-field--narrow">
-                <span class="prefixed-field__prefix">$</span>
+                <span class="prefixed-field__prefix">{{ $ctrl.currencySymbol }}</span>
                 <input class="input-text"
                        id="autopilot-budget"
                        type="text"

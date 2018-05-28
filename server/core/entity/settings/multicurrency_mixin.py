@@ -2,8 +2,6 @@ import decimal
 
 import django.db.models
 
-import utils.dates_helper
-import utils.numbers
 import core.multicurrency
 
 
@@ -37,9 +35,8 @@ class MulticurrencySettingsMixin(object):
             return to_usd_field, new_usd
 
     def _get_exchange_rate(self):
-        today = utils.dates_helper.local_today()
         currency = self.get_currency()
-        return core.multicurrency.get_exchange_rate(today, currency)
+        return core.multicurrency.get_current_exchange_rate(currency)
 
     def _round(self, field_name, number):
         field = self._meta.get_field(field_name)

@@ -6,7 +6,6 @@ from django.test import TestCase
 
 import core.multicurrency
 from dash import constants
-import utils.dates_helper
 from .multicurrency_mixin import MulticurrencySettingsMixin
 from .update_object import UpdateObject
 
@@ -33,10 +32,9 @@ class TestSettings(MulticurrencySettingsMixin, django.db.models.Model):
 
 class MulticurrencySettingsMixinTest(TestCase):
 
-    @patch.object(core.multicurrency, 'get_exchange_rate')
+    @patch.object(core.multicurrency, 'get_current_exchange_rate')
     def test_get_counterpart_usd(self, mock_get_exchange_rate):
         mock_get_exchange_rate.return_value = Decimal('2.0')
-        today = utils.dates_helper.local_today()
 
         settings = TestSettings()
         new_settings = settings.copy_settings()
@@ -44,12 +42,11 @@ class MulticurrencySettingsMixinTest(TestCase):
         new_settings.a = Decimal('1.0')
         self.assertEqual(new_settings.local_a, Decimal('2.0'))
 
-        mock_get_exchange_rate.assert_called_with(today, constants.Currency.EUR)
+        mock_get_exchange_rate.assert_called_with(constants.Currency.EUR)
 
-    @patch.object(core.multicurrency, 'get_exchange_rate')
+    @patch.object(core.multicurrency, 'get_current_exchange_rate')
     def test_get_counterpart_local(self, mock_get_exchange_rate):
         mock_get_exchange_rate.return_value = Decimal('2.0')
-        today = utils.dates_helper.local_today()
 
         settings = TestSettings()
         new_settings = settings.copy_settings()
@@ -57,9 +54,9 @@ class MulticurrencySettingsMixinTest(TestCase):
         new_settings.local_b = Decimal('1.0')
         self.assertEqual(new_settings.b, Decimal('0.5'))
 
-        mock_get_exchange_rate.assert_called_with(today, constants.Currency.EUR)
+        mock_get_exchange_rate.assert_called_with(constants.Currency.EUR)
 
-    @patch.object(core.multicurrency, 'get_exchange_rate')
+    @patch.object(core.multicurrency, 'get_current_exchange_rate')
     def test_get_counterpart_none(self, mock_get_exchange_rate):
         mock_get_exchange_rate.return_value = Decimal('2.0')
 

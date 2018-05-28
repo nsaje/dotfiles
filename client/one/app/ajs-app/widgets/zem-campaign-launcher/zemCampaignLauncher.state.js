@@ -140,7 +140,7 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
         function validateFields () {
             var fields = {};
             angular.forEach(state.fields, function (value, name) {
-                if (value !== null) {
+                if (value) {
                     fields[name] = value;
                 }
             });
@@ -193,8 +193,13 @@ angular.module('one.widgets').service('zemCampaignLauncherStateService', functio
         function launchCampaign () {
             if (state.requests.launchCampaign.inProgress) return;
 
+            var fields = {};
+            angular.forEach(state.fields, function (value, name) {
+                fields[name] = value || null;
+            });
+
             state.requests.launchCampaign.inProgress = true;
-            zemCampaignLauncherEndpoint.launchCampaign(account, state.fields)
+            zemCampaignLauncherEndpoint.launchCampaign(account, fields)
                 .then(function (campaignId) {
                     state.requests.launchCampaign.success = true;
                     $timeout(function () {

@@ -11,7 +11,7 @@ from . import service
 
 class TestGoalsService(TestCase):
 
-    @patch.object(core.multicurrency, 'get_exchange_rate')
+    @patch.object(core.multicurrency, 'get_current_exchange_rate')
     def test_get_campaign_goals_defaults(self, mock_get_exchange_rate):
         mock_get_exchange_rate.return_value = decimal.Decimal('2.0')
         account = magic_mixer.blend(core.entity.Account)

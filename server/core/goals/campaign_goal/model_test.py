@@ -52,7 +52,7 @@ class TestCampaignGoals(TestCase):
         self.assertEqual(dash.constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
         self.assertEqual('Campaign goal "Time on Site - Seconds" set as primary', hist.changes_text)
 
-    @patch.object(core.multicurrency, 'get_exchange_rate')
+    @patch.object(core.multicurrency, 'get_current_exchange_rate')
     def test_add_value(self, mock_get_exchange_rate):
         request = magic_mixer.blend_request_user()
         campaign = magic_mixer.blend(dash.models.Campaign)
@@ -82,7 +82,7 @@ class TestCampaignGoals(TestCase):
         self.assertEqual(dash.constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
         self.assertEqual(hist.changes_text, 'Changed campaign goal value: "40 Time on Site - Seconds"')
 
-    @patch.object(core.multicurrency, 'get_exchange_rate')
+    @patch.object(core.multicurrency, 'get_current_exchange_rate')
     def test_add_value_cost_dependant_goal(self, mock_get_exchange_rate):
         request = magic_mixer.blend_request_user()
         campaign = magic_mixer.blend(dash.models.Campaign)

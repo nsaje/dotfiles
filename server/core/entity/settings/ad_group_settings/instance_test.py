@@ -231,7 +231,7 @@ class InstanceTest(TestCase):
 
 class MulticurrencyTest(TestCase):
 
-    @patch.object(core.multicurrency, 'get_exchange_rate')
+    @patch.object(core.multicurrency, 'get_current_exchange_rate')
     def test_set_usd(self, mock_get_exchange_rate):
         ad_group = magic_mixer.blend(core.entity.AdGroup)
         mock_get_exchange_rate.return_value = Decimal('2.0')
@@ -239,7 +239,7 @@ class MulticurrencyTest(TestCase):
         self.assertEqual(ad_group.settings.local_cpc_cc, Decimal('1.00'))
         self.assertEqual(ad_group.settings.cpc_cc, Decimal('0.50'))
 
-    @patch.object(core.multicurrency, 'get_exchange_rate')
+    @patch.object(core.multicurrency, 'get_current_exchange_rate')
     def test_set_local(self, mock_get_exchange_rate):
         ad_group = magic_mixer.blend(core.entity.AdGroup)
         mock_get_exchange_rate.return_value = Decimal('2.0')
@@ -247,7 +247,7 @@ class MulticurrencyTest(TestCase):
         self.assertEqual(ad_group.settings.local_cpc_cc, Decimal('0.50'))
         self.assertEqual(ad_group.settings.cpc_cc, Decimal('0.25'))
 
-    @patch.object(core.multicurrency, 'get_exchange_rate')
+    @patch.object(core.multicurrency, 'get_current_exchange_rate')
     def test_set_none(self, mock_get_exchange_rate):
         ad_group = magic_mixer.blend(core.entity.AdGroup)
         mock_get_exchange_rate.return_value = Decimal('2.0')

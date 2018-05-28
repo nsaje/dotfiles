@@ -3,6 +3,8 @@ from rest_framework import serializers
 from rest_framework import fields
 
 import dash.constants
+import utils.lc_helper
+import core.multicurrency
 import restapi.serializers.fields
 from restapi.serializers import targeting
 
@@ -44,12 +46,6 @@ class CampaignLauncherSerializer(serializers.Serializer):
         allow_null=True,
         max_digits=None,
         decimal_places=4,
-        min_value=decimal.Decimal('0.05'),
-        max_value=decimal.Decimal('10'),
-        error_messages={
-            'min_value': 'Maximum CPC can\'t be lower than $0.05.',
-            'max_value': 'Maximum CPC can\'t be higher than $10.00.'
-        }
     )
     daily_budget = fields.DecimalField(max_digits=10, decimal_places=4)
     upload_batch = restapi.serializers.fields.IdField()
@@ -59,3 +55,26 @@ class CampaignLauncherSerializer(serializers.Serializer):
     target_devices = targeting.DevicesSerializer()
     target_placements = targeting.PlacementsSerializer()
     target_os = targeting.OSsSerializer()
+
+    def validate_max_cpc(self, value):
+        if not value:
+            return value
+
+        account = self.context['account']
+        currency_symbol = core.multicurrency.get_currency_symbol(account.currency)
+        exchange_rate = core.multicurrency.get_current_exchange_rate(account.currency)
+        min_cpc = round(decimal.Decimal('0.05') * exchange_rate, 3)
+        max_cpc = round(decimal.Decimal('10') * exchange_rate, 3)
+
+        if value < min_cpc:
+            raise serializers.ValidationError(
+                'Maximum CPC can\'t be lower than {}.'.format(
+                    utils.lc_helper.format_currency(min_cpc, places=3, curr=currency_symbol))
+            )
+        if value > max_cpc:
+            raise serializers.ValidationError(
+                'Maximum CPC can\'t be higher than {}.'.format(
+                    utils.lc_helper.format_currency(max_cpc, places=3, curr=currency_symbol))
+            )
+
+        return value

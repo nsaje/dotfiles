@@ -6,7 +6,7 @@ angular.module('one.widgets').component('zemCampaignLauncherGoal', {
         account: '<',
     },
     template: require('./zemCampaignLauncherGoal.component.html'),
-    controller: function ($filter, zemConversionPixelsEndpoint) {
+    controller: function ($filter, zemConversionPixelsEndpoint, zemMulticurrencyService) {
         var $ctrl = this;
 
         $ctrl.updateCampaignGoal = updateCampaignGoal;
@@ -14,9 +14,8 @@ angular.module('one.widgets').component('zemCampaignLauncherGoal', {
         $ctrl.$onInit = function () {
             $ctrl.state = $ctrl.stateService.getState();
             $ctrl.availableGoals = angular.copy(options.campaignGoalKPIs).map(function (goalKPI) {
-                // TODO (multicurrency): Set unit dynamically when multi-currency support is added to campaign launcher
                 if (goalKPI.unit === '__CURRENCY__') {
-                    goalKPI.unit = '$';
+                    goalKPI.unit = zemMulticurrencyService.getAppropriateCurrencySymbol($ctrl.account);
                 }
                 return goalKPI;
             });
