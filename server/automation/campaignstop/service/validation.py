@@ -24,6 +24,9 @@ def validate_minimum_budget_amount(budget_line_item, amount):
 
     refresh.refresh_if_stale([budget_line_item.campaign])
     min_amount = _calculate_minimum_budget_amount(log, budget_line_item)
+    log.add_context({
+        'desired_amount': amount,
+    })
     if amount < min_amount:
         raise CampaignStopValidationException('Budget amount has to be at least ${}'.format(min_amount), min_amount)
 
