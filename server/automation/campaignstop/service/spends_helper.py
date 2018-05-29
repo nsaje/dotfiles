@@ -50,13 +50,20 @@ def get_budget_spend_estimates(log, campaign):
     spend_estimates = {}
     remaining_rt_spend = current_rt_spend if current_rt_spend else 0
     local_remaining_rt_spend = _to_local_currency(campaign, remaining_rt_spend)
+    spend_per_budget = {}
     for budget in budgets_active_today:
         past_spend = budget.get_local_spend_data(date=budget_spend_until_date)['etfm_total']
+        spend_per_budget[budget.id] = past_spend
         spend_estimates[budget] = min(budget.amount, past_spend + local_remaining_rt_spend)
 
         rt_added = spend_estimates[budget] - past_spend
         local_remaining_rt_spend -= rt_added
 
+    log.add_context({
+        'budget_spends_until_date': budget_spend_until_date,
+        'local_spend_per_budget': spend_per_budget,
+        'local_remaining_rt_spend': local_remaining_rt_spend,
+    })
     return spend_estimates
 
 
