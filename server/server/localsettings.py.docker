@@ -248,7 +248,7 @@ R1_PIXEL_URL = 'https://r1.zemanta.com/api/pixel/{account_id}/{slug}/'
 DEPLETING_AVAILABLE_BUDGET_SCALAR = 1.5
 DEPLETING_CAMPAIGN_BUDGET_EMAIL = 'help@zemanta.com'
 
-BIDDER_API_SIGN_KEY = Secret('').get()
+BIDDER_API_SIGN_KEY = [Secret('').get()]
 BIDDER_API_URL_BASE = 'https://b1api.zemanta.com'
 
 # BCM

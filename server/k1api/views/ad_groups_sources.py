@@ -39,54 +39,49 @@ class AdGroupSourcesView(K1APIView):
             slugs = slugs.split(',')
 
         # get ad groups we're interested in
-        ad_groups = dash.models.AdGroup.objects.all()
+        ad_groups = (
+            dash.models.AdGroup.objects.all()
+            .exclude_archived()
+            .select_related('settings', 'campaign__account')
+        )
         if ad_group_ids:
             ad_groups = ad_groups.filter(id__in=ad_group_ids)
-        ad_groups = ad_groups.exclude_archived()
-        ad_group_ids = list(ad_groups.values_list('id', flat=True))
+        ad_group_map = {ad_group.id: ad_group for ad_group in ad_groups}
 
-        campaigns = dash.models.Campaign.objects.filter(adgroup__in=ad_groups)
+        campaigns = set(ad_group.campaign for ad_group in ad_groups)
         campaignstop_map = automation.campaignstop.get_campaignstop_states(campaigns)
 
-        ad_groups_settings_query = dash.models.AdGroupSettings.objects.filter(ad_group__in=ad_group_ids)
-        ad_groups_settings = ad_groups_settings_query.group_current_settings()
-
-        ad_group_settings_map = {ags.ad_group_id: ags for ags in ad_groups_settings}
-
-        ag_source_settings_query = (dash.models.AdGroupSourceSettings.objects
-                                    .filter(ad_group_source__ad_group__in=list(ad_group_settings_map.keys()))
-                                    .filter(ad_group_source__source__deprecated=False))
+        ad_group_sources = (
+            dash.models.AdGroupSource.objects.all()
+            .filter(ad_group__in=ad_groups)
+            .filter(source__deprecated=False)
+            .select_related('settings', 'source__source_type')
+        )
 
         # filter which sources we want
         if source_types:
-            ag_source_settings_query = ag_source_settings_query.filter(
-                ad_group_source__source__source_type__type__in=source_types)
+            ad_group_sources = ad_group_sources.filter(
+                source__source_type__type__in=source_types)
         if slugs:
-            ag_source_settings_query = ag_source_settings_query.filter(
-                ad_group_source__source__bidder_slug__in=slugs)
-
-        ad_group_source_settings = (ag_source_settings_query
-                                    .group_current_settings()
-                                    .select_related('ad_group_source__source__source_type',
-                                                    'ad_group_source__ad_group__campaign__account'))
+            ad_group_sources = ad_group_sources.filter(
+                source__bidder_slug__in=slugs)
 
         # build a map of today's campaign budgets
         budgets = dash.models.BudgetLineItem.objects.all().filter_today().distinct('campaign_id').select_related('credit')
         if ad_group_ids:
-            budgets = budgets.filter(campaign__adgroup__in=ad_group_ids)
+            budgets = budgets.filter(campaign__in=campaigns)
         campaigns_budgets_map = {
             budget.campaign_id: budget for budget in budgets
         }
 
         # build the list of objects
-        ad_group_sources = []
-        for ad_group_source_settings in ad_group_source_settings:
-            ad_group = ad_group_source_settings.ad_group_source.ad_group
-            ad_group_settings = ad_group_settings_map[ad_group.id]
+        ad_group_source_dicts = []
+        for ad_group_source in ad_group_sources:
+            ad_group = ad_group_map[ad_group_source.ad_group_id]
             campaignstop_allowed_to_run = campaignstop_map[ad_group.campaign.id]['allowed_to_run']
             if self._is_ad_group_source_enabled(
-                    ad_group_settings,
-                    ad_group_source_settings,
+                    ad_group,
+                    ad_group_source,
                     campaignstop_allowed_to_run):
                 source_state = constants.AdGroupSettingsState.ACTIVE
             else:
@@ -95,24 +90,22 @@ class AdGroupSourcesView(K1APIView):
             # executor should know when it has a blocking action pending
 
             tracking_code = url_helper.combine_tracking_codes(
-                ad_group_settings.get_tracking_codes(), ''
+                ad_group.settings.get_tracking_codes(), ''
             )
-
-            campaign = ad_group_source_settings.ad_group_source.ad_group.campaign
 
             license_fee = None
             margin = None
-            if campaign.id in campaigns_budgets_map:
-                license_fee = campaigns_budgets_map[campaign.id].credit.license_fee
-                margin = campaigns_budgets_map[campaign.id].margin
+            if ad_group.campaign_id in campaigns_budgets_map:
+                license_fee = campaigns_budgets_map[ad_group.campaign_id].credit.license_fee
+                margin = campaigns_budgets_map[ad_group.campaign_id].margin
 
-            cpc_cc = ad_group_source_settings.get_external_cpc_cc(
-                campaign.account,
+            cpc_cc = ad_group_source.settings.get_external_cpc_cc(
+                ad_group.campaign.account,
                 license_fee,
                 margin,
             )
-            daily_budget_cc = ad_group_source_settings.get_external_daily_budget_cc(
-                campaign.account,
+            daily_budget_cc = ad_group_source.settings.get_external_daily_budget_cc(
+                ad_group.campaign.account,
                 license_fee,
                 margin,
             )
@@ -121,31 +114,31 @@ class AdGroupSourcesView(K1APIView):
                     ad_group.campaign.account_id in BLOCKED_ACCOUNTS):
                 source_state = constants.AdGroupSettingsState.INACTIVE
             source = {
-                'ad_group_id': ad_group_settings.ad_group_id,
-                'slug': ad_group_source_settings.ad_group_source.source.bidder_slug,
-                'source_campaign_key': ad_group_source_settings.ad_group_source.source_campaign_key,
+                'ad_group_id': ad_group_source.ad_group_id,
+                'slug': ad_group_source.source.bidder_slug,
+                'source_campaign_key': ad_group_source.source_campaign_key,
                 'tracking_code': tracking_code,
                 'state': source_state,
                 'cpc_cc': format(cpc_cc, '.4f'),
                 'daily_budget_cc': format(daily_budget_cc, '.4f'),
             }
-            ad_group_sources.append(source)
+            ad_group_source_dicts.append(source)
 
-        return self.response_ok(ad_group_sources)
+        return self.response_ok(ad_group_source_dicts)
 
-    def _is_ad_group_source_enabled(self, ad_group_settings, ad_group_source_settings, campaignstop_allowed_to_run):
+    def _is_ad_group_source_enabled(self, ad_group, ad_group_source, campaignstop_allowed_to_run):
         if not campaignstop_allowed_to_run:
             return False
 
-        if ad_group_settings.state != constants.AdGroupSettingsState.ACTIVE:
+        if ad_group.settings.state != constants.AdGroupSettingsState.ACTIVE:
             return False
 
-        if ad_group_source_settings.state != constants.AdGroupSourceSettingsState.ACTIVE:
+        if ad_group_source.settings.state != constants.AdGroupSourceSettingsState.ACTIVE:
             return False
 
-        if (ad_group_source_settings.ad_group_source.source.source_type.type == constants.SourceType.B1 and
-                ad_group_settings.b1_sources_group_enabled and
-                ad_group_settings.b1_sources_group_state != constants.AdGroupSourceSettingsState.ACTIVE):
+        if (ad_group_source.source.source_type.type == constants.SourceType.B1 and
+                ad_group.settings.b1_sources_group_enabled and
+                ad_group.settings.b1_sources_group_state != constants.AdGroupSourceSettingsState.ACTIVE):
             return False
 
         return True

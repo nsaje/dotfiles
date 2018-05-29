@@ -42,15 +42,13 @@ class AdGroupsView(K1APIView):
         if slugs:
             slugs = slugs.split(',')
 
-        ad_groups_settings,\
-            campaigns_settings_map,\
-            accounts_settings_map,\
-            agencies_settings_map,\
+        ad_groups,\
             campaigns_budgets_map,\
-            campaignstop_states = self._get_settings_maps(ad_group_ids, source_types, slugs, marker, limit)
+            campaignstop_states = self._get_ad_groups(ad_group_ids, source_types, slugs, marker, limit)
 
-        campaign_goal_types = self._get_campaign_goal_types(list(campaigns_settings_map.keys()))
-        campaign_goals = self._get_campaign_goals(list(campaigns_settings_map.keys()))
+        campaign_ids = set(ad_group.campaign_id for ad_group in ad_groups)
+        campaign_goal_types = self._get_campaign_goal_types(list(campaign_ids))
+        campaign_goals = self._get_campaign_goals(list(campaign_ids))
 
         all_custom_flags = {
             flag: False
@@ -59,24 +57,24 @@ class AdGroupsView(K1APIView):
             )
         }
 
-        ad_groups = []
-        for ad_group_settings in ad_groups_settings:
-            if ad_group_settings is None:
+        ad_group_dicts = []
+        for ad_group in ad_groups:
+            if ad_group.settings is None:
                 logger.error('K1API - ad group settings are None')
                 continue
 
-            campaign_settings = campaigns_settings_map[ad_group_settings.ad_group.campaign_id]
-            account_settings = accounts_settings_map[ad_group_settings.ad_group.campaign.account_id]
-            agency_settings = agencies_settings_map.get(ad_group_settings.ad_group.campaign.account.agency_id)  # FIXME(nsaje): settings should exist
+            agency_settings = None
+            if ad_group.campaign.account.agency:
+                agency_settings = ad_group.campaign.account.agency.settings
 
-            blacklist = ad_group_settings.blacklist_publisher_groups
-            whitelist = ad_group_settings.whitelist_publisher_groups
+            blacklist = ad_group.settings.blacklist_publisher_groups
+            whitelist = ad_group.settings.whitelist_publisher_groups
 
-            ad_group = ad_group_settings.ad_group
+            ad_group = ad_group.settings.ad_group
             blacklist, whitelist = publisher_group_helpers.concat_publisher_group_targeting(
-                ad_group, ad_group_settings,
-                ad_group.campaign, campaign_settings,
-                ad_group.campaign.account, account_settings,
+                ad_group, ad_group.settings,
+                ad_group.campaign, ad_group.campaign.settings,
+                ad_group.campaign.account, ad_group.campaign.account.settings,
                 ad_group.campaign.account.agency, agency_settings,
                 include_global=False  # global blacklist is handled separately by the bidder, no need to duplicate work
             )
@@ -87,17 +85,17 @@ class AdGroupsView(K1APIView):
                 license_fee = campaigns_budgets_map[ad_group.campaign_id].credit.license_fee
                 margin = campaigns_budgets_map[ad_group.campaign_id].margin
 
-            max_cpm = ad_group_settings.get_external_max_cpm(
+            max_cpm = ad_group.settings.get_external_max_cpm(
                 ad_group.campaign.account,
                 license_fee,
                 margin
             )
-            b1_sources_group_daily_budget = ad_group_settings.get_external_b1_sources_group_daily_budget(
+            b1_sources_group_daily_budget = ad_group.settings.get_external_b1_sources_group_daily_budget(
                 ad_group.campaign.account,
                 license_fee,
                 margin
             )
-            b1_sources_group_cpc_cc = ad_group_settings.get_external_b1_sources_group_cpc_cc(
+            b1_sources_group_cpc_cc = ad_group.settings.get_external_b1_sources_group_cpc_cc(
                 ad_group.campaign.account,
                 license_fee,
                 margin,
@@ -108,51 +106,51 @@ class AdGroupsView(K1APIView):
             flags.update(all_custom_flags)
             flags.update(ad_group.get_all_custom_flags())
 
-            ad_group = {
+            ad_group_dict = {
                 'id': ad_group.id,
                 'name': ad_group.get_external_name(),
-                'start_date': ad_group_settings.start_date,
-                'end_date': self._get_end_date(ad_group_settings, campaignstop_states),
+                'start_date': ad_group.settings.start_date,
+                'end_date': self._get_end_date(ad_group.settings, campaignstop_states),
                 'time_zone': settings.DEFAULT_TIME_ZONE,
-                'brand_name': ad_group_settings.brand_name,
-                'display_url': ad_group_settings.display_url,
-                'tracking_codes': ad_group_settings.get_tracking_codes(),
-                'target_devices': ad_group_settings.target_devices,
-                'target_os': ad_group_settings.target_os,
-                'target_browsers': ad_group_settings.target_browsers,
-                'target_placements': ad_group_settings.target_placements,
-                'target_regions': ad_group_settings.target_regions,
-                'exclusion_target_regions': ad_group_settings.exclusion_target_regions,
-                'iab_category': campaign_settings.iab_category,
-                'campaign_language': campaign_settings.language,
-                'retargeting': self._get_retargeting(ad_group_settings),
-                'demographic_targeting': ad_group_settings.bluekai_targeting,
-                'interest_targeting': ad_group_settings.interest_targeting,
-                'exclusion_interest_targeting': ad_group_settings.exclusion_interest_targeting,
+                'brand_name': ad_group.settings.brand_name,
+                'display_url': ad_group.settings.display_url,
+                'tracking_codes': ad_group.settings.get_tracking_codes(),
+                'target_devices': ad_group.settings.target_devices,
+                'target_os': ad_group.settings.target_os,
+                'target_browsers': ad_group.settings.target_browsers,
+                'target_placements': ad_group.settings.target_placements,
+                'target_regions': ad_group.settings.target_regions,
+                'exclusion_target_regions': ad_group.settings.exclusion_target_regions,
+                'iab_category': ad_group.campaign.settings.iab_category,
+                'campaign_language': ad_group.campaign.settings.language,
+                'retargeting': self._get_retargeting(ad_group.settings),
+                'demographic_targeting': ad_group.settings.bluekai_targeting,
+                'interest_targeting': ad_group.settings.interest_targeting,
+                'exclusion_interest_targeting': ad_group.settings.exclusion_interest_targeting,
                 'campaign_id': ad_group.campaign.id,
                 'account_id': ad_group.campaign.account.id,
                 'agency_id': ad_group.campaign.account.agency_id,
                 'goal_types': campaign_goal_types[ad_group.campaign.id],
                 'goals': campaign_goals[ad_group.campaign.id],
-                'dayparting': ad_group_settings.dayparting,
+                'dayparting': ad_group.settings.dayparting,
                 'max_cpm': format(max_cpm, '.4f') if max_cpm else max_cpm,
                 'b1_sources_group': {
-                    'enabled': ad_group_settings.b1_sources_group_enabled,
+                    'enabled': ad_group.settings.b1_sources_group_enabled,
                     'daily_budget': b1_sources_group_daily_budget,
                     'cpc_cc': b1_sources_group_cpc_cc,
-                    'state': ad_group_settings.b1_sources_group_state,
+                    'state': ad_group.settings.b1_sources_group_state,
                 },
                 'whitelist_publisher_groups': whitelist,
                 'blacklist_publisher_groups': blacklist,
-                'delivery_type': ad_group_settings.delivery_type,
-                'click_capping_daily_ad_group_max_clicks': ad_group_settings.click_capping_daily_ad_group_max_clicks,
-                'click_capping_daily_click_budget': ad_group_settings.click_capping_daily_click_budget,
+                'delivery_type': ad_group.settings.delivery_type,
+                'click_capping_daily_ad_group_max_clicks': ad_group.settings.click_capping_daily_ad_group_max_clicks,
+                'click_capping_daily_click_budget': ad_group.settings.click_capping_daily_click_budget,
                 'custom_flags': flags,
             }
 
-            ad_groups.append(ad_group)
+            ad_group_dicts.append(ad_group_dict)
 
-        return self.response_ok(ad_groups)
+        return self.response_ok(ad_group_dicts)
 
     @staticmethod
     def _get_retargeting(ad_group_settings):
@@ -218,7 +216,7 @@ class AdGroupsView(K1APIView):
         return campaign_goals_dicts
 
     @staticmethod
-    def _get_settings_maps(ad_group_ids, source_types, slugs, marker, limit):
+    def _get_ad_groups(ad_group_ids, source_types, slugs, marker, limit):
         ad_groups = dash.models.AdGroup.objects.all()
 
         if ad_group_ids:
@@ -239,34 +237,18 @@ class AdGroupsView(K1APIView):
         # apply pagination
         ad_groups = ad_groups.order_by('pk')[:limit]
 
-        ad_groups_settings = (dash.models.AdGroupSettings.objects
-                              .filter(ad_group__in=ad_groups)
-                              .select_related('ad_group__campaign__account__agency')
-                              .order_by('ad_group_id')
-                              .group_current_settings())
+        ad_groups = ad_groups.select_related(
+            'settings',
+            'campaign__settings',
+            'campaign__account__settings',
+            'campaign__account__agency__settings',
+        )
 
-        campaigns_settings = (dash.models.CampaignSettings.objects
-                              .filter(campaign_id__in=set([ag.ad_group.campaign_id for ag in ad_groups_settings]))
-                              .group_current_settings()
-                              .only('campaign_id', 'iab_category', 'whitelist_publisher_groups', 'blacklist_publisher_groups'))
-        campaigns_settings_map = {cs.campaign_id: cs for cs in campaigns_settings}
         campaignstop_states = automation.campaignstop.get_campaignstop_states(
-            set(ad_group_settings.ad_group.campaign for ad_group_settings in ad_groups_settings))
-
-        accounts_settings = (dash.models.AccountSettings.objects
-                             .filter(account_id__in=set([ag.ad_group.campaign.account_id for ag in ad_groups_settings]))
-                             .group_current_settings()
-                             .only('account_id', 'whitelist_publisher_groups', 'blacklist_publisher_groups'))
-        accounts_settings_map = {accs.account_id: accs for accs in accounts_settings}
-
-        agencies_settings = (dash.models.AgencySettings.objects
-                             .filter(agency_id__in=set([ag.ad_group.campaign.account.agency_id for ag in ad_groups_settings]))
-                             .group_current_settings()
-                             .only('agency_id', 'whitelist_publisher_groups', 'blacklist_publisher_groups'))
-        agencies_settings_map = {agncs.agency_id: agncs for agncs in agencies_settings}
+            set(ad_group.campaign for ad_group in ad_groups))
 
         budgets = (dash.models.BudgetLineItem.objects
-                   .filter(campaign_id__in=set([ag.ad_group.campaign_id for ag in ad_groups_settings]))
+                   .filter(campaign_id__in=set([ad_group.campaign_id for ad_group in ad_groups]))
                    .filter_today()
                    .distinct('campaign_id')
                    .select_related('credit', 'campaign')
@@ -275,9 +257,6 @@ class AdGroupsView(K1APIView):
             budget.campaign_id: budget for budget in budgets
         }
 
-        return ad_groups_settings,\
-            campaigns_settings_map,\
-            accounts_settings_map,\
-            agencies_settings_map,\
+        return ad_groups,\
             campaigns_budgets_map,\
             campaignstop_states

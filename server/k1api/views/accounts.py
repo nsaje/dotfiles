@@ -1,6 +1,7 @@
 import logging
 from collections import defaultdict
 
+from django.db.models import Prefetch
 
 import dash.constants
 import dash.models
@@ -16,12 +17,24 @@ class AccountsView(K1APIView):
     @db_for_reads.use_read_replica()
     def get(self, request):
         account_ids = request.GET.get('account_ids')
-        accounts = (dash.models.Account.objects
-                    .all()
-                    .exclude_archived()
-                    .prefetch_related('conversionpixel_set',
-                                      'conversionpixel_set__sourcetypepixel_set',
-                                      'conversionpixel_set__sourcetypepixel_set__source_type'))
+        accounts = (
+            dash.models.Account.objects.all()
+            .exclude_archived()
+            .prefetch_related(
+                Prefetch(
+                    'conversionpixel_set',
+                    queryset=dash.models.ConversionPixel.objects.all().order_by('pk'),
+                ),
+                Prefetch(
+                    'conversionpixel_set__sourcetypepixel_set',
+                    queryset=(
+                        dash.models.SourceTypePixel.objects.all()
+                        .order_by('pk')
+                        .select_related('source_type')
+                    ),
+                )
+            )
+        )
         if account_ids:
             accounts = accounts.filter(id__in=account_ids.split(','))
 
@@ -29,12 +42,12 @@ class AccountsView(K1APIView):
         account_dicts = []
         for account in accounts:
             pixels = []
-            for pixel in account.conversionpixel_set.all().order_by('pk'):
+            for pixel in account.conversionpixel_set.all():
                 if pixel.archived:
                     continue
 
                 source_pixels = []
-                for source_pixel in pixel.sourcetypepixel_set.all().order_by('pk'):
+                for source_pixel in pixel.sourcetypepixel_set.all():
                     source_pixel_dict = {
                         'url': source_pixel.url,
                         'source_pixel_id': source_pixel.source_pixel_id,
@@ -65,14 +78,19 @@ class AccountsView(K1APIView):
 
     def _get_audiences_for_accounts(self, accounts):
         accounts_audiences = defaultdict(list)
-        audiences = (dash.models.Audience.objects
-                     .filter(pixel__account__in=accounts, archived=False)
-                     .select_related('pixel')
-                     .prefetch_related('audiencerule_set')
-                     .order_by('pk'))
+        audiences = (
+            dash.models.Audience.objects.all()
+            .filter(pixel__account__in=accounts, archived=False)
+            .select_related('pixel')
+            .prefetch_related(Prefetch(
+                'audiencerule_set',
+                queryset=dash.models.AudienceRule.objects.all().order_by('pk'),
+            ))
+            .order_by('pk')
+        )
         for audience in audiences:
             rules = []
-            for rule in audience.audiencerule_set.all().order_by('pk'):
+            for rule in audience.audiencerule_set.all():
                 rule_dict = {
                     'id': rule.id,
                     'type': rule.type,

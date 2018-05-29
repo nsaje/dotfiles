@@ -1,31 +1,38 @@
-from django.db import connection
 import influx
 import logging
+
+from django.conf import settings
+from django.db import connections
 
 from utils import influx_helper
 
 logger = logging.getLogger(__name__)
 
+DATABASE_NAMES = ['default'] + settings.DATABASE_READ_REPLICAS
+
 
 def queries_to_influx(get_response):
 
     def middleware(request):
-        connection.force_debug_cursor = True
+        for name in DATABASE_NAMES:
+            connections[name].force_debug_cursor = True
 
         response = get_response(request)
 
         try:
-            if len(connection.queries) > 0:
-                total_time = 0
-                queries_per_verb = {
-                    'SELECT': 0,
-                    'INSERT': 0,
-                    'UPDATE': 0,
-                    'DELETE': 0,
-                    'OTHER': 0,
-                }
+            total_time = 0
+            total_queries = 0
+            queries_per_verb = {
+                'SELECT': 0,
+                'INSERT': 0,
+                'UPDATE': 0,
+                'DELETE': 0,
+                'OTHER': 0,
+            }
 
-                for query in connection.queries:
+            for name in DATABASE_NAMES:
+                total_queries += len(connections[name].queries)
+                for query in connections[name].queries:
                     query_time = query.get('time')
                     if query_time is None:
                         # django-debug-toolbar monkeypatches the connection
@@ -40,8 +47,9 @@ def queries_to_influx(get_response):
                     except KeyError:
                         queries_per_verb['OTHER'] += 1
 
-                path = influx_helper.clean_path(request.path)
+            path = influx_helper.clean_path(request.path)
 
+            if total_queries > 0:
                 influx.timing(
                     'queries.timer',
                     total_time,
@@ -51,7 +59,7 @@ def queries_to_influx(get_response):
                 )
                 influx.timing(
                     'queries.count',
-                    len(connection.queries),
+                    total_queries,
                     path=path,
                     method=request.method,
                     status=str(response.status_code),
