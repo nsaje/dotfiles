@@ -41,6 +41,7 @@ def get_autopilot_cpc_recommendations(
                 old_cpc_cc,
                 budget_changes[all_rtb_ad_group_source]['new_budget'] if budget_changes else data[all_rtb_ad_group_source]['old_budget'],
                 data[all_rtb_ad_group_source]['yesterdays_spend_cc'],
+                data[ag_source]['yesterdays_spend_cc'],
                 data[ag_source]['goal_performance'])
 
         cpc_change_comments += calculation_comments
@@ -101,7 +102,7 @@ def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_sp
     return _threshold_autopilot_min_max_cpc(new_cpc, cpc_change_comments)
 
 
-def calculate_new_autopilot_cpc_automatic_mode_rtb(current_cpc, rtb_daily_budget, rtb_yesterdays_spend, performance):
+def calculate_new_autopilot_cpc_automatic_mode_rtb(current_cpc, rtb_daily_budget, rtb_yesterdays_spend, source_yesterday_spend, performance):
     underspend_perc = rtb_yesterdays_spend / rtb_daily_budget - 1
     current_cpc, cpc_change_comments = _get_calculate_cpc_comments(current_cpc, rtb_daily_budget, rtb_yesterdays_spend)
     if cpc_change_comments:
@@ -112,6 +113,10 @@ def calculate_new_autopilot_cpc_automatic_mode_rtb(current_cpc, rtb_daily_budget
         if change_interval['underspend_upper_limit'] <= underspend_perc <= change_interval['underspend_lower_limit']:
             budget_fulfillment_factor = change_interval['bid_cpc_proc_increase']
             break
+
+    if (source_yesterday_spend < settings.AUTOPILOT_CPC_NO_SPEND_THRESHOLD and
+            budget_fulfillment_factor < settings.AUTOPILOT_CPC_NO_SPEND_CHANGE):
+        budget_fulfillment_factor = settings.AUTOPILOT_CPC_NO_SPEND_CHANGE
 
     performance_factor = decimal.Decimal('1.0')
     for change_interval in settings.AUTOPILOT_CPC_CHANGE_PERFORMANCE_FACTOR_TABLE:

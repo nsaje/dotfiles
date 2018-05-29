@@ -55,6 +55,7 @@ class AutopilotCpcTestCase(test.TestCase):
                 Decimal(test_case[2])),
                 (Decimal(test_case[3]), test_case[4]))
 
+    @patch('automation.autopilot.settings.AUTOPILOT_CPC_NO_SPEND_CHANGE', Decimal('0.4'))
     @patch('automation.autopilot.settings.AUTOPILOT_CPC_CHANGE_TABLE', (
         {'underspend_upper_limit': -1, 'underspend_lower_limit': -0.5,
             'bid_cpc_proc_increase': Decimal('0.1')},
@@ -76,38 +77,41 @@ class AutopilotCpcTestCase(test.TestCase):
     @patch('automation.autopilot.settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE', Decimal('0.25'))
     def test_calculate_new_autopilot_cpc_automatic_mode_rtb(self):
         test_cases = (
-            #  cpc, rtb_daily_budget, rtb_yesterday_spend, source_performance, new_cpc, comments
-            ('0', '10', '5', 1.0, '0.01', [CpcChangeComment.CPC_NOT_SET,
-                                           CpcChangeComment.CURRENT_CPC_TOO_LOW]),
-            ('0.5', '10', '8', 1.0, '0.75', []),
-            ('2.5', '10', '8', 1.0, '2.75', []),
-            ('0.5', '10', '10', 1.0, '0.25', []),
-            ('0.5', '10', '2', 1.0, '0.55', []),
-            ('0.5', '10', '0', 1.0, '0.55', []),  # no yesterday spend
-            ('0.5', '10', '5', 1.0, '0.55', []),
-            ('0.5', '-10', '5', 1.0, '0.5', [CpcChangeComment.BUDGET_NOT_SET]),
-            ('0.5', '10', '-5', 1.0, '0.55', []),
-            ('-0.5', '10', '5', 1.0, '0.01', [CpcChangeComment.CPC_NOT_SET,
-                                              CpcChangeComment.CURRENT_CPC_TOO_LOW]),
-            ('0.35', '10', '9.96', 1.0, '0.15', []),
-            ('2.8', '10', '9.96', 1.0, '2.5', []),
-            ('3.5', '10', '1', 1.0, '3', [CpcChangeComment.CURRENT_CPC_TOO_HIGH]),
-            ('0.005', '10', '1', 1.0, '0.01', [CpcChangeComment.CURRENT_CPC_TOO_LOW]),
-            ('1.0', '10', '10', 0.2, '0.7', []),
-            ('0.5', '10', '10', 0.7, '0.2', []),
-            ('1.0', '10', '7', 0.2, '0.7', [])
+            #  cpc, rtb_daily_budget, rtb_yesterday_spend, source_yesterday_spend, source_performance, new_cpc, comments
+            ('0',     '10',  '5',    '2', 1.0, '0.01', [CpcChangeComment.CPC_NOT_SET,
+                                                        CpcChangeComment.CURRENT_CPC_TOO_LOW]),
+            ('0.5',   '10',  '8',    '2', 1.0, '0.75', []),
+            ('2.5',   '10',  '8',    '2', 1.0, '2.75', []),
+            ('0.5',   '10',  '10',   '2', 1.0, '0.25', []),
+            ('0.5',   '10',  '2',    '2', 1.0, '0.55', []),
+            ('0.5',   '10',  '0',    '2', 1.0, '0.55', []),  # no yesterday spend
+            ('0.5',   '10',  '5',    '2', 1.0, '0.55', []),
+            ('0.5',   '-10', '5',    '2', 1.0, '0.5',  [CpcChangeComment.BUDGET_NOT_SET]),
+            ('0.5',   '10',  '-5',   '2', 1.0, '0.55', []),
+            ('-0.5',  '10',  '5',    '2', 1.0, '0.01', [CpcChangeComment.CPC_NOT_SET,
+                                                        CpcChangeComment.CURRENT_CPC_TOO_LOW]),
+            ('0.35',  '10',  '9.96', '2', 1.0, '0.15', []),
+            ('2.8',   '10',  '9.96', '2', 1.0, '2.5',  []),
+            ('3.5',   '10',  '1',    '2', 1.0, '3',    [CpcChangeComment.CURRENT_CPC_TOO_HIGH]),
+            ('0.005', '10',  '1',    '2', 1.0, '0.01', [CpcChangeComment.CURRENT_CPC_TOO_LOW]),
+            ('1.0',   '10',  '10',   '2', 0.2, '0.7',  []),
+            ('0.5',   '10',  '10',   '2', 0.7, '0.2',  []),
+            ('1.0',   '10',  '7',    '2', 0.2, '0.7',  []),
+            ('0.5',   '10',  '10',   '0', 1.0, '0.7',  []),  # source with no spend
+            ('0.5',   '10',  '8',    '0', 1.0, '0.75', []),  # higher budget_fulfillment_factor overrides source with no spend
         )
         for test_case in test_cases:
             new_cpc, comments = cpc.calculate_new_autopilot_cpc_automatic_mode_rtb(
                 Decimal(test_case[0]),
                 Decimal(test_case[1]),
                 Decimal(test_case[2]),
-                test_case[3])
+                Decimal(test_case[3]),
+                test_case[4])
             self.assertEqual(
                 (new_cpc, comments),
-                (Decimal(test_case[4]), test_case[5]),
-                msg=('Expected cpc: ' + test_case[4] + ' Actual: ' + str(new_cpc) +
-                     ' | Expected Comments: "' + str(test_case[5]) + '" Actual: "' + str(comments) + '"'
+                (Decimal(test_case[5]), test_case[6]),
+                msg=('Expected cpc: ' + test_case[5] + ' Actual: ' + str(new_cpc) +
+                     ' | Expected Comments: "' + str(test_case[6]) + '" Actual: "' + str(comments) + '"'
                      ))
 
     @patch('automation.autopilot.settings.AUTOPILOT_MIN_CPC', Decimal('0.1'))
