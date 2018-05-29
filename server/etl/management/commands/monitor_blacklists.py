@@ -75,7 +75,8 @@ class Command(ExceptionCommand):
         ad_groups = ad_groups.select_related('campaign', 'campaign__account')
         campaigns = models.Campaign.objects.filter(pk__in=ad_groups.values_list('campaign_id', flat=True))
         accounts = models.Account.objects.filter(pk__in=campaigns.values_list('account_id', flat=True))
-        agencies = models.Agency.objects.filter(agency_id__isnull=False, pk__in=accounts.values_list('agency_id', flat=True))
+        agencies = models.Agency.objects.filter(
+            pk__in=accounts.filter(agency_id__isnull=False).values_list('agency_id', flat=True))
         ad_group_settings_map = {x.ad_group_id: x for x in models.AdGroupSettings.objects.filter(
             ad_group__in=ad_groups).group_current_settings()}
         campaign_settings_map = {x.campaign_id: x for x in models.CampaignSettings.objects.filter(
