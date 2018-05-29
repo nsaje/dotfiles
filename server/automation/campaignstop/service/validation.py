@@ -1,5 +1,7 @@
 import decimal
 
+import newrelic.agent
+
 from . import refresh
 from . import spends_helper
 from .. import RealTimeCampaignStopLog
@@ -15,6 +17,7 @@ class CampaignStopValidationException(Exception):
         self.min_amount = min_amount
 
 
+@newrelic.agent.function_trace()
 def validate_minimum_budget_amount(budget_line_item, amount):
     if not budget_line_item.campaign.real_time_campaign_stop:
         return
