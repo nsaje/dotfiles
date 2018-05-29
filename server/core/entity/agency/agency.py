@@ -104,7 +104,9 @@ class Agency(models.Model):
                                              on_delete=models.PROTECT, null=True, blank=True)
 
     yahoo_account = models.ForeignKey(
-        core.features.yahoo_accounts.YahooAccount, on_delete=models.PROTECT, null=True)
+        core.features.yahoo_accounts.YahooAccount, on_delete=models.PROTECT,
+        null=True, blank=True
+    )
 
     settings = models.OneToOneField('AgencySettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_entity')
 
