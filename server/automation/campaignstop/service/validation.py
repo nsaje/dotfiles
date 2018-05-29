@@ -34,8 +34,8 @@ def _calculate_minimum_budget_amount(log, budget_line_item):
     reserved_amount = estimated_spend * RESERVED_PROPORTION
     amount = estimated_spend + reserved_amount
     log.add_context({
-        'spend_estimates': spend_estimates,
-        'min_amount':  amount,
+        'spend_estimates': {budget.id: spend for budget, spend in spend_estimates.items()},
+        'min_amount': amount,
     })
     return _round(amount)
 
