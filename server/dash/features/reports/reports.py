@@ -21,6 +21,7 @@ from celery.exceptions import SoftTimeLimitExceeded
 import stats.constants
 import stats.api_breakdowns
 import stats.api_reports
+import stats.helpers
 
 import utils.s3helpers
 import utils.email_helper
@@ -171,6 +172,8 @@ class ReportJobExecutor(JobExecutor):
         level = helpers.get_level_from_constraints(filter_constraints)
         breakdown = list(helpers.get_breakdown_from_fields(job.query['fields'], level))
         structure_constraints = cls._extract_structure_constraints(filter_constraints)
+        all_accounts_in_local_currency = job.query['options']['all_accounts_in_local_currency'] and \
+            user.has_perm('zemauth.can_request_accounts_report_in_local_currencies')
 
         constraints = stats.api_reports.prepare_constraints(
             user, breakdown, start_date, end_date, filtered_sources,
@@ -192,7 +195,12 @@ class ReportJobExecutor(JobExecutor):
         order = cls._get_order(job, column_to_field_name_map)
         column_names = cls._extract_column_names(job.query['fields'])
 
-        currency = stats.helpers.get_report_currency(user, constraints['allowed_accounts'])
+        currency = None
+        account_currency_map = None
+        if all_accounts_in_local_currency:
+            account_currency_map = {account.id: account.currency for account in constraints['allowed_accounts']}
+        else:
+            currency = stats.helpers.get_report_currency(user, constraints['allowed_accounts'])
 
         try:
             columns = [column_to_field_name_map[column_name] for column_name in column_names]
@@ -218,16 +226,20 @@ class ReportJobExecutor(JobExecutor):
                 dashapi_cache=dashapi_cache,
             )
 
-            stats.helpers.update_rows_to_contain_values_in_currency(rows, currency)
+            if all_accounts_in_local_currency:
+                stats.helpers.update_rows_to_contain_local_values(rows)
+            else:
+                stats.helpers.update_rows_to_contain_values_in_currency(rows, currency)
 
-            cls.convert_to_csv(job, rows, currency, column_to_field_name_map, output, header=offset == 0)
+            cls.convert_to_csv(job, rows, column_to_field_name_map, output, header=offset == 0, currency=currency,
+                               account_currency_map=account_currency_map)
 
             if len(rows) < BATCH_ROWS or job.query['options']['include_items_with_no_spend']:
                 break
 
             offset += BATCH_ROWS
 
-        if job.query['options']['include_totals']:
+        if job.query['options']['include_totals'] and not all_accounts_in_local_currency:
             totals_constraints = stats.api_reports.prepare_constraints(
                 user, breakdown, start_date, end_date, filtered_sources,
                 show_archived=True,
@@ -243,12 +255,13 @@ class ReportJobExecutor(JobExecutor):
 
             stats.helpers.update_rows_to_contain_values_in_currency([totals], currency)
 
-            cls.convert_to_csv(job, [totals], currency, column_to_field_name_map, output, header=False)
+            cls.convert_to_csv(job, [totals], column_to_field_name_map, output, header=False, currency=currency)
 
         return output.getvalue(), stats.api_reports.get_filename(breakdown, constraints)
 
     @classmethod
-    def convert_to_csv(cls, job, data, currency, field_name_mapping, output, header=True):
+    def convert_to_csv(cls, job, data, field_name_mapping, output, header=True, currency=None,
+                       account_currency_map=None):
         requested_columns = cls._extract_column_names(job.query['fields'])
         requested_columns = cls._append_currency_column_if_necessary(requested_columns, field_name_mapping)
 
@@ -257,7 +270,8 @@ class ReportJobExecutor(JobExecutor):
         if job.query['options']['show_status_date']:
             csv_column_names, original_to_dated = cls._date_column_names(csv_column_names)
 
-        rows = cls._get_csv_rows(data, currency, field_name_mapping, requested_columns, original_to_dated)
+        rows = cls._get_csv_rows(data, field_name_mapping, requested_columns, original_to_dated, currency=currency,
+                                 account_currency_map=account_currency_map)
         output.write(csv_utils.dictlist_to_csv(csv_column_names, rows, writeheader=header))
 
     @staticmethod
@@ -287,14 +301,16 @@ class ReportJobExecutor(JobExecutor):
         return requested_columns
 
     @staticmethod
-    def _get_csv_rows(data, currency, field_name_mapping, requested_columns, original_to_dated):
+    def _get_csv_rows(data, field_name_mapping, requested_columns, original_to_dated, currency=None,
+                      account_currency_map=None):
         for row in data:
             csv_row = {}
             for column_name in requested_columns:
                 field_name = field_name_mapping[column_name]
                 csv_column = original_to_dated[column_name]
                 if field_name == 'currency':
-                    csv_row[csv_column] = currency
+                    csv_row[csv_column] = helpers.get_row_currency(row, currency=currency,
+                                                                   account_currency_map=account_currency_map)
                 elif field_name in row:
                     csv_row[csv_column] = row[field_name]
                 else:

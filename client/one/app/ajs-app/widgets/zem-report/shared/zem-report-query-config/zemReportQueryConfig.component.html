@@ -55,7 +55,11 @@
     <label class="form__label" for="include-totals-checkbox">Include totals</label>
     <div class="form__checkbox">
         <label>
-            <input id="include-totals-checkbox" type="checkbox" ng-model="$ctrl.config.includeTotals" ng-disabled="$ctrl.disabled" class="input-checkbox">
+            <input id="include-totals-checkbox"
+                   type="checkbox"
+                   ng-model="$ctrl.config.includeTotals"
+                   ng-disabled="$ctrl.disabled || $ctrl.config.allAccountsInLocalCurrency"
+                   class="input-checkbox">
             <span class="checkbox-text"></span>
         </label>
     </div>
@@ -84,6 +88,21 @@
                    ng-disabled="$ctrl.disabled"
                    class="input-checkbox">
             <span class="checkbox-text" for="add-missing-checkbox"></span>
+        </label>
+    </div>
+</div>
+<div ng-if="$ctrl.showAllAccountsInLocalCurrencyCheckbox" class="form__group" >
+    <label class="form__label" for="all-accounts-in-local-currency-checkbox" is-internal="zemauth.can_request_accounts_report_in_local_currencies">
+        Use accounts' local currencies to generate report
+    </label>
+    <div class="form__checkbox">
+        <label>
+            <input id="all-accounts-in-local-currency-checkbox"
+                   type="checkbox"
+                   ng-model="$ctrl.config.allAccountsInLocalCurrency"
+                   ng-disabled="$ctrl.disabled"
+                   class="input-checkbox">
+            <span class="checkbox-text" for="all-accounts-in-local-currency-checkbox"></span>
         </label>
     </div>
 </div>

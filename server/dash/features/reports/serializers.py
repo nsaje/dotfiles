@@ -47,6 +47,7 @@ class ReportOptionsSerializer(serializers.Serializer):
         dash.constants.PublisherBlacklistFilter.get_all(), default=dash.constants.PublisherBlacklistFilter.SHOW_ALL)
     include_totals = serializers.BooleanField(default=False)
     include_items_with_no_spend = serializers.BooleanField(default=False)
+    all_accounts_in_local_currency = serializers.BooleanField(default=False)
     show_status_date = serializers.BooleanField(default=False)
     recipients = serializers.ListField(child=serializers.EmailField(), default=[])
     order = restapi.serializers.fields.PlainCharField(required=False)

@@ -296,7 +296,15 @@ def update_rows_to_contain_values_in_currency(rows, currency):
     if currency == dash.constants.Currency.USD:
         _strip_local_values_from_rows(rows)
         return
-    _update_rows_to_contain_local_values(rows)
+    update_rows_to_contain_local_values(rows)
+
+
+def update_rows_to_contain_local_values(rows):
+    for row in rows:
+        for key in list(row.keys()):
+            if key and key.startswith('local_'):
+                non_local_key = key.replace('local_', '', 1)
+                row[non_local_key] = row.pop(key, None)
 
 
 def _strip_local_values_from_rows(rows):
@@ -304,14 +312,6 @@ def _strip_local_values_from_rows(rows):
         for key in list(row.keys()):
             if key and key.startswith('local_'):
                 row.pop(key, None)
-
-
-def _update_rows_to_contain_local_values(rows):
-    for row in rows:
-        for key in list(row.keys()):
-            if key and key.startswith('local_'):
-                non_local_key = key.replace('local_', '', 1)
-                row[non_local_key] = row.pop(key, None)
 
 
 def should_query_dashapi_first(order, target_dimension):

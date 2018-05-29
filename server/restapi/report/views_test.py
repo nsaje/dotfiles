@@ -171,6 +171,7 @@ class ReportViewsTest(TestCase):
                 'showBlacklistedPublishers': 'active',
                 'includeTotals': True,
                 'includeItemsWithNoSpend': True,
+                'allAccountsInLocalCurrency': False,
                 'order': 'Clicks'
             }
         }

@@ -79,6 +79,7 @@ class ScheduledReportsTestCase(TestCase):
             }],
             'options': {
                 'include_items_with_no_spend': False,
+                'all_accounts_in_local_currency': False,
                 'include_totals': False,
                 'show_archived': False,
                 'show_blacklisted_publishers': 'all',

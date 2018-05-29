@@ -31,10 +31,12 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
             includeTotals: false,
             includeIds: false,
             includeItemsWithNoSpend: false,
+            allAccountsInLocalCurrency: false,
             selectedFields: [],
         };
         $ctrl.showTruncatedColsList = true;
         $ctrl.showIncludeItemsWithNoSpend = true;
+        $ctrl.showAllAccountsInLocalCurrencyCheckbox = false;
         $ctrl.shownSelectedFields = [];
         $ctrl.appliedFilterConditions = [];
         $ctrl.view = '';
@@ -56,6 +58,11 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
             $ctrl.view = $ctrl.breakdown[0].report_query;
             if ($ctrl.view === 'Publisher') {
                 $ctrl.showIncludeItemsWithNoSpend = false;
+            }
+
+            if ($ctrl.view === 'Account' &&
+                zemPermissions.hasPermission('zemauth.can_request_accounts_report_in_local_currencies')) {
+                $ctrl.showAllAccountsInLocalCurrencyCheckbox = true;
             }
 
             update();

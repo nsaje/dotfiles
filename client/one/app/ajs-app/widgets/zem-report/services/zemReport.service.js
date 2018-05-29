@@ -79,6 +79,7 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
                 showArchived: zemDataFilterService.getShowArchived(),
                 includeTotals: queryConfig.includeTotals || false,
                 includeItemsWithNoSpend: queryConfig.includeItemsWithNoSpend || false,
+                allAccountsInLocalCurrency: queryConfig.allAccountsInLocalCurrency || false,
                 showStatusDate: true,
                 order: getOrder(gridApi),
             }
