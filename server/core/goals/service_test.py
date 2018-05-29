@@ -26,8 +26,8 @@ class TestGoalsService(TestCase):
                 dash.constants.CampaignGoalKPI.CPA: '100.00',
                 dash.constants.CampaignGoalKPI.CPC: '0.700',
                 dash.constants.CampaignGoalKPI.CPV: '1.00',
-                dash.constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: '5.50',
-                dash.constants.CampaignGoalKPI.CP_NEW_VISITOR: '5.50',
+                dash.constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: '5.60',
+                dash.constants.CampaignGoalKPI.CP_NEW_VISITOR: '5.60',
                 dash.constants.CampaignGoalKPI.CP_PAGE_VIEW: '0.90',
                 dash.constants.CampaignGoalKPI.CPCV: '1.20',
             }

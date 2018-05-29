@@ -2,6 +2,7 @@ import decimal
 
 import dash.constants
 import core.multicurrency
+import utils.numbers
 
 import dash.campaign_goals
 
@@ -13,8 +14,8 @@ _CAMPAIGN_GOAL_DEFAULT_VALUE = {
     dash.constants.CampaignGoalKPI.CPA: {'value': decimal.Decimal('50'), 'convert_to_local': True},
     dash.constants.CampaignGoalKPI.CPC: {'value': decimal.Decimal('0.35'), 'convert_to_local': True},
     dash.constants.CampaignGoalKPI.CPV: {'value': decimal.Decimal('0.5'), 'convert_to_local': True},
-    dash.constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: {'value': decimal.Decimal('2.75'), 'convert_to_local': True},
-    dash.constants.CampaignGoalKPI.CP_NEW_VISITOR: {'value': decimal.Decimal('2.75'), 'convert_to_local': True},
+    dash.constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: {'value': decimal.Decimal('2.8'), 'convert_to_local': True},
+    dash.constants.CampaignGoalKPI.CP_NEW_VISITOR: {'value': decimal.Decimal('2.8'), 'convert_to_local': True},
     dash.constants.CampaignGoalKPI.CP_PAGE_VIEW: {'value': decimal.Decimal('0.45'), 'convert_to_local': True},
     dash.constants.CampaignGoalKPI.CPCV: {'value': decimal.Decimal('0.6'), 'convert_to_local': True},
 }
@@ -29,6 +30,6 @@ def _convert_to_local_value(kpi, value, exchange_rate):
     converted_value = value.get('value')
 
     if value.get('convert_to_local'):
-        converted_value = converted_value * exchange_rate
+        converted_value = utils.numbers.round_to_significant_figures(converted_value * exchange_rate, 2)
 
     return dash.campaign_goals.CAMPAIGN_GOAL_VALUE_FORMAT[kpi](converted_value, curr='')
