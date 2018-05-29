@@ -126,26 +126,6 @@ class CampaignGoalsTest(RESTAPITest):
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
         self.validate_against_db(resp_json['data'])
 
-    def test_campaigngoals_legacy_window_post(self):
-        account = dash.models.Account.objects.get(pk=186)
-        pixel = magic_mixer.blend(dash.models.ConversionPixel, account=account)
-        test_campaigngoal = self.campaigngoal_repr(
-            type=constants.CampaignGoalKPI.CPA,
-            value='0.44',
-            primary=True,
-            conversionGoal=dict(
-                type='PIXEL',
-                conversionWindow='LEQ_90_DAYS',
-                goalId=pixel.id,
-            )
-        )
-        post_data = test_campaigngoal.copy()
-        del post_data['id']
-        r = self.client.post(
-            reverse('campaigngoals_list', kwargs={'campaign_id': 608}),
-            data=post_data, format='json')
-        self.assertResponseError(r, 'ValidationError')
-
     def test_campaigngoals_post_validation(self):
         test_campaigngoal = self.campaigngoal_repr(
             type=constants.CampaignGoalKPI.CPC,

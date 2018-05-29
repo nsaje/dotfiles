@@ -989,11 +989,13 @@ var constants = {
         LEQ_1_DAY: 24,
         LEQ_7_DAYS: 168,
         LEQ_30_DAYS: 720,
+        LEQ_90_DAYS: 2160,
     },
     conversionWindowText: {
         24: '1 day',
         168: '7 days',
         720: '30 days',
+        2160: '90 days',
     },
     entityAction: {
         ACTIVATE: 'activate',
@@ -2179,6 +2181,7 @@ var options = {
         {name: '1 day', value: constants.conversionWindow.LEQ_1_DAY},
         {name: '7 days', value: constants.conversionWindow.LEQ_7_DAYS},
         {name: '30 days', value: constants.conversionWindow.LEQ_30_DAYS},
+        {name: '90 days', value: constants.conversionWindow.LEQ_90_DAYS},
     ],
     exportFrequency: [
         {name: 'Daily', value: constants.exportFrequency.DAILY},

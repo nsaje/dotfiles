@@ -254,7 +254,7 @@ def _get_pixel_field_names_mapping(pixels, uses_bcm_v2):
     for pixel in sorted(pixels, key=lambda x: x.name.lower()):
         prefix = pixel.get_prefix()
 
-        for window, window_title in dash.constants.ConversionWindowsLegacy.get_choices():
+        for window, window_title in dash.constants.ConversionWindows.get_choices():
             field_name = '{}_{}'.format(prefix, window)
             column_name = '{} {}'.format(pixel.name, window_title)
             mapping[column_name] = field_name
