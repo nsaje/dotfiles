@@ -82,14 +82,14 @@ class ValidateMinimumBudgetAmountTest(TestCase):
             validation.validate_minimum_budget_amount(self.budget, 399)
             self.assertEqual(400, e.min_amount)
 
-    @mock.patch('utils.dates_helper.utc_now')
-    def test_validate_minimum_budget_amount_invalid_real_time_data(self, mock_utc_now):
-        am = datetime.datetime(self.today.year, self.today.month, self.today.day, 6)
-        mock_utc_now.return_value = am
-
-        with self.assertRaises(validation.CampaignStopValidationException) as e:
-            validation.validate_minimum_budget_amount(self.budget, 399)
-            self.assertEqual(400, e.min_amount)
+    # @mock.patch('utils.dates_helper.utc_now')
+    # def test_validate_minimum_budget_amount_invalid_real_time_data(self, mock_utc_now):
+    #     am = datetime.datetime(self.today.year, self.today.month, self.today.day, 6)
+    #     mock_utc_now.return_value = am
+    #
+    #     with self.assertRaises(validation.CampaignStopValidationException) as e:
+    #         validation.validate_minimum_budget_amount(self.budget, 399)
+    #         self.assertEqual(400, e.min_amount)
 
     def test_validate_without_real_time_campaign_stop(self):
         self.campaign.set_real_time_campaign_stop(is_enabled=False)
