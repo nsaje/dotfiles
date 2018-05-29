@@ -529,24 +529,25 @@ class CampaignSettings(api_common.BaseApiView):
             raise exc.ValidationError(errors=errors)
 
         form_data = native_server.transform_campaign_settings(campaign, settings_form.cleaned_data)
-        try:
-            campaign.settings.update(request, **form_data)
 
-        except core.entity.settings.campaign_settings.exceptions.CannotChangeLanguage as err:
+        with transaction.atomic():
+            try:
+                campaign.settings.update(request, **form_data)
+
+            except core.entity.settings.campaign_settings.exceptions.CannotChangeLanguage as err:
                 raise utils.exc.ValidationError(errors={
                     'language': str(err)
                 })
 
-        with transaction.atomic():
             goal_errors = self.set_goals(request, campaign, changes)
 
-        if any(goal_error for goal_error in goal_errors):
-            errors['goals'] = goal_errors
+            if any(goal_error for goal_error in goal_errors):
+                errors['goals'] = goal_errors
 
-        if errors:
-            raise exc.ValidationError(errors=errors)
+            if errors:
+                raise exc.ValidationError(errors=errors)
 
-        native_server.apply_campaign_change_hacks(request, campaign, changes)
+            native_server.apply_campaign_change_hacks(request, campaign, changes)
 
         response = {
             'settings': self.get_dict(request, campaign.settings, campaign),
