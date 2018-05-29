@@ -78,6 +78,8 @@ class ReportQuerySerializer(serializers.Serializer):
             stats.api_reports.validate_breakdown_by_permissions(level, self.context['request'].user, breakdown)
         except exc.InvalidBreakdownError as e:
             raise serializers.ValidationError(e)
+        except exc.MissingDataError:
+            raise serializers.ValidationError('Breakdown not available. Please contact support.')
         return data
 
 
