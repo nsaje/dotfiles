@@ -29,6 +29,7 @@ def validate_minimum_budget_amount(budget_line_item, amount):
     min_amount = _calculate_minimum_budget_amount(log, budget_line_item)
     log.add_context({
         'desired_amount': amount,
+        'min_amount': min_amount,
     })
     if amount < min_amount:
         raise CampaignStopValidationException('Budget amount has to be at least ${}'.format(min_amount), min_amount)
@@ -41,7 +42,7 @@ def _calculate_minimum_budget_amount(log, budget_line_item):
     amount = estimated_spend + reserved_amount
     log.add_context({
         'spend_estimates': {budget.id: spend for budget, spend in spend_estimates.items()},
-        'min_amount': amount,
+        'min_amount_raw': amount,
     })
     return _round(amount)
 

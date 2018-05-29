@@ -62,7 +62,6 @@ def get_budget_spend_estimates(log, campaign):
     log.add_context({
         'budget_spends_until_date': budget_spend_until_date,
         'local_spend_per_budget': spend_per_budget,
-        'local_remaining_rt_spend': local_remaining_rt_spend,
     })
     return spend_estimates
 
