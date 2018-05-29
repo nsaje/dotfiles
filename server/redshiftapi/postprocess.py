@@ -232,7 +232,7 @@ def apply_pixel_columns(breakdown, rows, pixels, touchpoint_rows):
     pixel_breakdown = breakdown + ['slug']
     pixel_rows_map = sort_helper.group_rows_by_breakdown_key(pixel_breakdown, touchpoint_rows, max_1=False)
 
-    conversion_windows = sorted(dash.constants.ConversionWindows.get_all())
+    conversion_windows = sorted(dash.constants.ConversionWindowsLegacy.get_all())
 
     for row in rows:
         cost = row['e_media_cost'] or 0

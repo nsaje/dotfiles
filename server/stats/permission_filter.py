@@ -279,7 +279,7 @@ def _get_allowed_pixels_fields(user, pixels, uses_bcm_v2):
 
     allowed = set()
     for pixel in pixels:
-        for conversion_window in dash.constants.ConversionWindows.get_all():
+        for conversion_window in dash.constants.ConversionWindowsLegacy.get_all():
             view_key = pixel.get_view_key(conversion_window)
             allowed.add(view_key)
 
