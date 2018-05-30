@@ -37,7 +37,7 @@ class CreateClientTestCase(TestCase):
             },
         })
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(client.default_account_type, dash.constants.AccountType.TEST)
+        self.assertEqual(client.default_account_type, dash.constants.AccountType.PILOT)
         self.assertEqual(client.cs_representative.email, service.DEFAULT_CS_REPRESENTATIVE)
         self.assertEqual(client.sales_representative.email, service.DEFAULT_SALES_REPRESENTATIVE)
 
@@ -58,7 +58,7 @@ class CreateClientTestCase(TestCase):
         })
         self.assertEqual(r.status_code, 200)
         sett = client.get_current_settings()
-        self.assertEqual(sett.account_type, dash.constants.AccountType.TEST)
+        self.assertEqual(sett.account_type, dash.constants.AccountType.PILOT)
         self.assertEqual(sett.default_cs_representative.email, service.DEFAULT_CS_REPRESENTATIVE)
         self.assertEqual(sett.default_sales_representative.email, service.DEFAULT_SALES_REPRESENTATIVE)
 
