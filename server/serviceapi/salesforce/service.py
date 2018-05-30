@@ -17,7 +17,7 @@ CLIENT_TYPE_OBJECT_MAP = {
     constants.CLIENT_TYPE_CLIENT_DIRECT: core.entity.account.Account
 }
 
-DEFAULT_ACCOUNT_TYPE = dash.constants.AccountType.TEST
+DEFAULT_ACCOUNT_TYPE = dash.constants.AccountType.PILOT
 
 # TODO: handle properly via SF
 DEFAULT_CS_REPRESENTATIVE = 'tadej.pavlic@zemanta.com'
