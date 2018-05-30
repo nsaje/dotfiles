@@ -374,6 +374,12 @@ class MulticurrencyHelpersTest(TestCase):
         account = models.Account.objects.get(pk=2)
         self.assertEqual(helpers.get_report_currency(self.user, [account, account]), dash.constants.Currency.EUR)
 
+    def test_get_report_currency_multiple_accounts_same_currency_with_none(self):
+        account_none = models.Account.objects.get(pk=1)
+        account_none.currency = None
+        account = models.Account.objects.get(pk=2)
+        self.assertEqual(helpers.get_report_currency(self.user, [account_none, account, account]), dash.constants.Currency.EUR)
+
     def test_update_rows_to_contain_values_in_currency_usd_currency(self):
         rows = [
             {'test_value_one': 1, 'local_test_value_one': 10, 'test_value_two': 2, 'local_test_value_two': 20},

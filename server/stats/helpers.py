@@ -284,12 +284,11 @@ def get_report_currency(user, accounts, permission=None):
     if len(accounts) == 0 or (permission and not user.has_perm(permission)):
         return dash.constants.Currency.USD
 
-    currency = accounts[0].currency
-    for account in accounts[1:]:
-        if account.currency != currency:
-            return dash.constants.Currency.USD
-
-    return currency
+    currency_set = set(account.currency for account in accounts if account.currency)
+    if len(currency_set) == 1:
+        return currency_set.pop()
+    else:
+        return dash.constants.Currency.USD
 
 
 def update_rows_to_contain_values_in_currency(rows, currency):
