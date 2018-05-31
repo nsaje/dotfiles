@@ -30,7 +30,7 @@ class Command(utils.command_helpers.ExceptionCommand):
                     data.append(row)
         missing = MANDATORY_COLUMNS - set(header)
         if missing:
-            raise('Missing columns: {}'.format(', '.join(missing)))
+            raise Exception('Missing columns: {}'.format(', '.join(missing)))
         query = 'INSERT INTO mv_master_diff ({columns}) VALUES {values};'.format(
             columns=', '.join(header),
             values=', '.join(['({})'.format(', '.join(
