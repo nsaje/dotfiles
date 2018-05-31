@@ -22,7 +22,7 @@ class Command(ExceptionCommand):
         parser.add_argument('min_date', type=str)
 
     def handle(self, *args, **options):
-        since = datetime.datetime.strptime(options['min_date'], '%Y-%m-%d').date()
+        since = datetime.datetime.strptime(options['min_date'], '%Y-%m-%d')
         batch = options['batch']
         accounts = Account.objects.filter(
             agency_id=options['agency_id']
@@ -35,7 +35,10 @@ class Command(ExceptionCommand):
         with redshiftapi.db.get_stats_cursor() as cur:
             cur.execute(query)
             account_since = {
-                account_id: max(start_date, since)
+                account_id: max(
+                    datetime.datetime.strptime(str(start_date), "%Y-%m-%d"),
+                    since
+                )
                 for account_id, start_date in cur.fetchall()
             }
         if not account_since:
@@ -43,10 +46,9 @@ class Command(ExceptionCommand):
         for acc_id, since in account_since.items():
             if (acc_id % NUM_OF_BATCHES) != batch:
                 continue
-            since_dt = datetime.datetime.strptime(since, "%Y-%m-%d")
-            print("reprocessing", acc_id, "since", since_dt)
+            print("reprocessing", acc_id, "since", since)
             try:
-                refresh_k1.refresh_k1_reports(since_dt, acc_id,
+                refresh_k1.refresh_k1_reports(since, acc_id,
                                               skip_vacuum=True, skip_analyze=True)
             except Exception as e:
                 print("Exception:", e)
