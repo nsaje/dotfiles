@@ -264,7 +264,7 @@ def _post_to_slack(status, update_since, account_id=None):
 
 
 @influx.timer('etl.refresh_k1.refresh_k1_timer', type='all')
-def refresh_k1_reports(update_since, account_id=None, skip_vacuum=False):
+def refresh_k1_reports(update_since, account_id=None, skip_vacuum=False, skip_analyze=False):
     do_post_to_slack = (datetime.datetime.today() - update_since).days > SLACK_MIN_DAYS_TO_PROCESS
     if do_post_to_slack or account_id:
         _post_to_slack('started', update_since, account_id)
@@ -274,7 +274,7 @@ def refresh_k1_reports(update_since, account_id=None, skip_vacuum=False):
     materialization_run.create_done()
 
 
-def _refresh_k1_reports(update_since, views, account_id=None, skip_vacuum=False):
+def _refresh_k1_reports(update_since, views, account_id=None, skip_vacuum=False, skip_analyze=False):
     influx.incr('etl.refresh_k1.refresh_k1_reports', 1)
 
     if account_id:
@@ -305,7 +305,8 @@ def _refresh_k1_reports(update_since, views, account_id=None, skip_vacuum=False)
             try:
                 if not skip_vacuum and not mv_class.IS_TEMPORARY_TABLE:
                     maintenance.vacuum(mv_class.TABLE_NAME)
-                maintenance.analyze(mv_class.TABLE_NAME)
+                if not skip_analyze:
+                    maintenance.analyze(mv_class.TABLE_NAME)
             except Exception:
                 logger.exception("Vacuum and analyze skipped due to error")
 
@@ -319,7 +320,7 @@ def _refresh_k1_reports(update_since, views, account_id=None, skip_vacuum=False)
     influx.incr('etl.refresh_k1.refresh_k1_reports_finished', 1)
 
 
-def _handle_replicas(views, job_id, date_from, date_to, account_id=None, skip_vacuum=False):
+def _handle_replicas(views, job_id, date_from, date_to, account_id=None, skip_vacuum=False, skip_analyze=False):
     for mv_class in views:
         if not mv_class.IS_TEMPORARY_TABLE:
             s3_path = materialize_views.unload_table(
@@ -329,7 +330,8 @@ def _handle_replicas(views, job_id, date_from, date_to, account_id=None, skip_va
                     db_name, s3_path, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
                 if not skip_vacuum:
                     maintenance.vacuum(mv_class.TABLE_NAME, db_name=db_name)
-                maintenance.analyze(mv_class.TABLE_NAME, db_name=db_name)
+                if not skip_analyze:
+                    maintenance.analyze(mv_class.TABLE_NAME, db_name=db_name)
             if mv_class in (materialize_views.MasterView, materialize_views.MasterPublishersView):
                 # do not copy mv_master and mv_master_pubs into postgres, too large
                 continue
@@ -338,7 +340,8 @@ def _handle_replicas(views, job_id, date_from, date_to, account_id=None, skip_va
                     db_name, s3_path, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
                 if not skip_vacuum:
                     maintenance.vacuum(mv_class.TABLE_NAME, db_name=db_name)
-                maintenance.analyze(mv_class.TABLE_NAME, db_name=db_name)
+                if not skip_analyze:
+                    maintenance.analyze(mv_class.TABLE_NAME, db_name=db_name)
 
 
 def get_all_views_table_names(temporary=False):
