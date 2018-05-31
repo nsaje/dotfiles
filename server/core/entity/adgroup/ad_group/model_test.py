@@ -6,6 +6,7 @@ from dash import constants
 from dash import history_helpers
 
 import core.entity
+import core.source
 
 
 @patch.object(core.entity.AdGroupSource.objects, 'bulk_create_on_allowed_sources')
@@ -14,15 +15,17 @@ import core.entity
 @patch('automation.autopilot.recalculate_budgets_ad_group', autospec=True)
 class AdGroupCreate(TestCase):
 
+    def setUp(self):
+        self.request = magic_mixer.blend_request_user()
+        self.campaign = magic_mixer.blend(core.entity.Campaign)
+
     def test_create(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):
-        request = magic_mixer.blend_request_user()
-        campaign = magic_mixer.blend(core.entity.Campaign)
         self.assertEqual(0, core.entity.settings.AdGroupSettings.objects.all().count())
 
-        ad_group = core.entity.AdGroup.objects.create(request, campaign)
+        ad_group = core.entity.AdGroup.objects.create(self.request, self.campaign)
 
         self.assertIsNotNone(ad_group.get_current_settings().pk)
-        self.assertEqual(ad_group.campaign, campaign)
+        self.assertEqual(ad_group.campaign, self.campaign)
 
         self.assertTrue(mock_bulk_create.called)
         self.assertTrue(mock_insert_adgroup.called)
@@ -32,6 +35,16 @@ class AdGroupCreate(TestCase):
         history = history_helpers.get_ad_group_history(ad_group)
         self.assertEqual(len(history), 1)
         self.assertEqual(history[0].action_type, constants.HistoryActionType.SETTINGS_CHANGE)
+
+    @patch('django.conf.settings.OUTBRAIN_AD_REVIEW', True)
+    @patch.object(core.entity.AdGroupSource.objects, 'create')
+    def test_create_amplify_review_ad_group_source(
+            self, mock_create, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):
+        outbrain_source = magic_mixer.blend(core.source.Source, source_type__type='outbrain')
+        ad_group = core.entity.AdGroup.objects.create(self.request, self.campaign)
+        mock_create.assert_called_with(
+            self.request, ad_group, outbrain_source, write_history=False,
+            k1_sync=False, ad_review_only=True, state=constants.AdGroupSourceSettingsState.INACTIVE)
 
 
 @patch.object(core.entity.AdGroupSource.objects, 'bulk_clone_on_allowed_sources')

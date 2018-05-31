@@ -26,6 +26,7 @@ class ContentAdManager(models.Manager):
         content_ad = ContentAd(
             ad_group=batch.ad_group,
             batch=batch,
+            outbrain_ad_review=batch.ad_group.outbrain_ad_review and settings.OUTBRAIN_AD_REVIEW,
         )
 
         for field in kwargs:

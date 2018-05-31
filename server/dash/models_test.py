@@ -1350,7 +1350,7 @@ class HistoryTest(TestCase):
             ad_group=ad_group
         )
 
-        hist = models.History.objects.all().order_by('-created_dt').first()
+        hist = models.History.objects.all().order_by('-created_dt')[1]
         self.assertIn('Created settings. Source: b1.', hist.changes_text)
 
 

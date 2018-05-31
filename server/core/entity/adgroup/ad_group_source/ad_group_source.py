@@ -23,13 +23,15 @@ logger = logging.getLogger(__name__)
 
 
 class AdGroupSourceManager(core.common.QuerySetManager):
-    def _create(self, ad_group, source):
+    def _create(self, ad_group, source, ad_review_only=False):
         default_settings = source.get_default_settings()
         ad_group_source = AdGroupSource(
             source=source,
             ad_group=ad_group,
             source_credentials=default_settings.credentials,
-            can_manage_content_ads=source.can_manage_content_ads())
+            can_manage_content_ads=source.can_manage_content_ads(),
+            ad_review_only=ad_review_only,
+        )
         ad_group_source.save(None)
 
         ad_group_source.settings = core.entity.settings.AdGroupSourceSettings(ad_group_source=ad_group_source)
@@ -40,13 +42,19 @@ class AdGroupSourceManager(core.common.QuerySetManager):
         return ad_group_source
 
     @transaction.atomic
-    def create(self, request, ad_group, source, write_history=True, k1_sync=True, skip_validation=False, **updates):
+    def create(self, request, ad_group, source, write_history=True, k1_sync=True,
+               skip_validation=False, ad_review_only=False, **updates):
+        try:
+            ad_group_source = AdGroupSource.objects.get(source=source, ad_group=ad_group)
+        except AdGroupSource.DoesNotExist:
+            ad_group_source = None
+
         if not skip_validation and not ad_group.campaign.account.allowed_sources.filter(pk=source.id).exists():
             raise utils.exc.ValidationError(
                 '{} media source can not be added to this account.'.format(source.name)
             )
 
-        if not skip_validation and AdGroupSource.objects.filter(source=source, ad_group=ad_group).exists():
+        if not skip_validation and ad_group_source and not ad_group_source.ad_review_only:
             raise utils.exc.ValidationError(
                 '{} media source for ad group {} already exists.'.format(source.name, ad_group.id))
 
@@ -54,15 +62,16 @@ class AdGroupSourceManager(core.common.QuerySetManager):
             raise utils.exc.ValidationError(
                 '{} media source can not be added because it does not support retargeting.'.format(source.name))
 
-        ad_group_source = self._create(ad_group, source)
-        if write_history:
-            ad_group.write_history_source_added(request, ad_group_source)
+        if not ad_group_source:
+            ad_group_source = self._create(ad_group, source, ad_review_only=ad_review_only)
+            ad_group_source.set_initial_settings(request, ad_group, **updates)
+        elif ad_group_source.ad_review_only and not ad_review_only:
+            self._handle_ad_review_only(ad_group_source)
+        else:
+            raise Exception('Erroneous case - should not be reachable')
 
-        ad_group_source.set_initial_settings(
-            request,
-            ad_group,
-            **updates
-        )
+        if write_history and not ad_review_only:
+            ad_group.write_history_source_added(request, ad_group_source)
 
         if settings.K1_CONSISTENCY_SYNC:
             # circular dependency
@@ -73,6 +82,11 @@ class AdGroupSourceManager(core.common.QuerySetManager):
             utils.k1_helper.update_ad_group(ad_group.id, msg='AdGroupSources.put')
 
         return ad_group_source
+
+    def _handle_ad_review_only(self, ad_group_source):
+        ad_group_source.settings.update(state=constants.AdGroupSourceSettingsState.ACTIVE)
+        ad_group_source.ad_review_only = False
+        ad_group_source.save()
 
     @transaction.atomic
     def bulk_create_on_allowed_sources(self, request, ad_group, write_history=True, k1_sync=True):
@@ -102,8 +116,9 @@ class AdGroupSourceManager(core.common.QuerySetManager):
 
     @transaction.atomic
     def clone(self, request, ad_group, source_ad_group_source, write_history=True, k1_sync=True):
-        ad_group_source = self._create(ad_group, source_ad_group_source.source)
-        if write_history:
+        ad_group_source = self._create(
+            ad_group, source_ad_group_source.source, ad_review_only=source_ad_group_source.ad_review_only)
+        if write_history and not ad_group_source.ad_review_only:
             ad_group.write_history_source_added(request, ad_group_source)
 
         ad_group_source.set_cloned_settings(None, source_ad_group_source)

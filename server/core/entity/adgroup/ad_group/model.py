@@ -19,8 +19,14 @@ import core.bcm
 import core.common
 import core.history
 import core.entity
+import core.source
 
 from . import bcm_mixin
+
+
+AMPLIFY_REVIEW_AGENCIES_DISABLED = {
+    55,  # Outbrain
+}
 
 
 class AdGroupManager(core.common.QuerySetManager):
@@ -31,6 +37,8 @@ class AdGroupManager(core.common.QuerySetManager):
 
     def _create(self, request, campaign, name, **kwargs):
         ad_group = AdGroup(campaign=campaign, name=name, **kwargs)
+        if settings.OUTBRAIN_AD_REVIEW and campaign.account.agency_id not in AMPLIFY_REVIEW_AGENCIES_DISABLED:
+            ad_group.outbrain_ad_review = True
         ad_group.save(request)
         return ad_group
 
@@ -62,6 +70,8 @@ class AdGroupManager(core.common.QuerySetManager):
 
             core.entity.AdGroupSource.objects.bulk_create_on_allowed_sources(
                 request, ad_group, write_history=False, k1_sync=False)
+            if ad_group.outbrain_ad_review:
+                self._ensure_amplify_review_source(request, ad_group)
 
         self._post_create(ad_group)
         ad_group.write_history_created(request)
@@ -81,11 +91,21 @@ class AdGroupManager(core.common.QuerySetManager):
 
             core.entity.AdGroupSource.objects.bulk_clone_on_allowed_sources(
                 request, ad_group, source_ad_group, write_history=False, k1_sync=False)
+            if ad_group.outbrain_ad_review:
+                self._ensure_amplify_review_source(request, ad_group)
 
         self._post_create(ad_group)
         ad_group.write_history_cloned_from(request, source_ad_group)
         source_ad_group.write_history_cloned_to(request, ad_group)
         return ad_group
+
+    def _ensure_amplify_review_source(self, request, ad_group):
+        source_types_added = set(ad_group.adgroupsource_set.all().values_list('source__source_type__type', flat=True))
+        if constants.SourceType.OUTBRAIN not in source_types_added:
+            outbrain_source = core.source.Source.objects.get(source_type__type=constants.SourceType.OUTBRAIN)
+            core.entity.AdGroupSource.objects.create(
+                request, ad_group, outbrain_source, write_history=False, k1_sync=False, ad_review_only=True,
+                state=constants.AdGroupSourceSettingsState.INACTIVE)
 
 
 class AdGroup(models.Model,

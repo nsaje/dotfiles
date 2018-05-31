@@ -66,6 +66,22 @@ class AdGroupSourceCreate(TestCase):
             core.entity.AdGroupSource.objects.create(
                 self.request, self.ad_group, self.default_source_settings.source)
 
+    @patch('automation.autopilot.recalculate_budgets_ad_group')
+    def test_create_ad_review_only_already_exists(self, mock_autopilot, mock_k1):
+        ad_group_source = magic_mixer.blend(
+            core.entity.AdGroupSource,
+            ad_group=self.ad_group,
+            source=self.default_source_settings.source,
+            ad_review_only=True,
+        )
+        ad_group_source.settings.update(state=constants.AdGroupSourceSettingsState.INACTIVE)
+        core.entity.AdGroupSource.objects.create(
+            self.request, self.ad_group, self.default_source_settings.source)
+
+        ad_group_source = core.entity.AdGroupSource.objects.get()
+        self.assertFalse(ad_group_source.ad_review_only)
+        self.assertEqual(constants.AdGroupSourceSettingsState.ACTIVE, ad_group_source.settings.state)
+
     def test_create_not_on_account(self, mock_k1):
         self.ad_group.campaign.account.allowed_sources.remove(self.default_source_settings.source)
 
