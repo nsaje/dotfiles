@@ -13,7 +13,7 @@ import core.multicurrency
 
 logger = logging.getLogger(__name__)
 
-HOURS_DELAY = 6
+HOURS_DELAY = 12
 MAX_RT_DATA_AGE_MINUTES = 15
 CHECK_FREQUENCY_MINUTES = 5
 MIN_PREV_SPEND_SECONDS = 90
