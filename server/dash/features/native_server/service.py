@@ -8,11 +8,14 @@ import dash.constants
 AGENCY_RCS = 220
 AGENCY_MEDIAMOND = 196
 
+AD_GROUP_SETTINGS_CREATE_HACKS_PER_AGENCY = {
+    AGENCY_RCS: {
+        'target_regions': [],
+        'exclusion_target_regions': [],
+    },
+}
 AD_GROUP_SETTINGS_HACKS_PER_AGENCY = {
     AGENCY_RCS: {
-        'target_regions': ['IT'],
-        'exclusion_target_regions': [],
-        'notes': 'Geo-targeting: Italy only',
     },
 }
 CAMPAIGN_SETTINGS_HACKS_PER_AGENCY = {
@@ -32,10 +35,10 @@ def _update_ad_group_sources_cpc(request, ad_group, cpc_cc):
 
 
 def apply_ad_group_create_hacks(request, ad_group):
-    if ad_group.campaign.account.agency_id in AD_GROUP_SETTINGS_HACKS_PER_AGENCY:
+    if ad_group.campaign.account.agency_id in AD_GROUP_SETTINGS_CREATE_HACKS_PER_AGENCY:
         ad_group.settings.update(
             request,
-            **AD_GROUP_SETTINGS_HACKS_PER_AGENCY[ad_group.campaign.account.agency_id]
+            **AD_GROUP_SETTINGS_CREATE_HACKS_PER_AGENCY[ad_group.campaign.account.agency_id]
         )
         _update_ad_group_sources_cpc(request, ad_group, _get_cpc_goal_value(ad_group.campaign).value)
     if ad_group.campaign.account.agency_id == AGENCY_MEDIAMOND:
