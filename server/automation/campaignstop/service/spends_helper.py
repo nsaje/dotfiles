@@ -103,10 +103,13 @@ def _get_until_date_for_budget_spends(campaign):
 
 def _should_query_realtime_stats_for_yesterday(campaign):
     in_critical_hours = 0 <= dates_helper.local_now().hour < HOURS_DELAY
+    local_midnight = dates_helper.local_now().replace(hour=0, minute=0, second=0, microsecond=0)
+    local_recent = local_midnight - datetime.timedelta(hours=2)
+    utc_recent = dates_helper.local_to_utc_time(local_recent)
     recent_rt_data_exists = RealTimeCampaignDataHistory.objects.filter(
         campaign=campaign,
         date=dates_helper.local_yesterday(),
-        created_dt__gte=dates_helper.utc_now() - datetime.timedelta(hours=2),
+        created_dt__gte=utc_recent,
     ).exists()  # midnight job that corrects the state for stopped campaigns doesn't have recent yesterday data
     return in_critical_hours and recent_rt_data_exists
 

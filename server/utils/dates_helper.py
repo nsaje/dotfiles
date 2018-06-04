@@ -14,7 +14,8 @@ def utc_now():
 
 
 def local_to_utc_time(dt):
-    dt = DEFAULT_TIME_ZONE.localize(dt)
+    if not dt.tzinfo:
+        dt = DEFAULT_TIME_ZONE.localize(dt)
     return dt.astimezone(pytz.utc)
 
 
