@@ -314,7 +314,7 @@ class ContentAdsTest(K1APIBaseTest):
             'submission_status': dash.constants.ContentAdSubmissionStatus.APPROVED,
             'tracking_slug': content_ad_sources[2].source.tracking_slug,
         }]
-        self.assertEqual(data, expected)
+        self.assertCountEqual(data, expected)
 
     def test_update_content_ad_status(self):
         cas = dash.models.ContentAdSource.objects.get(pk=1)
