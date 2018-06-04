@@ -385,35 +385,47 @@ class ContentAdsLoader(Loader):
     def per_source_status_map(self):
         per_source_map = collections.defaultdict(dict)
         sources = {x.id: x.name for x in self.filtered_sources_qs}
-        source_status_map = self._get_per_ad_group_source_status_map()
+        source_map = self._get_per_ad_group_source_map()
 
         for content_ad_id, content_ad in self.objs_map.items():
             for content_ad_source in self.content_ads_sources_map[content_ad_id]:
                 source_id = content_ad_source.source_id
 
-                source_status = source_status_map[content_ad.ad_group_id][source_id]
+                source_status = source_map[content_ad.ad_group_id][source_id]['state']
                 if source_status is None:
                     source_status = constants.AdGroupSourceSettingsState.INACTIVE
 
+                submission_status, submission_errors = self._get_submission_status(
+                    content_ad, content_ad_source, source_map[content_ad.ad_group_id][source_id]['content_ad_submission_policy'])
                 per_source_map[content_ad_id][content_ad_source.source_id] = {
                     'source_id': source_id,
                     'source_name': sources.get(source_id),
                     'source_status': source_status,
-                    'submission_status': content_ad_source.get_submission_status(),
-                    'submission_errors': content_ad_source.submission_errors,
+                    'submission_status': submission_status,
+                    'submission_errors': submission_errors,
                 }
 
         return per_source_map
 
-    def _get_per_ad_group_source_status_map(self):
+    def _get_per_ad_group_source_map(self):
         ad_group_sources_settings = models.AdGroupSourceSettings.objects.filter(
             ad_group_source__ad_group_id__in=set(x.ad_group_id for x in self.objs_qs)).group_current_settings().values_list(
-                'ad_group_source__ad_group_id', 'ad_group_source__source_id', 'state')
+                'ad_group_source__ad_group_id', 'ad_group_source__source_id', 'state', 'ad_group_source__source__content_ad_submission_policy')
 
         settings_map = collections.defaultdict(dict)
-        for ad_group_id, source_id, state in ad_group_sources_settings:
-            settings_map[ad_group_id][source_id] = state
+        for ad_group_id, source_id, state, content_ad_submission_policy in ad_group_sources_settings:
+            settings_map[ad_group_id][source_id] = {
+                'state': state,
+                'content_ad_submission_policy': content_ad_submission_policy,
+            }
         return settings_map
+
+    def _get_submission_status(self, content_ad, content_ad_source, content_ad_submission_policy):
+        if content_ad_submission_policy == constants.SourceSubmissionPolicy.AUTOMATIC_WITH_AMPLIFY_APPROVAL and\
+           content_ad.outbrain_ad_review and content_ad.id in self.amplify_reviews_map:
+            outbrain_content_ad_source = self.amplify_reviews_map[content_ad.id]
+            return outbrain_content_ad_source.get_submission_status(), content_ad_source.submission_errors
+        return content_ad_source.get_submission_status(), content_ad_source.submission_errors
 
     @cached_property
     def content_ads_sources_map(self):
@@ -425,6 +437,18 @@ class ContentAdsLoader(Loader):
             content_ads_sources_map[content_ad_source.content_ad_id].append(content_ad_source)
 
         return content_ads_sources_map
+
+    @cached_property
+    def amplify_reviews_map(self):
+        qs = models.ContentAdSource.objects.filter(
+            content_ad_id__in=self.objs_ids,
+            source__bidder_slug='outbrain'
+        )
+
+        amplify_reviews_map = {}
+        for content_ad_source in qs:
+            amplify_reviews_map[content_ad_source.content_ad_id] = content_ad_source
+        return amplify_reviews_map
 
 
 class PublisherBlacklistLoader(Loader):
