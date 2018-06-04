@@ -128,32 +128,32 @@ urlpatterns += [
 # Api
 urlpatterns += [
     url(
-        r'^api/grid/ad_groups/(?P<ad_group_id>\d+)/settings/',
+        r'^api/grid/ad_groups/(?P<ad_group_id>\d+)/settings/$',
         login_required(dash.views.grid.AdGroupSettings.as_view()),
         name='grid_ad_group_settings'
     ),
     url(
-        r'^api/grid/content_ads/(?P<content_ad_id>\d+)/settings/',
+        r'^api/grid/content_ads/(?P<content_ad_id>\d+)/settings/$',
         login_required(dash.views.grid.ContentAdSettings.as_view()),
         name='grid_content_ad_settings'
     ),
     url(
-        r'^api/grid/content_ads/(?P<content_ad_id>\d+)/edit/',
+        r'^api/grid/content_ads/(?P<content_ad_id>\d+)/edit/$',
         login_required(dash.views.grid.ContentAdEdit.as_view()),
         name='grid_content_ad_edit'
     ),
     url(
-        r'^api/grid/ad_groups/(?P<ad_group_id>\d+)/sources/(?P<source_id>\d+)/settings/',
+        r'^api/grid/ad_groups/(?P<ad_group_id>\d+)/sources/(?P<source_id>\d+)/settings/$',
         login_required(dash.views.grid.AdGroupSourceSettings.as_view()),
         name='grid_ad_group_source_settings'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/settings/state/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/settings/state/$',
         login_required(dash.views.agency.AdGroupSettingsState.as_view()),
         name='ad_group_settings_state'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/settings/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/settings/$',
         login_required(dash.views.agency.AdGroupSettings.as_view()),
         name='ad_group_settings'
     ),
@@ -163,58 +163,58 @@ urlpatterns += [
         name='ad_group_sources'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/(?P<source_id>\d+)/settings/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/(?P<source_id>\d+)/settings/$',
         login_required(dash.views.views.AdGroupSourceSettings.as_view()),
         name='ad_group_source_settings'
     ),
     url(
-        r'^api/contentads/upload/csv/',
+        r'^api/contentads/upload/csv/$',
         login_required(dash.features.contentupload.views.UploadCsv.as_view()), name='upload_csv'
     ),
     url(
-        r'^api/contentads/upload/batch/',
+        r'^api/contentads/upload/batch/$',
         login_required(dash.features.contentupload.views.UploadBatch.as_view()), name='upload_batch'
     ),
     url(
-        r'^api/contentads/upload/(?P<batch_id>\d+)/status/',
+        r'^api/contentads/upload/(?P<batch_id>\d+)/status/$',
         login_required(dash.features.contentupload.views.UploadStatus.as_view()), name='upload_status'
     ),
     url(
-        r'^api/contentads/upload/(?P<batch_id>\d+)/download/',
+        r'^api/contentads/upload/(?P<batch_id>\d+)/download/$',
         login_required(
             dash.features.contentupload.views.CandidatesDownload.as_view()), name='upload_candidates_download'
     ),
     url(
-        r'^api/contentads/upload/(?P<batch_id>\d+)/save/',
+        r'^api/contentads/upload/(?P<batch_id>\d+)/save/$',
         login_required(dash.features.contentupload.views.UploadSave.as_view()), name='upload_save'
     ),
     url(
-        r'^api/contentads/upload/(?P<batch_id>\d+)/cancel/',
+        r'^api/contentads/upload/(?P<batch_id>\d+)/cancel/$',
         login_required(dash.features.contentupload.views.UploadCancel.as_view()), name='upload_cancel'
     ),
     url(
         r'^api/contentads/upload'
-        '/(?P<batch_id>\d+)/candidate/(?:(?P<candidate_id>\d+)/)?',
+        '/(?P<batch_id>\d+)/candidate/(?:(?P<candidate_id>\d+)/)?$',
         login_required(dash.features.contentupload.views.Candidate.as_view()), name='upload_candidate'
     ),
     url(
         r'^api/contentads/upload'
-        '/(?P<batch_id>\d+)/candidate_update/(?:(?P<candidate_id>\d+)/)?',
+        '/(?P<batch_id>\d+)/candidate_update/(?:(?P<candidate_id>\d+)/)?$',
         login_required(
             dash.features.contentupload.views.CandidateUpdate.as_view()), name='upload_candidate_update'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/edit/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/edit/$',
         login_required(dash.views.bulk_actions.AdGroupContentAdEdit.as_view()),
         name='ad_group_content_ad_edit'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/state/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/state/$',
         login_required(dash.views.bulk_actions.AdGroupContentAdState.as_view()),
         name='ad_group_content_ad_state'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/csv/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/csv/$',
         login_required(dash.views.bulk_actions.AdGroupContentAdCSV.as_view()),
         name='ad_group_content_ad_csv'
     ),
@@ -229,7 +229,7 @@ urlpatterns += [
         name='ad_group_content_ad_restore'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/state/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/state/$',
         login_required(dash.views.bulk_actions.AdGroupSourceState.as_view()),
         name='ad_group_source_state'
     ),
@@ -269,169 +269,169 @@ urlpatterns += [
         name='all_accounts_account_restore'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/overview/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/overview/$',
         login_required(dash.views.views.AdGroupOverview.as_view()),
         name='ad_group_overview'
     ),
     url(
-        r'^api/accounts/overview/',
+        r'^api/accounts/overview/$',
         login_required(dash.views.views.AllAccountsOverview.as_view()),
         name='all_accounts_overview'
     ),
     url(
-        r'^api/history/',
+        r'^api/history/$',
         login_required(dash.views.agency.History.as_view()),
         name='history'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/daily_stats/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/daily_stats/$',
         login_required(dash.features.daily_stats.views.AdGroupContentAdsDailyStats.as_view()),
         name='ad_group_content_ads_daily_stats'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/daily_stats/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/daily_stats/$',
         login_required(dash.features.daily_stats.views.AdGroupSourcesDailyStats.as_view()),
         name='ad_group_sources_daily_stats'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/publishers/daily_stats/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/publishers/daily_stats/$',
         login_required(dash.features.daily_stats.views.AdGroupPublishersDailyStats.as_view()),
         name='ad_group_publishers_daily_stats'
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/daily_stats/',
+        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/daily_stats/$',
         login_required(dash.features.daily_stats.views.CampaignAdGroupsDailyStats.as_view()),
         name='campaign_ad_groups_daily_stats'
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/sources/daily_stats/',
+        r'^api/campaigns/(?P<campaign_id>\d+)/sources/daily_stats/$',
         login_required(dash.features.daily_stats.views.CampaignSourcesDailyStats.as_view()),
         name='campaign_sources_daily_stats'
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/publishers/daily_stats/',
+        r'^api/campaigns/(?P<campaign_id>\d+)/publishers/daily_stats/$',
         login_required(dash.features.daily_stats.views.CampaignPublishersDailyStats.as_view()),
         name='campaign_publishers_daily_stats'
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/campaigns/daily_stats/',
+        r'^api/accounts/(?P<account_id>\d+)/campaigns/daily_stats/$',
         login_required(dash.features.daily_stats.views.AccountCampaignsDailyStats.as_view()),
         name='account_campaigns_daily_stats'
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/sources/daily_stats/',
+        r'^api/accounts/(?P<account_id>\d+)/sources/daily_stats/$',
         login_required(dash.features.daily_stats.views.AccountSourcesDailyStats.as_view()),
         name='account_sources_daily_stats'
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/publishers/daily_stats/',
+        r'^api/accounts/(?P<account_id>\d+)/publishers/daily_stats/$',
         login_required(dash.features.daily_stats.views.AccountPublishersDailyStats.as_view()),
         name='account_publishers_daily_stats'
     ),
     url(
-        r'^api/all_accounts/accounts/daily_stats/',
+        r'^api/all_accounts/accounts/daily_stats/$',
         login_required(dash.features.daily_stats.views.AllAccountsAccountsDailyStats.as_view()),
         name='accounts_accounts_daily_stats'
     ),
     url(
-        r'^api/all_accounts/sources/daily_stats/',
+        r'^api/all_accounts/sources/daily_stats/$',
         login_required(dash.features.daily_stats.views.AllAccountsSourcesDailyStats.as_view()),
         name='accounts_sources_daily_stats'
     ),
     url(
-        r'^api/all_accounts/publishers/daily_stats/',
+        r'^api/all_accounts/publishers/daily_stats/$',
         login_required(dash.features.daily_stats.views.AllAccountsPublishersDailyStats.as_view()),
         name='accounts_publishers_daily_stats'
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/',
+        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/$',
         login_required(dash.views.views.CampaignAdGroups.as_view()),
         name='campaign_ad_groups'
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/settings/',
+        r'^api/campaigns/(?P<campaign_id>\d+)/settings/$',
         login_required(dash.views.agency.CampaignSettings.as_view()),
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/goals/validate/',
+        r'^api/campaigns/(?P<campaign_id>\d+)/goals/validate/$',
         login_required(dash.views.agency.CampaignGoalValidation.as_view()),
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/campaigns/',
+        r'^api/accounts/(?P<account_id>\d+)/campaigns/$',
         login_required(dash.views.views.AccountCampaigns.as_view()),
         name='account_campaigns'
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/content-insights/',
+        r'^api/campaigns/(?P<campaign_id>\d+)/content-insights/$',
         login_required(dash.views.agency.CampaignContentInsights.as_view()),
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/settings/',
+        r'^api/accounts/(?P<account_id>\d+)/settings/$',
         login_required(dash.views.agency.AccountSettings.as_view()),
         name='account_settings'
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/(?P<action>\w+)',
+        r'^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/(?P<action>\w+)$',
         login_required(dash.views.agency.AccountUserAction.as_view()),
         name='account_user_action',
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/conversion_pixels/',
+        r'^api/accounts/(?P<account_id>\d+)/conversion_pixels/$',
         login_required(dash.views.agency.ConversionPixel.as_view()),
         name='account_conversion_pixels',
     ),
     url(
-        r'^api/conversion_pixel/(?P<conversion_pixel_id>\d+)/',
+        r'^api/conversion_pixel/(?P<conversion_pixel_id>\d+)/$',
         login_required(dash.views.agency.ConversionPixel.as_view()),
         name='conversion_pixel',
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/',
+        r'^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/$',
         login_required(dash.views.agency.AccountUsers.as_view()),
         name='account_users_manage',
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/users/',
+        r'^api/accounts/(?P<account_id>\d+)/users/$',
         login_required(dash.views.agency.AccountUsers.as_view()),
         name='account_users',
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/archive/',
+        r'^api/accounts/(?P<account_id>\d+)/archive/$',
         login_required(dash.views.views.AccountArchive.as_view()),
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/restore/',
+        r'^api/accounts/(?P<account_id>\d+)/restore/$',
         login_required(dash.views.views.AccountRestore.as_view()),
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/archive/',
+        r'^api/campaigns/(?P<campaign_id>\d+)/archive/$',
         login_required(dash.views.views.CampaignArchive.as_view()),
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/restore/',
+        r'^api/campaigns/(?P<campaign_id>\d+)/restore/$',
         login_required(dash.views.views.CampaignRestore.as_view()),
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/overview/',
+        r'^api/campaigns/(?P<campaign_id>\d+)/overview/$',
         login_required(dash.views.views.CampaignOverview.as_view()),
         name='campaign_overview'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/archive/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/archive/$',
         login_required(dash.views.views.AdGroupArchive.as_view()),
         name='ad_group_archive',
     ),
     url(
-        r'^api/sources/',
+        r'^api/sources/$',
         login_required(dash.views.views.AvailableSources.as_view()),
     ),
     url(
-        r'^api/agencies/',
+        r'^api/agencies/$',
         login_required(dash.views.agency.Agencies.as_view()),
         name='agencies',
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/restore/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/restore/$',
         login_required(dash.views.views.AdGroupRestore.as_view()),
         name='ad_group_restore',
     ),
@@ -441,27 +441,27 @@ urlpatterns += [
         name='accounts_create',
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/overview/',
+        r'^api/accounts/(?P<account_id>\d+)/overview/$',
         login_required(dash.views.views.AccountOverview.as_view()),
         name='account_overview'
     ),
     url(
-        r'^api/(?P<level_>(ad_groups|campaigns|accounts))/(?P<id_>\d+)/nav/',
+        r'^api/(?P<level_>(ad_groups|campaigns|accounts))/(?P<id_>\d+)/nav/$',
         login_required(dash.views.navigation.NavigationDataView.as_view()),
         name='navigation'
     ),
     url(
-        r'^api/all_accounts/nav/',
+        r'^api/all_accounts/nav/$',
         login_required(dash.views.navigation.NavigationAllAccountsDataView.as_view()),
         name='navigation_all_accounts'
     ),
     url(
-        r'^api/nav/',
+        r'^api/nav/$',
         login_required(dash.views.navigation.NavigationTreeView.as_view()),
         name='navigation_tree'
     ),
     url(
-        r'^api/usesbcmv2/',
+        r'^api/usesbcmv2/$',
         login_required(dash.views.navigation.UsesBCMV2View.as_view()),
         name='navigation_tree_usesbcmv2'
     ),
@@ -471,27 +471,27 @@ urlpatterns += [
         name='user'
     ),
     url(
-        r'^api/all_accounts/breakdown(?P<breakdown>(/\w+)+/?)',
+        r'^api/all_accounts/breakdown(?P<breakdown>(/\w+)+/?)$',
         login_required(dash.views.breakdown.AllAccountsBreakdown.as_view()),
         name='breakdown_all_accounts'
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/breakdown(?P<breakdown>(/\w+)+/?)',
+        r'^api/accounts/(?P<account_id>\d+)/breakdown(?P<breakdown>(/\w+)+/?)$',
         login_required(dash.views.breakdown.AccountBreakdown.as_view()),
         name='breakdown_accounts'
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/breakdown(?P<breakdown>(/\w+)+/?)',
+        r'^api/campaigns/(?P<campaign_id>\d+)/breakdown(?P<breakdown>(/\w+)+/?)$',
         login_required(dash.views.breakdown.CampaignBreakdown.as_view()),
         name='breakdown_campaigns'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/breakdown(?P<breakdown>(/\w+)+/?)',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/breakdown(?P<breakdown>(/\w+)+/?)$',
         login_required(dash.views.breakdown.AdGroupBreakdown.as_view()),
         name='breakdown_ad_groups'
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/facebook_account_status/',
+        r'^api/accounts/(?P<account_id>\d+)/facebook_account_status/$',
         login_required(dash.views.agency.FacebookAccountStatus.as_view()),
         name='facebook_account_status'
     ),
@@ -506,52 +506,52 @@ urlpatterns += [
         name='live_stream_allow'
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/audiences/(?P<audience_id>\d+)/archive/',
+        r'^api/accounts/(?P<account_id>\d+)/audiences/(?P<audience_id>\d+)/archive/$',
         login_required(dash.views.audiences.AudienceArchive.as_view()),
         name='accounts_audience_archive',
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/audiences/(?P<audience_id>\d+)/restore/',
+        r'^api/accounts/(?P<account_id>\d+)/audiences/(?P<audience_id>\d+)/restore/$',
         login_required(dash.views.audiences.AudienceRestore.as_view()),
         name='accounts_audience_restore',
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/audiences/(?P<audience_id>\d+)/',
+        r'^api/accounts/(?P<account_id>\d+)/audiences/(?P<audience_id>\d+)/$',
         login_required(dash.views.audiences.AudiencesView.as_view()),
         name='accounts_audience',
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/audiences/',
+        r'^api/accounts/(?P<account_id>\d+)/audiences/$',
         login_required(dash.views.audiences.AudiencesView.as_view()),
         name='accounts_audiences'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/alerts/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/alerts/$',
         login_required(dash.views.alerts.AdGroupAlerts.as_view()),
         name='ad_group_alerts',
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/alerts/',
+        r'^api/campaigns/(?P<campaign_id>\d+)/alerts/$',
         login_required(dash.views.alerts.CampaignAlerts.as_view()),
         name='campaign_alerts',
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/alerts/',
+        r'^api/accounts/(?P<account_id>\d+)/alerts/$',
         login_required(dash.views.alerts.AccountAlerts.as_view()),
         name='account_alerts',
     ),
     url(
-        r'^api/all_accounts/alerts/',
+        r'^api/all_accounts/alerts/$',
         login_required(dash.views.alerts.AllAccountsAlerts.as_view()),
         name='all_account_alerts',
     ),
     url(
-        r'^api/publishers/targeting/',
+        r'^api/publishers/targeting/$',
         login_required(dash.views.publishers.PublisherTargeting.as_view()),
         name='publisher_targeting'
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/publisher_groups/(?P<publisher_group_id>\d+)/download/',
+        r'^api/accounts/(?P<account_id>\d+)/publisher_groups/(?P<publisher_group_id>\d+)/download/$',
         login_required(dash.views.publishers.PublisherGroupsDownload.as_view()),
         name='download_publisher_groups'
     ),
@@ -566,7 +566,7 @@ urlpatterns += [
         name='accounts_publisher_groups_upload'
     ),
     url(
-        r'^api/custom_report_download/',
+        r'^api/custom_report_download/$',
         login_required(dash.views.custom_report.CustomReportDownload.as_view()),
         name='custom_report_download'
     ),
@@ -616,12 +616,12 @@ urlpatterns += [
 # Source OAuth
 urlpatterns += [
     url(
-        r'^source/oauth/authorize/(?P<source_name>yahoo)',
+        r'^source/oauth/authorize/(?P<source_name>yahoo)$',
         login_required(dash.views.views.oauth_authorize),
         name='source.oauth.authorize',
     ),
     url(
-        r'^source/oauth/(?P<source_name>yahoo)',
+        r'^source/oauth/(?P<source_name>yahoo)$',
         dash.views.views.oauth_redirect,  # mustn't have login_required because it's a redirect URI
         name='source.oauth.redirect'
     )
