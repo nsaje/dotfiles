@@ -7,9 +7,10 @@ from etl import refresh_k1
 import redshiftapi.db
 from core.entity.account import Account
 
+import utils.slack
+
 logger = logging.getLogger(__name__)
 NUM_OF_BATCHES = 4
-import utils.slack
 
 
 class Command(ExceptionCommand):
