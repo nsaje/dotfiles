@@ -4,7 +4,7 @@ RUN useradd -m -u 1000 ubuntu
 
 # Ugly hack to get around a bug in dpkg: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=877679
 # I'd never do this outside the container
-RUN mv /usr/sbin/update-alternatives /usr/sbin/update-alternatives.disabled && ln -s /bin/true /usr/sbin/update-alternatives
+RUN export UA=$(which update-alternatives) && mv ${UA} ${UA}.disabled && ln -s /bin/true ${UA}
 
 # Install dependencies
 RUN apt-get update && \
@@ -36,7 +36,7 @@ ADD server/requirements.txt /requirements.txt
 # FIXME(nsaje): cd to /opt so pip install -e installs packages there. Can remove once pip-freeze supports git requirements properly
 RUN set -ex && \
     cd /opt && \
-    buildDeps='gcc python3-dev libxml2-dev libxslt1-dev libffi-dev libssl-dev libpq-dev libcurl4-openssl-dev' && \
+    buildDeps='gcc python3-dev libxml2-dev libxslt1-dev libffi-dev libssl-dev libpq-dev libcurl4-openssl-dev zlib1g-dev' && \
     apt-get install -y --no-install-recommends $buildDeps && \
     pip install -r /requirements.txt && \
     mv /requirements.txt /requirements.txt-installed && \
