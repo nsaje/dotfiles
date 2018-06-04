@@ -12,7 +12,7 @@ from .. import constants
 from .. import RealTimeCampaignStopLog
 
 THRESHOLD = decimal.Decimal('10')
-HOURS_DELAY = 6
+HOURS_DELAY = 12
 
 
 def update_campaigns_state(campaigns=None):

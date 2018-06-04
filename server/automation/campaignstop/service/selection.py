@@ -8,7 +8,7 @@ from .. import constants
 from .. import CampaignStopState, RealTimeDataHistory, RealTimeCampaignStopLog
 from . import refresh_realtime_data
 
-HOURS_DELAY = 6
+HOURS_DELAY = 12
 THRESHOLD = 10
 
 
