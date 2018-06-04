@@ -2349,11 +2349,9 @@ class AdGroupDeliveryType(ConstantBase):
 
 class SourceSubmissionPolicy(ConstantBase):
     AUTOMATIC = 1
-    AUTOMATIC_WITH_AMPLIFY_APPROVAL = 3  # force ordering
     MANUAL = 2
 
     _VALUES = {
         AUTOMATIC: 'Automatic',
         MANUAL: 'Manual',
-        AUTOMATIC_WITH_AMPLIFY_APPROVAL: 'Automatic with Amplify approval',
     }
