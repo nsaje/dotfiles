@@ -55,20 +55,25 @@ class Command(ExceptionCommand):
     def _get_message_body(self, campaigns, *, output_type):
         message_parts = []
         stopped_by_end_date_count = 0
+        stopped_by_end_date_overspend = 0
         for campaign, data in campaigns.items():
             if not data['active_budgets']:
                 stopped_by_end_date_count += 1
+                if data['overspend'] and data['overspend'] >= 0.01:
+                    stopped_by_end_date_overspend += data['overspend']
                 continue
 
             message_part = self._get_campaign_part(campaign, output_type=output_type)
             message_part += '${} remaining budget'.format(data['available'])
             if data['overspend'] and data['overspend'] >= 0.01:
-                message_part += self._get_overspend_part(data, output_type=output_type)
+                message_part += self._get_overspend_part(data['overspend'], output_type=output_type)
             message_parts.append(message_part)
 
         message = self._get_message_title() + '\n'.join(message_parts + [''])
         if stopped_by_end_date_count:
             message += '\n{} campaigns stopped by end date - no active budgets left'.format(stopped_by_end_date_count)
+            if stopped_by_end_date_overspend:
+                message += self._get_overspend_part(stopped_by_end_date_overspend, output_type=output_type)
         return message
 
     def _get_campaign_part(self, campaign, *, output_type):
@@ -76,10 +81,10 @@ class Command(ExceptionCommand):
             return self._get_campaign_part_slack(campaign)
         return self._get_campaign_part_verbose(campaign)
 
-    def _get_overspend_part(self, data, *, output_type):
+    def _get_overspend_part(self, amount, *, output_type):
         if output_type == 'slack':
-            return ' (*${:.2f} overspend*)'.format(data['overspend'])
-        return ' (${:.2f} overspend)'.format(data['overspend'])
+            return ' (*${:.2f} overspend*)'.format(amount)
+        return ' (${:.2f} overspend)'.format(amount)
 
     def _get_campaign_part_slack(self, campaign):
         return '- {}: '.format(slack.campaign_url(campaign))
