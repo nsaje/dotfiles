@@ -24,7 +24,7 @@
                 entity="$container.entity"
                 errors="$container.errors"
                 api="$container.childApi"
-                ng-if="$ctrl.hasPermission('zemauth.can_use_bluekai_targeting')"
+                ng-if="$ctrl.hasPermission('zemauth.can_use_bluekai_targeting') && !$ctrl.hasPermission('zemauth.disable_public_rcs')"
         ></zem-demographic-targeting>
         <zem-ad-group-targeting-settings
                 class="zem-settings-component"
