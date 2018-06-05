@@ -133,6 +133,7 @@ class ContentAd(models.Model, prodops_mixin.ProdopsMixin, instance.ContentAdInst
     tracker_urls = ArrayField(models.CharField(max_length=2048), null=True)
 
     additional_data = JSONField(null=True, blank=True)
+    outbrain_ad_review = models.NullBooleanField(default=None)
     amplify_review = models.NullBooleanField(default=None)
 
     def get_original_image_url(self, width=None, height=None):

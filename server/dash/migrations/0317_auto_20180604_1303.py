@@ -13,16 +13,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RenameField(
-            model_name='adgroup',
-            old_name='outbrain_ad_review',
-            new_name='amplify_review',
-        ),
-        migrations.RenameField(
-            model_name='contentad',
-            old_name='outbrain_ad_review',
-            new_name='amplify_review',
-        ),
         migrations.AlterField(
             model_name='account',
             name='currency',
