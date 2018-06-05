@@ -291,9 +291,13 @@ class CampaignBudgetView(api_common.BaseApiView):
         form = forms.BudgetLineItemForm(data)
 
         try:
+            form.is_valid()
+
+        except exc.ValidationError:
             if form.errors:
                 raise exc.ValidationError(errors=form.errors)
 
+        try:
             item = core.bcm.BudgetLineItem.objects.create(
                 request=request,
                 campaign=campaign,
