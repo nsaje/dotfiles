@@ -137,6 +137,23 @@ class BaseDailyStatsTest(TestCase):
 
 
 class AccountsDailyStatsTest(BaseDailyStatsTest):
+
+    def test_invalid_metrics(self):
+        perm = authmodels.Permission.objects.get(codename='all_accounts_accounts_view')
+        self.user.user_permissions.add(perm)
+        source_id = 3
+
+        self._prepare_mock('source_id', source_id)
+
+        params = self._get_params(selected_ids=[source_id])
+        params['metrics'] = ['invalidmetric']
+        response = self.client.get(
+            reverse('accounts_sources_daily_stats'),
+            params,
+            follow=True
+        )
+        self.assertEqual(400, response.status_code)
+
     def test_get_by_source(self):
         perm = authmodels.Permission.objects.get(codename='all_accounts_accounts_view')
         self.user.user_permissions.add(perm)
