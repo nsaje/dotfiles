@@ -54,18 +54,21 @@ class Command(ExceptionCommand):
 
     def _get_message_body(self, campaigns, *, output_type):
         message_parts = []
+        stopped_by_end_date_count = 0
         for campaign, data in campaigns.items():
-            message_part = self._get_campaign_part(campaign, output_type=output_type)
-            if data['active_budgets']:
-                message_part += '${} remaining budget'.format(data['available'])
-            else:
-                message_part += 'no budgets active on date - stopped by end date'
+            if not data['active_budgets']:
+                stopped_by_end_date_count += 1
+                continue
 
+            message_part = self._get_campaign_part(campaign, output_type=output_type)
+            message_part += '${} remaining budget'.format(data['available'])
             if data['overspend'] and data['overspend'] >= 0.01:
                 message_part += self._get_overspend_part(data, output_type=output_type)
             message_parts.append(message_part)
 
         message = self._get_message_title() + '\n'.join(message_parts + [''])
+        if stopped_by_end_date_count:
+            message += '\n{} campaigns stopped by end date - no active budgets left'.format(stopped_by_end_date_count)
         return message
 
     def _get_campaign_part(self, campaign, *, output_type):
