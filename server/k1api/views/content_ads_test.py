@@ -257,7 +257,7 @@ class ContentAdsTest(K1APIBaseTest):
         content_ads = magic_mixer.cycle(3).blend(
             dash.models.ContentAd,
             ad_group=new_ad_group,
-            outbrain_ad_review=(val for val in [True, True, False]),
+            amplify_review=(val for val in [True, True, False]),
         )
         magic_mixer.cycle(3).blend(
             dash.models.ContentAdSource,

@@ -324,7 +324,7 @@ REST_FRAMEWORK = {
 }
 
 DISABLE_FACEBOOK = False
-OUTBRAIN_AD_REVIEW = False
+AMPLIFY_REVIEW = False
 
 try:
     from server.localsettings_docker_override import *  # noqa

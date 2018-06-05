@@ -37,8 +37,8 @@ class AdGroupManager(core.common.QuerySetManager):
 
     def _create(self, request, campaign, name, **kwargs):
         ad_group = AdGroup(campaign=campaign, name=name, **kwargs)
-        if settings.OUTBRAIN_AD_REVIEW and campaign.account.agency_id not in AMPLIFY_REVIEW_AGENCIES_DISABLED:
-            ad_group.outbrain_ad_review = True
+        if settings.AMPLIFY_REVIEW and campaign.account.agency_id not in AMPLIFY_REVIEW_AGENCIES_DISABLED:
+            ad_group.amplify_review = True
         ad_group.save(request)
         return ad_group
 
@@ -70,7 +70,7 @@ class AdGroupManager(core.common.QuerySetManager):
 
             core.entity.AdGroupSource.objects.bulk_create_on_allowed_sources(
                 request, ad_group, write_history=False, k1_sync=False)
-            if ad_group.outbrain_ad_review:
+            if ad_group.amplify_review:
                 ad_group.ensure_amplify_review_source(request)
 
         self._post_create(ad_group)
@@ -91,7 +91,7 @@ class AdGroupManager(core.common.QuerySetManager):
 
             core.entity.AdGroupSource.objects.bulk_clone_on_allowed_sources(
                 request, ad_group, source_ad_group, write_history=False, k1_sync=False)
-            if ad_group.outbrain_ad_review:
+            if ad_group.amplify_review:
                 ad_group.ensure_amplify_review_source(request)
 
         self._post_create(ad_group)
@@ -134,7 +134,7 @@ class AdGroup(models.Model,
     custom_flags = JSONField(null=True, blank=True)
 
     settings = models.OneToOneField('AdGroupSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_entity')
-    outbrain_ad_review = models.NullBooleanField(default=None)
+    amplify_review = models.NullBooleanField(default=None)
 
     objects = AdGroupManager()
 

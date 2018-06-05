@@ -26,7 +26,7 @@ class ContentAdManager(models.Manager):
         content_ad = ContentAd(
             ad_group=batch.ad_group,
             batch=batch,
-            outbrain_ad_review=batch.ad_group.outbrain_ad_review and settings.OUTBRAIN_AD_REVIEW,
+            amplify_review=batch.ad_group.amplify_review and settings.AMPLIFY_REVIEW,
         )
 
         for field in kwargs:
@@ -133,7 +133,7 @@ class ContentAd(models.Model, prodops_mixin.ProdopsMixin, instance.ContentAdInst
     tracker_urls = ArrayField(models.CharField(max_length=2048), null=True)
 
     additional_data = JSONField(null=True, blank=True)
-    outbrain_ad_review = models.NullBooleanField(default=None)
+    amplify_review = models.NullBooleanField(default=None)
 
     def get_original_image_url(self, width=None, height=None):
         if self.image_id is None:

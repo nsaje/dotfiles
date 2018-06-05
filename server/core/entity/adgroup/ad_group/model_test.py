@@ -36,7 +36,7 @@ class AdGroupCreate(TestCase):
         self.assertEqual(len(history), 1)
         self.assertEqual(history[0].action_type, constants.HistoryActionType.SETTINGS_CHANGE)
 
-    @patch('django.conf.settings.OUTBRAIN_AD_REVIEW', True)
+    @patch('django.conf.settings.AMPLIFY_REVIEW', True)
     @patch.object(core.entity.AdGroupSource.objects, 'create')
     def test_create_amplify_review_ad_group_source(
             self, mock_create, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):

@@ -422,7 +422,7 @@ class ContentAdsLoader(Loader):
 
     def _get_submission_status(self, content_ad, content_ad_source, content_ad_submission_policy):
         if content_ad_submission_policy == constants.SourceSubmissionPolicy.AUTOMATIC_WITH_AMPLIFY_APPROVAL and\
-           content_ad.outbrain_ad_review and content_ad.id in self.amplify_reviews_map:
+           content_ad.amplify_review and content_ad.id in self.amplify_reviews_map:
             outbrain_content_ad_source = self.amplify_reviews_map[content_ad.id]
             return outbrain_content_ad_source.get_submission_status(), content_ad_source.submission_errors
         return content_ad_source.get_submission_status(), content_ad_source.submission_errors
