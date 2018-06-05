@@ -15,7 +15,7 @@ SECRET_KEY = Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8d
 
 STATS_DB_NAME = 'k1'
 STATS_DB_WRITE_REPLICAS = []
-STATS_DB_WRITE_REPLICAS_POSTGRES = ['stats-postgres', 'stats-postgres-vacuumed']
+STATS_DB_WRITE_REPLICAS_POSTGRES = ['stats-postgres']
 STATS_DB_READ_REPLICAS = []
 STATS_DB_READ_REPLICAS_POSTGRES = ['stats-postgres']
 
@@ -54,15 +54,7 @@ DATABASES = {
         'NAME': 'stats',
         'USER': 'eins',
         'PASSWORD': Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAGYwZAYJKoZIhvcNAQcGoFcwVQIBADBQBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDCX77CkQWFHkc0f3FgIBEIAjHCDzAGIzaXT1Y1bjBYKkMBrZEfiJThS9ed0TqN9nm1I6ugY=').get().decode('utf-8'),
-        'HOST': 'stats-postgres.cmkkg7ghktp5.us-east-1.rds.amazonaws.com',
-        'PORT': 5432,
-    },
-    'stats-postgres-vacuumed': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'stats',
-        'USER': 'eins',
-        'PASSWORD': Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAGYwZAYJKoZIhvcNAQcGoFcwVQIBADBQBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDCX77CkQWFHkc0f3FgIBEIAjHCDzAGIzaXT1Y1bjBYKkMBrZEfiJThS9ed0TqN9nm1I6ugY=').get().decode('utf-8'),
-        'HOST': 'nsaje-vacuum-full-test.cmkkg7ghktp5.us-east-1.rds.amazonaws.com',
+        'HOST': 'stats-postgres-2.cmkkg7ghktp5.us-east-1.rds.amazonaws.com',
         'PORT': 5432,
     },
 }
