@@ -71,7 +71,9 @@ class Command(ExceptionCommand):
 
         message = self._get_message_title() + '\n'.join(message_parts + [''])
         if stopped_by_end_date_count:
-            message += '\n{} campaigns stopped by end date - no active budgets left'.format(stopped_by_end_date_count)
+            message += '\nAdditionally, {} campaigns were stopped by end date - no active budgets left'.format(
+                '*' + stopped_by_end_date_count + '*' if output_type == 'slack' else stopped_by_end_date_count
+            )
             if stopped_by_end_date_overspend:
                 message += self._get_overspend_part(stopped_by_end_date_overspend, output_type=output_type)
         return message
