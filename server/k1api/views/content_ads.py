@@ -157,20 +157,21 @@ class ContentAdSourcesView(K1APIView):
         return self.response_ok(response)
 
     def _get_amplify_review_statuses(self, content_ad_sources):
-        statuses = dash.models.ContentAdSource.objects.filter(
-            source__bidder_slug=OUTBRAIN_SOURCE_SLUG,
-            content_ad_id__in=content_ad_sources.filter(
-                content_ad__amplify_review=True,
-            ).values_list('content_ad_id')
-        ).values('content_ad_id', 'submission_status')
-        return {status['content_ad_id']: status['submission_status'] for status in statuses}
+        # statuses = dash.models.ContentAdSource.objects.filter(
+        #     source__bidder_slug=OUTBRAIN_SOURCE_SLUG,
+        #     content_ad_id__in=content_ad_sources.filter(
+        #         content_ad__amplify_review=True,
+        #     ).values_list('content_ad_id')
+        # ).values('content_ad_id', 'submission_status')
+        # return {status['content_ad_id']: status['submission_status'] for status in statuses}
+        return {}
 
     def _get_content_ad_source_state(self, content_ad_source_state, source_submission_policy,
                                      content_ad_amplify_review, amplify_review_status):
-        if content_ad_amplify_review and\
-           source_submission_policy == dash.constants.SourceSubmissionPolicy.AUTOMATIC_WITH_AMPLIFY_APPROVAL and\
-           amplify_review_status != dash.constants.ContentAdSubmissionStatus.APPROVED:
-            return dash.constants.ContentAdSourceState.INACTIVE
+        # if content_ad_amplify_review and\
+        #    source_submission_policy == dash.constants.SourceSubmissionPolicy.AUTOMATIC_WITH_AMPLIFY_APPROVAL and\
+        #    amplify_review_status != dash.constants.ContentAdSubmissionStatus.APPROVED:
+        #     return dash.constants.ContentAdSourceState.INACTIVE
         return content_ad_source_state
 
     def put(self, request):
