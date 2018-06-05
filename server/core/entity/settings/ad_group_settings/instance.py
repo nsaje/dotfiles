@@ -91,7 +91,7 @@ class AdGroupSettingsMixin(object):
             else:
                 if not self.ad_group.can_restore():
                     raise exc.ForbiddenError(
-                        'Account and campaign must not be archived in order to restore an ad group.'
+                        'Account and campaign have to not be archived in order to restore an ad group.'
                     )
 
     def _handle_and_set_change_consequences(self, new_settings):

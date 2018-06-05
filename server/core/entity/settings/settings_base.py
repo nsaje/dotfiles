@@ -67,7 +67,6 @@ class SettingsBase(models.Model, core.history.HistoryMixin):
     @transaction.atomic()
     def update_unsafe(self, request, system_user=None, **kwargs):
         user = request.user if request else None
-        history_changes_text = kwargs.pop('history_changes_text', None)
         changes = self.get_changes(kwargs)
 
         update_fields = None
@@ -87,10 +86,7 @@ class SettingsBase(models.Model, core.history.HistoryMixin):
                 update_fields.append('system_user')
 
         history_changes = self.get_model_state_changes(kwargs)
-        if history_changes_text:
-            self.add_to_history(user, constants.HistoryActionType.SETTINGS_CHANGE, history_changes, history_changes_text)
-        else:
-            self.add_to_history(user, constants.HistoryActionType.SETTINGS_CHANGE, history_changes)
+        self.add_to_history(user, constants.HistoryActionType.SETTINGS_CHANGE, history_changes)
 
         for k, v in changes.items():
             setattr(self, k, v)
