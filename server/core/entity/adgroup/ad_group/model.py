@@ -134,7 +134,6 @@ class AdGroup(models.Model,
     custom_flags = JSONField(null=True, blank=True)
 
     settings = models.OneToOneField('AdGroupSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_entity')
-    outbrain_ad_review = models.NullBooleanField(default=None)
     amplify_review = models.NullBooleanField(default=None)
 
     objects = AdGroupManager()
