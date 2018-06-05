@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 import restapi.serializers.fields
+import dash.constants
 
 from . import constants
 
@@ -9,6 +10,11 @@ class ClientSerializer(serializers.Serializer):
     salesforce_account_id = restapi.serializers.fields.PlainCharField()
     name = restapi.serializers.fields.PlainCharField()
     type = serializers.ChoiceField([constants.CLIENT_TYPE_AGENCY, constants.CLIENT_TYPE_CLIENT_DIRECT])
+    currency = restapi.serializers.fields.DashConstantField(
+        dash.constants.Currency,
+        required=False,
+        default=dash.constants.Currency.USD,
+    )
 
 
 class CreditLineSerializer(serializers.Serializer):
@@ -26,6 +32,12 @@ class CreditLineSerializer(serializers.Serializer):
 
     pct_of_budget = serializers.DecimalField(max_digits=6, decimal_places=4, required=False, default=None)
     calc_variable_fee = serializers.DecimalField(max_digits=12, decimal_places=4, required=False, default=None)
+
+    currency = restapi.serializers.fields.DashConstantField(
+        dash.constants.Currency,
+        required=False,
+        default=dash.constants.Currency.USD,
+    )
 
     def validate(self, data):
         if not (data['pct_of_budget'] or data['calc_variable_fee']):

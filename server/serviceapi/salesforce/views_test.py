@@ -14,6 +14,7 @@ from utils.magic_mixer import magic_mixer
 class CreateClientTestCase(TestCase):
 
     def setUp(self):
+        self.maxDiff = None
         self.client = APIClient()
         self.user = magic_mixer.blend(User)
         self.client.force_authenticate(user=self.user)
@@ -46,6 +47,7 @@ class CreateClientTestCase(TestCase):
             'salesforceAccountId': 1,
             'name': 'Brand 1',
             'type': 'brand',
+            'currency': 'EUR',
         }
         url = reverse('service.salesforce.client')
         r = self.client.put(url, data=data, format='json')
@@ -61,6 +63,7 @@ class CreateClientTestCase(TestCase):
         self.assertEqual(sett.account_type, dash.constants.AccountType.PILOT)
         self.assertEqual(sett.default_cs_representative.email, service.DEFAULT_CS_REPRESENTATIVE)
         self.assertEqual(sett.default_sales_representative.email, service.DEFAULT_SALES_REPRESENTATIVE)
+        self.assertEqual(client.currency, dash.constants.Currency.EUR)
 
     def test_put_invalid(self):
         url = reverse('service.salesforce.client')
@@ -235,6 +238,7 @@ class CreateCreditTestCase(TestCase):
             'salesforceContractId': '111',
             'z1_accountId': 'a1',
             'pct_of_budget': '0.1',
+            'currency': 'EUR',
         }
         r = self.client.put(url, data=data, format='json')
         cli = core.bcm.credit_line_item.CreditLineItem.objects.all().order_by('-created_dt').first()
@@ -256,11 +260,12 @@ class CreateCreditTestCase(TestCase):
         })
         mock_slack.assert_called_with(
             None,
-            'New agency credit #{} added to agency {} with amount $500 and end date 2017-06-20.'.format(
+            'New agency credit #{} added to agency {} with amount €500 and end date 2017-06-20.'.format(
                 cli.pk,
                 self.agency.name
             )
         )
+        self.assertEqual(cli.currency, dash.constants.Currency.EUR)
 
     @mock.patch('core.bcm.bcm_slack.log_to_slack')
     def test_create_account_credit(self, mock_slack):

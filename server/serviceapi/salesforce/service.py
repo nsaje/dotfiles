@@ -39,6 +39,7 @@ def create_credit_line_item(request, data):
     start_date = data['start_date']
     end_date = data['end_date']
     amount = int(data['amount_at_signing'])
+    currency = data['currency']
     cli = dict(
         contract_id=str(data['salesforce_contract_id']),
         contract_number=str(data['contract_number']),
@@ -47,6 +48,8 @@ def create_credit_line_item(request, data):
         comment=data['description'],
 
         status=dash.constants.CreditLineItemStatus.SIGNED,
+
+        currency=currency
     )
     cli.update(**_get_client_lookup(data['z1_account_id']))
 
@@ -96,11 +99,14 @@ def create_client(request, data):
         client.cs_representative = cs
         client.save(request)
     elif data['type'] == constants.CLIENT_TYPE_CLIENT_DIRECT:
-        new_settings = client.get_current_settings().copy_settings()
-        new_settings.account_type = DEFAULT_ACCOUNT_TYPE
-        new_settings.default_sales_representative = sales
-        new_settings.default_cs_representative = cs
-        new_settings.save(request)
+        client.settings.update(
+            request,
+            account_type=DEFAULT_ACCOUNT_TYPE,
+            default_sales_representative=sales,
+            default_cs_representative=cs,
+        )
+        client.currency = data['currency']
+        client.save(request)
     return client
 
 
