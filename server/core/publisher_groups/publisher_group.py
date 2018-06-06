@@ -41,7 +41,7 @@ class PublisherGroup(models.Model):
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(
-        max_length=127,
+        max_length=255,
         editable=True,
         blank=False,
         null=False
