@@ -12,6 +12,7 @@ from utils import email_helper
 
 logger = logging.getLogger(__name__)
 
+
 OUTBRAIN_MAX_BLACKLISTED_PUBLISHERS = 30
 OUTBRAIN_CPC_CONSTRAINT_LIMIT = 30
 OUTBRAIN_CPC_CONSTRAINT_MIN = Decimal('0.65')
