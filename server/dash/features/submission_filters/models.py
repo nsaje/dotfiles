@@ -14,6 +14,7 @@ class SubmissionFilterManager(core.common.BaseManager):
             raise exceptions.MultipleFilterEntitiesException()
         if (source.content_ad_submission_policy, state) not in (
                 (dash.constants.SourceSubmissionPolicy.AUTOMATIC, constants.SubmissionFilterState.BLOCK),
+                (dash.constants.SourceSubmissionPolicy.AUTOMATIC_WITH_AMPLIFY_APPROVAL, constants.SubmissionFilterState.BLOCK),
                 (dash.constants.SourceSubmissionPolicy.MANUAL, constants.SubmissionFilterState.ALLOW), ):
             raise exceptions.SourcePolicyException()
         if SubmissionFilter.objects.filter(source=source, **entities).exists():

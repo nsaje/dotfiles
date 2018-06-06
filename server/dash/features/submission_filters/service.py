@@ -11,6 +11,11 @@ _FIELD_MAPPER = {
     'agency': 'content_ad__ad_group__campaign__account__agency_id',
 }
 
+AUTOMATIC_APPROVAL_POLICIES = {
+    dash.constants.SourceSubmissionPolicy.AUTOMATIC,
+    dash.constants.SourceSubmissionPolicy.AUTOMATIC_WITH_AMPLIFY_APPROVAL,
+}
+
 
 def filter_valid_content_ad_sources(content_ad_sources):
     valid = []
@@ -21,7 +26,7 @@ def filter_valid_content_ad_sources(content_ad_sources):
                 lookup.setdefault(entity_short + '_id__in', set()).add(cas[entity_long])
     applied_filters = _get_any_applied_filters(lookup)
     for cas in content_ad_sources:
-        is_valid = cas['source__content_ad_submission_policy'] == dash.constants.SourceSubmissionPolicy.AUTOMATIC
+        is_valid = cas['source__content_ad_submission_policy'] in AUTOMATIC_APPROVAL_POLICIES
         for entity_short, entity_long in _FIELD_MAPPER.items():
             submission_filter = applied_filters.get((cas['source_id'], entity_short, cas[entity_long]))
             if not submission_filter:
