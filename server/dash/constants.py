@@ -193,11 +193,13 @@ class Currency(ConstantBase):
     USD = 'USD'
     EUR = 'EUR'
     GBP = 'GBP'
+    AUD = 'AUD'
 
     _VALUES = {
         USD: 'US Dollar',
         EUR: 'Euro',
         GBP: 'British Pound',
+        AUD: 'Australian Dollar',
     }
 
 

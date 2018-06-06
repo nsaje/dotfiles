@@ -26,12 +26,21 @@ class CurrencyExchangeRateViewTest(K1APIBaseTest):
             currency=dash.constants.Currency.GBP,
             exchange_rate='0.876',
         )
+        magic_mixer.blend(
+            core.multicurrency.CurrencyExchangeRate,
+            date=dates_helper.local_today(),
+            currency=dash.constants.Currency.AUD,
+            exchange_rate='0.765',
+        )
         super().setUp()
 
     def test_get(self):
         response = self.client.get(reverse('k1api.currency_exchange_rates'))
         data = json.loads(response.content)
-        self.assertEqual({'response': {'USD': '1.0000', 'EUR': '0.9870', 'GBP': '0.8760'}, 'error': None}, data)
+        self.assertEqual({
+            'response': {'USD': '1.0000', 'EUR': '0.9870', 'GBP': '0.8760', 'AUD': '0.7650'},
+            'error': None
+        }, data)
 
     def test_get_specific(self):
         response = self.client.get(reverse('k1api.currency_exchange_rates'), {'currencies': ['EUR']})
