@@ -103,6 +103,9 @@ class ContentAdSourcesView(K1APIView):
             content_ad_sources = content_ad_sources.filter(content_ad_id__in=content_ad_ids.split(','))
         if ad_group_ids:
             content_ad_sources = content_ad_sources.filter(content_ad__ad_group_id__in=ad_group_ids.split(','))
+
+        content_ad_sources_without_source_filters = content_ad_sources
+
         if source_types:
             content_ad_sources = content_ad_sources.filter(source__source_type__type__in=source_types.split(','))
         if slugs:
@@ -110,7 +113,6 @@ class ContentAdSourcesView(K1APIView):
         if source_content_ad_ids:
             content_ad_sources = content_ad_sources.filter(source_content_ad_id__in=source_content_ad_ids.split(','))
 
-        amplify_review_statuses = self._get_amplify_review_statuses(content_ad_sources)
         content_ad_sources = (
             content_ad_sources.select_related('content_ad', 'source', 'content_ad__ad_group__campaign__account')
             .values(
@@ -133,6 +135,8 @@ class ContentAdSourcesView(K1APIView):
 
         if request.GET.get('use_filters', 'false') == 'true':
             content_ad_sources = dash.features.submission_filters.filter_valid_content_ad_sources(content_ad_sources)
+
+        amplify_review_statuses = self._get_amplify_review_statuses(content_ad_sources_without_source_filters)
 
         response = []
         for content_ad_source in content_ad_sources:
@@ -157,21 +161,17 @@ class ContentAdSourcesView(K1APIView):
         return self.response_ok(response)
 
     def _get_amplify_review_statuses(self, content_ad_sources):
-        # statuses = dash.models.ContentAdSource.objects.filter(
-        #     source__bidder_slug=OUTBRAIN_SOURCE_SLUG,
-        #     content_ad_id__in=content_ad_sources.filter(
-        #         content_ad__amplify_review=True,
-        #     ).values_list('content_ad_id')
-        # ).values('content_ad_id', 'submission_status')
-        # return {status['content_ad_id']: status['submission_status'] for status in statuses}
-        return {}
+        statuses = content_ad_sources.filter(
+            source__bidder_slug=OUTBRAIN_SOURCE_SLUG,
+        ).values('content_ad_id', 'submission_status')
+        return {status['content_ad_id']: status['submission_status'] for status in statuses}
 
     def _get_content_ad_source_state(self, content_ad_source_state, source_submission_policy,
                                      content_ad_amplify_review, amplify_review_status):
-        # if content_ad_amplify_review and\
-        #    source_submission_policy == dash.constants.SourceSubmissionPolicy.AUTOMATIC_WITH_AMPLIFY_APPROVAL and\
-        #    amplify_review_status != dash.constants.ContentAdSubmissionStatus.APPROVED:
-        #     return dash.constants.ContentAdSourceState.INACTIVE
+        if content_ad_amplify_review and\
+           source_submission_policy == dash.constants.SourceSubmissionPolicy.AUTOMATIC_WITH_AMPLIFY_APPROVAL and\
+           amplify_review_status != dash.constants.ContentAdSubmissionStatus.APPROVED:
+            return dash.constants.ContentAdSourceState.INACTIVE
         return content_ad_source_state
 
     def put(self, request):
