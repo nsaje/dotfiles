@@ -119,3 +119,9 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
 
         except exceptions.YahooDesktopCPCTooLow as err:
             raise utils.exc.ValidationError(errors={'targeting': {'devices': [str(err)]}})
+
+        except exceptions.PublisherWhitelistInvalid as err:
+            raise utils.exc.ValidationError(errors={'targeting': {'publisherGroups': {'included': [str(err)]}}})
+
+        except exceptions.PublisherBlacklistInvalid as err:
+            raise utils.exc.ValidationError(errors={'targeting': {'publisherGroups': {'excluded': [str(err)]}}})

@@ -40,22 +40,27 @@ class CampaignViewSet(RESTAPIBaseViewSet):
         serializer = serializers.CampaignSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         settings = serializer.validated_data
-        account = restapi.access.get_account(request.user, settings['campaign']['account_id'])
+        account = restapi.access.get_account(request.user, settings.get('campaign', {}).get('account_id'))
 
         with transaction.atomic():
             new_campaign = core.entity.Campaign.objects.create(
                 request,
                 account=account,
-                name=settings['name'],
+                name=settings.get('name'),
             )
-            new_campaign.settings.update(request, **settings)
+            self._update_campaign(request, new_campaign, settings)
 
         return self.response_ok(serializers.CampaignSerializer(new_campaign.settings).data, status=201)
 
     def _update_campaign(self, request, campaign, data):
         try:
             campaign.settings.update(request, **data)
+
         except core.entity.settings.campaign_settings.exceptions.CannotChangeLanguage as err:
-            raise utils.exc.ValidationError(errors={
-                'language': str(err)
-            })
+            raise utils.exc.ValidationError(errors={'language': str(err)})
+
+        except core.entity.settings.campaign_settings.exceptions.PublisherWhitelistInvalid as err:
+            raise utils.exc.ValidationError(errors={'targeting': {'publisherGroups': {'included': [str(err)]}}})
+
+        except core.entity.settings.campaign_settings.exceptions.PublisherBlacklistInvalid as err:
+            raise utils.exc.ValidationError(errors={'targeting': {'publisherGroups': {'excluded': [str(err)]}}})

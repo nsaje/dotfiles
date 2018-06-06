@@ -556,7 +556,7 @@ class AdGroupsTest(RESTAPITest):
         self.assertEqual(resp_json['data']['clickCappingDailyClickBudget'], self.expected_none_click_output)
         self.assertEqual(resp_json['data']['dayparting']['timezone'], '')
 
-    def _test_adgroups_put_none(self):
+    def test_adgroups_put_none(self):
         adgroup = self.adgroup_repr(
             end_date=None,
             max_cpc=None,
@@ -569,7 +569,7 @@ class AdGroupsTest(RESTAPITest):
             click_capping_daily_ad_group_max_clicks=None,
             click_capping_daily_click_budget=None,
             dayparting=None,
-            final_target_regions=None,
+            target_regions={},
         )
         r = self.client.put(
             reverse('adgroups_details', kwargs={'ad_group_id': 2040}),
@@ -589,4 +589,40 @@ class AdGroupsTest(RESTAPITest):
         self.assertEqual(resp_json['data']['clickCappingDailyAdGroupMaxClicks'], self.expected_none_click_output)
         self.assertEqual(resp_json['data']['clickCappingDailyClickBudget'], self.expected_none_click_output)
         self.assertEqual(resp_json['data']['dayparting'], {})
-        self.assertEqual(resp_json['data']['targeting']['geo']['included'], [])
+        self.assertEqual(
+            resp_json['data']['targeting']['geo']['included'],
+            {'countries': [], 'regions': [], 'dma': [], 'cities': [], 'postalCodes': []}
+        )
+
+    def test_adgroups_publisher_groups(self):
+        adgroup = self.adgroup_repr(
+            whitelist_publisher_groups=[153],
+            blacklist_publisher_groups=[154],
+        )
+        r = self.client.put(
+            reverse('adgroups_details', kwargs={'ad_group_id': 2040}),
+            data=adgroup,
+            format='json',
+        )
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json['data'])
+
+        adgroup = self.adgroup_repr(
+            whitelist_publisher_groups=[1],
+        )
+        r = self.client.put(
+            reverse('adgroups_details', kwargs={'ad_group_id': 2040}),
+            data=adgroup,
+            format='json',
+        )
+        self.assertResponseError(r, 'ValidationError')
+
+        adgroup = self.adgroup_repr(
+            blacklist_publisher_groups=[2],
+        )
+        r = self.client.put(
+            reverse('adgroups_details', kwargs={'ad_group_id': 2040}),
+            data=adgroup,
+            format='json',
+        )
+        self.assertResponseError(r, 'ValidationError')

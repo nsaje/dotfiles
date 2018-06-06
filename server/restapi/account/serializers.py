@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from dash import constants
 import restapi.serializers.fields
 
 
@@ -20,4 +21,9 @@ class AccountSerializer(serializers.Serializer):
         max_length=127,
         error_messages={'required': 'Please specify account name.'},
         source='settings.name',
+    )
+    currency = restapi.serializers.fields.DashConstantField(
+        constants.Currency,
+        default=constants.Currency.USD,
+        required=False,
     )

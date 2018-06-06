@@ -3,16 +3,10 @@ import core.publisher_groups.publisher_group
 from . import exceptions
 
 
-class CampaignSettingsValidatorMixin(object):
+class AccountSettingsValidatorMixin(object):
 
     def clean(self, changes):
-        self._validate_language(changes)
         self._validate_publisher_groups(changes)
-
-    def _validate_language(self, changes):
-        if 'language' in changes and self.campaign.adgroup_set.count() > 0:
-            msg = 'Cannot change language because Campaign has Ad Group/Ad Groups'
-            raise exceptions.CannotChangeLanguage(msg)
 
     def _validate_publisher_groups(self, changes):
         whitelist = changes.get('whitelist_publisher_groups')
@@ -21,7 +15,7 @@ class CampaignSettingsValidatorMixin(object):
         if whitelist:
             whitelist_count = core.publisher_groups.publisher_group.PublisherGroup\
                                   .objects.all()\
-                                  .filter_by_account(self.campaign.account)\
+                                  .filter_by_account(self.account)\
                                   .filter(pk__in=whitelist)\
                                   .count()
             if whitelist_count != len(whitelist):
@@ -30,7 +24,7 @@ class CampaignSettingsValidatorMixin(object):
         if blacklist:
             blacklist_count = core.publisher_groups.publisher_group.PublisherGroup\
                                   .objects.all()\
-                                  .filter_by_account(self.campaign.account)\
+                                  .filter_by_account(self.account)\
                                   .filter(pk__in=blacklist)\
                                   .count()
             if blacklist_count != len(blacklist):

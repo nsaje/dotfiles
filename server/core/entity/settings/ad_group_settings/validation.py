@@ -12,6 +12,7 @@ import utils.dates_helper
 import utils.exc
 
 import core.entity.settings.ad_group_source_settings.validation_helpers
+import core.publisher_groups.publisher_group
 
 
 # should inherit from core.common.BaseValidator so that full_clean is called on save,
@@ -31,6 +32,7 @@ class AdGroupSettingsValidatorMixin(object):
         self._validate_all_rtb_state(new_settings)
         self._validate_yahoo_desktop_targeting(new_settings)
         self._validate_bluekai_targeting_change(new_settings)
+        self._validate_publisher_groups(new_settings),
         self._validate_b1_sources_group_cpc_cc(new_settings)
         self._validate_b1_sources_group_daily_budget(new_settings)
 
@@ -211,6 +213,25 @@ class AdGroupSettingsValidatorMixin(object):
             if min_cpc and curr_ags_settings.cpc_cc < min_cpc:
                 msg = 'CPC on Yahoo is too low for desktop-only targeting. Please set it to at least $0.25.'
                 raise exceptions.YahooDesktopCPCTooLow(msg)
+
+    def _validate_publisher_groups(self, new_settings):
+        if self.whitelist_publisher_groups != new_settings.whitelist_publisher_groups:
+            whitelist_count = core.publisher_groups.publisher_group.PublisherGroup\
+                                  .objects.all()\
+                                  .filter_by_account(self.ad_group.campaign.account)\
+                                  .filter(pk__in=new_settings.whitelist_publisher_groups)\
+                                  .count()
+            if whitelist_count != len(new_settings.whitelist_publisher_groups):
+                raise exceptions.PublisherWhitelistInvalid('Invalid whitelist publisher group selection.')
+
+        if self.blacklist_publisher_groups != new_settings.blacklist_publisher_groups:
+            blacklist_count = core.publisher_groups.publisher_group.PublisherGroup\
+                                  .objects.all()\
+                                  .filter_by_account(self.ad_group.campaign.account)\
+                                  .filter(pk__in=new_settings.blacklist_publisher_groups)\
+                                  .count()
+            if blacklist_count != len(new_settings.blacklist_publisher_groups):
+                raise exceptions.PublisherBlacklistInvalid('Invalid blacklist publisher group selection.')
 
     def _validate_b1_sources_group_cpc_cc(self, new_settings):
         if self.local_b1_sources_group_cpc_cc == new_settings.local_b1_sources_group_cpc_cc:

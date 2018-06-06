@@ -3,6 +3,7 @@
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.db import transaction
 
 import utils.demo_anonymizer
 import utils.string_helper
@@ -12,11 +13,13 @@ import core.common
 import core.history
 import core.source
 
-from .settings_base import SettingsBase
-from .settings_query_set import SettingsQuerySet
+from . import validation
+from ..settings_base import SettingsBase
+from ..settings_query_set import SettingsQuerySet
 
 
-class AccountSettings(SettingsBase):
+class AccountSettings(validation.AccountSettingsValidatorMixin,
+                      SettingsBase):
     class Meta:
         app_label = 'dash'
         ordering = ('-created_dt',)
@@ -77,6 +80,13 @@ class AccountSettings(SettingsBase):
     changes_text = models.TextField(blank=True, null=True)
 
     objects = core.common.QuerySetManager()
+
+    @transaction.atomic
+    def update(self, request, **kwargs):
+        clean_updates = {field: value for field, value in kwargs.items() if field in self._settings_fields}
+        changes = self.get_changes(clean_updates)
+        self.clean(changes)
+        super().update(request, **changes)
 
     @classmethod
     def get_human_prop_name(cls, prop_name):

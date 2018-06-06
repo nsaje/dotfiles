@@ -253,3 +253,42 @@ class CampaignsTest(RESTAPITest):
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json['data'])
+
+    def test_campaigns_publisher_groups(self):
+        test_campaign = self.campaign_repr(
+            id=608,
+            account_id=186,
+            whitelist_publisher_groups=[153],
+            blacklist_publisher_groups=[154],
+        )
+        r = self.client.put(
+            reverse('campaigns_details', kwargs={'campaign_id': 608}),
+            data=test_campaign,
+            format='json'
+        )
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json['data'])
+
+        test_campaign = self.campaign_repr(
+            id=608,
+            account_id=186,
+            whitelist_publisher_groups=[1],
+        )
+        r = self.client.put(
+            reverse('campaigns_details', kwargs={'campaign_id': 608}),
+            data=test_campaign,
+            format='json'
+        )
+        self.assertResponseError(r, 'ValidationError')
+
+        test_campaign = self.campaign_repr(
+            id=608,
+            account_id=186,
+            blacklist_publisher_groups=[2],
+        )
+        r = self.client.put(
+            reverse('campaigns_details', kwargs={'campaign_id': 608}),
+            data=test_campaign,
+            format='json'
+        )
+        self.assertResponseError(r, 'ValidationError')

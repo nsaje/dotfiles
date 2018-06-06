@@ -497,6 +497,7 @@
         modified_dt: '2015-02-21T00:00:00'
         name: 'Whitelist'
         account: 186
+        agency: 1
     model: dash.publishergroup
     pk: 153
 
@@ -505,6 +506,7 @@
         modified_dt: '2015-02-21T00:00:00'
         name: 'Whitelist 2'
         account: 186
+        agency: 1
     model: dash.publishergroup
     pk: 154
 
@@ -513,6 +515,7 @@
         modified_dt: '2015-02-21T00:00:00'
         name: 'Whitelist 3'
         account: 186
+        agency: 1
     model: dash.publishergroup
     pk: 155
 
@@ -521,6 +524,7 @@
         modified_dt: '2015-02-21T00:00:00'
         name: 'Blacklist'
         account: 186
+        agency: 1
     model: dash.publishergroup
     pk: 156
 

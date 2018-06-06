@@ -123,30 +123,7 @@ class AdGroupSettings(api_common.BaseApiView):
             ad_group.settings.update(request, **data)
 
         except utils.exc.MultipleValidationError as err:
-            errors = {}
-            for e in err.errors:
-                if isinstance(e, core.entity.settings.ad_group_settings.exceptions.MaxCPCTooLow):
-                    errors.setdefault('cpc_cc', []).append(str(e))
-
-                elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.MaxCPCTooHigh):
-                    errors.setdefault('cpc_cc', []).append(str(e))
-
-                elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.MaxCPMTooLow):
-                    errors.setdefault('max_cpm', []).append(str(e))
-
-                elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.MaxCPMTooHigh):
-                    errors.setdefault('max_cpm', []).append(str(e))
-
-                elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.EndDateBeforeStartDate):
-                    errors.setdefault('end_date', []).append(str(e))
-
-                elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.EndDateInThePast):
-                    errors.setdefault('end_date', []).append(str(e))
-
-                elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.TrackingCodeInvalid):
-                    errors.setdefault('tracking_code', []).append(str(e))
-
-            raise utils.exc.ValidationError(errors=errors)
+            self._handle_multiple_error(err)
 
         except core.entity.settings.ad_group_settings.exceptions.CannotChangeAdGroupState as err:
             raise utils.exc.ValidationError(errors={'state': [str(err)]})
@@ -180,6 +157,12 @@ class AdGroupSettings(api_common.BaseApiView):
 
         except core.entity.settings.ad_group_settings.exceptions.YahooDesktopCPCTooLow as err:
             raise utils.exc.ValidationError(errors={'target_devices': [str(err)]})
+
+        except core.entity.settings.ad_group_settings.exceptions.PublisherWhitelistInvalid as err:
+            raise utils.exc.ValidationError(errors={'whitelist_publisher_groups': [str(err)]})
+
+        except core.entity.settings.ad_group_settings.exceptions.PublisherBlacklistInvalid as err:
+            raise utils.exc.ValidationError(errors={'blacklist_publisher_groups': [str(err)]})
 
         except core.entity.settings.ad_group_source_settings.exceptions.RTBSourcesCPCNegative as err:
             raise utils.exc.ValidationError(errors={'b1_sources_group_cpc_cc': [str(err)]})
@@ -236,6 +219,32 @@ class AdGroupSettings(api_common.BaseApiView):
                     )
                 ]
             })
+
+    def _handle_multiple_error(self, err):
+        errors = {}
+        for e in err.errors:
+            if isinstance(e, core.entity.settings.ad_group_settings.exceptions.MaxCPCTooLow):
+                errors.setdefault('cpc_cc', []).append(str(e))
+
+            elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.MaxCPCTooHigh):
+                errors.setdefault('cpc_cc', []).append(str(e))
+
+            elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.MaxCPMTooLow):
+                errors.setdefault('max_cpm', []).append(str(e))
+
+            elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.MaxCPMTooHigh):
+                errors.setdefault('max_cpm', []).append(str(e))
+
+            elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.EndDateBeforeStartDate):
+                errors.setdefault('end_date', []).append(str(e))
+
+            elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.EndDateInThePast):
+                errors.setdefault('end_date', []).append(str(e))
+
+            elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.TrackingCodeInvalid):
+                errors.setdefault('tracking_code', []).append(str(e))
+
+        raise utils.exc.ValidationError(errors=errors)
 
     def _supports_max_cpm(self, ad_group_sources):
         unsupported_sources = []
@@ -535,9 +544,13 @@ class CampaignSettings(api_common.BaseApiView):
                 campaign.settings.update(request, **form_data)
 
             except core.entity.settings.campaign_settings.exceptions.CannotChangeLanguage as err:
-                raise utils.exc.ValidationError(errors={
-                    'language': str(err)
-                })
+                raise utils.exc.ValidationError(errors={'language': str(err)})
+
+            except core.entity.settings.campaign_settings.exceptions.PublisherWhitelistInvalid as err:
+                raise utils.exc.ValidationError(errors={'whitelist_publisher_groups': [str(err)]})
+
+            except core.entity.settings.campaign_settings.exceptions.PublisherBlacklistInvalid as err:
+                raise utils.exc.ValidationError(errors={'blacklist_publisher_groups': [str(err)]})
 
             goal_errors = self.set_goals(request, campaign, changes)
 

@@ -232,7 +232,7 @@ id        | string                | the account's id                           |
 agencyId  | string                | the agency's id                            | required | read only
 name      | string                | the name of the account                    | required | optional
 targeting | [targeting](#account-targeting) | account targeting settings       | optional | optional
-
+currency  | [Currency](#currency) | the account's currency (default is USD)    | optional | N\A
 
 <a name="account-targeting"></a>
 #### Account Targeting Settings
@@ -1831,6 +1831,13 @@ A string representing a decimal number. Example: `"15.48"`
 
 
 # Group Constants reference
+
+<a name="currency"></a>
+## Account / Currency
+
+- `USD` - US Dollar
+- `EUR` - Euro
+- `GBP` - British Pound
 
 ## Ad group / Content ad State
 

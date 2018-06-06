@@ -71,3 +71,11 @@ class EndDateInThePast(ValidationError):
 
 class TrackingCodeInvalid(ValidationError):
     pass
+
+
+class PublisherWhitelistInvalid(ValidationError):
+    pass
+
+
+class PublisherBlacklistInvalid(ValidationError):
+    pass

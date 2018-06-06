@@ -1,9 +1,12 @@
 from restapi.common.views_base import RESTAPIBaseViewSet
 
 import restapi.access
-from . import serializers
 import core.entity
-import dash.constants
+import utils.exc
+
+from . import serializers
+
+from django.db import transaction
 
 
 UPDATABLE_SETTINGS_FIELDS = (
@@ -26,7 +29,7 @@ class AccountViewSet(RESTAPIBaseViewSet):
         settings_updates = serializer.validated_data.get('settings')
         if settings_updates:
             update = {key: value for key, value in list(settings_updates.items()) if key in UPDATABLE_SETTINGS_FIELDS}
-            account.settings.update(request, **update)
+            self._update_account(request, account, update)
         return self.response_ok(serializers.AccountSerializer(account).data)
 
     def list(self, request):
@@ -36,21 +39,31 @@ class AccountViewSet(RESTAPIBaseViewSet):
     def create(self, request):
         serializer = serializers.AccountSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         agency = None
         agency_id = serializer.validated_data.get('agency_id')
         if agency_id:
             agency = restapi.access.get_agency(request.user, agency_id)
 
-        new_account = core.entity.Account.objects.create(
-            request,
-            name=serializer.validated_data['settings']['name'],
-            agency=agency,
-            currency=dash.constants.Currency.USD,
-        )
+        with transaction.atomic():
+            new_account = core.entity.Account.objects.create(
+                request,
+                name=serializer.validated_data.get('settings', {}).get('name'),
+                agency=agency,
+                currency=serializer.validated_data.get('currency'),
+            )
+            settings_updates = serializer.validated_data.get('settings')
+            if settings_updates:
+                update = {key: value for key, value in list(settings_updates.items()) if key in UPDATABLE_SETTINGS_FIELDS}
+                self._update_account(request, new_account, update)
 
-        settings_updates = serializer.validated_data.get('settings')
-        if settings_updates:
-            update = {key: value for key, value in list(settings_updates.items()) if key in UPDATABLE_SETTINGS_FIELDS}
-            new_account.settings.update(request, **update)
         return self.response_ok(serializers.AccountSerializer(new_account).data, status=201)
+
+    def _update_account(self, request, account, data):
+        try:
+            account.settings.update(request, **data)
+
+        except core.entity.settings.account_settings.exceptions.PublisherWhitelistInvalid as err:
+            raise utils.exc.ValidationError(errors={'targeting': {'publisherGroups': {'included': [str(err)]}}})
+
+        except core.entity.settings.account_settings.exceptions.PublisherBlacklistInvalid as err:
+            raise utils.exc.ValidationError(errors={'targeting': {'publisherGroups': {'excluded': [str(err)]}}})
