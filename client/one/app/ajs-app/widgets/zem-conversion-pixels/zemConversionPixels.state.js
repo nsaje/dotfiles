@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemConversionPixelsStateService', function ($q, $http, zemPubSubService, zemConversionPixelsEndpoint) { //eslint-disable-line max-len
+angular.module('one.widgets').service('zemConversionPixelsStateService', function ($q, $http, zemPubSubService, zemDataFilterService, zemConversionPixelsEndpoint) { //eslint-disable-line max-len
 
     function StateService (account) {
 
@@ -34,11 +34,19 @@ angular.module('one.widgets').service('zemConversionPixelsStateService', functio
         ///////////////////////////////////////////////////////////////////////////////////////////////
         // Internals
         //
+        var filteredStatusesUpdateHandler;
+        var conversionPixelsCache = [];
+
         function initialize () {
+            filteredStatusesUpdateHandler = zemDataFilterService.onFilteredStatusesUpdate(function () {
+                state.conversionPixels = conversionPixelsCache.filter(filterPixelsByStatus);
+            });
+
             return getConversionPixels();
         }
 
         function destroy () {
+            if (filteredStatusesUpdateHandler) filteredStatusesUpdateHandler();
         }
 
         function getState () {
@@ -50,7 +58,8 @@ angular.module('one.widgets').service('zemConversionPixelsStateService', functio
             state.requests.list.inProgress = true;
             return zemConversionPixelsEndpoint.list(account.id).then(
                 function (data) {
-                    state.conversionPixels = data.rows;
+                    conversionPixelsCache = data.rows;
+                    state.conversionPixels = conversionPixelsCache.filter(filterPixelsByStatus);
                     state.tagPrefix = data.tagPrefix;
                 },
                 function () {
@@ -136,6 +145,13 @@ angular.module('one.widgets').service('zemConversionPixelsStateService', functio
 
         function getPixelById (id) {
             return state.conversionPixels.filter(function (pixel) { return pixel.id === id; })[0];
+        }
+
+        function filterPixelsByStatus (pixel) {
+            if (zemDataFilterService.getShowArchived()) {
+                return true;
+            }
+            return !pixel.archived;
         }
 
         function clearRequestError (request, validationErrorField) {

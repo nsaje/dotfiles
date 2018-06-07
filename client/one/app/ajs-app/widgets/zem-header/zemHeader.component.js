@@ -34,6 +34,10 @@ angular.module('one.widgets').component('zemHeader', {
                 $ctrl.isDateRangePickerVisible = true;
                 $ctrl.isFilterSelectorToggleVisible = true;
             }
+
+            if ($state.includes('v2.pixels')) {
+                $ctrl.isFilterSelectorToggleVisible = true;
+            }
         }
 
         var isHeaderFixed = false;

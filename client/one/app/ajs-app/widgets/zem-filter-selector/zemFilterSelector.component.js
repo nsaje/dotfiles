@@ -37,6 +37,7 @@ angular.module('one.widgets').component('zemFilterSelector', {
             $ctrl.visibleSections = zemFilterSelectorService.getVisibleSections();
             $ctrl.isListElementOverflowing = false;
 
+            refresh();
             updateListElementWidth();
         };
 

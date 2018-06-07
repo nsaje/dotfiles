@@ -28,7 +28,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr ng-class="{'archived': item.archived}" ng-repeat="item in $ctrl.state.conversionPixels | orderBy:$ctrl.orderField:$ctrl.orderReverse | filter: $ctrl.filterConversionPixels">
+                <tr ng-class="{'archived': item.archived}" ng-repeat="item in $ctrl.state.conversionPixels | orderBy:$ctrl.orderField:$ctrl.orderReverse">
                     <td>
                         <strong>{{ item.name }}</strong> <span ng-if="item.audienceEnabled" class="text-gray">(Custom audience pixel)</span>
                     </td>
@@ -83,4 +83,3 @@
         An error has occurred while loading pixels. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
     </span>
 </div>
-

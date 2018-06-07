@@ -41,7 +41,7 @@
                     {{ audience.createdDt | date:'MMM d, y h:mm:ss a' }}
                 </td>
                 <td class="custom-table__action-buttons">
-                    <a tabindex="-1" ng-click="$ctrl.openAudienceModal(audience)" href="#" class="button button--small button--with-icon edit-icon">Edit</a>
+                    <a tabindex="-1" ng-click="$ctrl.openAudienceModal(audience)" ng-if="!audience.archived" href="#" class="button button--small button--with-icon edit-icon">Edit</a>
                     <a tabindex="-1" ng-click="$ctrl.archiveAudience(audience)" ng-if="!audience.archived" href="#" class="button button--small button--with-icon archive-icon" ng-class="{'disabled': $ctrl.state.requests.archive[audience.id].inProgress}">Archive</a>
                     <a tabindex="-1" ng-click="$ctrl.restoreAudience(audience)" ng-if="audience.archived" href="#" class="button button--small button--with-icon archive-icon" ng-class="{'disabled': $ctrl.state.requests.restore[audience.id].inProgress}">Restore</a>
                 </td>

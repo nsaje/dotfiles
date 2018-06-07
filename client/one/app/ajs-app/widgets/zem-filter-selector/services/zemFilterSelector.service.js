@@ -29,6 +29,9 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
             permissions: ['zemauth.can_filter_by_media_source'],
             cssClass: 'sources',
             getOptions: getSourcesOptions,
+            isVisible: function () {
+                return $state.includes('v2.analytics');
+            },
         },
         {
             condition: zemDataFilterService.CONDITIONS.agencies,

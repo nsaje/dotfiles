@@ -6,7 +6,7 @@ angular.module('one.widgets').component('zemConversionPixels', {
         onAudiencePixelUpdate: '&'
     },
     template: require('./zemConversionPixels.component.html'),
-    controller: function ($scope, $uibModal, zemPermissions, zemConversionPixelsStateService, zemDataFilterService) { // eslint-disable-line max-len
+    controller: function ($scope, $uibModal, zemPermissions, zemConversionPixelsStateService) {
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
@@ -21,6 +21,10 @@ angular.module('one.widgets').component('zemConversionPixels', {
 
             $ctrl.archiveConversionPixel = $ctrl.stateService.archive;
             $ctrl.restoreConversionPixel = $ctrl.stateService.restore;
+        };
+
+        $ctrl.$onDestroy = function () {
+            $ctrl.stateService.destroy();
         };
 
         $ctrl.addConversionPixel = function () {
@@ -60,16 +64,8 @@ angular.module('one.widgets').component('zemConversionPixels', {
             });
         };
 
-        $ctrl.filterConversionPixels = function (conversionPixel) {
-            if (zemDataFilterService.getShowArchived()) {
-                return true;
-            }
-            return !conversionPixel.archived;
-        };
-
         $ctrl.getConversionPixelTag = function (name, url) {
             return '<!-- ' + name + '-->\n<img src="' + url + '" height="1" width="1" border="0" alt="" />';
         };
-
     }
 });
