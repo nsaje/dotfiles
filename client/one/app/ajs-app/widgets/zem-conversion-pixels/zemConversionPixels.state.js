@@ -77,7 +77,8 @@ angular.module('one.widgets').service('zemConversionPixelsStateService', functio
             state.requests.create.inProgress = true;
             return zemConversionPixelsEndpoint.post(account.id, pixel).then(
                 function (data) {
-                    state.conversionPixels.push(data);
+                    conversionPixelsCache.push(data);
+                    state.conversionPixels = conversionPixelsCache.filter(filterPixelsByStatus);
                 },
                 function (data) {
                     if (data && data.errors) {
@@ -98,6 +99,7 @@ angular.module('one.widgets').service('zemConversionPixelsStateService', functio
             return zemConversionPixelsEndpoint.put(pixel.id, pixel).then(
                 function (data) {
                     angular.extend(getPixelById(pixel.id), data);
+                    state.conversionPixels = conversionPixelsCache.filter(filterPixelsByStatus);
                 },
                 function (data) {
                     if (data && data.errors) {
@@ -144,7 +146,7 @@ angular.module('one.widgets').service('zemConversionPixelsStateService', functio
         }
 
         function getPixelById (id) {
-            return state.conversionPixels.filter(function (pixel) { return pixel.id === id; })[0];
+            return conversionPixelsCache.filter(function (pixel) { return pixel.id === id; })[0];
         }
 
         function filterPixelsByStatus (pixel) {
