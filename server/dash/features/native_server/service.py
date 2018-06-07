@@ -16,6 +16,7 @@ AD_GROUP_SETTINGS_CREATE_HACKS_PER_AGENCY = {
 }
 AD_GROUP_SETTINGS_HACKS_PER_AGENCY = {
     AGENCY_RCS: {
+        'delivery_type': dash.constants.AdGroupDeliveryType.ACCELERATED,
     },
 }
 CAMPAIGN_SETTINGS_HACKS_PER_AGENCY = {
