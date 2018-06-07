@@ -106,7 +106,7 @@ class ContentAdSourcesView(K1APIView):
         if source_content_ad_ids:
             content_ad_sources = content_ad_sources.filter(source_content_ad_id__in=source_content_ad_ids.split(','))
 
-        # content_ad_sources_without_source_filters = content_ad_sources
+        content_ad_sources_without_source_filters = content_ad_sources
 
         if source_types:
             content_ad_sources = content_ad_sources.filter(source__source_type__type__in=source_types.split(','))
@@ -136,8 +136,7 @@ class ContentAdSourcesView(K1APIView):
         if request.GET.get('use_filters', 'false') == 'true':
             content_ad_sources = dash.features.submission_filters.filter_valid_content_ad_sources(content_ad_sources)
 
-        # amplify_review_statuses = self._get_amplify_review_statuses(content_ad_sources_without_source_filters)
-        amplify_review_statuses = {}
+        amplify_review_statuses = self._get_amplify_review_statuses(content_ad_sources_without_source_filters)
 
         response = []
         for content_ad_source in content_ad_sources:
