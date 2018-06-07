@@ -134,7 +134,8 @@ class ContentAdSourcesView(K1APIView):
         if request.GET.get('use_filters', 'false') == 'true':
             content_ad_sources = dash.features.submission_filters.filter_valid_content_ad_sources(content_ad_sources)
 
-        amplify_review_statuses = self._get_amplify_review_statuses(content_ad_sources)
+        # amplify_review_statuses = self._get_amplify_review_statuses(content_ad_sources)
+        amplify_review_statuses = {}
 
         response = []
         for content_ad_source in content_ad_sources:
