@@ -103,6 +103,8 @@ class ContentAdSourcesView(K1APIView):
             content_ad_sources = content_ad_sources.filter(content_ad_id__in=content_ad_ids.split(','))
         if ad_group_ids:
             content_ad_sources = content_ad_sources.filter(content_ad__ad_group_id__in=ad_group_ids.split(','))
+        if source_content_ad_ids:
+            content_ad_sources = content_ad_sources.filter(source_content_ad_id__in=source_content_ad_ids.split(','))
 
         content_ad_sources_without_source_filters = content_ad_sources
 
@@ -110,8 +112,6 @@ class ContentAdSourcesView(K1APIView):
             content_ad_sources = content_ad_sources.filter(source__source_type__type__in=source_types.split(','))
         if slugs:
             content_ad_sources = content_ad_sources.filter(source__bidder_slug__in=slugs.split(','))
-        if source_content_ad_ids:
-            content_ad_sources = content_ad_sources.filter(source_content_ad_id__in=source_content_ad_ids.split(','))
 
         content_ad_sources = (
             content_ad_sources.select_related('content_ad', 'source', 'content_ad__ad_group__campaign__account')
