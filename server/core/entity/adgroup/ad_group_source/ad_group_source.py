@@ -49,7 +49,8 @@ class AdGroupSourceManager(core.common.QuerySetManager):
         except AdGroupSource.DoesNotExist:
             ad_group_source = None
 
-        if not skip_validation and not ad_group.campaign.account.allowed_sources.filter(pk=source.id).exists():
+        if not skip_validation and not ad_review_only \
+           and not ad_group.campaign.account.allowed_sources.filter(pk=source.id).exists():
             raise utils.exc.ValidationError(
                 '{} media source can not be added to this account.'.format(source.name)
             )
