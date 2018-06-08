@@ -227,7 +227,7 @@ class AllAccountsAccountsDailyStats(AllAccountsDailyStatsView):
             .filter_by_user(request.user)\
             .filter_by_agencies(self.view_filter.filtered_agencies)\
             .filter_by_account_types(self.view_filter.filtered_account_types)
-        uses_bcm_v2 = all(accounts.values_list('uses_bcm_v2', flat=True)) if accounts else False
+        # uses_bcm_v2 = all(accounts.values_list('uses_bcm_v2', flat=True)) if accounts else False
 
         # self.validate_metrics(request.GET.getlist('metrics'), uses_bcm_v2=uses_bcm_v2)
 
@@ -261,7 +261,7 @@ class AllAccountsSourcesDailyStats(AllAccountsDailyStatsView):
             .filter_by_user(request.user)\
             .filter_by_agencies(self.view_filter.filtered_agencies)\
             .filter_by_account_types(self.view_filter.filtered_account_types)
-        uses_bcm_v2 = all(accounts.values_list('uses_bcm_v2', flat=True)) if accounts else False
+        # uses_bcm_v2 = all(accounts.values_list('uses_bcm_v2', flat=True)) if accounts else False
 
         # self.validate_metrics(request.GET.getlist('metrics'), uses_bcm_v2=uses_bcm_v2)
 
@@ -296,7 +296,7 @@ class AllAccountsPublishersDailyStats(AllAccountsDailyStatsView):
             .filter_by_user(request.user)\
             .filter_by_agencies(self.view_filter.filtered_agencies)\
             .filter_by_account_types(self.view_filter.filtered_account_types)
-        uses_bcm_v2 = all(accounts.values_list('uses_bcm_v2', flat=True)) if accounts else False
+        # uses_bcm_v2 = all(accounts.values_list('uses_bcm_v2', flat=True)) if accounts else False
 
         # self.validate_metrics(request.GET.getlist('metrics'), uses_bcm_v2=uses_bcm_v2)
 
