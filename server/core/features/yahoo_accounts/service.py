@@ -87,7 +87,7 @@ def update_source_campaign_keys(account, mapping):
 def update_yahoo_account(account, data):
     yahoo_account = core.features.yahoo_accounts.YahooAccount.objects.create(
         advertiser_id=data['advertiser_id'],
-        #  currency=data['currency'],
+        currency=data['currency'],
     )
     account.yahoo_account = yahoo_account
     account.save(None)
