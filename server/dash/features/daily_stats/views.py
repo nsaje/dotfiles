@@ -257,10 +257,10 @@ class AllAccountsSourcesDailyStats(AllAccountsDailyStatsView):
             raise exc.MissingDataError()
 
         self.view_filter = dash.views.helpers.ViewFilter(request=request)
-        accounts = models.Account.objects.all()\
-            .filter_by_user(request.user)\
-            .filter_by_agencies(self.view_filter.filtered_agencies)\
-            .filter_by_account_types(self.view_filter.filtered_account_types)
+        # accounts = models.Account.objects.all()\
+        #     .filter_by_user(request.user)\
+        #     .filter_by_agencies(self.view_filter.filtered_agencies)\
+        #     .filter_by_account_types(self.view_filter.filtered_account_types)
         # uses_bcm_v2 = all(accounts.values_list('uses_bcm_v2', flat=True)) if accounts else False
 
         # self.validate_metrics(request.GET.getlist('metrics'), uses_bcm_v2=uses_bcm_v2)
@@ -292,10 +292,10 @@ class AllAccountsPublishersDailyStats(AllAccountsDailyStatsView):
             raise exc.MissingDataError()
 
         self.view_filter = dash.views.helpers.ViewFilter(request=request)
-        accounts = models.Account.objects.all()\
-            .filter_by_user(request.user)\
-            .filter_by_agencies(self.view_filter.filtered_agencies)\
-            .filter_by_account_types(self.view_filter.filtered_account_types)
+        # accounts = models.Account.objects.all()\
+        #     .filter_by_user(request.user)\
+        #     .filter_by_agencies(self.view_filter.filtered_agencies)\
+        #     .filter_by_account_types(self.view_filter.filtered_account_types)
         # uses_bcm_v2 = all(accounts.values_list('uses_bcm_v2', flat=True)) if accounts else False
 
         # self.validate_metrics(request.GET.getlist('metrics'), uses_bcm_v2=uses_bcm_v2)
