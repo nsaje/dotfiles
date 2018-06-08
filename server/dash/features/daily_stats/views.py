@@ -229,7 +229,7 @@ class AllAccountsAccountsDailyStats(AllAccountsDailyStatsView):
             .filter_by_account_types(self.view_filter.filtered_account_types)
         uses_bcm_v2 = all(accounts.values_list('uses_bcm_v2', flat=True)) if accounts else False
 
-        self.validate_metrics(request.GET.getlist('metrics'), uses_bcm_v2=uses_bcm_v2)
+        # self.validate_metrics(request.GET.getlist('metrics'), uses_bcm_v2=uses_bcm_v2)
 
         self.selected_objects = self._get_selected_objects(request, accounts)
 
@@ -263,7 +263,7 @@ class AllAccountsSourcesDailyStats(AllAccountsDailyStatsView):
             .filter_by_account_types(self.view_filter.filtered_account_types)
         uses_bcm_v2 = all(accounts.values_list('uses_bcm_v2', flat=True)) if accounts else False
 
-        self.validate_metrics(request.GET.getlist('metrics'), uses_bcm_v2=uses_bcm_v2)
+        # self.validate_metrics(request.GET.getlist('metrics'), uses_bcm_v2=uses_bcm_v2)
 
         sources = models.Source.objects.all()
 
@@ -298,7 +298,7 @@ class AllAccountsPublishersDailyStats(AllAccountsDailyStatsView):
             .filter_by_account_types(self.view_filter.filtered_account_types)
         uses_bcm_v2 = all(accounts.values_list('uses_bcm_v2', flat=True)) if accounts else False
 
-        self.validate_metrics(request.GET.getlist('metrics'), uses_bcm_v2=uses_bcm_v2)
+        # self.validate_metrics(request.GET.getlist('metrics'), uses_bcm_v2=uses_bcm_v2)
 
         self.selected_objects = None
 
@@ -335,7 +335,7 @@ class AccountCampaignsDailyStats(AccountDailyStatsView):
     def get(self, request, account_id):
         self.account = dash.views.helpers.get_account(request.user, account_id)
         pixels = self.account.conversionpixel_set.filter(archived=False)
-        self.validate_metrics(request.GET.getlist('metrics'), pixels=pixels, uses_bcm_v2=self.account.uses_bcm_v2)
+        # self.validate_metrics(request.GET.getlist('metrics'), pixels=pixels, uses_bcm_v2=self.account.uses_bcm_v2)
 
         campaigns = self.account.campaign_set.all().filter_by_user(request.user)
         self.selected_objects = self._get_selected_objects(request, campaigns)
@@ -368,7 +368,7 @@ class AccountSourcesDailyStats(AccountDailyStatsView):
     def get(self, request, account_id):
         self.account = dash.views.helpers.get_account(request.user, account_id)
         pixels = self.account.conversionpixel_set.filter(archived=False)
-        self.validate_metrics(request.GET.getlist('metrics'), pixels=pixels, uses_bcm_v2=self.account.uses_bcm_v2)
+        # self.validate_metrics(request.GET.getlist('metrics'), pixels=pixels, uses_bcm_v2=self.account.uses_bcm_v2)
 
         sources = models.Source.objects.all()
         self.selected_objects = self._get_selected_objects(request, sources)
@@ -404,7 +404,7 @@ class AccountPublishersDailyStats(AccountDailyStatsView):
         self.account = dash.views.helpers.get_account(request.user, account_id)
 
         pixels = self.account.conversionpixel_set.filter(archived=False)
-        self.validate_metrics(request.GET.getlist('metrics'), pixels=pixels, uses_bcm_v2=self.account.uses_bcm_v2)
+        # self.validate_metrics(request.GET.getlist('metrics'), pixels=pixels, uses_bcm_v2=self.account.uses_bcm_v2)
 
         self.selected_objects = None
 
@@ -446,12 +446,12 @@ class CampaignAdGroupsDailyStats(CampaignDailyStatsView):
         self.campaign = dash.views.helpers.get_campaign(request.user, campaign_id)
         conversion_goals = self.campaign.conversiongoal_set.all()
         pixels = self.campaign.account.conversionpixel_set.filter(archived=False)
-        self.validate_metrics(
-            request.GET.getlist('metrics'),
-            pixels=pixels,
-            conversion_goals=conversion_goals,
-            uses_bcm_v2=self.campaign.account.uses_bcm_v2
-        )
+        # self.validate_metrics(
+        #     request.GET.getlist('metrics'),
+        #     pixels=pixels,
+        #     conversion_goals=conversion_goals,
+        #     uses_bcm_v2=self.campaign.account.uses_bcm_v2
+        # )
 
         ad_groups = self.campaign.adgroup_set.all()
         self.selected_objects = self._get_selected_objects(request, ad_groups)
@@ -487,12 +487,12 @@ class CampaignSourcesDailyStats(CampaignDailyStatsView):
         self.campaign = dash.views.helpers.get_campaign(request.user, campaign_id)
         conversion_goals = self.campaign.conversiongoal_set.all()
         pixels = self.campaign.account.conversionpixel_set.filter(archived=False)
-        self.validate_metrics(
-            request.GET.getlist('metrics'),
-            pixels=pixels,
-            conversion_goals=conversion_goals,
-            uses_bcm_v2=self.campaign.account.uses_bcm_v2
-        )
+        # self.validate_metrics(
+        #     request.GET.getlist('metrics'),
+        #     pixels=pixels,
+        #     conversion_goals=conversion_goals,
+        #     uses_bcm_v2=self.campaign.account.uses_bcm_v2
+        # )
 
         sources = models.Source.objects.all()
         self.selected_objects = self._get_selected_objects(request, sources)
@@ -531,12 +531,12 @@ class CampaignPublishersDailyStats(CampaignDailyStatsView):
 
         conversion_goals = self.campaign.conversiongoal_set.all()
         pixels = self.campaign.account.conversionpixel_set.filter(archived=False)
-        self.validate_metrics(
-            request.GET.getlist('metrics'),
-            pixels=pixels,
-            conversion_goals=conversion_goals,
-            uses_bcm_v2=self.campaign.account.uses_bcm_v2
-        )
+        # self.validate_metrics(
+        #     request.GET.getlist('metrics'),
+        #     pixels=pixels,
+        #     conversion_goals=conversion_goals,
+        #     uses_bcm_v2=self.campaign.account.uses_bcm_v2
+        # )
 
         self.selected_objects = None
 
@@ -580,12 +580,12 @@ class AdGroupContentAdsDailyStats(AdGroupDailyStatsView):
         self.ad_group = dash.views.helpers.get_ad_group(request.user, ad_group_id)
         conversion_goals = self.ad_group.campaign.conversiongoal_set.all()
         pixels = self.ad_group.campaign.account.conversionpixel_set.filter(archived=False)
-        self.validate_metrics(
-            request.GET.getlist('metrics'),
-            pixels=pixels,
-            conversion_goals=conversion_goals,
-            uses_bcm_v2=self.ad_group.campaign.account.uses_bcm_v2
-        )
+        # self.validate_metrics(
+        #     request.GET.getlist('metrics'),
+        #     pixels=pixels,
+        #     conversion_goals=conversion_goals,
+        #     uses_bcm_v2=self.ad_group.campaign.account.uses_bcm_v2
+        # )
 
         content_ads = self.ad_group.contentad_set.all()
         self.selected_objects = self._get_selected_objects(request, content_ads)
@@ -621,12 +621,12 @@ class AdGroupSourcesDailyStats(AdGroupDailyStatsView):
         self.ad_group = dash.views.helpers.get_ad_group(request.user, ad_group_id)
         conversion_goals = self.ad_group.campaign.conversiongoal_set.all()
         pixels = self.ad_group.campaign.account.conversionpixel_set.filter(archived=False)
-        self.validate_metrics(
-            request.GET.getlist('metrics'),
-            pixels=pixels,
-            conversion_goals=conversion_goals,
-            uses_bcm_v2=self.ad_group.campaign.account.uses_bcm_v2
-        )
+        # self.validate_metrics(
+        #     request.GET.getlist('metrics'),
+        #     pixels=pixels,
+        #     conversion_goals=conversion_goals,
+        #     uses_bcm_v2=self.ad_group.campaign.account.uses_bcm_v2
+        # )
 
         sources = models.Source.objects.all()
         self.selected_objects = self._get_selected_objects(request, sources)
@@ -665,12 +665,12 @@ class AdGroupPublishersDailyStats(AdGroupDailyStatsView):
 
         conversion_goals = self.ad_group.campaign.conversiongoal_set.all()
         pixels = self.ad_group.campaign.account.conversionpixel_set.filter(archived=False)
-        self.validate_metrics(
-            request.GET.getlist('metrics'),
-            pixels=pixels,
-            conversion_goals=conversion_goals,
-            uses_bcm_v2=self.ad_group.campaign.account.uses_bcm_v2
-        )
+        # self.validate_metrics(
+        #     request.GET.getlist('metrics'),
+        #     pixels=pixels,
+        #     conversion_goals=conversion_goals,
+        #     uses_bcm_v2=self.ad_group.campaign.account.uses_bcm_v2
+        # )
 
         self.selected_objects = None
 
