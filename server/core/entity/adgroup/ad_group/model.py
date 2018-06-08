@@ -26,6 +26,7 @@ from . import bcm_mixin
 
 AMPLIFY_REVIEW_AGENCIES_DISABLED = {
     55,  # Outbrain
+    33,  # inPowered
 }
 
 
