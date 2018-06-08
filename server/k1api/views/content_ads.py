@@ -160,7 +160,7 @@ class ContentAdSourcesView(K1APIView):
 
     def _get_amplify_review_statuses(self, content_ad_sources):
         statuses = dash.models.ContentAdSource.objects.filter(
-            content_ad_id__in=set([content_ad_source['content_ad_id'] for content_ad_source in content_ad_sources]),
+            content_ad_id__in=set(content_ad_source['content_ad_id'] for content_ad_source in content_ad_sources),
             source__bidder_slug=OUTBRAIN_SOURCE_SLUG,
         ).values('content_ad_id', 'submission_status')
         return {status['content_ad_id']: status['submission_status'] for status in statuses}
