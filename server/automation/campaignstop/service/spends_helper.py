@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 HOURS_DELAY = 6
 MAX_RT_DATA_AGE_MINUTES = 15
-CHECK_FREQUENCY_MINUTES = 5
+CHECK_FREQUENCY_MINUTES = 2
 MIN_PREV_SPEND_SECONDS = 90
 
 
@@ -29,16 +29,16 @@ def get_predicted_remaining_budget(log, campaign):
     if current_rt_spends:
         remaining = available_amount - _sum_rt_spends(current_rt_spends)
 
-    spend_rate = _calculate_spend_rate(current_rt_spends, prev_rt_spends)
-    predicted_sped_increase = spend_rate * CHECK_FREQUENCY_MINUTES * 60
+    spend_rate_per_minute = _calculate_spend_rate_per_minute(current_rt_spends, prev_rt_spends)
+    predicted_spend_increase = spend_rate_per_minute * CHECK_FREQUENCY_MINUTES * 60
     log.add_context({
         'budget_spends_until_date': budget_spends_until_date,
         'available_budget': available_amount,
         'current_rt_spend': _sum_rt_spends(current_rt_spends),
         'prev_rt_spend': _sum_rt_spends(prev_rt_spends),
-        'spend_rate': predicted_sped_increase,
+        'spend_rate': predicted_spend_increase,
     })
-    return remaining - predicted_sped_increase
+    return remaining - predicted_spend_increase
 
 
 def get_budget_spend_estimates(log, campaign):
@@ -80,7 +80,7 @@ def _sum_rt_spends(rt_spends):
     return sum(s.etfm_spend for s in rt_spends)
 
 
-def _calculate_spend_rate(current_rt_spends, prev_rt_spends):
+def _calculate_spend_rate_per_minute(current_rt_spends, prev_rt_spends):
     if not current_rt_spends or not prev_rt_spends:
         return 0
 
