@@ -122,7 +122,7 @@ class GetPredictionTest(TestCase):
                 campaign=self.campaign,
                 date=dates_helper.local_today(),
                 etfm_spend=decimal.Decimal('50.0'),
-                created_dt=now-datetime.timedelta(seconds=300),
+                created_dt=now-datetime.timedelta(seconds=spends_helper.CHECK_FREQUENCY_MINUTES*60),
             )
             magic_mixer.blend(
                 RealTimeCampaignDataHistory,
@@ -209,7 +209,7 @@ class GetPredictionTest(TestCase):
                     campaign=self.campaign,
                     date=dates_helper.local_yesterday(),
                     etfm_spend=decimal.Decimal('200.0'),
-                    created_dt=now-datetime.timedelta(seconds=300),
+                    created_dt=now-datetime.timedelta(seconds=spends_helper.CHECK_FREQUENCY_MINUTES*60),
                 )
                 magic_mixer.blend(
                     RealTimeCampaignDataHistory,
@@ -223,7 +223,7 @@ class GetPredictionTest(TestCase):
                     campaign=self.campaign,
                     date=dates_helper.local_today(),
                     etfm_spend=decimal.Decimal('0.0'),
-                    created_dt=now-datetime.timedelta(seconds=300),
+                    created_dt=now-datetime.timedelta(seconds=spends_helper.CHECK_FREQUENCY_MINUTES*60),
                 )
                 magic_mixer.blend(
                     RealTimeCampaignDataHistory,
@@ -249,7 +249,7 @@ class GetPredictionTest(TestCase):
                     campaign=self.campaign,
                     date=dates_helper.local_today(),
                     etfm_spend=decimal.Decimal('0.0'),
-                    created_dt=now-datetime.timedelta(seconds=300),
+                    created_dt=now-datetime.timedelta(seconds=spends_helper.CHECK_FREQUENCY_MINUTES*60),
                 )  # previous spend to be taken
                 magic_mixer.blend(
                     RealTimeCampaignDataHistory,
@@ -282,14 +282,14 @@ class GetPredictionTest(TestCase):
                     campaign=self.campaign,
                     date=dates_helper.local_today(),
                     etfm_spend=decimal.Decimal('0.0'),
-                    created_dt=now-datetime.timedelta(seconds=900),
+                    created_dt=now-datetime.timedelta(seconds=3*spends_helper.CHECK_FREQUENCY_MINUTES*60),
                 )
                 magic_mixer.blend(
                     RealTimeCampaignDataHistory,
                     campaign=self.campaign,
                     date=dates_helper.local_today(),
                     etfm_spend=decimal.Decimal('50.0'),
-                    created_dt=now-datetime.timedelta(seconds=600),
+                    created_dt=now-datetime.timedelta(seconds=2*spends_helper.CHECK_FREQUENCY_MINUTES*60),
                 )
 
             prediction = spends_helper.get_predicted_remaining_budget(LogMock(), self.campaign)
