@@ -372,6 +372,9 @@ class AdGroupSettings(api_common.BaseApiView):
 
         account = ad_group.campaign.account
 
+        if account.id == 305:  # OEN
+            return []
+
         ad_groups = models.AdGroup.objects.filter(
             campaign__account=account
         ).select_related('campaign').order_by('id')
