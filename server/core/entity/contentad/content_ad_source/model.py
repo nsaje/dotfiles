@@ -60,7 +60,7 @@ class ContentAdSource(models.Model, prodops_mixin.ProdopsMixin):
         choices=constants.ContentAdSourceState.get_choices()
     )
 
-    source_content_ad_id = models.CharField(max_length=50, null=True)
+    source_content_ad_id = models.CharField(max_length=50, null=True, db_index=True)
 
     created_dt = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')
