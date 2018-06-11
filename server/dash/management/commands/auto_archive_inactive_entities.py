@@ -65,6 +65,7 @@ def _auto_archive_inactive_entities(inactive_since, whitelist=None):
     campaigns = set(ag.campaign for ag in ad_groups)
     campaignstop_map = automation.campaignstop.get_campaignstop_states(campaigns)
 
+    ad_group_count = 0
     for ag in ad_groups:
         campaignstop_allowed_to_run = campaignstop_map[ag.campaign.id]['allowed_to_run']
         spend = grouped_data.get(ag.id, {}).get('etfm_cost', 0)
@@ -81,6 +82,7 @@ def _auto_archive_inactive_entities(inactive_since, whitelist=None):
                 history_changes_text='Automated archiving.',
             )
             logger.info('Auto-archived ad group with id {}.'.format(ag.id))
+            ad_group_count += 1
 
     campaigns = models.Campaign.objects.filter(
         settings__created_dt__lte=inactive_since,
@@ -107,4 +109,4 @@ def _auto_archive_inactive_entities(inactive_since, whitelist=None):
         logger.info('Auto-archived campaign with id {}.'.format(c.id))
         campaign_count += 1
 
-    return len(ad_groups), campaign_count
+    return ad_group_count, campaign_count
