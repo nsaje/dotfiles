@@ -35,6 +35,7 @@ class Account(instance.AccountInstanceMixin,
     agency = models.ForeignKey(
         'Agency', on_delete=models.PROTECT, null=True, blank=True)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
+    auto_archiving_enabled = models.BooleanField(null=False, blank=False, default=True)
     created_dt = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(
