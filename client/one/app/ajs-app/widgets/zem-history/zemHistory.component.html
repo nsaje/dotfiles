@@ -26,14 +26,14 @@
                             }">
                                 <a href ng-click="$ctrl.changeOrder('changedBy')">User</a>
                             </th>
-                            <th class="custom-table__notes">Notes</th>
+                            <th class="custom-table__break-word">Notes</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr ng-repeat="item in $ctrl.history">
                             <td class="no-wrap">{{ item.datetime }}</td>
                             <td>{{ item.changedBy }}</td>
-                            <td class="custom-table__notes">{{ item.changesText }}</td>
+                            <td class="custom-table__break-word">{{ item.changesText }}</td>
                         </tr>
                         <tr ng-if="$ctrl.requestInProgress">
                             <td colspan="3">

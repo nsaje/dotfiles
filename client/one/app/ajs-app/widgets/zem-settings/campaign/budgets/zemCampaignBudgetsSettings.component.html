@@ -65,7 +65,7 @@
                     </td>
                     <td>{{ item.spend | decimalCurrency:item.currencySymbol:2 }}</td>
                     <td>{{ item.available | decimalCurrency:item.currencySymbol:2 }}</td>
-                    <td class="custom-table__notes">
+                    <td class="custom-table__break-word">
                         <zem-note-popover content="{{ item.comment }}" placement="top" ng-if="item.comment.length > 0"
                                           class="note-popover"></zem-note-popover>
                     </td>
@@ -107,7 +107,7 @@
                     </th>
                     <th>Total Spend</th>
                     <th>Available Budget</th>
-                    <th class="custom-table__notes">Notes</th>
+                    <th class="custom-table__break-word">Notes</th>
                     <th></th>
                 </tr>
                 </thead>
@@ -125,7 +125,7 @@
                     <td>{{ item.spend | decimalCurrency:item.currencySymbol:2 }}</td>
                     <td>{{ item.available | decimalCurrency:item.currencySymbol:2 }}</td>
 
-                    <td class="custom-table__notes">
+                    <td class="custom-table__break-word">
                         <zem-note-popover content="{{ item.comment }}" placement="top" ng-if="item.comment.length > 0"
                                           class="note-popover"></zem-note-popover>
                     </td>

@@ -70,7 +70,7 @@
                         <span ng-show="item.isAgency" class="text-green">Yes</span>
                         <span ng-show="!item.isAgency" class="text-red">No</span>
                     </td>
-                    <td class="custom-table__notes">{{ item.comment }}</td>
+                    <td class="custom-table__break-word">{{ item.comment }}</td>
                     <td class="custom-table__action-buttons">
                         <button class="button button--small button--with-icon edit-icon"
                                 ng-click="$ctrl.openCreditItemModal(item.id)"
@@ -138,7 +138,7 @@
                         <span ng-show="item.isAgency" class="text-green">Yes</span>
                         <span ng-show="!item.isAgency" class="text-red">No</span>
                     </td>
-                    <td class="custom-table__notes">{{ item.comment }}</td>
+                    <td class="custom-table__break-word">{{ item.comment }}</td>
                     <td class="custom-table__action-buttons"></td>
                 </tr>
                 <tr ng-show="!$ctrl.state.credit.past.length" class="message">

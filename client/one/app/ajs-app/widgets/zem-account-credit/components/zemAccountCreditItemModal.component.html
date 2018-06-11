@@ -88,7 +88,7 @@
             </thead>
             <tbody>
                 <tr ng-repeat="budget in $ctrl.state.creditItem.budgets">
-                    <td>{{ budget.campaign }}</td>
+                    <td class="custom-table__break-word">{{ budget.campaign }}</td>
                     <td>{{ budget.total | decimalCurrency:budget.currencySymbol:2 }}</td>
                     <td>{{ budget.spend | decimalCurrency:budget.currencySymbol:2 }}</td>
                     <td>{{ budget.startDate }} - {{ budget.endDate }}</td>

@@ -41,7 +41,7 @@
                     <td ng-if="$ctrl.hasPermission('zemauth.can_redirect_pixels')">
                         {{ item.redirectUrl ? 'Yes' : 'No' }}
                     </td>
-                    <td class="custom-table__notes" ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_notes')">
+                    <td class="custom-table__break-word" ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_notes')">
                         {{ item.notes }}
                     </td>
                     <td>
