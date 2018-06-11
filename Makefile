@@ -35,6 +35,7 @@ remove: ## removes all containers belonging to the stack
 
 test:	## runs tests inside container environment
 	docker-compose run --rm --entrypoint=/entrypoint_dev.sh eins bash -x ./run_tests.sh
+
 jenkins_test:
 	mkdir -p server/.junit_xml/
 	docker-compose -f docker-compose.yml -f docker-compose.jenkins.yml run -e CI_TEST=true --entrypoint=/entrypoint_dev.sh eins bash -x ./run_tests.sh
@@ -79,6 +80,10 @@ build:	## rebuilds a zemanta/z1 docker image
 					--build-arg BRANCH=$(GIT_BRANCH) \
 					-f docker/Dockerfile.z1 . \
 	&& docker tag $(ECR_BASE)/z1:$(TIMESTAMP) $(ECR_BASE)/z1:$(GIT_BRANCH).$(BUILD_NUM)
+
+build_utils: ## builds utility images for CI
+	docker build -t py3-tools -f docker/Dockerfile.py3-tools  docker/
+	cp client/package.json docker/ && docker build -t client-lint -f docker/Dockerfile.client-lint docker/ && rm docker/package.json
 
 push_baseimage:	## pushes zemanta/z1-base docker image to registry
 	test -n "$(GIT_BRANCH)" && docker push $(ECR_BASE)/z1-base:$(GIT_BRANCH)
