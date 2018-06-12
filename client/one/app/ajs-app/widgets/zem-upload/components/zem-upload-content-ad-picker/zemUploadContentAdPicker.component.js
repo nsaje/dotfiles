@@ -105,7 +105,8 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
         }
 
         function isVideoAssetReadyForUse (candidate) {
-            return isVideoAssetPresent(candidate) && candidate.videoAsset.status === constants.videoAssetStatus.READY_FOR_USE;
+            return isVideoAssetPresent(candidate)
+                   && candidate.videoAsset.status === constants.videoAssetStatus.READY_FOR_USE;
         }
 
         function isVideoAssetProcessingErrorPresent (candidate) {
