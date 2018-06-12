@@ -788,3 +788,11 @@ def validate_ad_groups_state(ad_groups, campaign, campaign_settings, state):
 def get_upload_batches_for_ad_group(ad_group):
     batch_ids = models.ContentAd.objects.filter(ad_group_id=ad_group.id).distinct('batch_id').values_list('batch_id')
     return models.UploadBatch.objects.filter(pk__in=batch_ids)
+
+
+def all_accounts_uses_bcm_v2(user):
+    accounts = models.Account.objects.all()\
+        .filter_by_user(user)\
+        .exclude_archived()\
+        .filter(uses_bcm_v2=False)
+    return not accounts.exists()

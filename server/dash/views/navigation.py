@@ -21,13 +21,8 @@ class UsesBCMV2View(api_common.BaseApiView):
 
         user = request.user
 
-        accounts = models.Account.objects.all()\
-            .filter_by_user(user)\
-            .exclude_archived()\
-            .filter(uses_bcm_v2=False)
-
         return self.create_api_response({
-            'usesBCMv2': not accounts.exists()
+            'usesBCMv2': helpers.all_accounts_uses_bcm_v2(user)
         })
 
 
