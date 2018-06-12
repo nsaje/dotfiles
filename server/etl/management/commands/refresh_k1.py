@@ -2,6 +2,7 @@ import datetime
 import logging
 
 from utils.command_helpers import ExceptionCommand
+from utils import dates_helper
 
 from etl import refresh_k1
 
@@ -16,12 +17,19 @@ class Command(ExceptionCommand):
         parser.add_argument('from', type=str)
         parser.add_argument('--account_id', type=int)
         parser.add_argument('--skip-vacuum', action='store_true')
+        parser.add_argument('--skip-analyze', action='store_true')
 
     def handle(self, *args, **options):
         err = []
         since = None
 
         skip_vacuum = options.get('skip_vacuum') or False
+        skip_analyze = options.get('skip_analyze') or False
+
+        hour = dates_helper.local_now().hour
+        if 0 <= hour <= 8:
+            skip_vacuum = True
+            skip_analyze = True
 
         try:
             since = datetime.datetime.strptime(options['from'], '%Y-%m-%d')
@@ -38,4 +46,4 @@ class Command(ExceptionCommand):
             logger.error(err)
             return
 
-        refresh_k1.refresh_k1_reports(since, options.get('account_id'), skip_vacuum)
+        refresh_k1.refresh_k1_reports(since, options.get('account_id'), skip_vacuum=skip_vacuum, skip_analyze=skip_analyze)

@@ -268,7 +268,7 @@ def refresh_k1_reports(update_since, account_id=None, skip_vacuum=False, skip_an
     do_post_to_slack = (datetime.datetime.today() - update_since).days > SLACK_MIN_DAYS_TO_PROCESS
     if do_post_to_slack or account_id:
         _post_to_slack('started', update_since, account_id)
-    _refresh_k1_reports(update_since, MATERIALIZED_VIEWS, account_id, skip_vacuum=skip_vacuum)
+    _refresh_k1_reports(update_since, MATERIALIZED_VIEWS, account_id, skip_vacuum=skip_vacuum, skip_analyze=skip_analyze)
     if do_post_to_slack or account_id:
         _post_to_slack('finished', update_since, account_id)
     materialization_run.create_done()
@@ -311,7 +311,7 @@ def _refresh_k1_reports(update_since, views, account_id=None, skip_vacuum=False,
                 logger.exception("Vacuum and analyze skipped due to error")
 
     # save processed data to S3 to for potential read replication
-    _handle_replicas(views, job_id, date_from, date_to, account_id=account_id, skip_vacuum=skip_vacuum)
+    _handle_replicas(views, job_id, date_from, date_to, account_id=account_id, skip_vacuum=skip_vacuum, skip_analyze=skip_analyze)
 
     # while everything is being updated data is not consistent among tables
     # so might as well leave cache until refresh finishes
