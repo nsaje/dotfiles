@@ -28,6 +28,12 @@ def get_autopilot_daily_budget_recommendations(
         logger.info(str(entity) +
                     ' does not have any active sources with enough spend. Uniformly redistributed budget.')
         comments.append(constants.DailyBudgetChangeComment.NO_ACTIVE_SOURCES_WITH_SPEND)
+
+        # recalculate min budgets without MIN_BUDGET_LOSS when no sources with spend
+        max_budgets, new_budgets = _get_minimum_autopilot_budget_constraints(data, bcm_modifiers)
+        min_budgets_sum = sum(new_budgets.values())
+        budget_left = daily_budget - min_budgets_sum
+
         new_budgets = _uniformly_redistribute_remaining_budget(active_sources, budget_left, new_budgets, bcm_modifiers)
     else:
         bandit = BetaBandit(active_sources_with_spend, backup_sources=active_sources)

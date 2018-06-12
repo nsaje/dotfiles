@@ -5,6 +5,7 @@ import operator
 from django import test
 
 from . import budgets
+from . import constants
 import dash
 import dash.models
 import dash.constants
@@ -160,6 +161,34 @@ class AutopilotBudgetsTestCase(test.TestCase):
             sources.get(id=1): Decimal('60'),
             sources.get(id=5): Decimal('50'),
             all_rtb_ad_group_source: Decimal('40'),
+        })
+
+    def test_ignore_budget_loss_when_no_ags_with_spend(self):
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        ags1 = dash.models.AllRTBAdGroupSource(dash.models.AdGroup.objects.get(pk=1))
+        ags2 = dash.models.AllRTBAdGroupSource(dash.models.AdGroup.objects.get(pk=2))
+        data = {
+            ags1: {
+                'old_budget': Decimal('500'),
+                'yesterdays_spend_cc': 0,
+            },
+            ags2: {
+                'old_budget': Decimal('10'),
+                'yesterdays_spend_cc': 0,
+            },
+        }
+        result = budgets.get_autopilot_daily_budget_recommendations(campaign, Decimal('500'), data, campaign.get_bcm_modifiers())
+        self.assertEqual(result, {
+            ags1: {
+                'old_budget': Decimal('500'),
+                'new_budget': Decimal('250'),
+                'budget_comments': [constants.DailyBudgetChangeComment.NO_ACTIVE_SOURCES_WITH_SPEND],
+            },
+            ags2: {
+                'old_budget': Decimal('10'),
+                'new_budget': Decimal('250'),
+                'budget_comments': [constants.DailyBudgetChangeComment.NO_ACTIVE_SOURCES_WITH_SPEND],
+            },
         })
 
 
