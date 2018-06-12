@@ -13,6 +13,8 @@ locations.
 The helper script is available
 [here](https://gist.github.com/nsaje/601217afcdc53543a585e6255bf1c503).
 
+Region ids used by Outbrain are in FIPS 10-4 standard (Maxmind GeoIP2 v1) while Zemanta's systems use ISO 3166-2 standard (Maxmind GeoIP2 v2). Because of that Outbrain's mapping were converted to ISO 3166-2 using this [script](https://gist.github.com/jurebajt/36272394743a8e07a38f7fc53c13daa2#file-remap_fips_to_iso_regions-py) and this [source for iso3166 codes](https://github.com/esosedi/3166).
+
 ## Yahoo
 
 We can query Yahoo's supported locations via their [data dictionary
