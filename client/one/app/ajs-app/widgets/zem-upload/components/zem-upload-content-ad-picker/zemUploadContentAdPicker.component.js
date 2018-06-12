@@ -55,7 +55,7 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
             if (isCandidateStatusLoading(candidate)) return false;
 
             var response = getAsyncUploadJobStatus(candidate) === constants.contentAdCandidateStatus.OK;
-            if (candidate.videoAsset) {
+            if (isVideoAssetPresent(candidate)) {
                 response = response && isVideoAssetReadyForUse(candidate);
             }
             return response;
@@ -94,18 +94,22 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
             return constants.contentAdCandidateStatus.OK;
         }
 
+        function isVideoAssetPresent (candidate) {
+            return candidate.videoAsset && candidate.videoAsset.status !== constants.videoAssetStatus.INITIALIZED;
+        }
+
         function isVideoAssetBeingProcessed (candidate) {
-            return !!candidate.videoAsset
+            return isVideoAssetPresent(candidate)
                    && !isVideoAssetReadyForUse(candidate)
                    && !isVideoAssetProcessingErrorPresent(candidate);
         }
 
         function isVideoAssetReadyForUse (candidate) {
-            return !!candidate.videoAsset && candidate.videoAsset.status === constants.videoAssetStatus.READY_FOR_USE;
+            return isVideoAssetPresent(candidate) && candidate.videoAsset.status === constants.videoAssetStatus.READY_FOR_USE;
         }
 
         function isVideoAssetProcessingErrorPresent (candidate) {
-            return !!candidate.videoAsset
+            return isVideoAssetPresent(candidate)
                    && candidate.videoAsset.status === constants.videoAssetStatus.PROCESSING_ERROR;
         }
 
