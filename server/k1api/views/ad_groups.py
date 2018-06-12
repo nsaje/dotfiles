@@ -146,6 +146,7 @@ class AdGroupsView(K1APIView):
                 'click_capping_daily_ad_group_max_clicks': ad_group.settings.click_capping_daily_ad_group_max_clicks,
                 'click_capping_daily_click_budget': ad_group.settings.click_capping_daily_click_budget,
                 'custom_flags': flags,
+                'amplify_review': ad_group.amplify_review,
             }
 
             ad_group_dicts.append(ad_group_dict)

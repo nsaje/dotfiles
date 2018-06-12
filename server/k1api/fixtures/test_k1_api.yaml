@@ -480,6 +480,7 @@
         settings: 1
         name: 'test adgroup 1'
         custom_flags: {'flag_1': True}
+        amplify_review: True
     model: dash.adgroup
     pk: 1
 

@@ -91,6 +91,7 @@ class AdGroupsTest(K1APIBaseTest):
             'click_capping_daily_ad_group_max_clicks': 15,
             'click_capping_daily_click_budget': '5.0000',
             'custom_flags': {'flag_1': True, 'flag_2': True, 'flag_3': True, 'flag_4': True},
+            'amplify_review': True,
         })
 
     def test_get_ad_groups_with_id_with_some_flags(self):
@@ -169,6 +170,7 @@ class AdGroupsTest(K1APIBaseTest):
             'click_capping_daily_ad_group_max_clicks': 15,
             'click_capping_daily_click_budget': '5.0000',
             'custom_flags': {'flag_1': False, 'flag_2': True, 'flag_3': True, 'flag_4': True},
+            'amplify_review': True,
         })
 
     @patch('utils.redirector_helper.insert_adgroup')
