@@ -322,6 +322,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('disable_public_rcs', 'Disable some public features for RCS.'),
             ('can_filter_by_media_source', 'Can filter by media source'),
             ('can_request_accounts_report_in_local_currencies', 'User can request all accounts report in local currencies'),
+            ('can_see_vast', 'User can see vast upload option'),
         )
 
     def get_full_name(self):

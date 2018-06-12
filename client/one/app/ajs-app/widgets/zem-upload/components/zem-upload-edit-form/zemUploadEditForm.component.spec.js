@@ -309,7 +309,9 @@ describe('ZemUploadEditFormCtrl', function () {
                 zemSpecsHelper.getMockedAsyncFunction($injector, {id: 1})
             );
 
-            ctrl.selectedCandidate = {};
+            ctrl.selectedCandidate = {
+                videoAsset: {},
+            };
             ctrl.videoUploadCallback();
             scope.$digest();
             expect(ctrl.startPollingVideoAssetStatus).toHaveBeenCalledWith({

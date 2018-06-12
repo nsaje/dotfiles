@@ -102,10 +102,23 @@
                     </div>
                 </div>
 
-                <div class="form__group" ng-class="{'form--error': ctrl.fieldsHaveErrors(['videoAssetId'])}" ng-if="ctrl.showVideoUpload && ctrl.hasPermission('zemauth.fea_video_upload')">
+                <div class="form__group" ng-if="ctrl.showVideoUpload && ctrl.hasPermission('zemauth.can_see_vast')">
+                    <label class="form__label" for="video-type-input" is-internal="zemauth.can_see_vast">Video type</label>
+                    <ui-select theme="select2" search-enabled="false" id="video-type-input"
+                               class="button button--plain button--full-width button--dropdown-toggle-icon"
+                               ng-disabled="ctrl.isEdit || (ctrl.selectedCandidate.videoAsset.status !== ctrl.videoAssetStatus.INITIALIZED && ctrl.selectedCandidate.videoAsset.status !== ctrl.videoAssetStatus.PROCESSING_ERROR)"
+                               ng-model="ctrl.selectedCandidate.videoAsset.type">
+                        <ui-select-match class="ui-select-match" placeholder="Choose video type">{{$select.selected.name}}</ui-select-match>
+                        <ui-select-choices repeat="videoType.value as videoType in ctrl.videoTypeOptions" class="ui-select-choices">
+                            {{videoType.name}}
+                        </ui-select-choices>
+                    </ui-select>
+                </div>
+
+                <div class="form__group" ng-class="{'form--error': ctrl.fieldsHaveErrors(['videoAssetId'])}" ng-if="ctrl.showVideoUpload && ctrl.hasPermission('zemauth.fea_video_upload') && ctrl.selectedCandidate.videoAsset.type === ctrl.videoTypes.DIRECT_UPLOAD">
                     <label class="form__label">Video</label>
                     <div class="content-upload__video-uploader">
-                        <zem-file-input class="content-upload__video-input" ng-if="!ctrl.selectedCandidate.videoAsset || ctrl.selectedCandidate.videoAsset.status === ctrl.videoAssetStatus.PROCESSING_ERROR" zem-file-input-change="ctrl.videoUploadCallback(file)" zem-file-input-accept="video/*">
+                        <zem-file-input class="content-upload__video-input" ng-if="ctrl.selectedCandidate.videoAsset.status === ctrl.videoAssetStatus.INITIALIZED || ctrl.selectedCandidate.videoAsset.status === ctrl.videoAssetStatus.PROCESSING_ERROR" zem-file-input-change="ctrl.videoUploadCallback(file)" zem-file-input-accept="video/*">
                             <button type="button" class="button button--with-icon folder-icon" zem-file-input-trigger ng-disabled="ctrl.isEdit">Choose file</button>
                         </zem-file-input>
                         <div class="content-upload__video-uploader-progress">
@@ -125,6 +138,46 @@
                     </div>
                     <div class="message message--error" ng-if="ctrl.fieldsApiErrors['videoAssetId']">Something went wrong. Please try again.</div>
                     <div class="message message--error" ng-if="ctrl.selectedCandidate.videoAsset.status === ctrl.videoAssetStatus.PROCESSING_ERROR">{{ctrl.selectedCandidate.videoAsset.errorMessage}}</div>
+                </div>
+
+                <div class="form__group" ng-if="ctrl.showVideoUpload && ctrl.selectedCandidate.videoAsset.type === ctrl.videoTypes.VAST_UPLOAD">
+                    <label class="form__label">Vast</label>
+                    <div class="content-upload__video-uploader">
+                        <zem-file-input ng-if="ctrl.selectedCandidate.videoAsset.status === ctrl.videoAssetStatus.INITIALIZED || ctrl.selectedCandidate.videoAsset.status === ctrl.videoAssetStatus.PROCESSING_ERROR" zem-file-input-change="ctrl.vastUploadCallback(file)" zem-file-input-accept="text/xml">
+                            <button type="button" class="button button--with-icon folder-icon" zem-file-input-trigger ng-disabled="ctrl.isEdit">Choose file</button>
+                        </zem-file-input>
+                        <div class="content-upload__video-uploader-progress">
+                            <div class="zem-progress-bar" ng-if="ctrl.selectedCandidate.videoAsset.status === ctrl.videoAssetStatus.NOT_UPLOADED">
+                                <span class="zem-progress-bar__text">Uploading: {{ctrl.selectedCandidate.videoUploadProgress || 0}} %</span>
+                                <span class="zem-progress-bar__shell">
+                                    <span class="zem-progress-bar__fill" style="width: {{ctrl.selectedCandidate.videoUploadProgress}}%;"></span>
+                                </span>
+                            </div>
+                            <div class="content-upload__video-uploader-processing" ng-if="ctrl.selectedCandidate.videoAsset.status === ctrl.videoAssetStatus.PROCESSING">
+                                <span class="loader"></span>Processing uploaded vast
+                            </div>
+                            <div class="content-upload__video-uploader-preview" ng-if="ctrl.selectedCandidate.videoAsset.status === ctrl.videoAssetStatus.READY_FOR_USE">
+                                <a href="{{ctrl.selectedCandidate.videoAsset.vastUrl}}" target="_blank">Vast file</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="message message--error" ng-if="ctrl.fieldsApiErrors['videoAssetId']">Something went wrong. Please try again.</div>
+                    <div class="message message--error" ng-if="ctrl.selectedCandidate.videoAsset.status === ctrl.videoAssetStatus.PROCESSING_ERROR">{{ctrl.selectedCandidate.videoAsset.errorMessage}}</div>
+                </div>
+
+                <div class="form__group" ng-if="ctrl.showVideoUpload && ctrl.selectedCandidate.videoAsset.type === ctrl.videoTypes.VAST_URL" ng-class="{'form--error': ctrl.fieldsHaveErrors('vastUrl')}">
+                    <label class="form__label">Vast URL</label>
+                    <input type="text" class="input-text" id="vast-url-input" ng-model="ctrl.selectedCandidate.videoAsset.vastUrl"
+                       ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }"
+                       ng-change="ctrl.vastUrlCallback(ctrl.selectedCandidate.videoAsset.vastUrl)"
+                       ng-disabled="ctrl.isEdit"
+                       ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.vastUrl || ctrl.fieldsSaved.vastUrl && !ctrl.fieldsHaveErrors('vastUrl')}"/>
+                    <div class="content-upload__field-additional-info content-upload__change-status" ng-class="{
+                         'content-upload__change-status--loading': ctrl.fieldsLoading.vastUrl,
+                         'content-upload__change-status--successful': ctrl.fieldsSaved.vastUrl && !ctrl.fieldsHaveErrors('vastUrl')}">
+                        <span class="content-upload__count-characters">{{ ctrl.selectedCandidate.videoAsset.vastUrl.length || 0 }}/{{ ctrl.MAX_URL_LENGTH }}</span>
+                    </div>
+                    <div class="message message--error" for="vast-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.vastUrl">{{ error }}</div>
                 </div>
 
                 <div class="form__group" ng-class="{'form--error': ctrl.fieldsHaveErrors('description')}">

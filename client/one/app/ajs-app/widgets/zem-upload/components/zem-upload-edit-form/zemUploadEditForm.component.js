@@ -48,6 +48,8 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
     vm.hasPermission = zemPermissions.hasPermission;
 
     vm.imageCrops = options.imageCrops;
+    vm.videoTypeOptions = options.videoTypes;
+    vm.videoTypes = constants.videoType;
     vm.callToActionOptions = defaults.callToAction;
     vm.candidateStatuses = constants.contentAdCandidateStatus;
     vm.fieldsLoading = {};
@@ -74,6 +76,12 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
 
         if (vm.isEdit && vm.selectedCandidate.videoAssetId) {
             vm.startPollingVideoAssetStatus(candidate);
+        }
+        if (!vm.selectedCandidate.videoAsset) {
+            vm.selectedCandidate.videoAsset = {
+                type: constants.videoType.DIRECT_UPLOAD,
+                status: constants.videoAssetStatus.INITIALIZED,
+            };
         }
     }
 
@@ -213,9 +221,7 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
         // Save reference to the candidate to which video is uploaded to be available in async closures
         var candidate = vm.selectedCandidate;
         candidate.videoUploadProgress = 0;
-        candidate.videoAsset = {
-            status: constants.videoAssetStatus.NOT_UPLOADED,
-        };
+        candidate.videoAsset.status = constants.videoAssetStatus.NOT_UPLOADED;
 
         vm.fieldsApiErrors.videoAssetId = false;
 
@@ -233,7 +239,69 @@ angular.module('one.widgets').controller('ZemUploadEditFormCtrl', function (conf
             })
             .catch(function () {
                 vm.fieldsApiErrors.videoAssetId = true;
-                delete candidate.videoAsset;
+                candidate.videoAsset.status = constants.videoAssetStatus.INITIALIZED;
+            });
+    };
+
+    vm.vastUploadCallback = function (file) {
+        var candidate = vm.selectedCandidate;
+        candidate.videoAsset.status = constants.videoAssetStatus.NOT_UPLOADED,
+
+        vm.endpoint.uploadVast(
+            file,
+            function updateUploadProgress (event) {
+                candidate.videoUploadProgress = Math.round(event.loaded / event.total * 100);
+            }
+        )
+            .then(function (videoAsset) {
+                candidate.videoAsset.status = constants.videoAssetStatus.PROCESSING;
+                return vm.endpoint.processVast(videoAsset)
+                    .then(function (videoAsset) {
+                        candidate.videoAsset = videoAsset;
+                        candidate.videoAssetId = videoAsset.id;
+                        vm.updateField(candidate, 'videoAssetId');
+                    });
+            })
+            .catch(function () {
+                vm.fieldsApiErrors.videoAssetId = true;
+                candidate.videoAsset.status = constants.videoAssetStatus.INITIALIZED;
+            });
+    };
+
+    vm.vastUrlCallback = function (url) {
+        var candidate = vm.selectedCandidate;
+        candidate.videoAsset.status = constants.videoAssetStatus.NOT_UPLOADED;
+
+        vm.fieldsSaved.vastUrl = false;
+        vm.fieldsLoading.vastUrl = true;
+        vm.fieldsApiErrors.vastUrl = false;
+
+        vm.endpoint.urlVast(url)
+            .then(function (videoAsset) {
+                if (!vm.selectedCandidate || candidate.id !== vm.selectedCandidate.id) {
+                    // edit form closed or selection changed in the mean time
+                    return;
+                }
+
+                vm.fieldsSaved.vastUrl = true;
+                vm.fieldsLoading.vastUrl = false;
+                delete vm.selectedCandidate.errors.vastUrl;
+
+                candidate.videoAsset = videoAsset;
+                candidate.videoAssetId = videoAsset.id;
+                vm.updateField(candidate, 'videoAssetId');
+            })
+            .catch(function (data) {
+                if (!vm.selectedCandidate || candidate.id !== vm.selectedCandidate.id) {
+                    // edit form closed or selection changed in the mean time
+                    return;
+                }
+
+                vm.fieldsLoading.vastUrl = false;
+                vm.fieldsApiErrors.vastUrl = true;
+                vm.selectedCandidate.errors.vastUrl = data.data.details;
+
+                candidate.videoAsset.status = constants.videoAssetStatus.INITIALIZED;
             });
     };
 });

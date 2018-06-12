@@ -13,3 +13,15 @@ class VideoAssetStatus(constant_base.ConstantBase):
         READY_FOR_USE: "Video is ready for use in creating ads",
         PROCESSING_ERROR: "An error has occurred while processing the video",
     }
+
+
+class VideoAssetType(constant_base.ConstantBase):
+    DIRECT_UPLOAD = 1
+    VAST_UPLOAD = 2
+    VAST_URL = 3
+
+    _VALUES = {
+        DIRECT_UPLOAD: 'DIRECT_UPLOAD',
+        VAST_UPLOAD: 'VAST_UPLOAD',
+        VAST_URL: 'VAST_URL',
+    }

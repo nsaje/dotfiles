@@ -3,11 +3,16 @@
 angular.module('one.widgets').factory('zemUploadEndpointService', function ($http, $q, zemUploadApiConverter, zemNavigationNewService) { // eslint-disable-line max-len
     function UploadEndpoint (baseUrl, adGroupId) {
         var DIRECT_UPLOAD = 'DIRECT_UPLOAD';
+        var VAST_UPLOAD = 'VAST_UPLOAD';
+        var VAST_URL = 'VAST_URL';
 
         this.upload = upload;
         this.createBatch = createBatch;
 
         this.uploadVideo = uploadVideo;
+        this.uploadVast = uploadVast;
+        this.urlVast = urlVast;
+        this.processVast = processVast;
         this.getVideoAsset = getVideoAsset;
 
         this.save = save;
@@ -96,19 +101,35 @@ angular.module('one.widgets').factory('zemUploadEndpointService', function ($htt
         }
 
         function uploadVideo (file, progressEventHandler) {
-            return createVideoAsset(file.name)
+            return createVideoAsset(DIRECT_UPLOAD, file.name, '')
                 .then(function (videoAsset) {
-                    return uploadVideoToS3(file, videoAsset, progressEventHandler);
+                    return uploadToS3(file, videoAsset, 'application/octet-stream', progressEventHandler);
                 });
         }
 
-        function createVideoAsset (name) {
+        function uploadVast (file, progressEventHandler) {
+            return createVideoAsset(VAST_UPLOAD, file.name, '')
+                .then(function (videoAsset) {
+                    return uploadToS3(file, videoAsset, 'text/xml', progressEventHandler);
+                });
+        }
+
+        function urlVast (url) {
+            return createVideoAsset(VAST_URL, '', url);
+        }
+
+        function processVast (videoAsset) {
+            return updateVideoAsset(videoAsset.id, {status: constants.videoAssetStatus.PROCESSING});
+        }
+
+        function createVideoAsset (type, name, vasturl) {
             var deferred = $q.defer();
             var url = '/rest/v1/accounts/' + zemNavigationNewService.getActiveAccount().id + '/videoassets/';
             var data = {
                 name: name,
+                vastUrl: vasturl,
                 upload: {
-                    type: DIRECT_UPLOAD,
+                    type: type,
                 }
             };
 
@@ -123,12 +144,12 @@ angular.module('one.widgets').factory('zemUploadEndpointService', function ($htt
             return deferred.promise;
         }
 
-        function uploadVideoToS3 (file, videoAsset, progressEventHandler) {
+        function uploadToS3 (file, videoAsset, contentType, progressEventHandler) {
             var config = {
-                headers: {'Content-Type': 'application/octet-stream'},
+                headers: {'Content-Type': contentType},
                 uploadEventHandlers: {
                     progress: progressEventHandler,
-                }
+                },
             };
             var deferred = $q.defer();
             $http.put(videoAsset.upload.url, file, config)
@@ -146,6 +167,21 @@ angular.module('one.widgets').factory('zemUploadEndpointService', function ($htt
             var url = '/rest/v1/accounts/' + zemNavigationNewService.getActiveAccount().id + '/videoassets/' + id;
 
             $http.get(url)
+                .then(function (data) {
+                    deferred.resolve(data.data.data);
+                })
+                .catch(function (error) {
+                    deferred.reject(error);
+                });
+
+            return deferred.promise;
+        }
+
+        function updateVideoAsset (id, input) {
+            var deferred = $q.defer();
+            var url = '/rest/v1/accounts/' + zemNavigationNewService.getActiveAccount().id + '/videoassets/' + id;
+
+            $http.put(url, input)
                 .then(function (data) {
                     deferred.resolve(data.data.data);
                 })

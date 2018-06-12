@@ -8,7 +8,8 @@ from django.conf import settings
 from . import constants
 
 
-S3_UPLOAD_PATH_FORMAT = 'upload/{videoasset_id}'
+S3_DIRECT_UPLOAD_PATH_FORMAT = 'upload/{videoasset_id}'
+S3_VAST_UPLOAD_PATH_FORMAT = 'vast/{videoasset_id}'
 
 
 ERROR_CODE_MESSAGES = {
@@ -18,6 +19,7 @@ ERROR_CODE_MESSAGES = {
     '4006': "File format not supported",
     '4008': "Invalid file: Missing audio or video",
     '4100': "Invalid file: Could not interpret embedded caption track",
+    '5000': "Invalid vast file",
 }
 
 
@@ -31,8 +33,8 @@ def validate_format(item):
 
 class VideoAssetManager(models.Manager):
 
-    def create(self, account, name):
-        video_asset = VideoAsset(account=account, name=name)
+    def create(self, type, account, name='', status=constants.VideoAssetStatus.NOT_UPLOADED, vast_url=''):
+        video_asset = VideoAsset(type=type, account=account, name=name, status=status, vast_url=vast_url)
         video_asset.save()
         return video_asset
 
@@ -55,16 +57,32 @@ class VideoAsset(models.Model):
     duration = models.IntegerField(null=True, blank=True)
     formats = jsonfield.fields.JSONField(blank=True, null=True)
 
+    type = models.IntegerField(
+        default=constants.VideoAssetType.DIRECT_UPLOAD,
+        choices=constants.VideoAssetType.get_choices()
+    )
+    vast_url = models.CharField(max_length=2048, blank=True, null=True)
+
     def get_s3_presigned_url(self):
         if self.status != constants.VideoAssetStatus.NOT_UPLOADED:
             raise ValueError("Cannot get an upload url for an already uploaded video")
+
+        if self.type == constants.VideoAssetType.DIRECT_UPLOAD:
+            key = S3_DIRECT_UPLOAD_PATH_FORMAT.format(videoasset_id=self.id)
+            content_type = 'application/octet-stream'
+        elif self.type == constants.VideoAssetType.VAST_UPLOAD:
+            key = S3_VAST_UPLOAD_PATH_FORMAT.format(videoasset_id=self.id)
+            content_type = 'text/xml'
+        else:
+            raise ValueError("Cannot get an upload url for this type of video asset")
+
         s3 = boto3.client('s3')
         url = s3.generate_presigned_url(
             ClientMethod='put_object',
             Params={
                 'Bucket': settings.S3_BUCKET_VIDEO,
-                'Key': S3_UPLOAD_PATH_FORMAT.format(videoasset_id=self.id),
-                'ContentType': 'application/octet-stream',
+                'Key': key,
+                'ContentType': content_type,
                 'Metadata': {
                     'videoassetid': str(self.id),
                     'callbackhost': settings.LAMBDA_CALLBACK_HOST,

@@ -1137,10 +1137,16 @@ var constants = {
         BOTTOM: 'bottom',
     },
     videoAssetStatus: {
+        INITIALIZED: 'INITIALIZED',
         NOT_UPLOADED: 'NOT_UPLOADED',
         PROCESSING: 'PROCESSING',
         READY_FOR_USE: 'READY_FOR_USE',
         PROCESSING_ERROR: 'PROCESSING_ERROR',
+    },
+    videoType: {
+        DIRECT_UPLOAD: 'DIRECT_UPLOAD',
+        VAST_UPLOAD: 'VAST_UPLOAD',
+        VAST_URL: 'VAST_URL',
     },
     gaTrackingType: {
         EMAIL: 1,
@@ -2216,6 +2222,11 @@ var options = {
         {name: 'Right', value: constants.imageCrop.RIGHT},
         {name: 'Top', value: constants.imageCrop.TOP},
         {name: 'Bottom', value: constants.imageCrop.BOTTOM},
+    ],
+    videoTypes: [
+        {name: 'Video file', value: constants.videoType.DIRECT_UPLOAD},
+        {name: 'VAST XML file', value: constants.videoType.VAST_UPLOAD},
+        {name: 'VAST XML url', value: constants.videoType.VAST_URL},
     ],
     gaTrackingType: [
         {name: 'Email', value: constants.gaTrackingType.EMAIL},
