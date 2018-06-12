@@ -65,7 +65,7 @@ class Command(ExceptionCommand):
         cities = {}
         city_names = set()
 
-        with open(maxmind_csv_path, 'r') as csvfile:
+        with open(maxmind_csv_path, 'r', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=',', quotechar='"')
             for row in reader:
                 if row['country_name']:
@@ -102,7 +102,7 @@ class Command(ExceptionCommand):
     @staticmethod
     def get_mapping(csv_path, column_name):
         mapping = {}
-        with open(csv_path, 'r') as csvfile:
+        with open(csv_path, 'r', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=',', quotechar='"')
             for row in reader:
                 mapping[row['key']] = row[column_name]
