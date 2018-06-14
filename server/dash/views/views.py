@@ -98,15 +98,16 @@ def supply_dash_redirect(request):
         raise exc.ValidationError(errors=validation_errors)
 
     try:
-        ad_group_source = models.AdGroupSource.objects.get(
-            ad_group__id=int(ad_group_id), source__id=int(source_id))
+        ad_group_source = models.AdGroupSource.objects\
+            .select_related('ad_group__campaign__account__yahoo_account')\
+            .get(ad_group__id=int(ad_group_id), source__id=int(source_id))
     except models.AdGroupSource.DoesNotExist:
         raise Http404()
 
     credentials = ad_group_source.source_credentials and ad_group_source.source_credentials.decrypt()
     if ad_group_source.source.source_type.type == constants.SourceType.YAHOO:
         url = YAHOO_DASH_URL.format(
-            advertiser_id=json.loads(credentials)['advertiser_id'],
+            advertiser_id=ad_group_source.ad_group.campaign.account.yahoo_account.advertiser_id,
             campaign_id=ad_group_source.source_campaign_key
         )
     elif ad_group_source.source.source_type.type == constants.SourceType.OUTBRAIN:
