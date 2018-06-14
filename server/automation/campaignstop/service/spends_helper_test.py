@@ -13,7 +13,7 @@ from utils import dates_helper
 from utils.test_helper import disable_auto_now_add
 
 from .. import RealTimeCampaignDataHistory
-from . import main
+from . import config
 from . import spends_helper
 
 
@@ -140,7 +140,7 @@ class GetPredictionTest(TestCase):
         with mock.patch('utils.dates_helper.utc_now') as mock_utc_now:
             midnight = datetime.datetime(today.year, today.month, today.day)
             mock_utc_now.return_value = midnight + datetime.timedelta(
-                hours=main.HOURS_DELAY-1)
+                hours=config.HOURS_DELAY-1)
             magic_mixer.blend(
                 RealTimeCampaignDataHistory,
                 campaign=self.campaign,
@@ -175,7 +175,7 @@ class GetPredictionTest(TestCase):
 
         with mock.patch('utils.dates_helper.utc_now') as mock_utc_now:
             midnight = datetime.datetime(today.year, today.month, today.day)
-            utc_now = midnight + datetime.timedelta(hours=main.HOURS_DELAY-1)
+            utc_now = midnight + datetime.timedelta(hours=config.HOURS_DELAY-1)
             mock_utc_now.return_value = utc_now
             with disable_auto_now_add(RealTimeCampaignDataHistory, 'created_dt'):
                 magic_mixer.blend(
@@ -201,7 +201,7 @@ class GetPredictionTest(TestCase):
         with mock.patch('utils.dates_helper.utc_now') as mock_utc_now:
             midnight = datetime.datetime(today.year, today.month, today.day)
             mock_utc_now.return_value = midnight + datetime.timedelta(
-                hours=main.HOURS_DELAY-1)
+                hours=config.HOURS_DELAY-1)
             with disable_auto_now_add(RealTimeCampaignDataHistory, 'created_dt'):
                 now = dates_helper.utc_now()
                 magic_mixer.blend(
@@ -241,7 +241,7 @@ class GetPredictionTest(TestCase):
         with mock.patch('utils.dates_helper.utc_now') as mock_utc_now:
             midnight = datetime.datetime(today.year, today.month, today.day)
             mock_utc_now.return_value = midnight + datetime.timedelta(
-                hours=main.HOURS_DELAY-1)
+                hours=config.HOURS_DELAY-1)
             with disable_auto_now_add(RealTimeCampaignDataHistory, 'created_dt'):
                 now = dates_helper.utc_now()
                 magic_mixer.blend(
@@ -274,7 +274,7 @@ class GetPredictionTest(TestCase):
         with mock.patch('utils.dates_helper.utc_now') as mock_utc_now:
             midnight = datetime.datetime(today.year, today.month, today.day)
             mock_utc_now.return_value = midnight + datetime.timedelta(
-                hours=main.HOURS_DELAY-1)
+                hours=config.HOURS_DELAY-1)
             with disable_auto_now_add(RealTimeCampaignDataHistory, 'created_dt'):
                 now = dates_helper.utc_now()
                 magic_mixer.blend(
@@ -375,7 +375,7 @@ class GetBudgetSpendEstimateTest(TestCase):
                 self.budget: 100
             }, estimate)
 
-            mock_utc_now.return_value = midnight + datetime.timedelta(hours=spends_helper.HOURS_DELAY-1)
+            mock_utc_now.return_value = midnight + datetime.timedelta(hours=config.HOURS_DELAY-1)
 
             estimate = spends_helper.get_budget_spend_estimates(LogMock(), self.campaign)
             self.assertEqual({
