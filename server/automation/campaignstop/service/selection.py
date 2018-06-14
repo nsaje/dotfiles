@@ -7,8 +7,8 @@ from utils import dates_helper
 from .. import constants
 from .. import CampaignStopState, RealTimeDataHistory, RealTimeCampaignStopLog
 from . import refresh_realtime_data
+from . import config
 
-HOURS_DELAY = 6
 THRESHOLD = 10
 
 
@@ -57,7 +57,7 @@ def _get_date_to_digest():
 
 
 def _in_critical_hours():
-        return 0 <= dates_helper.local_now().hour < HOURS_DELAY
+        return 0 <= dates_helper.local_now().hour < config.HOURS_DELAY
 
 
 def _get_max_campaign_spends(campaigns):

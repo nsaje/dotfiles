@@ -6,6 +6,7 @@ from utils import dates_helper
 from utils import numbers
 
 from .. import RealTimeCampaignDataHistory
+from . import config
 
 
 import core.multicurrency
@@ -13,7 +14,6 @@ import core.multicurrency
 
 logger = logging.getLogger(__name__)
 
-HOURS_DELAY = 6
 MAX_RT_DATA_AGE_MINUTES = 15
 CHECK_FREQUENCY_MINUTES = 2
 MIN_PREV_SPEND_SECONDS = 90
@@ -102,7 +102,7 @@ def _get_until_date_for_budget_spends(campaign):
 
 
 def _should_query_realtime_stats_for_yesterday(campaign):
-    in_critical_hours = 0 <= dates_helper.local_now().hour < HOURS_DELAY
+    in_critical_hours = 0 <= dates_helper.local_now().hour < config.HOURS_DELAY
     local_midnight = dates_helper.local_now().replace(hour=0, minute=0, second=0, microsecond=0)
     local_recent = local_midnight - datetime.timedelta(hours=2)
     utc_recent = dates_helper.local_to_utc_time(local_recent)
