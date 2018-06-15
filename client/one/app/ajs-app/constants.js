@@ -2226,7 +2226,7 @@ var options = {
     videoTypes: [
         {name: 'Video file', value: constants.videoType.DIRECT_UPLOAD},
         {name: 'VAST XML file', value: constants.videoType.VAST_UPLOAD},
-        {name: 'VAST XML url', value: constants.videoType.VAST_URL},
+        {name: 'VAST tag', value: constants.videoType.VAST_URL},
     ],
     gaTrackingType: [
         {name: 'Email', value: constants.gaTrackingType.EMAIL},

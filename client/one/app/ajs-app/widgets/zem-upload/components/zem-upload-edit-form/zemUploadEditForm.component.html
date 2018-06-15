@@ -103,7 +103,7 @@
                 </div>
 
                 <div class="form__group" ng-if="ctrl.showVideoUpload && ctrl.hasPermission('zemauth.can_see_vast')">
-                    <label class="form__label" for="video-type-input" is-internal="zemauth.can_see_vast">Video type</label>
+                    <label class="form__label" for="video-type-input" is-internal="zemauth.can_see_vast">Upload video by</label>
                     <ui-select theme="select2" search-enabled="false" id="video-type-input"
                                class="button button--plain button--full-width button--dropdown-toggle-icon"
                                ng-disabled="ctrl.isEdit || (ctrl.selectedCandidate.videoAsset.status !== ctrl.videoAssetStatus.INITIALIZED && ctrl.selectedCandidate.videoAsset.status !== ctrl.videoAssetStatus.PROCESSING_ERROR)"
@@ -141,7 +141,7 @@
                 </div>
 
                 <div class="form__group" ng-if="ctrl.showVideoUpload && ctrl.selectedCandidate.videoAsset.type === ctrl.videoTypes.VAST_UPLOAD">
-                    <label class="form__label">Vast</label>
+                    <label class="form__label">VAST</label>
                     <div class="content-upload__video-uploader">
                         <zem-file-input ng-if="ctrl.selectedCandidate.videoAsset.status === ctrl.videoAssetStatus.INITIALIZED || ctrl.selectedCandidate.videoAsset.status === ctrl.videoAssetStatus.PROCESSING_ERROR" zem-file-input-change="ctrl.vastUploadCallback(file)" zem-file-input-accept="text/xml">
                             <button type="button" class="button button--with-icon folder-icon" zem-file-input-trigger ng-disabled="ctrl.isEdit">Choose file</button>
@@ -166,7 +166,7 @@
                 </div>
 
                 <div class="form__group" ng-if="ctrl.showVideoUpload && ctrl.selectedCandidate.videoAsset.type === ctrl.videoTypes.VAST_URL" ng-class="{'form--error': ctrl.fieldsHaveErrors('vastUrl')}">
-                    <label class="form__label">Vast URL</label>
+                    <label class="form__label">VAST tag URL</label>
                     <input type="text" class="input-text" id="vast-url-input" ng-model="ctrl.selectedCandidate.videoAsset.vastUrl"
                        ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }"
                        ng-change="ctrl.vastUrlCallback(ctrl.selectedCandidate.videoAsset.vastUrl)"
