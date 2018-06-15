@@ -25,7 +25,8 @@ class AdGroupSettingsMixin(object):
         if updates:
             new_settings = self.copy_settings()
             self._apply_updates(new_settings, updates)
-            if not skip_validation:
+            is_pause = len(updates) == 1 and updates.get('state') == constants.AdGroupSettingsState.INACTIVE
+            if not skip_validation and not is_pause:
                 self._validate_changes(new_settings)
                 self.clean(new_settings)
             self._handle_and_set_change_consequences(new_settings)

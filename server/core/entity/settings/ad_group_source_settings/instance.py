@@ -26,7 +26,8 @@ class AdGroupSourceSettingsMixin(object):
         if not changes:
             return result
 
-        if not skip_validation:
+        is_pause = len(changes) == 1 and changes.get('state') == dash.constants.AdGroupSourceSettingsState.INACTIVE
+        if not skip_validation and not is_pause:
             self.clean(new_settings)
 
         if not skip_automation:

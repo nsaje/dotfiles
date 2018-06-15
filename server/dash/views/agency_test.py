@@ -807,6 +807,41 @@ class AdGroupSettingsTest(TestCase):
 
             self.assertNotEqual(response_settings_dict['max_cpm'], '1.600')
 
+    def test_deactivate_no_validation(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        add_permissions(self.user, ['settings_view'])
+
+        self.settings_dict['settings']['state'] = constants.AdGroupSettingsState.INACTIVE
+        ok_cpc = self.settings_dict['settings']['cpc_cc']
+        self.settings_dict['settings']['cpc_cc'] = '5000'
+        response = self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
+        )
+        self.assertEqual(response.status_code, 400)
+
+        self.settings_dict['settings']['cpc_cc'] = ok_cpc
+        ad_group.settings.update_unsafe(None, cpc_cc=Decimal(5000))
+        response = self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(ad_group.get_current_settings().cpc_cc, Decimal(5000))
+        self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
+
+        self.settings_dict['settings']['state'] = constants.AdGroupSettingsState.ACTIVE
+        response = self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(ad_group.get_current_settings().cpc_cc, Decimal(5000))
+        self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
+
 
 class AdGroupSettingsRetargetableAdgroupsTest(TestCase):
     fixtures = ['test_api.yaml', 'test_non_superuser.yaml', 'test_geolocations']

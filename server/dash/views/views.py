@@ -37,7 +37,7 @@ from dash import forms
 from dash import infobox_helpers
 from dash.features import native_server
 
-import core.entity.settings.ad_group_source_settings.exceptions as ad_group_source_exceptions
+import core.entity.settings.ad_group_source_settings.exceptions
 
 import stats.helpers
 
@@ -802,10 +802,10 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         try:
             return ad_group_source.settings.update(request, k1_sync=True, **data)
 
-        except ad_group_source_exceptions.DailyBudgetNegative as err:
+        except core.entity.settings.ad_group_source_settings.exceptions.DailyBudgetNegative as err:
             raise exc.ValidationError(errors={'daily_budget_cc': [str(err)]})
 
-        except ad_group_source_exceptions.MinimalDailyBudgetTooLow as err:
+        except core.entity.settings.ad_group_source_settings.exceptions.MinimalDailyBudgetTooLow as err:
             raise exc.ValidationError(errors={
                 'daily_budget_cc': ['Please provide daily spend cap of at least {}.'.format(
                     core.multicurrency.format_value_in_currency(
@@ -814,7 +814,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 )]
             })
 
-        except ad_group_source_exceptions.MaximalDailyBudgetTooHigh as err:
+        except core.entity.settings.ad_group_source_settings.exceptions.MaximalDailyBudgetTooHigh as err:
             raise exc.ValidationError(errors={
                 'daily_budget_cc': [
                     'Maximum allowed daily spend cap is {}. '
@@ -826,10 +826,10 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 ]
             })
 
-        except ad_group_source_exceptions.CPCNegative as err:
+        except core.entity.settings.ad_group_source_settings.exceptions.CPCNegative as err:
             raise exc.ValidationError(errors={'cpc_cc': [str(err)]})
 
-        except ad_group_source_exceptions.CPCPrecisionExceeded as err:
+        except core.entity.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:
             raise exc.ValidationError(errors={
                 'cpc_cc': ['CPC on {} cannot exceed {} decimal place{}.'.format(
                     err.data.get('source_name'),
@@ -838,7 +838,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 )]
             })
 
-        except ad_group_source_exceptions.MinimalCPCTooLow as err:
+        except core.entity.settings.ad_group_source_settings.exceptions.MinimalCPCTooLow as err:
             raise exc.ValidationError(errors={
                 'cpc_cc': ['Minimum CPC on {} is {}.'.format(
                     err.data.get('source_name'),
@@ -848,7 +848,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 )]
             })
 
-        except ad_group_source_exceptions.MaximalCPCTooHigh as err:
+        except core.entity.settings.ad_group_source_settings.exceptions.MaximalCPCTooHigh as err:
             raise exc.ValidationError(errors={
                 'cpc_cc': ['Maximum CPC on {} is {}.'.format(
                     err.data.get('source_name'),
@@ -858,22 +858,22 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 )]
             })
 
-        except ad_group_source_exceptions.RTBSourcesCPCNegative as err:
+        except core.entity.settings.ad_group_source_settings.exceptions.RTBSourcesCPCNegative as err:
             raise exc.ValidationError(errors={'cpc_cc': [str(err)]})
 
-        except ad_group_source_exceptions.CPCInvalid as err:
+        except core.entity.settings.ad_group_source_settings.exceptions.CPCInvalid as err:
             raise exc.ValidationError(errors={'cpc_cc': [str(err)]})
 
-        except ad_group_source_exceptions.RetargetingNotSupported as err:
+        except core.entity.settings.ad_group_source_settings.exceptions.RetargetingNotSupported as err:
             raise exc.ValidationError(errors={'state': [str(err)]})
 
-        except ad_group_source_exceptions.MediaSourceNotConnectedToFacebook as err:
+        except core.entity.settings.ad_group_source_settings.exceptions.MediaSourceNotConnectedToFacebook as err:
             raise exc.ValidationError(errors={'state': [str(err)]})
 
-        except ad_group_source_exceptions.YahooCPCTooLow as err:
+        except core.entity.settings.ad_group_source_settings.exceptions.YahooCPCTooLow as err:
             raise exc.ValidationError(errors={'state': [str(err)]})
 
-        except ad_group_source_exceptions.AutopilotDailySpendCapTooLow as err:
+        except core.entity.settings.ad_group_source_settings.exceptions.AutopilotDailySpendCapTooLow as err:
             raise exc.ValidationError(errors={'state': [str(err)]})
 
 

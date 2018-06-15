@@ -168,7 +168,7 @@ class AdGroupSettings(api_common.BaseApiView):
             raise utils.exc.ValidationError(errors={'b1_sources_group_cpc_cc': [str(err)]})
 
         except core.entity.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:
-            raise exc.ValidationError(errors={
+            raise utils.exc.ValidationError(errors={
                 'b1_sources_group_cpc_cc': ['CPC on {} cannot exceed {} decimal place{}.'.format(
                     err.data.get('source_name'),
                     err.data.get('value'),
@@ -177,7 +177,7 @@ class AdGroupSettings(api_common.BaseApiView):
             })
 
         except core.entity.settings.ad_group_source_settings.exceptions.MinimalCPCTooLow as err:
-            raise exc.ValidationError(errors={
+            raise utils.exc.ValidationError(errors={
                 'b1_sources_group_cpc_cc': ['Minimum CPC on {} is {}.'.format(
                     err.data.get('source_name'),
                     core.multicurrency.format_value_in_currency(
@@ -187,7 +187,7 @@ class AdGroupSettings(api_common.BaseApiView):
             })
 
         except core.entity.settings.ad_group_source_settings.exceptions.MaximalCPCTooHigh as err:
-            raise exc.ValidationError(errors={
+            raise utils.exc.ValidationError(errors={
                 'b1_sources_group_cpc_cc': ['Maximum CPC on {} is {}.'.format(
                     err.data.get('source_name'),
                     core.multicurrency.format_value_in_currency(
@@ -200,7 +200,7 @@ class AdGroupSettings(api_common.BaseApiView):
             raise utils.exc.ValidationError(errors={'b1_sources_group_daily_budget': [str(err)]})
 
         except core.entity.settings.ad_group_source_settings.exceptions.MinimalDailyBudgetTooLow as err:
-            raise exc.ValidationError(errors={
+            raise utils.exc.ValidationError(errors={
                 'b1_sources_group_daily_budget': ['Please provide daily spend cap of at least {}.'.format(
                     core.multicurrency.format_value_in_currency(
                         err.data.get('value'), 0, ad_group.settings.get_currency(),
@@ -209,7 +209,7 @@ class AdGroupSettings(api_common.BaseApiView):
             })
 
         except core.entity.settings.ad_group_source_settings.exceptions.MaximalDailyBudgetTooHigh as err:
-            raise exc.ValidationError(errors={
+            raise utils.exc.ValidationError(errors={
                 'b1_sources_group_daily_budget': [
                     'Maximum allowed daily spend cap is {}. '
                     'If you want use a higher daily spend cap, please contact support.'.format(

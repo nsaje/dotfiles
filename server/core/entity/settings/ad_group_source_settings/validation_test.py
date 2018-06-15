@@ -101,3 +101,37 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
 
         updates['daily_budget_cc'] = decimal.Decimal('100')
         ad_group_source.settings.update(None, **updates)
+
+    def test_validate_state(self):
+        ad_group_source = magic_mixer.blend(
+            core.entity.AdGroupSource, ad_group__campaign=self.campaign, source=self.source)
+        ad_group_source.settings.update_unsafe(
+            None,
+            state=dash.constants.AdGroupSettingsState.ACTIVE,
+            cpc_cc=decimal.Decimal('0.35'),
+            daily_budget_cc=decimal.Decimal('50')
+        )
+
+        updates = {}
+        updates['cpc_cc'] = decimal.Decimal('0.05')
+        updates['state'] = dash.constants.AdGroupSourceSettingsState.INACTIVE
+        with self.assertRaises(exceptions.MinimalCPCTooLow):
+            ad_group_source.settings.update(None, **updates)
+        self.assertEqual(ad_group_source.settings.state, dash.constants.AdGroupSettingsState.ACTIVE)
+
+        ad_group_source.settings.update_unsafe(
+            None,
+            cpc_cc=decimal.Decimal('0.05'),
+        )
+
+        updates = {}
+        updates['state'] = dash.constants.AdGroupSourceSettingsState.INACTIVE
+        ad_group_source.settings.update(None, skip_automation=True, **updates)
+        self.assertEqual(ad_group_source.settings.state, dash.constants.AdGroupSettingsState.INACTIVE)
+
+        with self.assertRaises(exceptions.MinimalCPCTooLow):
+            ad_group_source.settings.update(
+                None,
+                skip_automation=True,
+                state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
+            )

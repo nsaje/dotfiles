@@ -19,6 +19,9 @@ from dash.views import helpers
 from dash.features import contentupload
 from dash.views import breakdown_helpers
 
+import core.multicurrency
+import core.entity.settings.ad_group_source_settings.exceptions
+
 from utils import api_common
 from utils import exc
 from utils import k1_helper
@@ -76,12 +79,13 @@ class AdGroupSourceState(BaseBulkActionView):
 
         with transaction.atomic():
             for ad_group_source in ad_group_sources:
-                ad_group_source.settings.update(
+                self._update_ad_group_source(
                     request,
+                    ad_group_source,
                     state=state,
                     k1_sync=False,
                     skip_automation=True,
-                    skip_validation=False
+                    skip_validation=False,
                 )
 
         if (ad_group.settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or
@@ -109,6 +113,60 @@ class AdGroupSourceState(BaseBulkActionView):
         self._apply_updates(request, response, last_change_dt, ad_group_id)
 
         return self.create_api_response(response)
+
+    def _update_ad_group_source(self, request, ad_group_source, **data):
+        try:
+            return ad_group_source.settings.update(request, **data)
+
+        except core.entity.settings.ad_group_source_settings.exceptions.MinimalDailyBudgetTooLow as err:
+            raise exc.ValidationError('{}: {}'.format(
+                ad_group_source.source.name,
+                'Please provide daily spend cap of at least {}.'.format(
+                    core.multicurrency.format_value_in_currency(
+                        err.data.get('value'), 0, ad_group_source.settings.get_currency(),
+                    ),
+                )
+            ))
+
+        except core.entity.settings.ad_group_source_settings.exceptions.MaximalDailyBudgetTooHigh as err:
+            raise exc.ValidationError('{}: {}'.format(
+                ad_group_source.source.name,
+                'Maximum allowed daily spend cap is {}.'
+                'If you want use a higher daily spend cap, please contact support.'.format(
+                    core.multicurrency.format_value_in_currency(
+                        err.data.get('value'), 0, ad_group_source.settings.get_currency(),
+                    ),
+                )
+            ))
+
+        except core.entity.settings.ad_group_source_settings.exceptions.MinimalCPCTooLow as err:
+            raise exc.ValidationError('{}: {}'.format(
+                ad_group_source.source.name,
+                'Minimum CPC on {} is {}.'.format(
+                    err.data.get('source_name'),
+                    core.multicurrency.format_value_in_currency(
+                        err.data.get('value'), 2, ad_group_source.settings.get_currency(),
+                    ),
+                )
+            ))
+
+        except core.entity.settings.ad_group_source_settings.exceptions.MaximalCPCTooHigh as err:
+            raise exc.ValidationError('{}: {}'.format(
+                ad_group_source.source.name,
+                'Maximum CPC on {} is {}.'.format(
+                    err.data.get('source_name'),
+                    core.multicurrency.format_value_in_currency(
+                        err.data.get('value'), 2, ad_group_source.settings.get_currency(),
+                    ),
+                )
+            ))
+
+        except (core.entity.settings.ad_group_source_settings.exceptions.CPCInvalid,
+                core.entity.settings.ad_group_source_settings.exceptions.RetargetingNotSupported,
+                core.entity.settings.ad_group_source_settings.exceptions.MediaSourceNotConnectedToFacebook,
+                core.entity.settings.ad_group_source_settings.exceptions.YahooCPCTooLow,
+                core.entity.settings.ad_group_source_settings.exceptions.AutopilotDailySpendCapTooLow) as err:
+            raise exc.ValidationError('{}: {}'.format(ad_group_source.source.name, str(err)))
 
     def _get_editable_fields(self, ad_group, ad_group_settings, campaign_settings, ad_group_sources):
         allowed_sources = ad_group.campaign.account.allowed_sources.all().values_list('pk', flat=True)
@@ -423,7 +481,6 @@ class CampaignAdGroupState(BaseBulkActionView):
     @influx.timer('dash.api')
     def post(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
-
         data = json.loads(request.body)
 
         state = data.get('state')
@@ -441,7 +498,7 @@ class CampaignAdGroupState(BaseBulkActionView):
 
         with transaction.atomic():
             for ad_group in ad_groups:
-                ad_group.settings.update(request, state=state, skip_automation=True)
+                self._update_adgroup(request, ad_group, state=state, skip_automation=True)
 
         if campaign.settings.autopilot:
             autopilot.recalculate_budgets_campaign(campaign)
@@ -468,6 +525,25 @@ class CampaignAdGroupState(BaseBulkActionView):
                 }) for ad_group in ad_groups
             ]
         })
+
+    def _update_adgroup(self, request, ad_group, **data):
+        try:
+            ad_group.settings.update(request, **data)
+
+        except exc.MultipleValidationError as err:
+            self._handle_multiple_error(ad_group, err)
+
+        except (core.entity.settings.ad_group_settings.exceptions.CannotChangeAdGroupState,
+                core.entity.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooLow,
+                core.entity.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooHigh,
+                core.entity.settings.ad_group_settings.exceptions.YahooDesktopCPCTooLow) as err:
+            raise exc.ValidationError('{}: {}'.format(ad_group.settings.ad_group_name, str(err)))
+
+    def _handle_multiple_error(self, ad_group, err):
+        errors = []
+        for e in err.errors:
+            errors.append(str(e))
+        raise exc.ValidationError('{}: {}'.format(ad_group.settings.ad_group_name, ', '.join(errors)))
 
 
 class AccountCampaignArchive(BaseBulkActionView):
