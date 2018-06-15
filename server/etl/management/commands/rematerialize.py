@@ -50,7 +50,9 @@ class Command(ExceptionCommand):
             }
         if not account_since:
             return
-        n_accounts_processed, n_accounts_all = 0, len(accounts)
+        n_accounts_processed, n_accounts_all = 0, len([
+            acc_id for acc_id in account_since.keys() if (acc_id % NUM_OF_BATCHES) == batch
+        ])
         for acc_id, since in account_since.items():
             if (acc_id % NUM_OF_BATCHES) != batch:
                 continue
