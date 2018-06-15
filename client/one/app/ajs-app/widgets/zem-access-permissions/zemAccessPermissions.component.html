@@ -48,6 +48,9 @@
                             <span ng-if="$ctrl.entity.data.agency && user.is_agency_manager && $ctrl.hasPermission('zemauth.can_promote_agency_managers')">
                                 <button tabindex="-1" ng-click="$ctrl.downgrade(user)" href="#" class="button button--small" title="Downgrade to Normal User" is-internal="zemauth.can_promote_agency_managers">Downgrade</button>
                             </span>
+                            <span ng-if="$ctrl.hasPermission('zemauth.can_manage_restapi_access') && !user.can_use_restapi">
+                                <button tabindex="-1" ng-click="$ctrl.enableApi(user)" href="#" class="button button--small" title="Enable REST API access" is-internal="zemauth.can_manage_restapi_access">Enable REST API access</button>
+                            </span>
                             <button ng-show="!user.is_active" tabindex="-1" ng-click="$ctrl.activate(user)" href="#" class="button button--small button--with-icon send-icon" title="Resend Activation Mail">Resend</button>
                             <button tabindex="-1" ng-if="user.is_agency_manager" ng-click="$ctrl.remove(user)" href="#" class="button button--small button--with-icon remove-icon">Delete user</button>
                             <button tabindex="-1" ng-if="!user.is_agency_manager" ng-click="$ctrl.remove(user)" href="#" class="button button--small button--with-icon remove-icon">Disable access to this account</button>

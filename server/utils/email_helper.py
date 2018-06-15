@@ -711,3 +711,10 @@ def send_oen_postclickkpi_cpa_factors_email(factors):
         logger.error(
             'OEN CPA Optimization factors e-mail was not sent because an exception was raised: %s',
             traceback.format_exc())
+
+
+def send_restapi_access_enabled_notification(user):
+    send_official_email(agency_or_user=user,
+                        recipient_list=[user.email],
+                        **params_from_template(dash.constants.EmailTemplateType.USER_ENABLE_RESTAPI, user=user)
+                        )

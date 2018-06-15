@@ -3,6 +3,7 @@ import json
 import datetime
 import http.client
 
+from django.contrib.auth.models import Permission
 from mock import patch, ANY, call
 from decimal import Decimal
 
@@ -1215,8 +1216,8 @@ class ConversionPixelTestCase(TestCase):
     @patch('utils.redirector_helper.upsert_audience')
     @patch('utils.k1_helper.update_account')
     def test_post_audience_enabled(self, ping_mock, redirector_mock):
-        audience_enabled_pixels = models.ConversionPixel.objects.\
-            filter(audience_enabled=True).\
+        audience_enabled_pixels = models.ConversionPixel.objects. \
+            filter(audience_enabled=True). \
             filter(account_id=1)
         self.assertEqual(1, len(audience_enabled_pixels))
         audience_enabled_pixels[0].audience_enabled = False
@@ -1230,8 +1231,8 @@ class ConversionPixelTestCase(TestCase):
         )
         self.assertEqual(200, response.status_code)
 
-        audience_enabled_pixels = models.ConversionPixel.objects.\
-            filter(audience_enabled=True).\
+        audience_enabled_pixels = models.ConversionPixel.objects. \
+            filter(audience_enabled=True). \
             filter(account_id=1)
         self.assertEqual(1, len(audience_enabled_pixels))
         self.assertEqual(audience_enabled_pixels[0].name, 'name')
@@ -1254,8 +1255,8 @@ class ConversionPixelTestCase(TestCase):
     @patch('utils.redirector_helper.upsert_audience')
     @patch('utils.k1_helper.update_account')
     def test_post_audience_enabled_invalid(self, ping_mock, redirector_mock):
-        audience_enabled_pixels = models.ConversionPixel.objects.\
-            filter(audience_enabled=True).\
+        audience_enabled_pixels = models.ConversionPixel.objects. \
+            filter(audience_enabled=True). \
             filter(account_id=1)
         self.assertEqual(1, len(audience_enabled_pixels))
 
@@ -1281,8 +1282,8 @@ class ConversionPixelTestCase(TestCase):
         self.assertFalse(ping_mock.called)
         self.assertFalse(redirector_mock.called)
 
-        audience_enabled_pixels = models.ConversionPixel.objects.\
-            filter(audience_enabled=True).\
+        audience_enabled_pixels = models.ConversionPixel.objects. \
+            filter(audience_enabled=True). \
             filter(account_id=1)
         self.assertEqual(1, len(audience_enabled_pixels))
 
@@ -1412,8 +1413,8 @@ class ConversionPixelTestCase(TestCase):
     @patch('utils.redirector_helper.upsert_audience')
     @patch('utils.k1_helper.update_account')
     def test_put_audience_enabled(self, ping_mock, redirector_mock):
-        existing_audience_enabled_pixels = models.ConversionPixel.objects.\
-            filter(audience_enabled=True).\
+        existing_audience_enabled_pixels = models.ConversionPixel.objects. \
+            filter(audience_enabled=True). \
             filter(account_id=1)
         self.assertEqual(1, len(existing_audience_enabled_pixels))
         existing_audience_enabled_pixels[0].audience_enabled = False
@@ -1427,8 +1428,8 @@ class ConversionPixelTestCase(TestCase):
         )
         self.assertEqual(200, response.status_code)
 
-        audience_enabled_pixels = models.ConversionPixel.objects.\
-            filter(audience_enabled=True).\
+        audience_enabled_pixels = models.ConversionPixel.objects. \
+            filter(audience_enabled=True). \
             filter(account_id=1)
         self.assertEqual(1, len(audience_enabled_pixels))
         self.assertEqual(audience_enabled_pixels[0].id, existing_audience_enabled_pixels[0].id)
@@ -1451,8 +1452,8 @@ class ConversionPixelTestCase(TestCase):
     @patch('utils.redirector_helper.upsert_audience')
     @patch('utils.k1_helper.update_account')
     def test_put_audience_enabled_invalid(self, ping_mock, redirector_mock):
-        existing_audience_enabled_pixels = models.ConversionPixel.objects.\
-            filter(audience_enabled=True).\
+        existing_audience_enabled_pixels = models.ConversionPixel.objects. \
+            filter(audience_enabled=True). \
             filter(account_id=1)
         self.assertEqual(1, len(existing_audience_enabled_pixels))
 
@@ -1478,8 +1479,8 @@ class ConversionPixelTestCase(TestCase):
         self.assertFalse(ping_mock.called)
         self.assertFalse(redirector_mock.called)
 
-        audience_enabled_pixels = models.ConversionPixel.objects.\
-            filter(audience_enabled=True).\
+        audience_enabled_pixels = models.ConversionPixel.objects. \
+            filter(audience_enabled=True). \
             filter(account_id=1)
         self.assertEqual(1, len(audience_enabled_pixels))
         self.assertEqual(1, existing_audience_enabled_pixels[0].id)
@@ -3249,7 +3250,8 @@ class AccountUsersTest(TestCase):
                 'is_agency_manager': False,
                 'id': 2,
                 'last_login': user.last_login.date().isoformat(),
-                'email': 'user@test.com'
+                'email': 'user@test.com',
+                'can_use_restapi': False,
             },
             {
                 'name': '',
@@ -3257,7 +3259,9 @@ class AccountUsersTest(TestCase):
                 'is_agency_manager': False,
                 'id': 3,
                 'last_login': '2014-06-16',
-                'email': 'john@test.com'
+                'email': 'john@test.com',
+                'can_use_restapi': False,
+
             },
             {
                 'name': '',
@@ -3265,7 +3269,9 @@ class AccountUsersTest(TestCase):
                 'is_agency_manager': False,
                 'id': 1,
                 'last_login': '2014-06-16',
-                'email': 'superuser@test.com'
+                'email': 'superuser@test.com',
+                'can_use_restapi': True,
+
             }
         ],
             response.json()['data']['users']
@@ -3296,7 +3302,9 @@ class AccountUsersTest(TestCase):
                 'is_agency_manager': True,
                 'id': 1,
                 'last_login': '2014-06-16',
-                'email': 'superuser@test.com'
+                'email': 'superuser@test.com',
+                'can_use_restapi': True,
+
             }
         ],
             response.json()['data']['agency_managers']
@@ -3309,7 +3317,9 @@ class AccountUsersTest(TestCase):
                 'is_agency_manager': False,
                 'id': 2,
                 'last_login': user.last_login.date().isoformat(),
-                'email': 'user@test.com'
+                'email': 'user@test.com',
+                'can_use_restapi': False,
+
             },
             {
                 'name': '',
@@ -3317,7 +3327,8 @@ class AccountUsersTest(TestCase):
                 'is_agency_manager': False,
                 'id': 3,
                 'last_login': '2014-06-16',
-                'email': 'john@test.com'
+                'email': 'john@test.com',
+                'can_use_restapi': False,
             },
             {
                 'name': '',
@@ -3325,7 +3336,8 @@ class AccountUsersTest(TestCase):
                 'is_agency_manager': False,
                 'id': 1,
                 'last_login': '2014-06-16',
-                'email': 'superuser@test.com'
+                'email': 'superuser@test.com',
+                'can_use_restapi': True,
             }
         ],
             response.json()['data']['users']
@@ -3357,7 +3369,9 @@ class AccountUsersTest(TestCase):
                 'is_agency_manager': True,
                 'id': 1,
                 'last_login': '2014-06-16',
-                'email': 'superuser@test.com'
+                'email': 'superuser@test.com',
+                'can_use_restapi': True,
+
             }
         ],
             response.json()['data']['agency_managers']
@@ -3370,7 +3384,8 @@ class AccountUsersTest(TestCase):
                 'is_agency_manager': True,
                 'id': 1,
                 'last_login': '2014-06-16',
-                'email': 'superuser@test.com'
+                'email': 'superuser@test.com',
+                'can_use_restapi': True,
             },
             {
                 'name': '',
@@ -3378,7 +3393,8 @@ class AccountUsersTest(TestCase):
                 'is_agency_manager': False,
                 'id': 2,
                 'last_login': user.last_login.date().isoformat(),
-                'email': 'user@test.com'
+                'email': 'user@test.com',
+                'can_use_restapi': False,
             },
             {
                 'name': '',
@@ -3386,7 +3402,8 @@ class AccountUsersTest(TestCase):
                 'is_agency_manager': False,
                 'id': 3,
                 'last_login': '2014-06-16',
-                'email': 'john@test.com'
+                'email': 'john@test.com',
+                'can_use_restapi': False,
             },
             {
                 'name': '',
@@ -3394,7 +3411,8 @@ class AccountUsersTest(TestCase):
                 'is_agency_manager': False,
                 'id': 1,
                 'last_login': '2014-06-16',
-                'email': 'superuser@test.com'
+                'email': 'superuser@test.com',
+                'can_use_restapi': True,
             }
         ],
             response.json()['data']['users']
@@ -3445,10 +3463,9 @@ class AccountUsersTest(TestCase):
         user = User.objects.get(pk=2)
         acc1.users.add(user)
         acc2.users.add(user)
-        response = client.delete(
-            reverse('account_users_manage', kwargs={'account_id': 1,
-                                                    'user_id': user.pk}) + '?remove_from_all_accounts=1',
-        )
+        response = client.delete(reverse('account_users_manage',
+                                         kwargs={'account_id': 1, 'user_id': user.pk}) + '?remove_from_all_accounts=1',
+                                 )
         self.assertEqual(response.status_code, 200)
         self.assertFalse(acc1.users.filter(pk=user.pk))
         self.assertFalse(acc2.users.filter(pk=user.pk))
@@ -3641,6 +3658,69 @@ class UserDowngradeTest(TestCase):
         user = User.objects.get(pk=3)
         self.assertNotIn(user, agency.users.all())
         self.assertNotIn(user, account.users.all())
+
+
+class UserEnableRESTAPIAccessTest(TestCase):
+    fixtures = ['test_views.yaml', 'test_agency.yaml']
+
+    def _get_client_with_permissions(self, permissions_list):
+        password = 'secret'
+        user = User.objects.get(pk=2)
+        add_permissions(user, permissions_list)
+        user.save()
+        client = Client()
+        client.login(username=user.email, password=password)
+        return client
+
+    def test_without_permission(self):
+        client = self._get_client_with_permissions([])
+        response = client.post(
+            reverse('account_user_action', kwargs={'account_id': 1000, 'user_id': 2, 'action': 'enable_api'}),
+        )
+        self.assertEqual(401, response.status_code)
+
+    @patch('utils.email_helper.send_official_email')
+    def test_enable_api(self, mocking_email):
+        client = self._get_client_with_permissions(['can_manage_restapi_access'])
+        client_user = User.objects.get(pk=2)
+        user = User.objects.get(pk=3)
+        user.first_name = 'TestUser First Name'
+        user.save()
+        account = models.Account.objects.get(pk=1000)
+        account.users.add(user)
+        account.users.add(client_user)
+        perm = Permission.objects.get(codename='can_use_restapi')
+        group = authmodels.Group.objects.create(name='api_access_group')
+        group.permissions.add(perm)
+        self.assertFalse(user.has_perm('zemauth.can_use_restapi'))
+
+        response = client.post(
+            reverse('account_user_action', kwargs={'account_id': 1000, 'user_id': 3, 'action': 'enable_api'}))
+        user = User.objects.get(pk=3)
+
+        self.assertEqual(200, response.status_code)
+        self.assertIn(user, authmodels.Group.objects.get(permissions=perm).user_set.all())
+        self.assertTrue(user.has_perm('zemauth.can_use_restapi'))
+        self.assertTrue(mocking_email.called)
+        args = {
+            'agency_or_user': user,
+            'subject': 'User was granted REST API access',
+            'body': '''
+Hello TestUser First Name,
+
+You are now able to use the <a href="http://dev.zemanta.com/one/api/">Zemanta REST API</a>.
+As mentioned in our <a href="http://dev.zemanta.com/one/api/">documentation</a>, the first step is to register
+your application. Click on this <a href="https://one.zemanta.com/o/applications/register/">link</a> to do it now!
+
+Make good use of it!
+
+Yours truly,
+Zemanta''',
+            'additional_recipients': [],
+            'tags': ['USER_ENABLE_RESTAPI'],
+            'recipient_list': ['john@test.com']
+        }
+        mocking_email.assert_called_with(**args)
 
 
 class CampaignContentInsightsTest(TestCase):

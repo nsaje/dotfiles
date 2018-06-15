@@ -323,6 +323,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_filter_by_media_source', 'Can filter by media source'),
             ('can_request_accounts_report_in_local_currencies', 'User can request all accounts report in local currencies'),
             ('can_see_vast', 'User can see vast upload option'),
+            ('can_manage_restapi_access', 'User can manage REST API access')
         )
 
     def get_full_name(self):

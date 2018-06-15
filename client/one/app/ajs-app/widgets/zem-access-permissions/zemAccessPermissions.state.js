@@ -12,6 +12,7 @@ angular.module('one.widgets').service('zemAccessPermissionsStateService', functi
         this.undo = undo;
         this.promote = promote;
         this.downgrade = downgrade;
+        this.enableApi = enableApi;
 
         function initialize () {
             zemUserService.list(account.id).then(
@@ -140,6 +141,21 @@ angular.module('one.widgets').service('zemAccessPermissionsStateService', functi
             return zemAccessPermissionsEndpoint.post(account.id, user.id, 'downgrade').then(
                 function () {
                     user.is_agency_manager = false;
+                },
+                function () {
+                    return $q.reject();
+                }
+            ).finally(function () {
+                user.requestInProgress = false;
+            });
+        }
+
+        function enableApi (user) {
+            user.requestInProgress = true;
+
+            return zemAccessPermissionsEndpoint.post(account.id, user.id, 'enable_api').then(
+                function () {
+                    user.can_use_restapi = true;
                 },
                 function () {
                     return $q.reject();

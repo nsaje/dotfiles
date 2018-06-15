@@ -19,6 +19,7 @@ angular.module('one').component('zemAccessPermissions', {
         $ctrl.undo = $ctrl.stateService.undo;
         $ctrl.promote = $ctrl.stateService.promote;
         $ctrl.downgrade = $ctrl.stateService.downgrade;
+        $ctrl.enableApi = $ctrl.stateService.enableApi;
 
         $ctrl.$onInit = function () {
             $ctrl.stateService.initialize();

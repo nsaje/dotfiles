@@ -129,6 +129,8 @@ DEADJOE
 # IntelliJ editor
 .idea
 *.iml
+*.ipr
+*.iws
 
 # Visual Studio Code
 .vscode
@@ -139,3 +141,6 @@ tags
 
 # influx
 server/src/
+
+# dumps
+*.tar

@@ -1508,6 +1508,7 @@ class AccountUsers(api_common.BaseApiView):
             'last_login': user.last_login.date(),
             'is_active': user.last_login != user.date_joined,
             'is_agency_manager': agency_managers,
+            'can_use_restapi': user.has_perm('zemauth.can_use_restapi')
         }
 
 
@@ -1515,17 +1516,20 @@ class AccountUserAction(api_common.BaseApiView):
     ACTIVATE = 'activate'
     PROMOTE = 'promote'
     DOWNGRADE = 'downgrade'
+    ENABLE_API = 'enable_api'
 
     def __init__(self):
         self.actions = {
             AccountUserAction.ACTIVATE: self._activate,
             AccountUserAction.PROMOTE: self._promote,
             AccountUserAction.DOWNGRADE: self._downgrade,
+            AccountUserAction.ENABLE_API: self._enable_api
         }
         self.permissions = {
             AccountUserAction.ACTIVATE: 'zemauth.account_agency_access_permissions',
             AccountUserAction.PROMOTE: 'zemauth.can_promote_agency_managers',
             AccountUserAction.DOWNGRADE: 'zemauth.can_promote_agency_managers',
+            AccountUserAction.ENABLE_API: 'zemauth.can_manage_restapi_access',
         }
 
     def post(self, request, account_id, user_id, action):
@@ -1573,6 +1577,16 @@ class AccountUserAction(api_common.BaseApiView):
         account.agency.users.remove(user)
         account.users.add(user)
         user.groups.remove(*groups)
+
+    def _enable_api(self, request, user, account):
+        perm = authmodels.Permission.objects.get(codename='can_use_restapi')
+        api_group = authmodels.Group.objects.get(permissions=perm)
+
+        if api_group not in user.groups.all():
+            user.groups.add(api_group)
+            changes_text = '{} was granted REST API access'.format(user.email)
+            account.write_history(changes_text=changes_text)
+            email_helper.send_restapi_access_enabled_notification(user)
 
     def _check_is_agency_account(self, account):
         if not account.is_agency():
