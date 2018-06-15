@@ -107,7 +107,7 @@ def update_table_from_s3(db_name, s3_manifest_path, table_name, date_from, date_
             sql, params = prepare_date_range_delete_query(table_name, date_from, date_to, account_id)
             c.execute(sql, params)
 
-            sql, params = prepare_copy_csv_query(s3_manifest_path, table_name, format_csv=False, removequotes=True,
+            sql, params = prepare_copy_csv_query(s3_manifest_path, table_name, format_csv=False, removequotes=False,
                                                  escape=True, is_manifest=True, null_as='$NA$', gzip=True)
             c.execute(sql, params)
 
