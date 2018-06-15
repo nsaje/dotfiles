@@ -107,9 +107,8 @@
             <div class="message message--error" ng-repeat="error in $ctrl.errors.salesforceUrl"
                  for="name-input">{{ error }}</div>
         </div>
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_see_currency_setting')"
-             ng-class="{'form--error': !!$ctrl.errors.currency}">
-            <label class="form__label" for="currency-select" is-internal="zemauth.can_see_currency_setting">
+        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.currency}">
+            <label class="form__label" for="currency-select">
                 Currency:
                 <zem-help-popover content="Currency can be updated only if Account has no Campaigns yet."
                                   placement="top"></zem-help-popover>

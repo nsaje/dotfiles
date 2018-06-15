@@ -280,8 +280,8 @@ def extract_rs_order_field(order, target_dimension):
     return prefix + order_field
 
 
-def get_report_currency(user, accounts, permission=None):
-    if len(accounts) == 0 or (permission and not user.has_perm(permission)):
+def get_report_currency(user, accounts):
+    if len(accounts) == 0:
         return dash.constants.Currency.USD
 
     currency_set = set(account.currency for account in accounts if account.currency)

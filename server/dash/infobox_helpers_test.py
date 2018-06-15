@@ -216,25 +216,6 @@ class InfoBoxHelpersTest(TestCase):
     @mock.patch('redshiftapi.api_breakdowns.query')
     def test_get_yesterday_campaign_spend(self, mock_query):
         campaign = dash.models.Campaign.objects.get(pk=1)
-        user = zemauth.models.User.objects.get(pk=1)
-
-        mock_query.return_value = [{
-            'campaign_id': '1',
-            'e_yesterday_cost': 50,
-            'yesterday_et_cost': 60,
-            'yesterday_etfm_cost': 70,
-        }]
-
-        self.assertEqual({
-            'e_yesterday_cost': 50,
-            'yesterday_et_cost': 60,
-            'yesterday_etfm_cost': 70,
-        }, dash.infobox_helpers.get_yesterday_campaign_spend(user, campaign, False))
-
-    @mock.patch('redshiftapi.api_breakdowns.query')
-    def test_get_yesterday_campaign_spend_local_currency(self, mock_query):
-        campaign = dash.models.Campaign.objects.get(pk=1)
-        user = zemauth.models.User.objects.get(pk=1)
 
         mock_query.return_value = [{
             'campaign_id': '1',
@@ -246,7 +227,7 @@ class InfoBoxHelpersTest(TestCase):
             'e_yesterday_cost': 100,
             'yesterday_et_cost': 120,
             'yesterday_etfm_cost': 140,
-        }, dash.infobox_helpers.get_yesterday_campaign_spend(user, campaign, True))
+        }, dash.infobox_helpers.get_yesterday_campaign_spend(campaign))
 
     def test_calculate_daily_cap(self):
         ags = dash.models.AdGroupSource.objects.get(id=2)
@@ -258,41 +239,17 @@ class InfoBoxHelpersTest(TestCase):
         )
 
         campaign = dash.models.Campaign.objects.get(pk=1)
-        self.assertEqual(600, dash.infobox_helpers.calculate_daily_campaign_cap(
-            campaign, False))
-        self.assertEqual(600, dash.infobox_helpers.calculate_daily_campaign_cap(
-            campaign, True))
+        self.assertEqual(600, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
 
         # use raw sql to bypass model restrictions
         q = 'UPDATE dash_adgroupsettings SET state=2'
         cursor = connection.cursor()
         cursor.execute(q, [])
 
-        self.assertEqual(0, dash.infobox_helpers.calculate_daily_campaign_cap(
-            campaign, False))
-        self.assertEqual(0, dash.infobox_helpers.calculate_daily_campaign_cap(
-            campaign, True))
+        self.assertEqual(0, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
 
     @mock.patch('redshiftapi.api_breakdowns.query')
     def test_get_yesterday_adgroup_spend(self, mock_query):
-        user = zemauth.models.User.objects.get(pk=1)
-        ad_group = dash.models.AdGroup.objects.get(pk=1)
-        mock_query.return_value = [{
-            'ad_group_id': '1',
-            'e_yesterday_cost': 50,
-            'yesterday_et_cost': 60,
-            'yesterday_etfm_cost': 70,
-        }]
-
-        self.assertEqual({
-            'e_yesterday_cost': 50,
-            'yesterday_et_cost': 60,
-            'yesterday_etfm_cost': 70,
-        }, dash.infobox_helpers.get_yesterday_adgroup_spend(user, ad_group, False))
-
-    @mock.patch('redshiftapi.api_breakdowns.query')
-    def test_get_yesterday_adgroup_spend_local_currency(self, mock_query):
-        user = zemauth.models.User.objects.get(pk=1)
         ad_group = dash.models.AdGroup.objects.get(pk=1)
         mock_query.return_value = [{
             'ad_group_id': '1',
@@ -305,7 +262,7 @@ class InfoBoxHelpersTest(TestCase):
             'e_yesterday_cost': 100,
             'yesterday_et_cost': 120,
             'yesterday_etfm_cost': 140,
-        }, dash.infobox_helpers.get_yesterday_adgroup_spend(user, ad_group, True))
+        }, dash.infobox_helpers.get_yesterday_adgroup_spend(ad_group))
 
     def test_create_yesterday_spend_setting(self):
         setting = dash.infobox_helpers.create_yesterday_spend_setting(
@@ -458,18 +415,12 @@ class InfoBoxAccountHelpersTest(TestCase):
     def test_get_yesterday_account_spend(self, mock_query):
         mock_query.return_value = [self.mock_stats_yesterday[0]]
         account = self.accounts[0]
-        self.assertEqual({
-            'e_yesterday_cost': 50,
-            'yesterday_et_cost': 60,
-            'yesterday_etfm_cost': 70,
-        }, dash.infobox_helpers.get_yesterday_account_spend(account, False))
 
-        # local
         self.assertEqual({
             'e_yesterday_cost': 10,
             'yesterday_et_cost': 20,
             'yesterday_etfm_cost': 30,
-        }, dash.infobox_helpers.get_yesterday_account_spend(account, True))
+        }, dash.infobox_helpers.get_yesterday_account_spend(account))
 
         yesterday = datetime.date.today() - datetime.timedelta(days=1)
         constraints = {
@@ -978,19 +929,14 @@ class AllAccountsInfoboxHelpersTest(TestCase):
     def test_calculate_daily_account_cap(self):
         account = dash.models.Account.objects.get(pk=1)
         self.assertEqual(
-            600, dash.infobox_helpers.calculate_daily_account_cap(account, False))
-
-    def test_calculate_daily_account_cap_local_currency(self):
+            600, dash.infobox_helpers.calculate_daily_account_cap(account))
         self.assertEqual(
-            145, dash.infobox_helpers.calculate_daily_account_cap(self.account_local, False))
-        self.assertEqual(
-            174, dash.infobox_helpers.calculate_daily_account_cap(self.account_local, True))
+            174, dash.infobox_helpers.calculate_daily_account_cap(self.account_local))
 
     def test_calculate_allocated_and_available_credit(self):
         account = dash.models.Account.objects.get(pk=1)
         campaign = dash.models.Campaign.objects.get(pk=1)
-        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(
-            account, False)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
         self.assertEqual(0, available_credit)
         self.assertEqual(0, allocated_credit)
 
@@ -1006,8 +952,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
             created_by=user,
         )
 
-        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(
-            account, False)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
         self.assertEqual(100, available_credit)
 
         dash.models.BudgetLineItem.objects.create_unsafe(
@@ -1019,8 +964,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
             created_by=user,
         )
 
-        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(
-            account, False)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
         self.assertEqual(40, allocated_credit)
         self.assertEqual(60, available_credit)
 
@@ -1033,32 +977,16 @@ class AllAccountsInfoboxHelpersTest(TestCase):
             created_by=user,
         )
 
-        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(
-            account, False)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
         self.assertEqual(100, allocated_credit)
         self.assertEqual(00, available_credit)
 
     def test_calculate_allocated_and_available_credit_local_currency(self):
-        magic_mixer.blend(
-            dash.models.CreditLineItem,
-            agency=self.agency_local,
-            start_date=dates_helper.local_yesterday(),
-            end_date=dates_helper.local_today(),
-            status=dash.constants.CreditLineItemStatus.SIGNED,
-            amount=decimal.Decimal('7300.0'),
-            flat_fee_cc=0,
-            license_fee=decimal.Decimal('0.2')
-        )  # non local agency credit
-
         allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(
-            self.account_local, False)
-        self.assertEqual(0, allocated_credit)
-        self.assertEqual(7300, available_credit)
-
-        allocated_credit_local, available_credit_local = dash.infobox_helpers.calculate_allocated_and_available_credit(
-            self.account_local, True)
-        self.assertEqual(200, allocated_credit_local)
-        self.assertEqual(800, available_credit_local)
+            self.account_local
+        )
+        self.assertEqual(200, allocated_credit)
+        self.assertEqual(800, available_credit)
 
     def test_calculate_allocated_and_available_agency_credit(self):
         user = zemauth.models.User.objects.get(pk=1)
@@ -1075,8 +1003,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         account.save(r)
 
         campaign = dash.models.Campaign.objects.get(pk=1)
-        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(
-            account, False)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
         self.assertEqual(0, available_credit)
         self.assertEqual(0, allocated_credit)
 
@@ -1091,8 +1018,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
             created_by=user,
         )
 
-        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(
-            account, False)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
         self.assertEqual(100, available_credit)
 
         dash.models.BudgetLineItem.objects.create_unsafe(
@@ -1104,8 +1030,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
             created_by=user,
         )
 
-        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(
-            account, False)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
         self.assertEqual(40, allocated_credit)
         self.assertEqual(60, available_credit)
 
@@ -1118,16 +1043,14 @@ class AllAccountsInfoboxHelpersTest(TestCase):
             created_by=user,
         )
 
-        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(
-            account, False)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
         self.assertEqual(100, allocated_credit)
         self.assertEqual(00, available_credit)
 
     def test_calculate_allocated_and_available_credit_with_freed_budget(self):
         account = dash.models.Account.objects.get(pk=1)
         campaign = dash.models.Campaign.objects.get(pk=1)
-        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(
-            account, False)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
         self.assertEqual(0, available_credit)
         self.assertEqual(0, allocated_credit)
 
@@ -1143,8 +1066,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
             created_by=user,
         )
 
-        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(
-            account, False)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
         self.assertEqual(100, available_credit)
 
         dash.models.BudgetLineItem.objects.create_unsafe(
@@ -1157,7 +1079,6 @@ class AllAccountsInfoboxHelpersTest(TestCase):
             freed_cc=10 * 1e4
         )
 
-        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(
-            account, False)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
         self.assertEqual(30, allocated_credit)
         self.assertEqual(70, available_credit)

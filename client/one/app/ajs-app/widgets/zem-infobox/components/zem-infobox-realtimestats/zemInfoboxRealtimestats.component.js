@@ -51,11 +51,11 @@ angular.module('one.widgets').component('zemInfoboxRealtimestats', {
         }
 
         function formatSpend (spend) {
-            var currencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol(
+            return zemMulticurrencyService.getValueInAppropriateCurrency(
+                spend,
                 zemNavigationNewService.getActiveAccount(),
-                ['zemauth.can_see_infobox_in_local_currency']
+                4
             );
-            return $filter('decimalCurrency')(spend, currencySymbol, 4);
         }
     },
 });

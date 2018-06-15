@@ -37,4 +37,4 @@ class RealtimestatsViewsTest(RESTAPITest):
         ]
         self.assertEqual(resp_json['data'], expected)
 
-        mock_get.assert_called_with(core.entity.adgroup.AdGroup.objects.get(pk=2040), use_local_currency=False)
+        mock_get.assert_called_with(core.entity.adgroup.AdGroup.objects.get(pk=2040), use_local_currency=True)

@@ -135,35 +135,35 @@ def get_total_campaign_budgets_amount(user, campaign, until_date=None):
     return ret
 
 
-def get_yesterday_adgroup_spend(user, ad_group, use_local_currency):
+def get_yesterday_adgroup_spend(ad_group):
     constraints = {
         'ad_group_id': [ad_group.id]
     }
-    return _get_yesterday_spend('ad_group_id', constraints, use_local_currency)
+    return _get_yesterday_spend('ad_group_id', constraints)
 
 
-def get_yesterday_campaign_spend(user, campaign, use_local_currency):
+def get_yesterday_campaign_spend(campaign):
     constraints = {
         'campaign_id': [campaign.id]
     }
-    return _get_yesterday_spend('campaign_id', constraints, use_local_currency)
+    return _get_yesterday_spend('campaign_id', constraints)
 
 
-def get_yesterday_account_spend(account, use_local_currency):
+def get_yesterday_account_spend(account):
     constraints = {
         'account_id': [account.id]
     }
-    return _get_yesterday_spend('account_id', constraints, use_local_currency)
+    return _get_yesterday_spend('account_id', constraints)
 
 
 def get_yesterday_accounts_spend(accounts, use_local_currency):
     constraints = {
         'account_id': [account.id for account in accounts]
     }
-    return _get_yesterday_spend('account_id', constraints, use_local_currency)
+    return _get_yesterday_spend('account_id', constraints, use_local_currency=use_local_currency)
 
 
-def _get_yesterday_spend(breakdown, constraints, use_local_currency):
+def _get_yesterday_spend(breakdown, constraints, use_local_currency=True):
     yesterday = utils.dates_helper.local_yesterday()
     constraints.update({
         'date__gte': yesterday,
@@ -247,19 +247,19 @@ def _get_mtd_spend(breakdown, constraints, use_local_currency):
     return ret
 
 
-def calculate_daily_ad_group_cap(ad_group, use_local_currency):
+def calculate_daily_ad_group_cap(ad_group):
     """
     Daily media cap
     """
-    return _compute_daily_cap(use_local_currency, id=ad_group.id)
+    return _compute_daily_cap(id=ad_group.id)
 
 
-def calculate_daily_campaign_cap(campaign, use_local_currency):
-    return _compute_daily_cap(use_local_currency, campaign_id=campaign.id)
+def calculate_daily_campaign_cap(campaign):
+    return _compute_daily_cap(campaign_id=campaign.id)
 
 
-def calculate_daily_account_cap(account, use_local_currency):
-    return _compute_daily_cap(use_local_currency, campaign__account_id=account.id)
+def calculate_daily_account_cap(account):
+    return _compute_daily_cap(campaign__account_id=account.id)
 
 
 def calculate_available_media_account_budget(account):
@@ -275,30 +275,24 @@ def calculate_available_media_account_budget(account):
     return ret
 
 
-def calculate_available_campaign_budget(campaign, use_local_currency):
+def calculate_available_campaign_budget(campaign):
     # campaign budget based on non-depleted budget line items
     today = datetime.datetime.utcnow().date()
     budgets = _retrieve_active_budgetlineitems([campaign], today)
 
     if campaign.account.uses_bcm_v2:
-        if use_local_currency:
-            return sum(x.get_local_available_etfm_amount(today) for x in budgets)
-        else:
-            return sum(x.get_available_etfm_amount(today) for x in budgets)
+        return sum(x.get_local_available_etfm_amount(today) for x in budgets)
 
     ret = 0
     for bli in budgets:
-        if use_local_currency:
-            available_total_amount = bli.get_local_available_amount(today)
-        else:
-            available_total_amount = bli.get_available_amount(today)
+        available_total_amount = bli.get_local_available_amount(today)
         available_amount = available_total_amount * (1 - bli.credit.license_fee)
         ret += available_amount
     return ret
 
 
-def calculate_allocated_and_available_credit(account, use_local_currency):
-    credits = _retrieve_active_creditlineitems(account, use_local_currency=use_local_currency)
+def calculate_allocated_and_available_credit(account):
+    credits = _retrieve_active_creditlineitems(account)
     credit_total = credits.aggregate(
         amount_sum=Sum('amount'),
         flat_fee_sum=converters.CC_TO_DECIMAL_CURRENCY * Sum('flat_fee_cc'))
@@ -637,7 +631,7 @@ def get_entity_delivery_text(status):
         return 'Active - Running out of budget'
 
 
-def _retrieve_active_creditlineitems(account, use_local_currency=False):
+def _retrieve_active_creditlineitems(account):
     ret = dash.models.CreditLineItem.objects.filter(
         account=account
     )
@@ -645,14 +639,11 @@ def _retrieve_active_creditlineitems(account, use_local_currency=False):
         ret |= dash.models.CreditLineItem.objects.filter(
             agency=account.agency
         )
-    if use_local_currency:
-        ret = ret.filter(currency=account.currency)
-    else:
-        ret = ret.filter(currency=dash.constants.Currency.USD)
+    ret = ret.filter(currency=account.currency)
     return ret.filter_active()
 
 
-def _compute_daily_cap(use_local_currency, **filters):
+def _compute_daily_cap(**filters):
     ad_groups = dash.models.AdGroup.objects.filter(
         settings__state=dash.constants.AdGroupSettingsState.ACTIVE,
         **filters
@@ -680,10 +671,7 @@ def _compute_daily_cap(use_local_currency, **filters):
             ad_groups_with_active_b1_sources.add(adgroup_source['ad_group_id'])
             continue
 
-        if use_local_currency:
-            ret += adgroup_source['settings__local_daily_budget_cc'] or 0
-        else:
-            ret += adgroup_source['settings__daily_budget_cc'] or 0
+        ret += adgroup_source['settings__local_daily_budget_cc'] or 0
 
     for ad_group_id in ad_groups_with_active_b1_sources:
         ags = adgroup_map[ad_group_id].settings
@@ -694,31 +682,28 @@ def _compute_daily_cap(use_local_currency, **filters):
         if ags.b1_sources_group_state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
             continue
 
-        if use_local_currency:
-            ret += ags.local_b1_sources_group_daily_budget or 0
-        else:
-            ret += ags.b1_sources_group_daily_budget or 0
+        ret += ags.local_b1_sources_group_daily_budget or 0
 
     return ret
 
 
-def get_primary_campaign_goal(user, campaign, start_date, end_date, currency=dash.constants.Currency.USD, local_values=False):
+def get_primary_campaign_goal(user, campaign, start_date, end_date, currency=dash.constants.Currency.USD):
     primary_goal = dash.campaign_goals.fetch_goals([campaign.pk], end_date).first()
     if primary_goal is None or not primary_goal.primary:
         return []
 
     performance = dash.campaign_goals.get_goals_performance_campaign(
-        user, campaign, start_date, end_date, local_values)
+        user, campaign, start_date, end_date, local_values=True)
     return _get_primary_campaign_goal(user, campaign, performance, currency)
 
 
-def get_primary_campaign_goal_ad_group(user, ad_group, start_date, end_date, currency=dash.constants.Currency.USD, local_values=False):
+def get_primary_campaign_goal_ad_group(user, ad_group, start_date, end_date, currency=dash.constants.Currency.USD):
     primary_goal = dash.campaign_goals.fetch_goals([ad_group.campaign_id], end_date).first()
     if primary_goal is None or not primary_goal.primary:
         return []
 
     performance = dash.campaign_goals.get_goals_performance_ad_group(
-        user, ad_group, start_date, end_date, local_values)
+        user, ad_group, start_date, end_date, local_values=True)
     return _get_primary_campaign_goal(user, ad_group.campaign, performance, currency)
 
 

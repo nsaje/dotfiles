@@ -801,9 +801,9 @@ class AdGroupOverviewTest(TestCase):
         mock_query.return_value = [{
             'adgroup_id': 1,
             'source_id': 9,
-            'e_yesterday_cost': decimal.Decimal('0.0'),
-            'yesterday_et_cost': decimal.Decimal('0.0'),
-            'yesterday_etfm_cost': decimal.Decimal('0.0'),
+            'local_e_yesterday_cost': decimal.Decimal('0.0'),
+            'local_yesterday_et_cost': decimal.Decimal('0.0'),
+            'local_yesterday_etfm_cost': decimal.Decimal('0.0'),
         }]
 
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -912,9 +912,9 @@ class AdGroupOverviewTest(TestCase):
         )
 
         mock_query.return_value = [{
-            'e_yesterday_cost': decimal.Decimal('60.0'),
-            'yesterday_et_cost': decimal.Decimal('60.0'),
-            'yesterday_etfm_cost': decimal.Decimal('60.0'),
+            'local_e_yesterday_cost': decimal.Decimal('60.0'),
+            'local_yesterday_et_cost': decimal.Decimal('60.0'),
+            'local_yesterday_etfm_cost': decimal.Decimal('60.0'),
         }]
 
         response = self._get_ad_group_overview(1)
@@ -977,9 +977,9 @@ class CampaignOverviewTest(TestCase):
         mock_query.return_value = [{
             'campaign_id': 1,
             'source_id': 9,
-            'e_yesterday_cost': decimal.Decimal('0.0'),
-            'yesterday_et_cost': decimal.Decimal('0.0'),
-            'yesterday_etfm_cost': decimal.Decimal('0.0'),
+            'local_e_yesterday_cost': decimal.Decimal('0.0'),
+            'local_yesterday_et_cost': decimal.Decimal('0.0'),
+            'local_yesterday_etfm_cost': decimal.Decimal('0.0'),
         }]
         req = RequestFactory().get('/')
         req.user = self.user
@@ -1107,8 +1107,9 @@ class AccountOverviewTest(TestCase):
 
         mock_current_settings.return_value = settings
 
-        # do some extra setup to the account
         response = self._get_account_overview(1)
+        self.assertTrue(response['success'])
+
         settings = response['data']['basic_settings']
 
     @patch('dash.infobox_helpers.get_yesterday_account_spend')

@@ -1,30 +1,26 @@
-import {Injectable, Inject} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {downgradeInjectable} from '@angular/upgrade/static';
 
 declare var constants: any;
 
 @Injectable()
 export class MulticurrencyService {
-    constructor (@Inject('zemPermissions') private zemPermissions: any) {}
-
     getValueInAppropriateCurrency (
         value: any,
         account: any,
-        permissions: string[] = [],
         fractionSize?: number
     ): string {
-        const currency = this.getAppropriateCurrency(account, permissions);
+        const currency = this.getAppropriateCurrency(account);
         return this.getValueInCurrency(value, currency, fractionSize);
     }
 
-    getAppropriateCurrencySymbol (account: any, permissions: string[] = []): string {
-        const currency = this.getAppropriateCurrency(account, permissions);
+    getAppropriateCurrencySymbol (account: any): string {
+        const currency = this.getAppropriateCurrency(account);
         return constants.currencySymbol[currency];
     }
 
-    getAppropriateCurrency (account: any, permissions: string[] = []): string {
-        // TODO (multicurrency): Remove permission check after multicurrency is released (refactor tests too!)
-        if (account && this.zemPermissions.hasPermission(permissions)) {
+    getAppropriateCurrency (account: any): string {
+        if (account && account.data) {
             return account.data.currency;
         }
         return constants.currency.USD;
