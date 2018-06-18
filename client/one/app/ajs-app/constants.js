@@ -2189,6 +2189,11 @@ var options = {
         {name: '1 day', value: constants.conversionWindow.LEQ_1_DAY},
         {name: '7 days', value: constants.conversionWindow.LEQ_7_DAYS},
         {name: '30 days', value: constants.conversionWindow.LEQ_30_DAYS},
+    ],
+    conversionWindowsLegacy: [
+        {name: '1 day', value: constants.conversionWindow.LEQ_1_DAY},
+        {name: '7 days', value: constants.conversionWindow.LEQ_7_DAYS},
+        {name: '30 days', value: constants.conversionWindow.LEQ_30_DAYS},
         {name: '90 days', value: constants.conversionWindow.LEQ_90_DAYS},
     ],
     exportFrequency: [

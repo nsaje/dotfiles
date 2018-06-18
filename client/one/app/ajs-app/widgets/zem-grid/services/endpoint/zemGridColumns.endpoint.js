@@ -2061,7 +2061,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
                 type: 'condensed',
             };
             category.subcategories.push(subcategory);
-            angular.forEach(options.conversionWindows, function (window) {
+            angular.forEach(options.conversionWindowsLegacy, function (window) {
                 var name = pixel.name + ' ' + window.name;
                 var conversionsField = pixel.prefix + '_' + window.value;
                 var conversionsCol = angular.copy(COLUMNS.conversionCount);

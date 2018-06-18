@@ -28,6 +28,10 @@ class ConversionGoalSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
                 allow_blank=True,
                 allow_null=True,
             )
+        self.fields['conversion_window'] = restapi.serializers.fields.OutNullDashConstantField(
+            constants.ConversionWindowsLegacy,
+            source='conversion_goal.conversion_window',
+        )
         return super().to_representation(goal)
 
     goal_id = restapi.serializers.fields.PlainCharField(

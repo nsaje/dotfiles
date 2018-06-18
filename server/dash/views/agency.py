@@ -40,6 +40,8 @@ import core.goals.campaign_goal.exceptions
 import core.goals.conversion_goal.exceptions
 import core.multicurrency
 
+import restapi.campaigngoal.serializers
+
 from zemauth.models import User as ZemUser
 
 
@@ -492,10 +494,10 @@ class CampaignSettings(api_common.BaseApiView):
             'language': campaign.settings.language,
         }
         if request.user.has_perm('zemauth.can_see_campaign_goals'):
-            # TODO (refactor-workaround) Re-use restapi serializers
-            from restapi.campaigngoal.serializers import CampaignGoalsDefaultsSerializer
             response['goals'] = self.get_campaign_goals(request, campaign)
-            response['goals_defaults'] = CampaignGoalsDefaultsSerializer(core.goals.get_campaign_goals_defaults(campaign.account)).data
+            response['goals_defaults'] = restapi.campaigngoal.serializers.CampaignGoalsDefaultsSerializer(
+                core.goals.get_campaign_goals_defaults(campaign.account)
+            ).data
 
         if self.rest_proxy:
             return self.create_api_response(response)

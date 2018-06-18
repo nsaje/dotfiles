@@ -432,7 +432,7 @@ class MVJointMaster(MVMaster):
         if not pixels:
             return
 
-        conversion_windows = sorted(dash.constants.ConversionWindows.get_all())
+        conversion_windows = sorted(dash.constants.ConversionWindowsLegacy.get_all())
         for pixel in pixels:
             for conversion_window in conversion_windows:
                 pixel_key = pixel.get_view_key(conversion_window)
