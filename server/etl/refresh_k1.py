@@ -311,7 +311,8 @@ def _refresh_k1_reports(update_since, views, account_id=None, skip_vacuum=False,
                 logger.exception("Vacuum and analyze skipped due to error")
 
     # save processed data to S3 to for potential read replication
-    _handle_replicas(views, job_id, date_from, date_to, account_id=account_id, skip_vacuum=skip_vacuum, skip_analyze=skip_analyze)
+    unload_and_copy_into_replicas(
+        views, job_id, date_from, date_to, account_id=account_id, skip_vacuum=skip_vacuum, skip_analyze=skip_analyze)
 
     # while everything is being updated data is not consistent among tables
     # so might as well leave cache until refresh finishes
@@ -320,7 +321,7 @@ def _refresh_k1_reports(update_since, views, account_id=None, skip_vacuum=False,
     influx.incr('etl.refresh_k1.refresh_k1_reports_finished', 1)
 
 
-def _handle_replicas(views, job_id, date_from, date_to, account_id=None, skip_vacuum=False, skip_analyze=False):
+def unload_and_copy_into_replicas(views, job_id, date_from, date_to, account_id=None, skip_vacuum=False, skip_analyze=False):
     for mv_class in views:
         if not mv_class.IS_TEMPORARY_TABLE:
             s3_path = materialize_views.unload_table(
