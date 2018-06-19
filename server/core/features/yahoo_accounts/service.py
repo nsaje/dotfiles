@@ -23,10 +23,19 @@ class CannotRunMigrationException(Exception):
 
 
 @transaction.atomic
-def finalize_migration(account_id):
+def finalize_migration(account_id, direct_migration=False, advertiser_id=None, currency=None):
     account = core.entity.Account.objects.get(pk=account_id)
 
-    migration = utils.k1_helper.get_yahoo_migration(account_id)
+    if direct_migration:
+        migration = {
+            'status': constants.MIGRATION_STATUS_SWITCHOVER,
+            'advertiser_id': advertiser_id,
+            'currency': currency,
+            'switchover_date': str(utils.dates_helper.local_today()),
+        }
+    else:
+        migration = utils.k1_helper.get_yahoo_migration(account_id)
+
     if migration is None:
         raise CannotRunMigrationException('Migration for this account does not exist')
     if migration['status'] != constants.MIGRATION_STATUS_SWITCHOVER:
@@ -34,22 +43,35 @@ def finalize_migration(account_id):
     switchover_date = dateutil.parser.parse(migration['switchover_date']).date()
     if switchover_date > utils.dates_helper.local_today():
         raise CannotRunMigrationException('Finalize migration can only be run after switchover date')
+    if not migration['currency']:
+        raise CannotRunMigrationException('No currency set for migration')
+    if not migration['advertiser_id']:
+        raise CannotRunMigrationException('No advertiser id set for migration')
+    if account.yahoo_account.advertiser_id == migration['advertiser_id']:
+        raise CannotRunMigrationException('This account already has this advertiser id')
 
     update_yahoo_account(account, migration)
 
-    source_campaign_key_mapping = {
-        item['z1_id']: str(item['new'])
-        for item in utils.k1_helper.get_yahoo_migration_campaign_mappings(account_id)
-    }
+    if direct_migration:
+        source_campaign_key_mapping = {}
+    else:
+        source_campaign_key_mapping = {
+            item['z1_id']: str(item['new'])
+            for item in utils.k1_helper.get_yahoo_migration_campaign_mappings(account_id)
+        }
     update_source_campaign_keys(account, source_campaign_key_mapping)
 
-    source_content_ad_id_mapping = {
-        item['z1_id']: int(item['new'])
-        for item in utils.k1_helper.get_yahoo_migration_content_ad_mappings(account_id)
-    }
+    if direct_migration:
+        source_content_ad_id_mapping = {}
+    else:
+        source_content_ad_id_mapping = {
+            item['z1_id']: int(item['new'])
+            for item in utils.k1_helper.get_yahoo_migration_content_ad_mappings(account_id)
+        }
     update_source_content_ad_ids(account, source_content_ad_id_mapping)
 
-    utils.k1_helper.update_yahoo_migration(account_id, status=constants.MIGRATION_STATUS_FINISHED)
+    if not direct_migration:
+        utils.k1_helper.update_yahoo_migration(account_id, status=constants.MIGRATION_STATUS_FINISHED)
 
 
 def update_source_content_ad_ids(account, mapping):
@@ -85,9 +107,11 @@ def update_source_campaign_keys(account, mapping):
 
 
 def update_yahoo_account(account, data):
-    yahoo_account = core.features.yahoo_accounts.YahooAccount.objects.create(
+    yahoo_account, _ = core.features.yahoo_accounts.YahooAccount.objects.get_or_create(
         advertiser_id=data['advertiser_id'],
-        currency=data['currency'],
+        defaults={
+            'currency': data['currency'],
+        },
     )
     account.yahoo_account = yahoo_account
     account.save(None)
