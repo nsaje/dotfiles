@@ -158,3 +158,12 @@ class OutbrainTest(K1APIBaseTest):
         ag = dash.models.AdGroup.objects.get(pk=3)
         self.assertEqual(ag.campaign.account.outbrain_marketer_id, data['response'])
         mock_sendmail.assert_called_with(3)
+
+    def test_get_outbrain_marketer_id_none_left(self):
+        dash.models.OutbrainAccount.objects.all().delete()
+        response = self.client.get(
+            reverse('k1api.outbrain_marketer_id'),
+            {'ad_group_id': '3'}
+        )
+        data = json.loads(response.content)
+        self.assertEqual('No unused Outbrain accounts available.', data['error'])

@@ -63,7 +63,7 @@ class OutbrainMarketerIdView(K1APIView):
                 email_helper.send_outbrain_accounts_running_out_email(len(unused_accounts))
             outbrain_account = unused_accounts[0]
         except IndexError:
-            raise Exception('No unused Outbrain accounts available.')
+            return self.response_error('No unused Outbrain accounts available.', 404)
 
         outbrain_account.used = True
         outbrain_account.save()
