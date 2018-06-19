@@ -28,7 +28,7 @@ class VideoAssetSerializer(serializers.ModelSerializer):
     preview_url = fields.CharField(read_only=True, source='get_preview_url')
     name = restapi.serializers.fields.PlainCharField()
     upload = UploadInfoSerializer(required=False)
-    vast_url = restapi.serializers.fields.PlainCharField()
+    vast_url = restapi.serializers.fields.PlainCharField(source='get_vast_url')
 
 
 class VideoAssetPostSerializer(serializers.Serializer):

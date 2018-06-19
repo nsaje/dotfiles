@@ -87,6 +87,9 @@ ua-parser==0.7.3
 # rss parser for product sync
 feedparser==5.2.1
 
+# defusedxml for safer xml parsing
+defusedxml==0.5.0
+
 # development
 django-extensions==1.9.7
 django-queryinspect==1.0.0

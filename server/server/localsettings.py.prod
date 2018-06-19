@@ -322,6 +322,7 @@ LAMBDA_VIDEO_UPLOAD_SIGN_KEY = Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8
 LAMBDA_ENVIRONMENT = 'prod'
 LAMBDA_CALLBACK_HOST = 'https://one-cb.zemanta.com/'
 VIDEO_PREVIEW_URL = 'https://videos.zemanta.com/{filename}'
+VAST_URL = 'https://s3.amazonaws.com/zemvideos/vast/{filename}'
 
 # Slack hooks
 SLACK_INCOMING_HOOK_URL = Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAK8wgawGCSqGSIb3DQEHBqCBnjCBmwIBADCBlQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAy7uIydvn69NTLet/ICARCAaIEVbxdytOEy1elcsyvo56hsNHsmOXFPiBVvCbSjsYLr2rcRjjehxeYJR2kL0xTuLujyaRr2ACzkyH9/L8oRI+EytmZ0ELDeB2KyfQJWD3zX6GaMPcDUzeNdb26HMep3Qm+/Qo21tqAU').get().decode('utf-8')

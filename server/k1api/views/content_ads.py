@@ -56,6 +56,7 @@ class ContentAdsView(K1APIView):
                     'id': str(video_asset_obj.id),
                     'duration': video_asset_obj.duration,
                     'formats': video_asset_obj.formats,
+                    'vasturi': video_asset_obj.get_vast_url(),
                 }
             content_ad = {
                 'id': item.id,

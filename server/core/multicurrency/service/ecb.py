@@ -1,5 +1,5 @@
 import decimal
-from xml import etree
+from defusedxml import ElementTree
 import requests
 
 
@@ -8,7 +8,7 @@ ECB_EXCHANGE_RATES_XML = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-dai
 
 def fetch_ecb_exchange_rates():
     r = requests.get(ECB_EXCHANGE_RATES_XML)
-    root = etree.ElementTree.fromstring(r.content)
+    root = ElementTree.fromstring(r.content)
 
     namespaces = {'xmlns': 'http://www.ecb.int/vocabulary/2002-08-01/eurofxref'}
     iterator = root.iterfind('./xmlns:Cube/xmlns:Cube/xmlns:Cube', namespaces=namespaces)

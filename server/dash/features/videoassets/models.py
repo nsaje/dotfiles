@@ -33,8 +33,8 @@ def validate_format(item):
 
 class VideoAssetManager(models.Manager):
 
-    def create(self, type, account, name='', status=constants.VideoAssetStatus.NOT_UPLOADED, vast_url=''):
-        video_asset = VideoAsset(type=type, account=account, name=name, status=status, vast_url=vast_url)
+    def create(self, type, account, **kwargs):
+        video_asset = VideoAsset(type=type, account=account, **kwargs)
         video_asset.save()
         return video_asset
 
@@ -91,6 +91,13 @@ class VideoAsset(models.Model):
             }
         )
         return url
+
+    def get_vast_url(self, ready_for_use=True):
+        if ready_for_use and self.status != constants.VideoAssetStatus.READY_FOR_USE:
+            return None
+        if self.type == constants.VideoAssetType.VAST_UPLOAD:
+            return settings.VAST_URL.format(filename=self.id)
+        return self.vast_url
 
     def get_status_message(self):
         return constants.VideoAssetStatus.get_text(self.status)

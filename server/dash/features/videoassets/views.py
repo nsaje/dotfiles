@@ -33,11 +33,13 @@ class VideoAssetListView(VideoAssetBaseView):
             video_asset.upload = upload_info
             return self.response_ok(serializers.VideoAssetSerializer(video_asset).data)
         elif data['upload']['type'] == constants.VideoAssetType.VAST_URL:
-            #  raise rest_framework.serializers.ValidationError("Not a valid vast file url")
-            video_asset = service.create_asset_from_vast_url(account, data['vast_url'])
-            return self.response_ok(serializers.VideoAssetSerializer(video_asset).data)
+            try:
+                video_asset = service.create_asset_from_vast_url(account, data['vast_url'])
+                return self.response_ok(serializers.VideoAssetSerializer(video_asset).data)
+            except service.ParseVastError as e:
+                raise rest_framework.serializers.ValidationError(str(e))
         else:
-            return self.response_error("Unsupported upload type")
+            raise rest_framework.serializers.ValidationError('Unsupported upload type')
 
 
 class VideoAssetView(VideoAssetBaseView):
@@ -60,10 +62,21 @@ class VideoAssetView(VideoAssetBaseView):
                 video_asset.status == constants.VideoAssetStatus.NOT_UPLOADED and
                 data['status'] == constants.VideoAssetStatus.PROCESSING):
 
-            video_asset.status = constants.VideoAssetStatus.READY_FOR_USE
-            video_asset.save()
+            try:
+                duration, formats = service.parse_vast_from_url(video_asset.get_vast_url(ready_for_use=False))
 
-            serializer = serializers.VideoAssetSerializer(video_asset)
-            return self.response_ok(serializer.data)
+                video_asset.status = constants.VideoAssetStatus.READY_FOR_USE
+                video_asset.duration = duration
+                video_asset.formats = formats
+                video_asset.save()
+
+                serializer = serializers.VideoAssetSerializer(video_asset)
+                return self.response_ok(serializer.data)
+            except service.ParseVastError as e:
+                video_asset.status = constants.VideoAssetStatus.PROCESSING_ERROR
+                serializer = serializers.VideoAssetSerializer(video_asset)
+                data = serializer.data
+                data['error_message'] = str(e)
+                return self.response_ok(data)
         else:
-            return self.response_error("Unsupported asset update")
+            raise rest_framework.serializers.ValidationError('Unsupported asset update')

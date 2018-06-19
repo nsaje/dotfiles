@@ -191,6 +191,7 @@ class ContentAdsTest(K1APIBaseTest):
             'id': str(video_asset.id),
             'duration': 31,
             'formats': formats,
+            'vasturi': None,
         }
         self.assertEqual(data[0]['video_asset'], expected_video_asset)
 

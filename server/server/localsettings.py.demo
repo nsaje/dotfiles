@@ -255,6 +255,7 @@ LAMBDA_VIDEO_UPLOAD_SIGN_KEY = Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8
 LAMBDA_CALLBACK_HOST = 'https://{INSTANCE_NAME}.demo.zemanta.com/'.format(INSTANCE_NAME=os.environ.get('INSTANCE_NAME', 'demo123'))
 LAMBDA_ENVIRONMENT = 'demo'
 VIDEO_PREVIEW_URL = 'https://s3.amazonaws.com/zemvideos/transcoded/{filename}'
+VAST_URL = 'https://s3.amazonaws.com/zemvideos/vast/{filename}'
 
 # Slack hooks
 SLACK_INCOMING_HOOK_URL = Secret('').get().decode('utf-8')
