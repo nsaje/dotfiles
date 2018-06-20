@@ -204,7 +204,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             field: 'default_cs_representative',
             type: zemGridConstants.gridColumnTypes.TEXT,
             totalRow: false,
-            help: 'Customer Success representative responsible for the campaign and the communication with the client.',
+            help: 'Customer Success Manager responsible for the campaign and the communication with the client.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_managers_in_accounts_table',

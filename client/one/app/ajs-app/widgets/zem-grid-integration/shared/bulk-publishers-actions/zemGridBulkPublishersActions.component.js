@@ -11,7 +11,7 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
             'This publisher can\'t be blacklisted because the media source ' +
             'doesn\'t support publisher blacklisting or the limit of max ' +
             'blacklisted publisher on this particular media source has been reached.\n' +
-            'Contact your account manager for further details.';
+            'Contact your Customer Success Manager for further details.';
 
         var $ctrl = this;
 

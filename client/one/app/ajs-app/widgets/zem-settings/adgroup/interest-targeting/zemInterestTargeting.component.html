@@ -1,6 +1,6 @@
 <div class="form" ng-if="!$ctrl.hasPermission('zemauth.can_set_interest_targeting')">
     <div class="form__title">Interest targeting</div>
-    <div class="form__text">Define your audience by including or excluding interests and demographics. This is a read-only section. Please contact your Zemanta Account Manager if you want to set up or change interest targeting.</div>
+    <div class="form__text">Define your audience by including or excluding interests and demographics. This is a read-only section. Please contact your Zemanta Customer Success Manager if you want to set up or change interest targeting.</div>
     <div class="two-columns-list" ng-if="$ctrl.entity.settings.interestTargeting.length || $ctrl.entity.settings.exclusionInterestTargeting.length">
         <div class="two-columns-list__container" ng-if="$ctrl.entity.settings.interestTargeting.length > 0"
              ng-class="{'two-columns-list__container--half' : $ctrl.entity.settings.interestTargeting.length > 0 && $ctrl.entity.settings.exclusionInterestTargeting.length > 0 }">

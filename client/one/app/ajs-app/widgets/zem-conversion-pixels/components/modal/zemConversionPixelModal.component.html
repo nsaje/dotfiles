@@ -42,11 +42,11 @@
 
     <div ng-if="$ctrl.hasPermission('zemauth.account_custom_audiences_view')" class="m-b">
         <div class="message message--info message--with-icon" ng-if="!$ctrl.audiencePixel">
-            Only one pixel can be used for building custom audiences. This choice is permanent. If you want to change this, please contact your Account Manager.
+            Only one pixel can be used for building custom audiences. This choice is permanent. If you want to change this, please contact your Customer Success Manager.
         </div>
 
         <div class="message message--info message--with-icon" ng-if="$ctrl.audiencePixel && $ctrl.audiencePixel.id != $ctrl.pixel.id">
-            Only one pixel can be used for building custom audiences. You have already set pixel {{ $ctrl.audiencePixel.name }} for audience building, if you want to change this, please contact your Account Manager.
+            Only one pixel can be used for building custom audiences. You have already set pixel {{ $ctrl.audiencePixel.name }} for audience building, if you want to change this, please contact your Customer Success Manager.
         </div>
     </div>
 
