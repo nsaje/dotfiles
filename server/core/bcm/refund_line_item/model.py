@@ -4,20 +4,14 @@ from django.conf import settings
 import core.common
 import utils.demo_anonymizer
 
+from . import instance
 from . import manager
 
 
-class RefundLineItem(core.common.FootprintModel):
+class RefundLineItem(instance.RefundLineItemInstanceMixin, core.common.FootprintModel):
 
     class Meta:
         app_label = 'dash'
-
-    history_fields = [
-        'start_date',
-        'end_date',
-        'amount',
-        'comment',
-    ]
 
     _demo_fields = {
         'comment': utils.demo_anonymizer.fake_io,

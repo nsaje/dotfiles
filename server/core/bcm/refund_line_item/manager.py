@@ -10,5 +10,5 @@ class RefundLineItemManager(core.common.BaseManager):
             created_by=request.user,
             **kwargs,
         )
-        refund.save()
+        refund.save(request)
         return refund
