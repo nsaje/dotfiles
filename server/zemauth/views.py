@@ -11,14 +11,32 @@ from django.template.response import TemplateResponse
 from django.shortcuts import resolve_url
 
 from ratelimit.decorators import ratelimit
-
 import influx
 
-from . import gauth
 from utils import email_helper
+import utils.rest_common.authentication
+
 from zemauth.models import User
 from zemauth import forms
 from zemauth import devices
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import permissions
+
+from . import gauth
+from . import serializers
+
+
+class UserView(APIView):
+    authentication_classes = [
+        utils.rest_common.authentication.OAuth2Authentication,
+        utils.rest_common.authentication.SessionAuthentication,
+    ]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        return Response(serializers.UserSerializer(request.user).data)
 
 
 @influx.timer('auth.signin_response_time')

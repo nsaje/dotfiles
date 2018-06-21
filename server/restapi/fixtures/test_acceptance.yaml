@@ -38,7 +38,8 @@
   pk: 1
   fields: {client_id: ZCSx2WjxHxxV6rKZC3hdb6ejO8GLwcdUtltmpt9J, user: 1, redirect_uris: '',
     client_type: confidential, authorization_grant_type: client-credentials, client_secret: u7plEd04mHc11CckS9dojhYiwaWzNqeB1w9KgMxwe5rkW6Ss7mTRIx6Pd8t7YvdYc7bC1025H74s98E2eqhIcBlvBlHsc5vAp9TJMP2e8y6kyJKQUWkpUirFRl3Os2fC,
-    name: Test application, skip_authorization: false}
+    name: Test application, skip_authorization: false, created: '2015-09-23T09:57:22', updated: '2015-09-23T09:57:22'}
+
 
 # test agency
 -   fields:

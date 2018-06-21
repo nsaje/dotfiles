@@ -79,6 +79,7 @@ urlpatterns += [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^oauth2callback', zemauth.views.google_callback, name='zemauth.views.google_callback'),
     url(r'^supply_dash/', login_required(dash.views.views.supply_dash_redirect), name='supply_dash_redirect'),
+    url(r'^user/', zemauth.views.UserView.as_view(), name='user_details')
 ]
 
 # Oauth2 provider

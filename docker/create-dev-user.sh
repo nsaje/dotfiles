@@ -18,6 +18,22 @@ fi
 cat <<EOF | python $DIR/manage.py shell
 from zemauth.models import User
 from django.contrib.auth.models import Group
+import oauth2_provider.models
+
 u = User.objects.create_superuser('test@test.com', 'test123')
 u.groups.set(Group.objects.all())
+
+sspd_u = User.objects.get_or_create_service_user('sspd')
+sspd_u.groups.set(Group.objects.all())
+
+oauth2_provider.models.Application.objects.get_or_create(
+    client_id='GQ3eM9CBHabjaiCDsRh3Yro3srXzCqa4rUf1vYvQ',
+    user=sspd_u,
+    redirect_uris='http://localhost:8080/login',
+    client_type='confidential',
+    authorization_grant_type='authorization-code',
+    client_secret='jTZis7Hx8yAhxelQQsqgzrUMEu2MKVtKfSM2oSrZdqYgpTrqZyREaIJOGOxJfCT81iLGoYU3eQBEhIR5m4Uogv5JPG7UXYDZ6Mdjf0mDewpNIX1M6Y5EsDqHgvyLyvKV',
+    name='SSPDashboard',
+    skip_authorization=False
+)
 EOF

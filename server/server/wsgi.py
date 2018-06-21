@@ -21,6 +21,5 @@ if socket.socket is gevent.socket.socket:  # if running in gevent
     import psycogreen.gevent
     psycogreen.gevent.patch_psycopg()
 
-
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
