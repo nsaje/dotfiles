@@ -51,15 +51,16 @@ def get_autopilot_entities(ad_group=None, campaign=None):
               dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC]
     ad_groups = (
         dash.models.AdGroup.objects.all()
-        .filter_active()
         .filter(Q(settings__autopilot_state__in=states) | Q(campaign__settings__autopilot=True))
         .select_related('settings', 'campaign__settings', 'campaign__account')
         .distinct()
     )
     if ad_group is not None:
         ad_groups = ad_groups.filter(id=ad_group.id)
-    if campaign is not None:
+    elif campaign is not None:
         ad_groups = ad_groups.filter(campaign=campaign)
+    else:
+        ad_groups = ad_groups.filter_active()
 
     campaignstop_states = campaignstop.get_campaignstop_states(
         dash.models.Campaign.objects.filter(adgroup__in=ad_groups)
@@ -77,16 +78,13 @@ def get_autopilot_entities(ad_group=None, campaign=None):
         ags_per_ag_id[ags.ad_group_id].append(ags)
 
     data = defaultdict(dict)
-    for ad_group in ad_groups:
-        if not campaignstop_states[ad_group.campaign.id]['allowed_to_run']:
+    for ag in ad_groups:
+        if _should_exclude_ad_group(ag, campaignstop_states, ad_group, campaign):
             continue
 
-        if ad_group.get_running_status(ad_group.settings) != dash.constants.AdGroupRunningStatus.ACTIVE:
-            continue
-
-        ags = ags_per_ag_id[ad_group.id]
-        if (ad_group.settings.b1_sources_group_enabled and
-           ad_group.settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.INACTIVE):
+        ags = ags_per_ag_id[ag.id]
+        if (ag.settings.b1_sources_group_enabled and
+           ag.settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.INACTIVE):
             ags = _exclude_b1_ad_group_sources(ags)
 
         if len(ags) == 0:
@@ -94,11 +92,29 @@ def get_autopilot_entities(ad_group=None, campaign=None):
 
         # cache optimization (loading adgroup source and adgroup settings in single query is too slow)
         for ad_group_source in ags:
-            ad_group_source.ad_group = ad_group
+            ad_group_source.ad_group = ag
 
-        data[ad_group.campaign][ad_group] = ags
+        data[ag.campaign][ag] = ags
 
     return data
+
+
+def _should_exclude_ad_group(ag, campaignstop_states, ad_group, campaign):
+    # always process on setting change and not campaign autopilot
+    if (ad_group is not None or campaign is not None) and not ag.campaign.settings.autopilot:
+        return False
+
+    # do not process when adgroup not running
+    if ag.get_running_status(ag.settings) != dash.constants.AdGroupRunningStatus.ACTIVE:
+        return True
+
+    # on setting change and campaign autopilot process everything but paused adgroups
+    if ad_group is not None or campaign is not None:
+        return False
+
+    # do not process adgroups stopped by campaign stop on daily runs
+    if not campaignstop_states[ag.campaign.id]['allowed_to_run']:
+        return True
 
 
 def _exclude_b1_ad_group_sources(ad_group_sources):

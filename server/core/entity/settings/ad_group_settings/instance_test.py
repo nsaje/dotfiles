@@ -8,6 +8,7 @@ import core.entity
 import core.source
 from dash import constants
 import utils.exc
+from utils import dates_helper
 
 from . import model
 
@@ -205,16 +206,22 @@ class InstanceTest(TestCase):
         mock_autopilot.assert_called_once_with(self.ad_group, send_mail=False)
 
     @patch('automation.autopilot.recalculate_budgets_ad_group')
-    def test_recalculate_autopilot_change_state(self, mock_autopilot):
-        self.ad_group.settings.update_unsafe(None, state=constants.AdGroupSettingsState.ACTIVE)
-        self.ad_group.settings.update(None, state=constants.AdGroupSettingsState.INACTIVE)
-        mock_autopilot.assert_called_once_with(self.ad_group, send_mail=True)
-
-    @patch('automation.autopilot.recalculate_budgets_ad_group')
     def test_recalculate_autopilot_campaign_change_state(self, mock_autopilot):
         self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
         self.ad_group.settings.update_unsafe(None, state=constants.AdGroupSettingsState.ACTIVE)
         self.ad_group.settings.update(None, state=constants.AdGroupSettingsState.INACTIVE)
+        mock_autopilot.assert_called_once_with(self.ad_group, send_mail=False)
+
+    @patch('automation.autopilot.recalculate_budgets_ad_group')
+    def test_recalculate_autopilot_campaign_change_start_date(self, mock_autopilot):
+        self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
+        self.ad_group.settings.update(None, start_date=dates_helper.day_after(self.ad_group.settings.start_date))
+        mock_autopilot.assert_called_once_with(self.ad_group, send_mail=False)
+
+    @patch('automation.autopilot.recalculate_budgets_ad_group')
+    def test_recalculate_autopilot_campaign_change_end_date(self, mock_autopilot):
+        self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
+        self.ad_group.settings.update(None, end_date=dates_helper.utc_today())
         mock_autopilot.assert_called_once_with(self.ad_group, send_mail=False)
 
     @patch('automation.autopilot.recalculate_budgets_ad_group')
