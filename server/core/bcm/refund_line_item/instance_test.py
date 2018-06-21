@@ -17,11 +17,13 @@ class RefundLineItemInstanceMixinTest(TestCase):
     def test_save_history(self):
         request = magic_mixer.blend_request_user()
         account = magic_mixer.blend(core.entity.Account)
+        local_yesterday = dates_helper.local_yesterday()
+        local_today = dates_helper.local_today()
         credit = magic_mixer.blend(
             core.bcm.CreditLineItem,
             account=account,
-            start_date=dates_helper.local_yesterday(),
-            end_date=dates_helper.local_today(),
+            start_date=local_yesterday,
+            end_date=local_today,
             status=constants.CreditLineItemStatus.SIGNED,
             amount=1000,
             license_fee=Decimal('0.2'),
@@ -42,8 +44,8 @@ class RefundLineItemInstanceMixinTest(TestCase):
             'id': refund.id,
             'account': account.id,
             'credit': credit.id,
-            'start_date': '2018-06-19',
-            'end_date': '2018-06-20',
+            'start_date': local_yesterday.isoformat(),
+            'end_date': local_today.isoformat(),
             'amount': 100,
             'comment': '',
             'created_by': request.user.id,
@@ -57,8 +59,8 @@ class RefundLineItemInstanceMixinTest(TestCase):
             'id': refund.id,
             'account': account.id,
             'credit': credit.id,
-            'start_date': '2018-06-19',
-            'end_date': '2018-06-20',
+            'start_date': local_yesterday.isoformat(),
+            'end_date': local_today.isoformat(),
             'amount': 200,
             'comment': '',
             'created_by': request.user.id,
