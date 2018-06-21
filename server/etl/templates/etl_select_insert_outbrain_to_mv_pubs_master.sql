@@ -98,11 +98,13 @@ FROM
       GROUP BY 1, 2, 3, 4
     ) a
     natural full outer join (
-      SELECT * FROM postclickstats
+      SELECT date, ad_group_id, publisher, SUM(visits) as visits, SUM(new_visits) as new_visits, SUM(bounced_visits) as bounced_visits, SUM(pageviews) as pageviews, SUM(total_time_on_site) as total_time_on_site, SUM(users) as users
+      FROM postclickstats
       WHERE source='outbrain' AND date BETWEEN %(date_from)s AND %(date_to)s
             {% if account_id %}
                 AND ad_group_id=ANY(%(ad_group_id)s)
             {% endif %}
+      GROUP BY 1, 2, 3
     ) b
     natural full outer join (
       SELECT date, source_id, ad_group_id, publisher FROM mv_touchpointconversions
