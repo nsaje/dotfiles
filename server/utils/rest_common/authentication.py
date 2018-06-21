@@ -2,9 +2,6 @@ from rest_framework.authentication import BaseAuthentication
 from rest_framework.authentication import SessionAuthentication  # noqa
 from oauth2_provider.oauth2_backends import get_oauthlib_core
 
-from utils import request_signer
-from zemauth.models import User
-
 
 class OAuth2Authentication(BaseAuthentication):
     """
@@ -41,29 +38,3 @@ class OAuth2Authentication(BaseAuthentication):
         Bearer is the only finalized type currently
         """
         return 'Bearer realm="%s"' % self.www_authenticate_realm
-
-
-def gen_service_authentication(service_name, keys):
-    class RequestSignerAuthentication(BaseAuthentication):
-        def authenticate(self, request):
-            try:
-                request_signer.verify_wsgi_request(request, keys)
-                user = User.objects.get_or_create_service_user(service_name)
-                return (user, None)
-            except Exception:
-                return None
-    return RequestSignerAuthentication
-
-
-def gen_oauth_authentication(service_name):
-    class GeneratedOAuth2Authentication(OAuth2Authentication):
-
-        def authenticate(self, request):
-            status = super(GeneratedOAuth2Authentication, self).authenticate(request)
-            if not status:
-                return None
-            user, token = status
-            if user.email != '{}@service.zemanta.com'.format(service_name):
-                return None
-            return user, token
-    return GeneratedOAuth2Authentication

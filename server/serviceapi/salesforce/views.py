@@ -3,9 +3,8 @@ import django.db.utils
 import influx
 from rest_framework.serializers import ValidationError
 
-from .. import base
+from .. import base, authentication
 from . import serializers, service
-from utils.rest_common import authentication
 
 SERVICE_NAME = 'salesforce'
 

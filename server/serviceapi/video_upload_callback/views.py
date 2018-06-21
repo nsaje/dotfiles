@@ -5,7 +5,7 @@ import dash.features.videoassets.models
 import restapi.serializers.fields
 
 from .. import base
-from utils.rest_common import authentication
+from .. import authentication
 
 
 SERVICE_NAME = 'l1-video-upload'

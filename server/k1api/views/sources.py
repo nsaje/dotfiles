@@ -1,3 +1,4 @@
+import json
 import logging
 
 from django.db import transaction
@@ -47,7 +48,7 @@ class SourcePixelsView(K1APIView):
 
     @transaction.atomic
     def put(self, request):
-        data = request.data
+        data = json.loads(request.body)
         pixel_id = data['pixel_id']
         source_type = data['source_type']
 

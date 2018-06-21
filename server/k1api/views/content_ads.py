@@ -1,3 +1,4 @@
+import json
 import logging
 
 from django.http import Http404
@@ -176,7 +177,7 @@ class ContentAdSourcesView(K1APIView):
     def put(self, request):
         content_ad_id = request.GET.get('content_ad_id')
         source_slug = request.GET.get('source_slug')
-        data = request.data
+        data = json.loads(request.body)
 
         content_ad_source = dash.models.ContentAdSource.objects \
             .filter(content_ad_id=content_ad_id) \

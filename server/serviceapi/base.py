@@ -6,7 +6,7 @@ from djangorestframework_camel_case.parser import CamelCaseJSONParser
 
 
 class ServiceAPIBaseView(APIView):
-    # override with appropriate utils.rest_common.authentication.gen_service_authentication(...)
+    # override with appropriate authentication.gen_service_authentication(...)
     authentication_classes = []
 
     renderer_classes = [CamelCaseJSONRenderer]
