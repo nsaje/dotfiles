@@ -47,8 +47,10 @@ class ThrottlingTests(TestCase):
     def ensure_is_throttled(self, view, expect):
         user_a = magic_mixer.blend_user()
         user_b = magic_mixer.blend_user()
+        user_service = magic_mixer.blend_user()
         user_a.email = 'a@x.com'
         user_b.email = 'b@x.com'
+        user_service.email = 'test-service@service.zemanta.com'
 
         request = self.factory.get('/')
         request.user = user_a
@@ -63,3 +65,9 @@ class ThrottlingTests(TestCase):
         self.assertEqual(response.status_code, 200)
         response = view.as_view()(request)
         self.assertEqual(response.status_code, 429)
+
+        request = self.factory.get('/')
+        request.user = user_service
+        for dummy in range(10):
+            response = view.as_view()(request)
+            self.assertEqual(response.status_code, 200)
