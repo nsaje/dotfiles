@@ -3,22 +3,28 @@ import time
 
 import influx
 from django.conf import settings
-from django.http import JsonResponse, Http404
-from django.views.generic import View
+from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.views import APIView
+from rest_framework import permissions
 
-from utils import request_signer
+from utils.rest_common import authentication
 from utils import influx_helper
 
 logger = logging.getLogger(__name__)
 
 
-class K1APIView(View):
+class K1APIView(APIView):
+    authentication_classes = (
+        authentication.gen_oauth_authentication('sspd'),
+        authentication.gen_service_authentication('b1', settings.BIDDER_API_SIGN_KEY),
+        authentication.gen_service_authentication('k1', settings.K1_API_SIGN_KEY),
+    )
+    permission_classes = (permissions.IsAuthenticated,)
 
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
-        self._validate_signature(request)
         start_time = time.time()
         response = super(K1APIView, self).dispatch(request, *args, **kwargs)
         influx.timing(
@@ -30,14 +36,6 @@ class K1APIView(View):
             status=str(response.status_code),
         )
         return response
-
-    @staticmethod
-    def _validate_signature(request):
-        try:
-            request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY + settings.BIDDER_API_SIGN_KEY)
-        except request_signer.SignatureError:
-            logger.exception('Invalid K1 signature.')
-            raise Http404
 
     @staticmethod
     def response_ok(content):
