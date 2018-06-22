@@ -17,6 +17,7 @@ from django.contrib.admin import SimpleListFilter
 from import_export import resources, fields
 from import_export.admin import ExportMixin
 
+from dash.features.custom_flags.slack_logger import SlackLoggerMixin
 from zemauth.models import User as ZemUser
 
 from dash import constants
@@ -28,7 +29,7 @@ from dash import cpc_constraints
 import utils.k1_helper
 import utils.email_helper
 import utils.redirector_helper
-
+import utils.slack
 from automation import campaignstop
 from utils.admin_common import SaveWithRequestMixin
 
@@ -342,7 +343,7 @@ class AgencyResource(resources.ModelResource):
         return constants.AccountType.get_text(obj.default_account_type)
 
 
-class AgencyAdmin(ExportMixin, admin.ModelAdmin):
+class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
     search_fields = ['name']
     form = dash_forms.AgencyAdminForm
     list_display = (
@@ -399,6 +400,7 @@ class AgencyAdmin(ExportMixin, admin.ModelAdmin):
             formset.save()
 
     def save_model(self, request, obj, form, change):
+        old_obj = models.Agency.objects.get(id=obj.id)
         current_settings = obj.get_current_settings()
         new_settings = current_settings.copy_settings()
         for field in form.SETTINGS_FIELDS:
@@ -418,8 +420,10 @@ class AgencyAdmin(ExportMixin, admin.ModelAdmin):
             models.AdGroup.objects.filter(campaign__account__agency_id=obj.id).values_list('id', flat=True),
             'AgencyAdmin.save_model'
         )
+        self.log_custom_flags_event_to_slack(old_obj, obj)
 
-    def render_change_form(self, request, context, *args, **kwargs):
+
+def render_change_form(self, request, context, *args, **kwargs):
         context['adminform'].form.fields['sales_representative'].queryset = (
             ZemUser.objects.get_users_with_perm('campaign_settings_sales_rep').filter(
                 is_active=True
@@ -457,17 +461,18 @@ class CampaignInline(admin.TabularInline):
     raw_id_fields = ('default_whitelist', 'default_blacklist', 'account', 'settings')
 
 
-class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
+class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
     form = dash_forms.AccountAdminForm
     search_fields = ['name']
     list_display = (
+        'id',
         'name',
         'created_dt',
         'modified_dt',
         'salesforce_url',
         'uses_bcm_v2',
     )
-    readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'uses_bcm_v2')
+    readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'uses_bcm_v2', 'id')
     exclude = ('users', 'settings')
     raw_id_fields = ('default_whitelist', 'default_blacklist', 'agency', 'settings')
     inlines = (AccountUserInline, CampaignInline)
@@ -492,11 +497,13 @@ class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
             formset.save()
 
     def save_model(self, request, obj, form, change):
+        old_obj = models.Account.objects.get(id=obj.id)
         obj.save(request)
         utils.k1_helper.update_ad_groups(
             models.AdGroup.objects.filter(campaign__account_id=obj.id).values_list('id', flat=True),
             'AccountAdmin.save_model'
         )
+        self.log_custom_flags_event_to_slack(old_obj, obj)
 
 
 # Campaign
@@ -513,14 +520,15 @@ class AdGroupInline(admin.TabularInline):
     raw_id_fields = ('default_whitelist', 'default_blacklist')
 
 
-class CampaignAdmin(admin.ModelAdmin):
+class CampaignAdmin(SlackLoggerMixin, admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
+        'id',
         'name',
         'created_dt',
         'modified_dt',
     )
-    readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
+    readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'id')
     raw_id_fields = ('default_whitelist', 'default_blacklist', 'account')
     exclude = ('settings',)
     inlines = (AdGroupInline,)
@@ -528,12 +536,14 @@ class CampaignAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         old_obj = models.Campaign.objects.get(id=obj.id)
+        obj.save()
         if obj.real_time_campaign_stop and not old_obj.real_time_campaign_stop:
             campaignstop.notify_initialize(obj)
         utils.k1_helper.update_ad_groups(
             models.AdGroup.objects.filter(campaign_id=obj.id).values_list('id', flat=True),
             'CampaignAdmin.save_model'
         )
+        self.log_custom_flags_event_to_slack(old_obj, obj)
 
     def save_formset(self, request, form, formset, change):
         if formset.model == models.AdGroup:
@@ -714,13 +724,14 @@ class IsArchivedFilter(admin.SimpleListFilter):
         return queryset.filter(pk__in=ad_group_ids)
 
 
-class AdGroupAdmin(admin.ModelAdmin):
+class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
 
     class Media:
         css = {'all': ('css/admin/style.css',)}
 
     search_fields = ['name']
     list_display = (
+        'id',
         'name',
         'campaign_',
         'account_',
@@ -737,6 +748,7 @@ class AdGroupAdmin(admin.ModelAdmin):
         'default_whitelist',
     )
     readonly_fields = (
+        'id',
         'created_dt',
         'modified_dt',
         'modified_by',
@@ -775,6 +787,7 @@ class AdGroupAdmin(admin.ModelAdmin):
     is_archived_.boolean = True
 
     def save_model(self, request, ad_group, form, change):
+        old_obj = models.AdGroup.objects.get(id=ad_group.id)
         current_settings = ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
         for field in form.SETTINGS_FIELDS:
@@ -791,6 +804,7 @@ class AdGroupAdmin(admin.ModelAdmin):
             utils.email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
         ad_group.save(request)
         utils.k1_helper.update_ad_group(ad_group.pk, msg='AdGroupAdmin.save_model')
+        self.log_custom_flags_event_to_slack(old_obj, ad_group)
 
     def account_(self, obj):
         return '<a href="{account_url}">{account}</a>'.format(
