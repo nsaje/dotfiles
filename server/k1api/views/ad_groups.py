@@ -25,7 +25,7 @@ class AdGroupsView(K1APIView):
     """
     Returns a list of non-archived ad groups together with their current settings.
 
-    Filterable by ad_group_id, source_type and slug.
+    Filterable by ad_group_ids, source_type and slug.
     """
 
     @db_for_reads.use_read_replica()

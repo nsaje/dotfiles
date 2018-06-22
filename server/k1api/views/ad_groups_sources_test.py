@@ -10,9 +10,11 @@ import dash.features.geolocation
 import dash.features.ga
 import dash.constants
 import dash.models
+import dash.features.custom_flags.constants
 
 import logging
 
+from dash.features import custom_flags
 from utils.magic_mixer import magic_mixer
 from utils import dates_helper
 
@@ -262,3 +264,26 @@ class AdGroupsSourcesTest(K1APIBaseTest):
             ad_group_source.refresh_from_db()
             self.assertEqual(ad_group_source.blockers, {})
             mock_save.assert_not_called()
+
+    def test_get_ad_groups_blocked_state(self):
+        ad_group = dash.models.AdGroup.objects.get(pk=2)
+        self.assertFalse(ad_group.is_blocked_by_custom_flag())
+        response = self.client.get(reverse('k1api.ad_groups.sources'),
+                                   {'ad_group_ids': ad_group.id, 'source_types': 'b1'}
+                                   )
+        data = json.loads(response.content)['response'][0]
+        self.assertEqual(data['ad_group_id'], ad_group.id)
+        self.assertEqual(data['state'], dash.constants.AdGroupSourceSettingsState.ACTIVE)
+
+        customer_block_flag = dash.models.CustomFlag.objects.create(
+            id=custom_flags.constants.CUSTOMER_BLOCKED)
+        ad_group.custom_flags = {customer_block_flag.id: True}
+        ad_group.save(None)
+        ad_group = dash.models.AdGroup.objects.get(pk=ad_group.id)
+        self.assertTrue(ad_group.is_blocked_by_custom_flag())
+        response = self.client.get(reverse('k1api.ad_groups.sources'),
+                                   {'ad_group_ids': ad_group.id, 'source_types': 'b1'}
+                                   )
+        data = json.loads(response.content)['response'][0]
+        self.assertEqual(data['ad_group_id'], ad_group.id)
+        self.assertEqual(data['state'], dash.constants.AdGroupSourceSettingsState.INACTIVE)

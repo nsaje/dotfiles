@@ -14,6 +14,7 @@ from utils import dates_helper
 from utils import json_helper
 from utils import k1_helper
 from utils import redirector_helper
+from dash.features import custom_flags
 
 import core.bcm
 import core.common
@@ -191,6 +192,9 @@ class AdGroup(models.Model,
     def is_archived(self):
         current_settings = self.get_current_settings()
         return current_settings.archived
+
+    def is_blocked_by_custom_flag(self):
+        return bool(self.get_all_custom_flags().get(custom_flags.constants.CUSTOMER_BLOCKED))
 
     @classmethod
     def get_running_status(cls, ad_group_settings):

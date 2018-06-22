@@ -14,9 +14,6 @@ from .base import K1APIView
 
 logger = logging.getLogger(__name__)
 
-BLOCKED_AGENCIES = (151, 165, 191)
-BLOCKED_ACCOUNTS = (523, )
-
 
 class AdGroupSourcesView(K1APIView):
 
@@ -25,7 +22,7 @@ class AdGroupSourcesView(K1APIView):
         """
         Returns a list of non-archived ad group sources together with their current source settings.
 
-        Filterable by ad_group_id, source_type and slug.
+        Filterable by ad_group_ids, source_type and slug.
         """
         ad_group_ids = request.GET.get('ad_group_ids')
         source_types = request.GET.get('source_types')
@@ -109,8 +106,7 @@ class AdGroupSourcesView(K1APIView):
                 margin,
             )
 
-            if (ad_group.campaign.account.agency_id in BLOCKED_AGENCIES or
-                    ad_group.campaign.account_id in BLOCKED_ACCOUNTS):
+            if ad_group.is_blocked_by_custom_flag():
                 source_state = constants.AdGroupSettingsState.INACTIVE
             source = {
                 'ad_group_id': ad_group_source.ad_group_id,
