@@ -1,4 +1,3 @@
-import json
 import logging
 
 
@@ -149,7 +148,7 @@ class AdGroupSourcesView(K1APIView):
         """
         ad_group_id = request.GET.get('ad_group_id')
         bidder_slug = request.GET.get('source_slug')
-        data = json.loads(request.body)
+        data = request.data
 
         if not (ad_group_id and bidder_slug and data):
             return self.response_error("Must provide ad_group_id, source_slug and conf", status=404)
@@ -201,7 +200,7 @@ class AdGroupSourceBlockersView(K1APIView):
         ad_group_source = dash.models.AdGroupSource.objects.only('blockers').get(
             ad_group_id=ad_group_id, source__bidder_slug=source_slug)
 
-        blockers_update = json.loads(request.body)
+        blockers_update = request.data
         changes = 0
         for key, value in list(blockers_update.items()):
             if not (isinstance(key, str) and (isinstance(value, str) or value is None)):
