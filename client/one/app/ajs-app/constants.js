@@ -51,6 +51,7 @@ var constants = {
         EUR: 'EUR',
         GBP: 'GBP',
         AUD: 'AUD',
+        SGD: 'SGD',
     },
     infoboxStatus: {
         ACTIVE: 'active',
@@ -1266,6 +1267,7 @@ constants.currencySymbol[constants.currency.USD] = '$';
 constants.currencySymbol[constants.currency.EUR] = '€';
 constants.currencySymbol[constants.currency.GBP] = '£';
 constants.currencySymbol[constants.currency.AUD] = '$';
+constants.currencySymbol[constants.currency.SGD] = '$';
 
 var options = {
     // used for converting options lists values into REST API flavoured constant values
@@ -2293,6 +2295,7 @@ var options = {
         {name: 'Euro', value: constants.currency.EUR},
         {name: 'British Pound', value: constants.currency.GBP},
         {name: 'Australian Dollar', value: constants.currency.AUD},
+        {name: 'Singapore Dollar', value: constants.currency.SGD},
     ],
 };
 

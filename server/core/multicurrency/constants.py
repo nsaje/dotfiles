@@ -5,4 +5,5 @@ CurrencySymbol = {
     dash.constants.Currency.EUR: '€',
     dash.constants.Currency.GBP: '£',
     dash.constants.Currency.AUD: '$',
+    dash.constants.Currency.SGD: '$',
 }
