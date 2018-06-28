@@ -24,7 +24,7 @@ class RealtimestatsServiceTest(TestCase):
             'source_campaign_key': 'test_yahoo_1',
         }]
         self.yahoo_account = magic_mixer.blend(
-            core.features.yahoo_accounts.YahooAccount, budgets_tz='America/Los_Angeles')
+            core.features.yahoo_accounts.YahooAccount, budgets_tz='America/Los_Angeles', advertiser_id='test')
         self.account = magic_mixer.blend(
             core.entity.Account, uses_bcm_v2=True, yahoo_account=self.yahoo_account)
         self.campaign = magic_mixer.blend(core.entity.Campaign, account=self.account)
@@ -38,6 +38,7 @@ class RealtimestatsServiceTest(TestCase):
         self.expected_params = {
             'outbrain_campaign_id': 'test_outbrain_1',
             'yahoo_campaign_id': 'test_yahoo_1',
+            'yahoo_advertiser_id': 'test',
         }
 
         self._set_up_budgets()

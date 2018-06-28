@@ -142,7 +142,10 @@ def _get_source_params(ad_group, use_source_tz=False):
             params['outbrain_campaign_id'] = ad_group_source.source_campaign_key['campaign_id']
         elif ad_group_source.source.source_type.type == constants.SourceType.YAHOO \
                 and ad_group_source.source_campaign_key:
-            params['yahoo_campaign_id'] = ad_group_source.source_campaign_key
+            params.update({
+                'yahoo_advertiser_id': ad_group.campaign.account.yahoo_account.advertiser_id,
+                'yahoo_campaign_id': ad_group_source.source_campaign_key,
+            })
             if use_source_tz:
                 yahoo_account = ad_group.campaign.account.yahoo_account
                 if yahoo_account:
