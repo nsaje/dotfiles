@@ -135,7 +135,7 @@ class AllAccountsBreakdown(api_common.BaseApiView):
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
         constraints = stats.constraints_helper.prepare_all_accounts_constraints(
-            request.user, breakdown, only_used_sources=target_dim == 'source_id',
+            request.user, only_used_sources=target_dim == 'source_id',
             **get_constraints_kwargs(form.cleaned_data))
 
         goals = stats.api_breakdowns.get_goals(constraints, breakdown)
@@ -143,7 +143,7 @@ class AllAccountsBreakdown(api_common.BaseApiView):
         totals_thread = None
         if len(breakdown) == 1:
             totals_constraints = stats.constraints_helper.prepare_all_accounts_constraints(
-                request.user, breakdown, only_used_sources=False,
+                request.user, only_used_sources=False,
                 **get_constraints_kwargs(form.cleaned_data, show_archived=True))
             totals_fn = partial(
                 stats.api_breakdowns.totals,
@@ -212,14 +212,14 @@ class AccountBreakdown(api_common.BaseApiView):
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
         constraints = stats.constraints_helper.prepare_account_constraints(
-            request.user, account, breakdown, only_used_sources=target_dim == 'source_id',
+            request.user, account, only_used_sources=target_dim == 'source_id',
             **get_constraints_kwargs(form.cleaned_data))
         goals = stats.api_breakdowns.get_goals(constraints, breakdown)
 
         totals_thread = None
         if len(breakdown) == 1:
             totals_constraints = stats.constraints_helper.prepare_account_constraints(
-                request.user, account, breakdown,
+                request.user, account,
                 only_used_sources=False,
                 **get_constraints_kwargs(form.cleaned_data, show_archived=True))
             totals_fn = partial(
@@ -290,7 +290,7 @@ class CampaignBreakdown(api_common.BaseApiView):
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
         constraints = stats.constraints_helper.prepare_campaign_constraints(
-            request.user, campaign, breakdown, only_used_sources=target_dim == 'source_id',
+            request.user, campaign, only_used_sources=target_dim == 'source_id',
             **get_constraints_kwargs(form.cleaned_data))
         currency = stats.helpers.get_report_currency(request.user, [constraints['account']])
         goals = stats.api_breakdowns.get_goals(constraints, breakdown)
@@ -298,7 +298,7 @@ class CampaignBreakdown(api_common.BaseApiView):
         totals_thread = None
         if len(breakdown) == 1:
             totals_constraints = stats.constraints_helper.prepare_campaign_constraints(
-                request.user, campaign, breakdown, only_used_sources=False,
+                request.user, campaign, only_used_sources=False,
                 **get_constraints_kwargs(form.cleaned_data, show_archived=True))
             totals_fn = partial(
                 stats.api_breakdowns.totals,
@@ -374,7 +374,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
         constraints = stats.constraints_helper.prepare_ad_group_constraints(
-            request.user, ad_group, breakdown,
+            request.user, ad_group,
             only_used_sources=True,
             **get_constraints_kwargs(form.cleaned_data))
         currency = stats.helpers.get_report_currency(request.user, [constraints['account']])
@@ -383,7 +383,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
         totals_thread = None
         if len(breakdown) == 1:
             totals_constraints = stats.constraints_helper.prepare_ad_group_constraints(
-                request.user, ad_group, breakdown, only_used_sources=(target_dim == 'source_id'),
+                request.user, ad_group, only_used_sources=(target_dim == 'source_id'),
                 **get_constraints_kwargs(form.cleaned_data, show_archived=True))
             totals_fn = partial(
                 stats.api_breakdowns.totals,

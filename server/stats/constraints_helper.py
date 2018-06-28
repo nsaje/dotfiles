@@ -26,7 +26,7 @@ def _get_basic_constraints(start_date, end_date, show_archived, filtered_sources
 
 
 @newrelic.agent.function_trace()
-def prepare_all_accounts_constraints(user, breakdown, start_date, end_date, filtered_sources, show_archived=False,
+def prepare_all_accounts_constraints(user, start_date, end_date, filtered_sources, show_archived=False,
                                      filtered_agencies=None, filtered_account_types=None, filtered_accounts=None,
                                      only_used_sources=True,
                                      show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL):
@@ -43,11 +43,8 @@ def prepare_all_accounts_constraints(user, breakdown, start_date, end_date, filt
     allowed_campaigns = models.Campaign.objects.filter(account__in=allowed_accounts)\
                                                .filter_by_sources(filtered_sources)
 
-    # accounts tab
-    if constants.get_base_dimension(breakdown) == 'account_id':
-        # exclude archived accounts/campaigns only when on accounts tab
-        allowed_accounts = allowed_accounts.exclude_archived(show_archived)
-        allowed_campaigns = allowed_campaigns.exclude_archived(show_archived)
+    allowed_accounts = allowed_accounts.exclude_archived(show_archived)
+    allowed_campaigns = allowed_campaigns.exclude_archived(show_archived)
 
     constraints = {
         'allowed_accounts': allowed_accounts,
@@ -71,7 +68,7 @@ def prepare_all_accounts_constraints(user, breakdown, start_date, end_date, filt
 
 
 @newrelic.agent.function_trace()
-def prepare_account_constraints(user, account, breakdown, start_date, end_date, filtered_sources,
+def prepare_account_constraints(user, account, start_date, end_date, filtered_sources,
                                 filtered_campaigns=None, show_archived=False, only_used_sources=True,
                                 show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL):
     allowed_campaigns = account.campaign_set.all()\
@@ -83,10 +80,8 @@ def prepare_account_constraints(user, account, breakdown, start_date, end_date, 
 
     allowed_ad_groups = models.AdGroup.objects.filter(campaign_id__in=get_pk_list(allowed_campaigns))
 
-    # campaigns tab
-    if constants.get_base_dimension(breakdown) == 'campaign_id':
-        allowed_campaigns = allowed_campaigns.exclude_archived(show_archived)
-        allowed_ad_groups = allowed_ad_groups.exclude_archived(show_archived)
+    allowed_campaigns = allowed_campaigns.exclude_archived(show_archived)
+    allowed_ad_groups = allowed_ad_groups.exclude_archived(show_archived)
 
     constraints = {
         'account': account,
@@ -113,7 +108,7 @@ def prepare_account_constraints(user, account, breakdown, start_date, end_date, 
 
 
 @newrelic.agent.function_trace()
-def prepare_campaign_constraints(user, campaign, breakdown, start_date, end_date, filtered_sources,
+def prepare_campaign_constraints(user, campaign, start_date, end_date, filtered_sources,
                                  filtered_ad_groups=None, show_archived=False, only_used_sources=True,
                                  show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL):
     allowed_ad_groups = campaign.adgroup_set.all().exclude_archived(show_archived)
@@ -149,7 +144,7 @@ def prepare_campaign_constraints(user, campaign, breakdown, start_date, end_date
 
 
 @newrelic.agent.function_trace()
-def prepare_ad_group_constraints(user, ad_group, breakdown, start_date, end_date, filtered_sources,
+def prepare_ad_group_constraints(user, ad_group, start_date, end_date, filtered_sources,
                                  filtered_content_ads=None, show_archived=False, only_used_sources=True,
                                  show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL):
     allowed_content_ads = models.ContentAd.objects.filter(ad_group=ad_group).exclude_archived(show_archived)

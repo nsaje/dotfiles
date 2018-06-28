@@ -9,6 +9,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q, Max
+from django.utils.functional import cached_property
 
 import automation
 import automation.autopilot
@@ -69,51 +70,37 @@ def get_stats_end_date(end_time):
 class ViewFilter(object):
     '''Convenience class for extracting filters from requests'''
 
-    def __init__(self, request=None, user=None, data=None):
-        self.filtered_sources = None
-        self.filtered_agencies = None
-        self.filtered_account_types = None
-
-        # table breakdowns specific code
-        if data:
-            self._init_breakdowns(user, data)
-        else:
-            self._init_old(request)
-
-    def _init_old(self, request):
-        if not request:
-            return
-
+    def __init__(self, request=None):
+        self.request = request
+        self.data = None
         if request.method == 'GET':
-            data = request.GET
-            filtered_sources = data.get('filtered_sources')
-            filtered_agencies_raw = data.get('filtered_agencies')
-            filtered_agencies = filtered_agencies_raw.split(',') if\
-                filtered_agencies_raw else None
-            filtered_account_types_raw = data.get('filtered_account_types')
-            filtered_account_types = filtered_account_types_raw.split(',') if\
-                filtered_account_types_raw else None
+            self.data = request.GET
         elif request.method == 'PUT':
-            data = json.loads(request.body)
-            filtered_sources = data.get('filtered_sources')
-            filtered_agencies_raw = data.get('filtered_agencies')
-            filtered_agencies = filtered_agencies_raw.split(',') if\
-                filtered_agencies_raw else None
-            filtered_account_types_raw = data.get('filtered_account_types')
-            filtered_account_types = filtered_account_types_raw.split(',') if\
-                filtered_account_types_raw else None
+            self.data = json.loads(request.body)
 
-        if request.user is not None:
-            self.filtered_sources = get_filtered_sources(request.user, filtered_sources)
-        self.filtered_agencies = get_filtered_agencies(filtered_agencies)
-        self.filtered_account_types = get_filtered_account_types(filtered_account_types)
+        self.show_archived = self.data.get('show_archived') == 'true'
 
-    def _init_breakdowns(self, user, data):
-        self.filtered_sources = None
-        if user is not None:
-            self.filtered_sources = data.get('filtered_sources')
-        self.filtered_agencies = data.get('filtered_agencies')
-        self.filtered_account_types = data.get('filtered_account_types')
+    @cached_property
+    def start_date(self):
+        return get_stats_start_date(self.data.get('start_date'))
+
+    @cached_property
+    def end_date(self):
+        return get_stats_end_date(self.data.get('end_date'))
+
+    @cached_property
+    def filtered_sources(self):
+        if self.request.user is not None:
+            return get_filtered_sources(self.request.user, self.data.get('filtered_sources'))
+        return None
+
+    @cached_property
+    def filtered_agencies(self):
+        return get_filtered_agencies(self.data.get('filtered_agencies'))
+
+    @cached_property
+    def filtered_account_types(self):
+        return get_filtered_account_types(self.data.get('filtered_account_types'))
 
 
 def get_filtered_sources(user, sources_filter):
@@ -121,13 +108,7 @@ def get_filtered_sources(user, sources_filter):
     if not sources_filter:
         return filtered_sources
 
-    filtered_ids = []
-    for i in sources_filter.split(','):
-        try:
-            filtered_ids.append(int(i))
-        except ValueError:
-            pass
-
+    filtered_ids = _split_to_ids(sources_filter)
     if filtered_ids:
         filtered_sources = filtered_sources.filter(id__in=filtered_ids)
 
@@ -135,11 +116,10 @@ def get_filtered_sources(user, sources_filter):
 
 
 def get_filtered_agencies(agency_filter):
-    filtered_agencies = None
     if not agency_filter:
-        return filtered_agencies
+        return None
 
-    filtered_ids = list(map(int, agency_filter))
+    filtered_ids = _split_to_ids(agency_filter)
     if filtered_ids:
         filtered_agencies = models.Agency.objects.all().filter(
             id__in=filtered_ids
@@ -148,13 +128,24 @@ def get_filtered_agencies(agency_filter):
 
 
 def get_filtered_account_types(account_type_filter):
-    filtered_account_types = None
     if not account_type_filter:
-        return filtered_account_types
+        return None
 
     filtered_account_types = constants.AccountType.get_all()
-    filtered_ids = list(map(int, account_type_filter))
+    filtered_ids = _split_to_ids(account_type_filter)
     return list(set(filtered_account_types) & set(filtered_ids))
+
+
+def _split_to_ids(entity_filter):
+    entity_ids = []
+    if isinstance(entity_filter, str):
+        entity_filter = entity_filter.split(',')
+    for id in entity_filter:
+        try:
+            entity_ids.append(int(id))
+        except ValueError:
+            pass
+    return entity_ids
 
 
 def get_additional_columns(additional_columns):

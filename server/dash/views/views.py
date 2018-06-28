@@ -209,6 +209,10 @@ class AdGroupOverview(api_common.BaseApiView):
     @db_for_reads.use_stats_read_replica()
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        view_filter = helpers.ViewFilter(request)
+
+        start_date = view_filter.start_date
+        end_date = view_filter.end_date
 
         async_perf_query = threads.AsyncFunction(
             partial(
@@ -218,11 +222,8 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         async_perf_query.start()
 
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+        filtered_sources = view_filter.filtered_sources
         ad_group_settings = ad_group.get_current_settings()
-
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
         ad_group_running_status = infobox_helpers.get_adgroup_running_status(
             request.user, ad_group, filtered_sources)
@@ -375,8 +376,9 @@ class CampaignOverview(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
 
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+        view_filter = helpers.ViewFilter(request)
+        start_date = view_filter.start_date
+        end_date = view_filter.end_date
 
         campaign_running_status = infobox_helpers.get_campaign_running_status(campaign)
 
@@ -882,10 +884,10 @@ class AllAccountsOverview(api_common.BaseApiView):
     @influx.timer('dash.api')
     @db_for_reads.use_stats_read_replica()
     def get(self, request):
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
         # infobox only filters by agency and account type
         view_filter = helpers.ViewFilter(request=request)
+        start_date = view_filter.start_date
+        end_date = view_filter.end_date
 
         header = {
             'title': None,
@@ -902,7 +904,7 @@ class AllAccountsOverview(api_common.BaseApiView):
             performance_settings = [setting.as_dict() for setting in performance_settings]
         elif request.user.has_perm('zemauth.can_access_agency_infobox'):
             basic_settings = self._basic_agency_settings(request.user, start_date, end_date, view_filter)
-            performance_settings = self._append_performance_agency_settings(performance_settings, request.user)
+            performance_settings = self._append_performance_agency_settings(performance_settings, request.user, view_filter)
             performance_settings = [setting.as_dict() for setting in performance_settings]
         else:
             raise exc.AuthorizationError()
@@ -995,8 +997,8 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         return [setting.as_dict() for setting in settings]
 
-    def _append_performance_agency_settings(self, overview_settings, user):
-        accounts = models.Account.objects.all().filter_by_user(user)
+    def _append_performance_agency_settings(self, overview_settings, user, view_filter):
+        accounts = models.Account.objects.all().filter_by_user(user).exclude_archived(view_filter.show_archived)
         currency = stats.helpers.get_report_currency(user, accounts)
 
         uses_bcm_v2 = accounts.all_use_bcm_v2()
@@ -1026,7 +1028,8 @@ class AllAccountsOverview(api_common.BaseApiView):
         accounts = models.Account.objects\
                                  .filter_by_user(user)\
                                  .filter_by_agencies(view_filter.filtered_agencies)\
-                                 .filter_by_account_types(view_filter.filtered_account_types)
+                                 .filter_by_account_types(view_filter.filtered_account_types)\
+                                 .exclude_archived(view_filter.show_archived)
         currency = stats.helpers.get_report_currency(user, accounts)
 
         use_local_currency = currency != constants.Currency.USD

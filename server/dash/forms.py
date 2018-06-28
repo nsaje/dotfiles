@@ -1491,7 +1491,7 @@ class BreakdownForm(forms.Form):
     breakdown = PlainCharField(required=True)
 
     def clean_filtered_sources(self):
-        return helpers.get_filtered_sources(self.user, ','.join(self.cleaned_data.get('filtered_sources')))
+        return helpers.get_filtered_sources(self.user, self.cleaned_data.get('filtered_sources'))
 
     def clean_filtered_agencies(self):
         return helpers.get_filtered_agencies(self.cleaned_data.get('filtered_agencies'))
@@ -2007,7 +2007,7 @@ class PublisherTargetingForm(forms.Form):
         return None
 
     def clean_filtered_sources(self):
-        return helpers.get_filtered_sources(self.user, ','.join(self.cleaned_data.get('filtered_sources')))
+        return helpers.get_filtered_sources(self.user, self.cleaned_data.get('filtered_sources'))
 
 
 class PublisherGroupUploadForm(forms.Form, ParseCSVExcelFile):

@@ -19,14 +19,14 @@ MAX_DAILY_STATS_BREAKDOWNS = 3
 
 class BaseDailyStatsView(api_common.BaseApiView):
 
-    def extract_params(self, request, breakdown, selected_only):
+    def extract_params(self, request, selected_only):
+        view_filter = dash.views.helpers.ViewFilter(request)
         return {
             'user': request.user,
-            'breakdown': breakdown,
-            'start_date': dash.views.helpers.get_stats_start_date(request.GET.get('start_date')),
-            'end_date': dash.views.helpers.get_stats_end_date(request.GET.get('end_date')),
-            'filtered_sources': dash.views.helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources')),
-            'show_archived': request.GET.get('show_archived') == 'true',
+            'start_date': view_filter.start_date,
+            'end_date': view_filter.end_date,
+            'filtered_sources': view_filter.filtered_sources,
+            'show_archived': view_filter.show_archived,
             'only_used_sources': False,
         }
 
@@ -35,7 +35,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
         totals = request.GET.get('totals')
         metrics = request.GET.getlist('metrics')
 
-        constraints = self.prepare_constraints(request, ['day'])
+        constraints = self.prepare_constraints(request)
         currency = self._get_currency_from_constraints(request.user, constraints)
 
         result = []
@@ -71,7 +71,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
     def get_stats_totals(self, request, metrics, currency, should_use_publishers_view):
         breakdown = ['day']
 
-        constraints = self.prepare_constraints(request, breakdown)
+        constraints = self.prepare_constraints(request)
         goals = stats.api_breakdowns.get_goals(constraints, breakdown)
 
         query_results = stats.api_dailystats.query(
@@ -110,7 +110,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
         if not join_selected:
             breakdown.append(group_key)
 
-        constraints = self.prepare_constraints(request, breakdown, selected_only=True)
+        constraints = self.prepare_constraints(request, selected_only=True)
         goals = stats.api_breakdowns.get_goals(constraints, breakdown)
         query_results = stats.api_dailystats.query(
             request.user,
@@ -155,8 +155,9 @@ class BaseDailyStatsView(api_common.BaseApiView):
             campaign=None,
             pixels=None):
         user = request.user
-        start_date = dash.views.helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = dash.views.helpers.get_stats_end_date(request.GET.get('end_date'))
+        view_filter = dash.views.helpers.ViewFilter(request)
+        start_date = view_filter.start_date
+        end_date = view_filter.end_date
 
         result = {}
         if conversion_goals is not None:
@@ -198,12 +199,12 @@ class BaseDailyStatsView(api_common.BaseApiView):
 
 class AllAccountsDailyStatsView(BaseDailyStatsView):
 
-    def prepare_constraints(self, request, breakdown, selected_only=False):
-        params = self.extract_params(request, breakdown, selected_only)
+    def prepare_constraints(self, request, selected_only=False):
+        params = self.extract_params(request, selected_only)
         return stats.constraints_helper.prepare_all_accounts_constraints(**params)
 
-    def extract_params(self, request, breakdown, selected_only):
-        params = super(AllAccountsDailyStatsView, self).extract_params(request, breakdown, selected_only)
+    def extract_params(self, request, selected_only):
+        params = super(AllAccountsDailyStatsView, self).extract_params(request, selected_only)
         params['filtered_agencies'] = self.view_filter.filtered_agencies
         params['filtered_account_types'] = self.view_filter.filtered_account_types
         return params
@@ -211,8 +212,8 @@ class AllAccountsDailyStatsView(BaseDailyStatsView):
 
 class AllAccountsAccountsDailyStats(AllAccountsDailyStatsView):
 
-    def extract_params(self, request, breakdown, selected_only):
-        params = super(AllAccountsAccountsDailyStats, self).extract_params(request, breakdown, selected_only)
+    def extract_params(self, request, selected_only):
+        params = super(AllAccountsAccountsDailyStats, self).extract_params(request, selected_only)
         if selected_only:
             params['filtered_accounts'] = self.selected_objects
         return params
@@ -243,8 +244,8 @@ class AllAccountsAccountsDailyStats(AllAccountsDailyStatsView):
 
 class AllAccountsSourcesDailyStats(AllAccountsDailyStatsView):
 
-    def extract_params(self, request, breakdown, selected_only):
-        params = super(AllAccountsSourcesDailyStats, self).extract_params(request, breakdown, selected_only)
+    def extract_params(self, request, selected_only):
+        params = super(AllAccountsSourcesDailyStats, self).extract_params(request, selected_only)
         if selected_only:
             params['filtered_sources'] = params['filtered_sources'].filter(
                 id__in=self.selected_objects.values_list('pk', flat=True)
@@ -275,8 +276,8 @@ class AllAccountsSourcesDailyStats(AllAccountsDailyStatsView):
 
 class AllAccountsPublishersDailyStats(AllAccountsDailyStatsView):
 
-    def extract_params(self, request, breakdown, selected_only):
-        params = super(AllAccountsPublishersDailyStats, self).extract_params(request, breakdown, selected_only)
+    def extract_params(self, request, selected_only):
+        params = super(AllAccountsPublishersDailyStats, self).extract_params(request, selected_only)
         params['show_blacklisted_publishers'] = request.GET.get(
             'show_blacklisted_publishers', constants.PublisherBlacklistFilter.SHOW_ALL
         )
@@ -305,20 +306,20 @@ class AllAccountsPublishersDailyStats(AllAccountsDailyStatsView):
 
 class AccountDailyStatsView(BaseDailyStatsView):
 
-    def prepare_constraints(self, request, breakdown, selected_only=False):
-        params = self.extract_params(request, breakdown, selected_only)
+    def prepare_constraints(self, request, selected_only=False):
+        params = self.extract_params(request, selected_only)
         return stats.constraints_helper.prepare_account_constraints(**params)
 
-    def extract_params(self, request, breakdown, selected_only):
-        params = super(AccountDailyStatsView, self).extract_params(request, breakdown, selected_only)
+    def extract_params(self, request, selected_only):
+        params = super(AccountDailyStatsView, self).extract_params(request, selected_only)
         params['account'] = self.account
         return params
 
 
 class AccountCampaignsDailyStats(AccountDailyStatsView):
 
-    def extract_params(self, request, breakdown, selected_only):
-        params = super(AccountCampaignsDailyStats, self).extract_params(request, breakdown, selected_only)
+    def extract_params(self, request, selected_only):
+        params = super(AccountCampaignsDailyStats, self).extract_params(request, selected_only)
         if selected_only:
             params['filtered_campaigns'] = self.selected_objects
         return params
@@ -348,8 +349,8 @@ class AccountCampaignsDailyStats(AccountDailyStatsView):
 
 class AccountSourcesDailyStats(AccountDailyStatsView):
 
-    def extract_params(self, request, breakdown, selected_only):
-        params = super(AccountSourcesDailyStats, self).extract_params(request, breakdown, selected_only)
+    def extract_params(self, request, selected_only):
+        params = super(AccountSourcesDailyStats, self).extract_params(request, selected_only)
         if selected_only:
             params['filtered_sources'] = params['filtered_sources'].filter(
                 id__in=self.selected_objects.values_list('pk', flat=True)
@@ -381,8 +382,8 @@ class AccountSourcesDailyStats(AccountDailyStatsView):
 
 class AccountPublishersDailyStats(AccountDailyStatsView):
 
-    def extract_params(self, request, breakdown, selected_only):
-        params = super(AccountPublishersDailyStats, self).extract_params(request, breakdown, selected_only)
+    def extract_params(self, request, selected_only):
+        params = super(AccountPublishersDailyStats, self).extract_params(request, selected_only)
         params['show_blacklisted_publishers'] = request.GET.get(
             'show_blacklisted_publishers', constants.PublisherBlacklistFilter.SHOW_ALL
         )
@@ -415,20 +416,20 @@ class AccountPublishersDailyStats(AccountDailyStatsView):
 
 class CampaignDailyStatsView(BaseDailyStatsView):
 
-    def prepare_constraints(self, request, breakdown, selected_only=False):
-        params = self.extract_params(request, breakdown, selected_only)
+    def prepare_constraints(self, request, selected_only=False):
+        params = self.extract_params(request, selected_only)
         return stats.constraints_helper.prepare_campaign_constraints(**params)
 
-    def extract_params(self, request, breakdown, selected_only):
-        params = super(CampaignDailyStatsView, self).extract_params(request, breakdown, selected_only)
+    def extract_params(self, request, selected_only):
+        params = super(CampaignDailyStatsView, self).extract_params(request, selected_only)
         params['campaign'] = self.campaign
         return params
 
 
 class CampaignAdGroupsDailyStats(CampaignDailyStatsView):
 
-    def extract_params(self, request, breakdown, selected_only):
-        params = super(CampaignAdGroupsDailyStats, self).extract_params(request, breakdown, selected_only)
+    def extract_params(self, request, selected_only):
+        params = super(CampaignAdGroupsDailyStats, self).extract_params(request, selected_only)
         if selected_only:
             params['filtered_ad_groups'] = self.selected_objects
         return params
@@ -466,8 +467,8 @@ class CampaignAdGroupsDailyStats(CampaignDailyStatsView):
 
 class CampaignSourcesDailyStats(CampaignDailyStatsView):
 
-    def extract_params(self, request, breakdown, selected_only):
-        params = super(CampaignSourcesDailyStats, self).extract_params(request, breakdown, selected_only)
+    def extract_params(self, request, selected_only):
+        params = super(CampaignSourcesDailyStats, self).extract_params(request, selected_only)
         if selected_only:
             params['filtered_sources'] = params['filtered_sources'].filter(
                 id__in=self.selected_objects.values_list('pk', flat=True)
@@ -507,8 +508,8 @@ class CampaignSourcesDailyStats(CampaignDailyStatsView):
 
 class CampaignPublishersDailyStats(CampaignDailyStatsView):
 
-    def extract_params(self, request, breakdown, selected_only):
-        params = super(CampaignPublishersDailyStats, self).extract_params(request, breakdown, selected_only)
+    def extract_params(self, request, selected_only):
+        params = super(CampaignPublishersDailyStats, self).extract_params(request, selected_only)
         params['show_blacklisted_publishers'] = request.GET.get(
             'show_blacklisted_publishers', constants.PublisherBlacklistFilter.SHOW_ALL
         )
@@ -549,20 +550,20 @@ class CampaignPublishersDailyStats(CampaignDailyStatsView):
 
 class AdGroupDailyStatsView(BaseDailyStatsView):
 
-    def prepare_constraints(self, request, breakdown, selected_only=False):
-        params = self.extract_params(request, breakdown, selected_only)
+    def prepare_constraints(self, request, selected_only=False):
+        params = self.extract_params(request, selected_only)
         return stats.constraints_helper.prepare_ad_group_constraints(**params)
 
-    def extract_params(self, request, breakdown, selected_only):
-        params = super(AdGroupDailyStatsView, self).extract_params(request, breakdown, selected_only)
+    def extract_params(self, request, selected_only):
+        params = super(AdGroupDailyStatsView, self).extract_params(request, selected_only)
         params['ad_group'] = self.ad_group
         return params
 
 
 class AdGroupContentAdsDailyStats(AdGroupDailyStatsView):
 
-    def extract_params(self, request, breakdown, selected_only):
-        params = super(AdGroupContentAdsDailyStats, self).extract_params(request, breakdown, selected_only)
+    def extract_params(self, request, selected_only):
+        params = super(AdGroupContentAdsDailyStats, self).extract_params(request, selected_only)
         if selected_only:
             params['filtered_content_ads'] = self.selected_objects
         return params
@@ -600,8 +601,8 @@ class AdGroupContentAdsDailyStats(AdGroupDailyStatsView):
 
 class AdGroupSourcesDailyStats(AdGroupDailyStatsView):
 
-    def extract_params(self, request, breakdown, selected_only):
-        params = super(AdGroupSourcesDailyStats, self).extract_params(request, breakdown, selected_only)
+    def extract_params(self, request, selected_only):
+        params = super(AdGroupSourcesDailyStats, self).extract_params(request, selected_only)
         if selected_only:
             params['filtered_sources'] = params['filtered_sources'].filter(
                 id__in=self.selected_objects.values_list('pk', flat=True)
@@ -641,8 +642,8 @@ class AdGroupSourcesDailyStats(AdGroupDailyStatsView):
 
 class AdGroupPublishersDailyStats(AdGroupDailyStatsView):
 
-    def extract_params(self, request, breakdown, selected_only):
-        params = super(AdGroupPublishersDailyStats, self).extract_params(request, breakdown, selected_only)
+    def extract_params(self, request, selected_only):
+        params = super(AdGroupPublishersDailyStats, self).extract_params(request, selected_only)
         params['show_blacklisted_publishers'] = request.GET.get(
             'show_blacklisted_publishers', constants.PublisherBlacklistFilter.SHOW_ALL
         )

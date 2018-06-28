@@ -1616,8 +1616,9 @@ class CampaignContentInsights(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+        view_filter = helpers.ViewFilter(request)
+        start_date = view_filter.start_date
+        end_date = view_filter.end_date
 
         best_performer_rows, worst_performer_rows =\
             content_insights_helper.fetch_campaign_content_ad_metrics(

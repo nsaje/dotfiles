@@ -23,7 +23,7 @@ class PrepareConstraints(TestCase):
         end_date = datetime.date(2016, 2, 1)
 
         self.assertDictEqual(
-            constraints_helper.prepare_all_accounts_constraints(user, ['account_id'], start_date, end_date, sources),
+            constraints_helper.prepare_all_accounts_constraints(user, start_date, end_date, sources),
             {
                 'date__gte': start_date,
                 'date__lte': end_date,
@@ -56,7 +56,7 @@ class PrepareConstraints(TestCase):
 
         self.assertDictEqual(
             constraints_helper.prepare_all_accounts_constraints(
-                user, ['account_id', 'campaign_id'], start_date, end_date, sources
+                user, start_date, end_date, sources
             ),
             {
                 'date__gte': start_date,
@@ -89,7 +89,7 @@ class PrepareConstraints(TestCase):
         )
 
         self.assertDictEqual(
-            constraints_helper.prepare_all_accounts_constraints(user, ['source_id'], start_date, end_date, sources),
+            constraints_helper.prepare_all_accounts_constraints(user, start_date, end_date, sources),
             {
                 'date__gte': start_date,
                 'date__lte': end_date,
@@ -97,7 +97,7 @@ class PrepareConstraints(TestCase):
                 'filtered_sources': test_helper.QuerySetMatcher(sources),
                 'allowed_accounts': test_helper.QuerySetMatcher(dash.models.Account.objects.all()),
                 'allowed_campaigns': test_helper.QuerySetMatcher(
-                    dash.models.Campaign.objects.filter(pk__in=[1, 2])),  # show archived
+                    dash.models.Campaign.objects.filter(pk__in=[1])),
                 'publisher_blacklist': test_helper.QuerySetMatcher(dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1])),
                 'publisher_whitelist': test_helper.QuerySetMatcher(dash.models.PublisherGroupEntry.objects.none()),
                 'publisher_group_targeting': {
@@ -122,6 +122,7 @@ class PrepareConstraints(TestCase):
         )
 
     def test_prepare_account_constraints(self):
+        self.maxDiff = None
         sources = dash.models.Source.objects.all()
         user = User.objects.get(pk=1)
         start_date = datetime.date(2016, 1, 1)
@@ -129,7 +130,7 @@ class PrepareConstraints(TestCase):
         account = dash.models.Account.objects.get(pk=1)
 
         self.assertDictEqual(
-            constraints_helper.prepare_account_constraints(user, account, ['source_id', 'campaign_id'],
+            constraints_helper.prepare_account_constraints(user, account,
                                                            start_date, end_date, sources),
             {
                 'date__gte': start_date,
@@ -137,8 +138,8 @@ class PrepareConstraints(TestCase):
                 'show_archived': False,
                 'filtered_sources': test_helper.QuerySetMatcher(sources),
                 'account': account,
-                'allowed_campaigns': test_helper.QuerySetMatcher(dash.models.Campaign.objects.filter(pk__in=[1, 2])),
-                'allowed_ad_groups': test_helper.QuerySetMatcher(dash.models.AdGroup.objects.filter(campaign_id__in=[1, 2])),
+                'allowed_campaigns': test_helper.QuerySetMatcher(dash.models.Campaign.objects.filter(pk__in=[1])),
+                'allowed_ad_groups': test_helper.QuerySetMatcher(dash.models.AdGroup.objects.filter(pk__in=[1, 2])),
                 'publisher_blacklist': test_helper.QuerySetMatcher(dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1, 5])),
                 'publisher_whitelist': test_helper.QuerySetMatcher(dash.models.PublisherGroupEntry.objects.none()),
                 'publisher_group_targeting': {
@@ -170,7 +171,7 @@ class PrepareConstraints(TestCase):
         campaign = dash.models.Campaign.objects.get(pk=1)
 
         self.assertDictEqual(
-            constraints_helper.prepare_campaign_constraints(user, campaign, ['campaign_id', 'ad_group_id'],
+            constraints_helper.prepare_campaign_constraints(user, campaign,
                                                             start_date, end_date, sources),
             {
                 'date__gte': start_date,
@@ -206,7 +207,7 @@ class PrepareConstraints(TestCase):
         )
 
         self.assertDictEqual(
-            constraints_helper.prepare_campaign_constraints(user, campaign, ['campaign_id', 'content_ad_id'],
+            constraints_helper.prepare_campaign_constraints(user, campaign,
                                                             start_date, end_date, sources),
             {
                 'date__gte': start_date,
@@ -248,9 +249,8 @@ class PrepareConstraints(TestCase):
         end_date = datetime.date(2016, 2, 1)
         ad_group = dash.models.AdGroup.objects.get(pk=1)
 
-        self.maxDiff = None
         self.assertDictEqual(
-            constraints_helper.prepare_ad_group_constraints(user, ad_group, ['ad_group_id', 'content_ad_id'],
+            constraints_helper.prepare_ad_group_constraints(user, ad_group,
                                                             start_date, end_date, sources),
             {
                 'date__gte': start_date,
@@ -286,7 +286,7 @@ class PrepareConstraints(TestCase):
         self.maxDiff = None
         self.assertDictEqual(
             constraints_helper.prepare_ad_group_constraints(
-                user, ad_group, ['ad_group_id', 'content_ad_id'], start_date, end_date, sources,
+                user, ad_group, start_date, end_date, sources,
                 show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ACTIVE),
             {
                 'date__gte': start_date,
@@ -334,48 +334,48 @@ class NarrowFilteredSourcesTest(TestCase):
 
     def test_prepare_all_accounts_constraints(self):
         constraints = constraints_helper.prepare_all_accounts_constraints(
-            self.user, ['account_id'], self.start_date, self.end_date,
+            self.user, self.start_date, self.end_date,
             dash.models.Source.objects.all(), only_used_sources=True)
         self.assertEqual(constraints['filtered_sources'], test_helper.QuerySetMatcher(dash.models.Source.objects.all()))
 
         dash.models.AdGroupSource.objects.filter(source=self.sources[1]).update(ad_review_only=True)
         constraints = constraints_helper.prepare_all_accounts_constraints(
-            self.user, ['account_id'], self.start_date, self.end_date,
+            self.user, self.start_date, self.end_date,
             dash.models.Source.objects.all(), only_used_sources=True)
         self.assertEqual(constraints['filtered_sources'], test_helper.QuerySetMatcher([self.sources[0]]))
 
     def test_prepare_account_constraints(self):
         constraints = constraints_helper.prepare_account_constraints(
-            self.user, self.ad_group.campaign.account, ['account_id', 'campaign_id'], self.start_date, self.end_date,
+            self.user, self.ad_group.campaign.account, self.start_date, self.end_date,
             dash.models.Source.objects.all(), only_used_sources=True)
         self.assertEqual(constraints['filtered_sources'], test_helper.QuerySetMatcher(dash.models.Source.objects.all()))
 
         dash.models.AdGroupSource.objects.filter(source=self.sources[1]).update(ad_review_only=True)
         constraints = constraints_helper.prepare_account_constraints(
-            self.user, self.ad_group.campaign.account, ['account_id', 'campaign_id'], self.start_date, self.end_date,
+            self.user, self.ad_group.campaign.account, self.start_date, self.end_date,
             dash.models.Source.objects.all(), only_used_sources=True)
         self.assertEqual(constraints['filtered_sources'], test_helper.QuerySetMatcher([self.sources[0]]))
 
     def test_prepare_campaign_constraints(self):
         constraints = constraints_helper.prepare_campaign_constraints(
-            self.user, self.ad_group.campaign, ['campaign_id', 'ad_group_id'], self.start_date, self.end_date,
+            self.user, self.ad_group.campaign, self.start_date, self.end_date,
             dash.models.Source.objects.all(), only_used_sources=True)
         self.assertEqual(constraints['filtered_sources'], test_helper.QuerySetMatcher(dash.models.Source.objects.all()))
 
         dash.models.AdGroupSource.objects.filter(source=self.sources[1]).update(ad_review_only=True)
         constraints = constraints_helper.prepare_campaign_constraints(
-            self.user, self.ad_group.campaign, ['ad_group_id', 'content_ad_id'], self.start_date, self.end_date,
+            self.user, self.ad_group.campaign, self.start_date, self.end_date,
             dash.models.Source.objects.all(), only_used_sources=True)
         self.assertEqual(constraints['filtered_sources'], test_helper.QuerySetMatcher([self.sources[0]]))
 
     def test_prepare_ad_group_constraints(self):
         constraints = constraints_helper.prepare_ad_group_constraints(
-            self.user, self.ad_group, ['ad_group_id', 'content_ad_id'], self.start_date, self.end_date,
+            self.user, self.ad_group, self.start_date, self.end_date,
             dash.models.Source.objects.all(), only_used_sources=True)
         self.assertEqual(constraints['filtered_sources'], test_helper.QuerySetMatcher(dash.models.Source.objects.all()))
 
         dash.models.AdGroupSource.objects.filter(source=self.sources[1]).update(ad_review_only=True)
         constraints = constraints_helper.prepare_ad_group_constraints(
-            self.user, self.ad_group, ['ad_group_id', 'content_ad_id'], self.start_date, self.end_date,
+            self.user, self.ad_group, self.start_date, self.end_date,
             dash.models.Source.objects.all(), only_used_sources=True)
         self.assertEqual(constraints['filtered_sources'], test_helper.QuerySetMatcher([self.sources[0]]))
