@@ -85,9 +85,10 @@ class AdGroupSourceManager(core.common.QuerySetManager):
         return ad_group_source
 
     def _handle_ad_review_only(self, ad_group_source):
-        ad_group_source.settings.update(state=constants.AdGroupSourceSettingsState.ACTIVE)
         ad_group_source.ad_review_only = False
         ad_group_source.save()
+
+        ad_group_source.settings.update(state=constants.AdGroupSourceSettingsState.ACTIVE)
 
     @transaction.atomic
     def bulk_create_on_allowed_sources(self, request, ad_group, write_history=True, k1_sync=True):
