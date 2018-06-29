@@ -1793,6 +1793,54 @@ class CustomFlagAdmin(admin.ModelAdmin):
     )
 
 
+class DirectDealConnectionForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(DirectDealConnectionForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        super(DirectDealConnectionForm, self).clean()
+
+        if self.cleaned_data.get('agency') is not None and self.cleaned_data.get('adgroup') is not None:
+            raise ValidationError('Configuring both agency and adgroup is not allowed')
+
+        if self.cleaned_data.get('exclusive') is True:
+            if self.cleaned_data.get('agency') is None and self.cleaned_data.get('adgroup') is None:
+                raise ValidationError('Exclusive flag can be True only in combination with agency or adgroup')
+
+    def save_model(self, request, obj, form, change):
+        if getattr(obj, 'created_by', None) is None:
+            obj.author = request.user
+        obj.save()
+
+
+class DirectDealConnectionAdmin(admin.ModelAdmin):
+    model = models.DirectDealConnection
+    form = DirectDealConnectionForm
+    raw_id_fields = ('adgroup', 'agency')
+    readonly_fields = ('modified_dt', 'created_dt', 'created_by')
+    list_display = (
+        'id',
+        'source',
+        'exclusive',
+        'adgroup',
+        'agency',
+        'get_deals'
+    )
+
+    def get_deals(self, obj):
+        return "\n".join([d.deal_id for d in obj.deals.all()])
+
+    def save_model(self, request, obj, form, change):
+        obj.save(request)
+
+
+class DirectDealAdmin(admin.ModelAdmin):
+    model = models.DirectDeal
+    list_display = (
+        'deal_id',
+    )
+
+
 admin.site.register(models.Agency, AgencyAdmin)
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
@@ -1823,3 +1871,5 @@ admin.site.register(models.CpcConstraint, CpcConstraintAdmin)
 admin.site.register(models.CustomHack, CustomHackAdmin)
 admin.site.register(models.CustomFlag, CustomFlagAdmin)
 admin.site.register(models.SubmissionFilter, SubmissionFilterAdmin)
+admin.site.register(models.DirectDeal, DirectDealAdmin)
+admin.site.register(models.DirectDealConnection, DirectDealConnectionAdmin)

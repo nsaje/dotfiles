@@ -12,6 +12,7 @@ from .views import r1_mapping
 from .views import ga_accounts
 from .views import outbrain
 from .views import yahoo
+from .views import direct_deals
 from .views import currency_exchange_rates
 
 
@@ -120,6 +121,11 @@ urlpatterns = [
         r'^geolocations$',
         geolocations.GeolocationsView.as_view(),
         name='k1api.geolocations',
+    ),
+    url(
+        r'^direct_deals$',
+        direct_deals.DirectDealsView.as_view(),
+        name='k1api.directdeals',
     ),
     url(
         '^currency_exchange_rates$',

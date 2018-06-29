@@ -14,6 +14,7 @@ from core.publisher_bid_modifiers.publisher_bid_modifier import PublisherBidModi
 from core.publisher_groups import *
 from core.multicurrency import *
 from core.features.yahoo_accounts.models import *
+from core.direct_deals import *
 
 # Core helpers
 from core.bcm.helpers import *
