@@ -1,22 +1,23 @@
 import core.common
 import calendar
 
+from django.db import transaction
+
 from . import model
 
 
 class RefundLineItemManager(core.common.BaseManager):
 
+    @transaction.atomic
     def create(self, request, **kwargs):
-        start_date = kwargs.pop('start_date')
-        end_date = kwargs.pop(
-            'end_date',
-            start_date.replace(day=calendar.monthrange(start_date.year, start_date.month)[1]),
+        start_date = kwargs.get('start_date')
+        end_date = start_date.replace(
+            day=calendar.monthrange(start_date.year, start_date.month)[1],
         )
         refund = model.RefundLineItem(
             created_by=request.user,
-            start_date=start_date,
             end_date=end_date,
             **kwargs,
         )
-        refund.save(request)
+        refund.clean_save(request)
         return refund

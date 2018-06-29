@@ -96,7 +96,7 @@ class AccountCreditRefundTest(RESTAPITest):
             self.validate_against_db(item)
 
     def test_refund_post(self):
-        new_refund = self.refund_repr(account_id=186, credit_id=861)
+        new_refund = self.refund_repr(account_id=186, credit_id=861, amount=0)
         del new_refund['id']
         r = self.client.post(
             reverse('accounts_credits_refunds_list', kwargs={
@@ -112,6 +112,32 @@ class AccountCreditRefundTest(RESTAPITest):
         new_refund['createdBy'] = resp_json['data']['createdBy']
         new_refund['createdDt'] = resp_json['data']['createdDt']
         self.assertEqual(resp_json['data'], new_refund)
+
+    def test_refund_post_amount_fail(self):
+        new_refund = self.refund_repr()
+        del new_refund['id']
+        r = self.client.post(
+            reverse('accounts_credits_refunds_list', kwargs={
+                'account_id': 186,
+                'credit_id': 861,
+            }),
+            data=new_refund,
+            format='json',
+        )
+        self.assertResponseError(r, 'ValidationError')
+
+    def test_refund_post_date_fail(self):
+        new_refund = self.refund_repr(start_date=datetime.date(2014, 1, 1))
+        del new_refund['id']
+        r = self.client.post(
+            reverse('accounts_credits_refunds_list', kwargs={
+                'account_id': 186,
+                'credit_id': 861,
+            }),
+            data=new_refund,
+            format='json',
+        )
+        self.assertResponseError(r, 'ValidationError')
 
     def test_refund_delete(self):
         r = self.client.delete(

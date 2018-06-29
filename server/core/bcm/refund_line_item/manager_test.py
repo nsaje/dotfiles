@@ -1,3 +1,4 @@
+import datetime
 from decimal import Decimal
 
 from django.test import TestCase
@@ -10,7 +11,6 @@ from dash import constants
 from . import model
 
 from utils.magic_mixer import magic_mixer
-from utils import dates_helper
 
 
 class TestRefundLineItemManager(TestCase):
@@ -18,11 +18,16 @@ class TestRefundLineItemManager(TestCase):
     def test_create(self):
         request = magic_mixer.blend_request_user()
         account = magic_mixer.blend(core.entity.Account)
+
+        start_date = datetime.date(2018, 7, 8)
+        end_date = datetime.date(2018, 9, 10)
+        refund_start_date = start_date.replace(day=1)
+
         credit = magic_mixer.blend(
             core.bcm.CreditLineItem,
             account=account,
-            start_date=dates_helper.local_yesterday(),
-            end_date=dates_helper.local_today(),
+            start_date=start_date,
+            end_date=end_date,
             status=constants.CreditLineItemStatus.SIGNED,
             amount=1000,
             license_fee=Decimal('0.2'),
@@ -32,9 +37,8 @@ class TestRefundLineItemManager(TestCase):
             request,
             account=account,
             credit=credit,
-            start_date=dates_helper.local_yesterday(),
-            end_date=dates_helper.local_today(),
-            amount=100,
+            start_date=refund_start_date,
+            amount=0,
             comment='',
         )
 

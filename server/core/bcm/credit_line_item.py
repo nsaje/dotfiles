@@ -113,6 +113,9 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
     def get_allocated_amount(self):
         return Decimal(sum(b.allocated_amount() for b in self.budgets.all()))
 
+    def get_refunds_amount(self):
+        return Decimal(sum(r.amount for r in self.refunds.all()))
+
     def get_overlap(self, start_date, end_date):
         return dates_helper.get_overlap(self.start_date, self.end_date, start_date, end_date)
 
@@ -252,7 +255,7 @@ class CreditLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
         return Decimal(self.flat_fee_cc) * converters.CC_TO_DECIMAL_CURRENCY
 
     def effective_amount(self):
-        return Decimal(self.amount) - self.flat_fee()
+        return Decimal(self.amount) - self.flat_fee() + self.get_refunds_amount()
 
     def get_available_amount(self):
         return self.effective_amount() - self.get_allocated_amount()
