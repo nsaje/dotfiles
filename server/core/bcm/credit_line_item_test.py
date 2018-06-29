@@ -10,6 +10,7 @@ from utils.magic_mixer import magic_mixer
 from utils import test_helper
 
 from .credit_line_item import CreditLineItem
+from .refund_line_item.model import RefundLineItem
 
 
 class TestCreditLineItemManager(TestCase):
@@ -146,4 +147,34 @@ class TestCreditLineItemQuerySetFilterOverlapping(TestCase):
                     datetime.date(2017, 2, 15)
                 )
             )
+        )
+
+
+class TestCreditLineItemAmounts(TestCase):
+
+    def setUp(self):
+        self.request = magic_mixer.blend_request_user()
+        account = magic_mixer.blend(dash.models.Account, users=[self.request.user])
+        self.base_amount = 1000
+        self.item = CreditLineItem.objects.create(
+            self.request,
+            datetime.date(2017, 1, 1),
+            datetime.date(2017, 1, 31),
+            self.base_amount,
+            account=account,
+            license_fee=Decimal('0.1')
+        )
+
+    def test_refunds_amount(self):
+        self.assertEqual(self.item.get_available_amount(), self.base_amount)
+        refund = RefundLineItem.objects.create_unsafe(
+            account=self.item.account,
+            credit=self.item,
+            start_date=datetime.date(2017, 1, 1),
+            end_date=datetime.date(2017, 1, 2),
+            amount=self.base_amount,
+        )
+        self.assertEqual(
+            self.item.get_available_amount(),
+            self.base_amount + refund.amount,
         )

@@ -7,6 +7,9 @@ import restapi.access
 from restapi.common.pagination import StandardPagination
 
 import core.entity
+from core.bcm.refund_line_item import exceptions
+
+import utils.exc
 
 from . import serializers
 
@@ -25,7 +28,7 @@ class AccountCreditRefundViewSet(RESTAPIBaseViewSet):
 
     def remove(self, request, account_id, credit_id, refund_id):
         refund = self._get_refund_query(request, account_id, credit_id).get(id=refund_id)
-        refund.delete()
+        self.update_refund(refund.delete)
         return Response(None, status=204)
 
     def list(self, request, account_id, credit_id=None):
@@ -40,7 +43,8 @@ class AccountCreditRefundViewSet(RESTAPIBaseViewSet):
         account, credit = self._get_account_and_credit(request, account_id, credit_id)
         serializer = serializers.AccountCreditRefundSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        new_refund = core.bcm.RefundLineItem.objects.create(
+        new_refund = self.update_refund(
+            core.bcm.RefundLineItem.objects.create,
             request=request,
             account=account,
             credit=credit.get(),
@@ -69,3 +73,18 @@ class AccountCreditRefundViewSet(RESTAPIBaseViewSet):
         return core.bcm.RefundLineItem.objects.filter(
             credit__in=credit,
         )
+
+    def update_refund(self, fn, **kwargs):
+        try:
+            refund = fn(**kwargs)
+
+        except exceptions.StartDateInvalid as err:
+            raise utils.exc.ValidationError(errors={'start_date': [str(err)]})
+
+        except exceptions.RefundAmountExceededTotalSpend as err:
+            raise utils.exc.ValidationError(errors={'amount': [str(err)]})
+
+        except exceptions.CreditAvailableAmountNegative as err:
+            raise utils.exc.ValidationError(errors={'amount': [str(err)]})
+
+        return refund

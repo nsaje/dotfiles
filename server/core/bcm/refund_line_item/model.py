@@ -6,9 +6,10 @@ import utils.demo_anonymizer
 
 from . import instance
 from . import manager
+from . import validation
 
 
-class RefundLineItem(instance.RefundLineItemInstanceMixin, core.common.FootprintModel):
+class RefundLineItem(validation.RefundLineItemValidatorMixin, instance.RefundLineItemInstanceMixin, core.common.FootprintModel):
 
     class Meta:
         app_label = 'dash'
