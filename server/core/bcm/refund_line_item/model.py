@@ -22,7 +22,7 @@ class RefundLineItem(instance.RefundLineItemInstanceMixin, core.common.Footprint
     start_date = models.DateField()
     end_date = models.DateField()
     amount = models.IntegerField()
-    comment = models.TextField(blank=True, null=True)
+    comment = models.TextField(default='Unchecked credit refund')
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
