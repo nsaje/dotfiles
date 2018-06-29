@@ -32,7 +32,7 @@ DATABASES = {
         'NAME': 'stats',
         'USER': 'demo',
         'PASSWORD': Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAG4wbAYJKoZIhvcNAQcGoF8wXQIBADBYBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDBDb8DE5OXc1+Nb2ZQIBEIArn2mgpGeErWfhKa5/BF4kNoO4P3lX+61WldqOd9qccwQ8ptcGPsxNjDXkoA==').get().decode('utf-8'),
-        'HOST': 'stats-postgres-1.cmkkg7ghktp5.us-east-1.rds.amazonaws.com',
+        'HOST': 'ec2-18-209-193-186.compute-1.amazonaws.com',
         'PORT': 5432,
     }
 }
