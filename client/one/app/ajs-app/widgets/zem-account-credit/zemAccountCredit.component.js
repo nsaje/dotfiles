@@ -5,8 +5,10 @@ angular.module('one').component('zemAccountCredit', {
         account: '<',
     },
     template: require('./zemAccountCredit.component.html'),
-    controller: function (zemAccountCreditStateService, $window, $uibModal) {
+    controller: function (zemAccountCreditStateService, zemPermissions, $window, $uibModal) {
         var $ctrl = this;
+
+        $ctrl.hasPermission = zemPermissions.hasPermission;
 
         $ctrl.$onInit = function () {
             $ctrl.stateService = zemAccountCreditStateService.createInstance($ctrl.account);
@@ -15,6 +17,7 @@ angular.module('one').component('zemAccountCredit', {
 
             $ctrl.openCreditItemModal = openCreditItemModal;
             $ctrl.cancelCreditItem = cancelCreditItem;
+            $ctrl.openCreditRefundItemModal = openCreditRefundItemModal;
         };
 
         function cancelCreditItem (id) {
@@ -31,6 +34,18 @@ angular.module('one').component('zemAccountCredit', {
                 resolve: {
                     stateService: $ctrl.stateService,
                     id: id,
+                    account: $ctrl.account,
+                },
+            });
+        }
+
+        function openCreditRefundItemModal (creditItem) {
+            $ctrl.stateService.setCreditItem(creditItem);
+            $uibModal.open({
+                component: 'zemAccountCreditRefundItemModal',
+                windowClass: 'zem-account-credit-refund-item-modal',
+                resolve: {
+                    stateService: $ctrl.stateService,
                     account: $ctrl.account,
                 },
             });

@@ -1,6 +1,7 @@
 import restapi.bcm.urls
 import restapi.account.urls
 import restapi.accountcredit.urls
+import restapi.accountcreditrefund.urls
 import restapi.campaign.urls
 import restapi.campaignstats.urls
 import restapi.campaignlauncher.urls
@@ -27,6 +28,7 @@ urlpatterns = []
 urlpatterns += restapi.bcm.urls.urlpatterns
 urlpatterns += restapi.account.urls.urlpatterns
 urlpatterns += restapi.accountcredit.urls.urlpatterns
+urlpatterns += restapi.accountcreditrefund.urls.urlpatterns
 urlpatterns += restapi.campaign.urls.urlpatterns
 urlpatterns += restapi.campaignstats.urls.urlpatterns
 urlpatterns += restapi.campaignlauncher.urls.urlpatterns

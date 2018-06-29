@@ -33,6 +33,7 @@
       - ['can_set_advanced_device_targeting', 'zemauth', 'user']
       - ['can_use_bluekai_targeting', 'zemauth', 'user']
       - ['can_set_click_capping', 'zemauth', 'user']
+      - ['can_manage_credit_refunds', 'zemauth', 'user']
 
 - model: oauth2_provider.application
   pk: 1
@@ -116,6 +117,21 @@
         comment: 'Test case'
     model: dash.budgetlineitem
     pk: 1910
+
+# test refundlineitems
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        account: 186 # test account 1
+        credit: 861
+        start_date: '2015-10-01'
+        end_date: '2116-11-30'
+        amount: 1000
+        comment: 'Test refund'
+    model: dash.refundlineitem
+    pk: 777
 
 # test campaign
 

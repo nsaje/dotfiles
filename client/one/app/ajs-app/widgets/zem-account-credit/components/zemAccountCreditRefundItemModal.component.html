@@ -1,0 +1,51 @@
+<div class="modal__header">
+    <div class="modal__title">Credit Item #{{ $ctrl.state.creditItem.id }} refund</div>
+</div>
+<div class="modal__body">
+    <p>Refund for credit item created by <strong>{{ $ctrl.state.creditItem.createdBy }}</strong> on <strong>{{ $ctrl.state.creditItem.createdOn }}</strong></p>
+    <hr>
+    <div class="form" id="form-account-credit-refund-item" ng-show="!$ctrl.state.requests.reloadCreditItem.inProgress">
+        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditRefundItem.errors.startDate}">
+            <label class="form__label" for="date-input">Refund for month</label>
+            <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon">
+                <input class="input-text" id="date-input" type="text" uib-datepicker-popup="MM/yyyy"
+                       ng-model="$ctrl.state.creditRefundItem.startDate" datepicker-options="$ctrl.datePickerOptions"
+                       is-open="$ctrl.isDatePickerOpen" ng-click="$ctrl.openDatePicker()" />
+            </div>
+            <div ng-repeat="error in $ctrl.state.requests.saveCreditRefundItem.errors.startDate" class="message message--error" for="date-input">{{ error }}</div>
+        </div>
+        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditRefundItem.errors.amount}">
+            <label class="form__label" for="amount-input">Credit refund</label>
+            <div class="prefixed-field postfixed-field prefixed-field--narrow postfixed-field--narrow">
+                <span class="prefixed-field__prefix">{{$ctrl.state.creditItem.currencySymbol}}</span>
+                <input class="input-text" id="amount-input" type="text" ng-model="$ctrl.state.creditRefundItem.amount" zem-currency-input fraction-size="0">
+                <span class="postfixed-field__postfix">.00</span>
+            </div>
+            <div ng-repeat="error in $ctrl.state.requests.saveCreditRefundItem.errors.amount" class="message message--error" for="amount">{{ error }}</div>
+        </div>
+        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditRefundItem.errors.comment}">
+            <label class="form__label" for="comment-input">Custom Notes</label>
+            <textarea class="textarea" id="comment-input" type="text" ng-model="$ctrl.state.creditRefundItem.comment" maxlength="256"></textarea>
+            <div class="message message--error" ng-repeat="error in $ctrl.state.requests.saveCreditRefundItem.errors.comment" for="comment">{{ error }}</div>
+        </div>
+        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditRefundItem.errors.agency}" ng-if="$ctrl.account.data.agency">
+            <label class="form__label">Agency credit</label>
+            <div class="form__checkbox">
+                <label>
+                    <input class="input-checkbox" id="is-agency-input" type="checkbox" ng-model="$ctrl.state.creditItem.isAgency">
+                    <span class="checkbox-text"></span>
+                </label>
+            </div>
+            <div class="message message--error" ng-repeat="error in $ctrl.state.requests.saveCreditRefundItem.errors.agency" for="is-agency-input">{{ error }}</div>
+        </div>
+        <hr>
+    </div>
+</div>
+<div class="modal__footer buttons-panel">
+    <button type="button" class="button button--highlight button--with-icon check-icon" ng-click="$ctrl.saveCreditRefundItem()" ng-disabled="$ctrl.state.requests.saveCreditRefundItem.inProgress">Save</button>
+    <button type="button" class="button button--outline" ng-click="$ctrl.discardCreditRefundItem()" ng-disabled="$ctrl.state.requests.saveCreditRefundItem.inProgress">Discard</button>
+    <div class="loader" ng-show="$ctrl.state.requests.saveCreditRefundItem.inProgress"></div>
+    <span ng-show="$ctrl.saved" class="message message--success">Your updates have been saved.</span>
+    <span ng-show="$ctrl.saved === false" class="message message--error">An error occurred while saving. Please correct the marked fields and save again.</span>
+    <span ng-show="$ctrl.discarded" class="message">Your updates have been discarded.</span>
+</div>
