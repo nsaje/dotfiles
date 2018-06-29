@@ -38,7 +38,7 @@ class RefundLineItemInstanceMixinTest(TestCase):
             credit=credit,
             start_date=refund_start_date,
             amount=0,
-            comment='',
+            comment='test',
         )
         self.assertEqual(1, core.bcm.RefundHistory.objects.count())
 
@@ -49,7 +49,7 @@ class RefundLineItemInstanceMixinTest(TestCase):
             'start_date': str(refund_start_date),
             'end_date': str(refund_end_date),
             'amount': 0,
-            'comment': '',
+            'comment': 'test',
             'created_by': request.user.id,
         }
         self.assertEqual(expected_history, core.bcm.RefundHistory.objects.latest('created_dt').snapshot)
@@ -64,7 +64,7 @@ class RefundLineItemInstanceMixinTest(TestCase):
             'start_date': str(refund_start_date),
             'end_date': str(refund_end_date),
             'amount': 0,
-            'comment': '',
+            'comment': 'test',
             'created_by': request.user.id,
         }
         self.assertEqual(expected_history, core.bcm.RefundHistory.objects.latest('created_dt').snapshot)

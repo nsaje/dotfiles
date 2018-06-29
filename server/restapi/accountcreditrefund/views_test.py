@@ -16,7 +16,7 @@ class AccountCreditRefundTest(RESTAPITest):
         start_date=datetime.date(2018, 4, 1),
         end_date=datetime.date(2018, 4, 30),
         amount=500,
-        comment='',
+        comment='test',
         created_by='test@test.com',
         created_dt=datetime.datetime.now(),
     ):
@@ -115,6 +115,19 @@ class AccountCreditRefundTest(RESTAPITest):
 
     def test_refund_post_amount_fail(self):
         new_refund = self.refund_repr()
+        del new_refund['id']
+        r = self.client.post(
+            reverse('accounts_credits_refunds_list', kwargs={
+                'account_id': 186,
+                'credit_id': 861,
+            }),
+            data=new_refund,
+            format='json',
+        )
+        self.assertResponseError(r, 'ValidationError')
+
+    def test_refund_post_comment_fail(self):
+        new_refund = self.refund_repr(comment='')
         del new_refund['id']
         r = self.client.post(
             reverse('accounts_credits_refunds_list', kwargs={

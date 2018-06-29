@@ -39,7 +39,7 @@ class TestRefundLineItemManager(TestCase):
             credit=credit,
             start_date=refund_start_date,
             amount=0,
-            comment='',
+            comment='test',
         )
 
         self.assertTrue(refund.id)
