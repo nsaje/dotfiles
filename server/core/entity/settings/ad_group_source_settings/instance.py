@@ -20,6 +20,8 @@ class AdGroupSourceSettingsMixin(object):
 
         new_settings = self.copy_settings()
         for key, value in updates.items():
+            if key == 'state' and self.ad_group_source.ad_review_only:
+                value = dash.constants.AdGroupSourceSettingsState.INACTIVE
             setattr(new_settings, key, value)
 
         changes = self.get_setting_changes(new_settings)
