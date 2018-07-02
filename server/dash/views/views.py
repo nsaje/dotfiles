@@ -670,11 +670,11 @@ class AdGroupSources(api_common.BaseApiView):
         ad_group_settings = ad_group.get_current_settings()
 
         allowed_sources = ad_group.campaign.account.allowed_sources.all()
-        ad_group_sources = ad_group.sources.all()
+        existing_ad_group_sources = ad_group.adgroupsource_set.exclude(ad_review_only=True)
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         sources_with_credentials = models.DefaultSourceSettings.objects.all().with_credentials().values('source')
         available_sources = allowed_sources.\
-            exclude(pk__in=ad_group_sources).\
+            exclude(pk__in=existing_ad_group_sources.values_list('source_id')).\
             filter(pk__in=filtered_sources).\
             filter(pk__in=sources_with_credentials).\
             order_by('name')
