@@ -2,6 +2,7 @@ import logging
 import backtosql
 
 from django.core.cache import caches
+from django.db.models import Q
 
 from redshiftapi import db
 from etl import maintenance
@@ -16,12 +17,23 @@ logger = logging.getLogger(__name__)
 TABLE_NAME = 'mv_inventory'
 CACHE_NAME = 'inventory_planning'
 
+NATIVE_AD_SERVER_IDS = [
+    115,  # Mediamond
+    118,  # RCS
+    122,  # News Corp
+]
+
 
 def refresh_inventory_data(date_from, date_to, skip_vacuum=False):
     valid_country_codes = list(dash.features.geolocation.Geolocation.objects.filter(
         type=dash.constants.LocationType.COUNTRY
     ).values_list('key', flat=True))
-    source_slug_to_id = {s.bidder_slug: s.id for s in core.source.Source.objects.filter(deprecated=False, released=True)}
+    source_slug_to_id = {
+        s.bidder_slug: s.id
+        for s in core.source.Source.objects.filter(
+            Q(deprecated=False) & (Q(released=True) | Q(id__in=NATIVE_AD_SERVER_IDS))
+        )
+    }
 
     sql = backtosql.generate_sql(
         'etl_aggregate_inventory_data.sql',

@@ -325,6 +325,9 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_vast', 'User can see vast upload option'),
             ('can_manage_restapi_access', 'User can manage REST API access'),
             ('can_manage_credit_refunds', 'User can see and create credit refunds'),
+            ('can_see_mediamond_publishers', 'User can see Mediamond publishers in inventory planning'),
+            ('can_see_rcs_publishers', 'User can see RCS publishers in inventory planning'),
+            ('can_see_newscorp_publishers', 'User can see News Corp publishers in inventory planning'),
         )
 
     def get_full_name(self):

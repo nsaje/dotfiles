@@ -14,7 +14,7 @@ class TestService(TestCase):
 
     def test_get_summary(self):
         self.mock_query.return_value = [{'a': 1}, {'b': 2}]
-        self.assertEqual(service.get_summary(None), {'a': 1})
+        self.assertEqual(service.get_summary(None, {}), {'a': 1})
 
     @mock.patch.object(service, '_get_countries_map')
     def test_get_by_country(self, mock_countries_map):
@@ -44,7 +44,7 @@ class TestService(TestCase):
                 'bid_reqs': 10000,
             },
         ]
-        self.assertEqual(service.get_by_country(None), [
+        self.assertEqual(service.get_by_country(None, {}), [
             {
                 'country': 'a',
                 'name': 'Country A',
@@ -88,7 +88,7 @@ class TestService(TestCase):
                 'total_win_price': 10.0,
             },
         ]
-        self.assertEqual(service.get_by_device_type(None), [
+        self.assertEqual(service.get_by_device_type(None, {}), [
             {
                 'device_type': 2,
                 'name': 'Desktop',
@@ -122,7 +122,7 @@ class TestService(TestCase):
             }
         ])
 
-    @mock.patch.object(service, '_get_sources_map')
+    @mock.patch.object(service, '_get_filtered_sources_map')
     def test_get_by_media_source(self, mock_sources_map):
         mock_sources_map.return_value = {
             1: 'Source A',
@@ -152,7 +152,7 @@ class TestService(TestCase):
                 'total_win_price': 10.0,
             },
         ]
-        self.assertEqual(service.get_by_media_source(None), [
+        self.assertEqual(service.get_by_media_source(None, {}), [
             {
                 'source_id': 1,
                 'name': 'Source A',
