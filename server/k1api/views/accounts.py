@@ -2,6 +2,7 @@ import logging
 from collections import defaultdict
 
 from django.db.models import Prefetch
+from django.db.models import Q
 
 import dash.constants
 import dash.models
@@ -114,8 +115,7 @@ class AccountsView(K1APIView):
         return accounts_audiences
 
     def _is_amplify_review_only(self, account):
-        return dash.models.AdGroupSource.objects.filter(
+        return not dash.models.AdGroupSource.objects.filter(
             ad_group__campaign__account_id=account.id,
             source_id=OUTBRAIN_SOURCE_ID,
-            ad_review_only=True
-        ).exists()
+        ).filter(Q(ad_review_only=False) | Q(ad_review_only=None)).exists()
