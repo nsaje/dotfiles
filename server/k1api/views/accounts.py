@@ -12,6 +12,9 @@ from .base import K1APIView
 logger = logging.getLogger(__name__)
 
 
+OUTBRAIN_SOURCE_ID = 3
+
+
 class AccountsView(K1APIView):
 
     @db_for_reads.use_read_replica()
@@ -71,6 +74,7 @@ class AccountsView(K1APIView):
                 'pixels': pixels,
                 'custom_audiences': accounts_audiences[account.id],
                 'outbrain_marketer_id': account.outbrain_marketer_id,
+                'outbrain_amplify_review_only': self._is_amplify_review_only(account),
             }
             account_dicts.append(account_dict)
 
@@ -108,3 +112,10 @@ class AccountsView(K1APIView):
             }
             accounts_audiences[audience.pixel.account_id].append(audience_dict)
         return accounts_audiences
+
+    def _is_amplify_review_only(self, account):
+        return dash.models.AdGroupSource.objects.filter(
+            ad_group__campaign__account_id=account.id,
+            source_id=OUTBRAIN_SOURCE_ID,
+            ad_review_only=True
+        ).exists()

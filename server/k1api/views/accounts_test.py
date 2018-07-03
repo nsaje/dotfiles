@@ -41,6 +41,7 @@ class AccountsTest(K1APIBaseTest):
             'id': 1,
             'name': 'test account 1',
             'outbrain_marketer_id': 'abcde',
+            'outbrain_amplify_review_only': False,
             'custom_audiences': [
                 {'pixel_id': 1,
                  'rules': [
