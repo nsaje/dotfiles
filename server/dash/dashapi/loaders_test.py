@@ -367,10 +367,11 @@ class ContentAdLoaderTest(TestCase):
         })
 
     def test_content_ads_sources_map(self):
-        self.assertDictEqual(self.loader.content_ads_sources_map, {
-            1: [models.ContentAdSource.objects.get(pk=1), models.ContentAdSource.objects.get(pk=2)],
-            2: [models.ContentAdSource.objects.get(pk=3)],
-        })
+        self.assertEqual(2, len(self.loader.content_ads_sources_map))
+        self.assertCountEqual(
+            self.loader.content_ads_sources_map[1],
+            [models.ContentAdSource.objects.get(pk=1), models.ContentAdSource.objects.get(pk=2)])
+        self.assertCountEqual(self.loader.content_ads_sources_map[2], [models.ContentAdSource.objects.get(pk=3)])
 
     def test_content_ads_sources_map_filtered_by_sources(self):
         content_ads = models.ContentAd.objects.all()
