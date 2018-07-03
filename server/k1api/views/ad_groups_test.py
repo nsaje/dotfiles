@@ -36,6 +36,7 @@ class AdGroupsTest(K1APIBaseTest):
         self.assertDictEqual(data[0], {
             'id': 1,
             'name': 'ONE: test account 1 / test campaign 1 / test adgroup 1 / 1',
+            'external_name': 'ONE: test account 1 / test campaign 1 / test adgroup 1 / 1',
             'start_date': '2014-06-04',
             'end_date': None,
             'time_zone': 'America/New_York',
@@ -59,8 +60,11 @@ class AdGroupsTest(K1APIBaseTest):
             'interest_targeting': ["tech", "entertainment"],
             'exclusion_interest_targeting': ["politics", "war"],
             'campaign_id': 1,
+            'campaign_name': 'test campaign 1',
             'account_id': 1,
+            'account_name': 'test account 1',
             'agency_id': 20,
+            'agency_name': 'test agency 1',
             'goal_types': [2, 5],
             'goals': [{
                 'campaign_id': 1,
@@ -115,6 +119,7 @@ class AdGroupsTest(K1APIBaseTest):
         self.assertDictEqual(data[0], {
             'id': 1,
             'name': 'ONE: test account 1 / test campaign 1 / test adgroup 1 / 1',
+            'external_name': 'ONE: test account 1 / test campaign 1 / test adgroup 1 / 1',
             'start_date': '2014-06-04',
             'end_date': None,
             'time_zone': 'America/New_York',
@@ -138,8 +143,11 @@ class AdGroupsTest(K1APIBaseTest):
             'interest_targeting': ["tech", "entertainment"],
             'exclusion_interest_targeting': ["politics", "war"],
             'campaign_id': 1,
+            'campaign_name': 'test campaign 1',
             'account_id': 1,
+            'account_name': 'test account 1',
             'agency_id': 20,
+            'agency_name': 'test agency 1',
             'goal_types': [2, 5],
             'goals': [{
                 'campaign_id': 1,

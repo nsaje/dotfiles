@@ -64,8 +64,10 @@ class AdGroupsView(K1APIView):
                 continue
 
             agency_settings = None
+            agency_name = ''
             if ad_group.campaign.account.agency:
                 agency_settings = ad_group.campaign.account.agency.settings
+                agency_name = ad_group.campaign.account.agency.name
 
             blacklist = ad_group.settings.blacklist_publisher_groups
             whitelist = ad_group.settings.whitelist_publisher_groups
@@ -109,6 +111,7 @@ class AdGroupsView(K1APIView):
             ad_group_dict = {
                 'id': ad_group.id,
                 'name': ad_group.get_external_name(),
+                'external_name': ad_group.get_external_name(),
                 'start_date': ad_group.settings.start_date,
                 'end_date': self._get_end_date(ad_group.settings, campaignstop_states),
                 'time_zone': settings.DEFAULT_TIME_ZONE,
@@ -128,8 +131,11 @@ class AdGroupsView(K1APIView):
                 'interest_targeting': ad_group.settings.interest_targeting,
                 'exclusion_interest_targeting': ad_group.settings.exclusion_interest_targeting,
                 'campaign_id': ad_group.campaign.id,
+                'campaign_name': ad_group.campaign.name,
                 'account_id': ad_group.campaign.account.id,
+                'account_name': ad_group.campaign.account.name,
                 'agency_id': ad_group.campaign.account.agency_id,
+                'agency_name': agency_name,
                 'goal_types': campaign_goal_types[ad_group.campaign.id],
                 'goals': campaign_goals[ad_group.campaign.id],
                 'dayparting': ad_group.settings.dayparting,

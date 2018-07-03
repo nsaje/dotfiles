@@ -36,4 +36,15 @@ oauth2_provider.models.Application.objects.get_or_create(
     name='SSPDashboard',
     skip_authorization=False
 )
+
+oauth2_provider.models.Application.objects.get_or_create(
+    client_id='2IR8uOePVExOw7qFp3ooNA0YxktiswFkoAq9EVXk',
+    user=sspd_u,
+    redirect_uris='',
+    client_type='confidential',
+    authorization_grant_type='client-credentials',
+    client_secret='eX3PFlzP8hycjoMvBHwESCuL6WFxybWdK4S4seVVB65KehyXr4thBwih6Vv9mzAO5jZWQFAlvLZrzYuermhUDn2OBZqIudX6tf6XaUmJTguW68iC6Ey1XqcHCImMnFfq',
+    name='SSPDashboard - api',
+    skip_authorization=False
+)
 EOF

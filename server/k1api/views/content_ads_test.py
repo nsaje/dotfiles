@@ -233,6 +233,7 @@ class ContentAdsTest(K1APIBaseTest):
             {
                 "content_ad_id": 1,
                 "ad_group_id": 1,
+                "source_id": 1,
                 "submission_status": 1,
                 "source_content_ad_id": "987654321",
                 "tracking_slug": "adblade",
@@ -293,6 +294,7 @@ class ContentAdsTest(K1APIBaseTest):
         expected = [{
             'ad_group_id': content_ads[0].ad_group_id,
             'content_ad_id': content_ads[0].id,
+            'source_id': other_ad_group_source.source_id,
             'source_content_ad_id': content_ad_sources[0].source_content_ad_id,
             'source_slug': 'newsource',
             'state': dash.constants.ContentAdSourceState.ACTIVE,
@@ -301,6 +303,7 @@ class ContentAdsTest(K1APIBaseTest):
         }, {
             'ad_group_id': content_ads[1].ad_group_id,
             'content_ad_id': content_ads[1].id,
+            'source_id': other_ad_group_source.source_id,
             'source_content_ad_id': content_ad_sources[1].source_content_ad_id,
             'source_slug': 'newsource',
             'state': dash.constants.ContentAdSourceState.INACTIVE,
@@ -309,6 +312,7 @@ class ContentAdsTest(K1APIBaseTest):
         }, {
             'ad_group_id': content_ads[2].ad_group_id,
             'content_ad_id': content_ads[2].id,
+            'source_id': other_ad_group_source.source_id,
             'source_content_ad_id': content_ad_sources[2].source_content_ad_id,
             'source_slug': 'newsource',
             'state': dash.constants.ContentAdSourceState.ACTIVE,

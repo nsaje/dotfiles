@@ -140,6 +140,7 @@ class ContentAdSourcesView(K1APIView):
         for content_ad_source in content_ad_sources:
             response.append({
                 'content_ad_id': content_ad_source['content_ad_id'],
+                'source_id': content_ad_source['source_id'],
                 'ad_group_id': content_ad_source['content_ad__ad_group_id'],
                 'source_slug': content_ad_source['source__bidder_slug'],
                 'tracking_slug': content_ad_source['source__tracking_slug'],

@@ -27,6 +27,7 @@ class SourcesView(K1APIView):
         for source in sources:
             source_dict = {
                 'id': source.id,
+                'name': source.name,
                 'slug': source.tracking_slug,
                 'credentials': None
             }
