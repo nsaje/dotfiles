@@ -69,6 +69,7 @@ def get_autopilot_entities(ad_group=None, campaign=None):
         dash.models.AdGroupSource.objects.all()
         .filter(settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
         .filter(ad_group_id__in=[ag.id for ag in ad_groups])
+        .exclude(ad_review_only=True)
         .select_related('source__source_type')
         .select_related('settings')
         .order_by('pk')
