@@ -117,7 +117,9 @@ class AccountsView(K1APIView):
     def _is_amplify_review_only(self, account):
         return dash.models.AdGroupSource.objects.filter(
             ad_group__campaign__account_id=account.id,
+            ad_group__settings__archived=False,
             ad_review_only=True,
+            source_id=OUTBRAIN_SOURCE_ID,
         ).exists() and not dash.models.AdGroupSource.objects.filter(
             ad_group__campaign__account_id=account.id,
             ad_group__settings__archived=False,
