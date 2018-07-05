@@ -1082,3 +1082,27 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
         self.assertEqual(30, allocated_credit)
         self.assertEqual(70, available_credit)
+
+    def test_refunds(self):
+        account = dash.models.Account.objects.get(pk=1)
+        user = zemauth.models.User.objects.get(pk=1)
+        start_date = datetime.date(2018, 7, 7)
+        end_date = datetime.date(2018, 8, 7)
+        credit = dash.models.CreditLineItem.objects.create_unsafe(
+            account=account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+        dash.models.RefundLineItem.objects.create_unsafe(
+            account=account,
+            credit=credit,
+            start_date=start_date.replace(day=1),
+            end_date=start_date.replace(day=31),
+            amount=0,
+            created_by=user,
+        )
+        refunded = dash.infobox_helpers.calculate_credit_refund(account)
+        self.assertEqual(refunded, 0)

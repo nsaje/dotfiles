@@ -308,6 +308,13 @@ def calculate_allocated_and_available_credit(account):
     return allocated, (assigned or 0) - allocated
 
 
+def calculate_credit_refund(account):
+    return core.bcm.RefundLineItem.objects.filter(
+        credit__account=account,
+        start_date=utils.dates_helper.local_today().replace(day=1)
+    ).aggregate(Sum('amount'))['amount__sum']
+
+
 def create_yesterday_spend_setting(yesterday_costs, daily_budget, currency, uses_bcm_v2=False):
     yesterday_cost = yesterday_costs['yesterday_etfm_cost'] if uses_bcm_v2 else yesterday_costs['e_yesterday_cost']
     currency_symbol = core.multicurrency.get_currency_symbol(currency)

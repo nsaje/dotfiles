@@ -616,6 +616,20 @@ class AccountOverview(api_common.BaseApiView):
         )
         settings.append(allocated_credit_setting.as_dict())
 
+        credit_refund = infobox_helpers.calculate_credit_refund(account)
+        if credit_refund:
+            credit_refund_text = lc_helper.format_currency(
+                credit_refund,
+                curr=currency_symbol,
+            )
+            credit_refund_setting = infobox_helpers.OverviewSetting(
+                'Refunded credit:',
+                credit_refund_text,
+                description='',
+                tooltip='Total refunded credit',
+            )
+            settings.append(credit_refund_setting.as_dict())
+
         return settings
 
     def _performance_settings(self, account, user):
