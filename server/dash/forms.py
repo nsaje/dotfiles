@@ -17,6 +17,7 @@ from django.contrib.postgres import forms as postgres_forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.core import validators
 from django.utils.html import strip_tags
+from django.core import exceptions
 
 import core.multicurrency
 from dash import constants
@@ -1415,6 +1416,26 @@ class CreditLineItemAdminForm(forms.ModelForm):
         fields = ['account', 'agency', 'start_date', 'end_date', 'currency', 'amount',
                   'flat_fee_cc', 'flat_fee_start_date', 'flat_fee_end_date',
                   'license_fee', 'status', 'comment']
+
+
+class RefundLineItemAdminForm(forms.ModelForm):
+
+    class Meta:
+        model = models.RefundLineItem
+        fields = ['account', 'credit', 'start_date', 'end_date', 'amount', 'comment']
+
+    def full_clean(self):
+        try:
+            super().full_clean()
+
+        except core.bcm.refund_line_item.exceptions.StartDateInvalid as err:
+            self.add_error(None, exceptions.ValidationError({'start_date': [str(err)]}))
+
+        except core.bcm.refund_line_item.exceptions.RefundAmountExceededTotalSpend as err:
+            self.add_error(None, exceptions.ValidationError({'amount': [str(err)]}))
+
+        except core.bcm.refund_line_item.exceptions.CreditAvailableAmountNegative as err:
+            self.add_error(None, exceptions.ValidationError({'amount': [str(err)]}))
 
 
 class BudgetLineItemAdminForm(forms.ModelForm):

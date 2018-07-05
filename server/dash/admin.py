@@ -1142,6 +1142,54 @@ class CreditLineItemAdmin(ExportMixin, SaveWithRequestMixin, admin.ModelAdmin):
         return False
 
 
+class RefundLineItemResource(resources.ModelResource):
+
+    class Meta:
+        model = models.RefundLineItem
+
+    def _get_name(self, obj):
+        return obj.name if obj else '/'
+
+    def dehydrate_account(self, obj):
+        return obj.account.name if obj.account else '/'
+
+    def dehydrate_created_by(self, obj):
+        return obj.created_by.email if obj.created_by else '/'
+
+
+class RefundLineItemAdmin(ExportMixin, SaveWithRequestMixin, admin.ModelAdmin):
+    list_display = (
+        'account',
+        'credit',
+        'start_date',
+        'end_date',
+        'amount',
+        'comment',
+        'created_dt',
+        'created_by',
+    )
+    date_hierarchy = 'start_date'
+    list_filter = ('account', 'created_by', 'credit')
+    readonly_fields = ('end_date', 'created_dt', 'created_by',)
+    search_fields = ('account__name', 'amount', 'comment')
+    actions = None
+    form = dash_forms.RefundLineItemAdminForm
+    resource_class = RefundLineItemResource
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.select_related('account', 'credit', 'created_by')
+        return qs
+
+    def delete_model(self, request, refund):
+        try:
+            super().delete_model(request, refund)
+
+        except models.refund_line_item.exceptions.CreditAvailableAmountNegative as err:
+            messages.set_level(request, messages.ERROR)
+            messages.error(request, str(err))
+
+
 class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     list_display = (
         '__str__',
@@ -1857,6 +1905,7 @@ admin.site.register(models.DemoMapping, DemoMappingAdmin)
 admin.site.register(models.OutbrainAccount, OutbrainAccountAdmin)
 admin.site.register(models.ContentAdSource, ContentAdSourceAdmin)
 admin.site.register(models.CreditLineItem, CreditLineItemAdmin)
+admin.site.register(models.RefundLineItem, RefundLineItemAdmin)
 admin.site.register(models.BudgetLineItem, BudgetLineItemAdmin)
 admin.site.register(models.ScheduledExportReportLog, ScheduledExportReportLogAdmin)
 admin.site.register(models.ScheduledExportReport, ScheduledExportReportAdmin)

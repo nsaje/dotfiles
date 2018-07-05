@@ -11,9 +11,13 @@ class RefundLineItemValidatorMixin(object):
         is_valid = (self.start_date >= self.credit.start_date.replace(day=1) and
                     self.start_date <= self.credit.end_date)
 
-        if self.start_date.day != 1 or not is_valid:
+        if self.start_date.day != 1:
             raise exceptions.StartDateInvalid(
-                'Refund start date is bound by credit start and end date.'
+                'Start date has to be set on the first day of the month.'
+            )
+        if not is_valid:
+            raise exceptions.StartDateInvalid(
+                'Refund start date is bound by credit start and end month.'
             )
 
     def _validate_amount(self):
