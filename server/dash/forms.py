@@ -578,6 +578,9 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
     default_cs_representative = forms.IntegerField(
         required=False
     )
+    ob_representative = forms.IntegerField(
+        required=False
+    )
     account_type = forms.IntegerField(
         required=False
     )
@@ -658,6 +661,24 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
             raise forms.ValidationError(err_msg)
 
         return cs_representative
+
+    def clean_ob_representative(self):
+        ob_representative_id = self.cleaned_data.get(
+            'ob_representative')
+
+        if ob_representative_id is None:
+            return None
+
+        err_msg = 'Invalid OB representative.'
+
+        try:
+            ob_representative = ZemUser.objects.\
+                get_users_with_perm('can_be_ob_representative').\
+                get(pk=ob_representative_id)
+        except ZemUser.DoesNotExist:
+            raise forms.ValidationError(err_msg)
+
+        return ob_representative
 
     def clean_account_type(self):
         account_type = self.cleaned_data.get('account_type')
