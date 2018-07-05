@@ -5,6 +5,7 @@ import dash.constants
 from .model import Account
 
 from utils.magic_mixer import magic_mixer
+import zemauth.models
 
 
 class AccountManagerTestCase(TestCase):
@@ -44,3 +45,24 @@ class AccountManagerTestCase(TestCase):
         )
 
         self.assertEqual(None, account.currency)
+
+    def test_set_user_defaults_from_agency(self):
+        sales_representative = magic_mixer.blend(zemauth.models.User)
+        ob_representative = magic_mixer.blend(zemauth.models.User)
+        cs_representative = magic_mixer.blend(zemauth.models.User)
+        agency = magic_mixer.blend(
+            core.entity.Agency,
+            sales_representative=sales_representative,
+            ob_representative=ob_representative,
+            cs_representative=cs_representative,
+        )
+
+        account = Account.objects.create(
+            self.request,
+            name='Test',
+            agency=agency,
+        )
+
+        self.assertEqual(sales_representative, account.settings.default_sales_representative)
+        self.assertEqual(cs_representative, account.settings.default_cs_representative)
+        self.assertEqual(ob_representative, account.settings.ob_representative)

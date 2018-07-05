@@ -2547,6 +2547,33 @@ class AccountSettingsTest(TestCase):
             'currency': 'USD',
         })
 
+        add_permissions(user, ['can_set_account_ob_representative'])
+
+        response = client.get(
+            reverse('account_settings', kwargs={'account_id': 1000}),
+            follow=True
+        ).json()
+
+        self.assertTrue(response['success'])
+        self.assertDictEqual(response['data']['settings'], {
+            'name': 'Chuck ads',
+            'default_account_manager': None,
+            'default_sales_representative': None,
+            'default_cs_representative': None,
+            'ob_representative': None,
+            'allowed_sources': {'2': {'name': 'Source 2', 'released': True, 'deprecated': False},
+                                '100': {'name': 'AdsNative', 'released': True, 'deprecated': False},
+                                '200': {'name': 'Facebook', 'released': True, 'deprecated': False}
+                                },
+            'account_type': constants.AccountType.UNKNOWN,
+            'salesforce_url': None,
+            'id': '1000',
+            'archived': False,
+            'whitelist_publisher_groups': [],
+            'blacklist_publisher_groups': [],
+            'currency': 'USD',
+        })
+
     def test_get_can_set_agency(self):
         client = self._get_client_with_permissions([
             'can_modify_account_name',
@@ -2578,6 +2605,7 @@ class AccountSettingsTest(TestCase):
             'default_account_type': 1,
             'sales_representative': None,
             'cs_representative': None,
+            'ob_representative': None,
         }]
         self.assertEqual(agencies, response['data']['agencies'])
 
@@ -2653,6 +2681,34 @@ class AccountSettingsTest(TestCase):
         self.assertEqual(response.status_code, 401, 'agency manager cannot set cs rep. without permission')
 
         add_permissions(user, ['can_set_account_cs_representative'])
+        response, _ = self._put_account_agency(client, basic_settings, 1000)
+        self.assertEqual(response.status_code, 200)
+
+    def test_put_as_agency_manager_ob_rep(self):
+        client = self._get_client_with_permissions([
+            'can_modify_account_name',
+            'can_modify_account_manager',
+        ])
+        user = User.objects.get(pk=2)
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(user)
+
+        basic_settings = {
+            'id': 1000,
+            'name': 'changed name',
+            'default_account_manager': '3',
+            'ob_representative': '3',
+            'currency': 'USD',
+        }
+
+        response, _ = self._put_account_agency(client, basic_settings, 1000)
+        self.assertEqual(response.status_code, 400, msg='Designated ob rep doesn''t have permission')
+
+        add_permissions(User.objects.get(pk=3), ['can_be_ob_representative'])
+        response, _ = self._put_account_agency(client, basic_settings, 1000)
+        self.assertEqual(response.status_code, 401, 'agency manager cannot set ob rep. without permission')
+
+        add_permissions(user, ['can_set_account_ob_representative'])
         response, _ = self._put_account_agency(client, basic_settings, 1000)
         self.assertEqual(response.status_code, 200)
 
@@ -2843,6 +2899,7 @@ class AccountSettingsTest(TestCase):
             'can_modify_allowed_sources',
             'can_set_account_sales_representative',
             'can_set_account_cs_representative',
+            'can_set_account_ob_representative',
             'can_modify_facebook_page',
         ])
         response = Response()
@@ -2853,6 +2910,7 @@ class AccountSettingsTest(TestCase):
         mock_page_id.return_value = response
 
         add_permissions(User.objects.get(pk=2), ['campaign_settings_cs_rep'])
+        add_permissions(User.objects.get(pk=2), ['can_be_ob_representative'])
 
         response = client.put(
             reverse('account_settings', kwargs={'account_id': 1}),
@@ -2862,6 +2920,7 @@ class AccountSettingsTest(TestCase):
                     'default_sales_representative': '1',
                     'default_cs_representative': '2',
                     'default_account_manager': '3',
+                    'ob_representative': '2',
                     'account_type': '4',
                     'salesforce_url': '',
                     'id': '1',
@@ -2889,6 +2948,7 @@ class AccountSettingsTest(TestCase):
             'default_sales_representative': User.objects.get(pk=1),
             'default_cs_representative': User.objects.get(pk=2),
             'default_account_manager': User.objects.get(pk=3),
+            'ob_representative': User.objects.get(pk=2),
             'account_type': 4,
             'name': 'changed name',
             'salesforce_url': None,
