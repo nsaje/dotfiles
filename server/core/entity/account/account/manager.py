@@ -42,7 +42,6 @@ class AccountManager(core.common.BaseManager):
         if agency is not None:
             settings_updates['default_sales_representative'] = agency.sales_representative
             settings_updates['default_cs_representative'] = agency.cs_representative
-            settings_updates['ob_representative'] = agency.ob_representative
             settings_updates['account_type'] = constants.AccountType.ACTIVATED
 
         account.settings = core.entity.settings.AccountSettings(account=account)

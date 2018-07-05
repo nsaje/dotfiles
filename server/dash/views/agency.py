@@ -997,8 +997,6 @@ class AccountSettings(api_common.BaseApiView):
             response['sales_reps'] = self.get_sales_representatives(account)
         if request.user.has_perm('zemauth.can_set_account_cs_representative'):
             response['cs_reps'] = self.get_cs_representatives(account)
-        if request.user.has_perm('zemauth.can_set_account_ob_representative'):
-            response['ob_reps'] = self.get_ob_representatives()
         if request.user.has_perm('zemauth.can_see_backend_hacks'):
             response['hacks'] = models.CustomHack.objects.all().filter_applied(
                 account=account
@@ -1028,7 +1026,6 @@ class AccountSettings(api_common.BaseApiView):
                 'name',
                 'sales_representative',
                 'cs_representative',
-                'ob_representative',
                 'default_account_type',
             ))
 
@@ -1106,11 +1103,6 @@ class AccountSettings(api_common.BaseApiView):
                 not user.has_perm('zemauth.can_set_account_cs_representative'):
             raise exc.AuthorizationError()
 
-        if ('ob_representative' in form.cleaned_data and
-                form.cleaned_data['ob_representative'] is not None and
-                not user.has_perm('zemauth.can_set_account_ob_representative')):
-            raise exc.AuthorizationError()
-
         if 'name' in form.cleaned_data and\
                 form.cleaned_data['name'] is not None and\
                 not user.has_perm('zemauth.can_modify_account_name'):
@@ -1153,7 +1145,6 @@ class AccountSettings(api_common.BaseApiView):
                     name=resource['agency'],
                     sales_representative=resource['default_sales_representative'],
                     cs_representative=resource['default_cs_representative'],
-                    ob_representative=resource['ob_representative'],
                 )
                 account.agency = agency
 
@@ -1258,8 +1249,6 @@ class AccountSettings(api_common.BaseApiView):
             settings.default_sales_representative = resource['default_sales_representative']
         if resource['default_cs_representative']:
             settings.default_cs_representative = resource['default_cs_representative']
-        if resource['ob_representative']:
-            settings.ob_representative = resource['ob_representative']
 
     def get_allowed_sources(self, account, include_unreleased_sources, allowed_sources_ids_list):
         allowed_sources_dict = {}
@@ -1318,9 +1307,6 @@ class AccountSettings(api_common.BaseApiView):
             result['default_cs_representative'] =\
                 str(settings.default_cs_representative.id) if\
                 settings.default_cs_representative is not None else None
-        if request.user.has_perm('zemauth.can_set_account_ob_representative'):
-            result['ob_representative'] =\
-                str(settings.ob_representative_id) if settings.ob_representative_id else None
         if request.user.has_perm('zemauth.can_modify_account_type'):
             result['account_type'] = settings.account_type
         if request.user.has_perm('zemauth.can_modify_allowed_sources'):
@@ -1374,10 +1360,6 @@ class AccountSettings(api_common.BaseApiView):
         if account.agency_id in SUBAGENCY_MAP:
             subagencies = models.Agency.objects.filter(pk__in=SUBAGENCY_MAP[account.agency_id])
             users &= ZemUser.objects.filter(agency__in=subagencies).distinct()
-        return self.format_user_list(users)
-
-    def get_ob_representatives(self):
-        users = ZemUser.objects.get_users_with_perm('can_be_ob_representative').filter(is_active=True)
         return self.format_user_list(users)
 
     def format_user_list(self, users):

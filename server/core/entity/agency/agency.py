@@ -58,13 +58,6 @@ class Agency(models.Model):
         related_name="+",
         on_delete=models.PROTECT
     )
-    ob_representative = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
-        blank=True,
-        related_name="+",
-        on_delete=models.PROTECT,
-    )
     whitelabel = models.CharField(
         max_length=255,
         choices=constants.Whitelabel.get_choices(),
