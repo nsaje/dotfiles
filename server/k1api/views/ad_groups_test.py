@@ -35,7 +35,7 @@ class AdGroupsTest(K1APIBaseTest):
 
         self.assertDictEqual(data[0], {
             'id': 1,
-            'name': 'ONE: test account 1 / test campaign 1 / test adgroup 1 / 1',
+            'name': 'test adgroup 1',
             'external_name': 'ONE: test account 1 / test campaign 1 / test adgroup 1 / 1',
             'start_date': '2014-06-04',
             'end_date': None,
@@ -118,7 +118,7 @@ class AdGroupsTest(K1APIBaseTest):
 
         self.assertDictEqual(data[0], {
             'id': 1,
-            'name': 'ONE: test account 1 / test campaign 1 / test adgroup 1 / 1',
+            'name': 'test adgroup 1',
             'external_name': 'ONE: test account 1 / test campaign 1 / test adgroup 1 / 1',
             'start_date': '2014-06-04',
             'end_date': None,

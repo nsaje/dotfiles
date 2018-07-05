@@ -110,7 +110,7 @@ class AdGroupsView(K1APIView):
 
             ad_group_dict = {
                 'id': ad_group.id,
-                'name': ad_group.get_external_name(),
+                'name': ad_group.name,
                 'external_name': ad_group.get_external_name(),
                 'start_date': ad_group.settings.start_date,
                 'end_date': self._get_end_date(ad_group.settings, campaignstop_states),
