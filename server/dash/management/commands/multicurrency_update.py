@@ -3,6 +3,8 @@ from utils.command_helpers import ExceptionCommand
 import core.multicurrency
 import dash.constants
 
+import influx
+
 
 class Command(ExceptionCommand):
 
@@ -12,6 +14,7 @@ class Command(ExceptionCommand):
         parser.add_argument(
             '-c', '--currency', type=str, choices=dash.constants.Currency.get_all())
 
+    @influx.timer('multicurrency.job_run')
     def handle(self, *args, **options):
         kwargs = {}
         if options['currency']:
