@@ -3,6 +3,7 @@ import restapi.access
 
 from django.db import transaction
 
+import core.multicurrency
 import core.entity.adgroup.ad_group_source
 from core.entity.settings.ad_group_source_settings import exceptions
 
@@ -10,7 +11,7 @@ import utils.exc
 import utils.lc_helper
 import utils.string_helper
 
-import core.multicurrency
+import decimal
 
 from . import serializers
 
@@ -84,7 +85,7 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
             raise utils.exc.ValidationError(errors={
                 'daily_budget': ['Please provide daily spend cap of at least {}.'.format(
                     core.multicurrency.format_value_in_currency(
-                        err.data.get('value'), 0, ad_group_source.settings.get_currency(),
+                        err.data.get('value'), 0, decimal.ROUND_CEILING, ad_group_source.settings.get_currency(),
                     ),
                 )]
             })
@@ -95,7 +96,7 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
                     'Maximum allowed daily spend cap is {}. '
                     'If you want use a higher daily spend cap, please contact support.'.format(
                         core.multicurrency.format_value_in_currency(
-                            err.data.get('value'), 0, ad_group_source.settings.get_currency(),
+                            err.data.get('value'), 0, decimal.ROUND_FLOOR, ad_group_source.settings.get_currency(),
                         ),
                     )
                 ]
@@ -118,7 +119,7 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
                 'cpc': ['Minimum CPC on {} is {}.'.format(
                     err.data.get('source_name'),
                     core.multicurrency.format_value_in_currency(
-                        err.data.get('value'), 2, ad_group_source.settings.get_currency(),
+                        err.data.get('value'), 2, decimal.ROUND_CEILING, ad_group_source.settings.get_currency(),
                     ),
                 )]
             })
@@ -128,7 +129,7 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
                 'cpc': ['Maximum CPC on {} is {}.'.format(
                     err.data.get('source_name'),
                     core.multicurrency.format_value_in_currency(
-                        err.data.get('value'), 2, ad_group_source.settings.get_currency(),
+                        err.data.get('value'), 2, decimal.ROUND_FLOOR, ad_group_source.settings.get_currency(),
                     ),
                 )]
             })

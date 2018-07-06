@@ -23,6 +23,7 @@ from utils import exc
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 
+import core.source.source_type.model
 import zemauth.models
 
 
@@ -417,6 +418,48 @@ class AdGroupSourceSettingsTest(TestCase):
             data=json.dumps({'state': '1'})
         )
         self.assertEqual(response.status_code, 400)
+
+    @patch.object(core.source.source_type.model.SourceType, 'get_etfm_max_daily_budget', return_value=89.77)
+    @patch.object(core.source.source_type.model.SourceType, 'get_etfm_min_daily_budget', return_value=7.11)
+    @patch.object(core.source.source_type.model.SourceType, 'get_min_cpc', return_value=0.1211)
+    def test_adgroups_sources_rounding(self, min_cpc_mock, min_daily_budget_mock, max_daily_budget_mock):
+        self.ad_group.settings.update_unsafe(None, cpc_cc=0.7792)
+
+        # min cpc - would return 0.12 without rounding ceiling
+        r = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'cpc_cc': '0.1200'}),
+        )
+        json_data = json.loads(r.content)['data']
+        self.assertEqual(json_data['error_code'], 'ValidationError')
+        self.assertTrue('0.13' in json_data['errors']['cpc_cc'][0])
+
+        # max cpc - would return 0.78 without rounding floor
+        r = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'cpc_cc': '0.78'}),
+        )
+        json_data = json.loads(r.content)['data']
+        self.assertEqual(json_data['error_code'], 'ValidationError')
+        self.assertTrue('0.77' in json_data['errors']['cpc_cc'][0])
+
+        # min daily budget - would return 7 without rounding ceiling
+        r = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'cpc_cc': '0.14', 'daily_budget_cc': '7'}),
+        )
+        json_data = json.loads(r.content)['data']
+        self.assertEqual(json_data['error_code'], 'ValidationError')
+        self.assertTrue('8' in json_data['errors']['daily_budget_cc'][0])
+
+        # max daily budget - would return 90 without rounding floor
+        r = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'cpc_cc': '0.14', 'daily_budget_cc': '90'}),
+        )
+        json_data = json.loads(r.content)['data']
+        self.assertEqual(json_data['error_code'], 'ValidationError')
+        self.assertTrue('89' in json_data['errors']['daily_budget_cc'][0])
 
 
 class CampaignAdGroups(TestCase):

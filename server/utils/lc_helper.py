@@ -1,4 +1,4 @@
-from decimal import Decimal
+import decimal
 
 
 def default_currency(number, places=2):
@@ -6,7 +6,9 @@ def default_currency(number, places=2):
 
 
 def format_currency(value,
+                    *,
                     places=2,
+                    rounding=decimal.ROUND_HALF_DOWN,
                     curr='',
                     sep=',',
                     dp='.',
@@ -16,6 +18,7 @@ def format_currency(value,
     """Convert Decimal to a money formatted string.
 
     places:  required number of places after the decimal point
+    rounding:optional rounding with set default (must be a decimal constant)
     curr:    optional currency symbol before the sign (may be blank)
     sep:     optional grouping separator (comma, period, space, or blank)
     dp:      decimal point indicator (comma or period)
@@ -24,9 +27,9 @@ def format_currency(value,
     neg:     optional sign for negative numbers: '-', '(', space or blank
     trailneg:optional trailing minus indicator:  '-', ')', space or blank
     """
-    value = Decimal(value)
-    q = Decimal(10) ** -places      # 2 places --> '0.01'
-    sign, digits, exp = value.quantize(q).as_tuple()
+    value = decimal.Decimal(value)
+    q = decimal.Decimal(10) ** -places      # 2 places --> '0.01'
+    sign, digits, exp = value.quantize(q, rounding).as_tuple()
     result = []
     digits = list(map(str, digits))
     build, next = result.append, digits.pop

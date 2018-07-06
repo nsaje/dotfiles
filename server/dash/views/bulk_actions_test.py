@@ -11,6 +11,7 @@ from dash import history_helpers
 from dash import models
 from dash.views import bulk_actions
 
+import core.source.source_type.model
 from zemauth.models import User
 
 
@@ -121,6 +122,67 @@ class AdGroupSourceStateTest(TestCase):
             ad_group,
             ad_group_sources
         )
+
+    @patch.object(core.source.source_type.model.SourceType, 'get_etfm_max_daily_budget', return_value=89.77)
+    @patch.object(core.source.source_type.model.SourceType, 'get_etfm_min_daily_budget', return_value=7.11)
+    @patch.object(core.source.source_type.model.SourceType, 'get_min_cpc', return_value=0.1211)
+    def test_adgroups_sources_rounding(self, min_cpc_mock, min_daily_budget_mock, max_daily_budget_mock):
+        ad_group_id = 1
+        data = {
+            'state': constants.AdGroupSourceSettingsState.ACTIVE,
+            'selected_ids': [ad_group_id],
+        }
+        ad_group = models.AdGroup.objects.get(pk=ad_group_id)
+        ad_group_settings = ad_group.get_current_settings().copy_settings()
+        ad_group_settings.retargeting_ad_groups = False
+        ad_group_settings.exclusion_retargeting_ad_groups = False
+        ad_group_settings.audience_targeting = False
+        ad_group_settings.exclusion_audience_targeting = False
+        ad_group_settings.cpc_cc = 0.7792
+        ad_group_settings.save(None)
+
+        ad_group_sources = ad_group.adgroupsource_set.all()
+
+        # min cpc - would return 0.12 without rounding ceiling
+        for ags in ad_group_sources:
+            ags_settings = ags.settings.copy_settings()
+            ags_settings.cpc_cc = 0.12
+            ags_settings.save(None)
+        response = self._post_source_state(ad_group_id, data)
+        json_data = json.loads(response.content)['data']
+        self.assertEqual(json_data['error_code'], 'ValidationError')
+        self.assertTrue('0.13' in json_data['message'])
+
+        # max cpc - would return 0.78 without rounding floor
+        for ags in ad_group_sources:
+            ags_settings = ags.settings.copy_settings()
+            ags_settings.cpc_cc = 0.78
+            ags_settings.save(None)
+        response = self._post_source_state(ad_group_id, data)
+        json_data = json.loads(response.content)['data']
+        self.assertEqual(json_data['error_code'], 'ValidationError')
+        self.assertTrue('0.77' in json_data['message'])
+
+        # min daily budget - would return 7 without rounding ceiling
+        for ags in ad_group_sources:
+            ags_settings = ags.settings.copy_settings()
+            ags_settings.cpc_cc = 0.17
+            ags_settings.daily_budget_cc = 7
+            ags_settings.save(None)
+        response = self._post_source_state(ad_group_id, data)
+        json_data = json.loads(response.content)['data']
+        self.assertEqual(json_data['error_code'], 'ValidationError')
+        self.assertTrue('8' in json_data['message'])
+
+        # max daily budget - would return 90 without rounding floor
+        for ags in ad_group_sources:
+            ags_settings = ags.settings.copy_settings()
+            ags_settings.daily_budget_cc = 90
+            ags_settings.save(None)
+        response = self._post_source_state(ad_group_id, data)
+        json_data = json.loads(response.content)['data']
+        self.assertEqual(json_data['error_code'], 'ValidationError')
+        self.assertTrue('89' in json_data['message'])
 
 
 class AdGroupContentAdArchiveTest(TestCase):

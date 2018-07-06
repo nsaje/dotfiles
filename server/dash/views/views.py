@@ -825,7 +825,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             raise exc.ValidationError(errors={
                 'daily_budget_cc': ['Please provide daily spend cap of at least {}.'.format(
                     core.multicurrency.format_value_in_currency(
-                        err.data.get('value'), 0, ad_group_source.settings.get_currency(),
+                        err.data.get('value'), 0, decimal.ROUND_CEILING, ad_group_source.settings.get_currency(),
                     ),
                 )]
             })
@@ -836,7 +836,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                     'Maximum allowed daily spend cap is {}. '
                     'If you want use a higher daily spend cap, please contact support.'.format(
                         core.multicurrency.format_value_in_currency(
-                            err.data.get('value'), 0, ad_group_source.settings.get_currency(),
+                            err.data.get('value'), 0, decimal.ROUND_FLOOR, ad_group_source.settings.get_currency(),
                         ),
                     )
                 ]
@@ -859,7 +859,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 'cpc_cc': ['Minimum CPC on {} is {}.'.format(
                     err.data.get('source_name'),
                     core.multicurrency.format_value_in_currency(
-                        err.data.get('value'), 2, ad_group_source.settings.get_currency(),
+                        err.data.get('value'), 2, decimal.ROUND_CEILING, ad_group_source.settings.get_currency(),
                     ),
                 )]
             })
@@ -869,7 +869,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 'cpc_cc': ['Maximum CPC on {} is {}.'.format(
                     err.data.get('source_name'),
                     core.multicurrency.format_value_in_currency(
-                        err.data.get('value'), 2, ad_group_source.settings.get_currency(),
+                        err.data.get('value'), 2, decimal.ROUND_FLOOR, ad_group_source.settings.get_currency(),
                     ),
                 )]
             })

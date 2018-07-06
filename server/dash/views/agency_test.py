@@ -843,6 +843,51 @@ class AdGroupSettingsTest(TestCase):
         self.assertEqual(ad_group.get_current_settings().cpc_cc, Decimal(5000))
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
 
+    @patch.object(core.source.source_type.model.SourceType, 'get_etfm_max_daily_budget', return_value=89.77)
+    @patch.object(core.source.source_type.model.SourceType, 'get_etfm_min_daily_budget', return_value=7.11)
+    @patch.object(core.source.source_type.model.SourceType, 'get_etfm_max_cpc', return_value=0.7792)
+    @patch.object(core.source.source_type.model.SourceType, 'get_etfm_min_cpc', return_value=0.1211)
+    def test_adgroups_sources_rounding(self, min_cpc_mock, max_cpc_mock, min_daily_budget_mock, max_daily_budget_mock):
+        def _put_ad_group(ad_group_id, data):
+            return self.client.put(
+                reverse('ad_group_settings', kwargs={'ad_group_id': ad_group_id}),
+                data=json.dumps(data),
+                follow=True
+            )
+
+        add_permissions(self.user, ['settings_view'])
+        ad_group_id = 1
+        default_cpc = self.settings_dict['settings']['b1_sources_group_cpc_cc']
+
+        # min cpc - would return 0.12 without rounding ceiling
+        self.settings_dict['settings']['b1_sources_group_cpc_cc'] = 0.12
+        response = _put_ad_group(ad_group_id, self.settings_dict)
+        json_data = json.loads(response.content)['data']
+        self.assertEqual(json_data['error_code'], 'ValidationError')
+        self.assertTrue('0.13' in json_data['errors']['b1_sources_group_cpc_cc'][0])
+
+        # max cpc - would return 0.78 without rounding floor
+        self.settings_dict['settings']['b1_sources_group_cpc_cc'] = 0.78
+        response = _put_ad_group(ad_group_id, self.settings_dict)
+        json_data = json.loads(response.content)['data']
+        self.assertEqual(json_data['error_code'], 'ValidationError')
+        self.assertTrue('0.77' in json_data['errors']['b1_sources_group_cpc_cc'][0])
+
+        # min daily budget - would return 7 without rounding ceiling
+        self.settings_dict['settings']['b1_sources_group_cpc_cc'] = default_cpc
+        self.settings_dict['settings']['b1_sources_group_daily_budget'] = 7
+        response = _put_ad_group(ad_group_id, self.settings_dict)
+        json_data = json.loads(response.content)['data']
+        self.assertEqual(json_data['error_code'], 'ValidationError')
+        self.assertTrue('8' in json_data['errors']['b1_sources_group_daily_budget'][0])
+
+        # max daily budget - would return 90 without rounding floor
+        self.settings_dict['settings']['b1_sources_group_daily_budget'] = 90
+        response = _put_ad_group(ad_group_id, self.settings_dict)
+        json_data = json.loads(response.content)['data']
+        self.assertEqual(json_data['error_code'], 'ValidationError')
+        self.assertTrue('89' in json_data['errors']['b1_sources_group_daily_budget'][0])
+
 
 class AdGroupSettingsRetargetableAdgroupsTest(TestCase):
     fixtures = ['test_api.yaml', 'test_non_superuser.yaml', 'test_geolocations']

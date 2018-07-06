@@ -25,9 +25,10 @@ def get_currency_symbol(currency):
     return CurrencySymbol.get(currency)
 
 
-def format_value_in_currency(value, places, currency):
+def format_value_in_currency(value, places, rounding, currency):
     return utils.lc_helper.format_currency(
         Decimal(value) * get_current_exchange_rate(currency),
         places=places,
+        rounding=rounding,
         curr=get_currency_symbol(currency)
     )
