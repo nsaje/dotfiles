@@ -53,6 +53,9 @@ angular.module('one.widgets').service('zemGridActionsService', function ($q, zem
                         return;
                     }
                 }
+                if (!action.hasPermission) {
+                    return;
+                }
                 action.action = executePublisherAction;
                 action.type = action.value;
                 buttons.push(action);
