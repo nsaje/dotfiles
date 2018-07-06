@@ -1266,8 +1266,8 @@ constants.currencySymbol = {};
 constants.currencySymbol[constants.currency.USD] = '$';
 constants.currencySymbol[constants.currency.EUR] = '€';
 constants.currencySymbol[constants.currency.GBP] = '£';
-constants.currencySymbol[constants.currency.AUD] = '$';
-constants.currencySymbol[constants.currency.SGD] = '$';
+constants.currencySymbol[constants.currency.AUD] = 'A$';
+constants.currencySymbol[constants.currency.SGD] = 'S$';
 
 var options = {
     // used for converting options lists values into REST API flavoured constant values
