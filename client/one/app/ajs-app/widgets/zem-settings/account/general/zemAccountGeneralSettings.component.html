@@ -68,6 +68,26 @@
                  for="cs-representative-select">{{ error }}</div>
         </div>
 
+        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_account_ob_representative')"
+             ng-class="{'form--error': !!$ctrl.errors.obRepresentative}">
+            <label class="form__label" is-internal="zemauth.can_set_account_ob_representative"
+                   for="ob-representative-select">
+                OB Representative:
+                <zem-help-popover content="Outbrain Manager responsible for the account and the communication with the client."
+                                  placement="top"></zem-help-popover>
+            </label>
+            <ui-select theme="select2" id="ob-representative-select"
+                       class="button button--plain button--full-width button--dropdown-toggle-icon"
+                       ng-model="$ctrl.entity.settings.obRepresentative">
+                <ui-select-match>{{$select.selected.name}}</ui-select-match>
+                <ui-select-choices repeat="rep.id as rep in $ctrl.entity.obReps | orderBy:getName | filter:$select.search" class="ui-select-choices">
+                    <div ng-bind-html="rep.name | highlight: $select.search"></div>
+                </ui-select-choices>
+            </ui-select>
+            <div class="message message--error" ng-repeat="error in $ctrl.errors.obRepresentative"
+                 for="ob-representative-select">{{ error }}</div>
+        </div>
+
         <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_modify_account_type')"
              ng-class="{'form--error': !!$ctrl.errors.accountType}">
             <label class="form__label" is-internal="zemauth.can_modify_account_type"
