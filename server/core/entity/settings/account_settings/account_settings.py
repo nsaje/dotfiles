@@ -33,6 +33,7 @@ class AccountSettings(validation.AccountSettingsValidatorMixin,
         'default_account_manager',
         'default_sales_representative',
         'default_cs_representative',
+        'ob_representative',
         'account_type',
         'whitelist_publisher_groups',
         'blacklist_publisher_groups',
@@ -66,6 +67,13 @@ class AccountSettings(validation.AccountSettingsValidatorMixin,
         related_name="+",
         on_delete=models.PROTECT
     )
+    ob_representative = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        related_name="+",
+        on_delete=models.PROTECT,
+    )
     account_type = models.IntegerField(
         default=constants.AccountType.UNKNOWN,
         choices=constants.AccountType.get_choices()
@@ -96,6 +104,7 @@ class AccountSettings(validation.AccountSettingsValidatorMixin,
             'default_account_manager': 'Account Manager',
             'default_sales_representative': 'Sales Representative',
             'default_cs_representative': 'Customer Success Representative',
+            'ob_representative': 'Outbrain Representative',
             'account_type': 'Account Type',
             'whitelist_publisher_groups': 'Whitelist publisher groups',
             'blacklist_publisher_groups': 'Blacklist publisher groups',
@@ -109,7 +118,8 @@ class AccountSettings(validation.AccountSettingsValidatorMixin,
             value = str(value)
         elif prop_name in ('default_account_manager',
                            'default_sales_representative',
-                           'default_cs_representative'):
+                           'default_cs_representative',
+                           'ob_representative'):
             # FIXME:circular dependency
             import dash.views.helpers
             value = dash.views.helpers.get_user_full_name_or_email(

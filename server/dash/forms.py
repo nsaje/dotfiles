@@ -481,8 +481,6 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, MulticurrencySettingsFormMix
     def clean_tracking_code(self):
         tracking_code = self.cleaned_data.get('tracking_code')
 
-        err_msg = 'Tracking code structure is not valid.'
-
         if tracking_code:
             # This is a bit of a hack we're doing here but if we don't prepend 'http:' to
             # the provided tracking code, then rfc3987 doesn't know how to
@@ -498,7 +496,7 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, MulticurrencySettingsFormMix
             try:
                 rfc3987.parse(test_url, rule='IRI')
             except ValueError:
-                raise forms.ValidationError(err_msg)
+                raise forms.ValidationError('Tracking code structure is not valid.')
 
         return self.cleaned_data.get('tracking_code')
 
@@ -578,6 +576,9 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
     default_cs_representative = forms.IntegerField(
         required=False
     )
+    ob_representative = forms.IntegerField(
+        required=False
+    )
     account_type = forms.IntegerField(
         required=False
     )
@@ -597,8 +598,7 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
     def clean_currency(self):
         currency = self.cleaned_data.get('currency')
         if self.account.currency != currency and self.account.campaign_set.count() > 0:
-            err_msg = "Cannot set currency for account with campaigns"
-            raise forms.ValidationError(err_msg)
+            raise forms.ValidationError("Cannot set currency for account with campaigns")
         return currency
 
     def clean_name(self):
@@ -615,11 +615,10 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
         if not account_manager_id:
             return None
 
-        err_msg = 'Invalid account manager.'
         try:
             account_manager = ZemUser.objects.get(pk=account_manager_id)
         except ZemUser.DoesNotExist:
-            raise forms.ValidationError(err_msg)
+            raise forms.ValidationError('Invalid account manager.')
 
         return account_manager
 
@@ -630,14 +629,12 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
         if sales_representative_id is None:
             return None
 
-        err_msg = 'Invalid sales representative.'
-
         try:
             sales_representative = ZemUser.objects.\
                 get_users_with_perm('campaign_settings_sales_rep').\
                 get(pk=sales_representative_id)
         except ZemUser.DoesNotExist:
-            raise forms.ValidationError(err_msg)
+            raise forms.ValidationError('Invalid sales representative.')
 
         return sales_representative
 
@@ -648,16 +645,30 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
         if cs_representative_id is None:
             return None
 
-        err_msg = 'Invalid CS representative.'
-
         try:
             cs_representative = ZemUser.objects.\
                 get_users_with_perm('campaign_settings_cs_rep').\
                 get(pk=cs_representative_id)
         except ZemUser.DoesNotExist:
-            raise forms.ValidationError(err_msg)
+            raise forms.ValidationError('Invalid CS representative.')
 
         return cs_representative
+
+    def clean_ob_representative(self):
+        ob_representative_id = self.cleaned_data.get(
+            'ob_representative')
+
+        if ob_representative_id is None:
+            return None
+
+        try:
+            ob_representative = ZemUser.objects.\
+                get_users_with_perm('can_be_ob_representative').\
+                get(pk=ob_representative_id)
+        except ZemUser.DoesNotExist:
+            raise forms.ValidationError('Invalid OB representative.')
+
+        return ob_representative
 
     def clean_account_type(self):
         account_type = self.cleaned_data.get('account_type')
@@ -976,8 +987,7 @@ class CampaignSettingsForm(PublisherGroupsFormMixin, forms.Form):
     def clean_language(self):
         language = self.cleaned_data.get('language')
         if self.campaign.settings.language != language and self.campaign.adgroup_set.count() > 0:
-            err_msg = "Cannot set language for campaign with ad groups"
-            raise forms.ValidationError(err_msg)
+            raise forms.ValidationError("Cannot set language for campaign with ad groups")
         return language
 
     def clean_campaign_manager(self):
@@ -985,12 +995,10 @@ class CampaignSettingsForm(PublisherGroupsFormMixin, forms.Form):
         if campaign_manager_id is None:
             return
 
-        err_msg = 'Invalid campaign manager.'
-
         try:
             campaign_manager = ZemUser.objects.get(pk=campaign_manager_id)
         except ZemUser.DoesNotExist:
-            raise forms.ValidationError(err_msg)
+            raise forms.ValidationError('Invalid campaign manager.')
 
         return campaign_manager
 
