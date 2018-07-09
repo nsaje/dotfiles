@@ -84,6 +84,7 @@ _FIELD_MAPPING = {
     'avg_cost_per_visit': ('Avg. Cost per Visit',),
     'avg_tos': ('Time on Site',),
     'billing_cost': ('Total Spend',),
+    'billing_cost_refund': ('Total Spend Refund',),
     'bounce_rate': ('Bounce Rate',),
     'bounced_visits': ('Bounced Visits',),
     'click_discrepancy': ('Click Discrepancy',),
@@ -94,9 +95,11 @@ _FIELD_MAPPING = {
     'data_cost': ('Actual Data Cost',),
     'e_data_cost': ('Data Cost',),
     'e_media_cost': ('Media Spend',),
+    'e_media_cost_refund': ('Media Spend Refund',),
     'e_yesterday_cost': ('Yesterday Spend',),
     'impressions': ('Impressions',),
     'license_fee': ('License Fee',),
+    'license_fee_refund': ('License Fee Refund',),
     'margin': ('Margin',),
     'media_cost': ('Actual Media Spend',),
     'new_users': ('New Users',),
@@ -117,6 +120,7 @@ _FIELD_MAPPING = {
     'flat_fee': ('Recognized Flat Fee',),
     'total_fee': ('Total Fee',),
     'total_fee_projection': ('Total Fee Projection',),
+
 
     'video_start': ('Video Start',),
     'video_first_quartile': ('Video First Quartile',),
@@ -141,6 +145,7 @@ _FIELD_MAPPING_BCMV2_OVERRIDES = {
     'avg_et_cost_per_visit': ('Avg. Platform Cost per Visit',),
 
     'etfm_cost': ('Total Spend',),
+    'etfm_cost_refund': ('Total Spend Refund',),
     'etf_cost': ('Agency Spend',),
     'et_cost': ('Platform Spend',),
     'at_cost': ('Actual Platform Spend',),
@@ -177,7 +182,8 @@ _COST_FIELDS = (
     'avg_et_cost_for_new_visitor', 'avg_et_cost_per_minute', 'avg_et_cost_per_non_bounced_visit',
     'avg_et_cost_per_pageview', 'avg_et_cost_per_visit', 'etfm_cost', 'etf_cost', 'et_cost', 'at_cost',
     'yesterday_etfm_cost', 'yesterday_et_cost', 'yesterday_at_cost', 'etfm_cpc', 'et_cpc', 'etfm_cpm', 'et_cpm',
-    'video_etfm_cpv', 'video_et_cpv', 'video_etfm_cpcv', 'video_et_cpcv',
+    'video_etfm_cpv', 'video_et_cpv', 'video_etfm_cpcv', 'video_et_cpcv', 'e_media_cost_refund', 'license_fee_refund',
+    'etfm_cost_refund', 'billing_cost_refund',
 )
 
 _DYNAMIC_COST_FIELDS_PREFIXES = (

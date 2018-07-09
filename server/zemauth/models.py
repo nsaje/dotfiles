@@ -332,6 +332,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_be_ob_representative', 'User can be chosen as OB representative'),
             ('can_set_account_ob_representative', 'User can set OB representative'),
             ('can_see_credit_refunds', 'User can see credit refunds in grid'),
+            ('can_include_credit_refunds_in_report', 'User can export credit refunds in all accounts report'),
         )
 
     def get_full_name(self):

@@ -106,3 +106,19 @@
         </label>
     </div>
 </div>
+<div ng-if="$ctrl.showAllAccountsCreditRefunds" class="form__group" >
+    <label class="form__label" for="all-accounts-include-credit-refunds" is-internal="zemauth.can_include_credit_refunds_in_report">
+        Include credit refunds
+    </label>
+    <div class="form__checkbox">
+        <label>
+            <input id="all-accounts-include-credit-refunds"
+                   type="checkbox"
+                   ng-model="$ctrl.config.allAccountsIncludeCreditRefunds"
+                   ng-disabled="$ctrl.disabled"
+                   ng-change="$ctrl.update()"
+                   class="input-checkbox">
+            <span class="checkbox-text" for="all-accounts-include-credit-refunds"></span>
+        </label>
+    </div>
+</div>
