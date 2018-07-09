@@ -30,6 +30,7 @@
         <table class="custom-table">
             <thead>
                 <tr>
+                    <th>Type</th>
                     <th>ID</th>
                     <th>Created by</th>
                     <th>Valid From</th>
@@ -47,6 +48,7 @@
             </thead>
             <tbody ng-repeat="item in $ctrl.state.credit.active">
                 <tr>
+                    <td>Credit</td>
                     <td ng-if="item.salesforceUrl"><a href="{{ item.salesforceUrl }}">{{ item.id }}</a></td>
                     <td ng-if="!item.salesforceUrl">{{ item.id }}</td>
                     <td>{{ item.createdBy }}<br /><span class="text-gray">{{ item.createdOn }}</span></td>
@@ -89,6 +91,7 @@
                     </td>
                 </tr>
                 <tr ng-repeat="refund in $ctrl.state.creditRefunds[item.id]" ng-if="$ctrl.hasPermission('zemauth.can_manage_credit_refunds')">
+                    <td>Refund</td>
                     <td >{{ refund.id }}</td>
                     <td>{{ refund.createdBy }}<br /><span class="text-gray">{{ refund.createdOn }}</span></td>
                     <td>{{ refund.startDate }}</td>
@@ -104,6 +107,7 @@
                     <td></td>
                 </tr>
                 <tr ng-if="$ctrl.hasPermission('zemauth.can_manage_credit_refunds') && $ctrl.state.creditRefunds.hasOwnProperty(item.id)">
+                    <td></td>
                     <td>Credit total:</td>
                     <td></td>
                     <td></td>
