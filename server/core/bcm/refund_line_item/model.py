@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 
 import core.common
+import core.history
 import utils.demo_anonymizer
 
 from . import instance
@@ -9,10 +10,21 @@ from . import manager
 from . import validation
 
 
-class RefundLineItem(validation.RefundLineItemValidatorMixin, instance.RefundLineItemInstanceMixin, core.common.FootprintModel):
+class RefundLineItem(
+        validation.RefundLineItemValidatorMixin,
+        instance.RefundLineItemInstanceMixin,
+        core.common.FootprintModel,
+        core.history.HistoryMixinOld):
 
     class Meta:
         app_label = 'dash'
+
+    history_fields = [
+        'start_date',
+        'end_date',
+        'amount',
+        'comment',
+    ]
 
     _demo_fields = {
         'comment': utils.demo_anonymizer.fake_io,

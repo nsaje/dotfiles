@@ -53,8 +53,15 @@ class RefundLineItemInstanceMixinTest(TestCase):
             'created_by': request.user.id,
         }
         self.assertEqual(expected_history, core.bcm.RefundHistory.objects.latest('created_dt').snapshot)
+        self.assertEqual(
+            'Created refund. Refund: #{}. Start Date set to "2018-07-01", End Date set to "2018-07-31",'
+            ' Amount set to "$0.00", Comment set to "test"'.format(refund.id),
+            account.history.latest('created_dt').changes_text,
+        )
 
-        refund.update(request, amount=0)
+        refund = model.RefundLineItem.objects.get(id=refund.id)
+        refund.update(request, comment='foo')
+
         self.assertEqual(2, core.bcm.RefundHistory.objects.count())
 
         expected_history = {
@@ -64,10 +71,14 @@ class RefundLineItemInstanceMixinTest(TestCase):
             'start_date': str(refund_start_date),
             'end_date': str(refund_end_date),
             'amount': 0,
-            'comment': 'test',
+            'comment': 'foo',
             'created_by': request.user.id,
         }
         self.assertEqual(expected_history, core.bcm.RefundHistory.objects.latest('created_dt').snapshot)
+        self.assertEqual(
+            'Refund: #{}. Comment set from "test" to "foo"'.format(refund.id),
+            account.history.latest('created_dt').changes_text,
+        )
 
         with self.assertRaises(exceptions.RefundAmountExceededTotalSpend):
             refund.update(request, amount=1000)
