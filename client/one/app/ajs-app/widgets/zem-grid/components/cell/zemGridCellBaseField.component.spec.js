@@ -89,7 +89,9 @@ describe('zemGridCellBaseField', function () {
                 value: test.value,
             };
             scope.$digest();
-            expect(element.find('.zem-grid-cell-base-field-container__value').text().trim()).toEqual(test.expectedResult);
+            expect(
+                element.find('.zem-grid-cell-base-field-container__value').text().trim()
+            ).toEqual(test.expectedResult);
         });
     });
 
@@ -111,7 +113,9 @@ describe('zemGridCellBaseField', function () {
                 value: test.value,
             };
             scope.$digest();
-            expect(element.find('.zem-grid-cell-base-field-container__value').text().trim()).toEqual(test.expectedResult);
+            expect(
+                element.find('.zem-grid-cell-base-field-container__value').text().trim()
+            ).toEqual(test.expectedResult);
         });
     });
 
@@ -132,7 +136,9 @@ describe('zemGridCellBaseField', function () {
                 value: test.value,
             };
             scope.$digest();
-            expect(element.find('.zem-grid-cell-base-field-container__value').text().trim()).toEqual(test.expectedResult);
+            expect(
+                element.find('.zem-grid-cell-base-field-container__value').text().trim()
+            ).toEqual(test.expectedResult);
         });
     });
 
@@ -151,7 +157,9 @@ describe('zemGridCellBaseField', function () {
                 value: test.value,
             };
             scope.$digest();
-            expect(element.find('.zem-grid-cell-base-field-container__value').text().trim()).toEqual(test.expectedResult);
+            expect(
+                element.find('.zem-grid-cell-base-field-container__value').text().trim()
+            ).toEqual(test.expectedResult);
         });
     });
 
@@ -173,7 +181,9 @@ describe('zemGridCellBaseField', function () {
                 value: test.value,
             };
             scope.$digest();
-            expect(element.find('.zem-grid-cell-base-field-container__value').text().trim()).toEqual(test.expectedResult);
+            expect(
+                element.find('.zem-grid-cell-base-field-container__value').text().trim()
+            ).toEqual(test.expectedResult);
         });
     });
 
@@ -226,7 +236,9 @@ describe('zemGridCellBaseField', function () {
             };
             scope.ctrl.grid.meta.data.ext.currency = test.currency;
             scope.$digest();
-            expect(element.find('.zem-grid-cell-base-field-container__value').text().trim()).toEqual(test.expectedResult);
+            expect(
+                element.find('.zem-grid-cell-base-field-container__value').text().trim()
+            ).toEqual(test.expectedResult);
         });
     });
 });
