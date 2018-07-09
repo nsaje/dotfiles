@@ -1,14 +1,16 @@
 describe('zemGridCellBaseField', function () {
-    var scope, element, $compile, zemGridConstants;
+    var scope, element, $compile, zemGridConstants, zemPermissions;
 
     var template = '<zem-grid-cell-base-field data="ctrl.data" column="ctrl.col" row="ctrl.row" grid="ctrl.grid"></zem-grid-cell-base-field>'; // eslint-disable-line max-len
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    beforeEach(inject(function ($rootScope, _$compile_, _zemGridConstants_) {
+    beforeEach(inject(function ($rootScope, _$compile_, _zemGridConstants_, _zemPermissions_) {
         $compile = _$compile_;
         zemGridConstants = _zemGridConstants_;
+        zemPermissions = _zemPermissions_;
+        zemPermissions.hasPermission = function () { return true; };
 
         scope = $rootScope.$new();
         scope.ctrl = {};
@@ -16,6 +18,7 @@ describe('zemGridCellBaseField', function () {
             type: zemGridConstants.gridRowType.STATS
         };
         scope.ctrl.row.data = {};
+        scope.ctrl.row.data.stats = {};
         scope.ctrl.col = {};
         scope.ctrl.col.data = {};
         scope.ctrl.grid = {
@@ -170,6 +173,33 @@ describe('zemGridCellBaseField', function () {
             };
             scope.$digest();
             expect(element.text().trim()).toEqual(test.expectedResult);
+        });
+    });
+
+    it('should correctly display number values with refunds', function () {
+        var tests = [
+            {value: undefined, expectedResult: 'N/A'},
+            {value: 1234.50, refund_value: 123, expectedResult: '1,235 (-123)'},
+            {value: 1234.56, refund_value: 123.45, fractionSize: 2, expectedResult: '1,234.56 (-123.45)'},
+        ];
+
+        scope.ctrl.col.field = 'custom_field';
+        scope.ctrl.col.data = {
+            type: 'number',
+        };
+
+        tests.forEach(function (test) {
+            scope.ctrl.col.data.fractionSize = test.fractionSize;
+            scope.ctrl.data = {
+                value: test.value,
+            };
+
+            scope.ctrl.row.data.stats.custom_field_refund = {
+                value: test.refund_value
+            };
+
+            scope.$digest();
+            expect(element.text().trim().replace(/\s+/, ' ')).toEqual(test.expectedResult);
         });
     });
 

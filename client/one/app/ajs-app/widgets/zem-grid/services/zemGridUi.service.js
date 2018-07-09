@@ -92,6 +92,7 @@ angular.module('one.widgets').factory('zemGridUIService', function ($timeout, $s
             formatterOptions.currency = grid.meta.data.ext.currency;
             var formattedValue = zemGridDataFormatter.formatValue(data.value || data.text, formatterOptions);
             var valueWidth = getTextWidth(formattedValue, font);
+            valueWidth += getRefundWidth(grid, row.data.stats, column, font);
             if (column.type === zemGridConstants.gridColumnTypes.BREAKDOWN) {
                 // Special case for breakdown column - add padding based on row level
                 valueWidth += (row.level - 1) * zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
@@ -113,11 +114,25 @@ angular.module('one.widgets').factory('zemGridUIService', function ($timeout, $s
                 formatterOptions.currency = grid.meta.data.ext.currency;
                 var formattedValue = zemGridDataFormatter.formatValue(data.value, formatterOptions);
                 var valueWidth = getTextWidth(formattedValue, font);
+                valueWidth += getRefundWidth(grid, grid.footer.row.data.stats, column, font);
                 width = Math.max(width, valueWidth);
             }
         }
 
         return width;
+    }
+
+    function getRefundWidth (grid, stats, column, font) {
+        var refundField = column.field + '_refund';
+        if (!stats[refundField]) {
+            return 0;
+        }
+        var formatterOptions = angular.copy(column.data);
+        formatterOptions.currency = grid.meta.data.ext.currency;
+        var formattedRefundValue = zemGridDataFormatter.formatValue(
+            stats[refundField], formatterOptions);
+        formattedRefundValue = ' (-' + formattedRefundValue + ')';
+        return getTextWidth(formattedRefundValue, font);
     }
 
     function getVisibleColumnIndex (visibleColumns, columnField) {

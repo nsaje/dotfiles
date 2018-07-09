@@ -15,7 +15,7 @@ class RefundLineItemManager(core.common.BaseManager):
             day=calendar.monthrange(start_date.year, start_date.month)[1],
         )
         refund = model.RefundLineItem(
-            created_by=request.user,
+            created_by=request.user if request else None,
             end_date=end_date,
             **kwargs,
         )
