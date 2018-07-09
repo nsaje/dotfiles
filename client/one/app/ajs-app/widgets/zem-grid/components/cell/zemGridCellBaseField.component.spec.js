@@ -36,7 +36,7 @@ describe('zemGridCellBaseField', function () {
         scope.ctrl.data = undefined;
         scope.$digest();
 
-        expect(element.find('.value').text().trim()).toEqual('N/A');
+        expect(element.find('.zem-grid-cell-base-field__value').text().trim()).toEqual('N/A');
     });
 
     it('should hide the field if no data is available or field is disabled in footer', function () {
@@ -44,14 +44,14 @@ describe('zemGridCellBaseField', function () {
         element = $compile(template)(scope);
         scope.$digest();
 
-        expect(element.find('.value').text().trim()).toEqual('');
+        expect(element.find('.zem-grid-cell-base-field__value').text().trim()).toEqual('');
 
         element.isolateScope().ctrl.row = {
             type: zemGridConstants.gridRowType.STATS
         };
         scope.$digest();
 
-        expect(element.find('.value').text().trim()).toEqual('N/A');
+        expect(element.find('.zem-grid-cell-base-field__value').text().trim()).toEqual('N/A');
 
         element.isolateScope().ctrl.row = {
             level: 0,
@@ -61,7 +61,7 @@ describe('zemGridCellBaseField', function () {
         };
         scope.$digest();
 
-        expect(element.find('.value').text().trim()).toEqual('');
+        expect(element.find('.zem-grid-cell-base-field__value').text().trim()).toEqual('');
     });
 
     it('should display default column\'s value if field\'s value is not defined and default value is set', function () {
@@ -70,7 +70,7 @@ describe('zemGridCellBaseField', function () {
             defaultValue: 'default',
         };
         scope.$digest();
-        expect(element.find('.value').text().trim()).toEqual('default');
+        expect(element.find('.zem-grid-cell-base-field__value').text().trim()).toEqual('default');
     });
 
     it('should correctly display text values', function () {
@@ -89,7 +89,7 @@ describe('zemGridCellBaseField', function () {
                 value: test.value,
             };
             scope.$digest();
-            expect(element.find('.value').text().trim()).toEqual(test.expectedResult);
+            expect(element.find('.zem-grid-cell-base-field__value').text().trim()).toEqual(test.expectedResult);
         });
     });
 
@@ -111,7 +111,7 @@ describe('zemGridCellBaseField', function () {
                 value: test.value,
             };
             scope.$digest();
-            expect(element.find('.value').text().trim()).toEqual(test.expectedResult);
+            expect(element.find('.zem-grid-cell-base-field__value').text().trim()).toEqual(test.expectedResult);
         });
     });
 
@@ -132,7 +132,7 @@ describe('zemGridCellBaseField', function () {
                 value: test.value,
             };
             scope.$digest();
-            expect(element.find('.value').text().trim()).toEqual(test.expectedResult);
+            expect(element.find('.zem-grid-cell-base-field__value').text().trim()).toEqual(test.expectedResult);
         });
     });
 
@@ -151,7 +151,7 @@ describe('zemGridCellBaseField', function () {
                 value: test.value,
             };
             scope.$digest();
-            expect(element.find('.value').text().trim()).toEqual(test.expectedResult);
+            expect(element.find('.zem-grid-cell-base-field__value').text().trim()).toEqual(test.expectedResult);
         });
     });
 
@@ -173,7 +173,7 @@ describe('zemGridCellBaseField', function () {
                 value: test.value,
             };
             scope.$digest();
-            expect(element.find('.value').text().trim()).toEqual(test.expectedResult);
+            expect(element.find('.zem-grid-cell-base-field__value').text().trim()).toEqual(test.expectedResult);
         });
     });
 
@@ -226,7 +226,7 @@ describe('zemGridCellBaseField', function () {
             };
             scope.ctrl.grid.meta.data.ext.currency = test.currency;
             scope.$digest();
-            expect(element.find('.value').text().trim()).toEqual(test.expectedResult);
+            expect(element.find('.zem-grid-cell-base-field__value').text().trim()).toEqual(test.expectedResult);
         });
     });
 });
