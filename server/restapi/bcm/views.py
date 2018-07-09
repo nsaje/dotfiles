@@ -114,7 +114,7 @@ class AccountCreditView(api_common.BaseApiView):
             'is_canceled': credit.status == constants.CreditLineItemStatus.CANCELED,
             'license_fee': helpers.format_decimal_to_percent(credit.license_fee) + '%',
             'flat_fee': flat_fee,
-            'total': credit.effective_amount(),
+            'total': credit.effective_amount() - credit.get_refunds_amount(),
             'allocated': allocated,
             'comment': credit.comment,
             'salesforce_url': credit.get_salesforce_url(),
