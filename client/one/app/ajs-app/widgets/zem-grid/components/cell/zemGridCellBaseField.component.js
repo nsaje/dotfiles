@@ -12,8 +12,9 @@ angular.module('one.widgets').directive('zemGridCellBaseField', function () {
             grid: '=',
         },
         template: require('./zemGridCellBaseField.component.html'),
-        controller: function ($scope, zemGridConstants, zemGridDataFormatter, zemGridUIService) { // eslint-disable-line max-len
+        controller: function ($scope, zemGridConstants, zemGridDataFormatter, zemGridUIService, zemPermissions) { // eslint-disable-line max-len
             var vm = this;
+            vm.hasPermission = zemPermissions.hasPermission;
 
             $scope.$watch('ctrl.row', update);
             $scope.$watch('ctrl.data', update);
@@ -37,6 +38,8 @@ angular.module('one.widgets').directive('zemGridCellBaseField', function () {
                 if (vm.data) {
                     vm.class += ' ' + zemGridUIService.getFieldGoalStatusClass(vm.data.goalStatus);
                 }
+
+                vm.refundFormattedValue = getRefundValue();
             }
 
             function isFieldVisible () {
@@ -44,6 +47,24 @@ angular.module('one.widgets').directive('zemGridCellBaseField', function () {
                     return false;
                 }
                 return !(vm.row.level === zemGridConstants.gridRowLevel.FOOTER && vm.column.data.totalRow === false);
+            }
+
+            function getRefundValue () {
+                var refundField = vm.column.field + '_refund';
+                if (!vm.row.data ||
+                    !vm.row.data.stats ||
+                    !vm.row.data.stats[refundField] ||
+                    !vm.row.data.stats[refundField].value) {
+                    return '';
+                }
+
+                var formatterOptions = angular.copy(vm.column.data);
+                formatterOptions.currency = vm.grid.meta.data.ext.currency;
+
+                return zemGridDataFormatter.formatValue(
+                    vm.row.data.stats[refundField].value,
+                    formatterOptions
+                );
             }
         },
     };

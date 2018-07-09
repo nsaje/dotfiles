@@ -709,6 +709,54 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             fieldGroup: 'cpm'
         },
 
+        // Refunds
+        eMediaCostRefund: {
+            name: 'Media Spend Refund',
+            field: 'e_media_cost_refund',
+            type: zemGridConstants.gridColumnTypes.CURRENCY,
+            totalRow: true,
+            help: 'Refunded amount of media spend.',
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            internal: 'zemauth.can_see_credit_refunds',
+            shown: false,
+        },
+        licenseFeeRefund: {
+            name: 'License Fee Refund',
+            field: 'license_fee_refund',
+            type: zemGridConstants.gridColumnTypes.CURRENCY,
+            totalRow: true,
+            help: 'Zemanta One platform usage cost.',
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            internal: 'zemauth.can_see_credit_refunds',
+            shown: false,
+        },
+        billingCostRefund: {
+            name: 'Total Spend Refund',
+            field: 'billing_cost_refund',
+            type: zemGridConstants.gridColumnTypes.CURRENCY,
+            totalRow: true,
+            help: 'Refunded amount of total spend.',
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            internal: 'zemauth.can_see_credit_refunds',
+            shown: false,
+            costMode: constants.costMode.LEGACY,
+        },
+        etfmCostRefund: {
+            name: 'Total Spend Refund',
+            field: 'etfm_cost_refund',
+            type: zemGridConstants.gridColumnTypes.CURRENCY,
+            totalRow: true,
+            help: 'Refunded amount of total spend.',
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            internal: 'zemauth.can_see_credit_refunds',
+            shown: false,
+            costMode: constants.costMode.ANY
+        },
+
         // Yesterday cost metrics
         yesterdayCost: {
             name: 'Actual Yesterday Spend',
@@ -1628,7 +1676,11 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         COLUMNS.atCost,
         COLUMNS.etCost,
         COLUMNS.etfCost,
-        COLUMNS.etfmCost
+        COLUMNS.etfmCost,
+        COLUMNS.eMediaCostRefund,
+        COLUMNS.licenseFeeRefund,
+        COLUMNS.etfmCostRefund,
+        COLUMNS.billingCostRefund
     ];
 
     var PROJECTIONS_GROUP = [

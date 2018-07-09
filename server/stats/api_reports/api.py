@@ -93,7 +93,7 @@ UNABLE_TO_SORT = (
     'spend_projection', 'allocated_budgets', 'license_fee_projection', 'status', 'image_hash', 'description',
     'image_urls', 'campaign_manager', 'supply_dash_url', 'total_fee_projection', 'display_url', 'url', 'external_id',
     'source_status', 'pacing', 'default_sales_representative', 'ad_group', 'default_account_manager', 'total_fee',
-    'campaign_status',
+    'campaign_status', 'e_media_cost_refund', 'license_fee_refund', 'etfm_cost_refund', 'billing_cost_refund',
 )
 
 

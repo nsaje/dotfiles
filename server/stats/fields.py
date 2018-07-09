@@ -49,7 +49,8 @@ DEFAULT_STATS = set([
     'video_cpcv', 'local_video_cpcv', 'video_etfm_cpcv', 'local_video_etfm_cpcv',
     'avg_cost_per_minute', 'local_avg_cost_per_minute', 'avg_cost_per_non_bounced_visit', 'local_avg_cost_per_non_bounced_visit',
     'avg_cost_per_pageview', 'local_avg_cost_per_pageview', 'avg_cost_for_new_visitor', 'local_avg_cost_for_new_visitor',
-    'avg_cost_per_visit', 'local_avg_cost_per_visit',
+    'avg_cost_per_visit', 'local_avg_cost_per_visit', 'e_media_cost_refund', 'license_fee_refund', 'etfm_cost_refund',
+    'billing_cost_refund',
 ])
 
 HELPER_FIELDS = set(['campaign_has_available_budget', 'status_per_source'])

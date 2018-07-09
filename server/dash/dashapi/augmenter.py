@@ -77,8 +77,10 @@ def augment_account(row, loader, is_base_level=False):
             settings, row)
 
         projections = loader.projections_map.get(account_id)
+        refunds = loader.refunds_map.get(account_id)
     else:
         projections = loader.projections_totals
+        refunds = loader.refunds_totals
 
     if projections is not None:
         row.update({
@@ -89,6 +91,14 @@ def augment_account(row, loader, is_base_level=False):
             'flat_fee': projections.get('flat_fee'),
             'total_fee': projections.get('total_fee'),
             'total_fee_projection': projections.get('total_fee_projection'),
+        })
+
+    if refunds:
+        row.update({
+            'e_media_cost_refund': refunds['e_media_cost'],
+            'license_fee_refund': refunds['license_fee'],
+            'billing_cost_refund': refunds['billing_cost'],
+            'etfm_cost_refund': refunds['etfm_cost'],
         })
 
 
@@ -109,6 +119,7 @@ def augment_account_for_report(row, loader, is_base_level=False):
 def augment_campaign(row, loader, is_base_level=False):
     campaign_id = row.get('campaign_id')
 
+    refunds = None
     if campaign_id:
         campaign = loader.objs_map[campaign_id]
         row.update({
@@ -123,6 +134,7 @@ def augment_campaign(row, loader, is_base_level=False):
         projections = loader.projections_map.get(campaign_id)
     else:
         projections = loader.projections_totals
+        refunds = loader.refunds_totals
 
     if projections is not None:
         row.update({
@@ -130,6 +142,14 @@ def augment_campaign(row, loader, is_base_level=False):
             'allocated_budgets': projections.get('allocated_media_budget'),
             'spend_projection': projections.get('media_spend_projection'),
             'license_fee_projection': projections.get('license_fee_projection'),
+        })
+
+    if refunds:
+        row.update({
+            'e_media_cost_refund': refunds['e_media_cost'],
+            'license_fee_refund': refunds['license_fee'],
+            'billing_cost_refund': refunds['billing_cost'],
+            'etfm_cost_refund': refunds['etfm_cost'],
         })
 
 

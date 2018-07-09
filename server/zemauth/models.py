@@ -331,6 +331,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_promote_additional_pixel', 'User can promote a pixel to an additional audience pixel'),
             ('can_be_ob_representative', 'User can be chosen as OB representative'),
             ('can_set_account_ob_representative', 'User can set OB representative'),
+            ('can_see_credit_refunds', 'User can see credit refunds in grid'),
         )
 
     def get_full_name(self):

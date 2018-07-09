@@ -1,3 +1,4 @@
+import calendar
 import collections
 from django.utils.functional import cached_property
 from django.db.models.query import QuerySet
@@ -7,11 +8,16 @@ from zemauth.models import User as ZemUser
 
 from analytics.projections import BudgetProjections
 
+import core.bcm.calculations
+import core.multicurrency
+
 from dash import models
 from dash import constants
 from dash import publisher_helpers
 from dash.views import helpers as view_helpers
 from dash.dashapi import data_helper
+
+import stats.helpers
 
 
 """
@@ -186,6 +192,68 @@ class AccountsLoader(Loader):
             return None
         return self._projections.total()
 
+    @cached_property
+    def refunds_map(self):
+        refunds_map = {}
+        for refund in self._refunds:
+            refunds_map.setdefault(refund.account_id, {
+                'billing_cost': 0,
+                'etfm_cost': 0,
+                'e_media_cost': 0,
+                'license_fee': 0,
+            })
+            total_amount, media_amount, license_fee_amount = self._calculate_refund_splits(refund)
+            refunds_map[refund.account_id]['e_media_cost'] += media_amount
+            refunds_map[refund.account_id]['license_fee'] += license_fee_amount
+            refunds_map[refund.account_id]['billing_cost'] += total_amount
+            refunds_map[refund.account_id]['etfm_cost'] += total_amount
+        return refunds_map
+
+    @cached_property
+    def refunds_totals(self):
+        if not self._refunds:
+            return {}
+
+        totals = {
+            'billing_cost': 0,
+            'etfm_cost': 0,
+            'e_media_cost': 0,
+            'license_fee': 0,
+        }
+        for refund in self._refunds:
+            total_amount, media_amount, license_fee_amount = self._calculate_refund_splits(refund)
+            totals['e_media_cost'] += media_amount
+            totals['license_fee'] += license_fee_amount
+            totals['billing_cost'] += total_amount
+            totals['etfm_cost'] += total_amount
+        return totals
+
+    @cached_property
+    def _refunds(self):
+        return models.RefundLineItem.objects.filter(
+            account_id__in=self.objs_ids,
+            start_date__gte=self.start_date.replace(day=1),
+            end_date__lte=self.end_date.replace(day=calendar.monthrange(self.end_date.year, self.end_date.month)[1]),
+        ).select_related('credit')
+
+    def _calculate_refund_splits(self, refund):
+        currency_exchange_rate = self._refund_exchange_rate(refund)
+        total_amount = refund.amount * currency_exchange_rate
+        media_amount = core.bcm.calculations.subtract_fee_and_margin(
+            total_amount,
+            license_fee=refund.credit.license_fee,
+            margin=0,  # doesn't apply on account level
+        )
+        license_fee_amount = core.bcm.calculations.calculate_fee(
+            media_amount, refund.credit.license_fee)
+        return total_amount, media_amount, license_fee_amount
+
+    def _refund_exchange_rate(self, refund):
+        view_currency = stats.helpers.get_report_currency(self.user, [account for account in self.objs_map.values()])
+        view_currency_exchange_rate = core.multicurrency.get_exchange_rate(refund.start_date, view_currency)
+        account_currency_exchange_rate = core.multicurrency.get_exchange_rate(refund.start_date, refund.account.currency)
+        return view_currency_exchange_rate / account_currency_exchange_rate
+
 
 class CampaignsLoader(Loader):
 
@@ -269,6 +337,46 @@ class CampaignsLoader(Loader):
         if not self.user.has_perm('zemauth.can_see_projections'):
             return None
         return self._projections.total()
+
+    @cached_property
+    def refunds_totals(self):
+        if not self._refunds:
+            return {}
+
+        totals = {
+            'billing_cost': 0,
+            'etfm_cost': 0,
+            'e_media_cost': 0,
+            'license_fee': 0,
+        }
+
+        for refund in self._refunds:
+            total_amount, media_amount, license_fee_amount = self._calculate_refund_splits(refund)
+            totals['e_media_cost'] += media_amount
+            totals['license_fee'] += license_fee_amount
+            totals['billing_cost'] += total_amount
+            totals['etfm_cost'] += total_amount
+
+        return totals
+
+    @cached_property
+    def _refunds(self):
+        return models.RefundLineItem.objects.filter(
+            account__in=models.Campaign.objects.filter(id__in=self.objs_ids).values_list('account_id', flat=True),
+            start_date__gte=self.start_date.replace(day=1),
+            end_date__lte=self.end_date.replace(day=calendar.monthrange(self.end_date.year, self.end_date.month)[1]),
+        ).select_related('credit')
+
+    def _calculate_refund_splits(self, refund):
+        total_amount = refund.amount
+        media_amount = core.bcm.calculations.subtract_fee_and_margin(
+            total_amount,
+            license_fee=refund.credit.license_fee,
+            margin=0,  # doesn't apply on account level
+        )
+        license_fee_amount = core.bcm.calculations.calculate_fee(
+            media_amount, refund.credit.license_fee)
+        return total_amount, media_amount, license_fee_amount
 
 
 class AdGroupsLoader(Loader):
