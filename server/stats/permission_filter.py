@@ -147,11 +147,6 @@ FIELD_PERMISSION_MAPPING = {
     'performance':                               ('zemauth.campaign_goal_performance',),
     'etfm_performance':                          ('zemauth.campaign_goal_performance', 'zemauth.can_view_end_user_cost_breakdown'),
     'styles':                                    ('zemauth.campaign_goal_performance',),
-
-    'e_media_cost_refund':                     ('zemauth.can_see_credit_refunds',),
-    'license_fee_refund':                      ('zemauth.can_see_credit_refunds',),
-    'etfm_cost_refund':                        ('zemauth.can_see_credit_refunds',),
-    'billing_cost_refund':                     ('zemauth.can_see_credit_refunds',),
 }
 
 
