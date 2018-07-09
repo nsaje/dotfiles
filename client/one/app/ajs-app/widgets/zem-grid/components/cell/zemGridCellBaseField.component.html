@@ -1,6 +1,7 @@
 <span class="zem-grid-cell-base-field"
       ng-class="ctrl.class">
     <span title="{{ctrl.formattedValue}}"
+          class="value"
           ng-bind="ctrl.formattedValue"
           zem-lazy-popover-text="{{ctrl.data.popoverMessage}}"
           zem-lazy-popover-placement="left"
@@ -8,6 +9,7 @@
           zem-lazy-popover-append-to-body="true">
     </span>
     <span ng-show="ctrl.refundFormattedValue && ctrl.hasPermission('zemauth.can_see_credit_refunds')"
+          class="refund"
           title="(-{{ctrl.refundFormattedValue}})"
           zem-lazy-popover-text="This number represents the refunded amount. It will not be charged at the end of the month."
           zem-lazy-popover-placement="top"
