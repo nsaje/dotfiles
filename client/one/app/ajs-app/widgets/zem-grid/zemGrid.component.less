@@ -455,33 +455,33 @@ zem-grid {
     .zem-grid-cell-editable-base-field:not(.text-field):not(.dateTime-field) {
         display: block;
         text-align: right;
-    }
 
-    .zem-grid-cell-base-field {
-        &.superperforming-goal {
-            color: @green;
+        .zem-grid-cell-base-field {
+            &.superperforming-goal {
+                color: @green;
+            }
+
+            &.underperforming-goal {
+                color: @red;
+            }
         }
 
-        &.underperforming-goal {
+        .zem-grid-cell-base-field__container {
+            display: inline-block;
+            vertical-align: middle;
+
+            line-height: 16px;
+            height: 100%;
+        }
+
+        .zem-grid-cell-base-field__value:after {
+            content: '\A';
+            white-space: pre;
+        }
+
+        .zem-grid-cell-base-field__refund {
             color: @red;
         }
-    }
-
-    .zem-grid-cell-base-field__container {
-        display: inline-block;
-        vertical-align: middle;
-
-        line-height: 16px;
-        height: 100%;
-    }
-
-    .zem-grid-cell-base-field__value:after {
-        content: '\A';
-        white-space: pre;
-    }
-
-    .zem-grid-cell-base-field__refund {
-        color: @red;
     }
 
     .zem-grid-cell-editable-base-field {
