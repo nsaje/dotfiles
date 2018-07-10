@@ -116,6 +116,12 @@ class Agency(models.Model):
 
     settings = models.OneToOneField('AgencySettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_entity')
 
+    def admin_link(self):
+        if self.id:
+            return '<a href="/admin/dash/agency/%d/">Edit</a>' % self.id
+        else:
+            return 'N/A'
+
     def get_long_name(self):
         return 'Agency {}'.format(self.name)
 
