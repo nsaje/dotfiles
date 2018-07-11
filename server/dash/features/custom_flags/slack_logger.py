@@ -17,18 +17,16 @@ class SlackLoggerMixin(object):
         added_msg = ''
 
         if removed:
-            removed_msg = '"{ids}" have been disabled on "{entity}" ({type}). {link}'.format(
+            removed_msg = '*{ids}* have been disabled on {entity_link} ({type}).'.format(
                 ids=', '.join(removed),
-                entity=updated_entity.name,
+                entity_link=self.entity_admin_url_builder(original_entity, anchor_tag=original_entity.name),
                 type=entity_type,
-                link=self.entity_admin_url_builder(original_entity)
             )
         if added:
-            added_msg = '"{ids}" have been enabled on "{entity}" ({type}). {link}'.format(
+            added_msg = '*{ids}* have been enabled on {entity_link} ({type}).'.format(
                 ids=', '.join(added),
-                entity=updated_entity.name,
+                entity_link=self.entity_admin_url_builder(original_entity, anchor_tag=updated_entity.name),
                 type=entity_type,
-                link=self.entity_admin_url_builder(original_entity)
             )
 
         txt = '\n'.join([removed_msg, added_msg])
@@ -38,8 +36,8 @@ class SlackLoggerMixin(object):
             except Exception:
                 logger.exception('Connection Error with Slack')
 
-    def entity_admin_url_builder(self, entity, domain='https://www.one.zemanta.com', anchor_tag='edit'):
-        entity_name = entity.__class__.__name__
+    def entity_admin_url_builder(self, entity, domain='https://one.zemanta.com', anchor_tag='edit'):
+        entity_name = entity.__class__.__name__.lower()
         url = '{domain}/admin/dash/{entity_name}/{id}/change'.format(domain=domain,
                                                                      entity_name=entity_name,
                                                                      id=entity.id)
