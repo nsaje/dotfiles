@@ -67,7 +67,7 @@ We use Grunt for building the app and Bower for management of third-party compon
 
 All the commands bellow assume that you are located in client subdirectory.
 
-Make sure that you have node.js ,npm and bower installed.
+Make sure that you have node.js, npm and bower installed.
 
 Install local development node modules:
 ```bash
