@@ -1856,6 +1856,8 @@ class HistoryActionType(ConstantBase):
     PUBLISHER_GROUP_CREATE = 25
     PUBLISHER_GROUP_UPDATE = 26
     CONTENT_AD_EDIT = 26
+    CONVERSION_PIXEL_SET_ADDITIONAL_PIXEL = 27
+    CONVERSION_PIXEL_CREATE_AS_ADDITIONAL = 28
 
     _VALUES = {
         GOAL_CHANGE: 'Change Campaign Goal',
@@ -1885,6 +1887,8 @@ class HistoryActionType(ConstantBase):
         CONVERSION_PIXEL_REMOVE_REDIRECT_URL: 'Remove redirect url for pixel',
         PUBLISHER_GROUP_CREATE: 'Create publisher group',
         PUBLISHER_GROUP_UPDATE: 'Update publisher group',
+        CONVERSION_PIXEL_SET_ADDITIONAL_PIXEL: 'Pixel set as an additional audience pixel',
+        CONVERSION_PIXEL_CREATE_AS_ADDITIONAL: 'Create Conversion Pixel as additional audience pixel'
     }
 
 

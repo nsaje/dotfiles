@@ -120,8 +120,8 @@ angular.module('one.widgets').service('zemConversionPixelsStateService', functio
                 function (data) {
                     conversionPixel.archived = data.archived;
                 },
-                function () {
-                    state.requests.archive[conversionPixel.id].error = true;
+                function (data) {
+                    state.requests.archive[conversionPixel.id].error = data.errors;
                     $q.reject();
                 }
             ).finally(function () {
@@ -136,8 +136,8 @@ angular.module('one.widgets').service('zemConversionPixelsStateService', functio
                 function (data) {
                     conversionPixel.archived = data.archived;
                 },
-                function () {
-                    state.requests.restore[conversionPixel.id].error = true;
+                function (data) {
+                    state.requests.restore[conversionPixel.id].error = data.errors;
                     $q.reject();
                 }
             ).finally(function () {

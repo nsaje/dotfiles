@@ -15,20 +15,23 @@ angular.module('one.widgets').component('zemCustomAudiencesModal', {
             {id: 'contains', name: 'URL contains'},
             {id: 'startsWith', name: 'URL equals'}
         ];
-
-        $ctrl.pixel = null;
+        $ctrl.currentAudiencePixel = null;
+        $ctrl.pixels = [];
+        $ctrl.selectedPixel = null;
         $ctrl.selectedTopRuleId = '';
         $ctrl.selectedRefererRuleId = '';
         $ctrl.selectedRefererRuleStartsWithValue = '';
         $ctrl.selectedRefererRuleContainsValue = '';
         $ctrl.selectedName = '';
         $ctrl.selectedTtl = 90;
+        $ctrl.title = '';
 
         $ctrl.updateAudience = updateAudience;
         $ctrl.createAudience = createAudience;
         $ctrl.showRefererRules = showRefererRules;
         $ctrl.getRequest = getRequest;
         $ctrl.clearValidationError = clearValidationError;
+        $ctrl.loadPixels = loadPixels;
 
         $ctrl.$onInit = function () {
             $ctrl.isCreationMode = !$ctrl.resolve.audience;
@@ -38,10 +41,13 @@ angular.module('one.widgets').component('zemCustomAudiencesModal', {
             $ctrl.state = $ctrl.stateService.getState();
 
             if ($ctrl.isCreationMode) {
-                loadPixel();
+                $ctrl.title = 'Create Custom Audience';
+                loadPixels();
             } else {
+                $ctrl.title = 'Edit Custom Audience';
                 loadAudience();
             }
+
         };
 
         $ctrl.$onDestroy = function () {
@@ -54,8 +60,9 @@ angular.module('one.widgets').component('zemCustomAudiencesModal', {
 
         function loadAudience () {
             $ctrl.stateService.get($ctrl.audience.id).then(function (audience) {
-                loadAudienceData(audience);
-                loadPixel(audience.pixelId);
+                loadPixels().then(function () {
+                    loadAudienceData(audience);
+                });
             });
         }
 
@@ -80,6 +87,7 @@ angular.module('one.widgets').component('zemCustomAudiencesModal', {
             }
 
             var data = {name: $ctrl.selectedName};
+            data.pixel_id = $ctrl.selectedPixel ? $ctrl.selectedPixel.id : $ctrl.currentAudiencePixel.id;
             $ctrl.stateService.update($ctrl.audience.id, data).then(
                 function () {
                     $ctrl.modalInstance.close();
@@ -90,6 +98,9 @@ angular.module('one.widgets').component('zemCustomAudiencesModal', {
         function loadAudienceData (audience) {
             $ctrl.selectedName = audience.name;
             $ctrl.selectedTtl = audience.ttl;
+            $ctrl.currentAudiencePixel = $ctrl.pixels.find(function (pi) {
+                return pi.id === parseInt(audience.pixelId);
+            });
             if (audience.rules) {
                 var rule = audience.rules[0];
                 if (rule.type === constants.audienceRuleType.VISIT) {
@@ -113,7 +124,7 @@ angular.module('one.widgets').component('zemCustomAudiencesModal', {
         function createAudienceData () {
             var audience = {
                 name: $ctrl.selectedName,
-                pixel_id: $ctrl.pixel.id,
+                pixel_id: $ctrl.selectedPixel.id,
                 ttl: $ctrl.selectedTtl,
             };
             var selectedRuleType = null;
@@ -143,15 +154,10 @@ angular.module('one.widgets').component('zemCustomAudiencesModal', {
             return audience;
         }
 
-        function loadPixel (pixelId) {
-            if (!pixelId) {
-                $ctrl.pixel = $ctrl.state.audiencePixels[0];
-            } else {
-                var pixelIdInt = parseInt(pixelId);
-                $ctrl.pixel = $ctrl.state.audiencePixels.filter(function (pixel) {
-                    return pixel.id === pixelIdInt;
-                })[0];
-            }
+        function loadPixels () {
+            return $ctrl.stateService.listAudiencePixels().then(function () {
+                $ctrl.pixels = $ctrl.state.audiencePixels.filter(function (pi) { return !pi.archived; });
+            });
         }
 
         function getRequest () {

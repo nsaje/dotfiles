@@ -30,7 +30,9 @@
             <tbody>
                 <tr ng-class="{'archived': item.archived}" ng-repeat="item in $ctrl.state.conversionPixels | orderBy:$ctrl.orderField:$ctrl.orderReverse">
                     <td>
-                        <strong>{{ item.name }}</strong> <span ng-if="item.audienceEnabled" class="text-gray">(Custom audience pixel)</span>
+                        <strong>{{ item.name }}</strong>
+                        <span ng-if="item.audienceEnabled" class="text-gray">(Custom audience pixel)</span>
+                        <span ng-if="item.additionalPixel" class="text-gray">(Additional custom audience pixel)</span>
                     </td>
                     <td ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_traffic')">
                         {{ (item.lastTriggered | date:'M/d/yyyy h:mm a') || 'Never' }}
@@ -47,7 +49,7 @@
                     <td>
                         <span class="loader" ng-if="$ctrl.state.requests.archive[item.id].inProgress || $ctrl.state.requests.restore[item.id].inProgress"></span>
                         <span ng-if="$ctrl.state.requests.archive[item.id].error || $ctrl.state.requests.restore[item.id].error" class="message message--error">
-                            An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
+                             {{ $ctrl.state.requests.archive[item.id].error.audience_enabled || $ctrl.state.requests.restore[item.id].error.audience_enabled }}
                         </span>
                     </td>
                     <td class="custom-table__action-buttons">

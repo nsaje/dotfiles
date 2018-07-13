@@ -1,5 +1,5 @@
 <div class="modal__header">
-    <div class="modal__title">Create Custom Audience</div>
+    <div class="modal__title">{{ $ctrl.title }}</div>
 </div>
 <div class="modal__body">
     <div class="form">
@@ -13,10 +13,28 @@
         <div class="form__group" ng-class="{'form--error': !!$ctrl.getRequest().validationErrors.pixelId}">
              <label class="form__label" for="zem-custom-audience-modal-pixie-select">
                 Pixel
-                <zem-help-popover content="The pixel that is the source of this traffic." placement="bottom"><span class="help-popover" zem-lazy-popover-html-unsafe="Pixel's name" zem-lazy-popover-placement="bottom" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span></zem-help-popover>
+                <zem-help-popover content="The pixel that is the source of this traffic." placement="bottom">
+                    <span class="help-popover" zem-lazy-popover-html-unsafe="Pixel's name" zem-lazy-popover-placement="bottom" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span>
+                </zem-help-popover>
             </label>
-            <input class="input-text" type="text" ng-model="$ctrl.pixel.name" ng-readonly="true" />
+            <ui-select class="button button--plain button--full-width button--dropdown-toggle-icon"
+                       theme="select2"
+                       search-enabled="false"
+                       id="zem-custom-audience-modal-pixie-select"
+                       ng-change="$ctrl.clearValidationError('pixelId')"
+                       ng-model="$ctrl.selectedPixel"
+                       ng-disabled="!$ctrl.isCreationMode">
+                <ui-select-match class="ui-select-match"
+                                 placeholder="{{ $ctrl.currentAudiencePixel.name && !$ctrl.isCreationMode ? $ctrl.currentAudiencePixel.name + ' - current pixel' : 'Select a Pixel' }} ">
+                    {{ $select.selected.name }}
+                </ui-select-match>
+                <ui-select-choices class="ui-select-choices" repeat="pixel in $ctrl.pixels track by pixel.id">
+                    {{ pixel.name }} {{ pixel.additionalPixel ? '(Additional Audience Pixel)' : '(Audience Pixel)' }}
+                    {{ pixel.id === $ctrl.currentAudiencePixel.id ? ' - current pixel' : '' }}
+                </ui-select-choices>
+            </ui-select>
             <div class="message message--error" ng-repeat="error in $ctrl.getRequest().validationErrors.pixelId">{{ error }}</div>
+            <div class="message message--warning" ng-if="$ctrl.selectedPixel.additionalPixel">Only the main audience pixel is synced with Outbrain!</div>
         </div>
 
         <div class="form__group" ng-class="{'form--error': !!$ctrl.getRequest().validationErrors.rules}">

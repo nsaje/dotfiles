@@ -20,10 +20,7 @@ class ConversionPixel(models.Model):
     impressions = models.PositiveIntegerField(default=0)
     redirect_url = models.CharField(max_length=2048, blank=True, null=True)
     notes = models.TextField(blank=True)
-
-    # TODO matijav 19.16.2016 a hack to allow multiple audience pixels
     additional_pixel = models.BooleanField(default=False)
-
     last_sync_dt = models.DateTimeField(
         default=datetime.datetime.utcnow, blank=True, null=True)
     created_dt = models.DateTimeField(

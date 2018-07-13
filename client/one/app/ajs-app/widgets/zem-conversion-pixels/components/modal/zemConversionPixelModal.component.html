@@ -30,7 +30,21 @@
                            ng-disabled="!!$ctrl.audiencePixel" ng-focus="$ctrl.clearError()" ng-change="$ctrl.clearError()" />
                     <span class="checkbox-text" for="audience-enabled-input"></span>
                 </label>
+
             </div>
+        </div>
+        <div class="form__group" ng-class="{'form--error': !!$ctrl.getRequest().validationErrors.additional_pixel}" ng-if="$ctrl.hasPermission('zemauth.can_promote_additional_pixel') && !$ctrl.pixel.audienceEnabled  && !!$ctrl.audiencePixel" >
+            <label class="form__label" for="enable-additional-pixel-input">Make this pixel an Additional Audience Pixel</label>
+            <div class="form__checkbox">
+                <label>
+                    <input class="input-checkbox" type="checkbox" id="enable-additional-pixel-input"
+                           ng-change="$ctrl.clearError()"
+                           ng-model="$ctrl.pixel.additionalPixel"
+                           ng-disabled="$ctrl.pixel.additionalPixel && !$ctrl.getRequest().validationErrors.additional_pixel"/>
+                    <span class="checkbox-text" for="enable-additional-pixel-input"></span>
+                </label>
+            </div>
+            <div class="message message--error" ng-repeat="error in $ctrl.getRequest().validationErrors.additional_pixel" for="enable-additional-pixel-input">{{ error }}</div>
         </div>
 
         <div class="form__group" ng-class="{'form--error': !!$ctrl.getRequest().validationErrors.notes}" ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_notes')">

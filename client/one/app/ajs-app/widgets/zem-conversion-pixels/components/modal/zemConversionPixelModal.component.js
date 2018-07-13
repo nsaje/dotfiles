@@ -1,7 +1,7 @@
 angular.module('one.widgets').component('zemConversionPixelModal', {
     bindings: {
         resolve: '<',
-        close: '&'
+        close: '&',
     },
     template: require('./zemConversionPixelModal.component.html'),
     controller: function ($rootScope, zemPermissions) {
@@ -28,15 +28,11 @@ angular.module('one.widgets').component('zemConversionPixelModal', {
         };
 
         function getRequest () {
-            return $ctrl.isCreationMode ?
-                $ctrl.state.requests.create :
-                $ctrl.state.requests.update[$ctrl.pixel.id];
+            return $ctrl.isCreationMode ? $ctrl.state.requests.create : $ctrl.state.requests.update[$ctrl.pixel.id];
         }
 
         function submit () {
-            var fn = $ctrl.isCreationMode ?
-                $ctrl.stateService.create :
-                $ctrl.stateService.update;
+            var fn = $ctrl.isCreationMode ? $ctrl.stateService.create : $ctrl.stateService.update;
 
             fn($ctrl.pixel).then(function () {
                 // FIXME: avoid broadcast in pixelAudienceEnabled propagation

@@ -7,7 +7,7 @@ from django.test import TestCase
 from django.conf import settings
 import mock
 
-from dash import constants
+from dash import constants, history_helpers
 from dash import models
 from zemauth import models as zmodels
 
@@ -357,6 +357,37 @@ class AudiencesTest(TestCase):
 
         redirector_upsert_audience_mock.assert_called_with(audiences[0])
         k1_update_account_mock.assert_called_with(audiences[0].pixel.account_id, msg='audience.update')
+
+    @mock.patch('utils.k1_helper.update_account')
+    @mock.patch('utils.redirector_helper.upsert_audience')
+    def test_post_create_audience_with_additional_pixel(self, redirector_upsert_audience_mock, k1_update_account_mock):
+        conversion_pixel = models.ConversionPixel.objects.get(id=1)
+        conversion_pixel.additional_pixel = True
+        conversion_pixel.save()
+        data = self._get_valid_post_data()
+        data['pixel_id'] = conversion_pixel.id
+        del(data["prefill_days"])
+
+        response = self.client.post(reverse('accounts_audiences', kwargs={'account_id': 1}),
+                                    json.dumps(data),
+                                    content_type='application/json')
+
+        audience_pixel_id = models.Audience.objects.get(id=1).pixel_id
+        data = json.loads(response.content)['data']
+        self.assertEqual(
+            {'id': data['id'], 'name': 'Test Audience', 'pixel_id': '{}'.format(conversion_pixel.id),
+             'ttl': 90, 'prefill_days': 90, 'rules': [{'id': '7', 'type': 2, 'value': 'test'}]},
+            data)
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(models.ConversionPixel.objects.get(id=audience_pixel_id).additional_pixel)
+        audience = models.Audience.objects.get(pk=data['id'])
+
+        hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
+        self.assertEqual(constants.HistoryActionType.AUDIENCE_CREATE, hist.action_type)
+        self.assertEqual('Created audience "Test Audience".', hist.changes_text)
+
+        redirector_upsert_audience_mock.assert_called_with(audience)
+        k1_update_account_mock.assert_called_with(audience.pixel.account_id, msg='audience.create')
 
 
 class AudienceArchiveTest(TestCase):
