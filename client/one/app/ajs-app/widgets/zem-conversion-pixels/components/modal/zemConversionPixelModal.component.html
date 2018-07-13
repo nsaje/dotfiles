@@ -40,7 +40,7 @@
                     <input class="input-checkbox" type="checkbox" id="enable-additional-pixel-input"
                            ng-change="$ctrl.clearError()"
                            ng-model="$ctrl.pixel.additionalPixel"
-                           ng-disabled="$ctrl.pixel.additionalPixel && !$ctrl.getRequest().validationErrors.additional_pixel"/>
+                           ng-disabled="$ctrl.pixel.additionalPixel && !$ctrl.isCreationMode"/>
                     <span class="checkbox-text" for="enable-additional-pixel-input"></span>
                 </label>
             </div>
@@ -61,6 +61,9 @@
 
         <div class="message message--info message--with-icon" ng-if="$ctrl.audiencePixel && $ctrl.audiencePixel.id != $ctrl.pixel.id">
             Only one pixel can be used for building custom audiences. You have already set pixel {{ $ctrl.audiencePixel.name }} for audience building, if you want to change this, please contact your Customer Success Manager.
+        </div>
+        <div class="message message--warning message--with-icon" ng-if="$ctrl.pixel.additionalPixel">
+            Only Custom Audience Pixel (The primary one) is synced with OutBrain, not the additional one!
         </div>
     </div>
 
