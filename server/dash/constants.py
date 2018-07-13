@@ -2375,3 +2375,17 @@ class SourceSubmissionPolicy(ConstantBase):
         MANUAL: 'Manual',
         AUTOMATIC_WITH_AMPLIFY_APPROVAL: 'Automatic with Amplify approval',
     }
+
+
+class Customflags(ConstantBase):
+    INT = 'int'
+    FLOAT = 'float'
+    STRING = 'string'
+    BOOL = 'boolean'
+
+    _VALUES = {
+        INT: 'number',
+        FLOAT: 'decimal number',
+        STRING: 'text',
+        BOOL: 'boolean',
+    }
