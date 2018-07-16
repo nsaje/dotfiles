@@ -16,6 +16,7 @@ class AdGroupSourcesTableUpdatesTest(TestCase):
     def test_get(self):
         response = ad_group_source_table_updates.get_updated_ad_group_sources_changes(
             User.objects.get(pk=1), None, None, 1)
+
         expected = {
             'notifications': {},
             'in_progress': False,
@@ -175,7 +176,17 @@ class AdGroupSourcesTableUpdatesTest(TestCase):
         ad_group_settings = ad_group.get_current_settings()
         ad_group_sources_settings = helpers.get_ad_group_sources_settings(ad_group_sources)
 
-        self.assertEqual(Decimal('10.0'), ad_group_source_table_updates._get_daily_budget(User.objects.get(pk=1), ad_group_settings, ad_group_sources_settings))
+        self.assertEqual(Decimal('10.0'), ad_group_source_table_updates._get_daily_budget(User.objects.get(pk=1), [], ad_group_settings, ad_group_sources_settings))
+
+    def test_get_daily_budget_filtered_sources(self):
+        ad_group = models.AdGroup.objects.get(id=2)
+        ad_group_sources = helpers.get_active_ad_group_sources(models.AdGroup, [ad_group])
+        ad_group_settings = ad_group.get_current_settings()
+        ad_group_sources_settings = helpers.get_ad_group_sources_settings(ad_group_sources)
+
+        filtered_sources = [2]
+
+        self.assertEqual(Decimal('40.0'), ad_group_source_table_updates._get_daily_budget(User.objects.get(pk=1), filtered_sources, ad_group_settings, ad_group_sources_settings))
 
     def test_get_daily_budget_all_rtb_enabled(self):
         ad_group = models.AdGroup.objects.get(id=1)
@@ -188,7 +199,7 @@ class AdGroupSourcesTableUpdatesTest(TestCase):
         ad_group_settings.b1_sources_group_daily_budget = Decimal(100)
         ad_group_settings.local_b1_sources_group_daily_budget = Decimal(200)
 
-        self.assertEqual(Decimal('200.0'), ad_group_source_table_updates._get_daily_budget(User.objects.get(pk=1), ad_group_settings, ad_group_sources_settings))
+        self.assertEqual(Decimal('200.0'), ad_group_source_table_updates._get_daily_budget(User.objects.get(pk=1), [], ad_group_settings, ad_group_sources_settings))
 
     def test_get_daily_budget_all_rtb_enabled_and_inactive(self):
         ad_group = models.AdGroup.objects.get(id=1)
@@ -199,4 +210,4 @@ class AdGroupSourcesTableUpdatesTest(TestCase):
         ad_group_settings.b1_sources_group_state = 2
         ad_group_settings.b1_sources_group_daily_budget = Decimal(100)
 
-        self.assertEqual(Decimal('0.0'), ad_group_source_table_updates._get_daily_budget(User.objects.get(pk=1), ad_group_settings, ad_group_sources_settings))
+        self.assertEqual(Decimal('0.0'), ad_group_source_table_updates._get_daily_budget(User.objects.get(pk=1), [], ad_group_settings, ad_group_sources_settings))

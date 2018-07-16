@@ -92,7 +92,7 @@ def get_updated_ad_group_sources_changes(user, last_change_dt, filtered_sources,
                                        ad_group_source, rows, notifications)
 
         response['rows'] = rows
-        daily_budget = _get_daily_budget(user, ad_group_settings, ad_group_sources_settings)
+        daily_budget = _get_daily_budget(user, filtered_sources, ad_group_settings, ad_group_sources_settings)
         response['totals'] = {
             'daily_budget': daily_budget,
             'current_daily_budget': daily_budget,
@@ -121,7 +121,7 @@ def _update_rtb_source_row(ad_group_settings, ad_group_source, rows, notificatio
             }
 
 
-def _get_daily_budget(user, ad_group_settings, ad_group_sources_settings):
+def _get_daily_budget(user, filtered_sources, ad_group_settings, ad_group_sources_settings):
     # MVP for all-RTB-sources-as-one
     all_rtb_budget = 0
     include_rtb_sources = True
@@ -132,19 +132,23 @@ def _get_daily_budget(user, ad_group_settings, ad_group_sources_settings):
                 constants.AdGroupSourceSettingsState.ACTIVE:
             all_rtb_budget = ad_group_settings.local_b1_sources_group_daily_budget
 
-    daily_budget = _get_daily_budget_total(user, ad_group_sources_settings, include_rtb_sources)
+    daily_budget = _get_daily_budget_total(user, filtered_sources, ad_group_sources_settings, include_rtb_sources)
     if not include_rtb_sources:
         daily_budget = daily_budget + all_rtb_budget if daily_budget else all_rtb_budget
 
     return daily_budget
 
 
-def _get_daily_budget_total(user, ad_group_sources_settings, include_rtb_sources=True):
+def _get_daily_budget_total(user, filtered_sources, ad_group_sources_settings, include_rtb_sources=True):
+    if not filtered_sources:
+        filtered_sources = []
+    filtered_sources = [int(s) for s in filtered_sources]
+
     budgets = [s.local_daily_budget_cc for s in ad_group_sources_settings if
                s is not None and s.local_daily_budget_cc is not None and
+               (not filtered_sources or s.ad_group_source.source_id in filtered_sources) and
                s.state == constants.AdGroupSourceSettingsState.ACTIVE and
-               (include_rtb_sources or s.ad_group_source.source.source_type.type != constants.SourceType.B1)
-               ]
+               (include_rtb_sources or s.ad_group_source.source.source_type.type != constants.SourceType.B1)]
 
     if not budgets:
         return None
