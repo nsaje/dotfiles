@@ -485,6 +485,11 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
 
     actions = [migrate_to_bcm_v2]
 
+    def get_readonly_fields(self, request, obj=None):
+        if obj and obj.yahoo_account:
+            return self.readonly_fields + ('yahoo_account',)
+        return self.readonly_fields
+
     def save_formset(self, request, form, formset, change):
         if formset.model == models.Campaign:
             instances = formset.save(commit=False)
