@@ -472,7 +472,7 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
         'salesforce_url',
         'uses_bcm_v2',
     )
-    readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'uses_bcm_v2', 'id', 'outbrain_marketer_id', 'yahoo_account')
+    readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'uses_bcm_v2', 'id', 'outbrain_marketer_id')
     exclude = ('users', 'settings')
     raw_id_fields = ('default_whitelist', 'default_blacklist', 'agency', 'settings')
     inlines = (AccountUserInline, CampaignInline)
