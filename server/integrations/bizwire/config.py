@@ -47,5 +47,6 @@ INTEREST_TARGETING = [
 NOTIFICATION_EMAILS = [
     'luka.silovinac@zemanta.com',
     'tadej.pavlic@zemanta.com',
+    'nsaje@outbrain.com',
     # 'bostjan@zemanta.com',
 ]
