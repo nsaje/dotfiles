@@ -38,7 +38,7 @@ DATABASES = {
 }
 DATABASE_READ_REPLICAS = []
 
-ALLOWED_HOSTS = [ '{INSTANCE_NAME}.demo.zemanta.com'.format(INSTANCE_NAME=os.environ.get('INSTANCE_NAME', 'demo123')), ]
+ALLOWED_HOSTS = ['{INSTANCE_NAME}.demo.zemanta.com'.format(INSTANCE_NAME=os.environ.get('INSTANCE_NAME', 'demo123')), ]
 
 BASE_URL = 'https://{INSTANCE_NAME}.demo.zemanta.com'.format(INSTANCE_NAME=os.environ.get('INSTANCE_NAME', 'demo123'))
 
@@ -49,6 +49,13 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_REDIRECT_EXEMPT = []
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+
+# added by request from asraka@outbrain.com (https://trello.com/c/BH1S1NNA/8-continuous-dast)
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SESSION_COOKIE_SECURE = True
 
 # Email settings
 EMAIL_USE_TLS = True
@@ -298,3 +305,4 @@ REST_FRAMEWORK = {
 
 DISABLE_FACEBOOK = True
 AMPLIFY_REVIEW = False
+
