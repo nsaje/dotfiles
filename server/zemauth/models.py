@@ -333,6 +333,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_set_account_ob_representative', 'User can set OB representative'),
             ('can_see_credit_refunds', 'User can see credit refunds in grid'),
             ('can_include_credit_refunds_in_report', 'User can export credit refunds in all accounts report'),
+            ('can_use_publisher_bid_modifiers_in_ui', 'User can see and adjust publisher bid modifiers in the UI'),
         )
 
     def get_full_name(self):
