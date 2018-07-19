@@ -34,7 +34,7 @@ if [ "$DIFF" != "" ]; then
     banner 1 "requirements.in"
 fi
 
-# Flake8 ------------------------------------------------------------------------
+# Flake8 ---------------------------------------------------------------------------
 blue "Flake8 lint in progress ..."
 docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=flake8 py3-tools ./server/
 
@@ -55,7 +55,7 @@ EXITCODE=$?
 banner $EXITCODE "ClientLint"
 
 
-# Xenon ------------------------------------------------------------------------
+# Xenon ----------------------------------------------------------------------------
 blue "Xenon (cyclomatic complexity) check in progress ..."
 docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=xenon py3-tools  \
   --max-absolute D \
@@ -64,3 +64,11 @@ docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=xenon py3-tools  \
 
 EXITCODE=$?
 banner $EXITCODE "Xenon"
+
+
+# mypy -----------------------------------------------------------------------------
+blue "mypy check in progress ..."
+docker run --rm -v $PWD:/src --workdir=/src/server/ --entrypoint=sh py3-tools \
+           -c 'mypy $(find . -name "*.py" | xargs grep typing | cut -d ":" -f1 | sort | uniq)'
+EXITCODE=$?
+banner $EXITCODE "mypy"

@@ -1,4 +1,9 @@
 import decimal
+from typing import (
+    Iterable,
+    List,
+    Optional
+)
 
 from django.db import transaction
 
@@ -14,20 +19,25 @@ from .. import RealTimeCampaignStopLog
 THRESHOLD = decimal.Decimal('10')
 
 
-def update_campaigns_state(campaigns=None):
-    if not campaigns:
-        campaigns = core.entity.Campaign.objects.filter(real_time_campaign_stop=True)
-    _update_campaigns(campaign for campaign in campaigns if campaign.real_time_campaign_stop)
+def update_campaigns_state(campaigns: Optional[List[core.entity.Campaign]] = None) -> None:
+    campaigns_list = _get_campaigns(campaigns)
+    _update_campaigns(campaign for campaign in campaigns_list if campaign.real_time_campaign_stop)
 
 
-def _update_campaigns(campaigns):
+def _get_campaigns(campaigns: Optional[List[core.entity.Campaign]] = None) -> Iterable[core.entity.Campaign]:
+    if campaigns:
+        return campaigns
+    return core.entity.Campaign.objects.filter(real_time_campaign_stop=True)
+
+
+def _update_campaigns(campaigns: Iterable[core.entity.Campaign]) -> None:
     for campaign in campaigns:
         refresh_realtime_data([campaign])
         _update_campaign(campaign)
 
 
 @transaction.atomic
-def _update_campaign(campaign):
+def _update_campaign(campaign: core.entity.Campaign) -> None:
     campaign_state, _ = CampaignStopState.objects.get_or_create(campaign=campaign)
 
     log = RealTimeCampaignStopLog(
@@ -41,7 +51,10 @@ def _update_campaign(campaign):
     log.add_context({'new_state': campaign_state.state})
 
 
-def _is_allowed_to_run(log, campaign, campaign_state):
+def _is_allowed_to_run(
+        log: RealTimeCampaignStopLog,
+        campaign: core.entity.Campaign,
+        campaign_state: CampaignStopState) -> bool:
     allowed_to_run = (
         not _is_max_end_date_past(log, campaign, campaign_state) and
         not _is_below_threshold(log, campaign, campaign_state)
@@ -50,7 +63,10 @@ def _is_allowed_to_run(log, campaign, campaign_state):
     return allowed_to_run
 
 
-def _is_max_end_date_past(log, campaign, campaign_state):
+def _is_max_end_date_past(
+        log: RealTimeCampaignStopLog,
+        campaign: core.entity.Campaign,
+        campaign_state: CampaignStopState) -> Optional[bool]:
     is_past = (
         campaign_state.max_allowed_end_date and
         campaign_state.max_allowed_end_date < dates_helper.local_today()
@@ -62,7 +78,10 @@ def _is_max_end_date_past(log, campaign, campaign_state):
     return is_past
 
 
-def _is_below_threshold(log, campaign, campaign_state):
+def _is_below_threshold(
+        log: RealTimeCampaignStopLog,
+        campaign: core.entity.Campaign,
+        campaign_state: CampaignStopState) -> bool:
     predicted = spends_helper.get_predicted_remaining_budget(log, campaign)
     threshold = _get_threshold(campaign_state)
     is_below = predicted < threshold
@@ -74,7 +93,7 @@ def _is_below_threshold(log, campaign, campaign_state):
     return is_below
 
 
-def _get_threshold(campaign_state):
+def _get_threshold(campaign_state: CampaignStopState) -> decimal.Decimal:
     if campaign_state.state == constants.CampaignStopState.STOPPED:
         # NOTE: avoid restarting when a stopped campaign only slightly above threshold is checked
         return THRESHOLD * decimal.Decimal('1.5')
